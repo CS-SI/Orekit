@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,7 +53,7 @@ public class AlignmentDetectorTest {
             withMaxCheck(60.0);
         Assertions.assertEquals(alignAngle, alignDetector.getAlignAngle(), 1.0e-15);
         Assertions.assertSame(sun, alignDetector.getPVCoordinatesProvider());
-        Assertions.assertEquals(60.0, alignDetector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(60.0, alignDetector.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         propagator.addEventDetector(alignDetector);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(6000));
         Assertions.assertEquals(383.3662, finalState.getDate().durationFrom(iniDate), 1.0e-3);

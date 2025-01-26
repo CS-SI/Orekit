@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,11 +30,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -86,7 +81,7 @@ public class CelestialBodyFactoryTest {
     }
 
     @Test
-    public void testHorizon() {
+    void testHorizon() {
 
         // The following data are an excerpt from a telnet session with JPL Horizon system
         // note that in Horizon we selected Jupiter barycenter rather than Jupiter body center
@@ -195,55 +190,6 @@ public class CelestialBodyFactoryTest {
     }
 
     @Test
-    public void testSerialization()
-            throws IOException, ClassNotFoundException {
-        Utils.setDataRoot("regular-data");
-        for (String name : new String[] {
-            CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER, CelestialBodyFactory.SUN, CelestialBodyFactory.MERCURY,
-            CelestialBodyFactory.VENUS, CelestialBodyFactory.EARTH_MOON, CelestialBodyFactory.EARTH,
-            CelestialBodyFactory.MOON, CelestialBodyFactory.MARS, CelestialBodyFactory.JUPITER,
-            CelestialBodyFactory.SATURN, CelestialBodyFactory.URANUS, CelestialBodyFactory.NEPTUNE, CelestialBodyFactory.PLUTO
-        }) {
-
-            CelestialBody original = CelestialBodyFactory.getBody(name);
-
-            ByteArrayOutputStream bosBody = new ByteArrayOutputStream();
-            ObjectOutputStream    oosBody = new ObjectOutputStream(bosBody);
-            oosBody.writeObject(original);
-            Assertions.assertTrue(bosBody.size() > 400);
-            Assertions.assertTrue(bosBody.size() < 460);
-
-            ByteArrayInputStream  bisBody = new ByteArrayInputStream(bosBody.toByteArray());
-            ObjectInputStream     oisBody = new ObjectInputStream(bisBody);
-            CelestialBody deserializedBody  = (CelestialBody) oisBody.readObject();
-            Assertions.assertTrue(original == deserializedBody);
-
-            ByteArrayOutputStream bosInertialFrame = new ByteArrayOutputStream();
-            ObjectOutputStream    oosInertialFrame = new ObjectOutputStream(bosInertialFrame);
-            oosInertialFrame.writeObject(original.getInertiallyOrientedFrame());
-            Assertions.assertTrue(bosInertialFrame.size() > 400);
-            Assertions.assertTrue(bosInertialFrame.size() < 460);
-
-            ByteArrayInputStream  bisInertialFrame = new ByteArrayInputStream(bosInertialFrame.toByteArray());
-            ObjectInputStream     oisInertialFrame = new ObjectInputStream(bisInertialFrame);
-            Frame deserializedInertialFrame  = (Frame) oisInertialFrame.readObject();
-            Assertions.assertTrue(original.getInertiallyOrientedFrame() == deserializedInertialFrame);
-
-            ByteArrayOutputStream bosBodyFrame = new ByteArrayOutputStream();
-            ObjectOutputStream    oosBodyFrame = new ObjectOutputStream(bosBodyFrame);
-            oosBodyFrame.writeObject(original.getBodyOrientedFrame());
-            Assertions.assertTrue(bosBodyFrame.size() > 400);
-            Assertions.assertTrue(bosBodyFrame.size() < 460);
-
-            ByteArrayInputStream  bisBodyFrame = new ByteArrayInputStream(bosBodyFrame.toByteArray());
-            ObjectInputStream     oisBodyFrame = new ObjectInputStream(bisBodyFrame);
-            Frame deserializedBodyFrame  = (Frame) oisBodyFrame.readObject();
-            Assertions.assertTrue(original.getBodyOrientedFrame() == deserializedBodyFrame);
-
-        }
-    }
-
-    @Test
     public void multithreadTest() {
         Utils.setDataRoot("regular-data");
         checkMultiThread(10, 100);
@@ -289,7 +235,7 @@ public class CelestialBodyFactoryTest {
     }
 
     @Test
-    public void testEarthMoonBarycenter() {
+    void testEarthMoonBarycenter() {
         Utils.setDataRoot("regular-data/de405-ephemerides");
         CelestialBody sun = CelestialBodyFactory.getSun();
         CelestialBody mars = CelestialBodyFactory.getMars();
@@ -311,7 +257,7 @@ public class CelestialBodyFactoryTest {
     }
 
     @Test
-    public void testICRFAndGCRFAlignment() {
+    void testICRFAndGCRFAlignment() {
         Utils.setDataRoot("regular-data");
         final CelestialBody earthMoonBarycenter   = CelestialBodyFactory.getEarthMoonBarycenter();
         final CelestialBody solarSystemBarycenter = CelestialBodyFactory.getSolarSystemBarycenter();
@@ -333,7 +279,7 @@ public class CelestialBodyFactoryTest {
     }
 
     @Test
-    public void testEarthInertialFrameAroundJ2000() {
+    void testEarthInertialFrameAroundJ2000() {
         Utils.setDataRoot("regular-data");
         final Frame earthFrame = CelestialBodyFactory.getEarth().getInertiallyOrientedFrame();
         final Frame base       = FramesFactory.getGCRF();
@@ -347,7 +293,7 @@ public class CelestialBodyFactoryTest {
     }
 
     @Test
-    public void testEarthBodyOrientedFrameAroundJ2000() {
+    void testEarthBodyOrientedFrameAroundJ2000() {
         Utils.setDataRoot("regular-data");
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
         final Frame base       = FramesFactory.getITRF(IERSConventions.IERS_2010, true);

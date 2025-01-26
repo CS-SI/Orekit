@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -39,11 +38,9 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.FieldTLE;
 import org.orekit.propagation.analytical.tle.FieldTLEPropagator;
 import org.orekit.propagation.analytical.tle.TLE;
-import org.orekit.propagation.analytical.tle.TLEConstants;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -117,7 +114,7 @@ public class FixedPointTleGenerationAlgorithmTest {
         // Changes frame
         final Frame eme2000 = FramesFactory.getEME2000();
         final TimeStampedPVCoordinates pv = state.getPVCoordinates(eme2000);
-        final CartesianOrbit orbit = new CartesianOrbit(pv, eme2000, state.getMu());
+        final CartesianOrbit orbit = new CartesianOrbit(pv, eme2000, state.getOrbit().getMu());
 
         // Convert to TLE
         final TLE rebuilt = new FixedPointTleGenerationAlgorithm().generate(new SpacecraftState(orbit), tleISS);
@@ -147,7 +144,7 @@ public class FixedPointTleGenerationAlgorithmTest {
         // Changes frame
         final Frame eme2000 = FramesFactory.getEME2000();
         final TimeStampedFieldPVCoordinates<T> pv = state.getPVCoordinates(eme2000);
-        final FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<T>(pv, eme2000, state.getMu());
+        final FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<T>(pv, eme2000, state.getOrbit().getMu());
 
         // Convert to TLE
         final FieldTLE<T> rebuilt = new FixedPointTleGenerationAlgorithm().generate(new FieldSpacecraftState<T>(orbit), tleISS);

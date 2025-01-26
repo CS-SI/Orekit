@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
-import org.orekit.time.FieldAbsoluteDate;
 
 /** This class logs events detectors events during propagation.
  *
@@ -48,8 +47,6 @@ import org.orekit.time.FieldAbsoluteDate;
  */
 public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
 
-
-
     /** List of occurred events. */
     private final List<FieldLoggedEvent<T>> log;
 
@@ -59,7 +56,7 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
      * </p>
      */
     public FieldEventsLogger() {
-        log = new ArrayList<FieldEventsLogger.FieldLoggedEvent<T>>();
+        log = new ArrayList<>();
     }
 
     /** Monitor an event detector.
@@ -83,7 +80,7 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
      * @param monitoredDetector event detector to monitor
      * @return the wrapping detector to add to the propagator
      */
-    public FieldAbstractDetector<FieldLoggingWrapper, T> monitorDetector(final FieldEventDetector<T> monitoredDetector) {
+    public FieldEventDetector<T> monitorDetector(final FieldEventDetector<T> monitoredDetector) {
         return new FieldLoggingWrapper(monitoredDetector);
     }
 
@@ -102,7 +99,7 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
      * @return an immutable copy of the logged events
      */
     public List<FieldLoggedEvent<T>> getLoggedEvents() {
-        return new ArrayList<FieldEventsLogger.FieldLoggedEvent<T>>(log);
+        return new ArrayList<>(log);
     }
 
     /** Class for logged events entries.
@@ -125,7 +122,8 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
          * @param increasingN indicator if the event switching function was increasing
          * or decreasing at event occurrence date
          */
-        private FieldLoggedEvent(final FieldEventDetector<T> detectorN, final FieldSpacecraftState<T> stateN, final boolean increasingN) {
+        private FieldLoggedEvent(final FieldEventDetector<T> detectorN, final FieldSpacecraftState<T> stateN,
+                                 final boolean increasingN) {
             detector   = detectorN;
             state      = stateN;
             increasing = increasingN;
@@ -157,45 +155,21 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
     }
 
     /** Internal wrapper for events detectors. */
-    private class FieldLoggingWrapper extends FieldAbstractDetector<FieldLoggingWrapper, T> {
+    private class FieldLoggingWrapper implements FieldDetectorModifier<T> {
 
-        /** Wrapped events detector. */
+        /** Wrapped detector. */
         private final FieldEventDetector<T> detector;
 
         /** Simple constructor.
          * @param detector events detector to wrap
          */
         FieldLoggingWrapper(final FieldEventDetector<T> detector) {
-            this(detector.getMaxCheckInterval(), detector.getThreshold(),
-                 detector.getMaxIterationCount(), null,
-                 detector);
-        }
-
-        /** Private constructor with full parameters.
-         * <p>
-         * This constructor is private as users are expected to use the builder
-         * API with the various {@code withXxx()} methods to set up the instance
-         * in a readable manner without using a huge amount of parameters.
-         * </p>
-         * @param maxCheck maximum checking interval
-         * @param threshold convergence threshold (s)
-         * @param maxIter maximum number of iterations in the event time search
-         * @param handler event handler to call at event occurrences
-         * @param detector events detector to wrap
-         * @since 6.1
-         */
-        private FieldLoggingWrapper(final FieldAdaptableInterval<T> maxCheck, final T threshold,
-                                    final int maxIter, final FieldEventHandler<T> handler,
-                                    final FieldEventDetector<T> detector) {
-            super(maxCheck, threshold, maxIter, handler);
             this.detector = detector;
         }
 
-        /** {@inheritDoc} */
         @Override
-        protected FieldLoggingWrapper create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
-                                             final int newMaxIter, final FieldEventHandler<T> newHandler) {
-            return new FieldLoggingWrapper(newMaxCheck, newThreshold, newMaxIter, newHandler, detector);
+        public FieldEventDetector<T> getDetector() {
+            return detector;
         }
 
         /** Log an event.
@@ -203,25 +177,14 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
          * @param increasing indicator if the event switching function was increasing
          */
         public void logEvent(final FieldSpacecraftState<T> state, final boolean increasing) {
-            log.add(new FieldLoggedEvent<>(detector, state, increasing));
+            log.add(new FieldLoggedEvent<>(getDetector(), state, increasing));
         }
 
         /** {@inheritDoc} */
-        public void init(final FieldSpacecraftState<T> s0,
-                         final FieldAbsoluteDate<T> t) {
-            super.init(s0, t);
-            detector.init(s0, t);
-        }
-
-        /** {@inheritDoc} */
-        public T g(final FieldSpacecraftState<T> s) {
-            return detector.g(s);
-        }
-
-        /** {@inheritDoc} */
+        @Override
         public FieldEventHandler<T> getHandler() {
 
-            final FieldEventHandler<T> handler = detector.getHandler();
+            final FieldEventHandler<T> handler = getDetector().getHandler();
 
             return new FieldEventHandler<T>() {
 
@@ -230,14 +193,14 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
                                             final FieldEventDetector<T> d,
                                             final boolean increasing) {
                     logEvent(s, increasing);
-                    return handler.eventOccurred(s, detector, increasing);
+                    return handler.eventOccurred(s, getDetector(), increasing);
                 }
 
                 /** {@inheritDoc} */
                 @Override
                 public FieldSpacecraftState<T> resetState(final FieldEventDetector<T> d,
                                                           final FieldSpacecraftState<T> oldState) {
-                    return handler.resetState(detector, oldState);
+                    return handler.resetState(getDetector(), oldState);
                 }
 
             };

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Mark Rutten
+/* Copyright 2002-2025 Mark Rutten
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -126,8 +126,8 @@ public class BistaticRange extends GroundReceiverMeasurement<BistaticRange> {
                                                                                       Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
 
         // Uplink time of flight from emitter station to transit state
-        final double tauU = signalTimeOfFlight(emitterApprox, transitPV.getPosition(), transitDate,
-                                               common.getState().getFrame());
+        final double tauU = signalTimeOfFlightAdjustableEmitter(emitterApprox, transitPV.getPosition(), transitDate,
+                                                                common.getState().getFrame());
 
         // Secondary station PV in inertial frame at rebound date on secondary station
         final TimeStampedPVCoordinates emitterPV = emitterApprox.shiftedBy(-tauU);
@@ -145,8 +145,12 @@ public class BistaticRange extends GroundReceiverMeasurement<BistaticRange> {
                                                            emitterPV
                                                        });
 
+        // Clock offsets
+        final double dte = getEmitterStation().getClockOffsetDriver().getValue(common.getState().getDate());
+        final double dtr = getReceiverStation().getClockOffsetDriver().getValue(common.getState().getDate());
+
         // Range value
-        final double tau = common.getTauD() + tauU;
+        final double tau = common.getTauD() + tauU + dtr - dte;
         final double range = tau * Constants.SPEED_OF_LIGHT;
 
         estimated.setEstimatedValue(range);
@@ -185,8 +189,8 @@ public class BistaticRange extends GroundReceiverMeasurement<BistaticRange> {
                                                                                              zero, zero, zero));
 
         // Uplink time of flight from emiiter to transit state
-        final Gradient tauU = signalTimeOfFlight(emitterApprox, transitPV.getPosition(),
-                                                 transitPV.getDate(), state.getFrame());
+        final Gradient tauU = signalTimeOfFlightAdjustableEmitter(emitterApprox, transitPV.getPosition(),
+                                                                  transitPV.getDate(), state.getFrame());
 
         // Emitter coordinates at transmit time
         final TimeStampedFieldPVCoordinates<Gradient> emitterPV = emitterApprox.shiftedBy(tauU.negate());
@@ -203,8 +207,12 @@ public class BistaticRange extends GroundReceiverMeasurement<BistaticRange> {
                     emitterPV.toTimeStampedPVCoordinates()
                 });
 
+        // Clock offsets
+        final Gradient dte = getEmitterStation().getClockOffsetDriver().getValue(nbParams, common.getIndices(), state.getDate());
+        final Gradient dtr = getReceiverStation().getClockOffsetDriver().getValue(nbParams, common.getIndices(), state.getDate());
+
         // Range value
-        final Gradient tau = common.getTauD().add(tauU);
+        final Gradient tau = common.getTauD().add(tauU).add(dtr).subtract(dte);
         final Gradient range = tau.multiply(Constants.SPEED_OF_LIGHT);
 
         estimated.setEstimatedValue(range.getValue());

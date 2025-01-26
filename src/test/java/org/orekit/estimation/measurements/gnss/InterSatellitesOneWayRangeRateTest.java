@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -127,7 +127,7 @@ public class InterSatellitesOneWayRangeRateTest {
             System.out.println("\nTest Range Rate Parameter Derivatives - Finite Differences Comparison\n");
         }
         // Run test
-        double refErrorsMedian = 2.2e-16;
+        double refErrorsMedian = 2.6e-15;
         double refErrorsMean   = 1.2e-7;
         double refErrorsMax    = 2.9e-6;
         this.genericTestParameterDerivatives(printResults,

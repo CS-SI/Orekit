@@ -38,11 +38,57 @@ public interface StaticTransform extends TimeStamped {
 
     /**
      * Get the identity static transform.
+     * It overrides most methods for speed.
      *
      * @return identity transform.
      */
     static StaticTransform getIdentity() {
-        return Transform.IDENTITY;
+        return new StaticTransform() {
+            @Override
+            public Vector3D getTranslation() {
+                return Vector3D.ZERO;
+            }
+
+            @Override
+            public Rotation getRotation() {
+                return Rotation.IDENTITY;
+            }
+
+            @Override
+            public StaticTransform getStaticInverse() {
+                return getInverse();
+            }
+
+            @Override
+            public StaticTransform getInverse() {
+                return this;
+            }
+
+            @Override
+            public AbsoluteDate getDate() {
+                return AbsoluteDate.ARBITRARY_EPOCH;
+            }
+
+            @Override
+            public Vector3D transformPosition(final Vector3D position) {
+                return transformVector(position);
+            }
+
+            @Override
+            public Vector3D transformVector(final Vector3D vector) {
+                return new Vector3D(vector.getX(), vector.getY(), vector.getZ());
+            }
+
+            @Override
+            public <T extends CalculusFieldElement<T>> FieldVector3D<T> transformVector(final FieldVector3D<T> vector) {
+                return new FieldVector3D<>(vector.getX(), vector.getY(), vector.getZ());
+            }
+
+            @Override
+            public <T extends CalculusFieldElement<T>> FieldVector3D<T> transformPosition(final FieldVector3D<T> position) {
+                return transformVector(position);
+            }
+        };
     }
 
     /**

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -386,7 +386,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
 
     public static ODEIntegrator generateDefaultIntegrator(final Orbit orbit, final OrbitType orbitType) {
         final double     dP         = 1;
-        final double[][] tolerances = NumericalPropagator.tolerances(dP, orbit, orbitType);
+        final double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, orbitType);
         final double     minStep    = 0.001;
         final double     maxStep    = 300.;
 
@@ -813,10 +813,10 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
             
         }
         Assertions.assertEquals( 0.067889396, relativeRMSSigmaError[0].getMean(), tolerance);
-        Assertions.assertEquals( 7.361016578, relativeRMSSigmaError[1].getMean(), tolerance);
+        Assertions.assertEquals( 20.113671554, relativeRMSSigmaError[1].getMean(), tolerance);
         Assertions.assertEquals( 0.064925239, relativeRMSSigmaError[0].getPercentile(50), tolerance);
-        Assertions.assertEquals( 7.705418959, relativeRMSSigmaError[1].getPercentile(50), tolerance);
+        Assertions.assertEquals( 13.962696065, relativeRMSSigmaError[1].getPercentile(50), tolerance);
         Assertions.assertEquals( 0.140595553, relativeRMSSigmaError[0].getMax(), tolerance);
-        Assertions.assertEquals(16.005112864, relativeRMSSigmaError[1].getMax(), tolerance);
+        Assertions.assertEquals(99.8740338063, relativeRMSSigmaError[1].getMax(), tolerance);
     }
 }

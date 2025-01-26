@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,7 +41,7 @@ import org.orekit.models.earth.ReferenceEllipsoid;
 public class EllipsoidTest {
 
     @Test
-    public void testGetters() {
+    void testGetters() {
 
         final Ellipsoid ellipsoid =
                 new Ellipsoid(FramesFactory.getEME2000(), 1, 2, 3);
@@ -55,7 +55,7 @@ public class EllipsoidTest {
     }
 
     @Test
-    public void testPrincipalPlanesIntersections() {
+    void testPrincipalPlanesIntersections() {
 
         final Ellipsoid ellipsoid =
                 new Ellipsoid(FramesFactory.getEME2000(), 1, 2, 3);
@@ -90,7 +90,7 @@ public class EllipsoidTest {
     }
 
     @Test
-    public void testFieldPrincipalPlanesIntersections() {
+    void testFieldPrincipalPlanesIntersections() {
         doTestFieldPrincipalPlanesIntersections(Binary64Field.getInstance());
     }
 
@@ -136,7 +136,7 @@ public class EllipsoidTest {
     }
 
     @Test
-    public void testNoIntersections() {
+    void testNoIntersections() {
         final Ellipsoid ellipsoid =
                 new Ellipsoid(FramesFactory.getEME2000(), 1, 2, 3);
         final Ellipse ps = ellipsoid.getPlaneSection(new Vector3D(0, 0, 4), Vector3D.PLUS_K);
@@ -144,7 +144,7 @@ public class EllipsoidTest {
     }
 
     @Test
-    public void testFieldNoIntersections() {
+    void testFieldNoIntersections() {
         doTestFieldNoIntersections(Binary64Field.getInstance());
     }
 
@@ -158,7 +158,7 @@ public class EllipsoidTest {
     }
 
     @Test
-    public void testSinglePoint() throws IOException {
+    void testSinglePoint() throws IOException {
         final Ellipsoid ellipsoid =
                 new Ellipsoid(FramesFactory.getEME2000(), 1, 2, 3);
         final Ellipse ps = ellipsoid.getPlaneSection(new Vector3D(0, 0, 3), Vector3D.PLUS_K);
@@ -168,7 +168,7 @@ public class EllipsoidTest {
     }
 
     @Test
-    public void testFieldSinglePoint() throws IOException {
+    void testFieldSinglePoint() throws IOException {
         doTestFieldSinglePoint(Binary64Field.getInstance());
     }
 
@@ -186,7 +186,7 @@ public class EllipsoidTest {
     }
 
     @Test
-    public void testRandomNormalSections() throws IOException {
+    void testRandomNormalSections() throws IOException {
         RandomGenerator random = new Well19937a(0x573c54d152aeafe4l);
         for (int i = 0; i < 100; ++i) {
             double a = 10 * random.nextDouble();
@@ -227,7 +227,7 @@ public class EllipsoidTest {
     }
 
     @Test
-    public void testFieldRandomNormalSections() throws IOException {
+    void testFieldRandomNormalSections() throws IOException {
         doTestFieldRandomNormalSections(Binary64Field.getInstance());
     }
 
@@ -273,7 +273,7 @@ public class EllipsoidTest {
     }
 
     @Test
-    public void testInside() {
+    void testInside() {
         final Ellipsoid ellipsoid =
                         new Ellipsoid(FramesFactory.getEME2000(), 1, 2, 3);
         for (double f = -2.0; f <= 2.0; f += 1.0 / 128.0) {
@@ -285,7 +285,7 @@ public class EllipsoidTest {
     }
 
     @Test
-    public void testFieldInside() {
+    void testFieldInside() {
         doTestFieldInside(Binary64Field.getInstance());
     }
 
@@ -302,7 +302,7 @@ public class EllipsoidTest {
     }
 
     @Test
-    public void testLimb() {
+    void testLimb() {
         final Ellipsoid ellipsoid =
                         new Ellipsoid(FramesFactory.getEME2000(), 1, 2, 3);
         RandomGenerator random = new Well1024a(0xa69c430a67475af7l);
@@ -327,7 +327,7 @@ public class EllipsoidTest {
     }
 
     @Test
-    public void testFieldLimb() {
+    void testFieldLimb() {
         doTestFieldLimb(Binary64Field.getInstance());
     }
 
@@ -358,7 +358,7 @@ public class EllipsoidTest {
 
     /** A test case where x >> y and y << 1, which is stressing numerically. */
     @Test
-    public void testIssue639() {
+    void testIssue639() {
         // setup
         Vector3D observer = new Vector3D(
                 5621586.021199942, -4496118.751975084, 0.000000008);
@@ -375,7 +375,7 @@ public class EllipsoidTest {
     }
 
     @Test
-    public void testFieldIssue639() {
+    void testFieldIssue639() {
         doTestFieldIssue639(Binary64Field.getInstance());
     }
 

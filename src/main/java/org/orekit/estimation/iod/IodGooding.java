@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -37,6 +38,7 @@ import org.orekit.utils.PVCoordinates;
  *    Technical Report 93004, April 1993
  * </p>
  * @author Joris Olympio
+ * @author Bryan Cazabonne
  * @since 8.0
  */
 public class IodGooding {
@@ -130,6 +132,55 @@ public class IodGooding {
         return rho3 * R;
     }
 
+    /** Estimate orbit from three angular (i.e., azimuth - elevation) observations.
+     * <p>
+     *     This method doesn't need initial guesses of range values since they are computed
+     *     by a Gauss algorithm.
+     * </p>
+     *
+     * @param outputFrame inertial frame for observer coordinates and orbit estimate
+     * @param azEl1 first angular observation
+     * @param azEl2 second angular observation
+     * @param azEl3 third angular observation
+     * @return an estimate of the orbit at the central date (i.e., date of the second angular observation)
+     * @since 13.0
+     */
+    public Orbit estimate(final Frame outputFrame, final AngularAzEl azEl1,
+                          final AngularAzEl azEl2, final AngularAzEl azEl3) {
+        return estimate(outputFrame, azEl1, azEl2, azEl3, 0, true);
+    }
+
+    /** Estimate orbit from three angular (i.e., azimuth - elevation) observations.
+     * <p>
+     *     This method doesn't need initial guesses of range values since they are computed
+     *     by a Gauss algorithm.
+     * </p>
+     *
+     * @param outputFrame inertial frame for observer coordinates and orbit estimate
+     * @param azEl1 first angular observation
+     * @param azEl2 second angular observation
+     * @param azEl3 third angular observation
+     * @param nRev number of complete revolutions between observation 1 and 3
+     * @param direction true if posigrade (short way)
+     * @return an estimate of the orbit at the central date (i.e., date of the second angular observation)
+     * @since 13.0
+     */
+    public Orbit estimate(final Frame outputFrame, final AngularAzEl azEl1,
+                          final AngularAzEl azEl2, final AngularAzEl azEl3,
+                          final int nRev, final boolean direction) {
+        // Use Gauss IOD to estimate orbit at T2
+        final Orbit estimatedByGaussAtT2 = new IodGauss(mu).estimate(outputFrame, azEl1, azEl2, azEl3);
+
+        // Keplerian propagation to compute orbits at T1 and T3 based on IOD Gauss result
+        final KeplerianPropagator propagator = new KeplerianPropagator(estimatedByGaussAtT2);
+
+        // Now, IOD Gooding can be used
+        return estimate(outputFrame, azEl1, azEl2, azEl3,
+                        computeDistance(propagator, azEl1.getDate(), azEl1.getGroundStationPosition(outputFrame)),
+                        computeDistance(propagator, azEl3.getDate(), azEl3.getGroundStationPosition(outputFrame)),
+                        nRev, direction);
+    }
+
     /** Estimate orbit from three angular observations.
      * <p>
      * This signature assumes there was less than an half revolution between start and final date
@@ -176,6 +227,55 @@ public class IodGooding {
                         azEl2.getObservedLineOfSight(outputFrame), azEl2.getDate(),
                         azEl3.getObservedLineOfSight(outputFrame), azEl3.getDate(),
                         rho1init, rho3init, nRev, direction);
+    }
+
+    /** Estimate orbit from three angular (i.e., right ascension - declination) observations.
+     * <p>
+     *     This method doesn't need initial guesses of range values since they are computed
+     *     by a Gauss algorithm.
+     * </p>
+     *
+     * @param outputFrame inertial frame for observer coordinates and orbit estimate
+     * @param raDec1 first angular observation
+     * @param raDec2 second angular observation
+     * @param raDec3 third angular observation
+     * @return an estimate of the orbit at the central date (i.e., date of the second angular observation)
+     * @since 13.0
+     */
+    public Orbit estimate(final Frame outputFrame, final AngularRaDec raDec1,
+                          final AngularRaDec raDec2, final AngularRaDec raDec3) {
+        return estimate(outputFrame, raDec1, raDec2, raDec3, 0, true);
+    }
+
+    /** Estimate orbit from three angular (i.e., right ascension - declination) observations.
+     * <p>
+     *     This method doesn't need initial guesses of range values since they are computed
+     *     by a Gauss algorithm.
+     * </p>
+     *
+     * @param outputFrame inertial frame for observer coordinates and orbit estimate
+     * @param raDec1 first angular observation
+     * @param raDec2 second angular observation
+     * @param raDec3 third angular observation
+     * @param nRev number of complete revolutions between observation 1 and 3
+     * @param direction true if posigrade (short way)
+     * @return an estimate of the orbit at the central date (i.e., date of the second angular observation)
+     * @since 13.0
+     */
+    public Orbit estimate(final Frame outputFrame, final AngularRaDec raDec1,
+                          final AngularRaDec raDec2, final AngularRaDec raDec3,
+                          final int nRev, final boolean direction) {
+        // Use Gauss IOD to estimate orbit at T2
+        final Orbit estimatedByGaussAtT2 = new IodGauss(mu).estimate(outputFrame, raDec1, raDec2, raDec3);
+
+        // Keplerian propagation to compute orbits at T1 and T3 based on IOD Gauss result
+        final KeplerianPropagator propagator = new KeplerianPropagator(estimatedByGaussAtT2);
+
+        // Now, IOD Gooding can be used
+        return estimate(outputFrame, raDec1, raDec2, raDec3,
+                        computeDistance(propagator, raDec1.getDate(), raDec1.getGroundStationPosition(outputFrame)),
+                        computeDistance(propagator, raDec3.getDate(), raDec3.getGroundStationPosition(outputFrame)),
+                        nRev, direction);
     }
 
     /** Estimate orbit from three angular observations.
@@ -661,6 +761,19 @@ public class IodGooding {
         }
 
         return null;
+    }
+
+    /** Compute the initial guess of the distance between the receiver and the satellite.
+     * @param propagator propagator used to compute the orbit at measurement epoch
+     * @param measurementEpoch measurement epoch
+     * @param receiverPosition receiver position in outputFrame
+     * @return the initial guess of the distant between the receiver and the satellite
+     * @since 13.0
+     */
+    private static double computeDistance(final KeplerianPropagator propagator, final AbsoluteDate measurementEpoch,
+                                          final Vector3D receiverPosition) {
+        final Orbit orbitAtMeasurementEpoch = propagator.propagate(measurementEpoch).getOrbit();
+        return Vector3D.distance(receiverPosition, orbitAtMeasurementEpoch.getPosition());
     }
 
 }

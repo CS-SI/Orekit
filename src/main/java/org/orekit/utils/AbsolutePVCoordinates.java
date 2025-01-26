@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,14 +16,9 @@
  */
 package org.orekit.utils;
 
-import java.io.Serializable;
-
 import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
-import org.orekit.annotation.DefaultDataContext;
-import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -31,15 +26,12 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeStamped;
 
 /** Position - Velocity - Acceleration linked to a date and a frame.
  */
-public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
-    implements TimeStamped, Serializable, PVCoordinatesProvider {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20150824L;
+public class AbsolutePVCoordinates extends TimeStampedPVCoordinates implements TimeStamped, PVCoordinatesProvider {
 
     /** Frame in which are defined the coordinates. */
     private final Frame frame;
@@ -232,6 +224,22 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
         return new AbsolutePVCoordinates(frame, spv);
     }
 
+    /** Get a time-shifted state.
+     * <p>
+     * The state can be slightly shifted to close dates. This shift is based on
+     * a simple Taylor expansion. It is <em>not</em> intended as a replacement for
+     * proper orbit propagation (it is not even Keplerian!) but should be sufficient
+     * for either small time shifts or coarse accuracy.
+     * </p>
+     * @param dt time shift in seconds
+     * @return a new state, shifted with respect to the instance (which is immutable)
+     * @since 13.0
+     */
+    public AbsolutePVCoordinates shiftedBy(final TimeOffset dt) {
+        final TimeStampedPVCoordinates spv = super.shiftedBy(dt);
+        return new AbsolutePVCoordinates(frame, spv);
+    }
+
     /** Create a local provider using simply Taylor expansion through {@link #shiftedBy(double)}.
      * <p>
      * The time evolution is based on a simple Taylor expansion. It is <em>not</em> intended as a
@@ -310,63 +318,6 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
     @Override
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate otherDate, final Frame outputFrame) {
         return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(outputFrame);
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * @return data transfer object that will be serialized
-     */
-    @DefaultDataContext
-    private Object writeReplace() {
-        return new DTO(this);
-    }
-
-    /** Internal class used only for serialization. */
-    @DefaultDataContext
-    private static class DTO implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20150916L;
-
-        /** Double values. */
-        private double[] d;
-
-        /** Frame in which acoordinates are defined. */
-        private final Frame frame;
-
-        /** Simple constructor.
-         * @param absPva instance to serialize
-         */
-        private DTO(final AbsolutePVCoordinates absPva) {
-
-            // decompose date
-            final AbsoluteDate j2000Epoch =
-                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
-            final double epoch  = FastMath.floor(absPva.getDate().durationFrom(j2000Epoch));
-            final double offset = absPva.getDate().durationFrom(j2000Epoch.shiftedBy(epoch));
-
-            this.d = new double[] {
-                epoch, offset,
-                absPva.getPosition().getX(),     absPva.getPosition().getY(),     absPva.getPosition().getZ(),
-                absPva.getVelocity().getX(),     absPva.getVelocity().getY(),     absPva.getVelocity().getZ(),
-                absPva.getAcceleration().getX(), absPva.getAcceleration().getY(), absPva.getAcceleration().getZ()
-            };
-            this.frame = absPva.frame;
-
-        }
-
-        /** Replace the deserialized data transfer object with a {@link AbsolutePVCoordinates}.
-         * @return replacement {@link AbsolutePVCoordinates}
-         */
-        private Object readResolve() {
-            final AbsoluteDate j2000Epoch =
-                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
-            return new AbsolutePVCoordinates(frame,
-                                             j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
-                                             new Vector3D(d[2], d[3], d[ 4]),
-                                             new Vector3D(d[5], d[6], d[ 7]),
-                                             new Vector3D(d[8], d[9], d[10]));
-        }
-
     }
 
 }

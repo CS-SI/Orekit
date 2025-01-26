@@ -91,6 +91,11 @@
             <message key="name.invalidPattern" value="Name ''{0}'' is not allowed."/>
         </module>
         <module name="SuppressionCommentFilter">
+            <property name="offCommentFormat" value="CHECKSTYLE\: stop ConstantName"/>
+            <property name="onCommentFormat"  value="CHECKSTYLE\: resume ConstantName"/>
+            <property name="checkFormat"      value="ConstantName"/>
+        </module>
+        <module name="SuppressionCommentFilter">
             <property name="offCommentFormat" value="CHECKSTYLE\: stop JavadocVariable check"/>
             <property name="onCommentFormat"  value="CHECKSTYLE\: resume JavadocVariable check"/>
             <property name="checkFormat"      value="JavadocVariable"/>

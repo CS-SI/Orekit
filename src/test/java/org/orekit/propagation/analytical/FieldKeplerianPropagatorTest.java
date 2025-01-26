@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -89,7 +89,7 @@ public class FieldKeplerianPropagatorTest {
     private double mu;
 
     @Test
-    public void testTuple() {
+    void testTuple() {
 
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         KeplerianOrbit k0 = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
@@ -148,125 +148,119 @@ public class FieldKeplerianPropagatorTest {
     }
 
     @Test
-    public void testSameDateCartesian() {
+    void testSameDateCartesian() {
         doTestSameDateCartesian(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testSameDateKeplerian() {
+    void testSameDateKeplerian() {
         doTestSameDateKeplerian(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testPropagatedCartesian() {
+    void testPropagatedCartesian() {
         doTestPropagatedCartesian(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testPropagatedKeplerian() {
+    void testPropagatedKeplerian() {
         doTestPropagatedKeplerian(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testAscendingNode() {
+    void testAscendingNode() {
         doTestAscendingNode(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testStopAtTargetDate() {
+    void testStopAtTargetDate() {
         doTestStopAtTargetDate(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testFixedStep() {
+    void testFixedStep() {
         doTestFixedStep(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testVariableStep() {
+    void testVariableStep() {
         doTestVariableStep(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testEphemeris() {
+    void testEphemeris() {
         doTestEphemeris(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testAdditionalState() {
+    void testAdditionalState() {
         doTestAdditionalState(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testIssue14() {
+    void testIssue14() {
         doTestIssue14(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testIssue107() {
+    void testIssue107() {
         doTestIssue107(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testMu() {
+    void testMu() {
         doTestMu(Binary64Field.getInstance());
     }
 
     @Test
-    public void testNoDerivatives() {
+    void testNoDerivatives() {
         doTestNoDerivatives(Binary64Field.getInstance());
     }
 
     @Test
-    public void testWrongAttitude() {
-        Assertions.assertThrows(OrekitException.class, () -> {
-            doTestWrongAttitude(Binary64Field.getInstance());
-        });
+    void testWrongAttitude() {
+        Assertions.assertThrows(OrekitException.class, () -> doTestWrongAttitude(Binary64Field.getInstance()));
     }
 
     @Test
-    public void testStepException() {
-        Assertions.assertThrows(OrekitException.class, () -> {
-            doTestStepException(Binary64Field.getInstance());
-        });
+    void testStepException() {
+        Assertions.assertThrows(OrekitException.class, () -> doTestStepException(Binary64Field.getInstance()));
     }
 
     @Test
-    public void testWrappedAttitudeException() {
-        Assertions.assertThrows(OrekitException.class, () -> {
-            doTestWrappedAttitudeException(Binary64Field.getInstance());
-        });
+    void testWrappedAttitudeException() {
+        Assertions.assertThrows(OrekitException.class, () -> doTestWrappedAttitudeException(Binary64Field.getInstance()));
     }
 
     @Test
-    public void testPerigee() {
+    void testPerigee() {
         doTestPerigee(Binary64Field.getInstance());
     }
 
     @Test
-    public void testAltitude() {
+    void testAltitude() {
         doTestAltitude(Binary64Field.getInstance());
     }
 
     @Test
-    public void testDate() {
+    void testDate() {
         doTestDate(Binary64Field.getInstance());
     }
 
     @Test
-    public void testSetting() {
+    void testSetting() {
         doTestSetting(Binary64Field.getInstance());
     }
 
@@ -290,7 +284,7 @@ public class FieldKeplerianPropagatorTest {
         T delta_t = zero; // extrapolation duration in seconds
         FieldAbsoluteDate<T> extrapDate = initDate.shiftedBy(delta_t);
 
-        FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(extrapDate);
+        FieldOrbit<T> finalOrbit = extrapolator.propagate(extrapDate).getOrbit();
 
         T a = finalOrbit.getA();
         // another way to compute n
@@ -329,7 +323,7 @@ public class FieldKeplerianPropagatorTest {
         T delta_t = zero; // extrapolation duration in seconds
         FieldAbsoluteDate<T> extrapDate = initDate.shiftedBy(delta_t);
 
-        FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(extrapDate);
+        FieldOrbit<T> finalOrbit = extrapolator.propagate(extrapDate).getOrbit();
 
         T a = finalOrbit.getA();
         // another way to compute n
@@ -372,7 +366,7 @@ public class FieldKeplerianPropagatorTest {
         T delta_t = zero.add(100000.0); // extrapolation duration in seconds
         FieldAbsoluteDate<T> extrapDate = initDate.shiftedBy(delta_t);
 
-        FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(extrapDate);
+        FieldOrbit<T> finalOrbit = extrapolator.propagate(extrapDate).getOrbit();
 
 
         // computation of (M final - M initial) with another method
@@ -462,7 +456,7 @@ public class FieldKeplerianPropagatorTest {
         T delta_t = zero.add(100000.0); // extrapolation duration in seconds
         FieldAbsoluteDate<T> extrapDate = initDate.shiftedBy(delta_t);
 
-        FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(extrapDate);
+        FieldOrbit<T> finalOrbit = extrapolator.propagate(extrapDate).getOrbit();
         Assertions.assertEquals(6092.3362422560844633, finalOrbit.getKeplerianPeriod().getReal(), 1.0e-12);
         Assertions.assertEquals(0.001031326088602888358, finalOrbit.getKeplerianMeanMotion().getReal(), 1.0e-16);
 
@@ -564,9 +558,6 @@ public class FieldKeplerianPropagatorTest {
         FieldStepHandlerMultiplexer<T> multiplexer = new FieldStepHandlerMultiplexer<>();
         propagator.setStepHandler(multiplexer);
         multiplexer.add(new FieldOrekitStepHandler<T>() {
-            @Override
-            public void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t) {
-            }
             @Override
             public void handleStep(FieldOrekitStepInterpolator<T> interpolator) {
             }
@@ -928,29 +919,16 @@ public class FieldKeplerianPropagatorTest {
 
     private <T extends CalculusFieldElement<T>> void checkDerivatives(final FieldOrbit<T> orbit,
                                                                   final boolean expectedDerivatives) {
-        Assertions.assertEquals(expectedDerivatives, orbit.hasDerivatives());
-        if (expectedDerivatives) {
-            Assertions.assertNotNull(orbit.getADot());
-            Assertions.assertNotNull(orbit.getEquinoctialExDot());
-            Assertions.assertNotNull(orbit.getEquinoctialEyDot());
-            Assertions.assertNotNull(orbit.getHxDot());
-            Assertions.assertNotNull(orbit.getHyDot());
-            Assertions.assertNotNull(orbit.getLEDot());
-            Assertions.assertNotNull(orbit.getLvDot());
-            Assertions.assertNotNull(orbit.getLMDot());
-            Assertions.assertNotNull(orbit.getEDot());
-            Assertions.assertNotNull(orbit.getIDot());
-        } else {
-            Assertions.assertNull(orbit.getADot());
-            Assertions.assertNull(orbit.getEquinoctialExDot());
-            Assertions.assertNull(orbit.getEquinoctialEyDot());
-            Assertions.assertNull(orbit.getHxDot());
-            Assertions.assertNull(orbit.getHyDot());
-            Assertions.assertNull(orbit.getLEDot());
-            Assertions.assertNull(orbit.getLvDot());
-            Assertions.assertNull(orbit.getLMDot());
-            Assertions.assertNull(orbit.getEDot());
-            Assertions.assertNull(orbit.getIDot());
+        Assertions.assertEquals(expectedDerivatives, orbit.hasNonKeplerianAcceleration());
+        if (!expectedDerivatives) {
+            final T zero = orbit.getA().getField().getZero();
+            Assertions.assertEquals(zero, orbit.getADot());
+            Assertions.assertEquals(zero, orbit.getEDot());
+            Assertions.assertEquals(zero, orbit.getIDot());
+            Assertions.assertEquals(zero, orbit.getEquinoctialExDot());
+            Assertions.assertEquals(zero, orbit.getEquinoctialEyDot());
+            Assertions.assertEquals(zero, orbit.getHxDot());
+            Assertions.assertEquals(zero, orbit.getHyDot());
         }
     }
 

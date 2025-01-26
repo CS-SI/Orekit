@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -254,43 +254,6 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
                                              new TimeStampedFieldAngularCoordinatesHermiteInterpolator<KK>(
                                                      interpolationPoints, extrapolationThreshold, angularFilter)),
              new TimeStampedFieldHermiteInterpolator<>(interpolationPoints, extrapolationThreshold));
-    }
-
-    /**
-     * Constructor.
-     * <p>
-     * <b>BEWARE:</b> output frame <b>must be inertial</b> if interpolated spacecraft states are defined by orbit. Throws an
-     * error otherwise.
-     *
-     * @param outputFrame output frame
-     * @param orbitInterpolator orbit interpolator
-     * @param absPVAInterpolator absolute position-velocity-acceleration
-     * @param massInterpolator mass interpolator
-     * @param attitudeInterpolator attitude interpolator
-     * @param additionalStateInterpolator additional state interpolator
-     *
-     * @deprecated using this constructor may throw an exception if any given interpolator
-     * does not use {@link #DEFAULT_INTERPOLATION_POINTS} and {@link
-     * #DEFAULT_EXTRAPOLATION_THRESHOLD_SEC}. Use {@link
-     * #FieldSpacecraftStateInterpolator(int, double, Frame, FieldTimeInterpolator,
-     * FieldTimeInterpolator, FieldTimeInterpolator, FieldTimeInterpolator,
-     * FieldTimeInterpolator)} instead.
-     */
-    @Deprecated
-    public FieldSpacecraftStateInterpolator(final Frame outputFrame,
-                                            final FieldTimeInterpolator<FieldOrbit<KK>, KK> orbitInterpolator,
-                                            final FieldTimeInterpolator<FieldAbsolutePVCoordinates<KK>, KK> absPVAInterpolator,
-                                            final FieldTimeInterpolator<TimeStampedField<KK>, KK> massInterpolator,
-                                            final FieldTimeInterpolator<FieldAttitude<KK>, KK> attitudeInterpolator,
-                                            final FieldTimeInterpolator<TimeStampedField<KK>, KK> additionalStateInterpolator) {
-        super(DEFAULT_INTERPOLATION_POINTS, DEFAULT_EXTRAPOLATION_THRESHOLD_SEC);
-        checkAtLeastOneInterpolator(orbitInterpolator, absPVAInterpolator);
-        this.outputFrame                 = outputFrame;
-        this.orbitInterpolator           = orbitInterpolator;
-        this.absPVAInterpolator          = absPVAInterpolator;
-        this.massInterpolator            = massInterpolator;
-        this.attitudeInterpolator        = attitudeInterpolator;
-        this.additionalStateInterpolator = additionalStateInterpolator;
     }
 
     /**

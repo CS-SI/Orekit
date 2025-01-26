@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,7 +43,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.ParameterDriver;
 
 /** The Knocke Earth Albedo and IR emission force model.
@@ -104,7 +104,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
     private static final double E2 = -0.18;
 
     /** Sun model. */
-    private final ExtendedPVCoordinatesProvider sun;
+    private final ExtendedPositionProvider sun;
 
     /** Spacecraft. */
     private final RadiationSensitive spacecraft;
@@ -127,7 +127,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
      * @param angularResolution angular resolution in rad
      */
     @DefaultDataContext
-    public KnockeRediffusedForceModel (final ExtendedPVCoordinatesProvider sun,
+    public KnockeRediffusedForceModel (final ExtendedPositionProvider sun,
                                        final RadiationSensitive spacecraft,
                                        final double equatorialRadius,
                                        final double angularResolution) {
@@ -142,7 +142,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
      * @param angularResolution angular resolution in rad
      * @param utc the UTC time scale to define reference epoch
      */
-    public KnockeRediffusedForceModel (final ExtendedPVCoordinatesProvider sun,
+    public KnockeRediffusedForceModel (final ExtendedPositionProvider sun,
                                        final RadiationSensitive spacecraft,
                                        final double equatorialRadius,
                                        final double angularResolution,

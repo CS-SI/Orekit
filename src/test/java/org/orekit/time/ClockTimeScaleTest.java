@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,9 +41,9 @@ public class ClockTimeScaleTest {
                                                            TimeSystem.GALILEO.getTimeScale(TimeScalesFactory.getTimeScales()),
                                                            clock);
         Assertions.assertEquals(name, positive.getName());
-        Assertions.assertEquals(1.00 / 1024.0 - 19.0, positive.offsetFromTAI(t0),                   1.0e-15);
-        Assertions.assertEquals(1.75 / 1024.0 - 19.0, positive.offsetFromTAI(t0.shiftedBy(1.0)), 1.0e-15);
-        Assertions.assertEquals(3.00 / 1024.0 - 19.0, positive.offsetFromTAI(t0.shiftedBy(2.0)), 1.0e-15);
+        Assertions.assertEquals(1.00 / 1024.0 - 19.0, positive.offsetFromTAI(t0).toDouble(),                   1.0e-15);
+        Assertions.assertEquals(1.75 / 1024.0 - 19.0, positive.offsetFromTAI(t0.shiftedBy(1.0)).toDouble(), 1.0e-15);
+        Assertions.assertEquals(3.00 / 1024.0 - 19.0, positive.offsetFromTAI(t0.shiftedBy(2.0)).toDouble(), 1.0e-15);
 
         FieldAbsoluteDate<Binary64> t064 = new FieldAbsoluteDate<>(Binary64Field.getInstance(), t0);
         Assertions.assertEquals(1.00 / 1024.0 - 19.0, positive.offsetFromTAI(t064).getReal(),                   1.0e-15);
@@ -65,12 +65,12 @@ public class ClockTimeScaleTest {
                                                            TimeScalesFactory.getUTC(),
                                                            clock);
         Assertions.assertEquals(name, positive.getName());
-        Assertions.assertEquals(1.00 / 1024.0 - 37.0, positive.offsetFromTAI(t0),                   1.0e-15);
-        Assertions.assertEquals(1.75 / 1024.0 - 37.0, positive.offsetFromTAI(t0.shiftedBy(1.0)), 1.0e-15);
-        Assertions.assertEquals(3.00 / 1024.0 - 37.0, positive.offsetFromTAI(t0.shiftedBy(2.0)), 1.0e-15);
+        Assertions.assertEquals(1.00 / 1024.0 - 37.0, positive.offsetFromTAI(t0).toDouble(),                1.0e-15);
+        Assertions.assertEquals(1.75 / 1024.0 - 37.0, positive.offsetFromTAI(t0.shiftedBy(1.0)).toDouble(), 1.0e-15);
+        Assertions.assertEquals(3.00 / 1024.0 - 37.0, positive.offsetFromTAI(t0.shiftedBy(2.0)).toDouble(), 1.0e-15);
 
         FieldAbsoluteDate<Binary64> t064 = new FieldAbsoluteDate<>(Binary64Field.getInstance(), t0);
-        Assertions.assertEquals(1.00 / 1024.0 - 37.0, positive.offsetFromTAI(t064).getReal(),                   1.0e-15);
+        Assertions.assertEquals(1.00 / 1024.0 - 37.0, positive.offsetFromTAI(t064).getReal(),                1.0e-15);
         Assertions.assertEquals(1.75 / 1024.0 - 37.0, positive.offsetFromTAI(t064.shiftedBy(1.0)).getReal(), 1.0e-15);
         Assertions.assertEquals(3.00 / 1024.0 - 37.0, positive.offsetFromTAI(t064.shiftedBy(2.0)).getReal(), 1.0e-15);
 

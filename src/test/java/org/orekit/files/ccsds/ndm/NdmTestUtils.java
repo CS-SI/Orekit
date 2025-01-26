@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -304,9 +304,6 @@ public class NdmTestUtils {
 
     public static void checkVector3D(final Vector3D original, final Vector3D rebuilt) {
         double eps = ULPS * FastMath.ulp(FastMath.max(1.0, original.getNorm()));
-        if (!Precision.equalsIncludingNaN(original.getY(), rebuilt.getY(), eps)) {
-            System.out.println("gotcha!");
-        }
         Assertions.assertTrue(Precision.equalsIncludingNaN(original.getX(), rebuilt.getX(), eps));
         Assertions.assertTrue(Precision.equalsIncludingNaN(original.getY(), rebuilt.getY(), eps));
         Assertions.assertTrue(Precision.equalsIncludingNaN(original.getZ(), rebuilt.getZ(), eps));

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Collections;
@@ -60,7 +59,7 @@ import org.orekit.utils.ParameterDriversProvider;
  * @author Fabien Maussion
  * @author Luc Maisonobe
  */
-public class TLE implements TimeStamped, Serializable, ParameterDriversProvider {
+public class TLE implements TimeStamped, ParameterDriversProvider {
 
     /** Identifier for SGP type of ephemeris. */
     public static final int SGP = 1;
@@ -113,9 +112,6 @@ public class TLE implements TimeStamped, Serializable, ParameterDriversProvider 
     /** International symbols for parsing. */
     private static final DecimalFormatSymbols SYMBOLS =
         new DecimalFormatSymbols(Locale.US);
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = -1596648022319057689L;
 
     /** The satellite number. */
     private final int satelliteNumber;
@@ -701,6 +697,13 @@ public class TLE implements TimeStamped, Serializable, ParameterDriversProvider 
         return bStarParameterDriver.getValue(date);
     }
 
+    /** Compute the semi-major axis from the mean motion of the TLE and the gravitational parameter from TLEConstants.
+     * @return the semi-major axis computed.
+     */
+    public double computeSemiMajorAxis() {
+        return FastMath.cbrt(TLEConstants.MU / (meanMotion * meanMotion));
+    }
+
     /** Get a string representation of this TLE set.
      * <p>The representation is simply the two lines separated by the
      * platform line separator.</p>
@@ -714,7 +717,7 @@ public class TLE implements TimeStamped, Serializable, ParameterDriversProvider 
      * Convert Spacecraft State into TLE.
      *
      * @param state Spacecraft State to convert into TLE
-     * @param templateTLE first guess used to get identification and estimate new TLE
+     * @param templateTLE only used to get identifiers like satellite number, launch year, etc. In other words, the keplerian elements contained in the generated TLE are based on the provided state and not the template TLE.
      * @param generationAlgorithm TLE generation algorithm
      * @return a generated TLE
      * @since 12.0
@@ -843,48 +846,6 @@ public class TLE implements TimeStamped, Serializable, ParameterDriversProvider 
      */
     public List<ParameterDriver> getParametersDrivers() {
         return Collections.singletonList(bStarParameterDriver);
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * @return data transfer object that will be serialized
-     */
-    private Object writeReplace() {
-        return new DataTransferObject(line1, line2, utc);
-    }
-
-    /** Internal class used only for serialization. */
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = -1596648022319057689L;
-
-        /** First line. */
-        private String line1;
-
-        /** Second line. */
-        private String line2;
-
-        /** The UTC scale. */
-        private final TimeScale utc;
-
-        /** Simple constructor.
-         * @param line1 the first element (69 char String)
-         * @param line2 the second element (69 char String)
-         * @param utc the UTC time scale
-         */
-        DataTransferObject(final String line1, final String line2, final TimeScale utc) {
-            this.line1 = line1;
-            this.line2 = line2;
-            this.utc   = utc;
-        }
-
-        /** Replace the deserialized data transfer object with a {@link TLE}.
-         * @return replacement {@link TLE}
-         */
-        private Object readResolve() {
-            return new TLE(line1, line2, utc);
-        }
-
     }
 
 }

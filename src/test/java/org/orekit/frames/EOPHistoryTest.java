@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,12 +30,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
 
 public class EOPHistoryTest {
 
@@ -123,40 +118,6 @@ public class EOPHistoryTest {
                 Assertions.assertEquals(0.3388, dtu1.getReal(), 3.0e-5);
             }
         }
-    }
-
-    @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
-        EOPHistory history = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(history);
-
-        Assertions.assertTrue(bos.size() > 135000);
-        Assertions.assertTrue(bos.size() < 140000);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        EOPHistory deserialized  = (EOPHistory) ois.readObject();
-        Assertions.assertEquals(history.getStartDate(), deserialized.getStartDate());
-        Assertions.assertEquals(history.getEndDate(), deserialized.getEndDate());
-        Assertions.assertEquals(history.getEntries().size(), deserialized.getEntries().size());
-        for (int i = 0; i < history.getEntries().size(); ++i) {
-            EOPEntry e1 = history.getEntries().get(i);
-            EOPEntry e2 = deserialized.getEntries().get(i);
-            Assertions.assertEquals(e1.getMjd(),         e2.getMjd());
-            Assertions.assertEquals(e1.getDate(),        e2.getDate());
-            Assertions.assertEquals(e1.getUT1MinusUTC(), e2.getUT1MinusUTC(), 1.0e-10);
-            Assertions.assertEquals(e1.getLOD(),         e2.getLOD(),         1.0e-10);
-            Assertions.assertEquals(e1.getDdEps(),       e2.getDdEps(),       1.0e-10);
-            Assertions.assertEquals(e1.getDdPsi(),       e2.getDdPsi(),       1.0e-10);
-            Assertions.assertEquals(e1.getDx(),          e2.getDx(),          1.0e-10);
-            Assertions.assertEquals(e1.getDy(),          e2.getDy(),          1.0e-10);
-            Assertions.assertEquals(e1.getX(),           e2.getX(),           1.0e-10);
-            Assertions.assertEquals(e1.getY(),           e2.getY(),           1.0e-10);
-        }
-
     }
 
     @Test

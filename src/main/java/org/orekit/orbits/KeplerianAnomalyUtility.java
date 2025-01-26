@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.SinCos;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 
 /**
@@ -332,4 +333,76 @@ public final class KeplerianAnomalyUtility {
         return e * FastMath.sinh(H) - H;
     }
 
+    /**
+     * Convert anomaly.
+     * @param oldType old position angle type
+     * @param anomaly old value for anomaly
+     * @param e eccentricity
+     * @param newType new position angle type
+     * @return converted anomaly
+     * @since 12.2
+     */
+    public static double convertAnomaly(final PositionAngleType oldType, final double anomaly, final double e,
+                                        final PositionAngleType newType) {
+        if (newType == oldType) {
+            return anomaly;
+
+        } else {
+            if (e > 1) {
+                switch (newType) {
+                    case MEAN:
+                        if (oldType == PositionAngleType.ECCENTRIC) {
+                            return KeplerianAnomalyUtility.hyperbolicEccentricToMean(e, anomaly);
+                        } else {
+                            return KeplerianAnomalyUtility.hyperbolicTrueToMean(e, anomaly);
+                        }
+
+                    case ECCENTRIC:
+                        if (oldType == PositionAngleType.MEAN) {
+                            return KeplerianAnomalyUtility.hyperbolicMeanToEccentric(e, anomaly);
+                        } else {
+                            return KeplerianAnomalyUtility.hyperbolicTrueToEccentric(e, anomaly);
+                        }
+
+                    case TRUE:
+                        if (oldType == PositionAngleType.ECCENTRIC) {
+                            return KeplerianAnomalyUtility.hyperbolicEccentricToTrue(e, anomaly);
+                        } else {
+                            return KeplerianAnomalyUtility.hyperbolicMeanToTrue(e, anomaly);
+                        }
+
+                    default:
+                        break;
+                }
+
+            } else {
+                switch (newType) {
+                    case MEAN:
+                        if (oldType == PositionAngleType.ECCENTRIC) {
+                            return KeplerianAnomalyUtility.ellipticEccentricToMean(e, anomaly);
+                        } else {
+                            return KeplerianAnomalyUtility.ellipticTrueToMean(e, anomaly);
+                        }
+
+                    case ECCENTRIC:
+                        if (oldType == PositionAngleType.MEAN) {
+                            return KeplerianAnomalyUtility.ellipticMeanToEccentric(e, anomaly);
+                        } else {
+                            return KeplerianAnomalyUtility.ellipticTrueToEccentric(e, anomaly);
+                        }
+
+                    case TRUE:
+                        if (oldType == PositionAngleType.ECCENTRIC) {
+                            return KeplerianAnomalyUtility.ellipticEccentricToTrue(e, anomaly);
+                        } else {
+                            return KeplerianAnomalyUtility.ellipticMeanToTrue(e, anomaly);
+                        }
+
+                    default:
+                        break;
+                }
+            }
+            throw new OrekitInternalError(null);
+        }
+    }
 }

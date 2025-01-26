@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -87,20 +87,20 @@ public class PreloadedTimeScalesTest {
 
         // verify
         Assertions.assertEquals("1970-01-01T00:00:00.000", javaEpoch.toString(utc));
-        Assertions.assertEquals(-32, utc.offsetFromTAI(date), 0);
-        Assertions.assertEquals(-32.2889120, ut1.offsetFromTAI(date), 1e-14);
-        Assertions.assertEquals(0, tai.offsetFromTAI(date), 0);
-        Assertions.assertEquals(-32, timeScales.getUTC().offsetFromTAI(date), 0);
-        Assertions.assertEquals(-32 + 24110.54841, timeScales.getGMST(IERSConventions.IERS_2010, true).offsetFromTAI(date3), 0);
-        Assertions.assertEquals(-32 + 3 * 3600, timeScales.getGLONASS().offsetFromTAI(date), 0);
-        Assertions.assertEquals(-19, timeScales.getGPS().offsetFromTAI(date), 0);
-        Assertions.assertEquals(-19, timeScales.getQZSS().offsetFromTAI(date), 0);
-        Assertions.assertEquals(-19, timeScales.getGST().offsetFromTAI(date), 0);
-        Assertions.assertEquals(-19, timeScales.getIRNSS().offsetFromTAI(date), 0);
-        Assertions.assertEquals(32.184, timeScales.getTT().offsetFromTAI(date), 0);
-        Assertions.assertEquals(32.184, timeScales.getTDB().offsetFromTAI(j2000Epoch.shiftedBy(216525.908119)), 0);
-        Assertions.assertEquals(32.184, timeScales.getTCB().offsetFromTAI(date2), 1e-4);
-        Assertions.assertEquals(32.184, timeScales.getTCG().offsetFromTAI(date2), 0);
+        Assertions.assertEquals(-32, utc.offsetFromTAI(date).toDouble(), 0);
+        Assertions.assertEquals(-32.2889120, ut1.offsetFromTAI(date).toDouble(), 1e-14);
+        Assertions.assertEquals(0, tai.offsetFromTAI(date).toDouble(), 0);
+        Assertions.assertEquals(-32, timeScales.getUTC().offsetFromTAI(date).toDouble(), 0);
+        Assertions.assertEquals(-32 + 24110.54841, timeScales.getGMST(IERSConventions.IERS_2010, true).offsetFromTAI(date3).toDouble(), 0);
+        Assertions.assertEquals(-32 + 3 * 3600, timeScales.getGLONASS().offsetFromTAI(date).toDouble(), 0);
+        Assertions.assertEquals(-19, timeScales.getGPS().offsetFromTAI(date).toDouble(), 0);
+        Assertions.assertEquals(-19, timeScales.getQZSS().offsetFromTAI(date).toDouble(), 0);
+        Assertions.assertEquals(-19, timeScales.getGST().offsetFromTAI(date).toDouble(), 0);
+        Assertions.assertEquals(-19, timeScales.getIRNSS().offsetFromTAI(date).toDouble(), 0);
+        Assertions.assertEquals(32.184, timeScales.getTT().offsetFromTAI(date).toDouble(), 0);
+        Assertions.assertEquals(32.184, timeScales.getTDB().offsetFromTAI(j2000Epoch.shiftedBy(216525.908119)).toDouble(), 0);
+        Assertions.assertEquals(32.184, timeScales.getTCB().offsetFromTAI(date2).toDouble(), 1e-4);
+        Assertions.assertEquals(32.184, timeScales.getTCG().offsetFromTAI(date2).toDouble(), 0);
     }
 
     /** Check the UT1 creation logic. */
@@ -126,12 +126,12 @@ public class PreloadedTimeScalesTest {
         Assertions.assertSame(ut11996Full, timeScales.getUT1(IERSConventions.IERS_1996, false));
 
 
-        Assertions.assertEquals(-32.2889120, ut12010Simple.offsetFromTAI(date), 1e-14);
-        Assertions.assertEquals(-32.2889120, ut12003Simple.offsetFromTAI(date), 1e-14);
-        Assertions.assertEquals(-32.2889120, ut11996Simple.offsetFromTAI(date), 1e-14);
-        Assertions.assertEquals(-2e-5, -32.2889120 - ut12010Full.offsetFromTAI(date), 1e-5);
-        Assertions.assertEquals(-2e-5, -32.2889120 - ut12003Full.offsetFromTAI(date), 1e-5);
-        Assertions.assertEquals(-2e-5, -32.2889120 - ut11996Full.offsetFromTAI(date), 1e-5);
+        Assertions.assertEquals(-32.2889120, ut12010Simple.offsetFromTAI(date).toDouble(), 1e-14);
+        Assertions.assertEquals(-32.2889120, ut12003Simple.offsetFromTAI(date).toDouble(), 1e-14);
+        Assertions.assertEquals(-32.2889120, ut11996Simple.offsetFromTAI(date).toDouble(), 1e-14);
+        Assertions.assertEquals(-2e-5, -32.2889120 - ut12010Full.offsetFromTAI(date).toDouble(), 1e-5);
+        Assertions.assertEquals(-2e-5, -32.2889120 - ut12003Full.offsetFromTAI(date).toDouble(), 1e-5);
+        Assertions.assertEquals(-2e-5, -32.2889120 - ut11996Full.offsetFromTAI(date).toDouble(), 1e-5);
 
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,6 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
-import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.MeasurementCreator;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.sequential.KalmanEstimator;
@@ -105,7 +104,7 @@ public class BrouwerLyddaneEstimationTestUtils {
         // Turn-around range stations
         // Map entry = primary station
         // Map value = secondary station associated
-        context.TARstations = new HashMap<GroundStation, GroundStation>();
+        context.TARstations = new HashMap<>();
 
         context.TARstations.put(context.createStation(-53.05388,  -75.01551, 1750.0, "Isla Desolación"),
                                 context.createStation(-54.815833,  -68.317778, 6.0, "Ushuaïa"));
@@ -139,7 +138,7 @@ public class BrouwerLyddaneEstimationTestUtils {
                                                                   final double step) {
 
         propagator.setStepHandler(step, creator);
-        final double       period = propagator.getInitialState().getKeplerianPeriod();
+        final double       period = propagator.getInitialState().getOrbit().getKeplerianPeriod();
         final AbsoluteDate start  = propagator.getInitialState().getDate().shiftedBy(startPeriod * period);
         final AbsoluteDate end    = propagator.getInitialState().getDate().shiftedBy(endPeriod   * period);
         propagator.propagate(start, end);

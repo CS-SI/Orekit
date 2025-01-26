@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,8 +47,8 @@ public class RelativisticClockInterSatellitesOneWayRangeRateModifier
         final SpacecraftState local  = estimated.getStates()[0];
         final SpacecraftState remote = estimated.getStates()[1];
         modifyWithoutDerivatives(estimated,
-                                 local.getA(), local.getPosition().getNorm(),
-                                 remote.getA(), remote.getPosition().getNorm());
+                                 local.getOrbit().getA(), local.getPosition().getNorm(),
+                                 remote.getOrbit().getA(), remote.getPosition().getNorm());
     }
 
 }

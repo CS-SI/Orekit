@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,6 +39,12 @@ import org.orekit.utils.ParameterDriversProvider;
  * @since 8.0
  */
 public interface EstimationModifier<T extends ObservedMeasurement<T>> extends ParameterDriversProvider {
+
+    /** Get the name of the effect modifying the measurement.
+     * @return name of the effect modifying the measurement
+     * @since 13.0
+     */
+    String getEffectName();
 
     /** Apply a modifier to an estimated measurement without derivatives.
      * @param estimated estimated measurement to modify

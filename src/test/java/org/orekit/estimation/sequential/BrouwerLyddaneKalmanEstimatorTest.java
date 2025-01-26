@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -81,12 +81,12 @@ public class BrouwerLyddaneKalmanEstimatorTest {
 
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 2.70e-8;
+        final double   posEps            = 3.3e-8;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 6.59e-11;
-        final double[] expectedsigmasPos = {0.998881, 0.933800, 0.997357};
+        final double   velEps            = 8.8e-11;
+        final double[] expectedsigmasPos = {0.998881, 0.933806, 0.997357};
         final double   sigmaPosEps       = 1e-6;
-        final double[] expectedSigmasVel = {9.475737e-4, 9.904671e-4, 5.060183e-4};
+        final double[] expectedSigmasVel = {9.475735e-4, 9.904680e-4, 5.060067e-4};
         final double   sigmaVelEps       = 1e-10;
         BrouwerLyddaneEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                                          refOrbit, positionAngleType,

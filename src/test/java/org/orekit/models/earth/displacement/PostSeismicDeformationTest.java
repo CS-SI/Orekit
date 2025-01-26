@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,7 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataSource;
 import org.orekit.data.FundamentalNutationArguments;
-import org.orekit.files.sinex.SinexLoader;
+import org.orekit.files.sinex.SinexParser;
 import org.orekit.files.sinex.Station;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -45,7 +45,9 @@ public class PostSeismicDeformationTest {
     public void testShintotsukawa() throws URISyntaxException {
         final URL url = PostSeismicDeformationTest.class.getClassLoader().
                         getResource("sinex/ITRF2020-psd-gnss.snx");
-        final Station stk2 = new SinexLoader(new DataSource(url.toURI())).getStation("STK2");
+        final Station stk2 = new SinexParser(TimeScalesFactory.getTimeScales()).
+                             parse(new DataSource(url.toURI())).
+                             getStations().get("STK2");
 
         final IERSConventions              conventions = IERSConventions.IERS_2010;
         final TimeScale                    utc         = TimeScalesFactory.getUTC();

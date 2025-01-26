@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,15 +16,9 @@
  */
 package org.orekit.control.indirect.adjoint.cost;
 
-import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetectionSettings;
-import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
-import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 
 import java.util.stream.Stream;
 
@@ -62,33 +56,16 @@ public class UnboundedCartesianEnergy extends CartesianEnergyConsideringMass {
     @Override
     protected double getThrustForceNorm(final double[] adjointVariables, final double mass) {
         final double adjointVelocityNorm = getAdjointVelocityNorm(adjointVariables);
-        final double factor = adjointVelocityNorm / mass - getMassFlowRateFactor() * adjointVariables[6];
+        double factor = adjointVelocityNorm / mass;
+        if (getAdjointDimension() > 6) {
+            factor -= getMassFlowRateFactor() * adjointVariables[6];
+        }
         return FastMath.max(0., factor);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected <T extends CalculusFieldElement<T>> T getFieldThrustForceNorm(final T[] adjointVariables, final T mass) {
-        final T adjointVelocityNorm = getFieldAdjointVelocityNorm(adjointVariables);
-        final T factor = adjointVelocityNorm.divide(mass).subtract(adjointVariables[6].multiply(getMassFlowRateFactor()));
-        if (factor.getReal() < 0.) {
-            return adjointVelocityNorm.getField().getZero();
-        } else {
-            return factor;
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public Stream<EventDetector> getEventDetectors() {
-        return Stream.of(new SingularityDetector(getEventDetectionSettings(), new ResetDerivativesOnEvent(),
-                0.));
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
-        return Stream.of(new FieldSingularityDetector<>(new FieldEventDetectionSettings<>(field, getEventDetectionSettings()),
-                new FieldResetDerivativesOnEvent<>(), field.getZero()));
+        return Stream.of(new SingularityDetector(getEventDetectionSettings(), 0.));
     }
 }

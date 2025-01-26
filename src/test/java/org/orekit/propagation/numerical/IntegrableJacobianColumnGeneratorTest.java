@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -52,6 +52,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -341,7 +342,7 @@ public class IntegrableJacobianColumnGeneratorTest {
         final double minStep = 0.001;
         final double maxStep = 1000;
 
-        double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, orbitType);
         NumericalPropagator propagator =
             new NumericalPropagator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]));
         propagator.setOrbitType(orbitType);

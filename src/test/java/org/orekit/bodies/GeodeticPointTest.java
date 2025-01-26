@@ -34,7 +34,7 @@ public class GeodeticPointTest {
      * normalization.
      */
     @Test
-    public void testGeodeticPointAngleNormalization() {
+    void testGeodeticPointAngleNormalization() {
         // action
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(135),
                 FastMath.toRadians(90 - 360), 0);
@@ -57,7 +57,7 @@ public class GeodeticPointTest {
      * several different angles.
      */
     @Test
-    public void testGeodeticPoint() {
+    void testGeodeticPoint() {
         // setup
         // the input and expected results
         final double pi = FastMath.PI;
@@ -94,7 +94,7 @@ public class GeodeticPointTest {
      * check {@link GeodeticPoint#equals(Object)}.
      */
     @Test
-    public void testEquals() {
+    void testEquals() {
         // setup
         GeodeticPoint point = new GeodeticPoint(1, 2, 3);
 
@@ -112,7 +112,7 @@ public class GeodeticPointTest {
      * check {@link GeodeticPoint#toString()}.
      */
     @Test
-    public void testToString() {
+    void testToString() {
         // setup
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(30),
                 FastMath.toRadians(60), 90);

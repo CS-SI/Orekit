@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Collections;
@@ -65,7 +64,7 @@ import org.orekit.utils.ParameterDriversProvider;
  * @since 11.0
  * @param <T> type of the field elements
  */
-public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeStamped<T>, Serializable, ParameterDriversProvider {
+public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeStamped<T>, ParameterDriversProvider {
 
     /** Identifier for default type of ephemeris (SGP4/SDP4). */
     public static final int DEFAULT = 0;
@@ -109,9 +108,6 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
     private static final DecimalFormatSymbols SYMBOLS =
         new DecimalFormatSymbols(Locale.US);
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -1596648022319057689L;
-
     /** The satellite number. */
     private final int satelliteNumber;
 
@@ -134,7 +130,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
     private final int elementNumber;
 
     /** the TLE current date. */
-    private final transient FieldAbsoluteDate<T> epoch;
+    private final FieldAbsoluteDate<T> epoch;
 
     /** Mean motion (rad/s). */
     private final T meanMotion;
@@ -173,7 +169,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
     private final TimeScale utc;
 
     /** Driver for ballistic coefficient parameter. */
-    private final transient ParameterDriver bStarParameterDriver;
+    private final ParameterDriver bStarParameterDriver;
 
     /** Simple constructor from unparsed two lines. This constructor uses the {@link
      * DataContext#getDefault() default data context}.
@@ -703,6 +699,14 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
         return bStarParameterDriver.getValue(getDate().toAbsoluteDate());
     }
 
+    /**
+     * Compute the semi-major axis from the mean motion of the TLE and the gravitational parameter from TLEConstants.
+     * @return the semi-major axis computed.
+     */
+    public T computeSemiMajorAxis() {
+        return FastMath.cbrt(meanMotion.square().reciprocal().multiply(TLEConstants.MU));
+    }
+
     /** Get a string representation of this TLE set.
      * <p>The representation is simply the two lines separated by the
      * platform line separator.</p>
@@ -720,7 +724,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
      * Convert Spacecraft State into TLE.
      *
      * @param state Spacecraft State to convert into TLE
-     * @param templateTLE first guess used to get identification and estimate new TLE
+     * @param templateTLE only used to get identifiers like satellite number, launch year, etc. In other words, the keplerian elements contained in the generated TLE are based on the provided state and not the template TLE.
      * @param generationAlgorithm TLE generation algorithm
      * @param <T> type of the element
      * @return a generated TLE

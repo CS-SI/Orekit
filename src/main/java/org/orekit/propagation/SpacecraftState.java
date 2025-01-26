@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,8 @@
  */
 package org.orekit.propagation;
 
-import java.io.Serializable;
-
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalStateException;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
@@ -35,11 +32,11 @@ import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.DoubleArrayDictionary;
-import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This class is the representation of a complete state holding orbit, attitude
@@ -68,14 +65,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Luc Maisonobe
  */
-public class SpacecraftState
-    implements TimeStamped, TimeShiftable<SpacecraftState>, Serializable {
+public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftState> {
 
     /** Default mass. */
     public static final double DEFAULT_MASS = 1000.0;
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20211119L;
 
     /**
      * tolerance on date comparison in {@link #checkConsistency(Orbit, Attitude)}. 100 ns
@@ -529,6 +522,51 @@ public class SpacecraftState
         }
     }
 
+    /** Get a time-shifted state.
+     * <p>
+     * The state can be slightly shifted to close dates. This shift is based on
+     * simple models. For orbits, the model is a Keplerian one if no derivatives
+     * are available in the orbit, or Keplerian plus quadratic effect of the
+     * non-Keplerian acceleration if derivatives are available. For attitude,
+     * a polynomial model is used. Neither mass nor additional states change.
+     * Shifting is <em>not</em> intended as a replacement for proper orbit
+     * and attitude propagation but should be sufficient for small time shifts
+     * or coarse accuracy.
+     * </p>
+     * <p>
+     * As a rough order of magnitude, the following table shows the extrapolation
+     * errors obtained between this simple shift method and an {@link
+     * org.orekit.propagation.numerical.NumericalPropagator numerical
+     * propagator} for a low Earth Sun Synchronous Orbit, with a 20x20 gravity field,
+     * Sun and Moon third bodies attractions, drag and solar radiation pressure.
+     * Beware that these results will be different for other orbits.
+     * </p>
+     * <table border="1">
+     * <caption>Extrapolation Error</caption>
+     * <tr style="background-color: #ccccff"><th>interpolation time (s)</th>
+     * <th>position error without derivatives (m)</th><th>position error with derivatives (m)</th></tr>
+     * <tr><td style="background-color: #eeeeff; padding:5px"> 60</td><td>  18</td><td> 1.1</td></tr>
+     * <tr><td style="background-color: #eeeeff; padding:5px">120</td><td>  72</td><td> 9.1</td></tr>
+     * <tr><td style="background-color: #eeeeff; padding:5px">300</td><td> 447</td><td> 140</td></tr>
+     * <tr><td style="background-color: #eeeeff; padding:5px">600</td><td>1601</td><td>1067</td></tr>
+     * <tr><td style="background-color: #eeeeff; padding:5px">900</td><td>3141</td><td>3307</td></tr>
+     * </table>
+     * @param dt time shift in seconds
+     * @return a new state, shifted with respect to the instance (which is immutable)
+     * except for the mass and additional states which stay unchanged
+     * @since 13.0
+     */
+    @Override
+    public SpacecraftState shiftedBy(final TimeOffset dt) {
+        if (isOrbitDefined()) {
+            return new SpacecraftState(orbit.shiftedBy(dt), attitude.shiftedBy(dt),
+                                       mass, shiftAdditional(dt.toDouble()), additionalDot);
+        } else {
+            return new SpacecraftState(absPva.shiftedBy(dt), attitude.shiftedBy(dt),
+                                       mass, shiftAdditional(dt.toDouble()), additionalDot);
+        }
+    }
+
     /** Shift additional states.
      * @param dt time shift in seconds
      * @return shifted additional states
@@ -762,140 +800,6 @@ public class SpacecraftState
         return StaticTransform.of(getDate(), getPosition().negate(), attitude.getRotation());
     }
 
-    /** Get the central attraction coefficient.
-     * @return mu central attraction coefficient (m^3/s^2), or {code Double.NaN} if the
-     * state contains an absolute position-velocity-acceleration rather than an orbit
-     */
-    public double getMu() {
-        return isOrbitDefined() ? orbit.getMu() : Double.NaN;
-    }
-
-    /** Get the Keplerian period.
-     * <p>The Keplerian period is computed directly from semi major axis
-     * and central acceleration constant.</p>
-     * @return Keplerian period in seconds, or {code Double.NaN} if the
-     * state contains an absolute position-velocity-acceleration rather
-     * than an orbit
-     */
-    public double getKeplerianPeriod() {
-        return isOrbitDefined() ? orbit.getKeplerianPeriod() : Double.NaN;
-    }
-
-    /** Get the Keplerian mean motion.
-     * <p>The Keplerian mean motion is computed directly from semi major axis
-     * and central acceleration constant.</p>
-     * @return Keplerian mean motion in radians per second, or {code Double.NaN} if the
-     * state contains an absolute position-velocity-acceleration rather
-     * than an orbit
-     */
-    public double getKeplerianMeanMotion() {
-        return isOrbitDefined() ? orbit.getKeplerianMeanMotion() : Double.NaN;
-    }
-
-    /** Get the semi-major axis.
-     * @return semi-major axis (m), or {code Double.NaN} if the
-     * state contains an absolute position-velocity-acceleration rather
-     * than an orbit
-     */
-    public double getA() {
-        return isOrbitDefined() ? orbit.getA() : Double.NaN;
-    }
-
-    /** Get the first component of the eccentricity vector (as per equinoctial parameters).
-     * @return e cos(ω + Ω), first component of eccentricity vector, or {code Double.NaN} if the
-     * state contains an absolute position-velocity-acceleration rather
-     * than an orbit
-     * @see #getE()
-     */
-    public double getEquinoctialEx() {
-        return isOrbitDefined() ? orbit.getEquinoctialEx() : Double.NaN;
-    }
-
-    /** Get the second component of the eccentricity vector (as per equinoctial parameters).
-     * @return e sin(ω + Ω), second component of the eccentricity vector, or {code Double.NaN} if the
-     * state contains an absolute position-velocity-acceleration rather
-     * than an orbit
-     * @see #getE()
-     */
-    public double getEquinoctialEy() {
-        return isOrbitDefined() ? orbit.getEquinoctialEy() : Double.NaN;
-    }
-
-    /** Get the first component of the inclination vector (as per equinoctial parameters).
-     * @return tan(i/2) cos(Ω), first component of the inclination vector, or {code Double.NaN} if the
-     * state contains an absolute position-velocity-acceleration rather
-     * than an orbit
-     * @see #getI()
-     */
-    public double getHx() {
-        return isOrbitDefined() ? orbit.getHx() : Double.NaN;
-    }
-
-    /** Get the second component of the inclination vector (as per equinoctial parameters).
-     * @return tan(i/2) sin(Ω), second component of the inclination vector, or {code Double.NaN} if the
-     * state contains an absolute position-velocity-acceleration rather
-     * than an orbit
-     * @see #getI()
-     */
-    public double getHy() {
-        return isOrbitDefined() ? orbit.getHy() : Double.NaN;
-    }
-
-    /** Get the true latitude argument (as per equinoctial parameters).
-     * @return v + ω + Ω true longitude argument (rad), or {code Double.NaN} if the
-     * state contains an absolute position-velocity-acceleration rather
-     * than an orbit
-     * @see #getLE()
-     * @see #getLM()
-     */
-    public double getLv() {
-        return isOrbitDefined() ? orbit.getLv() : Double.NaN;
-    }
-
-    /** Get the eccentric latitude argument (as per equinoctial parameters).
-     * @return E + ω + Ω eccentric longitude argument (rad), or {code Double.NaN} if the
-     * state contains an absolute position-velocity-acceleration rather
-     * than an orbit
-     * @see #getLv()
-     * @see #getLM()
-     */
-    public double getLE() {
-        return isOrbitDefined() ? orbit.getLE() : Double.NaN;
-    }
-
-    /** Get the mean longitude argument (as per equinoctial parameters).
-     * @return M + ω + Ω mean latitude argument (rad), or {code Double.NaN} if the
-     * state contains an absolute position-velocity-acceleration rather
-     * than an orbit
-     * @see #getLv()
-     * @see #getLE()
-     */
-    public double getLM() {
-        return isOrbitDefined() ? orbit.getLM() : Double.NaN;
-    }
-
-    // Additional orbital elements
-
-    /** Get the eccentricity.
-     * @return eccentricity, or {code Double.NaN} if the
-     * state contains an absolute position-velocity-acceleration rather
-     * than an orbit
-     * @see #getEquinoctialEx()
-     * @see #getEquinoctialEy()
-     */
-    public double getE() {
-        return isOrbitDefined() ? orbit.getE() : Double.NaN;
-    }
-
-    /** Get the inclination.
-     * @return inclination (rad)
-     * @see #getHx()
-     * @see #getHy()
-     */
-    public double getI() {
-        return isOrbitDefined() ? orbit.getI() : Double.NaN;
-    }
-
     /** Get the position in orbit definition frame.
      * @return position in orbit definition frame
      * @since 12.0
@@ -938,7 +842,7 @@ public class SpacecraftState
      * {@link TimeStampedPVCoordinates} if it needs to keep the value for a while.
      * </p>
      * @param outputFrame frame in which coordinates should be defined
-     * @return pvCoordinates in orbit definition frame
+     * @return pvCoordinates in given output frame
      */
     public TimeStampedPVCoordinates getPVCoordinates(final Frame outputFrame) {
         return isOrbitDefined() ? orbit.getPVCoordinates(outputFrame) : absPva.getPVCoordinates(outputFrame);
@@ -956,120 +860,6 @@ public class SpacecraftState
      */
     public double getMass() {
         return mass;
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * @return data transfer object that will be serialized
-     */
-    private Object writeReplace() {
-        return isOrbitDefined() ? new DTOO(this) : new DTOA(this);
-    }
-
-    /** Internal class used only for serialization. */
-    private static class DTOO implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20211121L;
-
-        /** Orbit. */
-        private final Orbit orbit;
-
-        /** Attitude and mass double values. */
-        private double[] d;
-
-        /** Additional states. */
-        private final DoubleArrayDictionary additional;
-
-        /** Additional states derivatives. */
-        private final DoubleArrayDictionary additionalDot;
-
-        /** Simple constructor.
-         * @param state instance to serialize
-         */
-        private DTOO(final SpacecraftState state) {
-
-            this.orbit         = state.orbit;
-            this.additional    = state.additional.getData().isEmpty()    ? null : state.additional;
-            this.additionalDot = state.additionalDot.getData().isEmpty() ? null : state.additionalDot;
-
-            final Rotation rotation             = state.attitude.getRotation();
-            final Vector3D spin                 = state.attitude.getSpin();
-            final Vector3D rotationAcceleration = state.attitude.getRotationAcceleration();
-            this.d = new double[] {
-                rotation.getQ0(), rotation.getQ1(), rotation.getQ2(), rotation.getQ3(),
-                spin.getX(), spin.getY(), spin.getZ(),
-                rotationAcceleration.getX(), rotationAcceleration.getY(), rotationAcceleration.getZ(),
-                state.mass
-            };
-
-        }
-
-        /** Replace the de-serialized data transfer object with a {@link SpacecraftState}.
-         * @return replacement {@link SpacecraftState}
-         */
-        private Object readResolve() {
-            return new SpacecraftState(orbit,
-                                       new Attitude(orbit.getFrame(),
-                                                    new TimeStampedAngularCoordinates(orbit.getDate(),
-                                                                                      new Rotation(d[0], d[1], d[2], d[3], false),
-                                                                                      new Vector3D(d[4], d[5], d[6]),
-                                                                                      new Vector3D(d[7], d[8], d[9]))),
-                                       d[10], additional, additionalDot);
-        }
-
-    }
-
-    /** Internal class used only for serialization. */
-    private static class DTOA implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20211121L;
-
-        /** Absolute position-velocity-acceleration. */
-        private final AbsolutePVCoordinates absPva;
-
-        /** Attitude and mass double values. */
-        private double[] d;
-
-        /** Additional states. */
-        private final DoubleArrayDictionary additional;
-
-        /** Additional states derivatives. */
-        private final DoubleArrayDictionary additionalDot;
-
-        /** Simple constructor.
-         * @param state instance to serialize
-         */
-        private DTOA(final SpacecraftState state) {
-
-            this.absPva        = state.absPva;
-            this.additional    = state.additional.getData().isEmpty()    ? null : state.additional;
-            this.additionalDot = state.additionalDot.getData().isEmpty() ? null : state.additionalDot;
-
-            final Rotation rotation             = state.attitude.getRotation();
-            final Vector3D spin                 = state.attitude.getSpin();
-            final Vector3D rotationAcceleration = state.attitude.getRotationAcceleration();
-            this.d = new double[] {
-                rotation.getQ0(), rotation.getQ1(), rotation.getQ2(), rotation.getQ3(),
-                spin.getX(), spin.getY(), spin.getZ(),
-                rotationAcceleration.getX(), rotationAcceleration.getY(), rotationAcceleration.getZ(),
-                state.mass
-            };
-
-        }
-
-        /** Replace the deserialized data transfer object with a {@link SpacecraftState}.
-         * @return replacement {@link SpacecraftState}
-         */
-        private Object readResolve() {
-            return new SpacecraftState(absPva,
-                                       new Attitude(absPva.getFrame(),
-                                                    new TimeStampedAngularCoordinates(absPva.getDate(),
-                                                                                      new Rotation(d[0], d[1], d[2], d[3], false),
-                                                                                      new Vector3D(d[4], d[5], d[6]),
-                                                                                      new Vector3D(d[7], d[8], d[9]))),
-                                       d[10], additional, additionalDot);
-        }
     }
 
     @Override

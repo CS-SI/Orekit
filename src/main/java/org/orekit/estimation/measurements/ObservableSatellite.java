@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,8 @@ package org.orekit.estimation.measurements;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.utils.ParameterDriver;
+
+import java.util.Optional;
 
 /** Class modeling a satellite that can be observed.
  *
@@ -62,11 +64,26 @@ public class ObservableSatellite {
      */
     private final ParameterDriver clockAccelerationDriver;
 
+    /** Optional name of the satellite.
+     * @since 13.0
+     */
+    private final Optional<String> name;
+
     /** Simple constructor.
      * @param propagatorIndex index of the propagator related to this satellite
      */
     public ObservableSatellite(final int propagatorIndex) {
+        this(propagatorIndex, null);
+    }
+
+    /** Simple constructor.
+     * @param propagatorIndex index of the propagator related to this satellite
+     * @param name satellite name
+     * @since 13.0
+     */
+    public ObservableSatellite(final int propagatorIndex, final String name) {
         this.propagatorIndex   = propagatorIndex;
+        this.name              = Optional.ofNullable(name);
         this.clockOffsetDriver = new ParameterDriver(CLOCK_OFFSET_PREFIX + propagatorIndex,
                                                      0.0, CLOCK_OFFSET_SCALE,
                                                      Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
@@ -91,6 +108,13 @@ public class ObservableSatellite {
         return SAT_PREFIX + propagatorIndex;
     }
 
+    /** Get the optional name of the satellite as initialized by the user.
+     * @return the optional name of the satellite as initialized by the user
+     * @since 13.0
+     */
+    public Optional<String> getSatelliteName() {
+        return name;
+    }
     /** Get the index of the propagator related to this satellite.
      * @return index of the propagator related to this satellite
      */

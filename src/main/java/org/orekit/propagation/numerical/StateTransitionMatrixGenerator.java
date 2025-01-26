@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -86,7 +86,7 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
      * <p>
      * The observer {@link PartialsObserver#partialsComputed(SpacecraftState, double[], double[])} partialsComputed}
      * method will be called when partial derivatives are computed, as a side effect of
-     * calling {@link #generate(SpacecraftState)}
+     * calling {@link #computePartials(SpacecraftState)} (SpacecraftState)}
      * </p>
      * @param name name of the parameter driver this observer is interested in (may be null)
      * @param observer observer to register
@@ -339,6 +339,7 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
     }
 
     /** Interface for observing partials derivatives. */
+    @FunctionalInterface
     public interface PartialsObserver {
 
         /** Callback called when partial derivatives have been computed.

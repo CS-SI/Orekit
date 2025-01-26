@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,8 @@
 package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.util.FastMath;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
+import org.orekit.frames.Frame;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
 
@@ -32,34 +32,10 @@ import org.orekit.time.AbsoluteDate;
  * @since 10.0
  * @param <T> type of the field elements
  */
-public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends FieldForceModelContext<T> {
+public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends FieldDSSTGravityContext<T> {
 
-    // Common factors for potential computation
-    /** A = sqrt(μ * a). */
-    private final T A;
-    /** &Chi; = 1 / sqrt(1 - e²) = 1 / B. */
-    private T X;
-    /** &Chi;². */
-    private T XX;
-    /** &Chi;³. */
-    private T XXX;
-    /** 1 / (A * B) . */
-    private T ooAB;
-    /** B / A . */
-    private T BoA;
-    /** B / A(1 + B) . */
-    private T BoABpo;
-    /** -C / (2 * A * B) . */
-    private T mCo2AB;
-    /** -2 * a / A . */
-    private T m2aoA;
-    /** μ / a . */
-    private T muoa;
-    /** R / a . */
-    private T roa;
-
-    /** Keplerian mean motion. */
-    private final T n;
+    /** &Chi;³ = 1 / B³. */
+    private final T chi3;
 
     // Short period terms
     /** h * k. */
@@ -83,8 +59,7 @@ public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends Fi
     /** B * B. */
     private T BB;
 
-    /**
-     * Simple constructor.
+    /** Constructor with central body frame equals orbit frame.
      *
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param provider          provider for spherical harmonics
@@ -92,42 +67,40 @@ public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends Fi
      * for each parameters corresponding to state date) obtained by calling the extract
      * parameter method {@link #extractParameters(double[], AbsoluteDate)}
      * to selected the right value for state date or by getting the parameters for a specific date
+     * @deprecated since 12.2 and issue 1104, should be removed in 13.0
+     */
+    @Deprecated
+    FieldDSSTZonalContext(final FieldAuxiliaryElements<T> auxiliaryElements,
+                          final UnnormalizedSphericalHarmonicsProvider provider,
+                          final T[] parameters) {
+
+        this(auxiliaryElements, auxiliaryElements.getFrame(), provider, parameters);
+    }
+
+    /** Constructor with central body frame potentially different from orbit frame.
+     *
+     * @param auxiliaryElements auxiliary elements related to the current orbit
+     * @param centralBodyFrame  rotating body frame
+     * @param provider          provider for spherical harmonics
+     * @param parameters        values of the force model parameters (only 1 values
+     * for each parameters corresponding to state date) obtained by calling the extract
+     * parameter method {@link #extractParameters(double[], AbsoluteDate)}
+     * to selected the right value for state date or by getting the parameters for a specific date
+     * @since 12.2
      */
     FieldDSSTZonalContext(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                 final UnnormalizedSphericalHarmonicsProvider provider,
-                                 final T[] parameters) {
+                          final Frame centralBodyFrame,
+                          final UnnormalizedSphericalHarmonicsProvider provider,
+                          final T[] parameters) {
 
-        super(auxiliaryElements);
+        super(auxiliaryElements, centralBodyFrame, provider, parameters);
 
-        final T mu = parameters[0];
-
-        // Keplerian mean motion
-        final T absA = FastMath.abs(auxiliaryElements.getSma());
-        n = FastMath.sqrt(mu.divide(absA)).divide(absA);
-
-        A = FastMath.sqrt(mu.multiply(auxiliaryElements.getSma()));
-
-        // &Chi; = 1 / B
-        X = auxiliaryElements.getB().reciprocal();
-        XX = X.square();
-        XXX = X.multiply(XX);
-
-        // 1 / AB
-        ooAB = (A.multiply(auxiliaryElements.getB())).reciprocal();
-        // B / A
-        BoA = auxiliaryElements.getB().divide(A);
-        // -C / 2AB
-        mCo2AB = auxiliaryElements.getC().multiply(ooAB).divide(2.).negate();
-        // B / A(1 + B)
-        BoABpo = BoA.divide(auxiliaryElements.getB().add(1.));
-        // -2 * a / A
-        m2aoA = auxiliaryElements.getSma().divide(A).multiply(2.).negate();
-        // μ / a
-        muoa = mu.divide(auxiliaryElements.getSma());
-        // R / a
-        roa = auxiliaryElements.getSma().divide(provider.getAe()).reciprocal();
+        // Chi3
+        final T chi = getChi();
+        this.chi3 = chi.multiply(getChi2());
 
         // Short period terms
+        // -----
 
         // h * k.
         hk = auxiliaryElements.getH().multiply(auxiliaryElements.getK());
@@ -136,99 +109,27 @@ public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends Fi
         // (k² - h²) / 2.
         k2mh2o2 = k2mh2.divide(2.);
         // 1 / (n² * a²) = 1 / (n * A)
-        oon2a2 = (A.multiply(n)).reciprocal();
+        oon2a2 = (getA().multiply(getMeanMotion())).reciprocal();
         // 1 / (n² * a) = a / (n * A)
         oon2a = auxiliaryElements.getSma().multiply(oon2a2);
         // χ³ / (n² * a)
-        x3on2a = XXX.multiply(oon2a);
+        x3on2a = chi3.multiply(oon2a);
         // χ / (n² * a²)
-        xon2a2 = X.multiply(oon2a2);
+        xon2a2 = chi.multiply(oon2a2);
         // (C * χ) / ( 2 * n² * a² )
         cxo2n2a2 = xon2a2.multiply(auxiliaryElements.getC()).divide(2.);
         // (χ²) / (n² * a² * (χ + 1 ) )
-        x2on2a2xp1 = xon2a2.multiply(X).divide(X.add(1.));
+        x2on2a2xp1 = xon2a2.multiply(chi).divide(chi.add(1.));
         // B * B
         BB = auxiliaryElements.getB().multiply(auxiliaryElements.getB());
-
     }
 
-    /** Get &Chi; = 1 / sqrt(1 - e²) = 1 / B.
-     * @return &Chi;
-     */
-    public T getX() {
-        return X;
-    }
 
-    /** Get &Chi;².
-     * @return &Chi;².
+    /** Getter for the &Chi;³.
+     * @return the &Chi;³
      */
-    public T getXX() {
-        return XX;
-    }
-
-    /** Get &Chi;³.
-     * @return &Chi;³
-     */
-    public T getXXX() {
-        return XXX;
-    }
-
-    /** Get m2aoA = -2 * a / A.
-     * @return m2aoA
-     */
-    public T getM2aoA() {
-        return m2aoA;
-    }
-
-    /** Get B / A.
-     * @return BoA
-     */
-    public T getBoA() {
-        return BoA;
-    }
-
-    /** Get ooAB = 1 / (A * B).
-     * @return ooAB
-     */
-    public T getOoAB() {
-        return ooAB;
-    }
-
-    /** Get mCo2AB = -C / 2AB.
-     * @return mCo2AB
-     */
-    public T getMCo2AB() {
-        return mCo2AB;
-    }
-
-    /** Get BoABpo = B / A(1 + B).
-     * @return BoABpo
-     */
-    public T getBoABpo() {
-        return BoABpo;
-    }
-
-    /** Get μ / a .
-     * @return muoa
-     */
-    public T getMuoa() {
-        return muoa;
-    }
-
-    /** Get roa = R / a.
-     * @return roa
-     */
-    public T getRoa() {
-        return roa;
-    }
-
-    /** Get the Keplerian mean motion.
-     * <p>The Keplerian mean motion is computed directly from semi major axis
-     * and central acceleration constant.</p>
-     * @return Keplerian mean motion in radians per second
-     */
-    public T getMeanMotion() {
-        return n;
+    public T getChi3() {
+        return chi3;
     }
 
     /** Get h * k.

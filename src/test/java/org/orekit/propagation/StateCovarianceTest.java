@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -498,12 +498,12 @@ public class StateCovarianceTest {
 
         // Then
         final RealMatrix expectedCovarianceMatrixInNTW = new BlockRealMatrix(new double[][] {
-                { 9.918792e-01,  6.679546e-03, -2.868345e-03,  2.621921e-05, -1.036158e-03, -2.868345e-05 },
-                { 6.679546e-03,  1.013743e+00, -1.019560e-02,  1.194061e-03,  2.299986e-04, -1.019560e-04 },
-                {-2.868345e-03, -1.019560e-02,  9.943782e-01, -4.002079e-05, -9.876648e-05,  4.378217e-05 },
-                { 2.621921e-05,  1.194061e-03, -4.002079e-05,  1.589968e-06,  9.028133e-07, -4.002079e-07 },
-                {-1.036158e-03,  2.299986e-04, -9.876648e-05,  9.028133e-07,  3.452177e-06, -9.876648e-07 },
-                {-2.868345e-05, -1.019560e-04,  4.378217e-05, -4.002079e-07, -9.876648e-07,  4.378217e-07 },
+                { 9.918792e-01,  6.679546e-03, -2.868345e-03, 2.6215894e-05, -1.035665e-03, -2.868345e-05 },
+                { 6.679546e-03,  1.013743e+00, -1.019560e-02,  1.193556e-03,  2.300019e-04, -1.019560e-04 },
+                {-2.868345e-03, -1.019560e-02,  9.943782e-01, -4.0015724e-05, -9.8767909e-05,  4.378217e-05 },
+                { 2.6215894e-05,  1.193556e-03, -4.0015724e-05,  1.58878e-06,  9.0271200e-07, -4.0015724e-07 },
+                {-1.035665e-03,  2.300019e-04, -9.8767909e-05,  9.0271200e-07,  3.4511471e-06, -9.8767909e-07 },
+                {-2.868345e-05, -1.019560e-04,  4.378217e-05, -4.0015724e-07, -9.8767909e-07,  4.378217e-07 },
         });
 
         compareCovariance(expectedCovarianceMatrixInNTW, convertedCovarianceMatrixInNTW, DEFAULT_VALLADO_THRESHOLD);
@@ -771,12 +771,12 @@ public class StateCovarianceTest {
 
         // Then
         final RealMatrix expectedCovarianceMatrixInRTN = new BlockRealMatrix(new double[][] {
-                { 9.918921e-001, 6.700644e-003, -2.878187e-003, 1.892086e-005, 6.700644e-005, -2.878187e-005 },
-                { 6.700644e-003, 1.013730e+000, -1.019283e-002, 6.700644e-005, 2.372970e-004, -1.019283e-004 },
-                { -2.878187e-003, -1.019283e-002, 9.943782e-001, -2.878187e-005, -1.019283e-004, 4.378217e-005 },
-                { 1.892086e-005, 6.700644e-005, -2.878187e-005, 1.892086e-007, 6.700644e-007, -2.878187e-007 },
-                { 6.700644e-005, 2.372970e-004, -1.019283e-004, 6.700644e-007, 2.372970e-006, -1.019283e-006 },
-                { -2.878187e-005, -1.019283e-004, 4.378217e-005, -2.878187e-007, -1.019283e-006, 4.378217e-007 }
+                { 9.918921e-001, 6.700644e-003, -2.878187e-003, 1.8924189e-005, 6.651362e-005, -2.878187e-005 },
+                { 6.700644e-003, 1.013730e+000, -1.019283e-002, 6.7510094e-005, 2.3729368e-004, -1.01928257e-004 },
+                { -2.878187e-003, -1.019283e-002, 9.943782e-001, -2.8786942e-005, -1.01926827e-004, 4.378217e-005 },
+                { 1.8924189e-005, 6.7510094e-005, -2.8786942e-005, 1.89275434e-007, 6.7017283e-007, -2.8786942e-007 },
+                { 6.651362e-005, 2.3729368e-004, -1.01926827e-004, 6.7017283e-007, 2.372903e-006, -1.0192682e-006 },
+                { -2.878187e-005, -1.01928257e-004, 4.378217e-005, -2.87869424e-007, -1.0192682e-006, 4.378217e-007 }
         });
 
         compareCovariance(expectedCovarianceMatrixInRTN, convertedCovarianceMatrixInRTN, DEFAULT_VALLADO_THRESHOLD);
@@ -1057,7 +1057,7 @@ public class StateCovarianceTest {
         final double     dP         = 1;
         final double     minStep    = 0.001;
         final double     maxStep    = 60;
-        final double[][] tolerances = NumericalPropagator.tolerances(dP, orbit, orbitType);
+        final double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, orbitType);
 
         return new DormandPrince853Integrator(minStep, maxStep, tolerances[0], tolerances[1]);
     }

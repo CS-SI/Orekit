@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,7 +39,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 
 import java.util.Arrays;
 
@@ -125,11 +125,7 @@ import java.util.Arrays;
  *  @author Pascal Parraud, 2016: Java translation
  *  @since 8.1
  */
-public class NRLMSISE00 implements Atmosphere {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = -7923498628122574334L;
-
+public class NRLMSISE00 extends AbstractSunInfluencedAtmosphere {
     // Constants
 
     /** Identifier for helium density. */
@@ -1006,9 +1002,6 @@ public class NRLMSISE00 implements Atmosphere {
     /** External data container. */
     private final NRLMSISE00InputParameters inputParams;
 
-    /** Sun position. */
-    private PVCoordinatesProvider sun;
-
     /** Earth body shape. */
     private final BodyShape earth;
 
@@ -1036,12 +1029,12 @@ public class NRLMSISE00 implements Atmosphere {
      * @param parameters the solar and magnetic activity data
      * @param sun the Sun position
      * @param earth the Earth body shape
-     * @see #NRLMSISE00(NRLMSISE00InputParameters, PVCoordinatesProvider, BodyShape,
+     * @see #NRLMSISE00(NRLMSISE00InputParameters, ExtendedPositionProvider, BodyShape,
      * TimeScale)
      */
     @DefaultDataContext
     public NRLMSISE00(final NRLMSISE00InputParameters parameters,
-                      final PVCoordinatesProvider sun,
+                      final ExtendedPositionProvider sun,
                       final BodyShape earth) {
         this(parameters, sun, earth,
                 DataContext.getDefault().getTimeScales()
@@ -1066,7 +1059,7 @@ public class NRLMSISE00 implements Atmosphere {
      * @since 10.1
      */
     public NRLMSISE00(final NRLMSISE00InputParameters parameters,
-                      final PVCoordinatesProvider sun,
+                      final ExtendedPositionProvider sun,
                       final BodyShape earth,
                       final TimeScale ut) {
         this(parameters, sun, earth, allOnes(), allOnes(), ut);
@@ -1089,13 +1082,13 @@ public class NRLMSISE00 implements Atmosphere {
      * @param ut UT time scale.
      */
     private NRLMSISE00(final NRLMSISE00InputParameters parameters,
-                       final PVCoordinatesProvider sun,
+                       final ExtendedPositionProvider sun,
                        final BodyShape earth,
                        final int[] sw,
                        final int[] swc,
                        final TimeScale ut) {
+        super(sun);
         this.inputParams = parameters;
-        this.sun         = sun;
         this.earth       = earth;
         this.sw          = sw;
         this.swc         = swc;
@@ -1130,7 +1123,7 @@ public class NRLMSISE00 implements Atmosphere {
             newSwc[number] = newSw[number];
         }
 
-        return new NRLMSISE00(inputParams, sun, earth, newSwc, newSwc, ut);
+        return new NRLMSISE00(inputParams, getSun(), earth, newSwc, newSwc, ut);
 
     }
 
@@ -1209,7 +1202,7 @@ public class NRLMSISE00 implements Atmosphere {
         final T lat = FastMath.toDegrees(inBody.getLatitude());
 
         // compute local solar time
-        final T lst = localSolarTime(dateD, position, frame);
+        final T lst = localSolarTime(date, position, frame);
 
         // get solar activity data and compute
         final FieldOutput<T> out = new FieldOutput<>(doy, sec, lat, lon, lst,
@@ -1231,7 +1224,7 @@ public class NRLMSISE00 implements Atmosphere {
     private double localSolarTime(final AbsoluteDate date,
                                   final Vector3D position,
                                   final Frame frame) {
-        final Vector3D sunPos = sun.getPosition(date, frame);
+        final Vector3D sunPos = getSunPosition(date, frame);
         final double lst = FastMath.PI + FastMath.atan2(
                 sunPos.getX() * position.getY() - sunPos.getY() * position.getX(),
                 sunPos.getX() * position.getX() + sunPos.getY() * position.getY());
@@ -1245,10 +1238,10 @@ public class NRLMSISE00 implements Atmosphere {
      * @param <T> type of the filed elements
      * @return the local solar time (hour in [0, 24[)
      */
-    private <T extends CalculusFieldElement<T>> T localSolarTime(final AbsoluteDate date,
+    private <T extends CalculusFieldElement<T>> T localSolarTime(final FieldAbsoluteDate<T> date,
                                                              final FieldVector3D<T> position,
                                                              final Frame frame) {
-        final Vector3D sunPos = sun.getPosition(date, frame);
+        final FieldVector3D<T> sunPos = getSunPosition(date, frame);
         final T y  = position.getY().multiply(sunPos.getX()).subtract(position.getX().multiply(sunPos.getY()));
         final T x  = position.getX().multiply(sunPos.getX()).add(position.getY().multiply(sunPos.getY()));
         final T hl = y.atan2(x).add(y.getPi());

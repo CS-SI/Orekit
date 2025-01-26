@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -58,11 +58,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.GenericTimeStampedCache;
 import org.orekit.utils.IERSConventions;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -585,28 +580,6 @@ public class MarshallSolarActivityFutureEstimationTest {
             new MarshallSolarActivityFutureEstimation("Jan2011F10-no-data\\.txt",
                                                       MarshallSolarActivityFutureEstimation.StrengthLevel.STRONG);
         });
-    }
-
-    @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
-        MarshallSolarActivityFutureEstimation original =
-                        new MarshallSolarActivityFutureEstimation("Jan2000F10-edited-data.txt$",
-                                                                  StrengthLevel.AVERAGE);
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(original);
-
-        Assertions.assertTrue(bos.size() > 400);
-        Assertions.assertTrue(bos.size() < 450);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        AbsoluteDate date = new AbsoluteDate(2004, 1, 1, utc);
-        MarshallSolarActivityFutureEstimation deserialized = (MarshallSolarActivityFutureEstimation) ois.readObject();
-        Assertions.assertEquals(original.getMeanFlux(date),    deserialized.getMeanFlux(date),    1.0e-12);
-        Assertions.assertEquals(original.getDailyFlux(date),   deserialized.getDailyFlux(date),   1.0e-12);
-        Assertions.assertEquals(original.getInstantFlux(date), deserialized.getInstantFlux(date), 1.0e-12);
     }
 
     /**

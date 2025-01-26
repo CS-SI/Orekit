@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -88,7 +88,7 @@ public enum CenterName {
     /** Celestial body getter.
      * @return getter for celestial body
      */
-    private final Function<CelestialBodies, CelestialBody> celestialBodyGetter;
+    private final transient Function<CelestialBodies, CelestialBody> celestialBodyGetter;
 
     /** Simple constructor.
      * @param celestialBodyGetter getter for celestial body

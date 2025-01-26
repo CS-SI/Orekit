@@ -451,6 +451,9 @@ NO_CACHED_ENTRIES = aucune entrée en cache
 # generated entries not sorted: {0} > {1} by {2,number,0.0##############E0} s
 NON_CHRONOLOGICALLY_SORTED_ENTRIES = les entrées générées ne sont pas dans l''ordre chronologique : {0} > {1} de {2,number,0.0##############E0} s
 
+# moving transition date from {0} to {1} collides with existing transition at {2}
+TRANSITION_DATES_COLLISION = déplacer la date de transition de {0} à {1} entre en collision avec la transition existante à {2}
+
 # no data generated around date: {0}
 NO_DATA_GENERATED = aucune donnée générée aux alentours de la date : {0}
 
@@ -591,6 +594,12 @@ UNKNOWN_CLOCK_DATA_TYPE = type de donnée d''horloge {0} inconnu
 
 # unknown satellite antenna code {0}
 UNKNOWN_SATELLITE_ANTENNA_CODE = code d''antenne satellite {0} inconnu
+
+# unknown GNSS antenna, name: {0}, radome code: {1}, serial number: {2}
+UNKNOWN_GNSS_ANTENNA = antenne GNSS inconnue, nom : {0}, code radome : {1}, numéro de série : {2}
+
+# unknown GNSS frequency, system: {0}, frequency code: {1} (line {2}, file {3})
+UNKNOWN_GNSS_FREQUENCY = fréquence GNSS inconnue, système : {0}, code de fréquence : {1} (ligne {2}, fichier {3})
 
 # frequency {0} is not supported by antenna {1}
 UNSUPPORTED_FREQUENCY_FOR_ANTENNA = fréquence {0} non prise en compte par l''antenne {1}
@@ -828,6 +837,9 @@ NO_UNSCENTED_TRANSFORM_CONFIGURED = aucune transformation unscented configurée
 # value is not strictly positive: {0}
 NOT_STRICTLY_POSITIVE = la valeur {0} n''est pas strictement positive
 
+# value is not positive: {0}
+NOT_POSITIVE = la valeur {0} n''est pas positive
+
 # transform from {0} to {1} is not implemented
 UNSUPPORTED_TRANSFORM = la transformation de {0} vers {1} n'est pas implémentée
 
@@ -896,3 +908,18 @@ PROPAGATOR_BUILDER_NOT_CLONEABLE = Le constructor de propagateur ne peut pas êt
 
 # field "{0}" is too long, maximum length is {1} characters
 FIELD_TOO_LONG = le champ « {0} » est trop long, la longueur maximale est de {1} caractères
+
+# Process covariance expecting dimension {0}, got {1}
+WRONG_PROCESS_COVARIANCE_DIMENSION = la dimension de la covariance de modèle est {0}, or il est attendu {1}
+
+# Measurement covariance expecting dimension {0}, got {1}
+WRONG_MEASUREMENT_COVARIANCE_DIMENSION = la dimension de la covariance de mesures est {0}, or il est attendu {1}
+
+# cannot parse data {0}
+CANNOT_PARSE_DATA = impossible d''analyser la donnée {0}
+
+# covariance must be square
+COVARIANCE_MUST_BE_SQUARE = la matrice de covariance doit être carrée
+
+# state vector (dimension {0}) and covariance (dimension {1}) are inconsistent
+INCONSISTENT_STATE_DIMENSIONS = les tailles du vecteur d''état (dimension {0}) et de la covariance (dimension {1}) ne sont pas compatibles

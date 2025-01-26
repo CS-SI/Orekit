@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,9 +36,6 @@ import org.orekit.utils.Constants;
  */
 class VEISProvider implements TransformProvider {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20130530L;
-
     /** 1st coef for Veis sidereal time computation in radians (100.075542 deg). */
     private static final double VST0 = 1.746647708617871;
 
@@ -71,7 +68,7 @@ class VEISProvider implements TransformProvider {
 
         // offset from FIFTIES epoch (UT1 scale)
         final double dtai = date.durationFrom(vstReference);
-        final double dutc = timeScales.getUTC().offsetFromTAI(date);
+        final double dutc = timeScales.getUTC().offsetFromTAI(date).toDouble();
         final double dut1 = 0.0; // fixed at 0 since Veis parent is GTOD frame WITHOUT EOP corrections
 
         final double tut1 = dtai + dutc + dut1;
@@ -97,7 +94,7 @@ class VEISProvider implements TransformProvider {
 
         // offset from FIFTIES epoch (UT1 scale)
         final T dtai = date.durationFrom(vstReference);
-        final double dutc = timeScales.getUTC().offsetFromTAI(date.toAbsoluteDate());
+        final double dutc = timeScales.getUTC().offsetFromTAI(date.toAbsoluteDate()).toDouble();
         final double dut1 = 0.0; // fixed at 0 since Veis parent is GTOD frame WITHOUT EOP corrections
 
         final T tut1 = dtai.add(dutc + dut1);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.orekit.estimation.measurements.ComparableMeasurement;
-import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.time.AbsoluteDate;
 
 
@@ -33,7 +33,7 @@ import org.orekit.time.AbsoluteDate;
 public class GatheringSubscriber implements GeneratedMeasurementSubscriber {
 
     /** Set for holding measurements. */
-    private SortedSet<ObservedMeasurement<?>> measurements;
+    private SortedSet<EstimatedMeasurementBase<?>> measurements;
 
     /** Simple constructor.
      */
@@ -44,15 +44,15 @@ public class GatheringSubscriber implements GeneratedMeasurementSubscriber {
     /** {@inheritDoc} */
     @Override
     public void init(final AbsoluteDate start, final AbsoluteDate end) {
-        final Comparator<ObservedMeasurement<?>> comparator = end.isAfterOrEqualTo(start) ?
-                                                              Comparator.naturalOrder() :
-                                                              Comparator.reverseOrder();
+        final Comparator<EstimatedMeasurementBase<?>> comparator = end.isAfterOrEqualTo(start) ?
+                                                                   Comparator.naturalOrder() :
+                                                                   Comparator.reverseOrder();
         measurements = new TreeSet<>(comparator);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void handleGeneratedMeasurement(final ObservedMeasurement<?> measurement) {
+    public void handleGeneratedMeasurement(final EstimatedMeasurementBase<?> measurement) {
         measurements.add(measurement);
     }
 
@@ -64,7 +64,7 @@ public class GatheringSubscriber implements GeneratedMeasurementSubscriber {
      * </p>
      * @return unmodifiable view of generated measurements
      */
-    public SortedSet<ObservedMeasurement<?>> getGeneratedMeasurements() {
+    public SortedSet<EstimatedMeasurementBase<?>> getGeneratedMeasurements() {
         return Collections.unmodifiableSortedSet(measurements);
     }
 

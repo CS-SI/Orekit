@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,7 +35,8 @@ import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
+import org.orekit.gnss.RadioWave;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -55,7 +56,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class InterSatellitesPhaseTest {
 
-    private static final Frequency FREQUENCY = Frequency.G01;
+    private static final RadioWave RADIO_WAVE = PredefinedGnssSignal.G01;
 
     /**
      * Test the values of the phase comparing the observed values and the estimated values
@@ -171,7 +172,8 @@ public class InterSatellitesPhaseTest {
         final double remoteClockOffset = 469.0e-6;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new InterSatellitesPhaseMeasurementCreator(ephemeris, FREQUENCY, ambiguity, localClockOffset, remoteClockOffset),
+                                                               new InterSatellitesPhaseMeasurementCreator(ephemeris,
+                                                                                                          RADIO_WAVE, ambiguity, localClockOffset, remoteClockOffset),
                                                                1.0, 3.0, 300.0);
 
         // Lists for results' storage - Used only for derivatives with respect to state
@@ -206,11 +208,11 @@ public class InterSatellitesPhaseTest {
 
                     final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
                     Assertions.assertEquals(2, participants.length);
-                    Assertions.assertEquals(FREQUENCY.getWavelength(), ((InterSatellitesPhase) measurement).getWavelength(), 1.0e-15);
+                    Assertions.assertEquals(RADIO_WAVE.getWavelength(), ((InterSatellitesPhase) measurement).getWavelength(), 1.0e-15);
                     final double dt = participants[1].getDate().durationFrom(participants[0].getDate());
-                    Assertions.assertEquals(FREQUENCY.getFrequency() * (dt + localClockOffset - remoteClockOffset) + ambiguity,
-                                        estimated.getEstimatedValue()[0],
-                                        1.0e-7);
+                    Assertions.assertEquals(RADIO_WAVE.getFrequency() * (dt + localClockOffset - remoteClockOffset) + ambiguity,
+                                            estimated.getEstimatedValue()[0],
+                                            1.0e-7);
 
                     final double phaseEstimated = estimated.getEstimatedValue()[0];
                     final double absoluteError = phaseEstimated-phaseObserved;
@@ -310,7 +312,8 @@ public class InterSatellitesPhaseTest {
         final double remoteClockOffset = 469.0e-6;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new InterSatellitesPhaseMeasurementCreator(ephemeris, FREQUENCY, ambiguity, localClockOffset, remoteClockOffset),
+                                                               new InterSatellitesPhaseMeasurementCreator(ephemeris,
+                                                                                                          RADIO_WAVE, ambiguity, localClockOffset, remoteClockOffset),
                                                                1.0, 3.0, 300.0);
 
         // Lists for results' storage - Used only for derivatives with respect to state
@@ -461,7 +464,7 @@ public class InterSatellitesPhaseTest {
         final int    ambiguity         = 1234;
         final double localClockOffset  = 0.137e-6;
         final double remoteClockOffset = 469.0e-6;
-        final InterSatellitesPhaseMeasurementCreator creator = new InterSatellitesPhaseMeasurementCreator(ephemeris, Frequency.E01,
+        final InterSatellitesPhaseMeasurementCreator creator = new InterSatellitesPhaseMeasurementCreator(ephemeris, PredefinedGnssSignal.E01,
                                                                             ambiguity, localClockOffset, remoteClockOffset);
         creator.getLocalSatellite().getClockOffsetDriver().setSelected(true);
         creator.getRemoteSatellite().getClockOffsetDriver().setSelected(true);
@@ -586,7 +589,7 @@ public class InterSatellitesPhaseTest {
 
         // Create a phase measurement. Remote is set to null since it not used by the test
         final InterSatellitesPhase phase = new InterSatellitesPhase(new ObservableSatellite(0), new ObservableSatellite(1),
-                                                                    AbsoluteDate.J2000_EPOCH, 467614.701, Frequency.G01.getWavelength(),
+                                                                    AbsoluteDate.J2000_EPOCH, 467614.701, PredefinedGnssSignal.G01.getWavelength(),
                                                                     0.02, 1.0,
                                                                     new AmbiguityCache());
 

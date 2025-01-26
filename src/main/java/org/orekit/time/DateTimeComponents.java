@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,9 +17,6 @@
 package org.orekit.time;
 
 import java.io.Serializable;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
 
 import java.util.concurrent.TimeUnit;
 import org.hipparchus.util.FastMath;
@@ -44,7 +41,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
             new DateTimeComponents(DateComponents.JULIAN_EPOCH, TimeComponents.H12);
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 5061129505488924484L;
+    private static final long serialVersionUID = 20240720L;
 
     /** Date component. */
     private final DateComponents date;
@@ -75,6 +72,24 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
     public DateTimeComponents(final int year, final int month, final int day,
                               final int hour, final int minute, final double second)
         throws IllegalArgumentException {
+        this(year, month, day, hour, minute, new TimeOffset(second));
+    }
+
+    /** Build an instance from raw level components.
+     * @param year year number (may be 0 or negative for BC years)
+     * @param month month number from 1 to 12
+     * @param day day number from 1 to 31
+     * @param hour hour number from 0 to 23
+     * @param minute minute number from 0 to 59
+     * @param second second number from 0.0 to 60.0 (excluded)
+     * @exception IllegalArgumentException if inconsistent arguments
+     * are given (parameters out of range, february 29 for non-leap years,
+     * dates during the gregorian leap in 1582 ...)
+     * @since 13.0
+     */
+    public DateTimeComponents(final int year, final int month, final int day,
+                              final int hour, final int minute, final TimeOffset second)
+        throws IllegalArgumentException {
         this.date = new DateComponents(year, month, day);
         this.time = new TimeComponents(hour, minute, second);
     }
@@ -92,6 +107,24 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      */
     public DateTimeComponents(final int year, final Month month, final int day,
                               final int hour, final int minute, final double second)
+        throws IllegalArgumentException {
+        this(year, month, day, hour, minute, new TimeOffset(second));
+    }
+
+    /** Build an instance from raw level components.
+     * @param year year number (may be 0 or negative for BC years)
+     * @param month month enumerate
+     * @param day day number from 1 to 31
+     * @param hour hour number from 0 to 23
+     * @param minute minute number from 0 to 59
+     * @param second second number from 0.0 to 60.0 (excluded)
+     * @exception IllegalArgumentException if inconsistent arguments
+     * are given (parameters out of range, february 29 for non-leap years,
+     * dates during the gregorian leap in 1582 ...)
+     * @since 13.0
+     */
+    public DateTimeComponents(final int year, final Month month, final int day,
+                              final int hour, final int minute, final TimeOffset second)
         throws IllegalArgumentException {
         this.date = new DateComponents(year, month, day);
         this.time = new TimeComponents(hour, minute, second);
@@ -132,25 +165,36 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      * @param offset offset from the reference in seconds
      * @see #offsetFrom(DateTimeComponents)
      */
-    public DateTimeComponents(final DateTimeComponents reference,
-                              final double offset) {
+    public DateTimeComponents(final DateTimeComponents reference, final double offset) {
+        this(reference, new TimeOffset(offset));
+    }
+
+    /** Build an instance from a seconds offset with respect to another one.
+     * @param reference reference date/time
+     * @param offset offset from the reference in seconds
+     * @see #offsetFrom(DateTimeComponents)
+     * @since 13.0
+     */
+    public DateTimeComponents(final DateTimeComponents reference, final TimeOffset offset) {
 
         // extract linear data from reference date/time
         int    day     = reference.getDate().getJ2000Day();
-        double seconds = reference.getTime().getSecondsInLocalDay();
+        TimeOffset seconds = reference.getTime().getSplitSecondsInLocalDay();
 
         // apply offset
-        seconds += offset;
+        seconds = seconds.add(offset);
 
         // fix range
-        final int dayShift = (int) FastMath.floor(seconds / Constants.JULIAN_DAY);
-        seconds -= Constants.JULIAN_DAY * dayShift;
+        final int dayShift = (int) FastMath.floor(seconds.toDouble() / Constants.JULIAN_DAY);
+        if (dayShift != 0) {
+            seconds = seconds.subtract(new TimeOffset(dayShift * TimeOffset.DAY.getSeconds(), 0L));
+        }
         day     += dayShift;
         final TimeComponents tmpTime = new TimeComponents(seconds);
 
         // set up components
         this.date = new DateComponents(day);
-        this.time = new TimeComponents(tmpTime.getHour(), tmpTime.getMinute(), tmpTime.getSecond(),
+        this.time = new TimeComponents(tmpTime.getHour(), tmpTime.getMinute(), tmpTime.getSplitSecond(),
                                        reference.getTime().getMinutesFromUTC());
 
     }
@@ -163,29 +207,27 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      * @since 12.1
      */
     public DateTimeComponents(final DateTimeComponents reference,
-        final long offset, final TimeUnit timeUnit) {
+                              final long offset, final TimeUnit timeUnit) {
 
         // extract linear data from reference date/time
-        int    day     = reference.getDate().getJ2000Day();
-        double seconds = reference.getTime().getSecondsInLocalDay();
+        int       day     = reference.getDate().getJ2000Day();
+        TimeOffset seconds = reference.getTime().getSplitSecondsInLocalDay();
 
         // apply offset
-        long offsetInNanos = TimeUnit.NANOSECONDS.convert(offset, timeUnit);
-        final long daysInNanoseconds = TimeUnit.NANOSECONDS.convert((long) Constants.JULIAN_DAY, TimeUnit.SECONDS);
-        final int nanoDayShift = (int) FastMath.floorDiv(offsetInNanos, daysInNanoseconds);
-        offsetInNanos -= daysInNanoseconds * nanoDayShift;
-
-        seconds += offsetInNanos / (double) TimeUnit.SECONDS.toNanos(1);
+        seconds = seconds.add(new TimeOffset(offset, timeUnit));
 
         // fix range
-        final int dayShift = (int) FastMath.floor(seconds / Constants.JULIAN_DAY);
-        seconds -= Constants.JULIAN_DAY * dayShift;
-        day     += dayShift + nanoDayShift;
+        final long dayShift = seconds.getSeconds() / TimeOffset.DAY.getSeconds() +
+                              (seconds.getSeconds() < 0L ? -1L : 0L);
+        if (dayShift != 0) {
+            seconds = seconds.subtract(new TimeOffset(dayShift, TimeOffset.DAY));
+            day    += dayShift;
+        }
         final TimeComponents tmpTime = new TimeComponents(seconds);
 
         // set up components
         this.date = new DateComponents(day);
-        this.time = new TimeComponents(tmpTime.getHour(), tmpTime.getMinute(), tmpTime.getSecond(),
+        this.time = new TimeComponents(tmpTime.getHour(), tmpTime.getMinute(), tmpTime.getSplitSecond(),
             reference.getTime().getMinutesFromUTC());
 
     }
@@ -217,12 +259,13 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      * @param dateTime dateTime to subtract from the instance
      * @return offset in seconds between the two instants
      * (positive if the instance is posterior to the argument)
-     * @see #DateTimeComponents(DateTimeComponents, double)
+     * @see #DateTimeComponents(DateTimeComponents, TimeOffset)
      */
     public double offsetFrom(final DateTimeComponents dateTime) {
         final int dateOffset = date.getJ2000Day() - dateTime.date.getJ2000Day();
-        final double timeOffset = time.getSecondsInUTCDay() - dateTime.time.getSecondsInUTCDay();
-        return Constants.JULIAN_DAY * dateOffset + timeOffset;
+        final TimeOffset timeOffset = time.getSplitSecondsInUTCDay().
+                                     subtract(dateTime.time.getSplitSecondsInUTCDay());
+        return Constants.JULIAN_DAY * dateOffset + timeOffset.toDouble();
     }
 
     /** Compute the seconds offset between two instances.
@@ -235,12 +278,9 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      */
     public long offsetFrom(final DateTimeComponents dateTime, final TimeUnit timeUnit) {
         final int dateOffset = date.getJ2000Day() - dateTime.date.getJ2000Day();
-        final double timeOffset = time.getSecondsInUTCDay() - dateTime.time.getSecondsInUTCDay();
-
-        final long multiplier = timeUnit.convert(1, TimeUnit.SECONDS);
-
-        return timeUnit.convert(Math.round(Constants.JULIAN_DAY * dateOffset), TimeUnit.SECONDS) +
-            FastMath.round(timeOffset * multiplier);
+        final TimeOffset timeOffset = time.getSplitSecondsInUTCDay().
+                                     subtract(dateTime.time.getSplitSecondsInUTCDay());
+        return TimeOffset.DAY.getRoundedTime(timeUnit) * dateOffset + timeOffset.getRoundedTime(timeUnit);
     }
 
     /** Get the date component.
@@ -365,13 +405,9 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      */
     public String toStringWithoutUtcOffset(final int minuteDuration,
                                            final int fractionDigits) {
-        final DecimalFormat secondsFormat =
-                new DecimalFormat("00", new DecimalFormatSymbols(Locale.US));
-        secondsFormat.setMaximumFractionDigits(fractionDigits);
-        secondsFormat.setMinimumFractionDigits(fractionDigits);
         final DateTimeComponents rounded = roundIfNeeded(minuteDuration, fractionDigits);
         return rounded.getDate().toString() + 'T' +
-                rounded.getTime().toStringWithoutUtcOffset(secondsFormat);
+               rounded.getTime().toStringWithoutUtcOffset(fractionDigits);
     }
 
     /**
@@ -395,30 +431,22 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      * to {@code fractionDigits} after the decimal point.
      * @since 11.3
      */
-    public DateTimeComponents roundIfNeeded(final int minuteDuration,
-                                            final int fractionDigits) {
-        double second = time.getSecond();
-        final double wrap = minuteDuration - 0.5 * FastMath.pow(10, -fractionDigits);
-        if (second >= wrap) {
-            // we should wrap around to the next minute
-            int minute = time.getMinute();
-            int hour   = time.getHour();
-            int j2000  = date.getJ2000Day();
-            second = 0;
-            ++minute;
-            if (minute > 59) {
-                minute = 0;
-                ++hour;
-                if (hour > 23) {
-                    hour = 0;
-                    ++j2000;
-                }
+    public DateTimeComponents roundIfNeeded(final int minuteDuration, final int fractionDigits) {
+
+        final TimeComponents wrappedTime = time.wrapIfNeeded(minuteDuration, fractionDigits);
+        if (wrappedTime == time) {
+            // no wrapping was needed
+            return this;
+        } else {
+            if (wrappedTime.getHour() < time.getHour()) {
+                // we have wrapped around next day
+                return new DateTimeComponents(new DateComponents(date, 1), wrappedTime);
+            } else {
+                // only the time was wrapped
+                return new DateTimeComponents(date, wrappedTime);
             }
-            return new DateTimeComponents(
-                    new DateComponents(j2000),
-                    new TimeComponents(hour, minute, second));
         }
-        return this;
+
     }
 
     /**
@@ -445,10 +473,18 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
                 d.getYear(), d.getMonth(), d.getDay());
         // time
         final String timeString;
-        if (t.getSecondsInLocalDay() != 0) {
-            final DecimalFormat format = new DecimalFormat("00.##############", new DecimalFormatSymbols(Locale.US));
-            timeString = String.format("%02d:%02d:", t.getHour(), t.getMinute()) +
-                    format.format(t.getSecond());
+        if (!t.getSplitSecondsInLocalDay().isZero()) {
+            final String formatted = t.toStringWithoutUtcOffset(18);
+            int last = formatted.length() - 1;
+            while (formatted.charAt(last) == '0') {
+                // we want to remove final zeros
+                --last;
+            }
+            if (formatted.charAt(last) == '.') {
+                // remove the decimal point if no decimals follow
+                --last;
+            }
+            timeString = formatted.substring(0, last + 1);
         } else {
             // shortcut for midnight local time
             timeString = "00:00:00";

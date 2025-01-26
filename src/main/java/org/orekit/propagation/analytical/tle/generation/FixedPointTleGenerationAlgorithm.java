@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -232,7 +232,7 @@ public class FixedPointTleGenerationAlgorithm implements TleGenerationAlgorithm 
         T lv  = equinoctialOrbit.getLv();
 
         // rough initialization of the TLE
-        final T bStar = state.getA().getField().getZero().newInstance(templateTLE.getBStar());
+        final T bStar = state.getMass().getField().getZero().newInstance(templateTLE.getBStar());
         final FieldKeplerianOrbit<T> keplerianOrbit = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(equinoctialOrbit);
         FieldTLE<T> current = TleGenerationUtil.newTLE(keplerianOrbit, templateTLE, bStar, utc);
 

@@ -1,0 +1,73 @@
+/* Copyright 2002-2024 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.orekit.estimation.sequential;
+
+import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.linear.RealVector;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStamped;
+
+public class PhysicalEstimatedState implements TimeStamped {
+
+    /** Date. */
+    private final AbsoluteDate date;
+
+    /** State mean. */
+    private final RealVector state;
+
+    /** State covariance. */
+    private final RealMatrix covarianceMatrix;
+
+    public PhysicalEstimatedState(final AbsoluteDate date,
+                                  final RealVector state,
+                                  final RealMatrix covarianceMatrix) {
+        this.date = date;
+        this.state = state;
+        this.covarianceMatrix = covarianceMatrix;
+
+        final int dim = state.getDimension();
+        if (!covarianceMatrix.isSquare()) {
+            throw new OrekitIllegalArgumentException(OrekitMessages.COVARIANCE_MUST_BE_SQUARE);
+        }
+        if (covarianceMatrix.getRowDimension() != dim) {
+            throw new OrekitIllegalArgumentException(OrekitMessages.INCONSISTENT_STATE_DIMENSIONS,
+                    dim, covarianceMatrix.getRowDimension());
+        }
+    }
+
+    /** {@inheritDoc}. */
+    @Override
+    public AbsoluteDate getDate() {
+        return date;
+    }
+
+    /** Get the physical state.
+     * @return the state mean
+     */
+    public RealVector getState() {
+        return state;
+    }
+
+    /** Get the physical covariance matrix.
+     * @return the state covariance
+     */
+    public RealMatrix getCovarianceMatrix() {
+        return covarianceMatrix;
+    }
+}

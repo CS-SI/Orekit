@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -64,7 +64,7 @@ import org.orekit.utils.ParameterDriver;
 public class InertialForces implements ForceModel {
 
     /** Reference inertial frame to use to compute inertial forces. */
-    private Frame referenceInertialFrame;
+    private final Frame referenceInertialFrame;
 
     /** Simple constructor.
      * @param referenceInertialFrame the pseudo-inertial frame to use as reference for the inertial forces

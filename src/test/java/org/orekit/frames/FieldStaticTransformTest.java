@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,6 +29,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -189,6 +190,25 @@ public class FieldStaticTransformTest {
         final FieldAbsoluteDate<Complex> actualFieldDate = testFieldStaticTransform.getFieldDate();
         // THEN
         Assertions.assertEquals(testFieldStaticTransform.getDate(), actualFieldDate.toAbsoluteDate());
+    }
+
+    @Test
+    void testGetIdentity() {
+        // GIVEN
+        final Field<Binary64> field = Binary64Field.getInstance();
+        final FieldStaticTransform<Binary64> identity = FieldStaticTransform.getIdentity(field);
+        final Vector3D vector3D = new Vector3D(3., 2.,1.);
+        final FieldVector3D<Binary64> fieldVector3D = new FieldVector3D<>(field, vector3D);
+        // WHEN & THEN
+        Assertions.assertEquals(identity.getFieldDate().toAbsoluteDate(), identity.getDate());
+        Assertions.assertEquals(identity.transformVector(vector3D), identity.getRotation().applyTo(vector3D));
+        Assertions.assertEquals(identity.transformPosition(vector3D),
+                identity.getRotation().applyTo(vector3D).add(identity.getTranslation().toVector3D()));
+        Assertions.assertEquals(identity.transformVector(fieldVector3D), identity.getRotation().applyTo(fieldVector3D));
+        Assertions.assertEquals(identity.transformPosition(fieldVector3D),
+                identity.getRotation().applyTo(fieldVector3D).add(identity.getTranslation()));
+        Assertions.assertEquals(identity, identity.getInverse());
+        Assertions.assertEquals(identity, identity.getStaticInverse());
     }
 
     private static class TestFieldStaticTransform implements FieldStaticTransform<Complex> {

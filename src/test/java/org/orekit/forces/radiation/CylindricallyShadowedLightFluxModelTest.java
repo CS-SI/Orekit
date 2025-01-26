@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -103,23 +103,6 @@ class CylindricallyShadowedLightFluxModelTest {
                 Assertions.assertEquals(1., ratio);
             }
         }
-    }
-
-    @Test
-    void testGetUnoccultedFluxVector() {
-        // GIVEN
-        final ComplexField field = ComplexField.getInstance();
-        final double occultingBodyRadius = 0.5;
-        final FieldVector3D<Complex> sunPosition = FieldVector3D.getPlusI(field).scalarMultiply(10.);
-        final ExtendedPositionProvider sun = mockFieldProvider(sunPosition);
-        final CylindricallyShadowedLightFluxModel model = new CylindricallyShadowedLightFluxModel(Double.NaN, sun, occultingBodyRadius);
-        final Vector3D position = new Vector3D(1., 1.);
-        final FieldVector3D<Complex> fieldPosition = new FieldVector3D<>(field, position);
-        // WHEN
-        final FieldVector3D<Complex> fieldFlux = model.getUnoccultedFluxVector(fieldPosition);
-        // THEN
-        final Vector3D expectedFlux = model.getUnoccultedFluxVector(position);
-        Assertions.assertEquals(expectedFlux, fieldFlux.toVector3D());
     }
 
     @SuppressWarnings("unchecked")

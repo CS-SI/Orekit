@@ -118,11 +118,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class Geoid implements EarthShape {
 
     /**
-     * uid is date of last modification.
-     */
-    private static final long serialVersionUID = 20150312L;
-
-    /**
      * A number larger than the largest undulation. Wikipedia says the geoid
      * height is in [-106, 85]. I chose 100 to be safe.
      */

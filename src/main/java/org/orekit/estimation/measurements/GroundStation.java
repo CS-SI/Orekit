@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -102,9 +102,6 @@ public class GroundStation {
      */
     public static final String ACCELERATION_SUFFIX = "-acceleration-clock";
 
-    /** Suffix for ground station intermediate frame name. */
-    public static final String INTERMEDIATE_SUFFIX = "-intermediate";
-
     /** Clock offset scaling factor.
      * <p>
      * We use a power of 2 to avoid numeric noise introduction
@@ -180,7 +177,7 @@ public class GroundStation {
      * </p>
      * @param baseFrame base frame associated with the station, without *any* parametric
      * model (no station offset, no polar motion, no meridian shift)
-     * @see #GroundStation(TopocentricFrame, EOPHistory, StationDisplacement...)
+     * @see #GroundStation(TopocentricFrame, PressureTemperatureHumidityProvider, EOPHistory, StationDisplacement...)
      */
     public GroundStation(final TopocentricFrame baseFrame) {
         this(baseFrame, TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
@@ -203,39 +200,11 @@ public class GroundStation {
      * @param baseFrame base frame associated with the station, without *any* parametric
      * model (no station offset, no polar motion, no meridian shift)
      * @param pthProvider provider for weather parameters
-     * @see #GroundStation(TopocentricFrame, EOPHistory, StationDisplacement...)
+     * @see #GroundStation(TopocentricFrame, PressureTemperatureHumidityProvider, EOPHistory, StationDisplacement...)
      * @since 12.1
      */
     public GroundStation(final TopocentricFrame baseFrame, final PressureTemperatureHumidityProvider pthProvider) {
         this(baseFrame, pthProvider, FramesFactory.findEOP(baseFrame), new StationDisplacement[0]);
-    }
-
-    /** Simple constructor.
-     * <p>
-     * The initial values for the pole and prime meridian parametric linear models
-     * ({@link #getPrimeMeridianOffsetDriver()}, {@link #getPrimeMeridianDriftDriver()},
-     * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()},
-     * {@link #getPolarOffsetXDriver()}, {@link #getPolarDriftXDriver()}) are set to 0.
-     * The initial values for the station offset model ({@link #getClockOffsetDriver()},
-     * {@link #getEastOffsetDriver()}, {@link #getNorthOffsetDriver()},
-     * {@link #getZenithOffsetDriver()}, {@link #getClockOffsetDriver()}) are set to 0.
-     * This implies that as long as these values are not changed, the offset frame is
-     * the same as the {@link #getBaseFrame() base frame}. As soon as some of these models
-     * are changed, the offset frame moves away from the {@link #getBaseFrame() base frame}.
-     * </p>
-     * @param baseFrame base frame associated with the station, without *any* parametric
-     * model (no station offset, no polar motion, no meridian shift)
-     * @param eopHistory EOP history associated with Earth frames
-     * @param displacements ground station displacement model (tides, ocean loading,
-     * atmospheric loading, thermal effects...)
-     * @since 9.1
-     * @deprecated as of 12.1, replaced by {@link #GroundStation(TopocentricFrame,
-     * PressureTemperatureHumidityProvider, EOPHistory, StationDisplacement...)}
-     */
-    @Deprecated
-    public GroundStation(final TopocentricFrame baseFrame, final EOPHistory eopHistory,
-                         final StationDisplacement... displacements) {
-        this(baseFrame, TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER, eopHistory, displacements);
     }
 
     /** Simple constructor.
@@ -319,7 +288,7 @@ public class GroundStation {
      * @since 12.1
      */
     public PressureTemperatureHumidity getPressureTemperatureHumidity(final AbsoluteDate date) {
-        return pthProvider.getWeatherParamerers(getOffsetGeodeticPoint(date), date);
+        return pthProvider.getWeatherParameters(getOffsetGeodeticPoint(date), date);
     }
 
     /** Get the weather parameters.
@@ -329,7 +298,7 @@ public class GroundStation {
      * @since 12.1
      */
     public <T extends CalculusFieldElement<T>> FieldPressureTemperatureHumidity<T> getPressureTemperatureHumidity(final FieldAbsoluteDate<T> date) {
-        return pthProvider.getWeatherParamerers(getOffsetGeodeticPoint(date), date);
+        return pthProvider.getWeatherParameters(getOffsetGeodeticPoint(date), date);
     }
 
     /** Get the displacement models.

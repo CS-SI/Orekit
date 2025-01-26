@@ -248,7 +248,7 @@ public abstract class CloseEventsAbstractTest {
         List<EventDetector> detectors = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
             FunctionalDetector detector1 = new FunctionalDetector()
-                    .withFunction(s -> s.getA() - 10e6)
+                    .withFunction(s -> s.getOrbit().getA() - 10e6)
                     .withThreshold(tol)
                     .withMaxCheck(10)
                     .withHandler(new RecordAndContinue(events));
@@ -2169,8 +2169,7 @@ public abstract class CloseEventsAbstractTest {
          * @param eventTs event times past epoch.
          */
         public TimeDetector(double... eventTs) {
-            this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-                 new StopOnEvent(), toDates(eventTs));
+            this(EventDetectionSettings.getDefaultEventDetectionSettings(), new StopOnEvent(), toDates(eventTs));
         }
 
         /**
@@ -2179,16 +2178,12 @@ public abstract class CloseEventsAbstractTest {
          * @param eventTs event times past epoch.
          */
         public TimeDetector(AbsoluteDate... eventTs) {
-            this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-                 new StopOnEvent(), Arrays.asList(eventTs));
+            this(EventDetectionSettings.getDefaultEventDetectionSettings(), new StopOnEvent(), Arrays.asList(eventTs));
         }
 
-        private TimeDetector(AdaptableInterval newMaxCheck,
-                             double newThreshold,
-                             int newMaxIter,
-                             EventHandler newHandler,
+        private TimeDetector(EventDetectionSettings detectionSettings, EventHandler newHandler,
                              List<AbsoluteDate> dates) {
-            super(newMaxCheck, newThreshold, newMaxIter, newHandler);
+            super(detectionSettings, newHandler);
             this.eventTs = dates;
         }
 
@@ -2209,12 +2204,9 @@ public abstract class CloseEventsAbstractTest {
         }
 
         @Override
-        protected TimeDetector create(AdaptableInterval newMaxCheck,
-                                      double newThreshold,
-                                      int newMaxIter,
+        protected TimeDetector create(EventDetectionSettings detectionSettings,
                                       EventHandler newHandler) {
-            return new TimeDetector(
-                    newMaxCheck, newThreshold, newMaxIter, newHandler, eventTs);
+            return new TimeDetector(detectionSettings, newHandler, eventTs);
         }
 
     }
@@ -2228,21 +2220,19 @@ public abstract class CloseEventsAbstractTest {
         private final EventDetector g;
 
         public FlatDetector(double... eventTs) {
-            this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+            this(EventDetectionSettings.getDefaultEventDetectionSettings(),
                  new StopOnEvent(), new TimeDetector(eventTs));
         }
 
         public FlatDetector(AbsoluteDate... eventTs) {
-            this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+            this(EventDetectionSettings.getDefaultEventDetectionSettings(),
                  new StopOnEvent(), new TimeDetector(eventTs));
         }
 
-        private FlatDetector(AdaptableInterval newMaxCheck,
-                             double newThreshold,
-                             int newMaxIter,
+        private FlatDetector(EventDetectionSettings detectionSettings,
                              EventHandler newHandler,
                              EventDetector g) {
-            super(newMaxCheck, newThreshold, newMaxIter, newHandler);
+            super(detectionSettings, newHandler);
             this.g = g;
         }
 
@@ -2252,11 +2242,9 @@ public abstract class CloseEventsAbstractTest {
         }
 
         @Override
-        protected FlatDetector create(AdaptableInterval newMaxCheck,
-                                      double newThreshold,
-                                      int newMaxIter,
+        protected FlatDetector create(EventDetectionSettings detectionSettings,
                                       EventHandler newHandler) {
-            return new FlatDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, g);
+            return new FlatDetector(detectionSettings, newHandler, g);
         }
 
     }
@@ -2268,16 +2256,14 @@ public abstract class CloseEventsAbstractTest {
         private final List<AbsoluteDate> eventTs;
 
         public ContinuousDetector(double... eventTs) {
-            this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+            this(EventDetectionSettings.getDefaultEventDetectionSettings(),
                  new StopOnEvent(), toDates(eventTs));
         }
 
-        private ContinuousDetector(AdaptableInterval newMaxCheck,
-                                   double newThreshold,
-                                   int newMaxIter,
+        private ContinuousDetector(EventDetectionSettings detectionSettings,
                                    EventHandler newHandler,
                                    List<AbsoluteDate> eventDates) {
-            super(newMaxCheck, newThreshold, newMaxIter, newHandler);
+            super(detectionSettings, newHandler);
             this.eventTs = eventDates;
         }
 
@@ -2302,13 +2288,9 @@ public abstract class CloseEventsAbstractTest {
         }
 
         @Override
-        protected ContinuousDetector create(
-                AdaptableInterval newMaxCheck,
-                double newThreshold,
-                int newMaxIter,
+        protected ContinuousDetector create(EventDetectionSettings detectionSettings,
                 EventHandler newHandler) {
-            return new ContinuousDetector(
-                    newMaxCheck, newThreshold, newMaxIter, newHandler, eventTs);
+            return new ContinuousDetector(detectionSettings, newHandler, eventTs);
         }
 
     }
@@ -2400,14 +2382,14 @@ public abstract class CloseEventsAbstractTest {
         int count;
 
         public ResetChangesSignGenerator(final AbsoluteDate t0, final double y1, final double y2, final double change) {
-            this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+            this(EventDetectionSettings.getDefaultEventDetectionSettings(),
                  new ContinueOnEvent(), t0, y1, y2, change);
         }
 
-        private ResetChangesSignGenerator(final AdaptableInterval newMaxCheck, final double newThreshold, final int newMaxIter,
+        private ResetChangesSignGenerator(final EventDetectionSettings eventDetectionSettings,
                                           final EventHandler newHandler,
                                           final AbsoluteDate t0, final double y1, final double y2, final double change ) {
-            super(newMaxCheck, newThreshold, newMaxIter, newHandler);
+            super(eventDetectionSettings, newHandler);
             this.t0     = t0;
             this.y1     = y1;
             this.y2     = y2;
@@ -2416,10 +2398,9 @@ public abstract class CloseEventsAbstractTest {
             this.count  = 0;
         }
 
-        protected ResetChangesSignGenerator create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                                   final int newMaxIter,
+        protected ResetChangesSignGenerator create(final EventDetectionSettings detectionSettings,
                                                    final EventHandler newHandler) {
-            return new ResetChangesSignGenerator(newMaxCheck, newThreshold, newMaxIter, newHandler,
+            return new ResetChangesSignGenerator(detectionSettings, newHandler,
                                                  t0, y1, y2, change);
         }
 

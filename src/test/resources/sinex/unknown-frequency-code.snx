@@ -1,0 +1,107 @@
+%=SNX 2.02 ESA 24:189:10055 ESA 24:184:86382 24:185:86382 P 00690 2 S E         
+*-------------------------------------------------------------------------------
+* Solution INdependent EXchange Format (SINEX) 
+*-------------------------------------------------------------------------------
++FILE/REFERENCE
+ REFERENCE FRAME    ITRF20
+ DESCRIPTION        European Space Operation Center (ESOC)                      
+ INPUT              ESOC solutions in normal equation format                    
+ OUTPUT             ESOC solutions in SINEX format                              
+ CONTACT            igsops@esa.int                                              
+ HARDWARE           Unix                                                        
+ SOFTWARE           Napeos 4.9 26/06/2023                                       
+ VERSION            3
+-FILE/REFERENCE
+*-------------------------------------------------------------------------------
++SITE/ID
+*CODE PT DOMES____ T STATION_DESCRIPTION___ APPROX_LON_ APPROX_LAT_ _APP_H_
+ ALBH  A 40129M003 P VICTORIA/SIDNEY, CANAD 236 30 45.1  48 23 23.2    32.3
+ ALGO  A 40104M002 P ALGONQUIN, CANADA      281 55 43.1  45 57 20.9   201.5
+-SITE/ID
+*-------------------------------------------------------------------------------
++SITE/RECEIVER
+*SITE PT SOLN T RECE_START__ RECE_END____ RECEIVER_TYPE_______ SERIA FIRMWARE___
+ ALBH  A    1 P 24:184:86382 24:185:86382 SEPT POLARX5         30133 5.2.0      
+ ALGO  A    1 P 24:184:86382 24:185:86382 SEPT POLARX5         30159 5.3.2      
+-SITE/RECEIVER
+*-------------------------------------------------------------------------------
++SITE/ECCENTRICITY
+*                                             UP______ NORTH___ EAST____ 
+*SITE PT SOLN T DATA_START__ DATA_END____ AXE MARKER->ARP(m)____________
+ ALBH  A    1 P 24:184:86382 24:185:86382 UNE   0.1000   0.0000   0.0000
+ ALGO  A    1 P 24:184:86382 24:185:86382 UNE   0.1000   0.0000   0.0000
+-SITE/ECCENTRICITY
+*-------------------------------------------------------------------------------
++SITE/ANTENNA
+*SITE PT SOLN T ANTE_START__ ANTE_END____ ANTENNA_TYPE____DOME SERIA DAZI
+ ALBH  A    1 P 24:184:86382 24:185:86382 TRM59800.00     SCIS 51123    0
+ ALGO  A    1 P 24:184:86382 24:185:86382 AOAD/M_T        NONE 303      0
+-SITE/ANTENNA
+*--------------------------------------------------------------------------
++SITE/GPS_PHASE_CENTER
+*ANTENNA_TYPE________ SERIA L1UP__ L1NO__ L1EA__ L2UP__ L2NO__ L2EA__ ANTCALIMOD
+ TRM59800.00     SCIS 51123 0.0866 0.0007 0.0002 0.1171 0.0003 -.0001 IGS20_2317
+ AOAD/M_T        NONE 303   0.0918 0.0007 -.0005 0.1203 -.0003 -.0007 IGS20_2317
+-SITE/GPS_PHASE_CENTER
+*--------------------------------------------------------------------------
++SITE/GAL_PHASE_CENTER
+*                           L1UP__ L1NO__ L1EA__ L5UP__ L5NO__ L5EA__ 
+*                           L6UP__ L6NO__ L6EA__ L7UP__ L7NO__ L7EA__ 
+*ANTENNA_TYPE________ SERIA L8UP__ L8NO__ L8EA__                      ANTCALIMOD
+ TRM59800.00     SCIS 51123 0.0866 0.0007 0.0002 0.1253 0.0001 -.0002 IGS20_2317
+ TRM59800.00     SCIS 51123 0.1115 0.0000 0.0003 0.1199 0.0002 -.0000 IGS20_2317
+ TRM59800.00     SCIS 51123 0.1221 0.0000 0.0000                      IGS20_2317
+ AOAD/M_T        NONE 303   0.0918 0.0007 -.0005 0.1203 -.0003 -.0007 IGS20_2317
+ AOAD/M_T        NONE 303   0.1203 -.0003 -.0007 0.1203 -.0003 -.0007 IGS20_2317
+ AOAD/M_T        NONE 303   0.1203 -.0003 -.0007                      IGS20_2317
+-SITE/GAL_PHASE_CENTER
+*--------------------------------------------------------------------------
++SATELLITE/ID
+*SITE PR COSPAR_ID T RECE_START__ RECE_END____ ANTENNA_TYPE________
+ R857 15 2018-086A P 24:184:86382 24:185:86382 GLONASS-M           
+ R861 16 2022-161A P 24:184:86382 24:185:86382 GLONASS-M           
+ R851 17 2016-008A P 24:184:86382 24:185:86382 GLONASS-M           
+ R854 18 2014-012A P 24:184:86382 24:185:86382 GLONASS-M           
+ G050 05 2009-043A P 24:184:86382 24:185:86382 BLOCK IIR-M
+ G067 06 2014-026A P 24:184:86382 24:185:86382 BLOCK IIF           
+ G048 07 2008-012A P 24:184:86382 24:185:86382 BLOCK IIR-M         
+ E212 03 2016-069B P 24:184:86382 24:185:86382 GALILEO-2
+ E214 05 2016-069D P 24:184:86382 24:185:86382 GALILEO-2
+ R747 02 2013-019A P 24:184:86382 24:185:86382 GLONASS-M
+ R744 03 2011-064A P 24:184:86382 24:185:86382 GLONASS-M           
+-SATELLITE/ID
+*-------------------------------------------------------------------------------
++SATELLITE/PHASE_CENTER
+*SITE F ZOFF__ XOFF__ YOFF__ F ZOFF__ XOFF__ YOFF__ CALIMODEL_ T A
+ R857 1 2.4748 -.5450 0.0000 2 2.4748 -.5450 0.0000 IGS20_2317 A F
+ R861 1 2.4587 -.5450 0.0000 2 2.4587 -.5450 0.0000 IGS20_2317 A F
+ R851 1 2.3278 -.5450 0.0000 2 2.3278 -.5450 0.0000 IGS20_2317 A F
+ R854 1 2.4483 -.5450 0.0000 5 2.4483 -.5450 0.0000 IGS20_2317 A F
+ G050 1 0.7426 -.0033 -.0003 2 0.7426 -.0033 -.0003 IGS20_2317 A F
+ G067 1 1.4115 0.3940 0.0000 2 1.4115 0.3940 0.0000 IGS20_2317 A F
+ G067 5 1.4115 0.3940 0.0000                        IGS20_2317 A F
+ G048 1 0.7570 -.0004 0.0050 2 0.7570 -.0004 0.0050 IGS20_2317 A F
+ E212 1 0.7371 0.1160 -.0092 5 0.6108 0.1169 -.0102  TGVF_2187 A F
+ E212 6 0.7348 0.1224 -.0097 7 0.6042 0.1231 -.0096  TGVF_2187 A F
+ E212 8 0.7348 0.1224 -.0097                         TGVF_2187 A F
+ E214 1 0.7571 0.1214 -.0094 5 0.6060 0.1224 -.0092  TGVF_2187 A F
+ J01  1 3.1993 -.0011  .0016 2 2.9943 -.0011  .0016 IGS20_2317 A E
+ J01  5 3.1993 -.0011  .0016                        IGS20_2317 A E
+ R747 1 2.3378 -.5450 0.0000 7 2.3378 -.5450 0.0000 IGS20_2317 A F
+ R744 1 2.4509 -.5450 0.0000 2 2.4509 -.5450 0.0000 IGS20_2317 A F
+-SATELLITE/PHASE_CENTER
+*-------------------------------------------------------------------------------
++SOLUTION/EPOCHS
+*SITE PT SOLN T START_TIME__ END_TIME____ MEAN_TIME___
+ ALBH  A    1 P 24:184:86382 24:185:86382 24:185:43182
+ ALGO  A    1 P 24:184:86382 24:185:86382 24:185:43182
+-SOLUTION/EPOCHS
+*-------------------------------------------------------------------------------
++SOLUTION/STATISTICS
+*STATISTICAL PARAMETER_________ _______VALUE(S)_______
+ NUMBER OF OBSERVATIONS                        1804024
+ NUMBER OF UNKNOWNS                              82817
+ WEIGHTED SQUARE SUM OF O-C      0.419867589918620E+07
+-SOLUTION/STATISTICS
+*-------------------------------------------------------------------------------
+%ENDSNX 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,16 +41,17 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.CartesianToleranceProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
 import org.orekit.propagation.integration.FieldStateMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
-import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeSpanMap;
@@ -87,7 +88,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * </ul>
  * <p>From these configuration parameters, only the initial state is mandatory. The default
  * propagation settings are in {@link OrbitType#EQUINOCTIAL equinoctial} parameters with
- * {@link PositionAngleType#TRUE true} longitude argument. If the central attraction coefficient
+ * {@link PositionAngleType#ECCENTRIC} longitude argument. If the central attraction coefficient
  * is not explicitly specified, the one used to define the initial orbit will be used.
  * However, specifying only the initial state and perhaps the central attraction coefficient
  * would mean the propagator would use only Keplerian forces. In this case, the simpler {@link
@@ -120,7 +121,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * final T          minStep   = zero.add(0.001);
  * final T          maxStep   = zero.add(500);
  * final T          initStep  = zero.add(60);
- * final double[][] tolerance = FieldNumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
+ * final double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, OrbitType.EQUINOCTIAL);
  * AdaptiveStepsizeFieldIntegrator&lt;T&gt; integrator = new DormandPrince853FieldIntegrator&lt;&gt;(field, minStep, maxStep, tolerance[0], tolerance[1]);
  * integrator.setInitialStepSize(initStep);
  * propagator = new FieldNumericalPropagator&lt;&gt;(field, integrator);
@@ -169,7 +170,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
      * called after creation, the integrated orbit will follow a Keplerian
      * evolution only. The defaults are {@link OrbitType#EQUINOCTIAL}
      * for {@link #setOrbitType(OrbitType) propagation
-     * orbit type} and {@link PositionAngleType#TRUE} for {@link
+     * orbit type} and {@link PositionAngleType#ECCENTRIC} for {@link
      * #setPositionAngleType(PositionAngleType) position angle type}.
      *
      * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
@@ -190,7 +191,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
      * called after creation, the integrated orbit will follow a Keplerian
      * evolution only. The defaults are {@link OrbitType#EQUINOCTIAL}
      * for {@link #setOrbitType(OrbitType) propagation
-     * orbit type} and {@link PositionAngleType#TRUE} for {@link
+     * orbit type} and {@link PositionAngleType#ECCENTRIC} for {@link
      * #setPositionAngleType(PositionAngleType) position angle type}.
      * @param field Field used by default
      * @param integrator numerical integrator to use for propagation.
@@ -207,8 +208,8 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
         setAttitudeProvider(attitudeProvider);
         setMu(field.getZero().add(Double.NaN));
         clearStepHandlers();
-        setOrbitType(OrbitType.EQUINOCTIAL);
-        setPositionAngleType(PositionAngleType.TRUE);
+        setOrbitType(NumericalPropagator.DEFAULT_ORBIT_TYPE);
+        setPositionAngleType(NumericalPropagator.DEFAULT_POSITION_ANGLE_TYPE);
     }
 
     /** Set the flag to ignore or not the creation of a {@link NewtonianAttraction}.
@@ -388,7 +389,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
     public void resetInitialState(final FieldSpacecraftState<T> state) {
         super.resetInitialState(state);
         if (!hasNewtonianAttraction()) {
-            setMu(state.getMu());
+            setMu(state.getOrbit().getMu());
         }
         setStartDate(state.getDate());
     }
@@ -515,9 +516,11 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
             this.jacobian = MathArrays.buildArray(getField(),  6, 6);
             this.recomputingJacobian = true;
 
+            // feed internal event detectors
             for (final ForceModel forceModel : forceModels) {
                 forceModel.getFieldEventDetectors(getField()).forEach(detector -> setUpEventDetector(integrator, detector));
             }
+            getAttitudeProvider().getFieldEventDetectors(getField()).forEach(detector -> setUpEventDetector(integrator, detector));
 
             // default value for Jacobian is identity
             for (int i = 0; i < jacobian.length; ++i) {
@@ -550,7 +553,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
         /** {@inheritDoc} */
         @Override
         public T[] computeDerivatives(final FieldSpacecraftState<T> state) {
-            final T zero = state.getA().getField().getZero();
+            final T zero = state.getMass().getField().getZero();
             currentState = state;
             Arrays.fill(yDot, zero);
             if (recomputingJacobian) {
@@ -647,17 +650,13 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
      * @return a two rows array, row 0 being the absolute tolerance error and row 1
      * being the relative tolerance error
      * @param <T> elements type
+     * @deprecated since 13.0. Use {@link ToleranceProvider} for default and custom tolerances.
      */
-    public static <T extends CalculusFieldElement<T>> double[][] tolerances(final T dP, final FieldOrbit<T> orbit, final OrbitType type) {
+    @Deprecated
+    public static <T extends CalculusFieldElement<T>> double[][] tolerances(final T dP, final FieldOrbit<T> orbit,
+                                                                            final OrbitType type) {
 
-        // estimate the scalar velocity error
-        final FieldPVCoordinates<T> pv = orbit.getPVCoordinates();
-        final T r2 = pv.getPosition().getNormSq();
-        final T v  = pv.getVelocity().getNorm();
-        final T dV = dP.multiply(orbit.getMu()).divide(v.multiply(r2));
-
-        return tolerances(dP, dV, orbit, type);
-
+        return ToleranceProvider.getDefaultToleranceProvider(dP.getReal()).getTolerances(orbit, type, PositionAngleType.TRUE);
     }
 
     /** Estimate tolerance vectors for integrators when propagating in orbits.
@@ -679,51 +678,15 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
      * @return a two rows array, row 0 being the absolute tolerance error and row 1
      * being the relative tolerance error
      * @since 10.3
+     * @deprecated since 13.0. Use {@link ToleranceProvider} for default and custom tolerances.
      */
+    @Deprecated
     public static <T extends CalculusFieldElement<T>> double[][] tolerances(final T dP, final T dV,
-                                                                        final FieldOrbit<T> orbit, final OrbitType type) {
+                                                                            final FieldOrbit<T> orbit,
+                                                                            final OrbitType type) {
 
-        final double[] absTol = new double[7];
-        final double[] relTol = new double[7];
-
-        // we set the mass tolerance arbitrarily to 1.0e-6 kg, as mass evolves linearly
-        // with trust, this often has no influence at all on propagation
-        absTol[6] = 1.0e-6;
-
-        if (type == OrbitType.CARTESIAN) {
-            absTol[0] = dP.getReal();
-            absTol[1] = dP.getReal();
-            absTol[2] = dP.getReal();
-            absTol[3] = dV.getReal();
-            absTol[4] = dV.getReal();
-            absTol[5] = dV.getReal();
-        } else {
-
-            // convert the orbit to the desired type
-            final T[][] jacobian = MathArrays.buildArray(dP.getField(), 6, 6);
-            final FieldOrbit<T> converted = type.convertType(orbit);
-            converted.getJacobianWrtCartesian(PositionAngleType.TRUE, jacobian);
-
-            for (int i = 0; i < 6; ++i) {
-                final  T[] row = jacobian[i];
-                absTol[i] =     row[0].abs().multiply(dP).
-                            add(row[1].abs().multiply(dP)).
-                            add(row[2].abs().multiply(dP)).
-                            add(row[3].abs().multiply(dV)).
-                            add(row[4].abs().multiply(dV)).
-                            add(row[5].abs().multiply(dV)).
-                            getReal();
-                if (Double.isNaN(absTol[i])) {
-                    throw new OrekitException(OrekitMessages.SINGULAR_JACOBIAN_FOR_ORBIT_TYPE, type);
-                }
-            }
-
-        }
-
-        Arrays.fill(relTol, dP.divide(orbit.getPosition().getNormSq().sqrt()).getReal());
-
-        return new double[][] { absTol, relTol };
-
+        return ToleranceProvider.of(CartesianToleranceProvider.of(dP.getReal(), dV.getReal(),
+                CartesianToleranceProvider.DEFAULT_ABSOLUTE_MASS_TOLERANCE)).getTolerances(orbit, type, PositionAngleType.TRUE);
     }
 
 }

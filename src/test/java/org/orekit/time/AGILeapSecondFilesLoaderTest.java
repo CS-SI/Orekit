@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -80,7 +80,7 @@ public class AGILeapSecondFilesLoaderTest {
     private void checkOffset(int year, int month, int day, double offset) {
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate(year, month, day, utc);
-        Assertions.assertEquals(offset, utc.offsetFromTAI(date), 1.0e-10);
+        Assertions.assertEquals(offset, utc.offsetFromTAI(date).toDouble(), 1.0e-10);
     }
 
     private void checkException(String name, OrekitMessages message) {

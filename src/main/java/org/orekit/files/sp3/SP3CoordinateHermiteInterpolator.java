@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,6 +28,12 @@ import org.orekit.time.AbstractTimeInterpolator;
  * As this implementation of interpolation is polynomial, it should be used only with small number of interpolation points
  * (about 10-20 points) in order to avoid <a href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
  * and numerical problems (including NaN appearing).
+ * </p>
+ * <p>
+ * If some clock or clock rate are present in the SP3 files as default values (999999.999999), then they
+ * are replaced by {@code Double.NaN} during parsing, so the interpolation will exhibit NaNs, but the
+ * positions will be properly interpolated.
+ * </p>
  *
  * @author Luc Maisonobe
  * @see HermiteInterpolator

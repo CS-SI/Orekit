@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -64,12 +64,23 @@ public class IGSUtils {
      *
      * <p>
      * This method uses the {@link DataContext#getDefault() default data context}.
-     * If the frame names has a form like IGS##, or ITR##, or ITRF##, or SLR##,
-     * where ## is a two digits number, then this number will be used to build the
-     * appropriate {@link ITRFVersion}. Otherwise (for example if name is
-     * UNDEF or WGS84), then a default {@link
-     * org.orekit.frames.Frames#getITRF(IERSConventions, boolean) ITRF}
-     * will be created.
+     * </p>
+     * <p>
+     * Various frame names are supported:
+     * </p>
+     * <ul>
+     *     <li>IER##, ITR##, ITRF##, IGS##, IGb##, or SLR##, where ## is a two digits number,
+     *         the number will be used to build the appropriate {@link ITRFVersion}</li>
+     *     <li>GCRF (left or right justified) for GCRF inertial frame</li>
+     *     <li>EME00 or EME2K for EME2000 inertial frame</li>
+     *     <li>for all other names (for example if name is UNDEF or WGS84),
+     *     then a default {@link org.orekit.frames.Frames#getITRF(IERSConventions, boolean) ITRF}
+     *     frame will be selected</li>
+     * </ul>
+     * <p>
+     * Note that using inertial frames in classical products like SP3 files is non-standard,
+     * it is supported by Orekit, but may not be supported by other programs, so they should
+     * be used with caution when writing files.
      * </p>
      *
      * @param name of the frame.
@@ -89,9 +100,8 @@ public class IGSUtils {
      * Various frame names are supported:
      * </p>
      * <ul>
-     *     <li>IGS##, or ITR##, or ITRF##, or SLR##,
-     *      where ## is a two digits number, then this number will be used to build the
-     *      appropriate {@link ITRFVersion}</li>
+     *     <li>IER##, ITR##, ITRF##, IGS##, IGb##, or SLR##, where ## is a two digits number,
+     *         the number will be used to build the appropriate {@link ITRFVersion}</li>
      *     <li>GCRF (left or right justified) for GCRF inertial frame</li>
      *     <li>EME00 or EME2K for EME2000 inertial frame</li>
      *     <li>for all other names (for example if name is UNDEF or WGS84),

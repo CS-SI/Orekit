@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -44,13 +44,13 @@ public class AltitudeDetector extends AbstractDetector<AltitudeDetector> {
 
     /** Build a new altitude detector.
      * <p>This simple constructor takes default values for maximal checking
-     *  interval ({@link #DEFAULT_MAXCHECK}) and convergence threshold
+     *  interval ({@link #DEFAULT_MAX_CHECK}) and convergence threshold
      * ({@link #DEFAULT_THRESHOLD}).</p>
      * @param altitude threshold altitude value
      * @param bodyShape body shape with respect to which altitude should be evaluated
      */
     public AltitudeDetector(final double altitude, final BodyShape bodyShape) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, altitude, bodyShape);
+        this(EventDetectionSettings.DEFAULT_MAX_CHECK, altitude, bodyShape);
     }
 
     /** Build a new altitude detector.
@@ -66,27 +66,8 @@ public class AltitudeDetector extends AbstractDetector<AltitudeDetector> {
     public AltitudeDetector(final double maxCheck,
                             final double altitude,
                             final BodyShape bodyShape) {
-        this(maxCheck, DEFAULT_THRESHOLD, altitude, bodyShape);
-    }
-
-    /** Build a new altitude detector.
-     * <p>The maximal interval between altitude checks should
-     * be smaller than the half duration of the minimal pass to handle,
-     * otherwise some short passes could be missed.</p>
-     * <p>The maximal interval between altitude checks should
-     * be smaller than the half duration of the minimal pass to handle,
-     * otherwise some short passes could be missed.</p>
-     * @param maxCheck maximal checking interval (s)
-     * @param threshold convergence threshold (s)
-     * @param altitude threshold altitude value (m)
-     * @param bodyShape body shape with respect to which altitude should be evaluated
-     */
-    public AltitudeDetector(final double maxCheck,
-                            final double threshold,
-                            final double altitude,
-                            final BodyShape bodyShape) {
-        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnDecreasing(),
-             altitude, bodyShape);
+        this(new EventDetectionSettings(maxCheck, EventDetectionSettings.DEFAULT_THRESHOLD, EventDetectionSettings.DEFAULT_MAX_ITER),
+                new StopOnDecreasing(), altitude, bodyShape);
     }
 
     /** Protected constructor with full parameters.
@@ -95,29 +76,24 @@ public class AltitudeDetector extends AbstractDetector<AltitudeDetector> {
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings detection settings
      * @param handler event handler to call at event occurrences
      * @param altitude threshold altitude value (m)
      * @param bodyShape body shape with respect to which altitude should be evaluated
-     * @since 6.1
+     * @since 13.0
      */
-    protected AltitudeDetector(final AdaptableInterval maxCheck, final double threshold,
-                               final int maxIter, final EventHandler handler,
+    protected AltitudeDetector(final EventDetectionSettings detectionSettings, final EventHandler handler,
                                final double altitude,
                                final BodyShape bodyShape) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(detectionSettings, handler);
         this.altitude  = altitude;
         this.bodyShape = bodyShape;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected AltitudeDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                      final int newMaxIter, final EventHandler newHandler) {
-        return new AltitudeDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                    altitude, bodyShape);
+    protected AltitudeDetector create(final EventDetectionSettings detectionSettings, final EventHandler newHandler) {
+        return new AltitudeDetector(detectionSettings, newHandler, altitude, bodyShape);
     }
 
     /** Get the threshold altitude value.

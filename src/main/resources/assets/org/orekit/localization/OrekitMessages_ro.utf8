@@ -451,6 +451,9 @@ NO_CACHED_ENTRIES = nu există înregistrări în cache
 # generated entries not sorted: {0} > {1} by {2,number,0.0##############E0} s
 NON_CHRONOLOGICALLY_SORTED_ENTRIES = înregistrările generate nu sunt în ordine cronologică: {0} > {1} cu {2,number,0.0##############E0} s
 
+# moving transition date from {0} to {1} collides with existing transition at {2}
+TRANSITION_DATES_COLLISION = <MISSING TRANSLATION>
+
 # no data generated around date: {0}
 NO_DATA_GENERATED = nu există informații generate în jurul datei: {0}
 
@@ -591,6 +594,12 @@ UNKNOWN_CLOCK_DATA_TYPE = tip de date de ceas necunoscut {0}
 
 # unknown satellite antenna code {0}
 UNKNOWN_SATELLITE_ANTENNA_CODE = codul {0} de antenă satelit este necunoscut
+
+# unknown GNSS antenna, name: {0}, radome code: {1}, serial number: {2}
+UNKNOWN_GNSS_ANTENNA = <MISSING TRANSLATION>
+
+# unknown GNSS frequency, system: {0}, frequency code: {1} (line {2}, file {3})
+UNKNOWN_GNSS_FREQUENCY = <MISSING TRANSLATION>
 
 # frequency {0} is not supported by antenna {1}
 UNSUPPORTED_FREQUENCY_FOR_ANTENNA = frecvența {0} nu este luată în considerare de antena {1}
@@ -828,6 +837,9 @@ NO_UNSCENTED_TRANSFORM_CONFIGURED = nicio transformare unscented configurată
 # value is not strictly positive: {0}
 NOT_STRICTLY_POSITIVE = valoarea nu este strict pozitivă: {0}
 
+# value is not strictly positive: {0}
+NOT_POSITIVE = valoarea nu este pozitivă: {0}
+
 # transform from {0} to {1} is not implemented
 UNSUPPORTED_TRANSFORM = transformarea de la {0} la {1} nu este implementată
 
@@ -897,3 +909,17 @@ PROPAGATOR_BUILDER_NOT_CLONEABLE = <MISSING TRANSLATION>
 # field "{0}" is too long, maximum length is {1} characters
 FIELD_TOO_LONG = <MISSING TRANSLATION>
 
+# Process covariance expecting dimension {0}, got {1}
+WRONG_PROCESS_COVARIANCE_DIMENSION = <MISSING TRANSLATION>
+
+# Measurement covariance expecting dimension {0}, got {1}
+WRONG_MEASUREMENT_COVARIANCE_DIMENSION = <MISSING TRANSLATION>
+
+# cannot parse data {0}
+CANNOT_PARSE_DATA = <MISSING TRANSLATION>
+
+# covariance must be square
+COVARIANCE_MUST_BE_SQUARE = <MISSING TRANSLATION>
+
+# state vector (dimension {0}) and covariance (dimension {1}) are inconsistent
+INCONSISTENT_STATE_DIMENSIONS = <MISSING TRANSLATION>

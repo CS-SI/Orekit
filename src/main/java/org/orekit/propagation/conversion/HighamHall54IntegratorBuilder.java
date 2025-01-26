@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,49 +16,44 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.HighamHall54Integrator;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.ToleranceProvider;
 
 /** Builder for HighamHall54Integrator.
  * @author Pascal Parraud
  * @since 6.0
  */
-public class HighamHall54IntegratorBuilder extends AbstractVariableStepIntegratorBuilder {
+public class HighamHall54IntegratorBuilder extends AbstractVariableStepIntegratorBuilder<HighamHall54Integrator>
+        implements ExplicitRungeKuttaIntegratorBuilder {
 
-    /** Build a new instance. Should only use this constructor with {@link Orbit}.
+    /**
+     * Build a new instance using default integration tolerances.
      * @param minStep minimum step size (s)
      * @param maxStep maximum step size (s)
      * @param dP position error (m)
      * @see HighamHall54Integrator
-     * @see NumericalPropagator#tolerances(double, Orbit, OrbitType)
      */
     public HighamHall54IntegratorBuilder(final double minStep, final double maxStep, final double dP) {
-        super(minStep, maxStep, dP);
+        super(minStep, maxStep, getDefaultToleranceProvider(dP));
     }
 
     /** Build a new instance.
      * @param minStep minimum step size (s)
      * @param maxStep maximum step size (s)
-     * @param dP position error (m)
-     * @param dV velocity error (m/s)
+     * @param toleranceProvider integration tolerance provider
      *
      * @since 12.2
      * @see HighamHall54Integrator
-     * @see NumericalPropagator#tolerances(double, double, Orbit, OrbitType)
      */
-    public HighamHall54IntegratorBuilder(final double minStep, final double maxStep, final double dP,
-                                         final double dV) {
-        super(minStep, maxStep, dP, dV);
+    public HighamHall54IntegratorBuilder(final double minStep, final double maxStep,
+                                         final ToleranceProvider toleranceProvider) {
+        super(minStep, maxStep, toleranceProvider);
     }
 
     /** {@inheritDoc} */
     @Override
-    public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType) {
-        final double[][] tol = getTolerances(orbit, orbitType);
-        return new HighamHall54Integrator(minStep, maxStep, tol[0], tol[1]);
+    protected HighamHall54Integrator buildIntegrator(final double[][] tolerances) {
+        return new HighamHall54Integrator(getMinStep(), getMaxStep(), tolerances[0], tolerances[1]);
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,13 +45,13 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
-     * ({@link #DEFAULT_MAXCHECK}) and convergence threshold ({@link
+     * ({@link #DEFAULT_MAX_CHECK}) and convergence threshold ({@link
      * #DEFAULT_THRESHOLD}).</p>
      * @param body body on which the longitude is defined
      * @param longitude longitude to be crossed
      */
     public LongitudeCrossingDetector(final OneAxisEllipsoid body, final double longitude) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, body, longitude);
+        this(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, body, longitude);
     }
 
     /** Build a detector.
@@ -62,7 +62,7 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
      */
     public LongitudeCrossingDetector(final double maxCheck, final double threshold,
                                     final OneAxisEllipsoid body, final double longitude) {
-        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
+        this(new EventDetectionSettings(maxCheck, threshold, DEFAULT_MAX_ITER), new StopOnIncreasing(),
              body, longitude);
     }
 
@@ -72,25 +72,22 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param body body on which the longitude is defined
      * @param longitude longitude to be crossed
+     * @since 13.0
      */
-    protected LongitudeCrossingDetector(final AdaptableInterval maxCheck, final double threshold,
-                                        final int maxIter, final EventHandler handler,
+    protected LongitudeCrossingDetector(final EventDetectionSettings detectionSettings, final EventHandler handler,
                                         final OneAxisEllipsoid body, final double longitude) {
 
-        super(maxCheck, threshold, maxIter, handler);
+        super(detectionSettings, handler);
 
         this.body      = body;
         this.longitude = longitude;
 
         // we filter out spurious longitude crossings occurring at the antimeridian
-        final RawLongitudeCrossingDetector raw = new RawLongitudeCrossingDetector(maxCheck, threshold, maxIter,
-                                                                                  new ContinueOnEvent());
+        final RawLongitudeCrossingDetector raw = new RawLongitudeCrossingDetector(detectionSettings, new ContinueOnEvent());
         final EnablingPredicate predicate =
             (state, detector, g) -> FastMath.abs(g) < 0.5 * FastMath.PI;
         this.filtering = new EventEnablingPredicateFilter(raw, predicate);
@@ -99,10 +96,9 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
 
     /** {@inheritDoc} */
     @Override
-    protected LongitudeCrossingDetector create(final AdaptableInterval newMaxCheck, final double newThreshold, final int newMaxIter,
+    protected LongitudeCrossingDetector create(final EventDetectionSettings detectionSettings,
                                                final EventHandler newHandler) {
-        return new LongitudeCrossingDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                             body, longitude);
+        return new LongitudeCrossingDetector(detectionSettings, newHandler, body, longitude);
     }
 
     /** Get the body on which the geographic zone is defined.
@@ -120,7 +116,9 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
     }
 
     /**  {@inheritDoc} */
+    @Override
     public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        super.init(s0, t);
         filtering.init(s0, t);
     }
 
@@ -152,22 +150,19 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
          * API with the various {@code withXxx()} methods to set up the instance
          * in a readable manner without using a huge amount of parameters.
          * </p>
-         * @param maxCheck maximum checking interval
-         * @param threshold convergence threshold (s)
-         * @param maxIter maximum number of iterations in the event time search
+         * @param detectionSettings event detection settings
          * @param handler event handler to call at event occurrences
          */
-        protected RawLongitudeCrossingDetector(final AdaptableInterval maxCheck, final double threshold, final int maxIter,
+        protected RawLongitudeCrossingDetector(final EventDetectionSettings detectionSettings,
                                                final EventHandler handler) {
-            super(maxCheck, threshold, maxIter, handler);
+            super(detectionSettings, handler);
         }
 
         /** {@inheritDoc} */
         @Override
-        protected RawLongitudeCrossingDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                                      final int newMaxIter,
+        protected RawLongitudeCrossingDetector create(final EventDetectionSettings detectionSettings,
                                                       final EventHandler newHandler) {
-            return new RawLongitudeCrossingDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
+            return new RawLongitudeCrossingDetector(detectionSettings, newHandler);
         }
 
         /** Compute the value of the detection function.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -48,6 +48,7 @@ import org.orekit.propagation.analytical.Ephemeris;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.AbstractTimeInterpolator;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.AbsolutePVCoordinatesTest;
 import org.orekit.utils.Constants;
@@ -251,7 +252,9 @@ class OrbitBlenderTest {
         final OrbitBlender                         orbitBlender = new OrbitBlender(quadratic, propagator, sergeiFrame);
 
         final TimeInterpolator<SpacecraftState> stateInterpolator =
-                new SpacecraftStateInterpolator(sergeiFrame, orbitBlender, null, null, null, null);
+                new SpacecraftStateInterpolator(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                                                AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+                                                sergeiFrame, orbitBlender, null, null, null, null);
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
@@ -287,12 +290,12 @@ class OrbitBlenderTest {
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
-                            0.05106377388516059,
-                            0.03671310671380644,
-                            0.05451875412478483,
-                            0.03654640625064279,
-                            0.09412869297314610,
-                            0.06642996306635666,
+                            0.1162978884753,
+                            0.0588245986331,
+                            0.1184075880186,
+                            0.0640733000785,
+                            0.2095374397978,
+                            0.0901515566884,
                             1e-13, false);
     }
 
@@ -316,16 +319,18 @@ class OrbitBlenderTest {
         final OrbitBlender orbitBlender = new OrbitBlender(quadratic, propagator, sergeiFrame);
 
         final TimeInterpolator<SpacecraftState> stateInterpolator =
-                new SpacecraftStateInterpolator(sergeiFrame, orbitBlender, null, null, null, null);
+                new SpacecraftStateInterpolator(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                                                AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+                                                sergeiFrame, orbitBlender, null, null, null, null);
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
-                            0.05106377388516059,
-                            0.03671310671380644,
-                            0.05451875412478483,
-                            0.03654640625064279,
-                            0.09412869297314610,
-                            0.06642996306635666,
+                            0.1162978884753,
+                            0.0588245986330,
+                            0.1184075880186,
+                            0.0640733000785,
+                            0.2095374397978,
+                            0.0901515566884,
                             1e-13, false);
     }
 
@@ -376,7 +381,9 @@ class OrbitBlenderTest {
         final OrbitBlender orbitBlender = new OrbitBlender(quadratic, propagator, sergeiFrame);
 
         final TimeInterpolator<SpacecraftState> stateInterpolator =
-                new SpacecraftStateInterpolator(sergeiFrame, orbitBlender, null, null, null, null);
+                new SpacecraftStateInterpolator(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                                                AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+                                                sergeiFrame, orbitBlender, null, null, null, null);
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,

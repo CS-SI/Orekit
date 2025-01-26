@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,7 +35,9 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.propagation.events.FieldEventsLogger.FieldLoggedEvent;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
+import org.orekit.propagation.events.intervals.AdaptableInterval;
 import org.orekit.propagation.events.intervals.ApsideDetectionAdaptableIntervalFactory;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -57,7 +59,7 @@ class FieldApsideDetectorTest {
                                          withThreshold(field.getZero().newInstance(1.0e-12)).
                                          withHandler(new FieldContinueOnEvent<T>());
 
-        Assertions.assertEquals(600.0, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(600.0, detector.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-12, detector.getThreshold().getReal(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
 
@@ -99,8 +101,8 @@ class FieldApsideDetectorTest {
     @Test
     void testAnomalyAwareMaxCheck() {
         final AdaptableInterval adaptableInterval = ApsideDetectionAdaptableIntervalFactory
-                .getForwardApsideDetectionAdaptableInterval();
-        doTestMaxcheck(Binary64Field.getInstance(), state -> adaptableInterval.currentInterval(state.toSpacecraftState()),
+                .getApsideDetectionAdaptableInterval();
+        doTestMaxcheck(Binary64Field.getInstance(), (state, isForward) -> adaptableInterval.currentInterval(state.toSpacecraftState(), true),
                 643);
     }
 
@@ -141,25 +143,31 @@ class FieldApsideDetectorTest {
                                                     Constants.EIGEN5C_EARTH_C60);
     }
 
-    private class CountingApsideDetector<T extends CalculusFieldElement<T>> extends FieldAdapterDetector<T> {
+    private class CountingApsideDetector<T extends CalculusFieldElement<T>> implements FieldDetectorModifier<T> {
 
+        private final FieldEventDetector<T> detector;
         private int count;
         
         public CountingApsideDetector(final FieldPropagator<T> propagator, final FieldAdaptableInterval<T> maxCheck) {
-            super(new FieldApsideDetector<>(propagator.getInitialState().getOrbit()).
-                  withMaxCheck(maxCheck).
-                  withThreshold(propagator.getInitialState().getDate().getField().getZero().newInstance(1.0e-12)).
-                  withHandler(new FieldContinueOnEvent<>()));
+            this.detector = new FieldApsideDetector<>(propagator.getInitialState().getOrbit()).
+                    withMaxCheck(maxCheck).
+                    withThreshold(propagator.getInitialState().getDate().getField().getZero().newInstance(1.0e-12)).
+                    withHandler(new FieldContinueOnEvent<>());
+        }
+
+        @Override
+        public FieldEventDetector<T> getDetector() {
+            return detector;
         }
 
         public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
-            super.init(s0, t);
+            FieldDetectorModifier.super.init(s0, t);
             count = 0;
         }
 
         public T g(final FieldSpacecraftState<T> s) {
             ++count;
-            return super.g(s);
+            return FieldDetectorModifier.super.g(s);
         }
 
     }

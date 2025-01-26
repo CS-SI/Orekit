@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,19 +16,25 @@
  */
 package org.orekit.propagation.events;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.util.FastMath;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
 import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
+import org.orekit.propagation.events.intervals.AdaptableInterval;
+import org.orekit.propagation.events.intervals.DateDetectionAdaptableIntervalFactory;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeStamped;
@@ -47,7 +53,7 @@ import org.orekit.utils.ParameterDriver;
 public interface EventDetectorsProvider {
 
     /** Accuracy of switching events dates (s). */
-    double DATATION_ACCURACY = 1.0e-10;
+    double DATATION_ACCURACY = DateDetector.DEFAULT_THRESHOLD;
 
     /** Get the discrete events related to the model.
      *
@@ -85,34 +91,16 @@ public interface EventDetectorsProvider {
         final ArrayList<TimeStamped> transitionDates = new ArrayList<>();
         for (final ParameterDriver driver : parameterDrivers) {
             // Get the transitions' dates from the TimeSpanMap
-            for (AbsoluteDate date : driver.getTransitionDates()) {
-                transitionDates.add(date);
-            }
+            transitionDates.addAll(Arrays.asList(driver.getTransitionDates()));
         }
         // Either force model does not have any parameter driver or only contains parameter driver with only 1 span
-        if (transitionDates.size() == 0) {
+        if (transitionDates.isEmpty()) {
             return Stream.empty();
 
         } else {
-            // Sort transition dates chronologically
-            transitionDates.sort(null);
-
-            // Find shortest duration between 2 consecutive dates
-            double shortestDuration = AbstractDetector.DEFAULT_MAXCHECK;
-            for (int i = 1; i < transitionDates.size(); i++) {
-                // Duration from current to previous date
-                shortestDuration = FastMath.min(shortestDuration,
-                                                transitionDates.get(i).durationFrom(transitionDates.get(i - 1)));
-            }
-
             // Create the date detector containing all transition dates and return it
-            // Max check set to half the shortest duration between 2 consecutive dates
-            final DateDetector datesDetector = new DateDetector(transitionDates.toArray(new TimeStamped[0])).
-                            withMaxCheck(0.5 * shortestDuration).
-                            withMinGap(0.5 * shortestDuration).
-                            withThreshold(DATATION_ACCURACY).
-                            withHandler(new ResetDerivativesOnEvent());
-            return Stream.of(datesDetector);
+            final DateDetector detector = getDateDetector(transitionDates.toArray(new TimeStamped[0]));
+            return Stream.of(detector);
         }
     }
 
@@ -129,46 +117,70 @@ public interface EventDetectorsProvider {
      * @param <T> extends CalculusFieldElement&lt;T&gt;
      * @return stream of event detectors
      */
-    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field, List<ParameterDriver> parameterDrivers) {
+    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field,
+                                                                                                     List<ParameterDriver> parameterDrivers) {
         // If force model does not have parameter Driver, an empty stream is given as results
         final ArrayList<AbsoluteDate> transitionDates = new ArrayList<>();
         for (ParameterDriver driver : parameterDrivers) {
             // Get the transitions' dates from the TimeSpanMap
-            for (AbsoluteDate date : driver.getTransitionDates()) {
-                transitionDates.add(date);
-            }
+            transitionDates.addAll(Arrays.asList(driver.getTransitionDates()));
         }
         // Either force model does not have any parameter driver or only contains parameter driver with only 1 span
-        if (transitionDates.size() == 0) {
+        if (transitionDates.isEmpty()) {
             return Stream.empty();
 
         } else {
-            // Sort transition dates chronologically
-            transitionDates.sort(null);
-
-            // Find shortest duration between 2 consecutive dates
-            double shortestDuration = AbstractDetector.DEFAULT_MAXCHECK;
-            for (int i = 1; i < transitionDates.size(); i++) {
-                // Duration from current to previous date
-                shortestDuration = FastMath.min(shortestDuration,
-                                                transitionDates.get(i).durationFrom(transitionDates.get(i - 1)));
-            }
-
             // Initialize the date detector
-            // Max check set to half the shortest duration between 2 consecutive dates
-            @SuppressWarnings("unchecked")
-            final FieldDateDetector<T> datesDetector =
-                            new FieldDateDetector<>(field, (FieldTimeStamped<T>[]) Array.newInstance(FieldTimeStamped.class, 0)).
-                            withMaxCheck(0.5 * shortestDuration).
-                            withMinGap(0.5 * shortestDuration).
-                            withThreshold(field.getZero().newInstance(DATATION_ACCURACY)).
-                            withHandler(new FieldResetDerivativesOnEvent<>());
-            // Add all transitions' dates to the date detector
-            for (int i = 0; i < transitionDates.size(); i++) {
-                datesDetector.addEventDate(new FieldAbsoluteDate<>(field, transitionDates.get(i)));
-            }
+            final FieldDateDetector<T> datesDetector = getFieldDateDetector(field,
+                    transitionDates.toArray(new AbsoluteDate[0]));
             // Return the detectors
             return Stream.of(datesDetector);
         }
+    }
+
+    /**
+     * Method building dates' detector.
+     * @param timeStampeds dates to detect
+     * @return dates detector
+     * @since 13.0
+     */
+    default DateDetector getDateDetector(final TimeStamped... timeStampeds) {
+        final AdaptableInterval maxCheck = DateDetectionAdaptableIntervalFactory.getDatesDetectionInterval(
+                timeStampeds);
+        final double minGap = DateDetectionAdaptableIntervalFactory.getMinGap(timeStampeds) / 2;
+        final DateDetector dateDetector = new DateDetector().withMaxCheck(maxCheck).withMinGap(minGap).
+                withThreshold(DATATION_ACCURACY).withHandler(new ResetDerivativesOnEvent());
+        final SortedSet<AbsoluteDate> sortedDates = new TreeSet<>(new ChronologicalComparator());
+        sortedDates.addAll(Arrays.stream(timeStampeds).map(TimeStamped::getDate).collect(Collectors.toList()));
+        for (final AbsoluteDate date : sortedDates) {
+            dateDetector.addEventDate(date);
+        }
+        return dateDetector;
+    }
+
+    /**
+     * Method building dates' detector.
+     * @param field field
+     * @param timeStampeds dates to detect
+     * @param <T> field type
+     * @return dates detector
+     * @since 13.0
+     */
+    default <T extends CalculusFieldElement<T>> FieldDateDetector<T> getFieldDateDetector(final Field<T> field,
+                                                                                          final TimeStamped... timeStampeds) {
+        @SuppressWarnings("unchecked")
+        final FieldAdaptableInterval<T> maxCheck = DateDetectionAdaptableIntervalFactory.getDatesDetectionFieldInterval(
+                Arrays.stream(timeStampeds).map(timeStamped -> new FieldAbsoluteDate<>(field, timeStamped.getDate()))
+                        .toArray(FieldTimeStamped[]::new));
+        final double minGap = DateDetectionAdaptableIntervalFactory.getMinGap(timeStampeds) / 2;
+        final FieldDateDetector<T> fieldDateDetector = new FieldDateDetector<>(field).
+                withHandler(new FieldResetDerivativesOnEvent<>()).withMaxCheck(maxCheck).withMinGap(minGap).
+                withThreshold(field.getZero().newInstance(DATATION_ACCURACY));
+        final SortedSet<AbsoluteDate> sortedDates = new TreeSet<>(new ChronologicalComparator());
+        sortedDates.addAll(Arrays.stream(timeStampeds).map(TimeStamped::getDate).collect(Collectors.toList()));
+        for (final AbsoluteDate date : sortedDates) {
+            fieldDateDetector.addEventDate(new FieldAbsoluteDate<>(field, date));
+        }
+        return fieldDateDetector;
     }
 }

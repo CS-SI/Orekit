@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ import org.orekit.Utils;
 import org.orekit.data.BodiesElements;
 import org.orekit.data.DataSource;
 import org.orekit.data.FundamentalNutationArguments;
-import org.orekit.files.sinex.SinexLoader;
+import org.orekit.files.sinex.SinexParser;
 import org.orekit.files.sinex.Station;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -45,7 +45,9 @@ public class TectonicsDisplacementTest {
     public void testLviv() throws URISyntaxException {
         final URL url = TectonicsDisplacementTest.class.getClassLoader().
                         getResource("sinex/SLRF2008_150928_2015.09.28.snx");
-        final Map<String, Station>         stations    = new SinexLoader(new DataSource(url.toURI())).getStations();
+        final Map<String, Station>         stations    = new SinexParser(TimeScalesFactory.getTimeScales()).
+                                                         parse(new DataSource(url.toURI())).
+                                                         getStations();
         final IERSConventions              conventions = IERSConventions.IERS_2010;
         final TimeScale                    utc         = TimeScalesFactory.getUTC();
         final TimeScale                    ut1         = TimeScalesFactory.getUT1(conventions, false);

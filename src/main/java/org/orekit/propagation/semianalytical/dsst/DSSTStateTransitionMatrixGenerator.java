@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -99,9 +99,9 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
 
     /** Register an observer for partial derivatives.
      * <p>
-     * The observer {@link DSSTPartialsObserver#partialsComputed(double[], double[]) partialsComputed}
+     * The observer {@link DSSTPartialsObserver#partialsComputed(SpacecraftState, RealMatrix, double[])} partialsComputed}
      * method will be called when partial derivatives are computed, as a side effect of
-     * calling {@link #generate(SpacecraftState)}
+     * calling {@link #computePartials(SpacecraftState)} (SpacecraftState)}
      * </p>
      * @param name name of the parameter driver this observer is interested in (may be null)
      * @param observer observer to register
@@ -304,6 +304,7 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
     }
 
     /** Interface for observing partials derivatives. */
+    @FunctionalInterface
     public interface DSSTPartialsObserver {
 
         /** Callback called when partial derivatives have been computed.

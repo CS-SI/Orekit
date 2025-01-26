@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.estimation.measurements.gnss;
 
 import org.hipparchus.util.MathArrays;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.GnssSignal;
 import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.SatelliteSystem;
 
@@ -60,19 +60,19 @@ public class NarrowLaneCombination extends AbstractDualFrequencyCombination {
 
     /** {@inheritDoc} */
     @Override
-    protected double getCombinedValue(final double obs1, final Frequency f1,
-                                      final double obs2, final Frequency f2) {
+    protected double getCombinedValue(final double obs1, final GnssSignal s1,
+                                      final double obs2, final GnssSignal s2) {
         // Get the ration f/f0
-        final double ratioF1 = f1.getRatio();
-        final double ratioF2 = f2.getRatio();
+        final double ratioF1 = s1.getRatio();
+        final double ratioF2 = s2.getRatio();
         // Perform combination
         return MathArrays.linearCombination(ratioF1, obs1, ratioF2, obs2) / (ratioF1 + ratioF2);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected double getCombinedFrequency(final Frequency f1, final Frequency f2) {
-        return f1.getMHzFrequency() + f2.getMHzFrequency();
+    protected double getCombinedFrequency(final GnssSignal s1, final GnssSignal s2) {
+        return s1.getFrequency() + s2.getFrequency();
     }
 
 }

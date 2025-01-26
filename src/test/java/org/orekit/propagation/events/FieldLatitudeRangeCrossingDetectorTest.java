@@ -1,4 +1,4 @@
-/* Copyright 2023-2024 Alberto Ferrero
+/* Copyright 2023-2025 Alberto Ferrero
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -59,7 +59,7 @@ public class FieldLatitudeRangeCrossingDetectorTest {
                 earth, FastMath.toRadians(50.0), FastMath.toRadians(60.0)).
                 withHandler(new FieldContinueOnEvent<>());
 
-        Assertions.assertEquals(60.0, d.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(60.0, d.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-6, d.getThreshold().getReal(), 1.0e-15);
         Assertions.assertEquals(50.0, FastMath.toDegrees(d.getFromLatitude()), 1.0e-14);
         Assertions.assertEquals(60.0, FastMath.toDegrees(d.getToLatitude()), 1.0e-14);
@@ -126,7 +126,7 @@ public class FieldLatitudeRangeCrossingDetectorTest {
                     earth, FastMath.toRadians(82.0), FastMath.toRadians(87.0)).
                 withHandler(new FieldContinueOnEvent<>());
 
-        Assertions.assertEquals(10.0, d.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(10.0, d.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-6, d.getThreshold().getReal(), 1.0e-15);
         Assertions.assertEquals(82.0, FastMath.toDegrees(d.getFromLatitude()), 1.0e-14);
         Assertions.assertEquals(87.0, FastMath.toDegrees(d.getToLatitude()), 1.0e-14);

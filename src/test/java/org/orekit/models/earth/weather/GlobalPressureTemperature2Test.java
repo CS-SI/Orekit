@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,129 +32,201 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.models.earth.troposphere.AzimuthalGradientCoefficients;
-import org.orekit.models.earth.troposphere.FieldAzimuthalGradientCoefficients;
 import org.orekit.models.earth.troposphere.FieldViennaACoefficients;
 import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.models.earth.troposphere.ViennaACoefficients;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 
 public class GlobalPressureTemperature2Test {
 
-    private static double epsilon = 1.0e-12;
+    private static final double epsilon = 1.0e-12;
 
     @Test
-    public void testProvidedParameters() throws IOException, URISyntaxException {
+    public void testMatlabRef0() throws IOException, URISyntaxException {
 
         Utils.setDataRoot("regular-data");
 
-        // Site Vienna: latitude:  48.20°N
-        //              longitude: 16.37°E
-        //              height:    156 m
-        //
-        // Date: 2 August 2012
-        //
-        // Expected outputs are given by the Department of Geodesy and Geoinformation of the Vienna University.
-        // Expected parameters : temperature -> 22.12 °C
-        //                       pressure    -> 1002.56 hPa
-        //                       e           -> 15.63 hPa
-        //                       ah          -> 0.0012647
-        //                       aw          -> 0.0005726
-        //
-        // We test the fiability of our implementation by comparing our output values with
-        // the ones obtained by the Vienna University.
-
+        // reference output obtained by running TU-Wien https://vmf.geo.tuwien.ac.at/codes/gpt2.m matlab script
         final double latitude  = FastMath.toRadians(48.20);
         final double longitude = FastMath.toRadians(16.37);
         final double height    = 156.0;
-        final AbsoluteDate date = AbsoluteDate.createMJDDate(56141, 0.0, TimeScalesFactory.getUTC());
-        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/gpt2_5_extract.grd");
+        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(4596.5 * Constants.JULIAN_DAY);
+        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/gpt2_5.grd");
         final GlobalPressureTemperature2 model =
-                        new GlobalPressureTemperature2(new DataSource(url.toURI()),
-                                                       TimeScalesFactory.getUTC());
+                        new GlobalPressureTemperature2(new DataSource(url.toURI()));
 
         final GeodeticPoint                 location = new GeodeticPoint(latitude, longitude, height);
         final ViennaACoefficients           a        = model.getA(location, date);
-        final PressureTemperatureHumidity   pth      = model.getWeatherParamerers(location, date);
-        final AzimuthalGradientCoefficients gradient = model.getGradientCoefficients(location, date);
+        final PressureTemperatureHumidity   pth      = model.getWeatherParameters(location, date);
 
-        Assertions.assertEquals(0.0012647,      a.getAh(),                   1.1e-7);
-        Assertions.assertEquals(0.0005726,      a.getAw(),                   8.6e-8);
-        Assertions.assertEquals(273.15 + 22.12, pth.getTemperature(),        2.3e-1);
-        Assertions.assertEquals(1002.56,        TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getPressure()),           7.4e-1);
-        Assertions.assertEquals(15.63,          TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getWaterVaporPressure()), 5.0e-2);
-        Assertions.assertTrue(Double.isNaN(pth.getTm()));
-        Assertions.assertTrue(Double.isNaN(pth.getLambda()));
-        Assertions.assertNull(gradient);
+        Assertions.assertEquals(0.001264669,           a.getAh(),                   1.0e-9);
+        Assertions.assertEquals(0.000572557,           a.getAw(),                   1.0e-9);
+        Assertions.assertEquals(273.15 + 22.121274184, pth.getTemperature(),        1.0e-9);
+        Assertions.assertEquals(1002.555031902,        TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getPressure()),           1.0e-9);
+        Assertions.assertEquals(15.625300653,          TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getWaterVaporPressure()), 1.0e-9);
 
     }
 
     @Test
-    public void testFieldProvidedParameters() throws IOException, URISyntaxException {
-        doTestFieldProvidedParameters(Binary64Field.getInstance());
+    public void testMatlabRef1() throws IOException, URISyntaxException {
+
+        Utils.setDataRoot("regular-data");
+
+        // reference output obtained by running TU-Wien https://vmf.geo.tuwien.ac.at/codes/gpt2.m matlab script
+        final double latitude  = FastMath.toRadians(77.5);
+        final double longitude = FastMath.toRadians(137.5);
+        final double height    = 0.0;
+        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(7395 * Constants.JULIAN_DAY);
+        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/gpt2_5.grd");
+        final GlobalPressureTemperature2 model =
+                        new GlobalPressureTemperature2(new DataSource(url.toURI()));
+
+        final GeodeticPoint                 location = new GeodeticPoint(latitude, longitude, height);
+        final ViennaACoefficients           a        = model.getA(location, date);
+        final PressureTemperatureHumidity   pth      = model.getWeatherParameters(location, date);
+
+        Assertions.assertEquals(0.001174547,           a.getAh(),                   1.0e-9);
+        Assertions.assertEquals(0.000579181,           a.getAw(),                   1.0e-9);
+        Assertions.assertEquals(273.15 - 19.053324536, pth.getTemperature(),        1.0e-9);
+        Assertions.assertEquals(1020.047182276,        TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getPressure()),           1.0e-9);
+        Assertions.assertEquals(1.189457053,           TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getWaterVaporPressure()), 1.0e-9);
+
     }
 
-    protected <T extends CalculusFieldElement<T>> void doTestFieldProvidedParameters(final Field<T> field)
+    @Test
+    public void testMatlabRef2() throws IOException, URISyntaxException {
+
+        Utils.setDataRoot("regular-data");
+
+        // reference output obtained by running TU-Wien https://vmf.geo.tuwien.ac.at/codes/gpt2.m matlab script
+        final double latitude  = FastMath.toRadians(80.0);
+        final double longitude = FastMath.toRadians(120.0);
+        final double height    = 100.0;
+        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(7395 * Constants.JULIAN_DAY);
+        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/gpt2_5.grd");
+        final GlobalPressureTemperature2 model =
+                        new GlobalPressureTemperature2(new DataSource(url.toURI()));
+
+        final GeodeticPoint                 location = new GeodeticPoint(latitude, longitude, height);
+        final ViennaACoefficients           a        = model.getA(location, date);
+        final PressureTemperatureHumidity   pth      = model.getWeatherParameters(location, date);
+
+        Assertions.assertEquals(0.001172082,           a.getAh(),                   1.0e-9);
+        Assertions.assertEquals(0.000582310,           a.getAw(),                   1.0e-9);
+        Assertions.assertEquals(273.15 - 20.146149484, pth.getTemperature(),        1.0e-9);
+        Assertions.assertEquals(1005.468561351,        TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getPressure()),           1.0e-9);
+        Assertions.assertEquals(1.002152409,           TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getWaterVaporPressure()), 1.0e-9);
+
+    }
+
+    @Test
+    public void testFieldMatlabRef0() throws IOException, URISyntaxException {
+        doTestFieldMatlabRef0(Binary64Field.getInstance());
+    }
+
+    protected <T extends CalculusFieldElement<T>> void doTestFieldMatlabRef0(final Field<T> field)
         throws IOException, URISyntaxException {
 
         Utils.setDataRoot("regular-data");
 
-        // Site Vienna: latitude:  48.20°N
-        //              longitude: 16.37°E
-        //              height:    156 m
-        //
-        // Date: 2 August 2012
-        //
-        // Expected outputs are given by the Department of Geodesy and Geoinformation of the Vienna University.
-        // Expected parameters : temperature -> 22.12 °C
-        //                       pressure    -> 1002.56 hPa
-        //                       e           -> 15.63 hPa
-        //                       ah          -> 0.0012647
-        //                       aw          -> 0.0005726
-        //
-        // We test the fiability of our implementation by comparing our output values with
-        // the ones obtained by the Vienna University.
-
+        // reference output obtained by running TU-Wien https://vmf.geo.tuwien.ac.at/codes/gpt2.m matlab script
         final T latitude  = FastMath.toRadians(field.getZero().newInstance(48.20));
         final T longitude = FastMath.toRadians(field.getZero().newInstance(16.37));
         final T height    = field.getZero().newInstance(156.0);
-        final FieldAbsoluteDate<T> date = FieldAbsoluteDate.createMJDDate(56141, field.getZero().newInstance(0.0), TimeScalesFactory.getUTC());
-        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/gpt2_5_extract.grd");
+        final FieldAbsoluteDate<T> date = FieldAbsoluteDate.getJ2000Epoch(field).shiftedBy(4596.5 * Constants.JULIAN_DAY);
+        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/gpt2_5.grd");
         final GlobalPressureTemperature2 model =
-                        new GlobalPressureTemperature2(new DataSource(url.toURI()),
-                                                       TimeScalesFactory.getUTC());
+                        new GlobalPressureTemperature2(new DataSource(url.toURI()));
 
         final FieldGeodeticPoint<T>                 location = new FieldGeodeticPoint<>(latitude, longitude, height);
         final FieldViennaACoefficients<T>           a        = model.getA(location, date);
-        final FieldPressureTemperatureHumidity<T>   pth      = model.getWeatherParamerers(location, date);
-        final FieldAzimuthalGradientCoefficients<T> gradient = model.getGradientCoefficients(location, date);
+        final FieldPressureTemperatureHumidity<T>   pth      = model.getWeatherParameters(location, date);
 
-        Assertions.assertEquals(0.0012647,      a.getAh().getReal(),                   1.1e-7);
-        Assertions.assertEquals(0.0005726,      a.getAw().getReal(),                   8.6e-8);
-        Assertions.assertEquals(273.15 + 22.12, pth.getTemperature().getReal(),        2.3e-1);
-        Assertions.assertEquals(1002.56,        TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getPressure()).getReal(),           7.4e-1);
-        Assertions.assertEquals(15.63,          TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getWaterVaporPressure()).getReal(), 5.0e-2);
-        Assertions.assertTrue(pth.getTm().isNaN());
-        Assertions.assertTrue(pth.getLambda().isNaN());
-        Assertions.assertNull(gradient);
+        Assertions.assertEquals(0.001264669,           a.getAh().getReal(),                   1.0e-9);
+        Assertions.assertEquals(0.000572557,           a.getAw().getReal(),                   1.0e-9);
+        Assertions.assertEquals(273.15 + 22.121274184, pth.getTemperature().getReal(),        1.0e-9);
+        Assertions.assertEquals(1002.555031902,        TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getPressure()).getReal(),           1.0e-9);
+        Assertions.assertEquals(15.625300653,          TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getWaterVaporPressure()).getReal(), 1.0e-9);
+
+    }
+
+    @Test
+    public void testFieldMatlabRef1() throws IOException, URISyntaxException {
+        doTestFieldMatlabRef1(Binary64Field.getInstance());
+    }
+
+    protected <T extends CalculusFieldElement<T>> void doTestFieldMatlabRef1(final Field<T> field)
+        throws IOException, URISyntaxException {
+
+        Utils.setDataRoot("regular-data");
+
+        // reference output obtained by running TU-Wien https://vmf.geo.tuwien.ac.at/codes/gpt2.m matlab script
+        final T latitude  = FastMath.toRadians(field.getZero().newInstance(77.5));
+        final T longitude = FastMath.toRadians(field.getZero().newInstance(137.5));
+        final T height    = field.getZero().newInstance(0.0);
+        final FieldAbsoluteDate<T> date = FieldAbsoluteDate.getJ2000Epoch(field).shiftedBy(7395 * Constants.JULIAN_DAY);
+        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/gpt2_5.grd");
+        final GlobalPressureTemperature2 model =
+                        new GlobalPressureTemperature2(new DataSource(url.toURI()));
+
+        final FieldGeodeticPoint<T>                 location = new FieldGeodeticPoint<>(latitude, longitude, height);
+        final FieldViennaACoefficients<T>           a        = model.getA(location, date);
+        final FieldPressureTemperatureHumidity<T>   pth      = model.getWeatherParameters(location, date);
+
+        Assertions.assertEquals(0.001174547,           a.getAh().getReal(),                   1.0e-9);
+        Assertions.assertEquals(0.000579181,           a.getAw().getReal(),                   1.0e-9);
+        Assertions.assertEquals(273.15 - 19.053324536, pth.getTemperature().getReal(),        1.0e-9);
+        Assertions.assertEquals(1020.047182276,        TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getPressure()).getReal(),           1.0e-9);
+        Assertions.assertEquals(1.189457053,           TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getWaterVaporPressure()).getReal(), 1.0e-9);
+
+    }
+
+    @Test
+    public void testFieldMatlabRef2() throws IOException, URISyntaxException {
+        doTestFieldMatlabRef2(Binary64Field.getInstance());
+    }
+
+    protected <T extends CalculusFieldElement<T>> void doTestFieldMatlabRef2(final Field<T> field)
+        throws IOException, URISyntaxException {
+
+        Utils.setDataRoot("regular-data");
+
+        // reference output obtained by running TU-Wien https://vmf.geo.tuwien.ac.at/codes/gpt2_5.m matlab script
+        final T latitude  = FastMath.toRadians(field.getZero().newInstance(80.0));
+        final T longitude = FastMath.toRadians(field.getZero().newInstance(120.0));
+        final T height    = field.getZero().newInstance(100.0);
+        final FieldAbsoluteDate<T> date = FieldAbsoluteDate.getJ2000Epoch(field).shiftedBy(7395 * Constants.JULIAN_DAY);
+        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/gpt2_5.grd");
+        final GlobalPressureTemperature2 model =
+                        new GlobalPressureTemperature2(new DataSource(url.toURI()));
+
+        final FieldGeodeticPoint<T>                 location = new FieldGeodeticPoint<>(latitude, longitude, height);
+        final FieldViennaACoefficients<T>           a        = model.getA(location, date);
+        final FieldPressureTemperatureHumidity<T>   pth      = model.getWeatherParameters(location, date);
+
+        Assertions.assertEquals(0.001172082,           a.getAh().getReal(),                   1.0e-9);
+        Assertions.assertEquals(0.000582310,           a.getAw().getReal(),                   1.0e-9);
+        Assertions.assertEquals(273.15 - 20.146149484, pth.getTemperature().getReal(),        1.0e-9);
+        Assertions.assertEquals(1005.468561351,        TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getPressure()).getReal(),           1.0e-9);
+        Assertions.assertEquals(1.002152409,           TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getWaterVaporPressure()).getReal(), 1.0e-9);
 
     }
 
     @Test
     public void testEquality() throws IOException, URISyntaxException {
-        doTestEquality("gpt-grid/gpt2_15.grd");
+        doTestEquality("gpt-grid/gpt2_5.grd");
     }
 
     @Test
     public void testEqualityLoadingGpt2w() throws IOException, URISyntaxException {
-        doTestEquality("gpt-grid/gpt2_15w.grd");
+        doTestEquality("gpt-grid/gpt2_5w.grd");
     }
 
     @Test
     public void testEqualityLoadingGpt3() throws IOException, URISyntaxException {
-        doTestEquality("gpt-grid/gpt3_15.grd");
+        doTestEquality("gpt-grid/gpt3_5.grd");
     }
 
     private void doTestEquality(final String resourceName) throws IOException, URISyntaxException {
@@ -162,21 +234,20 @@ public class GlobalPressureTemperature2Test {
         Utils.setDataRoot("regular-data");
 
         // Commons parameters
-        final AbsoluteDate date = AbsoluteDate.createMJDDate(56141, 0.0, TimeScalesFactory.getUTC());
+        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(4596.5 * Constants.JULIAN_DAY);
         final double latitude   = FastMath.toRadians(45.0);
         final double height     = 0.0;
 
         final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource(resourceName);
-        GlobalPressureTemperature2 model = new GlobalPressureTemperature2(new DataSource(url.toURI()),
-                                                                          TimeScalesFactory.getUTC());
+        GlobalPressureTemperature2 model = new GlobalPressureTemperature2(new DataSource(url.toURI()));
 
         // Test longitude = 181° and longitude = -179°
         GeodeticPoint               location1 = new GeodeticPoint(latitude, FastMath.toRadians(181.0), height);
         ViennaACoefficients         a1        = model.getA(location1, date);
-        PressureTemperatureHumidity pth1      = model.getWeatherParamerers(location1, date);
+        PressureTemperatureHumidity pth1      = model.getWeatherParameters(location1, date);
         GeodeticPoint               location2 = new GeodeticPoint(latitude, FastMath.toRadians(-179.0), height);
         ViennaACoefficients         a2        = model.getA(location2, date);
-        PressureTemperatureHumidity pth2      = model.getWeatherParamerers(location2, date);
+        PressureTemperatureHumidity pth2      = model.getWeatherParameters(location2, date);
 
         Assertions.assertEquals(pth1.getTemperature(),        pth2.getTemperature(),        epsilon);
         Assertions.assertEquals(pth1.getPressure(),           pth2.getPressure(),           epsilon);
@@ -187,10 +258,10 @@ public class GlobalPressureTemperature2Test {
         // Test longitude = 180° and longitude = -180°
         location1 = new GeodeticPoint(latitude, FastMath.toRadians(180.0), height);
         a1        = model.getA(location1, date);
-        pth1      = model.getWeatherParamerers(location1, date);
+        pth1      = model.getWeatherParameters(location1, date);
         location2 = new GeodeticPoint(latitude, FastMath.toRadians(-180.0), height);
         a2        = model.getA(location2, date);
-        pth2      = model.getWeatherParamerers(location2, date);
+        pth2      = model.getWeatherParameters(location2, date);
 
         Assertions.assertEquals(pth1.getTemperature(),        pth2.getTemperature(),        epsilon);
         Assertions.assertEquals(pth1.getPressure(),           pth2.getPressure(),           epsilon);
@@ -201,10 +272,10 @@ public class GlobalPressureTemperature2Test {
         // Test longitude = 0° and longitude = 360°
         location1 = new GeodeticPoint(latitude, FastMath.toRadians(0.0), height);
         a1        = model.getA(location1, date);
-        pth1      = model.getWeatherParamerers(location1, date);
+        pth1      = model.getWeatherParameters(location1, date);
         location2 = new GeodeticPoint(latitude, FastMath.toRadians(360.0), height);
         a2        = model.getA(location2, date);
-        pth2      = model.getWeatherParamerers(location2, date);
+        pth2      = model.getWeatherParameters(location2, date);
 
         Assertions.assertEquals(pth1.getTemperature(),        pth2.getTemperature(),        epsilon);
         Assertions.assertEquals(pth1.getPressure(),           pth2.getPressure(),           epsilon);
@@ -222,7 +293,7 @@ public class GlobalPressureTemperature2Test {
         final String fileName = "corrupted-bad-data-gpt3_15.grd";
         final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/" + fileName);
         try {
-            new GlobalPressureTemperature2(new DataSource(url.toURI()), TimeScalesFactory.getUTC());
+            new GlobalPressureTemperature2(new DataSource(url.toURI()));
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
@@ -240,7 +311,7 @@ public class GlobalPressureTemperature2Test {
         final String fileName = "corrupted-irregular-grid-gpt3_15.grd";
         final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/" + fileName);
         try {
-            new GlobalPressureTemperature2(new DataSource(url.toURI()), TimeScalesFactory.getUTC());
+            new GlobalPressureTemperature2(new DataSource(url.toURI()));
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.IRREGULAR_OR_INCOMPLETE_GRID, oe.getSpecifier());
@@ -257,7 +328,7 @@ public class GlobalPressureTemperature2Test {
         final String fileName = "corrupted-incomplete-header.grd";
         final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/" + fileName);
         try {
-            new GlobalPressureTemperature2(new DataSource(url.toURI()), TimeScalesFactory.getUTC());
+            new GlobalPressureTemperature2(new DataSource(url.toURI()));
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
@@ -275,7 +346,7 @@ public class GlobalPressureTemperature2Test {
         final String fileName = "corrupted-missing-seasonal-columns-gpt3_15.grd";
         final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/" + fileName);
         try {
-            new GlobalPressureTemperature2(new DataSource(url.toURI()), TimeScalesFactory.getUTC());
+            new GlobalPressureTemperature2(new DataSource(url.toURI()));
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
@@ -293,7 +364,7 @@ public class GlobalPressureTemperature2Test {
         final String fileName = "corrupted-missing-data-fields-gpt3_15.grd";
         final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/" + fileName);
         try {
-            new GlobalPressureTemperature2(new DataSource(url.toURI()), TimeScalesFactory.getUTC());
+            new GlobalPressureTemperature2(new DataSource(url.toURI()));
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());

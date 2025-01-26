@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,8 +47,8 @@ public class FieldNegateDetectorTest {
         //setup
         @SuppressWarnings("unchecked")
         FieldEventDetector<T> a = Mockito.mock(FieldEventDetector.class);
-        Mockito.when(a.getMaxCheckInterval()).thenReturn(FieldAdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
-        Mockito.when(a.getThreshold()).thenReturn(field.getZero().newInstance(AbstractDetector.DEFAULT_THRESHOLD));
+        Mockito.when(a.getDetectionSettings()).thenReturn(new FieldEventDetectionSettings<>(field,
+                EventDetectionSettings.getDefaultEventDetectionSettings()));
         @SuppressWarnings("unchecked")
         FieldEventHandler<T> c = Mockito.mock(FieldEventHandler.class);
         FieldNegateDetector<T> detector = new FieldNegateDetector<>(a).withHandler(c);
@@ -77,8 +77,8 @@ public class FieldNegateDetectorTest {
         //setup
         @SuppressWarnings("unchecked")
         FieldEventDetector<T> a = Mockito.mock(FieldEventDetector.class);
-        Mockito.when(a.getMaxCheckInterval()).thenReturn(FieldAdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
-        Mockito.when(a.getThreshold()).thenReturn(field.getZero().newInstance(AbstractDetector.DEFAULT_THRESHOLD));
+        Mockito.when(a.getDetectionSettings()).thenReturn(new FieldEventDetectionSettings<>(field,
+                EventDetectionSettings.getDefaultEventDetectionSettings()));
         FieldNegateDetector<T> detector = new FieldNegateDetector<>(a);
         @SuppressWarnings("unchecked")
         FieldSpacecraftState<T> s = Mockito.mock(FieldSpacecraftState.class);
@@ -101,15 +101,15 @@ public class FieldNegateDetectorTest {
         //setup
         @SuppressWarnings("unchecked")
         FieldEventDetector<T> a = Mockito.mock(FieldEventDetector.class);
-        Mockito.when(a.getMaxCheckInterval()).thenReturn(FieldAdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
-        Mockito.when(a.getThreshold()).thenReturn(field.getZero().newInstance(AbstractDetector.DEFAULT_THRESHOLD));
+        Mockito.when(a.getDetectionSettings()).thenReturn(new FieldEventDetectionSettings<>(field,
+                EventDetectionSettings.getDefaultEventDetectionSettings()));
         FieldNegateDetector<T> detector = new FieldNegateDetector<>(a);
 
         // action
         FieldNegateDetector<T> actual = detector.withMaxCheck(100);
 
         //verify
-        MatcherAssert.assertThat(actual.getMaxCheckInterval().currentInterval(null), CoreMatchers.is(100.0));
+        MatcherAssert.assertThat(actual.getMaxCheckInterval().currentInterval(null, true), CoreMatchers.is(100.0));
         Assertions.assertTrue(actual.getOriginal() == a);
     }
 }

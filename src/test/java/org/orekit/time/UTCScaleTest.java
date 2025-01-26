@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,11 +30,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.Constants;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -171,21 +166,21 @@ public class UTCScaleTest {
             final AbsoluteDate end = offset.getValidityStart();
             AbsoluteDate d = start.shiftedBy(end.durationFrom(start) / 2.0);
             int excess = utc.minuteDuration(d) - 60;
-            double leap = offset.getLeap();
+            TimeOffset leap = offset.getLeap();
             // verify
-            Assertions.assertTrue(leap <= excess, "at MJD" + offset.getMJD() + ": " + leap + " <= " + excess);
-            Assertions.assertTrue(leap > (excess - 1));
+            Assertions.assertTrue(leap.toDouble() <= excess, "at MJD" + offset.getMJD() + ": " + leap + " <= " + excess);
+            Assertions.assertTrue(leap.toDouble() > (excess - 1));
             // before the leap starts but still in the same minute
             d = start.shiftedBy(-30);
             int newExcess = utc.minuteDuration(d) - 60;
-            double newLeap = offset.getLeap();
+            TimeOffset newLeap = offset.getLeap();
             // verify
-            Assertions.assertTrue(newLeap <= newExcess, "at MJD" + offset.getMJD() + ": " + newLeap + " <= " + newExcess);
-            Assertions.assertTrue(leap > (excess - 1));
+            Assertions.assertTrue(newLeap.toDouble() <= newExcess, "at MJD" + offset.getMJD() + ": " + newLeap + " <= " + newExcess);
+            Assertions.assertTrue(leap.toDouble() > (excess - 1));
             Assertions.assertEquals(excess, newExcess);
-            Assertions.assertEquals(leap, newLeap, 0.0);
-            MatcherAssert.assertThat("" + offset.getValidityStart(), leap,
-                    OrekitMatchers.numberCloseTo(end.durationFrom(start), 1e-16, 1));
+            Assertions.assertEquals(leap, newLeap);
+            MatcherAssert.assertThat("" + offset.getValidityStart(), leap.toDouble(),
+                                     OrekitMatchers.numberCloseTo(end.durationFrom(start), 1e-16, 1));
         }
     }
 
@@ -194,9 +189,9 @@ public class UTCScaleTest {
         TimeScale scale = TimeScalesFactory.getGPS();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_DAY);
-            double dt1 = scale.offsetFromTAI(date);
+            double dt1 = scale.offsetFromTAI(date).toDouble();
             DateTimeComponents components = date.getComponents(scale);
-            double dt2 = scale.offsetToTAI(components.getDate(), components.getTime());
+            double dt2 = scale.offsetToTAI(components.getDate(), components.getTime()).toDouble();
             Assertions.assertEquals( 0.0, dt1 + dt2, 1.0e-10);
         }
     }
@@ -246,7 +241,7 @@ public class UTCScaleTest {
 
     private void checkOffset(int year, int month, int day, double offset) {
         AbsoluteDate date = new AbsoluteDate(year, month, day, utc);
-        Assertions.assertEquals(offset, utc.offsetFromTAI(date), 1.0e-10);
+        Assertions.assertEquals(offset, utc.offsetFromTAI(date).toDouble(), 1.0e-10);
     }
 
     @Test
@@ -338,7 +333,7 @@ public class UTCScaleTest {
         for (int i = 0; i < 10000; ++i) {
             AbsoluteDate randomDate = reference.shiftedBy(random.nextDouble() * testRange);
             datesList.add(randomDate);
-            offsetsList.add(utc.offsetFromTAI(randomDate));
+            offsetsList.add(utc.offsetFromTAI(randomDate).toDouble());
         }
 
         // check the offsets in multi-threaded mode
@@ -347,7 +342,7 @@ public class UTCScaleTest {
         for (int i = 0; i < datesList.size(); ++i) {
             final AbsoluteDate date = datesList.get(i);
             final double offset = offsetsList.get(i);
-            executorService.execute(() -> Assertions.assertEquals(offset, utc.offsetFromTAI(date), 1.0e-12));
+            executorService.execute(() -> Assertions.assertEquals(offset, utc.offsetFromTAI(date).toDouble(), 1.0e-12));
         }
 
         try {
@@ -371,7 +366,7 @@ public class UTCScaleTest {
         TimeScale scale = TimeScalesFactory.getUTC();
         // time before first leap second
         DateComponents dateComponents = new DateComponents(1950, 1, 1);
-        double actual = scale.offsetToTAI(dateComponents, TimeComponents.H00);
+        double actual = scale.offsetToTAI(dateComponents, TimeComponents.H00).toDouble();
         Assertions.assertEquals(0.0, actual, 1.0e-10);
     }
 
@@ -394,11 +389,11 @@ public class UTCScaleTest {
     public void testInfinityRegularDate() {
         TimeScale scale = TimeScalesFactory.getUTC();
         Assertions.assertEquals(-37.0,
-                            scale.offsetFromTAI(AbsoluteDate.FUTURE_INFINITY),
-                            1.0e-15);
+                                scale.offsetFromTAI(AbsoluteDate.FUTURE_INFINITY).toDouble(),
+                                1.0e-15);
         Assertions.assertEquals(0.0,
-                            scale.offsetFromTAI(AbsoluteDate.PAST_INFINITY),
-                            1.0e-15);
+                                scale.offsetFromTAI(AbsoluteDate.PAST_INFINITY).toDouble(),
+                                1.0e-15);
     }
 
     @Test
@@ -410,24 +405,6 @@ public class UTCScaleTest {
         Assertions.assertEquals(0.0,
                             scale.offsetFromTAI(FieldAbsoluteDate.getPastInfinity(Binary64Field.getInstance())).getReal(),
                             1.0e-15);
-    }
-
-    @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
-        UTCScale utc = TimeScalesFactory.getUTC();
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(utc);
-
-        Assertions.assertTrue(bos.size() > 1700);
-        Assertions.assertTrue(bos.size() < 1800);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        UTCScale deserialized  = (UTCScale) ois.readObject();
-        Assertions.assertEquals(utc.getBaseOffsets().size(), deserialized.getBaseOffsets().size());
-
     }
 
     @Test

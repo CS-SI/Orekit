@@ -16,8 +16,6 @@
  */
 package org.orekit.frames;
 
-import java.io.Serializable;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -26,8 +24,6 @@ import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalarFunction;
@@ -50,9 +46,6 @@ import org.orekit.utils.IERSConventions;
  * @since 7.0
  */
 public class EclipticProvider implements TransformProvider {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20140516L;
 
     /** IERS conventions. */
     private final IERSConventions conventions;
@@ -99,48 +92,6 @@ public class EclipticProvider implements TransformProvider {
         return new FieldTransform<>(date, new FieldRotation<>(FieldVector3D.getMinusI(date.getField()),
                                                               epsA,
                                                               RotationConvention.VECTOR_OPERATOR));
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * <p>
-     * This intermediate class serializes only the frame key.
-     * </p>
-     * @return data transfer object that will be serialized
-     */
-    @DefaultDataContext
-    private Object writeReplace() {
-        return new DataTransferObject(conventions);
-    }
-
-    /** Internal class used only for serialization. */
-    @DefaultDataContext
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20140516L;
-
-        /** IERS conventions. */
-        private final IERSConventions conventions;
-
-        /** Simple constructor.
-         * @param conventions IERS conventions
-         */
-        DataTransferObject(final IERSConventions conventions) {
-            this.conventions = conventions;
-        }
-
-        /** Replace the deserialized data transfer object with a {@link EclipticProvider}.
-         * @return replacement {@link EclipticProvider}
-         */
-        private Object readResolve() {
-            try {
-                // retrieve a transform
-                return new EclipticProvider(conventions);
-            } catch (OrekitException oe) {
-                throw new OrekitInternalError(oe);
-            }
-        }
-
     }
 
 }

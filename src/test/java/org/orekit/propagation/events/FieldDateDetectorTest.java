@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,15 +23,19 @@ import java.time.ZoneId;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldEquinoctialOrbit;
@@ -88,6 +92,35 @@ public class FieldDateDetectorTest {
     @Test
     public void testGenericHandler() {
         doTestGenericHandler(Binary64Field.getInstance());
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void testGetDefaultDetectionSettings() {
+        // GIVEN
+        final FieldDateDetector<Complex> fieldDateDetector = new FieldDateDetector<>(FieldAbsoluteDate.getArbitraryEpoch(ComplexField.getInstance()));
+        // WHEN
+        final FieldEventDetectionSettings<Complex> fieldEventDetectionSettings = fieldDateDetector.getDetectionSettings();
+        // THEN
+        Assertions.assertEquals(DateDetector.DEFAULT_THRESHOLD, fieldEventDetectionSettings.getThreshold().getReal());
+        Assertions.assertEquals(DateDetector.DEFAULT_MAX_ITER, fieldEventDetectionSettings.getMaxIterationCount());
+        Assertions.assertEquals(DateDetector.DEFAULT_MAX_CHECK, fieldEventDetectionSettings.getMaxCheckInterval()
+                .currentInterval(Mockito.mock(FieldSpacecraftState.class), true));
+    }
+
+    @Test
+    void testConstructor() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldAbsoluteDate<Binary64> fieldDate = new FieldAbsoluteDate<>(field, date);
+        // WHEN
+        final FieldDateDetector<Binary64> fieldDateDetector = new FieldDateDetector<>(fieldDate);
+        // THEN
+        Assertions.assertEquals(fieldDate, fieldDateDetector.getDate());
+        final EventDetectionSettings expectedSettings = new DateDetector().getDetectionSettings();
+        Assertions.assertEquals(expectedSettings.getThreshold(), fieldDateDetector.getThreshold().getReal());
+        Assertions.assertEquals(expectedSettings.getMaxIterationCount(), fieldDateDetector.getMaxIterationCount());
     }
 
     @Test

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,11 @@
  */
 package org.orekit.bodies;
 
-import java.io.Serializable;
 import java.util.function.DoubleFunction;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -54,9 +53,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Guylaine Prat
  */
 public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20130518L;
 
     /** Threshold for polar and equatorial points detection. */
     private static final double ANGULAR_THRESHOLD = 1.0e-4;
@@ -720,37 +716,35 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
      * @return point at the same location but as a surface-relative point,
      * using time as the single derivation parameter
      */
-    public FieldGeodeticPoint<DerivativeStructure> transform(final PVCoordinates point,
-                                                             final Frame frame, final AbsoluteDate date) {
+    public FieldGeodeticPoint<UnivariateDerivative2> transform(final PVCoordinates point,
+                                                               final Frame frame, final AbsoluteDate date) {
 
         // transform point to body frame
         final Transform toBody = frame.getTransformTo(bodyFrame, date);
         final PVCoordinates pointInBodyFrame = toBody.transformPVCoordinates(point);
-        final FieldVector3D<DerivativeStructure> p = pointInBodyFrame.toDerivativeStructureVector(2);
-        final DerivativeStructure   pr2 = p.getX().square().add(p.getY().square());
-        final DerivativeStructure   pr  = pr2.sqrt();
-        final DerivativeStructure   pz  = p.getZ();
+        final FieldVector3D<UnivariateDerivative2> p = pointInBodyFrame.toUnivariateDerivative2Vector();
+        final UnivariateDerivative2   pr2 = p.getX().square().add(p.getY().square());
+        final UnivariateDerivative2   pr  = pr2.sqrt();
+        final UnivariateDerivative2   pz  = p.getZ();
 
         // project point on the ellipsoid surface
         final TimeStampedPVCoordinates groundPoint = projectToGround(new TimeStampedPVCoordinates(date, pointInBodyFrame),
                                                                      bodyFrame);
-        final FieldVector3D<DerivativeStructure> gp = groundPoint.toDerivativeStructureVector(2);
-        final DerivativeStructure   gpr2 = gp.getX().square().add(gp.getY().square());
-        final DerivativeStructure   gpr  = gpr2.sqrt();
-        final DerivativeStructure   gpz  = gp.getZ();
+        final FieldVector3D<UnivariateDerivative2> gp = groundPoint.toUnivariateDerivative2Vector();
+        final UnivariateDerivative2   gpr2 = gp.getX().square().add(gp.getY().square());
+        final UnivariateDerivative2   gpr  = gpr2.sqrt();
+        final UnivariateDerivative2   gpz  = gp.getZ();
 
         // relative position of test point with respect to its ellipse sub-point
-        final DerivativeStructure dr  = pr.subtract(gpr);
-        final DerivativeStructure dz  = pz.subtract(gpz);
+        final UnivariateDerivative2 dr  = pr.subtract(gpr);
+        final UnivariateDerivative2 dz  = pz.subtract(gpz);
         final double insideIfNegative = g2 * (pr2.getReal() - ae2) + pz.getReal() * pz.getReal();
 
-        return new FieldGeodeticPoint<>(DerivativeStructure.atan2(gpz, gpr.multiply(g2)),
-                                                                  DerivativeStructure.atan2(p.getY(), p.getX()),
-                                                                  DerivativeStructure.hypot(dr, dz).copySign(insideIfNegative));
+        return new FieldGeodeticPoint<>(FastMath.atan2(gpz, gpr.multiply(g2)), FastMath.atan2(p.getY(), p.getX()),
+            FastMath.hypot(dr, dz).copySign(insideIfNegative));
     }
 
     /** Compute the azimuth angle from local north between the two points.
-     *
      * The angle is calculated clockwise from local north at the origin point
      * and follows the rhumb line to the destination point.
      *
@@ -926,61 +920,6 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
                                                0.0, 1.0);
                 return intermediate.apply(lambdaMin);
             }
-        }
-
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * <p>
-     * This intermediate class serializes the files supported names, the
-     * ephemeris type and the body name.
-     * </p>
-     * @return data transfer object that will be serialized
-     */
-    private Object writeReplace() {
-        return new DataTransferObject(getA(), f, bodyFrame, angularThreshold);
-    }
-
-    /** Internal class used only for serialization. */
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20130518L;
-
-        /** Equatorial radius. */
-        private final double ae;
-
-        /** Flattening. */
-        private final double f;
-
-        /** Body frame related to body shape. */
-        private final Frame bodyFrame;
-
-        /** Convergence limit. */
-        private final double angularThreshold;
-
-        /** Simple constructor.
-         * @param ae equatorial radius
-         * @param f the flattening (f = (a-b)/a)
-         * @param bodyFrame body frame related to body shape
-         * @param angularThreshold convergence limit
-         */
-        DataTransferObject(final double ae, final double f,
-                                  final Frame bodyFrame, final double angularThreshold) {
-            this.ae               = ae;
-            this.f                = f;
-            this.bodyFrame        = bodyFrame;
-            this.angularThreshold = angularThreshold;
-        }
-
-        /** Replace the deserialized data transfer object with a
-         * {@link JPLCelestialBody}.
-         * @return replacement {@link JPLCelestialBody}
-         */
-        private Object readResolve() {
-            final OneAxisEllipsoid ellipsoid = new OneAxisEllipsoid(ae, f, bodyFrame);
-            ellipsoid.setAngularThreshold(angularThreshold);
-            return ellipsoid;
         }
 
     }

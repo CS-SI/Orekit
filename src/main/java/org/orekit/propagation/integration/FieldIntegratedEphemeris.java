@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,10 +19,14 @@ package org.orekit.propagation.integration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.ode.FieldDenseOutputModel;
 import org.hipparchus.ode.FieldODEStateAndDerivative;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.AttitudeProviderModifier;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -32,6 +36,8 @@ import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.analytical.FieldAbstractAnalyticalPropagator;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldArrayDictionary;
 import org.orekit.utils.ParameterDriver;
@@ -82,7 +88,7 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
      * mean and short periodic elements. It is ignored by the Numerical propagator.
      * </p>
      */
-    private PropagationType type;
+    private final PropagationType type;
 
     /** Start date of the integration (can be min or max). */
     private final FieldAbsoluteDate<T> startDate;
@@ -94,7 +100,7 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
     private final FieldAbsoluteDate<T> maxDate;
 
     /** Underlying raw mathematical model. */
-    private FieldDenseOutputModel<T> model;
+    private final FieldDenseOutputModel<T> model;
 
     /** Unmanaged additional states that must be simply copied. */
     private final FieldArrayDictionary<T> unmanaged;
@@ -114,23 +120,24 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
      * @param minDate first date of the range
      * @param maxDate last date of the range
      * @param mapper mapper between raw double components and spacecraft state
+     * @param attitudeProvider attitude provider
      * @param type type of orbit to output (mean or osculating)
      * @param model underlying raw mathematical model
      * @param unmanaged unmanaged additional states that must be simply copied
      * @param providers generators for pre-integrated states
      * @param equations names of additional equations
      * @param dimensions dimensions of additional equations
-     * @since 11.2
+     * @since 13.0
      */
     public FieldIntegratedEphemeris(final FieldAbsoluteDate<T> startDate,
                                     final FieldAbsoluteDate<T> minDate, final FieldAbsoluteDate<T> maxDate,
-                                    final FieldStateMapper<T> mapper, final PropagationType type,
-                                    final FieldDenseOutputModel<T> model,
+                                    final FieldStateMapper<T> mapper, final AttitudeProvider attitudeProvider,
+                                    final PropagationType type, final FieldDenseOutputModel<T> model,
                                     final FieldArrayDictionary<T> unmanaged,
                                     final List<FieldAdditionalStateProvider<T>> providers,
                                     final String[] equations, final int[] dimensions) {
 
-        super(startDate.getField(), mapper.getAttitudeProvider());
+        super(startDate.getField(), attitudeProvider);
 
         this.startDate = startDate;
         this.minDate   = minDate;
@@ -151,6 +158,23 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
         // set up initial state
         super.resetInitialState(getInitialState());
 
+        // remove event detectors in attitude provider
+        setAttitudeProvider(new AttitudeProviderModifier() {
+            @Override
+            public AttitudeProvider getUnderlyingAttitudeProvider() {
+                return attitudeProvider;
+            }
+
+            @Override
+            public Stream<EventDetector> getEventDetectors() {
+                return Stream.of();
+            }
+
+            @Override
+            public <W extends CalculusFieldElement<W>> Stream<FieldEventDetector<W>> getFieldEventDetectors(final Field<W> field) {
+                return Stream.of();
+            }
+        });
     }
 
     /** Interpolate the model at some date.

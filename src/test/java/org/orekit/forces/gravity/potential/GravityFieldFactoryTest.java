@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,7 +36,7 @@ import java.util.Set;
 public class GravityFieldFactoryTest {
 
     @Test
-    public void testDefaultEGMMissingCoefficients() {
+    void testDefaultEGMMissingCoefficients() {
         Utils.setDataRoot("potential/egm-format");
         // we explicitly DON'T call GravityFieldFactory.addPotentialCoefficientsReader
         // to make sure we use only the default readers
@@ -50,7 +50,7 @@ public class GravityFieldFactoryTest {
     }
 
     @Test
-    public void testDefaultGRGSMissingCoefficients() {
+    void testDefaultGRGSMissingCoefficients() {
         Utils.setDataRoot("potential/grgs-format");
         // we explicitly DON'T call GravityFieldFactory.addPotentialCoefficientsReader
         // to make sure we use only the default readers
@@ -64,7 +64,7 @@ public class GravityFieldFactoryTest {
     }
 
     @Test
-    public void testDefaultIncludesICGEM() {
+    void testDefaultIncludesICGEM() {
         Utils.setDataRoot("potential/icgem-format");
         // we explicitly DON'T call GravityFieldFactory.addPotentialCoefficientsReader
         // to make sure we use only the default readers
@@ -77,7 +77,7 @@ public class GravityFieldFactoryTest {
     }
 
     @Test
-    public void testDefaultIncludesSHM() {
+    void testDefaultIncludesSHM() {
         Utils.setDataRoot("potential/shm-format");
         // we explicitly DON'T call GravityFieldFactory.addPotentialCoefficientsReader
         // to make sure we use only the default readers
@@ -90,7 +90,7 @@ public class GravityFieldFactoryTest {
     }
 
     @Test
-    public void testNormalizationFirstElements() {
+    void testNormalizationFirstElements() {
         int max = 50;
         double[][] factors = GravityFieldFactory.getUnnormalizationFactors(max, max);
         Assertions.assertEquals(max + 1, factors.length);
@@ -109,7 +109,7 @@ public class GravityFieldFactoryTest {
     }
 
     @Test
-    public void testNormalizationSquareField() {
+    void testNormalizationSquareField() {
         int max = 89;
         double[][] factors = GravityFieldFactory.getUnnormalizationFactors(max, max);
         Assertions.assertEquals(max + 1, factors.length);
@@ -122,7 +122,7 @@ public class GravityFieldFactoryTest {
     }
 
     @Test
-    public void testNormalizationLowOrder() {
+    void testNormalizationLowOrder() {
         int maxDegree = 393;
         int maxOrder  = 63;
         double[][] factors = GravityFieldFactory.getUnnormalizationFactors(maxDegree, maxOrder);
@@ -136,28 +136,28 @@ public class GravityFieldFactoryTest {
     }
 
     @Test
-    public void testNormalizationUnderflowSquareField() {
+    void testNormalizationUnderflowSquareField() {
         Assertions.assertThrows(OrekitException.class, () -> {
             GravityFieldFactory.getUnnormalizationFactors(90, 90);
         });
     }
 
     @Test
-    public void testNormalizationUnderflowLowOrder1() {
+    void testNormalizationUnderflowLowOrder1() {
         Assertions.assertThrows(OrekitException.class, () -> {
             GravityFieldFactory.getUnnormalizationFactors(394, 63);
         });
     }
 
     @Test
-    public void testNormalizationUnderflowLowOrde2() {
+    void testNormalizationUnderflowLowOrde2() {
         Assertions.assertThrows(OrekitException.class, () -> {
             GravityFieldFactory.getUnnormalizationFactors(393, 64);
         });
     }
 
     @Test
-    public void testUnnormalizer() throws OrekitException {
+    void testUnnormalizer() throws OrekitException {
         Utils.setDataRoot("potential/icgem-format");
         final AbsoluteDate refDate = new AbsoluteDate(2004, 10, 1, 12, 0, 0.0, TimeScalesFactory.getTT());
         final double shift = 1.23456e8;
@@ -186,7 +186,7 @@ public class GravityFieldFactoryTest {
     }
 
     @Test
-    public void testNormalizer() {
+    void testNormalizer() {
         Utils.setDataRoot("potential/icgem-format");
         final AbsoluteDate refDate = new AbsoluteDate(2004, 10, 1, 12, 0, 0.0, TimeScalesFactory.getTT());
         final double shift = 1.23456e8;

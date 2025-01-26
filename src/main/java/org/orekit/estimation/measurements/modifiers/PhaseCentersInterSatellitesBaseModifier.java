@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -49,6 +49,14 @@ public class PhaseCentersInterSatellitesBaseModifier<T extends AbstractMeasureme
                                                    final FrequencyPattern pattern2) {
         this.uplink   = new PhaseCentersOffsetComputer(pattern1, pattern2);
         this.downlink = new PhaseCentersOffsetComputer(pattern2, pattern1);
+    }
+
+    /** Get the name of the effect modifying the measurement.
+     * @return name of the effect modifying the measurement
+     * @since 13.0
+     */
+    public String getEffectName() {
+        return "mean phase center";
     }
 
     /** Compute distance modification for one way measurement.

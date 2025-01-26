@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -250,52 +250,6 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
                                                                                            extrapolationThreshold,
                                                                                            angularFilter)),
              new TimeStampedDoubleHermiteInterpolator(interpolationPoints, extrapolationThreshold));
-    }
-
-    /**
-     * Constructor with:
-     * <ul>
-     *     <li>Default number of interpolation points of {@code DEFAULT_INTERPOLATION_POINTS}</li>
-     *     <li>Default extrapolation threshold of {@code DEFAULT_EXTRAPOLATION_THRESHOLD_SEC} s</li>
-     * </ul>
-     * <p>
-     * At least one interpolator for either orbit or absolute position-velocity-acceleration is needed. All the other
-     * interpolators can be left to null if the user do not want to interpolate these values.
-     * <p>
-     * <b>BEWARE:</b> output frame <b>must be inertial</b> if interpolated spacecraft states are defined by orbit. Throws an
-     * error otherwise.
-     * <p>
-     * <b>BEWARE:</b> it is up to the user to check the consistency of input interpolators.
-     *
-     * @param outputFrame output frame (inertial if the user is planning to use the orbit interpolator)
-     * @param orbitInterpolator orbit interpolator (can be null if absPVAInterpolator is defined)
-     * @param absPVAInterpolator absolute position-velocity-acceleration (can be null if orbitInterpolator is defined)
-     * @param massInterpolator mass interpolator (can be null)
-     * @param attitudeInterpolator attitude interpolator (can be null)
-     * @param additionalStateInterpolator additional state interpolator (can be null)
-     *
-     * @see AbstractTimeInterpolator
-     *
-     * @deprecated using this constructor may throw an exception if any given interpolator
-     * does not use {@link #DEFAULT_INTERPOLATION_POINTS} and {@link
-     * #DEFAULT_EXTRAPOLATION_THRESHOLD_SEC}. Use {@link #SpacecraftStateInterpolator(int,
-     * double, Frame, TimeInterpolator, TimeInterpolator, TimeInterpolator,
-     * TimeInterpolator, TimeInterpolator)} instead.
-     */
-    @Deprecated
-    public SpacecraftStateInterpolator(final Frame outputFrame, final TimeInterpolator<Orbit> orbitInterpolator,
-                                       final TimeInterpolator<AbsolutePVCoordinates> absPVAInterpolator,
-                                       final TimeInterpolator<TimeStampedDouble> massInterpolator,
-                                       final TimeInterpolator<Attitude> attitudeInterpolator,
-                                       final TimeInterpolator<TimeStampedDouble> additionalStateInterpolator) {
-        super(DEFAULT_INTERPOLATION_POINTS, DEFAULT_EXTRAPOLATION_THRESHOLD_SEC);
-        checkAtLeastOneInterpolator(orbitInterpolator, absPVAInterpolator);
-        this.outputFrame                 = outputFrame;
-        this.orbitInterpolator           = orbitInterpolator;
-        this.absPVAInterpolator          = absPVAInterpolator;
-        this.massInterpolator            = massInterpolator;
-        this.attitudeInterpolator        = attitudeInterpolator;
-        this.additionalStateInterpolator = additionalStateInterpolator;
     }
 
     /**

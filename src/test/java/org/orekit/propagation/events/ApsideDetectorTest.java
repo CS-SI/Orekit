@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,6 +33,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.events.EventsLogger.LoggedEvent;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.intervals.AdaptableInterval;
 import org.orekit.propagation.events.intervals.ApsideDetectionAdaptableIntervalFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -51,7 +52,7 @@ class ApsideDetectorTest {
                                  withThreshold(1.0e-12).
                                  withHandler(new ContinueOnEvent());
 
-        Assertions.assertEquals(600.0, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(600.0, detector.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-12, detector.getThreshold(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
 
@@ -77,11 +78,11 @@ class ApsideDetectorTest {
 
     @Test
     void testAnomalyAwareMaxCheck() {
-        doTestMaxcheck(ApsideDetectionAdaptableIntervalFactory.getForwardApsideDetectionAdaptableInterval(), 726);
+        doTestMaxcheck(ApsideDetectionAdaptableIntervalFactory.getApsideDetectionAdaptableInterval(), 726);
     }
 
     private void doTestMaxcheck(final AdaptableInterval maxCheck, int expectedCalls) {
-        CountingApsideDetector detector = new CountingApsideDetector(maxCheck);
+        CountingApsideDetectorModifier detector = new CountingApsideDetectorModifier(maxCheck);
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(logger.monitorDetector(detector));
         propagator.propagate(propagator.getInitialState().getOrbit().getDate().shiftedBy(Constants.JULIAN_DAY));
@@ -111,25 +112,33 @@ class ApsideDetectorTest {
                                           Constants.EIGEN5C_EARTH_C60);
     }
 
-    private class CountingApsideDetector extends AdapterDetector {
+    private class CountingApsideDetectorModifier implements DetectorModifier {
 
+        private final ApsideDetector detector;
         private int count;
         
-        public CountingApsideDetector(final AdaptableInterval maxCheck) {
-            super(new ApsideDetector(propagator.getInitialState().getOrbit()).
+        public CountingApsideDetectorModifier(final AdaptableInterval maxCheck) {
+            this.detector = new ApsideDetector(propagator.getInitialState().getOrbit()).
                   withMaxCheck(maxCheck).
                   withThreshold(1.0e-12).
-                  withHandler(new ContinueOnEvent()));
+                  withHandler(new ContinueOnEvent());
         }
 
+        @Override
+        public ApsideDetector getDetector() {
+            return detector;
+        }
+
+        @Override
         public void init(final SpacecraftState s0, final AbsoluteDate t) {
-            super.init(s0, t);
+            DetectorModifier.super.init(s0, t);
             count = 0;
         }
 
+        @Override
         public double g(final SpacecraftState s) {
             ++count;
-            return super.g(s);
+            return DetectorModifier.super.g(s);
         }
 
     }

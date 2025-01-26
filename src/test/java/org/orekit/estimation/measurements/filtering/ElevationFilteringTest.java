@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -87,17 +88,12 @@ public class ElevationFilteringTest {
     private MeasurementBuilder<Range> getBuilder(final RandomGenerator random, final GroundStation groundStation,
                                                  final ObservableSatellite satellite, final double noise) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { noise });
-        MeasurementBuilder<Range> rb =
-                        new RangeBuilder(new CorrelatedRandomVectorGenerator(covariance, 1.0e-10, new GaussianRandomGenerator(random)),
-                                         groundStation, false, 1.0, 1.0, satellite);
-        return rb;
+        return new RangeBuilder(new CorrelatedRandomVectorGenerator(covariance, 1.0e-10, new GaussianRandomGenerator(random)),
+                                groundStation, false, 1.0, 1.0, satellite);
     }
 
     private ElevationDetector getElevationDetector(final TopocentricFrame topo, final double minElevation) {
-        ElevationDetector detector =
-                        new ElevationDetector(topo).
-                        withConstantElevation(minElevation);
-        return detector;
+        return new ElevationDetector(topo).withConstantElevation(minElevation);
     }
 
     private Generator getGenerator(final Orbit orbit, final GroundStation station, final TopocentricFrame topo, final double noise, final double elevation) {
@@ -105,11 +101,12 @@ public class ElevationFilteringTest {
         final ObservableSatellite satellite = new ObservableSatellite(0);
         Propagator propagator = buildPropagator(orbit);
         generator.addPropagator(propagator);
-        RandomGenerator random = new Well19937a(0x01e226dd859c2c9dl);
+        RandomGenerator random = new Well19937a(0x01e226dd859c2c9dL);
         MeasurementBuilder<Range> builder = getBuilder(random, station, satellite, noise);
         EventDetector event = getElevationDetector(topo, elevation);
         FixedStepSelector dateSelecor = new FixedStepSelector(30, TimeScalesFactory.getUTC());
-        EventBasedScheduler<Range> scheduler = new EventBasedScheduler<Range>(builder, dateSelecor, propagator, event, SignSemantic.FEASIBLE_MEASUREMENT_WHEN_POSITIVE);
+        EventBasedScheduler<Range> scheduler =
+            new EventBasedScheduler<>(builder, dateSelecor, propagator, event, SignSemantic.FEASIBLE_MEASUREMENT_WHEN_POSITIVE);
         generator.addScheduler(scheduler);
         return generator;
     }
@@ -145,27 +142,27 @@ public class ElevationFilteringTest {
         generator0.addSubscriber(gatherer0);
         //Generate two measurements sorted set, one with elevation greater than threshold the other greater than 0
         generatorThreshold.generate(date, date.shiftedBy(3600 * 5));
-        SortedSet<ObservedMeasurement<?>> measurementsPlusThreshold = gathererThreshold.getGeneratedMeasurements();
+        SortedSet<EstimatedMeasurementBase<?>> measurementsPlusThreshold = gathererThreshold.getGeneratedMeasurements();
         generator0.generate(date, date.shiftedBy(3600 * 5));
-        SortedSet<ObservedMeasurement<?>> measurements0 = gatherer0.getGeneratedMeasurements();
+        SortedSet<EstimatedMeasurementBase<?>> measurements0 = gatherer0.getGeneratedMeasurements();
 
         //Elevation filter
         ElevationFilter<Range> filter = new ElevationFilter<>(station, threshold);
 
         //Filter the observation, what should stay in it should be the same as the measurements generated with elevation greater than threshold.
         final ArrayList<ObservedMeasurement<?>> processMeasurements = new ArrayList<>();
-        for(ObservedMeasurement<?> meas : measurements0) {
-            final Range range = (Range) meas;
+        for(EstimatedMeasurementBase<?> meas : measurements0) {
+            final Range range = (Range) meas.getObservedMeasurement();
             final SpacecraftState currentSC =
                             new SpacecraftState(orbit.shiftedBy(-1.0 * orbit.getDate().durationFrom(meas.getDate())));
             filter.filter(range, currentSC);
-            if(meas.isEnabled()) {
-                processMeasurements.add(meas);
+            if(meas.getObservedMeasurement().isEnabled()) {
+                processMeasurements.add(meas.getObservedMeasurement());
             }
         }
         Assertions.assertEquals(processMeasurements.size(), measurementsPlusThreshold.size());
         int i = 0;
-        for(ObservedMeasurement<?> meas: measurementsPlusThreshold) {
+        for(EstimatedMeasurementBase<?> meas: measurementsPlusThreshold) {
             Assertions.assertEquals(0.0,  meas.getDate().durationFrom(processMeasurements.get(i).getDate()), 1.0e-9);
             Assertions.assertEquals(0.0, meas.getObservedValue()[0] - processMeasurements.get(i).getObservedValue()[0], 1);
             i++;

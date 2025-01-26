@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -58,11 +58,7 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -72,7 +68,7 @@ import java.util.Map;
 public class GroundStationTest {
 
     @Test
-    public void testEstimateClockOffset() throws IOException, ClassNotFoundException {
+    public void testEstimateClockOffset() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -161,7 +157,7 @@ public class GroundStationTest {
                                                                1.0, 3.0, 300.0);
 
         // move one station
-        final RandomGenerator random = new Well19937a(0x4adbecfc743bda60l);
+        final RandomGenerator random = new Well19937a(0x4adbecfc743bda60L);
         final TopocentricFrame base = context.stations.get(0).getBaseFrame();
         final BodyShape parent = base.getParentShape();
         final Vector3D baseOrigin = parent.transform(base.getPoint());
@@ -231,36 +227,6 @@ public class GroundStationTest {
         Assertions.assertEquals(0.55431, physicalCovariances.getEntry(6, 6), 1.0e-5);
         Assertions.assertEquals(0.22694, physicalCovariances.getEntry(7, 7), 1.0e-5);
         Assertions.assertEquals(0.13106, physicalCovariances.getEntry(8, 8), 1.0e-5);
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(moved.getEstimatedEarthFrame().getTransformProvider());
-
-        Assertions.assertTrue(bos.size() > 138000);
-        Assertions.assertTrue(bos.size() < 139000);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        EstimatedEarthFrameProvider deserialized  = (EstimatedEarthFrameProvider) ois.readObject();
-        Assertions.assertEquals(moved.getPrimeMeridianOffsetDriver().getValue(),
-                            deserialized.getPrimeMeridianOffsetDriver().getValue(),
-                            1.0e-15);
-        Assertions.assertEquals(moved.getPrimeMeridianDriftDriver().getValue(),
-                            deserialized.getPrimeMeridianDriftDriver().getValue(),
-                            1.0e-15);
-        Assertions.assertEquals(moved.getPolarOffsetXDriver().getValue(),
-                            deserialized.getPolarOffsetXDriver().getValue(),
-                            1.0e-15);
-        Assertions.assertEquals(moved.getPolarDriftXDriver().getValue(),
-                            deserialized.getPolarDriftXDriver().getValue(),
-                            1.0e-15);
-        Assertions.assertEquals(moved.getPolarOffsetYDriver().getValue(),
-                            deserialized.getPolarOffsetYDriver().getValue(),
-                            1.0e-15);
-        Assertions.assertEquals(moved.getPolarDriftYDriver().getValue(),
-                            deserialized.getPolarDriftYDriver().getValue(),
-                            1.0e-15);
-
     }
 
     @Test
@@ -1287,7 +1253,7 @@ public class GroundStationTest {
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER, oe.getSpecifier());
-            Assertions.assertEquals("prime-meridian-offset", (String) oe.getParts()[0]);
+            Assertions.assertEquals("prime-meridian-offset", oe.getParts()[0]);
         }
 
         try {
@@ -1309,7 +1275,7 @@ public class GroundStationTest {
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER, oe.getSpecifier());
-            Assertions.assertEquals("prime-meridian-offset", (String) oe.getParts()[0]);
+            Assertions.assertEquals("prime-meridian-offset", oe.getParts()[0]);
         }
 
     }
@@ -1339,16 +1305,16 @@ public class GroundStationTest {
         }
         Map<String, Integer> indices = new HashMap<>();
         for (int k = 0; k < dFCartesian.length; ++k) {
-            for (int i = 0; i < allDrivers.length; ++i) {
-                if (allDrivers[i].getName().matches(parameterPattern[k])) {
-                    selectedDrivers[k] = allDrivers[i];
+            for (final ParameterDriver allDriver : allDrivers) {
+                if (allDriver.getName().matches(parameterPattern[k])) {
+                    selectedDrivers[k] = allDriver;
                     dFCartesian[k] = differentiatedStationPV(station, eme2000, date, selectedDrivers[k], stepFactor);
                     indices.put(selectedDrivers[k].getNameSpan(date0), k);
                 }
             }
-        };
+        }
 
-        RandomGenerator generator = new Well19937a(0x084d58a19c498a54l);
+        RandomGenerator generator = new Well19937a(0x084d58a19c498a54L);
 
         double maxPositionValueRelativeError      = 0;
         double maxPositionDerivativeRelativeError = 0;
@@ -1448,15 +1414,15 @@ public class GroundStationTest {
         }
         Map<String, Integer> indices = new HashMap<>();
         for (int k = 0; k < dFAngular.length; ++k) {
-            for (int i = 0; i < allDrivers.length; ++i) {
-                if (allDrivers[i].getName().matches(parameterPattern[k])) {
-                    selectedDrivers[k] = allDrivers[i];
-                    dFAngular[k]   = differentiatedTransformAngular(station, eme2000, date, selectedDrivers[k], stepFactor);
+            for (final ParameterDriver allDriver : allDrivers) {
+                if (allDriver.getName().matches(parameterPattern[k])) {
+                    selectedDrivers[k] = allDriver;
+                    dFAngular[k] = differentiatedTransformAngular(station, eme2000, date, selectedDrivers[k], stepFactor);
                     indices.put(selectedDrivers[k].getNameSpan(date0), k);
                 }
             }
-        };
-        RandomGenerator generator = new Well19937a(0xa01a1d8fe5d80af7l);
+        }
+        RandomGenerator generator = new Well19937a(0xa01a1d8fe5d80af7L);
 
         double maxRotationValueError          = 0;
         double maxRotationDerivativeError     = 0;
@@ -1551,27 +1517,24 @@ public class GroundStationTest {
         final FiniteDifferencesDifferentiator differentiator =
                         new FiniteDifferencesDifferentiator(5, stepFactor * driver.getScale());
 
-        return differentiator.differentiate(new UnivariateVectorFunction() {
-            @Override
-            public double[] value(double x) {
-                final double[] result = new double[6];
-                try {
-                    final double previouspI = driver.getValue(date);
-                    driver.setValue(x, new AbsoluteDate());
-                    Transform t = station.getOffsetToInertial(eme2000, date, false);
-                    driver.setValue(previouspI, date);
-                    PVCoordinates stationPV = t.transformPVCoordinates(PVCoordinates.ZERO);
-                    result[ 0] = stationPV.getPosition().getX();
-                    result[ 1] = stationPV.getPosition().getY();
-                    result[ 2] = stationPV.getPosition().getZ();
-                    result[ 3] = stationPV.getVelocity().getX();
-                    result[ 4] = stationPV.getVelocity().getY();
-                    result[ 5] = stationPV.getVelocity().getZ();
-                } catch (OrekitException oe) {
-                    Assertions.fail(oe.getLocalizedMessage());
-                }
-                return result;
+        return differentiator.differentiate((UnivariateVectorFunction) x -> {
+            final double[] result = new double[6];
+            try {
+                final double previouspI = driver.getValue(date);
+                driver.setValue(x, new AbsoluteDate());
+                Transform t = station.getOffsetToInertial(eme2000, date, false);
+                driver.setValue(previouspI, date);
+                PVCoordinates stationPV = t.transformPVCoordinates(PVCoordinates.ZERO);
+                result[ 0] = stationPV.getPosition().getX();
+                result[ 1] = stationPV.getPosition().getY();
+                result[ 2] = stationPV.getPosition().getZ();
+                result[ 3] = stationPV.getVelocity().getX();
+                result[ 4] = stationPV.getVelocity().getY();
+                result[ 5] = stationPV.getVelocity().getZ();
+            } catch (OrekitException oe) {
+                Assertions.fail(oe.getLocalizedMessage());
             }
+            return result;
         });
     }
 

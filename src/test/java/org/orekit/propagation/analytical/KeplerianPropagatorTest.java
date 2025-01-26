@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -175,7 +175,7 @@ public class KeplerianPropagatorTest {
         double delta_t = 0.0; // extrapolation duration in seconds
         AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
 
-        SpacecraftState finalOrbit = extrapolator.propagate(extrapDate);
+        Orbit finalOrbit = extrapolator.propagate(extrapDate).getOrbit();
 
         double a = finalOrbit.getA();
         // another way to compute n
@@ -210,7 +210,7 @@ public class KeplerianPropagatorTest {
         double delta_t = 0.0; // extrapolation duration in seconds
         AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
 
-        SpacecraftState finalOrbit = extrapolator.propagate(extrapDate);
+        Orbit finalOrbit = extrapolator.propagate(extrapDate).getOrbit();
 
         double a = finalOrbit.getA();
         // another way to compute n
@@ -249,7 +249,7 @@ public class KeplerianPropagatorTest {
         double delta_t = 100000.0; // extrapolation duration in seconds
         AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
 
-        SpacecraftState finalOrbit = extrapolator.propagate(extrapDate);
+        Orbit finalOrbit = extrapolator.propagate(extrapDate).getOrbit();
 
 
         // computation of (M final - M initial) with another method
@@ -339,7 +339,7 @@ public class KeplerianPropagatorTest {
         double delta_t = 100000.0; // extrapolation duration in seconds
         AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
 
-        SpacecraftState finalOrbit = extrapolator.propagate(extrapDate);
+        Orbit finalOrbit = extrapolator.propagate(extrapDate).getOrbit();
         Assertions.assertEquals(6092.3362422560844633, finalOrbit.getKeplerianPeriod(), 1.0e-12);
         Assertions.assertEquals(0.001031326088602888358, finalOrbit.getKeplerianMeanMotion(), 1.0e-16);
 
@@ -896,17 +896,16 @@ public class KeplerianPropagatorTest {
     }
 
     private void checkDerivatives(final Orbit orbit, final boolean expectedDerivatives) {
-        Assertions.assertEquals(expectedDerivatives, orbit.hasDerivatives());
-        Assertions.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getADot()));
-        Assertions.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getEquinoctialExDot()));
-        Assertions.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getEquinoctialEyDot()));
-        Assertions.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getHxDot()));
-        Assertions.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getHyDot()));
-        Assertions.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getLEDot()));
-        Assertions.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getLvDot()));
-        Assertions.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getLMDot()));
-        Assertions.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getEDot()));
-        Assertions.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getIDot()));
+        Assertions.assertEquals(expectedDerivatives, orbit.hasNonKeplerianAcceleration());
+        if (!expectedDerivatives) {
+            Assertions.assertEquals(0., orbit.getADot());
+            Assertions.assertEquals(0., orbit.getEDot());
+            Assertions.assertEquals(0., orbit.getIDot());
+            Assertions.assertEquals(0., orbit.getEquinoctialExDot());
+            Assertions.assertEquals(0., orbit.getEquinoctialEyDot());
+            Assertions.assertEquals(0., orbit.getHxDot());
+            Assertions.assertEquals(0., orbit.getHyDot());
+        }
     }
 
     private static double tangLEmLv(double Lv, double ex, double ey){

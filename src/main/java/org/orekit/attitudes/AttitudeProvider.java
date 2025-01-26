@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,13 +17,24 @@
 package org.orekit.attitudes;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.orekit.frames.Frame;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.EventDetectorsProvider;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ParameterDriver;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
 
 
 /** This interface represents an attitude provider model set.
@@ -31,7 +42,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * from an date and position-velocity local provider.</p>
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public interface AttitudeProvider {
+public interface AttitudeProvider extends EventDetectorsProvider, AttitudeRotationModel {
 
     /** Compute the attitude corresponding to an orbital state.
      * @param pvProv local position-velocity provider around current date
@@ -78,4 +89,50 @@ public interface AttitudeProvider {
         return getAttitude(pvProv, date, frame).getRotation();
     }
 
+    /** {@inheritDoc}
+     * The default implementation is independent of the input parameters as by default there is no driver.
+     * Users wanting to use them must override this.
+     * @since 13.0
+     */
+    @Override
+    default Rotation getAttitudeRotation(final SpacecraftState state, final double[] parameters) {
+        return getAttitudeRotation(state.isOrbitDefined() ? state.getOrbit() : state.getAbsPVA(), state.getDate(),
+                state.getFrame());
+    }
+
+    /** {@inheritDoc}
+     * The default implementation is independent of the input parameters as by default there is no driver.
+     * Users wanting to use them must override this.
+     * @since 13.0
+     */
+    @Override
+    default <T extends CalculusFieldElement<T>> FieldRotation<T> getAttitudeRotation(final FieldSpacecraftState<T> state,
+                                                                                     final T[] parameters) {
+        return getAttitudeRotation(state.isOrbitDefined() ? state.getOrbit() : state.getAbsPVA(), state.getDate(),
+                state.getFrame());
+    }
+
+    /** {@inheritDoc}
+     * @since 13.0
+     */
+    @Override
+    default Stream<EventDetector> getEventDetectors() {
+        return getEventDetectors(getParametersDrivers());
+    }
+
+    /** {@inheritDoc}
+     * @since 13.0
+     */
+    @Override
+    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
+        return getFieldEventDetectors(field, getParametersDrivers());
+    }
+
+    /** {@inheritDoc}
+     * @since 13.0
+     */
+    @Override
+    default List<ParameterDriver> getParametersDrivers() {
+        return new ArrayList<>();
+    }
 }

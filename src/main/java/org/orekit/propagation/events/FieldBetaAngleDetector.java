@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Joseph Reed
+/* Copyright 2002-2025 Joseph Reed
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -75,7 +75,7 @@ public class FieldBetaAngleDetector<T extends CalculusFieldElement<T>> extends F
     public FieldBetaAngleDetector(final Field<T> field, final T betaAngleThreshold,
             final FieldPVCoordinatesProvider<T> celestialBodyProvider,
             final Frame inertialFrame) {
-        this(FieldAdaptableInterval.of(DEFAULT_MAXCHECK), field.getZero().newInstance(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
+        this(new FieldEventDetectionSettings<>(field, EventDetectionSettings.getDefaultEventDetectionSettings()),
                 new FieldStopOnEvent<>(), betaAngleThreshold, celestialBodyProvider, inertialFrame);
     }
 
@@ -83,19 +83,17 @@ public class FieldBetaAngleDetector<T extends CalculusFieldElement<T>> extends F
      * <p>This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.</p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param betaAngleThreshold beta angle threshold (radians)
      * @param celestialBodyProvider coordinate provider for the celestial provider
      * @param inertialFrame inertial frame in which to compute the beta angle
+     * @since 13.0
      */
-    protected FieldBetaAngleDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold,
-                             final int maxIter, final FieldEventHandler<T> handler,
+    protected FieldBetaAngleDetector(final FieldEventDetectionSettings<T> detectionSettings, final FieldEventHandler<T> handler,
                              final T betaAngleThreshold, final FieldPVCoordinatesProvider<T> celestialBodyProvider,
                              final Frame inertialFrame) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(detectionSettings, handler);
         this.betaAngleThreshold = betaAngleThreshold;
         this.celestialBodyProvider = celestialBodyProvider;
         this.inertialFrame = inertialFrame;
@@ -128,7 +126,7 @@ public class FieldBetaAngleDetector<T extends CalculusFieldElement<T>> extends F
      * @return the new detector instance
      */
     public FieldBetaAngleDetector<T> withCelestialProvider(final FieldPVCoordinatesProvider<T> newProvider) {
-        return new FieldBetaAngleDetector<>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(),
+        return new FieldBetaAngleDetector<>(getDetectionSettings(),
                 getHandler(), getBetaAngleThreshold(), newProvider, getInertialFrame());
     }
 
@@ -138,7 +136,7 @@ public class FieldBetaAngleDetector<T extends CalculusFieldElement<T>> extends F
      * @return the new detector instance
      */
     public FieldBetaAngleDetector<T> withBetaThreshold(final T newBetaAngleThreshold) {
-        return new FieldBetaAngleDetector<>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(),
+        return new FieldBetaAngleDetector<>(getDetectionSettings(),
                 getHandler(), newBetaAngleThreshold, getCelestialBodyProvider(), getInertialFrame());
     }
 
@@ -148,7 +146,7 @@ public class FieldBetaAngleDetector<T extends CalculusFieldElement<T>> extends F
      * @return the new detector instance
      */
     public FieldBetaAngleDetector<T> withInertialFrame(final Frame newFrame) {
-        return new FieldBetaAngleDetector<>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(),
+        return new FieldBetaAngleDetector<>(getDetectionSettings(),
                 getHandler(), getBetaAngleThreshold(), getCelestialBodyProvider(), newFrame);
     }
 
@@ -187,9 +185,9 @@ public class FieldBetaAngleDetector<T extends CalculusFieldElement<T>> extends F
 
     /** {@inheritDoc} */
     @Override
-    protected FieldBetaAngleDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
-            final int newMaxIter, final FieldEventHandler<T> newHandler) {
-        return new FieldBetaAngleDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler,
+    protected FieldBetaAngleDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
+                                               final FieldEventHandler<T> newHandler) {
+        return new FieldBetaAngleDetector<>(detectionSettings, newHandler,
                 getBetaAngleThreshold(), getCelestialBodyProvider(), getInertialFrame());
     }
 }

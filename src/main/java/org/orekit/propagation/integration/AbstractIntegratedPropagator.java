@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -329,7 +329,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     }
 
     /** {@inheritDoc} */
-    public Collection<EventDetector> getEventsDetectors() {
+    public Collection<EventDetector> getEventDetectors() {
         return Collections.unmodifiableCollection(detectors);
     }
 
@@ -352,6 +352,14 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      */
     protected void setUpEventDetector(final ODEIntegrator integ, final EventDetector detector) {
         integ.addEventDetector(new AdaptedEventDetector(detector));
+    }
+
+    /**
+     * Clear the ephemeris generators.
+     * @since 13.0
+     */
+    public void clearEphemerisGenerators() {
+        ephemerisGenerators.clear();
     }
 
     /** {@inheritDoc} */
@@ -439,8 +447,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             // propagate from start date to end date with event detection
             final SpacecraftState finalState = integrateDynamics(tEnd, false);
 
-            return finalState;
+            // Finalize event detectors
+            getEventDetectors().forEach(detector -> detector.finish(finalState));
 
+            return finalState;
         }
 
     }
@@ -488,7 +498,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             attitudeProviderForDerivatives = initializeAttitudeProviderForDerivatives();
 
             if (Double.isNaN(getMu())) {
-                setMu(getInitialState().getMu());
+                setMu(getInitialState().isOrbitDefined() ? getInitialState().getOrbit().getMu() : Double.NaN);
             }
 
             if (getInitialState().getMass() <= 0.0) {
@@ -953,7 +963,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** {@inheritDoc} */
         @Override
         public AdaptableInterval getMaxCheckInterval() {
-            return s -> detector.getMaxCheckInterval().currentInterval(convert(s));
+            return (state, isForward) -> detector.getMaxCheckInterval().currentInterval(convert(state), isForward);
         }
 
         /** {@inheritDoc} */
@@ -1239,7 +1249,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             // create the ephemeris
             ephemeris = new IntegratedEphemeris(startDate, minDate, maxDate,
-                                                stateMapper, propagationType, model,
+                                                stateMapper, getAttitudeProvider(), propagationType, model,
                                                 unmanaged, getAdditionalStateProviders(),
                                                 names, dimensions);
 

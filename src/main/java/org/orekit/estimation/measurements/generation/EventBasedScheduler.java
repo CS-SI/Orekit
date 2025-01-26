@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,16 +16,18 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.AdapterDetector;
+import org.orekit.propagation.events.DetectorModifier;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DatesSelector;
 import org.orekit.utils.TimeSpanMap;
 
+import java.util.function.Predicate;
 
 /** {@link Scheduler} based on {@link EventDetector} for generating measurements sequences.
  * <p>
@@ -66,7 +68,39 @@ public class EventBasedScheduler<T extends ObservedMeasurement<T>> extends Abstr
     /** Simple constructor.
      * <p>
      * The event detector instance should <em>not</em> be already bound to the propagator.
-     * It will be wrapped in an {@link AdapterDetector adapter} in order to manage time
+     * It will be wrapped in an {@link DetectorModifier adapter} in order to manage time
+     * ranges when measurements are feasible. The wrapping adapter will be automatically
+     * {@link Propagator#addEventDetector(EventDetector) added} to the propagator by this
+     * constructor.
+     * </p>
+     * <p>
+     * BEWARE! Dates selectors often store internally the last selected dates, so they are not
+     * reusable across several {@link EventBasedScheduler instances}. A separate selector
+     * should be used for each scheduler.
+     * </p>
+     * <p>
+     * This constructor calls {@link #EventBasedScheduler(MeasurementBuilder, DatesSelector,
+     * Predicate, Propagator, EventDetector, SignSemantic)} whith the predicate set to accept
+     * all generated measurements.
+     * </p>
+     * @param builder builder for individual measurements
+     * @param selector selector for dates (beware that selectors are generally not
+     * reusable across several {@link EventBasedScheduler instances}, each selector should
+     * be dedicated to one scheduler
+     * @param propagator propagator associated with this scheduler
+     * @param detector detector for checking measurements feasibility
+     * @param signSemantic semantic of the detector g function sign to use
+     */
+    public EventBasedScheduler(final MeasurementBuilder<T> builder, final DatesSelector selector,
+                               final Propagator propagator,
+                               final EventDetector detector, final SignSemantic signSemantic) {
+        this(builder, selector, e -> true, propagator, detector, signSemantic);
+    }
+
+    /** Simple constructor.
+     * <p>
+     * The event detector instance should <em>not</em> be already bound to the propagator.
+     * It will be wrapped in an {@link DetectorModifier adapter} in order to manage time
      * ranges when measurements are feasible. The wrapping adapter will be automatically
      * {@link Propagator#addEventDetector(EventDetector) added} to the propagator by this
      * constructor.
@@ -80,18 +114,21 @@ public class EventBasedScheduler<T extends ObservedMeasurement<T>> extends Abstr
      * @param selector selector for dates (beware that selectors are generally not
      * reusable across several {@link EventBasedScheduler instances}, each selector should
      * be dedicated to one scheduler
+     * @param filter predicate for a posteriori filtering of generated measurements
+     *               (measurements are accepted if the predicates evaluates to {@code true})
      * @param propagator propagator associated with this scheduler
      * @param detector detector for checking measurements feasibility
      * @param signSemantic semantic of the detector g function sign to use
+     * @since 13.0
      */
     public EventBasedScheduler(final MeasurementBuilder<T> builder, final DatesSelector selector,
-                               final Propagator propagator,
+                               final Predicate<EstimatedMeasurementBase<T>> filter, final Propagator propagator,
                                final EventDetector detector, final SignSemantic signSemantic) {
-        super(builder, selector);
+        super(builder, selector, filter);
         this.signSemantic = signSemantic;
-        this.feasibility  = new TimeSpanMap<Boolean>(Boolean.FALSE);
+        this.feasibility  = new TimeSpanMap<>(Boolean.FALSE);
         this.forward      = true;
-        propagator.addEventDetector(new FeasibilityAdapter(detector));
+        propagator.addEventDetector(new FeasibilityModifier(detector));
     }
 
     /** {@inheritDoc} */
@@ -101,21 +138,30 @@ public class EventBasedScheduler<T extends ObservedMeasurement<T>> extends Abstr
     }
 
     /** Adapter for managing feasibility status changes. */
-    private class FeasibilityAdapter extends AdapterDetector {
+    private class FeasibilityModifier implements DetectorModifier {
+
+        /** Wrapped event detector. */
+        private final EventDetector eventDetector;
 
         /** Build an adaptor wrapping an existing detector.
-         * @param detector detector to wrap
+         * @param eventDetector detector to wrap
          */
-        FeasibilityAdapter(final EventDetector detector) {
-            super(detector);
+        FeasibilityModifier(final EventDetector eventDetector) {
+            this.eventDetector = eventDetector;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public EventDetector getDetector() {
+            return eventDetector;
         }
 
         /** {@inheritDoc} */
         @Override
         public void init(final SpacecraftState s0, final AbsoluteDate t) {
-            super.init(s0, t);
+            DetectorModifier.super.init(s0, t);
             forward     = t.compareTo(s0.getDate()) > 0;
-            feasibility = new TimeSpanMap<Boolean>(signSemantic.measurementIsFeasible(g(s0)));
+            feasibility = new TimeSpanMap<>(signSemantic.measurementIsFeasible(g(s0)));
         }
 
         /** {@inheritDoc} */

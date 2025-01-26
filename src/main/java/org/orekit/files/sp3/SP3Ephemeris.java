@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -142,9 +142,9 @@ public class SP3Ephemeris implements EphemerisFile.SatelliteEphemeris<SP3Coordin
      * <p>
      *  There are always 2n+1 {@link AggregatedClockModel#getModels()}
      *  underlying clock models when there are n {@link #getSegments() segments}
-     *  in the ephemeris. This happens because there are {@link TimeSpanMap.Span
-     *  spans} with {@code null} {@link TimeSpanMap.Span#getData()} before the
-     *  first segment, between all regular segments and after last segment.
+     *  in the ephemeris. This happens because there are spans with {@code null}
+     *  data before the first segment, between all regular segments and after
+     *  last segment.
      * </p>
      * @return extracted clock model
      * @since 12.1

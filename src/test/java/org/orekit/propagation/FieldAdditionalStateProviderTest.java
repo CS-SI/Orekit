@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -65,8 +65,7 @@ public class FieldAdditionalStateProviderTest {
     }
 
     private <T extends CalculusFieldElement<T>> AdaptiveStepsizeFieldIntegrator<T> createIntegrator(final Field<T> field, final FieldSpacecraftState<T> state) {
-        final T zero = field.getZero();
-        double[][] tolerance = FieldNumericalPropagator.tolerances(zero.add(0.001), state.getOrbit(), OrbitType.EQUINOCTIAL);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(state.getOrbit(), OrbitType.EQUINOCTIAL);
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince54FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
         return integrator;

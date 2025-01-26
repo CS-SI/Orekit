@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,6 +45,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -133,7 +134,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
      * equal to -20.2 milliarcsecs per year.
      */
     @Test
-    public void testSmallEffectOnOrbit() {
+    void testSmallEffectOnOrbit() {
         // Setup
         final double gm = Constants.EIGEN5C_EARTH_MU;
 	final Frame frame = FramesFactory.getGCRF();
@@ -142,7 +143,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
                                    FastMath.toRadians(40.), PositionAngleType.MEAN,
                                    frame, date, gm
                 );
-        double[][] tol = NumericalPropagator.tolerances(0.1, orbit, OrbitType.KEPLERIAN);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.1).getTolerances(orbit, OrbitType.KEPLERIAN);
         AbstractIntegrator integrator = new DormandPrince853Integrator(1, 3600, tol[0], tol[1]);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setOrbitType(OrbitType.CARTESIAN);
@@ -165,7 +166,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testGlobalStateJacobian()
+    void testGlobalStateJacobian()
         {
 
         // initialization
@@ -179,7 +180,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
                                          0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
-        double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, integrationType);
 
         NumericalPropagator propagator =
                 new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
@@ -195,7 +196,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testParameterDerivativeGradient() {
+    void testParameterDerivativeGradient() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -207,7 +208,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
 
         DeSitterRelativity relativity = new DeSitterRelativity();
         Assertions.assertFalse(relativity.dependsOnPositionOnly());
-        final String name = relativity.getSun().getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX;
+        final String name = relativity.getSun().getName() + DeSitterRelativity.ATTRACTION_COEFFICIENT_SUFFIX;
         checkParameterDerivativeGradient(state, relativity, name, 1.0, 1.0e-15);
 
     }
@@ -240,7 +241,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
 
         SpacecraftState iSR = initialState.toSpacecraftState();
         OrbitType type = OrbitType.KEPLERIAN;
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(FKO.toOrbit(), type);
 
 
         AdaptiveStepsizeFieldIntegrator<Gradient> integrator =
@@ -270,7 +271,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testJacobianVs80ImplementationGradient() {
+    void testJacobianVs80ImplementationGradient() {
         double gm = Constants.EIGEN5C_EARTH_MU;
         DeSitterRelativity relativity = new DeSitterRelativity();
         final Vector3D p = new Vector3D(3777828.75000531, -5543949.549783845, 2563117.448578311);
@@ -288,7 +289,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testJacobianVs80Implementation() {
+    void testJacobianVs80Implementation() {
         double gm = Constants.EIGEN5C_EARTH_MU;
         DeSitterRelativity relativity = new DeSitterRelativity();
         final Vector3D p = new Vector3D(3777828.75000531, -5543949.549783845, 2563117.448578311);

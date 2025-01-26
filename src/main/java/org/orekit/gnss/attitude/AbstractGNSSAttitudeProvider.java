@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,7 +30,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeStamped;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
@@ -51,7 +51,7 @@ abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvider {
     private final AbsoluteDate validityEnd;
 
     /** Provider for Sun position. */
-    private final ExtendedPVCoordinatesProvider sun;
+    private final ExtendedPositionProvider sun;
 
     /** Inertial frame where velocity are computed. */
     private final Frame inertialFrame;
@@ -70,7 +70,7 @@ abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvider {
      */
     protected AbstractGNSSAttitudeProvider(final AbsoluteDate validityStart,
                                            final AbsoluteDate validityEnd,
-                                           final ExtendedPVCoordinatesProvider sun,
+                                           final ExtendedPositionProvider sun,
                                            final Frame inertialFrame) {
         this.validityStart = validityStart;
         this.validityEnd   = validityEnd;
@@ -186,7 +186,7 @@ abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvider {
      * @return provider for Sun position
      * @since 12.0
      */
-    protected ExtendedPVCoordinatesProvider getSun() {
+    protected ExtendedPositionProvider getSun() {
         return sun;
     }
 

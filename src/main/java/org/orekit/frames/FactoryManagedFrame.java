@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,21 +16,11 @@
  */
 package org.orekit.frames;
 
-import java.io.Serializable;
-
-import org.orekit.annotation.DefaultDataContext;
-import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
-
 
 /** Base class for the predefined frames that are managed by {@link Frames}.
  * @author Luc Maisonobe
  */
 public class FactoryManagedFrame extends Frame {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = -8176399341069422724L;
 
     /** Key of the frame within the factory. */
     private final Predefined factoryKey;
@@ -53,49 +43,6 @@ public class FactoryManagedFrame extends Frame {
      */
     public Predefined getFactoryKey() {
         return factoryKey;
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * <p>
-     * This intermediate class serializes only the frame key.
-     * </p>
-     * @return data transfer object that will be serialized
-     */
-    @DefaultDataContext
-    private Object writeReplace() {
-        return new DataTransferObject(factoryKey);
-    }
-
-    /** Internal class used only for serialization. */
-    @DefaultDataContext
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 2970971575793609756L;
-
-        /** Name of the frame within the factory. */
-        private final String name;
-
-        /** Simple constructor.
-         * @param factoryKey key of the frame within the factory
-         */
-        private DataTransferObject(final Predefined factoryKey) {
-            this.name = factoryKey.name();
-        }
-
-        /** Replace the deserialized data transfer object with a {@link FactoryManagedFrame}.
-         * @return replacement {@link FactoryManagedFrame}
-         */
-        private Object readResolve() {
-            try {
-                // retrieve a managed frame
-                return DataContext.getDefault().getFrames()
-                        .getFrame(Predefined.valueOf(name));
-            } catch (OrekitException oe) {
-                throw new OrekitInternalError(oe);
-            }
-        }
-
     }
 
 }

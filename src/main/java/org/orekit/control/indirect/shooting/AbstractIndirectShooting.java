@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,9 +18,9 @@ package org.orekit.control.indirect.shooting;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.ode.FieldODEIntegrator;
+import org.hipparchus.ode.FieldOrdinaryDifferentialEquation;
 import org.hipparchus.ode.ODEIntegrator;
+import org.hipparchus.ode.nonstiff.FieldExplicitRungeKuttaIntegrator;
 import org.orekit.control.indirect.shooting.propagation.ShootingPropagationSettings;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
@@ -28,12 +28,11 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.conversion.FieldODEIntegratorBuilder;
+import org.orekit.propagation.conversion.FieldExplicitRungeKuttaIntegratorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
-import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
-import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.time.FieldAbsoluteDate;
 
 /**
  * Abstract class for indirect shooting methods with numerical propagation.
@@ -80,7 +79,8 @@ public abstract class AbstractIndirectShooting {
      */
     protected NumericalPropagator buildPropagator(final SpacecraftState initialState) {
         final ODEIntegrator integrator = buildIntegrator(initialState);
-        final NumericalPropagator propagator = new NumericalPropagator(integrator);
+        final NumericalPropagator propagator =
+              new NumericalPropagator(integrator, propagationSettings.getAttitudeProvider());
         propagator.setIgnoreCentralAttraction(true);
         propagator.setInitialState(initialState);
         propagator.setIgnoreCentralAttraction(false);
@@ -93,7 +93,6 @@ public abstract class AbstractIndirectShooting {
             }
             propagator.setOrbitType(null);
         }
-        propagator.setAttitudeProvider(propagationSettings.getAttitudeProvider());
         for (final ForceModel forceModel: propagationSettings.getForceModels()) {
             propagator.addForceModel(forceModel);
         }
@@ -112,41 +111,10 @@ public abstract class AbstractIndirectShooting {
         final ODEIntegratorBuilder integratorBuilder = propagationSettings.getIntegrationSettings().getIntegratorBuilder();
         if (initialState.isOrbitDefined()) {
             final Orbit orbit = initialState.getOrbit();
-            return integratorBuilder.buildIntegrator(orbit, orbit.getType());
+            return integratorBuilder.buildIntegrator(orbit, orbit.getType(), NumericalPropagator.DEFAULT_POSITION_ANGLE_TYPE);
         } else {
             return integratorBuilder.buildIntegrator(initialState.getAbsPVA());
         }
-    }
-
-    /**
-     * Create Gradient numerical propagator.
-     * @param initialState initial state
-     * @return numerical propagator.
-     */
-    protected FieldNumericalPropagator<Gradient> buildFieldPropagator(final FieldSpacecraftState<Gradient> initialState) {
-        final Field<Gradient> field = initialState.getDate().getField();
-        final FieldODEIntegrator<Gradient> integrator = buildFieldIntegrator(initialState);
-        final FieldNumericalPropagator<Gradient> propagator = new FieldNumericalPropagator<>(field, integrator);
-        propagator.setIgnoreCentralAttraction(true);
-        propagator.removeForceModels();
-        propagator.setInitialState(initialState);
-        propagator.setIgnoreCentralAttraction(false);
-        if (initialState.isOrbitDefined()) {
-            propagator.setOrbitType(initialState.getOrbit().getType());
-        } else {
-            propagator.setOrbitType(null);
-            if (propagationSettings.getForceModels().stream().noneMatch(NewtonianAttraction.class::isInstance)) {
-                propagator.setIgnoreCentralAttraction(true);
-            }
-        }
-        propagator.setAttitudeProvider(propagationSettings.getAttitudeProvider());
-        for (final ForceModel forceModel: propagationSettings.getForceModels()) {
-            propagator.addForceModel(forceModel);
-        }
-        final FieldAdditionalDerivativesProvider<Gradient> derivativesProvider = propagationSettings.getAdjointDynamicsProvider()
-            .buildFieldAdditionalDerivativesProvider(field);
-        propagator.addAdditionalDerivativesProvider(derivativesProvider);
-        return propagator;
     }
 
     /**
@@ -155,14 +123,25 @@ public abstract class AbstractIndirectShooting {
      * @param <T> field type
      * @return integrator.
      */
-    private <T extends CalculusFieldElement<T>> FieldODEIntegrator<T> buildFieldIntegrator(final FieldSpacecraftState<T> initialState) {
-        final FieldODEIntegratorBuilder<T> integratorBuilder = propagationSettings.getIntegrationSettings()
-            .getFieldIntegratorBuilder(initialState.getMass().getField());
+    protected <T extends CalculusFieldElement<T>> FieldExplicitRungeKuttaIntegrator<T> buildFieldIntegrator(final FieldSpacecraftState<T> initialState) {
+        final Field<T> field = initialState.getMass().getField();
+        final FieldExplicitRungeKuttaIntegratorBuilder<T> integratorBuilder = propagationSettings.getIntegrationSettings()
+            .getFieldIntegratorBuilder(field);
         if (initialState.isOrbitDefined()) {
             final FieldOrbit<T> orbit = initialState.getOrbit();
-            return integratorBuilder.buildIntegrator(orbit, orbit.getType());
+            return integratorBuilder.buildIntegrator(field, orbit.toOrbit(), orbit.getType(),
+                    NumericalPropagator.DEFAULT_POSITION_ANGLE_TYPE);
         } else {
             return integratorBuilder.buildIntegrator(initialState.getAbsPVA());
         }
     }
+
+    /**
+     * Build Ordinary Differential Equation for Field.
+     * @param referenceDate date defining the origin of times
+     * @param <T> field type
+     * @return Field ODE
+     * @since 13.0
+     */
+    protected abstract  <T extends CalculusFieldElement<T>> FieldOrdinaryDifferentialEquation<T> buildFieldODE(FieldAbsoluteDate<T> referenceDate);
 }

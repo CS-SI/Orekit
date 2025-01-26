@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,7 +27,7 @@ import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.gnss.AmbiguityCache;
 import org.orekit.estimation.measurements.gnss.InterSatellitesPhase;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
@@ -63,7 +63,7 @@ public class RelativisticJ2ClockInterSatellitesPhaseModifierTest {
     public void testRelativisticClockCorrectionDeprecated() {
 
         // Measurement
-        final double wavelength = Frequency.G01.getWavelength();
+        final double wavelength = PredefinedGnssSignal.G01.getWavelength();
         final InterSatellitesPhase phase = new InterSatellitesPhase(new ObservableSatellite(0), new ObservableSatellite(1),
                                                                     date,
                                                                     Vector3D.distance(states[0].getPosition(),
@@ -84,6 +84,9 @@ public class RelativisticJ2ClockInterSatellitesPhaseModifierTest {
         //          The computed value is equal to 67.284 ps, therefore lying in the supposed range.
         Assertions.assertEquals(-0.106217, estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0], 1.0e-6);
         Assertions.assertEquals(0, modifier.getParametersDrivers().size());
+        Assertions.assertEquals(1,
+                                estimatedAfter.getAppliedEffects().entrySet().stream().
+                                filter(e -> e.getKey().getEffectName().equals("J₂ clock relativity")).count());
 
     }
 
@@ -92,7 +95,7 @@ public class RelativisticJ2ClockInterSatellitesPhaseModifierTest {
 
         // Measurement
         final AmbiguityCache cache = new AmbiguityCache();
-        final double wavelength = Frequency.G01.getWavelength();
+        final double wavelength = PredefinedGnssSignal.G01.getWavelength();
         final InterSatellitesPhase phase = new InterSatellitesPhase(new ObservableSatellite(0), new ObservableSatellite(1),
                                                                     date,
                                                                     Vector3D.distance(states[0].getPosition(),

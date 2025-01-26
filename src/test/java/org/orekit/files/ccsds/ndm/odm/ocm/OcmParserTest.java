@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -44,6 +44,7 @@ import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.files.ccsds.utils.lexical.KvnLexicalAnalyzer;
 import org.orekit.files.ccsds.utils.lexical.XmlLexicalAnalyzer;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -55,7 +56,6 @@ import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
@@ -68,7 +68,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testNonExistentKvnFile() throws URISyntaxException {
+    public void testNonExistentKvnFile() {
         final String realName = "/ccsds/odm/ocm/OCMExample1.txt";
         final String wrongName = realName + "xxxxx";
         final DataSource source = new DataSource(wrongName, () -> getClass().getResourceAsStream(wrongName));
@@ -82,7 +82,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testNonExistentXmlFile() throws URISyntaxException {
+    public void testNonExistentXmlFile() {
         final String realName = "/ccsds/odm/ocm/OCMExample1.txt";
         final String wrongName = realName + "xxxxx";
         final DataSource source = new DataSource(wrongName, () -> getClass().getResourceAsStream(wrongName));
@@ -96,7 +96,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testMissingT0() throws URISyntaxException {
+    public void testMissingT0() {
         final String name = "/ccsds/odm/ocm/OCM-missing-t0.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -112,7 +112,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testMissingManeuverTime() throws URISyntaxException {
+    public void testMissingManeuverTime() {
         final String name = "/ccsds/odm/ocm/OCM-missing-maneuver-time.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -128,7 +128,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testWrongTimeSpan() throws URISyntaxException {
+    public void testWrongTimeSpan() {
         final String name = "/ccsds/odm/ocm/OCM-wrong-time-span.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -146,7 +146,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testMissingRevnumBasis() throws URISyntaxException {
+    public void testMissingRevnumBasis() {
         final String name = "/ccsds/odm/ocm/OCM-missing-revnum-basis.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -162,7 +162,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testSpuriousMetaDataSection() throws URISyntaxException {
+    public void testSpuriousMetaDataSection() {
         final String name = "/ccsds/odm/ocm/OCM-spurious-metadata-section.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -179,7 +179,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testIncompatibleUnitsDimension() throws URISyntaxException {
+    public void testIncompatibleUnitsDimension() {
         final String name = "/ccsds/odm/ocm/OCM-incompatible-units-dimension.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -196,7 +196,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testIncompatibleUnitsScale() throws URISyntaxException {
+    public void testIncompatibleUnitsScale() {
         final String name = "/ccsds/odm/ocm/OCM-incompatible-units-scale.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -213,7 +213,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testWrongNbElements() throws URISyntaxException {
+    public void testWrongNbElements() {
         final String name = "/ccsds/odm/ocm/OCM-wrong-nb-elements.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -231,7 +231,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testUnknownFrame() throws URISyntaxException {
+    public void testUnknownFrame() {
         final String name = "/ccsds/odm/ocm/OCM-unknown-frame.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final Ocm    ocm    = new ParserBuilder().
@@ -259,7 +259,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testUserDefined() throws URISyntaxException {
+    public void testUserDefined() {
         final String name = "/ccsds/odm/ocm/OCM-user-defined.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final Ocm    ocm    = new ParserBuilder().
@@ -289,7 +289,7 @@ public class OcmParserTest {
 
         // Check Header Block;
         Assertions.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
-        Assertions.assertEquals(new AbsoluteDate(1998, 11, 06, 9, 23, 57, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1998, 11, 6, 9, 23, 57, TimeScalesFactory.getUTC()),
                             file.getHeader().getCreationDate());
 
         // OCM is the only message for which OBJECT_NAME is not mandatory, it is not present in this minimal file
@@ -297,7 +297,8 @@ public class OcmParserTest {
 
         Assertions.assertEquals("JAXA", file.getHeader().getOriginator());
 
-        final AbsoluteDate t0 = new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172, TimeScalesFactory.getUTC());
+        final AbsoluteDate t0 = new AbsoluteDate(1998, 12, 18, 14, 28, new TimeOffset(15, TimeOffset.SECOND, 117200, TimeOffset.MICROSECOND),
+                                                 TimeScalesFactory.getUTC());
         Assertions.assertEquals(t0, file.getMetadata().getEpochT0());
         Assertions.assertEquals(TimeSystem.UTC, file.getMetadata().getTimeSystem());
 
@@ -370,7 +371,7 @@ public class OcmParserTest {
                             file.getHeader().getComments().get(0));
         Assertions.assertEquals("This example shows the specification of multiple comment lines",
                             file.getHeader().getComments().get(1));
-        Assertions.assertEquals(new AbsoluteDate(1998, 11, 06, 9, 23, 57, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1998, 11, 6, 9, 23, 57, TimeScalesFactory.getUTC()),
                             file.getHeader().getCreationDate());
         Assertions.assertEquals("JAXA", file.getHeader().getOriginator());
         Assertions.assertEquals("OCM 201113719185", file.getHeader().getMessageId());
@@ -421,8 +422,8 @@ public class OcmParserTest {
         Assertions.assertEquals("km/s", orb.getMetadata().getTrajUnits().get(4).getName());
         Assertions.assertEquals("km/s", orb.getMetadata().getTrajUnits().get(5).getName());
         Assertions.assertEquals(1, orb.getTrajectoryStates().size());
-        Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 25.1172, ts),
-                            orb.getTrajectoryStates().get(0).getDate());
+        Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, new TimeOffset(25L, 117200000000000000L), ts),
+                                orb.getTrajectoryStates().get(0).getDate());
         Assertions.assertEquals( 2854533.0, orb.getTrajectoryStates().get(0).getElements()[0], 1.0e-10);
         Assertions.assertEquals(-2916187.0, orb.getTrajectoryStates().get(0).getElements()[1], 1.0e-10);
         Assertions.assertEquals(-5360774.0, orb.getTrajectoryStates().get(0).getElements()[2], 1.0e-10);
@@ -502,7 +503,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testWriteOCM2() throws URISyntaxException, IOException {
+    public void testWriteOCM2() throws IOException {
         final String name = "/ccsds/odm/ocm/OCMExample2.xml";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         OcmParser parser = new ParserBuilder(). withMu(Constants.EIGEN5C_EARTH_MU).buildOcmParser();
@@ -534,7 +535,7 @@ public class OcmParserTest {
                             file.getHeader().getComments().get(2));
         Assertions.assertEquals("This example shows the specification of multiple comment lines",
                             file.getHeader().getComments().get(3));
-        Assertions.assertEquals(new AbsoluteDate(1998, 11, 06, 9, 23, 57, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1998, 11, 6, 9, 23, 57, TimeScalesFactory.getUTC()),
                             file.getHeader().getCreationDate());
         Assertions.assertEquals("JAXA", file.getHeader().getOriginator());
         Assertions.assertEquals("OCM 201113719185", file.getHeader().getMessageId());
@@ -636,7 +637,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testParseOCM3() throws IOException {
+    public void testParseOCM3() {
         final String   name  = "/ccsds/odm/ocm/OCMExample3.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final Ocm file = new ParserBuilder().
@@ -648,10 +649,10 @@ public class OcmParserTest {
         TimeScale utc = TimeScalesFactory.getUTC();
         Assertions.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
         Assertions.assertEquals(0, file.getMetadata().getComments().size());
-        Assertions.assertEquals(new AbsoluteDate(1998, 11, 06, 9, 23, 57, utc),
+        Assertions.assertEquals(new AbsoluteDate(1998, 11, 6, 9, 23, 57, utc),
                             file.getHeader().getCreationDate());
 
-        final AbsoluteDate t0 = new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172, utc);
+        final AbsoluteDate t0 = new AbsoluteDate(1998, 12, 18, 14, 28, new TimeOffset(15, TimeOffset.SECOND, 117200, TimeOffset.MICROSECOND), utc);
         Assertions.assertEquals(t0, file.getMetadata().getEpochT0());
         Assertions.assertEquals("UTC", file.getMetadata().getTimeSystem().name());
 
@@ -661,7 +662,8 @@ public class OcmParserTest {
         Assertions.assertEquals(2, orb.getMetadata().getComments().size());
         Assertions.assertEquals("ORBIT EPHEMERIS INCORPORATING DEPLOYMENTS AND MANEUVERS (BELOW)", orb.getMetadata().getComments().get(0));
         Assertions.assertEquals("intervening data records omitted after DT=20.0",     orb.getMetadata().getComments().get(1));
-        Assertions.assertEquals("PREDICTED", orb.getMetadata().getTrajBasis()); // default value, not present in the file
+        // TRAJ_BASIS has no default in 502.0-B-3 (p. 6-16, Table 6-4)
+        Assertions.assertEquals(null, orb.getMetadata().getTrajBasis()); // not present in the file
         Assertions.assertEquals("TOD", orb.getMetadata().getTrajReferenceFrame().getName());
         Assertions.assertNotNull(orb.getMetadata().getTrajReferenceFrame().asFrame());
         Assertions.assertEquals(CelestialBodyFrame.TOD, orb.getMetadata().getTrajReferenceFrame().asCelestialBodyFrame());
@@ -873,7 +875,7 @@ public class OcmParserTest {
         Assertions.assertEquals("This file is a dummy example with inconsistent data", file.getHeader().getComments().get(0));
         Assertions.assertEquals("it is used to exercise all possible keys in Key-Value Notation", file.getHeader().getComments().get(1));
         Assertions.assertEquals("dummy-classification",                file.getHeader().getClassification());
-        Assertions.assertEquals(new AbsoluteDate(2019, 7, 23, 10, 29, 31.576, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(2019, 7, 23, 10, 29, new TimeOffset(31L, 576000000000000000L), TimeScalesFactory.getUTC()),
                                 file.getHeader().getCreationDate());
         Assertions.assertEquals("JPL",                                 file.getHeader().getOriginator());
         Assertions.assertEquals("ABC-12_34",                           file.getHeader().getMessageId());
@@ -924,19 +926,23 @@ public class OcmParserTest {
         final AbsoluteDate epoch = file.getMetadata().getEpochT0();
         Assertions.assertEquals(new AbsoluteDate(2019, 7, 23,  0, 0, 0.0, TimeScalesFactory.getUTC()), epoch);
         Assertions.assertEquals(28800.0, file.getMetadata().getSclkOffsetAtEpoch(), 1.0e-10);
-        Assertions.assertEquals(2.5,                                   file.getMetadata().getSclkSecPerSISec(), 1.0e-15);
-        Assertions.assertEquals(new AbsoluteDate(2019, 7, 23,  9, 29, 31.576, TimeScalesFactory.getUTC()),
-                            file.getMetadata().getPreviousMessageEpoch());
-        Assertions.assertEquals(new AbsoluteDate(2019, 7, 23, 11, 29, 31.576, TimeScalesFactory.getUTC()),
-                            file.getMetadata().getNextMessageEpoch());
+        Assertions.assertEquals(2.5,     file.getMetadata().getSclkSecPerSISec(), 1.0e-15);
+        Assertions.assertEquals(new AbsoluteDate(2019, 7, 23,  9, 29,
+                                                 new TimeOffset(31, TimeOffset.SECOND, 576, TimeOffset.MILLISECOND),
+                                                 TimeScalesFactory.getUTC()),
+                                file.getMetadata().getPreviousMessageEpoch());
+        Assertions.assertEquals(new AbsoluteDate(2019, 7, 23, 11, 29,
+                                                 new TimeOffset(31, TimeOffset.SECOND, 576, TimeOffset.MILLISECOND),
+                                                 TimeScalesFactory.getUTC()),
+                                file.getMetadata().getNextMessageEpoch());
         Assertions.assertEquals(new AbsoluteDate(2019, 7, 23,  9, 30,  0.0, TimeScalesFactory.getUTC()),
-                            file.getMetadata().getStartTime());
+                                file.getMetadata().getStartTime());
         Assertions.assertEquals(new AbsoluteDate(2019, 7, 23, 10, 29, 50.0, TimeScalesFactory.getUTC()),
-                            file.getMetadata().getStopTime());
+                                file.getMetadata().getStopTime());
         Assertions.assertEquals(0.041550925925 * Constants.JULIAN_DAY, file.getMetadata().getTimeSpan(), 1.0e-15);
         Assertions.assertEquals(37.0,                                  file.getMetadata().getTaimutcT0(), 1.0e-15);
         Assertions.assertEquals(new AbsoluteDate(2050, 12, 31, 23, 59, 60.0, TimeScalesFactory.getUTC()),
-                            file.getMetadata().getNextLeapEpoch());
+                                file.getMetadata().getNextLeapEpoch());
         Assertions.assertEquals(38.0,                                  file.getMetadata().getNextLeapTaimutc(), 1.0e-15);
         Assertions.assertEquals(-0.1642060,                            file.getMetadata().getUt1mutcT0(), 1.0e-15);
         Assertions.assertEquals("IERS",                                file.getMetadata().getEopSource());

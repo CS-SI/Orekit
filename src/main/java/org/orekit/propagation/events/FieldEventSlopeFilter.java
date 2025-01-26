@@ -94,9 +94,7 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
      * @param filter filter to use
      */
     public FieldEventSlopeFilter(final D rawDetector, final FilterType filter) {
-        this(rawDetector.getMaxCheckInterval(), rawDetector.getThreshold(),
-             rawDetector.getMaxIterationCount(), new LocalHandler<>(),
-             rawDetector, filter);
+        this(rawDetector.getDetectionSettings(), new LocalHandler<>(), rawDetector, filter);
     }
 
     /** Protected constructor with full parameters.
@@ -105,18 +103,17 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param rawDetector event detector to wrap
      * @param filter filter to use
+     * since 13.0
      */
     @SuppressWarnings("unchecked")
-    protected FieldEventSlopeFilter(final FieldAdaptableInterval<T> maxCheck, final T threshold,
-                                    final int maxIter, final FieldEventHandler<T> handler,
+    protected FieldEventSlopeFilter(final FieldEventDetectionSettings<T> detectionSettings,
+                                    final FieldEventHandler<T> handler,
                                     final D rawDetector, final FilterType filter) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(detectionSettings, handler);
         this.rawDetector  = rawDetector;
         this.filter       = filter;
         this.transformers = new Transformer[HISTORY_SIZE];
@@ -125,9 +122,9 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
 
     /** {@inheritDoc} */
     @Override
-    protected FieldEventSlopeFilter<D, T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
-                                                 final int newMaxIter, final FieldEventHandler<T> newHandler) {
-        return new FieldEventSlopeFilter<>(newMaxCheck, newThreshold, newMaxIter, newHandler, rawDetector, filter);
+    protected FieldEventSlopeFilter<D, T> create(final FieldEventDetectionSettings<T> detectionSettings,
+                                                 final FieldEventHandler<T> newHandler) {
+        return new FieldEventSlopeFilter<>(detectionSettings, newHandler, rawDetector, filter);
     }
 
     /**
@@ -139,6 +136,7 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
     }
 
     /**  {@inheritDoc} */
+    @Override
     public void init(final FieldSpacecraftState<T> s0,
                      final FieldAbsoluteDate<T> t) {
         super.init(s0, t);
@@ -249,16 +247,16 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
     private static class LocalHandler<D extends FieldEventDetector<T>, T extends CalculusFieldElement<T>> implements FieldEventHandler<T> {
 
         /** {@inheritDoc} */
+        @SuppressWarnings("unchecked")
         public Action eventOccurred(final FieldSpacecraftState<T> s, final FieldEventDetector<T> detector, final boolean increasing) {
-            @SuppressWarnings("unchecked")
             final FieldEventSlopeFilter<D, T> esf = (FieldEventSlopeFilter<D, T>) detector;
             return esf.rawDetector.getHandler().eventOccurred(s, esf.rawDetector, esf.filter.getTriggeredIncreasing());
         }
 
         /** {@inheritDoc} */
         @Override
+        @SuppressWarnings("unchecked")
         public FieldSpacecraftState<T> resetState(final FieldEventDetector<T> detector, final FieldSpacecraftState<T> oldState) {
-            @SuppressWarnings("unchecked")
             final FieldEventSlopeFilter<D, T> esf = (FieldEventSlopeFilter<D, T>) detector;
             return esf.rawDetector.getHandler().resetState(esf.rawDetector, oldState);
         }

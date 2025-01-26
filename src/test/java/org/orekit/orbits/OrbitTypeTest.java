@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -132,7 +132,7 @@ class OrbitTypeTest {
 
     static <T extends CalculusFieldElement<T>> void compareFieldCartesian(final FieldCartesianOrbit<T> expectedFieldOrbit,
                                                                           final FieldCartesianOrbit<T> actualFieldOrbit) {
-        Assertions.assertEquals(expectedFieldOrbit.hasDerivatives(), actualFieldOrbit.hasDerivatives());
+        Assertions.assertEquals(expectedFieldOrbit.hasNonKeplerianAcceleration(), actualFieldOrbit.hasNonKeplerianAcceleration());
         Assertions.assertEquals(expectedFieldOrbit.getFrame(), actualFieldOrbit.getFrame());
         Assertions.assertEquals(expectedFieldOrbit.getMu(), actualFieldOrbit.getMu());
         Assertions.assertEquals(expectedFieldOrbit.getDate(), actualFieldOrbit.getDate());

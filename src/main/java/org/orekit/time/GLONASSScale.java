@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,11 +32,11 @@ import org.hipparchus.CalculusFieldElement;
  */
 public class GLONASSScale implements TimeScale {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20160331L;
-
     /** Constant offset with respect to UTC (3 hours). */
-    private static final double OFFSET = 10800;
+    private static final TimeOffset OFFSET = new TimeOffset(3, TimeOffset.HOUR);
+
+    /** Constant negative offset with respect to UTC (-3 hours). */
+    private static final TimeOffset NEGATIVE_OFFSET = OFFSET.negate();
 
     /** UTC time scale. */
     private final UTCScale utc;
@@ -50,22 +50,22 @@ public class GLONASSScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public double offsetFromTAI(final AbsoluteDate date) {
-        return OFFSET + utc.offsetFromTAI(date);
+    public TimeOffset offsetFromTAI(final AbsoluteDate date) {
+        return OFFSET.add(utc.offsetFromTAI(date));
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
-        return utc.offsetFromTAI(date).add(OFFSET);
+        return utc.offsetFromTAI(date).add(OFFSET.toDouble());
     }
 
     /** {@inheritDoc} */
     @Override
-    public double offsetToTAI(final DateComponents date, final TimeComponents time) {
+    public TimeOffset offsetToTAI(final DateComponents date, final TimeComponents time) {
         final DateTimeComponents utcComponents =
-                        new DateTimeComponents(new DateTimeComponents(date, time), -OFFSET);
-        return utc.offsetToTAI(utcComponents.getDate(), utcComponents.getTime()) - OFFSET;
+                        new DateTimeComponents(new DateTimeComponents(date, time), NEGATIVE_OFFSET);
+        return utc.offsetToTAI(utcComponents.getDate(), utcComponents.getTime()).add(NEGATIVE_OFFSET);
     }
 
     /** {@inheritDoc} */
@@ -94,7 +94,7 @@ public class GLONASSScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public double getLeap(final AbsoluteDate date) {
+    public TimeOffset getLeap(final AbsoluteDate date) {
         return utc.getLeap(date);
     }
 

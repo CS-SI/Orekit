@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,7 +40,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
@@ -255,7 +255,7 @@ public class DSSTIntegrableJacobianColumnGeneratorTest {
         final double minStep = 6000.0;
         final double maxStep = 86400.0;
 
-        double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, orbitType);
         DSSTPropagator propagator =
             new DSSTPropagator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]), type);
         for (DSSTForceModel model : models) {

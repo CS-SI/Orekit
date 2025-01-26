@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,7 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldKinematicTransform;
 import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
@@ -73,7 +74,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @param <T> type of the field elements
  */
 public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends FieldOrbit<T>
-        implements PositionAngleBased {
+        implements PositionAngleBased<FieldEquinoctialOrbit<T>> {
 
     /** Semi-major axis (m). */
     private final T a;
@@ -140,8 +141,8 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
                                  final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
         this(a, ex, ey, hx, hy, l,
-             null, null, null, null, null, null,
-             type, cachedPositionAngleType, frame, date, mu);
+             a.getField().getZero(), a.getField().getZero(), a.getField().getZero(), a.getField().getZero(), a.getField().getZero(),
+             computeKeplerianLDot(type, a, ex, ey, mu, l, type), type, cachedPositionAngleType, frame, date, mu);
     }
 
     /** Creates a new instance.
@@ -165,8 +166,8 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
                                  final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
             throws IllegalArgumentException {
         this(a, ex, ey, hx, hy, l,
-                null, null, null, null, null, null,
-                type, type, frame, date, mu);
+                a.getField().getZero(), a.getField().getZero(), a.getField().getZero(), a.getField().getZero(), a.getField().getZero(),
+                computeKeplerianLDot(type, a, ex, ey, mu, l, type), type, type, frame, date, mu);
     }
 
     /** Creates a new instance.
@@ -217,14 +218,9 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
         this.hy    = hy;
         this.hyDot = hyDot;
 
-        if (hasDerivatives()) {
-            final FieldUnivariateDerivative1<T> alphaUD = initializeCachedL(l, lDot, type);
-            this.cachedL = alphaUD.getValue();
-            this.cachedLDot = alphaUD.getFirstDerivative();
-        } else {
-            this.cachedL = initializeCachedL(l, type);
-            this.cachedLDot = null;
-        }
+        final FieldUnivariateDerivative1<T> lUD = initializeCachedL(l, lDot, type);
+        this.cachedL = lUD.getValue();
+        this.cachedLDot = lUD.getFirstDerivative();
 
         this.partialPV = null;
 
@@ -352,12 +348,12 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
             // acceleration is either almost zero or NaN,
             // we assume acceleration was not known
             // we don't set up derivatives
-            aDot  = null;
-            exDot = null;
-            eyDot = null;
-            hxDot = null;
-            hyDot = null;
-            cachedLDot = null;
+            aDot  = getZero();
+            exDot = getZero();
+            eyDot = getZero();
+            hxDot = getZero();
+            hyDot = getZero();
+            cachedLDot = computeKeplerianLDot(cachedPositionAngleType, a, ex, ey, mu, cachedL, cachedPositionAngleType);
         }
 
     }
@@ -422,22 +418,12 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
         cachedPositionAngleType = op.getCachedPositionAngleType();
         cachedL    = getZero().newInstance(op.getL(cachedPositionAngleType));
 
-        if (op.hasDerivatives()) {
-            aDot  = getZero().newInstance(op.getADot());
-            exDot = getZero().newInstance(op.getEquinoctialExDot());
-            eyDot = getZero().newInstance(op.getEquinoctialEyDot());
-            hxDot = getZero().newInstance(op.getHxDot());
-            hyDot = getZero().newInstance(op.getHyDot());
-            cachedLDot = getZero().newInstance(op.getLDot(cachedPositionAngleType));
-        } else {
-            aDot  = null;
-            exDot = null;
-            eyDot = null;
-            hxDot = null;
-            hyDot = null;
-            cachedLDot = null;
-        }
-
+        aDot  = getZero().newInstance(op.getADot());
+        exDot = getZero().newInstance(op.getEquinoctialExDot());
+        eyDot = getZero().newInstance(op.getEquinoctialEyDot());
+        hxDot = getZero().newInstance(op.getHxDot());
+        hyDot = getZero().newInstance(op.getHyDot());
+        cachedLDot = getZero().newInstance(op.getLDot(cachedPositionAngleType));
     }
 
     /** Constructor from Field and Orbit.
@@ -537,10 +523,6 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     /** {@inheritDoc} */
     @Override
     public T getLvDot() {
-
-        if (!hasDerivatives()) {
-            return null;
-        }
         switch (cachedPositionAngleType) {
             case ECCENTRIC:
                 final FieldUnivariateDerivative1<T> lEUD = new FieldUnivariateDerivative1<>(cachedL, cachedLDot);
@@ -588,9 +570,6 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     @Override
     public T getLEDot() {
 
-        if (!hasDerivatives()) {
-            return null;
-        }
         switch (cachedPositionAngleType) {
             case TRUE:
                 final FieldUnivariateDerivative1<T> lvUD = new FieldUnivariateDerivative1<>(cachedL, cachedLDot);
@@ -638,9 +617,6 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     @Override
     public T getLMDot() {
 
-        if (!hasDerivatives()) {
-            return null;
-        }
         switch (cachedPositionAngleType) {
             case TRUE:
                 final FieldUnivariateDerivative1<T> lvUD = new FieldUnivariateDerivative1<>(cachedL, cachedLDot);
@@ -687,56 +663,9 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
 
     /** {@inheritDoc} */
     @Override
-    public boolean hasDerivatives() {
-        return aDot != null;
-    }
-
-    /** Computes the true longitude argument from the eccentric longitude argument.
-     * @param lE = E + ω + Ω eccentric longitude argument (rad)
-     * @param ex first component of the eccentricity vector
-     * @param ey second component of the eccentricity vector
-     * @param <T> Type of the field elements
-     * @return the true longitude argument
-     */
-    @Deprecated
-    public static <T extends CalculusFieldElement<T>> T eccentricToTrue(final T lE, final T ex, final T ey) {
-        return FieldEquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, lE);
-    }
-
-    /** Computes the eccentric longitude argument from the true longitude argument.
-     * @param lv = v + ω + Ω true longitude argument (rad)
-     * @param ex first component of the eccentricity vector
-     * @param ey second component of the eccentricity vector
-     * @param <T> Type of the field elements
-     * @return the eccentric longitude argument
-     */
-    @Deprecated
-    public static <T extends CalculusFieldElement<T>> T trueToEccentric(final T lv, final T ex, final T ey) {
-        return FieldEquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, lv);
-    }
-
-    /** Computes the eccentric longitude argument from the mean longitude argument.
-     * @param lM = M + ω + Ω mean longitude argument (rad)
-     * @param ex first component of the eccentricity vector
-     * @param ey second component of the eccentricity vector
-     * @param <T> Type of the field elements
-     * @return the eccentric longitude argument
-     */
-    @Deprecated
-    public static <T extends CalculusFieldElement<T>> T meanToEccentric(final T lM, final T ex, final T ey) {
-        return FieldEquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, lM);
-    }
-
-    /** Computes the mean longitude argument from the eccentric longitude argument.
-     * @param lE = E + ω + Ω mean longitude argument (rad)
-     * @param ex first component of the eccentricity vector
-     * @param ey second component of the eccentricity vector
-     * @param <T> Type of the field elements
-     * @return the mean longitude argument
-     */
-    @Deprecated
-    public static <T extends CalculusFieldElement<T>> T eccentricToMean(final T lE, final T ex, final T ey) {
-        return FieldEquinoctialLongitudeArgumentUtility.eccentricToMean(ex, ey, lE);
+    public boolean hasNonKeplerianAcceleration() {
+        return aDot.getReal() != 0. || exDot.getReal() != 0 || hxDot.getReal() != 0. || eyDot.getReal() != 0. || hyDot.getReal() != 0. ||
+                FastMath.abs(cachedLDot.subtract(computeKeplerianLDot(cachedPositionAngleType, a, ex, ey, getMu(), cachedL, cachedPositionAngleType)).getReal()) > TOLERANCE_POSITION_ANGLE_RATE;
     }
 
     /** {@inheritDoc} */
@@ -748,11 +677,9 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     /** {@inheritDoc} */
     @Override
     public T getEDot() {
-
-        if (!hasDerivatives()) {
-            return null;
+        if (!hasNonKeplerianRates()) {
+            return getZero();
         }
-
         return ex.multiply(exDot).add(ey.multiply(eyDot)).divide(ex.square().add(ey.square()).sqrt());
 
     }
@@ -766,11 +693,9 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     /** {@inheritDoc} */
     @Override
     public T getIDot() {
-
-        if (!hasDerivatives()) {
-            return null;
+        if (!hasNonKeplerianRates()) {
+            return getZero();
         }
-
         final T h2 = hx.square().add(hy.square());
         final T h  = h2.sqrt();
         return hx.multiply(hxDot).add(hy.multiply(hyDot)).multiply(2).divide(h.multiply(h2.add(1)));
@@ -885,50 +810,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
 
     }
 
-    /** Initialize cached argument of longitude.
-     * @param l input argument of longitude
-     * @param positionAngleType position angle type passed as input
-     * @return argument of longitude to cache
-     * @since 12.1
-     */
-    private T initializeCachedL(final T l, final PositionAngleType positionAngleType) {
-        if (positionAngleType == cachedPositionAngleType) {
-            return l;
-
-        } else {
-            switch (cachedPositionAngleType) {
-
-                case ECCENTRIC:
-                    if (positionAngleType == PositionAngleType.MEAN) {
-                        return FieldEquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, l);
-                    } else {
-                        return FieldEquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, l);
-                    }
-
-                case MEAN:
-                    if (positionAngleType == PositionAngleType.TRUE) {
-                        return FieldEquinoctialLongitudeArgumentUtility.trueToMean(ex, ey, l);
-                    } else {
-                        return FieldEquinoctialLongitudeArgumentUtility.eccentricToMean(ex, ey, l);
-                    }
-
-                case TRUE:
-                    if (positionAngleType == PositionAngleType.MEAN) {
-                        return FieldEquinoctialLongitudeArgumentUtility.meanToTrue(ex, ey, l);
-                    } else {
-                        return FieldEquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, l);
-                    }
-
-                default:
-                    throw new OrekitInternalError(null);
-            }
-        }
-    }
-
     /** Compute non-Keplerian part of the acceleration from first time derivatives.
-     * <p>
-     * This method should be called only when {@link #hasDerivatives()} returns true.
-     * </p>
      * @return non-Keplerian part of the acceleration
      */
     private FieldVector3D<T> nonKeplerianAcceleration() {
@@ -1015,12 +897,37 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
         final T r2 = partialPV.getPosition().getNormSq();
         final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r2.multiply(r2.sqrt()).reciprocal().multiply(getMu().negate()),
                                                                            partialPV.getPosition());
-        final FieldVector3D<T> acceleration = hasDerivatives() ?
+        final FieldVector3D<T> acceleration = hasNonKeplerianRates() ?
                                               keplerianAcceleration.add(nonKeplerianAcceleration()) :
                                               keplerianAcceleration;
 
         return new TimeStampedFieldPVCoordinates<>(getDate(), partialPV.getPosition(), partialPV.getVelocity(), acceleration);
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldEquinoctialOrbit<T> withFrame(final Frame inertialFrame) {
+        final FieldPVCoordinates<T> fieldPVCoordinates;
+        if (hasNonKeplerianAcceleration()) {
+            fieldPVCoordinates = getPVCoordinates(inertialFrame);
+        } else {
+            final FieldKinematicTransform<T> transform = getFrame().getKinematicTransformTo(inertialFrame, getDate());
+            fieldPVCoordinates = transform.transformOnlyPV(getPVCoordinates());
+        }
+        final FieldEquinoctialOrbit<T> fieldOrbit = new FieldEquinoctialOrbit<>(fieldPVCoordinates, inertialFrame, getDate(), getMu());
+        if (fieldOrbit.getCachedPositionAngleType() == getCachedPositionAngleType()) {
+            return fieldOrbit;
+        } else {
+            return fieldOrbit.withCachedPositionAngleType(getCachedPositionAngleType());
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldEquinoctialOrbit<T> withCachedPositionAngleType(final PositionAngleType positionAngleType) {
+        return new FieldEquinoctialOrbit<>(a, ex, ey, hx, hy, getL(positionAngleType), aDot, exDot, eyDot, hxDot, hyDot,
+                getLDot(positionAngleType), positionAngleType, getFrame(), getDate(), getMu());
     }
 
     /** {@inheritDoc} */
@@ -1039,7 +946,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
                                                                                       PositionAngleType.MEAN, cachedPositionAngleType, getFrame(),
                                                                                       getDate().shiftedBy(dt), getMu());
 
-        if (hasDerivatives()) {
+        if (hasNonKeplerianRates()) {
 
             // extract non-Keplerian acceleration from first time derivatives
             final FieldVector3D<T> nonKeplerianAcceleration = nonKeplerianAcceleration();
@@ -1238,27 +1145,39 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     @Override
     public void addKeplerContribution(final PositionAngleType type, final T gm,
                                       final T[] pDot) {
-        final T oMe2;
-        final T ksi;
-        final T n               = gm.divide(a).sqrt().divide(a);
+        pDot[5] = pDot[5].add(computeKeplerianLDot(type, a, ex, ey, gm, cachedL, cachedPositionAngleType));
+    }
+
+    /**
+     * Compute rate of argument of longitude.
+     * @param type position angle type of rate
+     * @param a semi major axis
+     * @param ex ex
+     * @param ey ey
+     * @param mu mu
+     * @param l argument of longitude
+     * @param cachedType position angle type of passed l
+     * @param <T> field type
+     * @return first-order time derivative for l
+     * @since 12.2
+     */
+    private static <T extends CalculusFieldElement<T>> T computeKeplerianLDot(final PositionAngleType type, final T a, final T ex,
+                                                                              final T ey, final T mu, final T l, final PositionAngleType cachedType) {
+        final T n               = mu.divide(a).sqrt().divide(a);
+        if (type == PositionAngleType.MEAN) {
+            return n;
+        }
         final FieldSinCos<T> sc;
-        switch (type) {
-            case MEAN :
-                pDot[5] = pDot[5].add(n);
-                break;
-            case ECCENTRIC :
-                sc = FastMath.sinCos(getLE());
-                ksi  = ((ex.multiply(sc.cos())).add(ey.multiply(sc.sin()))).negate().add(1).reciprocal();
-                pDot[5] = pDot[5].add(n.multiply(ksi));
-                break;
-            case TRUE :
-                sc = FastMath.sinCos(getLv());
-                oMe2 = getOne().subtract(ex.square()).subtract(ey.square());
-                ksi  =  ex.multiply(sc.cos()).add(1).add(ey.multiply(sc.sin()));
-                pDot[5] = pDot[5].add(n.multiply(ksi).multiply(ksi).divide(oMe2.multiply(oMe2.sqrt())));
-                break;
-            default :
-                throw new OrekitInternalError(null);
+        final T ksi;
+        if (type == PositionAngleType.ECCENTRIC) {
+            sc = FastMath.sinCos(FieldEquinoctialLongitudeArgumentUtility.convertL(cachedType, l, ex, ey, type));
+            ksi = ((ex.multiply(sc.cos())).add(ey.multiply(sc.sin()))).negate().add(1).reciprocal();
+            return n.multiply(ksi);
+        } else {
+            sc = FastMath.sinCos(FieldEquinoctialLongitudeArgumentUtility.convertL(cachedType, l, ex, ey, type));
+            final T oMe2 = a.getField().getOne().subtract(ex.square()).subtract(ey.square());
+            ksi  =  ex.multiply(sc.cos()).add(1).add(ey.multiply(sc.sin()));
+            return n.multiply(ksi).multiply(ksi).divide(oMe2.multiply(oMe2.sqrt()));
         }
     }
 
@@ -1282,13 +1201,13 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
 
     /** {@inheritDoc} */
     @Override
-    public boolean hasRates() {
-        return hasDerivatives();
+    public boolean hasNonKeplerianRates() {
+        return hasNonKeplerianAcceleration();
     }
 
     /** {@inheritDoc} */
     @Override
-    public FieldEquinoctialOrbit<T> removeRates() {
+    public FieldEquinoctialOrbit<T> withKeplerianRates() {
         return new FieldEquinoctialOrbit<>(getA(), getEquinoctialEx(), getEquinoctialEy(), getHx(), getHy(),
                 cachedL, cachedPositionAngleType, getFrame(), getDate(), getMu());
     }
@@ -1297,7 +1216,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     @Override
     public EquinoctialOrbit toOrbit() {
         final double cachedPositionAngle = cachedL.getReal();
-        if (hasDerivatives()) {
+        if (hasNonKeplerianRates()) {
             return new EquinoctialOrbit(a.getReal(), ex.getReal(), ey.getReal(),
                                         hx.getReal(), hy.getReal(), cachedPositionAngle,
                                         aDot.getReal(), exDot.getReal(), eyDot.getReal(),

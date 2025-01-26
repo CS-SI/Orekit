@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -236,7 +236,7 @@ class FieldOrbitTest {
         }
 
         @Override
-        public boolean hasDerivatives() {
+        public boolean hasNonKeplerianAcceleration() {
             return false;
         }
 
@@ -250,6 +250,11 @@ class FieldOrbitTest {
             final FieldPVCoordinates<Complex> fieldPVCoordinates = new FieldPVCoordinates<>(initPosition(),
                     FieldVector3D.getZero(getField()));
             return new TimeStampedFieldPVCoordinates<>(getDate(), fieldPVCoordinates);
+        }
+
+        @Override
+        public FieldOrbit<Complex> withFrame(Frame inertialFrame) {
+            return null;
         }
 
         @Override

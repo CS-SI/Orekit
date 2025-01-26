@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,7 +40,6 @@ public interface TroposphericModel extends ParameterDriversProvider {
      * @param trackingCoordinates tracking coordinates of the satellite
      * @param point station location
      * @param weather weather parameters
-     * for constant default values)
      * @param parameters tropospheric model parameters
      * @param date current date
      * @return the path delay due to the troposphere
@@ -56,7 +55,6 @@ public interface TroposphericModel extends ParameterDriversProvider {
      * @param trackingCoordinates tracking coordinates of the satellite
      * @param point station location
      * @param weather weather parameters
-     * for constant default values)
      * @param parameters tropospheric model parameters at current date
      * @param date current date
      * @return the path delay due to the troposphere

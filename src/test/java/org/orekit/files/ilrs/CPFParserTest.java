@@ -43,6 +43,11 @@ import java.util.List;
 public class CPFParserTest {
 
     @Test
+    public void testIssue1614() {
+        Assertions.assertEquals(10, CPFParser.DEFAULT_INTERPOLATION_SAMPLE);
+    }
+
+    @Test
     public void testJason3Version2() throws URISyntaxException, IOException {
 
         // Simple test for version 2.0, only contains position entries

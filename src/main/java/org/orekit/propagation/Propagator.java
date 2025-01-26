@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -205,7 +205,7 @@ public interface Propagator extends PVCoordinatesProvider {
     /** Add an event detector.
      * @param detector event detector to add
      * @see #clearEventsDetectors()
-     * @see #getEventsDetectors()
+     * @see #getEventDetectors()
      * @param <T> class type for the generic version
      */
     <T extends EventDetector> void addEventDetector(T detector);
@@ -215,11 +215,11 @@ public interface Propagator extends PVCoordinatesProvider {
      * @see #addEventDetector(EventDetector)
      * @see #clearEventsDetectors()
      */
-    Collection<EventDetector> getEventsDetectors();
+    Collection<EventDetector> getEventDetectors();
 
     /** Remove all events detectors.
      * @see #addEventDetector(EventDetector)
-     * @see #getEventsDetectors()
+     * @see #getEventDetectors()
      */
     void clearEventsDetectors();
 

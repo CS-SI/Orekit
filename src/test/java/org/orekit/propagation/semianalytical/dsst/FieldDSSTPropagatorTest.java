@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -77,12 +77,7 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.FieldBoundedPropagator;
-import org.orekit.propagation.FieldEphemerisGenerator;
-import org.orekit.propagation.FieldPropagator;
-import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.PropagationType;
-import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.*;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldAltitudeDetector;
 import org.orekit.propagation.events.FieldDateDetector;
@@ -112,7 +107,7 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 public class FieldDSSTPropagatorTest {
-
+ 
     /**
      * Test issue #1029 about DSST short period terms computation.
      * Issue #1029 is a regression introduced in version 10.0
@@ -141,7 +136,7 @@ public class FieldDSSTPropagatorTest {
         final FieldEquinoctialOrbit<T> equinoctial = new FieldEquinoctialOrbit<>(orbit);
 
         // create propagator
-        final double[][] tol = FieldDSSTPropagator.tolerances(zero.add(0.001), equinoctial);
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-3).getTolerances(equinoctial, OrbitType.EQUINOCTIAL);
         final AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 3600.0, 86400.0, tol[0], tol[1]);
         final FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.OSCULATING);
 
@@ -159,7 +154,7 @@ public class FieldDSSTPropagatorTest {
 
         // The purpose is not verifying propagated values, but to check that no exception occurred
         Assertions.assertEquals(0.0, propagated.getDate().durationFrom(orbitEpoch.shiftedBy(20.0 * Constants.JULIAN_DAY)).getReal(), Double.MIN_VALUE);
-        Assertions.assertEquals(4.216464862956647E7, propagated.getA().getReal(), Double.MIN_VALUE);
+        Assertions.assertEquals(4.216464862956647E7, propagated.getOrbit().getA().getReal(), Double.MIN_VALUE);
 
     }
 
@@ -183,12 +178,12 @@ public class FieldDSSTPropagatorTest {
         dsstForceModels.add(new DSSTThirdBody(CelestialBodyFactory.getSun(), orbit.getMu().getReal()));
 
         FieldSpacecraftState<T> meanState = FieldDSSTPropagator.computeMeanState(osculatingState, null, dsstForceModels);
-        Assertions.assertEquals( 0.421,   osculatingState.getA().subtract(meanState.getA()).getReal(),                         1.0e-3);
-        Assertions.assertEquals(-5.23e-8, osculatingState.getEquinoctialEx().subtract(meanState.getEquinoctialEx()).getReal(), 1.0e-10);
-        Assertions.assertEquals(15.22e-8, osculatingState.getEquinoctialEy().subtract(meanState.getEquinoctialEy()).getReal(), 1.0e-10);
-        Assertions.assertEquals(-3.15e-8, osculatingState.getHx().subtract(meanState.getHx()).getReal(),                       1.0e-10);
-        Assertions.assertEquals( 2.83e-8, osculatingState.getHy().subtract(meanState.getHy()).getReal(),                       1.0e-10);
-        Assertions.assertEquals(15.96e-8, osculatingState.getLM().subtract(meanState.getLM()).getReal(),                       1.0e-10);
+        Assertions.assertEquals( 0.421,   osculatingState.getOrbit().getA().subtract(meanState.getOrbit().getA()).getReal(),                         1.0e-3);
+        Assertions.assertEquals(-5.23e-8, osculatingState.getOrbit().getEquinoctialEx().subtract(meanState.getOrbit().getEquinoctialEx()).getReal(), 1.0e-10);
+        Assertions.assertEquals(15.22e-8, osculatingState.getOrbit().getEquinoctialEy().subtract(meanState.getOrbit().getEquinoctialEy()).getReal(), 1.0e-10);
+        Assertions.assertEquals(-3.15e-8, osculatingState.getOrbit().getHx().subtract(meanState.getOrbit().getHx()).getReal(),                       1.0e-10);
+        Assertions.assertEquals( 2.83e-8, osculatingState.getOrbit().getHy().subtract(meanState.getOrbit().getHy()).getReal(),                       1.0e-10);
+        Assertions.assertEquals(15.96e-8, osculatingState.getOrbit().getLM().subtract(meanState.getOrbit().getLM()).getReal(),                       1.0e-10);
 
     }
 
@@ -212,12 +207,12 @@ public class FieldDSSTPropagatorTest {
         dsstForceModels.add(new DSSTThirdBody(CelestialBodyFactory.getSun(), orbit.getMu().getReal()));
 
         FieldSpacecraftState<T> meanState = FieldDSSTPropagator.computeMeanState(osculatingState, null, dsstForceModels);
-        Assertions.assertEquals( 0.421,   osculatingState.getA().subtract(meanState.getA()).getReal(),                         1.0e-3);
-        Assertions.assertEquals(-5.23e-8, osculatingState.getEquinoctialEx().subtract(meanState.getEquinoctialEx()).getReal(), 1.0e-10);
-        Assertions.assertEquals(15.22e-8, osculatingState.getEquinoctialEy().subtract(meanState.getEquinoctialEy()).getReal(), 1.0e-10);
-        Assertions.assertEquals(-3.15e-8, osculatingState.getHx().subtract(meanState.getHx()).getReal(),                       1.0e-10);
-        Assertions.assertEquals( 2.83e-8, osculatingState.getHy().subtract(meanState.getHy()).getReal(),                       1.0e-10);
-        Assertions.assertEquals(15.96e-8, osculatingState.getLM().subtract(meanState.getLM()).getReal(),                       1.0e-10);
+        Assertions.assertEquals( 0.421,   osculatingState.getOrbit().getA().subtract(meanState.getOrbit().getA()).getReal(),                         1.0e-3);
+        Assertions.assertEquals(-5.23e-8, osculatingState.getOrbit().getEquinoctialEx().subtract(meanState.getOrbit().getEquinoctialEx()).getReal(), 1.0e-10);
+        Assertions.assertEquals(15.22e-8, osculatingState.getOrbit().getEquinoctialEy().subtract(meanState.getOrbit().getEquinoctialEy()).getReal(), 1.0e-10);
+        Assertions.assertEquals(-3.15e-8, osculatingState.getOrbit().getHx().subtract(meanState.getOrbit().getHx()).getReal(),                       1.0e-10);
+        Assertions.assertEquals( 2.83e-8, osculatingState.getOrbit().getHy().subtract(meanState.getOrbit().getHy()).getReal(),                       1.0e-10);
+        Assertions.assertEquals(15.96e-8, osculatingState.getOrbit().getLM().subtract(meanState.getOrbit().getLM()).getReal(),                       1.0e-10);
 
     }
 
@@ -254,7 +249,7 @@ public class FieldDSSTPropagatorTest {
                         PositionAngleType.TRUE, eci, initialDate, zero.add(Constants.EIGEN5C_EARTH_MU));
         final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit);
         FieldSpacecraftState<T> oscuState = FieldDSSTPropagator.computeOsculatingState(state, null, forces);
-        Assertions.assertEquals(7119927.097122, oscuState.getA().getReal(), 0.001);
+        Assertions.assertEquals(7119927.148, oscuState.getOrbit().getA().getReal(), 0.001);
     }
 
     @Test
@@ -273,8 +268,7 @@ public class FieldDSSTPropagatorTest {
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(
                         zero.add(600e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS), zero, zero, zero, zero, zero,
                         PositionAngleType.TRUE, eci, initialDate, zero.add(Constants.EIGEN5C_EARTH_MU));
-        double[][] tol = FieldDSSTPropagator
-                        .tolerances(zero.add(1.), orbit);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1).getTolerances(orbit, OrbitType.EQUINOCTIAL);
         FieldPropagator<T> prop = new FieldDSSTPropagator<>(field,
                         new DormandPrince853FieldIntegrator<>(field, 0.1, 500, tol[0], tol[1]));
         prop.resetInitialState(new FieldSpacecraftState<>(new FieldCartesianOrbit<>(orbit)));
@@ -344,13 +338,13 @@ public class FieldDSSTPropagatorTest {
         final FieldSpacecraftState<T> finalState = dsstPropagator.propagate(state.getDate().shiftedBy(dt));
 
         // Check results
-        final T n = FastMath.sqrt(state.getA().reciprocal().multiply(state.getMu())).divide(state.getA());
-        Assertions.assertEquals(state.getA().getReal(),                      finalState.getA().getReal(), 0.);
-        Assertions.assertEquals(state.getEquinoctialEx().getReal(),          finalState.getEquinoctialEx().getReal(), 0.);
-        Assertions.assertEquals(state.getEquinoctialEy().getReal(),          finalState.getEquinoctialEy().getReal(), 0.);
-        Assertions.assertEquals(state.getHx().getReal(),                     finalState.getHx().getReal(), 0.);
-        Assertions.assertEquals(state.getHy().getReal(),                     finalState.getHy().getReal(), 0.);
-        Assertions.assertEquals(state.getLM().add(n.multiply(dt)).getReal(), finalState.getLM().getReal(), 1.e-14);
+        final T n = FastMath.sqrt(state.getOrbit().getA().reciprocal().multiply(state.getOrbit().getMu())).divide(state.getOrbit().getA());
+        Assertions.assertEquals(state.getOrbit().getA().getReal(),                      finalState.getOrbit().getA().getReal(), 0.);
+        Assertions.assertEquals(state.getOrbit().getEquinoctialEx().getReal(),          finalState.getOrbit().getEquinoctialEx().getReal(), 0.);
+        Assertions.assertEquals(state.getOrbit().getEquinoctialEy().getReal(),          finalState.getOrbit().getEquinoctialEy().getReal(), 0.);
+        Assertions.assertEquals(state.getOrbit().getHx().getReal(),                     finalState.getOrbit().getHx().getReal(), 0.);
+        Assertions.assertEquals(state.getOrbit().getHy().getReal(),                     finalState.getOrbit().getHy().getReal(), 0.);
+        Assertions.assertEquals(state.getOrbit().getLM().add(n.multiply(dt)).getReal(), finalState.getOrbit().getLM().getReal(), 1.e-14);
 
     }
 
@@ -377,13 +371,13 @@ public class FieldDSSTPropagatorTest {
         final FieldSpacecraftState<T> s = ephem.propagate(state.getDate().shiftedBy(dt));
 
         // Check results
-        final T n = FastMath.sqrt(state.getA().reciprocal().multiply(state.getMu())).divide(state.getA());
-        Assertions.assertEquals(state.getA().getReal(),                      s.getA().getReal(), 0.);
-        Assertions.assertEquals(state.getEquinoctialEx().getReal(),          s.getEquinoctialEx().getReal(), 0.);
-        Assertions.assertEquals(state.getEquinoctialEy().getReal(),          s.getEquinoctialEy().getReal(), 0.);
-        Assertions.assertEquals(state.getHx().getReal(),                     s.getHx().getReal(), 0.);
-        Assertions.assertEquals(state.getHy().getReal(),                     s.getHy().getReal(), 0.);
-        Assertions.assertEquals(state.getLM().add(n.multiply(dt)).getReal(), s.getLM().getReal(), 1.5e-14);
+        final T n = FastMath.sqrt(state.getOrbit().getA().reciprocal().multiply(state.getOrbit().getMu())).divide(state.getOrbit().getA());
+        Assertions.assertEquals(state.getOrbit().getA().getReal(),                      s.getOrbit().getA().getReal(), 0.);
+        Assertions.assertEquals(state.getOrbit().getEquinoctialEx().getReal(),          s.getOrbit().getEquinoctialEx().getReal(), 0.);
+        Assertions.assertEquals(state.getOrbit().getEquinoctialEy().getReal(),          s.getOrbit().getEquinoctialEy().getReal(), 0.);
+        Assertions.assertEquals(state.getOrbit().getHx().getReal(),                     s.getOrbit().getHx().getReal(), 0.);
+        Assertions.assertEquals(state.getOrbit().getHy().getReal(),                     s.getOrbit().getHy().getReal(), 0.);
+        Assertions.assertEquals(state.getOrbit().getLM().add(n.multiply(dt)).getReal(), s.getOrbit().getLM().getReal(), 1.5e-14);
 
     }
 
@@ -432,13 +426,13 @@ public class FieldDSSTPropagatorTest {
         // p/hy =  -0.3399607878
         // q/hx =   0.3971568634
         // lM   = 140.6375352°
-        Assertions.assertEquals(2.655992081E7, state.getA().getReal(), 1.e2);
-        Assertions.assertEquals(0.2731622444E-03, state.getEquinoctialEx().getReal(), 2.e-8);
-        Assertions.assertEquals(0.4164167597E-02, state.getEquinoctialEy().getReal(), 2.e-8);
-        Assertions.assertEquals(-0.3399607878, state.getHx().getReal(), 5.e-8);
-        Assertions.assertEquals(0.3971568634, state.getHy().getReal(), 2.e-6);
+        Assertions.assertEquals(2.655992081E7, state.getOrbit().getA().getReal(), 1.e2);
+        Assertions.assertEquals(0.2731622444E-03, state.getOrbit().getEquinoctialEx().getReal(), 2.e-8);
+        Assertions.assertEquals(0.4164167597E-02, state.getOrbit().getEquinoctialEy().getReal(), 2.e-8);
+        Assertions.assertEquals(-0.3399607878, state.getOrbit().getHx().getReal(), 5.e-8);
+        Assertions.assertEquals(0.3971568634, state.getOrbit().getHy().getReal(), 2.e-6);
         Assertions.assertEquals(140.6375352,
-                                FastMath.toDegrees(MathUtils.normalizeAngle(state.getLM(), zero.add(FastMath.PI)).getReal()),
+                                FastMath.toDegrees(MathUtils.normalizeAngle(state.getOrbit().getLM(), zero.add(FastMath.PI)).getReal()),
                                 5.e-3);
     }
 
@@ -495,13 +489,13 @@ public class FieldDSSTPropagatorTest {
         // p/hy =  -0.5968524904937771
         // q/hx =   0.1595005111738418
         // lM   = 183°9386620425922
-        Assertions.assertEquals(42163393.0, state.getA().getReal(), 1.e-1);
-        Assertions.assertEquals(-0.2592789733084587, state.getEquinoctialEx().getReal(), 5.e-7);
-        Assertions.assertEquals(-0.06893353670734315, state.getEquinoctialEy().getReal(), 2.e-7);
-        Assertions.assertEquals( 0.1595005111738418, state.getHx().getReal(), 2.e-7);
-        Assertions.assertEquals(-0.5968524904937771, state.getHy().getReal(), 5.e-8);
+        Assertions.assertEquals(42163393.0, state.getOrbit().getA().getReal(), 1.e-1);
+        Assertions.assertEquals(-0.2592789733084587, state.getOrbit().getEquinoctialEx().getReal(), 5.e-7);
+        Assertions.assertEquals(-0.06893353670734315, state.getOrbit().getEquinoctialEy().getReal(), 2.e-7);
+        Assertions.assertEquals( 0.1595005111738418, state.getOrbit().getHx().getReal(), 2.e-7);
+        Assertions.assertEquals(-0.5968524904937771, state.getOrbit().getHy().getReal(), 5.e-8);
         Assertions.assertEquals(183.9386620425922,
-                                FastMath.toDegrees(MathUtils.normalizeAngle(state.getLM(), zero.add(FastMath.PI)).getReal()),
+                                FastMath.toDegrees(MathUtils.normalizeAngle(state.getOrbit().getLM(), zero.add(FastMath.PI)).getReal()),
                                 3.e-2);
     }
 
@@ -583,13 +577,13 @@ public class FieldDSSTPropagatorTest {
         // p/hy =  0.8698955648709271
         // q/hx =  0.7757573478894775
         // lM   = 193°0939742953394
-        Assertions.assertEquals(7204521.657141485, state.getA().getReal(), 6.e-1);
-        Assertions.assertEquals(-0.001016800430994036, state.getEquinoctialEx().getReal(), 5.e-8);
-        Assertions.assertEquals(0.0007093755541595772, state.getEquinoctialEy().getReal(), 2.e-8);
-        Assertions.assertEquals(0.7757573478894775, state.getHx().getReal(), 5.e-8);
-        Assertions.assertEquals(0.8698955648709271, state.getHy().getReal(), 5.e-8);
+        Assertions.assertEquals(7204521.657141485, state.getOrbit().getA().getReal(), 6.e-1);
+        Assertions.assertEquals(-0.001016800430994036, state.getOrbit().getEquinoctialEx().getReal(), 5.e-8);
+        Assertions.assertEquals(0.0007093755541595772, state.getOrbit().getEquinoctialEy().getReal(), 2.e-8);
+        Assertions.assertEquals(0.7757573478894775, state.getOrbit().getHx().getReal(), 5.e-8);
+        Assertions.assertEquals(0.8698955648709271, state.getOrbit().getHy().getReal(), 5.e-8);
         Assertions.assertEquals(193.0939742953394,
-                                FastMath.toDegrees(MathUtils.normalizeAngle(state.getLM(), zero.add(FastMath.PI)).getReal()),
+                                FastMath.toDegrees(MathUtils.normalizeAngle(state.getOrbit().getLM(), zero.add(FastMath.PI)).getReal()),
                                 2.e-3);
         //Assertions.assertEquals(((DSSTAtmosphericDrag)drag).getCd(), cd, 1e-9);
         //Assertions.assertEquals(((DSSTAtmosphericDrag)drag).getArea(), area, 1e-9);
@@ -652,13 +646,13 @@ public class FieldDSSTPropagatorTest {
         // p/hy =  0.6618387121369373D-05
         // q/hx = -0.5624363171289686D-05
         // lM   = 140°3496229467104
-        Assertions.assertEquals(42166257.99807995, state.getA().getReal(), 1.2);
-        Assertions.assertEquals(-0.1781865038201885e-05, state.getEquinoctialEx().getReal(), 3.e-7);
-        Assertions.assertEquals(-0.1191876027555493e-03, state.getEquinoctialEy().getReal(), 4.e-6);
-        Assertions.assertEquals(-0.5624363171289686e-05, state.getHx().getReal(), 4.e-9);
-        Assertions.assertEquals( 0.6618387121369373e-05, state.getHy().getReal(), 3.e-10);
+        Assertions.assertEquals(42166257.99807995, state.getOrbit().getA().getReal(), 1.2);
+        Assertions.assertEquals(-0.1781865038201885e-05, state.getOrbit().getEquinoctialEx().getReal(), 3.e-7);
+        Assertions.assertEquals(-0.1191876027555493e-03, state.getOrbit().getEquinoctialEy().getReal(), 4.e-6);
+        Assertions.assertEquals(-0.5624363171289686e-05, state.getOrbit().getHx().getReal(), 4.e-9);
+        Assertions.assertEquals( 0.6618387121369373e-05, state.getOrbit().getHy().getReal(), 3.e-10);
         Assertions.assertEquals(140.3496229467104,
-                                FastMath.toDegrees(MathUtils.normalizeAngle(state.getLM(), zero.add(FastMath.PI)).getReal()),
+                                FastMath.toDegrees(MathUtils.normalizeAngle(state.getOrbit().getLM(), zero.add(FastMath.PI)).getReal()),
                                 2.e-4);
     }
 
@@ -698,13 +692,13 @@ public class FieldDSSTPropagatorTest {
         checking.assertEvent(false);
         final FieldSpacecraftState<T> finalState = dsstPropagator.propagate(state.getDate().shiftedBy(dt));
         checking.assertEvent(true);
-        final T n = FastMath.sqrt(state.getA().reciprocal().multiply(state.getMu())).divide(state.getA());
-        Assertions.assertEquals(state.getA().getReal(), finalState.getA().getReal(), 1.0e-10);
-        Assertions.assertEquals(state.getEquinoctialEx().getReal(), finalState.getEquinoctialEx().getReal(), 1.0e-10);
-        Assertions.assertEquals(state.getEquinoctialEy().getReal(), finalState.getEquinoctialEy().getReal(), 1.0e-10);
-        Assertions.assertEquals(state.getHx().getReal(), finalState.getHx().getReal(), 1.0e-10);
-        Assertions.assertEquals(state.getHy().getReal(), finalState.getHy().getReal(), 1.0e-10);
-        Assertions.assertEquals(state.getLM().add(n.multiply(dt)).getReal(), finalState.getLM().getReal(), 6.0e-10);
+        final T n = FastMath.sqrt(state.getOrbit().getA().reciprocal().multiply(state.getOrbit().getMu())).divide(state.getOrbit().getA());
+        Assertions.assertEquals(state.getOrbit().getA().getReal(), finalState.getOrbit().getA().getReal(), 1.0e-10);
+        Assertions.assertEquals(state.getOrbit().getEquinoctialEx().getReal(), finalState.getOrbit().getEquinoctialEx().getReal(), 1.0e-10);
+        Assertions.assertEquals(state.getOrbit().getEquinoctialEy().getReal(), finalState.getOrbit().getEquinoctialEy().getReal(), 1.0e-10);
+        Assertions.assertEquals(state.getOrbit().getHx().getReal(), finalState.getOrbit().getHx().getReal(), 1.0e-10);
+        Assertions.assertEquals(state.getOrbit().getHy().getReal(), finalState.getOrbit().getHy().getReal(), 1.0e-10);
+        Assertions.assertEquals(state.getOrbit().getLM().add(n.multiply(dt)).getReal(), finalState.getOrbit().getLM().getReal(), 6.0e-10);
     }
 
     @Test
@@ -722,7 +716,7 @@ public class FieldDSSTPropagatorTest {
                         new FieldAbsoluteDate<>(field, 2003, 5, 6, TimeScalesFactory.getUTC()),
                         zero.add(nshp.getMu()));
         T period = orbit.getKeplerianPeriod();
-        double[][] tolerance = FieldDSSTPropagator.tolerances(zero.add(1.), orbit);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(1).getTolerances(orbit, OrbitType.EQUINOCTIAL);
         AdaptiveStepsizeFieldIntegrator<T> integrator =
                         new DormandPrince853FieldIntegrator<>(field, period.getReal() / 100, period.getReal() * 100, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(period.multiply(10.).getReal());
@@ -748,13 +742,13 @@ public class FieldDSSTPropagatorTest {
         // the initial orbit is osculating the final orbit is a mean orbit
         // and they are not considered at the same epoch
         // we keep it only as is was an historical test
-        Assertions.assertEquals(2187.2, orbit.getA().subtract(finalState.getA()).getReal(), 1.0);
+        Assertions.assertEquals(2187.2, orbit.getA().subtract(finalState.getOrbit().getA()).getReal(), 1.0);
 
         propagator.setInitialState(new FieldSpacecraftState<>(orbit, zero.add(45.0)), PropagationType.MEAN);
         finalState = propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
         // the following comparison is realistic
         // both the initial orbit and final orbit are mean orbits
-        Assertions.assertEquals(1475.90, orbit.getA().subtract(finalState.getA()).getReal(), 1.0);
+        Assertions.assertEquals(1475.90, orbit.getA().subtract(finalState.getOrbit().getA()).getReal(), 1.0);
 
     }
 
@@ -780,7 +774,7 @@ public class FieldDSSTPropagatorTest {
                         new FieldAbsoluteDate<>(field, 2003, 5, 6, TimeScalesFactory.getUTC()),
                         zero.add(nshp.getMu()));
         T period = orbit.getKeplerianPeriod();
-        double[][] tolerance = FieldDSSTPropagator.tolerances(zero.add(1.), orbit);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(1).getTolerances(orbit, OrbitType.EQUINOCTIAL);
         AdaptiveStepsizeFieldIntegrator<T> integrator =
                         new DormandPrince853FieldIntegrator<>(field, period.getReal() / 100, period.getReal() * 100, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(period.multiply(10.).getReal());
@@ -843,9 +837,9 @@ public class FieldDSSTPropagatorTest {
 
         final T zero = field.getZero();
         // build integrator
-        final T minStep = initialState.getKeplerianPeriod().multiply(0.1);
-        final T maxStep = initialState.getKeplerianPeriod().multiply(10.0);
-        final double[][] tol = FieldDSSTPropagator.tolerances(zero.add(0.1), initialState.getOrbit());
+        final T minStep = initialState.getOrbit().getKeplerianPeriod().multiply(0.1);
+        final T maxStep = initialState.getOrbit().getKeplerianPeriod().multiply(10.0);
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-1).getTolerances(initialState.getOrbit(), OrbitType.EQUINOCTIAL);
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, minStep.getReal(), maxStep.getReal(), tol[0], tol[1]);
 
         // build the propagator for the propagation of the mean elements
@@ -920,7 +914,7 @@ public class FieldDSSTPropagatorTest {
         // there are no Gaussian force models, we don't need an attitude provider
         final FieldSpacecraftState<T> computedMeanState = FieldDSSTPropagator.computeMeanState(osculatingState, null, forces);
 
-        Assertions.assertEquals(meanState.getA().getReal(), computedMeanState.getA().getReal(), 2.0e-8);
+        Assertions.assertEquals(meanState.getOrbit().getA().getReal(), computedMeanState.getOrbit().getA().getReal(), 2.0e-8);
         Assertions.assertEquals(0.0,
                                 FieldVector3D.distance(meanState.getPosition(),
                                                        computedMeanState.getPosition()).getReal(),
@@ -942,7 +936,7 @@ public class FieldDSSTPropagatorTest {
                         new FieldAbsoluteDate<>(field, 2003, 5, 6, TimeScalesFactory.getUTC()),
                         zero.add(nshp.getMu()));
         T period = orbit.getKeplerianPeriod();
-        double[][] tolerance = FieldDSSTPropagator.tolerances(zero.add(1.), orbit);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(1).getTolerances(orbit, OrbitType.EQUINOCTIAL);
         AdaptiveStepsizeFieldIntegrator<T> integrator =
                         new DormandPrince853FieldIntegrator<>(field, period.getReal() / 100, period.getReal() * 100, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(period.multiply(10).getReal());
@@ -1032,8 +1026,8 @@ public class FieldDSSTPropagatorTest {
         final FieldSpacecraftState<T> meanState = getGEOState(field);
 
         // Third Bodies Force Model (Moon + Sun)
-        final DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), meanState.getMu().getReal());
-        final DSSTForceModel sun  = new DSSTThirdBody(CelestialBodyFactory.getSun(), meanState.getMu().getReal());
+        final DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), meanState.getOrbit().getMu().getReal());
+        final DSSTForceModel sun  = new DSSTThirdBody(CelestialBodyFactory.getSun(), meanState.getOrbit().getMu().getReal());
 
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
         forces.add(moon);
@@ -1084,8 +1078,8 @@ public class FieldDSSTPropagatorTest {
 
         // Surface force models that require an attitude provider
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
-        forces.add(new DSSTSolarRadiationPressure(sun, earth, boxAndWing, osculatingState.getMu().getReal()));
-        forces.add(new DSSTAtmosphericDrag(atmosphere, boxAndWing, osculatingState.getMu().getReal()));
+        forces.add(new DSSTSolarRadiationPressure(sun, earth, boxAndWing, osculatingState.getOrbit().getMu().getReal()));
+        forces.add(new DSSTAtmosphericDrag(atmosphere, boxAndWing, osculatingState.getOrbit().getMu().getReal()));
 
         final FieldSpacecraftState<T> meanState = FieldDSSTPropagator.computeMeanState(osculatingState, attitudeProvider, forces);
         Assertions.assertEquals(0.522,
@@ -1116,7 +1110,7 @@ public class FieldDSSTPropagatorTest {
         final AttitudeProvider attitudeProvider = new LofOffset(osculatingState.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYZ, 0.0, 0.0, 0.0);
         // Surface force models that require an attitude provider
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
-        forces.add(new DSSTAtmosphericDrag(atmosphere, boxAndWing, osculatingState.getMu().getReal()));
+        forces.add(new DSSTAtmosphericDrag(atmosphere, boxAndWing, osculatingState.getOrbit().getMu().getReal()));
         final FieldSpacecraftState<T> meanState = FieldDSSTPropagator.computeMeanState(osculatingState, attitudeProvider, forces);
         final FieldSpacecraftState<T> computedOsculatingState = FieldDSSTPropagator.computeOsculatingState(meanState, attitudeProvider, forces);
         Assertions.assertEquals(0.0,
@@ -1154,7 +1148,7 @@ public class FieldDSSTPropagatorTest {
         forceModels.add(new DSSTThirdBody(CelestialBodyFactory.getSun(), provider.getMu()));
 
         // Set up DSST propagator
-        final double[][] tol = FieldDSSTPropagator.tolerances(zero.add(10.0), state.getOrbit());
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(10).getTolerances(state.getOrbit(), OrbitType.EQUINOCTIAL);
         final FieldODEIntegrator<T> integrator = new DormandPrince54FieldIntegrator<>(field, 60.0, 3600.0, tol[0], tol[1]);
         final FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.OSCULATING);
         for (DSSTForceModel force : forceModels) {
@@ -1169,7 +1163,7 @@ public class FieldDSSTPropagatorTest {
         final FieldSpacecraftState<T> finalState = propagator.propagate(state.getDate().shiftedBy(86400.0));
 
         // Verify is the propagation is correctly performed
-        Assertions.assertEquals(finalState.getMu().getReal(), 3.986004415E14, Double.MIN_VALUE);
+        Assertions.assertEquals(finalState.getOrbit().getMu().getReal(), 3.986004415E14, Double.MIN_VALUE);
     }
 
     @Test
@@ -1258,9 +1252,9 @@ public class FieldDSSTPropagatorTest {
         // Set propagator with state and force model
         final T zero = field.getZero();
         initialState.getDate();
-        final T minStep = initialState.getKeplerianPeriod();
+        final T minStep = initialState.getOrbit().getKeplerianPeriod();
         final T maxStep = minStep.multiply(100.);
-        final double[][] tol = FieldDSSTPropagator.tolerances(zero.add(1.), initialState.getOrbit());
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1).getTolerances(initialState.getOrbit(), OrbitType.EQUINOCTIAL);
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, minStep.getReal(), maxStep.getReal(), tol[0], tol[1]);
         final FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.OSCULATING);
         propagator.setInitialState(initialState, PropagationType.OSCULATING);
@@ -1325,14 +1319,14 @@ public class FieldDSSTPropagatorTest {
         // Initial mean SMA
         final double initialMeanSma =  FieldDSSTPropagator.computeMeanState(initialState,
                                                                             attitude,
-                                                                            propagator.getAllForceModels()).getA().getReal();
+                                                                            propagator.getAllForceModels()).getOrbit().getA().getReal();
         // WHEN
         // ----
         
         // Propagating step by step and getting mean SMAs
         final List<Double> propagatedMeanSma = new ArrayList<>();
         for (int i = 1; i <= nStep; i++) {
-            propagatedMeanSma.add(propagator.propagate(t0.shiftedBy(i * step)).getA().getReal());
+            propagatedMeanSma.add(propagator.propagate(t0.shiftedBy(i * step)).getOrbit().getA().getReal());
         }
 
         // THEN
@@ -1378,9 +1372,9 @@ public class FieldDSSTPropagatorTest {
                                                                                    FieldSpacecraftState<T> initialState) {
         final T zero = field.getZero();
         initialState.getDate();
-        final T minStep = initialState.getKeplerianPeriod();
+        final T minStep = initialState.getOrbit().getKeplerianPeriod();
         final T maxStep = minStep.multiply(100.);
-        final double[][] tol = FieldDSSTPropagator.tolerances(zero.add(1.), initialState.getOrbit());
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1).getTolerances(initialState.getOrbit(), OrbitType.EQUINOCTIAL);
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, minStep.getReal(), maxStep.getReal(), tol[0], tol[1]);
         final FieldDSSTPropagator<T> dsstProp = new FieldDSSTPropagator<>(field, integrator);
         dsstProp.setInitialState(initialState, PropagationType.MEAN);
@@ -1427,8 +1421,8 @@ public class FieldDSSTPropagatorTest {
         @Override
         protected double[] getLLimits(SpacecraftState state,
                                       AuxiliaryElements auxiliaryElements) {
-            return new double[] { -FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0),
-                FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0) };
+            return new double[] { -FastMath.PI + MathUtils.normalizeAngle(state.getOrbit().getLv(), 0),
+                FastMath.PI + MathUtils.normalizeAngle(state.getOrbit().getLv(), 0) };
         }
 
         /** {@inheritDoc} */
@@ -1438,8 +1432,8 @@ public class FieldDSSTPropagatorTest {
             final Field<T> field = state.getDate().getField();
             final T zero = field.getZero();
             final T[] tab = MathArrays.buildArray(field, 2);
-            tab[0] = MathUtils.normalizeAngle(state.getLv(), zero).subtract(FastMath.PI);
-            tab[1] = MathUtils.normalizeAngle(state.getLv(), zero).add(FastMath.PI);
+            tab[0] = MathUtils.normalizeAngle(state.getOrbit().getLv(), zero).subtract(FastMath.PI);
+            tab[1] = MathUtils.normalizeAngle(state.getOrbit().getLv(), zero).add(FastMath.PI);
             return tab;
         }
 
@@ -1521,7 +1515,7 @@ public class FieldDSSTPropagatorTest {
         double maxstep = 1000.0;
         T positionTolerance = zero.add(10.0);
         OrbitType propagationType = OrbitType.EQUINOCTIAL;
-        double[][] tolerances = FieldNumericalPropagator.tolerances(positionTolerance, osculatingOrbit, propagationType);
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(positionTolerance.getReal()).getTolerances(osculatingOrbit, propagationType);
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, minStep, maxstep, tolerances[0], tolerances[1]);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(propagationType);

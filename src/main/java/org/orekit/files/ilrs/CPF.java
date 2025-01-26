@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -285,9 +285,6 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
 
     /** A single record of position and possibility velocity in an SP3 file. */
     public static class CPFCoordinate extends TimeStampedPVCoordinates {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20201016L;
 
         /** Leap second flag. */
         private final int leap;

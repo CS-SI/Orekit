@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements.filtering;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.orekit.files.rinex.observation.ObservationData;
 import org.orekit.files.rinex.observation.ObservationDataSet;
@@ -36,22 +37,22 @@ import org.orekit.time.ChronologicalComparator;
 public class SingleFrequencySmoother {
 
     /** Window size for the hatch filter. */
-    private int N;
+    private final int N;
 
     /** Interval time between two measurements.*/
-    private double integrationTime;
+    private final double integrationTime;
 
     /** Threshold for the difference between smoothed and measured values. */
-    private double threshold;
+    private final double threshold;
 
     /** Type of the smoothing measurements. */
-    private MeasurementType type;
+    private final MeasurementType type;
 
     /**
      * Map storing the filters for each observation type.
      * Observation types should not overlap for a single RINEX file.
      */
-    private HashMap<ObservationType, SingleFrequencyHatchFilter> mapFilters;
+    private final HashMap<ObservationType, SingleFrequencyHatchFilter> mapFilters;
 
     /**
      * Map storing the filtered data for each pseudo range.
@@ -59,7 +60,7 @@ public class SingleFrequencySmoother {
      * stores a pseudo-range ObservationData object with the filtered value, and the initial ObservationDataSet,
      * needed for further processing.
      */
-    private HashMap<ObservationType, List<SmoothedObservationDataSet>> mapFilteredData;
+    private final HashMap<ObservationType, List<SmoothedObservationDataSet>> mapFilteredData;
 
     /**
      * Simple constructor.
@@ -92,7 +93,7 @@ public class SingleFrequencySmoother {
                                                    final ObservationData smoothingData,
                                                    final SatelliteSystem system) {
         // Wavelength in meters
-        final double wavelength = smoothingData.getObservationType().getFrequency(system).getWavelength();
+        final double wavelength = smoothingData.getObservationType().getSignal(system).getWavelength();
         // Return a Single Frequency Hatch Filter
         return new SingleFrequencyHatchFilter(codeData, smoothingData, type, wavelength, threshold, N, integrationTime);
     }
@@ -101,7 +102,7 @@ public class SingleFrequencySmoother {
      * Get the map of the filtered data.
      * @return a map containing the filtered data.
      */
-    public HashMap<ObservationType, List<SmoothedObservationDataSet>> getFilteredDataMap() {
+    public Map<ObservationType, List<SmoothedObservationDataSet>> getFilteredDataMap() {
         return mapFilteredData;
     }
 
@@ -109,7 +110,7 @@ public class SingleFrequencySmoother {
      * Get the map storing the filters for each observation type.
      * @return the map storing the filters for each observation type
      */
-    public final HashMap<ObservationType, SingleFrequencyHatchFilter> getMapFilters() {
+    public final Map<ObservationType, SingleFrequencyHatchFilter> getMapFilters() {
         return mapFilters;
     }
 
@@ -186,7 +187,7 @@ public class SingleFrequencySmoother {
                                     mapFilteredData.get(obsTypeData).add(new SmoothedObservationDataSet(filteredRange, obsSet));
                                 }
                             } else {
-                                // IF the filter does not exist and one of the phase is equal to NaN or absent
+                                // If the filter does not exist and one of the phase is equal to NaN or absent
                                 // just skip to the next ObservationDataSet.
                             }
 

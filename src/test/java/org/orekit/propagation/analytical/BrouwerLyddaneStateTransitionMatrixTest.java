@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,7 +36,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -93,7 +93,7 @@ public class BrouwerLyddaneStateTransitionMatrixTest {
         final SpacecraftState initialState = propagator.getInitialState();
         final double[] stateVector = new double[6];
         OrbitType.CARTESIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngleType.MEAN, stateVector, null);
-        final AbsoluteDate target = initialState.getDate().shiftedBy(initialState.getKeplerianPeriod());
+        final AbsoluteDate target = initialState.getDate().shiftedBy(initialState.getOrbit().getKeplerianPeriod());
         MatricesHarvester harvester = propagator.setupMatricesComputation("stm", null, null);
         final SpacecraftState finalState = propagator.propagate(target);
         RealMatrix dYdY0 = harvester.getStateTransitionMatrix(finalState);
@@ -103,7 +103,7 @@ public class BrouwerLyddaneStateTransitionMatrixTest {
         // compute reference state Jacobian using finite differences
         double[][] dYdY0Ref = new double[6][6];
         BrouwerLyddanePropagator propagator2;
-        double[] steps = NumericalPropagator.tolerances(10, initialState.getOrbit(), OrbitType.CARTESIAN)[0];
+        double[] steps = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(initialState.getOrbit(), OrbitType.CARTESIAN)[0];
         for (int i = 0; i < 6; ++i) {
             propagator2 = new BrouwerLyddanePropagator(shiftState(initialState, OrbitType.CARTESIAN, -4 * steps[i], i).getOrbit(), provider, M2);
             SpacecraftState sM4h = propagator2.propagate(target);
@@ -130,7 +130,7 @@ public class BrouwerLyddaneStateTransitionMatrixTest {
             for (int j = 0; j < 6; ++j) {
                 if (stateVector[i] != 0) {
                     double error = FastMath.abs((dYdY0.getEntry(i, j) - dYdY0Ref[i][j]) / stateVector[i]) * steps[j];
-                    Assertions.assertEquals(0, error, 1.42e-13);
+                    Assertions.assertEquals(0, error, 3.0e-13);
                 }
             }
         }
@@ -166,7 +166,7 @@ public class BrouwerLyddaneStateTransitionMatrixTest {
         array[0][column] += delta;
 
         return arrayToState(array, state.getFrame(), state.getDate(),
-                            state.getMu(), state.getAttitude());
+                            state.getOrbit().getMu(), state.getAttitude());
 
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -139,7 +139,8 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     public OrbitManeuverHistoryMetadata(final AbsoluteDate epochT0) {
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
-        manBasis            = ManBasis.PLANNED;
+        // In 502.0-B-3 (p. 6-39) MAN_BASIS is optional and has no default
+        manBasis            = null;
         manReferenceFrame   = new FrameFacade(null, null,
                                               OrbitRelativeFrame.TNW_INERTIAL, null,
                                               OrbitRelativeFrame.TNW_INERTIAL.name());

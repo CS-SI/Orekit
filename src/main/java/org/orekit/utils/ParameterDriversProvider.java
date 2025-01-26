@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,6 +33,21 @@ import org.orekit.utils.TimeSpanMap.Span;
  * @since 11.2
  */
 public interface ParameterDriversProvider {
+
+    /** Find if a parameter driver with a given name already exists in a list of parameter drivers.
+     * @param driversList the list of parameter drivers
+     * @param name the parameter driver's name to filter with
+     * @return true if the name was found, false otherwise
+     * @since 13.0
+     */
+    static boolean findByName(final List<ParameterDriver> driversList, final String name) {
+        for (final ParameterDriver d : driversList) {
+            if (d.getName().equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /** Get the drivers for parameters.
      * @return drivers for parameters

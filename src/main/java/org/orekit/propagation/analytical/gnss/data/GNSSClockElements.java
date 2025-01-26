@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.orekit.time.TimeStamped;
 
-/**This interface provides the minimal set of orbital elements needed by the
+/** This interface provides the minimal set of clock elements needed by the
  * {@link org.orekit.propagation.analytical.gnss.ClockCorrectionsProvider}.
 *
 * @author Pascal Parraud
@@ -32,7 +32,6 @@ public interface GNSSClockElements extends TimeStamped {
      * @return the Zeroth Order Clock Correction (s)
      * @see #getAf1()
      * @see #getAf2()
-     * @see #getToc()
      */
     double getAf0();
 
@@ -42,7 +41,6 @@ public interface GNSSClockElements extends TimeStamped {
      * @return the First Order Clock Correction (s/s)
      * @see #getAf0()
      * @see #getAf2()
-     * @see #getToc()
      */
     double getAf1();
 
@@ -52,34 +50,22 @@ public interface GNSSClockElements extends TimeStamped {
      * @return the Second Order Clock Correction (s/s²)
      * @see #getAf0()
      * @see #getAf1()
-     * @see #getToc()
      */
     double getAf2();
 
     /**
-     * Gets the estimated group delay differential TGD for L1-L2 correction.
-     *
+     * Get the estimated group delay differential TGD for L1-L2 correction.
      * @return the estimated group delay differential TGD for L1-L2 correction (s)
      */
     double getTGD();
 
     /**
-     * Gets the duration of the GNSS cycle in seconds.
-     *
-     * @return the duration of the GNSS cycle in seconds
-     */
-    double getCycleDuration();
-
-    /**
-     * Gets the clock correction reference time toc.
-     *
-     * @return the clock correction reference time (s)
+     * Get the time of clock.
+     * @return the time of clock (s)
      * @see #getAf0()
      * @see #getAf1()
      * @see #getAf2()
      */
-    default double getToc() {
-        return 0.0;
-    }
+    double getToc();
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -73,7 +73,8 @@ class PrefixedUnit extends Unit {
                                               Unit.SOLAR_FLUX_UNIT.alias("sfu"),
                                               Unit.TOTAL_ELECTRON_CONTENT_UNIT,
                                               Unit.TOTAL_ELECTRON_CONTENT_UNIT.alias("tecu"),
-                                              Unit.EARTH_RADII);
+                                              Unit.EARTH_RADII,
+                                              Unit.CYCLE);
         ALLOWED = new HashMap<>(base.size() * Prefix.values().length);
         for (final Unit unit : base) {
             ALLOWED.put(unit.getName(), new PrefixedUnit(null, unit));

@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -173,7 +173,7 @@ class CartesianAdjointDerivativesProviderTest {
 
         @Override
         public double[] getRatesContribution(AbsoluteDate date, double[] stateVariables, double[] adjointVariables, Frame frame) {
-            return new double[] { 1., 10., 100. };
+            return new double[] { 1., 10., 100., 0., 0., 0. };
         }
 
         @Override

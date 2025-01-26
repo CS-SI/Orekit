@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -99,7 +99,7 @@ class SpacecraftStateInterpolatorTest {
             double OMEGA = FastMath.toRadians(261);
             double lv    = 0;
 
-            AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01),
+            AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 1, 1),
                     TimeComponents.H00,
                     TimeScalesFactory.getUTC());
             final Frame frame = FramesFactory.getEME2000();
@@ -248,7 +248,7 @@ class SpacecraftStateInterpolatorTest {
         final double     dP         = 1;
         final double     minStep    = 0.001;
         final double     maxStep    = 100;
-        final double[][] tolerances = NumericalPropagator.tolerances(dP, absPV);
+        final double[][] tolerances = ToleranceProvider.of(CartesianToleranceProvider.of(dP)).getTolerances(absPV);
 
         return new DormandPrince853Integrator(minStep, maxStep, tolerances[0], tolerances[1]);
     }
@@ -560,8 +560,10 @@ class SpacecraftStateInterpolatorTest {
         Mockito.when(additionalStateInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(additionalStateInterpolator));
 
         final SpacecraftStateInterpolator stateInterpolator =
-                new SpacecraftStateInterpolator(frame, orbitInterpolator, absPVAInterpolator, massInterpolator,
-                        attitudeInterpolator, additionalStateInterpolator);
+                new SpacecraftStateInterpolator(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                                                AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+                                                frame, orbitInterpolator, absPVAInterpolator, massInterpolator,
+                                                attitudeInterpolator, additionalStateInterpolator);
 
         // WHEN
         final int returnedNbInterpolationPoints = stateInterpolator.getNbInterpolationPoints();

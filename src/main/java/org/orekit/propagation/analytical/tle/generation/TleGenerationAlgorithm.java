@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Bryan Cazabonne
+/* Copyright 2002-2025 Bryan Cazabonne
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,8 +34,8 @@ public interface TleGenerationAlgorithm {
      * <p>
      * The template TLE is only used to get identifiers like satellite
      * number, launch year, etc.
-     * In other words, the keplerian elements contained in the generate
-     * TLE a based on the provided state and not the template TLE.
+     * In other words, the keplerian elements contained in the generated
+     * TLE are based on the provided state and not the template TLE.
      * </p>
      * @param state spacecraft state
      * @param templateTLE template TLE
@@ -48,8 +48,8 @@ public interface TleGenerationAlgorithm {
      * <p>
      * The template TLE is only used to get identifiers like satellite
      * number, launch year, etc.
-     * In other words, the keplerian elements contained in the generate
-     * TLE a based on the provided state and not the template TLE.
+     * In other words, the keplerian elements contained in the generated
+     * TLE are based on the provided state and not the template TLE.
      * </p>
      * @param <T> type of the elements
      * @param state spacecraft state

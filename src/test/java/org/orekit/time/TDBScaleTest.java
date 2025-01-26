@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,14 +30,14 @@ public class TDBScaleTest {
     public void testReference() {
         TimeScale scale = TimeScalesFactory.getTDB();
         Assertions.assertEquals("TDB", scale.toString());
-        Assertions.assertEquals(32.183927340791372839, scale.offsetFromTAI(AbsoluteDate.J2000_EPOCH), 1.0e-15);
+        Assertions.assertEquals(32.183927340791372839, scale.offsetFromTAI(AbsoluteDate.J2000_EPOCH).toDouble(), 1.0e-15);
     }
 
     @Test
     public void testDate5000000() {
         TimeScale scale = TimeScalesFactory.getTDB();
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(5000000);
-        Assertions.assertEquals(32.185364155950634549, scale.offsetFromTAI(date), 1.0e-13);
+        Assertions.assertEquals(32.185364155950634549, scale.offsetFromTAI(date).toDouble(), 1.0e-13);
     }
 
     @Test
@@ -51,7 +51,7 @@ public class TDBScaleTest {
     @Test
     public void testToTAI() {
         TimeScale scale = TimeScalesFactory.getTDB();
-        AbsoluteDate date = new AbsoluteDate(2000, 01, 01, 11, 59, 59.999927340791372839, scale);
+        AbsoluteDate date = new AbsoluteDate(2000, 1, 1, 11, 59, 59.999927340791372839, scale);
         double dt = AbsoluteDate.J2000_EPOCH.durationFrom(date);
         Assertions.assertEquals(0.0, dt, 1.0e-13);
     }
@@ -79,9 +79,9 @@ public class TDBScaleTest {
 
         AbsoluteDate date = new AbsoluteDate(1992, 11, 13, 2, 57, 7.2,
                                              TimeScalesFactory.getTAI());
-        double delta = TimeScalesFactory.getTDB().offsetFromTAI(date) -
-                       TimeScalesFactory.getTT().offsetFromTAI(date);
-        Assertions.assertEquals(-0.001279984433218163669, delta, 1.0e-5);
+        TimeOffset delta = TimeScalesFactory.getTDB().offsetFromTAI(date).
+                          subtract(TimeScalesFactory.getTT().offsetFromTAI(date));
+        Assertions.assertEquals(-0.001279984433218163669, delta.toDouble(), 1.0e-5);
 
     }
 
@@ -125,14 +125,14 @@ public class TDBScaleTest {
     public void testDuringLeap() {
         final TimeScale utc   = TimeScalesFactory.getUTC();
         final TimeScale scale = TimeScalesFactory.getTDB();
-        final AbsoluteDate before = new AbsoluteDate(new DateComponents(1983, 06, 30),
+        final AbsoluteDate before = new AbsoluteDate(new DateComponents(1983, 6, 30),
                                                      new TimeComponents(23, 59, 59),
                                                      utc);
         final AbsoluteDate during = before.shiftedBy(1.25);
         Assertions.assertEquals(61, utc.minuteDuration(during));
-        Assertions.assertEquals(1.0, utc.getLeap(during), 1.0e-10);
+        Assertions.assertEquals(1.0, utc.getLeap(during).toDouble(), 1.0e-10);
         Assertions.assertEquals(60, scale.minuteDuration(during));
-        Assertions.assertEquals(0.0, scale.getLeap(during), 1.0e-10);
+        Assertions.assertEquals(0.0, scale.getLeap(during).toDouble(), 1.0e-10);
     }
 
     @BeforeEach

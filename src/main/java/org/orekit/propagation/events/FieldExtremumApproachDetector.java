@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -120,7 +120,7 @@ public class FieldExtremumApproachDetector<T extends CalculusFieldElement<T>>
      * approach.
      */
     public FieldExtremumApproachDetector(final Field<T> field, final FieldPVCoordinatesProvider<T> secondaryPVProvider) {
-        this(field.getZero().newInstance(DEFAULT_MAXCHECK), field.getZero().newInstance(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
+        this(new FieldEventDetectionSettings<>(field, EventDetectionSettings.getDefaultEventDetectionSettings()),
              new FieldStopOnIncreasing<>(), secondaryPVProvider);
     }
 
@@ -130,40 +130,17 @@ public class FieldExtremumApproachDetector<T extends CalculusFieldElement<T>>
      * This constructor is to be used if the user wants to change the default behavior of the detector.
      * </p>
      *
-     * @param maxCheck Maximum checking interval.
-     * @param threshold Convergence threshold (s).
-     * @param maxIter Maximum number of iterations in the event time search.
+     * @param detectionSettings Event detection settings.
      * @param handler Event handler to call at event occurrences.
      * @param secondaryPVProvider PVCoordinates provider of the other object with which we want to find out the extremum
      * approach.
-     *
-     * @see FieldEventHandler
-     */
-    protected FieldExtremumApproachDetector(final T maxCheck, final T threshold, final int maxIter,
-                                            final FieldEventHandler<T> handler,
-                                            final FieldPVCoordinatesProvider<T> secondaryPVProvider) {
-        this(FieldAdaptableInterval.of(maxCheck.getReal()), threshold, maxIter, handler, secondaryPVProvider);
-    }
-
-    /**
-     * Constructor.
-     * <p>
-     * This constructor is to be used if the user wants to change the default behavior of the detector.
-     * </p>
-     *
-     * @param maxCheck Maximum checking interval.
-     * @param threshold Convergence threshold (s).
-     * @param maxIter Maximum number of iterations in the event time search.
-     * @param handler Event handler to call at event occurrences.
-     * @param secondaryPVProvider PVCoordinates provider of the other object with which we want to find out the extremum
-     * approach.
-     *
+     * @since 13.0
      * @see EventHandler
      */
-    protected FieldExtremumApproachDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold, final int maxIter,
+    protected FieldExtremumApproachDetector(final FieldEventDetectionSettings<T> detectionSettings,
                                             final FieldEventHandler<T> handler,
                                             final FieldPVCoordinatesProvider<T> secondaryPVProvider) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(detectionSettings, handler);
         this.secondaryPVProvider = secondaryPVProvider;
     }
 
@@ -173,11 +150,7 @@ public class FieldExtremumApproachDetector<T extends CalculusFieldElement<T>>
      * @param s Spacecraft state.
      *
      * @return Relative position between primary (=s) and secondaryPVProvider.
-     *
-     * @deprecated The output type of this method shall be modified in the future to improve code efficiency (though it will
-     * still give access to the relative position and velocity)
      */
-    @Deprecated
     public FieldPVCoordinates<T> computeDeltaPV(final FieldSpacecraftState<T> s) {
         final FieldVector3D<T> primaryPos = s.getPosition();
         final FieldVector3D<T> primaryVel = s.getPVCoordinates().getVelocity();
@@ -217,8 +190,8 @@ public class FieldExtremumApproachDetector<T extends CalculusFieldElement<T>>
 
     /** {@inheritDoc} */
     @Override
-    protected FieldExtremumApproachDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
-                                                      final int newMaxIter, final FieldEventHandler<T> newHandler) {
-        return new FieldExtremumApproachDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler, secondaryPVProvider);
+    protected FieldExtremumApproachDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
+                                                      final FieldEventHandler<T> newHandler) {
+        return new FieldExtremumApproachDetector<>(detectionSettings, newHandler, secondaryPVProvider);
     }
 }

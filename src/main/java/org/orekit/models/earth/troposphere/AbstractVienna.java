@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,7 +42,7 @@ import org.orekit.utils.TrackingCoordinates;
 public abstract class AbstractVienna implements TroposphericModel, TroposphereMappingFunction {
 
     /** C coefficient from Chen and Herring gradient mapping function.
-     * @see Modeling tropospheric delays for space geodetic techniques, Daniel Landskron, 2017, section 2.2
+     * @see "Modeling tropospheric delays for space geodetic techniques, Daniel Landskron, 2017, section 2.2"
      */
     private static final double C = 0.0032;
 
@@ -175,8 +175,18 @@ public abstract class AbstractVienna implements TroposphericModel, TroposphereMa
      * @param date date
      * @return day of year
      */
-    protected int getDayOfYear(final AbsoluteDate date) {
-        return date.getComponents(utc).getDate().getDayOfYear();
+    protected double getDayOfYear(final AbsoluteDate date) {
+        return date.getDayOfYear(utc);
+    }
+
+    /** Get day of year.
+     * @param <T> type of the field elements
+     * @param date date
+     * @return day of year
+     * @since 13.0
+     */
+    protected <T extends CalculusFieldElement<T>> T getDayOfYear(final FieldAbsoluteDate<T> date) {
+        return date.getDayOfYear(utc);
     }
 
 }

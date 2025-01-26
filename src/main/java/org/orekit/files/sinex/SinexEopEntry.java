@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -223,6 +223,33 @@ public class SinexEopEntry implements TimeStamped {
                             equinox[0], equinox[1],
                             nro[0], nro[1],
                             version, epoch);
+
+    }
+
+    /** Copy an EOP entry to another epoch.
+     * <p>
+     * Only the data epoch is updated.
+     * </p>
+     * @param date new epoch
+     * @return a new entry with changed epoch
+     */
+    SinexEopEntry toNewEpoch(final AbsoluteDate date) {
+
+        // Initialize
+        final SinexEopEntry newEntry = new SinexEopEntry(date);
+
+        // Fill
+        newEntry.setLod(getLod());
+        newEntry.setUt1MinusUtc(getUt1MinusUtc());
+        newEntry.setxPo(getXPo());
+        newEntry.setyPo(getYPo());
+        newEntry.setNutX(getNutX());
+        newEntry.setNutY(getNutY());
+        newEntry.setNutLn(getNutLn());
+        newEntry.setNutOb(getNutOb());
+
+        // Return
+        return newEntry;
 
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -604,7 +604,7 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
         this.initialModel = (stateType == PropagationType.MEAN) ?
                              new FieldEHModel<>(circular, state.getMass(), referenceRadius, mu, ck0) :
                              computeMeanParameters(circular, state.getMass(), epsilon, maxIterations);
-        this.models = new FieldTimeSpanMap<FieldEHModel<T>, T>(initialModel, state.getA().getField());
+        this.models = new FieldTimeSpanMap<>(initialModel, state.getMass().getField());
     }
 
     /** {@inheritDoc} */

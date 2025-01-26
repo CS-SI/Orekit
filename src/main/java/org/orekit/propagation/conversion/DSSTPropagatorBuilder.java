@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -44,19 +44,10 @@ import java.util.List;
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder {
-
-    /** First order integrator builder for propagation. */
-    private final ODEIntegratorBuilder builder;
+public class DSSTPropagatorBuilder extends AbstractIntegratedPropagatorBuilder<DSSTPropagator> {
 
     /** Force models used during the extrapolation of the orbit. */
     private final List<DSSTForceModel> forceModels;
-
-    /** Current mass for initial state (kg). */
-    private double mass;
-
-    /** Type of the orbit used for the propagation.*/
-    private PropagationType propagationType;
 
     /** Type of the elements used to define the orbital state.*/
     private PropagationType stateType;
@@ -114,19 +105,9 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder {
                                  final PropagationType propagationType,
                                  final PropagationType stateType,
                                  final AttitudeProvider attitudeProvider) {
-        super(referenceOrbit, PositionAngleType.MEAN, positionScale, true, attitudeProvider);
-        this.builder           = builder;
+        super(referenceOrbit, builder, PositionAngleType.MEAN, positionScale, propagationType, attitudeProvider, Propagator.DEFAULT_MASS);
         this.forceModels       = new ArrayList<>();
-        this.mass              = Propagator.DEFAULT_MASS;
-        this.propagationType   = propagationType;
         this.stateType         = stateType;
-    }
-
-    /** Get the type of the orbit used for the propagation (mean or osculating).
-     * @return the type of the orbit used for the propagation
-     */
-    public PropagationType getPropagationType() {
-        return propagationType;
     }
 
     /** Get the type of the elements used to define the orbital state (mean or osculating).
@@ -136,54 +117,12 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder {
         return stateType;
     }
 
-    /** Create a copy of a DSSTPropagatorBuilder object.
-     * @return Copied version of the DSSTPropagatorBuilder
-     */
-    @Deprecated
-    public DSSTPropagatorBuilder copy() {
-        final DSSTPropagatorBuilder copyBuilder =
-                        new DSSTPropagatorBuilder(createInitialOrbit(),
-                                                  builder,
-                                                  getPositionScale(),
-                                                  propagationType,
-                                                  stateType,
-                                                  getAttitudeProvider());
-        copyBuilder.setMass(mass);
-        for (DSSTForceModel model : forceModels) {
-            copyBuilder.addForceModel(model);
-        }
-        return copyBuilder;
-    }
-
-    /** Get the integrator builder.
-     * @return the integrator builder
-     */
-    public ODEIntegratorBuilder getIntegratorBuilder()
-    {
-        return builder;
-    }
-
     /** Get the list of all force models.
      * @return the list of all force models
      */
     public List<DSSTForceModel> getAllForceModels()
     {
         return Collections.unmodifiableList(forceModels);
-    }
-
-    /** Get the mass.
-     * @return the mass
-     */
-    public double getMass()
-    {
-        return mass;
-    }
-
-    /** Set the initial mass.
-     * @param mass the mass (kg)
-     */
-    public void setMass(final double mass) {
-        this.mass = mass;
     }
 
     /** Add a force model to the global perturbation model.
@@ -231,12 +170,11 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder {
         setParameters(normalizedParameters);
         final EquinoctialOrbit orbit    = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(createInitialOrbit());
         final Attitude         attitude = getAttitudeProvider().getAttitude(orbit, orbit.getDate(), getFrame());
-        final SpacecraftState  state    = new SpacecraftState(orbit, attitude, mass);
+        final SpacecraftState  state    = new SpacecraftState(orbit, attitude, getMass());
 
         final DSSTPropagator propagator = new DSSTPropagator(
-                builder.buildIntegrator(orbit, OrbitType.EQUINOCTIAL),
-                propagationType,
-                getAttitudeProvider());
+                getIntegratorBuilder().buildIntegrator(orbit, OrbitType.EQUINOCTIAL, PositionAngleType.MEAN),
+                getPropagationType(), getAttitudeProvider());
 
         // Configure force models
         if (!hasNewtonianAttraction()) {
@@ -268,7 +206,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder {
                                     measurements,
                                     estimatedMeasurementsParameters,
                                     observer,
-                                    propagationType);
+                                    getPropagationType());
     }
 
     /** Check if Newtonian attraction force model is available.

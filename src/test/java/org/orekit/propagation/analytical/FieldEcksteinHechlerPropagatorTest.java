@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -60,6 +60,7 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.events.FieldApsideDetector;
 import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.FieldElevationDetector;
@@ -140,7 +141,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
         // Extrapolation at the initial date
         // ---------------------------------
-        FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(initDate);
+        FieldOrbit<T> finalOrbit = extrapolator.propagate(initDate).getOrbit();
 
         // positions match perfectly
         Assertions.assertEquals(0.0,
@@ -190,7 +191,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
         // Extrapolation at the initial date
         // ---------------------------------
-        FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(initDate);
+        FieldOrbit<T> finalOrbit = extrapolator.propagate(initDate).getOrbit();
 
         // positions match perfectly
         Assertions.assertEquals(0.0,
@@ -260,8 +261,8 @@ public class FieldEcksteinHechlerPropagatorTest {
         double delta_t = 100.0; // extrapolation duration in seconds
         FieldAbsoluteDate<T> extrapDate = initDate.shiftedBy(delta_t);
 
-        FieldSpacecraftState<T> finalOrbitAna = extrapolatorAna.propagate(extrapDate);
-        FieldSpacecraftState<T> finalOrbitKep = extrapolatorKep.propagate(extrapDate);
+        FieldOrbit<T> finalOrbitAna = extrapolatorAna.propagate(extrapDate).getOrbit();
+        FieldOrbit<T> finalOrbitKep = extrapolatorKep.propagate(extrapDate).getOrbit();
 
         Assertions.assertEquals(finalOrbitAna.getDate().durationFrom(extrapDate).getReal(), 0.0,
                      Utils.epsilonTest);
@@ -321,7 +322,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         double delta_t = 100000.0; // extrapolation duration in seconds
         FieldAbsoluteDate<T> extrapDate = initDate.shiftedBy(delta_t);
 
-        FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(extrapDate);
+        FieldOrbit<T> finalOrbit = extrapolator.propagate(extrapDate).getOrbit();
 
         Assertions.assertEquals(0.0, finalOrbit.getDate().durationFrom(extrapDate).getReal(), 1.0e-9);
 
@@ -412,7 +413,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         double delta_t = 100000.0; // extrapolation duration in seconds
         FieldAbsoluteDate<T> extrapDate = initDate.shiftedBy(delta_t);
 
-        FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(extrapDate);
+        FieldOrbit<T> finalOrbit = extrapolator.propagate(extrapDate).getOrbit();
 
         Assertions.assertEquals(0.0, finalOrbit.getDate().durationFrom(extrapDate).getReal(), 1.0e-9);
 
@@ -660,7 +661,7 @@ public class FieldEcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void testAcceleration() {
+    void testAcceleration() {
         doTestAcceleration(Binary64Field.getInstance());
     }
 
@@ -753,10 +754,10 @@ public class FieldEcksteinHechlerPropagatorTest {
 
         Assertions.assertEquals(0, pv.getPosition().getZ().getReal(), 1.0e-6);
         Assertions.assertTrue(pv.getVelocity().getZ().getReal() > 0);
-        Collection<FieldEventDetector<T>> detectors = propagator.getEventsDetectors();
+        Collection<FieldEventDetector<T>> detectors = propagator.getEventDetectors();
         Assertions.assertEquals(1, detectors.size());
         propagator.clearEventsDetectors();
-        Assertions.assertEquals(0, propagator.getEventsDetectors().size());
+        Assertions.assertEquals(0, propagator.getEventDetectors().size());
     }
 
     @Test
@@ -895,7 +896,7 @@ public class FieldEcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void testIssue504() {
+    void testIssue504() {
         doTestIssue504(Binary64Field.getInstance());
     }
 
@@ -920,11 +921,13 @@ public class FieldEcksteinHechlerPropagatorTest {
         final FieldSpacecraftState<T> finalState = propagator.propagate(initDate);
 
         // Verify
-        Assertions.assertEquals(initialState.getA().getReal(),             finalState.getA().getReal(),             18.0);
-        Assertions.assertEquals(initialState.getEquinoctialEx().getReal(), finalState.getEquinoctialEx().getReal(), 1.0e-6);
-        Assertions.assertEquals(initialState.getEquinoctialEy().getReal(), finalState.getEquinoctialEy().getReal(), 5.0e-6);
-        Assertions.assertEquals(initialState.getHx().getReal(),            finalState.getHx().getReal(),            1.0e-6);
-        Assertions.assertEquals(initialState.getHy().getReal(),            finalState.getHy().getReal(),            2.0e-6);
+        final FieldOrbit<T> initialOrbit = initialState.getOrbit();
+        final FieldOrbit<T> finalOrbit = finalState.getOrbit();
+        Assertions.assertEquals(initialOrbit.getA().getReal(),             finalOrbit.getA().getReal(),             18.0);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEx().getReal(), finalOrbit.getEquinoctialEx().getReal(), 1.0e-6);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEy().getReal(), finalOrbit.getEquinoctialEy().getReal(), 5.0e-6);
+        Assertions.assertEquals(initialOrbit.getHx().getReal(),            finalOrbit.getHx().getReal(),            1.0e-6);
+        Assertions.assertEquals(initialOrbit.getHy().getReal(),            finalOrbit.getHy().getReal(),            2.0e-6);
         Assertions.assertEquals(0.0,
                             FieldVector3D.distance(initialState.getPosition(),
                                                    finalState.getPosition()).getReal(),
@@ -936,7 +939,7 @@ public class FieldEcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void testIssue504Bis() {
+    void testIssue504Bis() {
         doTestIssue504Bis(Binary64Field.getInstance());
     }
 
@@ -961,11 +964,13 @@ public class FieldEcksteinHechlerPropagatorTest {
         final FieldSpacecraftState<T> finalState = propagator.propagate(initDate);
 
         // Verify
-        Assertions.assertEquals(initialState.getA().getReal(),             finalState.getA().getReal(),             18.0);
-        Assertions.assertEquals(initialState.getEquinoctialEx().getReal(), finalState.getEquinoctialEx().getReal(), 1.0e-6);
-        Assertions.assertEquals(initialState.getEquinoctialEy().getReal(), finalState.getEquinoctialEy().getReal(), 5.0e-6);
-        Assertions.assertEquals(initialState.getHx().getReal(),            finalState.getHx().getReal(),            1.0e-6);
-        Assertions.assertEquals(initialState.getHy().getReal(),            finalState.getHy().getReal(),            2.0e-6);
+        final FieldOrbit<T> initialOrbit = initialState.getOrbit();
+        final FieldOrbit<T> finalOrbit = finalState.getOrbit();
+        Assertions.assertEquals(initialOrbit.getA().getReal(),             finalOrbit.getA().getReal(),             18.0);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEx().getReal(), finalOrbit.getEquinoctialEx().getReal(), 1.0e-6);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEy().getReal(), finalOrbit.getEquinoctialEy().getReal(), 5.0e-6);
+        Assertions.assertEquals(initialOrbit.getHx().getReal(),            finalOrbit.getHx().getReal(),            1.0e-6);
+        Assertions.assertEquals(initialOrbit.getHy().getReal(),            finalOrbit.getHy().getReal(),            2.0e-6);
         Assertions.assertEquals(0.0,
                             FieldVector3D.distance(initialState.getPosition(),
                                                    finalState.getPosition()).getReal(),
@@ -977,7 +982,7 @@ public class FieldEcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void testMeanOrbit() throws IOException {
+    void testMeanOrbit() throws IOException {
         doTestMeanOrbit(Binary64Field.getInstance());
     }
 
@@ -993,7 +998,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
         // set up a reference numerical propagator starting for the specified start orbit
         // using the same force models (i.e. the first few zonal terms)
-        double[][] tol = FieldNumericalPropagator.tolerances(zero.newInstance(0.1), initialOsculating, OrbitType.CIRCULAR);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.1).getTolerances(initialOsculating, OrbitType.CIRCULAR);
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, tol[0], tol[1]);
         integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> num = new FieldNumericalPropagator<>(field, integrator);

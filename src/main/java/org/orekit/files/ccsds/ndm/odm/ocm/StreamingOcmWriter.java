@@ -248,9 +248,10 @@ public class StreamingOcmWriter implements AutoCloseable {
                                                                    writer.getFlattening(),
                                                                    trajectoryMetadata.getTrajReferenceFrame().asFrame()) :
                                               null;
+                final double mu = s0.isOrbitDefined() ? s0.getOrbit().getMu() : Double.NaN;
                 trajectoryWriter = new TrajectoryStateHistoryWriter(new TrajectoryStateHistory(trajectoryMetadata,
                                                                                                Collections.emptyList(),
-                                                                                               body, s0.getMu()),
+                                                                                               body, mu),
                                                                     writer.getTimeConverter());
                 trajectoryWriter.enterSection(generator);
                 trajectoryWriter.writeMetadata(generator);
@@ -270,11 +271,12 @@ public class StreamingOcmWriter implements AutoCloseable {
                     // we crossed ascending node
                     ++crossings;
                 }
+                final double mu = currentState.isOrbitDefined() ? currentState.getOrbit().getMu() : Double.NaN;
                 lastZ = pv.getPosition().getZ();
                 final TrajectoryState state = new TrajectoryState(type, pv.getDate(),
                                                                   type.toRawElements(pv, frame,
                                                                                      trajectoryWriter.getHistory().getBody(),
-                                                                                     currentState.getMu()));
+                                                                                     mu));
                 trajectoryWriter.writeState(generator, state, type.getUnits());
             } catch (IOException e) {
                 throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE, e.getLocalizedMessage());

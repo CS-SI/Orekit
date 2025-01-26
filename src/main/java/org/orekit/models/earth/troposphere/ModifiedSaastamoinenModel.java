@@ -68,7 +68,7 @@ import java.util.regex.Pattern;
  * @see "Guochang Xu, GPS - Theory, Algorithms and Applications, Springer, 2007"
  * @since 12.0
  */
-public class ModifiedSaastamoinenModel implements TroposphericModel, DiscreteTroposphericModel {
+public class ModifiedSaastamoinenModel implements TroposphericModel {
 
     /** Default file name for δR correction term table. */
     public static final String DELTA_R_FILE_NAME = "^saastamoinen-correction\\.txt$";
@@ -122,92 +122,6 @@ public class ModifiedSaastamoinenModel implements TroposphericModel, DiscreteTro
 
     /** Lowest acceptable elevation angle [rad]. */
     private double lowElevationThreshold;
-
-    /**
-     * Create a new Saastamoinen model for the troposphere using the given environmental
-     * conditions and table from the reference book.
-     *
-     * @param t0 the temperature at the station [K]
-     * @param p0 the atmospheric pressure at the station [mbar]
-     * @param r0 the humidity at the station [fraction] (50% -&gt; 0.5)
-     * @see #ModifiedSaastamoinenModel(double, double, double, String, DataProvidersManager)
-     * @since 10.1
-     * @deprecated as of 12.1.1, replaced by {@link #ModifiedSaastamoinenModel(PressureTemperatureHumidityProvider)}
-     */
-    @Deprecated
-    public ModifiedSaastamoinenModel(final double t0, final double p0, final double r0) {
-        this(t0, p0, r0, defaultDeltaR());
-    }
-
-    /** Create a new Saastamoinen model for the troposphere using the given
-     * environmental conditions. This constructor uses the {@link DataContext#getDefault()
-     * default data context} if {@code deltaRFileName != null}.
-     *
-     * @param t0 the temperature at the station [K]
-     * @param p0 the atmospheric pressure at the station [mbar]
-     * @param r0 the humidity at the station [fraction] (50% -&gt; 0.5)
-     * @param deltaRFileName regular expression for filename containing δR
-     * correction term table (typically {@link #DELTA_R_FILE_NAME}), if null
-     * default values from the reference book are used
-     * @since 7.1
-     * @see #ModifiedSaastamoinenModel(double, double, double, String, DataProvidersManager)
-     * @deprecated as of 12.1.1, replaced by {@link #ModifiedSaastamoinenModel(PressureTemperatureHumidityProvider, String)}
-     */
-    @Deprecated
-    @DefaultDataContext
-    public ModifiedSaastamoinenModel(final double t0, final double p0, final double r0,
-                                     final String deltaRFileName) {
-        this(t0, p0, r0, deltaRFileName,
-                DataContext.getDefault().getDataProvidersManager());
-    }
-
-    /** Create a new Saastamoinen model for the troposphere using the given
-     * environmental conditions. This constructor allows the user to specify the source of
-     * of the δR file.
-     *
-     * @param t0 the temperature at the station [K]
-     * @param p0 the atmospheric pressure at the station [mbar]
-     * @param r0 the humidity at the station [fraction] (50% -&gt; 0.5)
-     * @param deltaRFileName regular expression for filename containing δR
-     * correction term table (typically {@link #DELTA_R_FILE_NAME}), if null
-     * default values from the reference book are used
-     * @param dataProvidersManager provides access to auxiliary data.
-     * @since 10.1
-     * @deprecated as of 12.1.1, replaced by {@link #ModifiedSaastamoinenModel(PressureTemperatureHumidityProvider, String, DataProvidersManager)}
-     */
-    @Deprecated
-    public ModifiedSaastamoinenModel(final double t0,
-                                     final double p0,
-                                     final double r0,
-                                     final String deltaRFileName,
-                                     final DataProvidersManager dataProvidersManager) {
-        this(t0, p0, r0,
-             deltaRFileName == null ?
-                     defaultDeltaR() :
-                     loadDeltaR(deltaRFileName, dataProvidersManager));
-    }
-
-    /** Create a new Saastamoinen model.
-     *
-     * @param t0 the temperature at the station [K]
-     * @param p0 the atmospheric pressure at the station [mbar]
-     * @param r0 the humidity at the station [fraction] (50% -> 0.5)
-     * @param deltaR δR correction term function
-     * @since 7.1
-     * @deprecated as of 12.1.1, replaced by {@link #ModifiedSaastamoinenModel(PressureTemperatureHumidityProvider, BilinearInterpolatingFunction)}
-     */
-    @Deprecated
-    private ModifiedSaastamoinenModel(final double t0, final double p0, final double r0,
-                                      final BilinearInterpolatingFunction deltaR) {
-        this(new ConstantPressureTemperatureHumidityProvider(
-            new PressureTemperatureHumidity(0,
-                                            TroposphericModelUtils.HECTO_PASCAL.toSI(p0),
-                                            t0,
-                                            WATER.waterVaporPressure(TroposphericModelUtils.HECTO_PASCAL.toSI(p0), t0, r0),
-                                            Double.NaN,
-                                            Double.NaN)),
-             deltaR);
-    }
 
     /**
      * Create a new Saastamoinen model for the troposphere using the given environmental
@@ -303,51 +217,6 @@ public class ModifiedSaastamoinenModel implements TroposphericModel, DiscreteTro
      */
     public PressureTemperatureHumidityProvider getPth0Provider() {
         return pth0Provider;
-    }
-
-    /** {@inheritDoc}
-     * <p>
-     * The Saastamoinen model is not defined for altitudes below 0.0. for continuity
-     * reasons, we use the value for h = 0 when altitude is negative.
-     * </p>
-     * <p>
-     * There are also numerical issues for elevation angles close to zero. For continuity reasons,
-     * elevations lower than a threshold will use the value obtained
-     * for the threshold itself.
-     * </p>
-     * @see #getLowElevationThreshold()
-     * @see #setLowElevationThreshold(double)
-     */
-    @Override
-    public double pathDelay(final double elevation, final GeodeticPoint point,
-                            final double[] parameters, final AbsoluteDate date) {
-        return pathDelay(new TrackingCoordinates(0.0, elevation, 0.0), point,
-                         pth0Provider.getWeatherParamerers(point, date),
-                         parameters, date).
-               getDelay();
-    }
-
-    /** {@inheritDoc}
-     * <p>
-     * The Saastamoinen model is not defined for altitudes below 0.0. for continuity
-     * reasons, we use the value for h = 0 when altitude is negative.
-     * </p>
-     * <p>
-     * There are also numerical issues for elevation angles close to zero. For continuity reasons,
-     * elevations lower than a threshold will use the value obtained
-     * for the threshold itself.
-     * </p>
-     * @see #getLowElevationThreshold()
-     * @see #setLowElevationThreshold(double)
-     */
-    @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
-                                                       final T[] parameters, final FieldAbsoluteDate<T> date) {
-        return pathDelay(new FieldTrackingCoordinates<>(date.getField().getZero(), elevation, date.getField().getZero()),
-                         point,
-                         pth0Provider.getWeatherParamerers(point, date),
-                         parameters, date).
-               getDelay();
     }
 
     /** {@inheritDoc}

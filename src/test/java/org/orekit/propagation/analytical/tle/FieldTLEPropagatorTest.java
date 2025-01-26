@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -92,12 +92,12 @@ public class FieldTLEPropagatorTest {
         FieldSpacecraftState<T> finalState = propagator.propagate(initDate.shiftedBy(period));
 
         // Check results
-        Assertions.assertEquals(initialState.getA().getReal(), finalState.getA().getReal(), 1e-1);
-        Assertions.assertEquals(initialState.getEquinoctialEx().getReal(), finalState.getEquinoctialEx().getReal(), 1e-1);
-        Assertions.assertEquals(initialState.getEquinoctialEy().getReal(), finalState.getEquinoctialEy().getReal(), 1e-1);
-        Assertions.assertEquals(initialState.getHx().getReal(), finalState.getHx().getReal(), 1e-3);
-        Assertions.assertEquals(initialState.getHy().getReal(), finalState.getHy().getReal(), 1e-3);
-        Assertions.assertEquals(initialState.getLM().getReal(), finalState.getLM().getReal(), 1e-3);
+        Assertions.assertEquals(initialState.getOrbit().getA().getReal(), finalState.getOrbit().getA().getReal(), 1e-1);
+        Assertions.assertEquals(initialState.getOrbit().getEquinoctialEx().getReal(), finalState.getOrbit().getEquinoctialEx().getReal(), 1e-1);
+        Assertions.assertEquals(initialState.getOrbit().getEquinoctialEy().getReal(), finalState.getOrbit().getEquinoctialEy().getReal(), 1e-1);
+        Assertions.assertEquals(initialState.getOrbit().getHx().getReal(), finalState.getOrbit().getHx().getReal(), 1e-3);
+        Assertions.assertEquals(initialState.getOrbit().getHy().getReal(), finalState.getOrbit().getHy().getReal(), 1e-3);
+        Assertions.assertEquals(initialState.getOrbit().getLM().getReal(), finalState.getOrbit().getLM().getReal(), 1e-3);
 
     }
 
@@ -128,22 +128,22 @@ public class FieldTLEPropagatorTest {
         FieldSpacecraftState<T> boundedState = boundedProp.propagate(initDate);
 
         // Check results
-        Assertions.assertEquals(initialState.getA().getReal(), boundedState.getA().getReal(), 0.);
-        Assertions.assertEquals(initialState.getEquinoctialEx().getReal(), boundedState.getEquinoctialEx().getReal(), 0.);
-        Assertions.assertEquals(initialState.getEquinoctialEy().getReal(), boundedState.getEquinoctialEy().getReal(), 0.);
-        Assertions.assertEquals(initialState.getHx().getReal(), boundedState.getHx().getReal(), 0.);
-        Assertions.assertEquals(initialState.getHy().getReal(), boundedState.getHy().getReal(), 0.);
-        Assertions.assertEquals(initialState.getLM().getReal(), boundedState.getLM().getReal(), 1e-14);
+        Assertions.assertEquals(initialState.getOrbit().getA().getReal(), boundedState.getOrbit().getA().getReal(), 0.);
+        Assertions.assertEquals(initialState.getOrbit().getEquinoctialEx().getReal(), boundedState.getOrbit().getEquinoctialEx().getReal(), 0.);
+        Assertions.assertEquals(initialState.getOrbit().getEquinoctialEy().getReal(), boundedState.getOrbit().getEquinoctialEy().getReal(), 0.);
+        Assertions.assertEquals(initialState.getOrbit().getHx().getReal(), boundedState.getOrbit().getHx().getReal(), 0.);
+        Assertions.assertEquals(initialState.getOrbit().getHy().getReal(), boundedState.getOrbit().getHy().getReal(), 0.);
+        Assertions.assertEquals(initialState.getOrbit().getLM().getReal(), boundedState.getOrbit().getLM().getReal(), 1e-14);
 
         FieldSpacecraftState<T> finalState = boundedProp.propagate(endDate);
 
         // Check results
-        Assertions.assertEquals(initialState.getA().getReal(), finalState.getA().getReal(), 1e-1);
-        Assertions.assertEquals(initialState.getEquinoctialEx().getReal(), finalState.getEquinoctialEx().getReal(), 1e-1);
-        Assertions.assertEquals(initialState.getEquinoctialEy().getReal(), finalState.getEquinoctialEy().getReal(), 1e-1);
-        Assertions.assertEquals(initialState.getHx().getReal(), finalState.getHx().getReal(), 1e-3);
-        Assertions.assertEquals(initialState.getHy().getReal(), finalState.getHy().getReal(), 1e-3);
-        Assertions.assertEquals(initialState.getLM().getReal(), finalState.getLM().getReal(), 1e-3);
+        Assertions.assertEquals(initialState.getOrbit().getA().getReal(), finalState.getOrbit().getA().getReal(), 1e-1);
+        Assertions.assertEquals(initialState.getOrbit().getEquinoctialEx().getReal(), finalState.getOrbit().getEquinoctialEx().getReal(), 1e-1);
+        Assertions.assertEquals(initialState.getOrbit().getEquinoctialEy().getReal(), finalState.getOrbit().getEquinoctialEy().getReal(), 1e-1);
+        Assertions.assertEquals(initialState.getOrbit().getHx().getReal(), finalState.getOrbit().getHx().getReal(), 1e-3);
+        Assertions.assertEquals(initialState.getOrbit().getHy().getReal(), finalState.getOrbit().getHy().getReal(), 1e-3);
+        Assertions.assertEquals(initialState.getOrbit().getLM().getReal(), finalState.getOrbit().getLM().getReal(), 1e-3);
 
     }
 

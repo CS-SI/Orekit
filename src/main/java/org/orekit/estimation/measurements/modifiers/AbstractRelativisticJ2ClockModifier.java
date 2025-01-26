@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -66,6 +66,14 @@ public class AbstractRelativisticJ2ClockModifier {
         this.gm = gm;
     }
 
+    /** Get the name of the effect modifying the measurement.
+     * @return name of the effect modifying the measurement
+     * @since 13.0
+     */
+    public String getEffectName() {
+        return "J₂ clock relativity";
+    }
+
     /**
      * Computes the relativistic J2 clock time delay correction.
      *
@@ -75,15 +83,13 @@ public class AbstractRelativisticJ2ClockModifier {
     protected double relativisticJ2Correction(final EstimatedMeasurementBase<?> estimated) {
 
         // Extracting the state of the receiver to determine the frame and mu
-        /**
-         * The satellite states are stored at the creation of the estimated measurements
-         * and can contain up to 2 elements. In most cases, only the receiver's state and
-         * therefore frame is stored, with the emitter's frame corresponding to the receiver's.
-         * Still, in the InterSatellites case, the states of the 2 spacecrafts are stored,
-         * and can contain different frames. This case is treated by looking at the length
-         * of SpacecraftState stored in the Estimated Measurements, with the only length 2
-         * case is the InterSatellites case.
-         */
+        //
+        // The satellite states are stored at the creation of the estimated measurements
+        // and can contain up to 2 elements. In most cases, only the receiver's state and
+        // therefore frame is stored, with the emitter's frame corresponding to the receiver's.// Still, in the InterSatellites case, the states of the 2 spacecrafts are stored, // and can contain different frames. This case is treated by looking at the length
+        // of SpacecraftState stored in the Estimated Measurements, with the only length 2
+        // case is the InterSatellites case.
+        //
         final SpacecraftState[] states = estimated.getStates();
         final SpacecraftState state =  (states.length < 2) ? states[0] : states[1];
 

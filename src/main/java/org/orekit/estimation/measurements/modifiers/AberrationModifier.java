@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Mark Rutten
+/* Copyright 2002-2025 Mark Rutten
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -73,8 +73,7 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
         this(DataContext.getDefault());
     }
 
-    /**
-     * Constructor.
+    /** Constructor.
      * @param dataContext data context
      * @since 12.0.1
      */
@@ -82,9 +81,13 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
         this.dataContext = dataContext;
     }
 
-    /**
-     * Natural to proper correction for aberration of light.
-     *
+    /** {@inheritDoc} */
+    @Override
+    public String getEffectName() {
+        return "aberration";
+    }
+
+    /** Natural to proper correction for aberration of light.
      * @param naturalRaDec the "natural" direction (in barycentric coordinates)
      * @param station      the observer ground station
      * @param date         the date of the measurement

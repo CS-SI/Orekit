@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,7 @@ import java.io.Serializable;
 public class OffsetModel implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20230302L;
+    private static final long serialVersionUID = 20240721L;
 
     /** Date of the offset start. */
     private final DateComponents start;
@@ -35,10 +35,10 @@ public class OffsetModel implements Serializable {
     private final int mjdRef;
 
     /** Offset at reference date in seconds (TAI minus UTC). */
-    private final double offset;
+    private final TimeOffset offset;
 
-    /** Offset slope in seconds per UTC day (TAI minus UTC / dUTC). */
-    private final double slope;
+    /** Offset slope in nanoseconds per UTC second (TAI minus UTC / dUTC). */
+    private final int slope;
 
     /** Constructor for a linear offset model.
      * <p>
@@ -47,10 +47,10 @@ public class OffsetModel implements Serializable {
      * @param start date of the offset start
      * @param mjdRef reference date of the linear model as a modified julian day
      * @param offset offset at reference date in seconds (TAI minus UTC)
-     * @param slope offset slope in seconds per UTC day (TAI minus UTC / dUTC)
+     * @param slope offset slope in nanoseconds per UTC second (TAI minus UTC / dUTC)
      */
     public OffsetModel(final DateComponents start,
-                       final int mjdRef, final double offset, final double slope) {
+                       final int mjdRef, final TimeOffset offset, final int slope) {
         this.start  = start;
         this.mjdRef = mjdRef;
         this.offset = offset;
@@ -65,7 +65,7 @@ public class OffsetModel implements Serializable {
      * @param offset offset at reference date in seconds (TAI minus UTC)
      */
     public OffsetModel(final DateComponents start, final int offset) {
-        this(start, 41317, offset, 0.0);
+        this(start, 41317, new TimeOffset(offset, 0L), 0);
     }
 
     /** Get the date of the offset start.
@@ -85,14 +85,14 @@ public class OffsetModel implements Serializable {
     /** Offset at reference date in seconds (TAI minus UTC).
      * @return offset at reference date in seconds (TAI minus UTC)
      */
-    public double getOffset() {
+    public TimeOffset getOffset() {
         return offset;
     }
 
-    /** Offset slope in seconds per UTC day (TAI minus UTC / dUTC).
-     * @return offset slope in seconds per UTC day (TAI minus UTC / dUTC)
+    /** Offset slope in nanoseconds per UTC second (TAI minus UTC / dUTC).
+     * @return offset slope in nanoseconds per UTC second  (TAI minus UTC / dUTC)
      */
-    public double getSlope() {
+    public int getSlope() {
         return slope;
     }
 

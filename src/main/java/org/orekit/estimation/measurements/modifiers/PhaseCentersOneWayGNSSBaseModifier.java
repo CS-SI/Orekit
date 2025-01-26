@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -52,6 +52,14 @@ public class PhaseCentersOneWayGNSSBaseModifier<T extends AbstractMeasurement<T>
         this.attitudeProvider = attitudeProvider;
     }
 
+    /** Get the name of the effect modifying the measurement.
+     * @return name of the effect modifying the measurement
+     * @since 13.0
+     */
+    public String getEffectName() {
+        return "mean phase center";
+    }
+
     /** Compute distance modification for one way measurement.
      * @param estimated estimated measurement to modify
      * @return distance modification to add to raw measurement
@@ -69,7 +77,7 @@ public class PhaseCentersOneWayGNSSBaseModifier<T extends AbstractMeasurement<T>
         final StaticTransform receptionSpacecraftToInert = receptionState.toStaticTransform().getInverse();
 
         // Orbit of the remote satellite
-        final Orbit orbitRemote = new CartesianOrbit(phaseParticipants[0], refStateLocal.getFrame(), receptionState.getMu());
+        final Orbit orbitRemote = new CartesianOrbit(phaseParticipants[0], refStateLocal.getFrame(), receptionState.getOrbit().getMu());
 
         // Transforms from spacecraft to inertial frame at emission date
         final SpacecraftState refStateRemote            = new SpacecraftState(orbitRemote,

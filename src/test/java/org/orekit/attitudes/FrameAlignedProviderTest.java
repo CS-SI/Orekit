@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,6 +39,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -68,7 +69,8 @@ public class FrameAlignedProviderTest {
     private Orbit        orbit0;
 
     @Test
-    public void testIsInertial() {
+    @DefaultDataContext
+    void testIsInertial() {
         FrameAlignedProvider law = new FrameAlignedProvider(new Rotation(new Vector3D(0.6, 0.48, 0.64), 0.9,
                                                                          RotationConvention.VECTOR_OPERATOR));
         KeplerianPropagator propagator = new KeplerianPropagator(orbit0, law);
@@ -85,7 +87,8 @@ public class FrameAlignedProviderTest {
     }
 
     @Test
-    public void testCompensateMomentum() {
+    @DefaultDataContext
+    void testCompensateMomentum() {
         FrameAlignedProvider law = new FrameAlignedProvider(new Rotation(new Vector3D(-0.64, 0.6, 0.48), 0.2,
                                                                          RotationConvention.VECTOR_OPERATOR));
         KeplerianPropagator propagator = new KeplerianPropagator(orbit0, law);
@@ -100,8 +103,9 @@ public class FrameAlignedProviderTest {
     }
 
     @Test
-    public void testSpin() {
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
+    @DefaultDataContext
+    void testSpin() {
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
 
@@ -157,7 +161,7 @@ public class FrameAlignedProviderTest {
     }
 
     @Test
-    public void testGetAttitude() {
+    void testGetAttitude() {
         // expected
         Frame eci = orbit0.getFrame();
         Attitude expected = new Attitude(t0, eci, AngularCoordinates.IDENTITY);
@@ -200,7 +204,7 @@ public class FrameAlignedProviderTest {
      * FieldAbsoluteDate, Frame)}.
      */
     @Test
-    public void testGetAttitudeField() {
+    void testGetAttitudeField() {
         // expected
         Frame eci = orbit0.getFrame();
         Attitude expected = new Attitude(t0, eci, AngularCoordinates.IDENTITY);
@@ -245,6 +249,7 @@ public class FrameAlignedProviderTest {
     }
 
     @Test
+    @DefaultDataContext
     void testGetAttitudeRotation() {
         // GIVEN
         final Frame frame1 = FramesFactory.getGCRF();
@@ -259,17 +264,20 @@ public class FrameAlignedProviderTest {
     }
 
     @Test
+    @DefaultDataContext
     void testGetAttitudeRotationFieldComplex() {
         final ComplexField complexField = ComplexField.getInstance();
         templateTestGetRotationField(complexField);
     }
 
     @Test
+    @DefaultDataContext
     void testGetAttitudeRotationFieldGradient() {
         final GradientField gradientField = GradientField.getField(1);
         templateTestGetRotationField(gradientField);
     }
 
+    @DefaultDataContext
     <T extends CalculusFieldElement<T>> void templateTestGetRotationField(final Field<T> field) {
         // GIVEN
         final Frame frame1 = FramesFactory.getGCRF();
@@ -285,11 +293,12 @@ public class FrameAlignedProviderTest {
     }
 
     @BeforeEach
+    @DefaultDataContext
     public void setUp() {
         try {
             Utils.setDataRoot("regular-data");
 
-            t0 = new AbsoluteDate(new DateComponents(2008, 06, 03), TimeComponents.H12,
+            t0 = new AbsoluteDate(new DateComponents(2008, 6, 3), TimeComponents.H12,
                                   TimeScalesFactory.getUTC());
             orbit0 =
                 new KeplerianOrbit(12345678.9, 0.001, 2.3, 0.1, 3.04, 2.4,

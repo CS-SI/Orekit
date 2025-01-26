@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,13 +45,14 @@ import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.CartesianToleranceProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
 import org.orekit.propagation.integration.FieldStateMapper;
-import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
 import org.orekit.propagation.semianalytical.dsst.forces.FieldShortPeriodTerms;
@@ -62,6 +63,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldMaxGapInterpola
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldArrayDictionary;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeSpanMap;
@@ -158,7 +160,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
     private final Field<T> field;
 
     /** Force models used to compute short periodic terms. */
-    private final transient List<DSSTForceModel> forceModels;
+    private final List<DSSTForceModel> forceModels;
 
     /** State mapper holding the force models. */
     private FieldMeanPlusShortPeriodicMapper mapper;
@@ -274,6 +276,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
     * @see #addForceModel(DSSTForceModel)
     * @see #getAllForceModels()
     */
+    @Override
     public void setMu(final T mu) {
         addForceModel(new DSSTNewtonianAttraction(mu.getReal()));
     }
@@ -321,7 +324,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
         super.resetInitialState(state);
         if (!hasNewtonianAttraction()) {
             // use the state to define central attraction
-            setMu(state.getMu());
+            setMu(state.getOrbit().getMu());
         }
         super.setStartDate(state.getDate());
     }
@@ -346,7 +349,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
      */
     public void setSelectedCoefficients(final Set<String> selectedCoefficients) {
         mapper.setSelectedCoefficients(selectedCoefficients == null ?
-                                       null : new HashSet<String>(selectedCoefficients));
+                                       null : new HashSet<>(selectedCoefficients));
     }
 
     /** Get the selected short periodic coefficients that must be stored as additional states.
@@ -493,6 +496,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
     /** Get propagation parameter type.
      * @return orbit type used for propagation
      */
+    @Override
     public OrbitType getOrbitType() {
         return super.getOrbitType();
     }
@@ -500,6 +504,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
     /** Get propagation parameter type.
      * @return angle type to use for propagation
      */
+    @Override
     public PositionAngleType getPositionAngleType() {
         return super.getPositionAngleType();
     }
@@ -756,12 +761,13 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
             final FieldEquinoctialOrbit<T> rebuilt = computeOsculatingOrbit(meanState, shortPeriodTerms);
 
             // adapted parameters residuals
-            final T deltaA  = osculating.getA().subtract(rebuilt.getA());
-            final T deltaEx = osculating.getEquinoctialEx().subtract(rebuilt.getEquinoctialEx());
-            final T deltaEy = osculating.getEquinoctialEy().subtract(rebuilt.getEquinoctialEy());
-            final T deltaHx = osculating.getHx().subtract(rebuilt.getHx());
-            final T deltaHy = osculating.getHy().subtract(rebuilt.getHy());
-            final T deltaLv = MathUtils.normalizeAngle(osculating.getLv().subtract(rebuilt.getLv()), zero);
+            final FieldOrbit<T> osculatingOrbit = osculating.getOrbit();
+            final T deltaA  = osculatingOrbit.getA().subtract(rebuilt.getA());
+            final T deltaEx = osculatingOrbit.getEquinoctialEx().subtract(rebuilt.getEquinoctialEx());
+            final T deltaEy = osculatingOrbit.getEquinoctialEy().subtract(rebuilt.getEquinoctialEy());
+            final T deltaHx = osculatingOrbit.getHx().subtract(rebuilt.getHx());
+            final T deltaHy = osculatingOrbit.getHy().subtract(rebuilt.getHy());
+            final T deltaLv = MathUtils.normalizeAngle(osculatingOrbit.getLv().subtract(rebuilt.getLv()), zero);
 
             // check convergence
             if (FastMath.abs(deltaA).getReal()  < thresholdA.getReal() &&
@@ -811,7 +817,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
         }
         return (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.mapArrayToOrbit(y, meanDot,
                                                                                 PositionAngleType.MEAN, meanState.getDate(),
-                                                                                meanState.getMu(), meanState.getFrame());
+                                                                                meanState.getOrbit().getMu(), meanState.getFrame());
     }
 
     /** {@inheritDoc} */
@@ -1092,9 +1098,17 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * @param orbit reference orbit
      * @return a two rows array, row 0 being the absolute tolerance error
      *                       and row 1 being the relative tolerance error
+     * @deprecated since 13.0. Use {@link ToleranceProvider} for default and custom tolerances.
      */
+    @Deprecated
     public static <T extends CalculusFieldElement<T>> double[][] tolerances(final T dP, final FieldOrbit<T> orbit) {
-        return FieldNumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
+        // estimate the scalar velocity error
+        final FieldPVCoordinates<T> pv = orbit.getPVCoordinates();
+        final T r2 = pv.getPosition().getNormSq();
+        final T v  = pv.getVelocity().getNorm();
+        final T dV = orbit.getMu().multiply(dP).divide(v.multiply(r2));
+
+        return tolerances(dP, dV, orbit);
     }
 
     /** Estimate tolerance vectors for an AdaptativeStepsizeIntegrator.
@@ -1115,10 +1129,14 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * @return a two rows array, row 0 being the absolute tolerance error
      *                       and row 1 being the relative tolerance error
      * @since 10.3
+     * @deprecated since 13.0. Use {@link ToleranceProvider} for default and custom tolerances.
      */
+    @Deprecated
     public static <T extends CalculusFieldElement<T>> double[][] tolerances(final T dP, final T dV,
-                                                                        final FieldOrbit<T> orbit) {
-        return FieldNumericalPropagator.tolerances(dP, dV, orbit, OrbitType.EQUINOCTIAL);
+                                                                            final FieldOrbit<T> orbit) {
+        return ToleranceProvider.of(CartesianToleranceProvider.of(dP.getReal(), dV.getReal(),
+                        CartesianToleranceProvider.DEFAULT_ABSOLUTE_MASS_TOLERANCE))
+                .getTolerances(orbit, OrbitType.EQUINOCTIAL, PositionAngleType.MEAN);
     }
 
     /** Step handler used to compute the parameters for the short periodic contributions.

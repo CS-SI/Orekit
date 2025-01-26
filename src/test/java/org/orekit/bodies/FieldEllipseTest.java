@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,32 +42,32 @@ import org.orekit.utils.TimeStampedFieldPVCoordinatesHermiteInterpolator;
 public class FieldEllipseTest {
 
     @Test
-    public void testMeridianShape() {
+    void testMeridianShape() {
         doTestMeridianShape(Binary64Field.getInstance());
     }
 
     @Test
-    public void testEquatorialShape() {
+    void testEquatorialShape() {
         doTestEquatorialShape(Binary64Field.getInstance());
     }
 
     @Test
-    public void testProjectionDerivatives() {
+    void testProjectionDerivatives() {
         doTestProjectionDerivatives(Binary64Field.getInstance());
     }
 
     @Test
-    public void testMinRadiusOfCurvature() {
+    void testMinRadiusOfCurvature() {
         doTestMinRadiusOfCurvature(Binary64Field.getInstance());
     }
 
     @Test
-    public void testMaxRadiusOfCurvature() {
+    void testMaxRadiusOfCurvature() {
         doTestMaxRadiusOfCurvature(Binary64Field.getInstance());
     }
 
     @Test
-    public void testFlatEllipse() {
+    void testFlatEllipse() {
         doTestFlatEllipse(Binary64Field.getInstance());
     }
 

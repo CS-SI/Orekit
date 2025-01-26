@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 
 /**
  * Class containing parameters for event detection.
@@ -31,13 +32,13 @@ import org.orekit.propagation.FieldSpacecraftState;
 public class FieldEventDetectionSettings <T extends CalculusFieldElement<T>> {
 
     /** Default maximum checking interval (s). */
-    public static final double DEFAULT_MAXCHECK = 600;
+    public static final double DEFAULT_MAX_CHECK = EventDetectionSettings.DEFAULT_MAX_CHECK;
 
     /** Default convergence threshold (s). */
-    public static final double DEFAULT_THRESHOLD = 1.e-6;
+    public static final double DEFAULT_THRESHOLD = EventDetectionSettings.DEFAULT_THRESHOLD;
 
     /** Default maximum number of iterations in the event time search. */
-    public static final int DEFAULT_MAX_ITER = 100;
+    public static final int DEFAULT_MAX_ITER = EventDetectionSettings.DEFAULT_MAX_ITER;
 
     /** Adaptable interval for maximum time without event evaluation. */
     private final FieldAdaptableInterval<T> maxCheckInterval;
@@ -80,7 +81,7 @@ public class FieldEventDetectionSettings <T extends CalculusFieldElement<T>> {
      * @param eventDetectionSettings non-Field detection settings
      */
     public FieldEventDetectionSettings(final Field<T> field, final EventDetectionSettings eventDetectionSettings) {
-        this(state -> eventDetectionSettings.getMaxCheckInterval().currentInterval(state.toSpacecraftState()),
+        this(FieldAdaptableInterval.of(eventDetectionSettings.getMaxCheckInterval()),
             field.getZero().newInstance(eventDetectionSettings.getThreshold()), eventDetectionSettings.getMaxIterationCount());
     }
 
@@ -113,7 +114,7 @@ public class FieldEventDetectionSettings <T extends CalculusFieldElement<T>> {
      * @return event detection settings
      */
     public EventDetectionSettings toEventDetectionSettings() {
-        return new EventDetectionSettings(state -> getMaxCheckInterval().currentInterval(new FieldSpacecraftState<>(getThreshold().getField(), state)),
+        return new EventDetectionSettings((state, isForward) -> getMaxCheckInterval().currentInterval(new FieldSpacecraftState<>(getThreshold().getField(), state), isForward),
                 getThreshold().getReal(), getMaxIterationCount());
     }
 }

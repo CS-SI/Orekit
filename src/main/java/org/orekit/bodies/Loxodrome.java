@@ -1,4 +1,4 @@
-/* Copyright 2022 Joseph Reed
+/* Copyright 2022-2025 Joseph Reed
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -52,7 +52,7 @@ public class Loxodrome {
      * This method is an equivalent to {@code new Loxodrome(point, azimuth, body, point.getAltitude())}
      *
      * @param point the initial loxodrome point
-     * @param azimuth the heading, clockwise angle from north (radians, {@code [0,2pi]})
+     * @param azimuth the heading, clockwise angle from north (radians, {@code [0,2π]})
      * @param body ellipsoid body on which the loxodrome is defined
      */
     public Loxodrome(final GeodeticPoint point, final double azimuth, final OneAxisEllipsoid body) {
@@ -62,7 +62,7 @@ public class Loxodrome {
     /** Constructor building a loxodrome from an initial point and an azimuth-off-local-north heading.
      *
      * @param point the initial loxodrome point
-     * @param azimuth the heading, clockwise angle from north (radians, {@code [0,2pi]})
+     * @param azimuth the heading, clockwise angle from north (radians, {@code [0,2π]})
      * @param body ellipsoid body on which the loxodrome is defined
      * @param altitude altitude above the reference body
      */
@@ -104,8 +104,8 @@ public class Loxodrome {
 
     /** Calculate the point at the specified distance from the origin point along the loxodrome.
      *
-     * A positive distance follows the line in the azumuth direction (i.e. northward for arcs with azimuth
-     * angles {@code [3pi/2, 2pi]} or {@code [0, pi/2]}). Negative distances travel in the opposite direction along
+     * A positive distance follows the line in the azimuth direction (i.e. northward for arcs with azimuth
+     * angles {@code [3π/2, 2π]} or {@code [0, π/2]}). Negative distances travel in the opposite direction along
      * the rhumb line.
      *
      * Distance is computed at the altitude of the origin point.
@@ -137,7 +137,7 @@ public class Loxodrome {
         final double lon;
         if (FastMath.abs(cosAzimuth) < COS_ANGLE_THRESHOLD) {
             lat = point.getLatitude();
-            lon = point.getLongitude() + ((distance * FastMath.sin(azimuth) * t3) / semiMajorAxis * FastMath.cos(point.getLatitude()));
+            lon = point.getLongitude() + ((distance * FastMath.sin(azimuth) * t3) / (semiMajorAxis * FastMath.cos(point.getLatitude())));
         }
         else {
             final double eccSq34 = 0.75 * body.getEccentricitySquared();
@@ -158,10 +158,10 @@ public class Loxodrome {
         return new GeodeticPoint(lat, lon, getAltitude());
     }
 
-    /** Adjust the latitude if necessary, ensuring it's always between -pi/2 and +pi/2.
+    /** Adjust the latitude if necessary, ensuring it's always between -π/2 and +π/2.
      *
      * @param lat the latitude value
-     * @return the latitude, within {@code [-pi/2,+pi/2]}
+     * @return the latitude, within {@code [-π/2,+π/2]}
      */
     static double fixLatitude(final double lat) {
         if (lat < -MathUtils.SEMI_PI) {

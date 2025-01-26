@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -294,43 +294,11 @@ public abstract class AbstractFieldTimeInterpolator<T extends FieldTimeStamped<K
             this.interpolationDate = interpolationDate;
         }
 
-        /**
-         * Get the central date to use to find neighbors while taking into account extrapolation threshold.
-         *
-         * @param date interpolation date
-         *
-         * @return central date to use to find neighbors
-         *
-         * @deprecated This method appears to be unused and may be removed in Orekit 13.0.
-         * Please Comment on forum.orekit.org if you have a use case for this method.
-         */
-        @Deprecated
-        protected FieldAbsoluteDate<KK> getCentralDate(final FieldAbsoluteDate<KK> date) {
-            return AbstractFieldTimeInterpolator.getCentralDate(
-                    date,
-                    neighborList.get(0).getDate(),
-                    neighborList.get(neighborList.size() - 1).getDate(),
-                    extrapolationThreshold);
-        }
-
         /** Get interpolation date.
          * @return interpolation date
          */
         public FieldAbsoluteDate<KK> getInterpolationDate() {
             return interpolationDate;
-        }
-
-        /** Get cached samples.
-         * @return cached samples
-         *
-         * @deprecated This method appears to be unused and may be removed in Orekit 13.0.
-         * Please Comment on forum.orekit.org if you have a use case for this method.
-         */
-        @Deprecated
-        public ImmutableFieldTimeStampedCache<T, KK> getCachedSamples() {
-            return new ImmutableFieldTimeStampedCache<>(
-                    interpolationPoints,
-                    getNeighborList());
         }
 
         /** Get neighbor list.

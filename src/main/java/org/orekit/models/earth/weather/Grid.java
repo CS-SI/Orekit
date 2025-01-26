@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,9 +21,12 @@ import java.util.SortedSet;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.utils.Constants;
 
 /** Container for a complete grid.
  * @author Bryan Cazabonne
@@ -101,19 +104,21 @@ class Grid {
     private int getWestIndex(final double longitude) {
 
         final int lonKey = (int) FastMath.rint(FastMath.toDegrees(longitude) * GridEntry.DEG_TO_MAS);
-        final int index  = longitudeSample.headSet(lonKey + 1).size() - 1;
 
         // we don't do clipping in longitude because we have added a row to wrap around the Earth
-        return index;
+        return longitudeSample.headSet(lonKey + 1).size() - 1;
 
     }
 
     /** Get interpolator within a cell.
      * @param latitude latitude of point of interest
      * @param longitude longitude of point of interest
+     * @param altitude altitude of point of interest
+     * @param deltaRef duration since reference date
      * @return interpolator for the cell
      */
-    CellInterpolator getInterpolator(final double latitude, final double longitude) {
+    CellInterpolator getInterpolator(final double latitude, final double longitude,
+                                     final double altitude, final double deltaRef) {
 
         // keep longitude within grid range
         final double normalizedLongitude =
@@ -124,12 +129,16 @@ class Grid {
         final int southIndex = getSouthIndex(latitude);
         final int westIndex  = getWestIndex(normalizedLongitude);
 
+        final double coef = (deltaRef / Constants.JULIAN_YEAR) * 2 * FastMath.PI;
+        final SinCos sc1  = FastMath.sinCos(coef);
+        final SinCos sc2  = FastMath.sinCos(2.0 * coef);
+
         // build interpolator
         return new CellInterpolator(latitude, normalizedLongitude,
-                                    entries[southIndex    ][westIndex    ],
-                                    entries[southIndex    ][westIndex + 1],
-                                    entries[southIndex + 1][westIndex    ],
-                                    entries[southIndex + 1][westIndex + 1]);
+                                    entries[southIndex    ][westIndex    ].evaluate(sc1, sc2, altitude),
+                                    entries[southIndex    ][westIndex + 1].evaluate(sc1, sc2, altitude),
+                                    entries[southIndex + 1][westIndex    ].evaluate(sc1, sc2, altitude),
+                                    entries[southIndex + 1][westIndex + 1].evaluate(sc1, sc2, altitude));
 
     }
 
@@ -137,9 +146,12 @@ class Grid {
      * @param <T> type of the field elements
      * @param latitude latitude of point of interest
      * @param longitude longitude of point of interest
+     * @param altitude altitude of point of interest
+     * @param deltaRef duration since reference date
      * @return interpolator for the cell
      */
-    <T extends CalculusFieldElement<T>> FieldCellInterpolator<T> getInterpolator(final T latitude, final T longitude) {
+    <T extends CalculusFieldElement<T>> FieldCellInterpolator<T> getInterpolator(final T latitude, final T longitude,
+                                                                                 final T altitude, final T deltaRef) {
 
         // keep longitude within grid range
         final T normalizedLongitude =
@@ -150,12 +162,16 @@ class Grid {
         final int southIndex = getSouthIndex(latitude.getReal());
         final int westIndex  = getWestIndex(normalizedLongitude.getReal());
 
-        // build interpolator
+        final T              coef = deltaRef.multiply(2 * FastMath.PI / Constants.JULIAN_YEAR);
+        final FieldSinCos<T> sc1  = FastMath.sinCos(coef);
+        final FieldSinCos<T> sc2  = FastMath.sinCos(coef.multiply(2));
+
+         // build interpolator
         return new FieldCellInterpolator<>(latitude, normalizedLongitude,
-                                           entries[southIndex    ][westIndex    ],
-                                           entries[southIndex    ][westIndex + 1],
-                                           entries[southIndex + 1][westIndex    ],
-                                           entries[southIndex + 1][westIndex + 1]);
+                                           entries[southIndex    ][westIndex    ].evaluate(sc1, sc2, altitude),
+                                           entries[southIndex    ][westIndex + 1].evaluate(sc1, sc2, altitude),
+                                           entries[southIndex + 1][westIndex    ].evaluate(sc1, sc2, altitude),
+                                           entries[southIndex + 1][westIndex + 1].evaluate(sc1, sc2, altitude));
 
     }
 
@@ -166,7 +182,7 @@ class Grid {
     boolean hasModels(final SeasonalModelType... types) {
         boolean hasAll = true;
         for (final SeasonalModelType type : types) {
-            hasAll &= entries[0][0].getModel(type) != null;
+            hasAll &= entries[0][0].hasModel(type);
         }
         return hasAll;
     }

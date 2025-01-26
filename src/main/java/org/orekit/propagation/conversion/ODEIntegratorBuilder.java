@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,10 +16,10 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.hipparchus.ode.AbstractIntegrator;
-import org.orekit.orbits.CartesianOrbit;
+import org.hipparchus.ode.ODEIntegrator;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.utils.AbsolutePVCoordinates;
 
 /** This interface is the top-level abstraction to build first order integrators for propagators conversion.
@@ -31,19 +31,24 @@ public interface ODEIntegratorBuilder {
     /** Build a first order integrator.
      * @param orbit reference orbit
      * @param orbitType orbit type to use
+     * @param angleType position angle type to use
+     * @return a first order integrator ready to use
+     * @since 13.0
+     */
+    ODEIntegrator buildIntegrator(Orbit orbit, OrbitType orbitType, PositionAngleType angleType);
+
+    /** Build a first order integrator.
+     * @param orbit reference orbit
+     * @param orbitType orbit type to use
      * @return a first order integrator ready to use
      */
-    AbstractIntegrator buildIntegrator(Orbit orbit, OrbitType orbitType);
+    ODEIntegrator buildIntegrator(Orbit orbit, OrbitType orbitType);
 
     /**
      * Build a first order integrator. Non-orbit version.
      * @param absolutePVCoordinates absolute position-velocity vector
      * @return a first order integrator ready to use
+     * @since 12.2
      */
-    default AbstractIntegrator buildIntegrator(final AbsolutePVCoordinates absolutePVCoordinates) {
-        final double arbitraryMu = 1.;
-        final CartesianOrbit cartesianOrbit = new CartesianOrbit(absolutePVCoordinates.getPVCoordinates(),
-            absolutePVCoordinates.getFrame(), arbitraryMu);
-        return buildIntegrator(cartesianOrbit, OrbitType.CARTESIAN);
-    }
+    ODEIntegrator buildIntegrator(AbsolutePVCoordinates absolutePVCoordinates);
 }

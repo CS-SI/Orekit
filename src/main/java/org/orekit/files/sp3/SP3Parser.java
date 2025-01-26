@@ -39,7 +39,6 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFileParser;
 import org.orekit.frames.Frame;
-import org.orekit.frames.ITRFVersion;
 import org.orekit.gnss.IGSUtils;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
@@ -50,7 +49,6 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
-import org.orekit.utils.IERSConventions;
 
 /** A parser for the SP3 orbit file format. It supports all formats from sp3-a
  * to sp3-d.
@@ -66,11 +64,8 @@ import org.orekit.utils.IERSConventions;
  */
 public class SP3Parser implements EphemerisFileParser<SP3> {
 
-    /** String representation of the center of ephemeris coordinate system.
-     * @deprecated as of 12.1 not used anymore
-     */
-    @Deprecated
-    public static final String SP3_FRAME_CENTER_STRING = "EARTH";
+    /** Default number of samples to use when interpolating SP3 coordinates. */
+    public static final int DEFAULT_INTERPOLATION_SAMPLES = 7;
 
     /** Spaces delimiters. */
     private static final String SPACES = "\\s+";
@@ -91,13 +86,15 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
      * Create an SP3 parser using default values.
      *
      * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     * It also uses a {@link #DEFAULT_INTERPOLATION_SAMPLES default number of samples} to
+     * interpolate coordinates.
      *
      * @see #SP3Parser(double, int, Function)
      * @see IGSUtils#guessFrame(String)
      */
     @DefaultDataContext
     public SP3Parser() {
-        this(Constants.EIGEN5C_EARTH_MU, 7, IGSUtils::guessFrame);
+        this(Constants.EIGEN5C_EARTH_MU, DEFAULT_INTERPOLATION_SAMPLES, IGSUtils::guessFrame);
     }
 
     /**
@@ -145,30 +142,6 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
         this.interpolationSamples = interpolationSamples;
         this.frameBuilder         = frameBuilder;
         this.timeScales           = timeScales;
-    }
-
-    /**
-     * Default string to {@link Frame} conversion for {@link #SP3Parser()}.
-     *
-     * <p>
-     * This method uses the {@link DataContext#getDefault() default data context}.
-     * If the frame names has a form like IGS##, or ITR##, or SLR##, where ##
-     * is a two digits number, then this number will be used to build the
-     * appropriate {@link ITRFVersion}. Otherwise (for example if name is
-     * UNDEF or WGS84), then a default {@link
-     * org.orekit.frames.Frames#getITRF(IERSConventions, boolean) ITRF}
-     * will be created.
-     * </p>
-     *
-     * @param name of the frame.
-     * @return ITRF based on 2010 conventions,
-     * with tidal effects considered during EOP interpolation
-     * @deprecated as of 12.1, replaced by {@link IGSUtils#guessFrame(String)}
-     */
-    @Deprecated
-    @DefaultDataContext
-    public static Frame guessFrame(final String name) {
-        return IGSUtils.guessFrame(name);
     }
 
     @Override
@@ -719,9 +692,11 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                                                      SP3Utils.POSITION_UNIT.toSI(Double.parseDouble(line.substring(32, 46).trim())));
 
                     // clock (microsec)
-                    pi.latestClock = SP3Utils.CLOCK_UNIT.toSI(line.trim().length() <= 46 ?
-                                                              SP3Utils.DEFAULT_CLOCK_VALUE :
-                                                              Double.parseDouble(line.substring(46, 60).trim()));
+                    final double clockField = line.trim().length() <= 46 ?
+                                              SP3Utils.DEFAULT_CLOCK_VALUE :
+                                              Double.parseDouble(line.substring(46, 60).trim());
+                    pi.latestClock = FastMath.abs(clockField - SP3Utils.DEFAULT_CLOCK_VALUE) < 1.0e-6 ?
+                                     Double.NaN : SP3Utils.CLOCK_UNIT.toSI(clockField);
 
                     if (pi.latestPosition.getNorm() > 0) {
 
@@ -813,9 +788,11 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                                                            SP3Utils.VELOCITY_UNIT.toSI(Double.parseDouble(line.substring(32, 46).trim())));
 
                     // clock rate in file is 1e-4 us / s
-                    final double clockRateChange = SP3Utils.CLOCK_RATE_UNIT.toSI(line.trim().length() <= 46 ?
-                                                                                 SP3Utils.DEFAULT_CLOCK_RATE_VALUE :
-                                                                                 Double.parseDouble(line.substring(46, 60).trim()));
+                    final double clockRateField = line.trim().length() <= 46 ?
+                                                  SP3Utils.DEFAULT_CLOCK_RATE_VALUE :
+                                                  Double.parseDouble(line.substring(46, 60).trim());
+                    final double clockRateChange = FastMath.abs(clockRateField - SP3Utils.DEFAULT_CLOCK_RATE_VALUE) < 1.0e-6 ?
+                                                   Double.NaN : SP3Utils.CLOCK_RATE_UNIT.toSI(clockRateField);
 
                     final Vector3D velocityAccuracy;
                     if (line.length() < 69 ||

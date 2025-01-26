@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -89,9 +89,7 @@ class FieldSpacecraftStateTest {
 
     @Test
     void testDatesConsistency() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            doTestDatesConsistency(Binary64Field.getInstance());
-        });
+        Assertions.assertThrows(IllegalArgumentException.class, () -> doTestDatesConsistency(Binary64Field.getInstance()));
     }
 
     @Test
@@ -101,9 +99,7 @@ class FieldSpacecraftStateTest {
 
     @Test
     void testFramesConsistency() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            doTestFramesConsistency(Binary64Field.getInstance());
-        });
+        Assertions.assertThrows(IllegalArgumentException.class, () -> doTestFramesConsistency(Binary64Field.getInstance()));
     }
 
     @Test
@@ -133,9 +129,8 @@ class FieldSpacecraftStateTest {
 
     @Test
     void testFramesConsistencyAbsPV() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            doTestFramesConsistencyAbsPV(Binary64Field.getInstance());
-        });
+        Assertions.assertThrows(IllegalArgumentException.class,
+                                () -> doTestFramesConsistencyAbsPV(Binary64Field.getInstance()));
     }
 
     @Test
@@ -255,10 +250,10 @@ class FieldSpacecraftStateTest {
             FieldSpacecraftState<T> control_f = ScS_f.shiftedBy(zero.add(dt));
 
 
-            Assertions.assertEquals(control_r.getA(), control_f.getA().getReal(), 1e-10);
-            Assertions.assertEquals(control_r.getE(), control_f.getE().getReal(), 1e-10);
-            Assertions.assertEquals(control_r.getEquinoctialEx(), control_f.getEquinoctialEx().getReal(), 1e-10);
-            Assertions.assertEquals(control_r.getEquinoctialEy(), control_f.getEquinoctialEy().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getOrbit().getA(), control_f.getOrbit().getA().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getOrbit().getE(), control_f.getOrbit().getE().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getOrbit().getEquinoctialEx(), control_f.getOrbit().getEquinoctialEx().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getOrbit().getEquinoctialEy(), control_f.getOrbit().getEquinoctialEy().getReal(), 1e-10);
             Assertions.assertEquals(control_r.getPosition().getX(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getX(), 1e-10);
             Assertions.assertEquals(control_r.getPosition().getY(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getY(), 1e-10);
             Assertions.assertEquals(control_r.getPosition().getZ(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getZ(), 1e-10);
@@ -435,11 +430,8 @@ class FieldSpacecraftStateTest {
         FieldAttitude<T> shiftedAttitude = attitudeLaw
                 .getAttitude(orbit1Shift, orbit1Shift.getDate(), orbit.getFrame());
 
-        //verify dates are very close, but not equal
-        Assertions.assertNotEquals(shiftedAttitude.getDate(), orbit10Shifts.getDate());
-        Assertions.assertEquals(
-                shiftedAttitude.getDate().durationFrom(orbit10Shifts.getDate()).getReal(),
-                0, Precision.EPSILON);
+        // since Orekit 13, dates are equal
+        Assertions.assertEquals(shiftedAttitude.getDate(), orbit10Shifts.getDate());
 
         //action + verify no exception is thrown
         new FieldSpacecraftState<>(orbit10Shifts, shiftedAttitude);
@@ -716,16 +708,6 @@ class FieldSpacecraftStateTest {
             SpacecraftState control_r = ScS_r.shiftedBy(dt);
             FieldSpacecraftState<T> control_f = ScS_f.shiftedBy(zero.add(dt));
 
-
-            Assertions.assertEquals(control_r.getMu(), control_f.getMu().getReal(), 1e-10);
-            Assertions.assertEquals(control_r.getI(), control_f.getI().getReal(), 1e-10);
-            Assertions.assertEquals(control_r.getHx(), control_f.getHx().getReal(), 1e-10);
-            Assertions.assertEquals(control_r.getHy(), control_f.getHy().getReal(), 1e-10);
-            Assertions.assertEquals(control_r.getLv(), control_f.getLv().getReal(), 1e-10);
-            Assertions.assertEquals(control_r.getLE(), control_f.getLE().getReal(), 1e-10);
-            Assertions.assertEquals(control_r.getLM(), control_f.getLM().getReal(), 1e-10);
-            Assertions.assertEquals(control_r.getKeplerianMeanMotion(), control_f.getKeplerianMeanMotion().getReal(), 1e-10);
-            Assertions.assertEquals(control_r.getKeplerianPeriod(), control_f.getKeplerianPeriod().getReal(), 1e-10);
             Assertions.assertEquals(control_r.getPosition().getX(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getX(), 1e-10);
             Assertions.assertEquals(control_r.getPosition().getY(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getY(), 1e-10);
             Assertions.assertEquals(control_r.getPosition().getZ(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getZ(), 1e-10);
@@ -783,14 +765,11 @@ class FieldSpacecraftStateTest {
 
         BodyCenterPointing attitudeLaw = new BodyCenterPointing(absPV_f.getFrame(), earth);
 
-        FieldAttitude<T> shiftedAttitude = attitudeLaw
-                .getAttitude(AbsolutePVCoordinates1Shift, AbsolutePVCoordinates1Shift.getDate(), absPV_f.getFrame());
-
-        //verify dates are very close, but not equal
-        Assertions.assertNotEquals(shiftedAttitude.getDate(), AbsolutePVCoordinates10Shifts.getDate());
-        Assertions.assertEquals(
-                shiftedAttitude.getDate().durationFrom(AbsolutePVCoordinates10Shifts.getDate()).getReal(),
-                0, Precision.EPSILON);
+        FieldAttitude<T> shiftedAttitude = attitudeLaw.getAttitude(AbsolutePVCoordinates1Shift,
+                                                                   AbsolutePVCoordinates1Shift.getDate(),
+                                                                   absPV_f.getFrame());
+        // since Orekit 13, dates are equal
+        Assertions.assertEquals(shiftedAttitude.getDate(), AbsolutePVCoordinates10Shifts.getDate());
 
         //action + verify no exception is thrown
         FieldSpacecraftState<T> s1 = new FieldSpacecraftState<>(AbsolutePVCoordinates10Shifts, shiftedAttitude);

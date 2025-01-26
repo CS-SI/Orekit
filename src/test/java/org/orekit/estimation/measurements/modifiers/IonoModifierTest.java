@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,7 +53,7 @@ import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.estimation.measurements.gnss.PhaseMeasurementCreator;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
 import org.orekit.orbits.OrbitType;
@@ -81,7 +81,7 @@ public class IonoModifierTest {
         model = new KlobucharIonoModel(new double[]{.3820e-07, .1490e-07, -.1790e-06, 0},
                                        new double[]{.1430e+06, 0, -.3280e+06, .1130e+06});
         // GPS L1 in HZ
-        frequency = Frequency.G01.getFrequency();
+        frequency = PredefinedGnssSignal.G01.getFrequency();
     }
 
     @Test
@@ -110,7 +110,7 @@ public class IonoModifierTest {
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new PhaseMeasurementCreator(context,
-                                                                                           Frequency.G01, 0,
+                                                                                           PredefinedGnssSignal.G01, 0,
                                                                                            satClockOffset),
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
@@ -127,6 +127,7 @@ public class IonoModifierTest {
             EstimatedMeasurementBase<Phase> evalNoMod = phase.estimateWithoutDerivatives(12, 17, new SpacecraftState[] { refstate });
             Assertions.assertEquals(12, evalNoMod.getIteration());
             Assertions.assertEquals(17, evalNoMod.getCount());
+
 
             // add modifier
             phase.addModifier(modifier);
@@ -153,6 +154,9 @@ public class IonoModifierTest {
             Assertions.assertTrue(diffMeters < 0);
             Assertions.assertEquals(0.0, diffMeters, 30.0);
 
+            Assertions.assertEquals(1,
+                                    eval.getAppliedEffects().entrySet().stream().
+                                    filter(e -> e.getKey().getEffectName().equals("ionosphere")).count());
         }
     }
 
@@ -182,7 +186,7 @@ public class IonoModifierTest {
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new PhaseMeasurementCreator(context,
-                                                                                           Frequency.G01, 0,
+                                                                                           PredefinedGnssSignal.G01, 0,
                                                                                            satClockOffset),
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
@@ -640,7 +644,7 @@ public class IonoModifierTest {
         for (final ObservedMeasurement<?> measurement : measurements) {
             // parameter corresponding to station position offset
             final GroundStation   station = ((Range) measurement).getStation();
-            final AbsoluteDate    date    = ((Range) measurement).getDate();
+            final AbsoluteDate    date    = measurement.getDate();
             final SpacecraftState state   = propagator.propagate(date);
 
             double delayMeters = model.pathDelay(state, station.getBaseFrame(), frequency, model.getParameters());

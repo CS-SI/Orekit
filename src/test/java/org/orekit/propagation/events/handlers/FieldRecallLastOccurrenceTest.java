@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -46,6 +46,19 @@ class FieldRecallLastOccurrenceTest {
     }
 
     @Test
+    void testFinish() {
+        // GIVEN
+        final TestHandler testHandler = new TestHandler();
+        final FieldRecallLastOccurrence<Complex> recallLastOccurrence = new FieldRecallLastOccurrence<>(testHandler);
+        final FieldAbsoluteDate<Complex> expectedDate = FieldAbsoluteDate.getArbitraryEpoch(ComplexField.getInstance());
+        final FieldSpacecraftState<Complex> mockedState = mockState(expectedDate);
+        // WHEN
+        recallLastOccurrence.finish(mockedState, null);
+        // THEN
+        Assertions.assertTrue(testHandler.isFinished);
+    }
+
+    @Test
     void testResetState() {
         // GIVEN
         final TestHandler testHandler = new TestHandler();
@@ -81,6 +94,7 @@ class FieldRecallLastOccurrenceTest {
     private static class TestHandler implements FieldEventHandler<Complex> {
 
         boolean isInitialized = false;
+        boolean isFinished = false;
 
         @Override
         public void init(FieldSpacecraftState<Complex> initialState, FieldAbsoluteDate<Complex> target, FieldEventDetector<Complex> detector) {
@@ -92,6 +106,10 @@ class FieldRecallLastOccurrenceTest {
             return ACTION;
         }
 
+        @Override
+        public void finish(FieldSpacecraftState<Complex> finalState, FieldEventDetector<Complex> detector) {
+            isFinished = true;
+        }
     }
 
 }

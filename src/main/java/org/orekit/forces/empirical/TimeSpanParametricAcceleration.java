@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,24 +19,18 @@ package org.orekit.forces.empirical;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.forces.ForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
 
@@ -74,22 +68,7 @@ import org.orekit.utils.TimeSpanMap.Span;
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class TimeSpanParametricAcceleration implements ForceModel {
-
-    /** Prefix for dates before in the parameter drivers' name. */
-    public static final String DATE_BEFORE = " - Before ";
-
-    /** Prefix for dates after in the parameter drivers' name. */
-    public static final String DATE_AFTER = " - After ";
-
-    /** Direction of the acceleration in defining frame. */
-    private final Vector3D direction;
-
-    /** Flag for inertial acceleration direction. */
-    private final boolean isInertial;
-
-    /** The attitude to override, if set. */
-    private final AttitudeProvider attitudeOverride;
+public class TimeSpanParametricAcceleration extends AbstractParametricAcceleration {
 
     /** TimeSpanMap of AccelerationModel objects. */
     private final TimeSpanMap<AccelerationModel> accelerationModelTimeSpanMap;
@@ -141,9 +120,7 @@ public class TimeSpanParametricAcceleration implements ForceModel {
                                            final boolean isInertial,
                                            final AttitudeProvider attitudeOverride,
                                            final AccelerationModel accelerationModel) {
-        this.direction                    = direction;
-        this.isInertial                   = isInertial;
-        this.attitudeOverride             = attitudeOverride;
+        super(direction, isInertial, attitudeOverride);
         this.accelerationModelTimeSpanMap = new TimeSpanMap<>(accelerationModel);
     }
 
@@ -227,12 +204,6 @@ public class TimeSpanParametricAcceleration implements ForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public boolean dependsOnPositionOnly() {
-        return isInertial;
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public Vector3D acceleration(final SpacecraftState state,
                                  final double[] parameters) {
 
@@ -240,21 +211,7 @@ public class TimeSpanParametricAcceleration implements ForceModel {
         final AbsoluteDate date = state.getDate();
 
         // Compute inertial direction
-        final Vector3D inertialDirection;
-        if (isInertial) {
-            // the acceleration direction is already defined in the inertial frame
-            inertialDirection = direction;
-        } else {
-            final Rotation rotation;
-            if (attitudeOverride == null) {
-                // the acceleration direction is defined in spacecraft frame as set by the propagator
-                rotation = state.getAttitude().getRotation();
-            } else {
-                // the acceleration direction is defined in a dedicated frame
-                rotation = attitudeOverride.getAttitudeRotation(state.getOrbit(), date, state.getFrame());
-            }
-            inertialDirection = rotation.applyInverseTo(direction);
-        }
+        final Vector3D inertialDirection = getAccelerationDirection(state);
 
         // Extract the proper parameters valid at date from the input array
         final double[] extractedParameters = extractParameters(parameters, date);
@@ -273,21 +230,7 @@ public class TimeSpanParametricAcceleration implements ForceModel {
         final FieldAbsoluteDate<T> date = state.getDate();
 
         // Compute inertial direction
-        final FieldVector3D<T> inertialDirection;
-        if (isInertial) {
-            // the acceleration direction is already defined in the inertial frame
-            inertialDirection = new FieldVector3D<>(state.getDate().getField(), direction);
-        } else {
-            final FieldRotation<T> rotation;
-            if (attitudeOverride == null) {
-                // the acceleration direction is defined in spacecraft frame as set by the propagator
-                rotation = state.getAttitude().getRotation();
-            } else {
-                // the acceleration direction is defined in a dedicated frame
-                rotation = attitudeOverride.getAttitudeRotation(state.getOrbit(), date, state.getFrame());
-            }
-            inertialDirection = rotation.applyInverseTo(direction);
-        }
+        final FieldVector3D<T> inertialDirection = getAccelerationDirection(state);
 
         // Extract the proper parameters valid at date from the input array
         final T[] extractedParameters = extractParameters(parameters, date);
@@ -295,18 +238,6 @@ public class TimeSpanParametricAcceleration implements ForceModel {
         // Compute and return the parametric acceleration
         return new FieldVector3D<>(getAccelerationModel(date.toAbsoluteDate()).signedAmplitude(state, extractedParameters), inertialDirection);
 
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Stream<EventDetector> getEventDetectors() {
-        return Stream.empty();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
-        return Stream.empty();
     }
 
     /** {@inheritDoc}
@@ -326,7 +257,7 @@ public class TimeSpanParametricAcceleration implements ForceModel {
             // Add all the parameter drivers of the time span
             for (ParameterDriver driver : span.getData().getParametersDrivers()) {
                 // Add the driver only if the name does not exist already
-                if (!findByName(listParameterDrivers, driver.getName())) {
+                if (!ParameterDriversProvider.findByName(listParameterDrivers, driver.getName())) {
                     listParameterDrivers.add(driver);
                 }
             }
@@ -391,20 +322,6 @@ public class TimeSpanParametricAcceleration implements ForceModel {
             }
         }
         return outParameters;
-    }
-
-    /** Find if a parameter driver with a given name already exists in a list of parameter drivers.
-     * @param driversList the list of parameter drivers
-     * @param name the parameter driver's name to filter with
-     * @return true if the name was found, false otherwise
-     */
-    private boolean findByName(final List<ParameterDriver> driversList, final String name) {
-        for (final ParameterDriver d : driversList) {
-            if (d.getName().equals(name)) {
-                return true;
-            }
-        }
-        return false;
     }
 
 }

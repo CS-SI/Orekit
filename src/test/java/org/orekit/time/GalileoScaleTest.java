@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -54,25 +54,25 @@ public class GalileoScaleTest {
                                                      utc);
         final AbsoluteDate during = before.shiftedBy(1.25);
         Assertions.assertEquals(61, utc.minuteDuration(during));
-        Assertions.assertEquals(1.0, utc.getLeap(during), 1.0e-10);
+        Assertions.assertEquals(1.0, utc.getLeap(during).toDouble(), 1.0e-10);
         Assertions.assertEquals(60, scale.minuteDuration(during));
-        Assertions.assertEquals(0.0, scale.getLeap(during), 1.0e-10);
+        Assertions.assertEquals(0.0, scale.getLeap(during).toDouble(), 1.0e-10);
     }
 
     @Test
     public void testConstant() {
         TimeScale scale = TimeScalesFactory.getGST();
-        double reference = scale.offsetFromTAI(AbsoluteDate.J2000_EPOCH);
+        double reference = scale.offsetFromTAI(AbsoluteDate.J2000_EPOCH).toDouble();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_DAY);
-            Assertions.assertEquals(reference, scale.offsetFromTAI(date), 1.0e-15);
+            Assertions.assertEquals(reference, scale.offsetFromTAI(date).toDouble(), 1.0e-15);
         }
     }
 
     @Test
     public void testField() {
         TimeScale scale = TimeScalesFactory.getGST();
-        double reference = scale.offsetFromTAI(AbsoluteDate.J2000_EPOCH);
+        double reference = scale.offsetFromTAI(AbsoluteDate.J2000_EPOCH).toDouble();
         final Binary64Field field = Binary64Field.getInstance();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             FieldAbsoluteDate<Binary64> date = FieldAbsoluteDate.getJ2000Epoch(field).
@@ -87,7 +87,7 @@ public class GalileoScaleTest {
         TimeScale gps = TimeScalesFactory.getGPS();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_DAY);
-            Assertions.assertEquals(gps.offsetFromTAI(date), gst.offsetFromTAI(date), 1.0e-15);
+            Assertions.assertEquals(gps.offsetFromTAI(date).toDouble(), gst.offsetFromTAI(date).toDouble(), 1.0e-15);
         }
     }
 
@@ -96,9 +96,9 @@ public class GalileoScaleTest {
         TimeScale scale = TimeScalesFactory.getGST();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_DAY);
-            double dt1 = scale.offsetFromTAI(date);
+            double dt1 = scale.offsetFromTAI(date).toDouble();
             DateTimeComponents components = date.getComponents(scale);
-            double dt2 = scale.offsetToTAI(components.getDate(), components.getTime());
+            double dt2 = scale.offsetToTAI(components.getDate(), components.getTime()).toDouble();
             Assertions.assertEquals( 0.0, dt1 + dt2, 1.0e-10);
         }
     }

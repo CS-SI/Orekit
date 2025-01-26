@@ -1,4 +1,4 @@
-/* Copyright 2020 Airbus Defence and Space
+/* Copyright 2020-2025 Airbus Defence and Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import org.hipparchus.ode.events.Action;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -42,6 +43,24 @@ public class EventMultipleHandlerTest {
     @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
+    }
+
+    @Test
+    void testFinishEmpty() {
+        final EventHandler mockedHandler = Mockito.mock(EventHandler.class);
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        final EventDetector mockedDetector = Mockito.mock(EventDetector.class);
+        final EventMultipleHandler eventMultipleHandler = new EventMultipleHandler();
+        Assertions.assertDoesNotThrow(() -> eventMultipleHandler.finish(mockedState, mockedDetector));
+    }
+
+    @Test
+    void testFinish() {
+        final EventHandler mockedHandler = Mockito.mock(EventHandler.class);
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        final EventDetector mockedDetector = Mockito.mock(EventDetector.class);
+        final EventMultipleHandler eventMultipleHandler = new EventMultipleHandler().addHandler(mockedHandler);
+        Assertions.assertDoesNotThrow(() -> eventMultipleHandler.finish(mockedState, mockedDetector));
     }
 
      /**

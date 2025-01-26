@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,17 +45,19 @@ import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.forces.maneuvers.jacobians.Duration;
 import org.orekit.forces.maneuvers.jacobians.MedianDate;
 import org.orekit.forces.maneuvers.jacobians.TriggerDate;
-import org.orekit.forces.maneuvers.trigger.ManeuverTriggers;
+import org.orekit.forces.maneuvers.trigger.ResettableManeuverTriggers;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.AdditionalStateProvider;
+import org.orekit.propagation.CartesianToleranceProvider;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.ParameterDrivenDateIntervalDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
@@ -64,7 +66,6 @@ import org.orekit.propagation.integration.StateMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.DoubleArrayDictionary;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
@@ -107,7 +108,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * </ul>
  * <p>From these configuration parameters, only the initial state is mandatory. The default
  * propagation settings are in {@link OrbitType#EQUINOCTIAL equinoctial} parameters with
- * {@link PositionAngleType#TRUE true} longitude argument. If the central attraction coefficient
+ * {@link PositionAngleType#ECCENTRIC} longitude argument. If the central attraction coefficient
  * is not explicitly specified, the one used to define the initial orbit will be used.
  * However, specifying only the initial state and perhaps the central attraction coefficient
  * would mean the propagator would use only Keplerian forces. In this case, the simpler {@link
@@ -140,7 +141,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * final double minStep  = 0.001;
  * final double maxStep  = 500;
  * final double initStep = 60;
- * final double[][] tolerance = NumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
+ * final double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, OrbitType.EQUINOCTIAL);
  * AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tolerance[0], tolerance[1]);
  * integrator.setInitialStepSize(initStep);
  * propagator = new NumericalPropagator(integrator);
@@ -166,6 +167,12 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 public class NumericalPropagator extends AbstractIntegratedPropagator {
+
+    /** Default orbit type. */
+    public static final OrbitType DEFAULT_ORBIT_TYPE = OrbitType.EQUINOCTIAL;
+
+    /** Default position angle type. */
+    public static final PositionAngleType DEFAULT_POSITION_ANGLE_TYPE = PositionAngleType.ECCENTRIC;
 
     /** Space dimension. */
     private static final int SPACE_DIMENSION = 3;
@@ -195,7 +202,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * called after creation, the integrated orbit will follow a Keplerian
      * evolution only. The defaults are {@link OrbitType#EQUINOCTIAL}
      * for {@link #setOrbitType(OrbitType) propagation
-     * orbit type} and {@link PositionAngleType#TRUE} for {@link
+     * orbit type} and {@link PositionAngleType#ECCENTRIC} for {@link
      * #setPositionAngleType(PositionAngleType) position angle type}.
      *
      * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
@@ -216,7 +223,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * called after creation, the integrated orbit will follow a Keplerian
      * evolution only. The defaults are {@link OrbitType#EQUINOCTIAL}
      * for {@link #setOrbitType(OrbitType) propagation
-     * orbit type} and {@link PositionAngleType#TRUE} for {@link
+     * orbit type} and {@link PositionAngleType#ECCENTRIC} for {@link
      * #setPositionAngleType(PositionAngleType) position angle type}.
      * @param integrator numerical integrator to use for propagation.
      * @param attitudeProvider the attitude law.
@@ -230,8 +237,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         initMapper();
         setAttitudeProvider(attitudeProvider);
         clearStepHandlers();
-        setOrbitType(OrbitType.EQUINOCTIAL);
-        setPositionAngleType(PositionAngleType.TRUE);
+        setOrbitType(DEFAULT_ORBIT_TYPE);
+        setPositionAngleType(DEFAULT_POSITION_ANGLE_TYPE);
     }
 
     /** Set the flag to ignore or not the creation of a {@link NewtonianAttraction}.
@@ -414,7 +421,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         super.resetInitialState(state);
         if (!hasNewtonianAttraction()) {
             // use the state to define central attraction
-            setMu(state.getMu());
+            setMu(state.isOrbitDefined() ? state.getOrbit().getMu() : Double.NaN);
         }
         setStartDate(state.getDate());
     }
@@ -512,12 +519,12 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         final List<String> names = new ArrayList<>();
         for (final ForceModel forceModel : getAllForceModels()) {
-            if (forceModel instanceof Maneuver) {
+            if (forceModel instanceof Maneuver && ((Maneuver) forceModel).getManeuverTriggers() instanceof ResettableManeuverTriggers) {
                 final Maneuver maneuver = (Maneuver) forceModel;
-                final ManeuverTriggers maneuverTriggers = maneuver.getManeuverTriggers();
+                final ResettableManeuverTriggers maneuverTriggers = (ResettableManeuverTriggers) maneuver.getManeuverTriggers();
 
                 maneuverTriggers.getEventDetectors().
-                        filter(d -> d instanceof ParameterDrivenDateIntervalDetector).
+                        filter(ParameterDrivenDateIntervalDetector.class::isInstance).
                         map(d -> (ParameterDrivenDateIntervalDetector) d).
                         forEach(d -> {
                             TriggerDate start;
@@ -600,7 +607,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      */
     private TriggerDate manageTriggerDate(final String stmName,
                                           final Maneuver maneuver,
-                                          final ManeuverTriggers mt,
+                                          final ResettableManeuverTriggers mt,
                                           final String driverName,
                                           final boolean start,
                                           final double threshold) {
@@ -723,8 +730,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         for (final ForceModel forceModel : getAllForceModels()) {
             for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
                 if (!triggerDates.contains(driver.getNamesSpanMap().getFirstSpan().getData())) {
-                    // if the first span is not in triggerdate means that the driver is not a trigger
-                    // date and can be selected here
+                    // if the first span is not in triggerDates,
+                    // it means that the driver is not a trigger date and can be selected here
                     selected.add(driver);
                 }
             }
@@ -915,7 +922,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         private SpacecraftState currentState;
 
         /** Jacobian of the orbital parameters with respect to the Cartesian parameters. */
-        private double[][] jacobian;
+        private final double[][] jacobian;
 
         /** Flag keeping track whether Jacobian matrix needs to be recomputed or not. */
         private boolean recomputingJacobian;
@@ -929,9 +936,11 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             this.jacobian = new double[6][6];
             this.recomputingJacobian = true;
 
+            // feed internal event detectors
             for (final ForceModel forceModel : forceModels) {
                 forceModel.getEventDetectors().forEach(detector -> setUpEventDetector(integrator, detector));
             }
+            getAttitudeProvider().getEventDetectors().forEach(detector -> setUpEventDetector(integrator, detector));
 
             // default value for Jacobian is identity
             for (int i = 0; i < jacobian.length; ++i) {
@@ -1038,33 +1047,11 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * @param absPva reference absolute position-velocity-acceleration
      * @return a two rows array, row 0 being the absolute tolerance error and row 1
      * being the relative tolerance error
-     * @see NumericalPropagator#tolerances(double, Orbit, OrbitType)
+     * @deprecated since 13.0. Use {@link ToleranceProvider} for default and custom tolerances.
      */
+    @Deprecated
     public static double[][] tolerances(final double dP, final AbsolutePVCoordinates absPva) {
-
-        final double relative = dP / absPva.getPosition().getNorm();
-        final double dV = relative * absPva.getVelocity().getNorm();
-
-        final double[] absTol = new double[7];
-        final double[] relTol = new double[7];
-
-        absTol[0] = dP;
-        absTol[1] = dP;
-        absTol[2] = dP;
-        absTol[3] = dV;
-        absTol[4] = dV;
-        absTol[5] = dV;
-
-        // we set the mass tolerance arbitrarily to 1.0e-6 kg, as mass evolves linearly
-        // with trust, this often has no influence at all on propagation
-        absTol[6] = 1.0e-6;
-
-        Arrays.fill(relTol, relative);
-
-        return new double[][] {
-            absTol, relTol
-        };
-
+        return ToleranceProvider.of(CartesianToleranceProvider.of(dP)).getTolerances(absPva);
     }
 
     /** Estimate tolerance vectors for integrators when propagating in orbits.
@@ -1092,17 +1079,11 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * (it may be different from {@code orbit.getType()})
      * @return a two rows array, row 0 being the absolute tolerance error and row 1
      * being the relative tolerance error
+     * @deprecated since 13.0. Use {@link ToleranceProvider} for default and custom tolerances.
      */
+    @Deprecated
     public static double[][] tolerances(final double dP, final Orbit orbit, final OrbitType type) {
-
-        // estimate the scalar velocity error
-        final PVCoordinates pv = orbit.getPVCoordinates();
-        final double r2 = pv.getPosition().getNormSq();
-        final double v  = pv.getVelocity().getNorm();
-        final double dV = orbit.getMu() * dP / (v * r2);
-
-        return tolerances(dP, dV, orbit, type);
-
+        return ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, type, PositionAngleType.TRUE);
     }
 
     /** Estimate tolerance vectors for integrators when propagating in orbits.
@@ -1123,52 +1104,14 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * @return a two rows array, row 0 being the absolute tolerance error and row 1
      * being the relative tolerance error
      * @since 10.3
+     * @deprecated since 13.0. Use {@link ToleranceProvider} for default and custom tolerances.
      */
+    @Deprecated
     public static double[][] tolerances(final double dP, final double dV,
                                         final Orbit orbit, final OrbitType type) {
 
-        final double[] absTol = new double[7];
-        final double[] relTol = new double[7];
-
-        // we set the mass tolerance arbitrarily to 1.0e-6 kg, as mass evolves linearly
-        // with trust, this often has no influence at all on propagation
-        absTol[6] = 1.0e-6;
-
-        if (type == OrbitType.CARTESIAN) {
-            absTol[0] = dP;
-            absTol[1] = dP;
-            absTol[2] = dP;
-            absTol[3] = dV;
-            absTol[4] = dV;
-            absTol[5] = dV;
-        } else {
-
-            // convert the orbit to the desired type
-            final double[][] jacobian = new double[6][6];
-            final Orbit converted = type.convertType(orbit);
-            converted.getJacobianWrtCartesian(PositionAngleType.TRUE, jacobian);
-
-            for (int i = 0; i < 6; ++i) {
-                final double[] row = jacobian[i];
-                absTol[i] = FastMath.abs(row[0]) * dP +
-                            FastMath.abs(row[1]) * dP +
-                            FastMath.abs(row[2]) * dP +
-                            FastMath.abs(row[3]) * dV +
-                            FastMath.abs(row[4]) * dV +
-                            FastMath.abs(row[5]) * dV;
-                if (Double.isNaN(absTol[i])) {
-                    throw new OrekitException(OrekitMessages.SINGULAR_JACOBIAN_FOR_ORBIT_TYPE, type);
-                }
-            }
-
-        }
-
-        Arrays.fill(relTol, dP / FastMath.sqrt(orbit.getPosition().getNormSq()));
-
-        return new double[][] {
-            absTol, relTol
-        };
-
+        return ToleranceProvider.of(CartesianToleranceProvider.of(dP, dV, CartesianToleranceProvider.DEFAULT_ABSOLUTE_MASS_TOLERANCE))
+                .getTolerances(orbit, type, PositionAngleType.TRUE);
     }
 
     /** {@inheritDoc} */

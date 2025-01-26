@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,11 @@ package org.orekit.estimation.sequential;
  * @author Maxime Journot
  * @since 9.2
  */
+@FunctionalInterface
 public interface KalmanObserver {
+
+    default void init(KalmanEstimation estimation) {
+    }
 
     /** Notification callback after each one of a Kalman filter estimation.
      * @param estimation estimation performed by Kalman estimator

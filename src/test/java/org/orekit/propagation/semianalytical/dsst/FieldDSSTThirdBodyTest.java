@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,7 +39,7 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
@@ -137,7 +137,7 @@ public class FieldDSSTThirdBodyTest {
 
         final FieldSpacecraftState<T> meanState = getGEOState(field);
 
-        final DSSTForceModel moon    = new DSSTThirdBody(CelestialBodyFactory.getMoon(), meanState.getMu().getReal());
+        final DSSTForceModel moon    = new DSSTThirdBody(CelestialBodyFactory.getMoon(), meanState.getOrbit().getMu().getReal());
 
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
         forces.add(moon);
@@ -196,8 +196,8 @@ public class FieldDSSTThirdBodyTest {
 
         // Force model
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
-        final DSSTForceModel moon    = new DSSTThirdBody(CelestialBodyFactory.getMoon(), meanState.getMu());
-        final DSSTForceModel sun     = new DSSTThirdBody(CelestialBodyFactory.getSun(),  meanState.getMu());
+        final DSSTForceModel moon    = new DSSTThirdBody(CelestialBodyFactory.getMoon(), meanState.getOrbit().getMu());
+        final DSSTForceModel sun     = new DSSTThirdBody(CelestialBodyFactory.getSun(),  meanState.getOrbit().getMu());
         forces.add(moon);
         forces.add(sun);
 
@@ -215,7 +215,7 @@ public class FieldDSSTThirdBodyTest {
 
             // Array for short period terms
             final Gradient[] shortPeriod = new Gradient[6];
-            final Gradient zero = dsState.getA().getField().getZero();
+            final Gradient zero = dsState.getOrbit().getA().getField().getZero();
             Arrays.fill(shortPeriod, zero);
 
             final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
@@ -250,7 +250,7 @@ public class FieldDSSTThirdBodyTest {
         // Compute reference state Jacobian using finite differences
         double[][] shortPeriodJacobianRef = new double[6][6];
         double dP = 0.001;
-        double[] steps = NumericalPropagator.tolerances(1000000 * dP, orbit, orbitType)[0];
+        double[] steps = ToleranceProvider.getDefaultToleranceProvider(1000000 * dP).getTolerances(orbit, orbitType)[0];
         for (int i = 0; i < 6; i++) {
 
             SpacecraftState stateM4 = shiftState(meanState, orbitType, -4 * steps[i], i);
@@ -316,8 +316,8 @@ public class FieldDSSTThirdBodyTest {
 
         // Force model
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
-        final DSSTForceModel moon    = new DSSTThirdBody(CelestialBodyFactory.getMoon(), meanState.getMu());
-        final DSSTForceModel sun     = new DSSTThirdBody(CelestialBodyFactory.getSun(),  meanState.getMu());
+        final DSSTForceModel moon    = new DSSTThirdBody(CelestialBodyFactory.getMoon(), meanState.getOrbit().getMu());
+        final DSSTForceModel sun     = new DSSTThirdBody(CelestialBodyFactory.getSun(),  meanState.getOrbit().getMu());
         forces.add(moon);
         forces.add(sun);
 
@@ -497,7 +497,7 @@ public class FieldDSSTThirdBodyTest {
         array[0][column] += delta;
 
         return arrayToState(array, orbitType, state.getFrame(), state.getDate(),
-                            state.getMu(), state.getAttitude());
+                            state.getOrbit().getMu(), state.getAttitude());
 
     }
 

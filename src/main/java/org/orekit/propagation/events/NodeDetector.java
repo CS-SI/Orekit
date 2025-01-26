@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,6 +27,7 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
+import org.orekit.propagation.events.intervals.AdaptableInterval;
 
 /** Finder for node crossing events.
  * <p>This class finds equator crossing events (i.e. ascending
@@ -67,8 +68,8 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
      * @since 10.3
      */
     public NodeDetector(final Frame frame) {
-        this(AdaptableInterval.of(DEFAULT_MAX_CHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-             new StopOnIncreasing(), frame);
+        this(new EventDetectionSettings(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, EventDetectionSettings.DEFAULT_MAX_ITER),
+                new StopOnIncreasing(), frame);
     }
 
     /** Build a new instance.
@@ -94,8 +95,8 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
      * {@link org.orekit.frames.FramesFactory#getITRF(org.orekit.utils.IERSConventions, boolean) ITRF})
      */
     public NodeDetector(final double threshold, final Orbit orbit, final Frame frame) {
-        this(AdaptableInterval.of(2 * estimateNodesTimeSeparation(orbit) / 3), threshold,
-             DEFAULT_MAX_ITER, new StopOnIncreasing(),
+        this(new EventDetectionSettings(AdaptableInterval.of(2 * estimateNodesTimeSeparation(orbit) / 3), threshold,
+             DEFAULT_MAX_ITER), new StopOnIncreasing(),
              frame);
     }
 
@@ -105,27 +106,23 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings detection settings
      * @param handler event handler to call at event occurrences
      * @param frame frame in which the equator is defined (typical
      * values are {@link org.orekit.frames.FramesFactory#getEME2000() EME<sub>2000</sub>} or
      * {@link org.orekit.frames.FramesFactory#getITRF(org.orekit.utils.IERSConventions, boolean) ITRF})
-     * @since 6.1
+     * @since 12.2
      */
-    protected NodeDetector(final AdaptableInterval maxCheck, final double threshold,
-                           final int maxIter, final EventHandler handler,
+    protected NodeDetector(final EventDetectionSettings detectionSettings, final EventHandler handler,
                            final Frame frame) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(detectionSettings, handler);
         this.frame = frame;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected NodeDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                  final int newMaxIter, final EventHandler newHandler) {
-        return new NodeDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, frame);
+    protected NodeDetector create(final EventDetectionSettings detectionSettings, final EventHandler newHandler) {
+        return new NodeDetector(detectionSettings, newHandler, frame);
     }
 
     /** Find time separation between nodes.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,14 +28,13 @@ import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.ParameterDriver;
 
-/** Class modifying theoretical angular measurement with ionospheric radio refractive index.
+/** Class modifying theoretical angular measurement with tropospheric radio refractive index.
  * A radio ray passing through the lower (non-ionized) layer of the atmosphere undergoes bending
  * caused by the gradient of the relative index. Since the refractive index varies mainly with
  * altitude, only the vertical gradient of the refractive index is considered here.
- * The effect of ionospheric correction on the angular measurement is computed directly
+ * The effect of tropospheric correction on the angular measurement is computed directly
  * through the computation of the apparent elevation angle.
  * Recommendation ITU-R P.453-11 (07/2015) and Recommendation ITU-R P.834-7 (10/2015)
- *
  *
  * @author Thierry Ceolin
  * @since 8.0
@@ -53,10 +52,16 @@ public class AngularRadioRefractionModifier implements EstimationModifier<Angula
         atmosModel = model;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getEffectName() {
+        return "refraction";
+    }
+
     /** Compute the measurement error due to troposphere refraction.
     * @param station station
     * @param state spacecraft state
-    * @return the measurement error due to ionosphere
+    * @return the measurement error due to troposphere
     */
     private double angularErrorRadioRefractionModel(final GroundStation station,
                                                     final SpacecraftState state) {
@@ -85,7 +90,7 @@ public class AngularRadioRefractionModifier implements EstimationModifier<Angula
         final SpacecraftState state   = estimated.getStates()[0];
         final double correction = angularErrorRadioRefractionModel(station, state);
 
-        // update estimated value taking into account the tropospheric elevation corection.
+        // update estimated value taking into account the tropospheric elevation correction.
         // The tropospheric elevation correction is directly added to the elevation.
         final double[] oldValue = estimated.getEstimatedValue();
         final double[] newValue = oldValue.clone();

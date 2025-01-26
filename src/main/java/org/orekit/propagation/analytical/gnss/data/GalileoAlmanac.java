@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,11 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.util.FastMath;
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.TimeScales;
 
 /**
  * Class for Galileo almanac.
@@ -28,7 +32,7 @@ import org.hipparchus.util.FastMath;
  * @since 10.0
  *
  */
-public class GalileoAlmanac extends AbstractAlmanac {
+public class GalileoAlmanac extends AbstractAlmanac<GalileoAlmanac> {
 
     /** Nominal inclination (Ref: Galileo ICD - Table 75). */
     private static final double I0 = FastMath.toRadians(56.0);
@@ -50,9 +54,33 @@ public class GalileoAlmanac extends AbstractAlmanac {
 
     /**
      * Build a new almanac.
+     * @param timeScales known time scales
+     * @param system     satellite system to consider for interpreting week number
+     *                   (may be different from real system, for example in Rinex nav, weeks
+     *                   are always according to GPS)
      */
-    public GalileoAlmanac() {
-        super(GNSSConstants.GALILEO_MU, GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB);
+    public GalileoAlmanac(final TimeScales timeScales, final SatelliteSystem system) {
+        super(GNSSConstants.GALILEO_MU, GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB, timeScales, system);
+    }
+
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param original regular field instance
+     */
+    public <T extends CalculusFieldElement<T>> GalileoAlmanac(final FieldGalileoAlmanac<T> original) {
+        super(original);
+        setHealthE5a(original.getHealthE5a());
+        setHealthE5b(original.getHealthE5b());
+        setHealthE1(original.getHealthE1());
+        setIOD(original.getIOD());
+    }
+
+    /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, GalileoAlmanac>>
+        F toField(final Field<T> field) {
+        return (F) new FieldGalileoAlmanac<>(field, this);
     }
 
     /**
@@ -65,7 +93,7 @@ public class GalileoAlmanac extends AbstractAlmanac {
      */
     public void setDeltaSqrtA(final double dsqa) {
         final double sqrtA = dsqa + FastMath.sqrt(A0);
-        super.setSma(sqrtA * sqrtA);
+        setSma(sqrtA * sqrtA);
     }
 
     /**
@@ -76,7 +104,7 @@ public class GalileoAlmanac extends AbstractAlmanac {
      * @param dinc correction of orbit reference inclination at reference time in radians
      */
     public void setDeltaInc(final double dinc) {
-        super.setI0(I0 + dinc);
+        setI0(I0 + dinc);
     }
 
     /**

@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,8 +20,10 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -77,7 +79,6 @@ class OrbitTest {
 
     private static class TestOrbit extends Orbit {
 
-        private static final long serialVersionUID = 5921352039485286603L;
         final double a;
 
         protected TestOrbit(final double aIn) throws IllegalArgumentException {
@@ -201,7 +202,17 @@ class OrbitTest {
         }
 
         @Override
+        public Orbit withFrame(Frame inertialFrame) {
+            return null;
+        }
+
+        @Override
         public Orbit shiftedBy(double dt) {
+            return new TestOrbit(a);
+        }
+
+        @Override
+        public Orbit shiftedBy(TimeOffset dt) {
             return new TestOrbit(a);
         }
 

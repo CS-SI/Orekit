@@ -33,9 +33,6 @@ import org.orekit.time.FieldAbsoluteDate;
  */
 public class ModifiedFrame extends Frame {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20170619L;
-
     /** Reference frame used to create this frame. */
     private final CelestialBodyFrame refFrame;
 
@@ -82,9 +79,6 @@ public class ModifiedFrame extends Frame {
 
     /** Transform provider for {@link ModifiedFrame}. */
     private static class OriginTransformProvider implements TransformProvider {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20170619L;
 
         /** The new origin. */
         private final CelestialBody body;

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,8 +29,8 @@ import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSRangeRate;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.orbits.KeplerianOrbit;
@@ -117,7 +117,7 @@ public class OneWayGNSSRangeRateBuilderTest {
         AbsoluteDate t0     = o1.getDate().shiftedBy(startPeriod * period);
         AbsoluteDate t1     = o1.getDate().shiftedBy(endPeriod   * period);
         generator.generate(t0, t1);
-        SortedSet<ObservedMeasurement<?>> measurements = gatherer.getGeneratedMeasurements();
+        SortedSet<EstimatedMeasurementBase<?>> measurements = gatherer.getGeneratedMeasurements();
 
         // and yet another set of propagators for reference
         Propagator propagator1 = buildPropagator();
@@ -127,7 +127,7 @@ public class OneWayGNSSRangeRateBuilderTest {
         AbsoluteDate previous = null;
         AbsoluteDate tInf = t0.isBefore(t1) ? t0 : t1;
         AbsoluteDate tSup = t0.isBefore(t1) ? t1 : t0;
-        for (ObservedMeasurement<?> measurement : measurements) {
+        for (EstimatedMeasurementBase<?> measurement : measurements) {
             AbsoluteDate date = measurement.getDate();
             double[] m = measurement.getObservedValue();
             Assertions.assertTrue(date.compareTo(tInf) >= 0);
@@ -142,10 +142,13 @@ public class OneWayGNSSRangeRateBuilderTest {
                 }
             }
             previous = date;
-            double[] e = measurement.estimateWithoutDerivatives(new SpacecraftState[] {
-                                                                    propagator1.propagate(date),
-                                                                    propagator2.propagate(date)
-                                                                }).getEstimatedValue();
+            double[] e = measurement.
+                getObservedMeasurement().
+                estimateWithoutDerivatives(new SpacecraftState[] {
+                                               propagator1.propagate(date),
+                                               propagator2.propagate(date)
+                                           }).
+                getEstimatedValue();
             for (int i = 0; i < m.length; ++i) {
                 maxError = FastMath.max(maxError, FastMath.abs(e[i] - m[i]));
             }

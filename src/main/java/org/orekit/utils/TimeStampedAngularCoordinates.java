@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeStamped;
 
 /** {@link TimeStamped time-stamped} version of {@link AngularCoordinates}.
@@ -143,6 +144,24 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
     public TimeStampedAngularCoordinates shiftedBy(final double dt) {
+        final AngularCoordinates sac = super.shiftedBy(dt);
+        return new TimeStampedAngularCoordinates(date.shiftedBy(dt),
+                                                 sac.getRotation(), sac.getRotationRate(), sac.getRotationAcceleration());
+
+    }
+
+    /** Get a time-shifted state.
+     * <p>
+     * The state can be slightly shifted to close dates. This shift is based on
+     * a simple linear model. It is <em>not</em> intended as a replacement for
+     * proper attitude propagation but should be sufficient for either small
+     * time shifts or coarse accuracy.
+     * </p>
+     * @param dt time shift in seconds
+     * @return a new state, shifted with respect to the instance (which is immutable)
+     * @since 13.0
+     */
+    public TimeStampedAngularCoordinates shiftedBy(final TimeOffset dt) {
         final AngularCoordinates sac = super.shiftedBy(dt);
         return new TimeStampedAngularCoordinates(date.shiftedBy(dt),
                                                  sac.getRotation(), sac.getRotationRate(), sac.getRotationAcceleration());

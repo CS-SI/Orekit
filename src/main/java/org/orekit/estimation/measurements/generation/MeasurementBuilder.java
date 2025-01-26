@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -67,9 +68,9 @@ public interface MeasurementBuilder<T extends ObservedMeasurement<T>> {
      * @param date measurement date
      * @param interpolators interpolators relevant for this builder
      * @return generated measurement
-     * @since 12.0
+     * @since 13.0
      */
-    T build(AbsoluteDate date, Map<ObservableSatellite, OrekitStepInterpolator> interpolators);
+    EstimatedMeasurementBase<T> build(AbsoluteDate date, Map<ObservableSatellite, OrekitStepInterpolator> interpolators);
 
     /** Generate a single measurement.<p>
      *
@@ -80,7 +81,7 @@ public interface MeasurementBuilder<T extends ObservedMeasurement<T>> {
      * @return generated measurement
      * @since 12.1
      */
-    default T build(AbsoluteDate date, SpacecraftState[] states) {
+    default EstimatedMeasurementBase<T> build(AbsoluteDate date, SpacecraftState[] states) {
         final Map<ObservableSatellite, OrekitStepInterpolator> interpolators = new ConcurrentHashMap<>();
 
         for (int i = 0; i < states.length; i++) {

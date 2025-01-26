@@ -22,6 +22,7 @@ import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
 
 /**
@@ -39,8 +40,7 @@ public class CloseEventsNumericalABTest extends CloseEventsAbstractTest {
      * @return a usable propagator.
      */
     public Propagator getPropagator(double stepSize) {
-        double[][] tol = NumericalPropagator
-                .tolerances(10000, initialOrbit, OrbitType.CARTESIAN);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(10000).getTolerances(initialOrbit, OrbitType.CARTESIAN);
         final AdamsBashforthIntegrator integrator =
                         new AdamsBashforthIntegrator(4, stepSize, stepSize, tol[0], tol[1]);
         final DormandPrince853Integrator starter =

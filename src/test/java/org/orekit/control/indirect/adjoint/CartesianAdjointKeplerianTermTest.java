@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,6 +36,7 @@ import org.orekit.utils.Constants;
 class CartesianAdjointKeplerianTermTest {
 
     @Test
+    @SuppressWarnings("unchecked")
     void testGetPositionAdjointContribution() {
         // GIVEN
         final CartesianAdjointKeplerianTerm keplerianTerm = new CartesianAdjointKeplerianTerm(Constants.EGM96_EARTH_MU);

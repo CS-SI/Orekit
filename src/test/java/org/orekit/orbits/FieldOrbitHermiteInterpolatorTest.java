@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,8 +23,10 @@ import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
 import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.time.AbstractTimeInterpolator;
@@ -39,6 +41,11 @@ import java.util.List;
 class FieldOrbitHermiteInterpolatorTest {
 
     private final Field<Binary64> field = Binary64Field.getInstance();
+
+    @BeforeEach
+    public void setUp() {
+        Utils.setDataRoot("regular-data");
+    }
 
     @Test
     public void testCartesianInterpolationWithDerivatives() {
@@ -491,7 +498,7 @@ class FieldOrbitHermiteInterpolatorTest {
             FieldVector3D<Binary64>     propagatedP   = propagator.propagate(t).getPosition();
             Binary64                    shiftedE      = initialOrbit.shiftedBy(zero.add(dt)).getE();
             Binary64                    interpolatedE = interpolator.interpolate(t, sample).getE();
-            Binary64                    propagatedE   = propagator.propagate(t).getE();
+            Binary64                    propagatedE   = propagator.propagate(t).getOrbit().getE();
             maxShiftPositionError             =
                     FastMath.max(maxShiftPositionError, shiftedP.subtract(propagatedP).getNorm().getReal());
             maxInterpolationPositionError     =
@@ -524,7 +531,7 @@ class FieldOrbitHermiteInterpolatorTest {
             FieldVector3D<Binary64>     propagatedP   = propagator.propagate(t).getPosition();
             Binary64                    shiftedE      = initialOrbit.shiftedBy(zero.add(dt)).getE();
             Binary64                    interpolatedE = interpolator.interpolate(t, sample).getE();
-            Binary64                    propagatedE   = propagator.propagate(t).getE();
+            Binary64                    propagatedE   = propagator.propagate(t).getOrbit().getE();
             maxShiftPositionError             =
                     FastMath.max(maxShiftPositionError, shiftedP.subtract(propagatedP).getNorm().getReal());
             maxInterpolationPositionError     =

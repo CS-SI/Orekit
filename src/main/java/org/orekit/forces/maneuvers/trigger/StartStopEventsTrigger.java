@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldAbstractDetector;
-import org.orekit.propagation.events.FieldAdaptableInterval;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -201,7 +201,7 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
      */
     private <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>> D convertAndSetUpStartHandler(final Field<S> field) {
         final FieldAbstractDetector<D, S> converted = convertStartDetector(field, startDetector);
-        final FieldAdaptableInterval<S>   maxCheck  = s -> startDetector.getMaxCheckInterval().currentInterval(s.toSpacecraftState());
+        final FieldAdaptableInterval<S>   maxCheck  = (s, isForward) -> startDetector.getMaxCheckInterval().currentInterval(s.toSpacecraftState(), isForward);
         return converted.
                withMaxCheck(maxCheck).
                withThreshold(field.getZero().newInstance(startDetector.getThreshold())).
@@ -220,7 +220,7 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
      */
     private <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>> D convertAndSetUpStopHandler(final Field<S> field) {
         final FieldAbstractDetector<D, S> converted = convertStopDetector(field, stopDetector);
-        final FieldAdaptableInterval<S>   maxCheck  = s -> stopDetector.getMaxCheckInterval().currentInterval(s.toSpacecraftState());
+        final FieldAdaptableInterval<S>   maxCheck  = (s, isForward) -> stopDetector.getMaxCheckInterval().currentInterval(s.toSpacecraftState(), isForward);
         return converted.
                withMaxCheck(maxCheck).
                withThreshold(field.getZero().newInstance(stopDetector.getThreshold())).

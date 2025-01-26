@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,7 +45,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
-import org.orekit.utils.StateFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TimeSpanMap.Span;
 
@@ -148,8 +147,8 @@ public class InterSatellitesRangeTest {
 
         // Lists for results' storage - Used only for derivatives with respect to state
         // "final" value to be seen by "handleStep" function of the propagator
-        final List<Double> absoluteErrors = new ArrayList<Double>();
-        final List<Double> relativeErrors = new ArrayList<Double>();
+        final List<Double> absoluteErrors = new ArrayList<>();
+        final List<Double> relativeErrors = new ArrayList<>();
 
         // Set step handler
         // Use a lambda function to implement "handleStep" function
@@ -172,10 +171,11 @@ public class InterSatellitesRangeTest {
 
                     // Values of the Range & errors
                     final double RangeObserved  = measurement.getObservedValue()[0];
-                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] {
-                                                                                                             state,
-                                                                                                             ephemeris.propagate(state.getDate())
-                                                                                                         });
+                    final EstimatedMeasurementBase<?> estimated = measurement.
+                        estimateWithoutDerivatives(new SpacecraftState[] {
+                                                       state,
+                                                       ephemeris.propagate(state.getDate())
+                                                   });
 
                     final InterSatellitesRange isr = (InterSatellitesRange) estimated.getObservedMeasurement();
                     final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
@@ -257,7 +257,8 @@ public class InterSatellitesRangeTest {
         Assertions.assertEquals(0.0, relErrorsMax,    5.0e-11);
 
         // Test measurement type
-        Assertions.assertEquals(InterSatellitesRange.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        Assertions.assertEquals(InterSatellitesRange.MEASUREMENT_TYPE,
+                                measurements.get(0).getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean printResults, final int index,
@@ -294,8 +295,8 @@ public class InterSatellitesRangeTest {
 
         // Lists for results' storage - Used only for derivatives with respect to state
         // "final" value to be seen by "handleStep" function of the propagator
-        final List<Double> errorsP = new ArrayList<Double>();
-        final List<Double> errorsV = new ArrayList<Double>();
+        final List<Double> errorsP = new ArrayList<>();
+        final List<Double> errorsV = new ArrayList<>();
 
         // Set step handler
         // Use a lambda function to implement "handleStep" function
@@ -319,20 +320,20 @@ public class InterSatellitesRangeTest {
                         interpolator.getInterpolatedState(date),
                         ephemeris.propagate(date)
                     };
-                    final double[][]      jacobian  = measurement.estimate(0, 0, states).getStateDerivatives(index);
+                    final double[][]      jacobian  = measurement.
+                        estimate(0, 0, states).
+                        getStateDerivatives(index);
 
                     // Jacobian reference value
                     final double[][] jacobianRef;
 
                     // Compute a reference value using finite differences
-                    jacobianRef = Differentiation.differentiate(new StateFunction() {
-                        public double[] value(final SpacecraftState state) {
-                            final SpacecraftState[] s = states.clone();
-                            s[index] = state;
-                            return measurement.estimateWithoutDerivatives(s).getEstimatedValue();
-                        }
-                    }, measurement.getDimension(), propagator.getAttitudeProvider(),
-                       OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(states[index]);
+                    jacobianRef = Differentiation.differentiate(state1 -> {
+                                                                    final SpacecraftState[] s = states.clone();
+                                                                    s[index] = state1;
+                                                                    return measurement.estimateWithoutDerivatives(s).getEstimatedValue();
+                                                                }, measurement.getDimension(), propagator.getAttitudeProvider(),
+                                                                OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(states[index]);
 
                     Assertions.assertEquals(jacobianRef.length, jacobian.length);
                     Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
@@ -389,8 +390,8 @@ public class InterSatellitesRangeTest {
         propagator.propagate(measurements.get(measurements.size()-1).getDate());
 
         // Convert lists to double[] and evaluate some statistics
-        final double relErrorsP[] = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
-        final double relErrorsV[] = errorsV.stream().mapToDouble(Double::doubleValue).toArray();
+        final double[] relErrorsP = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
+        final double[] relErrorsV = errorsV.stream().mapToDouble(Double::doubleValue).toArray();
 
         final double errorsPMedian = new Median().evaluate(relErrorsP);
         final double errorsPMean   = new Mean().evaluate(relErrorsP);
@@ -466,7 +467,7 @@ public class InterSatellitesRangeTest {
                         EstimationTestUtils.createMeasurements(propagator, creator, 1.0, 3.0, 300.0);
 
         // List to store the results
-        final List<Double> relErrorList = new ArrayList<Double>();
+        final List<Double> relErrorList = new ArrayList<>();
 
         // Set step handler
         // Use a lambda function to implement "handleStep" function
@@ -506,7 +507,8 @@ public class InterSatellitesRangeTest {
                     for (int i = 0; i < drivers.length; ++i) {
                         for (Span<String> span = drivers[i].getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 
-                            final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(drivers[i], span.getStart());
+                            final double[] gradient  = measurement.
+                                estimate(0, 0, states).getParameterDerivatives(drivers[i], span.getStart());
                             Assertions.assertEquals(1, measurement.getDimension());
                             Assertions.assertEquals(1, gradient.length);
 
@@ -542,7 +544,7 @@ public class InterSatellitesRangeTest {
         propagator.propagate(measurements.get(measurements.size()-1).getDate());
 
         // Convert error list to double[]
-        final double relErrors[] = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();
+        final double[] relErrors = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();
 
         // Compute statistics
         final double relErrorsMedian = new Median().evaluate(relErrors);

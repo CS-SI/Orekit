@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
@@ -79,7 +80,7 @@ public class LofOffsetTest {
      * Testing of the getters.
      */
     @Test
-    public void testGetters() {
+    void testGetters() {
         final Rotation expectedRotation = new Rotation(RotationOrder.XYZ, RotationConvention.VECTOR_OPERATOR, 0, 0, 0).revert();
         final LofOffset lofOffset = new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS);
         Assertions.assertEquals(LOFType.LVLH_CCSDS, lofOffset.getLof());
@@ -90,7 +91,7 @@ public class LofOffsetTest {
     /** Test is the lof offset is the one expected
      */
     @Test
-    public void testZero() {
+    void testZero() {
 
         //  Satellite position
 
@@ -108,7 +109,8 @@ public class LofOffsetTest {
     /** Test if the lof offset is the one expected
      */
     @Test
-    public void testOffset() {
+    @DefaultDataContext
+    void testOffset() {
 
         //  Satellite position
         final CircularOrbit circ =
@@ -152,7 +154,7 @@ public class LofOffsetTest {
     /** Test is the target pointed is the one expected
      */
     @Test
-    public void testTarget()
+    void testTarget()
         {
 
         // Create target point and target pointing law towards that point
@@ -184,7 +186,8 @@ public class LofOffsetTest {
     }
 
     @Test
-    public void testSpin() {
+    @DefaultDataContext
+    void testSpin() {
 
         final AttitudeProvider law = new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYX, 0.1, 0.2, 0.3);
 
@@ -225,7 +228,8 @@ public class LofOffsetTest {
     }
 
     @Test
-    public void testAnglesSign() {
+    @DefaultDataContext
+    void testAnglesSign() {
 
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
@@ -261,7 +265,8 @@ public class LofOffsetTest {
     }
 
     @Test
-    public void testRetrieveAngles() {
+    @DefaultDataContext
+    void testRetrieveAngles() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
@@ -290,7 +295,8 @@ public class LofOffsetTest {
     }
 
     @Test
-    public void testTypesField() {
+    @DefaultDataContext
+    void testTypesField() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
@@ -373,6 +379,7 @@ public class LofOffsetTest {
     }
 
     @BeforeEach
+    @DefaultDataContext
     public void setUp() {
         try {
 

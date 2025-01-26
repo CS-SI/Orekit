@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,18 +16,20 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.TimeScales;
+
 /**
  * Container for data contained in an IRNSS navigation message.
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class IRNSSNavigationMessage extends AbstractNavigationMessage  {
+public class IRNSSNavigationMessage extends AbstractNavigationMessage<IRNSSNavigationMessage>  {
 
     /** Issue of Data, Ephemeris and Clock. */
     private int iodec;
-
-    /** Group Delay Differential (s). */
-    private double tgd;
 
     /** User range accuracy (m). */
     private double ura;
@@ -35,9 +37,34 @@ public class IRNSSNavigationMessage extends AbstractNavigationMessage  {
     /** Satellite health status. */
     private double svHealth;
 
-    /** Constructor. */
-    public IRNSSNavigationMessage() {
-        super(GNSSConstants.IRNSS_MU, GNSSConstants.IRNSS_AV, GNSSConstants.IRNSS_WEEK_NB);
+    /** Constructor.
+     * @param timeScales known time scales
+     * @param system     satellite system to consider for interpreting week number
+     *                   (may be different from real system, for example in Rinex nav, weeks
+     *                   are always according to GPS)
+     */
+    public IRNSSNavigationMessage(final TimeScales timeScales, final SatelliteSystem system) {
+        super(GNSSConstants.IRNSS_MU, GNSSConstants.IRNSS_AV, GNSSConstants.IRNSS_WEEK_NB,
+              timeScales, system);
+    }
+
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param original regular field instance
+     */
+    public <T extends CalculusFieldElement<T>> IRNSSNavigationMessage(final FieldIRNSSNavigationMessage<T> original) {
+        super(original);
+        setIODEC(original.getIODEC());
+        setURA(original.getURA().getReal());
+        setSvHealth(original.getSvHealth().getReal());
+    }
+
+    /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, IRNSSNavigationMessage>>
+        F toField(final Field<T> field) {
+        return (F) new FieldIRNSSNavigationMessage<>(field, this);
     }
 
     /**
@@ -55,22 +82,6 @@ public class IRNSSNavigationMessage extends AbstractNavigationMessage  {
     public void setIODEC(final double value) {
         // The value is given as a floating number in the navigation message
         this.iodec = (int) value;
-    }
-
-    /**
-     * Getter for the estimated group delay differential TGD for L5-S correction.
-     * @return the estimated group delay differential TGD for L5-S correction (s)
-     */
-    public double getTGD() {
-        return tgd;
-    }
-
-    /**
-     * Setter for the Group Delay Differential (s).
-     * @param time the group delay differential to set
-     */
-    public void setTGD(final double time) {
-        this.tgd = time;
     }
 
     /**

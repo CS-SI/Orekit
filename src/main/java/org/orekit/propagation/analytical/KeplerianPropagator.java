@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -152,7 +152,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
 
         // ensure the orbit use the specified mu and has no non-Keplerian derivatives
         final SpacecraftState formerInitial = getInitialState();
-        final double mu = formerInitial == null ? state.getMu() : formerInitial.getMu();
+        final double mu = formerInitial == null ? state.getOrbit().getMu() : formerInitial.getOrbit().getMu();
         final SpacecraftState fixedState = fixState(state.getOrbit(),
                                                     state.getAttitude(),
                                                     state.getMass(),

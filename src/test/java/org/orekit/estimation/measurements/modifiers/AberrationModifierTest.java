@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Mark Rutten
+/* Copyright 2002-2025 Mark Rutten
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -304,6 +304,11 @@ public class AberrationModifierTest {
         // Apply aberration to result should get us back to unmodified values
         double[] unmodRaDec = AberrationModifier.naturalToProper(estModRaDec, groundStation, epoch, FramesFactory.getGCRF());
         Assertions.assertArrayEquals(estimatedRaDec, unmodRaDec, 1e-12);
+
+        Assertions.assertEquals(1,
+                                modEstimated.getAppliedEffects().entrySet().stream().
+                                filter(e -> e.getKey().getEffectName().equals("aberration")).count());
+
     }
 
     @Test

@@ -1,4 +1,4 @@
-' Copyright 2002-2024 CS GROUP
+' Copyright 2002-2025 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -35,8 +35,6 @@
 
       interface "TimeShiftable<T>" as TimeShiftable_T_
 
-      interface "TimeInterpolable<T>" as TimeInterpolable_T_
-
     }
 
     package propagation #DDEBD8 {
@@ -72,7 +70,7 @@
         +SpacecraftState getInitialState()
         +void resetInitialState(SpacecraftState state)
         +void addEventDetector(EventDetector detector)
-        +Collection<EventDetector> getEventsDetectors()
+        +Collection<EventDetector> getEventDetectors()
         +void clearEventsDetectors()
         +AttitudeProvider getAttitudeProvider()
         +void setAttitudeProvider(AttitudeProvider attitudeProvider)
@@ -87,7 +85,6 @@
 
      TimeStamped         ..|> SpacecraftState
      TimeShiftable_T_    ..|> SpacecraftState
-     TimeInterpolable_T_ ..|> SpacecraftState
 
    }
 

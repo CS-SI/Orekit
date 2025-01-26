@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -99,9 +99,7 @@ public class BatchLSEstimatorTest {
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
                                                                 propagatorBuilder);
-        for (final ObservedMeasurement<?> measurement : measurements) {
-            estimator.addMeasurement(measurement);
-        }
+        measurements.forEach(estimator::addMeasurement);
         estimator.setParametersConvergenceThreshold(1.0e-2);
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
@@ -146,9 +144,7 @@ public class BatchLSEstimatorTest {
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
                                                                 propagatorBuilder);
-        for (final ObservedMeasurement<?> measurement : measurements) {
-            estimator.addMeasurement(measurement);
-        }
+        measurements.forEach(estimator::addMeasurement);
         estimator.setParametersConvergenceThreshold(1.0e-2);
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
@@ -190,9 +186,7 @@ public class BatchLSEstimatorTest {
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
                                                                 propagatorBuilder);
-        for (final ObservedMeasurement<?> measurement : measurements) {
-            estimator.addMeasurement(measurement);
-        }
+        measurements.forEach(estimator::addMeasurement);
         estimator.setParametersConvergenceThreshold(1.0e-2);
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
@@ -236,9 +230,7 @@ public class BatchLSEstimatorTest {
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
                                                                 propagatorBuilder);
-        for (final ObservedMeasurement<?> range : measurements) {
-            estimator.addMeasurement(range);
-        }
+        measurements.forEach(estimator::addMeasurement);
         estimator.setParametersConvergenceThreshold(1.0e-2);
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
@@ -339,10 +331,10 @@ public class BatchLSEstimatorTest {
         final PhaseCentersRangeModifier obaModifier = new PhaseCentersRangeModifier(FrequencyPattern.ZERO_CORRECTION,
                                                                                     new FrequencyPattern(antennaPhaseCenter,
                                                                                                          null));
-        for (final ObservedMeasurement<?> range : measurements) {
-            ((Range) range).addModifier(obaModifier);
-            estimator.addMeasurement(range);
-        }
+        measurements.forEach(m -> {
+            ((Range) m).addModifier(obaModifier);
+            estimator.addMeasurement(m);
+        });
         estimator.setParametersConvergenceThreshold(1.0e-2);
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
@@ -393,7 +385,7 @@ public class BatchLSEstimatorTest {
 
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
                                      0.0, 2.0e-5,
-                                     0.0, 5.2e-5,
+                                     0.0, 5.3e-5,
                                      0.0, 2.7e-5,
                                      0.0, 1.1e-8);
 
@@ -460,12 +452,8 @@ public class BatchLSEstimatorTest {
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
                                                                 propagatorBuilder1,
                                                                 propagatorBuilder2);
-        for (final ObservedMeasurement<?> interSat : r12) {
-            estimator.addMeasurement(interSat);
-        }
-        for (final ObservedMeasurement<?> range : r1) {
-            estimator.addMeasurement(range);
-        }
+        r1.forEach(estimator::addMeasurement);
+        r12.forEach(estimator::addMeasurement);
         estimator.setParametersConvergenceThreshold(1.0e-2);
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
@@ -669,15 +657,9 @@ public class BatchLSEstimatorTest {
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
                                                                 propagatorBuilder1,
                                                                 propagatorBuilder2);
-        for (final ObservedMeasurement<?> interSat : r12) {
-            estimator.addMeasurement(interSat);
-        }
-        for (final ObservedMeasurement<?> range : r1) {
-            estimator.addMeasurement(range);
-        }
-        for (final ObservedMeasurement<?> angular : a1) {
-            estimator.addMeasurement(angular);
-        }
+        r12.forEach(estimator::addMeasurement);
+        r1.forEach(estimator::addMeasurement);
+        a1.forEach(estimator::addMeasurement);
         estimator.setParametersConvergenceThreshold(1.0e-3);
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
@@ -957,9 +939,7 @@ public class BatchLSEstimatorTest {
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
                                                                 propagatorBuilder);
-        for (final ObservedMeasurement<?> range : measurements) {
-            estimator.addMeasurement(range);
-        }
+        measurements.forEach(estimator::addMeasurement);
         estimator.setParametersConvergenceThreshold(1.0e-2);
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
@@ -1016,13 +996,11 @@ public class BatchLSEstimatorTest {
             station.getClockDriftDriver().setValue(groundClockDrift);
         }
         final double satClkDrift = 3.2e-10;
-        final List<ObservedMeasurement<?>> measurements1 =
+        final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
 
-        final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
-        measurements.addAll(measurements1);
 
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
@@ -1072,7 +1050,7 @@ public class BatchLSEstimatorTest {
                                                                1.0, 3.0, 300.0);
 
         // concat measurements
-        final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
+        final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
         measurements.addAll(measurementsRange);
         measurements.addAll(measurementsRangeRate);
 
@@ -1121,15 +1099,13 @@ public class BatchLSEstimatorTest {
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
                                                                 propagatorBuilder);
 
-        for (final ObservedMeasurement<?> measurement : measurements) {
-            estimator.addMeasurement(measurement);
-        }
+        measurements.forEach(estimator::addMeasurement);
 
         ParameterDriversList estimatedParameters = estimator.getPropagatorParametersDrivers(true);
         // Verify that the propagator, the builder and the estimator know mu
         final String driverName = NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT;
-        Assertions.assertTrue(propagator.getAllForceModels().get(0) instanceof NewtonianAttraction);
-        Assertions.assertTrue(propagatorBuilder.getAllForceModels().get(0) instanceof NewtonianAttraction);
+        Assertions.assertInstanceOf(NewtonianAttraction.class, propagator.getAllForceModels().get(0));
+        Assertions.assertInstanceOf(NewtonianAttraction.class, propagatorBuilder.getAllForceModels().get(0));
         Assertions.assertNotNull(estimatedParameters.findByName(driverName));
         Assertions.assertTrue(propagator.getAllForceModels().get(0).getParameterDriver(driverName).isSelected());
         Assertions.assertTrue(propagatorBuilder.getAllForceModels().get(0).getParameterDriver(driverName).isSelected());
@@ -1180,9 +1156,7 @@ public class BatchLSEstimatorTest {
         // create the estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
                                                                 propagatorBuilder);
-        for (final ObservedMeasurement<?> measurement : measurements) {
-            estimator.addMeasurement(measurement);
-        }
+        measurements.forEach(estimator::addMeasurement);
         estimator.setParametersConvergenceThreshold(1.0e-2);
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);

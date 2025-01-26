@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -70,5 +70,11 @@ public class RecallLastOccurrence implements EventHandler {
     @Override
     public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
         return wrappedHandler.resetState(detector, oldState);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void finish(final SpacecraftState finalState, final EventDetector detector) {
+        wrappedHandler.finish(finalState, detector);
     }
 }

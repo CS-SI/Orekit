@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.estimation.measurements.gnss;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
 
 public class AmbiguityCacheTest {
 
@@ -26,22 +26,22 @@ public class AmbiguityCacheTest {
     public void testCache() {
         final AmbiguityCache cache  = new AmbiguityCache();
         final AmbiguityDriver
-            driver01 = cache.getAmbiguity("E18", "TUKT", Frequency.E01.getWavelength());
+            driver01 = cache.getAmbiguity("E18", "TUKT", PredefinedGnssSignal.E01.getWavelength());
         Assertions.assertEquals("E18",  driver01.getEmitter());
         Assertions.assertEquals("TUKT", driver01.getReceiver());
-        Assertions.assertEquals(Frequency.E01.getWavelength(), driver01.getWavelength(), 1.0e-10);
+        Assertions.assertEquals(PredefinedGnssSignal.E01.getWavelength(), driver01.getWavelength(), 1.0e-10);
         Assertions.assertEquals("ambiguity-E18-TUKT-154.00", driver01.getName());
-        final AmbiguityDriver driver05 = cache.getAmbiguity("E18", "TUKT", Frequency.E05.getWavelength());
+        final AmbiguityDriver driver05 = cache.getAmbiguity("E18", "TUKT", PredefinedGnssSignal.E05.getWavelength());
         Assertions.assertEquals("E18",  driver05.getEmitter());
         Assertions.assertEquals("TUKT", driver05.getReceiver());
-        Assertions.assertEquals(Frequency.E05.getWavelength(), driver05.getWavelength(), 1.0e-10);
+        Assertions.assertEquals(PredefinedGnssSignal.E05.getWavelength(), driver05.getWavelength(), 1.0e-10);
         Assertions.assertEquals("ambiguity-E18-TUKT-115.00", driver05.getName());
-        final AmbiguityDriver driverB = cache.getAmbiguity("E19", "AGGO", Frequency.E01.getWavelength());
+        final AmbiguityDriver driverB = cache.getAmbiguity("E19", "AGGO", PredefinedGnssSignal.E01.getWavelength());
         Assertions.assertEquals("E19",  driverB.getEmitter());
         Assertions.assertEquals("AGGO", driverB.getReceiver());
-        Assertions.assertEquals(Frequency.E01.getWavelength(), driverB.getWavelength(), 1.0e-10);
+        Assertions.assertEquals(PredefinedGnssSignal.E01.getWavelength(), driverB.getWavelength(), 1.0e-10);
         Assertions.assertEquals("ambiguity-E19-AGGO-154.00", driverB.getName());
-        Assertions.assertSame(driver01, cache.getAmbiguity("E18", "TUKT", Frequency.E01.getWavelength()));
+        Assertions.assertSame(driver01, cache.getAmbiguity("E18", "TUKT", PredefinedGnssSignal.E01.getWavelength()));
     }
 
 }

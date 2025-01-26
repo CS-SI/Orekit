@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,7 +36,7 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
@@ -46,6 +46,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -71,7 +72,7 @@ public class EstimatedIonosphericModelTest {
         final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 1.0);
         // Delay
         final double delay = model.pathDelay(0.5 * FastMath.PI,
-                                             Frequency.G01.getFrequency(),
+                                             PredefinedGnssSignal.G01.getFrequency(),
                                              model.getParameters(new AbsoluteDate()));
         // Verify
         Assertions.assertEquals(0.162, delay, 0.001);
@@ -90,7 +91,7 @@ public class EstimatedIonosphericModelTest {
         final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 1.0);
         // Delay
         final T delay = model.pathDelay(zero.add(0.5 * FastMath.PI),
-                                        Frequency.G01.getFrequency(),
+                                        PredefinedGnssSignal.G01.getFrequency(),
                                         model.getParameters(field));
         // Verify
         Assertions.assertEquals(0.162, delay.getReal(), 0.001);
@@ -106,7 +107,7 @@ public class EstimatedIonosphericModelTest {
         // the pamater driver has no validity period, so only 1 values estimated over
         // the all period, that is why getParameters is called with no argument
         double delayMeters = model.pathDelay(FastMath.toRadians(elevation),
-                                             Frequency.G01.getFrequency(),
+                                             PredefinedGnssSignal.G01.getFrequency(),
                                              model.getParameters());
 
         Assertions.assertTrue(Precision.compareTo(delayMeters, 12., 1.0e-6) < 0);
@@ -125,7 +126,7 @@ public class EstimatedIonosphericModelTest {
         final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 50.0);
         T zero = field.getZero();
         T delayMeters = model.pathDelay(zero.add(FastMath.toRadians(elevation)),
-                                             Frequency.G01.getFrequency(),
+                                             PredefinedGnssSignal.G01.getFrequency(),
                                              model.getParameters(field));
 
         Assertions.assertTrue(Precision.compareTo(delayMeters.getReal(), 12., 1.0e-6) < 0);
@@ -135,7 +136,7 @@ public class EstimatedIonosphericModelTest {
     @Test
     public void testZeroDelay() {
         // Frequency
-        final double frequency = Frequency.G01.getFrequency();
+        final double frequency = PredefinedGnssSignal.G01.getFrequency();
 
         // Geodetic point
         final double height       = 0.0;
@@ -172,7 +173,7 @@ public class EstimatedIonosphericModelTest {
     private <T extends CalculusFieldElement<T>> void doTestFieldZeroDelay(final Field<T> field) {
         final T zero = field.getZero();
         // Frequency
-        final double frequency = Frequency.G01.getFrequency();
+        final double frequency = PredefinedGnssSignal.G01.getFrequency();
 
         // Geodetic point
         final double height       = 0.0;
@@ -213,11 +214,11 @@ public class EstimatedIonosphericModelTest {
         final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 50.0);
         T zero = field.getZero();
         T delayMetersF = model.pathDelay(zero.add(FastMath.toRadians(elevation)),
-                                             Frequency.G01.getFrequency(),
+                                             PredefinedGnssSignal.G01.getFrequency(),
                                              model.getParameters(field));
 
         double delayMetersR = model.pathDelay(FastMath.toRadians(elevation),
-                                             Frequency.G01.getFrequency(),
+                                             PredefinedGnssSignal.G01.getFrequency(),
                                              model.getParameters());
 
         Assertions.assertEquals(delayMetersR, delayMetersF.getReal(), 1.0e-15);
@@ -227,7 +228,7 @@ public class EstimatedIonosphericModelTest {
     public void testDelayStateDerivatives() {
 
         // Frequency
-        final double frequency = Frequency.G01.getFrequency();
+        final double frequency = PredefinedGnssSignal.G01.getFrequency();
 
         // Geodetic point
         final double height       = 0.0;
@@ -296,7 +297,7 @@ public class EstimatedIonosphericModelTest {
         final OrbitType orbitType = OrbitType.KEPLERIAN;
         final PositionAngleType angleType = PositionAngleType.MEAN;
         double dP = 0.001;
-        double[] steps = NumericalPropagator.tolerances(1000000 * dP, orbit, orbitType)[0];
+        double[] steps = ToleranceProvider.getDefaultToleranceProvider(1000000 * dP).getTolerances(orbit, orbitType)[0];
         for (int i = 0; i < 6; i++) {
             SpacecraftState stateM4 = shiftState(state, orbitType, angleType, -4 * steps[i], i);
             final Vector3D positionM4 = stateM4.getPosition();
@@ -371,7 +372,7 @@ public class EstimatedIonosphericModelTest {
         array[0][column] += delta;
 
         return arrayToState(array, orbitType, angleType, state.getFrame(), state.getDate(),
-                            state.getMu(), state.getAttitude());
+                            state.getOrbit().getMu(), state.getAttitude());
 
     }
 
@@ -379,7 +380,7 @@ public class EstimatedIonosphericModelTest {
     public void testParametersDerivatives() {
 
         // Frequency
-        final double frequency = Frequency.G01.getFrequency();
+        final double frequency = PredefinedGnssSignal.G01.getFrequency();
 
         // Geodetic point
         final double latitude     = FastMath.toRadians(45.0);

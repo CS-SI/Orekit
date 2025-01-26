@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -182,12 +182,7 @@ public class FieldTLETest {
         final DSFactory factory = new DSFactory(1, 1);
         FieldTLE<DerivativeStructure> tleA = new FieldTLE<>(factory.getDerivativeField(), line1, line2);
         FieldTLE<Binary64> tleB = new FieldTLE<>(Binary64Field.getInstance(), line1, line2);
-        try {
-            tleA.equals(tleB);
-            Assertions.fail("an exception should have been thrown");
-        } catch (Exception e) {
-            // nothing to do
-        }
+        Assertions.assertNotEquals(tleA, tleB);
     }
 
     public <T extends CalculusFieldElement<T>> void doTestTLEFormat(Field<T> field) {
@@ -210,6 +205,7 @@ public class FieldTLETest {
         Assertions.assertEquals(133.9522, FastMath.toDegrees(tle.getPerigeeArgument().getReal()), 1e-10);
         Assertions.assertEquals(226.1918, FastMath.toDegrees(tle.getMeanAnomaly().getReal()), 1e-10);
         Assertions.assertEquals(14.26113993, tle.getMeanMotion().getReal() * Constants.JULIAN_DAY / (2 * FastMath.PI), 0);
+        Assertions.assertEquals(7182888.814633288, tle.computeSemiMajorAxis().getReal(), 1e-10);
         Assertions.assertEquals(tle.getRevolutionNumberAtEpoch(), 6, 0);
         Assertions.assertEquals(tle.getElementNumber(), 2 , 0);
 

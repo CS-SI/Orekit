@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,14 +17,9 @@
 package org.orekit.propagation.analytical.tle;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.nio.file.Path;
 import java.text.ParseException;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -33,7 +28,6 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -49,9 +43,6 @@ import org.orekit.utils.PVCoordinates;
 
 
 public class TLETest {
-    
-    @TempDir
-    public Path temporaryFolderPath;
 
     @Test
     public void testTLEFormat() {
@@ -74,6 +65,7 @@ public class TLETest {
         Assertions.assertEquals(133.9522, FastMath.toDegrees(tle.getPerigeeArgument()), 1e-10);
         Assertions.assertEquals(226.1918, FastMath.toDegrees(tle.getMeanAnomaly()), 1e-10);
         Assertions.assertEquals(14.26113993, tle.getMeanMotion() * Constants.JULIAN_DAY / (2 * FastMath.PI), 0);
+        Assertions.assertEquals(7182888.814633288, tle.computeSemiMajorAxis(), 1e-10);
         Assertions.assertEquals(tle.getRevolutionNumberAtEpoch(), 6, 0);
         Assertions.assertEquals(tle.getElementNumber(), 2 , 0);
 
@@ -566,36 +558,6 @@ public class TLETest {
         Assertions.assertEquals(tleISS.getMeanAnomaly(),             rebuilt.getMeanAnomaly(),     eps * tleISS.getMeanAnomaly());
         Assertions.assertEquals(tleISS.getMeanAnomaly(),             rebuilt.getMeanAnomaly(),     eps * tleISS.getMeanAnomaly());
         Assertions.assertEquals(tleISS.getBStar(),                   rebuilt.getBStar(),           eps * tleISS.getBStar());
-    }
-
-    @Test
-    public void testIssue851() throws IOException, ClassNotFoundException {
-
-        // Initialize TLE
-        final TLE tleISS = new TLE("1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
-                                   "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
-        String filename = temporaryFolderPath.resolve("file.ser").toString();
-
-        // Serialization
-        FileOutputStream fileSer = new FileOutputStream(filename);
-        ObjectOutputStream outSer = new ObjectOutputStream(fileSer);
-        outSer.writeObject(tleISS);
-        outSer.close();
-        fileSer.close();
-
-        // Deserialization
-        TLE rebuilt = null;
-        FileInputStream file = new FileInputStream(filename);
-        ObjectInputStream in = new ObjectInputStream(file);
-        rebuilt = (TLE) in.readObject();
-        in.close();
-        file.close();
-
-        // Verify
-        Assertions.assertEquals(tleISS.getLine1(), rebuilt.getLine1());
-        Assertions.assertEquals(tleISS.getLine2(), rebuilt.getLine2());
-        Assertions.assertEquals(tleISS.getBStar(), rebuilt.getBStar(), 1.0e-15);
-
     }
 
     @Test

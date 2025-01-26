@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,11 +35,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.Utils;
+import org.orekit.bodies.AnalyticalSolarPositionProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -56,50 +59,51 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 import java.util.function.Function;
 
-public class AlignedAndConstrainedTest {
+class AlignedAndConstrainedTest {
 
     @Test
-    public void testAlignmentsEarthSun() {
+    void testAlignmentsEarthSun() {
         doTestAlignment(Vector3D.PLUS_K, PredefinedTarget.EARTH,
                         Vector3D.PLUS_I, PredefinedTarget.SUN,
                         t -> Vector3D.ZERO,
-                        t -> sun.getPosition(t, eme2000),
+                        t -> sun.getPosition(t, gcrf),
                         1.0e-15, 1.0e-15);
     }
 
     @Test
-    public void testAlignmentsEarthSunField() {
+    void testAlignmentsEarthSunField() {
         final Binary64Field field = Binary64Field.getInstance();
         doTestAlignment(field,
                         Vector3D.PLUS_K, PredefinedTarget.EARTH,
                         Vector3D.PLUS_I, PredefinedTarget.SUN,
                         t -> FieldVector3D.getZero(field),
-                        t -> sun.getPosition(t, eme2000),
+                        t -> sun.getPosition(t, gcrf),
                         1.0e-15, 1.0e-15);
     }
 
     @Test
-    public void testDerivativesEarthSun() {
+    void testDerivativesEarthSun() {
         doTestDerivatives(Vector3D.PLUS_K, PredefinedTarget.EARTH,
                           Vector3D.PLUS_I, PredefinedTarget.SUN,
                           2.0e-15);
     }
 
     @Test
-    public void testAlignmentsNadirNorth() {
+    void testAlignmentsNadirNorth() {
         doTestAlignment(Vector3D.PLUS_K, PredefinedTarget.NADIR,
                         Vector3D.PLUS_I, PredefinedTarget.NORTH,
                         t -> {
                             final Vector3D      pH          = orbit.shiftedBy(t.durationFrom(orbit.getDate())).getPosition();
-                            final GeodeticPoint gpH         = earth.transform(pH, eme2000, t);
+                            final GeodeticPoint gpH         = earth.transform(pH, gcrf, t);
                             final GeodeticPoint gp0         = new GeodeticPoint(gpH.getLatitude(), gpH.getLongitude(), 0.0);
                             final Vector3D      p0          = earth.transform(gp0);
-                            final Transform     earth2Inert = earth.getBodyFrame().getTransformTo(eme2000, t);
+                            final Transform     earth2Inert = earth.getBodyFrame().getTransformTo(gcrf, t);
                             return earth2Inert.transformPosition(p0);
                         },
                         t -> Vector3D.PLUS_K,
@@ -107,19 +111,19 @@ public class AlignedAndConstrainedTest {
     }
 
     @Test
-    public void testAlignmentsNadirNorthField() {
+    void testAlignmentsNadirNorthField() {
         final Binary64Field field = Binary64Field.getInstance();
         doTestAlignment(field,
                         Vector3D.PLUS_K, PredefinedTarget.NADIR,
                         Vector3D.PLUS_I, PredefinedTarget.NORTH,
                         t -> {
                             final FieldVector3D<Binary64>      pH          = getOrbit(field).shiftedBy(t.durationFrom(orbit.getDate())).getPosition();
-                            final FieldGeodeticPoint<Binary64> gpH         = earth.transform(pH, eme2000, t);
+                            final FieldGeodeticPoint<Binary64> gpH         = earth.transform(pH, gcrf, t);
                             final FieldGeodeticPoint<Binary64> gp0         = new FieldGeodeticPoint<>(gpH.getLatitude(),
                                                                                                       gpH.getLongitude(),
                                                                                                       field.getZero());
                             final FieldVector3D<Binary64>      p0          = earth.transform(gp0);
-                            final FieldTransform<Binary64>     earth2Inert = earth.getBodyFrame().getTransformTo(eme2000, t);
+                            final FieldTransform<Binary64>     earth2Inert = earth.getBodyFrame().getTransformTo(gcrf, t);
                             return earth2Inert.transformPosition(p0);
                         },
                         t -> FieldVector3D.getPlusK(field),
@@ -127,14 +131,14 @@ public class AlignedAndConstrainedTest {
     }
 
     @Test
-    public void testDerivativesNadirNorth() {
+    void testDerivativesNadirNorth() {
         doTestDerivatives(Vector3D.PLUS_K, PredefinedTarget.NADIR,
                           Vector3D.PLUS_I, PredefinedTarget.NORTH,
-                          2.0e-15);
+                          1.0e-12);
     }
 
     @Test
-    public void testAlignmentsVelocityMomentum() {
+    void testAlignmentsVelocityMomentum() {
         doTestAlignment(Vector3D.MINUS_J, PredefinedTarget.VELOCITY,
                         Vector3D.MINUS_K, PredefinedTarget.MOMENTUM,
                         t -> orbit.shiftedBy(t.durationFrom(orbit.getDate())).getPVCoordinates().getVelocity().normalize(),
@@ -143,7 +147,7 @@ public class AlignedAndConstrainedTest {
     }
 
     @Test
-    public void testAlignmentsVelocityMomentumField() {
+    void testAlignmentsVelocityMomentumField() {
         final Binary64Field field = Binary64Field.getInstance();
         doTestAlignment(field,
                         Vector3D.MINUS_J, PredefinedTarget.VELOCITY,
@@ -154,44 +158,44 @@ public class AlignedAndConstrainedTest {
     }
 
     @Test
-    public void testDerivativesVelocityMomentum() {
+    void testDerivativesVelocityMomentum() {
         doTestDerivatives(Vector3D.MINUS_J, PredefinedTarget.VELOCITY,
                           Vector3D.MINUS_K, PredefinedTarget.MOMENTUM,
                           7.0e-16);
     }
 
     @Test
-    public void testAlignmentsStationEast() {
+    void testAlignmentsStationEast() {
         doTestAlignment(Vector3D.PLUS_K, new GroundPointTarget(station),
                         Vector3D.PLUS_I, PredefinedTarget.EAST,
-                        t -> earth.getBodyFrame().getTransformTo(eme2000, t).transformPosition(station),
+                        t -> earth.getBodyFrame().getTransformTo(gcrf, t).transformPosition(station),
                         t -> {
-                           final Transform earth2Inert = earth.getBodyFrame().getTransformTo(eme2000, t);
+                           final Transform earth2Inert = earth.getBodyFrame().getTransformTo(gcrf, t);
                            final Vector3D  pInert      = orbit.shiftedBy(t.durationFrom(orbit.getDate())).getPosition();
-                           final GeodeticPoint gp      = earth.transform(pInert, eme2000, t);
+                           final GeodeticPoint gp      = earth.transform(pInert, gcrf, t);
                            return earth2Inert.transformVector(gp.getEast()).normalize();
                         },
                         4.0e-10, 1.0e-10);
     }
 
     @Test
-    public void testAlignmentsStationEastField() {
+    void testAlignmentsStationEastField() {
         final Binary64Field field = Binary64Field.getInstance();
         doTestAlignment(field,
                         Vector3D.PLUS_K, new GroundPointTarget(station),
                         Vector3D.PLUS_I, PredefinedTarget.EAST,
-                        t -> earth.getBodyFrame().getTransformTo(eme2000, t).transformPosition(station),
+                        t -> earth.getBodyFrame().getTransformTo(gcrf, t).transformPosition(station),
                         t -> {
-                            final FieldTransform<Binary64> earth2Inert = earth.getBodyFrame().getTransformTo(eme2000, t);
+                            final FieldTransform<Binary64> earth2Inert = earth.getBodyFrame().getTransformTo(gcrf, t);
                             final FieldVector3D<Binary64>  pInert      = getOrbit(field).shiftedBy(t.durationFrom(orbit.getDate())).getPosition();
-                            final FieldGeodeticPoint<Binary64> gp      = earth.transform(pInert, eme2000, t);
+                            final FieldGeodeticPoint<Binary64> gp      = earth.transform(pInert, gcrf, t);
                             return earth2Inert.transformVector(gp.getEast()).normalize();
                         },
                         4.0e-10, 1.0e-15);
     }
 
     @Test
-    public void testDerivativesStationEast() {
+    void testDerivativesStationEast() {
         doTestDerivatives(Vector3D.PLUS_K, new GroundPointTarget(station),
                           Vector3D.PLUS_I, PredefinedTarget.EAST,
                           7.0e-13);
@@ -301,7 +305,7 @@ public class AlignedAndConstrainedTest {
 
         // evaluate quaternion derivatives using finite differences
         final UnivariateVectorFunction q = dt -> {
-            final Attitude attitude = aac.getAttitude(orbit.shiftedBy(dt), orbit.getDate().shiftedBy(dt), eme2000);
+            final Attitude attitude = aac.getAttitude(orbit.shiftedBy(dt), orbit.getDate().shiftedBy(dt), gcrf);
             final Rotation rotation = attitude.getRotation();
             return new double[] {
                 rotation.getQ0(), rotation.getQ1(), rotation.getQ2(), rotation.getQ3()
@@ -313,7 +317,7 @@ public class AlignedAndConstrainedTest {
 
         // evaluate quaternions derivatives using internal model
         final FieldRotation<UnivariateDerivative1> r = aac.
-                                                       getAttitude(orbit, orbit.getDate(), eme2000).
+                                                       getAttitude(orbit, orbit.getDate(), gcrf).
                                                        getOrientation().
                                                        toUnivariateDerivative1Rotation();
 
@@ -334,7 +338,7 @@ public class AlignedAndConstrainedTest {
         // GIVEN
         final GroundPointTarget groundPointTarget = new GroundPointTarget(new Vector3D(1., 2.));
         final AlignedAndConstrained alignedAndConstrained = new AlignedAndConstrained(Vector3D.PLUS_I, target,
-                Vector3D.MINUS_J, groundPointTarget, sun, earth);
+                Vector3D.MINUS_J, groundPointTarget, orbit.getFrame(), sun, earth);
         // WHEN
         final Rotation actualRotation = alignedAndConstrained.getAttitudeRotation(orbit, orbit.getDate(), orbit.getFrame());
         // THEN
@@ -344,11 +348,59 @@ public class AlignedAndConstrainedTest {
 
     @ParameterizedTest
     @EnumSource(value = PredefinedTarget.class)
+    void testGetAttitudeRotationDifferentFrame(final PredefinedTarget target) {
+        // GIVEN
+        final GroundPointTarget groundPointTarget = new GroundPointTarget(new Vector3D(1., 2.));
+        final Frame inertialFrame = FramesFactory.getTOD(false);
+        final AlignedAndConstrained alignedAndConstrained = new AlignedAndConstrained(Vector3D.PLUS_I, target,
+                Vector3D.MINUS_J, groundPointTarget, inertialFrame, sun, earth);
+        // WHEN
+        final Rotation actualRotation = alignedAndConstrained.getAttitudeRotation(orbit, orbit.getDate(), orbit.getFrame());
+        // THEN
+        final Rotation expectedRotation = alignedAndConstrained.getAttitude(orbit, orbit.getDate(), orbit.getFrame()).getRotation();
+        Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation), 5e-9);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = PredefinedTarget.class)
+    void testFieldGetAttitudeRotationVersusNonField(final PredefinedTarget target) {
+        // GIVEN
+        final GroundPointTarget groundPointTarget = new GroundPointTarget(new Vector3D(1., 2.));
+        final AlignedAndConstrained alignedAndConstrained = new AlignedAndConstrained(Vector3D.PLUS_I, target,
+                Vector3D.MINUS_J, groundPointTarget, orbit.getFrame(), sun, earth);
+        final FieldOrbit<Binary64> fieldOrbit = new FieldCartesianOrbit<>(Binary64Field.getInstance(), orbit);
+        // WHEN
+        final Rotation actualRotation = alignedAndConstrained.getAttitudeRotation(fieldOrbit, fieldOrbit.getDate(),
+                fieldOrbit.getFrame()).toRotation();
+        // THEN
+        final Rotation expectedRotation = alignedAndConstrained.getAttitudeRotation(orbit, orbit.getDate(), orbit.getFrame());
+        Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation), 5e-9);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = PredefinedTarget.class)
+    void testFieldGetAttitudeRotationVersusNonFieldDifferentFrame(final PredefinedTarget target) {
+        // GIVEN
+        final GroundPointTarget groundPointTarget = new GroundPointTarget(new Vector3D(1., 2.));
+        final Frame inertialFrame = FramesFactory.getTOD(false);
+        final AlignedAndConstrained alignedAndConstrained = new AlignedAndConstrained(Vector3D.PLUS_I, target,
+                Vector3D.MINUS_J, groundPointTarget, inertialFrame, sun, earth);
+        final FieldOrbit<Binary64> fieldOrbit = new FieldCartesianOrbit<>(Binary64Field.getInstance(), orbit);
+        // WHEN
+        final Rotation actualRotation = alignedAndConstrained.getAttitudeRotation(fieldOrbit, fieldOrbit.getDate(),
+                fieldOrbit.getFrame()).toRotation();
+        // THEN
+        final Rotation expectedRotation = alignedAndConstrained.getAttitudeRotation(orbit, orbit.getDate(), orbit.getFrame());
+        Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation), 5e-9);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = PredefinedTarget.class)
     void testFieldGetAttitudeRotation(final PredefinedTarget target) {
         // GIVEN
         final GroundPointTarget groundPointTarget = new GroundPointTarget(new Vector3D(1., 2.));
         final AlignedAndConstrained alignedAndConstrained = new AlignedAndConstrained(Vector3D.PLUS_I, target,
-                Vector3D.MINUS_J, groundPointTarget, sun, earth);
+                Vector3D.MINUS_J, groundPointTarget, orbit.getFrame(), sun, earth);
         final FieldOrbit<Binary64> fieldOrbit = new FieldCartesianOrbit<>(Binary64Field.getInstance(), orbit);
         // WHEN
         final FieldRotation<Binary64> actualRotation = alignedAndConstrained.getAttitudeRotation(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame());
@@ -357,13 +409,59 @@ public class AlignedAndConstrainedTest {
         Assertions.assertEquals(0., Rotation.distance(expectedRotation.toRotation(), actualRotation.toRotation()), 5e-9);
     }
 
+    @ParameterizedTest
+    @EnumSource(value = PredefinedTarget.class)
+    void testFieldGetAttitudeRotationDifferentFrames(final PredefinedTarget target) {
+        // GIVEN
+        final GroundPointTarget groundPointTarget = new GroundPointTarget(new Vector3D(1., 2.));
+        final Frame inertialFrame = FramesFactory.getTOD(false);
+        final AlignedAndConstrained alignedAndConstrained = new AlignedAndConstrained(Vector3D.PLUS_I, target,
+                Vector3D.MINUS_J, groundPointTarget, inertialFrame, sun, earth);
+        final FieldOrbit<Binary64> fieldOrbit = new FieldCartesianOrbit<>(Binary64Field.getInstance(), orbit);
+        // WHEN
+        final FieldRotation<Binary64> actualRotation = alignedAndConstrained.getAttitudeRotation(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame());
+        // THEN
+        final FieldRotation<Binary64> expectedRotation = alignedAndConstrained.getAttitude(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame()).getRotation();
+        Assertions.assertEquals(0., Rotation.distance(expectedRotation.toRotation(), actualRotation.toRotation()), 5e-9);
+    }
+
+    @Test
+    void testGetAttitude() {
+        // GIVEN
+        final ExtendedPositionProvider sunProvider = new AnalyticalSolarPositionProvider();
+        final Frame inertialFrame = FramesFactory.getGCRF();
+        final AlignedAndConstrained attitudeProvider = new AlignedAndConstrained(Vector3D.PLUS_I,
+                PredefinedTarget.VELOCITY, Vector3D.PLUS_K, PredefinedTarget.SUN, inertialFrame, sunProvider, null);
+        // WHEN
+        final Attitude actualAttitude = attitudeProvider.getAttitude(orbit, orbit.getDate(), inertialFrame);
+        // THEN
+        final Frame earthFixedFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final Attitude attitude = attitudeProvider.getAttitude(orbit, orbit.getDate(), earthFixedFrame);
+        final Attitude expectedAttitude = attitude.withReferenceFrame(inertialFrame);
+        Assertions.assertEquals(0., Rotation.distance(expectedAttitude.getRotation(),
+                actualAttitude.getRotation()), 1e-10);
+        Assertions.assertEquals(0., expectedAttitude.getSpin().subtract(actualAttitude.getSpin()).getNorm(),
+                1e-6);
+    }
+
+    @Test
+    void testConstructorException() {
+        // GIVEN
+        final Frame nonInertialFrame = FramesFactory.getGTOD(false);
+        // WHEN
+        final OrekitException exception = Assertions.assertThrows(OrekitException.class, () -> new AlignedAndConstrained(Vector3D.PLUS_I,
+                PredefinedTarget.VELOCITY, Vector3D.PLUS_K, PredefinedTarget.SUN, nonInertialFrame, null, null));
+        // THEN
+        Assertions.assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, exception.getSpecifier());
+    }
+
     @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
-        eme2000 = FramesFactory.getEME2000();
+        gcrf = FramesFactory.getGCRF();
         orbit = new KeplerianOrbit(new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
                                                      new Vector3D(0, 0, 3680.853673522056)),
-                                   eme2000,
+                                   gcrf,
                                    new AbsoluteDate(2003, 3, 2, 13, 17, 7.865, TimeScalesFactory.getUTC()),
                                    3.986004415e14);
         earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -375,14 +473,14 @@ public class AlignedAndConstrainedTest {
 
     @AfterEach
     public void tearDown() {
-        eme2000 = null;
+        gcrf = null;
         orbit   = null;
         earth   = null;
         sun     = null;
         station = null;
     }
 
-    private Frame eme2000;
+    private Frame gcrf;
     private Orbit orbit;
     private CelestialBody sun;
     private OneAxisEllipsoid earth;

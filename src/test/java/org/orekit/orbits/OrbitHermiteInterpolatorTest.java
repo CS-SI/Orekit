@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,8 +19,10 @@ package org.orekit.orbits;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
 import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -33,6 +35,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 class OrbitHermiteInterpolatorTest {
+
+    @BeforeEach
+    public void setUp() {
+        Utils.setDataRoot("regular-data");
+    }
 
     @Test
     public void testCartesianInterpolationWithDerivatives() {
@@ -456,7 +463,7 @@ class OrbitHermiteInterpolatorTest {
             Vector3D     propagatedP   = propagator.propagate(t).getPosition();
             double       shiftedE      = initialOrbit.shiftedBy(dt).getE();
             double       interpolatedE = interpolator.interpolate(t, sample).getE();
-            double       propagatedE   = propagator.propagate(t).getE();
+            double       propagatedE   = propagator.propagate(t).getOrbit().getE();
             maxShiftPositionError             =
                     FastMath.max(maxShiftPositionError, shiftedP.subtract(propagatedP).getNorm());
             maxInterpolationPositionError     =
@@ -489,7 +496,7 @@ class OrbitHermiteInterpolatorTest {
             Vector3D     propagatedP   = propagator.propagate(t).getPosition();
             double       shiftedE      = initialOrbit.shiftedBy(dt).getE();
             double       interpolatedE = interpolator.interpolate(t, sample).getE();
-            double       propagatedE   = propagator.propagate(t).getE();
+            double       propagatedE   = propagator.propagate(t).getOrbit().getE();
             maxShiftPositionError             =
                     FastMath.max(maxShiftPositionError, shiftedP.subtract(propagatedP).getNorm());
             maxInterpolationPositionError     =

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -107,8 +107,8 @@ public class Range extends GroundReceiverMeasurement<Range> {
             // Station at transit state date (derivatives of tauD taken into account)
             final TimeStampedPVCoordinates stationAtTransitDate = common.getStationDownlink().shiftedBy(-common.getTauD());
             // Uplink delay
-            final double tauU = signalTimeOfFlight(stationAtTransitDate, transitPV.getPosition(),
-                                                   transitPV.getDate(), common.getState().getFrame());
+            final double tauU = signalTimeOfFlightAdjustableEmitter(stationAtTransitDate, transitPV.getPosition(),
+                                                                    transitPV.getDate(), common.getState().getFrame());
             final TimeStampedPVCoordinates stationUplink = common.getStationDownlink().shiftedBy(-common.getTauD() - tauU);
 
             // Prepare the evaluation
@@ -183,8 +183,8 @@ public class Range extends GroundReceiverMeasurement<Range> {
                             common.getStationDownlink().shiftedBy(common.getTauD().negate());
             // Uplink delay
             final Gradient tauU =
-                            signalTimeOfFlight(stationAtTransitDate, transitPV.getPosition(), transitPV.getDate(),
-                                               state.getFrame());
+                            signalTimeOfFlightAdjustableEmitter(stationAtTransitDate, transitPV.getPosition(), transitPV.getDate(),
+                                                                state.getFrame());
             final TimeStampedFieldPVCoordinates<Gradient> stationUplink =
                             common.getStationDownlink().shiftedBy(-common.getTauD().getValue() - tauU.getValue());
 

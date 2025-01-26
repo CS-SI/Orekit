@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -214,6 +214,9 @@ public class PhaseCentersRangeModifierTest {
             Range ar = (Range) antennaCenteredMeasurements.get(i);
             Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 1.0e-8);
             Assertions.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 3.4e-7);
+            Assertions.assertEquals(1,
+                                    estimated.getAppliedEffects().entrySet().stream().
+                                    filter(e -> e.getKey().getEffectName().equals("mean phase center")).count());
         }
 
     }
