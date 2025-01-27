@@ -51,7 +51,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;
-import org.orekit.propagation.AdditionalStateProvider;
+import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.CartesianToleranceProvider;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
@@ -615,7 +615,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         TriggerDate triggerGenerator = null;
 
         // check if we already have set up the provider
-        for (final AdditionalStateProvider provider : getAdditionalStateProviders()) {
+        for (final AdditionalDataProvider<?> provider : getAdditionalDataProviders()) {
             if (provider instanceof TriggerDate &&
                 provider.getName().equals(driverName)) {
                 // the Jacobian column generator has already been set up in a previous propagation
@@ -629,7 +629,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             triggerGenerator = new TriggerDate(stmName, driverName, start, maneuver, threshold);
             mt.addResetter(triggerGenerator);
             addAdditionalDerivativesProvider(triggerGenerator.getMassDepletionDelay());
-            addAdditionalStateProvider(triggerGenerator);
+            addAdditionalDataProvider(triggerGenerator);
         }
 
         if (!getInitialIntegrationState().hasAdditionalState(driverName)) {
@@ -655,7 +655,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         MedianDate medianGenerator = null;
 
         // check if we already have set up the provider
-        for (final AdditionalStateProvider provider : getAdditionalStateProviders()) {
+        for (final AdditionalDataProvider<?> provider : getAdditionalDataProviders()) {
             if (provider instanceof MedianDate &&
                 provider.getName().equals(medianName)) {
                 // the Jacobian column generator has already been set up in a previous propagation
@@ -667,7 +667,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         if (medianGenerator == null) {
             // this is the first time we need the Jacobian column generator, create it
             medianGenerator = new MedianDate(startName, stopName, medianName);
-            addAdditionalStateProvider(medianGenerator);
+            addAdditionalDataProvider(medianGenerator);
         }
 
         if (!getInitialIntegrationState().hasAdditionalState(medianName)) {
@@ -692,7 +692,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         Duration durationGenerator = null;
 
         // check if we already have set up the provider
-        for (final AdditionalStateProvider provider : getAdditionalStateProviders()) {
+        for (final AdditionalDataProvider<?> provider : getAdditionalDataProviders()) {
             if (provider instanceof Duration &&
                 provider.getName().equals(durationName)) {
                 // the Jacobian column generator has already been set up in a previous propagation
@@ -704,7 +704,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         if (durationGenerator == null) {
             // this is the first time we need the Jacobian column generator, create it
             durationGenerator = new Duration(startName, stopName, durationName);
-            addAdditionalStateProvider(durationGenerator);
+            addAdditionalDataProvider(durationGenerator);
         }
 
         if (!getInitialIntegrationState().hasAdditionalState(durationName)) {

@@ -840,12 +840,12 @@ public class KeplerianPropagatorTest {
         final KeplerianPropagator propagator = new KeplerianPropagator(orbit, new LofOffset(eme2000, LOFType.LVLH));
 
         // we have A → B → C → D → E → F but register them in a different order
-        propagator.addAdditionalStateProvider(new DependentGenerator("F", "E"));
-        propagator.addAdditionalStateProvider(new DependentGenerator("B", "A"));
-        propagator.addAdditionalStateProvider(new DependentGenerator("E", "D"));
-        propagator.addAdditionalStateProvider(new DependentGenerator("C", "B"));
-        propagator.addAdditionalStateProvider(new DependentGenerator("A", null));
-        propagator.addAdditionalStateProvider(new DependentGenerator("D", "C"));
+        propagator.addAdditionalDataProvider(new DependentGenerator("F", "E"));
+        propagator.addAdditionalDataProvider(new DependentGenerator("B", "A"));
+        propagator.addAdditionalDataProvider(new DependentGenerator("E", "D"));
+        propagator.addAdditionalDataProvider(new DependentGenerator("C", "B"));
+        propagator.addAdditionalDataProvider(new DependentGenerator("A", null));
+        propagator.addAdditionalDataProvider(new DependentGenerator("D", "C"));
 
         final SpacecraftState finalState = propagator.propagate(orbit.getDate().shiftedBy(3600.0));
         Assertions.assertEquals(1,   finalState.getAdditionalState("A").length);
@@ -875,12 +875,12 @@ public class KeplerianPropagatorTest {
         final KeplerianPropagator propagator = new KeplerianPropagator(orbit, new LofOffset(eme2000, LOFType.LVLH));
 
         // here, the dependency creates a loop, which is detected and its adders ignored
-        propagator.addAdditionalStateProvider(new DependentGenerator("F", "E"));
-        propagator.addAdditionalStateProvider(new DependentGenerator("B", "A"));
-        propagator.addAdditionalStateProvider(new DependentGenerator("E", "D"));
-        propagator.addAdditionalStateProvider(new DependentGenerator("C", "B"));
-        propagator.addAdditionalStateProvider(new DependentGenerator("A", null));
-        propagator.addAdditionalStateProvider(new DependentGenerator("D", "F"));
+        propagator.addAdditionalDataProvider(new DependentGenerator("F", "E"));
+        propagator.addAdditionalDataProvider(new DependentGenerator("B", "A"));
+        propagator.addAdditionalDataProvider(new DependentGenerator("E", "D"));
+        propagator.addAdditionalDataProvider(new DependentGenerator("C", "B"));
+        propagator.addAdditionalDataProvider(new DependentGenerator("A", null));
+        propagator.addAdditionalDataProvider(new DependentGenerator("D", "F"));
 
         final SpacecraftState finalState = propagator.propagate(orbit.getDate().shiftedBy(3600.0));
         Assertions.assertEquals(1,   finalState.getAdditionalState("A").length);
@@ -943,7 +943,7 @@ public class KeplerianPropagatorTest {
             return dependency != null && state.getAdditionalStatesValues().getEntry(dependency) == null;
         }
 
-        public double[] getAdditionalState(final SpacecraftState state) {
+        public double[] getAdditionalData(final SpacecraftState state) {
             return new double[] {
                 dependency == null ? 1.0 : state.getAdditionalState(dependency)[0] + 1.0
             };

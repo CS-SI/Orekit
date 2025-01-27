@@ -37,8 +37,8 @@ import org.orekit.time.FieldTimeInterpolator;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.AngularDerivativesFilter;
-import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.FieldPVCoordinatesProvider;
+import org.orekit.utils.DataDictionary;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinatesHermiteInterpolator;
@@ -275,8 +275,8 @@ public class AttitudesSequence extends AbstractSwitchingAttitudeProvider {
                         final Attitude  sAttitude = getPast().getAttitude(sAPV, shiftedDate, s.getFrame());
                         sState    = new SpacecraftState(sAPV, sAttitude, s.getMass());
                     }
-                    for (final DoubleArrayDictionary.Entry entry : s.getAdditionalStatesValues().getData()) {
-                        sState = sState.addAdditionalState(entry.getKey(), entry.getValue());
+                    for (final DataDictionary.Entry entry : s.getAdditionalStatesValues().getData()) {
+                        sState = sState.addAdditionalData(entry.getKey(), entry.getValue());
                     }
 
                     // prepare transition

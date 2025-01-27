@@ -119,7 +119,7 @@ class OrbitBlenderTest {
 
         StateCovarianceKeplerianHermiteInterpolatorTest.configurePropagatorForSergeiCase(propagator);
 
-        propagator.addAdditionalStateProvider(stateCovarianceMatrixProvider);
+        propagator.addAdditionalDataProvider(stateCovarianceMatrixProvider);
 
         propagator.getMultiplexer().add(1, (currentState) -> {
             referenceStates.add(currentState);

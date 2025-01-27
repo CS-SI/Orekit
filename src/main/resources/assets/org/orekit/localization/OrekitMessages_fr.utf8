@@ -298,8 +298,11 @@ PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET = la fonction setPeriod a déjà été ut
 # scale factor for parameter {0} is too small: {1}
 TOO_SMALL_SCALE_FOR_PARAMETER = le facteur d''échelle pour le paramètre {0} est trop petit : {1}
 
-# unknown additional state "{0}"
-UNKNOWN_ADDITIONAL_STATE = état additionel "{0}" inconnu
+# state "{0}" is not a double array
+ADDITIONAL_STATE_BAD_TYPE = le state "{0}" n'est pas un tableau de doubles
+
+# unknown additional data "{0}"
+UNKNOWN_ADDITIONAL_DATA = data additionel "{0}" inconnu
 
 # unknown month "{0}"
 UNKNOWN_MONTH = mois inconnu "{0}"

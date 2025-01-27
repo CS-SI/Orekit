@@ -93,7 +93,7 @@ public class TestUtils {
             }
 
             @Override
-            public double[] getAdditionalState(final SpacecraftState state) {
+            public double[] getAdditionalData(final SpacecraftState state) {
                 return new double[0];
             }
         };

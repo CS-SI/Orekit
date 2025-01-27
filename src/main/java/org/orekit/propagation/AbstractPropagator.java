@@ -32,6 +32,7 @@ import org.orekit.frames.Frame;
 import org.orekit.propagation.sampling.StepHandlerMultiplexer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
+import org.orekit.utils.DataDictionary;
 import org.orekit.utils.TimeSpanMap;
 
 /** Common handling of {@link Propagator} methods for propagators.
@@ -54,10 +55,10 @@ public abstract class AbstractPropagator implements Propagator {
     private AttitudeProvider attitudeProvider;
 
     /** Providers for additional states. */
-    private final List<AdditionalStateProvider> additionalStateProviders;
+    private final List<AdditionalDataProvider<?>> additionalStateProviders;
 
     /** States managed by no generators. */
-    private final Map<String, TimeSpanMap<double[]>> unmanagedStates;
+    private final Map<String, TimeSpanMap<Object>> unmanagedStates;
 
     /** Initial state. */
     private SpacecraftState initialState;
@@ -121,7 +122,7 @@ public abstract class AbstractPropagator implements Propagator {
 
     /** {@inheritDoc} */
     @Override
-    public void addAdditionalStateProvider(final AdditionalStateProvider provider) {
+    public void addAdditionalDataProvider(final AdditionalDataProvider<?> provider) {
 
         // check if the name is already used
         if (isAdditionalStateManaged(provider.getName())) {
@@ -137,7 +138,7 @@ public abstract class AbstractPropagator implements Propagator {
 
     /** {@inheritDoc} */
     @Override
-    public List<AdditionalStateProvider> getAdditionalStateProviders() {
+    public List<AdditionalDataProvider<?>> getAdditionalDataProviders() {
         return Collections.unmodifiableList(additionalStateProviders);
     }
 
@@ -188,9 +189,9 @@ public abstract class AbstractPropagator implements Propagator {
         SpacecraftState updated = original;
 
         // update the states not managed by providers
-        for (final Map.Entry<String, TimeSpanMap<double[]>> entry : unmanagedStates.entrySet()) {
-            updated = updated.addAdditionalState(entry.getKey(),
-                                                 entry.getValue().get(original.getDate()));
+        for (final Map.Entry<String, TimeSpanMap<Object>> entry : unmanagedStates.entrySet()) {
+            updated = updated.addAdditionalData(entry.getKey(),
+                                                entry.getValue().get(original.getDate()));
         }
 
         return updated;
@@ -210,12 +211,12 @@ public abstract class AbstractPropagator implements Propagator {
         SpacecraftState updated = updateUnmanagedStates(original);
 
         // set up queue for providers
-        final Queue<AdditionalStateProvider> pending = new LinkedList<>(getAdditionalStateProviders());
+        final Queue<AdditionalDataProvider<?>> pending = new LinkedList<>(getAdditionalDataProviders());
 
         // update the additional states managed by providers, taking care of dependencies
         int yieldCount = 0;
         while (!pending.isEmpty()) {
-            final AdditionalStateProvider provider = pending.remove();
+            final AdditionalDataProvider<?> provider = pending.remove();
             if (provider.yields(updated)) {
                 // this generator has to wait for another one,
                 // we put it again in the pending queue
@@ -243,14 +244,14 @@ public abstract class AbstractPropagator implements Propagator {
      * @since 11.2
      */
     protected void initializeAdditionalStates(final AbsoluteDate target) {
-        for (final AdditionalStateProvider provider : additionalStateProviders) {
+        for (final AdditionalDataProvider<?> provider : additionalStateProviders) {
             provider.init(initialState, target);
         }
     }
 
     /** {@inheritDoc} */
     public boolean isAdditionalStateManaged(final String name) {
-        for (final AdditionalStateProvider provider : additionalStateProviders) {
+        for (final AdditionalDataProvider<?> provider : additionalStateProviders) {
             if (provider.getName().equals(name)) {
                 return true;
             }
@@ -286,7 +287,7 @@ public abstract class AbstractPropagator implements Propagator {
             // there is an initial state
             // (null initial states occur for example in interpolated ephemerides)
             // copy the additional states present in initialState but otherwise not managed
-            for (final DoubleArrayDictionary.Entry initial : initialState.getAdditionalStatesValues().getData()) {
+            for (final DataDictionary.Entry initial : initialState.getAdditionalStatesValues().getData()) {
                 if (!isAdditionalStateManaged(initial.getKey())) {
                     // this additional state is in the initial state, but is unknown to the propagator
                     // we store it in a way event handlers may change it
@@ -302,8 +303,8 @@ public abstract class AbstractPropagator implements Propagator {
     protected void stateChanged(final SpacecraftState state) {
         final AbsoluteDate date    = state.getDate();
         final boolean      forward = date.durationFrom(getStartDate()) >= 0.0;
-        for (final DoubleArrayDictionary.Entry changed : state.getAdditionalStatesValues().getData()) {
-            final TimeSpanMap<double[]> tsm = unmanagedStates.get(changed.getKey());
+        for (final DataDictionary.Entry changed : state.getAdditionalStatesValues().getData()) {
+            final TimeSpanMap<Object> tsm = unmanagedStates.get(changed.getKey());
             if (tsm != null) {
                 // this is an unmanaged state
                 if (forward) {

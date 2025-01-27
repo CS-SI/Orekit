@@ -213,7 +213,7 @@ public class TriggerDate
 
     /** {@inheritDoc} */
     @Override
-    public double[] getAdditionalState(final SpacecraftState state) {
+    public double[] getAdditionalData(final SpacecraftState state) {
         // we check contribution rather than triggered because this method
         // is called after maneuverTriggered and before resetState,
         // when preparing the old state to be reset

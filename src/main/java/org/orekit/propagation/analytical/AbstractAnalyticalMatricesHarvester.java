@@ -105,7 +105,7 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
 
     /** {@inheritDoc} */
     @Override
-    public double[] getAdditionalState(final SpacecraftState state) {
+    public double[] getAdditionalData(final SpacecraftState state) {
         // Update the partial derivatives if needed
         updateDerivativesIfNeeded(state);
         // Return the state transition matrix in an array

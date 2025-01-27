@@ -309,7 +309,7 @@ public class StateCovarianceMatrixProviderTest {
         final StateCovarianceMatrixProvider provider =
                 new StateCovarianceMatrixProvider(additionalName, stmName, harvester, initialStateCovarianceInKep);
         propagator.setInitialState(initialState);
-        propagator.addAdditionalStateProvider(provider);
+        propagator.addAdditionalDataProvider(provider);
 
         // Propagate
         final SpacecraftState propagated = propagator.propagate(initialState.getDate().shiftedBy(Constants.JULIAN_DAY));
@@ -421,7 +421,7 @@ public class StateCovarianceMatrixProviderTest {
         final StateCovarianceMatrixProvider provider =
                 new StateCovarianceMatrixProvider(additionalName, stmName, harvester, initialStateCovariance);
         propagator.setInitialState(initialState);
-        propagator.addAdditionalStateProvider(provider);
+        propagator.addAdditionalDataProvider(provider);
 
         // Propagate
         final SpacecraftState propagated = propagator.propagate(initialState.getDate().shiftedBy(Constants.JULIAN_DAY));
@@ -613,7 +613,7 @@ public class StateCovarianceMatrixProviderTest {
         final StateCovariance initialStateCovariance = new StateCovariance(initCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngleType.MEAN);
         final StateCovarianceMatrixProvider provider =
                 new StateCovarianceMatrixProvider(additionalName, stmName, harvester, initialStateCovariance);
-        propagator.addAdditionalStateProvider(provider);
+        propagator.addAdditionalDataProvider(provider);
         
         return provider;
     }

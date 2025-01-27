@@ -71,7 +71,7 @@ public class AdditionalStateProviderTest {
         final MainStateModifier modifier = new MainStateModifier();
 
         // Add the provider to the propagator
-        propagator.addAdditionalStateProvider(modifier);
+        propagator.addAdditionalDataProvider(modifier);
 
         // Propagate
         final double dt = 600.0;
@@ -98,7 +98,7 @@ public class AdditionalStateProviderTest {
         Assertions.assertFalse(provider.wasCalled());
 
         // Add the provider to the propagator
-        propagator.addAdditionalStateProvider(provider);
+        propagator.addAdditionalDataProvider(provider);
 
         // Propagate
         final double dt = 600.0;
@@ -123,7 +123,7 @@ public class AdditionalStateProviderTest {
         Assertions.assertFalse(provider.wasCalled());
 
         // Add the provider to the propagator
-        propagator.addAdditionalStateProvider(provider);
+        propagator.addAdditionalDataProvider(provider);
 
         // Propagate
         final double dt = 600.0;
@@ -148,7 +148,7 @@ public class AdditionalStateProviderTest {
         Assertions.assertFalse(provider.wasCalled());
 
         // Add the provider to the propagator
-        propagator.addAdditionalStateProvider(provider);
+        propagator.addAdditionalDataProvider(provider);
 
         // Propagate
         final double dt = 600.0;
@@ -198,7 +198,7 @@ public class AdditionalStateProviderTest {
         }
 
         @Override
-        public double[] getAdditionalState(SpacecraftState state) {
+        public double[] getAdditionalData(SpacecraftState state) {
             return new double[] {
                 dt
             };

@@ -824,12 +824,12 @@ class NumericalPropagatorTest {
         } catch (OrekitException oe) {
             Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
         }
-        propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+        propagator.addAdditionalDataProvider(new AdditionalStateProvider() {
             public String getName() {
                 return "constant";
             }
 
-            public double[] getAdditionalState(SpacecraftState state) {
+            public double[] getAdditionalData(SpacecraftState state) {
                 return new double[] { 1.0 };
             }
         });
@@ -1015,11 +1015,11 @@ class NumericalPropagatorTest {
         final double dt = -3200;
         final double rate = 2.0;
 
-        propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+        propagator.addAdditionalDataProvider(new AdditionalStateProvider() {
             public String getName() {
                 return "squaredA";
             }
-            public double[] getAdditionalState(SpacecraftState state) {
+            public double[] getAdditionalData(SpacecraftState state) {
                 return new double[] { state.getOrbit().getA() * state.getOrbit().getA() };
             }
         });

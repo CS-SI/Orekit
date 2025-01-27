@@ -96,12 +96,12 @@ class PropagatorTest {
         }
 
         @Override
-        public void addAdditionalStateProvider(AdditionalStateProvider additionalStateProvider) {
+        public void addAdditionalDataProvider(AdditionalDataProvider<?> additionalStateProvider) {
             // not used in test
         }
 
         @Override
-        public List<AdditionalStateProvider> getAdditionalStateProviders() {
+        public List<AdditionalDataProvider<?>> getAdditionalDataProviders() {
             return null;
         }
 

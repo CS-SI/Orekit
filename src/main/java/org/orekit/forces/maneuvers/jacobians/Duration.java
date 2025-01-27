@@ -69,7 +69,7 @@ public class Duration implements AdditionalStateProvider {
 
     /** {@inheritDoc} */
     @Override
-    public double[] getAdditionalState(final SpacecraftState state) {
+    public double[] getAdditionalData(final SpacecraftState state) {
 
         // compute partial derivatives with respect to start and stop dates
         final double[] dYdT0 = state.getAdditionalState(startName);

@@ -36,7 +36,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.AbstractPropagator;
-import org.orekit.propagation.AdditionalStateProvider;
+import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.MatricesHarvester;
@@ -450,8 +450,8 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
             try {
                 // copy the same additional state providers as the original propagator
-                for (AdditionalStateProvider provider : AbstractAnalyticalPropagator.this.getAdditionalStateProviders()) {
-                    addAdditionalStateProvider(provider);
+                for (AdditionalDataProvider<?> provider : AbstractAnalyticalPropagator.this.getAdditionalDataProviders()) {
+                    addAdditionalDataProvider(provider);
                 }
             } catch (OrekitException oe) {
                 // as the generators are already compatible with each other,

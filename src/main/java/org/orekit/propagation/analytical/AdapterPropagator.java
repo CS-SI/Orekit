@@ -27,6 +27,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
+import org.orekit.utils.DataDictionary;
 
 /** Orbit propagator that adapts an underlying propagator, adding {@link
  * DifferentialEffect differential effects}.
@@ -135,7 +136,7 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
 
         // compute reference state
         SpacecraftState state = reference.propagate(date);
-        final DoubleArrayDictionary additionalBefore    = state.getAdditionalStatesValues();
+        final DataDictionary additionalBefore    = state.getAdditionalStatesValues();
         final DoubleArrayDictionary additionalDotBefore = state.getAdditionalStatesDerivatives();
 
         // add all the effects
@@ -144,9 +145,9 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
         }
 
         // forward additional states and derivatives from the reference propagator
-        for (final DoubleArrayDictionary.Entry entry : additionalBefore.getData()) {
+        for (final DataDictionary.Entry entry : additionalBefore.getData()) {
             if (!state.hasAdditionalState(entry.getKey())) {
-                state = state.addAdditionalState(entry.getKey(), entry.getValue());
+                state = state.addAdditionalData(entry.getKey(), entry.getValue());
             }
         }
         for (final DoubleArrayDictionary.Entry entry : additionalDotBefore.getData()) {

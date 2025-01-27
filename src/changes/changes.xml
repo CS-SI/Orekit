@@ -55,6 +55,9 @@
             Adding parsing of SITE/GPS_PHASE_CENTER, SITE/GAL_PHASE_CENTER,
             and SATELLITE/PHASE_CENTER from Sinex files.
         </action>
+        <action dev="serrof" type="add" issue="1645">
+            Extends additional state to any type of data
+        </action>
         <action dev="serrof" type="add" issue="1644">
             Add duration flight cost for indirect shooting.
         </action>

@@ -43,6 +43,7 @@ import org.orekit.utils.ImmutableTimeStampedCache;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.orekit.utils.DataDictionary;
 
 /**
  * This class is designed to accept and handle tabulated orbital entries. Tabulated entries are classified and then
@@ -209,7 +210,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
         maxDate = states.get(states.size() - 1).getDate();
         frame   = s0.getFrame();
 
-        final List<DoubleArrayDictionary.Entry> as = s0.getAdditionalStatesValues().getData();
+        final List<DataDictionary.Entry> as = s0.getAdditionalStatesValues().getData();
         additional = new String[as.size()];
         for (int i = 0; i < additional.length; ++i) {
             additional[i] = as.get(i).getKey();

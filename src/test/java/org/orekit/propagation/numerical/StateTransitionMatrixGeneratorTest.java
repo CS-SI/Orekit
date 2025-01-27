@@ -142,12 +142,12 @@ class StateTransitionMatrixGeneratorTest {
             }
         });
         propagator2.setInitialState(propagator2.getInitialState().addAdditionalState("dummy-3", new double[1]));
-        propagator2.addAdditionalStateProvider(new TriggerDate(dummyStmGenerator.getName(), "dummy-4", true,
-                                                               (Maneuver) propagator2.getAllForceModels().get(1),
-                                                               1.0e-6));
-        propagator2.addAdditionalStateProvider(new AdditionalStateProvider() {
+        propagator2.addAdditionalDataProvider(new TriggerDate(dummyStmGenerator.getName(), "dummy-4", true,
+                                                              (Maneuver) propagator2.getAllForceModels().get(1),
+                                                              1.0e-6));
+        propagator2.addAdditionalDataProvider(new AdditionalStateProvider() {
             public String getName() { return "dummy-5"; }
-            public double[] getAdditionalState(SpacecraftState s) { return new double[1]; }
+            public double[] getAdditionalData(SpacecraftState s) { return new double[1]; }
         });
         final MatricesHarvester   harvester2   = propagator2.setupMatricesComputation("stm", null, null);
         final SpacecraftState     intermediate = propagator2.propagate(firing.shiftedBy(0.5 * duration));
@@ -667,9 +667,9 @@ class StateTransitionMatrixGeneratorTest {
         }
         final Maneuver maneuver = new Maneuver(null, triggers, propulsionModel);
         propagator.addForceModel(maneuver);
-        propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+        propagator.addAdditionalDataProvider(new AdditionalStateProvider() {
             public String getName() { return triggers.getName().concat("-acc"); }
-            public double[] getAdditionalState(SpacecraftState state) {
+            public double[] getAdditionalData(SpacecraftState state) {
                 double[] parameters = Arrays.copyOfRange(maneuver.getParameters(initialState.getDate()), 0, propulsionModel.getParametersDrivers().size());
                 return new double[] {
                     propulsionModel.getAcceleration(state, state.getAttitude(), parameters).getNorm()

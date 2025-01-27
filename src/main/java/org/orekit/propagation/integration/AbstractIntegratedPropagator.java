@@ -62,7 +62,7 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.DoubleArrayDictionary;
+import org.orekit.utils.DataDictionary;
 
 
 /** Common handling of {@link org.orekit.propagation.Propagator Propagator}
@@ -296,7 +296,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** Add a provider for user-specified state derivatives to be integrated along with the orbit propagation.
      * @param provider provider for additional derivatives
-     * @see #addAdditionalStateProvider(org.orekit.propagation.AdditionalStateProvider)
+     * @see #addAdditionalDataProvider(org.orekit.propagation.AdditionalDataProvider)
      * @since 11.1
      */
     public void addAdditionalDerivativesProvider(final AdditionalDerivativesProvider provider) {
@@ -1230,8 +1230,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             }
 
             // get the initial additional states that are not managed
-            final DoubleArrayDictionary unmanaged = new DoubleArrayDictionary();
-            for (final DoubleArrayDictionary.Entry initial : getInitialState().getAdditionalStatesValues().getData()) {
+            final DataDictionary unmanaged = new DataDictionary();
+            for (final DataDictionary.Entry initial : getInitialState().getAdditionalStatesValues().getData()) {
                 if (!isAdditionalStateManaged(initial.getKey())) {
                     // this additional state was in the initial state, but is unknown to the propagator
                     // we simply copy its initial value as is
@@ -1250,7 +1250,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             // create the ephemeris
             ephemeris = new IntegratedEphemeris(startDate, minDate, maxDate,
                                                 stateMapper, getAttitudeProvider(), propagationType, model,
-                                                unmanaged, getAdditionalStateProviders(),
+                                                unmanaged, getAdditionalDataProviders(),
                                                 names, dimensions);
 
         }

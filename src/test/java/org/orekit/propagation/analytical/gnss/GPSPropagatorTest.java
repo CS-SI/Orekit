@@ -87,8 +87,8 @@ public class GPSPropagatorTest {
     @Test
     public void testClockCorrections() {
         final GNSSPropagator propagator = almanacs.get(0).getPropagator();
-        propagator.addAdditionalStateProvider(new ClockCorrectionsProvider(almanacs.get(0),
-                                                                           almanacs.get(0).getCycleDuration()));
+        propagator.addAdditionalDataProvider(new ClockCorrectionsProvider(almanacs.get(0),
+                                                                          almanacs.get(0).getCycleDuration()));
         // Propagate at the GPS date and one GPS cycle later
         final AbsoluteDate date0 = almanacs.get(0).getDate();
         double dtRelMin = 0;
@@ -547,7 +547,7 @@ public class GPSPropagatorTest {
 
         // Setup additional state provider which use the initial state in its init method
         final AdditionalStateProvider additionalStateProvider = TestUtils.getAdditionalProviderWithInit();
-        propagator.addAdditionalStateProvider(additionalStateProvider);
+        propagator.addAdditionalDataProvider(additionalStateProvider);
 
         // WHEN & THEN
         Assertions.assertDoesNotThrow(() -> propagator.propagate(new AbsoluteDate()), "No error should have been thrown");

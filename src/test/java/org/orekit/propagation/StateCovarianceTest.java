@@ -956,7 +956,7 @@ public class StateCovarianceTest {
         final StateCovarianceMatrixProvider provider =
                 new StateCovarianceMatrixProvider("covariance", stmAdditionalName, harvester, initialCovariance);
 
-        propagator.addAdditionalStateProvider(provider);
+        propagator.addAdditionalDataProvider(provider);
 
         // When
         final SpacecraftState propagatedState      = propagator.propagate(initialDate.shiftedBy(1));

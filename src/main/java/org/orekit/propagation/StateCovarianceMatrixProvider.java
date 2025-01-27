@@ -132,7 +132,7 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
 
     /** {@inheritDoc} */
     @Override
-    public double[] getAdditionalState(final SpacecraftState state) {
+    public double[] getAdditionalData(final SpacecraftState state) {
 
         // State transition matrix for the input state
         final RealMatrix dYdY0 = harvester.getStateTransitionMatrix(state);
@@ -170,7 +170,7 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
     public StateCovariance getStateCovariance(final SpacecraftState state) {
 
         // Get the current propagated covariance
-        final RealMatrix covarianceMatrix = toRealMatrix(getAdditionalState(state));
+        final RealMatrix covarianceMatrix = toRealMatrix(getAdditionalData(state));
 
         // Create associated state covariance
         final StateCovariance covariance =

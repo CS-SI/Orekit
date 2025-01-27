@@ -230,7 +230,7 @@ class IntegratedEphemerisTest {
 
         // Setup additional state provider which use the initial state in its init method
         final AdditionalStateProvider additionalStateProvider = TestUtils.getAdditionalProviderWithInit();
-        numericalPropagator.addAdditionalStateProvider(additionalStateProvider);
+        numericalPropagator.addAdditionalDataProvider(additionalStateProvider);
 
         // Setup integrated ephemeris
         final EphemerisGenerator generator = numericalPropagator.getEphemerisGenerator();

@@ -120,13 +120,13 @@ public class TabulatedEphemerisTest {
                 return "dt";
             }
 
-           public double[] getAdditionalState(SpacecraftState state) {
+           public double[] getAdditionalData(SpacecraftState state) {
                 return new double[] { state.getDate().durationFrom(initDate) };
             }
         };
-        eck.addAdditionalStateProvider(provider);
+        eck.addAdditionalDataProvider(provider);
         try {
-            eck.addAdditionalStateProvider(provider);
+            eck.addAdditionalDataProvider(provider);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,

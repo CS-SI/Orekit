@@ -102,7 +102,7 @@ public class ClockCorrectionsProvider implements AdditionalStateProvider {
 
     /** {@inheritDoc} */
     @Override
-    public double[] getAdditionalState(final SpacecraftState state) {
+    public double[] getAdditionalData(final SpacecraftState state) {
 
         // polynomial clock model
         final double  dt    = getDT(state.getDate());

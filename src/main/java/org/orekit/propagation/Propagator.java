@@ -168,19 +168,19 @@ public interface Propagator extends PVCoordinatesProvider {
     /** Add a set of user-specified state parameters to be computed along with the orbit propagation.
      * @param additionalStateProvider provider for additional state
      */
-    void addAdditionalStateProvider(AdditionalStateProvider additionalStateProvider);
+    void addAdditionalDataProvider(AdditionalDataProvider<?> additionalStateProvider);
 
     /** Get an unmodifiable list of providers for additional state.
      * @return providers for the additional states
      */
-    List<AdditionalStateProvider> getAdditionalStateProviders();
+    List<AdditionalDataProvider<?>> getAdditionalDataProviders();
 
     /** Check if an additional state is managed.
      * <p>
      * Managed states are states for which the propagators know how to compute
      * its evolution. They correspond to additional states for which a
-     * {@link AdditionalStateProvider provider} has been registered by calling the
-     * {@link #addAdditionalStateProvider(AdditionalStateProvider) addAdditionalStateProvider} method.
+     * {@link AdditionalDataProvider provider} has been registered by calling the
+     * {@link #addAdditionalDataProvider(AdditionalDataProvider) addAdditionalStateProvider} method.
      * </p>
      * <p>
      * Additional states that are present in the {@link #getInitialState() initial state}

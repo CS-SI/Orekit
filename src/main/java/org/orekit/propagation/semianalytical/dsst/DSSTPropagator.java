@@ -60,6 +60,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.InterpolationGrid;
 import org.orekit.propagation.semianalytical.dsst.utilities.MaxGapInterpolationGrid;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
+import org.orekit.utils.DataDictionary;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterObserver;
@@ -1060,19 +1061,19 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             // (the loop may not be performed if there are no force models and in the
             //  case we want to remain in mean parameters only)
             final double[] elements = y.clone();
-            final DoubleArrayDictionary coefficients;
+            final DataDictionary coefficients;
             if (type == PropagationType.MEAN) {
                 coefficients = null;
             } else {
                 final Orbit meanOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, yDot, PositionAngleType.MEAN, date, getMu(), getFrame());
-                coefficients = selectedCoefficients == null ? null : new DoubleArrayDictionary();
+                coefficients = selectedCoefficients == null ? null : new DataDictionary();
                 for (final ShortPeriodTerms spt : shortPeriodTerms) {
                     final double[] shortPeriodic = spt.value(meanOrbit);
                     for (int i = 0; i < shortPeriodic.length; i++) {
                         elements[i] += shortPeriodic[i];
                     }
                     if (selectedCoefficients != null) {
-                        coefficients.putAll(spt.getCoefficients(date, selectedCoefficients));
+                        coefficients.putAllDoubles(spt.getCoefficients(date, selectedCoefficients));
                     }
                 }
             }

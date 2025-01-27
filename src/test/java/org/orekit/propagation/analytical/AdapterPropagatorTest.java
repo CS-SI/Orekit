@@ -90,11 +90,11 @@ public class AdapterPropagatorTest {
         AdapterPropagator.DifferentialEffect effect =
                 new SmallManeuverAnalyticalModel(adapterPropagator.propagate(t0), dV.negate(), isp);
         adapterPropagator.addEffect(effect);
-        adapterPropagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+        adapterPropagator.addAdditionalDataProvider(new AdditionalStateProvider() {
             public String getName() {
                 return "dummy 3";
             }
-            public double[] getAdditionalState(SpacecraftState state) {
+            public double[] getAdditionalData(SpacecraftState state) {
                 return new double[3];
             }
         });
@@ -152,11 +152,11 @@ public class AdapterPropagatorTest {
         AdapterPropagator.DifferentialEffect effect =
                 new SmallManeuverAnalyticalModel(adapterPropagator.propagate(t0), dV.negate(), isp);
         adapterPropagator.addEffect(effect);
-        adapterPropagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+        adapterPropagator.addAdditionalDataProvider(new AdditionalStateProvider() {
             public String getName() {
                 return "dummy 3";
             }
-            public double[] getAdditionalState(SpacecraftState state) {
+            public double[] getAdditionalData(SpacecraftState state) {
                 return new double[3];
             }
         });
@@ -224,11 +224,11 @@ public class AdapterPropagatorTest {
                                          GravityFieldFactory.getUnnormalizedProvider(gravityField));
         adapterPropagator.addEffect(directEffect);
         adapterPropagator.addEffect(derivedEffect);
-        adapterPropagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+        adapterPropagator.addAdditionalDataProvider(new AdditionalStateProvider() {
             public String getName() {
                 return "dummy 3";
             }
-            public double[] getAdditionalState(SpacecraftState state) {
+            public double[] getAdditionalData(SpacecraftState state) {
                 return new double[3];
             }
         });
@@ -278,7 +278,7 @@ public class AdapterPropagatorTest {
 
         // Setup additional state provider which use the initial state in its init method
         final AdditionalStateProvider additionalStateProvider = TestUtils.getAdditionalProviderWithInit();
-        adapterPropagator.addAdditionalStateProvider(additionalStateProvider);
+        adapterPropagator.addAdditionalDataProvider(additionalStateProvider);
 
         // WHEN & THEN
         Assertions.assertDoesNotThrow(() -> adapterPropagator.propagate(finalOrbit.getDate()), "No error should have been thrown");
@@ -307,11 +307,11 @@ public class AdapterPropagatorTest {
             new DormandPrince853Integrator(0.001, 1000, tolerances[0], tolerances[1]);
         integrator.setInitialStepSize(orbit.getKeplerianPeriod() / 100.0);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
-        propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+        propagator.addAdditionalDataProvider(new AdditionalStateProvider() {
             public String getName() {
                 return "dummy 2";
             }
-            public double[] getAdditionalState(SpacecraftState state) {
+            public double[] getAdditionalData(SpacecraftState state) {
                 return new double[] { 5.0 };
             }
         });

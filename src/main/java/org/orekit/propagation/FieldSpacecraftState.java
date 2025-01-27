@@ -41,6 +41,7 @@ import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.FieldArrayDictionary;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.DataDictionary;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -262,13 +263,15 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         this.attitude = new FieldAttitude<>(field, state.getAttitude());
         this.mass     = field.getZero().newInstance(state.getMass());
 
-        final DoubleArrayDictionary additionalD = state.getAdditionalStatesValues();
+        final DataDictionary additionalD = state.getAdditionalStatesValues();
         if (additionalD.size() == 0) {
             this.additional = new FieldArrayDictionary<>(field);
         } else {
             this.additional = new FieldArrayDictionary<>(field, additionalD.size());
-            for (final DoubleArrayDictionary.Entry entry : additionalD.getData()) {
-                this.additional.put(entry.getKey(), entry.getValue());
+            for (final DataDictionary.Entry entry : additionalD.getData()) {
+                if (entry.getValue() instanceof double[]) {
+                    this.additional.put(entry.getKey(), (double[]) entry.getValue());
+                }
             }
         }
         final DoubleArrayDictionary additionalDotD = state.getAdditionalStatesDerivatives();
@@ -749,7 +752,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         for (final FieldArrayDictionary<T>.Entry entry : additional.getData()) {
             final T[] other = state.additional.get(entry.getKey());
             if (other == null) {
-                throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE,
+                throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_DATA,
                                           entry.getKey());
             }
             if (other.length != entry.getValue().length) {
@@ -762,7 +765,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         for (final FieldArrayDictionary<T>.Entry entry : additionalDot.getData()) {
             final T[] other = state.additionalDot.get(entry.getKey());
             if (other == null) {
-                throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE,
+                throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_DATA,
                                           entry.getKey());
             }
             if (other.length != entry.getValue().length) {
@@ -775,7 +778,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
             // the other state has more additional states
             for (final FieldArrayDictionary<T>.Entry entry : state.additional.getData()) {
                 if (additional.getEntry(entry.getKey()) == null) {
-                    throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE,
+                    throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_DATA,
                                               entry.getKey());
                 }
             }
@@ -785,7 +788,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
             // the other state has more additional states
             for (final FieldArrayDictionary<T>.Entry entry : state.additionalDot.getData()) {
                 if (additionalDot.getEntry(entry.getKey()) == null) {
-                    throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE,
+                    throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_DATA,
                                               entry.getKey());
                 }
             }
@@ -803,7 +806,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     public T[] getAdditionalState(final String name) {
         final FieldArrayDictionary<T>.Entry entry = additional.getEntry(name);
         if (entry == null) {
-            throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE, name);
+            throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_DATA, name);
         }
         return entry.getValue();
     }
@@ -819,7 +822,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     public T[] getAdditionalStateDerivative(final String name) {
         final FieldArrayDictionary<T>.Entry entry = additionalDot.getEntry(name);
         if (entry == null) {
-            throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE, name);
+            throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_DATA, name);
         }
         return entry.getValue();
     }
@@ -933,11 +936,11 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @return SpacecraftState instance with the same properties
      */
     public SpacecraftState toSpacecraftState() {
-        final DoubleArrayDictionary dictionary;
+        final DataDictionary dictionary;
         if (additional.size() == 0) {
-            dictionary = new DoubleArrayDictionary();
+            dictionary = new DataDictionary();
         } else {
-            dictionary = new DoubleArrayDictionary(additional.size());
+            dictionary = new DataDictionary(additional.size());
             for (final FieldArrayDictionary<T>.Entry entry : additional.getData()) {
                 final double[] array = new double[entry.getValue().length];
                 for (int k = 0; k < array.length; ++k) {

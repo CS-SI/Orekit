@@ -40,7 +40,7 @@ public abstract class AbstractStateModifier implements AdditionalStateProvider {
 
     /** {@inheritDoc} */
     @Override
-    public double[] getAdditionalState(final SpacecraftState state) {
+    public double[] getAdditionalData(final SpacecraftState state) {
         return null;
     }
 

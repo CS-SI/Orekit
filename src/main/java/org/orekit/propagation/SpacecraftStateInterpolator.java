@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation;
 
+import java.util.Comparator;
 import org.hipparchus.util.Pair;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeInterpolator;
@@ -38,6 +39,7 @@ import org.orekit.utils.AbsolutePVCoordinatesHermiteInterpolator;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.DoubleArrayDictionary;
+import org.orekit.utils.DataDictionary;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinatesHermiteInterpolator;
 
@@ -398,9 +400,9 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
 
         final List<TimeStampedDouble> masses = new ArrayList<>();
 
-        final List<DoubleArrayDictionary.Entry> additionalEntries = earliestState.getAdditionalStatesValues().getData();
-        final Map<String, List<Pair<AbsoluteDate, double[]>>> additionalSample =
-                createAdditionalStateSample(additionalEntries);
+        final List<DataDictionary.Entry> additionalEntries = earliestState.getAdditionalStatesValues().getData();
+        final Map<String, List<Pair<AbsoluteDate, Object>>> additionalSample =
+                createAdditionalDataSample(additionalEntries);
 
         final List<DoubleArrayDictionary.Entry> additionalDotEntries =
                 earliestState.getAdditionalStatesDerivatives().getData();
@@ -435,7 +437,7 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
             if (additionalStateInterpolator != null) {
 
                 // Add all additional state values if they are interpolated
-                for (final Map.Entry<String, List<Pair<AbsoluteDate, double[]>>> entry : additionalSample.entrySet()) {
+                for (final Map.Entry<String, List<Pair<AbsoluteDate, Object>>> entry : additionalSample.entrySet()) {
                     entry.getValue().add(new Pair<>(currentDate, state.getAdditionalState(entry.getKey())));
                 }
 
@@ -456,11 +458,11 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
         }
 
         // Interpolate additional states and derivatives
-        final DoubleArrayDictionary interpolatedAdditional;
+        final DataDictionary interpolatedAdditional;
         final DoubleArrayDictionary interpolatedAdditionalDot;
         if (additionalStateInterpolator != null) {
-            interpolatedAdditional    = interpolateAdditionalState(interpolationDate, additionalSample);
-            interpolatedAdditionalDot = interpolateAdditionalState(interpolationDate, additionalDotSample);
+            interpolatedAdditional    = interpolateAdditionalState(interpolationDate, additionalSample).orElse(null);
+            interpolatedAdditionalDot = interpolateAdditionalState(interpolationDate, additionalDotSample).map(DataDictionary::toDoubleDictionary).orElse(null);
         } else {
             interpolatedAdditional    = null;
             interpolatedAdditionalDot = null;
@@ -583,56 +585,84 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
         for (final DoubleArrayDictionary.Entry entry : additionalEntries) {
             additionalSamples.put(entry.getKey(), new ArrayList<>());
         }
-
         return additionalSamples;
     }
 
     /**
-     * Interpolate additional state values.
+     * Create empty samples for given additional entries.
      *
-     * @param interpolationDate interpolation date
-     * @param additionalSamples additional state samples
+     * @param additionalEntries tabulated additional entries
      *
-     * @return interpolated additional state values
+     * @return empty samples for given additional entries
      */
-    private DoubleArrayDictionary interpolateAdditionalState(final AbsoluteDate interpolationDate,
-                                                             final Map<String, List<Pair<AbsoluteDate, double[]>>> additionalSamples) {
-        final DoubleArrayDictionary interpolatedAdditional;
+    private Map<String, List<Pair<AbsoluteDate, Object>>> createAdditionalDataSample(
+            final List<DataDictionary.Entry> additionalEntries) {
+        final Map<String, List<Pair<AbsoluteDate, Object>>> additionalSamples = new HashMap<>(additionalEntries.size());
+
+        for (final DataDictionary.Entry entry : additionalEntries) {
+            additionalSamples.put(entry.getKey(), new ArrayList<>());
+        }
+        return additionalSamples;
+    }
+
+    /**
+     * Interpolate additional values.
+     *  Double arrays are interpolated whereas objects values are kept identical until change.
+     *
+     * @param <T> type of the data
+     * @param interpolationDate interpolation date
+     * @param additionalSamples additional data samples
+     *
+     * @return interpolated additional data values
+     */
+    private <T> Optional<DataDictionary> interpolateAdditionalState(final AbsoluteDate interpolationDate,
+                                                                    final Map<String, List<Pair<AbsoluteDate, T>>> additionalSamples) {
+        final Optional<DataDictionary> interpolatedAdditional;
 
         if (additionalSamples.isEmpty()) {
-            interpolatedAdditional = null;
+            interpolatedAdditional = Optional.empty();
         } else {
-            interpolatedAdditional = new DoubleArrayDictionary(additionalSamples.size());
-            for (final Map.Entry<String, List<Pair<AbsoluteDate, double[]>>> entry : additionalSamples.entrySet()) {
-
+            interpolatedAdditional = Optional.of(new DataDictionary(additionalSamples.size()));
+            for (final Map.Entry<String, List<Pair<AbsoluteDate, T>>> entry : additionalSamples.entrySet()) {
                 // Get current entry
-                final List<Pair<AbsoluteDate, double[]>> currentAdditionalSamples = entry.getValue();
-
-                // Extract number of values for this specific entry
-                final int nbOfValues = currentAdditionalSamples.get(0).getValue().length;
-
-                // For each value of current additional state entry
-                final double[] currentInterpolatedAdditional = new double[nbOfValues];
-                for (int i = 0; i < nbOfValues; i++) {
-
-                    // Create final index for lambda expression use
-                    final int currentIndex = i;
-
-                    // Create sample for specific value of current additional state values
-                    final List<TimeStampedDouble> currentValueSample = new ArrayList<>();
-
-                    currentAdditionalSamples.forEach(currentSamples -> currentValueSample.add(
-                            new TimeStampedDouble(currentSamples.getValue()[currentIndex], currentSamples.getFirst())));
-
-                    // Interpolate
-                    currentInterpolatedAdditional[i] =
-                            additionalStateInterpolator.interpolate(interpolationDate, currentValueSample).getValue();
+                final List<Pair<AbsoluteDate, T>> currentAdditionalSamples = entry.getValue();
+                final T currentInterpolatedAdditional;
+                if (currentAdditionalSamples.get(0).getValue() instanceof double[]) {
+                    currentInterpolatedAdditional = (T) interpolateAdditionalSamples(interpolationDate, currentAdditionalSamples);
+                } else {
+                    currentInterpolatedAdditional = currentAdditionalSamples.stream()
+                                                                            .filter(pair -> pair.getKey().isAfter(interpolationDate))
+                                                                            .min(Comparator.comparing(Pair::getKey))
+                                                                            .get()
+                                                                            .getValue();
                 }
-
-                interpolatedAdditional.put(entry.getKey(), currentInterpolatedAdditional);
+                interpolatedAdditional.get().put(entry.getKey(), currentInterpolatedAdditional);
             }
         }
         return interpolatedAdditional;
+    }
+
+    private <T> double[] interpolateAdditionalSamples(final AbsoluteDate interpolationDate, final List<Pair<AbsoluteDate, T>> currentAdditionalSamples) {
+        // Extract number of values for this specific entry
+        final int nbOfValues = ((double[]) currentAdditionalSamples.get(0).getValue()).length;
+
+        // For each value of current additional state entry
+        final double[] currentInterpolatedAdditional = new double[nbOfValues];
+        for (int i = 0; i < nbOfValues; i++) {
+
+            // Create final index for lambda expression use
+            final int currentIndex = i;
+
+            // Create sample for specific value of current additional state values
+            final List<TimeStampedDouble> currentValueSample = new ArrayList<>();
+
+            currentAdditionalSamples.forEach(
+                    currentSamples -> currentValueSample.add(new TimeStampedDouble(((double[]) currentSamples.getValue())[currentIndex], currentSamples.getFirst())));
+
+            // Interpolate
+            currentInterpolatedAdditional[i] = additionalStateInterpolator.interpolate(interpolationDate, currentValueSample).getValue();
+        }
+        return currentInterpolatedAdditional;
     }
 
     /**

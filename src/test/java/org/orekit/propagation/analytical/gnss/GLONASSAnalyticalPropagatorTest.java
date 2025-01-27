@@ -200,7 +200,7 @@ public class GLONASSAnalyticalPropagatorTest {
 
         // Setup additional state provider which use the initial state in its init method
         final AdditionalStateProvider additionalStateProvider = TestUtils.getAdditionalProviderWithInit();
-        propagator.addAdditionalStateProvider(additionalStateProvider);
+        propagator.addAdditionalDataProvider(additionalStateProvider);
 
         // WHEN & THEN
         Assertions.assertDoesNotThrow(() -> propagator.propagate(new AbsoluteDate()), "No error should have been thrown");
