@@ -200,11 +200,12 @@ public class GnssGradientConverterTest {
 
     private void checkUnitaryInitialSTM(final FieldSpacecraftState<Gradient> initialState) {
         final FieldPVCoordinates<Gradient> pv0 = initialState.getPVCoordinates();
-        checkUnitary(pv0.getPosition().getX().getGradient(), 0, 2.0e-12, 2.0e-8);
-        checkUnitary(pv0.getPosition().getY().getGradient(), 1, 2.0e-12, 2.0e-8);
-        checkUnitary(pv0.getPosition().getZ().getGradient(), 2, 2.0e-12, 2.0e-8);
-        checkUnitary(pv0.getVelocity().getX().getGradient(), 3, 2.0e-12, 2.0e-8);
-        checkUnitary(pv0.getVelocity().getY().getGradient(), 4, 2.0e-12, 2.0e-8);
+        checkUnitary(pv0.getPosition().getX().getGradient(), 0, 4.0e-13, 2.0e-8);
+        checkUnitary(pv0.getPosition().getY().getGradient(), 1, 4.0e-13, 2.0e-8);
+        checkUnitary(pv0.getPosition().getZ().getGradient(), 2, 4.0e-13, 2.0e-8);
+        checkUnitary(pv0.getVelocity().getX().getGradient(), 3, 2.0e-12, 2.0e-12);
+        checkUnitary(pv0.getVelocity().getY().getGradient(), 4, 2.0e-12, 2.0e-12);
+        checkUnitary(pv0.getVelocity().getZ().getGradient(), 5, 2.0e-12, 2.0e-12);
     }
 
     private void checkUnitary(final double[] gradient, final int index,
@@ -226,7 +227,7 @@ public class GnssGradientConverterTest {
     private double differentiate(final GNSSPropagator basePropagator, final AbsoluteDate target,
                                  final double step, final int outIndex, final int inIndex) {
 
-        // function that converts a shift in one element of initial state (i.e Px, Py, Pz, Vx, Vy, Vz)
+        // function that converts a shift in one element of initial state (i.e. Px, Py, Pz, Vx, Vy, Vz)
         // into one element of propagated state
         final UnivariateFunction f = h -> {
 
