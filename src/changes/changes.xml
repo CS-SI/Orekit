@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="serrof" type="add" issue="1655">
+            Add propagation history recorder as step handler.
+        </action>
         <action dev="serrof" type="add" issue="1654">
             Add easy way to integrate cost with indirect control.
         </action>
