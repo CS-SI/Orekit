@@ -36,15 +36,15 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
 import org.orekit.propagation.integration.FieldCombinedDerivatives;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.sampling.OrekitStepInterpolator;
+import org.orekit.propagation.sampling.PropagationStepRecorder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Abstract class for indirect single shooting methods with fixed initial Cartesian state.
@@ -60,8 +60,10 @@ public abstract class AbstractFixedInitialCartesianSingleShooting extends Abstra
     /** Template for initial state. Contains the initial Cartesian coordinates. */
     private final SpacecraftState initialSpacecraftStateTemplate;
 
-    /** Holder for integration steps. */
-    private final List<AbsoluteDate> stepDates = new ArrayList<>();
+    /**
+     * Step handler to record propagation steps.
+     */
+    private final PropagationStepRecorder propagationStepRecorder;
 
     /** Scales for automatic differentiation variables. */
     private double[] scales;
@@ -75,6 +77,7 @@ public abstract class AbstractFixedInitialCartesianSingleShooting extends Abstra
                                                           final SpacecraftState initialSpacecraftStateTemplate) {
         super(propagationSettings);
         this.initialSpacecraftStateTemplate = initialSpacecraftStateTemplate;
+        this.propagationStepRecorder = new PropagationStepRecorder();
     }
 
     /**
@@ -119,7 +122,6 @@ public abstract class AbstractFixedInitialCartesianSingleShooting extends Abstra
                                         final double[] userScales) {
         scales = userScales.clone();
         final SpacecraftState initialState = createStateWithMassAndAdjoint(initialMass, initialGuess);
-        stepDates.clear();
         final ShootingBoundaryOutput initialGuessSolution = computeCandidateSolution(initialState, 0);
         if (initialGuessSolution.isConverged()) {
             return initialGuessSolution;
@@ -132,8 +134,7 @@ public abstract class AbstractFixedInitialCartesianSingleShooting extends Abstra
     @Override
     protected NumericalPropagator buildPropagator(final SpacecraftState initialState) {
         final NumericalPropagator propagator = super.buildPropagator(initialState);
-        propagator.setStepHandler((OrekitStepInterpolator interpolator) ->
-                stepDates.add(interpolator.getCurrentState().getDate()));
+        propagator.setStepHandler(propagationStepRecorder);
         final CartesianAdjointDerivativesProvider derivativesProvider = (CartesianAdjointDerivativesProvider)
             getPropagationSettings().getAdjointDynamicsProvider().buildAdditionalDerivativesProvider();
         derivativesProvider.getCost().getEventDetectors().forEach(propagator::addEventDetector);
@@ -172,7 +173,6 @@ public abstract class AbstractFixedInitialCartesianSingleShooting extends Abstra
             if (Double.isNaN(initialAdjoint[0])) {
                 return candidateSolution;
             } else {
-                stepDates.clear();
                 candidateSolution = computeCandidateSolution(initialState, iterationCount);
             }
             iterationCount++;
@@ -202,6 +202,8 @@ public abstract class AbstractFixedInitialCartesianSingleShooting extends Abstra
         System.arraycopy(fieldInitialState.getAdditionalState(dynamicsProvider.getAdjointName()), 0, integrationState,
                 7, dynamicsProvider.getDimension());
         // step-by-step integration
+        final List<AbsoluteDate> stepDates = propagationStepRecorder.copyStates().stream().map(SpacecraftState::getDate)
+                .collect(Collectors.toList());
         for (final AbsoluteDate stepDate: stepDates) {
             final Gradient time = initialDate.durationFrom(date).negate();
             final Gradient nextTime = initialDate.durationFrom(stepDate).negate();
