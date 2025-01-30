@@ -79,7 +79,17 @@ public class Generator {
      * @return satellite satellite propagated by the propagator
      */
     public ObservableSatellite addPropagator(final Propagator propagator) {
-        final ObservableSatellite os = new ObservableSatellite(propagators.size());
+        return addPropagator(propagator, null);
+    }
+
+    /** Add a propagator.
+     * @param propagator to add
+     * @param name satellite name (if null, a default name built from index will be used)
+     * @return satellite satellite propagated by the propagator
+     * @since 13.0
+     */
+    public ObservableSatellite addPropagator(final Propagator propagator, final String name) {
+        final ObservableSatellite os = new ObservableSatellite(propagators.size(), name);
         observableSatellites.add(os);
         propagators.add(propagator);
         return os;
