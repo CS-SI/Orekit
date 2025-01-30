@@ -19,8 +19,6 @@ package org.orekit.estimation.measurements;
 import org.hipparchus.util.FastMath;
 import org.orekit.utils.ParameterDriver;
 
-import java.util.Optional;
-
 /** Class modeling a satellite that can be observed.
  *
  * @author Luc Maisonobe
@@ -64,16 +62,19 @@ public class ObservableSatellite {
      */
     private final ParameterDriver clockAccelerationDriver;
 
-    /** Optional name of the satellite.
+    /** Name of the satellite.
      * @since 13.0
      */
-    private final Optional<String> name;
+    private final String name;
 
     /** Simple constructor.
+     * <p>
+     * This constructor builds a default name based on the propagator index.
+     * </p>
      * @param propagatorIndex index of the propagator related to this satellite
      */
     public ObservableSatellite(final int propagatorIndex) {
-        this(propagatorIndex, null);
+        this(propagatorIndex, SAT_PREFIX + propagatorIndex);
     }
 
     /** Simple constructor.
@@ -83,7 +84,7 @@ public class ObservableSatellite {
      */
     public ObservableSatellite(final int propagatorIndex, final String name) {
         this.propagatorIndex   = propagatorIndex;
-        this.name              = Optional.ofNullable(name);
+        this.name              = name;
         this.clockOffsetDriver = new ParameterDriver(CLOCK_OFFSET_PREFIX + propagatorIndex,
                                                      0.0, CLOCK_OFFSET_SCALE,
                                                      Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
@@ -101,20 +102,13 @@ public class ObservableSatellite {
      * org.orekit.estimation.measurements.gnss.AmbiguityCache#getAmbiguity(String,
      * String, double)}
      * </p>
-     * @return name for the satellite (built from the propagator index)
+     * @return name for the satellite
      * @since 12.1
      */
     public String getName() {
-        return SAT_PREFIX + propagatorIndex;
-    }
-
-    /** Get the optional name of the satellite as initialized by the user.
-     * @return the optional name of the satellite as initialized by the user
-     * @since 13.0
-     */
-    public Optional<String> getSatelliteName() {
         return name;
     }
+
     /** Get the index of the propagator related to this satellite.
      * @return index of the propagator related to this satellite
      */

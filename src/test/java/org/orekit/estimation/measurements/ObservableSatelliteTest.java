@@ -7,9 +7,7 @@ class ObservableSatelliteTest {
 
     @Test
     public void testIssue1039() {
-        Assertions.assertFalse(new ObservableSatellite(0).getSatelliteName().isPresent());
-        ObservableSatellite satellite = new ObservableSatellite(0, "satellite");
-        Assertions.assertTrue(satellite.getSatelliteName().isPresent());
-        Assertions.assertEquals("satellite", satellite.getSatelliteName().get())    ;
+        Assertions.assertEquals("sat-0", new ObservableSatellite(0).getName());
+        Assertions.assertEquals("satellite", new ObservableSatellite(0, "satellite").getName())    ;
     }
 }
