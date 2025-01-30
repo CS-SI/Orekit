@@ -44,8 +44,8 @@ public class AntennaKey {
      * <p>
      * The Sinex file specification uses a single 20 characters field named "Antenna type"
      * and described as "Antenna name and model" (Antex specification is similar). In
-     * practice this field contains a variable length name and last four characters are a
-     * radome code, which may be set to {@link #OTHER_RADOME_CODE "NONE"} for a catch-all
+     * practice this field contains a variable length name and the last four characters are
+     * a radome code, which may be set to {@link #OTHER_RADOME_CODE "NONE"} for a catch-all
      * entry. Here, we separate this field into its two components, so we can provide
      * {@link #matchingCandidates() fuzzy matching} by tweaking the radome code if needed.
      * </p>
@@ -86,7 +86,7 @@ public class AntennaKey {
      * </p>
      * <p>
      * Another example is file ESA0OPSFIN_20241850000_01D_01D_SOL.SNX which contains the
-     * following entries related to antenna type :
+     * following entries related to antenna type ASH701945G_M:
      * </p>
      * <pre>
      * SITE/ANTENNA
