@@ -27,15 +27,15 @@ import org.orekit.utils.ParameterDriver;
 public class ObservableSatellite {
 
     /** Prefix for clock offset parameter driver, the propagator index will be appended to it. */
-    public static final String CLOCK_OFFSET_PREFIX = "clock-offset-satellite-";
+    public static final String CLOCK_OFFSET_PREFIX = "clock-offset-";
 
     /** Prefix for clock drift parameter driver, the propagator index will be appended to it. */
-    public static final String CLOCK_DRIFT_PREFIX = "clock-drift-satellite-";
+    public static final String CLOCK_DRIFT_PREFIX = "clock-drift-";
 
     /** Prefix for clock acceleration parameter driver, the propagator index will be appended to it.
      * @since 12.1
      */
-    public static final String CLOCK_ACCELERATION_PREFIX = "clock-acceleration-satellite-";
+    public static final String CLOCK_ACCELERATION_PREFIX = "clock-acceleration-";
 
     /** Clock offset scaling factor.
      * <p>
@@ -74,24 +74,24 @@ public class ObservableSatellite {
      * @param propagatorIndex index of the propagator related to this satellite
      */
     public ObservableSatellite(final int propagatorIndex) {
-        this(propagatorIndex, SAT_PREFIX + propagatorIndex);
+        this(propagatorIndex, null);
     }
 
     /** Simple constructor.
      * @param propagatorIndex index of the propagator related to this satellite
-     * @param name satellite name
+     * @param name satellite name (if null, a default name built from index will be used)
      * @since 13.0
      */
     public ObservableSatellite(final int propagatorIndex, final String name) {
         this.propagatorIndex   = propagatorIndex;
-        this.name              = name;
-        this.clockOffsetDriver = new ParameterDriver(CLOCK_OFFSET_PREFIX + propagatorIndex,
+        this.name              = name == null ? SAT_PREFIX + propagatorIndex : name;
+        this.clockOffsetDriver = new ParameterDriver(CLOCK_OFFSET_PREFIX + this.name,
                                                      0.0, CLOCK_OFFSET_SCALE,
                                                      Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-        this.clockDriftDriver = new ParameterDriver(CLOCK_DRIFT_PREFIX + propagatorIndex,
+        this.clockDriftDriver = new ParameterDriver(CLOCK_DRIFT_PREFIX + this.name,
                                                     0.0, CLOCK_OFFSET_SCALE,
                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-        this.clockAccelerationDriver = new ParameterDriver(CLOCK_ACCELERATION_PREFIX + propagatorIndex,
+        this.clockAccelerationDriver = new ParameterDriver(CLOCK_ACCELERATION_PREFIX + this.name,
                                                            0.0, CLOCK_OFFSET_SCALE,
                                                            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
     }
