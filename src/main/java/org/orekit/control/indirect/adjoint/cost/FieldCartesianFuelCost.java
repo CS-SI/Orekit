@@ -24,8 +24,6 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.FieldEventDetectionSettings;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.events.handlers.FieldEventHandler;
-import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
 
 import java.util.stream.Stream;
 
@@ -142,7 +140,7 @@ public class FieldCartesianFuelCost<T extends CalculusFieldElement<T>> extends F
     /** {@inheritDoc} */
     @Override
     public Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
-        return Stream.of(new FieldSwitchDetector());
+        return Stream.of(new FieldSwitchDetector(getEventDetectionSettings()));
     }
 
     @Override
@@ -154,10 +152,11 @@ public class FieldCartesianFuelCost<T extends CalculusFieldElement<T>> extends F
     /**
      * Field event detector for bang-bang switches.
      */
-    private class FieldSwitchDetector implements FieldEventDetector<T> {
+    class FieldSwitchDetector extends FieldControlSwitchDetector<T> {
 
-        /** Event handler. */
-        private final FieldResetDerivativesOnEvent<T> handler = new FieldResetDerivativesOnEvent<>();
+        FieldSwitchDetector(final FieldEventDetectionSettings<T> detectionSettings) {
+            super(detectionSettings);
+        }
 
         /** {@inheritDoc} */
         @Override
@@ -166,14 +165,5 @@ public class FieldCartesianFuelCost<T extends CalculusFieldElement<T>> extends F
             return evaluateFieldSwitchFunction(adjoint, state.getMass());
         }
 
-        @Override
-        public FieldEventDetectionSettings<T> getDetectionSettings() {
-            return eventDetectionSettings;
-        }
-
-        @Override
-        public FieldEventHandler<T> getHandler() {
-            return handler;
-        }
     }
 }

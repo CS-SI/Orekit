@@ -28,7 +28,7 @@ import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
  * @author Romain Serra
  * @since 13.0
  */
-abstract class FieldControlSwitchDetector<T extends CalculusFieldElement<T>> implements FieldEventDetector<T> {
+public abstract class FieldControlSwitchDetector<T extends CalculusFieldElement<T>> implements FieldEventDetector<T> {
 
     /** Event handler. */
     private final FieldEventHandler<T> handler = new FieldResetDerivativesOnEvent<>();
