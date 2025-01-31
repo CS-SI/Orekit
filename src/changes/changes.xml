@@ -286,6 +286,9 @@
         <action dev="serrof" type="add" issue="1440">
             Add some getters in PropagatorBuilder.
         </action>
+        <action dev="maxime" type="update" issue="1430">
+            Changed methods visibility in (Field)Abstract(Analytical)Propagator.
+        </action>
         <action dev="serrof" type="update" issue="1241">
             Use Field date in Sun's position for atmosphere when applicable.
         </action>
