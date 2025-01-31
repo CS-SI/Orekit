@@ -83,7 +83,7 @@ public class GeoMagneticModelParser {
 
         // read all the models from source
         final List<GeoMagneticField> fields = new ArrayList<>();
-        for (GeoMagneticField model = readModel(str); model != null ; model = readModel(str)) {
+        for (GeoMagneticField model = readModel(str); model != null; model = readModel(str)) {
             fields.add(model);
         }
 
