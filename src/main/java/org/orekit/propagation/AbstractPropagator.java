@@ -34,7 +34,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.TimeSpanMap;
 
-/** Common handling of {@link Propagator} methods for analytical propagators.
+/** Common handling of {@link Propagator} methods for propagators.
  * <p>
  * This abstract class allows to provide easily the full set of {@link Propagator}
  * methods, including all propagation modes support and discrete events support for
@@ -204,7 +204,7 @@ public abstract class AbstractPropagator implements Propagator {
      * @see #addAdditionalStateProvider(AdditionalStateProvider)
      * @see #updateUnmanagedStates(SpacecraftState)
      */
-    protected SpacecraftState updateAdditionalStates(final SpacecraftState original) {
+    public SpacecraftState updateAdditionalStates(final SpacecraftState original) {
 
         // start with original state and unmanaged states
         SpacecraftState updated = updateUnmanagedStates(original);

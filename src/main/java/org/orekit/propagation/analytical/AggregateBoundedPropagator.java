@@ -113,7 +113,7 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
     }
 
     @Override
-    protected SpacecraftState basicPropagate(final AbsoluteDate date) {
+    public SpacecraftState basicPropagate(final AbsoluteDate date) {
         // #589 override this method for a performance benefit,
         // getPropagator(date).propagate(date) is only called once
 

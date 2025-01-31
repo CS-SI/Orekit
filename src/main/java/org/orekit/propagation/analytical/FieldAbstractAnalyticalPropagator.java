@@ -383,7 +383,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
      * @param date target date for propagation
      * @return state at specified date
      */
-    protected FieldSpacecraftState<T> basicPropagate(final FieldAbsoluteDate<T> date) {
+    public FieldSpacecraftState<T> basicPropagate(final FieldAbsoluteDate<T> date) {
         try {
 
             // evaluate orbit
