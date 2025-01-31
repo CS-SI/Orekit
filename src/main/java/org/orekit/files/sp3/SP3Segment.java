@@ -175,7 +175,7 @@ public class SP3Segment implements EphemerisFile.EphemerisSegment<SP3Coordinate>
 
         /** {@inheritDoc} */
         @Override
-        protected SpacecraftState updateAdditionalStates(final SpacecraftState original) {
+        public SpacecraftState updateAdditionalStates(final SpacecraftState original) {
 
             final HermiteInterpolator interpolator = new HermiteInterpolator();
 

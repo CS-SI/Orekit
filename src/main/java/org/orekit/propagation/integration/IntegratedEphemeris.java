@@ -199,7 +199,7 @@ public class IntegratedEphemeris
 
     /** {@inheritDoc} */
     @Override
-    protected SpacecraftState basicPropagate(final AbsoluteDate date) {
+    public SpacecraftState basicPropagate(final AbsoluteDate date) {
         final ODEStateAndDerivative os = getInterpolatedState(date);
         SpacecraftState state = mapper.mapArrayToState(mapper.mapDoubleToDate(os.getTime(), date),
                                                        os.getPrimaryState(), os.getPrimaryDerivative(),
@@ -269,7 +269,7 @@ public class IntegratedEphemeris
 
     /** {@inheritDoc} */
     @Override
-    protected SpacecraftState updateAdditionalStates(final SpacecraftState original) {
+    public SpacecraftState updateAdditionalStates(final SpacecraftState original) {
 
         SpacecraftState updated = super.updateAdditionalStates(original);
 

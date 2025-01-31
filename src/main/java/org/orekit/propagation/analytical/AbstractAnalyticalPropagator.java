@@ -387,7 +387,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
      * @param date target date for propagation
      * @return state at specified date
      */
-    protected SpacecraftState basicPropagate(final AbsoluteDate date) {
+    public SpacecraftState basicPropagate(final AbsoluteDate date) {
         try {
 
             // evaluate orbit
