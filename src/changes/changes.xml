@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="luc" type="add" issue="1658">
+            Added GeoMagneticModelParser.
+        </action>
         <action dev="luc" type="add" issue="1657">
             Allow setting satellite names in measurements generation.
         </action>
