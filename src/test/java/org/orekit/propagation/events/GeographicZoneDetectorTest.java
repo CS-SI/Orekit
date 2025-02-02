@@ -18,9 +18,11 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.partitioning.RegionFactory;
+import org.hipparchus.geometry.spherical.twod.Circle;
 import org.hipparchus.geometry.spherical.twod.S2Point;
 import org.hipparchus.geometry.spherical.twod.Sphere2D;
 import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
+import org.hipparchus.geometry.spherical.twod.SubCircle;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -103,7 +105,8 @@ public class GeographicZoneDetectorTest {
             { 41.58361,  8.77572 }, { 41.38000,  9.22975 }
           });
 
-          return (SphericalPolygonsSet) new RegionFactory<Sphere2D, S2Point>().union(continental, corsica);
+          return (SphericalPolygonsSet) new RegionFactory<Sphere2D, S2Point, Circle, SubCircle>().
+                 union(continental, corsica);
 
     }
 

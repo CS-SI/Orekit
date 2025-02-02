@@ -20,9 +20,11 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.partitioning.Region;
 import org.hipparchus.geometry.partitioning.Region.Location;
 import org.hipparchus.geometry.partitioning.RegionFactory;
+import org.hipparchus.geometry.spherical.twod.Circle;
 import org.hipparchus.geometry.spherical.twod.S2Point;
 import org.hipparchus.geometry.spherical.twod.Sphere2D;
 import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
+import org.hipparchus.geometry.spherical.twod.SubCircle;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -461,9 +463,10 @@ public class EllipsoidTessellatorTest {
 
         SphericalPolygonsSet shape1 = buildSimpleZone(1e-10, coordinates1);
         SphericalPolygonsSet shape2 = buildSimpleZone(1e-10, coordinates2);
-        Region<Sphere2D, S2Point> intersection = order ?
-                                                 new RegionFactory<Sphere2D, S2Point>().intersection(shape1, shape2) :
-                                                 new RegionFactory<Sphere2D, S2Point>().intersection(shape2, shape1);
+        Region<Sphere2D, S2Point, Circle, SubCircle> intersection =
+            order ?
+            new RegionFactory<Sphere2D, S2Point, Circle, SubCircle>().intersection(shape1, shape2) :
+            new RegionFactory<Sphere2D, S2Point, Circle, SubCircle>().intersection(shape2, shape1);
 
         for (final double[] doubles : expectedIn) {
             Assertions.assertEquals(Location.INSIDE,
@@ -562,7 +565,8 @@ public class EllipsoidTessellatorTest {
                                                                        FastMath.toRadians(9.22975),
                                                                        0.0));
 
-          return (SphericalPolygonsSet) new RegionFactory<Sphere2D, S2Point>().union(continental, corsica);
+          return (SphericalPolygonsSet) new RegionFactory<Sphere2D, S2Point, Circle, SubCircle>().
+                 union(continental, corsica);
 
     }
 

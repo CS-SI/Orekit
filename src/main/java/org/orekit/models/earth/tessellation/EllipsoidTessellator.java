@@ -29,7 +29,6 @@ import java.util.Queue;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.partitioning.BSPTree;
-import org.hipparchus.geometry.partitioning.Hyperplane;
 import org.hipparchus.geometry.partitioning.RegionFactory;
 import org.hipparchus.geometry.partitioning.SubHyperplane;
 import org.hipparchus.geometry.spherical.oned.ArcsSet;
@@ -164,12 +163,13 @@ public class EllipsoidTessellator {
                                        final double widthOverlap, final double lengthOverlap,
                                        final boolean truncateLastWidth, final boolean truncateLastLength) {
 
-        final double                           splitWidth  = (fullWidth  - widthOverlap)  / quantization;
-        final double                           splitLength = (fullLength - lengthOverlap) / quantization;
-        final Map<Mesh, List<Tile>>            map         = new IdentityHashMap<>();
-        final RegionFactory<Sphere2D, S2Point> factory     = new RegionFactory<>();
-        SphericalPolygonsSet                   remaining   = (SphericalPolygonsSet) zone.copySelf();
-        S2Point                                inside      = getInsidePoint(remaining);
+        final RegionFactory<Sphere2D, S2Point, Circle, SubCircle> factory = new RegionFactory<>();
+
+        final double                splitWidth  = (fullWidth  - widthOverlap)  / quantization;
+        final double                splitLength = (fullLength - lengthOverlap) / quantization;
+        final Map<Mesh, List<Tile>> map         = new IdentityHashMap<>();
+        SphericalPolygonsSet        remaining   = (SphericalPolygonsSet) zone.copySelf();
+        S2Point                     inside      = getInsidePoint(remaining);
 
         int count = 0;
         while (inside != null) {
@@ -241,12 +241,12 @@ public class EllipsoidTessellator {
     public List<List<GeodeticPoint>> sample(final SphericalPolygonsSet zone,
                                             final double width, final double length) {
 
-        final double                           splitWidth  = width  / quantization;
-        final double                           splitLength = length / quantization;
-        final Map<Mesh, List<GeodeticPoint>>   map         = new IdentityHashMap<>();
-        final RegionFactory<Sphere2D, S2Point> factory     = new RegionFactory<>();
-        SphericalPolygonsSet                   remaining   = (SphericalPolygonsSet) zone.copySelf();
-        S2Point                                inside      = getInsidePoint(remaining);
+        final RegionFactory<Sphere2D, S2Point, Circle, SubCircle> factory = new RegionFactory<>();
+        final double                          splitWidth  = width  / quantization;
+        final double                          splitLength = length / quantization;
+        final Map<Mesh, List<GeodeticPoint>>  map         = new IdentityHashMap<>();
+        SphericalPolygonsSet                  remaining   = (SphericalPolygonsSet) zone.copySelf();
+        S2Point                               inside      = getInsidePoint(remaining);
 
         int count = 0;
         while (inside != null) {
@@ -427,7 +427,8 @@ public class EllipsoidTessellator {
                 final SphericalPolygonsSet quadrilateral =
                         new SphericalPolygonsSet(zone.getTolerance(), s2p0, s2p1, s2p2, s2p3);
 
-                if (!new RegionFactory<Sphere2D, S2Point>().intersection(zone.copySelf(), quadrilateral).isEmpty()) {
+                if (!new RegionFactory<Sphere2D, S2Point, Circle, SubCircle>().
+                    intersection(zone.copySelf(), quadrilateral).isEmpty()) {
 
                     // the tile does cover part of the zone, it contributes to the tessellation
                     tiles.add(new Tile(toGeodetic(s2p0), toGeodetic(s2p1), toGeodetic(s2p2), toGeodetic(s2p3)));
@@ -737,8 +738,8 @@ public class EllipsoidTessellator {
      * @param sub arc to characterize
      * @return true if the arc meets the inside of the zone
      */
-    private boolean recurseMeetInside(final BSPTree<Sphere2D, S2Point> node,
-                                      final SubHyperplane<Sphere2D, S2Point> sub) {
+    private boolean recurseMeetInside(final BSPTree<Sphere2D, S2Point, Circle, SubCircle> node,
+                                      final SubHyperplane<Sphere2D, S2Point, Circle, SubCircle> sub) {
 
         if (node.getCut() == null) {
             // we have reached a leaf node
@@ -748,8 +749,8 @@ public class EllipsoidTessellator {
                 return (Boolean) node.getAttribute();
             }
         } else {
-            final Hyperplane<Sphere2D, S2Point> hyperplane = node.getCut().getHyperplane();
-            final SubHyperplane.SplitSubHyperplane<Sphere2D, S2Point> split = sub.split(hyperplane);
+            final Circle hyperplane = node.getCut().getHyperplane();
+            final SubHyperplane.SplitSubHyperplane<Sphere2D, S2Point, Circle, SubCircle> split = sub.split(hyperplane);
             switch (split.getSide()) {
                 case PLUS:
                     return recurseMeetInside(node.getPlus(),  sub);
