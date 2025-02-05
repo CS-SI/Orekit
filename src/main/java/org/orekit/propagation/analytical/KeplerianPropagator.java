@@ -176,7 +176,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** {@inheritDoc} */
-    protected Orbit propagateOrbit(final AbsoluteDate date) {
+    public Orbit propagateOrbit(final AbsoluteDate date) {
 
         // propagate orbit
         Orbit orbit = states.get(date).getOrbit();

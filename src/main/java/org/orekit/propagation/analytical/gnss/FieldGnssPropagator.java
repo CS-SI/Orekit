@@ -183,7 +183,8 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     @Override
-    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
+    public FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date,
+                                        final T[] parameters) {
         // Gets the PVCoordinates in ECEF frame
         final FieldPVCoordinates<T> pvaInECEF = propagateInEcef(date, parameters);
         // Transforms the PVCoordinates to ECI frame

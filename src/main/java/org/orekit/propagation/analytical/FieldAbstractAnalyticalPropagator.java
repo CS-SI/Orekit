@@ -373,7 +373,8 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
      * @param parameters model parameters
      * @return propagated orbit
      */
-    protected abstract FieldOrbit<T> propagateOrbit(FieldAbsoluteDate<T> date, T[] parameters);
+    public abstract FieldOrbit<T> propagateOrbit(FieldAbsoluteDate<T> date,
+                                                 T[] parameters);
 
     /** Propagate an orbit without any fancy features.
      * <p>This method is similar in spirit to the {@link #propagate} method,
@@ -464,7 +465,8 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
 
         /** {@inheritDoc} */
         @Override
-        protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> target, final T[] parameters) {
+        public FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> target,
+                                            final T[] parameters) {
             return FieldAbstractAnalyticalPropagator.this.propagateOrbit(target, parameters);
         }
 
