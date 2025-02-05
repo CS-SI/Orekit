@@ -1082,7 +1082,7 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void closeMessage(final ParseInfo pi) {
-                pi.file.addGPSLegacyNavigationMessage(pi.gpsCNav);
+                pi.file.addGPSCivilianNavigationMessage(pi.gpsCNav);
                 pi.gpsCNav = null;
             }
 

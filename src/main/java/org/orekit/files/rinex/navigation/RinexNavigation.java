@@ -240,9 +240,9 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
     /**
      * Add a GPS civilian navigation message to the list.
      * @param message message to add
-     * @since 12.0
+     * @since 13.0
      */
-    public void addGPSLegacyNavigationMessage(final GPSCivilianNavigationMessage message) {
+    public void addGPSCivilianNavigationMessage(final GPSCivilianNavigationMessage message) {
         final int    gpsPRN = message.getPRN();
         final String prnString = gpsPRN < 10 ? "0" + String.valueOf(gpsPRN) : String.valueOf(gpsPRN);
         final String satId = SatelliteSystem.GPS.getKey() + prnString;
