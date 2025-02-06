@@ -1,4 +1,4 @@
-/* Copyright 2024 The Johns Hopkins University Applied Physics Laboratory
+/* Copyright 2024-2025 The Johns Hopkins University Applied Physics Laboratory
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -237,7 +237,7 @@ public class IIRVBuilder {
      * @return the newly constructed {@link IIRVEphemerisFile} containing the given coordinates
      */
     public <C extends TimeStampedPVCoordinates> IIRVEphemerisFile buildEphemerisFile(final List<C> timeStampedPVCoordinates) {
-        final int year = timeStampedPVCoordinates.getFirst().getDate().getComponents(utc).getDate().getYear();
+        final int year = timeStampedPVCoordinates.get(0).getDate().getComponents(utc).getDate().getYear();
         return new IIRVEphemerisFile(year, buildIIRVMessage(timeStampedPVCoordinates));
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2024 The Johns Hopkins University Applied Physics Laboratory
+/* Copyright 2024-2025 The Johns Hopkins University Applied Physics Laboratory
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.

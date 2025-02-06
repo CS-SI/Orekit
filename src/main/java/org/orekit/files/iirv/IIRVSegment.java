@@ -1,4 +1,4 @@
-/* Copyright 2024 The Johns Hopkins University Applied Physics Laboratory
+/* Copyright 2024-2025 The Johns Hopkins University Applied Physics Laboratory
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.orekit.files.iirv;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -90,6 +91,7 @@ public class IIRVSegment implements EphemerisFile.EphemerisSegment<TimeStampedPV
 
     /** {@inheritDoc} */
     @Override
+    @DefaultDataContext
     public Frame getFrame() {
         return iirvMessage.getVectors().get(0).getFrame();
     }
@@ -125,7 +127,7 @@ public class IIRVSegment implements EphemerisFile.EphemerisSegment<TimeStampedPV
         final List<IIRVVector> iirvVectors = iirvMessage.getVectors();
 
         final ArrayList<TimeStampedPVCoordinates> coordinates = new ArrayList<>();
-        coordinates.add(iirvVectors.getFirst().getTimeStampedPVCoordinates(year));
+        coordinates.add(iirvVectors.get(0).getTimeStampedPVCoordinates(year));
 
         for (int i = 1; i < iirvVectors.size(); i++) {
             final IIRVVector prev = iirvVectors.get(i - 1);

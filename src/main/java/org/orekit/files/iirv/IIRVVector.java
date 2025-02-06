@@ -1,4 +1,4 @@
-/* Copyright 2024 The Johns Hopkins University Applied Physics Laboratory
+/* Copyright 2024-2025 The Johns Hopkins University Applied Physics Laboratory
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,8 @@
 package org.orekit.files.iirv;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -789,9 +791,21 @@ public class IIRVVector implements Comparable<IIRVVector> {
     /**
      * Returns the {@link Frame} associated with the IIRV vector based on its {@link CoordinateSystemTerm}.
      *
+     * @param context data context used to retrieve frames
      * @return coordinate system
      * @see CoordinateSystemTerm#getFrame
      */
+    public Frame getFrame(final DataContext context) {
+        return coordinateSystem.getFrame(context);
+    }
+
+    /**
+     * Returns the {@link Frame} associated with the IIRV vector based on its {@link CoordinateSystemTerm}.
+     *
+     * @return coordinate system
+     * @see CoordinateSystemTerm#getFrame
+     */
+    @DefaultDataContext
     public Frame getFrame() {
         return coordinateSystem.getFrame();
     }

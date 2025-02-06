@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -85,6 +86,7 @@ public class IIRVEphemerisTest {
         // Test frames
         for (IIRVVector iirv : testSegment.getIIRVMessage().getVectors()) {
             assertEquals(testSegment.getFrame().getName(), iirv.getFrame().getName());
+            assertEquals(testSegment.getFrame().getName(), iirv.getFrame(DataContext.getDefault()).getName());
             assertEquals(testSegment.getFrame().getName(), iirv.getCoordinateSystem().getFrame().getName());
         }
 
