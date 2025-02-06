@@ -35,7 +35,6 @@ import org.orekit.utils.PVCoordinates;
  * <li>Delta, with ascending nodes distributed over 360°</li>
  * <li>Star, with ascending nodes distributed over 180°</li>
  * </ul>
- * </p>
  * @author Luc Maisonobe
  * @since 12.1
  */
