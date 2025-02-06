@@ -463,9 +463,7 @@ public abstract class AbstractFixedInitialCartesianSingleShooting extends Abstra
         final Gradient[] increasedVariablesArray = MathArrays.buildArray(increasedVariablesField,
                 integrationState.length);
         for (int i = 0; i < integrationState.length; i++) {
-            final double[] gradient = new double[increasedVariables];
-            System.arraycopy(integrationState[i].getGradient(), 0, gradient, 0, increasedVariables - 1);
-            increasedVariablesArray[i] = new Gradient(integrationState[i].getValue(), gradient);
+            increasedVariablesArray[i] = integrationState[i].stackVariable();
         }
         // evaluate event function in Taylor algebra with time as additional gradient variable
         final Gradient dt = Gradient.variable(increasedVariables, increasedVariables - 1, 1);
