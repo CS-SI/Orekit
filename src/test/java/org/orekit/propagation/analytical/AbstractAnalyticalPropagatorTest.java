@@ -101,7 +101,7 @@ class AbstractAnalyticalPropagatorTest {
         }
 
         @Override
-        protected Orbit propagateOrbit(AbsoluteDate date) {
+        public Orbit propagateOrbit(AbsoluteDate date) {
             return new CartesianOrbit(orbit.getPVCoordinates(), orbit.getFrame(), date, orbit.getMu());
         }
     }

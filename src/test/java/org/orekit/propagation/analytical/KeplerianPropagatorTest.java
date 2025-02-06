@@ -690,7 +690,7 @@ public class KeplerianPropagatorTest {
         Propagator propagator = new KeplerianPropagator(orbit) {
             AbsoluteDate lastDate = AbsoluteDate.PAST_INFINITY;
 
-            protected SpacecraftState basicPropagate(final AbsoluteDate date) {
+            public SpacecraftState basicPropagate(final AbsoluteDate date) {
                 if (date.compareTo(lastDate) < 0) {
                     throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                                                    "no backward propagation allowed");

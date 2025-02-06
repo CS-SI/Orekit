@@ -64,7 +64,7 @@ public class AggregateBoundedPropagatorTest {
     }
 
     /**
-     * Check {@link AggregateBoundedPropagator#propagateOrbit(AbsoluteDate)} when the
+     * Check {@link AbstractAnalyticalPropagator#propagateOrbit(AbsoluteDate)} when the
      * constituent propagators are exactly adjacent.
      */
     @Test
@@ -107,7 +107,7 @@ public class AggregateBoundedPropagatorTest {
     }
 
     /**
-     * Check {@link AggregateBoundedPropagator#propagateOrbit(AbsoluteDate)} when the
+     * Check {@link AbstractAnalyticalPropagator#propagateOrbit(AbsoluteDate)} when the
      * constituent propagators overlap.
      */
     @Test
@@ -143,7 +143,7 @@ public class AggregateBoundedPropagatorTest {
     }
 
     /**
-     * Check {@link AggregateBoundedPropagator#propagateOrbit(AbsoluteDate)} with a gap
+     * Check {@link AbstractAnalyticalPropagator#propagateOrbit(AbsoluteDate)} with a gap
      * between the constituent propagators.
      */
     @Test

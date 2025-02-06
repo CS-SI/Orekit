@@ -203,7 +203,7 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
 
     /** {@inheritDoc} */
     @Override
-    protected FieldSpacecraftState<T> basicPropagate(final FieldAbsoluteDate<T> date) {
+    public FieldSpacecraftState<T> basicPropagate(final FieldAbsoluteDate<T> date) {
         final FieldODEStateAndDerivative<T> os = getInterpolatedState(date);
         FieldSpacecraftState<T> state = mapper.mapArrayToState(mapper.mapDoubleToDate(os.getTime(), date),
                                                                os.getPrimaryState(), os.getPrimaryDerivative(),
@@ -216,7 +216,8 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
 
     /** {@inheritDoc} */
     @Override
-    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
+    public FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date,
+                                        final T[] parameters) {
         return basicPropagate(date).getOrbit();
     }
 
@@ -267,7 +268,7 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
 
     /** {@inheritDoc} */
     @Override
-    protected FieldSpacecraftState<T> updateAdditionalStates(final FieldSpacecraftState<T> original) {
+    public FieldSpacecraftState<T> updateAdditionalStates(final FieldSpacecraftState<T> original) {
 
         FieldSpacecraftState<T> updated = super.updateAdditionalStates(original);
 

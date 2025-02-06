@@ -216,7 +216,8 @@ public class FieldIntelsatElevenElementsPropagator<T extends CalculusFieldElemen
      * {@inheritDoc}.
      */
     @Override
-    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
+    public FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date,
+                                        final T[] parameters) {
         return new FieldCartesianOrbit<>(ecefFrame.getTransformTo(inertialFrame, date).transformPVCoordinates(propagateInEcef(date)), inertialFrame, date,
                                          date.getField().getZero().add(Constants.WGS84_EARTH_MU));
     }

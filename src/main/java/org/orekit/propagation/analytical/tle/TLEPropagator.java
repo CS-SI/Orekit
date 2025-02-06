@@ -605,7 +605,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** {@inheritDoc} */
-    protected Orbit propagateOrbit(final AbsoluteDate date) {
+    public Orbit propagateOrbit(final AbsoluteDate date) {
         final TLE closestTle = tlesAndMasses.get(date).getKey();
         if (!tle.equals(closestTle)) {
             initializeTle(closestTle);

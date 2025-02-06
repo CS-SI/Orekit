@@ -832,7 +832,7 @@ public class FieldKeplerianPropagatorTest {
             FieldAbsoluteDate<T> lastDate = FieldAbsoluteDate.getPastInfinity(field);
 
             @Override
-            protected FieldSpacecraftState<T> basicPropagate(final FieldAbsoluteDate<T> date) {
+            public FieldSpacecraftState<T> basicPropagate(final FieldAbsoluteDate<T> date) {
                 if (date.compareTo(lastDate) < 0) {
                     throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                                                    "no backward propagation allowed");
