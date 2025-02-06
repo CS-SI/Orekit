@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="pascal" type="add" issue="1662">
+            Update WalkerConstellation to handle the Star pattern in addition to the Delta pattern.
+        </action>
         <action dev="luc" type="add" issue="1658">
             Added GeoMagneticModelParser.
         </action>
