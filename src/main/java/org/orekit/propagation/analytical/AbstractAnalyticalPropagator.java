@@ -377,7 +377,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
      * @param date target date for the orbit
      * @return extrapolated parameters
      */
-    protected abstract Orbit propagateOrbit(AbsoluteDate date);
+    public abstract Orbit propagateOrbit(AbsoluteDate date);
 
     /** Propagate an orbit without any fancy features.
      * <p>This method is similar in spirit to the {@link #propagate} method,
@@ -387,7 +387,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
      * @param date target date for propagation
      * @return state at specified date
      */
-    protected SpacecraftState basicPropagate(final AbsoluteDate date) {
+    public SpacecraftState basicPropagate(final AbsoluteDate date) {
         try {
 
             // evaluate orbit
@@ -472,7 +472,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
-        protected Orbit propagateOrbit(final AbsoluteDate target) {
+        public Orbit propagateOrbit(final AbsoluteDate target) {
             return AbstractAnalyticalPropagator.this.propagateOrbit(target);
         }
 

@@ -218,7 +218,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
 
     /** {@inheritDoc} */
     @Override
-    protected Orbit propagateOrbit(final AbsoluteDate date) {
+    public Orbit propagateOrbit(final AbsoluteDate date) {
         // Gets the PVCoordinates in ECEF frame
         final PVCoordinates pvaInECEF = propagateInEcef(date);
         // Transforms the PVCoordinates to ECI frame

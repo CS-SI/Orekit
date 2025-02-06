@@ -187,7 +187,8 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
 
     /** {@inheritDoc} */
     @Override
-    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
+    public FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date,
+                                        final T[] parameters) {
         // propagate orbit
         FieldOrbit<T> orbit = states.get(date).getOrbit();
         do {
