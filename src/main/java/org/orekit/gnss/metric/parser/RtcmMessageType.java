@@ -115,7 +115,7 @@ public enum RtcmMessageType implements MessageType {
             gpsNavMessage.setAf0(RtcmDataField.DF084.doubleValue(encodedMessage));
             gpsNavMessage.setIODC(RtcmDataField.DF085.intValue(encodedMessage));
             gpsNavMessage.setCrs(RtcmDataField.DF086.doubleValue(encodedMessage));
-            gpsNavMessage.setDeltaN(RtcmDataField.DF087.doubleValue(encodedMessage));
+            gpsNavMessage.setDeltaN0(RtcmDataField.DF087.doubleValue(encodedMessage));
             gpsNavMessage.setM0(RtcmDataField.DF088.doubleValue(encodedMessage));
             gpsNavMessage.setCuc(RtcmDataField.DF089.doubleValue(encodedMessage));
             gpsNavMessage.setE(RtcmDataField.DF090.doubleValue(encodedMessage));
@@ -251,7 +251,7 @@ public enum RtcmMessageType implements MessageType {
             beidouNavMessage.setAf0(RtcmDataField.DF496.doubleValue(encodedMessage));
             beidouNavMessage.setAODC(RtcmDataField.DF497.intValue(encodedMessage));
             beidouNavMessage.setCrs(RtcmDataField.DF498.doubleValue(encodedMessage));
-            beidouNavMessage.setDeltaN(RtcmDataField.DF499.doubleValue(encodedMessage));
+            beidouNavMessage.setDeltaN0(RtcmDataField.DF499.doubleValue(encodedMessage));
             beidouNavMessage.setM0(RtcmDataField.DF500.doubleValue(encodedMessage));
             beidouNavMessage.setCuc(RtcmDataField.DF501.doubleValue(encodedMessage));
             beidouNavMessage.setE(RtcmDataField.DF502.doubleValue(encodedMessage));
@@ -304,7 +304,7 @@ public enum RtcmMessageType implements MessageType {
             qzssNavMessage.setAf0(RtcmDataField.DF433.doubleValue(encodedMessage));
             qzssNavMessage.setIODE(RtcmDataField.DF434.intValue(encodedMessage));
             qzssNavMessage.setCrs(RtcmDataField.DF435.doubleValue(encodedMessage));
-            qzssNavMessage.setDeltaN(RtcmDataField.DF436.doubleValue(encodedMessage));
+            qzssNavMessage.setDeltaN0(RtcmDataField.DF436.doubleValue(encodedMessage));
             qzssNavMessage.setM0(RtcmDataField.DF437.doubleValue(encodedMessage));
             qzssNavMessage.setCuc(RtcmDataField.DF438.doubleValue(encodedMessage));
             qzssNavMessage.setE(RtcmDataField.DF439.doubleValue(encodedMessage));
@@ -386,7 +386,7 @@ public enum RtcmMessageType implements MessageType {
             galileoNavMessage.setAf1(RtcmDataField.DF295.doubleValue(encodedMessage));
             galileoNavMessage.setAf0(RtcmDataField.DF296.doubleValue(encodedMessage));
             galileoNavMessage.setCrs(RtcmDataField.DF297.doubleValue(encodedMessage));
-            galileoNavMessage.setDeltaN(RtcmDataField.DF298.doubleValue(encodedMessage));
+            galileoNavMessage.setDeltaN0(RtcmDataField.DF298.doubleValue(encodedMessage));
             galileoNavMessage.setM0(RtcmDataField.DF299.doubleValue(encodedMessage));
             galileoNavMessage.setCuc(RtcmDataField.DF300.doubleValue(encodedMessage));
             galileoNavMessage.setE(RtcmDataField.DF301.doubleValue(encodedMessage));

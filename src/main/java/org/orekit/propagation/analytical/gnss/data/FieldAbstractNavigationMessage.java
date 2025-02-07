@@ -41,7 +41,7 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
     extends FieldAbstractAlmanac<T, O> {
 
     /** Mean Motion Difference from Computed Value. */
-    private T deltaN;
+    private T deltaN0;
 
     /** Time of clock epoch. */
     private FieldAbsoluteDate<T> epochToc;
@@ -55,7 +55,7 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
      */
     protected FieldAbstractNavigationMessage(final Field<T> field, final O original) {
         super(field, original);
-        setDeltaN(field.getZero().newInstance(original.getDeltaN()));
+        setDeltaN0(field.getZero().newInstance(original.getDeltaN0()));
         setEpochToc(new FieldAbsoluteDate<>(field, original.getEpochToc()));
         setTransmissionTime(field.getZero().newInstance(original.getTransmissionTime()));
     }
@@ -68,7 +68,7 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
     protected <V extends CalculusFieldElement<V>> FieldAbstractNavigationMessage(final Function<V, T> converter,
                                                                                  final FieldAbstractNavigationMessage<V, O> original) {
         super(converter, original);
-        setDeltaN(converter.apply(original.getDeltaN()));
+        setDeltaN0(converter.apply(original.getDeltaN0()));
         setEpochToc(new FieldAbsoluteDate<>(getMu().getField(), original.getEpochToc().toAbsoluteDate()));
         setTransmissionTime(converter.apply(original.getTransmissionTime()));
     }
@@ -94,24 +94,16 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
 
     /** {@inheritDoc} */
     @Override
-    public T getMeanMotion() {
-        return super.getMeanMotion().add(deltaN);
-    }
-
-    /**
-     * Getter for the delta of satellite mean motion.
-     * @return delta of satellite mean motion
-     */
-    public T getDeltaN() {
-        return deltaN;
+    public T getDeltaN0() {
+        return deltaN0;
     }
 
     /**
      * Setter for the delta of satellite mean motion.
-     * @param deltaN the value to set
+     * @param deltaN0 the value to set
      */
-    public void setDeltaN(final T deltaN) {
-        this.deltaN = deltaN;
+    public void setDeltaN0(final T deltaN0) {
+        this.deltaN0 = deltaN0;
     }
 
     /**

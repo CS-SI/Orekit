@@ -133,10 +133,8 @@ public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElem
         return cnv2;
     }
 
-    /**
-     * Getter for the change rate in semi-major axis.
-     * @return the change rate in semi-major axis
-     */
+    /** {@inheritDoc} */
+    @Override
     public T getADot() {
         return aDot;
     }
@@ -149,10 +147,8 @@ public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElem
         this.aDot = value;
     }
 
-    /**
-     * Getter for change rate in Δn₀.
-     * @return change rate in Δn₀
-     */
+    /** {@inheritDoc} */
+    @Override
     public T getDeltaN0Dot() {
         return deltaN0Dot;
     }

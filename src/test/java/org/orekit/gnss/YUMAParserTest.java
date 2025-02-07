@@ -39,7 +39,7 @@ public class YUMAParserTest {
     }
 
     @Test
-    public void testNoFile() throws IOException, ParseException {
+    public void testNoFile() {
         // the parser for reading Yuma files with a pattern
         YUMAParser reader = new YUMAParser(".*\\.yum$");
         // No such YUMA file, should throw an exception
@@ -101,18 +101,18 @@ public class YUMAParserTest {
         Assertions.assertEquals(-1, alm.getURA());
         Assertions.assertEquals(-1, alm.getSatConfiguration());
         Assertions.assertEquals("YUMA", alm.getSource());
-        Assertions.assertTrue(alm.getDate().durationFrom(new GNSSDate(862, 319488.0, SatelliteSystem.GPS).getDate()) == 0);
+        Assertions.assertEquals(0, alm.getDate().durationFrom(new GNSSDate(862, 319488.0, SatelliteSystem.GPS).getDate()), 1.0e-15);
         Assertions.assertEquals(0., alm.getCic(), 0.);
         Assertions.assertEquals(0., alm.getCis(), 0.);
         Assertions.assertEquals(0., alm.getCrc(), 0.);
         Assertions.assertEquals(0., alm.getCrs(), 0.);
         Assertions.assertEquals(0., alm.getCuc(), 0.);
         Assertions.assertEquals(0., alm.getCus(), 0.);
-        Assertions.assertEquals(1.4484676210186782E-4, alm.getMeanMotion(), 0.);
+        Assertions.assertEquals(1.4484676210186782E-4, alm.getMeanMotion0(), 0.);
     }
 
     @Test
-    public void testLoadDefault() throws IOException, ParseException, OrekitException {
+    public void testLoadDefault() throws OrekitException {
         // the parser for reading Yuma files
         YUMAParser reader = new YUMAParser(null);
         reader.loadData();
@@ -142,14 +142,14 @@ public class YUMAParserTest {
         Assertions.assertEquals(-1, alm.getURA());
         Assertions.assertEquals(-1, alm.getSatConfiguration());
         Assertions.assertEquals("YUMA", alm.getSource());
-        Assertions.assertTrue(alm.getDate().durationFrom(new GNSSDate(866, 589824.0, SatelliteSystem.GPS).getDate()) == 0);
+        Assertions.assertEquals(0, alm.getDate().durationFrom(new GNSSDate(866, 589824.0, SatelliteSystem.GPS).getDate()), 1.0e-15);
         Assertions.assertEquals(0., alm.getCic(), 0.);
         Assertions.assertEquals(0., alm.getCis(), 0.);
         Assertions.assertEquals(0., alm.getCrc(), 0.);
         Assertions.assertEquals(0., alm.getCrs(), 0.);
         Assertions.assertEquals(0., alm.getCuc(), 0.);
         Assertions.assertEquals(0., alm.getCus(), 0.);
-        Assertions.assertEquals(1.45860023309E-4, alm.getMeanMotion(), 1.e-15);
+        Assertions.assertEquals(1.45860023309E-4, alm.getMeanMotion0(), 1.e-15);
     }
 
 }

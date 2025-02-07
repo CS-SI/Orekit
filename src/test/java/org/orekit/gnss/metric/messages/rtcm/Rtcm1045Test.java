@@ -36,7 +36,7 @@ import java.util.ArrayList;
 
 public class Rtcm1045Test {
 
-    private double eps = 8.2e-10;
+    private final double eps = 8.2e-10;
 
     @BeforeEach
     public void setUp() {
@@ -106,7 +106,8 @@ public class Rtcm1045Test {
         Assertions.assertEquals(1.279588E-9,            galileoMessage.getAf1(),                eps);
         Assertions.assertEquals(0.036617268982809,      galileoMessage.getAf0(),                eps);
         Assertions.assertEquals(0.0,                    galileoMessage.getCrs(),                eps);
-        Assertions.assertEquals(1.4587496546628753E-4,  galileoMessage.getMeanMotion(),         eps);
+        Assertions.assertEquals(1.458633710547623E-4,   galileoMessage.getMeanMotion0(),        eps);
+        Assertions.assertEquals(1.4587496546628753E-4,  galileoMessage.getMeanMotion0() + galileoMessage.getDeltaN0(), eps);
         Assertions.assertEquals(0.1671775426328288,     galileoMessage.getM0(),                 eps);
         Assertions.assertEquals(0.0,                    galileoMessage.getCuc(),                eps);
         Assertions.assertEquals(0.0389980711042881,     galileoMessage.getE(),                  eps);

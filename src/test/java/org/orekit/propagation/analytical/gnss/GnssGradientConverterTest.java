@@ -58,7 +58,7 @@ public class GnssGradientConverterTest {
         goe.setWeek(1024);
         goe.setTime(293400.0);
         goe.setSqrtA(5440.602949142456);
-        goe.setDeltaN(3.7394414770330066E-9);
+        goe.setDeltaN0(3.7394414770330066E-9);
         goe.setE(2.4088891223073006E-4);
         goe.setI0(0.9531656087278083);
         goe.setIDot(-2.36081262303612E-10);
@@ -104,7 +104,7 @@ public class GnssGradientConverterTest {
         goe.setTime(288000);
         goe.setSqrtA(5153.599830627441);
         goe.setE(0.012442796607501805);
-        goe.setDeltaN(4.419469802942352E-9);
+        goe.setDeltaN0(4.419469802942352E-9);
         goe.setI0(0.9558937988021613);
         goe.setIDot(-2.4608167886110235E-10);
         goe.setOmega0(1.0479401362158658);

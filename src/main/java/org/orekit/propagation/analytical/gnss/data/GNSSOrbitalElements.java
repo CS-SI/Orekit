@@ -199,14 +199,47 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
         getSmaDriver().setValue(sma);
     }
 
-    /** Get the mean motion.
-     * @return the mean motion (rad/s)
+    /** Getter for the change rate in semi-major axis.
+     * <p>
+     * This value is non-zero only in civilian navigation messages
+     * </p>
+     * @return the change rate in semi-major axis
+     * @since 13.0
      */
-    public double getMeanMotion() {
+    public double getADot() {
+        return 0;
+    }
+
+    /** Get the computed mean motion n₀.
+     * @return the computed mean motion n₀ (rad/s)
+     * @since 13.0
+     */
+    public double getMeanMotion0() {
         final double absA = FastMath.abs(getSma());
         return FastMath.sqrt(getMu() / absA) / absA;
     }
 
+    /** Getter for the delta of satellite mean motion.
+     * <p>
+     * This value is non-zero only in navigation messages
+     * </p>
+     * @return delta of satellite mean motion
+     * @since 13.0
+     */
+    public double getDeltaN0() {
+        return 0;
+    }
+
+    /** Getter for change rate in Δn₀.
+     * <p>
+     * This value is non-zero only in civilian navigation messages
+     * </p>
+     * @return change rate in Δn₀
+     * @since 13.0
+     */
+    public double getDeltaN0Dot() {
+        return 0;
+    }
 
     /** Get the driver for the eccentricity.
      * @return driver for the eccentricity

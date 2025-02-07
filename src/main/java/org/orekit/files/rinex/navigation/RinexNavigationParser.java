@@ -910,7 +910,7 @@ public class RinexNavigationParser {
             public void parseFirstBroadcastOrbit(final String line, final ParseInfo pi) {
                 pi.gpsLNav.setIODE(parseBroadcastDouble1(line, pi.initialSpaces, Unit.SECOND));
                 pi.gpsLNav.setCrs(parseBroadcastDouble2(line,    pi.initialSpaces, Unit.METRE));
-                pi.gpsLNav.setDeltaN(parseBroadcastDouble3(line, pi.initialSpaces, RAD_PER_S));
+                pi.gpsLNav.setDeltaN0(parseBroadcastDouble3(line, pi.initialSpaces, RAD_PER_S));
                 pi.gpsLNav.setM0(parseBroadcastDouble4(line,     pi.initialSpaces, Unit.RADIAN));
             }
 
@@ -994,7 +994,7 @@ public class RinexNavigationParser {
             public void parseFirstBroadcastOrbit(final String line, final ParseInfo pi) {
                 pi.gpsCNav.setADot(parseBroadcastDouble1(line, pi.initialSpaces, M_PER_S));
                 pi.gpsCNav.setCrs(parseBroadcastDouble2(line,    pi.initialSpaces, Unit.METRE));
-                pi.gpsCNav.setDeltaN(parseBroadcastDouble3(line, pi.initialSpaces, RAD_PER_S));
+                pi.gpsCNav.setDeltaN0(parseBroadcastDouble3(line, pi.initialSpaces, RAD_PER_S));
                 pi.gpsCNav.setM0(parseBroadcastDouble4(line,     pi.initialSpaces, Unit.RADIAN));
             }
 
@@ -1102,7 +1102,7 @@ public class RinexNavigationParser {
             public void parseFirstBroadcastOrbit(final String line, final ParseInfo pi) {
                 pi.galileoNav.setIODNav(parseBroadcastInt1(line, pi.initialSpaces));
                 pi.galileoNav.setCrs(parseBroadcastDouble2(line,       pi.initialSpaces, Unit.METRE));
-                pi.galileoNav.setDeltaN(parseBroadcastDouble3(line,    pi.initialSpaces, RAD_PER_S));
+                pi.galileoNav.setDeltaN0(parseBroadcastDouble3(line,    pi.initialSpaces, RAD_PER_S));
                 pi.galileoNav.setM0(parseBroadcastDouble4(line,        pi.initialSpaces, Unit.RADIAN));
             }
 
@@ -1276,7 +1276,7 @@ public class RinexNavigationParser {
             public void parseFirstBroadcastOrbit(final String line, final ParseInfo pi) {
                 pi.qzssLNav.setIODE(parseBroadcastDouble1(line, pi.initialSpaces, Unit.SECOND));
                 pi.qzssLNav.setCrs(parseBroadcastDouble2(line,    pi.initialSpaces, Unit.METRE));
-                pi.qzssLNav.setDeltaN(parseBroadcastDouble3(line, pi.initialSpaces, RAD_PER_S));
+                pi.qzssLNav.setDeltaN0(parseBroadcastDouble3(line, pi.initialSpaces, RAD_PER_S));
                 pi.qzssLNav.setM0(parseBroadcastDouble4(line,     pi.initialSpaces, Unit.RADIAN));
             }
 
@@ -1360,7 +1360,7 @@ public class RinexNavigationParser {
             public void parseFirstBroadcastOrbit(final String line, final ParseInfo pi) {
                 pi.qzssCNav.setADot(parseBroadcastDouble1(line, pi.initialSpaces, M_PER_S));
                 pi.qzssCNav.setCrs(parseBroadcastDouble2(line,    pi.initialSpaces, Unit.METRE));
-                pi.qzssCNav.setDeltaN(parseBroadcastDouble3(line, pi.initialSpaces, RAD_PER_S));
+                pi.qzssCNav.setDeltaN0(parseBroadcastDouble3(line, pi.initialSpaces, RAD_PER_S));
                 pi.qzssCNav.setM0(parseBroadcastDouble4(line,     pi.initialSpaces, Unit.RADIAN));
             }
 
@@ -1468,7 +1468,7 @@ public class RinexNavigationParser {
             public void parseFirstBroadcastOrbit(final String line, final ParseInfo pi) {
                 pi.beidouLNav.setAODE(parseBroadcastDouble1(line, pi.initialSpaces, Unit.SECOND));
                 pi.beidouLNav.setCrs(parseBroadcastDouble2(line,    pi.initialSpaces, Unit.METRE));
-                pi.beidouLNav.setDeltaN(parseBroadcastDouble3(line, pi.initialSpaces, RAD_PER_S));
+                pi.beidouLNav.setDeltaN0(parseBroadcastDouble3(line, pi.initialSpaces, RAD_PER_S));
                 pi.beidouLNav.setM0(parseBroadcastDouble4(line,     pi.initialSpaces, Unit.RADIAN));
             }
 
@@ -1548,7 +1548,7 @@ public class RinexNavigationParser {
             public void parseFirstBroadcastOrbit(final String line, final ParseInfo pi) {
                 pi.beidouCNav.setADot(parseBroadcastDouble1(line, pi.initialSpaces, M_PER_S));
                 pi.beidouCNav.setCrs(parseBroadcastDouble2(line,    pi.initialSpaces, Unit.METRE));
-                pi.beidouCNav.setDeltaN(parseBroadcastDouble3(line, pi.initialSpaces, RAD_PER_S));
+                pi.beidouCNav.setDeltaN0(parseBroadcastDouble3(line, pi.initialSpaces, RAD_PER_S));
                 pi.beidouCNav.setM0(parseBroadcastDouble4(line,     pi.initialSpaces, Unit.RADIAN));
             }
 
@@ -1748,7 +1748,7 @@ public class RinexNavigationParser {
             public void parseFirstBroadcastOrbit(final String line, final ParseInfo pi) {
                 pi.irnssNav.setIODEC(parseBroadcastDouble1(line, pi.initialSpaces, Unit.SECOND));
                 pi.irnssNav.setCrs(parseBroadcastDouble2(line,     pi.initialSpaces, Unit.METRE));
-                pi.irnssNav.setDeltaN(parseBroadcastDouble3(line,  pi.initialSpaces, RAD_PER_S));
+                pi.irnssNav.setDeltaN0(parseBroadcastDouble3(line,  pi.initialSpaces, RAD_PER_S));
                 pi.irnssNav.setM0(parseBroadcastDouble4(line,      pi.initialSpaces, Unit.RADIAN));
             }
 
@@ -1932,7 +1932,7 @@ public class RinexNavigationParser {
          * @param message navigation message
          */
         protected void parseSvEpochSvClockLineRinex2(final String line, final TimeScale timeScale,
-                                                     final AbstractNavigationMessage message) {
+                                                     final AbstractNavigationMessage<?> message) {
             // PRN
             message.setPRN(RinexUtils.parseInt(line, 0, 2));
 
@@ -1959,7 +1959,7 @@ public class RinexNavigationParser {
          * @param message navigation message
          */
         protected void parseSvEpochSvClockLine(final String line, final TimeScale timeScale,
-                                               final AbstractNavigationMessage message) {
+                                               final AbstractNavigationMessage<?> message) {
             // PRN
             message.setPRN(RinexUtils.parseInt(line, 1, 2));
 
