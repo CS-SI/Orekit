@@ -103,7 +103,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
     public SpacecraftState(final Orbit orbit) {
         this(orbit, getDefaultAttitudeProvider(orbit.getFrame())
                         .getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
-             DEFAULT_MASS, (DoubleArrayDictionary) null);
+             DEFAULT_MASS, null);
     }
 
     /** Build a spacecraft state from orbit and attitude.
@@ -115,7 +115,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      */
     public SpacecraftState(final Orbit orbit, final Attitude attitude)
         throws IllegalArgumentException {
-        this(orbit, attitude, DEFAULT_MASS, (DoubleArrayDictionary) null);
+        this(orbit, attitude, DEFAULT_MASS, null);
     }
 
     /** Create a new instance from orbit and mass.
@@ -126,7 +126,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
     public SpacecraftState(final Orbit orbit, final double mass) {
         this(orbit, getDefaultAttitudeProvider(orbit.getFrame())
                         .getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
-             mass, (DoubleArrayDictionary) null);
+             mass, null);
     }
 
     /** Build a spacecraft state from orbit, attitude and mass.
@@ -138,7 +138,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      */
     public SpacecraftState(final Orbit orbit, final Attitude attitude, final double mass)
         throws IllegalArgumentException {
-        this(orbit, attitude, mass, (DoubleArrayDictionary) null);
+        this(orbit, attitude, mass, null);
     }
 
     /** Build a spacecraft state from orbit and additional states.
@@ -232,7 +232,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
     public SpacecraftState(final AbsolutePVCoordinates absPva) {
         this(absPva, getDefaultAttitudeProvider(absPva.getFrame())
                         .getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
-             DEFAULT_MASS, (DoubleArrayDictionary) null);
+             DEFAULT_MASS, null);
     }
 
     /** Build a spacecraft state from position-velocity-acceleration and attitude.
@@ -244,7 +244,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva, final Attitude attitude)
         throws IllegalArgumentException {
-        this(absPva, attitude, DEFAULT_MASS, (DoubleArrayDictionary) null);
+        this(absPva, attitude, DEFAULT_MASS, null);
     }
 
     /** Create a new instance from position-velocity-acceleration and mass.
@@ -255,7 +255,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
     public SpacecraftState(final AbsolutePVCoordinates absPva, final double mass) {
         this(absPva, getDefaultAttitudeProvider(absPva.getFrame())
                         .getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
-             mass, (DoubleArrayDictionary) null);
+             mass, null);
     }
 
     /** Build a spacecraft state from position-velocity-acceleration, attitude and mass.
@@ -267,7 +267,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva, final Attitude attitude, final double mass)
         throws IllegalArgumentException {
-        this(absPva, attitude, mass, (DoubleArrayDictionary) null);
+        this(absPva, attitude, mass, null);
     }
 
     /** Build a spacecraft state from position-velocity-acceleration and additional states.
