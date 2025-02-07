@@ -180,7 +180,7 @@ public abstract class NeQuickModel implements IonosphericModel {
      * @return modip at specified location
      * @since 13.0
      */
-    protected abstract double computeMODIP(final double latitude, final double longitude);
+    protected abstract double computeMODIP(double latitude, double longitude);
 
     /** Compute modip for a location.
      * @param <T> type of the field elements
@@ -189,7 +189,7 @@ public abstract class NeQuickModel implements IonosphericModel {
      * @return modip at specified location
      * @since 13.0
      */
-    protected abstract <T extends CalculusFieldElement<T>> T computeMODIP(final T latitude, final T longitude);
+    protected abstract <T extends CalculusFieldElement<T>> T computeMODIP(T latitude, T longitude);
 
     /**
      * Computes the electron density at a given height.
