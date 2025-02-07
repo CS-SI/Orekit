@@ -170,9 +170,8 @@ public class NeQuickItu extends NeQuickModel {
             double sum = 0;
             for (int i = 0; i < segment.getNbPoints(); ++i) {
                 final GeodeticPoint gp = segment.getPoint(i);
-                final double modip = ItuHolder.INSTANCE.computeMODIP(gp.getLatitude(), gp.getLongitude());
-                final double ed =
-                    electronDensity(dateTime, modip, f107, gp.getLatitude(), gp.getLongitude(), gp.getAltitude());
+                final double ed = electronDensity(dateTime, f107,
+                                                  gp.getLatitude(), gp.getLongitude(), gp.getAltitude());
                 sum += ed;
             }
 
@@ -215,9 +214,8 @@ public class NeQuickItu extends NeQuickModel {
             T sum = s1.getField().getZero();
             for (int i = 0; i < segment.getNbPoints(); ++i) {
                 final FieldGeodeticPoint<T> gp = segment.getPoint(i);
-                final T modip = ItuHolder.INSTANCE.computeMODIP(gp.getLatitude(), gp.getLongitude());
-                final T ed =
-                    electronDensity(dateTime, modip, f107T, gp.getLatitude(), gp.getLongitude(), gp.getAltitude());
+                final T ed =  electronDensity(dateTime, f107T,
+                                              gp.getLatitude(), gp.getLongitude(), gp.getAltitude());
                 sum = sum.add(ed);
             }
 
@@ -232,6 +230,18 @@ public class NeQuickItu extends NeQuickModel {
 
         return Unit.TOTAL_ELECTRON_CONTENT_UNIT.fromSI(gInt2.add(gInt2.subtract(gInt1).divide(15.0)));
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected double computeMODIP(final double latitude, final double longitude) {
+        return ItuHolder.INSTANCE.computeMODIP(latitude, longitude);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected <T extends CalculusFieldElement<T>> T computeMODIP(final T latitude, final T longitude) {
+        return ItuHolder.INSTANCE.computeMODIP(latitude, longitude);
     }
 
     /** {@inheritDoc} */

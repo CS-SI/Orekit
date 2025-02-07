@@ -174,19 +174,37 @@ public abstract class NeQuickModel implements IonosphericModel {
 
     }
 
+    /** Compute modip for a location.
+     * @param latitude latitude
+     * @param longitude longitude
+     * @return modip at specified location
+     * @since 13.0
+     */
+    protected abstract double computeMODIP(final double latitude, final double longitude);
+
+    /** Compute modip for a location.
+     * @param <T> type of the field elements
+     * @param latitude latitude
+     * @param longitude longitude
+     * @return modip at specified location
+     * @since 13.0
+     */
+    protected abstract <T extends CalculusFieldElement<T>> T computeMODIP(final T latitude, final T longitude);
+
     /**
      * Computes the electron density at a given height.
      * @param dateTime date
-     * @param modip modified dip latitude
      * @param az effective ionization level
      * @param latitude latitude along the integration path
      * @param longitude longitude along the integration path
      * @param h height along the integration path in m
      * @return electron density [m⁻³]
+     * @since 13.0
      */
-    public double electronDensity(final DateTimeComponents dateTime, final double modip, final double az,
+    public double electronDensity(final DateTimeComponents dateTime, final double az,
                                   final double latitude, final double longitude, final double h) {
 
+        final double modip = computeMODIP(latitude, longitude);
         final NeQuickParameters parameters = new NeQuickParameters(dateTime,
                                                                    flattenF2[dateTime.getDate().getMonth() - 1],
                                                                    flattenFm3[dateTime.getDate().getMonth() - 1],
@@ -207,17 +225,17 @@ public abstract class NeQuickModel implements IonosphericModel {
      * Computes the electron density at a given height.
      * @param <T> type of the elements
      * @param dateTime date
-     * @param modip modified dip latitude
      * @param az effective ionization level
      * @param latitude latitude along the integration path
      * @param longitude longitude along the integration path
      * @param h height along the integration path in m
      * @return electron density [m⁻³]
+     * @since 13.0
      */
-    public <T extends CalculusFieldElement<T>> T electronDensity(final DateTimeComponents dateTime,
-                                                                 final T modip, final T az,
+    public <T extends CalculusFieldElement<T>> T electronDensity(final DateTimeComponents dateTime, final T az,
                                                                  final T latitude, final T longitude, final T h) {
 
+        final T modip = computeMODIP(latitude, longitude);
         final FieldNeQuickParameters<T> parameters =
             new FieldNeQuickParameters<>(dateTime,
                                          flattenF2[dateTime.getDate().getMonth() - 1],
