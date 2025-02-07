@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="luc" type="add" issue="1665">
+            Fixed parsing of week number in Rinex CNAV/CNAV2 messages.
+        </action>
         <action dev="luc" type="add" issue="1663">
             Take civilian navigation messages rates into account in GNSS propagators.
         </action>

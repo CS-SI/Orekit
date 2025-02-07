@@ -199,7 +199,7 @@ public class RinexNavigationParser {
         /** The corresponding navigation messages file object. */
         private final RinexNavigation file;
 
-        /** Number of initial spaces in broadcase orbits lines. */
+        /** Number of initial spaces in broadcast orbits lines. */
         private int initialSpaces;
 
         /** Flag indicating header has been completely parsed. */
@@ -1076,6 +1076,7 @@ public class RinexNavigationParser {
              */
             private void parseTransmissionTimeLine(final String line, final ParseInfo pi) {
                 pi.gpsCNav.setTransmissionTime(parseBroadcastDouble1(line, pi.initialSpaces, Unit.SECOND));
+                pi.gpsCNav.setWeek(parseBroadcastInt2(line, pi.initialSpaces));
                 pi.closePendingMessage();
             }
 
@@ -1442,6 +1443,7 @@ public class RinexNavigationParser {
              */
             private void parseTransmissionTimeLine(final String line, final ParseInfo pi) {
                 pi.qzssCNav.setTransmissionTime(parseBroadcastDouble1(line, pi.initialSpaces, Unit.SECOND));
+                pi.qzssCNav.setWeek(parseBroadcastInt2(line, pi.initialSpaces));
                 pi.closePendingMessage();
             }
 
