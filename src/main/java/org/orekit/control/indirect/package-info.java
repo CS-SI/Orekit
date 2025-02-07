@@ -24,7 +24,7 @@
  * <p>
  * See the Orekit internal note for more details on the present implementations:
  * <br>
- * https://orekit.org/doc/technical-notes/2024-10-01-Serra_R-Indirect_Approach_for_Optimal_Control_in_Orekit.pdf
+ * https://orekit.org/doc/technical-notes/2025-02-05-Serra_R-Indirect_Approach_for_Optimal_Control_in_Orekit_v13.0.pdf
  * </p>
  * Some external references:
  * <ul>
