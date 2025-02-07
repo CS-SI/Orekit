@@ -42,6 +42,9 @@ import java.util.regex.Pattern;
  */
 public class IIRVParser implements EphemerisFileParser<IIRVEphemerisFile> {
 
+    /** Default number of sample for interpolating data (See: reference documents). */
+    public static final int DEFAULT_INTERPOLATION_SAMPLE = 10;
+
     /** Standard gravitational parameter in m³/s². */
     private final double mu;
 
@@ -64,7 +67,7 @@ public class IIRVParser implements EphemerisFileParser<IIRVEphemerisFile> {
      * @param utc  UTC time scale
      */
     public IIRVParser(final int year, final UTCScale utc) {
-        this(Constants.IERS96_EARTH_MU, 7, year, utc);
+        this(Constants.IERS96_EARTH_MU, DEFAULT_INTERPOLATION_SAMPLE, year, utc);
     }
 
     /**
