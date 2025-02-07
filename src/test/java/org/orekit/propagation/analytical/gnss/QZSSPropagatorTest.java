@@ -165,7 +165,7 @@ public class QZSSPropagatorTest {
         qoe.setTime(226800.0);
         qoe.setSqrtA(6493.226968765259);
         qoe.setE(0.07426900835707784);
-        qoe.setDeltaN(4.796628370253418E-10);
+        qoe.setDeltaN0(4.796628370253418E-10);
         qoe.setI0(0.7116940567084221);
         qoe.setIDot(4.835915721014987E-10);
         qoe.setOmega0(0.6210371871830609);

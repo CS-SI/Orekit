@@ -440,7 +440,7 @@ public class NavigationFileParserTest {
         Assertions.assertTrue(list.get(0).getRadioWave().closeTo(PredefinedGnssSignal.B1C, 1.0e-6));
         Assertions.assertEquals(-1.139640808105e-02, list.get(0).getADot(),       1.0e-15);
         Assertions.assertEquals(-1.300156250000e+02, list.get(0).getCrs(),        1.0e-15);
-        Assertions.assertEquals(3.453536710809e-09,  list.get(0).getDeltaN(),     1.0e-15);
+        Assertions.assertEquals(3.453536710809e-09,  list.get(0).getDeltaN0(),    1.0e-15);
         Assertions.assertEquals(-8.439895553698e-01, list.get(0).getM0(),         1.0e-15);
         Assertions.assertEquals(-6.432645022869e-06, list.get(0).getCuc(),        1.0e-15);
         Assertions.assertEquals(5.305649829097e-04,  list.get(0).getE(),          1.0e-15);

@@ -171,7 +171,7 @@ public class BeidouPropagatorTest {
         boe.setTime(284400.0);
         boe.setSqrtA(6492.84515953064);
         boe.setE(0.00728036486543715);
-        boe.setDeltaN(2.1815194404696853E-9);
+        boe.setDeltaN0(2.1815194404696853E-9);
         boe.setI0(0.9065628903946735);
         boe.setIDot(0.0);
         boe.setOmega0(-0.6647664535282437);

@@ -239,8 +239,14 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
     public PVCoordinates propagateInEcef(final AbsoluteDate date) {
         // Duration from GNSS ephemeris Reference date
         final UnivariateDerivative2 tk = new UnivariateDerivative2(getTk(date), 1.0, 0.0);
+        // Semi-major axis
+        final UnivariateDerivative2 ak = tk.multiply(orbitalElements.getADot()).add(orbitalElements.getSma());
+        // Mean motion
+        final UnivariateDerivative2 nA = tk.multiply(orbitalElements.getDeltaN0Dot() * 0.5).
+                                         add(orbitalElements.getDeltaN0()).
+                                         add(orbitalElements.getMeanMotion0());
         // Mean anomaly
-        final UnivariateDerivative2 mk = tk.multiply(orbitalElements.getMeanMotion()).add(orbitalElements.getM0());
+        final UnivariateDerivative2 mk = tk.multiply(nA).add(orbitalElements.getM0());
         // Eccentric Anomaly
         final UnivariateDerivative2 e  = tk.newInstance(orbitalElements.getE());
         final UnivariateDerivative2 ek = FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(e, mk);
@@ -258,7 +264,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
         // Corrected Argument of Latitude
         final FieldSinCos<UnivariateDerivative2> csuk = FastMath.sinCos(phik.add(dphik));
         // Corrected Radius
-        final UnivariateDerivative2 rk = ek.cos().multiply(-orbitalElements.getE()).add(1).multiply(orbitalElements.getSma()).add(drk);
+        final UnivariateDerivative2 rk = ek.cos().multiply(-orbitalElements.getE()).add(1).multiply(ak).add(drk);
         // Corrected Inclination
         final UnivariateDerivative2 ik  = tk.multiply(orbitalElements.getIDot()).add(orbitalElements.getI0()).add(dik);
         final FieldSinCos<UnivariateDerivative2> csik = FastMath.sinCos(ik);

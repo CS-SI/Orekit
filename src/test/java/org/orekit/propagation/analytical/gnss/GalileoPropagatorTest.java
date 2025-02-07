@@ -62,7 +62,7 @@ public class GalileoPropagatorTest {
         goe.setWeek(1024);
         goe.setTime(293400.0);
         goe.setSqrtA(5440.602949142456);
-        goe.setDeltaN(3.7394414770330066E-9);
+        goe.setDeltaN0(3.7394414770330066E-9);
         goe.setE(2.4088891223073006E-4);
         goe.setI0(0.9531656087278083);
         goe.setIDot(-2.36081262303612E-10);
