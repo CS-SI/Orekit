@@ -17,6 +17,7 @@
 package org.orekit.files.ilrs;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -458,9 +459,9 @@ public class CRDHeader extends ILRSHeader {
      */
     public String getH1CrdString() {
         final DateComponents dc = getProductionEpoch();
-        return String.format("H1 %3s %2d %04d %02d %02d %02d", getFormat(),
-                getVersion(), dc.getYear(), dc.getMonth(), dc.getDay(),
-                getProductionHour());
+        return String.format(Locale.US, "H1 %3s %2d %04d %02d %02d %02d", getFormat(),
+                             getVersion(), dc.getYear(), dc.getMonth(), dc.getDay(),
+                             getProductionHour());
     }
 
     /**
@@ -469,7 +470,7 @@ public class CRDHeader extends ILRSHeader {
      * @since 12.0
      */
     public String getH2CrdString() {
-        return String.format("H2 %s %4d %02d %02d %2d %s", stationName,
+        return String.format(Locale.US, "H2 %s %4d %02d %02d %2d %s", stationName,
                 systemIdentifier, systemNumber, systemOccupancy,
                 epochIdentifier, stationNetword);
     }
@@ -481,7 +482,7 @@ public class CRDHeader extends ILRSHeader {
      */
     public String getH3CrdString() {
         final int targetLocation = getTargetLocation();
-        return String.format("H3 %s %7s %4s %5s %1d %1d %2s", getName(),
+        return String.format(Locale.US, "H3 %s %7s %4s %5s %1d %1d %2s", getName(),
                 getIlrsSatelliteId(), getSic(), getNoradId(),
                 getSpacecraftEpochTimeScale(), getTargetClass(),
                 CRD.formatIntegerOrNaN(targetLocation, -1));
@@ -498,7 +499,7 @@ public class CRDHeader extends ILRSHeader {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final String startEpoch = getStartEpoch().toStringWithoutUtcOffset(utc, 0);
         final String endEpoch = getEndEpoch().toStringWithoutUtcOffset(utc, 0);
-        return String.format("H4 %2d %s %s %d %d %d %d %d %d %d %d", getDataType(),
+        return String.format(Locale.US, "H4 %2d %s %s %d %d %d %d %d %d %d %d", getDataType(),
                 PATTERN_DATETIME_DELIMITER_REGEX.matcher(startEpoch).replaceAll(SPACE),
                 PATTERN_DATETIME_DELIMITER_REGEX.matcher(endEpoch).replaceAll(SPACE),
                 dataReleaseFlag, isTroposphericRefractionApplied ? 1 : 0,
@@ -515,7 +516,7 @@ public class CRDHeader extends ILRSHeader {
      * @since 12.0
      */
     public String getH5CrdString() {
-        return String.format("H5 %2d %02d %s %3s %5d", getPredictionType(), getYearOfCentury(),
+        return String.format(Locale.US, "H5 %2d %02d %s %3s %5d", getPredictionType(), getYearOfCentury(),
                 getDateAndTime(), getPredictionProvider(), getSequenceNumber());
     }
 
@@ -630,7 +631,8 @@ public class CRDHeader extends ILRSHeader {
             final DataType type = CODES_MAP.get(id);
             if (type == null) {
                // Invalid value. An exception is thrown
-                throw new RuntimeException(String.format("Invalid data type indicator {0} in CRD file header", id));
+                throw new RuntimeException(String.format(Locale.US,
+                                                         "Invalid data type indicator {0} in CRD file header", id));
             }
             return type;
         }

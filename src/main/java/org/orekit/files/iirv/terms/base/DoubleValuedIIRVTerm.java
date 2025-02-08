@@ -16,10 +16,13 @@
  */
 package org.orekit.files.iirv.terms.base;
 
+import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.iirv.terms.IIRVTermUtils;
+
+import java.util.Locale;
 
 /**
  * Term in an IIRV Vector representing a double value.
@@ -110,7 +113,8 @@ public class DoubleValuedIIRVTerm extends IIRVVectorTerm<Double> {
             final int afterDecimalPlace = Integer.parseInt(intStr.substring(intStr.length() - nCharsAfterDecimalPlace));
 
             // Turn into a double by dividing the n numbers that appear after the decimal places by 10^n
-            final double unsignedValue = FastMath.abs(beforeDecimalPlace) + afterDecimalPlace / FastMath.pow(10.0, nCharsAfterDecimalPlace);
+            final double unsignedValue = FastMath.abs(beforeDecimalPlace) +
+                                         afterDecimalPlace / (double) ArithmeticUtils.pow(10, nCharsAfterDecimalPlace);
 
             // Return the resulting double with the correct sign
             return sign * unsignedValue;
@@ -126,10 +130,13 @@ public class DoubleValuedIIRVTerm extends IIRVVectorTerm<Double> {
         final int signAdjustedStringLength = isSigned ? length() - 1 : length();
 
         // Round the number to the specified number of decimal places
-        final double roundedNum = FastMath.round(termValue * FastMath.pow(10, nCharsAfterDecimalPlace)) / FastMath.pow(10, nCharsAfterDecimalPlace);
+        final double p = ArithmeticUtils.pow(10, nCharsAfterDecimalPlace); // beware, this *must* be a double
+        final double roundedNum = FastMath.round(termValue * p) / p;
 
         // Format the absolute value of the rounded number with specified integer and decimal lengths
-        String formattedStr = String.format("%0" + signAdjustedStringLength + "." + nCharsAfterDecimalPlace + "f", FastMath.abs(roundedNum));
+        String formattedStr = String.format(Locale.US,
+                                            "%0" + signAdjustedStringLength + "." + nCharsAfterDecimalPlace + "f",
+                                            FastMath.abs(roundedNum));
 
         // Remove the decimal point
         formattedStr = formattedStr.replace(".", "");
@@ -169,7 +176,7 @@ public class DoubleValuedIIRVTerm extends IIRVVectorTerm<Double> {
         }
 
         // If the value is greater than the maximum possible value, throw an error
-        final double maxPossibleValue = FastMath.pow(10, n);
+        final double maxPossibleValue = ArithmeticUtils.pow(10, n);
         if (FastMath.abs(value) >= maxPossibleValue) {
             throw new OrekitIllegalArgumentException(OrekitMessages.IIRV_VALUE_TOO_LARGE, FastMath.abs(value), maxPossibleValue);
         }
