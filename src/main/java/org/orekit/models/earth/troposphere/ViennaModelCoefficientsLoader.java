@@ -249,7 +249,7 @@ public class ViennaModelCoefficientsLoader extends AbstractSelfFeedingLoader
                                                 year, monthString, dayString, hourString));
                 break;
             case VIENNA_THREE:
-                setSupportedNames(String.format(Locale.US,"VMF3_%04d%2s%2s.H%2s",
+                setSupportedNames(String.format(Locale.US, "VMF3_%04d%2s%2s.H%2s",
                                                 year, monthString, dayString, hourString));
                 break;
             default:

@@ -35,10 +35,10 @@ import java.util.regex.Pattern;
 public class CRDConfiguration {
 
     /** Dict of configuration record. **/
-    private Map<String, BaseConfiguration> mapConfigurationRecords;
+    private final Map<String, BaseConfiguration> mapConfigurationRecords;
 
     /** List of system configuration. **/
-    private List<SystemConfiguration> systemConfigurationRecords;
+    private final List<SystemConfiguration> systemConfigurationRecords;
 
     /**
      * Constructor.
@@ -431,7 +431,7 @@ public class CRDConfiguration {
             final StringBuilder sb = new StringBuilder();
             sb.append(String.format(Locale.US, "%10.3f %s", wavelength * 1e9, getConfigurationId()));
             for (final String comp : components) {
-                sb.append(String.format(Locale.US," %s", comp));
+                sb.append(String.format(Locale.US, " %s", comp));
             }
             return sb.toString().replace(',', '.');
         }
