@@ -302,7 +302,7 @@ TOO_SMALL_SCALE_FOR_PARAMETER = scale factor for parameter {0} is too small: {1}
 ADDITIONAL_STATE_BAD_TYPE = state "{0}" is not a double array
 
 # unknown additional data "{0}"
-UNKNOWN_ADDITIONAL_DATA = <MISSING TRANSLATION>
+UNKNOWN_ADDITIONAL_DATA = unknown additional data "{0}"
 
 # unknown month "{0}"
 UNKNOWN_MONTH = unknown month "{0}"

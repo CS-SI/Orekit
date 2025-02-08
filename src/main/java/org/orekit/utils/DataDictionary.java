@@ -41,7 +41,7 @@ import java.util.Map;
 public class DataDictionary implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20211121L;
+    private static final long serialVersionUID = 20250208L;
 
     /** Default capacity. */
     private static final int DEFAULT_INITIAL_CAPACITY = 4;
@@ -71,10 +71,17 @@ public class DataDictionary implements Serializable {
         this(DEFAULT_INITIAL_CAPACITY + dictionary.getData().size());
         for (final Entry entry : dictionary.getData()) {
             // we don't call put(key, value) to avoid the overhead of the unneeded call to remove(key)
-            add(entry.getKey(), entry.getValue());
+            data.add(new Entry(entry.getKey(), entry.getValue()));
         }
     }
 
+    /** Creates a double values dictionary.
+     * <p>
+     * Creates a DoubleArrayDictionary with all double[] values
+     * contained in the instance.
+     * </p>
+     * @return a double values dictionary
+     */
     public DoubleArrayDictionary toDoubleDictionary() {
         final DoubleArrayDictionary dictionary = new DoubleArrayDictionary();
         for (final Entry entry : data) {
@@ -133,14 +140,10 @@ public class DataDictionary implements Serializable {
      */
     public void put(final String key, final Object value) {
         remove(key);
-        add(key, value);
-    }
-
-    public void add(final String key, final Object value) {
         data.add(new Entry(key, value));
     }
 
-    /** Put all the entries from the map in the dictionary.
+    /** Put all the double[] entries from the map in the dictionary.
      * @param map map to copy into the instance
      */
     public void putAllDoubles(final Map<String, double[]> map) {
@@ -229,7 +232,7 @@ public class DataDictionary implements Serializable {
     public static class Entry implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20211121L;
+        private static final long serialVersionUID = 20250208L;
 
         /** Key. */
         private final String key;
@@ -283,7 +286,6 @@ public class DataDictionary implements Serializable {
          * </p>
          * @param factor multiplicative factor for increment
          * @param raw raw increment to be multiplied by {@code factor} and then added
-         * @since 11.1.1
          */
         public void scaledIncrement(final double factor, final DoubleArrayDictionary.Entry raw) {
             if (value instanceof double[]) {
@@ -300,10 +302,5 @@ public class DataDictionary implements Serializable {
                 Arrays.fill((double[]) value, 0.0);
             }
         }
-
-
-
     }
-
-
 }

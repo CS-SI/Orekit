@@ -165,13 +165,13 @@ public interface Propagator extends PVCoordinatesProvider {
      */
     void resetInitialState(SpacecraftState state);
 
-    /** Add a set of user-specified state parameters to be computed along with the orbit propagation.
-     * @param additionalStateProvider provider for additional state
+    /** Add a set of user-specified data to be computed along with the orbit propagation.
+     * @param additionalStateProvider provider for additional data
      */
     void addAdditionalDataProvider(AdditionalDataProvider<?> additionalStateProvider);
 
-    /** Get an unmodifiable list of providers for additional state.
-     * @return providers for the additional states
+    /** Get an unmodifiable list of providers for additional data.
+     * @return providers for the additional data
      */
     List<AdditionalDataProvider<?>> getAdditionalDataProviders();
 

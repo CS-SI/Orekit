@@ -89,7 +89,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
     /** Current mass (kg). */
     private final double mass;
 
-    /** Additional states. */
+    /** Additional data, can be any object (String, double[], etc.). */
     private final DataDictionary additional;
 
     /** Additional states derivatives.
@@ -145,7 +145,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
     /** Build a spacecraft state from orbit and additional states.
      * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param orbit the orbit
-     * @param additional additional states
+     * @param additional additional data
      * @since 11.1
      */
     public SpacecraftState(final Orbit orbit, final DataDictionary additional) {
@@ -158,7 +158,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
      * @param orbit the orbit
      * @param attitude attitude
-     * @param additional additional states
+     * @param additional additional data
      * @exception IllegalArgumentException if orbit and attitude dates
      * or frames are not equal
      * @since 11.1
@@ -172,7 +172,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * <p>Attitude law is set to an unspecified default attitude.</p>
      * @param orbit the orbit
      * @param mass the mass (kg)
-     * @param additional additional states
+     * @param additional additional data
      * @since 11.1
      */
     public SpacecraftState(final Orbit orbit, final double mass, final DataDictionary additional) {
@@ -185,9 +185,8 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * @param orbit the orbit
      * @param attitude attitude
      * @param mass the mass (kg)
-     * @param additional additional states (may be null if no additional states are available)
-     * @exception IllegalArgumentException if orbit and attitude dates
-     * or frames are not equal
+     * @param additional additional data (may be null if no additional data are available)
+     * @exception IllegalArgumentException if orbit and attitude dates or frames are not equal
      * @since 11.1
      */
     public SpacecraftState(final Orbit orbit, final Attitude attitude,
@@ -200,7 +199,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * @param orbit the orbit
      * @param attitude attitude
      * @param mass the mass (kg)
-     * @param additional additional states (may be null if no additional states are available)
+     * @param additional additional data (may be null if no additional states are available)
      * @param additionalDot additional states derivatives (may be null if no additional states derivatives are available)
      * @exception IllegalArgumentException if orbit and attitude dates
      * or frames are not equal
@@ -214,16 +213,8 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
         this.absPva     = null;
         this.attitude   = attitude;
         this.mass       = mass;
-        if (additional == null) {
-            this.additional = new DataDictionary();
-        } else {
-            this.additional = additional;
-        }
-        if (additionalDot == null) {
-            this.additionalDot = new DoubleArrayDictionary();
-        } else {
-            this.additionalDot = new DoubleArrayDictionary(additionalDot);
-        }
+        this.additional = additional == null ? new DataDictionary() : additional;
+        this.additionalDot = additionalDot == null ? new DoubleArrayDictionary() : new DoubleArrayDictionary(additionalDot);
     }
 
     /** Build a spacecraft state from position-velocity-acceleration only.
@@ -274,7 +265,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
     /** Build a spacecraft state from position-velocity-acceleration and additional states.
      * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param absPva position-velocity-acceleration
-     * @param additional additional states
+     * @param additional additional data
      * @since 11.1
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva, final DataDictionary additional) {
@@ -287,7 +278,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
      * @param absPva position-velocity-acceleration
      * @param attitude attitude
-     * @param additional additional states
+     * @param additional additional data
      * @exception IllegalArgumentException if orbit and attitude dates
      * or frames are not equal
      * @since 11.1
@@ -301,7 +292,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * <p>Attitude law is set to an unspecified default attitude.</p>
      * @param absPva position-velocity-acceleration
      * @param mass the mass (kg)
-     * @param additional additional states
+     * @param additional additional data
      * @since 11.1
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva, final double mass, final DataDictionary additional) {
@@ -314,7 +305,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * @param absPva position-velocity-acceleration
      * @param attitude attitude
      * @param mass the mass (kg)
-     * @param additional additional states (may be null if no additional states are available)
+     * @param additional additional data (may be null if no additional data are available)
      * @exception IllegalArgumentException if orbit and attitude dates
      * or frames are not equal
      * @since 11.1
@@ -329,7 +320,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * @param absPva position-velocity-acceleration
      * @param attitude attitude
      * @param mass the mass (kg)
-     * @param additional additional states (may be null if no additional states are available)
+     * @param additional additional data (may be null if no additional data are available)
      * @param additionalDot additional states derivatives(may be null if no additional states derivatives are available)
      * @exception IllegalArgumentException if orbit and attitude dates
      * or frames are not equal
@@ -343,19 +334,11 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
         this.absPva     = absPva;
         this.attitude   = attitude;
         this.mass       = mass;
-        if (additional == null) {
-            this.additional = new DataDictionary();
-        } else {
-            this.additional = new DataDictionary(additional);
-        }
-        if (additionalDot == null) {
-            this.additionalDot = new DoubleArrayDictionary();
-        } else {
-            this.additionalDot = new DoubleArrayDictionary(additionalDot);
-        }
+        this.additional = additional == null ? new DataDictionary() : new DataDictionary(additional);
+        this.additionalDot = additionalDot == null ? new DoubleArrayDictionary() : new DoubleArrayDictionary(additionalDot);
     }
 
-    /** Add an additional state.
+    /** Add an additional state (i.e., represented by double values).
      * <p>
      * {@link SpacecraftState SpacecraftState} instances are immutable,
      * so this method does <em>not</em> change the instance, but rather
@@ -366,10 +349,16 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * did not have any additional state with that name, the new instance
      * will have one more additional state than the original instance.
      * </p>
+     * <p>
+     * Since Orekit 13.0, it is possible to add any additional type of data
+     * (i.e., any type of Object) thanks to {@link #addAdditionalData(String, Object)}
+     * method.
+     * </p>
      * @param name name of the additional state (names containing "orekit"
      * with any case are reserved for the library internal use)
      * @param value value of the additional state
      * @return a new instance, with the additional state added
+     * @see #addAdditionalData(String, Object)
      * @see #hasAdditionalState(String)
      * @see #getAdditionalState(String)
      * @see #getAdditionalStatesValues()
@@ -378,6 +367,26 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
         return addAdditionalData(name, value.clone());
     }
 
+    /** Add an additional data.
+     * <p>
+     * {@link SpacecraftState SpacecraftState} instances are immutable,
+     * so this method does <em>not</em> change the instance, but rather
+     * creates a new instance, which has the same orbit, attitude, mass
+     * and additional states as the original instance, except it also
+     * has the specified state. If the original instance already had an
+     * additional data with the same name, it will be overridden. If it
+     * did not have any additional state with that name, the new instance
+     * will have one more additional state than the original instance.
+     * </p>
+     * @param name name of the additional data (names containing "orekit"
+     * with any case are reserved for the library internal use)
+     * @param value value of the additional data
+     * @return a new instance, with the additional data added
+     * @see #hasAdditionalState(String)
+     * @see #getAdditionalData(String)
+     * @see #getAdditionalStatesValues()
+     * @since 13.0
+     */
     public SpacecraftState addAdditionalData(final String name, final Object value) {
         final DataDictionary newDict = new DataDictionary(additional);
         newDict.put(name, value);
@@ -653,7 +662,9 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * @param name name of the additional state
      * @return true if the additional state is available
      * @see #addAdditionalState(String, double[])
+     * @see #addAdditionalData(String, Object)
      * @see #getAdditionalState(String)
+     * @see #getAdditionalData(String)
      * @see #getAdditionalStatesValues()
      */
     public boolean hasAdditionalState(final String name) {
@@ -757,13 +768,14 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * @see #addAdditionalState(String, double[])
      * @see #hasAdditionalState(String)
      * @see #getAdditionalStatesValues()
+     * @since 13.0
      */
     public Object getAdditionalData(final String name) {
         final DataDictionary.Entry entry = additional.getEntry(name);
         if (entry == null) {
             throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_DATA, name);
         }
-        return  entry.getValue();
+        return entry.getValue();
     }
 
     /** Get an additional state derivative.

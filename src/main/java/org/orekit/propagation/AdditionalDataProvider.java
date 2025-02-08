@@ -20,6 +20,9 @@ import org.orekit.time.AbsoluteDate;
 
 /** This interface allows to modify {@link SpacecraftState} and set up additional data.
  * <p>
+ * A data can be any type of java Object (i.e., double[], String, class, etc.)
+ * </p>
+ * <p>
  * {@link Propagator Propagators} generate {@link SpacecraftState states} that contain at
  * least orbit, attitude, and mass. These states may however also contain {@link
  * SpacecraftState#addAdditionalData(String, Object) additional data}. Instances of classes
@@ -75,19 +78,19 @@ import org.orekit.time.AbsoluteDate;
  */
 public interface AdditionalDataProvider<T> {
 
-    /** Get the name of the additional state.
+    /** Get the name of the additional data.
      * <p>
      * If a provider just modifies one of the basic elements (orbit, attitude
-     * or mass) without adding any new state, it should return the empty string
+     * or mass) without adding any new data, it should return the empty string
      * as its name.
      * </p>
-     * @return name of the additional state (names containing "orekit"
+     * @return name of the additional data (names containing "orekit"
      * with any case are reserved for the library internal use)
      */
     String getName();
 
-    /** Initialize the additional state provider at the start of propagation.
-     * @param initialState initial state information at the start of propagation
+    /** Initialize the additional data provider at the start of propagation.
+     * @param initialState initial spacecraft state information at the start of propagation
      * @param target       date of propagation
      */
     default void init(final SpacecraftState initialState, final AbsoluteDate target) {
@@ -96,7 +99,7 @@ public interface AdditionalDataProvider<T> {
 
     /** Check if this provider should yield so another provider has an opportunity to add missing parts.
      * <p>
-     * Decision to yield is often based on an additional state being {@link SpacecraftState#hasAdditionalState(String)
+     * Decision to yield is often based on an additional data being {@link SpacecraftState#hasAdditionalState(String)
      * already available} in the provided {@code state} (but it could theoretically also depend on
      * an additional state derivative being {@link SpacecraftState#hasAdditionalStateDerivative(String)
      * already available}, or any other criterion). If for example a provider needs the state transition
@@ -104,7 +107,7 @@ public interface AdditionalDataProvider<T> {
      * </p>
      * <pre>{@code
      * public boolean yields(final SpacecraftState state) {
-     *     return !state.getAdditionalStates().containsKey("STM");
+     *     return !state.hasAdditionalState("STM");
      * }
      * }</pre>
      * <p>
@@ -119,8 +122,8 @@ public interface AdditionalDataProvider<T> {
         return false;
     }
 
-    /** Get the additional state.
-     * @param state spacecraft state to which additional state should correspond
+    /** Get the additional data.
+     * @param state spacecraft state to which additional data should correspond
      * @return additional state corresponding to spacecraft state
      */
     T getAdditionalData(SpacecraftState state);
