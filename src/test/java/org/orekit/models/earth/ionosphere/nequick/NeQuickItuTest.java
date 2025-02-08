@@ -63,6 +63,10 @@ public class NeQuickItuTest {
         // Model
         final NeQuickItu model = new NeQuickItu(137.568737, TimeScalesFactory.getUTC());
 
+        // Getters
+        Assertions.assertEquals(137.568737, model.getF107(), 1.0e-6);
+        Assertions.assertEquals("UTC", model.getUtc().getName());
+
         // Geodetic points
         final GeodeticPoint recP = new GeodeticPoint(FastMath.toRadians(-31.80), FastMath.toRadians(115.89), 12.78);
         final GeodeticPoint satP = new GeodeticPoint(FastMath.toRadians(-14.31), FastMath.toRadians(124.09), 20100697.90);

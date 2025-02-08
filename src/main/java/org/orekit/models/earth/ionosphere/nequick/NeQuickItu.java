@@ -73,6 +73,13 @@ public class NeQuickItu extends NeQuickModel {
         this.f107 = f107;
     }
 
+    /** Get solar flux.
+     * @return solar flux
+     */
+    public double getF107() {
+        return f107;
+    }
+
     /** {@inheritDoc} */
     @Override
     double stec(final DateTimeComponents dateTime, final Ray ray) {

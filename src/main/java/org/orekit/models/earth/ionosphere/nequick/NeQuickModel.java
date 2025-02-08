@@ -83,6 +83,14 @@ public abstract class NeQuickModel implements IonosphericModel {
 
     }
 
+    /** Get UTC time scale.
+     * @return UTC time scale
+     * @since 13.0
+     */
+    public TimeScale getUtc() {
+        return utc;
+    }
+
     /** {@inheritDoc} */
     @Override
     public double pathDelay(final SpacecraftState state, final TopocentricFrame baseFrame,

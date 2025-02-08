@@ -69,6 +69,13 @@ public class NeQuickGalileo extends NeQuickModel {
         this.alpha = alpha.clone();
     }
 
+    /** Get effective ionisation level coefficients.
+     * @return effective ionisation level coefficients
+     */
+    public double[] getAlpha() {
+        return alpha.clone();
+    }
+
     /**
      * Compute effective ionization level.
      *
