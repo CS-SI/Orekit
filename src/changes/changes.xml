@@ -55,6 +55,10 @@
             Adding parsing of SITE/GPS_PHASE_CENTER, SITE/GAL_PHASE_CENTER,
             and SATELLITE/PHASE_CENTER from Sinex files.
         </action>
+        <action dev="bryan" type="add" issue="1645">
+            Updated StateCovarianceMatrixProvider to be an AdditionalDataProvider
+            of RealMatrix.
+        </action>
         <action dev="anne-laure" type="add" issue="1645">
             Extends additional state to any type of data
         </action>

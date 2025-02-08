@@ -201,6 +201,43 @@ public class StateCovarianceMatrixProviderTest {
     }
 
     /**
+     * Unit test for covariance propagation in Cartesian elements.
+     * This test verifies the mechanism of AdditionalDataProvider for a RealMatrix.
+     */
+    @Test
+    public void tesAdditionalDataProvider() {
+
+        // Initialization
+        setUp();
+
+        // Integrator
+        final double step = 60.0;
+        final ODEIntegrator integrator = new ClassicalRungeKuttaIntegrator(step);
+
+        // Numerical propagator
+        final NumericalPropagator propagator = new NumericalPropagator(integrator);
+        // Add a force model
+        final NormalizedSphericalHarmonicsProvider gravity = GravityFieldFactory.getNormalizedProvider(2, 0);
+        final ForceModel holmesFeatherstone =
+                new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), gravity);
+        propagator.addForceModel(holmesFeatherstone);
+        propagator.setInitialState(initialState);
+
+        // Configure covariance propagation
+        final StateCovarianceMatrixProvider provider = setUpCovariancePropagation(propagator);
+
+        // Propagate
+        final SpacecraftState propagated = propagator.propagate(initialState.getDate().shiftedBy(Constants.JULIAN_DAY));
+
+        // Get the propagated covariance
+        final RealMatrix propagatedCov = provider.getAdditionalData(propagated);
+
+        // Verify
+        compareCovariance(refCovAfter60s, propagatedCov, 3.0e-5);
+        Assertions.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
+    }
+
+    /**
      * Unit test for covariance propagation in Cartesian elements. The difference here is that the propagator uses its
      * default orbit type: EQUINOCTIAL
      */
