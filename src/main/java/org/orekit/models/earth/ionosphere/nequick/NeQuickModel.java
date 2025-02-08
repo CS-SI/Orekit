@@ -153,13 +153,7 @@ public abstract class NeQuickModel implements IonosphericModel {
      * @return the STEC in TECUnits
      */
     public double stec(final AbsoluteDate date, final GeodeticPoint recP, final GeodeticPoint satP) {
-
-        // Load the correct CCIR file
-        final DateTimeComponents dateTime = date.getComponents(utc);
-        loadsIfNeeded(dateTime.getDate());
-
-        return stec(dateTime, new Ray(recP, satP));
-
+        return stec(date.getComponents(utc), new Ray(recP, satP));
     }
 
     /**
@@ -173,13 +167,7 @@ public abstract class NeQuickModel implements IonosphericModel {
     public <T extends CalculusFieldElement<T>> T stec(final FieldAbsoluteDate<T> date,
                                                       final FieldGeodeticPoint<T> recP,
                                                       final FieldGeodeticPoint<T> satP) {
-
-        // Load the correct CCIR file
-        final DateTimeComponents dateTime = date.getComponents(utc);
-        loadsIfNeeded(dateTime.getDate());
-
-        return stec(dateTime, new FieldRay<>(recP, satP));
-
+        return stec(date.getComponents(utc), new FieldRay<>(recP, satP));
     }
 
     /** Compute modip for a location.
@@ -212,6 +200,9 @@ public abstract class NeQuickModel implements IonosphericModel {
     public double electronDensity(final DateTimeComponents dateTime, final double az,
                                   final double latitude, final double longitude, final double h) {
 
+        // Load the correct CCIR file
+        loadsIfNeeded(dateTime.getDate());
+
         final double modip = computeMODIP(latitude, longitude);
         final NeQuickParameters parameters = new NeQuickParameters(dateTime,
                                                                    flattenF2[dateTime.getDate().getMonth() - 1],
@@ -242,6 +233,10 @@ public abstract class NeQuickModel implements IonosphericModel {
      */
     public <T extends CalculusFieldElement<T>> T electronDensity(final DateTimeComponents dateTime, final T az,
                                                                  final T latitude, final T longitude, final T h) {
+
+
+        // Load the correct CCIR file
+        loadsIfNeeded(dateTime.getDate());
 
         final T modip = computeMODIP(latitude, longitude);
         final FieldNeQuickParameters<T> parameters =
