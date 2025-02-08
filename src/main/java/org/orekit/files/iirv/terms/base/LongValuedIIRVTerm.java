@@ -20,6 +20,8 @@ import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 
+import java.util.regex.Pattern;
+
 /**
  * Term in an IIRV Vector representing a Long (or integer) value.
  *
@@ -27,6 +29,9 @@ import org.orekit.errors.OrekitMessages;
  * @since 13.0
  */
 public class LongValuedIIRVTerm extends IIRVVectorTerm<Long> {
+
+    /** Space pattern. */
+    private static final Pattern SPACE_PATTERN = Pattern.compile(" ");
 
     /** True if negative values are permitted, false if the value is positive. */
     private final boolean isSigned;
@@ -72,7 +77,7 @@ public class LongValuedIIRVTerm extends IIRVVectorTerm<Long> {
     public static long computeValueFromString(final String value) {
         try {
             // Remove spaces (for positive values)
-            final String integerString = value.replaceAll(" ", "");
+            final String integerString = SPACE_PATTERN.matcher(value).replaceAll("");
 
             // Cast String to integer
             return Long.parseLong(integerString);

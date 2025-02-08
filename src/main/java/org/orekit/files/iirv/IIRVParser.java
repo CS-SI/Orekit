@@ -45,6 +45,9 @@ public class IIRVParser implements EphemerisFileParser<IIRVEphemerisFile> {
     /** Default number of sample for interpolating data (See: reference documents). */
     public static final int DEFAULT_INTERPOLATION_SAMPLE = 10;
 
+    /** Line separator. */
+    private static final Pattern LINE_SEPARATOR_PATTERN = Pattern.compile(IIRVVector.LINE_SEPARATOR);
+
     /** Standard gravitational parameter in m³/s². */
     private final double mu;
 
@@ -85,7 +88,7 @@ public class IIRVParser implements EphemerisFileParser<IIRVEphemerisFile> {
         this.utc = utc;
     }
 
-    /** @inheritDoc} */
+    /** {@inheritDoc} */
     @Override
     public IIRVEphemerisFile parse(final DataSource source) {
         if (source == null) {
@@ -152,7 +155,7 @@ public class IIRVParser implements EphemerisFileParser<IIRVEphemerisFile> {
      * {@code iirvVectorStrings}
      */
     public IIRVEphemerisFile parse(final String iirv) {
-        return parse(Arrays.asList(iirv.split(IIRVVector.LINE_SEPARATOR)));
+        return parse(Arrays.asList(LINE_SEPARATOR_PATTERN.split(iirv)));
     }
 
     /**

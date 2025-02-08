@@ -63,15 +63,7 @@ import java.util.Objects;
  * {@code mmmmmmmmaaaaakkkksrrrrrrrccc<<==}<br>
  * {@code ITERM oooo<<==}
  * <table border="1">
- *     <thead>
- *         <tr>
- *             <th>Line No.</th>
- *             <th>Characters</th>
- *             <th>Value</th>
- *             <th>Type</th>
- *             <th>Description</th>
- *             <th>Class</th>
- *    </thead>
+ *    <caption>Line No. / Characters / Value / Type / Description / Class</caption>
  *    <tbody>
  *        <tr>
  *            <th rowspan="9">1</th>
