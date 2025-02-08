@@ -21,6 +21,8 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.iirv.terms.IIRVTermUtils;
 
+import java.util.regex.Pattern;
+
 /**
  * Term in an IIRV Vector representing a double value.
  *
@@ -28,6 +30,9 @@ import org.orekit.files.iirv.terms.IIRVTermUtils;
  * @since 13.0
  */
 public class DoubleValuedIIRVTerm extends IIRVVectorTerm<Double> {
+
+    /** Space pattern. */
+    private static final Pattern SPACE_PATTERN = Pattern.compile(" ");
 
     /**
      * Number of characters before the end of the encoded String the decimal place is assumed to occur.
@@ -95,7 +100,7 @@ public class DoubleValuedIIRVTerm extends IIRVVectorTerm<Double> {
             String intStr = value;
 
             // Remove spaces (for positive values)
-            intStr = intStr.replaceAll(" ", "");
+            intStr = SPACE_PATTERN.matcher(intStr).replaceAll("");
 
             // Return if there are no characters after the decimal place
             if (nCharsAfterDecimalPlace == 0) {
