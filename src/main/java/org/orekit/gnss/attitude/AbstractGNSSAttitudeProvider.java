@@ -158,12 +158,8 @@ abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvider {
      */
     private <T extends CalculusFieldElement<T>> FieldTurnSpan<T> getTurnSpan(final FieldAbsoluteDate<T> date) {
 
-        SortedSet<TimeStamped> sortedSet = fieldTurns.get(date.getField());
-        if (sortedSet == null) {
-            // this is the first time we manage such a field, prepare a sorted set for it
-            sortedSet = new TreeSet<>(new ChronologicalComparator());
-            fieldTurns.put(date.getField(), sortedSet);
-        }
+        SortedSet<TimeStamped> sortedSet = fieldTurns.computeIfAbsent(date.getField(), k -> new TreeSet<>(new ChronologicalComparator()));
+        // this is the first time we manage such a field, prepare a sorted set for it
 
         // as the reference date of the turn span is the end + margin date,
         // the span to consider can only be the first span that is after date

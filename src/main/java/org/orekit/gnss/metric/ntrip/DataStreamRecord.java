@@ -94,7 +94,7 @@ public class DataStreamRecord extends Record {
         this.carrierPhase   = CarrierPhase.getCarrierPhase(getField(5));
         this.systems        = Stream.
                               of(getField(6).split("\\+")).
-                              map(k -> NavigationSystem.getNavigationSystem(k)).
+                              map(NavigationSystem::getNavigationSystem).
                               collect(Collectors.toList());
         this.latitude       = FastMath.toRadians(Double.parseDouble(getField(9)));
         this.longitude      = FastMath.toRadians(Double.parseDouble(getField(10)));

@@ -38,7 +38,7 @@ public enum Authentication {
     DIGEST("D");
 
     /** Keywords map. */
-    private static final Map<String, Authentication> KEYWORDS_MAP = new HashMap<String, Authentication>();
+    private static final Map<String, Authentication> KEYWORDS_MAP = new HashMap<>();
     static {
         for (final Authentication type : values()) {
             KEYWORDS_MAP.put(type.getKeyword(), type);

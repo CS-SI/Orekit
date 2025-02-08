@@ -88,10 +88,10 @@ public class ShiftingTransformProvider implements TransformProvider {
     private ShiftingTransformProvider(final InterpolatingTransformProvider interpolatingProvider,
                                      final int maxSlots, final double maxSpan, final double newSlotInterval) {
         this.interpolatingProvider = interpolatingProvider;
-        this.cache = new GenericTimeStampedCache<Transform>(2, maxSlots, maxSpan, newSlotInterval,
-                                                            new TransformGenerator(2,
-                                                                                   interpolatingProvider,
-                                                                                   interpolatingProvider.getStep()));
+        this.cache = new GenericTimeStampedCache<>(2, maxSlots, maxSpan, newSlotInterval,
+                new TransformGenerator(2,
+                        interpolatingProvider,
+                        interpolatingProvider.getStep()));
         this.fieldCaches = new HashMap<>();
     }
 
@@ -142,14 +142,14 @@ public class ShiftingTransformProvider implements TransformProvider {
             (GenericTimeStampedCache<FieldTransform<T>>) fieldCaches.get(date.getField());
         if (fieldCache == null) {
             fieldCache =
-                new GenericTimeStampedCache<FieldTransform<T>>(cache.getMaxNeighborsSize(),
-                                                               cache.getMaxSlots(),
-                                                               cache.getMaxSpan(),
-                                                               cache.getNewSlotQuantumGap(),
-                                                               new FieldTransformGenerator<>(date.getField(),
-                                                                                             cache.getMaxNeighborsSize(),
-                                                                                             interpolatingProvider,
-                                                                                             interpolatingProvider.getStep()));
+                    new GenericTimeStampedCache<>(cache.getMaxNeighborsSize(),
+                            cache.getMaxSlots(),
+                            cache.getMaxSpan(),
+                            cache.getNewSlotQuantumGap(),
+                            new FieldTransformGenerator<>(date.getField(),
+                                    cache.getMaxNeighborsSize(),
+                                    interpolatingProvider,
+                                    interpolatingProvider.getStep()));
             fieldCaches.put(date.getField(), fieldCache);
         }
 
@@ -169,14 +169,14 @@ public class ShiftingTransformProvider implements TransformProvider {
             (GenericTimeStampedCache<FieldTransform<T>>) fieldCaches.get(date.getField());
         if (fieldCache == null) {
             fieldCache =
-                new GenericTimeStampedCache<FieldTransform<T>>(cache.getMaxNeighborsSize(),
-                                                               cache.getMaxSlots(),
-                                                               cache.getMaxSpan(),
-                                                               cache.getNewSlotQuantumGap(),
-                                                               new FieldTransformGenerator<>(date.getField(),
-                                                                                             cache.getMaxNeighborsSize(),
-                                                                                             interpolatingProvider,
-                                                                                             interpolatingProvider.getStep()));
+                    new GenericTimeStampedCache<>(cache.getMaxNeighborsSize(),
+                            cache.getMaxSlots(),
+                            cache.getMaxSpan(),
+                            cache.getNewSlotQuantumGap(),
+                            new FieldTransformGenerator<>(date.getField(),
+                                    cache.getMaxNeighborsSize(),
+                                    interpolatingProvider,
+                                    interpolatingProvider.getStep()));
             fieldCaches.put(date.getField(), fieldCache);
         }
 

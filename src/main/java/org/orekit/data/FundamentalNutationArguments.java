@@ -235,7 +235,7 @@ public class FundamentalNutationArguments {
 
             // look for the reference date and the 14 polynomials
             final int n = FundamentalName.values().length;
-            final Map<FundamentalName, double[]> polynomials = new HashMap<FundamentalName, double[]>(n);
+            final Map<FundamentalName, double[]> polynomials = new HashMap<>(n);
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 lineNumber++;
                 if (definitionParser.parseDefinition(line, lineNumber, name)) {
@@ -244,7 +244,7 @@ public class FundamentalNutationArguments {
                 }
             }
 
-            final List<double[]> coefficients = new ArrayList<double[]>(n);
+            final List<double[]> coefficients = new ArrayList<>(n);
             coefficients.add(getCoefficients(FundamentalName.L,       polynomials, name));
             coefficients.add(getCoefficients(FundamentalName.L_PRIME, polynomials, name));
             coefficients.add(getCoefficients(FundamentalName.F,       polynomials, name));

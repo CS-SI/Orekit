@@ -154,7 +154,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
                                               final SphericalPolygonsSet zone,
                                               final double samplingStep) {
 
-        final List<SamplingPoint> sampledZone = new ArrayList<SamplingPoint>();
+        final List<SamplingPoint> sampledZone = new ArrayList<>();
 
         // sample the zone boundary
         final List<Vertex> boundary = zone.getBoundaryLoops();

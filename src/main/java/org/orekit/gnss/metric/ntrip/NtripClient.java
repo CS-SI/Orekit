@@ -160,7 +160,7 @@ public class NtripClient {
                                DEFAULT_RECONNECT_DELAY_FACTOR,
                                DEFAULT_MAX_RECONNECT);
         setProxy(Type.DIRECT, null, -1);
-        this.gga             = new AtomicReference<String>(null);
+        this.gga             = new AtomicReference<>(null);
         this.sourceTable     = null;
         this.executorService = null;
     }

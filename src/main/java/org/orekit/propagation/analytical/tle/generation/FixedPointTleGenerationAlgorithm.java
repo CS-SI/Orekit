@@ -312,7 +312,7 @@ public class FixedPointTleGenerationAlgorithm implements TleGenerationAlgorithm 
      * @return the converted orbit, i.e. equinoctial in TEME frame
      */
     private <T extends CalculusFieldElement<T>> FieldEquinoctialOrbit<T> convert(final FieldOrbit<T> orbitIn) {
-        return new FieldEquinoctialOrbit<T>(orbitIn.getPVCoordinates(teme), teme, orbitIn.getMu().newInstance(TLEConstants.MU));
+        return new FieldEquinoctialOrbit<>(orbitIn.getPVCoordinates(teme), teme, orbitIn.getMu().newInstance(TLEConstants.MU));
     }
 
 }

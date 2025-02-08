@@ -55,8 +55,8 @@ public class FieldShortPeriodicsInterpolatedCoefficient <T extends CalculusField
      */
     public FieldShortPeriodicsInterpolatedCoefficient(final int interpolationPoints) {
         this.interpolationPoints = interpolationPoints;
-        this.abscissae = new ArrayList<FieldAbsoluteDate<T>>();
-        this.values = new ArrayList<T[]>();
+        this.abscissae = new ArrayList<>();
+        this.values = new ArrayList<>();
         this.latestClosestNeighbor = 0;
     }
 

@@ -54,8 +54,8 @@ public class STMEquations
         this.name = "stmEquations";
 
         // Jacobian constant values initialization
-        for (int j = 0; j < jacobian.length; ++j) {
-            Arrays.fill(jacobian[j], 0.0);
+        for (double[] doubles : jacobian) {
+            Arrays.fill(doubles, 0.0);
         }
 
         jacobian[0][3] = 1.0;

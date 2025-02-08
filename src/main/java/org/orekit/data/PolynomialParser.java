@@ -306,7 +306,7 @@ public class PolynomialParser {
      */
     public double[] parse(final String expression) {
 
-        final Map<Integer, Double> coefficients = new HashMap<Integer, Double>();
+        final Map<Integer, Double> coefficients = new HashMap<>();
         int maxDegree = -1;
         matcher = pattern.matcher(expression);
         next = 0;

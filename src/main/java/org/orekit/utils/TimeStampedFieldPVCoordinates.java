@@ -98,7 +98,7 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
      * @param pv non-field, time-stamped Position-Velocity coordinates
      */
     public TimeStampedFieldPVCoordinates(final Field<T> field, final TimeStampedPVCoordinates pv) {
-        this(pv.getDate(), new FieldPVCoordinates<T>(field, pv));
+        this(pv.getDate(), new FieldPVCoordinates<>(field, pv));
     }
 
     /** Multiplicative constructor

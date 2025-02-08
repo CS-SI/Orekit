@@ -106,7 +106,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
                                                                                    initialOrbit.getDate(),
                                                                                    initialOrbit.getFrame()),
                                                  mass, mu, null, null);
-        states = new TimeSpanMap<SpacecraftState>(initial);
+        states = new TimeSpanMap<>(initial);
         super.resetInitialState(initial);
 
     }
@@ -160,7 +160,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
                                                     state.getAdditionalStatesValues(),
                                                     state.getAdditionalStatesDerivatives());
 
-        states = new TimeSpanMap<SpacecraftState>(fixedState);
+        states = new TimeSpanMap<>(fixedState);
         super.resetInitialState(fixedState);
 
     }

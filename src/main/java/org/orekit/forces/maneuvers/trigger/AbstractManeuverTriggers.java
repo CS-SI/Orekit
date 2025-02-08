@@ -138,11 +138,7 @@ public abstract class AbstractManeuverTriggers implements ResettableManeuverTrig
     public <T extends CalculusFieldElement<T>> void addResetter(final Field<T> field, final FieldManeuverTriggersResetter<T> resetter) {
 
         // check if we already have resetters for this field
-        List<FieldManeuverTriggersResetter<?>> list = fieldResetters.get(field);
-        if (list == null) {
-            list = new ArrayList<>();
-            fieldResetters.put(field, list);
-        }
+        List<FieldManeuverTriggersResetter<?>> list = fieldResetters.computeIfAbsent(field, k -> new ArrayList<>());
 
         // add the resetter to the list
         list.add(resetter);

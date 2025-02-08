@@ -85,7 +85,7 @@ public class MultisatStepNormalizer implements MultiSatStepHandler {
 
         if (lastStates == null) {
             // initialize lastState in the first step case
-            lastStates = interpolators.stream().map(i -> i.getPreviousState()).collect(Collectors.toList());
+            lastStates = interpolators.stream().map(OrekitStepInterpolator::getPreviousState).collect(Collectors.toList());
         }
 
         // take the propagation direction into account

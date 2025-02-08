@@ -423,9 +423,9 @@ public class AemWriter extends AbstractMessageWriter<AdmHeader, AemSegment, Aem>
             generator.writeRawData(generator.dateToString(getTimeConverter(), attitude.getDate()));
 
             // data
-            for (int index = 0; index < data.length; index++) {
+            for (String datum : data) {
                 generator.writeRawData(' ');
-                generator.writeRawData(data[index]);
+                generator.writeRawData(datum);
             }
 
             // end the line

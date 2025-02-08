@@ -352,7 +352,7 @@ public class CRD {
 
             final String systemConfigId = systemConfigurationId == null ? getConfigurationRecords().getSystemRecord().getConfigurationId() : systemConfigurationId;
 
-            final List<Calibration> list = new ArrayList<Calibration>();
+            final List<Calibration> list = new ArrayList<>();
             // Loop to find the appropriate one
             for (Calibration calibration : calibrationData) {
                 if (systemConfigId.equalsIgnoreCase(calibration.getSystemConfigurationId())) {
@@ -403,7 +403,7 @@ public class CRD {
 
             final String systemConfigId = systemConfigurationId == null ? getConfigurationRecords().getSystemRecord().getConfigurationId() : systemConfigurationId;
 
-            final List<CalibrationDetail> list = new ArrayList<CalibrationDetail>();
+            final List<CalibrationDetail> list = new ArrayList<>();
             // Loop to find the appropriate one
             for (CalibrationDetail calibration : calibrationDetailData) {
                 if (systemConfigId.equalsIgnoreCase(calibration.getSystemConfigurationId())) {
@@ -1318,7 +1318,7 @@ public class CRD {
             } else {
 
                 // Meteo data
-                this.meteo = new ImmutableTimeStampedCache<MeteorologicalMeasurement>(neighborsSize, meteoData);
+                this.meteo = new ImmutableTimeStampedCache<>(neighborsSize, meteoData);
 
                 // Initialize first and last available dates
                 this.firstDate = meteoData.first().getDate();

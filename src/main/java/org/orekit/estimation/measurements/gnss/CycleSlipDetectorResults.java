@@ -56,7 +56,7 @@ public class CycleSlipDetectorResults {
         this.satellite = satellite;
         begin.put(signal, date);
         end.put(signal, date);
-        results.put(signal, new ArrayList<AbsoluteDate>());
+        results.put(signal, new ArrayList<>());
     }
 
     /**
@@ -120,7 +120,7 @@ public class CycleSlipDetectorResults {
     void addAtOtherFrequency(final GnssSignal signal, final AbsoluteDate date) {
         begin.put(signal, date);
         end.put(signal, date);
-        results.put(signal, new ArrayList<AbsoluteDate>());
+        results.put(signal, new ArrayList<>());
     }
 
     /**

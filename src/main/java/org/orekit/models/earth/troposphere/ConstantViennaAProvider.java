@@ -48,8 +48,8 @@ public class ConstantViennaAProvider implements ViennaAProvider {
     @Override
     public <T extends CalculusFieldElement<T>> FieldViennaACoefficients<T> getA(final FieldGeodeticPoint<T> location,
                                                                                 final FieldAbsoluteDate<T> date) {
-        return new FieldViennaACoefficients<T>(date.getField().getZero().newInstance(a.getAh()),
-                                               date.getField().getZero().newInstance(a.getAw()));
+        return new FieldViennaACoefficients<>(date.getField().getZero().newInstance(a.getAh()),
+                date.getField().getZero().newInstance(a.getAw()));
     }
 
 }

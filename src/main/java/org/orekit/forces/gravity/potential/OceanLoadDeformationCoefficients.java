@@ -130,7 +130,7 @@ public enum OceanLoadDeformationCoefficients {
                 // setup the reader
                 lineNumber = 0;
                 int maxDegree = 0;
-                final Map<Integer, Double> map = new HashMap<Integer, Double>();
+                final Map<Integer, Double> map = new HashMap<>();
                 for (line = reader.readLine(); line != null; line = reader.readLine()) {
                     lineNumber++;
                     final Matcher regularMatcher = regularLinePattern.matcher(line);

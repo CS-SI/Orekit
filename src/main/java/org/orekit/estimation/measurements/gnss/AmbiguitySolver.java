@@ -100,7 +100,7 @@ public class AmbiguitySolver {
 
         // set up indirection array
         final List<ParameterDriver> freeDrivers = getFreeAmbiguityDrivers();
-        final List<String> measurementsPDriversNames = new ArrayList<String>();
+        final List<String> measurementsPDriversNames = new ArrayList<>();
         int totalValuesToEstimate = 0;
         for (ParameterDriver driver : freeDrivers) {
             totalValuesToEstimate += driver.getNbOfValues();
@@ -116,9 +116,9 @@ public class AmbiguitySolver {
         final int n = freeDrivers.size();
         final int[] indirection = new int[totalValuesToEstimate];
         int nb = 0;
-        for (int i = 0; i < n; ++i) {
+        for (ParameterDriver freeDriver : freeDrivers) {
 
-            for (Span<String> spanFreeDriver = freeDrivers.get(i).getNamesSpanMap().getFirstSpan(); spanFreeDriver != null; spanFreeDriver = spanFreeDriver.next()) {
+            for (Span<String> spanFreeDriver = freeDriver.getNamesSpanMap().getFirstSpan(); spanFreeDriver != null; spanFreeDriver = spanFreeDriver.next()) {
                 indirection[nb] = -1;
 
                 for (int k = 0; k < measurementsPDriversNames.size(); ++k) {
@@ -138,7 +138,7 @@ public class AmbiguitySolver {
                         builder.append(driverName);
                     }
                     throw new OrekitIllegalArgumentException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                                             spanFreeDriver.getData(), builder.toString());
+                            spanFreeDriver.getData(), builder.toString());
                 }
                 nb++;
             }

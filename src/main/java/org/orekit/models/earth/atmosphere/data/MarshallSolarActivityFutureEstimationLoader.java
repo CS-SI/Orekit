@@ -307,12 +307,9 @@ public class MarshallSolarActivityFutureEstimationLoader
         @Override
         public int hashCode() {
             int  result;
-            long temp;
             result = getFileDate().hashCode();
-            temp   = Double.doubleToLongBits(getF107());
-            result = 31 * result + (int) (temp ^ (temp >>> 32));
-            temp   = Double.doubleToLongBits(getAp());
-            result = 31 * result + (int) (temp ^ (temp >>> 32));
+            result = 31 * result + Double.hashCode(getF107());
+            result = 31 * result + Double.hashCode(getAp());
             return result;
         }
 

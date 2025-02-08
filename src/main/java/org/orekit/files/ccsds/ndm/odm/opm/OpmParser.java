@@ -462,7 +462,7 @@ public class OpmParser extends OdmParser<Opm, OpmParser> {
         if (covarianceBlock == null) {
             // save the current metadata for later retrieval of reference frame
             final OdmCommonMetadata savedMetadata = metadata;
-            covarianceBlock = new CartesianCovariance(() -> savedMetadata.getReferenceFrame());
+            covarianceBlock = new CartesianCovariance(savedMetadata::getReferenceFrame);
             if (moveCommentsIfEmpty(spacecraftParametersBlock, covarianceBlock)) {
                 // get rid of the empty logical block
                 spacecraftParametersBlock = null;

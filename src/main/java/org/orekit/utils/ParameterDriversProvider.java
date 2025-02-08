@@ -113,8 +113,8 @@ public interface ParameterDriversProvider {
         final int nbParametersValues = getNbParametersDriversValue();
         final double[] parameters = new double[nbParametersValues];
         int paramIndex = 0;
-        for (int i = 0; i < drivers.size(); ++i) {
-            for (Span<Double> span = drivers.get(i).getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+        for (ParameterDriver driver : drivers) {
+            for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
                 parameters[paramIndex++] = span.getData();
             }
 
@@ -133,8 +133,8 @@ public interface ParameterDriversProvider {
         final int nbParametersValues = getNbParametersDriversValue();
         final T[] parameters = MathArrays.buildArray(field, nbParametersValues);
         int paramIndex = 0;
-        for (int i = 0; i < drivers.size(); ++i) {
-            for (Span<Double> span = drivers.get(i).getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+        for (ParameterDriver driver : drivers) {
+            for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
                 parameters[paramIndex++] = field.getZero().newInstance(span.getData());
             }
         }

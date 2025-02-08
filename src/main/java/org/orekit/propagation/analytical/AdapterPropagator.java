@@ -83,7 +83,7 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
     public AdapterPropagator(final Propagator reference) {
         super(reference.getAttitudeProvider());
         this.reference = reference;
-        this.effects = new ArrayList<DifferentialEffect>();
+        this.effects = new ArrayList<>();
         // Sets initial state
         super.resetInitialState(getInitialState());
     }

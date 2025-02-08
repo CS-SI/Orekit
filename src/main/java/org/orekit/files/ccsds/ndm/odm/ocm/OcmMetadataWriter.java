@@ -138,7 +138,7 @@ class OcmMetadataWriter extends AbstractWriter {
                              metadata.getOrbitCategory(), false);
         if (metadata.getOcmDataElements() != null) {
             generator.writeEntry(OcmMetadataKey.OCM_DATA_ELEMENTS.name(),
-                                 metadata.getOcmDataElements().stream().map(e -> e.name()).collect(Collectors.toList()), false);
+                                 metadata.getOcmDataElements().stream().map(Enum::name).collect(Collectors.toList()), false);
         }
 
         // other times

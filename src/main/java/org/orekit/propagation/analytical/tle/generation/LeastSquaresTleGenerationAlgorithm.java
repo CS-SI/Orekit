@@ -232,7 +232,7 @@ public class LeastSquaresTleGenerationAlgorithm implements TleGenerationAlgorith
         public Pair<RealVector, RealMatrix> value(final RealVector point) {
             final RealVector objectiveOscState = MatrixUtils.createRealVector(6);
             final RealMatrix objectiveJacobian = MatrixUtils.createRealMatrix(6, 7);
-            getTransformedAndJacobian(state -> meanStateToPV(state), point, objectiveOscState, objectiveJacobian);
+            getTransformedAndJacobian(this::meanStateToPV, point, objectiveOscState, objectiveJacobian);
             return new Pair<>(objectiveOscState, objectiveJacobian);
         }
 

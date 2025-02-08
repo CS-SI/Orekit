@@ -420,7 +420,7 @@ public class Unit implements Serializable {
      * @return value in SI units
      */
     public double toSI(final Double value) {
-        return value == null ? Double.NaN : value.doubleValue() * scale;
+        return value == null ? Double.NaN : value * scale;
     }
 
     /** Convert a value to SI units.
@@ -446,7 +446,7 @@ public class Unit implements Serializable {
      * @return value in instance units
      */
     public double fromSI(final Double value) {
-        return value == null ? Double.NaN : value.doubleValue() / scale;
+        return value == null ? Double.NaN : value / scale;
     }
 
     /** Convert a value from SI units.
