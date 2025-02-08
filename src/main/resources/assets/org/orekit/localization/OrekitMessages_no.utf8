@@ -373,6 +373,30 @@ CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER = <MISSING TRANSLATION>
 # Time system should have already been set before line {0} of file {1}
 CCSDS_TIME_SYSTEM_NOT_READ_YET = <MISSING TRANSLATION>
 
+# line break(s) missing after vector number {0} in {1}
+IIRV_MISSING_LINEBREAK_IN_FILE = <MISSING TRANSLATION>
+
+# line {0} in IIRV vector is not valid: "{1}"
+IIRV_INVALID_LINE_IN_VECTOR = <MISSING TRANSLATION>
+
+# cannot embed more than 1000 vectors in a single IIRV message file: got {0}. Consider splitting the data into multiple files
+IIRV_EXCEEDS_MAX_VECTORS = <MISSING TRANSLATION>
+
+# numeric value "{0}" exceeds the maximum length of {1} for string representation
+IIRV_VALUE_TOO_LARGE = <MISSING TRANSLATION>
+
+# invalid IIRV term value: {0}
+IIRV_INVALID_TERM_VALUE = <MISSING TRANSLATION>
+
+# the "{0}" term cannot change within an IIRV message file
+IIRV_TERM_CHANGES_WITHIN_FILE = <MISSING TRANSLATION>
+
+# IIRV sequence number must increase by 1 for each subsequent vector entry. At at line {0}, expected sequence number {1}+1, but found {2}
+IIRV_SEQUENCE_NUMBER_MUST_BE_INCREASING_BY_ONE = <MISSING TRANSLATION>
+
+# IIRV coordinate system "{0}" ({1}) has not been mapped to an Orekit frame
+IIRV_UNMAPPED_COORDINATE_SYSTEM = <MISSING TRANSLATION>
+
 # cannot estimate precession without proper derivatives
 CANNOT_ESTIMATE_PRECESSION_WITHOUT_PROPER_DERIVATIVES = <MISSING TRANSLATION>
 

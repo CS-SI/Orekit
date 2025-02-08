@@ -370,6 +370,30 @@ CCSDS_TDM_KEYWORD_NOT_FOUND = Aucun mot-clef CCSDS TDM trouvé à la ligne {0} d
 # no Range Units converter configured for parsing Tracking Data Message
 CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER = aucun convertisseur d''unitées de pseudo-distance configuré pour la lecture des  « Tracking Data Message »
 
+# line break(s) missing after vector number {0} in {1}
+IIRV_MISSING_LINEBREAK_IN_FILE = fin de ligne manquante après le vecteur numéro {0} dans {1}
+
+# line {0} in IIRV vector is not valid: "{1}"
+IIRV_INVALID_LINE_IN_VECTOR = la ligne {0} dans le vecteur IIRV est invalide : "{1}"
+
+# cannot embed more than 1000 vectors in a single IIRV message file: got {0}. Consider splitting the data into multiple files
+IIRV_EXCEEDS_MAX_VECTORS = il n''est pas possible de stocker plus de 1000 vecteurs dans un unique message IIRV. Le nombre actuel est {0}. Veuillez diviser vos données en plusieurs fichiers
+
+# numeric value "{0}" exceeds the maximum length of {1} for string representation
+IIRV_VALUE_TOO_LARGE = la valeur "{0}" dépasse la taille maximale autorisée de {1} pour une représentation textuelle
+
+# invalid IIRV term value: {0}
+IIRV_INVALID_TERM_VALUE = le terme {0} est invalide
+
+# the "{0}" term cannot change within an IIRV message file
+IIRV_TERM_CHANGES_WITHIN_FILE = le terme "{0}" ne peut pas changer au sein d''un message IIRV
+
+# IIRV sequence number must increase by 1 for each subsequent vector entry. At at line {0}, expected sequence number {1}+1, but found {2}
+IIRV_SEQUENCE_NUMBER_MUST_BE_INCREASING_BY_ONE = Le numéro de séquence IIRV doit augmenter de 1 pour chaque entrée vectorielle subséquente. À la ligne {0}, le numéro de séquence attendu était {1}+1, mais {2} a été trouvé
+
+# IIRV coordinate system "{0}" ({1}) has not been mapped to an Orekit frame
+IIRV_UNMAPPED_COORDINATE_SYSTEM = Le système de coordonnées IIRV "{0}" ({1}) ne peut pas être converti en repère Orekit
+
 # Time system should have already been set before line {0} of file {1}
 CCSDS_TIME_SYSTEM_NOT_READ_YET = le système temporel aurait déjà dû être initialisé avant la ligne {0} du fichier {1}
 
