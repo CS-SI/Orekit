@@ -190,13 +190,13 @@ public class Range extends GroundReceiverMeasurement<Range> {
 
             // Prepare the evaluation
             estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
-                    new SpacecraftState[]{
-                            common.getTransitState()
-                    }, new TimeStampedPVCoordinates[]{
-                    stationUplink.toTimeStampedPVCoordinates(),
-                    transitPV.toTimeStampedPVCoordinates(),
-                    common.getStationDownlink().toTimeStampedPVCoordinates()
-            });
+                                                            new SpacecraftState[] {
+                                                                common.getTransitState()
+                                                            }, new TimeStampedPVCoordinates[] {
+                                                                stationUplink.toTimeStampedPVCoordinates(),
+                                                                transitPV.toTimeStampedPVCoordinates(),
+                                                                common.getStationDownlink().toTimeStampedPVCoordinates()
+                                                            });
 
             // Range value
             final double   cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;
@@ -206,12 +206,12 @@ public class Range extends GroundReceiverMeasurement<Range> {
         } else {
 
             estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
-                    new SpacecraftState[]{
-                            common.getTransitState()
-                    }, new TimeStampedPVCoordinates[]{
-                    transitPV.toTimeStampedPVCoordinates(),
-                    common.getStationDownlink().toTimeStampedPVCoordinates()
-            });
+                            new SpacecraftState[] {
+                                common.getTransitState()
+                            }, new TimeStampedPVCoordinates[] {
+                                transitPV.toTimeStampedPVCoordinates(),
+                                common.getStationDownlink().toTimeStampedPVCoordinates()
+                            });
 
             // Clock offsets
             final ObservableSatellite satellite = getSatellites().get(0);

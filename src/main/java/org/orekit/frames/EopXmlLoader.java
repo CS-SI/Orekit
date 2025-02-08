@@ -239,31 +239,27 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
 
                 if (content == DataFileContent.UNKNOWN) {
                     // try to identify file content
-                    switch (qName) {
-                        case TIME_SERIES_ELT:
-                            // the file contains final data
-                            content = DataFileContent.DAILY;
-                            break;
-                        case FINALS_ELT:
-                            // the file contains final data
-                            content = DataFileContent.FINAL;
-                            break;
-                        case DATA_ELT:
-                            final String product = atts.getValue(PRODUCT_ATTR);
-                            if (product != null) {
-                                if (product.startsWith(BULLETIN_A_PROD)) {
-                                    // the file contains bulletinA
-                                    content = DataFileContent.BULLETIN_A;
-                                    inBulletinA = true;
-                                } else if (product.startsWith(BULLETIN_B_PROD)) {
-                                    // the file contains bulletinB
-                                    content = DataFileContent.BULLETIN_B;
-                                } else if (product.startsWith(EOP_C04_PROD_PREFIX) && product.endsWith(EOP_C04_PROD_SUFFIX)) {
-                                    // the file contains EOP C04
-                                    content = DataFileContent.EOP_C04;
-                                }
+                    if (qName.equals(TIME_SERIES_ELT)) {
+                        // the file contains final data
+                        content = DataFileContent.DAILY;
+                    } else if (qName.equals(FINALS_ELT)) {
+                        // the file contains final data
+                        content = DataFileContent.FINAL;
+                    } else if (qName.equals(DATA_ELT)) {
+                        final String product = atts.getValue(PRODUCT_ATTR);
+                        if (product != null) {
+                            if (product.startsWith(BULLETIN_A_PROD)) {
+                                // the file contains bulletinA
+                                content     = DataFileContent.BULLETIN_A;
+                                inBulletinA = true;
+                            } else if (product.startsWith(BULLETIN_B_PROD)) {
+                                // the file contains bulletinB
+                                content = DataFileContent.BULLETIN_B;
+                            } else if (product.startsWith(EOP_C04_PROD_PREFIX) && product.endsWith(EOP_C04_PROD_SUFFIX)) {
+                                // the file contains EOP C04
+                                content = DataFileContent.EOP_C04;
                             }
-                            break;
+                        }
                     }
                 }
 

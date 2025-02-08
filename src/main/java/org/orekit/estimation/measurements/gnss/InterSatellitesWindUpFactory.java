@@ -56,17 +56,17 @@ public class InterSatellitesWindUpFactory {
                                            final Dipole receiverDipole) {
 
         // select emitter satellite system
-        Map<Integer, Map<SatelliteSystem, Map<Integer, InterSatellitesWindUp>>> emitterSystemModifiers =
+        final Map<Integer, Map<SatelliteSystem, Map<Integer, InterSatellitesWindUp>>> emitterSystemModifiers =
                 modifiers.computeIfAbsent(emitterSystem, k -> new HashMap<>());
         // build a new map for this satellite system
 
         // select emitter satellite
-        Map<SatelliteSystem, Map<Integer, InterSatellitesWindUp>> emitterSatelliteModifiers =
+        final Map<SatelliteSystem, Map<Integer, InterSatellitesWindUp>> emitterSatelliteModifiers =
                 emitterSystemModifiers.computeIfAbsent(emitterPrnNumber, k -> new HashMap<>());
         // build a new map for this satellite
 
         // select receiver satellite system
-        Map<Integer, InterSatellitesWindUp> receiverSystemModifiers =
+        final Map<Integer, InterSatellitesWindUp> receiverSystemModifiers =
                 emitterSatelliteModifiers.computeIfAbsent(receiverSystem, k -> new HashMap<>());
         // build a new map for this satellite system
 

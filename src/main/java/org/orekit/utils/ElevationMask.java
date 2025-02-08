@@ -18,7 +18,6 @@ package org.orekit.utils;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Comparator;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;

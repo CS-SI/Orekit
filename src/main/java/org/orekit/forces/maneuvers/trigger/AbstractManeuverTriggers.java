@@ -45,7 +45,7 @@ public abstract class AbstractManeuverTriggers implements ResettableManeuverTrig
     private final List<ManeuverTriggersResetter> resetters;
 
     /** Cached field-based resetters. */
-    private final transient Map<Field<? extends CalculusFieldElement<?>>, List<FieldManeuverTriggersResetter<?>>> fieldResetters;
+    private final Map<Field<? extends CalculusFieldElement<?>>, List<FieldManeuverTriggersResetter<?>>> fieldResetters;
 
     /** Simple constructor.
      */
@@ -138,7 +138,7 @@ public abstract class AbstractManeuverTriggers implements ResettableManeuverTrig
     public <T extends CalculusFieldElement<T>> void addResetter(final Field<T> field, final FieldManeuverTriggersResetter<T> resetter) {
 
         // check if we already have resetters for this field
-        List<FieldManeuverTriggersResetter<?>> list = fieldResetters.computeIfAbsent(field, k -> new ArrayList<>());
+        final List<FieldManeuverTriggersResetter<?>> list = fieldResetters.computeIfAbsent(field, k -> new ArrayList<>());
 
         // add the resetter to the list
         list.add(resetter);
