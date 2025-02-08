@@ -833,10 +833,10 @@ class NumericalPropagatorTest {
                 return new double[] { 1.0 };
             }
         });
-        Assertions.assertTrue(propagator.isAdditionalStateManaged("linear"));
-        Assertions.assertTrue(propagator.isAdditionalStateManaged("constant"));
-        Assertions.assertFalse(propagator.isAdditionalStateManaged("non-managed"));
-        Assertions.assertEquals(2, propagator.getManagedAdditionalStates().length);
+        Assertions.assertTrue(propagator.isAdditionalDataManaged("linear"));
+        Assertions.assertTrue(propagator.isAdditionalDataManaged("constant"));
+        Assertions.assertFalse(propagator.isAdditionalDataManaged("non-managed"));
+        Assertions.assertEquals(2, propagator.getManagedAdditionalData().length);
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear", 1.5));
 
         CheckingHandler checking = new CheckingHandler(Action.STOP);
@@ -1057,9 +1057,9 @@ class NumericalPropagatorTest {
 
         double shift = -60;
         SpacecraftState s = ephemeris1.propagate(initDate.shiftedBy(shift));
-        Assertions.assertEquals(2, s.getAdditionalStatesValues().size());
-        Assertions.assertTrue(s.hasAdditionalState("squaredA"));
-        Assertions.assertTrue(s.hasAdditionalState("extra"));
+        Assertions.assertEquals(2, s.getAdditionalDataValues().size());
+        Assertions.assertTrue(s.hasAdditionalData("squaredA"));
+        Assertions.assertTrue(s.hasAdditionalData("extra"));
         Assertions.assertEquals(s.getOrbit().getA() * s.getOrbit().getA(), s.getAdditionalState("squaredA")[0], 1.0e-10);
         Assertions.assertEquals(1.5 + shift * rate, s.getAdditionalState("extra")[0], 1.0e-10);
 
@@ -1647,7 +1647,7 @@ class NumericalPropagatorTest {
         propagator.propagate(initialOrbit.getDate().shiftedBy(600));
         BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         final SpacecraftState finalState = ephemeris.propagate(initialOrbit.getDate().shiftedBy(300));
-        Assertions.assertEquals(2,    finalState.getAdditionalStatesValues().size());
+        Assertions.assertEquals(2,    finalState.getAdditionalDataValues().size());
         Assertions.assertEquals(2,    finalState.getAdditionalState("test_provider_0").length);
         Assertions.assertEquals(0.0,  finalState.getAdditionalState("test_provider_0")[0], 1.0e-15);
         Assertions.assertEquals(0.0,  finalState.getAdditionalState("test_provider_0")[1], 1.0e-15);

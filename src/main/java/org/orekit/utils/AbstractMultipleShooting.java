@@ -542,7 +542,7 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      */
     private double[][] getStateTransitionMatrix(final SpacecraftState s) {
         // Additional states
-        final DataDictionary dictionary = s.getAdditionalStatesValues();
+        final DataDictionary dictionary = s.getAdditionalDataValues();
         // Initialize state transition matrix
         final int        dim  = 6;
         final double[][] phiM = new double[dim][dim];

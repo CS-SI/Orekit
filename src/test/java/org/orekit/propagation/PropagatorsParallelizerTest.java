@@ -415,7 +415,7 @@ public class PropagatorsParallelizerTest {
             return name;
         }
         public boolean yields(final SpacecraftState state) {
-            return !state.hasAdditionalState(name);
+            return !state.hasAdditionalData(name);
         }
         public CombinedDerivatives combinedDerivatives(SpacecraftState state) {
             return new CombinedDerivatives(new double[] { base * state.getAdditionalState(name)[0] },

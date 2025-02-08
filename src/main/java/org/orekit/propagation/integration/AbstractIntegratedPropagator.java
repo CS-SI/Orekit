@@ -265,10 +265,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** {@inheritDoc} */
     @Override
-    public boolean isAdditionalStateManaged(final String name) {
+    public boolean isAdditionalDataManaged(final String name) {
 
         // first look at already integrated states
-        if (super.isAdditionalStateManaged(name)) {
+        if (super.isAdditionalDataManaged(name)) {
             return true;
         }
 
@@ -284,8 +284,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** {@inheritDoc} */
     @Override
-    public String[] getManagedAdditionalStates() {
-        final String[] alreadyIntegrated = super.getManagedAdditionalStates();
+    public String[] getManagedAdditionalData() {
+        final String[] alreadyIntegrated = super.getManagedAdditionalData();
         final String[] managed = new String[alreadyIntegrated.length + additionalDerivativesProviders.size()];
         System.arraycopy(alreadyIntegrated, 0, managed, 0, alreadyIntegrated.length);
         for (int i = 0; i < additionalDerivativesProviders.size(); ++i) {
@@ -302,7 +302,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     public void addAdditionalDerivativesProvider(final AdditionalDerivativesProvider provider) {
 
         // check if the name is already used
-        if (isAdditionalStateManaged(provider.getName())) {
+        if (this.isAdditionalDataManaged(provider.getName())) {
             // these derivatives are already registered, complain
             throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,
                                       provider.getName());
@@ -1231,8 +1231,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             // get the initial additional states that are not managed
             final DataDictionary unmanaged = new DataDictionary();
-            for (final DataDictionary.Entry initial : getInitialState().getAdditionalStatesValues().getData()) {
-                if (!isAdditionalStateManaged(initial.getKey())) {
+            for (final DataDictionary.Entry initial : getInitialState().getAdditionalDataValues().getData()) {
+                if (!AbstractIntegratedPropagator.this.isAdditionalDataManaged(initial.getKey())) {
                     // this additional state was in the initial state, but is unknown to the propagator
                     // we simply copy its initial value as is
                     unmanaged.put(initial.getKey(), initial.getValue());

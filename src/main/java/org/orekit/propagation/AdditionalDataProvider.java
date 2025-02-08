@@ -99,7 +99,7 @@ public interface AdditionalDataProvider<T> {
 
     /** Check if this provider should yield so another provider has an opportunity to add missing parts.
      * <p>
-     * Decision to yield is often based on an additional data being {@link SpacecraftState#hasAdditionalState(String)
+     * Decision to yield is often based on an additional data being {@link SpacecraftState#hasAdditionalData(String)
      * already available} in the provided {@code state} (but it could theoretically also depend on
      * an additional state derivative being {@link SpacecraftState#hasAdditionalStateDerivative(String)
      * already available}, or any other criterion). If for example a provider needs the state transition
@@ -107,7 +107,7 @@ public interface AdditionalDataProvider<T> {
      * </p>
      * <pre>{@code
      * public boolean yields(final SpacecraftState state) {
-     *     return !state.hasAdditionalState("STM");
+     *     return !state.hasAdditionalData("STM");
      * }
      * }</pre>
      * <p>

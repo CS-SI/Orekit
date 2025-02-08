@@ -106,12 +106,12 @@ class PropagatorTest {
         }
 
         @Override
-        public boolean isAdditionalStateManaged(String name) {
+        public boolean isAdditionalDataManaged(String name) {
             return false;
         }
 
         @Override
-        public String[] getManagedAdditionalStates() {
+        public String[] getManagedAdditionalData() {
             return new String[0];
         }
 

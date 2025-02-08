@@ -253,7 +253,7 @@ class IntegratedEphemerisTest {
 
     private void checkState(final double dt, final SpacecraftState state, final DerivativesProvider provider) {
 
-        Assertions.assertTrue(state.hasAdditionalState(provider.getName()));
+        Assertions.assertTrue(state.hasAdditionalData(provider.getName()));
         Assertions.assertEquals(provider.getDimension(), state.getAdditionalState(provider.getName()).length);
         for (int i = 0; i < provider.getDimension(); ++i) {
             Assertions.assertEquals(i * dt, state.getAdditionalState(provider.getName())[i], 4.0e-15 * i * dt);

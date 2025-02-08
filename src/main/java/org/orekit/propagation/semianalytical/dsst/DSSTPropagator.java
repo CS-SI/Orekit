@@ -426,7 +426,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             addAdditionalDerivativesProvider(stmGenerator);
         }
 
-        if (!getInitialIntegrationState().hasAdditionalState(dsstHarvester.getStmName())) {
+        if (!getInitialIntegrationState().hasAdditionalData(dsstHarvester.getStmName())) {
             // add the initial State Transition Matrix if it is not already there
             // (perhaps due to a previous propagation)
             setInitialState(stmGenerator.setInitialStateTransitionMatrix(getInitialState(),
@@ -481,7 +481,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                     addAdditionalDerivativesProvider(generator);
                 }
 
-                if (!getInitialIntegrationState().hasAdditionalState(span.getData())) {
+                if (!getInitialIntegrationState().hasAdditionalData(span.getData())) {
                     // add the initial Jacobian column if it is not already there
                     // (perhaps due to a previous propagation)
                     setInitialState(getInitialState().addAdditionalState(span.getData(),
@@ -671,7 +671,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         final EquinoctialOrbit osculatingOrbit = computeOsculatingOrbit(mean, shortPeriodTerms);
 
         return new SpacecraftState(osculatingOrbit, mean.getAttitude(), mean.getMass(),
-                                   mean.getAdditionalStatesValues(), mean.getAdditionalStatesDerivatives());
+                                   mean.getAdditionalDataValues(), mean.getAdditionalStatesDerivatives());
 
     }
 
@@ -727,7 +727,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                                                    final int maxIterations) {
         final Orbit meanOrbit = computeMeanOrbit(osculating, attitudeProvider, forceModels, epsilon, maxIterations);
         return new SpacecraftState(meanOrbit, osculating.getAttitude(), osculating.getMass(),
-                                   osculating.getAdditionalStatesValues(), osculating.getAdditionalStatesDerivatives());
+                                   osculating.getAdditionalDataValues(), osculating.getAdditionalStatesDerivatives());
     }
 
      /** Override the default value of the parameter.

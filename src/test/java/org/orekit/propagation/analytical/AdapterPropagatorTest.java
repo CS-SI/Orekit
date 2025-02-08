@@ -99,11 +99,11 @@ public class AdapterPropagatorTest {
             }
         });
 
-        // the adapted propagators do not manage the additional states from the reference,
+        // the adapted propagators do not manage the additional data from the reference,
         // they simply forward them
-        Assertions.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 1"));
-        Assertions.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 2"));
-        Assertions.assertTrue(adapterPropagator.isAdditionalStateManaged("dummy 3"));
+        Assertions.assertFalse(adapterPropagator.isAdditionalDataManaged("dummy 1"));
+        Assertions.assertFalse(adapterPropagator.isAdditionalDataManaged("dummy 2"));
+        Assertions.assertTrue(adapterPropagator.isAdditionalDataManaged("dummy 3"));
 
         for (AbsoluteDate t = t0.shiftedBy(0.5 * dt);
              t.compareTo(withoutManeuver.getMaxDate()) < 0;
@@ -163,9 +163,9 @@ public class AdapterPropagatorTest {
 
         // the adapted propagators do not manage the additional states from the reference,
         // they simply forward them
-        Assertions.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 1"));
-        Assertions.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 2"));
-        Assertions.assertTrue(adapterPropagator.isAdditionalStateManaged("dummy 3"));
+        Assertions.assertFalse(adapterPropagator.isAdditionalDataManaged("dummy 1"));
+        Assertions.assertFalse(adapterPropagator.isAdditionalDataManaged("dummy 2"));
+        Assertions.assertTrue(adapterPropagator.isAdditionalDataManaged("dummy 3"));
 
         for (AbsoluteDate t = t0.shiftedBy(0.5 * dt);
              t.compareTo(withoutManeuver.getMaxDate()) < 0;
@@ -235,9 +235,9 @@ public class AdapterPropagatorTest {
 
         // the adapted propagators do not manage the additional states from the reference,
         // they simply forward them
-        Assertions.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 1"));
-        Assertions.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 2"));
-        Assertions.assertTrue(adapterPropagator.isAdditionalStateManaged("dummy 3"));
+        Assertions.assertFalse(adapterPropagator.isAdditionalDataManaged("dummy 1"));
+        Assertions.assertFalse(adapterPropagator.isAdditionalDataManaged("dummy 2"));
+        Assertions.assertTrue(adapterPropagator.isAdditionalDataManaged("dummy 3"));
 
         double maxDelta = 0;
         double maxNominal = 0;
@@ -347,10 +347,10 @@ public class AdapterPropagatorTest {
 
         // both the initial propagator and generated ephemeris manage one of the two
         // additional states, but they also contain unmanaged copies of the other one
-        Assertions.assertFalse(propagator.isAdditionalStateManaged("dummy 1"));
-        Assertions.assertTrue(propagator.isAdditionalStateManaged("dummy 2"));
-        Assertions.assertFalse(ephemeris.isAdditionalStateManaged("dummy 1"));
-        Assertions.assertTrue(ephemeris.isAdditionalStateManaged("dummy 2"));
+        Assertions.assertFalse(propagator.isAdditionalDataManaged("dummy 1"));
+        Assertions.assertTrue(propagator.isAdditionalDataManaged("dummy 2"));
+        Assertions.assertFalse(ephemeris.isAdditionalDataManaged("dummy 1"));
+        Assertions.assertTrue(ephemeris.isAdditionalDataManaged("dummy 2"));
         Assertions.assertEquals(2, ephemeris.getInitialState().getAdditionalState("dummy 1").length);
         Assertions.assertEquals(1, ephemeris.getInitialState().getAdditionalState("dummy 2").length);
 

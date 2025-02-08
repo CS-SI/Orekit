@@ -81,7 +81,7 @@ public class TabulatedEphemerisTest {
                                                               c.getFrame(), c.getMu()),
                                            state.getAttitude(),
                                            state.getMass(),
-                                           state.getAdditionalStatesValues());
+                                           state.getAdditionalDataValues());
             }
         }, 8.5, 0.22);
     }

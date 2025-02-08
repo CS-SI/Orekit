@@ -136,7 +136,7 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
 
         // compute reference state
         SpacecraftState state = reference.propagate(date);
-        final DataDictionary additionalBefore    = state.getAdditionalStatesValues();
+        final DataDictionary additionalBefore    = state.getAdditionalDataValues();
         final DoubleArrayDictionary additionalDotBefore = state.getAdditionalStatesDerivatives();
 
         // add all the effects
@@ -146,12 +146,12 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
 
         // forward additional states and derivatives from the reference propagator
         for (final DataDictionary.Entry entry : additionalBefore.getData()) {
-            if (!state.hasAdditionalState(entry.getKey())) {
+            if (!state.hasAdditionalData(entry.getKey())) {
                 state = state.addAdditionalData(entry.getKey(), entry.getValue());
             }
         }
         for (final DoubleArrayDictionary.Entry entry : additionalDotBefore.getData()) {
-            if (!state.hasAdditionalState(entry.getKey())) {
+            if (!state.hasAdditionalData(entry.getKey())) {
                 state = state.addAdditionalStateDerivative(entry.getKey(), entry.getValue());
             }
         }

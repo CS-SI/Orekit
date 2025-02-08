@@ -250,7 +250,7 @@ There are three main cases:
 
 The first two cases correspond to additional states managed by the propagator, the
 last case not being considered as managed. The list of states managed by the propagator
-is available using the `getManagedAdditionalStates` and `isAdditionalStateManaged`. 
+is available using the `getManagedAdditionalData` and `isAdditionalDataManaged`. 
 
 ## Available propagators
 

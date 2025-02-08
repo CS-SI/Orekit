@@ -44,7 +44,7 @@
         +Attitude getAttitude()
         +double getMass()
         +SpacecraftState addAdditionalState(final String name, final double ... value)
-        +boolean hasAdditionalState(final String name)
+        +boolean hasAdditionalData(final String name)
         +double[] getAdditionalState(final String name)
         +DoubleArrayDictionary getAdditionalStates()
         +SpacecraftState addAdditionalStateDerivative(final String name, final double ... value)

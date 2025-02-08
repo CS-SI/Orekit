@@ -116,7 +116,7 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
     @Override
     public RealMatrix getStateTransitionMatrix(final SpacecraftState state) {
         // Check if additional state is defined
-        if (!state.hasAdditionalState(getName())) {
+        if (!state.hasAdditionalData(getName())) {
             return null;
         }
         // Return the state transition matrix

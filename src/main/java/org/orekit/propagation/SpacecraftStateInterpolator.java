@@ -400,7 +400,7 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
 
         final List<TimeStampedDouble> masses = new ArrayList<>();
 
-        final List<DataDictionary.Entry> additionalEntries = earliestState.getAdditionalStatesValues().getData();
+        final List<DataDictionary.Entry> additionalEntries = earliestState.getAdditionalDataValues().getData();
         final Map<String, List<Pair<AbsoluteDate, Object>>> additionalSample =
                 createAdditionalDataSample(additionalEntries);
 

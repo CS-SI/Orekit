@@ -889,9 +889,9 @@ public class KeplerianPropagatorTest {
         Assertions.assertEquals(2.0, finalState.getAdditionalState("B")[0], 1.0e-15);
         Assertions.assertEquals(1,   finalState.getAdditionalState("C").length);
         Assertions.assertEquals(3.0, finalState.getAdditionalState("C")[0], 1.0e-15);
-        Assertions.assertFalse(finalState.hasAdditionalState("D"));
-        Assertions.assertFalse(finalState.hasAdditionalState("E"));
-        Assertions.assertFalse(finalState.hasAdditionalState("F"));
+        Assertions.assertFalse(finalState.hasAdditionalData("D"));
+        Assertions.assertFalse(finalState.hasAdditionalData("E"));
+        Assertions.assertFalse(finalState.hasAdditionalData("F"));
 
     }
 
@@ -940,7 +940,7 @@ public class KeplerianPropagatorTest {
         }
 
         public boolean yields(final SpacecraftState state) {
-            return dependency != null && state.getAdditionalStatesValues().getEntry(dependency) == null;
+            return dependency != null && state.getAdditionalDataValues().getEntry(dependency) == null;
         }
 
         public double[] getAdditionalData(final SpacecraftState state) {

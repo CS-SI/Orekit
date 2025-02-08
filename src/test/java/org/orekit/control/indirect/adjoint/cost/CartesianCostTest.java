@@ -46,7 +46,7 @@ class CartesianCostTest {
         final String expectedName = "a";
         final SpacecraftState mockedState = Mockito.mock();
         final String adjointName = cost.getAdjointName();
-        Mockito.when(mockedState.hasAdditionalState(adjointName)).thenReturn(yields);
+        Mockito.when(mockedState.hasAdditionalData(adjointName)).thenReturn(yields);
         // WHEN
         final AdditionalDerivativesProvider costDerivative = cost.getCostDerivativeProvider(expectedName);
         // THEN

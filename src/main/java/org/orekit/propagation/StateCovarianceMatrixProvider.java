@@ -127,7 +127,7 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
      */
     @Override
     public boolean yields(final SpacecraftState state) {
-        return !state.hasAdditionalState(stmName);
+        return !state.hasAdditionalData(stmName);
     }
 
     /** {@inheritDoc} */

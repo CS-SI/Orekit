@@ -120,8 +120,8 @@ public class EphemerisPropagatorBuilderTest {
         assertEquals(expectedPropagator.getMinDate(), builtPropagator.getMinDate());
         assertEquals(expectedPropagator.getMaxDate(), builtPropagator.getMaxDate());
 
-        Assertions.assertArrayEquals(expectedPropagator.getManagedAdditionalStates(),
-                                     builtPropagator.getManagedAdditionalStates());
+        Assertions.assertArrayEquals(expectedPropagator.getManagedAdditionalData(),
+                                     builtPropagator.getManagedAdditionalData());
         // Initial state has also been verified to be equal between both ephemeris (except for the Attitude which is expected
         // to have different memory address)
     }

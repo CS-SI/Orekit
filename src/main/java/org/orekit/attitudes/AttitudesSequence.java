@@ -275,7 +275,7 @@ public class AttitudesSequence extends AbstractSwitchingAttitudeProvider {
                         final Attitude  sAttitude = getPast().getAttitude(sAPV, shiftedDate, s.getFrame());
                         sState    = new SpacecraftState(sAPV, sAttitude, s.getMass());
                     }
-                    for (final DataDictionary.Entry entry : s.getAdditionalStatesValues().getData()) {
+                    for (final DataDictionary.Entry entry : s.getAdditionalDataValues().getData()) {
                         sState = sState.addAdditionalData(entry.getKey(), entry.getValue());
                     }
 

@@ -161,7 +161,7 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
     /** {@inheritDoc} */
     @Override
     public boolean yields(final SpacecraftState state) {
-        return !state.hasAdditionalState(getName());
+        return !state.hasAdditionalData(getName());
     }
 
     /** Set the initial value of the State Transition Matrix.

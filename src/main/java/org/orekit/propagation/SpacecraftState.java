@@ -359,9 +359,9 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * @param value value of the additional state
      * @return a new instance, with the additional state added
      * @see #addAdditionalData(String, Object)
-     * @see #hasAdditionalState(String)
+     * @see #hasAdditionalData(String)
      * @see #getAdditionalState(String)
-     * @see #getAdditionalStatesValues()
+     * @see #getAdditionalDataValues()
      */
     public SpacecraftState addAdditionalState(final String name, final double... value) {
         return addAdditionalData(name, value.clone());
@@ -382,9 +382,9 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * with any case are reserved for the library internal use)
      * @param value value of the additional data
      * @return a new instance, with the additional data added
-     * @see #hasAdditionalState(String)
+     * @see #hasAdditionalData(String)
      * @see #getAdditionalData(String)
-     * @see #getAdditionalStatesValues()
+     * @see #getAdditionalDataValues()
      * @since 13.0
      */
     public SpacecraftState addAdditionalData(final String name, final Object value) {
@@ -658,16 +658,16 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
         return isOrbitDefined() ? orbit.getFrame() : absPva.getFrame();
     }
 
-    /** Check if an additional state is available.
-     * @param name name of the additional state
-     * @return true if the additional state is available
+    /** Check if an additional data is available.
+     * @param name name of the additional data
+     * @return true if the additional data is available
      * @see #addAdditionalState(String, double[])
      * @see #addAdditionalData(String, Object)
      * @see #getAdditionalState(String)
      * @see #getAdditionalData(String)
-     * @see #getAdditionalStatesValues()
+     * @see #getAdditionalDataValues()
      */
-    public boolean hasAdditionalState(final String name) {
+    public boolean hasAdditionalData(final String name) {
         return additional.getEntry(name) != null;
     }
 
@@ -749,8 +749,8 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * @param name name of the additional state
      * @return value of the additional state
      * @see #addAdditionalState(String, double[])
-     * @see #hasAdditionalState(String)
-     * @see #getAdditionalStatesValues()
+     * @see #hasAdditionalData(String)
+     * @see #getAdditionalDataValues()
      */
     public double[] getAdditionalState(final String name) {
         final Object data = getAdditionalData(name);
@@ -766,8 +766,8 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * @param name name of the additional state
      * @return value of the additional state
      * @see #addAdditionalState(String, double[])
-     * @see #hasAdditionalState(String)
-     * @see #getAdditionalStatesValues()
+     * @see #hasAdditionalData(String)
+     * @see #getAdditionalDataValues()
      * @since 13.0
      */
     public Object getAdditionalData(final String name) {
@@ -794,14 +794,15 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
         return entry.getValue();
     }
 
-    /** Get an unmodifiable map of additional states.
-     * @return unmodifiable map of additional states
+    /** Get an unmodifiable map of additional data.
+     * @return unmodifiable map of additional data
      * @see #addAdditionalState(String, double[])
-     * @see #hasAdditionalState(String)
+     * @see #addAdditionalData(String, Object)
+     * @see #hasAdditionalData(String)
      * @see #getAdditionalState(String)
      * @since 11.1
      */
-    public DataDictionary getAdditionalStatesValues() {
+    public DataDictionary getAdditionalDataValues() {
         return additional;
     }
 

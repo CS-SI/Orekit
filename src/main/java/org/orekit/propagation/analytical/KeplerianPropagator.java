@@ -158,7 +158,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
                                                     state.getAttitude(),
                                                     state.getMass(),
                                                     mu,
-                                                    state.getAdditionalStatesValues(),
+                                                    state.getAdditionalDataValues(),
                                                     state.getAdditionalStatesDerivatives());
 
         states = new TimeSpanMap<>(fixedState);

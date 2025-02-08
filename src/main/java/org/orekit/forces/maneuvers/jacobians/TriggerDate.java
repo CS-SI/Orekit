@@ -183,7 +183,7 @@ public class TriggerDate
      */
     @Override
     public boolean yields(final SpacecraftState state) {
-        return !(state.hasAdditionalState(stmName) && state.hasAdditionalState(massDepletionDelay.getName()));
+        return !(state.hasAdditionalData(stmName) && state.hasAdditionalData(massDepletionDelay.getName()));
     }
 
     /** Get the mass depletion effect processor.

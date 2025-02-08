@@ -304,7 +304,7 @@ class ImpulseManeuverTest {
         propagator.addEventDetector(burnAtEpoch);
 
         SpacecraftState finalState = propagator.propagate(epoch.shiftedBy(totalPropagationTime));
-        Assertions.assertEquals(1, finalState.getAdditionalStatesValues().size());
+        Assertions.assertEquals(1, finalState.getAdditionalDataValues().size());
         Assertions.assertEquals(-1.0, finalState.getAdditionalState("testOnly")[0], 1.0e-15);
 
     }
@@ -351,7 +351,7 @@ class ImpulseManeuverTest {
         propagator.addEventDetector(burnAtEpoch);
 
         SpacecraftState finalState = propagator.propagate(epoch.shiftedBy(totalPropagationTime));
-        Assertions.assertEquals(1, finalState.getAdditionalStatesValues().size());
+        Assertions.assertEquals(1, finalState.getAdditionalDataValues().size());
         Assertions.assertEquals(36, finalState.getAdditionalState("derivatives").length);
 
         RealMatrix stateTransitionMatrix = harvester.getStateTransitionMatrix(finalState);

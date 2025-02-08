@@ -125,7 +125,7 @@ public abstract class AbstractPropagator implements Propagator {
     public void addAdditionalDataProvider(final AdditionalDataProvider<?> provider) {
 
         // check if the name is already used
-        if (isAdditionalStateManaged(provider.getName())) {
+        if (isAdditionalDataManaged(provider.getName())) {
             // this additional state is already registered, complain
             throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,
                                       provider.getName());
@@ -250,7 +250,7 @@ public abstract class AbstractPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
-    public boolean isAdditionalStateManaged(final String name) {
+    public boolean isAdditionalDataManaged(final String name) {
         for (final AdditionalDataProvider<?> provider : additionalStateProviders) {
             if (provider.getName().equals(name)) {
                 return true;
@@ -260,7 +260,7 @@ public abstract class AbstractPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
-    public String[] getManagedAdditionalStates() {
+    public String[] getManagedAdditionalData() {
         final String[] managed = new String[additionalStateProviders.size()];
         for (int i = 0; i < managed.length; ++i) {
             managed[i] = additionalStateProviders.get(i).getName();
@@ -287,8 +287,8 @@ public abstract class AbstractPropagator implements Propagator {
             // there is an initial state
             // (null initial states occur for example in interpolated ephemerides)
             // copy the additional states present in initialState but otherwise not managed
-            for (final DataDictionary.Entry initial : initialState.getAdditionalStatesValues().getData()) {
-                if (!isAdditionalStateManaged(initial.getKey())) {
+            for (final DataDictionary.Entry initial : initialState.getAdditionalDataValues().getData()) {
+                if (!isAdditionalDataManaged(initial.getKey())) {
                     // this additional state is in the initial state, but is unknown to the propagator
                     // we store it in a way event handlers may change it
                     unmanagedStates.put(initial.getKey(), new TimeSpanMap<>(initial.getValue()));
@@ -303,7 +303,7 @@ public abstract class AbstractPropagator implements Propagator {
     protected void stateChanged(final SpacecraftState state) {
         final AbsoluteDate date    = state.getDate();
         final boolean      forward = date.durationFrom(getStartDate()) >= 0.0;
-        for (final DataDictionary.Entry changed : state.getAdditionalStatesValues().getData()) {
+        for (final DataDictionary.Entry changed : state.getAdditionalDataValues().getData()) {
             final TimeSpanMap<Object> tsm = unmanagedStates.get(changed.getKey());
             if (tsm != null) {
                 // this is an unmanaged state

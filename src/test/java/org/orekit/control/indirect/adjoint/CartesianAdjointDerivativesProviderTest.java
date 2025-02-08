@@ -79,7 +79,7 @@ class CartesianAdjointDerivativesProviderTest {
         // WHEN
         final SpacecraftState state = propagator.propagate(orbit.getDate().shiftedBy(1000.));
         // THEN
-        Assertions.assertTrue(propagator.isAdditionalStateManaged(name));
+        Assertions.assertTrue(propagator.isAdditionalDataManaged(name));
         final double[] finalAdjoint = state.getAdditionalState(name);
         Assertions.assertEquals(0, finalAdjoint[0]);
         Assertions.assertEquals(0, finalAdjoint[1]);

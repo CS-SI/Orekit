@@ -417,7 +417,7 @@ public class EphemerisTest {
 
         // Create ephemeris with attitude override
         Ephemeris ephemPropagator = new Ephemeris(states, interpolator, new LofOffset(inertialFrame, LOFType.LVLH_CCSDS));
-        Assertions.assertEquals(0, ephemPropagator.getManagedAdditionalStates().length);
+        Assertions.assertEquals(0, ephemPropagator.getManagedAdditionalData().length);
 
         //First test that we got position, velocity and attitude nailed
         int numberEphemTestIntervals = 2880;
@@ -604,14 +604,14 @@ public class EphemerisTest {
             }
         });
 
-        final String[] additional = ephem.getManagedAdditionalStates();
+        final String[] additional = ephem.getManagedAdditionalData();
         Arrays.sort(additional);
         Assertions.assertEquals(2, additional.length);
-        Assertions.assertEquals(name1, ephem.getManagedAdditionalStates()[0]);
-        Assertions.assertEquals(name2, ephem.getManagedAdditionalStates()[1]);
-        Assertions.assertTrue(ephem.isAdditionalStateManaged(name1));
-        Assertions.assertTrue(ephem.isAdditionalStateManaged(name2));
-        Assertions.assertFalse(ephem.isAdditionalStateManaged("not managed"));
+        Assertions.assertEquals(name1, ephem.getManagedAdditionalData()[0]);
+        Assertions.assertEquals(name2, ephem.getManagedAdditionalData()[1]);
+        Assertions.assertTrue(ephem.isAdditionalDataManaged(name1));
+        Assertions.assertTrue(ephem.isAdditionalDataManaged(name2));
+        Assertions.assertFalse(ephem.isAdditionalDataManaged("not managed"));
 
         SpacecraftState s = ephem.propagate(initDate.shiftedBy(-270.0));
         Assertions.assertEquals(-270.0, s.getAdditionalState(name1)[0], 1.0e-15);

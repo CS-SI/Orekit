@@ -497,7 +497,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             addAdditionalDerivativesProvider(stmGenerator);
         }
 
-        if (!getInitialIntegrationState().hasAdditionalState(harvester.getStmName())) {
+        if (!getInitialIntegrationState().hasAdditionalData(harvester.getStmName())) {
             // add the initial State Transition Matrix if it is not already there
             // (perhaps due to a previous propagation)
             setInitialState(stmGenerator.setInitialStateTransitionMatrix(getInitialState(),
@@ -632,7 +632,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             addAdditionalDataProvider(triggerGenerator);
         }
 
-        if (!getInitialIntegrationState().hasAdditionalState(driverName)) {
+        if (!getInitialIntegrationState().hasAdditionalData(driverName)) {
             // add the initial Jacobian column if it is not already there
             // (perhaps due to a previous propagation)
             setInitialColumn(triggerGenerator.getMassDepletionDelay().getName(), new double[6]);
@@ -670,7 +670,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             addAdditionalDataProvider(medianGenerator);
         }
 
-        if (!getInitialIntegrationState().hasAdditionalState(medianName)) {
+        if (!getInitialIntegrationState().hasAdditionalData(medianName)) {
             // add the initial Jacobian column if it is not already there
             // (perhaps due to a previous propagation)
             setInitialColumn(medianName, getHarvester().getInitialJacobianColumn(medianName));
@@ -707,7 +707,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             addAdditionalDataProvider(durationGenerator);
         }
 
-        if (!getInitialIntegrationState().hasAdditionalState(durationName)) {
+        if (!getInitialIntegrationState().hasAdditionalData(durationName)) {
             // add the initial Jacobian column if it is not already there
             // (perhaps due to a previous propagation)
             setInitialColumn(durationName, getHarvester().getInitialJacobianColumn(durationName));
@@ -768,7 +768,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                     addAdditionalDerivativesProvider(generator);
                 }
 
-                if (!getInitialIntegrationState().hasAdditionalState(currentNameSpan.getData())) {
+                if (!getInitialIntegrationState().hasAdditionalData(currentNameSpan.getData())) {
                     // add the initial Jacobian column if it is not already there
                     // (perhaps due to a previous propagation)
                     setInitialColumn(currentNameSpan.getData(), getHarvester().getInitialJacobianColumn(currentNameSpan.getData()));

@@ -203,8 +203,8 @@ class SpacecraftStateTest {
                         state.
                         addAdditionalState("test-1", new double[] { 1.0, 2.0 }).
                         addAdditionalState("test-2", 42.0);
-        Assertions.assertEquals(0, state.getAdditionalStatesValues().size());
-        Assertions.assertFalse(state.hasAdditionalState("test-1"));
+        Assertions.assertEquals(0, state.getAdditionalDataValues().size());
+        Assertions.assertFalse(state.hasAdditionalData("test-1"));
         try {
             state.getAdditionalState("test-1");
             Assertions.fail("an exception should have been thrown");
@@ -233,9 +233,9 @@ class SpacecraftStateTest {
             Assertions.assertEquals(LocalizedCoreFormats.DIMENSIONS_MISMATCH, mise.getSpecifier());
             Assertions.assertEquals(7, ((Integer) mise.getParts()[0]).intValue());
         }
-        Assertions.assertEquals(2, extended.getAdditionalStatesValues().getData().size());
-        Assertions.assertTrue(extended.hasAdditionalState("test-1"));
-        Assertions.assertTrue(extended.hasAdditionalState("test-2"));
+        Assertions.assertEquals(2, extended.getAdditionalDataValues().getData().size());
+        Assertions.assertTrue(extended.hasAdditionalData("test-1"));
+        Assertions.assertTrue(extended.hasAdditionalData("test-2"));
         Assertions.assertEquals( 1.0, extended.getAdditionalState("test-1")[0], 1.0e-15);
         Assertions.assertEquals( 2.0, extended.getAdditionalState("test-1")[1], 1.0e-15);
         Assertions.assertEquals(42.0, extended.getAdditionalState("test-2")[0], 1.0e-15);
@@ -302,7 +302,7 @@ class SpacecraftStateTest {
         DoubleArrayDictionary dictionary = new DoubleArrayDictionary();
         dictionary.put("test-3", new double[] { -6.0 });
         SpacecraftState s = new SpacecraftState(state.getOrbit(), state.getAttitude(), state.getMass(), null, dictionary);
-        Assertions.assertFalse(s.hasAdditionalState("test-3"));
+        Assertions.assertFalse(s.hasAdditionalData("test-3"));
         Assertions.assertEquals(-6.0, s.getAdditionalStateDerivative("test-3")[0], 1.0e-15);
 
     }
@@ -439,8 +439,8 @@ class SpacecraftStateTest {
                 state.
                  addAdditionalState("test-1", add).
                   addAdditionalState("test-2", 42.0);
-        Assertions.assertEquals(0, state.getAdditionalStatesValues().size());
-        Assertions.assertFalse(state.hasAdditionalState("test-1"));
+        Assertions.assertEquals(0, state.getAdditionalDataValues().size());
+        Assertions.assertFalse(state.hasAdditionalData("test-1"));
         try {
             state.getAdditionalState("test-1");
             Assertions.fail("an exception should have been thrown");
@@ -470,9 +470,9 @@ class SpacecraftStateTest {
             Assertions.assertEquals(LocalizedCoreFormats.DIMENSIONS_MISMATCH, mise.getSpecifier());
             Assertions.assertEquals(7, ((Integer) mise.getParts()[0]).intValue());
         }
-        Assertions.assertEquals(2, extended.getAdditionalStatesValues().size());
-        Assertions.assertTrue(extended.hasAdditionalState("test-1"));
-        Assertions.assertTrue(extended.hasAdditionalState("test-2"));
+        Assertions.assertEquals(2, extended.getAdditionalDataValues().size());
+        Assertions.assertTrue(extended.hasAdditionalData("test-1"));
+        Assertions.assertTrue(extended.hasAdditionalData("test-2"));
         Assertions.assertEquals( 1.0, extended.getAdditionalState("test-1")[0], 1.0e-15);
         Assertions.assertEquals( 2.0, extended.getAdditionalState("test-1")[1], 1.0e-15);
         Assertions.assertEquals(42.0, extended.getAdditionalState("test-2")[0], 1.0e-15);

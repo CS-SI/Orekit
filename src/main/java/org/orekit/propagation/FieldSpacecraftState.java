@@ -263,7 +263,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         this.attitude = new FieldAttitude<>(field, state.getAttitude());
         this.mass     = field.getZero().newInstance(state.getMass());
 
-        final DataDictionary additionalD = state.getAdditionalStatesValues();
+        final DataDictionary additionalD = state.getAdditionalDataValues();
         if (additionalD.size() == 0) {
             this.additional = new FieldArrayDictionary<>(field);
         } else {

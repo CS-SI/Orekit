@@ -210,7 +210,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
         maxDate = states.get(states.size() - 1).getDate();
         frame   = s0.getFrame();
 
-        final List<DataDictionary.Entry> as = s0.getAdditionalStatesValues().getData();
+        final List<DataDictionary.Entry> as = s0.getAdditionalDataValues().getData();
         additional = new String[as.size()];
         for (int i = 0; i < additional.length; ++i) {
             additional[i] = as.get(i).getKey();
@@ -378,14 +378,14 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
                 calculatedAttitude =
                         attitudeProvider.getAttitude(evaluatedState.getOrbit(), date, evaluatedState.getFrame());
                 return new SpacecraftState(evaluatedState.getOrbit(), calculatedAttitude, evaluatedState.getMass(),
-                                           evaluatedState.getAdditionalStatesValues(),
+                                           evaluatedState.getAdditionalDataValues(),
                                            evaluatedState.getAdditionalStatesDerivatives());
             }
             else {
                 calculatedAttitude =
                         attitudeProvider.getAttitude(evaluatedState.getAbsPVA(), date, evaluatedState.getFrame());
                 return new SpacecraftState(evaluatedState.getAbsPVA(), calculatedAttitude, evaluatedState.getMass(),
-                                           evaluatedState.getAdditionalStatesValues(),
+                                           evaluatedState.getAdditionalDataValues(),
                                            evaluatedState.getAdditionalStatesDerivatives());
             }
 
@@ -426,10 +426,10 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
 
     /** {@inheritDoc} */
     @Override
-    public boolean isAdditionalStateManaged(final String name) {
+    public boolean isAdditionalDataManaged(final String name) {
 
         // the additional state may be managed by a specific provider in the base class
-        if (super.isAdditionalStateManaged(name)) {
+        if (super.isAdditionalDataManaged(name)) {
             return true;
         }
 
@@ -446,8 +446,8 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
 
     /** {@inheritDoc} */
     @Override
-    public String[] getManagedAdditionalStates() {
-        final String[] upperManaged = super.getManagedAdditionalStates();
+    public String[] getManagedAdditionalData() {
+        final String[] upperManaged = super.getManagedAdditionalData();
         final String[] managed      = new String[upperManaged.length + additional.length];
         System.arraycopy(upperManaged, 0, managed, 0, upperManaged.length);
         System.arraycopy(additional, 0, managed, upperManaged.length, additional.length);

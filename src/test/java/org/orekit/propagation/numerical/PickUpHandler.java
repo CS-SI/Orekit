@@ -112,7 +112,7 @@ class PickUpHandler implements OrekitStepHandler, StateTransitionMatrixGenerator
 
     private void checkState(final SpacecraftState state) {
         stmGenerator.combinedDerivatives(state); // just for the side effect of calling partialsComputed
-        Assertions.assertEquals(columnName == null ? 1 : 2, state.getAdditionalStatesValues().size());
+        Assertions.assertEquals(columnName == null ? 1 : 2, state.getAdditionalDataValues().size());
         dYdY0 = harvester.getStateTransitionMatrix(state);
         dYdP  = harvester.getParametersJacobian(state); // may be null
         s0    = state;
