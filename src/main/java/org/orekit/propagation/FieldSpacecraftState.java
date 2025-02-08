@@ -113,7 +113,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     public FieldSpacecraftState(final FieldOrbit<T> orbit) {
         this(orbit, SpacecraftState.getDefaultAttitudeProvider(orbit.getFrame())
                         .getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
-             orbit.getA().getField().getZero().newInstance(DEFAULT_MASS), (FieldArrayDictionary<T>) null);
+             orbit.getA().getField().getZero().newInstance(DEFAULT_MASS), null);
     }
 
     /** Build a spacecraft state from orbit and attitude.
@@ -125,7 +125,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      */
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final FieldAttitude<T> attitude)
         throws IllegalArgumentException {
-        this(orbit, attitude, orbit.getA().getField().getZero().newInstance(DEFAULT_MASS), (FieldArrayDictionary<T>) null);
+        this(orbit, attitude, orbit.getA().getField().getZero().newInstance(DEFAULT_MASS), null);
     }
 
     /** Create a new instance from orbit and mass.
@@ -136,7 +136,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final T mass) {
         this(orbit, SpacecraftState.getDefaultAttitudeProvider(orbit.getFrame())
                         .getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
-             mass, (FieldArrayDictionary<T>) null);
+             mass, null);
     }
 
     /** Build a spacecraft state from orbit, attitude and mass.
@@ -148,7 +148,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      */
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final FieldAttitude<T> attitude, final T mass)
         throws IllegalArgumentException {
-        this(orbit, attitude, mass, (FieldArrayDictionary<T>) null);
+        this(orbit, attitude, mass, null);
     }
 
     /** Build a spacecraft state from orbit and additional states.
@@ -294,7 +294,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         this(absPva,
              SpacecraftState.getDefaultAttitudeProvider(absPva.getFrame()).
                      getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
-             absPva.getDate().getField().getZero().newInstance(DEFAULT_MASS), (FieldArrayDictionary<T>) null);
+             absPva.getDate().getField().getZero().newInstance(DEFAULT_MASS), null);
     }
 
     /** Build a spacecraft state from orbit and attitude.
@@ -306,7 +306,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      */
     public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final FieldAttitude<T> attitude)
         throws IllegalArgumentException {
-        this(absPva, attitude, absPva.getDate().getField().getZero().newInstance(DEFAULT_MASS), (FieldArrayDictionary<T>) null);
+        this(absPva, attitude, absPva.getDate().getField().getZero().newInstance(DEFAULT_MASS), null);
     }
 
     /** Create a new instance from orbit and mass.
@@ -317,7 +317,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final T mass) {
         this(absPva, SpacecraftState.getDefaultAttitudeProvider(absPva.getFrame())
                         .getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
-             mass, (FieldArrayDictionary<T>) null);
+             mass, null);
     }
 
     /** Build a spacecraft state from orbit, attitude and mass.
@@ -329,7 +329,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      */
     public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final FieldAttitude<T> attitude, final T mass)
         throws IllegalArgumentException {
-        this(absPva, attitude, mass, (FieldArrayDictionary<T>) null);
+        this(absPva, attitude, mass, null);
     }
 
     /** Build a spacecraft state from orbit only.
