@@ -16,16 +16,6 @@
  */
 package org.orekit.propagation.integration;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketedUnivariateSolver;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
@@ -63,6 +53,16 @@ import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DataDictionary;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 
 
 /** Common handling of {@link org.orekit.propagation.Propagator Propagator}
@@ -558,7 +558,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 final String name      = provider.getName();
                 final int    offset    = secondaryOffsets.get(name);
                 final int    dimension = provider.getDimension();
-                updatedState = updatedState.addAdditionalState(name, Arrays.copyOfRange(secondary, offset, offset + dimension));
+                updatedState = updatedState.addAdditionalData(name, Arrays.copyOfRange(secondary, offset, offset + dimension));
                 updatedState = updatedState.addAdditionalStateDerivative(name, Arrays.copyOfRange(secondaryDerivative, offset, offset + dimension));
             }
         }
@@ -796,7 +796,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 for (final AdditionalDerivativesProvider provider: additionalDerivativesProviders) {
                     final String name = provider.getName();
                     final double[] value = storedInitialState.getAdditionalState(name);
-                    updatedState = updatedState.addAdditionalState(name, value);
+                    updatedState = updatedState.addAdditionalData(name, value);
                 }
             }
             return updatedState;
@@ -921,7 +921,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 final String name      = provider.getName();
                 final int    offset    = secondaryOffsets.get(name);
                 final int    dimension = provider.getDimension();
-                initialState = initialState.addAdditionalState(name, Arrays.copyOfRange(secondary, offset, offset + dimension));
+                initialState = initialState.addAdditionalData(name, Arrays.copyOfRange(secondary, offset, offset + dimension));
             }
 
             return updateAdditionalStates(initialState);

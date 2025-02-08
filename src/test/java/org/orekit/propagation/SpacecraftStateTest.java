@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation;
 
-import java.text.ParseException;
-
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalStateException;
@@ -54,12 +52,9 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.AbsolutePVCoordinates;
-import org.orekit.utils.Constants;
-import org.orekit.utils.DoubleArrayDictionary;
-import org.orekit.utils.IERSConventions;
-import org.orekit.utils.DataDictionary;
-import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.*;
+
+import java.text.ParseException;
 
 
 class SpacecraftStateTest {
@@ -201,8 +196,8 @@ class SpacecraftStateTest {
         final SpacecraftState state = propagator.propagate(orbit.getDate().shiftedBy(60));
         final SpacecraftState extended =
                         state.
-                        addAdditionalState("test-1", new double[] { 1.0, 2.0 }).
-                        addAdditionalState("test-2", 42.0);
+                        addAdditionalData("test-1", new double[] { 1.0, 2.0 }).
+                        addAdditionalData("test-2", 42.0);
         Assertions.assertEquals(0, state.getAdditionalDataValues().size());
         Assertions.assertFalse(state.hasAdditionalData("test-1"));
         try {
@@ -227,7 +222,7 @@ class SpacecraftStateTest {
             Assertions.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
         }
         try {
-            extended.ensureCompatibleAdditionalStates(extended.addAdditionalState("test-2", new double[7]));
+            extended.ensureCompatibleAdditionalStates(extended.addAdditionalData("test-2", new double[7]));
             Assertions.fail("an exception should have been thrown");
         } catch (MathIllegalStateException mise) {
             Assertions.assertEquals(LocalizedCoreFormats.DIMENSIONS_MISMATCH, mise.getSpecifier());
@@ -322,7 +317,7 @@ class SpacecraftStateTest {
         // Create initial state with one additional state and add it to the propagator
         final String name = "A";
         SpacecraftState initialState = new SpacecraftState(orbit).
-                                       addAdditionalState(name, new double[] { -1 });
+                                       addAdditionalData(name, new double[] { -1 });
 
         propagator.resetInitialState(initialState);
 
@@ -338,7 +333,7 @@ class SpacecraftStateTest {
 
             @Override
             public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
-                return oldState.addAdditionalState(name, new double[] { +1 });
+                return oldState.addAdditionalData(name, new double[] { +1 });
             }
 
         });
@@ -372,7 +367,7 @@ class SpacecraftStateTest {
         // Create initial state with one additional state and add it to the propagator
         final String name = "A";
         SpacecraftState initialState = new SpacecraftState(orbit).
-                        addAdditionalState(name, new double[] { -1 });
+                        addAdditionalData(name, new double[] { -1 });
 
         propagator.setInitialState(initialState);
 
@@ -388,7 +383,7 @@ class SpacecraftStateTest {
 
             @Override
             public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
-                return oldState.addAdditionalState(name, new double[] { +1 });
+                return oldState.addAdditionalData(name, new double[] { +1 });
             }
 
         });
@@ -437,8 +432,8 @@ class SpacecraftStateTest {
         add[1] = 2.;
         final SpacecraftState extended =
                 state.
-                 addAdditionalState("test-1", add).
-                  addAdditionalState("test-2", 42.0);
+                 addAdditionalData("test-1", add).
+                  addAdditionalData("test-2", 42.0);
         Assertions.assertEquals(0, state.getAdditionalDataValues().size());
         Assertions.assertFalse(state.hasAdditionalData("test-1"));
         try {
@@ -464,7 +459,7 @@ class SpacecraftStateTest {
         }
         try {
             double[] kk = new double[7];
-            extended.ensureCompatibleAdditionalStates(extended.addAdditionalState("test-2", kk));
+            extended.ensureCompatibleAdditionalStates(extended.addAdditionalData("test-2", kk));
             Assertions.fail("an exception should have been thrown");
         } catch (MathIllegalStateException mise) {
             Assertions.assertEquals(LocalizedCoreFormats.DIMENSIONS_MISMATCH, mise.getSpecifier());
@@ -581,9 +576,9 @@ class SpacecraftStateTest {
         final String valueOnly          = "value-only";
         final String derivativeOnly     = "derivative-only";
         final SpacecraftState s0 = propagator.getInitialState().
-                                   addAdditionalState(valueAndDerivative,           new double[] { 1.0,  2.0 }).
+                                   addAdditionalData(valueAndDerivative,           new double[] { 1.0,  2.0 }).
                                    addAdditionalStateDerivative(valueAndDerivative, new double[] { 3.0,  2.0 }).
-                                   addAdditionalState(valueOnly,                    new double[] { 5.0,  4.0 }).
+                                   addAdditionalData(valueOnly,                    new double[] { 5.0,  4.0 }).
                                    addAdditionalStateDerivative(derivativeOnly,     new double[] { 1.0, -1.0 });
         Assertions.assertEquals( 1.0, s0.getAdditionalState(valueAndDerivative)[0],           1.0e-15);
         Assertions.assertEquals( 2.0, s0.getAdditionalState(valueAndDerivative)[1],           1.0e-15);

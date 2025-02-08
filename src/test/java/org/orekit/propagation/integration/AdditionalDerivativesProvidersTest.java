@@ -62,7 +62,7 @@ public class AdditionalDerivativesProvidersTest {
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
         NumericalPropagator propagatorNumerical = new NumericalPropagator(integrator);
-        propagatorNumerical.setInitialState(initialState.addAdditionalState(linear.getName(), reference));
+        propagatorNumerical.setInitialState(initialState.addAdditionalData(linear.getName(), reference));
         propagatorNumerical.addAdditionalDerivativesProvider(linear);
         SpacecraftState finalState = propagatorNumerical.propagate(initDate.shiftedBy(dt));
 
@@ -88,7 +88,7 @@ public class AdditionalDerivativesProvidersTest {
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
         DSSTPropagator propagatorDSST = new DSSTPropagator(integrator);
-        propagatorDSST.setInitialState(initialState.addAdditionalState(linear.getName(), reference));
+        propagatorDSST.setInitialState(initialState.addAdditionalData(linear.getName(), reference));
         propagatorDSST.addAdditionalDerivativesProvider(linear);
         SpacecraftState finalState = propagatorDSST.propagate(initDate.shiftedBy(dt));
 
@@ -117,8 +117,8 @@ public class AdditionalDerivativesProvidersTest {
         integrator.setInitialStepSize(60);
         NumericalPropagator propagatorNumerical = new NumericalPropagator(integrator);
         propagatorNumerical.setInitialState(initialState.
-                                            addAdditionalState(linear1.getName(), reference1).
-                                            addAdditionalState(linear2.getName(), reference2));
+                                            addAdditionalData(linear1.getName(), reference1).
+                                            addAdditionalData(linear2.getName(), reference2));
         propagatorNumerical.addAdditionalDerivativesProvider(linear1);
         propagatorNumerical.addAdditionalDerivativesProvider(linear2);
         propagatorNumerical.addEventDetector(new ImpulseManeuver(new DateDetector(initDate.shiftedBy(dt / 2.0)),
@@ -149,8 +149,8 @@ public class AdditionalDerivativesProvidersTest {
         integrator.setInitialStepSize(60);
         NumericalPropagator propagatorNumerical = new NumericalPropagator(integrator);
         propagatorNumerical.setInitialState(initialState.
-                                            addAdditionalState(yield1.getName(), init1).
-                                            addAdditionalState(yield2.getName(), init2));
+                                            addAdditionalData(yield1.getName(), init1).
+                                            addAdditionalData(yield2.getName(), init2));
         propagatorNumerical.addAdditionalDerivativesProvider(yield2); // we intentionally register yield2 before yield 1 to check reordering
         propagatorNumerical.addAdditionalDerivativesProvider(yield1);
         SpacecraftState finalState = propagatorNumerical.propagate(initDate.shiftedBy(dt));
@@ -175,7 +175,7 @@ public class AdditionalDerivativesProvidersTest {
         integrator.setInitialStepSize(60);
         NumericalPropagator propagatorNumerical = new NumericalPropagator(integrator);
         propagatorNumerical.setInitialState(initialState.
-                                            addAdditionalState(coupling.getName(),
+                                            addAdditionalData(coupling.getName(),
                                                                coupling.secondaryInit));
         propagatorNumerical.addAdditionalDerivativesProvider(coupling);
         SpacecraftState finalState = propagatorNumerical.propagate(initDate.shiftedBy(dt));

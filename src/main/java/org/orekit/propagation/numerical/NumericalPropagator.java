@@ -16,11 +16,6 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
@@ -69,10 +64,15 @@ import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
-import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /** This class propagates {@link org.orekit.orbits.Orbit orbits} using
  * numerical integration.
@@ -807,7 +807,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                         toArray();
 
         // set additional state
-        setInitialState(state.addAdditionalState(columnName, column));
+        setInitialState(state.addAdditionalData(columnName, column));
 
     }
 

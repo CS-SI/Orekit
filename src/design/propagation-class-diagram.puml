@@ -43,7 +43,7 @@
         +Orbit getOrbit()
         +Attitude getAttitude()
         +double getMass()
-        +SpacecraftState addAdditionalState(final String name, final double ... value)
+        +SpacecraftState addAdditionalData(final String name, final Object value)
         +boolean hasAdditionalData(final String name)
         +double[] getAdditionalState(final String name)
         +DoubleArrayDictionary getAdditionalStates()
@@ -53,7 +53,7 @@
         +DoubleArrayDictionary getAdditionalStatesDerivatives()
       }
       note bottom
-        always immutable addAdditionalState and
+        always immutable addAdditionalData and
         addAdditionalStateDerivative create new instances
       end note
 

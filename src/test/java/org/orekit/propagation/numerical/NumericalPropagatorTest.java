@@ -16,18 +16,6 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
@@ -90,13 +78,20 @@ import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
-import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeComponents;
-import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.*;
 import org.orekit.utils.*;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 class NumericalPropagatorTest {
 
@@ -837,7 +832,7 @@ class NumericalPropagatorTest {
         Assertions.assertTrue(propagator.isAdditionalDataManaged("constant"));
         Assertions.assertFalse(propagator.isAdditionalDataManaged("non-managed"));
         Assertions.assertEquals(2, propagator.getManagedAdditionalData().length);
-        propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear", 1.5));
+        propagator.setInitialState(propagator.getInitialState().addAdditionalData("linear", 1.5));
 
         CheckingHandler checking = new CheckingHandler(Action.STOP);
         propagator.addEventDetector(new AdditionalStateLinearDetector(new EventDetectionSettings(10.0, 1.0e-8, EventDetectionSettings.DEFAULT_MAX_ITER),
@@ -896,12 +891,12 @@ class NumericalPropagatorTest {
                 return new CombinedDerivatives(new double[] { 1.0 }, null);
             }
         });
-        propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear", 1.5));
+        propagator.setInitialState(propagator.getInitialState().addAdditionalData("linear", 1.5));
 
         CheckingHandler checking = new CheckingHandler(Action.RESET_STATE) {
             public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState)
                 {
-                return oldState.addAdditionalState("linear", oldState.getAdditionalState("linear")[0] * 2);
+                return oldState.addAdditionalData("linear", oldState.getAdditionalState("linear")[0] * 2);
             }
         };
 
@@ -1034,7 +1029,7 @@ class NumericalPropagatorTest {
                 return new CombinedDerivatives(new double[] { rate }, null);
             }
         });
-        propagator.setInitialState(propagator.getInitialState().addAdditionalState("extra", 1.5));
+        propagator.setInitialState(propagator.getInitialState().addAdditionalData("extra", 1.5));
 
         propagator.setOrbitType(OrbitType.CARTESIAN);
         final EphemerisGenerator generator = propagator.getEphemerisGenerator();
@@ -1658,7 +1653,7 @@ class NumericalPropagatorTest {
 
     private void addDerivativeProvider(NumericalPropagator propagator, EmptyDerivativeProvider provider) {
         SpacecraftState initialState = propagator.getInitialState();
-        propagator.setInitialState(initialState.addAdditionalState(provider.getName(), provider.getInitialState()));
+        propagator.setInitialState(initialState.addAdditionalData(provider.getName(), provider.getInitialState()));
         propagator.addAdditionalDerivativesProvider(provider);
     }
 
@@ -1735,7 +1730,7 @@ class NumericalPropagatorTest {
         final NumericalPropagator numericalPropagator = new NumericalPropagator(rungeKuttaIntegrator);
         final SpacecraftState state = new SpacecraftState(initialOrbit);
         final String name = "test";
-        numericalPropagator.setInitialState(state.addAdditionalState(name, 0.));
+        numericalPropagator.setInitialState(state.addAdditionalData(name, 0.));
         numericalPropagator.addAdditionalDerivativesProvider(mockDerivativeProvider(name));
         numericalPropagator.addForceModel(createForceModelBasedOnAdditionalState(name));
         // WHEN & THEN

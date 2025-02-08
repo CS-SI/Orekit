@@ -80,7 +80,7 @@ class FieldUnboundedCartesianEnergyTest {
         final FieldCartesianAdjointDerivativesProvider<Gradient> fieldAdjointDerivativesProvider = new FieldCartesianAdjointDerivativesProvider<>(energy);
         final Orbit orbit = new CartesianOrbit(new PVCoordinates(new Vector3D(7e6, 1e3, 0), new Vector3D(10., 7e3, -200)),
                 FramesFactory.getGCRF(), AbsoluteDate.ARBITRARY_EPOCH, Constants.EGM96_EARTH_MU);
-        final SpacecraftState state = new SpacecraftState(orbit, mass).addAdditionalState(name, 1., 2., 3., 4., 5., 6.);
+        final SpacecraftState state = new SpacecraftState(orbit, mass).addAdditionalData(name, new double[] {1., 2., 3., 4., 5., 6.});
         final FieldSpacecraftState<Gradient> fieldState = new FieldSpacecraftState<>(GradientField.getField(1), state);
         // WHEN
         final FieldCombinedDerivatives<Gradient>fieldCombinedDerivatives = fieldAdjointDerivativesProvider.combinedDerivatives(fieldState);
@@ -123,7 +123,7 @@ class FieldUnboundedCartesianEnergyTest {
         final Field<Complex> field = ComplexField.getInstance();
         final Orbit orbit = new CartesianOrbit(new PVCoordinates(new Vector3D(7e6, 1e3, 0), new Vector3D(10., 7e3, -200)),
                 FramesFactory.getGCRF(), AbsoluteDate.ARBITRARY_EPOCH, Constants.EGM96_EARTH_MU);
-        final SpacecraftState state = new SpacecraftState(orbit, 10.).addAdditionalState(name, 1., 2., 3., 4., 5., 6., 7.);
+        final SpacecraftState state = new SpacecraftState(orbit, 10.).addAdditionalData(name, new double[] {1., 2., 3., 4., 5., 6., 7.});
         // WHEN
         final Stream<FieldEventDetector<Complex>> fieldEventDetectorStream = unboundedCartesianEnergy.getFieldEventDetectors(field);
         // THEN

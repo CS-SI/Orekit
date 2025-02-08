@@ -16,22 +16,12 @@
  */
 package org.orekit.propagation;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.*;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.BodyCenterPointing;
@@ -65,6 +55,12 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class PropagatorsParallelizerTest {
@@ -393,9 +389,9 @@ public class PropagatorsParallelizerTest {
         final double base0 = 2.0e-3;
         final double base1 = 2.5e-3;
         p0.addAdditionalDerivativesProvider(new Exponential(name, base0));
-        p0.setInitialState(p0.getInitialState().addAdditionalState(name, 1.0));
+        p0.setInitialState(p0.getInitialState().addAdditionalData(name, 1.0));
         p1.addAdditionalDerivativesProvider(new Exponential(name, base1));
-        p1.setInitialState(p1.getInitialState().addAdditionalState(name, 1.0));
+        p1.setInitialState(p1.getInitialState().addAdditionalData(name, 1.0));
         List<SpacecraftState> results = new PropagatorsParallelizer(Arrays.asList(p0, p1), interpolators -> {}).
                         propagate(startDate, endDate);
         double expected0 = FastMath.exp(base0 * endDate.durationFrom(startDate));

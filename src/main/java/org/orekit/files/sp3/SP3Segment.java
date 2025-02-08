@@ -16,10 +16,6 @@
  */
 package org.orekit.files.sp3;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
@@ -34,6 +30,10 @@ import org.orekit.time.ClockOffset;
 import org.orekit.time.SampledClockModel;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.SortedListTrimmer;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /** One segment of an {@link SP3Ephemeris}.
  * @author Thomas Neidhart
@@ -201,7 +201,7 @@ public class SP3Segment implements EphemerisFile.EphemerisSegment<SP3Coordinate>
 
             // add the clock offset and its first derivative
             return super.updateAdditionalStates(original).
-                addAdditionalState(SP3Utils.CLOCK_ADDITIONAL_STATE, derivatives[0]).
+                addAdditionalData(SP3Utils.CLOCK_ADDITIONAL_STATE, derivatives[0]).
                 addAdditionalStateDerivative(SP3Utils.CLOCK_ADDITIONAL_STATE, derivatives[1]);
 
         }

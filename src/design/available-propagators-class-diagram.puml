@@ -70,7 +70,7 @@
 
         abstract class AbstractAnalyticalPropagator {
           +PVCoordinatesProvider getPvProvider()
-          +void addAdditionalStateProvider(AdditionalStateProvider additionalStateProvider)
+          +void addAdditionalDataProvider(AdditionalStateProvider additionalStateProvider)
         }
 
         AbstractPropagator           <|-- AbstractAnalyticalPropagator

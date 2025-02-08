@@ -16,7 +16,10 @@
  */
 package org.orekit.forces.maneuvers;
 
-import org.hipparchus.geometry.euclidean.threed.*;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
@@ -295,7 +298,7 @@ class ImpulseManeuverTest {
         final Attitude initialAttitude = attitudeProvider.getAttitude(initialOrbit, initialOrbit.getDate(), initialOrbit.getFrame());
         final SpacecraftState initialState = new SpacecraftState(initialOrbit, initialAttitude);
         KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit);
-        propagator.resetInitialState(initialState.addAdditionalState("testOnly", -1.0));
+        propagator.resetInitialState(initialState.addAdditionalData("testOnly", -1.0));
         DateDetector dateDetector = new DateDetector(epoch.shiftedBy(0.5 * totalPropagationTime));
         FrameAlignedProvider attitudeOverride = new FrameAlignedProvider(new Rotation(RotationOrder.XYX,
                                                                               RotationConvention.VECTOR_OPERATOR,

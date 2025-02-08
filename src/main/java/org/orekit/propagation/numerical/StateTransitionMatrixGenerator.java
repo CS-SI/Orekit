@@ -16,10 +16,6 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -40,6 +36,10 @@ import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap.Span;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /** Generator for State Transition Matrix.
  * @author Luc Maisonobe
@@ -162,7 +162,7 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
         }
 
         // set additional state
-        return state.addAdditionalState(stmName, flat);
+        return state.addAdditionalData(stmName, flat);
 
     }
 

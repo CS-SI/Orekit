@@ -16,9 +16,6 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.io.IOException;
-import java.text.ParseException;
-
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
@@ -61,6 +58,9 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
+
+import java.io.IOException;
+import java.text.ParseException;
 
 /** Unit tests for {@link IntegrableJacobianColumnGenerator}. */
 public class IntegrableJacobianColumnGeneratorTest {
@@ -283,7 +283,7 @@ public class IntegrableJacobianColumnGeneratorTest {
         propagator.addAdditionalDerivativesProvider(stmGenerator);
 
         initialState = stmGenerator.setInitialStateTransitionMatrix(initialState, null, orbitType, angleType);
-        initialState = initialState.addAdditionalState(columnGenerator.getName(), new double[6]);
+        initialState = initialState.addAdditionalData(columnGenerator.getName(), new double[6]);
         propagator.setInitialState(initialState);
 
         final AbsoluteDate finalDate = fireDate.shiftedBy(3800);

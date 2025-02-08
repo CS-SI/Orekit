@@ -16,14 +16,6 @@
  */
 package org.orekit.propagation.numerical;
 
-import static org.hamcrest.CoreMatchers.is;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Stream;
-
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -79,6 +71,14 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
+
+import static org.hamcrest.CoreMatchers.is;
+
 /** Unit tests for {@link StateTransitionMatrixGenerator}. */
 class StateTransitionMatrixGeneratorTest {
 
@@ -131,9 +131,9 @@ class StateTransitionMatrixGeneratorTest {
                                                            Collections.emptyList(),
                                                            propagator2.getAttitudeProvider());
         propagator2.addAdditionalDerivativesProvider(dummyStmGenerator);
-        propagator2.setInitialState(propagator2.getInitialState().addAdditionalState(dummyStmGenerator.getName(), new double[36]));
+        propagator2.setInitialState(propagator2.getInitialState().addAdditionalData(dummyStmGenerator.getName(), new double[36]));
         propagator2.addAdditionalDerivativesProvider(new IntegrableJacobianColumnGenerator(dummyStmGenerator, "dummy-2"));
-        propagator2.setInitialState(propagator2.getInitialState().addAdditionalState("dummy-2", new double[6]));
+        propagator2.setInitialState(propagator2.getInitialState().addAdditionalData("dummy-2", new double[6]));
         propagator2.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
             public String getName() { return "dummy-3"; }
             public int getDimension() { return 1; }
@@ -141,7 +141,7 @@ class StateTransitionMatrixGeneratorTest {
                 return new CombinedDerivatives(new double[1], null);
             }
         });
-        propagator2.setInitialState(propagator2.getInitialState().addAdditionalState("dummy-3", new double[1]));
+        propagator2.setInitialState(propagator2.getInitialState().addAdditionalData("dummy-3", new double[1]));
         propagator2.addAdditionalDataProvider(new TriggerDate(dummyStmGenerator.getName(), "dummy-4", true,
                                                               (Maneuver) propagator2.getAllForceModels().get(1),
                                                               1.0e-6));
@@ -303,7 +303,7 @@ class StateTransitionMatrixGeneratorTest {
         final StateTransitionMatrixGenerator transitionMatrixGenerator = new StateTransitionMatrixGenerator(name,
                 forceModels, attitudeProvider);
         SpacecraftState state = new SpacecraftState(orbit);
-        state = state.addAdditionalState(name, new double[36]);
+        state = state.addAdditionalData(name, new double[36]);
         // WHEN
         final CombinedDerivatives combinedDerivatives = transitionMatrixGenerator.combinedDerivatives(state);
         // THEN
@@ -473,7 +473,7 @@ class StateTransitionMatrixGeneratorTest {
         AdaptiveStepsizeIntegrator integrator0 = new DormandPrince853Integrator(minStep, maxStep, tolerances[0], tolerances[1]);
         integrator0.setInitialStepSize(1.0);
         NumericalPropagator p0 = new NumericalPropagator(integrator0);
-        p0.setInitialState(new SpacecraftState(orbit).addAdditionalState("tmp", new double[1]));
+        p0.setInitialState(new SpacecraftState(orbit).addAdditionalData("tmp", new double[1]));
         p0.setupMatricesComputation("stm0", null, null);
         AdaptiveStepsizeIntegrator integrator1 = new DormandPrince853Integrator(minStep, maxStep, tolerances[0], tolerances[1]);
         integrator1.setInitialStepSize(1.0);

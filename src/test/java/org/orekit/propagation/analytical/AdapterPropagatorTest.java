@@ -297,8 +297,8 @@ public class AdapterPropagatorTest {
             new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
 
         // add some dummy additional states
-        initialState = initialState.addAdditionalState("dummy 1", 1.25, 2.5);
-        initialState = initialState.addAdditionalState("dummy 2", 5.0);
+        initialState = initialState.addAdditionalData("dummy 1", new double[]{1.25, 2.5});
+        initialState = initialState.addAdditionalData("dummy 2", 5.0);
 
         // set up numerical propagator
         final double dP = 1.0;

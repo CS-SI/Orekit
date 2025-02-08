@@ -197,8 +197,8 @@ class IntegratedEphemerisTest {
         propagator.addAdditionalDerivativesProvider(provider2);
         final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.setInitialState(new SpacecraftState(initialOrbit).
-                                   addAdditionalState(provider1.getName(), new double[provider1.getDimension()]).
-                                   addAdditionalState(provider2.getName(), new double[provider2.getDimension()]));
+                                   addAdditionalData(provider1.getName(), new double[provider1.getDimension()]).
+                                   addAdditionalData(provider2.getName(), new double[provider2.getDimension()]));
         propagator.propagate(finalDate);
         IntegratedEphemeris ephemeris = (IntegratedEphemeris) generator.getGeneratedEphemeris();
 

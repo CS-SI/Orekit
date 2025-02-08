@@ -37,8 +37,8 @@ import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.AbsolutePVCoordinates;
-import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.DataDictionary;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This class is the representation of a complete state holding orbit, attitude
@@ -338,35 +338,6 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
         this.additionalDot = additionalDot == null ? new DoubleArrayDictionary() : new DoubleArrayDictionary(additionalDot);
     }
 
-    /** Add an additional state (i.e., represented by double values).
-     * <p>
-     * {@link SpacecraftState SpacecraftState} instances are immutable,
-     * so this method does <em>not</em> change the instance, but rather
-     * creates a new instance, which has the same orbit, attitude, mass
-     * and additional states as the original instance, except it also
-     * has the specified state. If the original instance already had an
-     * additional state with the same name, it will be overridden. If it
-     * did not have any additional state with that name, the new instance
-     * will have one more additional state than the original instance.
-     * </p>
-     * <p>
-     * Since Orekit 13.0, it is possible to add any additional type of data
-     * (i.e., any type of Object) thanks to {@link #addAdditionalData(String, Object)}
-     * method.
-     * </p>
-     * @param name name of the additional state (names containing "orekit"
-     * with any case are reserved for the library internal use)
-     * @param value value of the additional state
-     * @return a new instance, with the additional state added
-     * @see #addAdditionalData(String, Object)
-     * @see #hasAdditionalData(String)
-     * @see #getAdditionalState(String)
-     * @see #getAdditionalDataValues()
-     */
-    public SpacecraftState addAdditionalState(final String name, final double... value) {
-        return addAdditionalData(name, value.clone());
-    }
-
     /** Add an additional data.
      * <p>
      * {@link SpacecraftState SpacecraftState} instances are immutable,
@@ -389,7 +360,13 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      */
     public SpacecraftState addAdditionalData(final String name, final Object value) {
         final DataDictionary newDict = new DataDictionary(additional);
-        newDict.put(name, value);
+        if (value instanceof double[]) {
+            newDict.put(name, ((double[]) value).clone());
+        } else if (value instanceof Double) {
+            newDict.put(name, new double[] {(double) value});
+        } else {
+            newDict.put(name, value);
+        }
         if (isOrbitDefined()) {
             return new SpacecraftState(orbit, attitude, mass, newDict, additionalDot);
         } else {
@@ -661,7 +638,6 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
     /** Check if an additional data is available.
      * @param name name of the additional data
      * @return true if the additional data is available
-     * @see #addAdditionalState(String, double[])
      * @see #addAdditionalData(String, Object)
      * @see #getAdditionalState(String)
      * @see #getAdditionalData(String)
@@ -748,14 +724,17 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      *
      * @param name name of the additional state
      * @return value of the additional state
-     * @see #addAdditionalState(String, double[])
      * @see #hasAdditionalData(String)
      * @see #getAdditionalDataValues()
      */
     public double[] getAdditionalState(final String name) {
         final Object data = getAdditionalData(name);
         if (!(data instanceof double[])) {
-            throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_BAD_TYPE, name);
+            if (data instanceof Double) {
+                return new double[] {(double) data};
+            } else {
+                throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_BAD_TYPE, name);
+            }
         }
         return (double[]) data;
     }
@@ -765,7 +744,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      *
      * @param name name of the additional state
      * @return value of the additional state
-     * @see #addAdditionalState(String, double[])
+     * @see #addAdditionalData(String, Object)
      * @see #hasAdditionalData(String)
      * @see #getAdditionalDataValues()
      * @since 13.0
@@ -796,7 +775,6 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
 
     /** Get an unmodifiable map of additional data.
      * @return unmodifiable map of additional data
-     * @see #addAdditionalState(String, double[])
      * @see #addAdditionalData(String, Object)
      * @see #hasAdditionalData(String)
      * @see #getAdditionalState(String)

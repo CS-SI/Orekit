@@ -16,10 +16,6 @@
  */
 package org.orekit.propagation.integration;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Stream;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.ode.DenseOutputModel;
@@ -39,6 +35,10 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DataDictionary;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
 
 /** This class stores sequentially generated orbital parameters for
  * later retrieval.
@@ -282,7 +282,7 @@ public class IntegratedEphemeris
                 final double[] state      = Arrays.copyOfRange(combinedState,      index, index + dimensions[i]);
                 final double[] derivative = Arrays.copyOfRange(combinedDerivative, index, index + dimensions[i]);
                 updated = updated.
-                          addAdditionalState(equations[i], state).
+                          addAdditionalData(equations[i], state).
                           addAdditionalStateDerivative(equations[i], derivative);
                 index += dimensions[i];
             }

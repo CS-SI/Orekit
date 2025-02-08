@@ -255,7 +255,7 @@ public abstract class AbstractFixedInitialCartesianSingleShooting extends Abstra
      */
     private SpacecraftState createStateWithMassAndAdjoint(final double initialMass, final double[] initialAdjoint) {
         final String adjointName = getPropagationSettings().getAdjointDynamicsProvider().getAdjointName();
-        return createInitialStateWithMass(initialMass).addAdditionalState(adjointName, initialAdjoint);
+        return createInitialStateWithMass(initialMass).addAdditionalData(adjointName, initialAdjoint);
     }
 
     /**

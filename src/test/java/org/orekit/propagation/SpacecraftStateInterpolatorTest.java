@@ -20,11 +20,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
@@ -49,22 +45,8 @@ import org.orekit.orbits.OrbitHermiteInterpolator;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.AbstractTimeInterpolator;
-import org.orekit.time.DateComponents;
-import org.orekit.time.TimeComponents;
-import org.orekit.time.TimeInterpolator;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.time.TimeStamped;
-import org.orekit.time.TimeStampedDouble;
-import org.orekit.time.TimeStampedDoubleHermiteInterpolator;
-import org.orekit.utils.AbsolutePVCoordinates;
-import org.orekit.utils.AbsolutePVCoordinatesHermiteInterpolator;
-import org.orekit.utils.AngularDerivativesFilter;
-import org.orekit.utils.CartesianDerivativesFilter;
-import org.orekit.utils.Constants;
-import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinates;
+import org.orekit.time.*;
+import org.orekit.utils.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -303,7 +285,7 @@ class SpacecraftStateInterpolatorTest {
             double          dt    = i * 900.0 / (n - 1);
             SpacecraftState state = orbitPropagator.propagate(centerDate.shiftedBy(dt));
             state = state.
-                    addAdditionalState("quadratic", dt * dt).
+                    addAdditionalData("quadratic", dt * dt).
                     addAdditionalStateDerivative("quadratic-dot", dt * dt);
             sample.add(state);
         }
@@ -357,7 +339,7 @@ class SpacecraftStateInterpolatorTest {
             double          dt    = i * 900.0 / (n - 1);
             SpacecraftState state = absPVPropagator.propagate(centerDate.shiftedBy(dt));
             state = state.
-                    addAdditionalState("quadratic", dt * dt).
+                    addAdditionalData("quadratic", dt * dt).
                     addAdditionalStateDerivative("quadratic-dot", dt * dt);
             sample.add(state);
         }

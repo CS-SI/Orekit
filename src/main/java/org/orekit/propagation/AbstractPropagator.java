@@ -16,14 +16,6 @@
  */
 package org.orekit.propagation;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
@@ -31,9 +23,17 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.sampling.StepHandlerMultiplexer;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.DataDictionary;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.TimeSpanMap;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 
 /** Common handling of {@link Propagator} methods for propagators.
  * <p>
@@ -202,7 +202,7 @@ public abstract class AbstractPropagator implements Propagator {
      * @param original original state
      * @return updated state, with all additional states included
      * (including {@link #updateUnmanagedStates(SpacecraftState) unmanaged} states)
-     * @see #addAdditionalStateProvider(AdditionalStateProvider)
+     * @see #addAdditionalDataProvider(AdditionalDataProvider)
      * @see #updateUnmanagedStates(SpacecraftState)
      */
     public SpacecraftState updateAdditionalStates(final SpacecraftState original) {

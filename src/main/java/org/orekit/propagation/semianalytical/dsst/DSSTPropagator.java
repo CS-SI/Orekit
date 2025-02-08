@@ -16,14 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.ODEStateAndDerivative;
@@ -59,15 +51,23 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FixedNumberInterpola
 import org.orekit.propagation.semianalytical.dsst.utilities.InterpolationGrid;
 import org.orekit.propagation.semianalytical.dsst.utilities.MaxGapInterpolationGrid;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.DataDictionary;
+import org.orekit.utils.DoubleArrayDictionary;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterObserver;
-import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.ParameterObserver;
+import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * This class propagates {@link org.orekit.orbits.Orbit orbits} using the DSST theory.
@@ -484,7 +484,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                 if (!getInitialIntegrationState().hasAdditionalData(span.getData())) {
                     // add the initial Jacobian column if it is not already there
                     // (perhaps due to a previous propagation)
-                    setInitialState(getInitialState().addAdditionalState(span.getData(),
+                    setInitialState(getInitialState().addAdditionalData(span.getData(),
                                                                          getHarvester().getInitialJacobianColumn(span.getData())),
                                     getPropagationType());
                 }
