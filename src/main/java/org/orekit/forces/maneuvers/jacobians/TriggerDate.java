@@ -23,7 +23,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.forces.maneuvers.trigger.ManeuverTriggersResetter;
-import org.orekit.propagation.AdditionalStateProvider;
+import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.time.AbsoluteDate;
@@ -75,7 +75,7 @@ import org.orekit.utils.TimeSpanMap;
  * </p>
  * <p>
  * As the primary part of the column is generated using a closed-form expression, this generator
- * implements the {@link AdditionalStateProvider} interface and stores the column directly
+ * implements the {@link AdditionalDataProvider} interface and stores the column directly
  * in the primary state during propagation.
  * </p>
  * <p>
@@ -115,7 +115,7 @@ import org.orekit.utils.TimeSpanMap;
  * @see Duration
  */
 public class TriggerDate
-    implements AdditionalStateProvider, ManeuverTriggersResetter {
+    implements ManeuverTriggersResetter, AdditionalDataProvider<double[]> {
 
     /** Dimension of the state. */
     private static final int STATE_DIMENSION = 6;

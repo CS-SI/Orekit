@@ -26,7 +26,7 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;
-import org.orekit.propagation.AdditionalStateProvider;
+import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -44,7 +44,7 @@ import org.orekit.utils.TimeSpanMap.Span;
  * @author Bryan Cazabonne
  * @since 11.1
  */
-public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatricesHarvester implements AdditionalStateProvider {
+public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatricesHarvester implements AdditionalDataProvider<double[]> {
 
     /** Columns names for parameters. */
     private List<String> columnsNames;

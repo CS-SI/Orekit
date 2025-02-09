@@ -72,7 +72,6 @@ import org.orekit.time.AbsoluteDate;
  * </p>
  * @see org.orekit.propagation.Propagator
  * @see org.orekit.propagation.integration.AdditionalDerivativesProvider
- * @see AdditionalStateProvider
  * @author Luc Maisonobe
  * @since 13.0
  */

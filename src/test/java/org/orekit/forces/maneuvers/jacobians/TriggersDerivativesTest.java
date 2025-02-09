@@ -347,7 +347,7 @@ public class TriggersDerivativesTest {
         }
         final Maneuver maneuver = new Maneuver(null, triggers, propulsionModel);
         propagator.addForceModel(maneuver);
-        propagator.addAdditionalDataProvider(new AdditionalStateProvider() {
+        propagator.addAdditionalDataProvider(new AdditionalDataProvider<double[]>() {
             public String getName() { return triggers.getName().concat("-acc"); }
             public double[] getAdditionalData(SpacecraftState state) {
                 double[] parameters = Arrays.copyOfRange(maneuver.getParameters(initialState.getDate()), 0, propulsionModel.getParametersDrivers().size());

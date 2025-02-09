@@ -90,7 +90,7 @@ public class AdapterPropagatorTest {
         AdapterPropagator.DifferentialEffect effect =
                 new SmallManeuverAnalyticalModel(adapterPropagator.propagate(t0), dV.negate(), isp);
         adapterPropagator.addEffect(effect);
-        adapterPropagator.addAdditionalDataProvider(new AdditionalStateProvider() {
+        adapterPropagator.addAdditionalDataProvider(new AdditionalDataProvider<double[]>() {
             public String getName() {
                 return "dummy 3";
             }
@@ -152,7 +152,7 @@ public class AdapterPropagatorTest {
         AdapterPropagator.DifferentialEffect effect =
                 new SmallManeuverAnalyticalModel(adapterPropagator.propagate(t0), dV.negate(), isp);
         adapterPropagator.addEffect(effect);
-        adapterPropagator.addAdditionalDataProvider(new AdditionalStateProvider() {
+        adapterPropagator.addAdditionalDataProvider(new AdditionalDataProvider<double[]>() {
             public String getName() {
                 return "dummy 3";
             }
@@ -224,7 +224,7 @@ public class AdapterPropagatorTest {
                                          GravityFieldFactory.getUnnormalizedProvider(gravityField));
         adapterPropagator.addEffect(directEffect);
         adapterPropagator.addEffect(derivedEffect);
-        adapterPropagator.addAdditionalDataProvider(new AdditionalStateProvider() {
+        adapterPropagator.addAdditionalDataProvider(new AdditionalDataProvider<double[]>() {
             public String getName() {
                 return "dummy 3";
             }
@@ -276,9 +276,9 @@ public class AdapterPropagatorTest {
         final Ephemeris ephemeris = new Ephemeris(states, 2);
         final AdapterPropagator adapterPropagator = new AdapterPropagator(ephemeris);
 
-        // Setup additional state provider which use the initial state in its init method
-        final AdditionalStateProvider additionalStateProvider = TestUtils.getAdditionalProviderWithInit();
-        adapterPropagator.addAdditionalDataProvider(additionalStateProvider);
+        // Setup additional data provider which use the initial state in its init method
+        final AdditionalDataProvider<double[]> additionalDataProvider = TestUtils.getAdditionalProviderWithInit();
+        adapterPropagator.addAdditionalDataProvider(additionalDataProvider);
 
         // WHEN & THEN
         Assertions.assertDoesNotThrow(() -> adapterPropagator.propagate(finalOrbit.getDate()), "No error should have been thrown");
@@ -307,12 +307,12 @@ public class AdapterPropagatorTest {
             new DormandPrince853Integrator(0.001, 1000, tolerances[0], tolerances[1]);
         integrator.setInitialStepSize(orbit.getKeplerianPeriod() / 100.0);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
-        propagator.addAdditionalDataProvider(new AdditionalStateProvider() {
+        propagator.addAdditionalDataProvider(new AdditionalDataProvider<Double>() {
             public String getName() {
                 return "dummy 2";
             }
-            public double[] getAdditionalData(SpacecraftState state) {
-                return new double[] { 5.0 };
+            public Double getAdditionalData(SpacecraftState state) {
+                return 5.0;
             }
         });
         propagator.setInitialState(initialState);

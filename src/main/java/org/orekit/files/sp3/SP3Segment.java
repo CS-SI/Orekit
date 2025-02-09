@@ -175,7 +175,7 @@ public class SP3Segment implements EphemerisFile.EphemerisSegment<SP3Coordinate>
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState updateAdditionalStates(final SpacecraftState original) {
+        public SpacecraftState updateAdditionalData(final SpacecraftState original) {
 
             final HermiteInterpolator interpolator = new HermiteInterpolator();
 
@@ -200,7 +200,7 @@ public class SP3Segment implements EphemerisFile.EphemerisSegment<SP3Coordinate>
             final double[][] derivatives = interpolator.derivatives(0.0, 1);
 
             // add the clock offset and its first derivative
-            return super.updateAdditionalStates(original).
+            return super.updateAdditionalData(original).
                 addAdditionalData(SP3Utils.CLOCK_ADDITIONAL_STATE, derivatives[0]).
                 addAdditionalStateDerivative(SP3Utils.CLOCK_ADDITIONAL_STATE, derivatives[1]);
 

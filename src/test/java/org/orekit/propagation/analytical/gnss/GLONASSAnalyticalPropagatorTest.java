@@ -29,7 +29,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.propagation.AdditionalStateProvider;
+import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.analytical.gnss.data.GLONASSAlmanac;
 import org.orekit.propagation.analytical.gnss.data.GLONASSOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
@@ -198,9 +198,9 @@ public class GLONASSAnalyticalPropagatorTest {
         // Setup propagator
         final GLONASSAnalyticalPropagator propagator = almanac.getPropagator();
 
-        // Setup additional state provider which use the initial state in its init method
-        final AdditionalStateProvider additionalStateProvider = TestUtils.getAdditionalProviderWithInit();
-        propagator.addAdditionalDataProvider(additionalStateProvider);
+        // Setup additional data provider which use the initial state in its init method
+        final AdditionalDataProvider<double[]> additionalDataProvider = TestUtils.getAdditionalProviderWithInit();
+        propagator.addAdditionalDataProvider(additionalDataProvider);
 
         // WHEN & THEN
         Assertions.assertDoesNotThrow(() -> propagator.propagate(new AbsoluteDate()), "No error should have been thrown");

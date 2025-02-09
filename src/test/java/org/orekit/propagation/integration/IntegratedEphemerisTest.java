@@ -228,9 +228,9 @@ class IntegratedEphemerisTest {
         numericalPropagator.setInitialState(new SpacecraftState(initialOrbit));
         numericalPropagator.setOrbitType(OrbitType.CARTESIAN);
 
-        // Setup additional state provider which use the initial state in its init method
-        final AdditionalStateProvider additionalStateProvider = TestUtils.getAdditionalProviderWithInit();
-        numericalPropagator.addAdditionalDataProvider(additionalStateProvider);
+        // Setup additional data provider which use the initial state in its init method
+        final AdditionalDataProvider<double[]> additionalDataProvider = TestUtils.getAdditionalProviderWithInit();
+        numericalPropagator.addAdditionalDataProvider(additionalDataProvider);
 
         // Setup integrated ephemeris
         final EphemerisGenerator generator = numericalPropagator.getEphemerisGenerator();

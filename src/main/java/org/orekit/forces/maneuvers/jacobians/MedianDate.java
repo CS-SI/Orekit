@@ -16,7 +16,7 @@
  */
 package org.orekit.forces.maneuvers.jacobians;
 
-import org.orekit.propagation.AdditionalStateProvider;
+import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.SpacecraftState;
 
 /** Generator for one column of a Jacobian matrix for special case of maneuver median date.
@@ -29,7 +29,7 @@ import org.orekit.propagation.SpacecraftState;
  * @see Duration
  * @see TriggerDate
  */
-public class MedianDate implements AdditionalStateProvider {
+public class MedianDate implements AdditionalDataProvider<double[]> {
 
     /** Name of the parameter corresponding to the start date. */
     private final String startName;

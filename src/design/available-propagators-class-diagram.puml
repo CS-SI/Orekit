@@ -46,7 +46,7 @@
         +EphemerisGenerator getEphemerisGenerator()
         +SpacecraftState getInitialState()
         +void resetInitialState(SpacecraftState state)
-        +void addAdditionalDataProvider(AdditionalDataProvider<?> additionalStateProvider)
+        +void addAdditionalDataProvider(AdditionalDataProvider<?> additionalDataProvider)
         +List<AdditionalDataProvider<?>> getAdditionalDataProviders()
         +boolean isAdditionalDataManaged(String name)
         +String[] getManagedAdditionalData()

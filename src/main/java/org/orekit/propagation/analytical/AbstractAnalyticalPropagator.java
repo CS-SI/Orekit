@@ -128,11 +128,11 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
             lastPropagationStart = start;
 
-            // Initialize additional states
-            initializeAdditionalStates(target);
+            // Initialize additional data
+            initializeAdditionalData(target);
 
             final boolean isForward = target.compareTo(start) >= 0;
-            SpacecraftState state   = updateAdditionalStates(basicPropagate(start));
+            SpacecraftState state   = updateAdditionalData(basicPropagate(start));
 
             // initialize event detectors
             eventStates = getAttitudeProvider().getEventDetectors().map(EventState::new).collect(Collectors.toList());
@@ -151,7 +151,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
                 // attempt to advance to the target date
                 final SpacecraftState previous = state;
-                final SpacecraftState current = updateAdditionalStates(basicPropagate(target));
+                final SpacecraftState current = updateAdditionalData(basicPropagate(target));
                 final OrekitStepInterpolator interpolator =
                         new BasicStepInterpolator(isForward, previous, current);
 
@@ -160,7 +160,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
                 // Update the potential changes in the spacecraft state due to the events
                 // especially the potential attitude transition
-                state = updateAdditionalStates(basicPropagate(state.getDate()));
+                state = updateAdditionalData(basicPropagate(state.getDate()));
 
             } while (!isLastStep);
 
@@ -566,7 +566,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
             final SpacecraftState basicState = basicPropagate(date);
 
             // add the additional states
-            return updateAdditionalStates(basicState);
+            return updateAdditionalData(basicState);
 
         }
 

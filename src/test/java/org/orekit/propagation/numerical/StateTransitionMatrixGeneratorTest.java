@@ -145,7 +145,7 @@ class StateTransitionMatrixGeneratorTest {
         propagator2.addAdditionalDataProvider(new TriggerDate(dummyStmGenerator.getName(), "dummy-4", true,
                                                               (Maneuver) propagator2.getAllForceModels().get(1),
                                                               1.0e-6));
-        propagator2.addAdditionalDataProvider(new AdditionalStateProvider() {
+        propagator2.addAdditionalDataProvider(new AdditionalDataProvider<double[]>() {
             public String getName() { return "dummy-5"; }
             public double[] getAdditionalData(SpacecraftState s) { return new double[1]; }
         });
@@ -170,7 +170,7 @@ class StateTransitionMatrixGeneratorTest {
     }
 
     /**
-     * check {@link StateTransitionMatrixGenerator#generate(SpacecraftState)} correctly sets the satellite velocity.
+     * check {@link StateTransitionMatrixGenerator#combinedDerivatives(SpacecraftState)} correctly sets the satellite velocity.
      */
     @Test
     void testComputeDerivativesStateVelocity() {
@@ -667,7 +667,7 @@ class StateTransitionMatrixGeneratorTest {
         }
         final Maneuver maneuver = new Maneuver(null, triggers, propulsionModel);
         propagator.addForceModel(maneuver);
-        propagator.addAdditionalDataProvider(new AdditionalStateProvider() {
+        propagator.addAdditionalDataProvider(new AdditionalDataProvider<double[]>() {
             public String getName() { return triggers.getName().concat("-acc"); }
             public double[] getAdditionalData(SpacecraftState state) {
                 double[] parameters = Arrays.copyOfRange(maneuver.getParameters(initialState.getDate()), 0, propulsionModel.getParametersDrivers().size());
@@ -706,15 +706,7 @@ class StateTransitionMatrixGeneratorTest {
     /** Mock {@link ForceModel}. */
     private static class MockForceModel implements ForceModel {
 
-        /**
-         * argument for {@link #accelerationDerivatives(AbsoluteDate, Frame,
-         * FieldVector3D, FieldVector3D, FieldRotation, DerivativeStructure)}.
-         */
         public FieldVector3D<DerivativeStructure> accelerationDerivativesPosition;
-        /**
-         * argument for {@link #accelerationDerivatives(AbsoluteDate, Frame,
-         * FieldVector3D, FieldVector3D, FieldRotation, DerivativeStructure)}.
-         */
         public FieldVector3D<DerivativeStructure> accelerationDerivativesVelocity;
 
         /** {@inheritDoc} */

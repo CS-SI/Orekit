@@ -35,7 +35,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.AdditionalStateProvider;
+import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.SpacecraftStateInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -97,10 +97,10 @@ public class TabulatedEphemerisTest {
         double OMEGA = FastMath.toRadians(261);
         double lv = 0;
 
-        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 1, 1),
                                                        TimeComponents.H00,
                                                        TimeScalesFactory.getUTC());
-        final AbsoluteDate finalDate = new AbsoluteDate(new DateComponents(2004, 01, 02),
+        final AbsoluteDate finalDate = new AbsoluteDate(new DateComponents(2004, 1, 2),
                                                         TimeComponents.H00,
                                                         TimeScalesFactory.getUTC());
         double deltaT = finalDate.durationFrom(initDate);
@@ -114,14 +114,14 @@ public class TabulatedEphemerisTest {
         EcksteinHechlerPropagator eck =
             new EcksteinHechlerPropagator(transPar, mass,
                                           ae, mu, c20, c30, c40, c50, c60);
-        AdditionalStateProvider provider = new AdditionalStateProvider() {
+        AdditionalDataProvider<Double> provider = new AdditionalDataProvider<Double>() {
 
             public String getName() {
                 return "dt";
             }
 
-           public double[] getAdditionalData(SpacecraftState state) {
-                return new double[] { state.getDate().durationFrom(initDate) };
+           public Double getAdditionalData(SpacecraftState state) {
+                return  state.getDate().durationFrom(initDate);
             }
         };
         eck.addAdditionalDataProvider(provider);

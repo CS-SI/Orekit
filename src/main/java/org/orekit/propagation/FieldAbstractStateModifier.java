@@ -20,7 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 
 /** Abstract base class for modifying state during propagation.
  * <p>
- * This class is a specialized implementation of {@link AdditionalStateProvider}
+ * This class is a specialized implementation of {@link FieldAdditionalStateProvider}
  * with a name set to the empty string and returning a null additional state.
  * </p>
  * <p>
@@ -28,7 +28,7 @@ import org.hipparchus.CalculusFieldElement;
  * many side effects. Using this class should therefore be done cautiously.
  * </p>
  * @see Propagator
- * @see AdditionalStateProvider
+ * @see FieldAdditionalStateProvider
  * @author Luc Maisonobe
  * @param <T> type of the field elements
  * @since 12.1

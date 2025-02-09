@@ -54,8 +54,8 @@ public abstract class AbstractPropagator implements Propagator {
     /** Attitude provider. */
     private AttitudeProvider attitudeProvider;
 
-    /** Providers for additional states. */
-    private final List<AdditionalDataProvider<?>> additionalStateProviders;
+    /** Providers for additional data. */
+    private final List<AdditionalDataProvider<?>> additionalDataProviders;
 
     /** States managed by no generators. */
     private final Map<String, TimeSpanMap<Object>> unmanagedStates;
@@ -70,7 +70,7 @@ public abstract class AbstractPropagator implements Propagator {
      */
     protected AbstractPropagator() {
         multiplexer              = new StepHandlerMultiplexer();
-        additionalStateProviders = new ArrayList<>();
+        additionalDataProviders  = new ArrayList<>();
         unmanagedStates          = new HashMap<>();
         harvester                = null;
     }
@@ -132,14 +132,14 @@ public abstract class AbstractPropagator implements Propagator {
         }
 
         // this is really a new name, add it
-        additionalStateProviders.add(provider);
+        additionalDataProviders.add(provider);
 
     }
 
     /** {@inheritDoc} */
     @Override
     public List<AdditionalDataProvider<?>> getAdditionalDataProviders() {
-        return Collections.unmodifiableList(additionalStateProviders);
+        return Collections.unmodifiableList(additionalDataProviders);
     }
 
     /** {@inheritDoc} */
@@ -180,15 +180,15 @@ public abstract class AbstractPropagator implements Propagator {
     /** Update state by adding unmanaged states.
      * @param original original state
      * @return updated state, with unmanaged states included
-     * @see #updateAdditionalStates(SpacecraftState)
+     * @see #updateAdditionalData(SpacecraftState)
      */
-    protected SpacecraftState updateUnmanagedStates(final SpacecraftState original) {
+    protected SpacecraftState updateUnmanagedData(final SpacecraftState original) {
 
         // start with original state,
-        // which may already contain additional states, for example in interpolated ephemerides
+        // which may already contain additional data, for example in interpolated ephemerides
         SpacecraftState updated = original;
 
-        // update the states not managed by providers
+        // update the data providers not managed by providers
         for (final Map.Entry<String, TimeSpanMap<Object>> entry : unmanagedStates.entrySet()) {
             updated = updated.addAdditionalData(entry.getKey(),
                                                 entry.getValue().get(original.getDate()));
@@ -198,22 +198,22 @@ public abstract class AbstractPropagator implements Propagator {
 
     }
 
-    /** Update state by adding all additional states.
+    /** Update state by adding all additional data.
      * @param original original state
-     * @return updated state, with all additional states included
-     * (including {@link #updateUnmanagedStates(SpacecraftState) unmanaged} states)
+     * @return updated state, with all additional data included
+     * (including {@link #updateUnmanagedData(SpacecraftState) unmanaged} data)
      * @see #addAdditionalDataProvider(AdditionalDataProvider)
-     * @see #updateUnmanagedStates(SpacecraftState)
+     * @see #updateUnmanagedData(SpacecraftState)
      */
-    public SpacecraftState updateAdditionalStates(final SpacecraftState original) {
+    public SpacecraftState updateAdditionalData(final SpacecraftState original) {
 
-        // start with original state and unmanaged states
-        SpacecraftState updated = updateUnmanagedStates(original);
+        // start with original state and unmanaged data
+        SpacecraftState updated = updateUnmanagedData(original);
 
         // set up queue for providers
         final Queue<AdditionalDataProvider<?>> pending = new LinkedList<>(getAdditionalDataProviders());
 
-        // update the additional states managed by providers, taking care of dependencies
+        // update the additional data managed by providers, taking care of dependencies
         int yieldCount = 0;
         while (!pending.isEmpty()) {
             final AdditionalDataProvider<?> provider = pending.remove();
@@ -243,15 +243,15 @@ public abstract class AbstractPropagator implements Propagator {
      * @param target date of propagation. Not equal to {@code initialState.getDate()}.
      * @since 11.2
      */
-    protected void initializeAdditionalStates(final AbsoluteDate target) {
-        for (final AdditionalDataProvider<?> provider : additionalStateProviders) {
+    protected void initializeAdditionalData(final AbsoluteDate target) {
+        for (final AdditionalDataProvider<?> provider : additionalDataProviders) {
             provider.init(initialState, target);
         }
     }
 
     /** {@inheritDoc} */
     public boolean isAdditionalDataManaged(final String name) {
-        for (final AdditionalDataProvider<?> provider : additionalStateProviders) {
+        for (final AdditionalDataProvider<?> provider : additionalDataProviders) {
             if (provider.getName().equals(name)) {
                 return true;
             }
@@ -261,9 +261,9 @@ public abstract class AbstractPropagator implements Propagator {
 
     /** {@inheritDoc} */
     public String[] getManagedAdditionalData() {
-        final String[] managed = new String[additionalStateProviders.size()];
+        final String[] managed = new String[additionalDataProviders.size()];
         for (int i = 0; i < managed.length; ++i) {
-            managed[i] = additionalStateProviders.get(i).getName();
+            managed[i] = additionalDataProviders.get(i).getName();
         }
         return managed;
     }
@@ -286,10 +286,10 @@ public abstract class AbstractPropagator implements Propagator {
         if (initialState != null) {
             // there is an initial state
             // (null initial states occur for example in interpolated ephemerides)
-            // copy the additional states present in initialState but otherwise not managed
+            // copy the additional data present in initialState but otherwise not managed
             for (final DataDictionary.Entry initial : initialState.getAdditionalDataValues().getData()) {
                 if (!isAdditionalDataManaged(initial.getKey())) {
-                    // this additional state is in the initial state, but is unknown to the propagator
+                    // this additional data is in the initial state, but is unknown to the propagator
                     // we store it in a way event handlers may change it
                     unmanagedStates.put(initial.getKey(), new TimeSpanMap<>(initial.getValue()));
                 }

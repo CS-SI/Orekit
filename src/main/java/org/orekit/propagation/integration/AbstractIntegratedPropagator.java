@@ -421,8 +421,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             // prepare handling of STM and Jacobian matrices
             setUpStmAndJacobianGenerators();
 
-            // Initialize additional states
-            initializeAdditionalStates(tEnd);
+            // Initialize additional data
+            initializeAdditionalData(tEnd);
 
             if (!tStart.equals(getInitialState().getDate())) {
                 // if propagation start date is not initial date,
@@ -562,7 +562,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 updatedState = updatedState.addAdditionalStateDerivative(name, Arrays.copyOfRange(secondaryDerivative, offset, offset + dimension));
             }
         }
-        return updateAdditionalStates(updatedState);
+        return updateAdditionalData(updatedState);
     }
 
     /** Get the initial state for integration.
@@ -774,7 +774,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         public void init(final double t0, final double[] y0, final double finalTime) {
             // update space dynamics view
             SpacecraftState initialState = stateMapper.mapArrayToState(t0, y0, null, PropagationType.MEAN);
-            initialState = updateAdditionalStates(initialState);
+            initialState = updateAdditionalData(initialState);
             initialState = updateStatesFromAdditionalDerivativesIfKnown(initialState);
             final AbsoluteDate target = stateMapper.mapDoubleToDate(finalTime);
             main.init(initialState, target);
@@ -813,7 +813,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             SpacecraftState currentState = stateMapper.mapArrayToState(t, y, null, PropagationType.MEAN);
             stateMapper.setAttitudeProvider(getAttitudeProvider());
 
-            currentState = updateAdditionalStates(currentState);
+            currentState = updateAdditionalData(currentState);
             // compute main state differentials
             return main.computeDerivatives(currentState);
 
@@ -924,7 +924,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 initialState = initialState.addAdditionalData(name, Arrays.copyOfRange(secondary, offset, offset + dimension));
             }
 
-            return updateAdditionalStates(initialState);
+            return updateAdditionalData(initialState);
 
         }
 

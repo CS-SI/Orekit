@@ -900,7 +900,7 @@ public class KeplerianPropagatorTest {
         mu   = Double.NaN;
     }
 
-    private static class DependentGenerator implements AdditionalStateProvider {
+    private static class DependentGenerator implements AdditionalDataProvider<double[]> {
 
         private final String name;
         private final String dependency;

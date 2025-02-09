@@ -264,14 +264,14 @@ public class IntegratedEphemeris
     /** {@inheritDoc} */
     @Override
     public SpacecraftState getInitialState() {
-        return updateAdditionalStates(basicPropagate(getMinDate()));
+        return updateAdditionalData(basicPropagate(getMinDate()));
     }
 
     /** {@inheritDoc} */
     @Override
-    public SpacecraftState updateAdditionalStates(final SpacecraftState original) {
+    public SpacecraftState updateAdditionalData(final SpacecraftState original) {
 
-        SpacecraftState updated = super.updateAdditionalStates(original);
+        SpacecraftState updated = super.updateAdditionalData(original);
 
         if (equations.length > 0) {
             final ODEStateAndDerivative osd                = getInterpolatedState(updated.getDate());

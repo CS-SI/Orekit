@@ -1,26 +1,31 @@
 package org.orekit.propagation;
 
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.Attitude;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
 class AdditionalDataProviderTest {
     private static final double DURATION = 600.0;
-    private static final String BEFORE = "Let's go!";
-    private static final String AFTER = "Good job!";
+    private static final String STRING_BEFORE = "Let's go!";
+    private static final String STRING_AFTER = "Good job!";
     private AbsoluteDate initDate;
     private SpacecraftState initialState;
     private AdaptiveStepsizeIntegrator integrator;
@@ -41,46 +46,144 @@ class AdditionalDataProviderTest {
     }
 
     @Test
-    public void testPropagate() {
+    public void testModifyMainState() {
+
+        // Create propagator
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setInitialState(initialState);
 
-        final MainDataModifier modifier = new MainDataModifier();
+        // Create state modifier
+        final MainStateModifier modifier = new MainStateModifier();
+
+        // Add the provider to the propagator
         propagator.addAdditionalDataProvider(modifier);
 
-        final SpacecraftState propagated = propagator.propagate(initDate.shiftedBy(DURATION));
-        Assertions.assertEquals(AFTER, propagated.getAdditionalData(MainDataModifier.class.getSimpleName()));
+        // Propagate
+        final double dt = 600.0;
+        final SpacecraftState propagated = propagator.propagate(initDate.shiftedBy(dt));
+
+        // Verify
+        Assertions.assertEquals(2 * SpacecraftState.DEFAULT_MASS, propagated.getMass(), 1.0e-12);
+        Assertions.assertEquals(FastMath.PI,
+                propagated.getAttitude().getRotation().getAngle(),
+                1.0e-15);
+
     }
 
     @Test
-    public void testInterpolation() {
+    public void testIssue900Numerical() {
+
+        // Create propagator
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setInitialState(initialState);
 
-        final MainDataModifier modifier = new MainDataModifier();
+        // Create additional state provider
+        final String name          = "init";
+        final TimeDifferenceProvider provider = new TimeDifferenceProvider(name);
+        Assertions.assertFalse(provider.wasCalled());
+
+        // Add the provider to the propagator
+        propagator.addAdditionalDataProvider(provider);
+
+        // Propagate
+        final double dt = 600.0;
+        final SpacecraftState propagated = propagator.propagate(initDate.shiftedBy(dt));
+
+        // Verify
+        Assertions.assertTrue(provider.wasCalled());
+        Assertions.assertEquals(dt, propagated.getAdditionalState(name)[0], 0.01);
+
+    }
+
+    @Test
+    public void testIssue900Dsst() {
+
+        // Initialize propagator
+        final DSSTPropagator propagator = new DSSTPropagator(integrator);
+        propagator.setInitialState(initialState, PropagationType.MEAN);
+
+        // Create additional state provider
+        final String name          = "init";
+        final TimeDifferenceProvider provider = new TimeDifferenceProvider(name);
+        Assertions.assertFalse(provider.wasCalled());
+
+        // Add the provider to the propagator
+        propagator.addAdditionalDataProvider(provider);
+
+        // Propagate
+        final double dt = 600.0;
+        final SpacecraftState propagated = propagator.propagate(initialState.getDate().shiftedBy(dt));
+
+        // Verify
+        Assertions.assertTrue(provider.wasCalled());
+        Assertions.assertEquals(dt, propagated.getAdditionalState(name)[0], 0.01);
+
+    }
+
+    @Test
+    public void testIssue900BrouwerLyddane() {
+
+        // Initialize propagator
+        BrouwerLyddanePropagator propagator = new BrouwerLyddanePropagator(initialState.getOrbit(), Utils.defaultLaw(),
+                GravityFieldFactory.getUnnormalizedProvider(5, 0), BrouwerLyddanePropagator.M2);
+
+        // Create additional state provider
+        final String name          = "init";
+        final TimeDifferenceProvider provider = new TimeDifferenceProvider(name);
+        Assertions.assertFalse(provider.wasCalled());
+
+        // Add the provider to the propagator
+        propagator.addAdditionalDataProvider(provider);
+
+        // Propagate
+        final double dt = 600.0;
+        final SpacecraftState propagated = propagator.propagate(initialState.getDate().shiftedBy(dt));
+
+        // Verify
+        Assertions.assertTrue(provider.wasCalled());
+        Assertions.assertEquals(dt, propagated.getAdditionalState(name)[0], 0.01);
+
+    }
+
+    @Test
+    public void testPropagateAdditionalStringData() {
+        final NumericalPropagator propagator = new NumericalPropagator(integrator);
+        propagator.setInitialState(initialState);
+
+        final MainStringDataModifier modifier = new MainStringDataModifier();
+        propagator.addAdditionalDataProvider(modifier);
+
+        final SpacecraftState propagated = propagator.propagate(initDate.shiftedBy(DURATION));
+        Assertions.assertEquals(STRING_AFTER, propagated.getAdditionalData(MainStringDataModifier.class.getSimpleName()));
+    }
+
+    @Test
+    public void testInterpolationAdditionalStringData() {
+        final NumericalPropagator propagator = new NumericalPropagator(integrator);
+        propagator.setInitialState(initialState);
+
+        final MainStringDataModifier modifier = new MainStringDataModifier();
         propagator.addAdditionalDataProvider(modifier);
         EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(initDate.shiftedBy(DURATION));
         BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
-        Assertions.assertEquals(BEFORE, getAdditionalDataAt(ephemeris, initDate.shiftedBy(DURATION / 2 - 0.1)));
-        Assertions.assertEquals(AFTER, getAdditionalDataAt(ephemeris, initDate.shiftedBy(DURATION / 2)));
-        Assertions.assertEquals(AFTER, getAdditionalDataAt(ephemeris, initDate.shiftedBy(DURATION / 2 + 0.1)));
+        Assertions.assertEquals(STRING_BEFORE, getAdditionalDataAt(ephemeris, initDate.shiftedBy(DURATION / 2 - 0.1)));
+        Assertions.assertEquals(STRING_AFTER, getAdditionalDataAt(ephemeris, initDate.shiftedBy(DURATION / 2)));
+        Assertions.assertEquals(STRING_AFTER, getAdditionalDataAt(ephemeris, initDate.shiftedBy(DURATION / 2 + 0.1)));
     }
 
     private Object getAdditionalDataAt(Propagator propagator, AbsoluteDate date) {
-        return propagator.propagate(date).getAdditionalData(MainDataModifier.class.getSimpleName());
+        return propagator.propagate(date).getAdditionalData(MainStringDataModifier.class.getSimpleName());
     }
 
-
-
-    private class MainDataModifier implements AdditionalDataProvider<String> {
+    private class MainStringDataModifier implements AdditionalDataProvider<String> {
 
         private String value;
 
         @Override
         public void init(SpacecraftState initialState, AbsoluteDate target) {
-            value = target.getDate().isBefore(initDate.shiftedBy(DURATION / 2)) ? BEFORE : AFTER;
+            value = target.getDate().isBefore(initDate.shiftedBy(DURATION / 2)) ? STRING_BEFORE : STRING_AFTER;
         }
 
         @Override
@@ -90,7 +193,58 @@ class AdditionalDataProviderTest {
 
         @Override
         public String getName() {
-            return MainDataModifier.class.getSimpleName();
+            return MainStringDataModifier.class.getSimpleName();
         }
     }
+
+    private static class MainStateModifier extends AbstractStateModifier {
+        /** {@inheritDoc} */
+        @Override
+        public SpacecraftState change(final SpacecraftState state) {
+            return new SpacecraftState(state.getOrbit(),
+                    new Attitude(state.getDate(),
+                            state.getFrame(),
+                            new Rotation(0, 0, 0, 1, false),
+                            Vector3D.ZERO,
+                            Vector3D.ZERO),
+                    2 * SpacecraftState.DEFAULT_MASS);
+        }
+    }
+
+    private static class TimeDifferenceProvider implements AdditionalDataProvider<double[]> {
+
+        private final String  name;
+        private boolean called;
+        private double  dt;
+
+        public TimeDifferenceProvider(final String name) {
+            this.name   = name;
+            this.called = false;
+            this.dt     = 0.0;
+        }
+
+        @Override
+        public void init(SpacecraftState initialState, AbsoluteDate target) {
+            this.called = true;
+            this.dt     = target.durationFrom(initialState.getDate());
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public double[] getAdditionalData(SpacecraftState state) {
+            return new double[] {
+                    dt
+            };
+        }
+
+        public boolean wasCalled() {
+            return called;
+        }
+
+    }
+
 }

@@ -40,7 +40,7 @@ import org.orekit.time.AbsoluteDate;
  * </p>
  * <p>
  * This interface is the numerical (read not already integrated) counterpart of
- * the {@link org.orekit.propagation.AdditionalStateProvider} interface.
+ * the {@link org.orekit.propagation.AdditionalDataProvider} interface.
  * It allows to append various additional state parameters to any {@link
  * org.orekit.propagation.numerical.NumericalPropagator numerical propagator} or {@link
  * org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSST propagator}.

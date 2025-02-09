@@ -412,16 +412,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      */
     private static void checkConsistency(final Orbit orbit, final Attitude attitude)
         throws IllegalArgumentException {
-        if (FastMath.abs(orbit.getDate().durationFrom(attitude.getDate())) >
-            DATE_INCONSISTENCY_THRESHOLD) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.ORBIT_AND_ATTITUDE_DATES_MISMATCH,
-                                                     orbit.getDate(), attitude.getDate());
-        }
-        if (orbit.getFrame() != attitude.getReferenceFrame()) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.FRAMES_MISMATCH,
-                                                     orbit.getFrame().getName(),
-                                                     attitude.getReferenceFrame().getName());
-        }
+        checkDateAndFrameConsistency(attitude, orbit.getDate(), orbit.getFrame());
     }
 
     /** Defines provider for default Attitude when not passed to constructor.
@@ -457,15 +448,24 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      */
     private static void checkConsistency(final AbsolutePVCoordinates absPva, final Attitude attitude)
         throws IllegalArgumentException {
-        if (FastMath.abs(absPva.getDate().durationFrom(attitude.getDate())) >
-            DATE_INCONSISTENCY_THRESHOLD) {
+        checkDateAndFrameConsistency(attitude, absPva.getDate(), absPva.getFrame());
+    }
+
+    /** Check attitude frame and epoch.
+     * @param attitude attitude
+     * @param date epoch to verify
+     * @param frame frame to verify
+     */
+    private static void checkDateAndFrameConsistency(final Attitude attitude, final AbsoluteDate date, final Frame frame) {
+        if (FastMath.abs(date.durationFrom(attitude.getDate())) >
+                DATE_INCONSISTENCY_THRESHOLD) {
             throw new OrekitIllegalArgumentException(OrekitMessages.ORBIT_AND_ATTITUDE_DATES_MISMATCH,
-                                                     absPva.getDate(), attitude.getDate());
+                    date, attitude.getDate());
         }
-        if (absPva.getFrame() != attitude.getReferenceFrame()) {
+        if (frame != attitude.getReferenceFrame()) {
             throw new OrekitIllegalArgumentException(OrekitMessages.FRAMES_MISMATCH,
-                                                     absPva.getFrame().getName(),
-                                                     attitude.getReferenceFrame().getName());
+                    frame.getName(),
+                    attitude.getReferenceFrame().getName());
         }
     }
 

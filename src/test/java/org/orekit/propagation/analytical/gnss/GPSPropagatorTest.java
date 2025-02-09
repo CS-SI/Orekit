@@ -36,7 +36,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.SEMParser;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.AdditionalStateProvider;
+import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.Propagator;
@@ -545,9 +545,9 @@ public class GPSPropagatorTest {
         // Setup propagator
         final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).build();
 
-        // Setup additional state provider which use the initial state in its init method
-        final AdditionalStateProvider additionalStateProvider = TestUtils.getAdditionalProviderWithInit();
-        propagator.addAdditionalDataProvider(additionalStateProvider);
+        // Setup additional data provider which use the initial state in its init method
+        final AdditionalDataProvider<double[]> additionalDataProvider = TestUtils.getAdditionalProviderWithInit();
+        propagator.addAdditionalDataProvider(additionalDataProvider);
 
         // WHEN & THEN
         Assertions.assertDoesNotThrow(() -> propagator.propagate(new AbsoluteDate()), "No error should have been thrown");

@@ -32,7 +32,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.AdditionalStateProvider;
+import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.FieldAdditionalStateProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -74,8 +74,8 @@ public class TestUtils {
      *
      * @return additional state provider with custom init() method defined which use the initial state
      */
-    public static AdditionalStateProvider getAdditionalProviderWithInit() {
-        return new AdditionalStateProvider() {
+    public static AdditionalDataProvider<double[]> getAdditionalProviderWithInit() {
+        return new AdditionalDataProvider<double[]>() {
             /**
              * Custom init method which use the initial state instance.
              *
@@ -84,7 +84,7 @@ public class TestUtils {
              */
             @Override
             public void init(final SpacecraftState initialState, final AbsoluteDate target) {
-                initialState.getMass();
+                // do nothing
             }
 
             @Override

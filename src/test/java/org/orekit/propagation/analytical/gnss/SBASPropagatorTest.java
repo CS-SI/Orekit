@@ -31,7 +31,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.propagation.AdditionalStateProvider;
+import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
 import org.orekit.propagation.analytical.gnss.data.SBASNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.SBASOrbitalElements;
@@ -211,9 +211,9 @@ public class SBASPropagatorTest {
         // Setup propagator
         final SBASPropagator propagator = new SBASPropagatorBuilder(soe, frames).build();
 
-        // Setup additional state provider which use the initial state in its init method
-        final AdditionalStateProvider additionalStateProvider = TestUtils.getAdditionalProviderWithInit();
-        propagator.addAdditionalDataProvider(additionalStateProvider);
+        // Setup additional data provider which use the initial state in its init method
+        final AdditionalDataProvider<double[]> additionalDataProvider = TestUtils.getAdditionalProviderWithInit();
+        propagator.addAdditionalDataProvider(additionalDataProvider);
 
         // WHEN & THEN
         Assertions.assertDoesNotThrow(() -> propagator.propagate(new AbsoluteDate()), "No error should have been thrown");

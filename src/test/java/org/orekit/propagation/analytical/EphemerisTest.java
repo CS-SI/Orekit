@@ -561,7 +561,7 @@ public class EphemerisTest {
         final TimeInterpolator<SpacecraftState> interpolator = new SpacecraftStateInterpolator(inertialFrame);
 
         final Propagator ephem = new Ephemeris(states, interpolator);
-        ephem.addAdditionalDataProvider(new AdditionalStateProvider() {
+        ephem.addAdditionalDataProvider(new AdditionalDataProvider<double[]>() {
             public String getName() {
                 return name1;
             }
@@ -886,9 +886,9 @@ public class EphemerisTest {
 
         final Ephemeris ephemeris = new Ephemeris(states, 2);
 
-        // Setup additional state provider which use the initial state in its init method
-        final AdditionalStateProvider additionalStateProvider = TestUtils.getAdditionalProviderWithInit();
-        ephemeris.addAdditionalDataProvider(additionalStateProvider);
+        // Setup additional data provider which use the initial state in its init method
+        final AdditionalDataProvider<double[]> additionalDataProvider = TestUtils.getAdditionalProviderWithInit();
+        ephemeris.addAdditionalDataProvider(additionalDataProvider);
 
         // WHEN & THEN
         Assertions.assertDoesNotThrow(() -> ephemeris.propagate(ephemeris.getMaxDate()), "No error should have been thrown");
