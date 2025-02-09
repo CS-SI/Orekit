@@ -110,14 +110,14 @@ public interface FieldCartesianCost<T extends CalculusFieldElement<T>> {
 
             @Override
             public boolean yields(final FieldSpacecraftState<T> state) {
-                return !state.hasAdditionalState(getAdjointName());
+                return !state.hasAdditionalData(getAdjointName());
             }
 
             @Override
             public FieldCombinedDerivatives<T> combinedDerivatives(final FieldSpacecraftState<T> s) {
                 final T mass = s.getMass();
                 final T[] derivatives = MathArrays.buildArray(mass.getField(), 1);
-                final T[] adjoint = s.getAdditionalState(getAdjointName());
+                final T[] adjoint = s.getAdditionalData(getAdjointName());
                 final T hamiltonianContribution = getFieldHamiltonianContribution(adjoint, s.getMass());
                 derivatives[0] = hamiltonianContribution.negate();
                 return new FieldCombinedDerivatives<>(derivatives, null);

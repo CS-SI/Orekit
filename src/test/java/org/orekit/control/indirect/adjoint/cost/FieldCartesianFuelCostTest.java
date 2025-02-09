@@ -152,7 +152,7 @@ class FieldCartesianFuelCostTest {
             adjoint[i] = new Binary64(i + 1);
         }
         return new FieldSpacecraftState<>(field, new SpacecraftState(orbit, mass))
-                .addAdditionalState(adjointName, adjoint);
+                .addAdditionalData(adjointName, adjoint);
     }
 
     @Test

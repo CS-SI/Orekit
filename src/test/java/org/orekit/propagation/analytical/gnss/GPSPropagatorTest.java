@@ -111,7 +111,7 @@ public class GPSPropagatorTest {
     public void testFieldClockCorrections() {
         final FieldGPSAlmanac<Binary64> gpsAlmanac = almanacs.get(0).toField(Binary64Field.getInstance());
         final FieldGnssPropagator<Binary64> propagator = gpsAlmanac.getPropagator();
-        propagator.addAdditionalStateProvider(new FieldClockCorrectionsProvider<>(gpsAlmanac,
+        propagator.addAdditionalDataProvider(new FieldClockCorrectionsProvider<>(gpsAlmanac,
                                                                                   gpsAlmanac.getCycleDuration()));
         // Propagate at the GPS date and one GPS cycle later
         final FieldAbsoluteDate<Binary64> date0 = gpsAlmanac.getDate();
@@ -119,7 +119,7 @@ public class GPSPropagatorTest {
         double dtRelMax = 0;
         for (double dt = 0; dt < 0.5 * Constants.JULIAN_DAY; dt += 1.0) {
             FieldSpacecraftState<Binary64> state = propagator.propagate(date0.shiftedBy(dt));
-            Binary64[] corrections = state.getAdditionalState(ClockCorrectionsProvider.CLOCK_CORRECTIONS);
+            Binary64[] corrections = state.getAdditionalData(ClockCorrectionsProvider.CLOCK_CORRECTIONS);
             Assertions.assertEquals(3, corrections.length);
             Assertions.assertEquals(1.33514404296875E-05, corrections[0].getReal(), 1.0e-19);
             dtRelMin = FastMath.min(dtRelMin, corrections[1].getReal());

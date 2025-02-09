@@ -23,7 +23,6 @@ import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -98,7 +97,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     /** Current mass (kg). */
     private final T mass;
 
-    /** Additional states. */
+    /** Additional data. */
     private final FieldArrayDictionary<T> additional;
 
     /** Additional states derivatives.
@@ -414,7 +413,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         }
     }
 
-    /** Add an additional state.
+    /** Add an additional data.
      * <p>
      * {@link FieldSpacecraftState SpacecraftState} instances are immutable,
      * so this method does <em>not</em> change the instance, but rather
@@ -425,15 +424,16 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * did not have any additional state with that name, the new instance
      * will have one more additional state than the original instance.
      * </p>
-     * @param name name of the additional state
-     * @param value value of the additional state
-     * @return a new instance, with the additional state added
-     * @see #hasAdditionalState(String)
-     * @see #getAdditionalState(String)
-     * @see #getAdditionalStatesValues()
+     * @param name name of the additional data (names containing "orekit"
+     *      * with any case are reserved for the library internal use)
+     * @param value value of the additional data
+     * @return a new instance, with the additional data added
+     * @see #hasAdditionalData(String)
+     * @see #getAdditionalData(String)
+     * @see #getAdditionalDataValues()
      */
     @SafeVarargs
-    public final FieldSpacecraftState<T> addAdditionalState(final String name, final T... value) {
+    public final FieldSpacecraftState<T> addAdditionalData(final String name, final T... value) {
         final FieldArrayDictionary<T> newDict = new FieldArrayDictionary<>(additional);
         newDict.put(name, value.clone());
         if (isOrbitDefined()) {
@@ -478,18 +478,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      */
     private void checkConsistency(final FieldOrbit<T> orbitN, final FieldAttitude<T> attitudeN)
         throws IllegalArgumentException {
-        if (orbitN.getDate().durationFrom(attitudeN.getDate()).abs().getReal() >
-            DATE_INCONSISTENCY_THRESHOLD) {
-
-            throw new OrekitIllegalArgumentException(OrekitMessages.ORBIT_AND_ATTITUDE_DATES_MISMATCH,
-                                                     orbitN.getDate(), attitudeN.getDate());
-        }
-
-        if (orbitN.getFrame() != attitudeN.getReferenceFrame()) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.FRAMES_MISMATCH,
-                                                     orbitN.getFrame().getName(),
-                                                     attitudeN.getReferenceFrame().getName());
-        }
+        checkDateAndFrameConsistency(attitudeN, orbitN.getDate(), orbitN.getFrame());
     }
 
     /** Check if the state contains an orbit part.
@@ -515,15 +504,27 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      */
     private static <T extends CalculusFieldElement<T>> void checkConsistency(final FieldAbsolutePVCoordinates<T> absPva, final FieldAttitude<T> attitude)
         throws IllegalArgumentException {
-        if (FastMath.abs(absPva.getDate().durationFrom(attitude.getDate())).getReal() >
-            DATE_INCONSISTENCY_THRESHOLD) {
+        checkDateAndFrameConsistency(attitude, absPva.getDate(), absPva.getFrame());
+    }
+
+    /** Check attitude frame and epoch.
+     * @param attitude attitude
+     * @param date epoch to verify
+     * @param frame frame to verify
+     * @param <T> type of the elements
+     */
+    private static <T extends CalculusFieldElement<T>> void checkDateAndFrameConsistency(final FieldAttitude<T> attitude,
+                                                                                         final FieldAbsoluteDate<T> date,
+                                                                                         final Frame frame) {
+        if (date.durationFrom(attitude.getDate()).abs().getReal() >
+                DATE_INCONSISTENCY_THRESHOLD) {
             throw new OrekitIllegalArgumentException(OrekitMessages.ORBIT_AND_ATTITUDE_DATES_MISMATCH,
-                                                     absPva.getDate(), attitude.getDate());
+                    date, attitude.getDate());
         }
-        if (absPva.getFrame() != attitude.getReferenceFrame()) {
+        if (frame != attitude.getReferenceFrame()) {
             throw new OrekitIllegalArgumentException(OrekitMessages.FRAMES_MISMATCH,
-                                                     absPva.getFrame().getName(),
-                                                     attitude.getReferenceFrame().getName());
+                    frame.getName(),
+                    attitude.getReferenceFrame().getName());
         }
     }
 
@@ -611,9 +612,9 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         }
     }
 
-    /** Shift additional states.
+    /** Shift additional data.
      * @param dt time shift in seconds
-     * @return shifted additional states
+     * @return shifted additional data
      * @since 11.1.1
      */
     private FieldArrayDictionary<T> shiftAdditional(final double dt) {
@@ -714,14 +715,14 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     }
 
 
-    /** Check if an additional state is available.
-     * @param name name of the additional state
-     * @return true if the additional state is available
-     * @see #addAdditionalState(String, CalculusFieldElement...)
-     * @see #getAdditionalState(String)
-     * @see #getAdditionalStatesValues()
+    /** Check if an additional data is available.
+     * @param name name of the additional data
+     * @return true if the additional data is available
+     * @see #addAdditionalData(String, CalculusFieldElement...)
+     * @see #getAdditionalData(String)
+     * @see #getAdditionalDataValues()
      */
-    public boolean hasAdditionalState(final String name) {
+    public boolean hasAdditionalData(final String name) {
         return additional.getEntry(name) != null;
     }
 
@@ -796,14 +797,14 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
 
     }
 
-    /** Get an additional state.
-     * @param name name of the additional state
-     * @return value of the additional state
-          * @see #addAdditionalState(String, CalculusFieldElement...)
-     * @see #hasAdditionalState(String)
-     * @see #getAdditionalStatesValues()
+    /** Get an additional data.
+     * @param name name of the additional data
+     * @return value of the additional data
+          * @see #addAdditionalData(String, CalculusFieldElement...)
+     * @see #hasAdditionalData(String)
+     * @see #getAdditionalDataValues()
      */
-    public T[] getAdditionalState(final String name) {
+    public T[] getAdditionalData(final String name) {
         final FieldArrayDictionary<T>.Entry entry = additional.getEntry(name);
         if (entry == null) {
             throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_DATA, name);
@@ -829,12 +830,12 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
 
     /** Get an unmodifiable map of additional states.
      * @return unmodifiable map of additional states
-     * @see #addAdditionalState(String, CalculusFieldElement...)
-     * @see #hasAdditionalState(String)
-     * @see #getAdditionalState(String)
+     * @see #addAdditionalData(String, CalculusFieldElement...)
+     * @see #hasAdditionalData(String)
+     * @see #getAdditionalData(String)
      * @since 11.1
      */
-    public FieldArrayDictionary<T> getAdditionalStatesValues() {
+    public FieldArrayDictionary<T> getAdditionalDataValues() {
         return additional.unmodifiableView();
     }
 

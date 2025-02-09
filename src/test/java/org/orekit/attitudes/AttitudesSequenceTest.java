@@ -232,7 +232,7 @@ public class AttitudesSequenceTest {
                                                 monitored, true, false, transitionTime,
                                                 AngularDerivativesFilter.USE_RRA, nightToDayHandler);
         FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(initialOrbit);
-        initialState = initialState.addAdditionalState("fortyTwo", field.getZero().add(42.0));
+        initialState = initialState.addAdditionalData("fortyTwo", field.getZero().add(42.0));
         if (ed.g(initialState.toSpacecraftState()) >= 0) {
             // initial position is in daytime
             setInEclipse(initialDate.toAbsoluteDate(), false);

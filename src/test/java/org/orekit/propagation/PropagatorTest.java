@@ -96,7 +96,7 @@ class PropagatorTest {
         }
 
         @Override
-        public void addAdditionalDataProvider(AdditionalDataProvider<?> additionalStateProvider) {
+        public void addAdditionalDataProvider(AdditionalDataProvider<?> additionalDataProvider) {
             // not used in test
         }
 

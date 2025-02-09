@@ -27,11 +27,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
-import org.orekit.control.indirect.adjoint.cost.CartesianCost;
 import org.orekit.control.indirect.adjoint.cost.FieldUnboundedCartesianEnergyNeglectingMass;
-import org.orekit.control.indirect.adjoint.cost.TestCost;
 import org.orekit.control.indirect.adjoint.cost.TestFieldCost;
-import org.orekit.control.indirect.adjoint.cost.UnboundedCartesianEnergyNeglectingMass;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.*;
@@ -77,13 +74,13 @@ class FieldCartesianAdjointDerivativesProviderTest {
                 FramesFactory.getGCRF(), AbsoluteDate.ARBITRARY_EPOCH, mu);
         final FieldSpacecraftState<Binary64> initialState = new FieldSpacecraftState<>(field, new SpacecraftState(orbit));
         propagator.setOrbitType(OrbitType.CARTESIAN);
-        propagator.setInitialState(initialState.addAdditionalState(name, MathArrays.buildArray(field, 6)));
+        propagator.setInitialState(initialState.addAdditionalData(name, MathArrays.buildArray(field, 6)));
         propagator.addAdditionalDerivativesProvider(derivativesProvider);
         // WHEN
         final FieldSpacecraftState<Binary64> terminalState = propagator.propagate(initialState.getDate().shiftedBy(1000.));
         // THEN
-        Assertions.assertTrue(propagator.isAdditionalStateManaged(name));
-        final Binary64[] adjoint = terminalState.getAdditionalState(name);
+        Assertions.assertTrue(propagator.isAdditionalDataManaged(name));
+        final Binary64[] adjoint = terminalState.getAdditionalData(name);
         Assertions.assertEquals(0., adjoint[0].getReal());
         Assertions.assertEquals(0., adjoint[1].getReal());
         Assertions.assertEquals(0., adjoint[2].getReal());
@@ -139,6 +136,6 @@ class FieldCartesianAdjointDerivativesProviderTest {
         for (int i = 0; i < 6; i++) {
             adjoint[i] = Binary64.ONE;
         }
-        return stateWithoutAdditional.addAdditionalState(name, adjoint);
+        return stateWithoutAdditional.addAdditionalData(name, adjoint);
     }
 }

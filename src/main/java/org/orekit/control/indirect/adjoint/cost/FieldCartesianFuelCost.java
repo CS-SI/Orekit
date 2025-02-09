@@ -161,7 +161,7 @@ public class FieldCartesianFuelCost<T extends CalculusFieldElement<T>> extends F
         /** {@inheritDoc} */
         @Override
         public T g(final FieldSpacecraftState<T> state) {
-            final T[] adjoint = state.getAdditionalState(getAdjointName());
+            final T[] adjoint = state.getAdditionalData(getAdjointName());
             return evaluateFieldSwitchFunction(adjoint, state.getMass());
         }
 

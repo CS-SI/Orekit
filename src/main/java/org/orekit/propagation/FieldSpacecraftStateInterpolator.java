@@ -366,7 +366,7 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
         final List<TimeStampedField<KK>> masses = new ArrayList<>();
 
         final List<FieldArrayDictionary<KK>.Entry> additionalEntries =
-                earliestState.getAdditionalStatesValues().getData();
+                earliestState.getAdditionalDataValues().getData();
         final Map<String, List<Pair<FieldAbsoluteDate<KK>, KK[]>>> additionalSample =
                 createAdditionalStateSample(additionalEntries);
 
@@ -405,7 +405,7 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
 
                 // Add all additional state values if they are interpolated
                 for (final Map.Entry<String, List<Pair<FieldAbsoluteDate<KK>, KK[]>>> entry : additionalSample.entrySet()) {
-                    entry.getValue().add(new Pair<>(currentDate, state.getAdditionalState(entry.getKey())));
+                    entry.getValue().add(new Pair<>(currentDate, state.getAdditionalData(entry.getKey())));
                 }
 
                 // Add all additional state derivative values if they are interpolated

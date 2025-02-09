@@ -56,6 +56,10 @@
             and SATELLITE/PHASE_CENTER from Sinex files.
         </action>
         <action dev="bryan" type="add" issue="1645">
+            Replaced FieldAdditionalStateProvider by FieldAdditionalDataProvider
+            for consistency with non-field feature.
+        </action>
+        <action dev="bryan" type="add" issue="1645">
             Removed AdditionalStateProvider to use AdditionalDataProvider.
         </action>
         <action dev="bryan" type="add" issue="1645">

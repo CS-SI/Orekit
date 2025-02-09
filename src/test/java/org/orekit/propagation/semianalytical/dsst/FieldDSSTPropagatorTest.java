@@ -172,7 +172,7 @@ public class FieldDSSTPropagatorTest {
                         date, zero.add(Constants.WGS84_EARTH_MU));
         FieldSpacecraftState<T> osculatingState = new FieldSpacecraftState<>(orbit, zero.add(1116.2829));
 
-        List<DSSTForceModel> dsstForceModels = new ArrayList<DSSTForceModel>();
+        List<DSSTForceModel> dsstForceModels = new ArrayList<>();
 
         dsstForceModels.add(new DSSTThirdBody(CelestialBodyFactory.getMoon(), orbit.getMu().getReal()));
         dsstForceModels.add(new DSSTThirdBody(CelestialBodyFactory.getSun(), orbit.getMu().getReal()));
@@ -201,7 +201,7 @@ public class FieldDSSTPropagatorTest {
                         date, zero.add(Constants.WGS84_EARTH_MU));
         FieldSpacecraftState<T> osculatingState = new FieldSpacecraftState<>(orbit, zero.add(1116.2829));
 
-        List<DSSTForceModel> dsstForceModels = new ArrayList<DSSTForceModel>();
+        List<DSSTForceModel> dsstForceModels = new ArrayList<>();
 
         dsstForceModels.add(new DSSTThirdBody(CelestialBodyFactory.getMoon(), orbit.getMu().getReal()));
         dsstForceModels.add(new DSSTThirdBody(CelestialBodyFactory.getSun(), orbit.getMu().getReal()));
@@ -237,7 +237,7 @@ public class FieldDSSTPropagatorTest {
                         new DSSTTesseral(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
                                          earthDegree, earthOrder, eccPower, earthDegree + eccPower,
                                          earthDegree, earthOrder, eccPower);
-        final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
+        final Collection<DSSTForceModel> forces = new ArrayList<>();
         forces.add(force);
         TimeScale tai = TimeScalesFactory.getTAI();
         FieldAbsoluteDate<T> initialDate = new FieldAbsoluteDate<>(field, "2015-07-01", tai);
@@ -666,7 +666,7 @@ public class FieldDSSTPropagatorTest {
         final FieldDSSTPropagator<T> dsstPropagator = setDSSTProp(field, state);
 
         final FieldAbsoluteDate<T> stopDate = state.getDate().shiftedBy(1000);
-        CheckingHandler<FieldDateDetector<T>, T> checking = new CheckingHandler<FieldDateDetector<T>, T>(Action.STOP);
+        CheckingHandler<FieldDateDetector<T>, T> checking = new CheckingHandler<>(Action.STOP);
         FieldDateDetector<T> detector = new FieldDateDetector<>(field, stopDate).withHandler(checking);
         dsstPropagator.addEventDetector(detector);
         checking.assertEvent(false);
@@ -685,7 +685,7 @@ public class FieldDSSTPropagatorTest {
         final FieldDSSTPropagator<T> dsstPropagator = setDSSTProp(field, state);
 
         final FieldAbsoluteDate<T> resetDate = state.getDate().shiftedBy(1000);
-        CheckingHandler<FieldDateDetector<T>, T> checking = new CheckingHandler<FieldDateDetector<T>, T>(Action.CONTINUE);
+        CheckingHandler<FieldDateDetector<T>, T> checking = new CheckingHandler<>(Action.CONTINUE);
         FieldDateDetector<T> detector = new FieldDateDetector<>(field, resetDate).withHandler(checking);
         dsstPropagator.addEventDetector(detector);
         final double dt = 3200;
@@ -803,8 +803,8 @@ public class FieldDSSTPropagatorTest {
 
         // direct generation of states
         propagator.setInitialState(new FieldSpacecraftState<>(orbit, zero.add(45.0)), PropagationType.MEAN);
-        final List<FieldSpacecraftState<T>> states = new ArrayList<FieldSpacecraftState<T>>();
-        propagator.setStepHandler(zero.add(600), currentState -> states.add(currentState));
+        final List<FieldSpacecraftState<T>> states = new ArrayList<>();
+        propagator.setStepHandler(zero.add(600), states::add);
         propagator.propagate(orbit.getDate().shiftedBy(nDays * Constants.JULIAN_DAY));
 
         // ephemeris generation
@@ -835,7 +835,6 @@ public class FieldDSSTPropagatorTest {
     private <T extends CalculusFieldElement<T>> void doTestGetInitialOsculatingState(Field<T> field) {
         final FieldSpacecraftState<T> initialState = getGEOState(field);
 
-        final T zero = field.getZero();
         // build integrator
         final T minStep = initialState.getOrbit().getKeplerianPeriod().multiply(0.1);
         final T maxStep = initialState.getOrbit().getKeplerianPeriod().multiply(10.0);
@@ -878,7 +877,7 @@ public class FieldDSSTPropagatorTest {
                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY,
                                                          provider, 2, 0, 0, 2, 2, 0, 0);
 
-        final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
+        final Collection<DSSTForceModel> forces = new ArrayList<>();
         forces.add(zonal);
         forces.add(tesseral);
 
@@ -905,7 +904,7 @@ public class FieldDSSTPropagatorTest {
                                                    Constants.WGS84_EARTH_ANGULAR_VELOCITY,
                                                    provider, 2, 0, 0, 2, 2, 0, 0);
 
-        final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
+        final Collection<DSSTForceModel> forces = new ArrayList<>();
         forces.add(zonal);
         forces.add(tesseral);
 
@@ -958,25 +957,25 @@ public class FieldDSSTPropagatorTest {
         final FieldAbsoluteDate<T> finalDate = orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY);
         propagator.resetInitialState(new FieldSpacecraftState<>(orbit, zero.add(45.0)));
         final FieldSpacecraftState<T> stateNoConfig = propagator.propagate(finalDate);
-        Assertions.assertEquals(0, stateNoConfig.getAdditionalStatesValues().size());
+        Assertions.assertEquals(0, stateNoConfig.getAdditionalDataValues().size());
 
-        propagator.setSelectedCoefficients(new HashSet<String>());
+        propagator.setSelectedCoefficients(new HashSet<>());
         propagator.resetInitialState(new FieldSpacecraftState<>(orbit, zero.add(45.0)));
         final FieldSpacecraftState<T> stateConfigEmpty = propagator.propagate(finalDate);
-        Assertions.assertEquals(234, stateConfigEmpty.getAdditionalStatesValues().size());
+        Assertions.assertEquals(234, stateConfigEmpty.getAdditionalDataValues().size());
 
-        final Set<String> selected = new HashSet<String>();
+        final Set<String> selected = new HashSet<>();
         selected.add("DSST-3rd-body-Moon-s[7]");
         selected.add("DSST-central-body-tesseral-c[-2][3]");
         propagator.setSelectedCoefficients(selected);
         propagator.resetInitialState(new FieldSpacecraftState<>(orbit, zero.add(45.0)));
         final FieldSpacecraftState<T> stateConfigeSelected = propagator.propagate(finalDate);
-        Assertions.assertEquals(selected.size(), stateConfigeSelected.getAdditionalStatesValues().size());
+        Assertions.assertEquals(selected.size(), stateConfigeSelected.getAdditionalDataValues().size());
 
         propagator.setSelectedCoefficients(null);
         propagator.resetInitialState(new FieldSpacecraftState<>(orbit, zero.add(45.0)));
         final FieldSpacecraftState<T> stateConfigNull = propagator.propagate(finalDate);
-        Assertions.assertEquals(0, stateConfigNull.getAdditionalStatesValues().size());
+        Assertions.assertEquals(0, stateConfigNull.getAdditionalDataValues().size());
 
     }
 
@@ -1009,7 +1008,7 @@ public class FieldDSSTPropagatorTest {
         DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
                                                    Constants.WGS84_EARTH_ANGULAR_VELOCITY,
                                                    provider, 2, 0, 0, 2, 2, 0, 0);
-        final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
+        final Collection<DSSTForceModel> forces = new ArrayList<>();
         forces.add(zonal);
         forces.add(tesseral);
         // Computes J2 mean elements using the DSST osculating to mean converter
@@ -1029,7 +1028,7 @@ public class FieldDSSTPropagatorTest {
         final DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), meanState.getOrbit().getMu().getReal());
         final DSSTForceModel sun  = new DSSTThirdBody(CelestialBodyFactory.getSun(), meanState.getOrbit().getMu().getReal());
 
-        final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
+        final Collection<DSSTForceModel> forces = new ArrayList<>();
         forces.add(moon);
         forces.add(sun);
 
@@ -1077,7 +1076,7 @@ public class FieldDSSTPropagatorTest {
                                                                 0.0, 0.0, 0.0);
 
         // Surface force models that require an attitude provider
-        final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
+        final Collection<DSSTForceModel> forces = new ArrayList<>();
         forces.add(new DSSTSolarRadiationPressure(sun, earth, boxAndWing, osculatingState.getOrbit().getMu().getReal()));
         forces.add(new DSSTAtmosphericDrag(atmosphere, boxAndWing, osculatingState.getOrbit().getMu().getReal()));
 
@@ -1109,7 +1108,7 @@ public class FieldDSSTPropagatorTest {
         final Atmosphere atmosphere = new HarrisPriester(CelestialBodyFactory.getSun(), earth, 6);
         final AttitudeProvider attitudeProvider = new LofOffset(osculatingState.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYZ, 0.0, 0.0, 0.0);
         // Surface force models that require an attitude provider
-        final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
+        final Collection<DSSTForceModel> forces = new ArrayList<>();
         forces.add(new DSSTAtmosphericDrag(atmosphere, boxAndWing, osculatingState.getOrbit().getMu().getReal()));
         final FieldSpacecraftState<T> meanState = FieldDSSTPropagator.computeMeanState(osculatingState, attitudeProvider, forces);
         final FieldSpacecraftState<T> computedOsculatingState = FieldDSSTPropagator.computeOsculatingState(meanState, attitudeProvider, forces);

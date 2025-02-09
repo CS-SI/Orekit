@@ -93,7 +93,7 @@ public class FieldCartesianAdjointDerivativesProvider<T extends CalculusFieldEle
     public FieldCombinedDerivatives<T> combinedDerivatives(final FieldSpacecraftState<T> state) {
         // pre-computations
         final T mass = state.getMass();
-        final T[] adjointVariables = state.getAdditionalState(getName());
+        final T[] adjointVariables = state.getAdditionalData(getName());
         final int adjointDimension = getDimension();
         final T[] additionalDerivatives = MathArrays.buildArray(mass.getField(), adjointDimension);
         final T[] cartesianVariablesAndMass = formCartesianAndMassVector(state);
@@ -154,7 +154,7 @@ public class FieldCartesianAdjointDerivativesProvider<T extends CalculusFieldEle
      */
     public T evaluateHamiltonian(final FieldSpacecraftState<T> state) {
         final T[] cartesianAndMassVector = formCartesianAndMassVector(state);
-        final T[] adjointVariables = state.getAdditionalState(getName());
+        final T[] adjointVariables = state.getAdditionalData(getName());
         T hamiltonian = adjointVariables[0].multiply(cartesianAndMassVector[3]).add(adjointVariables[1].multiply(cartesianAndMassVector[4]))
                 .add(adjointVariables[2].multiply(cartesianAndMassVector[5]));
         final FieldAbsoluteDate<T> date = state.getDate();

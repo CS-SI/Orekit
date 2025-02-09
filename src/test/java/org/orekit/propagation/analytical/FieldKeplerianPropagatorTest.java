@@ -786,7 +786,7 @@ public class FieldKeplerianPropagatorTest {
                                                      zero, zero, zero, zero, PositionAngleType.TRUE,
                                                      FramesFactory.getGCRF(), initDate, zero.newInstance(mu));
         FieldPropagator<T> propagator = new FieldKeplerianPropagator<>(ic);
-        FieldSpacecraftState<T> initialState = propagator.getInitialState().addAdditionalState("myState", zero.newInstance(4.2));
+        FieldSpacecraftState<T> initialState = propagator.getInitialState().addAdditionalData("myState", zero.newInstance(4.2));
         propagator.resetInitialState(initialState);
         FieldAbsoluteDate<T> end = initDate.shiftedBy(90 * 60);
         FieldEphemerisGenerator<T> generator = propagator.getEphemerisGenerator();
@@ -794,9 +794,9 @@ public class FieldKeplerianPropagatorTest {
         FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
         FieldSpacecraftState<T> ephemerisInitialState = ephemeris.getInitialState();
         FieldSpacecraftState<T> finalStateBoundedPropagator = ephemeris.propagate(end);
-        Assertions.assertEquals(4.2, finalStateKeplerianPropagator.getAdditionalState("myState")[0].getReal(), 1.0e-15);
-        Assertions.assertEquals(4.2, ephemerisInitialState.getAdditionalState("myState")[0].getReal(), 1.0e-15);
-        Assertions.assertEquals(4.2, finalStateBoundedPropagator.getAdditionalState("myState")[0].getReal(), 1.0e-15);
+        Assertions.assertEquals(4.2, finalStateKeplerianPropagator.getAdditionalData("myState")[0].getReal(), 1.0e-15);
+        Assertions.assertEquals(4.2, ephemerisInitialState.getAdditionalData("myState")[0].getReal(), 1.0e-15);
+        Assertions.assertEquals(4.2, finalStateBoundedPropagator.getAdditionalData("myState")[0].getReal(), 1.0e-15);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue14(Field<T> field) {

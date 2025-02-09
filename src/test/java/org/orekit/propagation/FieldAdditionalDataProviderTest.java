@@ -43,7 +43,7 @@ import org.orekit.propagation.semianalytical.dsst.FieldDSSTPropagator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
 
-public class FieldAdditionalStateProviderTest {
+public class FieldAdditionalDataProviderTest {
 
     private double mu;
 
@@ -88,7 +88,7 @@ public class FieldAdditionalStateProviderTest {
         final MainStateModifier<T> modifier = new MainStateModifier<>();
 
         // Add the provider to the propagator
-        propagator.addAdditionalStateProvider(modifier);
+        propagator.addAdditionalDataProvider(modifier);
 
         // Propagate
         final double dt = 600.0;
@@ -121,7 +121,7 @@ public class FieldAdditionalStateProviderTest {
         Assertions.assertFalse(provider.wasCalled());
 
         // Add the provider to the propagator
-        propagator.addAdditionalStateProvider(provider);
+        propagator.addAdditionalDataProvider(provider);
 
         // Propagate
         final double dt = 600.0;
@@ -129,7 +129,7 @@ public class FieldAdditionalStateProviderTest {
 
         // Verify
         Assertions.assertTrue(provider.wasCalled());
-        Assertions.assertEquals(dt, propagated.getAdditionalState(name)[0].getReal(), 0.01);
+        Assertions.assertEquals(dt, propagated.getAdditionalData(name)[0].getReal(), 0.01);
 
     }
 
@@ -152,7 +152,7 @@ public class FieldAdditionalStateProviderTest {
         Assertions.assertFalse(provider.wasCalled());
 
         // Add the provider to the propagator
-        propagator.addAdditionalStateProvider(provider);
+        propagator.addAdditionalDataProvider(provider);
 
         // Propagate
         final double dt = 600.0;
@@ -160,7 +160,7 @@ public class FieldAdditionalStateProviderTest {
 
         // Verify
         Assertions.assertTrue(provider.wasCalled());
-        Assertions.assertEquals(dt, propagated.getAdditionalState(name)[0].getReal(), 0.01);
+        Assertions.assertEquals(dt, propagated.getAdditionalData(name)[0].getReal(), 0.01);
 
     }
 
@@ -201,7 +201,7 @@ public class FieldAdditionalStateProviderTest {
         Assertions.assertFalse(provider.wasCalled());
 
         // Add the provider to the propagator
-        propagator.addAdditionalStateProvider(provider);
+        propagator.addAdditionalDataProvider(provider);
 
         // Propagate
         final double dt = 600.0;
@@ -209,11 +209,11 @@ public class FieldAdditionalStateProviderTest {
 
         // Verify
         Assertions.assertTrue(provider.wasCalled());
-        Assertions.assertEquals(dt, propagated.getAdditionalState(name)[0].getReal(), 0.01);
+        Assertions.assertEquals(dt, propagated.getAdditionalData(name)[0].getReal(), 0.01);
 
     }
 
-    private static class TimeDifferenceProvider<T extends CalculusFieldElement<T>> implements FieldAdditionalStateProvider<T> {
+    private static class TimeDifferenceProvider<T extends CalculusFieldElement<T>> implements FieldAdditionalDataProvider<T> {
 
         private final String   name;
         private boolean  called;
@@ -239,7 +239,7 @@ public class FieldAdditionalStateProviderTest {
         }
 
         @Override
-        public T[] getAdditionalState(FieldSpacecraftState<T> state) {
+        public T[] getAdditionalData(FieldSpacecraftState<T> state) {
             final T[] array = MathArrays.buildArray(field, 1);
             array[0] = dt;
             return array;

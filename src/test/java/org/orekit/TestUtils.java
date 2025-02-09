@@ -33,7 +33,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.AdditionalDataProvider;
-import org.orekit.propagation.FieldAdditionalStateProvider;
+import org.orekit.propagation.FieldAdditionalDataProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -104,12 +104,12 @@ public class TestUtils {
      *
      * @return additional state provider with custom init() method defined which use the initial state
      */
-    public static <T extends CalculusFieldElement<T>> FieldAdditionalStateProvider<T> getFieldAdditionalProviderWithInit() {
-        return new FieldAdditionalStateProvider<T>() {
+    public static <T extends CalculusFieldElement<T>> FieldAdditionalDataProvider<T> getFieldAdditionalProviderWithInit() {
+        return new FieldAdditionalDataProvider<T>() {
 
             @Override
             public void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target) {
-                initialState.getMass();
+                // do nothing
             }
 
             @Override
@@ -118,7 +118,7 @@ public class TestUtils {
             }
 
             @Override
-            public T[] getAdditionalState(FieldSpacecraftState<T> state) {
+            public T[] getAdditionalData(FieldSpacecraftState<T> state) {
                 return MathArrays.buildArray(state.getDate().getField(), 0);
             }
         };
