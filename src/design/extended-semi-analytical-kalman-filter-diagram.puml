@@ -73,7 +73,7 @@
       package seminalytical.dsst #F3EFEB {
 
          class DSSTPropagator {
-           + void addAdditionalEquations(AdditionalEquations additional)
+           + DSSTHarvester setupMatricesComputation(String stmName, RealMatrix initialStm, DoubleArrayDictionary initialJacobianColumns)
            + SpacecraftState propagate(AbsoluteDate start, AbsoluteDate end)
            + void setStepHandler(OrekitStepHandler handler)
          }

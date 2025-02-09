@@ -32,24 +32,31 @@
     package utils #DDEBD8 {
       interface PVCoordinatesProvider {
         +PVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
+        +Vector3D getPosition(AbsoluteDate date, Frame frame)
       }
     }
  
     package propagation #DDEBD8 {
       interface Propagator {
+        +AttitudeProvider getDefaultLaw(Frames frames)
         +StepHandlerMultiplexer getMultiplexer()
         +void clearStepHandlers()
         +void setStepHandler(double h, OrekitFixedStepHandler handler)
         +void setStepHandler(OrekitStepHandler handler)
+        +EphemerisGenerator getEphemerisGenerator()
         +SpacecraftState getInitialState()
         +void resetInitialState(SpacecraftState state)
+        +void addAdditionalDataProvider(AdditionalDataProvider<?> additionalStateProvider)
+        +List<AdditionalDataProvider<?>> getAdditionalDataProviders()
+        +boolean isAdditionalDataManaged(String name)
+        +String[] getManagedAdditionalData()
         +void addEventDetector(EventDetector detector)
         +Collection<EventDetector> getEventDetectors()
         +void clearEventsDetectors()
         +AttitudeProvider getAttitudeProvider()
         +void setAttitudeProvider(AttitudeProvider attitudeProvider)
-        +MatricesHarvester setupMatricesComputation(String stmName, RealMatrix initialStm, DoubleArrayDictionary initialJacobianColumns)
         +Frame getFrame()
+        +MatricesHarvester setupMatricesComputation(String stmName, RealMatrix initialStm, DoubleArrayDictionary initialJacobianColumns)
         +SpacecraftState propagate(AbsoluteDate target)
         +SpacecraftState propagate(AbsoluteDate start, AbsoluteDate target)
       }
@@ -70,7 +77,6 @@
 
         abstract class AbstractAnalyticalPropagator {
           +PVCoordinatesProvider getPvProvider()
-          +void addAdditionalDataProvider(AdditionalStateProvider additionalStateProvider)
         }
 
         AbstractPropagator           <|-- AbstractAnalyticalPropagator
@@ -101,8 +107,6 @@
 
        abstract class AbstractIntegratedPropagator {
          +void setIntegrator(FirstOrderIntegrator integrator)
-         +void addAdditionalDerivativesProvider(AdditionalDerivativesProvider provider)
-         +void setInitialAdditionalState(String name, double[] addState)
        }
 
        BoundedPropagator <|.. IntegratedEphemeris

@@ -36,6 +36,8 @@
     }
     package errors #DDEBD8 {
     }
+    package control #DDEBD8 {
+    }
     package files #DDEBD8 {
     }
     package forces #DDEBD8 {

@@ -46,10 +46,11 @@
         +SpacecraftState addAdditionalData(final String name, final Object value)
         +boolean hasAdditionalData(final String name)
         +double[] getAdditionalState(final String name)
-        +DoubleArrayDictionary getAdditionalStates()
+        +Object getAdditionalData(final String name)
+        +DataDictionary getAdditionalDataValues()
         +SpacecraftState addAdditionalStateDerivative(final String name, final double ... value)
-        +boolean hasAdditionalStateDerivative(final String name)
-        +double[] getAdditionalStateDerivative(final String name)
+        +boolean hasAdditionalStateDerivative(String name)
+        +double[] getAdditionalStateDerivative(String name)
         +DoubleArrayDictionary getAdditionalStatesDerivatives()
       }
       note bottom
@@ -63,12 +64,18 @@
       }
 
       interface Propagator {
+        +AttitudeProvider getDefaultLaw(Frames frames)
         +StepHandlerMultiplexer getMultiplexer()
         +void clearStepHandlers()
         +void setStepHandler(double h, OrekitFixedStepHandler handler)
         +void setStepHandler(OrekitStepHandler handler)
+        +EphemerisGenerator getEphemerisGenerator()
         +SpacecraftState getInitialState()
         +void resetInitialState(SpacecraftState state)
+        +void addAdditionalDataProvider(AdditionalDataProvider<?> additionalStateProvider)
+        +List<AdditionalDataProvider<?>> getAdditionalDataProviders()
+        +boolean isAdditionalDataManaged(String name)
+        +String[] getManagedAdditionalData()
         +void addEventDetector(EventDetector detector)
         +Collection<EventDetector> getEventDetectors()
         +void clearEventsDetectors()
