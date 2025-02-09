@@ -50,7 +50,7 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.Constants;
 
-public class FieldAbsoluteDateTest {
+class FieldAbsoluteDateTest {
 
     private TimeScale utc;
 
@@ -61,129 +61,129 @@ public class FieldAbsoluteDateTest {
     }
 
     @Test
-    public void testStandardEpoch() {
+    void testStandardEpoch() {
         doTestStandardEpoch(Binary64Field.getInstance());
     }
 
     @Test
-    public void testStandardEpochStrings() {
+    void testStandardEpochStrings() {
         doTestStandardEpochStrings(Binary64Field.getInstance());
     }
 
     @Test
-    public void testJulianEpochRate() {
+    void testJulianEpochRate() {
         doTestJulianEpochRate(Binary64Field.getInstance());
     }
 
     @Test
-    public void testBesselianEpochRate() {
+    void testBesselianEpochRate() {
         doTestBesselianEpochRate(Binary64Field.getInstance());
     }
 
     @Test
-    public void testLieske() {
+    void testLieske() {
         doTestLieske(Binary64Field.getInstance());
     }
 
     @Test
-    public void testParse() {
+    void testParse() {
         doTestParse(Binary64Field.getInstance());
     }
 
     @Test
-    public void testLocalTimeParsing() {
+    void testLocalTimeParsing() {
         doTestLocalTimeParsing(Binary64Field.getInstance());
     }
 
     @Test
-    public void testTimeZoneDisplay() {
+    void testTimeZoneDisplay() {
         doTestTimeZoneDisplay(Binary64Field.getInstance());
     }
 
     @Test
-    public void testLocalTimeLeapSecond() {
+    void testLocalTimeLeapSecond() {
         doTestLocalTimeLeapSecond(Binary64Field.getInstance());
     }
 
     @Test
-    public void testTimeZoneLeapSecond() {
+    void testTimeZoneLeapSecond() {
         doTestTimeZoneLeapSecond(Binary64Field.getInstance());
     }
 
     @Test
-    public void testParseLeap() {
+    void testParseLeap() {
         doTestParseLeap(Binary64Field.getInstance());
     }
 
     @Test
-    public void testOutput() {
+    void testOutput() {
         doTestOutput(Binary64Field.getInstance());
     }
 
     @Test
-    public void testJ2000() {
+    void testJ2000() {
         doTestJ2000(Binary64Field.getInstance());
     }
 
     @Test
-    public void testFraction() {
+    void testFraction() {
         doTestFraction(Binary64Field.getInstance());
     }
 
     @Test
-    public void testScalesOffset() {
+    void testScalesOffset() {
         doTestScalesOffset(Binary64Field.getInstance());
     }
 
     @Test
-    public void testUTC() {
+    void testUTC() {
         doTestUTC(Binary64Field.getInstance());
     }
 
     @Test
-    public void test1970() {
+    void test1970() {
         doTest1970(Binary64Field.getInstance());
     }
 
     @Test
-    public void test1970Instant() {
+    void test1970Instant() {
         doTest1970Instant(Binary64Field.getInstance());
     }
 
     @Test
-    public void testInstantAccuracy() {
+    void testInstantAccuracy() {
         doTestInstantAccuracy(Binary64Field.getInstance());
     }
 
     @Test
-    public void testToInstant() {
+    void testToInstant() {
         doTestToInstant(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testUtcGpsOffset() {
+    void testUtcGpsOffset() {
         doTestUtcGpsOffset(Binary64Field.getInstance());
     }
 
     @Test
-    public void testGpsDate() {
+    void testGpsDate() {
         doTestGpsDate(Binary64Field.getInstance());
     }
 
     @Test
-    public void testMJDDate() {
+    void testMJDDate() {
         doTestMJDDate(Binary64Field.getInstance());
     }
 
     @Test
-    public void testJDDate() {
+    void testJDDate() {
         doTestJDDate(Binary64Field.getInstance());
     }
 
     /** Test issue 1310: get a date from a JD using a pivot timescale. */
     @Test
-    public void testIssue1310JDDateInTDB() {
+    void testIssue1310JDDateInTDB() {
 
         // Given
         // -----
@@ -211,156 +211,156 @@ public class FieldAbsoluteDateTest {
     }
 
     @Test
-    public void testOffsets() {
+    void testOffsets() {
         doTestOffsets(Binary64Field.getInstance());
     }
 
     @Test
-    public void testBeforeAndAfterLeap() {
+    void testBeforeAndAfterLeap() {
         doTestBeforeAndAfterLeap(Binary64Field.getInstance());
     }
 
     @Test
-    public void testSymmetry() {
+    void testSymmetry() {
         doTestSymmetry(Binary64Field.getInstance());
     }
 
     @Test
-    public void testEquals() {
+    void testEquals() {
         doTestEquals(Binary64Field.getInstance());
     }
 
     @Test
-    public void testIsEqualTo() { doTestIsEqualTo(Binary64Field.getInstance()); }
+    void testIsEqualTo() { doTestIsEqualTo(Binary64Field.getInstance()); }
 
     @Test
-    public void testIsCloseTo() { doTestIsCloseTo(Binary64Field.getInstance()); }
+    void testIsCloseTo() { doTestIsCloseTo(Binary64Field.getInstance()); }
 
     @Test
-    public void testIsBefore() { doTestIsBefore(Binary64Field.getInstance()); }
+    void testIsBefore() { doTestIsBefore(Binary64Field.getInstance()); }
 
     @Test
-    public void testIsAfter() { doTestIsAfter(Binary64Field.getInstance()); }
+    void testIsAfter() { doTestIsAfter(Binary64Field.getInstance()); }
 
     @Test
-    public void testIsBeforeOrEqualTo() { doTestIsBeforeOrEqualTo(Binary64Field.getInstance()); }
+    void testIsBeforeOrEqualTo() { doTestIsBeforeOrEqualTo(Binary64Field.getInstance()); }
 
     @Test
-    public void testIsAfterOrEqualTo() { doTestIsAfterOrEqualTo(Binary64Field.getInstance()); }
+    void testIsAfterOrEqualTo() { doTestIsAfterOrEqualTo(Binary64Field.getInstance()); }
 
     @Test
-    public void testIsBetween() { doTestIsBetween(Binary64Field.getInstance()); }
+    void testIsBetween() { doTestIsBetween(Binary64Field.getInstance()); }
 
     @Test
-    public void testIsBetweenOrEqualTo() { doTestIsBetweenOrEqualTo(Binary64Field.getInstance()); }
+    void testIsBetweenOrEqualTo() { doTestIsBetweenOrEqualTo(Binary64Field.getInstance()); }
 
     @Test
-    public void testComponents() {
+    void testComponents() {
         doTestComponents(Binary64Field.getInstance());
     }
 
     @Test
-    public void testMonth() {
+    void testMonth() {
         doTestMonth(Binary64Field.getInstance());
     }
 
     @Test
-    public void testCCSDSUnsegmentedNoExtension() {
+    void testCCSDSUnsegmentedNoExtension() {
         doTestCCSDSUnsegmentedNoExtension(Binary64Field.getInstance());
     }
 
     @Test
-    public void testCCSDSUnsegmentedWithExtendedPreamble() {
+    void testCCSDSUnsegmentedWithExtendedPreamble() {
         doTestCCSDSUnsegmentedWithExtendedPreamble(Binary64Field.getInstance());
     }
 
     @Test
-    public void testCCSDSDaySegmented() {
+    void testCCSDSDaySegmented() {
         doTestCCSDSDaySegmented(Binary64Field.getInstance());
     }
 
     @Test
-    public void testCCSDSCalendarSegmented() {
+    void testCCSDSCalendarSegmented() {
         doTestCCSDSCalendarSegmented(Binary64Field.getInstance());
     }
 
     @Test
-    public void testExpandedConstructors() {
+    void testExpandedConstructors() {
         doTestExpandedConstructors(Binary64Field.getInstance());
     }
 
     @Test
-    public void testHashcode() {
+    void testHashcode() {
         doTestHashcode(Binary64Field.getInstance());
     }
 
     @Test
-    public void testInfinity() {
+    void testInfinity() {
         doTestInfinity(Binary64Field.getInstance());
     }
 
     @Test
-    public void testAccuracy() {
+    void testAccuracy() {
         doTestAccuracy(Binary64Field.getInstance());
     }
 
     @Test
-    public void testAccuracyIssue348() {
+    void testAccuracyIssue348() {
         doTestAccuracyIssue348(Binary64Field.getInstance());
     }
 
     @Test
-    public void testIterationAccuracy() {
+    void testIterationAccuracy() {
         doTestIterationAccuracy(Binary64Field.getInstance());
     }
 
     @Test
-    public void testIssue142() {
+    void testIssue142() {
         doTestIssue142(Binary64Field.getInstance());
     }
 
     @Test
-    public void testIssue148() {
+    void testIssue148() {
         doTestIssue148(Binary64Field.getInstance());
     }
 
     @Test
-    public void testIssue149() {
+    void testIssue149() {
         doTestIssue149(Binary64Field.getInstance());
     }
 
     @Test
-    public void testWrapAtMinuteEnd() {
+    void testWrapAtMinuteEnd() {
         doTestWrapAtMinuteEnd(Binary64Field.getInstance());
     }
 
     @Test
-    public void testIssue508() {
+    void testIssue508() {
         doTestIssue508(Binary64Field.getInstance());
     }
 
     @Test
-    public void testGetComponentsIssue681and676and694() {
+    void testGetComponentsIssue681and676and694() {
         doTestGetComponentsIssue681and676and694(Binary64Field.getInstance());
     }
 
     @Test
-    public void testNegativeOffsetConstructor() {
+    void testNegativeOffsetConstructor() {
         doTestNegativeOffsetConstructor(Binary64Field.getInstance());
     }
 
     @Test
-    public void testNegativeOffsetShift() {
+    void testNegativeOffsetShift() {
         doTestNegativeOffsetShift(Binary64Field.getInstance());
     }
 
     @Test
-    public void testGetDayOfYear() {
+    void testGetDayOfYear() {
         doTestGetDayOfYear(Binary64Field.getInstance());
     }
     /** Test for method {@link FieldAbsoluteDate#hasZeroField()}.*/
     @Test
-    public void testHasZeroField() {
+    void testHasZeroField() {
                        
         // DerivativeStructure
         // ----------
@@ -441,75 +441,68 @@ public class FieldAbsoluteDateTest {
 
         Assertions.assertTrue(cxConstantDate.shiftedBy(new Complex(10., 0.)).hasZeroField());                
         
-        // Complex with imaginary part returns true
+        // Complex with imaginary part returns false
         Assertions.assertFalse(cxConstantDate.shiftedBy(new Complex(-100., 10.)).hasZeroField());
-        
-        // Others → Always return false
-        // ----------------------------
-        
+
         // Binary64
         final Binary64Field b64Field = Binary64Field.getInstance();
         final FieldAbsoluteDate<Binary64> b64Date = new FieldAbsoluteDate<>(b64Field);
-        Assertions.assertFalse(b64Date.hasZeroField());
+        Assertions.assertTrue(b64Date.hasZeroField());
         
         // Dfp
         final FieldAbsoluteDate<Dfp> dfpDate = new FieldAbsoluteDate<>(new DfpField(10));
-        Assertions.assertFalse(dfpDate.hasZeroField());
+        Assertions.assertTrue(dfpDate.hasZeroField());
         
         // FieldComplex
         final FieldAbsoluteDate<FieldComplex<Complex>> fcxDate = new FieldAbsoluteDate<>(FieldComplexField.getField(cxField));
-        Assertions.assertFalse(fcxDate.hasZeroField());
+        Assertions.assertTrue(fcxDate.hasZeroField());
         
         // FieldTuple
         final FieldAbsoluteDate<FieldTuple<DerivativeStructure>> ftpDate = new FieldAbsoluteDate<>(new FieldTuple<>(dsDt0, dsDt1).getField());
-        Assertions.assertFalse(ftpDate.hasZeroField());
+        Assertions.assertTrue(ftpDate.hasZeroField());
 
         // Tuple
-        final FieldAbsoluteDate<Tuple> tpDate = new FieldAbsoluteDate<>(new Tuple(0., 1., 2.).getField());
-        Assertions.assertFalse(tpDate.hasZeroField());
+        final FieldAbsoluteDate<Tuple> tpDate = new FieldAbsoluteDate<>(new Tuple(0., 1.).getField());
+        Assertions.assertTrue(tpDate.hasZeroField());
         
         // FieldDerivativeStructure
         final FDSFactory<Binary64> fdsFactory = new FDSFactory<>(b64Field, 3, 1);
         final FieldAbsoluteDate<FieldDerivativeStructure<Binary64>> fdsDate = new FieldAbsoluteDate<>(fdsFactory.constant(1.).getField());
-        Assertions.assertFalse(fdsDate.hasZeroField());
+        Assertions.assertTrue(fdsDate.hasZeroField());
         
         // FieldGradient
         final FieldAbsoluteDate<FieldGradient<Binary64>> fgdDate =
                         new FieldAbsoluteDate<>(new FieldGradient<>(fdsFactory.constant(1.)).getField());
-        Assertions.assertFalse(fgdDate.hasZeroField());
+        Assertions.assertTrue(fgdDate.hasZeroField());
         
         // FieldUnivariateDerivative1
-        FieldUnivariateDerivative1<Binary64> fu1 =  
-                        new FieldUnivariateDerivative1<>(b64Field.getZero().newInstance(1.),
-                                        b64Field.getOne());
-        final FieldAbsoluteDate<FieldUnivariateDerivative1<Binary64>> fu1Date = new FieldAbsoluteDate<>(fu1.getField());
-        Assertions.assertFalse(fu1Date.hasZeroField());
+        final FieldAbsoluteDate<FieldUnivariateDerivative1<Binary64>> fu1Date = new FieldAbsoluteDate<>(
+                FieldUnivariateDerivative1Field.getUnivariateDerivative1Field(Binary64Field.getInstance()));
+        Assertions.assertTrue(fu1Date.hasZeroField());
         
         // FieldUnivariateDerivative2
-        FieldUnivariateDerivative2<Binary64> fu2 =  
-                        new FieldUnivariateDerivative2<>(b64Field.getZero().newInstance(1.),
-                                        b64Field.getOne(), b64Field.getZero());
-        final FieldAbsoluteDate<FieldUnivariateDerivative2<Binary64>> fu2Date = new FieldAbsoluteDate<>(fu2.getField());
-        Assertions.assertFalse(fu2Date.hasZeroField());
+        final FieldAbsoluteDate<FieldUnivariateDerivative2<Binary64>> fu2Date = new FieldAbsoluteDate<>(
+                FieldUnivariateDerivative2Field.getUnivariateDerivative2Field(Binary64Field.getInstance()));
+        Assertions.assertTrue(fu2Date.hasZeroField());
     }
 
     @Test
-    public void testDurationFromWithTimeUnit() {
+    void testDurationFromWithTimeUnit() {
         doTestDurationFromWithTimeUnit(Binary64Field.getInstance());
     }
 
     @Test
-    public void testConstructWithTimeUnitOffset() {
+    void testConstructWithTimeUnitOffset() {
         doTestConstructWithTimeUnitOffset(Binary64Field.getInstance());
     }
 
     @Test
-    public void testShiftedByWithTimeUnit() {
+    void testShiftedByWithTimeUnit() {
         doTestShiftedByWithTimeUnit(Binary64Field.getInstance());
     }
 
     @Test
-    public void testToStringWithoutUtcOffset() {
+    void testToStringWithoutUtcOffset() {
         doTestToStringWithoutUtcOffset(Binary64Field.getInstance());
     }
 
@@ -1816,7 +1809,7 @@ public class FieldAbsoluteDateTest {
     }
 
     @Test
-    public void testMedian() {
+    void testMedian() {
         final AbsoluteDate date1 = new AbsoluteDate(2003, 6, 13, 14, 15,
                                                     new TimeOffset(53, TimeOffset.SECOND, 12, TimeOffset.ATTOSECOND),
                                                     TimeScalesFactory.getTT());
@@ -1840,7 +1833,7 @@ public class FieldAbsoluteDateTest {
     }
 
     @Test
-    public void testMedianInfinite() {
+    void testMedianInfinite() {
         final FieldAbsoluteDate<Binary64> future    = FieldAbsoluteDate.getFutureInfinity(Binary64Field.getInstance());
         final FieldAbsoluteDate<Binary64> past      = FieldAbsoluteDate.getPastInfinity(Binary64Field.getInstance());
         final FieldAbsoluteDate<Binary64> arbitrary = FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance());

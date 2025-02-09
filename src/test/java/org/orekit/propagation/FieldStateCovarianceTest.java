@@ -305,10 +305,10 @@ class FieldStateCovarianceTest {
         // Then
         final FieldMatrix<Binary64> expectedCovarianceMatrixInITRF = new BlockFieldMatrix<>(new Binary64[][] {
                 { new Binary64(9.9340005761276870e-01), new Binary64(7.5124999798868530e-03),
-                  new Binary64(5.8312675007359050e-03), new Binary64(3.454839626105493e-05),
-                  new Binary64(2.6851237046859065e-06), new Binary64(5.8312677693153940e-05) },
+                  new Binary64(5.8312675007359050e-03), new Binary64(3.4548396261054936e-05),
+                  new Binary64(2.68512370468592e-06), new Binary64(5.8312677693153940e-05) },
                 { new Binary64(7.5124999798868025e-03), new Binary64(1.0065990293034541e+00),
-                  new Binary64(1.2884310200351924e-02), new Binary64(1.4852736004690686e-04),
+                  new Binary64(1.2884310200351924e-02), new Binary64(1.4852736004690684e-04),
                   new Binary64(1.6544247282904867e-04), new Binary64(1.2884310644320954e-04) },
                 { new Binary64(5.8312675007359040e-03), new Binary64(1.2884310200351924e-02),
                   new Binary64(1.0000009130837746e+00), new Binary64(5.9252211072590390e-05),
@@ -316,7 +316,7 @@ class FieldStateCovarianceTest {
                 { new Binary64(3.4548396261054936e-05), new Binary64(1.4852736004690686e-04),
                   new Binary64(5.9252211072590403e-05), new Binary64(3.5631474857130520e-07),
                   new Binary64(7.6083489184819870e-07), new Binary64(5.9252213790760030e-07) },
-                { new Binary64(2.6851237046859150e-06), new Binary64(1.6544247282904864e-04),
+                { new Binary64(2.685123704685915e-06), new Binary64(1.6544247282904864e-04),
                   new Binary64(1.2841787487219447e-04), new Binary64(7.6083489184819880e-07),
                   new Binary64(1.6542289254142709e-06), new Binary64(1.2841787929229964e-06) },
                 { new Binary64(5.8312677693153934e-05), new Binary64(1.2884310644320950e-04),

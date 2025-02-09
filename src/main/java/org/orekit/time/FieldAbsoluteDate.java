@@ -24,10 +24,8 @@ import java.util.concurrent.TimeUnit;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.FieldElement;
-import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2Field;
-import org.hipparchus.complex.Complex;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
@@ -113,7 +111,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     /** Field-specific offset ({@link CalculusFieldElement#getReal() is always 0)}.
      * @since 13.0
      */
-    private final  T fieldOffset;
+    private final T fieldOffset;
 
     /** Build an instance from an AbsoluteDate.
      * @param field used by default
@@ -1610,7 +1608,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @since 12.0
      */
     public boolean hasZeroField() {
-        return (fieldOffset instanceof Derivative<?> || fieldOffset instanceof Complex) && fieldOffset.isZero();
+        return fieldOffset.getAddendum().isZero();
     }
 
     /**
