@@ -144,6 +144,6 @@ class QuadraticPenaltyCartesianFuelTest {
     private static SpacecraftState buildState(final double[] adjoint, final double mass) {
         final CartesianOrbit orbit = new CartesianOrbit(new PVCoordinates(Vector3D.MINUS_I, Vector3D.MINUS_K),
                 FramesFactory.getEME2000(), AbsoluteDate.ARBITRARY_EPOCH, 1.);
-        return new SpacecraftState(orbit, mass).addAdditionalState(ADJOINT_NAME, adjoint);
+        return new SpacecraftState(orbit, mass).addAdditionalData(ADJOINT_NAME, adjoint);
     }
 }

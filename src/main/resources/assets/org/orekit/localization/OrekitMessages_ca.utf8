@@ -298,8 +298,11 @@ PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET = la funció setPeriod ja ha sigut utilit
 # scale factor for parameter {0} is too small: {1}
 TOO_SMALL_SCALE_FOR_PARAMETER = el factor d''escala pel paràmetre {0} és massa petit: {1}
 
-# unknown additional state "{0}"
-UNKNOWN_ADDITIONAL_STATE = estat adicional desconegut "{0}"
+# state "{0}" is not a double array
+ADDITIONAL_STATE_BAD_TYPE = <MISSING TRANSLATION>
+
+# unknown additional data "{0}"
+UNKNOWN_ADDITIONAL_DATA = <MISSING TRANSLATION>
 
 # unknown month "{0}"
 UNKNOWN_MONTH = mes desconegut "{0}"

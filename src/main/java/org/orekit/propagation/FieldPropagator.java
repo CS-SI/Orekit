@@ -141,23 +141,23 @@ public interface FieldPropagator<T extends CalculusFieldElement<T>> extends Fiel
      */
     void resetInitialState(FieldSpacecraftState<T> state);
 
-    /** Add a set of user-specified state parameters to be computed along with the orbit propagation.
-     * @param additionalStateProvider provider for additional state
+    /** Add a set of user-specified data to be computed along with the orbit propagation.
+     * @param additionalDataProvider provider for additional data
      */
-    void addAdditionalStateProvider(FieldAdditionalStateProvider<T> additionalStateProvider);
+    void addAdditionalDataProvider(FieldAdditionalDataProvider<T> additionalDataProvider);
 
-    /** Get an unmodifiable list of providers for additional state.
+    /** Get an unmodifiable list of providers for additional data.
      * @return providers for the additional states
      */
-    List<FieldAdditionalStateProvider<T>> getAdditionalStateProviders();
+    List<FieldAdditionalDataProvider<T>> getAdditionalDataProviders();
 
-    /** Check if an additional state is managed.
+    /** Check if an additional data is managed.
      * <p>
-     * Managed states are states for which the propagators know how to compute
-     * its evolution. They correspond to additional states for which an
-     * {@link FieldAdditionalStateProvider additional state provider} has been registered
-     * by calling the {@link #addAdditionalStateProvider(FieldAdditionalStateProvider)
-     * addAdditionalStateProvider} method. If the propagator is an {@link
+     * Managed data are the ones for which the propagators know how to compute
+     * its evolution. They correspond to additional data for which an
+     * {@link FieldAdditionalDataProvider additional data provider} has been registered
+     * by calling the {@link #addAdditionalDataProvider(FieldAdditionalDataProvider)
+     * addAdditionalDataProvider} method. If the propagator is an {@link
      * org.orekit.propagation.integration.FieldAbstractIntegratedPropagator integrator-based
      * propagator}, the states for which a set of {@link
      * org.orekit.propagation.integration.FieldAdditionalDerivativesProvider additional derivatives
@@ -167,24 +167,24 @@ public interface FieldPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * method are also counted as managed additional states.
      * </p>
      * <p>
-     * Additional states that are present in the {@link #getInitialState() initial state}
-     * but have no evolution method registered are <em>not</em> considered as managed states.
-     * These unmanaged additional states are not lost during propagation, though. Their
+     * Additional data that are present in the {@link #getInitialState() initial state}
+     * but have no evolution method registered are <em>not</em> considered as managed data.
+     * These unmanaged additional data are not lost during propagation, though. Their
      * value are piecewise constant between state resets that may change them if some
      * event handler {@link
      * org.orekit.propagation.events.handlers.FieldEventHandler#resetState(FieldEventDetector,
      * FieldSpacecraftState) resetState} method is called at an event occurrence and happens
-     * to change the unmanaged additional state.
+     * to change the unmanaged additional data.
      * </p>
-     * @param name name of the additional state
-     * @return true if the additional state is managed
+     * @param name name of the additional data
+     * @return true if the additional data is managed
      */
-    boolean isAdditionalStateManaged(String name);
+    boolean isAdditionalDataManaged(String name);
 
-    /** Get all the names of all managed states.
-     * @return names of all managed states
+    /** Get all the names of all managed data.
+     * @return names of all managed data
      */
-    String[] getManagedAdditionalStates();
+    String[] getManagedAdditionalData();
 
     /** Add an event detector.
      * @param detector event detector to add

@@ -16,16 +16,6 @@
  */
 package org.orekit.propagation.integration;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketedUnivariateSolver;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
@@ -62,7 +52,17 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.DoubleArrayDictionary;
+import org.orekit.utils.DataDictionary;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 
 
 /** Common handling of {@link org.orekit.propagation.Propagator Propagator}
@@ -265,10 +265,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** {@inheritDoc} */
     @Override
-    public boolean isAdditionalStateManaged(final String name) {
+    public boolean isAdditionalDataManaged(final String name) {
 
         // first look at already integrated states
-        if (super.isAdditionalStateManaged(name)) {
+        if (super.isAdditionalDataManaged(name)) {
             return true;
         }
 
@@ -284,8 +284,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** {@inheritDoc} */
     @Override
-    public String[] getManagedAdditionalStates() {
-        final String[] alreadyIntegrated = super.getManagedAdditionalStates();
+    public String[] getManagedAdditionalData() {
+        final String[] alreadyIntegrated = super.getManagedAdditionalData();
         final String[] managed = new String[alreadyIntegrated.length + additionalDerivativesProviders.size()];
         System.arraycopy(alreadyIntegrated, 0, managed, 0, alreadyIntegrated.length);
         for (int i = 0; i < additionalDerivativesProviders.size(); ++i) {
@@ -296,13 +296,13 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** Add a provider for user-specified state derivatives to be integrated along with the orbit propagation.
      * @param provider provider for additional derivatives
-     * @see #addAdditionalStateProvider(org.orekit.propagation.AdditionalStateProvider)
+     * @see #addAdditionalDataProvider(org.orekit.propagation.AdditionalDataProvider)
      * @since 11.1
      */
     public void addAdditionalDerivativesProvider(final AdditionalDerivativesProvider provider) {
 
         // check if the name is already used
-        if (isAdditionalStateManaged(provider.getName())) {
+        if (this.isAdditionalDataManaged(provider.getName())) {
             // these derivatives are already registered, complain
             throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,
                                       provider.getName());
@@ -421,8 +421,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             // prepare handling of STM and Jacobian matrices
             setUpStmAndJacobianGenerators();
 
-            // Initialize additional states
-            initializeAdditionalStates(tEnd);
+            // Initialize additional data
+            initializeAdditionalData(tEnd);
 
             if (!tStart.equals(getInitialState().getDate())) {
                 // if propagation start date is not initial date,
@@ -558,11 +558,11 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 final String name      = provider.getName();
                 final int    offset    = secondaryOffsets.get(name);
                 final int    dimension = provider.getDimension();
-                updatedState = updatedState.addAdditionalState(name, Arrays.copyOfRange(secondary, offset, offset + dimension));
+                updatedState = updatedState.addAdditionalData(name, Arrays.copyOfRange(secondary, offset, offset + dimension));
                 updatedState = updatedState.addAdditionalStateDerivative(name, Arrays.copyOfRange(secondaryDerivative, offset, offset + dimension));
             }
         }
-        return updateAdditionalStates(updatedState);
+        return updateAdditionalData(updatedState);
     }
 
     /** Get the initial state for integration.
@@ -774,7 +774,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         public void init(final double t0, final double[] y0, final double finalTime) {
             // update space dynamics view
             SpacecraftState initialState = stateMapper.mapArrayToState(t0, y0, null, PropagationType.MEAN);
-            initialState = updateAdditionalStates(initialState);
+            initialState = updateAdditionalData(initialState);
             initialState = updateStatesFromAdditionalDerivativesIfKnown(initialState);
             final AbsoluteDate target = stateMapper.mapDoubleToDate(finalTime);
             main.init(initialState, target);
@@ -796,7 +796,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 for (final AdditionalDerivativesProvider provider: additionalDerivativesProviders) {
                     final String name = provider.getName();
                     final double[] value = storedInitialState.getAdditionalState(name);
-                    updatedState = updatedState.addAdditionalState(name, value);
+                    updatedState = updatedState.addAdditionalData(name, value);
                 }
             }
             return updatedState;
@@ -813,7 +813,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             SpacecraftState currentState = stateMapper.mapArrayToState(t, y, null, PropagationType.MEAN);
             stateMapper.setAttitudeProvider(getAttitudeProvider());
 
-            currentState = updateAdditionalStates(currentState);
+            currentState = updateAdditionalData(currentState);
             // compute main state differentials
             return main.computeDerivatives(currentState);
 
@@ -921,10 +921,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 final String name      = provider.getName();
                 final int    offset    = secondaryOffsets.get(name);
                 final int    dimension = provider.getDimension();
-                initialState = initialState.addAdditionalState(name, Arrays.copyOfRange(secondary, offset, offset + dimension));
+                initialState = initialState.addAdditionalData(name, Arrays.copyOfRange(secondary, offset, offset + dimension));
             }
 
-            return updateAdditionalStates(initialState);
+            return updateAdditionalData(initialState);
 
         }
 
@@ -1230,9 +1230,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             }
 
             // get the initial additional states that are not managed
-            final DoubleArrayDictionary unmanaged = new DoubleArrayDictionary();
-            for (final DoubleArrayDictionary.Entry initial : getInitialState().getAdditionalStatesValues().getData()) {
-                if (!isAdditionalStateManaged(initial.getKey())) {
+            final DataDictionary unmanaged = new DataDictionary();
+            for (final DataDictionary.Entry initial : getInitialState().getAdditionalDataValues().getData()) {
+                if (!AbstractIntegratedPropagator.this.isAdditionalDataManaged(initial.getKey())) {
                     // this additional state was in the initial state, but is unknown to the propagator
                     // we simply copy its initial value as is
                     unmanaged.put(initial.getKey(), initial.getValue());
@@ -1250,7 +1250,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             // create the ephemeris
             ephemeris = new IntegratedEphemeris(startDate, minDate, maxDate,
                                                 stateMapper, getAttitudeProvider(), propagationType, model,
-                                                unmanaged, getAdditionalStateProviders(),
+                                                unmanaged, getAdditionalDataProviders(),
                                                 names, dimensions);
 
         }

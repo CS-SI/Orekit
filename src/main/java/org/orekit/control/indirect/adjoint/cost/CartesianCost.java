@@ -106,7 +106,7 @@ public interface CartesianCost {
 
             @Override
             public boolean yields(final SpacecraftState state) {
-                return !state.hasAdditionalState(getAdjointName());
+                return !state.hasAdditionalData(getAdjointName());
             }
 
             @Override

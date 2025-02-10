@@ -863,7 +863,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
         // Create the harvester
         final BrouwerLyddaneHarvester harvester = new BrouwerLyddaneHarvester(this, stmName, initialStm, initialJacobianColumns);
         // Update the list of additional state provider
-        addAdditionalStateProvider(harvester);
+        addAdditionalDataProvider(harvester);
         // Return the configured harvester
         return harvester;
     }

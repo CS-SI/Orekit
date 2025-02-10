@@ -74,12 +74,12 @@ class CartesianAdjointDerivativesProviderTest {
         final Orbit orbit = new CartesianOrbit(new PVCoordinates(new Vector3D(7e6, 1e3, 0), new Vector3D(10., 7e3, -200)),
                 FramesFactory.getGCRF(), AbsoluteDate.ARBITRARY_EPOCH, mu);
         propagator.setOrbitType(OrbitType.CARTESIAN);
-        propagator.setInitialState(new SpacecraftState(orbit).addAdditionalState(name, new double[6]));
+        propagator.setInitialState(new SpacecraftState(orbit).addAdditionalData(name, new double[6]));
         propagator.addAdditionalDerivativesProvider(derivativesProvider);
         // WHEN
         final SpacecraftState state = propagator.propagate(orbit.getDate().shiftedBy(1000.));
         // THEN
-        Assertions.assertTrue(propagator.isAdditionalStateManaged(name));
+        Assertions.assertTrue(propagator.isAdditionalDataManaged(name));
         final double[] finalAdjoint = state.getAdditionalState(name);
         Assertions.assertEquals(0, finalAdjoint[0]);
         Assertions.assertEquals(0, finalAdjoint[1]);
@@ -166,7 +166,7 @@ class CartesianAdjointDerivativesProviderTest {
         for (int i = 0; i < 6; i++) {
             adjoint[i] = 1;
         }
-        return stateWithoutAdditional.addAdditionalState(name, adjoint);
+        return stateWithoutAdditional.addAdditionalData(name, adjoint);
     }
 
     private static class TestAdjointTerm implements CartesianAdjointEquationTerm {

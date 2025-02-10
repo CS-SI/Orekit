@@ -51,7 +51,7 @@ class FieldCartesianCostTest {
         final String expectedName = "a";
         final FieldSpacecraftState<Binary64> mockedState = Mockito.mock();
         final String adjointName = fieldCost.getAdjointName();
-        Mockito.when(mockedState.hasAdditionalState(adjointName)).thenReturn(yields);
+        Mockito.when(mockedState.hasAdditionalData(adjointName)).thenReturn(yields);
         // WHEN
         final FieldAdditionalDerivativesProvider<Binary64> fieldCostDerivative = fieldCost.getCostDerivativeProvider(expectedName);
         // THEN
@@ -61,7 +61,6 @@ class FieldCartesianCostTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     void getCostDerivativeProviderCombinedDerivativesTest() {
         // GIVEN
         final FieldCartesianCost<Binary64> cost = new TestCost();
@@ -73,7 +72,7 @@ class FieldCartesianCostTest {
         }
         final FieldSpacecraftState<Binary64> state = new FieldSpacecraftState<>(field,
                 new SpacecraftState(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH)))
-                .addAdditionalState(cost.getAdjointName(), adjoint);
+                .addAdditionalData(cost.getAdjointName(), adjoint);
         final Binary64 expectedDerivative = Binary64.ONE;
         // WHEN
         final FieldAdditionalDerivativesProvider<Binary64> fieldCostDerivative = cost.getCostDerivativeProvider(expectedName);

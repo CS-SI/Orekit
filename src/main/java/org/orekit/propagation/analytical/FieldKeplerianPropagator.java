@@ -144,7 +144,7 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
         FieldSpacecraftState<T> fixedState = new FieldSpacecraftState<>(fixedOrbit, attitude, mass);
         if (additionalStates != null) {
             for (final FieldArrayDictionary<T>.Entry entry : additionalStates.getData()) {
-                fixedState = fixedState.addAdditionalState(entry.getKey(), entry.getValue());
+                fixedState = fixedState.addAdditionalData(entry.getKey(), entry.getValue());
             }
         }
         if (additionalStatesderivatives != null) {
@@ -166,7 +166,7 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
                                                             state.getAttitude(),
                                                             state.getMass(),
                                                             mu,
-                                                            state.getAdditionalStatesValues(),
+                                                            state.getAdditionalDataValues(),
                                                             state.getAdditionalStatesDerivatives());
 
         states = new FieldTimeSpanMap<>(fixedState, state.getDate().getField());

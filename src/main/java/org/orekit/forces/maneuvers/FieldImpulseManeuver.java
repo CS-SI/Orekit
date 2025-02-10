@@ -282,13 +282,13 @@ public class FieldImpulseManeuver<T extends CalculusFieldElement<T>> extends Abs
                 final FieldOrbit<T> newOrbit = new FieldCartesianOrbit<>(newPV, oldState.getFrame(), oldState.getDate(),
                         oldState.getOrbit().getMu());
                 return new FieldSpacecraftState<>(oldState.getOrbit().getType().normalize(newOrbit, oldState.getOrbit()),
-                        oldState.getAttitude(), newMass, oldState.getAdditionalStatesValues(),
+                        oldState.getAttitude(), newMass, oldState.getAdditionalDataValues(),
                         oldState.getAdditionalStatesDerivatives());
             } else {
                 final FieldAbsolutePVCoordinates<T> newAbsPVA = new FieldAbsolutePVCoordinates<>(oldState.getFrame(),
                         oldState.getDate(), newPV);
                 return new FieldSpacecraftState<>(newAbsPVA, oldState.getAttitude(), newMass,
-                        oldState.getAdditionalStatesValues(), oldState.getAdditionalStatesDerivatives());
+                        oldState.getAdditionalDataValues(), oldState.getAdditionalStatesDerivatives());
             }
         }
 

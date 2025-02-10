@@ -397,7 +397,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
                                                                 new SpacecraftState(osculatingOrbit,
                                                                                     nominalMeanSpacecraftState.getAttitude(),
                                                                                     nominalMeanSpacecraftState.getMass(),
-                                                                                    nominalMeanSpacecraftState.getAdditionalStatesValues(),
+                                                                                    nominalMeanSpacecraftState.getAdditionalDataValues(),
                                                                                     nominalMeanSpacecraftState.getAdditionalStatesDerivatives())
                                                             });
 
@@ -466,7 +466,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
                                                                 new SpacecraftState(osculatingOrbit,
                                                                                     nominalMeanSpacecraftState.getAttitude(),
                                                                                     nominalMeanSpacecraftState.getMass(),
-                                                                                    nominalMeanSpacecraftState.getAdditionalStatesValues(),
+                                                                                    nominalMeanSpacecraftState.getAdditionalDataValues(),
                                                                                     nominalMeanSpacecraftState.getAdditionalStatesDerivatives())
                                                             });
         // Call the observer if the user add one

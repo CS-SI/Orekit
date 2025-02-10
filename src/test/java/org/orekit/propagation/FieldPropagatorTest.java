@@ -109,22 +109,22 @@ class FieldPropagatorTest {
         }
 
         @Override
-        public void addAdditionalStateProvider(FieldAdditionalStateProvider<Complex> additionalStateProvider) {
+        public void addAdditionalDataProvider(FieldAdditionalDataProvider<Complex> additionalDataProvider) {
             // not used in test
         }
 
         @Override
-        public List<FieldAdditionalStateProvider<Complex>> getAdditionalStateProviders() {
+        public List<FieldAdditionalDataProvider<Complex>> getAdditionalDataProviders() {
             return null;
         }
 
         @Override
-        public boolean isAdditionalStateManaged(String name) {
+        public boolean isAdditionalDataManaged(String name) {
             return false;
         }
 
         @Override
-        public String[] getManagedAdditionalStates() {
+        public String[] getManagedAdditionalData() {
             return new String[0];
         }
 

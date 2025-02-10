@@ -120,7 +120,7 @@ public abstract class AbstractMatricesHarvester implements MatricesHarvester {
     @Override
     public RealMatrix getStateTransitionMatrix(final SpacecraftState state) {
 
-        if (!state.hasAdditionalState(stmName)) {
+        if (!state.hasAdditionalData(stmName)) {
             return null;
         }
 

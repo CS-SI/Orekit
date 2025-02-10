@@ -55,8 +55,8 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
     /** Attitude provider. */
     private AttitudeProvider attitudeProvider;
 
-    /** Additional state providers. */
-    private final List<FieldAdditionalStateProvider<T>> additionalStateProviders;
+    /** Additional data providers. */
+    private final List<FieldAdditionalDataProvider<T>> additionalDataProviders;
 
     /** States managed by neither additional equations nor state providers. */
     private final Map<String, FieldTimeSpanMap<T[], T>> unmanagedStates;
@@ -73,7 +73,7 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
     protected FieldAbstractPropagator(final Field<T> field) {
         this.field               = field;
         multiplexer              = new FieldStepHandlerMultiplexer<>();
-        additionalStateProviders = new ArrayList<>();
+        additionalDataProviders  = new ArrayList<>();
         unmanagedStates          = new HashMap<>();
     }
 
@@ -129,31 +129,31 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    public void addAdditionalStateProvider(final FieldAdditionalStateProvider<T> additionalStateProvider) {
+    public void addAdditionalDataProvider(final FieldAdditionalDataProvider<T> additionalDataProvider) {
 
         // check if the name is already used
-        if (isAdditionalStateManaged(additionalStateProvider.getName())) {
-            // this additional state is already registered, complain
+        if (isAdditionalDataManaged(additionalDataProvider.getName())) {
+            // this additional data is already registered, complain
             throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,
-                                      additionalStateProvider.getName());
+                                      additionalDataProvider.getName());
         }
 
         // this is really a new name, add it
-        additionalStateProviders.add(additionalStateProvider);
+        additionalDataProviders.add(additionalDataProvider);
 
     }
 
     /** {@inheritDoc} */
-    public List<FieldAdditionalStateProvider<T>> getAdditionalStateProviders() {
-        return Collections.unmodifiableList(additionalStateProviders);
+    public List<FieldAdditionalDataProvider<T>> getAdditionalDataProviders() {
+        return Collections.unmodifiableList(additionalDataProviders);
     }
 
     /** Update state by adding unmanaged states.
      * @param original original state
      * @return updated state, with unmanaged states included
-     * @see #updateAdditionalStates(FieldSpacecraftState)
+     * @see #updateAdditionalData(FieldSpacecraftState)
      */
-    protected FieldSpacecraftState<T> updateUnmanagedStates(final FieldSpacecraftState<T> original) {
+    protected FieldSpacecraftState<T> updateUnmanagedData(final FieldSpacecraftState<T> original) {
 
         // start with original state,
         // which may already contain additional states, for example in interpolated ephemerides
@@ -161,7 +161,7 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
 
         // update the states not managed by providers
         for (final Map.Entry<String, FieldTimeSpanMap<T[], T>> entry : unmanagedStates.entrySet()) {
-            updated = updated.addAdditionalState(entry.getKey(),
+            updated = updated.addAdditionalData(entry.getKey(),
                                                  entry.getValue().get(original.getDate()));
         }
 
@@ -169,23 +169,23 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
 
     }
 
-    /** Update state by adding all additional states.
+    /** Update state by adding all additional data.
      * @param original original state
-     * @return updated state, with all additional states included
-     * @see #addAdditionalStateProvider(FieldAdditionalStateProvider)
+     * @return updated state, with all additional data included
+     * @see #addAdditionalDataProvider(FieldAdditionalDataProvider)
      */
-    public FieldSpacecraftState<T> updateAdditionalStates(final FieldSpacecraftState<T> original) {
+    public FieldSpacecraftState<T> updateAdditionalData(final FieldSpacecraftState<T> original) {
 
         // start with original state and unmanaged states
-        FieldSpacecraftState<T> updated = updateUnmanagedStates(original);
+        FieldSpacecraftState<T> updated = updateUnmanagedData(original);
 
         // set up queue for providers
-        final Queue<FieldAdditionalStateProvider<T>> pending = new LinkedList<>(getAdditionalStateProviders());
+        final Queue<FieldAdditionalDataProvider<T>> pending = new LinkedList<>(getAdditionalDataProviders());
 
-        // update the additional states managed by providers, taking care of dependencies
+        // update the additional data managed by providers, taking care of dependencies
         int yieldCount = 0;
         while (!pending.isEmpty()) {
-            final FieldAdditionalStateProvider<T> provider = pending.remove();
+            final FieldAdditionalDataProvider<T> provider = pending.remove();
             if (provider.yields(updated)) {
                 // this generator has to wait for another one,
                 // we put it again in the pending queue
@@ -208,19 +208,19 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
     }
 
     /**
-     * Initialize the additional state providers at the start of propagation.
+     * Initialize the additional data providers at the start of propagation.
      * @param target date of propagation. Not equal to {@code initialState.getDate()}.
      * @since 11.2
      */
-    protected void initializeAdditionalStates(final FieldAbsoluteDate<T> target) {
-        for (final FieldAdditionalStateProvider<T> provider : additionalStateProviders) {
+    protected void initializeAdditionalData(final FieldAbsoluteDate<T> target) {
+        for (final FieldAdditionalDataProvider<T> provider : additionalDataProviders) {
             provider.init(initialState, target);
         }
     }
 
     /** {@inheritDoc} */
-    public boolean isAdditionalStateManaged(final String name) {
-        for (final FieldAdditionalStateProvider<T> provider : additionalStateProviders) {
+    public boolean isAdditionalDataManaged(final String name) {
+        for (final FieldAdditionalDataProvider<T> provider : additionalDataProviders) {
             if (provider.getName().equals(name)) {
                 return true;
             }
@@ -229,10 +229,10 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    public String[] getManagedAdditionalStates() {
-        final String[] managed = new String[additionalStateProviders.size()];
+    public String[] getManagedAdditionalData() {
+        final String[] managed = new String[additionalDataProviders.size()];
         for (int i = 0; i < managed.length; ++i) {
-            managed[i] = additionalStateProviders.get(i).getName();
+            managed[i] = additionalDataProviders.get(i).getName();
         }
         return managed;
     }
@@ -255,9 +255,9 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
         if (initialState != null) {
             // there is an initial state
             // (null initial states occur for example in interpolated ephemerides)
-            // copy the additional states present in initialState but otherwise not managed
-            for (final FieldArrayDictionary<T>.Entry initial : initialState.getAdditionalStatesValues().getData()) {
-                if (!isAdditionalStateManaged(initial.getKey())) {
+            // copy the additional data present in initialState but otherwise not managed
+            for (final FieldArrayDictionary<T>.Entry initial : initialState.getAdditionalDataValues().getData()) {
+                if (!isAdditionalDataManaged(initial.getKey())) {
                     // this additional state is in the initial state, but is unknown to the propagator
                     // we store it in a way event handlers may change it
                     unmanagedStates.put(initial.getKey(),
@@ -274,7 +274,7 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
     protected void stateChanged(final FieldSpacecraftState<T> state) {
         final FieldAbsoluteDate<T> date    = state.getDate();
         final boolean              forward = date.durationFrom(getStartDate()).getReal() >= 0.0;
-        for (final  FieldArrayDictionary<T>.Entry changed : state.getAdditionalStatesValues().getData()) {
+        for (final  FieldArrayDictionary<T>.Entry changed : state.getAdditionalDataValues().getData()) {
             final FieldTimeSpanMap<T[], T> tsm = unmanagedStates.get(changed.getKey());
             if (tsm != null) {
                 // this is an unmanaged state

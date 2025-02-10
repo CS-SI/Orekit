@@ -16,18 +16,6 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
@@ -90,13 +78,20 @@ import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
-import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeComponents;
-import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.*;
 import org.orekit.utils.*;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 class NumericalPropagatorTest {
 
@@ -824,20 +819,20 @@ class NumericalPropagatorTest {
         } catch (OrekitException oe) {
             Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
         }
-        propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+        propagator.addAdditionalDataProvider(new AdditionalDataProvider<Double>() {
             public String getName() {
                 return "constant";
             }
 
-            public double[] getAdditionalState(SpacecraftState state) {
-                return new double[] { 1.0 };
+            public Double getAdditionalData(SpacecraftState state) {
+                return 1.0;
             }
         });
-        Assertions.assertTrue(propagator.isAdditionalStateManaged("linear"));
-        Assertions.assertTrue(propagator.isAdditionalStateManaged("constant"));
-        Assertions.assertFalse(propagator.isAdditionalStateManaged("non-managed"));
-        Assertions.assertEquals(2, propagator.getManagedAdditionalStates().length);
-        propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear", 1.5));
+        Assertions.assertTrue(propagator.isAdditionalDataManaged("linear"));
+        Assertions.assertTrue(propagator.isAdditionalDataManaged("constant"));
+        Assertions.assertFalse(propagator.isAdditionalDataManaged("non-managed"));
+        Assertions.assertEquals(2, propagator.getManagedAdditionalData().length);
+        propagator.setInitialState(propagator.getInitialState().addAdditionalData("linear", 1.5));
 
         CheckingHandler checking = new CheckingHandler(Action.STOP);
         propagator.addEventDetector(new AdditionalStateLinearDetector(new EventDetectionSettings(10.0, 1.0e-8, EventDetectionSettings.DEFAULT_MAX_ITER),
@@ -896,12 +891,12 @@ class NumericalPropagatorTest {
                 return new CombinedDerivatives(new double[] { 1.0 }, null);
             }
         });
-        propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear", 1.5));
+        propagator.setInitialState(propagator.getInitialState().addAdditionalData("linear", 1.5));
 
         CheckingHandler checking = new CheckingHandler(Action.RESET_STATE) {
             public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState)
                 {
-                return oldState.addAdditionalState("linear", oldState.getAdditionalState("linear")[0] * 2);
+                return oldState.addAdditionalData("linear", oldState.getAdditionalState("linear")[0] * 2);
             }
         };
 
@@ -1015,12 +1010,12 @@ class NumericalPropagatorTest {
         final double dt = -3200;
         final double rate = 2.0;
 
-        propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+        propagator.addAdditionalDataProvider(new AdditionalDataProvider<Double>() {
             public String getName() {
                 return "squaredA";
             }
-            public double[] getAdditionalState(SpacecraftState state) {
-                return new double[] { state.getOrbit().getA() * state.getOrbit().getA() };
+            public Double getAdditionalData(SpacecraftState state) {
+                return state.getOrbit().getA() * state.getOrbit().getA();
             }
         });
         propagator.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
@@ -1034,7 +1029,7 @@ class NumericalPropagatorTest {
                 return new CombinedDerivatives(new double[] { rate }, null);
             }
         });
-        propagator.setInitialState(propagator.getInitialState().addAdditionalState("extra", 1.5));
+        propagator.setInitialState(propagator.getInitialState().addAdditionalData("extra", 1.5));
 
         propagator.setOrbitType(OrbitType.CARTESIAN);
         final EphemerisGenerator generator = propagator.getEphemerisGenerator();
@@ -1057,9 +1052,9 @@ class NumericalPropagatorTest {
 
         double shift = -60;
         SpacecraftState s = ephemeris1.propagate(initDate.shiftedBy(shift));
-        Assertions.assertEquals(2, s.getAdditionalStatesValues().size());
-        Assertions.assertTrue(s.hasAdditionalState("squaredA"));
-        Assertions.assertTrue(s.hasAdditionalState("extra"));
+        Assertions.assertEquals(2, s.getAdditionalDataValues().size());
+        Assertions.assertTrue(s.hasAdditionalData("squaredA"));
+        Assertions.assertTrue(s.hasAdditionalData("extra"));
         Assertions.assertEquals(s.getOrbit().getA() * s.getOrbit().getA(), s.getAdditionalState("squaredA")[0], 1.0e-10);
         Assertions.assertEquals(1.5 + shift * rate, s.getAdditionalState("extra")[0], 1.0e-10);
 
@@ -1647,7 +1642,7 @@ class NumericalPropagatorTest {
         propagator.propagate(initialOrbit.getDate().shiftedBy(600));
         BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         final SpacecraftState finalState = ephemeris.propagate(initialOrbit.getDate().shiftedBy(300));
-        Assertions.assertEquals(2,    finalState.getAdditionalStatesValues().size());
+        Assertions.assertEquals(2,    finalState.getAdditionalDataValues().size());
         Assertions.assertEquals(2,    finalState.getAdditionalState("test_provider_0").length);
         Assertions.assertEquals(0.0,  finalState.getAdditionalState("test_provider_0")[0], 1.0e-15);
         Assertions.assertEquals(0.0,  finalState.getAdditionalState("test_provider_0")[1], 1.0e-15);
@@ -1658,7 +1653,7 @@ class NumericalPropagatorTest {
 
     private void addDerivativeProvider(NumericalPropagator propagator, EmptyDerivativeProvider provider) {
         SpacecraftState initialState = propagator.getInitialState();
-        propagator.setInitialState(initialState.addAdditionalState(provider.getName(), provider.getInitialState()));
+        propagator.setInitialState(initialState.addAdditionalData(provider.getName(), provider.getInitialState()));
         propagator.addAdditionalDerivativesProvider(provider);
     }
 
@@ -1735,7 +1730,7 @@ class NumericalPropagatorTest {
         final NumericalPropagator numericalPropagator = new NumericalPropagator(rungeKuttaIntegrator);
         final SpacecraftState state = new SpacecraftState(initialOrbit);
         final String name = "test";
-        numericalPropagator.setInitialState(state.addAdditionalState(name, 0.));
+        numericalPropagator.setInitialState(state.addAdditionalData(name, 0.));
         numericalPropagator.addAdditionalDerivativesProvider(mockDerivativeProvider(name));
         numericalPropagator.addForceModel(createForceModelBasedOnAdditionalState(name));
         // WHEN & THEN

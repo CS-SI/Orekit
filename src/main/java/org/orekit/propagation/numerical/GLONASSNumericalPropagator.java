@@ -217,7 +217,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
         return new SpacecraftState(new CartesianOrbit(pvInInertial, eci, pvInInertial.getDate(), GNSSConstants.GLONASS_MU),
                                                       stateInInertial.getAttitude(),
                                                       stateInInertial.getMass(),
-                                                      stateInInertial.getAdditionalStatesValues(),
+                                                      stateInInertial.getAdditionalDataValues(),
                                                       stateInInertial.getAdditionalStatesDerivatives());
     }
 

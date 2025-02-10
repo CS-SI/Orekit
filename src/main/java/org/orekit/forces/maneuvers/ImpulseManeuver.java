@@ -271,12 +271,12 @@ public class ImpulseManeuver extends AbstractImpulseManeuver implements Detector
                 final CartesianOrbit newOrbit = new CartesianOrbit(newPV, oldState.getFrame(), oldState.getDate(),
                         oldState.getOrbit().getMu());
                 return new SpacecraftState(oldState.getOrbit().getType().normalize(newOrbit, oldState.getOrbit()),
-                        oldState.getAttitude(), newMass, oldState.getAdditionalStatesValues(), oldState.getAdditionalStatesDerivatives());
+                        oldState.getAttitude(), newMass, oldState.getAdditionalDataValues(), oldState.getAdditionalStatesDerivatives());
             } else {
                 final AbsolutePVCoordinates newAPV = new AbsolutePVCoordinates(oldState.getFrame(), oldState.getDate(),
                         newPV);
                 return new SpacecraftState(newAPV, oldState.getAttitude(), newMass,
-                        oldState.getAdditionalStatesValues(), oldState.getAdditionalStatesDerivatives());
+                        oldState.getAdditionalDataValues(), oldState.getAdditionalStatesDerivatives());
             }
         }
 

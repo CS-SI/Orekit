@@ -189,7 +189,7 @@ public class FieldIntegratedEphemerisTest {
         numericalPropagator.propagate(finalDate);
         Assertions.assertTrue(numericalPropagator.getCalls() < 3200);
         FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
-        ephemeris.addAdditionalStateProvider(new FieldAdditionalStateProvider<T>() {
+        ephemeris.addAdditionalDataProvider(new FieldAdditionalDataProvider<T>() {
 
             @Override
             public String getName() {
@@ -197,7 +197,7 @@ public class FieldIntegratedEphemerisTest {
             }
 
             @Override
-            public T[] getAdditionalState(FieldSpacecraftState<T> state) {
+            public T[] getAdditionalData(FieldSpacecraftState<T> state) {
                 T[] array = MathArrays.buildArray(state.getDate().getField(), 1);
                 array[0] = state.getDate().durationFrom(initialOrbit.getDate());
                 return array;
@@ -206,7 +206,7 @@ public class FieldIntegratedEphemerisTest {
 
         //action
         FieldSpacecraftState<T> s = ephemeris.propagate(initialOrbit.getDate().shiftedBy(20.0));
-        Assertions.assertEquals(20.0, s.getAdditionalState("time-since-start")[0].getReal(), 1.0e-10);
+        Assertions.assertEquals(20.0, s.getAdditionalData("time-since-start")[0].getReal(), 1.0e-10);
 
         // check various protected methods
         try {
@@ -276,8 +276,8 @@ public class FieldIntegratedEphemerisTest {
         propagator.addAdditionalDerivativesProvider(provider2);
         final FieldEphemerisGenerator<T> generator = propagator.getEphemerisGenerator();
         propagator.setInitialState(new FieldSpacecraftState<>(initialOrbit).
-                                   addAdditionalState(provider1.getName(), MathArrays.buildArray(field, provider1.getDimension())).
-                                   addAdditionalState(provider2.getName(), MathArrays.buildArray(field, provider2.getDimension())));
+                addAdditionalData(provider1.getName(), MathArrays.buildArray(field, provider1.getDimension())).
+                addAdditionalData(provider2.getName(), MathArrays.buildArray(field, provider2.getDimension())));
         propagator.propagate(finalDate);
         FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
 
@@ -297,9 +297,9 @@ public class FieldIntegratedEphemerisTest {
         numericalPropagator.setInitialState(new FieldSpacecraftState<>(initialOrbit));
         numericalPropagator.setOrbitType(OrbitType.CARTESIAN);
 
-        // Setup additional state provider which use the initial state in its init method
-        final FieldAdditionalStateProvider<T> additionalStateProvider = TestUtils.getFieldAdditionalProviderWithInit();
-        numericalPropagator.addAdditionalStateProvider(additionalStateProvider);
+        // Setup additional data provider which use the initial state in its init method
+        final FieldAdditionalDataProvider<T> additionalDataProvider = TestUtils.getFieldAdditionalProviderWithInit();
+        numericalPropagator.addAdditionalDataProvider(additionalDataProvider);
 
         // Setup integrated ephemeris
         final FieldEphemerisGenerator<T> generator = numericalPropagator.getEphemerisGenerator();
@@ -315,11 +315,11 @@ public class FieldIntegratedEphemerisTest {
     private <T extends CalculusFieldElement<T>> void checkState(final double dt, final FieldSpacecraftState<T> state,
                                                                 final DerivativesProvider<T> provider) {
 
-        Assertions.assertTrue(state.hasAdditionalState(provider.getName()));
-        Assertions.assertEquals(provider.getDimension(), state.getAdditionalState(provider.getName()).length);
+        Assertions.assertTrue(state.hasAdditionalData(provider.getName()));
+        Assertions.assertEquals(provider.getDimension(), state.getAdditionalData(provider.getName()).length);
         for (int i = 0; i < provider.getDimension(); ++i) {
             Assertions.assertEquals(i * dt,
-                                state.getAdditionalState(provider.getName())[i].getReal(),
+                                state.getAdditionalData(provider.getName())[i].getReal(),
                                 4.0e-15 * i * dt);
         }
 

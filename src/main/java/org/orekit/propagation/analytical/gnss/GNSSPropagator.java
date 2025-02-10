@@ -190,7 +190,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
         final GnssHarvester harvester = new GnssHarvester(this, stmName, initialStm, initialJacobianColumns);
 
         // Update the list of additional state provider
-        addAdditionalStateProvider(harvester);
+        addAdditionalDataProvider(harvester);
 
         // Return the configured harvester
         return harvester;

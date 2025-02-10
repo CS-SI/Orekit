@@ -45,15 +45,29 @@
         <action dev="serrof" type="add" issue="1654">
             Add easy way to integrate cost with indirect control.
         </action>
-        <action dev="luc" type="add" issue="1649">
-            Adding parsing of SITE/GPS_PHASE_CENTER, SITE/GAL_PHASE_CENTER,
-            and SATELLITE/PHASE_CENTER from Sinex files.
-        </action>
         <action dev="luc" type="add" issue="1652">
             Added createMedian factory method to {Field}AbsoluteDate.
         </action>
         <action dev="serrof" type="update" issue="1650">
             Removed orbit-related chained getters in (Field)SpacecraftState.
+        </action>
+        <action dev="luc" type="add" issue="1649">
+            Adding parsing of SITE/GPS_PHASE_CENTER, SITE/GAL_PHASE_CENTER,
+            and SATELLITE/PHASE_CENTER from Sinex files.
+        </action>
+        <action dev="bryan" type="add" issue="1645">
+            Replaced FieldAdditionalStateProvider by FieldAdditionalDataProvider
+            for consistency with non-field feature.
+        </action>
+        <action dev="bryan" type="add" issue="1645">
+            Removed AdditionalStateProvider to use AdditionalDataProvider.
+        </action>
+        <action dev="bryan" type="add" issue="1645">
+            Updated StateCovarianceMatrixProvider to be an AdditionalDataProvider
+            of RealMatrix.
+        </action>
+        <action dev="anne-laure" type="add" issue="1645">
+            Extends additional state to any type of data
         </action>
         <action dev="serrof" type="add" issue="1644">
             Add duration flight cost for indirect shooting.

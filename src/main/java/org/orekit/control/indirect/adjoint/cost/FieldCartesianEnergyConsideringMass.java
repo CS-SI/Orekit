@@ -118,7 +118,7 @@ abstract class FieldCartesianEnergyConsideringMass<T extends CalculusFieldElemen
         /** {@inheritDoc} */
         @Override
         public T g(final FieldSpacecraftState<T> state) {
-            final T[] adjoint = state.getAdditionalState(getAdjointName());
+            final T[] adjoint = state.getAdditionalData(getAdjointName());
             return evaluateVariablePart(adjoint, state.getMass()).subtract(detectionValue);
         }
 

@@ -897,7 +897,7 @@ public class DSSTPropagatorTest {
         final AbsoluteDate finalDate = orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY);
         propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
         final SpacecraftState stateNoConfig = propagator.propagate(finalDate);
-        Assertions.assertEquals(0, stateNoConfig.getAdditionalStatesValues().size());
+        Assertions.assertEquals(0, stateNoConfig.getAdditionalDataValues().size());
 
         Assertions.assertNull(propagator.getSelectedCoefficients());
         propagator.setSelectedCoefficients(new HashSet<String>());
@@ -905,7 +905,7 @@ public class DSSTPropagatorTest {
         Assertions.assertTrue(propagator.getSelectedCoefficients().isEmpty());
         propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
         final SpacecraftState stateConfigEmpty = propagator.propagate(finalDate);
-        Assertions.assertEquals(234, stateConfigEmpty.getAdditionalStatesValues().size());
+        Assertions.assertEquals(234, stateConfigEmpty.getAdditionalDataValues().size());
 
         final Set<String> selected = new HashSet<String>();
         selected.add("DSST-3rd-body-Moon-s[7]");
@@ -914,12 +914,12 @@ public class DSSTPropagatorTest {
         Assertions.assertEquals(2, propagator.getSelectedCoefficients().size());
         propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
         final SpacecraftState stateConfigeSelected = propagator.propagate(finalDate);
-        Assertions.assertEquals(selected.size(), stateConfigeSelected.getAdditionalStatesValues().size());
+        Assertions.assertEquals(selected.size(), stateConfigeSelected.getAdditionalDataValues().size());
 
         propagator.setSelectedCoefficients(null);
         propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
         final SpacecraftState stateConfigNull = propagator.propagate(finalDate);
-        Assertions.assertEquals(0, stateConfigNull.getAdditionalStatesValues().size());
+        Assertions.assertEquals(0, stateConfigNull.getAdditionalDataValues().size());
 
     }
 

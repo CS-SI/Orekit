@@ -27,6 +27,7 @@ import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
+import org.orekit.utils.DataDictionary;
 import org.orekit.utils.TimeSpanMap;
 
 /** Simple Keplerian orbit propagator.
@@ -125,7 +126,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
      * @return fixed orbit
      */
     private SpacecraftState fixState(final Orbit orbit, final Attitude attitude, final double mass, final double mu,
-                                     final DoubleArrayDictionary additionalStates,
+                                     final DataDictionary additionalStates,
                                      final DoubleArrayDictionary additionalStatesDerivatives) {
         final OrbitType type = orbit.getType();
         final double[] stateVector = new double[6];
@@ -135,8 +136,8 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
                                                       orbit.getDate(), mu, orbit.getFrame());
         SpacecraftState fixedState = new SpacecraftState(fixedOrbit, attitude, mass);
         if (additionalStates != null) {
-            for (final DoubleArrayDictionary.Entry entry : additionalStates.getData()) {
-                fixedState = fixedState.addAdditionalState(entry.getKey(), entry.getValue());
+            for (final DataDictionary.Entry entry : additionalStates.getData()) {
+                fixedState = fixedState.addAdditionalData(entry.getKey(), entry.getValue());
             }
         }
         if (additionalStatesDerivatives != null) {
@@ -157,7 +158,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
                                                     state.getAttitude(),
                                                     state.getMass(),
                                                     mu,
-                                                    state.getAdditionalStatesValues(),
+                                                    state.getAdditionalDataValues(),
                                                     state.getAdditionalStatesDerivatives());
 
         states = new TimeSpanMap<>(fixedState);
@@ -202,7 +203,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
         // Create the harvester
         final KeplerianHarvester harvester = new KeplerianHarvester(this, stmName, initialStm, initialJacobianColumns);
         // Update the list of additional state provider
-        addAdditionalStateProvider(harvester);
+        addAdditionalDataProvider(harvester);
         // Return the configured harvester
         return harvester;
     }

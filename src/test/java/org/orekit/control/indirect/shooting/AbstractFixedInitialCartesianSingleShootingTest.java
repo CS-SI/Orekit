@@ -28,11 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.TestUtils;
 import org.orekit.control.indirect.adjoint.CartesianAdjointDerivativesProvider;
 import org.orekit.control.indirect.adjoint.CartesianAdjointKeplerianTerm;
-import org.orekit.control.indirect.shooting.propagation.CartesianAdjointDynamicsProvider;
-import org.orekit.control.indirect.shooting.propagation.CartesianAdjointDynamicsProviderFactory;
-import org.orekit.control.indirect.shooting.propagation.ShootingIntegrationSettings;
-import org.orekit.control.indirect.shooting.propagation.ShootingIntegrationSettingsFactory;
-import org.orekit.control.indirect.shooting.propagation.ShootingPropagationSettings;
+import org.orekit.control.indirect.shooting.propagation.*;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -68,7 +64,7 @@ class AbstractFixedInitialCartesianSingleShootingTest {
         final FieldVector3D<Gradient> fieldVelocity = fieldState.getPVCoordinates().getVelocity();
         Assertions.assertEquals(state.getPosition(), fieldPosition.toVector3D());
         Assertions.assertEquals(state.getPVCoordinates().getVelocity(), fieldVelocity.toVector3D());
-        Assertions.assertEquals(1., fieldState.getAdditionalState("adjoint")[0].getGradient()[0]);
+        Assertions.assertEquals(1., fieldState.getAdditionalData("adjoint")[0].getGradient()[0]);
     }
 
     @Test
@@ -101,7 +97,7 @@ class AbstractFixedInitialCartesianSingleShootingTest {
                 adjointDynamicsProvider, integrationSettings);
         final double[] adjoint = new double[] {1, 2, 3, 4, 5, 6};
         final SpacecraftState state = new SpacecraftState(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH))
-                .addAdditionalState(adjointName, adjoint);
+                .addAdditionalData(adjointName, adjoint);
         final TestSingleShooting testSingleShooting = new TestSingleShooting(propagationSettings, state);
         final FieldAbsoluteDate<Binary64> fieldDate = new FieldAbsoluteDate<>(Binary64Field.getInstance(), state.getDate());
         // WHEN

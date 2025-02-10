@@ -128,11 +128,11 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
         if (state.isOrbitDefined()) {
             return new SpacecraftState(
                     state.getOrbit(), attitude, state.getMass(),
-                    state.getAdditionalStatesValues(), state.getAdditionalStatesDerivatives());
+                    state.getAdditionalDataValues(), state.getAdditionalStatesDerivatives());
         } else {
             return new SpacecraftState(
                     state.getAbsPVA(), attitude, state.getMass(),
-                    state.getAdditionalStatesValues(), state.getAdditionalStatesDerivatives());
+                    state.getAdditionalDataValues(), state.getAdditionalStatesDerivatives());
         }
     }
 

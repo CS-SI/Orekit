@@ -46,7 +46,7 @@ class CartesianCostTest {
         final String expectedName = "a";
         final SpacecraftState mockedState = Mockito.mock();
         final String adjointName = cost.getAdjointName();
-        Mockito.when(mockedState.hasAdditionalState(adjointName)).thenReturn(yields);
+        Mockito.when(mockedState.hasAdditionalData(adjointName)).thenReturn(yields);
         // WHEN
         final AdditionalDerivativesProvider costDerivative = cost.getCostDerivativeProvider(expectedName);
         // THEN
@@ -62,7 +62,7 @@ class CartesianCostTest {
         final String name = "a";
         final double[] adjoint = new double[] {1, 2, 3, 4, 5, 6};
         final SpacecraftState state = new SpacecraftState(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH))
-                .addAdditionalState(cost.getAdjointName(), adjoint);
+                .addAdditionalData(cost.getAdjointName(), adjoint);
         // WHEN
         final AdditionalDerivativesProvider costDerivative = cost.getCostDerivativeProvider(name);
         // THEN

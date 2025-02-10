@@ -1030,12 +1030,12 @@ public class FieldNumericalPropagatorTest {
             Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
         }
         try {
-            propagator.addAdditionalStateProvider(new FieldAdditionalStateProvider<T>() {
+            propagator.addAdditionalDataProvider(new FieldAdditionalDataProvider<T>() {
                public String getName() {
                     return "linear";
                 }
 
-                public T[] getAdditionalState(FieldSpacecraftState<T> state) {
+                public T[] getAdditionalData(FieldSpacecraftState<T> state) {
                     return null;
                 }
             });
@@ -1043,22 +1043,22 @@ public class FieldNumericalPropagatorTest {
         } catch (OrekitException oe) {
             Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
         }
-        propagator.addAdditionalStateProvider(new FieldAdditionalStateProvider<T>() {
+        propagator.addAdditionalDataProvider(new FieldAdditionalDataProvider<T>() {
             public String getName() {
                 return "constant";
             }
 
-            public T[] getAdditionalState(FieldSpacecraftState<T> state) {
+            public T[] getAdditionalData(FieldSpacecraftState<T> state) {
                 T[] ret = MathArrays.buildArray(field, 1);
                 ret[0] = zero.add(1.0);
                 return ret;
             }
         });
-        Assertions.assertTrue(propagator.isAdditionalStateManaged("linear"));
-        Assertions.assertTrue(propagator.isAdditionalStateManaged("constant"));
-        Assertions.assertFalse(propagator.isAdditionalStateManaged("non-managed"));
-        Assertions.assertEquals(2, propagator.getManagedAdditionalStates().length);
-        propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear", zero.add(1.5)));
+        Assertions.assertTrue(propagator.isAdditionalDataManaged("linear"));
+        Assertions.assertTrue(propagator.isAdditionalDataManaged("constant"));
+        Assertions.assertFalse(propagator.isAdditionalDataManaged("non-managed"));
+        Assertions.assertEquals(2, propagator.getManagedAdditionalData().length);
+        propagator.setInitialState(propagator.getInitialState().addAdditionalData("linear", zero.add(1.5)));
 
         CheckingHandler<T> checking = new CheckingHandler<>(Action.STOP);
         propagator.addEventDetector(new AdditionalStateLinearDetector<>(zero.add(10.0), zero.add(1.0e-8)).withHandler(checking));
@@ -1068,7 +1068,7 @@ public class FieldNumericalPropagatorTest {
         final FieldSpacecraftState<T> finalState =
             propagator.propagate(initDate.shiftedBy(dt));
         checking.assertEvent(true);
-        Assertions.assertEquals(3.0, finalState.getAdditionalState("linear")[0].getReal(), 1.0e-8);
+        Assertions.assertEquals(3.0, finalState.getAdditionalData("linear")[0].getReal(), 1.0e-8);
         Assertions.assertEquals(1.5, finalState.getDate().durationFrom(initDate).getReal(), 1.0e-8);
 
     }
@@ -1091,7 +1091,7 @@ public class FieldNumericalPropagatorTest {
         }
 
         public T g(FieldSpacecraftState<T> s) {
-            return s.getAdditionalState("linear")[0].subtract(3.0);
+            return s.getAdditionalData("linear")[0].subtract(3.0);
         }
 
     }
@@ -1122,13 +1122,13 @@ public class FieldNumericalPropagatorTest {
                 return new FieldCombinedDerivatives<>(pDot, null);
             }
         });
-        propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear",
+        propagator.setInitialState(propagator.getInitialState().addAdditionalData("linear",
                                                                                    field.getZero().add(1.5)));
 
         CheckingHandler<T> checking = new CheckingHandler<T>(Action.RESET_STATE) {
             public FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector, FieldSpacecraftState<T> oldState)
                 {
-                return oldState.addAdditionalState("linear", oldState.getAdditionalState("linear")[0].multiply(2));
+                return oldState.addAdditionalData("linear", oldState.getAdditionalData("linear")[0].multiply(2));
             }
         };
 
@@ -1140,7 +1140,7 @@ public class FieldNumericalPropagatorTest {
         final FieldAbsoluteDate<T> initDate = propagator.getInitialState().getDate();
         final FieldSpacecraftState<T> finalState = propagator.propagate(initDate.shiftedBy(dt));
        // checking.assertEvent(true);
-        Assertions.assertEquals(dt + 4.5, finalState.getAdditionalState("linear")[0].getReal(), 1.0e-8);
+        Assertions.assertEquals(dt + 4.5, finalState.getAdditionalData("linear")[0].getReal(), 1.0e-8);
         Assertions.assertEquals(dt, finalState.getDate().durationFrom(initDate).getReal(), 1.0e-8);
 
     }
@@ -1260,11 +1260,11 @@ public class FieldNumericalPropagatorTest {
         FieldNumericalPropagator<T> propagator = createPropagator(field);
         FieldAbsoluteDate<T> initDate = propagator.getInitialState().getDate();
 
-        propagator.addAdditionalStateProvider(new FieldAdditionalStateProvider<T>() {
+        propagator.addAdditionalDataProvider(new FieldAdditionalDataProvider<T>() {
             public String getName() {
                 return "squaredA";
             }
-            public T[] getAdditionalState(FieldSpacecraftState<T> state) {
+            public T[] getAdditionalData(FieldSpacecraftState<T> state) {
                 T[] a = MathArrays.buildArray(field, 1);
                 a[0] = state.getOrbit().getA().multiply(state.getOrbit().getA());
                 return a;
@@ -1283,7 +1283,7 @@ public class FieldNumericalPropagatorTest {
                 return new FieldCombinedDerivatives<>(pDot, null);
             }
         });
-        propagator.setInitialState(propagator.getInitialState().addAdditionalState("extra", field.getZero().add(1.5)));
+        propagator.setInitialState(propagator.getInitialState().addAdditionalData("extra", field.getZero().add(1.5)));
 
         propagator.setOrbitType(OrbitType.CARTESIAN);
         final FieldEphemerisGenerator<T> generator = propagator.getEphemerisGenerator();
@@ -1306,11 +1306,11 @@ public class FieldNumericalPropagatorTest {
 
         double shift = -60;
         FieldSpacecraftState<T> s = ephemeris1.propagate(initDate.shiftedBy(shift));
-        Assertions.assertEquals(2, s.getAdditionalStatesValues().size());
-        Assertions.assertTrue(s.hasAdditionalState("squaredA"));
-        Assertions.assertTrue(s.hasAdditionalState("extra"));
-        Assertions.assertEquals(s.getOrbit().getA().multiply(s.getOrbit().getA()).getReal(), s.getAdditionalState("squaredA")[0].getReal(), 1.0e-10);
-        Assertions.assertEquals(1.5 + shift * rate, s.getAdditionalState("extra")[0].getReal(), 1.0e-10);
+        Assertions.assertEquals(2, s.getAdditionalDataValues().size());
+        Assertions.assertTrue(s.hasAdditionalData("squaredA"));
+        Assertions.assertTrue(s.hasAdditionalData("extra"));
+        Assertions.assertEquals(s.getOrbit().getA().multiply(s.getOrbit().getA()).getReal(), s.getAdditionalData("squaredA")[0].getReal(), 1.0e-10);
+        Assertions.assertEquals(1.5 + shift * rate, s.getAdditionalData("extra")[0].getReal(), 1.0e-10);
 
         try {
             ephemeris1.resetInitialState(s);
@@ -1739,19 +1739,19 @@ public class FieldNumericalPropagatorTest {
         propagator.propagate(initialOrbit.getDate().shiftedBy(600));
         FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
         final FieldSpacecraftState<T> finalState = ephemeris.propagate(initialOrbit.getDate().shiftedBy(300));
-        Assertions.assertEquals(2,    finalState.getAdditionalStatesValues().size());
-        Assertions.assertEquals(2,    finalState.getAdditionalState("test_provider_0").length);
-        Assertions.assertEquals(0.0,  finalState.getAdditionalState("test_provider_0")[0].getReal(), 1.0e-15);
-        Assertions.assertEquals(0.0,  finalState.getAdditionalState("test_provider_0")[1].getReal(), 1.0e-15);
-        Assertions.assertEquals(2,    finalState.getAdditionalState("test_provider_1").length);
-        Assertions.assertEquals(10.0, finalState.getAdditionalState("test_provider_1")[0].getReal(), 1.0e-15);
-        Assertions.assertEquals(20.0, finalState.getAdditionalState("test_provider_1")[1].getReal(), 1.0e-15);
+        Assertions.assertEquals(2,    finalState.getAdditionalDataValues().size());
+        Assertions.assertEquals(2,    finalState.getAdditionalData("test_provider_0").length);
+        Assertions.assertEquals(0.0,  finalState.getAdditionalData("test_provider_0")[0].getReal(), 1.0e-15);
+        Assertions.assertEquals(0.0,  finalState.getAdditionalData("test_provider_0")[1].getReal(), 1.0e-15);
+        Assertions.assertEquals(2,    finalState.getAdditionalData("test_provider_1").length);
+        Assertions.assertEquals(10.0, finalState.getAdditionalData("test_provider_1")[0].getReal(), 1.0e-15);
+        Assertions.assertEquals(20.0, finalState.getAdditionalData("test_provider_1")[1].getReal(), 1.0e-15);
     }
 
     private <T extends CalculusFieldElement<T>> void addDerivativeProvider(FieldNumericalPropagator<T> propagator,
                                                                            EmptyDerivativeProvider<T> provider) {
         FieldSpacecraftState<T> initialState = propagator.getInitialState();
-        propagator.setInitialState(initialState.addAdditionalState(provider.getName(), provider.getInitialState()));
+        propagator.setInitialState(initialState.addAdditionalData(provider.getName(), provider.getInitialState()));
         propagator.addAdditionalDerivativesProvider(provider);
     }
 
@@ -1843,7 +1843,7 @@ public class FieldNumericalPropagatorTest {
                 rungeKuttaIntegrator);
         final FieldSpacecraftState<Complex> state = new FieldSpacecraftState<>(initialOrbit);
         final String name = "test";
-        numericalPropagator.setInitialState(state.addAdditionalState(name, Complex.ZERO));
+        numericalPropagator.setInitialState(state.addAdditionalData(name, Complex.ZERO));
         numericalPropagator.addAdditionalDerivativesProvider(mockDerivativeProvider(name));
         numericalPropagator.addForceModel(createForceModelBasedOnAdditionalState(name));
         // WHEN & THEN

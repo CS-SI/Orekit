@@ -255,7 +255,7 @@ public abstract class AbstractFixedInitialCartesianSingleShooting extends Abstra
      */
     private SpacecraftState createStateWithMassAndAdjoint(final double initialMass, final double[] initialAdjoint) {
         final String adjointName = getPropagationSettings().getAdjointDynamicsProvider().getAdjointName();
-        return createInitialStateWithMass(initialMass).addAdditionalState(adjointName, initialAdjoint);
+        return createInitialStateWithMass(initialMass).addAdditionalData(adjointName, initialAdjoint);
     }
 
     /**
@@ -275,7 +275,7 @@ public abstract class AbstractFixedInitialCartesianSingleShooting extends Abstra
             fieldInitialAdjoint[i] = Gradient.variable(parametersNumber, i, 0.).multiply(getScales()[i]).add(initialAdjoint[i]);
         }
         final String adjointName = getPropagationSettings().getAdjointDynamicsProvider().getAdjointName();
-        return stateWithoutAdjoint.addAdditionalState(adjointName, fieldInitialAdjoint);
+        return stateWithoutAdjoint.addAdditionalData(adjointName, fieldInitialAdjoint);
     }
 
     /**
@@ -311,7 +311,7 @@ public abstract class AbstractFixedInitialCartesianSingleShooting extends Abstra
             stateWithoutAdjoint = new FieldSpacecraftState<>(absolutePVCoordinates, attitude, mass);
         }
         final String adjointName = getPropagationSettings().getAdjointDynamicsProvider().getAdjointName();
-        return stateWithoutAdjoint.addAdditionalState(adjointName, adjoint);
+        return stateWithoutAdjoint.addAdditionalData(adjointName, adjoint);
     }
 
     /**
@@ -390,7 +390,7 @@ public abstract class AbstractFixedInitialCartesianSingleShooting extends Abstra
         System.arraycopy(pvCoordinates.getPosition().toArray(), 0, integrationState, 0, 3);
         System.arraycopy(pvCoordinates.getVelocity().toArray(), 0, integrationState, 3, 3);
         integrationState[6] = fieldState.getMass();
-        System.arraycopy(fieldState.getAdditionalState(dynamicsProvider.getAdjointName()), 0, integrationState,
+        System.arraycopy(fieldState.getAdditionalData(dynamicsProvider.getAdjointName()), 0, integrationState,
                 7, dynamicsProvider.getDimension());
         return integrationState;
     }

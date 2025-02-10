@@ -145,7 +145,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
 
         configurePropagatorForSergeiCase(propagator);
 
-        propagator.addAdditionalStateProvider(stateCovarianceMatrixProvider);
+        propagator.addAdditionalDataProvider(stateCovarianceMatrixProvider);
 
         propagator.getMultiplexer().add(1, (currentState) -> {
 
@@ -242,7 +242,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
 
         configurePropagatorForSergeiCase(propagator);
 
-        propagator.addAdditionalStateProvider(stateCovarianceMatrixProvider);
+        propagator.addAdditionalDataProvider(stateCovarianceMatrixProvider);
 
         propagator.getMultiplexer().add(1, (currentState) -> {
 

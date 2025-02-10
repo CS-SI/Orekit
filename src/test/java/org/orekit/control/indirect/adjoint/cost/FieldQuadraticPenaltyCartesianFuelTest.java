@@ -211,6 +211,6 @@ class FieldQuadraticPenaltyCartesianFuelTest {
         final double[] adjoint = new double[] {1, 2, 3, 4, 5, 6, 7};
         final CartesianOrbit orbit = new CartesianOrbit(new PVCoordinates(Vector3D.MINUS_I, Vector3D.MINUS_K),
                 FramesFactory.getEME2000(), AbsoluteDate.ARBITRARY_EPOCH, 1.);
-        return new SpacecraftState(orbit, mass).addAdditionalState(ADJOINT_NAME, adjoint);
+        return new SpacecraftState(orbit, mass).addAdditionalData(ADJOINT_NAME, adjoint);
     }
 }

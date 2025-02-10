@@ -166,7 +166,7 @@ public class FieldDateDetectorTest {
             Assertions.assertEquals(dt.multiply(0.5).getReal(), restrictedDt.getReal(), 1.0e-10);
         });
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
-        propagator.setInitialState(initialState.addAdditionalState("dummy", MathArrays.buildArray(field, 1)));
+        propagator.setInitialState(initialState.addAdditionalData("dummy", MathArrays.buildArray(field, 1)));
 
         FieldDateDetector<T>  dateDetector = new FieldDateDetector<>(field, toArray(iniDate.shiftedBy(2.0*dt))).
                         withMinGap(minGap).withThreshold(field.getZero().newInstance(threshold));

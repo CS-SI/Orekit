@@ -66,20 +66,20 @@
         interface UnscentedProcess {
           + UnscentedEvolution getEvolution()
           + RealVector getInnovations()
+          + RealMatrix getProcessNoiseMatrix()
+          + RealVector[] getPredictedMeasurements()
         }
     
         class UnscentedEvolution {
           + RealVector[] getCurrentStates()
           + double getCurrentTime()
-          + RealVector[] getCurrentMeasurements()
-          + RealMatrix getProcessNoiseMatrix()
         }
     
         class "UnscentedKalmanFilter<T extends Measurement>" as UnscentedKalmanFilter_T {
           - ProcessEstimate predicted
           - ProcessEstimate corrected
           - UnscentedTransformProvider utProvider
-          + RealVector[] unscentedTransform()
+          + UnscentedTransformProvider getUnscentedTransformProvider()
           + predict(double time, RealVector[] predictedStates, RealMatrix noise)
           + correct(T measurement, RealMatrix innovationCovarianceMatrix, RealMatrix crossCovarianceMatrix, RealVector innovation)
         }
@@ -104,7 +104,7 @@
       class UnscentedKalmanEstimator {
         - UnscentedKalmanFilter filter
         - UnscentedKalmanModel processModel
-        + Propagator[] processMeasurements(List<ObservedMeasurement> measurements)
+        + Propagator[] processMeasurements(Iterable<ObservedMeasurement> measurements)
         + Propagator[] estimationStep(ObservedMeasurement<?> observedMeasurement)
       }
 

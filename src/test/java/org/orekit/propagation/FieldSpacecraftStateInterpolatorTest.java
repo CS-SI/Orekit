@@ -201,7 +201,6 @@ class FieldSpacecraftStateInterpolatorTest {
 
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     public void testErrorThrownWhenOneInterpolatorIsNotConsistentWithSampleSizeDeprecated() {
         // GIVEN
@@ -435,7 +434,7 @@ class FieldSpacecraftStateInterpolatorTest {
             Binary64                       dt    = new Binary64(i * 900.0 / (n - 1));
             FieldSpacecraftState<Binary64> state = analyticalPropagator.propagate(centerDate.shiftedBy(dt));
             state = state.
-                    addAdditionalState("quadratic", dt.multiply(dt)).
+                    addAdditionalData("quadratic", dt.multiply(dt)).
                     addAdditionalStateDerivative("quadratic-dot", dt.multiply(dt));
             sample.add(state);
         }
@@ -460,7 +459,7 @@ class FieldSpacecraftStateInterpolatorTest {
             maxErrorM =
                     FastMath.max(maxErrorM, FastMath.abs(interpolated.getMass().getReal() - propagated.getMass().getReal()));
             maxErrorQ = FastMath.max(maxErrorQ,
-                                     FastMath.abs(interpolated.getAdditionalState("quadratic")[0].getReal() - dt * dt));
+                                     FastMath.abs(interpolated.getAdditionalData("quadratic")[0].getReal() - dt * dt));
             maxErrorD =
                     FastMath.max(maxErrorD,
                                  FastMath.abs(interpolated.getAdditionalStateDerivative("quadratic-dot")[0].getReal()
@@ -590,7 +589,6 @@ class FieldSpacecraftStateInterpolatorTest {
         Assertions.assertEquals(AdditionalStateNbInterpolationPoints, returnedNbInterpolationPoints);
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     void testGetNbInterpolationsWithMultipleSubInterpolatorsDeprecated() {
         // GIVEN
@@ -703,7 +701,6 @@ class FieldSpacecraftStateInterpolatorTest {
                                         + "absolute position-velocity-acceleration interpolator", thrown.getMessage());
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     @DisplayName("test error thrown when using no interpolator for state")
     void testErrorThrownWhenGivingNoInterpolatorForStateDeprecated() {
@@ -752,7 +749,6 @@ class FieldSpacecraftStateInterpolatorTest {
 
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     @DisplayName("test error thrown when giving empty sample")
     void testErrorThrownWhenGivingEmptySampleDeprecated() {
@@ -827,7 +823,6 @@ class FieldSpacecraftStateInterpolatorTest {
 
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     void testFieldSpacecraftStateInterpolatorCreationDeprecated() {
         // Given

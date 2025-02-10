@@ -1,8 +1,8 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2025 Airbus Defence and Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * CS licenses this file to You under the Apache License, Version 2.0
+ * Airbus Defence and Space licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -25,22 +25,23 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-/** String → double[] mapping, for small number of keys.
+/** String → Object mapping, for small number of keys.
  * <p>
  * This class is a low overhead for a very small number of keys.
  * It is based on simple array and string comparison. It plays
- * the same role a {@code Map<String, double[]>} but with reduced
+ * the same role a {@code Map<String, Object>} but with reduced
  * features and not intended for large number of keys. For such
- * needs the regular {@code Map<String, double[]>} should be preferred.
+ * needs the regular {@code Map<String, Object>} should be preferred.
  * </p>
  *
- * @see DataDictionary
- * @since 11.1
+ * @see DoubleArrayDictionary
+ * @author Anne-Laure Lugan
+ * @since 13.0
  */
-public class DoubleArrayDictionary implements Serializable {
+public class DataDictionary implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20211121L;
+    private static final long serialVersionUID = 20250208L;
 
     /** Default capacity. */
     private static final int DEFAULT_INITIAL_CAPACITY = 4;
@@ -50,21 +51,21 @@ public class DoubleArrayDictionary implements Serializable {
 
     /** Constructor with {@link #DEFAULT_INITIAL_CAPACITY default initial capacity}.
      */
-    public DoubleArrayDictionary() {
+    public DataDictionary() {
         this(DEFAULT_INITIAL_CAPACITY);
     }
 
     /** Constructor with specified capacity.
      * @param initialCapacity initial capacity
      */
-    public DoubleArrayDictionary(final int initialCapacity) {
+    public DataDictionary(final int initialCapacity) {
         data = new ArrayList<>(initialCapacity);
     }
 
     /** Constructor from another dictionary.
      * @param dictionary dictionary to use for initializing entries
      */
-    public DoubleArrayDictionary(final DoubleArrayDictionary dictionary) {
+    public DataDictionary(final DataDictionary dictionary) {
         // take care to call dictionary.getData() and not use dictionary.data,
         // otherwise we get an empty dictionary when using a DoubleArrayDictionary.view
         this(DEFAULT_INITIAL_CAPACITY + dictionary.getData().size());
@@ -74,18 +75,26 @@ public class DoubleArrayDictionary implements Serializable {
         }
     }
 
-    /** Constructor from a map.
-     * @param map map to use for initializing entries
+    /** Creates a double values dictionary.
+     * <p>
+     * Creates a DoubleArrayDictionary with all double[] values
+     * contained in the instance.
+     * </p>
+     * @return a double values dictionary
      */
-    public DoubleArrayDictionary(final Map<String, double[]> map) {
-        this(map.size());
-        for (final Map.Entry<String, double[]> entry : map.entrySet()) {
-            // we don't call put(key, value) to avoid the overhead of the unneeded call to remove(key)
-            data.add(new Entry(entry.getKey(), entry.getValue()));
+    public DoubleArrayDictionary toDoubleDictionary() {
+        final DoubleArrayDictionary dictionary = new DoubleArrayDictionary();
+        for (final Entry entry : data) {
+            if (entry.getValue() instanceof double[]) {
+                dictionary.put(entry.getKey(), (double[]) entry.getValue());
+            }
         }
+        return dictionary;
     }
 
-    /** Get an unmodifiable view of the dictionary entries.
+    /**
+     * Get an unmodifiable view of the dictionary entries.
+     *
      * @return unmodifiable view of the dictionary entries
      */
     public List<Entry> getData() {
@@ -105,8 +114,8 @@ public class DoubleArrayDictionary implements Serializable {
      * </p>
      * @return copy of the dictionary, as an independent map
      */
-    public Map<String, double[]> toMap() {
-        final Map<String, double[]> map = new HashMap<>(data.size());
+    public Map<String, Object> toMap() {
+        final Map<String, Object> map = new HashMap<>(data.size());
         for (final Entry entry : data) {
             map.put(entry.getKey(), entry.getValue());
         }
@@ -129,16 +138,16 @@ public class DoubleArrayDictionary implements Serializable {
      * @param key entry key
      * @param value entry value
      */
-    public void put(final String key, final double[] value) {
+    public void put(final String key, final Object value) {
         remove(key);
         data.add(new Entry(key, value));
     }
 
-    /** Put all the entries from the map in the dictionary.
+    /** Put all the double[] entries from the map in the dictionary.
      * @param map map to copy into the instance
      */
-    public void putAll(final Map<String, double[]> map) {
-        for (final Map.Entry<String, double[]> entry : map.entrySet()) {
+    public void putAllDoubles(final Map<String, double[]> map) {
+        for (final Map.Entry<String,  double[]> entry : map.entrySet()) {
             put(entry.getKey(), entry.getValue());
         }
     }
@@ -146,7 +155,7 @@ public class DoubleArrayDictionary implements Serializable {
     /** Put all the entries from another dictionary.
      * @param dictionary dictionary to copy into the instance
      */
-    public void putAll(final DoubleArrayDictionary dictionary) {
+    public void putAll(final DataDictionary dictionary) {
         for (final Entry entry : dictionary.data) {
             put(entry.getKey(), entry.getValue());
         }
@@ -156,10 +165,11 @@ public class DoubleArrayDictionary implements Serializable {
      * @param key entry key
      * @return copy of the value corresponding to the key or null if key not present
      */
-    public double[] get(final String key) {
+    public Object get(final String key) {
         final Entry entry = getEntry(key);
         return entry == null ? null : entry.getValue();
     }
+
 
     /** Get a complete entry.
      * @param key entry key
@@ -190,6 +200,7 @@ public class DoubleArrayDictionary implements Serializable {
     }
 
 
+
     /** Get a string representation of the dictionary.
      * <p>
      * This string representation is intended for improving displays in debuggers only.
@@ -206,7 +217,11 @@ public class DoubleArrayDictionary implements Serializable {
             }
             builder.append(data.get(i).getKey());
             builder.append('[');
-            builder.append(data.get(i).getValue().length);
+            if (data.get(i).getValue() instanceof double[]) {
+                builder.append(((double[]) data.get(i).getValue()).length);
+            } else {
+                builder.append(data.get(i).getValue());
+            }
             builder.append(']');
         }
         builder.append('}');
@@ -217,21 +232,21 @@ public class DoubleArrayDictionary implements Serializable {
     public static class Entry implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20211121L;
+        private static final long serialVersionUID = 20250208L;
 
         /** Key. */
         private final String key;
 
         /** Value. */
-        private final double[] value;
+        private final Object value;
 
         /** Simple constructor.
          * @param key key
          * @param value value
          */
-        Entry(final String key, final double[] value) {
+        Entry(final String key, final Object value) {
             this.key   = key;
-            this.value = value.clone();
+            this.value = value;
         }
 
         /** Get the entry key.
@@ -242,32 +257,27 @@ public class DoubleArrayDictionary implements Serializable {
         }
 
         /** Get the value.
-         * @return a copy of the value (independent from internal array)
+         * @return a copy of the value (independent from internal array if it is a double array)
          */
-        public double[] getValue() {
-            return value.clone();
+        public Object getValue() {
+            return value instanceof double[] ? ((double[]) value).clone() : value;
         }
 
-        /** Get the size of the value array.
-         * @return size of the value array
-         */
-        public int size() {
-            return value.length;
-        }
-
-        /** Increment the value.
+        /** Increment the value if it is a double array.
          * <p>
          * For the sake of performance, no checks are done on argument.
          * </p>
          * @param increment increment to apply to the entry value
          */
         public void increment(final double[] increment) {
-            for (int i = 0; i < increment.length; ++i) {
-                value[i] += increment[i];
+            if (value instanceof double[]) {
+                for (int i = 0; i < increment.length; ++i) {
+                    ((double[]) value)[i] += increment[i];
+                }
             }
         }
 
-        /** Increment the value with another scaled entry.
+        /** Increment the value with another scaled entry if it is a double array.
          * <p>
          * Each component {@code value[i]} will be replaced by {@code value[i] + factor * raw.value[i]}.
          * </p>
@@ -276,19 +286,21 @@ public class DoubleArrayDictionary implements Serializable {
          * </p>
          * @param factor multiplicative factor for increment
          * @param raw raw increment to be multiplied by {@code factor} and then added
-         * @since 11.1.1
          */
-        public void scaledIncrement(final double factor, final Entry raw) {
-            for (int i = 0; i < raw.value.length; ++i) {
-                value[i] += factor * raw.value[i];
+        public void scaledIncrement(final double factor, final DoubleArrayDictionary.Entry raw) {
+            if (value instanceof double[]) {
+                for (int i = 0; i < raw.getValue().length; ++i) {
+                    ((double[]) value)[i] += factor * raw.getValue()[i];
+                }
             }
         }
 
-        /** Reset the value to zero.
+        /** Reset the value to zero if it is a double array.
          */
         public void zero() {
-            Arrays.fill(value, 0.0);
+            if (value instanceof double[]) {
+                Arrays.fill((double[]) value, 0.0);
+            }
         }
-
     }
 }

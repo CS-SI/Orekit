@@ -545,7 +545,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
         final FieldEquinoctialOrbit<T> osculatingOrbit = computeOsculatingOrbit(mean, shortPeriodTerms);
 
         return new FieldSpacecraftState<>(osculatingOrbit, mean.getAttitude(), mean.getMass(),
-                                          mean.getAdditionalStatesValues());
+                                          mean.getAdditionalDataValues());
 
     }
 
@@ -603,7 +603,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
                                                                                            final int maxIterations) {
         final FieldOrbit<T> meanOrbit = computeMeanOrbit(osculating, attitudeProvider, forceModel, epsilon, maxIterations);
         return new FieldSpacecraftState<>(meanOrbit, osculating.getAttitude(), osculating.getMass(),
-                                          osculating.getAdditionalStatesValues());
+                                          osculating.getAdditionalDataValues());
     }
 
     /** Override the default value of the parameter.
@@ -1059,9 +1059,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
          *  @param forceModel force to take into account
          *  @param state current state
          *  @param auxiliaryElements auxiliary elements related to the current orbit
-         *  @param parameters force model parameters (all span values for each parameters)
-         *  the extract parameter method {@link #extractParameters(double[], AbsoluteDate)} is called in
-         *  the method to select the right parameter.
+         *  @param parameters force model parameters
          *  @return the mean equinoctial elements rates da<sub>i</sub> / dt
          */
         private T[] elementRates(final DSSTForceModel forceModel,

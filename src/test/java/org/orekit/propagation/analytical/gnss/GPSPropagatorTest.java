@@ -36,7 +36,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.SEMParser;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.AdditionalStateProvider;
+import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.Propagator;
@@ -87,8 +87,8 @@ public class GPSPropagatorTest {
     @Test
     public void testClockCorrections() {
         final GNSSPropagator propagator = almanacs.get(0).getPropagator();
-        propagator.addAdditionalStateProvider(new ClockCorrectionsProvider(almanacs.get(0),
-                                                                           almanacs.get(0).getCycleDuration()));
+        propagator.addAdditionalDataProvider(new ClockCorrectionsProvider(almanacs.get(0),
+                                                                          almanacs.get(0).getCycleDuration()));
         // Propagate at the GPS date and one GPS cycle later
         final AbsoluteDate date0 = almanacs.get(0).getDate();
         double dtRelMin = 0;
@@ -111,7 +111,7 @@ public class GPSPropagatorTest {
     public void testFieldClockCorrections() {
         final FieldGPSAlmanac<Binary64> gpsAlmanac = almanacs.get(0).toField(Binary64Field.getInstance());
         final FieldGnssPropagator<Binary64> propagator = gpsAlmanac.getPropagator();
-        propagator.addAdditionalStateProvider(new FieldClockCorrectionsProvider<>(gpsAlmanac,
+        propagator.addAdditionalDataProvider(new FieldClockCorrectionsProvider<>(gpsAlmanac,
                                                                                   gpsAlmanac.getCycleDuration()));
         // Propagate at the GPS date and one GPS cycle later
         final FieldAbsoluteDate<Binary64> date0 = gpsAlmanac.getDate();
@@ -119,7 +119,7 @@ public class GPSPropagatorTest {
         double dtRelMax = 0;
         for (double dt = 0; dt < 0.5 * Constants.JULIAN_DAY; dt += 1.0) {
             FieldSpacecraftState<Binary64> state = propagator.propagate(date0.shiftedBy(dt));
-            Binary64[] corrections = state.getAdditionalState(ClockCorrectionsProvider.CLOCK_CORRECTIONS);
+            Binary64[] corrections = state.getAdditionalData(ClockCorrectionsProvider.CLOCK_CORRECTIONS);
             Assertions.assertEquals(3, corrections.length);
             Assertions.assertEquals(1.33514404296875E-05, corrections[0].getReal(), 1.0e-19);
             dtRelMin = FastMath.min(dtRelMin, corrections[1].getReal());
@@ -545,9 +545,9 @@ public class GPSPropagatorTest {
         // Setup propagator
         final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).build();
 
-        // Setup additional state provider which use the initial state in its init method
-        final AdditionalStateProvider additionalStateProvider = TestUtils.getAdditionalProviderWithInit();
-        propagator.addAdditionalStateProvider(additionalStateProvider);
+        // Setup additional data provider which use the initial state in its init method
+        final AdditionalDataProvider<double[]> additionalDataProvider = TestUtils.getAdditionalProviderWithInit();
+        propagator.addAdditionalDataProvider(additionalDataProvider);
 
         // WHEN & THEN
         Assertions.assertDoesNotThrow(() -> propagator.propagate(new AbsoluteDate()), "No error should have been thrown");

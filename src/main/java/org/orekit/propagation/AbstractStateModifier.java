@@ -18,7 +18,7 @@ package org.orekit.propagation;
 
 /** Abstract base class for modifying state during propagation.
  * <p>
- * This class is a specialized implementation of {@link AdditionalStateProvider}
+ * This class is a specialized implementation of {@link AdditionalDataProvider}
  * with a name set to the empty string and returning a null additional state.
  * </p>
  * <p>
@@ -26,11 +26,11 @@ package org.orekit.propagation;
  * many side effects. Using this class should therefore be done cautiously.
  * </p>
  * @see Propagator
- * @see AdditionalStateProvider
+ * @see AdditionalDataProvider
  * @author Luc Maisonobe
  * @since 12.1
  */
-public abstract class AbstractStateModifier implements AdditionalStateProvider {
+public abstract class AbstractStateModifier implements AdditionalDataProvider<double[]> {
 
     /** {@inheritDoc} */
     @Override
@@ -40,7 +40,7 @@ public abstract class AbstractStateModifier implements AdditionalStateProvider {
 
     /** {@inheritDoc} */
     @Override
-    public double[] getAdditionalState(final SpacecraftState state) {
+    public double[] getAdditionalData(final SpacecraftState state) {
         return null;
     }
 

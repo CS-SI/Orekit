@@ -96,22 +96,22 @@ class PropagatorTest {
         }
 
         @Override
-        public void addAdditionalStateProvider(AdditionalStateProvider additionalStateProvider) {
+        public void addAdditionalDataProvider(AdditionalDataProvider<?> additionalDataProvider) {
             // not used in test
         }
 
         @Override
-        public List<AdditionalStateProvider> getAdditionalStateProviders() {
+        public List<AdditionalDataProvider<?>> getAdditionalDataProviders() {
             return null;
         }
 
         @Override
-        public boolean isAdditionalStateManaged(String name) {
+        public boolean isAdditionalDataManaged(String name) {
             return false;
         }
 
         @Override
-        public String[] getManagedAdditionalStates() {
+        public String[] getManagedAdditionalData() {
             return new String[0];
         }
 
