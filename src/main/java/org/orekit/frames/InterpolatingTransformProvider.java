@@ -89,10 +89,10 @@ public class InterpolatingTransformProvider implements TransformProvider {
         this.cFilter     = cFilter;
         this.aFilter     = aFilter;
         this.step        = step;
-        this.cache       = new GenericTimeStampedCache<Transform>(gridPoints, maxSlots, maxSpan, newSlotInterval,
-                                                                  new TransformGenerator(gridPoints,
-                                                                                         rawProvider,
-                                                                                         step));
+        this.cache       = new GenericTimeStampedCache<>(gridPoints, maxSlots, maxSpan, newSlotInterval,
+                new TransformGenerator(gridPoints,
+                        rawProvider,
+                        step));
         this.fieldCaches = new HashMap<>();
     }
 
@@ -135,14 +135,14 @@ public class InterpolatingTransformProvider implements TransformProvider {
             (GenericTimeStampedCache<FieldTransform<T>>) fieldCaches.get(date.getField());
         if (fieldCache == null) {
             fieldCache =
-                new GenericTimeStampedCache<FieldTransform<T>>(cache.getMaxNeighborsSize(),
-                                                               cache.getMaxSlots(),
-                                                               cache.getMaxSpan(),
-                                                               cache.getNewSlotQuantumGap(),
-                                                               new FieldTransformGenerator<>(date.getField(),
-                                                                                             cache.getMaxNeighborsSize(),
-                                                                                             rawProvider,
-                                                                                             step));
+                    new GenericTimeStampedCache<>(cache.getMaxNeighborsSize(),
+                            cache.getMaxSlots(),
+                            cache.getMaxSpan(),
+                            cache.getNewSlotQuantumGap(),
+                            new FieldTransformGenerator<>(date.getField(),
+                                    cache.getMaxNeighborsSize(),
+                                    rawProvider,
+                                    step));
             fieldCaches.put(date.getField(), fieldCache);
         }
 

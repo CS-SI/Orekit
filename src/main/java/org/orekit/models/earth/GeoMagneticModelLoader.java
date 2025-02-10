@@ -18,15 +18,12 @@ package org.orekit.models.earth;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StreamTokenizer;
-import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.orekit.data.DataLoader;
+import org.orekit.data.DataSource;
 
 /** Loads geomagnetic field models from a given input stream. A stream may contain multiple
  * models, the loader reads all available models in consecutive order.
@@ -73,17 +70,13 @@ import org.orekit.data.DataLoader;
 public class GeoMagneticModelLoader implements DataLoader {
 
     /** The loaded models. */
-    private List<GeoMagneticField> models = new LinkedList<GeoMagneticField>();
+    private final List<GeoMagneticField> models;
 
     /** Empty constructor.
-     * <p>
-     * This constructor is not strictly necessary, but it prevents spurious
-     * javadoc warnings with JDK 18 and later.
-     * </p>
      * @since 12.0
      */
     public GeoMagneticModelLoader() {
-        // nothing to do
+        models = new LinkedList<>();
     }
 
     /** Returns a {@link Collection} of the {@link GeoMagneticField} models that
@@ -97,183 +90,12 @@ public class GeoMagneticModelLoader implements DataLoader {
 
     /** {@inheritDoc} */
     public boolean stillAcceptsData() {
-        return models == null || models.isEmpty();
+        return models.isEmpty();
     }
 
     /** {@inheritDoc} */
-    public void loadData(final InputStream input, final String name)
-        throws IOException, ParseException {
-
-        // open data file and parse values
-        final StreamTokenizer str = new StreamTokenizer(new InputStreamReader(input, StandardCharsets.UTF_8));
-
-        while (true) {
-            final GeoMagneticField model = readModel(str);
-            if (model != null) {
-                models.add(model);
-            } else {
-                break;
-            }
-        }
-    }
-
-    /** Read the model from the given {@link StreamTokenizer}.
-     * @param stream the stream to read the model from
-     * @return the parsed geomagnetic field model
-     * @throws IOException if an I/O error occurs
-     */
-    private GeoMagneticField readModel(final StreamTokenizer stream) throws IOException {
-
-        // check whether there is another model available in the stream
-        final int ttype = stream.nextToken();
-        if (ttype == StreamTokenizer.TT_EOF) {
-            return null;
-        }
-
-        if (ttype == StreamTokenizer.TT_WORD) {
-            return readCombinedFormat(stream);
-        } else {
-            return readOriginalWMMFormat(stream);
-        }
-    }
-
-    /** Read a magnetic field from combined format.
-     * @param stream the stream to read the model from
-     * @return magnetic field
-     * @throws IOException if some read error occurs
-     */
-    private GeoMagneticField readCombinedFormat(final StreamTokenizer stream)
-        throws IOException {
-        final String modelName = stream.sval;
-        stream.nextToken();
-        final double epoch = stream.nval;
-        stream.nextToken();
-        final int nMax = (int) stream.nval;
-        stream.nextToken();
-        final int nMaxSecVar = (int) stream.nval;
-
-        // ignored
-        stream.nextToken();
-
-        stream.nextToken();
-        final double startYear = stream.nval;
-
-        stream.nextToken();
-        final double endYear = stream.nval;
-
-        final GeoMagneticField model = new GeoMagneticField(modelName, epoch, nMax, nMaxSecVar,
-                                                            startYear, endYear);
-
-        // the rest is ignored
-        stream.nextToken();
-        @SuppressWarnings("unused")
-        final double altmin = stream.nval;
-
-        stream.nextToken();
-        @SuppressWarnings("unused")
-        final double altmax = stream.nval;
-
-        stream.nextToken();
-        stream.nextToken();
-
-        // loop to get model data from file
-        boolean done = false;
-        int n;
-        int m;
-
-        do {
-            stream.nextToken();
-            n = (int) stream.nval;
-            stream.nextToken();
-            m = (int) stream.nval;
-
-            stream.nextToken();
-            final double gnm = stream.nval;
-            stream.nextToken();
-            final double hnm = stream.nval;
-            stream.nextToken();
-            final double dgnm = stream.nval;
-            stream.nextToken();
-            final double dhnm = stream.nval;
-
-            model.setMainFieldCoefficients(n, m, gnm, hnm);
-            if (n <= nMaxSecVar && m <= nMaxSecVar) {
-                model.setSecularVariationCoefficients(n, m, dgnm, dhnm);
-            }
-
-            stream.nextToken();
-            stream.nextToken();
-
-            done = n == nMax && m == nMax;
-        } while (!done);
-
-        return model;
-    }
-
-    /** Read a magnetic field from original WMM files.
-     * @param stream the stream to read the model from
-     * @return magnetic field
-     * @throws IOException if some read error occurs
-     */
-    private GeoMagneticField readOriginalWMMFormat(final StreamTokenizer stream)
-        throws IOException {
-
-        // hard-coded values in original WMM format
-        final int nMax = 12;
-        final int nMaxSecVar = 12;
-
-        // the validity start is encoded in format MM/dd/yyyy
-        // use the slash as whitespace character to get separate tokens
-        stream.whitespaceChars('/', '/');
-
-        final double epoch = stream.nval;
-        stream.nextToken();
-        final String modelName = stream.sval;
-        stream.nextToken();
-        final double month = stream.nval;
-        stream.nextToken();
-        final double day = stream.nval;
-        stream.nextToken();
-        final double year = stream.nval;
-
-        final double startYear = GeoMagneticField.getDecimalYear((int) day, (int) month, (int) year);
-
-        final GeoMagneticField model = new GeoMagneticField(modelName, epoch, nMax, nMaxSecVar,
-                                                            startYear, epoch + 5.0);
-
-        // loop to get model data from file
-        boolean done = false;
-        int n;
-        int m;
-
-        do {
-            stream.nextToken();
-            n = (int) stream.nval;
-            stream.nextToken();
-            m = (int) stream.nval;
-
-            stream.nextToken();
-            final double gnm = stream.nval;
-            stream.nextToken();
-            final double hnm = stream.nval;
-            stream.nextToken();
-            final double dgnm = stream.nval;
-            stream.nextToken();
-            final double dhnm = stream.nval;
-
-            model.setMainFieldCoefficients(n, m, gnm, hnm);
-            if (n <= nMaxSecVar && m <= nMaxSecVar) {
-                model.setSecularVariationCoefficients(n, m, dgnm, dhnm);
-            }
-
-            done = n == nMax && m == nMax;
-        } while (!done);
-
-        // the original format closes with two delimiting lines of '9's
-        stream.nextToken();
-        stream.nextToken();
-
-        return model;
+    public void loadData(final InputStream input, final String name) throws IOException {
+        models.addAll(new GeoMagneticModelParser().parse(new DataSource(name, () -> input)));
     }
 
 }

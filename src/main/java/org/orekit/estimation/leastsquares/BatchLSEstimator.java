@@ -127,7 +127,7 @@ public class BatchLSEstimator {
                             final PropagatorBuilder... propagatorBuilder) {
 
         this.builders                       = propagatorBuilder;
-        this.measurements                   = new ArrayList<ObservedMeasurement<?>>();
+        this.measurements                   = new ArrayList<>();
         this.optimizer                      = optimizer;
         this.lsBuilder                      = new LeastSquaresBuilder();
         this.observer                       = null;

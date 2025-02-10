@@ -197,8 +197,8 @@ class IntegratedEphemerisTest {
         propagator.addAdditionalDerivativesProvider(provider2);
         final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.setInitialState(new SpacecraftState(initialOrbit).
-                                   addAdditionalState(provider1.getName(), new double[provider1.getDimension()]).
-                                   addAdditionalState(provider2.getName(), new double[provider2.getDimension()]));
+                                   addAdditionalData(provider1.getName(), new double[provider1.getDimension()]).
+                                   addAdditionalData(provider2.getName(), new double[provider2.getDimension()]));
         propagator.propagate(finalDate);
         IntegratedEphemeris ephemeris = (IntegratedEphemeris) generator.getGeneratedEphemeris();
 
@@ -228,9 +228,9 @@ class IntegratedEphemerisTest {
         numericalPropagator.setInitialState(new SpacecraftState(initialOrbit));
         numericalPropagator.setOrbitType(OrbitType.CARTESIAN);
 
-        // Setup additional state provider which use the initial state in its init method
-        final AdditionalStateProvider additionalStateProvider = TestUtils.getAdditionalProviderWithInit();
-        numericalPropagator.addAdditionalStateProvider(additionalStateProvider);
+        // Setup additional data provider which use the initial state in its init method
+        final AdditionalDataProvider<double[]> additionalDataProvider = TestUtils.getAdditionalProviderWithInit();
+        numericalPropagator.addAdditionalDataProvider(additionalDataProvider);
 
         // Setup integrated ephemeris
         final EphemerisGenerator generator = numericalPropagator.getEphemerisGenerator();
@@ -253,7 +253,7 @@ class IntegratedEphemerisTest {
 
     private void checkState(final double dt, final SpacecraftState state, final DerivativesProvider provider) {
 
-        Assertions.assertTrue(state.hasAdditionalState(provider.getName()));
+        Assertions.assertTrue(state.hasAdditionalData(provider.getName()));
         Assertions.assertEquals(provider.getDimension(), state.getAdditionalState(provider.getName()).length);
         for (int i = 0; i < provider.getDimension(); ++i) {
             Assertions.assertEquals(i * dt, state.getAdditionalState(provider.getName())[i], 4.0e-15 * i * dt);

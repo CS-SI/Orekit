@@ -543,7 +543,7 @@ public class PoissonSeriesParser {
                 // the dedicated parser will fill in the polynomial later
                 polynomial = null;
             }
-            final Map<Long, SeriesTerm> series = new HashMap<Long, SeriesTerm>();
+            final Map<Long, SeriesTerm> series = new HashMap<>();
 
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
 

@@ -80,7 +80,7 @@ public class TLEParametersDerivativesTest {
         final SpacecraftState initialState = propagator.getInitialState();
         final double[] stateVector = new double[6];
         OrbitType.CARTESIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngleType.MEAN, stateVector, null);
-        final AbsoluteDate target = initialState.getDate().shiftedBy(initialState.getKeplerianPeriod());
+        final AbsoluteDate target = initialState.getDate().shiftedBy(initialState.getOrbit().getKeplerianPeriod());
         TLEHarvester harvester = (TLEHarvester) propagator.setupMatricesComputation("stm", null, null);
         harvester.freezeColumnsNames();
         RealMatrix dYdP = harvester.getParametersJacobian(initialState);

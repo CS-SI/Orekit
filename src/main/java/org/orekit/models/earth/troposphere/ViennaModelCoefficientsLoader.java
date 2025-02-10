@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
@@ -244,10 +245,12 @@ public class ViennaModelCoefficientsLoader extends AbstractSelfFeedingLoader
         // For VMF1 it starts with "VMFG" whereas with VMF3 it starts with "VMF3"
         switch (type) {
             case VIENNA_ONE:
-                setSupportedNames(String.format("VMFG_%04d%2s%2s.H%2s", year, monthString, dayString, hourString));
+                setSupportedNames(String.format(Locale.US, "VMFG_%04d%2s%2s.H%2s",
+                                                year, monthString, dayString, hourString));
                 break;
             case VIENNA_THREE:
-                setSupportedNames(String.format("VMF3_%04d%2s%2s.H%2s", year, monthString, dayString, hourString));
+                setSupportedNames(String.format(Locale.US, "VMF3_%04d%2s%2s.H%2s",
+                                                year, monthString, dayString, hourString));
                 break;
             default:
                 break;

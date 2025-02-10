@@ -163,7 +163,7 @@ public class StreamMonitor extends AbstractEncodedMessage implements Runnable {
         this.stop                      = new AtomicBoolean(false);
         this.observers                 = new HashMap<>();
         this.lastMessages              = new HashMap<>();
-        this.exception                 = new AtomicReference<OrekitException>(null);
+        this.exception                 = new AtomicReference<>(null);
     }
 
     /** Add an observer for encoded messages.

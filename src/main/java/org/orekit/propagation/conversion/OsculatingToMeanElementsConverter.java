@@ -76,7 +76,7 @@ public class OsculatingToMeanElementsConverter {
      */
     public final SpacecraftState convert() {
 
-        final double timeSpan = state.getKeplerianPeriod() * satelliteRevolution;
+        final double timeSpan = state.getOrbit().getKeplerianPeriod() * satelliteRevolution;
         propagator.resetInitialState(state);
         final FiniteDifferencePropagatorConverter converter =
                 new FiniteDifferencePropagatorConverter(new KeplerianPropagatorBuilder(state.getOrbit(),

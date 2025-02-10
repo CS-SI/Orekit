@@ -19,7 +19,7 @@ package org.orekit.propagation.analytical.gnss;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.MathArrays;
-import org.orekit.propagation.FieldAdditionalStateProvider;
+import org.orekit.propagation.FieldAdditionalDataProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.gnss.data.FieldGNSSClockElements;
 import org.orekit.time.FieldAbsoluteDate;
@@ -45,7 +45,7 @@ import org.orekit.utils.FieldPVCoordinates;
  * @since 13.0
  */
 public class FieldClockCorrectionsProvider<T extends CalculusFieldElement<T>>
-    implements FieldAdditionalStateProvider<T> {
+    implements FieldAdditionalDataProvider<T> {
 
     /** The GPS clock elements. */
     private final FieldGNSSClockElements<T> gnssClk;
@@ -96,7 +96,7 @@ public class FieldClockCorrectionsProvider<T extends CalculusFieldElement<T>>
 
     /** {@inheritDoc} */
     @Override
-    public T[] getAdditionalState(final FieldSpacecraftState<T> state) {
+    public T[] getAdditionalData(final FieldSpacecraftState<T> state) {
 
         // polynomial clock model
         final T  dt    = getDT(state.getDate());

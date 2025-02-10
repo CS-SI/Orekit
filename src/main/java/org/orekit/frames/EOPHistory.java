@@ -445,7 +445,7 @@ public class EOPHistory {
         }
 
         // we have EOP data for date -> interpolate correction
-        double interpolated = interpolate(date, entry -> entry.getLOD());
+        double interpolated = interpolate(date, EOPEntry::getLOD);
         if (tidalCorrection != null) {
             interpolated += tidalCorrection.value(date)[3];
         }
@@ -471,7 +471,7 @@ public class EOPHistory {
         }
 
         // we have EOP data for date -> interpolate correction
-        T interpolated = interpolate(date, aDate, entry -> entry.getLOD());
+        T interpolated = interpolate(date, aDate, EOPEntry::getLOD);
         if (tidalCorrection != null) {
             interpolated = interpolated.add(tidalCorrection.value(date)[3]);
         }
@@ -501,8 +501,8 @@ public class EOPHistory {
 
         // we have EOP data for date -> interpolate correction
         final double[] interpolated = interpolate(date,
-                                                  entry -> entry.getX(),     entry -> entry.getY(),
-                                                  entry -> entry.getXRate(), entry -> entry.getYRate());
+                EOPEntry::getX, EOPEntry::getY,
+                EOPEntry::getXRate, EOPEntry::getYRate);
         if (tidalCorrection != null) {
             final double[] correction = tidalCorrection.value(date);
             interpolated[0] += correction[0];
@@ -535,7 +535,7 @@ public class EOPHistory {
         }
 
         // we have EOP data for date -> interpolate correction
-        final T[] interpolated = interpolate(date, aDate, entry -> entry.getX(), entry -> entry.getY());
+        final T[] interpolated = interpolate(date, aDate, EOPEntry::getX, EOPEntry::getY);
         if (tidalCorrection != null) {
             final T[] correction = tidalCorrection.value(date);
             interpolated[0] = interpolated[0].add(correction[0]);
@@ -560,7 +560,7 @@ public class EOPHistory {
         }
 
         // we have EOP data for date -> interpolate correction
-        return interpolate(date, entry -> entry.getDdPsi(), entry -> entry.getDdEps());
+        return interpolate(date, EOPEntry::getDdPsi, EOPEntry::getDdEps);
 
     }
 
@@ -582,7 +582,7 @@ public class EOPHistory {
         }
 
         // we have EOP data for date -> interpolate correction
-        return interpolate(date, aDate, entry -> entry.getDdPsi(), entry -> entry.getDdEps());
+        return interpolate(date, aDate, EOPEntry::getDdPsi, EOPEntry::getDdEps);
 
     }
 
@@ -601,7 +601,7 @@ public class EOPHistory {
         }
 
         // we have EOP data for date -> interpolate correction
-        return interpolate(date, entry -> entry.getDx(), entry -> entry.getDy());
+        return interpolate(date, EOPEntry::getDx, EOPEntry::getDy);
 
     }
 
@@ -623,7 +623,7 @@ public class EOPHistory {
         }
 
         // we have EOP data for date -> interpolate correction
-        return interpolate(date, aDate, entry -> entry.getDx(), entry -> entry.getDy());
+        return interpolate(date, aDate, EOPEntry::getDx, EOPEntry::getDy);
 
     }
 
@@ -885,13 +885,13 @@ public class EOPHistory {
 
         if (Double.isNaN(entry.getLOD() + entry.getXRate() + entry.getYRate())) {
             final double lod   = Double.isNaN(entry.getLOD()) ?
-                                 -differentiator.apply(entry, e -> e.getUT1MinusUTC()) :
+                                 -differentiator.apply(entry, EOPEntry::getUT1MinusUTC) :
                                  entry.getLOD();
             final double xRate = Double.isNaN(entry.getXRate()) ?
-                                 differentiator.apply(entry, e -> e.getX()) :
+                                 differentiator.apply(entry, EOPEntry::getX) :
                                  entry.getXRate();
             final double yRate = Double.isNaN(entry.getYRate()) ?
-                                 differentiator.apply(entry, e -> e.getY()) :
+                                 differentiator.apply(entry, EOPEntry::getY) :
                                  entry.getYRate();
             return new EOPEntry(entry.getMjd(),
                                 entry.getUT1MinusUTC(), lod,
@@ -951,11 +951,11 @@ public class EOPHistory {
             this.step            = 60 * 60;
             this.tidalCorrection = tidalCorrection;
             this.cache           =
-                new GenericTimeStampedCache<TidalCorrectionEntry>(8,
-                                                                  OrekitConfiguration.getCacheSlotsNumber(),
-                                                                  Constants.JULIAN_DAY * 30,
-                                                                  Constants.JULIAN_DAY,
-                                                                  this);
+                    new GenericTimeStampedCache<>(8,
+                            OrekitConfiguration.getCacheSlotsNumber(),
+                            Constants.JULIAN_DAY * 30,
+                            Constants.JULIAN_DAY,
+                            this);
         }
 
         /** {@inheritDoc} */
@@ -1007,7 +1007,7 @@ public class EOPHistory {
         @Override
         public List<TidalCorrectionEntry> generate(final AbsoluteDate existingDate, final AbsoluteDate date) {
 
-            final List<TidalCorrectionEntry> generated = new ArrayList<TidalCorrectionEntry>();
+            final List<TidalCorrectionEntry> generated = new ArrayList<>();
 
             if (existingDate == null) {
 

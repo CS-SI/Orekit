@@ -144,7 +144,7 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
         FieldSpacecraftState<T> fixedState = new FieldSpacecraftState<>(fixedOrbit, attitude, mass);
         if (additionalStates != null) {
             for (final FieldArrayDictionary<T>.Entry entry : additionalStates.getData()) {
-                fixedState = fixedState.addAdditionalState(entry.getKey(), entry.getValue());
+                fixedState = fixedState.addAdditionalData(entry.getKey(), entry.getValue());
             }
         }
         if (additionalStatesderivatives != null) {
@@ -161,12 +161,12 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
 
         // ensure the orbit use the specified mu and has no non-Keplerian derivatives
         final FieldSpacecraftState<T> formerInitial = getInitialState();
-        final T mu = formerInitial == null ? state.getMu() : formerInitial.getMu();
+        final T mu = formerInitial == null ? state.getOrbit().getMu() : formerInitial.getOrbit().getMu();
         final FieldSpacecraftState<T> fixedState = fixState(state.getOrbit(),
                                                             state.getAttitude(),
                                                             state.getMass(),
                                                             mu,
-                                                            state.getAdditionalStatesValues(),
+                                                            state.getAdditionalDataValues(),
                                                             state.getAdditionalStatesDerivatives());
 
         states = new FieldTimeSpanMap<>(fixedState, state.getDate().getField());
@@ -187,7 +187,8 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
 
     /** {@inheritDoc} */
     @Override
-    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
+    public FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date,
+                                        final T[] parameters) {
         // propagate orbit
         FieldOrbit<T> orbit = states.get(date).getOrbit();
         do {

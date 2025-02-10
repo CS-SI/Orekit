@@ -387,7 +387,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         // Calculate the predicted osculating elements
         final double[] osculating = computeOsculatingElements(predictedFilterCorrection);
         final Orbit osculatingOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(osculating, null, builder.getPositionAngleType(),
-                                                                            currentDate, nominalMeanSpacecraftState.getMu(),
+                                                                            currentDate, nominalMeanSpacecraftState.getOrbit().getMu(),
                                                                             nominalMeanSpacecraftState.getFrame());
 
         // Compute the predicted measurements  (See Ref [1], Eq. 3.8)
@@ -397,7 +397,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
                                                                 new SpacecraftState(osculatingOrbit,
                                                                                     nominalMeanSpacecraftState.getAttitude(),
                                                                                     nominalMeanSpacecraftState.getMass(),
-                                                                                    nominalMeanSpacecraftState.getAdditionalStatesValues(),
+                                                                                    nominalMeanSpacecraftState.getAdditionalDataValues(),
                                                                                     nominalMeanSpacecraftState.getAdditionalStatesDerivatives())
                                                             });
 
@@ -456,7 +456,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         // Calculate the corrected osculating elements
         final double[] osculating = computeOsculatingElements(correctedFilterCorrection);
         final Orbit osculatingOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(osculating, null, builder.getPositionAngleType(),
-                                                                            currentDate, nominalMeanSpacecraftState.getMu(),
+                                                                            currentDate, nominalMeanSpacecraftState.getOrbit().getMu(),
                                                                             nominalMeanSpacecraftState.getFrame());
 
         // Compute the corrected measurements
@@ -466,7 +466,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
                                                                 new SpacecraftState(osculatingOrbit,
                                                                                     nominalMeanSpacecraftState.getAttitude(),
                                                                                     nominalMeanSpacecraftState.getMass(),
-                                                                                    nominalMeanSpacecraftState.getAdditionalStatesValues(),
+                                                                                    nominalMeanSpacecraftState.getAdditionalDataValues(),
                                                                                     nominalMeanSpacecraftState.getAdditionalStatesDerivatives())
                                                             });
         // Call the observer if the user add one

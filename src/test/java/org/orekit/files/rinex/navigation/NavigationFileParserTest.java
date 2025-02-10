@@ -253,6 +253,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(6.810296326876e-09,  list.get(0).getIscL5I5(), 1.0e-20);
         Assertions.assertEquals(6.897607818246e-09,  list.get(0).getIscL5Q5(), 1.0e-20);
         Assertions.assertEquals(259206.0, list.get(0).getTransmissionTime(), 1.0e-10);
+        Assertions.assertEquals(2230, list.get(0).getWeek());
         Assertions.assertEquals(0.0, list.get(1).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 3, 30, 0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
 
     }
@@ -440,7 +441,7 @@ public class NavigationFileParserTest {
         Assertions.assertTrue(list.get(0).getRadioWave().closeTo(PredefinedGnssSignal.B1C, 1.0e-6));
         Assertions.assertEquals(-1.139640808105e-02, list.get(0).getADot(),       1.0e-15);
         Assertions.assertEquals(-1.300156250000e+02, list.get(0).getCrs(),        1.0e-15);
-        Assertions.assertEquals(3.453536710809e-09,  list.get(0).getDeltaN(),     1.0e-15);
+        Assertions.assertEquals(3.453536710809e-09,  list.get(0).getDeltaN0(),    1.0e-15);
         Assertions.assertEquals(-8.439895553698e-01, list.get(0).getM0(),         1.0e-15);
         Assertions.assertEquals(-6.432645022869e-06, list.get(0).getCuc(),        1.0e-15);
         Assertions.assertEquals(5.305649829097e-04,  list.get(0).getE(),          1.0e-15);
@@ -760,6 +761,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(1.600710675120e-09,  list.get(0).getIscL5I5(), 1.0e-20);
         Assertions.assertEquals(1.688022166491e-09,  list.get(0).getIscL5Q5(), 1.0e-20);
         Assertions.assertEquals(255606.0, list.get(0).getTransmissionTime(), 1.0e-10);
+        Assertions.assertEquals(2230, list.get(0).getWeek());
         Assertions.assertEquals(0.0, list.get(1).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 1, 0, 0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
 
     }

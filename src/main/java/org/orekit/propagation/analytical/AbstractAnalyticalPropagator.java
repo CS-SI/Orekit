@@ -36,7 +36,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.AbstractPropagator;
-import org.orekit.propagation.AdditionalStateProvider;
+import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.MatricesHarvester;
@@ -128,11 +128,11 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
             lastPropagationStart = start;
 
-            // Initialize additional states
-            initializeAdditionalStates(target);
+            // Initialize additional data
+            initializeAdditionalData(target);
 
             final boolean isForward = target.compareTo(start) >= 0;
-            SpacecraftState state   = updateAdditionalStates(basicPropagate(start));
+            SpacecraftState state   = updateAdditionalData(basicPropagate(start));
 
             // initialize event detectors
             eventStates = getAttitudeProvider().getEventDetectors().map(EventState::new).collect(Collectors.toList());
@@ -151,7 +151,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
                 // attempt to advance to the target date
                 final SpacecraftState previous = state;
-                final SpacecraftState current = updateAdditionalStates(basicPropagate(target));
+                final SpacecraftState current = updateAdditionalData(basicPropagate(target));
                 final OrekitStepInterpolator interpolator =
                         new BasicStepInterpolator(isForward, previous, current);
 
@@ -160,7 +160,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
                 // Update the potential changes in the spacecraft state due to the events
                 // especially the potential attitude transition
-                state = updateAdditionalStates(basicPropagate(state.getDate()));
+                state = updateAdditionalData(basicPropagate(state.getDate()));
 
             } while (!isLastStep);
 
@@ -377,7 +377,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
      * @param date target date for the orbit
      * @return extrapolated parameters
      */
-    protected abstract Orbit propagateOrbit(AbsoluteDate date);
+    public abstract Orbit propagateOrbit(AbsoluteDate date);
 
     /** Propagate an orbit without any fancy features.
      * <p>This method is similar in spirit to the {@link #propagate} method,
@@ -387,7 +387,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
      * @param date target date for propagation
      * @return state at specified date
      */
-    protected SpacecraftState basicPropagate(final AbsoluteDate date) {
+    public SpacecraftState basicPropagate(final AbsoluteDate date) {
         try {
 
             // evaluate orbit
@@ -450,8 +450,8 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
             try {
                 // copy the same additional state providers as the original propagator
-                for (AdditionalStateProvider provider : AbstractAnalyticalPropagator.this.getAdditionalStateProviders()) {
-                    addAdditionalStateProvider(provider);
+                for (AdditionalDataProvider<?> provider : AbstractAnalyticalPropagator.this.getAdditionalDataProviders()) {
+                    addAdditionalDataProvider(provider);
                 }
             } catch (OrekitException oe) {
                 // as the generators are already compatible with each other,
@@ -472,7 +472,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
-        protected Orbit propagateOrbit(final AbsoluteDate target) {
+        public Orbit propagateOrbit(final AbsoluteDate target) {
             return AbstractAnalyticalPropagator.this.propagateOrbit(target);
         }
 
@@ -566,7 +566,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
             final SpacecraftState basicState = basicPropagate(date);
 
             // add the additional states
-            return updateAdditionalStates(basicState);
+            return updateAdditionalData(basicState);
 
         }
 

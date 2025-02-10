@@ -107,7 +107,7 @@ public class EphemerisSegmentPropagator<C extends TimeStampedPVCoordinates> exte
     }
 
     @Override
-    protected Orbit propagateOrbit(final AbsoluteDate date) {
+    public Orbit propagateOrbit(final AbsoluteDate date) {
         final TimeStampedPVCoordinates pv = this.getPVCoordinates(date, inertialFrame);
         return new CartesianOrbit(pv, inertialFrame, this.ephemeris.getMu());
     }

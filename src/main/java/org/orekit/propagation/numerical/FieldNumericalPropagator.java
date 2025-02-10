@@ -389,7 +389,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
     public void resetInitialState(final FieldSpacecraftState<T> state) {
         super.resetInitialState(state);
         if (!hasNewtonianAttraction()) {
-            setMu(state.getMu());
+            setMu(state.getOrbit().getMu());
         }
         setStartDate(state.getDate());
     }
@@ -553,7 +553,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
         /** {@inheritDoc} */
         @Override
         public T[] computeDerivatives(final FieldSpacecraftState<T> state) {
-            final T zero = state.getA().getField().getZero();
+            final T zero = state.getMass().getField().getZero();
             currentState = state;
             Arrays.fill(yDot, zero);
             if (recomputingJacobian) {

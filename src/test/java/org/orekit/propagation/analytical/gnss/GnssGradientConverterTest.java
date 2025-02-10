@@ -58,7 +58,7 @@ public class GnssGradientConverterTest {
         goe.setWeek(1024);
         goe.setTime(293400.0);
         goe.setSqrtA(5440.602949142456);
-        goe.setDeltaN(3.7394414770330066E-9);
+        goe.setDeltaN0(3.7394414770330066E-9);
         goe.setE(2.4088891223073006E-4);
         goe.setI0(0.9531656087278083);
         goe.setIDot(-2.36081262303612E-10);
@@ -80,7 +80,7 @@ public class GnssGradientConverterTest {
         final FieldGnssPropagator<Gradient> gPropagator = new GnssGradientConverter(propagator).getPropagator();
         Assertions.assertEquals(9, gPropagator.getParametersDrivers().size());
         Assertions.assertEquals(0, gPropagator.getParametersDrivers().stream().filter(ParameterDriver::isSelected).count());
-        Assertions.assertEquals(6, gPropagator.getInitialState().getA().getFreeParameters());
+        Assertions.assertEquals(6, gPropagator.getInitialState().getOrbit().getA().getFreeParameters());
         checkUnitaryInitialSTM(gPropagator.getInitialState());
     }
 
@@ -90,7 +90,7 @@ public class GnssGradientConverterTest {
         final FieldGnssPropagator<Gradient> gPropagator = new GnssGradientConverter(propagator).getPropagator();
         Assertions.assertEquals(9, gPropagator.getParametersDrivers().size());
         Assertions.assertEquals( 9, gPropagator.getParametersDrivers().stream().filter(ParameterDriver::isSelected).count());
-        Assertions.assertEquals(15, gPropagator.getInitialState().getA().getFreeParameters());
+        Assertions.assertEquals(15, gPropagator.getInitialState().getOrbit().getA().getFreeParameters());
         checkUnitaryInitialSTM(gPropagator.getInitialState());
     }
 
@@ -104,7 +104,7 @@ public class GnssGradientConverterTest {
         goe.setTime(288000);
         goe.setSqrtA(5153.599830627441);
         goe.setE(0.012442796607501805);
-        goe.setDeltaN(4.419469802942352E-9);
+        goe.setDeltaN0(4.419469802942352E-9);
         goe.setI0(0.9558937988021613);
         goe.setIDot(-2.4608167886110235E-10);
         goe.setOmega0(1.0479401362158658);
@@ -200,11 +200,12 @@ public class GnssGradientConverterTest {
 
     private void checkUnitaryInitialSTM(final FieldSpacecraftState<Gradient> initialState) {
         final FieldPVCoordinates<Gradient> pv0 = initialState.getPVCoordinates();
-        checkUnitary(pv0.getPosition().getX().getGradient(), 0, 2.0e-12, 2.0e-8);
-        checkUnitary(pv0.getPosition().getY().getGradient(), 1, 2.0e-12, 2.0e-8);
-        checkUnitary(pv0.getPosition().getZ().getGradient(), 2, 2.0e-12, 2.0e-8);
-        checkUnitary(pv0.getVelocity().getX().getGradient(), 3, 2.0e-12, 2.0e-8);
-        checkUnitary(pv0.getVelocity().getY().getGradient(), 4, 2.0e-12, 2.0e-8);
+        checkUnitary(pv0.getPosition().getX().getGradient(), 0, 4.0e-13, 2.0e-8);
+        checkUnitary(pv0.getPosition().getY().getGradient(), 1, 4.0e-13, 2.0e-8);
+        checkUnitary(pv0.getPosition().getZ().getGradient(), 2, 4.0e-13, 2.0e-8);
+        checkUnitary(pv0.getVelocity().getX().getGradient(), 3, 2.0e-12, 2.0e-12);
+        checkUnitary(pv0.getVelocity().getY().getGradient(), 4, 2.0e-12, 2.0e-12);
+        checkUnitary(pv0.getVelocity().getZ().getGradient(), 5, 2.0e-12, 2.0e-12);
     }
 
     private void checkUnitary(final double[] gradient, final int index,
@@ -226,7 +227,7 @@ public class GnssGradientConverterTest {
     private double differentiate(final GNSSPropagator basePropagator, final AbsoluteDate target,
                                  final double step, final int outIndex, final int inIndex) {
 
-        // function that converts a shift in one element of initial state (i.e Px, Py, Pz, Vx, Vy, Vz)
+        // function that converts a shift in one element of initial state (i.e. Px, Py, Pz, Vx, Vy, Vz)
         // into one element of propagated state
         final UnivariateFunction f = h -> {
 
@@ -242,7 +243,7 @@ public class GnssGradientConverterTest {
             final SpacecraftState shiftedState =
                 new SpacecraftState(OrbitType.CARTESIAN.mapArrayToOrbit(in, null, PositionAngleType.MEAN,
                                                                         original.getDate(),
-                                                                        original.getMu(), original.getFrame()),
+                                                                        original.getOrbit().getMu(), original.getFrame()),
                                     original.getAttitude(), original.getMass());
 
             // build shifted propagator

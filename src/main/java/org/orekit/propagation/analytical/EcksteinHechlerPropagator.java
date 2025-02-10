@@ -759,7 +759,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
         // Create the harvester
         final EcksteinHechlerHarvester harvester = new EcksteinHechlerHarvester(this, stmName, initialStm, initialJacobianColumns);
         // Update the list of additional state provider
-        addAdditionalStateProvider(harvester);
+        addAdditionalDataProvider(harvester);
         // Return the configured harvester
         return harvester;
     }

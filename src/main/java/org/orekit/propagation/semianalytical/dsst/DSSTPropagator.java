@@ -16,14 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.ODEStateAndDerivative;
@@ -59,14 +51,23 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FixedNumberInterpola
 import org.orekit.propagation.semianalytical.dsst.utilities.InterpolationGrid;
 import org.orekit.propagation.semianalytical.dsst.utilities.MaxGapInterpolationGrid;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.DataDictionary;
 import org.orekit.utils.DoubleArrayDictionary;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterObserver;
-import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.ParameterObserver;
+import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * This class propagates {@link org.orekit.orbits.Orbit orbits} using the DSST theory.
@@ -292,7 +293,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         super.resetInitialState(state);
         if (!hasNewtonianAttraction()) {
             // use the state to define central attraction
-            setMu(state.getMu());
+            setMu(state.getOrbit().getMu());
         }
         super.setStartDate(state.getDate());
     }
@@ -425,7 +426,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             addAdditionalDerivativesProvider(stmGenerator);
         }
 
-        if (!getInitialIntegrationState().hasAdditionalState(dsstHarvester.getStmName())) {
+        if (!getInitialIntegrationState().hasAdditionalData(dsstHarvester.getStmName())) {
             // add the initial State Transition Matrix if it is not already there
             // (perhaps due to a previous propagation)
             setInitialState(stmGenerator.setInitialStateTransitionMatrix(getInitialState(),
@@ -480,10 +481,10 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                     addAdditionalDerivativesProvider(generator);
                 }
 
-                if (!getInitialIntegrationState().hasAdditionalState(span.getData())) {
+                if (!getInitialIntegrationState().hasAdditionalData(span.getData())) {
                     // add the initial Jacobian column if it is not already there
                     // (perhaps due to a previous propagation)
-                    setInitialState(getInitialState().addAdditionalState(span.getData(),
+                    setInitialState(getInitialState().addAdditionalData(span.getData(),
                                                                          getHarvester().getInitialJacobianColumn(span.getData())),
                                     getPropagationType());
                 }
@@ -670,7 +671,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         final EquinoctialOrbit osculatingOrbit = computeOsculatingOrbit(mean, shortPeriodTerms);
 
         return new SpacecraftState(osculatingOrbit, mean.getAttitude(), mean.getMass(),
-                                   mean.getAdditionalStatesValues(), mean.getAdditionalStatesDerivatives());
+                                   mean.getAdditionalDataValues(), mean.getAdditionalStatesDerivatives());
 
     }
 
@@ -726,7 +727,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                                                    final int maxIterations) {
         final Orbit meanOrbit = computeMeanOrbit(osculating, attitudeProvider, forceModels, epsilon, maxIterations);
         return new SpacecraftState(meanOrbit, osculating.getAttitude(), osculating.getMass(),
-                                   osculating.getAdditionalStatesValues(), osculating.getAdditionalStatesDerivatives());
+                                   osculating.getAdditionalDataValues(), osculating.getAdditionalStatesDerivatives());
     }
 
      /** Override the default value of the parameter.
@@ -899,12 +900,13 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             final EquinoctialOrbit rebuilt = computeOsculatingOrbit(meanState, shortPeriodTerms);
 
             // adapted parameters residuals
-            final double deltaA  = osculating.getA() - rebuilt.getA();
-            final double deltaEx = osculating.getEquinoctialEx() - rebuilt.getEquinoctialEx();
-            final double deltaEy = osculating.getEquinoctialEy() - rebuilt.getEquinoctialEy();
-            final double deltaHx = osculating.getHx() - rebuilt.getHx();
-            final double deltaHy = osculating.getHy() - rebuilt.getHy();
-            final double deltaLM = MathUtils.normalizeAngle(osculating.getLM() - rebuilt.getLM(), 0.0);
+            final Orbit osculationOrbit = osculating.getOrbit();
+            final double deltaA  = osculationOrbit.getA() - rebuilt.getA();
+            final double deltaEx = osculationOrbit.getEquinoctialEx() - rebuilt.getEquinoctialEx();
+            final double deltaEy = osculationOrbit.getEquinoctialEy() - rebuilt.getEquinoctialEy();
+            final double deltaHx = osculationOrbit.getHx() - rebuilt.getHx();
+            final double deltaHy = osculationOrbit.getHy() - rebuilt.getHy();
+            final double deltaLM = MathUtils.normalizeAngle(osculationOrbit.getLM() - rebuilt.getLM(), 0.0);
 
             // check convergence
             if (FastMath.abs(deltaA)  < thresholdA &&
@@ -954,7 +956,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         }
         return (EquinoctialOrbit) OrbitType.EQUINOCTIAL.mapArrayToOrbit(y, meanDot,
                                                                         PositionAngleType.MEAN, meanState.getDate(),
-                                                                        meanState.getMu(), meanState.getFrame());
+                                                                        meanState.getOrbit().getMu(), meanState.getFrame());
     }
 
     /** {@inheritDoc} */
@@ -1059,19 +1061,19 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             // (the loop may not be performed if there are no force models and in the
             //  case we want to remain in mean parameters only)
             final double[] elements = y.clone();
-            final DoubleArrayDictionary coefficients;
+            final DataDictionary coefficients;
             if (type == PropagationType.MEAN) {
                 coefficients = null;
             } else {
                 final Orbit meanOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, yDot, PositionAngleType.MEAN, date, getMu(), getFrame());
-                coefficients = selectedCoefficients == null ? null : new DoubleArrayDictionary();
+                coefficients = selectedCoefficients == null ? null : new DataDictionary();
                 for (final ShortPeriodTerms spt : shortPeriodTerms) {
                     final double[] shortPeriodic = spt.value(meanOrbit);
                     for (int i = 0; i < shortPeriodic.length; i++) {
                         elements[i] += shortPeriodic[i];
                     }
                     if (selectedCoefficients != null) {
-                        coefficients.putAll(spt.getCoefficients(date, selectedCoefficients));
+                        coefficients.putAllDoubles(spt.getCoefficients(date, selectedCoefficients));
                     }
                 }
             }

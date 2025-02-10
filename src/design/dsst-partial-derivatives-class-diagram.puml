@@ -39,6 +39,8 @@
       +RealMatrix getStateTransitionMatrix(SpacecraftState state)
       +RealMatrix getParametersJacobian(SpacecraftState state)
       +List<String> getJacobiansColumnsNames()
+      +OrbitType getOrbitType()
+      +PositionAngleType getPositionAngleType()
     }
 
     Propagator -right-> MatricesHarvester

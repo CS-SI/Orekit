@@ -72,6 +72,11 @@ public class NewtonFixedBoundaryCartesianSingleShooting extends AbstractFixedBou
         this.singularityThreshold = DEFAULT_SINGULARITY_THRESHOLD;
     }
 
+    @Override
+    public int getMaximumIterationCount() {
+        return getConditionChecker().getMaximumIterationCount();
+    }
+
     /**
      * Setter for singularity threshold in LU decomposition.
      * @param singularityThreshold new threshold value
@@ -92,10 +97,10 @@ public class NewtonFixedBoundaryCartesianSingleShooting extends AbstractFixedBou
 
     /** {@inheritDoc} */
     @Override
-    protected double[] updateAdjoint(final double[] originalInitialAdjoint,
-                                     final FieldSpacecraftState<Gradient> fieldTerminalState) {
+    protected double[] updateShootingVariables(final double[] originalShootingVariables,
+                                               final FieldSpacecraftState<Gradient> fieldTerminalState) {
         // form defects and their Jacobian matrix
-        final double[] defects = new double[originalInitialAdjoint.length];
+        final double[] defects = new double[originalShootingVariables.length];
         final double[][] defectsJacobianData = new double[defects.length][defects.length];
         final double reciprocalScalePosition = 1. / getScalePositionDefects();
         final double reciprocalScaleVelocity = 1. / getScaleVelocityDefects();
@@ -118,15 +123,15 @@ public class NewtonFixedBoundaryCartesianSingleShooting extends AbstractFixedBou
         defectsJacobianData[4] = fieldScaledTerminalVelocity.getY().getGradient();
         defects[5] = terminalScaledVelocity.getZ() - targetScaledVelocity.getZ();
         defectsJacobianData[5] = fieldScaledTerminalVelocity.getZ().getGradient();
-        if (originalInitialAdjoint.length != 6) {
+        if (originalShootingVariables.length != 6) {
             final String adjointName = getPropagationSettings().getAdjointDynamicsProvider().getAdjointName();
-            final Gradient terminalMassAdjoint = fieldTerminalState.getAdditionalState(adjointName)[6];
+            final Gradient terminalMassAdjoint = fieldTerminalState.getAdditionalData(adjointName)[6];
             defects[6] = terminalMassAdjoint.getValue();
             defectsJacobianData[6] = terminalMassAdjoint.getGradient();
         }
         // apply Newton's formula
         final double[] correction = computeCorrection(defects, defectsJacobianData);
-        final double[] correctedAdjoint = originalInitialAdjoint.clone();
+        final double[] correctedAdjoint = originalShootingVariables.clone();
         for (int i = 0; i < correction.length; i++) {
             correctedAdjoint[i] += correction[i];
         }

@@ -113,7 +113,7 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
     }
 
     @Override
-    protected SpacecraftState basicPropagate(final AbsoluteDate date) {
+    public SpacecraftState basicPropagate(final AbsoluteDate date) {
         // #589 override this method for a performance benefit,
         // getPropagator(date).propagate(date) is only called once
 
@@ -128,11 +128,11 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
         if (state.isOrbitDefined()) {
             return new SpacecraftState(
                     state.getOrbit(), attitude, state.getMass(),
-                    state.getAdditionalStatesValues(), state.getAdditionalStatesDerivatives());
+                    state.getAdditionalDataValues(), state.getAdditionalStatesDerivatives());
         } else {
             return new SpacecraftState(
                     state.getAbsPVA(), attitude, state.getMass(),
-                    state.getAdditionalStatesValues(), state.getAdditionalStatesDerivatives());
+                    state.getAdditionalDataValues(), state.getAdditionalStatesDerivatives());
         }
     }
 
@@ -148,7 +148,7 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
     }
 
     @Override
-    protected Orbit propagateOrbit(final AbsoluteDate date) {
+    public Orbit propagateOrbit(final AbsoluteDate date) {
         return getPropagator(date).propagate(date).getOrbit();
     }
 

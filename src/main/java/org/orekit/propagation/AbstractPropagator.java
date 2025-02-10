@@ -16,6 +16,17 @@
  */
 package org.orekit.propagation;
 
+import org.hipparchus.linear.RealMatrix;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
+import org.orekit.propagation.sampling.StepHandlerMultiplexer;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.DataDictionary;
+import org.orekit.utils.DoubleArrayDictionary;
+import org.orekit.utils.TimeSpanMap;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,17 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
-import org.hipparchus.linear.RealMatrix;
-import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.frames.Frame;
-import org.orekit.propagation.sampling.StepHandlerMultiplexer;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.DoubleArrayDictionary;
-import org.orekit.utils.TimeSpanMap;
-
-/** Common handling of {@link Propagator} methods for analytical propagators.
+/** Common handling of {@link Propagator} methods for propagators.
  * <p>
  * This abstract class allows to provide easily the full set of {@link Propagator}
  * methods, including all propagation modes support and discrete events support for
@@ -53,11 +54,11 @@ public abstract class AbstractPropagator implements Propagator {
     /** Attitude provider. */
     private AttitudeProvider attitudeProvider;
 
-    /** Providers for additional states. */
-    private final List<AdditionalStateProvider> additionalStateProviders;
+    /** Providers for additional data. */
+    private final List<AdditionalDataProvider<?>> additionalDataProviders;
 
     /** States managed by no generators. */
-    private final Map<String, TimeSpanMap<double[]>> unmanagedStates;
+    private final Map<String, TimeSpanMap<Object>> unmanagedStates;
 
     /** Initial state. */
     private SpacecraftState initialState;
@@ -69,7 +70,7 @@ public abstract class AbstractPropagator implements Propagator {
      */
     protected AbstractPropagator() {
         multiplexer              = new StepHandlerMultiplexer();
-        additionalStateProviders = new ArrayList<>();
+        additionalDataProviders  = new ArrayList<>();
         unmanagedStates          = new HashMap<>();
         harvester                = null;
     }
@@ -121,24 +122,24 @@ public abstract class AbstractPropagator implements Propagator {
 
     /** {@inheritDoc} */
     @Override
-    public void addAdditionalStateProvider(final AdditionalStateProvider provider) {
+    public void addAdditionalDataProvider(final AdditionalDataProvider<?> provider) {
 
         // check if the name is already used
-        if (isAdditionalStateManaged(provider.getName())) {
+        if (isAdditionalDataManaged(provider.getName())) {
             // this additional state is already registered, complain
             throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,
                                       provider.getName());
         }
 
         // this is really a new name, add it
-        additionalStateProviders.add(provider);
+        additionalDataProviders.add(provider);
 
     }
 
     /** {@inheritDoc} */
     @Override
-    public List<AdditionalStateProvider> getAdditionalStateProviders() {
-        return Collections.unmodifiableList(additionalStateProviders);
+    public List<AdditionalDataProvider<?>> getAdditionalDataProviders() {
+        return Collections.unmodifiableList(additionalDataProviders);
     }
 
     /** {@inheritDoc} */
@@ -179,43 +180,43 @@ public abstract class AbstractPropagator implements Propagator {
     /** Update state by adding unmanaged states.
      * @param original original state
      * @return updated state, with unmanaged states included
-     * @see #updateAdditionalStates(SpacecraftState)
+     * @see #updateAdditionalData(SpacecraftState)
      */
-    protected SpacecraftState updateUnmanagedStates(final SpacecraftState original) {
+    protected SpacecraftState updateUnmanagedData(final SpacecraftState original) {
 
         // start with original state,
-        // which may already contain additional states, for example in interpolated ephemerides
+        // which may already contain additional data, for example in interpolated ephemerides
         SpacecraftState updated = original;
 
-        // update the states not managed by providers
-        for (final Map.Entry<String, TimeSpanMap<double[]>> entry : unmanagedStates.entrySet()) {
-            updated = updated.addAdditionalState(entry.getKey(),
-                                                 entry.getValue().get(original.getDate()));
+        // update the data providers not managed by providers
+        for (final Map.Entry<String, TimeSpanMap<Object>> entry : unmanagedStates.entrySet()) {
+            updated = updated.addAdditionalData(entry.getKey(),
+                                                entry.getValue().get(original.getDate()));
         }
 
         return updated;
 
     }
 
-    /** Update state by adding all additional states.
+    /** Update state by adding all additional data.
      * @param original original state
-     * @return updated state, with all additional states included
-     * (including {@link #updateUnmanagedStates(SpacecraftState) unmanaged} states)
-     * @see #addAdditionalStateProvider(AdditionalStateProvider)
-     * @see #updateUnmanagedStates(SpacecraftState)
+     * @return updated state, with all additional data included
+     * (including {@link #updateUnmanagedData(SpacecraftState) unmanaged} data)
+     * @see #addAdditionalDataProvider(AdditionalDataProvider)
+     * @see #updateUnmanagedData(SpacecraftState)
      */
-    protected SpacecraftState updateAdditionalStates(final SpacecraftState original) {
+    public SpacecraftState updateAdditionalData(final SpacecraftState original) {
 
-        // start with original state and unmanaged states
-        SpacecraftState updated = updateUnmanagedStates(original);
+        // start with original state and unmanaged data
+        SpacecraftState updated = updateUnmanagedData(original);
 
         // set up queue for providers
-        final Queue<AdditionalStateProvider> pending = new LinkedList<>(getAdditionalStateProviders());
+        final Queue<AdditionalDataProvider<?>> pending = new LinkedList<>(getAdditionalDataProviders());
 
-        // update the additional states managed by providers, taking care of dependencies
+        // update the additional data managed by providers, taking care of dependencies
         int yieldCount = 0;
         while (!pending.isEmpty()) {
-            final AdditionalStateProvider provider = pending.remove();
+            final AdditionalDataProvider<?> provider = pending.remove();
             if (provider.yields(updated)) {
                 // this generator has to wait for another one,
                 // we put it again in the pending queue
@@ -242,15 +243,15 @@ public abstract class AbstractPropagator implements Propagator {
      * @param target date of propagation. Not equal to {@code initialState.getDate()}.
      * @since 11.2
      */
-    protected void initializeAdditionalStates(final AbsoluteDate target) {
-        for (final AdditionalStateProvider provider : additionalStateProviders) {
+    protected void initializeAdditionalData(final AbsoluteDate target) {
+        for (final AdditionalDataProvider<?> provider : additionalDataProviders) {
             provider.init(initialState, target);
         }
     }
 
     /** {@inheritDoc} */
-    public boolean isAdditionalStateManaged(final String name) {
-        for (final AdditionalStateProvider provider : additionalStateProviders) {
+    public boolean isAdditionalDataManaged(final String name) {
+        for (final AdditionalDataProvider<?> provider : additionalDataProviders) {
             if (provider.getName().equals(name)) {
                 return true;
             }
@@ -259,10 +260,10 @@ public abstract class AbstractPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
-    public String[] getManagedAdditionalStates() {
-        final String[] managed = new String[additionalStateProviders.size()];
+    public String[] getManagedAdditionalData() {
+        final String[] managed = new String[additionalDataProviders.size()];
         for (int i = 0; i < managed.length; ++i) {
-            managed[i] = additionalStateProviders.get(i).getName();
+            managed[i] = additionalDataProviders.get(i).getName();
         }
         return managed;
     }
@@ -285,10 +286,10 @@ public abstract class AbstractPropagator implements Propagator {
         if (initialState != null) {
             // there is an initial state
             // (null initial states occur for example in interpolated ephemerides)
-            // copy the additional states present in initialState but otherwise not managed
-            for (final DoubleArrayDictionary.Entry initial : initialState.getAdditionalStatesValues().getData()) {
-                if (!isAdditionalStateManaged(initial.getKey())) {
-                    // this additional state is in the initial state, but is unknown to the propagator
+            // copy the additional data present in initialState but otherwise not managed
+            for (final DataDictionary.Entry initial : initialState.getAdditionalDataValues().getData()) {
+                if (!isAdditionalDataManaged(initial.getKey())) {
+                    // this additional data is in the initial state, but is unknown to the propagator
                     // we store it in a way event handlers may change it
                     unmanagedStates.put(initial.getKey(), new TimeSpanMap<>(initial.getValue()));
                 }
@@ -302,8 +303,8 @@ public abstract class AbstractPropagator implements Propagator {
     protected void stateChanged(final SpacecraftState state) {
         final AbsoluteDate date    = state.getDate();
         final boolean      forward = date.durationFrom(getStartDate()) >= 0.0;
-        for (final DoubleArrayDictionary.Entry changed : state.getAdditionalStatesValues().getData()) {
-            final TimeSpanMap<double[]> tsm = unmanagedStates.get(changed.getKey());
+        for (final DataDictionary.Entry changed : state.getAdditionalDataValues().getData()) {
+            final TimeSpanMap<Object> tsm = unmanagedStates.get(changed.getKey());
             if (tsm != null) {
                 // this is an unmanaged state
                 if (forward) {

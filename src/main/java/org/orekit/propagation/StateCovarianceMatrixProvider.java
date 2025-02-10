@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation;
 
-import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
@@ -37,7 +36,7 @@ import org.orekit.time.AbsoluteDate;
  * both matrices must also be specified.
  * <p>
  * In order to add this additional state provider to an orbit propagator, user must use the
- * {@link Propagator#addAdditionalStateProvider(AdditionalStateProvider)} method.
+ * {@link Propagator#addAdditionalDataProvider(AdditionalDataProvider)} method.
  * <p>
  * For a given propagated spacecraft {@code state}, the propagated state covariance matrix is accessible through the
  * method {@link #getStateCovariance(SpacecraftState)}
@@ -46,7 +45,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Vincent Cucchietti
  * @since 11.3
  */
-public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
+public class StateCovarianceMatrixProvider implements AdditionalDataProvider<RealMatrix> {
 
     /** Dimension of the state. */
     private static final int STATE_DIMENSION = 6;
@@ -127,12 +126,12 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
      */
     @Override
     public boolean yields(final SpacecraftState state) {
-        return !state.hasAdditionalState(stmName);
+        return !state.hasAdditionalData(stmName);
     }
 
     /** {@inheritDoc} */
     @Override
-    public double[] getAdditionalState(final SpacecraftState state) {
+    public RealMatrix getAdditionalData(final SpacecraftState state) {
 
         // State transition matrix for the input state
         final RealMatrix dYdY0 = harvester.getStateTransitionMatrix(state);
@@ -145,7 +144,7 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
         propCov = propagated.changeCovarianceType(state.getOrbit(), covOrbitType, covAngleType).getMatrix();
 
         // Return the propagated covariance matrix
-        return toArray(propCov);
+        return propCov;
 
     }
 
@@ -170,7 +169,7 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
     public StateCovariance getStateCovariance(final SpacecraftState state) {
 
         // Get the current propagated covariance
-        final RealMatrix covarianceMatrix = toRealMatrix(getAdditionalState(state));
+        final RealMatrix covarianceMatrix = getAdditionalData(state);
 
         // Create associated state covariance
         final StateCovariance covariance =
@@ -217,40 +216,4 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
         // Return the converted covariance
         return getStateCovariance(state).changeCovarianceType(state.getOrbit(), orbitType, angleType);
     }
-
-    /**
-     * Set the covariance data into an array.
-     *
-     * @param covariance covariance matrix
-     * @return an array containing the covariance data
-     */
-    private double[] toArray(final RealMatrix covariance) {
-        final double[] array = new double[STATE_DIMENSION * STATE_DIMENSION];
-        int            index = 0;
-        for (int i = 0; i < STATE_DIMENSION; ++i) {
-            for (int j = 0; j < STATE_DIMENSION; ++j) {
-                array[index++] = covariance.getEntry(i, j);
-            }
-        }
-        return array;
-    }
-
-    /**
-     * Convert an array to a matrix (6x6 dimension).
-     *
-     * @param array input array
-     * @return the corresponding matrix
-     */
-    private RealMatrix toRealMatrix(final double[] array) {
-        final RealMatrix matrix = MatrixUtils.createRealMatrix(STATE_DIMENSION, STATE_DIMENSION);
-        int              index  = 0;
-        for (int i = 0; i < STATE_DIMENSION; ++i) {
-            for (int j = 0; j < STATE_DIMENSION; ++j) {
-                matrix.setEntry(i, j, array[index++]);
-            }
-        }
-        return matrix;
-
-    }
-
 }

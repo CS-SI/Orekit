@@ -68,7 +68,7 @@ public enum Month {
     DECEMBER(12);
 
     /** Parsing map. */
-    private static final Map<String, Month> STRINGS_MAP = new HashMap<String, Month>();
+    private static final Map<String, Month> STRINGS_MAP = new HashMap<>();
     static {
         for (final Month month : values()) {
             STRINGS_MAP.put(month.getLowerCaseName(),         month);
@@ -77,7 +77,7 @@ public enum Month {
     }
 
     /** Numbers map. */
-    private static final Map<Integer, Month> NUMBERS_MAP = new HashMap<Integer, Month>();
+    private static final Map<Integer, Month> NUMBERS_MAP = new HashMap<>();
     static {
         for (final Month month : values()) {
             NUMBERS_MAP.put(month.getNumber(), month);

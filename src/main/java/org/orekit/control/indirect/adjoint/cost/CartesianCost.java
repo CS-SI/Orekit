@@ -18,7 +18,10 @@ package org.orekit.control.indirect.adjoint.cost;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.control.indirect.adjoint.CartesianAdjointDerivativesProvider;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.propagation.integration.CombinedDerivatives;
 
 import java.util.stream.Stream;
 
@@ -67,7 +70,8 @@ public interface CartesianCost {
     void updateAdjointDerivatives(double[] adjointVariables, double mass, double[] adjointDerivatives);
 
     /**
-     * Computes the Hamiltonian contribution of the cost function.
+     * Computes the Hamiltonian contribution to the cost function.
+     * It equals the Lagrange-form integrand multiplied by -1.
      * @param adjointVariables adjoint vector
      * @param mass mass
      * @return contribution to Hamiltonian
@@ -80,5 +84,37 @@ public interface CartesianCost {
      */
     default Stream<EventDetector> getEventDetectors() {
         return Stream.of();
+    }
+
+    /**
+     * Get the derivatives provider to be able to integrate the cost function.
+     * @param name name of cost as additional state variable
+     * @return derivatives provider
+     * @since 13.0
+     */
+    default AdditionalDerivativesProvider getCostDerivativeProvider(final String name) {
+        return new AdditionalDerivativesProvider() {
+            @Override
+            public String getName() {
+                return name;
+            }
+
+            @Override
+            public int getDimension() {
+                return 1;
+            }
+
+            @Override
+            public boolean yields(final SpacecraftState state) {
+                return !state.hasAdditionalData(getAdjointName());
+            }
+
+            @Override
+            public CombinedDerivatives combinedDerivatives(final SpacecraftState s) {
+                final double[] adjoint = s.getAdditionalState(getAdjointName());
+                final double hamiltonianContribution = getHamiltonianContribution(adjoint, s.getMass());
+                return new CombinedDerivatives(new double[] { -hamiltonianContribution }, null);
+            }
+        };
     }
 }

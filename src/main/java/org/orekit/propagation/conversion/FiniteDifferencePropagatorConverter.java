@@ -109,8 +109,8 @@ public class FiniteDifferencePropagatorConverter extends AbstractPropagatorConve
                 }
             }
 
-            return new Pair<RealVector, RealMatrix>(MatrixUtils.createRealVector(eval),
-                                                    MatrixUtils.createRealMatrix(jacob));
+            return new Pair<>(MatrixUtils.createRealVector(eval),
+                    MatrixUtils.createRealMatrix(jacob));
 
         }
 

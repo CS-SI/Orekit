@@ -232,7 +232,7 @@ public class FixedPointTleGenerationAlgorithm implements TleGenerationAlgorithm 
         T lv  = equinoctialOrbit.getLv();
 
         // rough initialization of the TLE
-        final T bStar = state.getA().getField().getZero().newInstance(templateTLE.getBStar());
+        final T bStar = state.getMass().getField().getZero().newInstance(templateTLE.getBStar());
         final FieldKeplerianOrbit<T> keplerianOrbit = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(equinoctialOrbit);
         FieldTLE<T> current = TleGenerationUtil.newTLE(keplerianOrbit, templateTLE, bStar, utc);
 
@@ -312,7 +312,7 @@ public class FixedPointTleGenerationAlgorithm implements TleGenerationAlgorithm 
      * @return the converted orbit, i.e. equinoctial in TEME frame
      */
     private <T extends CalculusFieldElement<T>> FieldEquinoctialOrbit<T> convert(final FieldOrbit<T> orbitIn) {
-        return new FieldEquinoctialOrbit<T>(orbitIn.getPVCoordinates(teme), teme, orbitIn.getMu().newInstance(TLEConstants.MU));
+        return new FieldEquinoctialOrbit<>(orbitIn.getPVCoordinates(teme), teme, orbitIn.getMu().newInstance(TLEConstants.MU));
     }
 
 }

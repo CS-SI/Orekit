@@ -98,11 +98,6 @@ class AbstractIndirectShootingTest {
         public ShootingBoundaryOutput solve(double initialMass, double[] initialGuess) {
             return null;
         }
-
-        @Override
-        protected <T extends CalculusFieldElement<T>> FieldOrdinaryDifferentialEquation<T> buildFieldODE(final FieldAbsoluteDate<T> date) {
-            return null;
-        }
     }
 
 }

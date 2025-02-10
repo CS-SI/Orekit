@@ -17,7 +17,7 @@
 package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.propagation.AdditionalStateProvider;
+import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.data.GNSSClockElements;
 import org.orekit.time.AbsoluteDate;
@@ -46,7 +46,7 @@ import org.orekit.utils.PVCoordinates;
  * @author Luc Maisonobe
  * @since 9.3
  */
-public class ClockCorrectionsProvider implements AdditionalStateProvider {
+public class ClockCorrectionsProvider implements AdditionalDataProvider<double[]> {
 
     /** Name of the additional state for satellite clock corrections.
      * @since 9.3
@@ -102,7 +102,7 @@ public class ClockCorrectionsProvider implements AdditionalStateProvider {
 
     /** {@inheritDoc} */
     @Override
-    public double[] getAdditionalState(final SpacecraftState state) {
+    public double[] getAdditionalData(final SpacecraftState state) {
 
         // polynomial clock model
         final double  dt    = getDT(state.getDate());

@@ -22,10 +22,12 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.partitioning.BSPTree;
 import org.hipparchus.geometry.partitioning.BSPTreeVisitor;
 import org.hipparchus.geometry.partitioning.Region.Location;
+import org.hipparchus.geometry.spherical.twod.Circle;
 import org.hipparchus.geometry.spherical.twod.Edge;
 import org.hipparchus.geometry.spherical.twod.S2Point;
 import org.hipparchus.geometry.spherical.twod.Sphere2D;
 import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
+import org.hipparchus.geometry.spherical.twod.SubCircle;
 import org.hipparchus.geometry.spherical.twod.Vertex;
 
 /** BSP Tree visitor aimed at finding a point strictly inside a spherical zone.
@@ -36,7 +38,7 @@ import org.hipparchus.geometry.spherical.twod.Vertex;
  * </p>
  * @author Luc Maisonobe
  */
-class InsidePointFinder implements BSPTreeVisitor<Sphere2D> {
+class InsidePointFinder implements BSPTreeVisitor<Sphere2D, S2Point, Circle, SubCircle> {
 
     /** Zone of interest. */
     private final SphericalPolygonsSet zone;
@@ -58,18 +60,18 @@ class InsidePointFinder implements BSPTreeVisitor<Sphere2D> {
 
     /** {@inheritDoc} */
     @Override
-    public Order visitOrder(final BSPTree<Sphere2D> node) {
+    public Order visitOrder(final BSPTree<Sphere2D, S2Point, Circle, SubCircle> node) {
         return Order.MINUS_PLUS_SUB;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void visitInternalNode(final BSPTree<Sphere2D> node) {
+    public void visitInternalNode(final BSPTree<Sphere2D, S2Point, Circle, SubCircle> node) {
     }
 
     /** {@inheritDoc} */
     @Override
-    public void visitLeafNode(final BSPTree<Sphere2D> node) {
+    public void visitLeafNode(final BSPTree<Sphere2D, S2Point, Circle, SubCircle> node) {
 
         // we have already found a good point
         if (insidePointFirstChoice != null) {

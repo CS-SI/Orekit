@@ -22,8 +22,11 @@ import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.partitioning.Region;
 import org.hipparchus.geometry.partitioning.RegionFactory;
+import org.hipparchus.geometry.spherical.twod.Circle;
+import org.hipparchus.geometry.spherical.twod.S2Point;
 import org.hipparchus.geometry.spherical.twod.Sphere2D;
 import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
+import org.hipparchus.geometry.spherical.twod.SubCircle;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 
@@ -70,11 +73,11 @@ public class DoubleDihedraFieldOfView extends PolygonalFieldOfView {
     private static SphericalPolygonsSet createPolygon(final Vector3D center,
                                                       final Vector3D axis1, final double halfAperture1,
                                                       final Vector3D axis2, final double halfAperture2) {
-        final RegionFactory<Sphere2D> factory = new RegionFactory<Sphere2D>();
+        final RegionFactory<Sphere2D, S2Point, Circle, SubCircle> factory = new RegionFactory<>();
         final double tolerance = FastMath.max(FastMath.ulp(2.0 * FastMath.PI),
                                               1.0e-12 * FastMath.max(halfAperture1, halfAperture2));
-        final Region<Sphere2D> dihedra1 = buildDihedra(factory, tolerance, center, axis1, halfAperture1);
-        final Region<Sphere2D> dihedra2 = buildDihedra(factory, tolerance, center, axis2, halfAperture2);
+        final Region<Sphere2D, S2Point, Circle, SubCircle> dihedra1 = buildDihedra(factory, tolerance, center, axis1, halfAperture1);
+        final Region<Sphere2D, S2Point, Circle, SubCircle> dihedra2 = buildDihedra(factory, tolerance, center, axis2, halfAperture2);
         return (SphericalPolygonsSet) factory.intersection(dihedra1, dihedra2);
     }
 
@@ -88,9 +91,10 @@ public class DoubleDihedraFieldOfView extends PolygonalFieldOfView {
      * an hemisphere
      * @return dihedra
      */
-    private static Region<Sphere2D> buildDihedra(final RegionFactory<Sphere2D> factory,
-                                                 final double tolerance, final Vector3D center,
-                                                 final Vector3D axis, final double halfAperture) {
+    private static Region<Sphere2D, S2Point, Circle, SubCircle>
+        buildDihedra(final RegionFactory<Sphere2D, S2Point, Circle, SubCircle> factory,
+                     final double tolerance, final Vector3D center,
+                     final Vector3D axis, final double halfAperture) {
         if (halfAperture > 0.5 * FastMath.PI) {
             throw new OrekitException(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE,
                                       halfAperture, 0.0, 0.5 * FastMath.PI);

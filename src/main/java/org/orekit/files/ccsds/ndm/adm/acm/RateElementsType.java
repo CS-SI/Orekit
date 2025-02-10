@@ -136,7 +136,7 @@ public enum RateElementsType {
     RateElementsType(final String description, final String... unitsSpecifications) {
         this.description = description;
         this.units       = Stream.of(unitsSpecifications).
-                           map(s -> Unit.parse(s)).
+                           map(Unit::parse).
                            collect(Collectors.toList());
     }
 

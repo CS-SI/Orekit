@@ -248,7 +248,7 @@ public abstract class CloseEventsAbstractTest {
         List<EventDetector> detectors = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
             FunctionalDetector detector1 = new FunctionalDetector()
-                    .withFunction(s -> s.getA() - 10e6)
+                    .withFunction(s -> s.getOrbit().getA() - 10e6)
                     .withThreshold(tol)
                     .withMaxCheck(10)
                     .withHandler(new RecordAndContinue(events));

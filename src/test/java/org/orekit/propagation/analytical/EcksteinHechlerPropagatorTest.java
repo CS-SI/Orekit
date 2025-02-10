@@ -141,7 +141,7 @@ public class EcksteinHechlerPropagatorTest {
                             Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                               finalOrbit.getPVCoordinates().getVelocity()),
                             1.0e-3);
-        Assertions.assertEquals(125.2, finalOrbit.getA() - initialOrbit.getA(), 0.1);
+        Assertions.assertEquals(125.2, finalOrbit.getOrbit().getA() - initialOrbit.getA(), 0.1);
 
     }
 
@@ -183,7 +183,7 @@ public class EcksteinHechlerPropagatorTest {
                             Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                               finalOrbit.getPVCoordinates().getVelocity()),
                             1.0e-3);
-        Assertions.assertEquals(126.8, finalOrbit.getA() - initialOrbit.getA(), 0.1);
+        Assertions.assertEquals(126.8, finalOrbit.getOrbit().getA() - initialOrbit.getA(), 0.1);
 
     }
 
@@ -226,8 +226,8 @@ public class EcksteinHechlerPropagatorTest {
         double delta_t = 100.0; // extrapolation duration in seconds
         AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
 
-        SpacecraftState finalOrbitAna = extrapolatorAna.propagate(extrapDate);
-        SpacecraftState finalOrbitKep = extrapolatorKep.propagate(extrapDate);
+        Orbit finalOrbitAna = extrapolatorAna.propagate(extrapDate).getOrbit();
+        Orbit finalOrbitKep = extrapolatorKep.propagate(extrapDate).getOrbit();
 
         Assertions.assertEquals(finalOrbitAna.getDate().durationFrom(extrapDate), 0.0,
                      Utils.epsilonTest);
@@ -281,7 +281,7 @@ public class EcksteinHechlerPropagatorTest {
         double delta_t = 100000.0; // extrapolation duration in seconds
         AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
 
-        SpacecraftState finalOrbit = extrapolator.propagate(extrapDate);
+        Orbit finalOrbit = extrapolator.propagate(extrapDate).getOrbit();
 
         Assertions.assertEquals(0.0, finalOrbit.getDate().durationFrom(extrapDate), 1.0e-9);
 
@@ -363,7 +363,7 @@ public class EcksteinHechlerPropagatorTest {
         double delta_t = 100000.0; // extrapolation duration in seconds
         AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
 
-        SpacecraftState finalOrbit = extrapolator.propagate(extrapDate);
+        Orbit finalOrbit = extrapolator.propagate(extrapDate).getOrbit();
 
         Assertions.assertEquals(0.0, finalOrbit.getDate().durationFrom(extrapDate), 1.0e-9);
 
@@ -813,11 +813,13 @@ public class EcksteinHechlerPropagatorTest {
         final SpacecraftState finalState = propagator.propagate(initDate);
 
         // Verify
-        Assertions.assertEquals(initialState.getA(),             finalState.getA(),             18.0);
-        Assertions.assertEquals(initialState.getEquinoctialEx(), finalState.getEquinoctialEx(), 1.0e-6);
-        Assertions.assertEquals(initialState.getEquinoctialEy(), finalState.getEquinoctialEy(), 5.0e-6);
-        Assertions.assertEquals(initialState.getHx(),            finalState.getHx(),            1.0e-6);
-        Assertions.assertEquals(initialState.getHy(),            finalState.getHy(),            2.0e-6);
+        final Orbit initialOrbit = initialState.getOrbit();
+        final Orbit finalOrbit = finalState.getOrbit();
+        Assertions.assertEquals(initialOrbit.getA(),             finalOrbit.getA(),             18.0);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEx(), finalOrbit.getEquinoctialEx(), 1.0e-6);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEy(), finalOrbit.getEquinoctialEy(), 5.0e-6);
+        Assertions.assertEquals(initialOrbit.getHx(),            finalOrbit.getHx(),            1.0e-6);
+        Assertions.assertEquals(initialOrbit.getHy(),            finalOrbit.getHy(),            2.0e-6);
         Assertions.assertEquals(0.0,
                             Vector3D.distance(initialState.getPosition(),
                                               finalState.getPosition()),
@@ -849,11 +851,13 @@ public class EcksteinHechlerPropagatorTest {
         final SpacecraftState finalState = propagator.propagate(initDate);
 
         // Verify
-        Assertions.assertEquals(initialState.getA(),             finalState.getA(),             18.0);
-        Assertions.assertEquals(initialState.getEquinoctialEx(), finalState.getEquinoctialEx(), 1.0e-6);
-        Assertions.assertEquals(initialState.getEquinoctialEy(), finalState.getEquinoctialEy(), 5.0e-6);
-        Assertions.assertEquals(initialState.getHx(),            finalState.getHx(),            1.0e-6);
-        Assertions.assertEquals(initialState.getHy(),            finalState.getHy(),            2.0e-6);
+        final Orbit initialOrbit = initialState.getOrbit();
+        final Orbit finalOrbit = finalState.getOrbit();
+        Assertions.assertEquals(initialOrbit.getA(),             finalOrbit.getA(),             18.0);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEx(), finalOrbit.getEquinoctialEx(), 1.0e-6);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEy(), finalOrbit.getEquinoctialEy(), 5.0e-6);
+        Assertions.assertEquals(initialOrbit.getHx(),            finalOrbit.getHx(),            1.0e-6);
+        Assertions.assertEquals(initialOrbit.getHy(),            finalOrbit.getHy(),            2.0e-6);
         Assertions.assertEquals(0.0,
                             Vector3D.distance(initialState.getPosition(),
                                               finalState.getPosition()),

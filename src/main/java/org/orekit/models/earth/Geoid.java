@@ -406,17 +406,14 @@ public class Geoid implements EarthShape {
         final double highPoint = FastMath.sqrt(maxAbscissa2);
 
         // line search function
-        final UnivariateFunction heightFunction = new UnivariateFunction() {
-            @Override
-            public double value(final double x) {
-                try {
-                    final GeodeticPoint geodetic =
-                            transform(line.pointAt(x), bodyFrame, date);
-                    return geodetic.getAltitude();
-                } catch (OrekitException e) {
-                    // due to frame transform -> re-throw
-                    throw new RuntimeException(e);
-                }
+        final UnivariateFunction heightFunction = x1 -> {
+            try {
+                final GeodeticPoint geodetic =
+                        transform(line.pointAt(x1), bodyFrame, date);
+                return geodetic.getAltitude();
+            } catch (OrekitException e) {
+                // due to frame transform -> re-throw
+                throw new RuntimeException(e);
             }
         };
 

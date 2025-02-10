@@ -467,7 +467,7 @@ public class TimeSpanEstimatedModelTest {
         array[0][column] += delta;
 
         return arrayToState(array, orbitType, angleType, state.getFrame(), state.getDate(),
-                            state.getMu(), state.getAttitude());
+                            state.getOrbit().getMu(), state.getAttitude());
 
     }
 

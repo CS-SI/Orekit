@@ -27,6 +27,7 @@ import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
+import org.orekit.utils.DataDictionary;
 import org.orekit.utils.TimeSpanMap;
 
 /** Simple Keplerian orbit propagator.
@@ -106,7 +107,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
                                                                                    initialOrbit.getDate(),
                                                                                    initialOrbit.getFrame()),
                                                  mass, mu, null, null);
-        states = new TimeSpanMap<SpacecraftState>(initial);
+        states = new TimeSpanMap<>(initial);
         super.resetInitialState(initial);
 
     }
@@ -125,7 +126,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
      * @return fixed orbit
      */
     private SpacecraftState fixState(final Orbit orbit, final Attitude attitude, final double mass, final double mu,
-                                     final DoubleArrayDictionary additionalStates,
+                                     final DataDictionary additionalStates,
                                      final DoubleArrayDictionary additionalStatesDerivatives) {
         final OrbitType type = orbit.getType();
         final double[] stateVector = new double[6];
@@ -135,8 +136,8 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
                                                       orbit.getDate(), mu, orbit.getFrame());
         SpacecraftState fixedState = new SpacecraftState(fixedOrbit, attitude, mass);
         if (additionalStates != null) {
-            for (final DoubleArrayDictionary.Entry entry : additionalStates.getData()) {
-                fixedState = fixedState.addAdditionalState(entry.getKey(), entry.getValue());
+            for (final DataDictionary.Entry entry : additionalStates.getData()) {
+                fixedState = fixedState.addAdditionalData(entry.getKey(), entry.getValue());
             }
         }
         if (additionalStatesDerivatives != null) {
@@ -152,15 +153,15 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
 
         // ensure the orbit use the specified mu and has no non-Keplerian derivatives
         final SpacecraftState formerInitial = getInitialState();
-        final double mu = formerInitial == null ? state.getMu() : formerInitial.getMu();
+        final double mu = formerInitial == null ? state.getOrbit().getMu() : formerInitial.getOrbit().getMu();
         final SpacecraftState fixedState = fixState(state.getOrbit(),
                                                     state.getAttitude(),
                                                     state.getMass(),
                                                     mu,
-                                                    state.getAdditionalStatesValues(),
+                                                    state.getAdditionalDataValues(),
                                                     state.getAdditionalStatesDerivatives());
 
-        states = new TimeSpanMap<SpacecraftState>(fixedState);
+        states = new TimeSpanMap<>(fixedState);
         super.resetInitialState(fixedState);
 
     }
@@ -176,7 +177,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** {@inheritDoc} */
-    protected Orbit propagateOrbit(final AbsoluteDate date) {
+    public Orbit propagateOrbit(final AbsoluteDate date) {
 
         // propagate orbit
         Orbit orbit = states.get(date).getOrbit();
@@ -202,7 +203,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
         // Create the harvester
         final KeplerianHarvester harvester = new KeplerianHarvester(this, stmName, initialStm, initialJacobianColumns);
         // Update the list of additional state provider
-        addAdditionalStateProvider(harvester);
+        addAdditionalDataProvider(harvester);
         // Return the configured harvester
         return harvester;
     }

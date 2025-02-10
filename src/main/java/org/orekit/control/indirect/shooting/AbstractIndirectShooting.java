@@ -18,7 +18,6 @@ package org.orekit.control.indirect.shooting;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.ode.FieldOrdinaryDifferentialEquation;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.FieldExplicitRungeKuttaIntegrator;
 import org.orekit.control.indirect.shooting.propagation.ShootingPropagationSettings;
@@ -32,7 +31,6 @@ import org.orekit.propagation.conversion.FieldExplicitRungeKuttaIntegratorBuilde
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.time.FieldAbsoluteDate;
 
 /**
  * Abstract class for indirect shooting methods with numerical propagation.
@@ -136,12 +134,4 @@ public abstract class AbstractIndirectShooting {
         }
     }
 
-    /**
-     * Build Ordinary Differential Equation for Field.
-     * @param referenceDate date defining the origin of times
-     * @param <T> field type
-     * @return Field ODE
-     * @since 13.0
-     */
-    protected abstract  <T extends CalculusFieldElement<T>> FieldOrdinaryDifferentialEquation<T> buildFieldODE(FieldAbsoluteDate<T> referenceDate);
 }

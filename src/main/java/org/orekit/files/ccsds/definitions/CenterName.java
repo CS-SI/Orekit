@@ -34,43 +34,43 @@ import org.orekit.frames.Predefined;
  */
 public enum CenterName {
     /** Solar system barycenter aggregated body. */
-    SOLAR_SYSTEM_BARYCENTER(celestialBodies -> celestialBodies.getSolarSystemBarycenter()),
+    SOLAR_SYSTEM_BARYCENTER(CelestialBodies::getSolarSystemBarycenter),
 
     /** Sun body. */
-    SUN(celestialBodies -> celestialBodies.getSun()),
+    SUN(CelestialBodies::getSun),
 
     /** Mercury body. */
-    MERCURY(celestialBodies -> celestialBodies.getMercury()),
+    MERCURY(CelestialBodies::getMercury),
 
     /** Venus body. */
-    VENUS(celestialBodies -> celestialBodies.getVenus()),
+    VENUS(CelestialBodies::getVenus),
 
     /** Earth-Moon barycenter bodies pair. */
-    EARTH_MOON(celestialBodies -> celestialBodies.getEarthMoonBarycenter()),
+    EARTH_MOON(CelestialBodies::getEarthMoonBarycenter),
 
     /** Earth body. */
-    EARTH(celestialBodies -> celestialBodies.getEarth()),
+    EARTH(CelestialBodies::getEarth),
 
     /** Moon body. */
-    MOON(celestialBodies -> celestialBodies.getMoon()),
+    MOON(CelestialBodies::getMoon),
 
     /** Mars body. */
-    MARS(celestialBodies -> celestialBodies.getMars()),
+    MARS(CelestialBodies::getMars),
 
     /** Jupiter body. */
-    JUPITER(celestialBodies -> celestialBodies.getJupiter()),
+    JUPITER(CelestialBodies::getJupiter),
 
     /** Saturn body. */
-    SATURN(celestialBodies -> celestialBodies.getSaturn()),
+    SATURN(CelestialBodies::getSaturn),
 
     /** Uranus body. */
-    URANUS(celestialBodies -> celestialBodies.getUranus()),
+    URANUS(CelestialBodies::getUranus),
 
     /** Neptune body. */
-    NEPTUNE(celestialBodies -> celestialBodies.getNeptune()),
+    NEPTUNE(CelestialBodies::getNeptune),
 
     /** Pluto body. */
-    PLUTO(celestialBodies -> celestialBodies.getPluto());
+    PLUTO(CelestialBodies::getPluto);
 
     /** Suffix of the name of the inertial frame attached to a planet. */
     private static final String INERTIAL_FRAME_SUFFIX = "/inertial";

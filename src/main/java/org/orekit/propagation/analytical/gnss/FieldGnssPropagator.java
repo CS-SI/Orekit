@@ -183,7 +183,8 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     @Override
-    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
+    public FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date,
+                                        final T[] parameters) {
         // Gets the PVCoordinates in ECEF frame
         final FieldPVCoordinates<T> pvaInECEF = propagateInEcef(date, parameters);
         // Transforms the PVCoordinates to ECI frame
@@ -208,8 +209,14 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
                                                                                   date.getField().getOne(),
                                                                                   date.getField().getZero());
 
+        // Semi-major axis
+        final FieldUnivariateDerivative2<T> ak = tk.multiply(orbitalElements.getADot()).add(orbitalElements.getSma());
+        // Mean motion
+        final FieldUnivariateDerivative2<T> nA = tk.multiply(orbitalElements.getDeltaN0Dot().multiply(0.5)).
+                                                 add(orbitalElements.getDeltaN0()).
+                                                 add(orbitalElements.getMeanMotion0());
         // Mean anomaly
-        final FieldUnivariateDerivative2<T> mk = tk.multiply(orbitalElements.getMeanMotion()).add(orbitalElements.getM0());
+        final FieldUnivariateDerivative2<T> mk = tk.multiply(nA).add(orbitalElements.getM0());
         // Eccentric Anomaly
         final FieldUnivariateDerivative2<T> e  = tk.newInstance(orbitalElements.getE());
         final FieldUnivariateDerivative2<T> ek = FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(e, mk);
@@ -230,7 +237,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
         // Corrected Argument of Latitude
         final FieldSinCos<FieldUnivariateDerivative2<T>> csuk = FastMath.sinCos(phik.add(dphik));
         // Corrected Radius
-        final FieldUnivariateDerivative2<T> rk = ek.cos().multiply(e.negate()).add(1).multiply(orbitalElements.getSma()).add(drk);
+        final FieldUnivariateDerivative2<T> rk = ek.cos().multiply(e.negate()).add(1).multiply(ak).add(drk);
         // Corrected Inclination
         final FieldUnivariateDerivative2<T> ik  = tk.multiply(parameters[GNSSOrbitalElements.I_DOT_INDEX]).
                                                   add(orbitalElements.getI0()).add(dik);
@@ -441,10 +448,11 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
                       add(nonKeplerianElements.getAngularVelocity() * nonKeplerianElements.getTime());
 
         // recover eccentricity and anomaly
-        final T rV2OMu           = rk.multiply(v.getNormSq()).divide(initialState.getMu());
+        final T mu = initialState.getOrbit().getMu();
+        final T rV2OMu           = rk.multiply(v.getNormSq()).divide(mu);
         final T sma              = rk.divide(rV2OMu.negate().add(2));
         final T eCosE            = rV2OMu.subtract(1);
-        final T eSinE            = FieldVector3D.dotProduct(p, v).divide(FastMath.sqrt(initialState.getMu().multiply(sma)));
+        final T eSinE            = FieldVector3D.dotProduct(p, v).divide(FastMath.sqrt(mu.multiply(sma)));
         final T e                = FastMath.hypot(eCosE, eSinE);
         final T eccentricAnomaly = FastMath.atan2(eSinE, eCosE);
         final T aop              = phi.subtract(eccentricAnomaly);
@@ -452,7 +460,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
 
         return new FieldKeplerianOrbit<>(sma, e, i0, aop, om0, meanAnomaly, PositionAngleType.MEAN,
                                          PositionAngleType.MEAN, frozenEcef,
-                                         initialState.getDate(), initialState.getMu());
+                                         initialState.getDate(), mu);
 
     }
 

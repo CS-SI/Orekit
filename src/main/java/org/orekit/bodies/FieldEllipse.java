@@ -165,7 +165,7 @@ public class FieldEllipse<T extends CalculusFieldElement<T>> {
      * @see #toPlane(FieldVector3D)
      */
     public FieldVector3D<T> toSpace(final FieldVector2D<T> p) {
-        return new FieldVector3D<T>(a.getField().getOne(), center, p.getX(), u, p.getY(), v);
+        return new FieldVector3D<>(a.getField().getOne(), center, p.getX(), u, p.getY(), v);
     }
 
     /** Project a point to the ellipse plane.
@@ -326,8 +326,8 @@ public class FieldEllipse<T extends CalculusFieldElement<T>> {
 
         // back to 3D
         final FieldVector3D<T> e3D       = toSpace(e2D);
-        final FieldVector3D<T> eDot3D    = new FieldVector3D<T>(eDot2D.getX(),    u, eDot2D.getY(),    v);
-        final FieldVector3D<T> eDotDot3D = new FieldVector3D<T>(eDotDot2D.getX(), u, eDotDot2D.getY(), v);
+        final FieldVector3D<T> eDot3D    = new FieldVector3D<>(eDot2D.getX(), u, eDot2D.getY(), v);
+        final FieldVector3D<T> eDotDot3D = new FieldVector3D<>(eDotDot2D.getX(), u, eDotDot2D.getY(), v);
 
         return new TimeStampedFieldPVCoordinates<>(pv.getDate(), e3D, eDot3D, eDotDot3D);
 

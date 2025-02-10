@@ -69,6 +69,13 @@ public class NeQuickGalileo extends NeQuickModel {
         this.alpha = alpha.clone();
     }
 
+    /** Get effective ionisation level coefficients.
+     * @return effective ionisation level coefficients
+     */
+    public double[] getAlpha() {
+        return alpha.clone();
+    }
+
     /**
      * Compute effective ionization level.
      *
@@ -200,8 +207,7 @@ public class NeQuickGalileo extends NeQuickModel {
             final GeodeticPoint gp = seg.getPoint(i);
             final double modip = GalileoHolder.INSTANCE.computeMODIP(gp.getLatitude(), gp.getLongitude());
             final double az = effectiveIonizationLevel(modip);
-            density +=
-                electronDensity(dateTime, modip, az, gp.getLatitude(), gp.getLongitude(), gp.getAltitude());
+            density += electronDensity(dateTime, az, gp.getLatitude(), gp.getLongitude(), gp.getAltitude());
         }
 
         return 0.5 * seg.getInterval() * density;
@@ -223,12 +229,23 @@ public class NeQuickGalileo extends NeQuickModel {
             final FieldGeodeticPoint<T> gp = seg.getPoint(i);
             final T modip = GalileoHolder.INSTANCE.computeMODIP(gp.getLatitude(), gp.getLongitude());
             final T az = effectiveIonizationLevel(modip);
-            density =
-                density.add(electronDensity(dateTime, modip, az, gp.getLatitude(), gp.getLongitude(),
-                                            gp.getAltitude()));
+            density = density.add(electronDensity(dateTime, az,
+                                                  gp.getLatitude(), gp.getLongitude(), gp.getAltitude()));
         }
 
         return seg.getInterval().multiply(density).multiply(0.5);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected double computeMODIP(final double latitude, final double longitude) {
+        return GalileoHolder.INSTANCE.computeMODIP(latitude, longitude);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected <T extends CalculusFieldElement<T>> T computeMODIP(final T latitude, final T longitude) {
+        return GalileoHolder.INSTANCE.computeMODIP(latitude, longitude);
     }
 
     /** {@inheritDoc} */

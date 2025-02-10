@@ -16,11 +16,6 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
@@ -51,7 +46,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;
-import org.orekit.propagation.AdditionalStateProvider;
+import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.CartesianToleranceProvider;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
@@ -69,10 +64,15 @@ import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
-import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /** This class propagates {@link org.orekit.orbits.Orbit orbits} using
  * numerical integration.
@@ -421,7 +421,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         super.resetInitialState(state);
         if (!hasNewtonianAttraction()) {
             // use the state to define central attraction
-            setMu(state.getMu());
+            setMu(state.isOrbitDefined() ? state.getOrbit().getMu() : Double.NaN);
         }
         setStartDate(state.getDate());
     }
@@ -497,7 +497,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             addAdditionalDerivativesProvider(stmGenerator);
         }
 
-        if (!getInitialIntegrationState().hasAdditionalState(harvester.getStmName())) {
+        if (!getInitialIntegrationState().hasAdditionalData(harvester.getStmName())) {
             // add the initial State Transition Matrix if it is not already there
             // (perhaps due to a previous propagation)
             setInitialState(stmGenerator.setInitialStateTransitionMatrix(getInitialState(),
@@ -615,7 +615,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         TriggerDate triggerGenerator = null;
 
         // check if we already have set up the provider
-        for (final AdditionalStateProvider provider : getAdditionalStateProviders()) {
+        for (final AdditionalDataProvider<?> provider : getAdditionalDataProviders()) {
             if (provider instanceof TriggerDate &&
                 provider.getName().equals(driverName)) {
                 // the Jacobian column generator has already been set up in a previous propagation
@@ -629,10 +629,10 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             triggerGenerator = new TriggerDate(stmName, driverName, start, maneuver, threshold);
             mt.addResetter(triggerGenerator);
             addAdditionalDerivativesProvider(triggerGenerator.getMassDepletionDelay());
-            addAdditionalStateProvider(triggerGenerator);
+            addAdditionalDataProvider(triggerGenerator);
         }
 
-        if (!getInitialIntegrationState().hasAdditionalState(driverName)) {
+        if (!getInitialIntegrationState().hasAdditionalData(driverName)) {
             // add the initial Jacobian column if it is not already there
             // (perhaps due to a previous propagation)
             setInitialColumn(triggerGenerator.getMassDepletionDelay().getName(), new double[6]);
@@ -655,7 +655,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         MedianDate medianGenerator = null;
 
         // check if we already have set up the provider
-        for (final AdditionalStateProvider provider : getAdditionalStateProviders()) {
+        for (final AdditionalDataProvider<?> provider : getAdditionalDataProviders()) {
             if (provider instanceof MedianDate &&
                 provider.getName().equals(medianName)) {
                 // the Jacobian column generator has already been set up in a previous propagation
@@ -667,10 +667,10 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         if (medianGenerator == null) {
             // this is the first time we need the Jacobian column generator, create it
             medianGenerator = new MedianDate(startName, stopName, medianName);
-            addAdditionalStateProvider(medianGenerator);
+            addAdditionalDataProvider(medianGenerator);
         }
 
-        if (!getInitialIntegrationState().hasAdditionalState(medianName)) {
+        if (!getInitialIntegrationState().hasAdditionalData(medianName)) {
             // add the initial Jacobian column if it is not already there
             // (perhaps due to a previous propagation)
             setInitialColumn(medianName, getHarvester().getInitialJacobianColumn(medianName));
@@ -692,7 +692,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         Duration durationGenerator = null;
 
         // check if we already have set up the provider
-        for (final AdditionalStateProvider provider : getAdditionalStateProviders()) {
+        for (final AdditionalDataProvider<?> provider : getAdditionalDataProviders()) {
             if (provider instanceof Duration &&
                 provider.getName().equals(durationName)) {
                 // the Jacobian column generator has already been set up in a previous propagation
@@ -704,10 +704,10 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         if (durationGenerator == null) {
             // this is the first time we need the Jacobian column generator, create it
             durationGenerator = new Duration(startName, stopName, durationName);
-            addAdditionalStateProvider(durationGenerator);
+            addAdditionalDataProvider(durationGenerator);
         }
 
-        if (!getInitialIntegrationState().hasAdditionalState(durationName)) {
+        if (!getInitialIntegrationState().hasAdditionalData(durationName)) {
             // add the initial Jacobian column if it is not already there
             // (perhaps due to a previous propagation)
             setInitialColumn(durationName, getHarvester().getInitialJacobianColumn(durationName));
@@ -768,7 +768,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                     addAdditionalDerivativesProvider(generator);
                 }
 
-                if (!getInitialIntegrationState().hasAdditionalState(currentNameSpan.getData())) {
+                if (!getInitialIntegrationState().hasAdditionalData(currentNameSpan.getData())) {
                     // add the initial Jacobian column if it is not already there
                     // (perhaps due to a previous propagation)
                     setInitialColumn(currentNameSpan.getData(), getHarvester().getInitialJacobianColumn(currentNameSpan.getData()));
@@ -807,7 +807,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                         toArray();
 
         // set additional state
-        setInitialState(state.addAdditionalState(columnName, column));
+        setInitialState(state.addAdditionalData(columnName, column));
 
     }
 

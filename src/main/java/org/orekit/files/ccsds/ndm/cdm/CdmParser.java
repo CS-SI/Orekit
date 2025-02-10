@@ -272,8 +272,8 @@ public class CdmParser extends AbstractConstituentParser<CdmHeader, Cdm, CdmPars
 
             // Add the user defined block to both Objects data sections
             if (userDefinedBlock != null && !userDefinedBlock.getParameters().isEmpty()) {
-                for (int i = 0; i < segments.size(); i++) {
-                    segments.get(i).getData().setUserDefinedBlock(userDefinedBlock);
+                for (CdmSegment segment : segments) {
+                    segment.getData().setUserDefinedBlock(userDefinedBlock);
                 }
             }
         }

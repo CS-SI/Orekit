@@ -103,7 +103,7 @@ class DSSTThirdBodyTest {
     void testShortPeriodTerms() throws IllegalArgumentException {
         final SpacecraftState meanState = getGEOState();
 
-        final DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), meanState.getMu());
+        final DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), meanState.getOrbit().getMu());
 
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
         forces.add(moon);

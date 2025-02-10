@@ -74,8 +74,8 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
         final int k       = rawProvider.getMaxDegree() + 1;
         this.size         = (k * (k + 1)) / 2;
 
-        cache = new GenericTimeStampedCache<TimeStampedSphericalHarmonics>(nbPoints, maxSlots, maxSpan,
-                                                                           newSlotInterval, new Generator(step));
+        cache = new GenericTimeStampedCache<>(nbPoints, maxSlots, maxSpan,
+                newSlotInterval, new Generator(step));
     }
 
     /** {@inheritDoc} */
@@ -140,7 +140,7 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
             try {
 
                 final List<TimeStampedSphericalHarmonics> generated =
-                        new ArrayList<TimeStampedSphericalHarmonics>();
+                        new ArrayList<>();
                 final double[] cnmsnm = new double[2 * size];
 
                 if (existingDate == null) {

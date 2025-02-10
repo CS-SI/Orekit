@@ -138,7 +138,7 @@ public class NumericalPropagationHarvesterTest {
         for (int i = 0; i < p.length; i += 7) {
             p[i] = 1.0;
         }
-        SpacecraftState s = propagator.getInitialState().addAdditionalState(harvester.getStmName(), p);
+        SpacecraftState s = propagator.getInitialState().addAdditionalData(harvester.getStmName(), p);
         RealMatrix stm = harvester.getStateTransitionMatrix(s);
         Assertions.assertEquals(deltaId, stm.subtract(MatrixUtils.createRealIdentityMatrix(6)).getNorm1(), 1.0e-3);
         Assertions.assertEquals(type, harvester.getOrbitType());

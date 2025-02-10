@@ -16,8 +16,11 @@
  */
 package org.orekit.files.sinex;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.EopHistoryLoader;
 import org.orekit.frames.ITRFVersion;
+import org.orekit.gnss.GnssSignal;
+import org.orekit.gnss.SatInSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScales;
@@ -35,6 +38,9 @@ import java.util.TreeSet;
  */
 public class Sinex extends AbstractSinex {
 
+    /** Satellites phase centers. */
+    private final Map<SatInSystem, Map<GnssSignal, Vector3D>> satellitesPhaseCenters;
+
     /** Station data. */
     private final Map<String, Station> stations;
 
@@ -46,15 +52,25 @@ public class Sinex extends AbstractSinex {
      * @param creationDate SINEX file creation date
      * @param startDate start time of the data used in the Sinex solution
      * @param endDate end time of the data used in the Sinex solution
+     * @param satellitesPhaseCenters satellites phase centers
      * @param stations station data
      * @param eop Earth Orientation Parameters data
      */
     public Sinex(final TimeScales timeScales,
                  final AbsoluteDate creationDate, final AbsoluteDate startDate, final AbsoluteDate endDate,
+                 final Map<SatInSystem, Map<GnssSignal, Vector3D>> satellitesPhaseCenters,
                  final Map<String, Station> stations, final Map<AbsoluteDate, SinexEopEntry> eop) {
         super(timeScales, creationDate, startDate, endDate);
-        this.stations = stations;
-        this.eop      = eop;
+        this.satellitesPhaseCenters = satellitesPhaseCenters;
+        this.stations               = stations;
+        this.eop                    = eop;
+    }
+
+    /** Get the parsed satellites phase centers.
+     * @return unmodifiable view of parsed satellites phase centers
+     */
+    public Map<SatInSystem, Map<GnssSignal, Vector3D>> getSatellitesPhaseCenters() {
+        return Collections.unmodifiableMap(satellitesPhaseCenters);
     }
 
     /** Get the parsed station data.

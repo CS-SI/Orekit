@@ -175,7 +175,7 @@ public abstract class AbstractGradientConverter {
         final FieldCartesianOrbit<Gradient> gOrbit;
         final FieldAbsolutePVCoordinates<Gradient> gAbsolutePV;
         if (state.isOrbitDefined()) {
-            final Gradient gMu = Gradient.constant(freeStateParameters, state.getMu());
+            final Gradient gMu = Gradient.constant(freeStateParameters, state.getOrbit().getMu());
             gOrbit = new FieldCartesianOrbit<>(timeStampedFieldPVCoordinates, state.getFrame(), gMu);
             gAbsolutePV = null;
         } else {
@@ -262,14 +262,14 @@ public abstract class AbstractGradientConverter {
                                                                                PositionAngleType.MEAN,
                                                                                s0.getFrame(),
                                                                                extend(s0.getDate(), freeParameters),
-                                                                               extend(s0.getMu(), freeParameters)),
+                                                                               extend(orbit.getMu(), freeParameters)),
                             gAttitude,
                             gMass);
                 } else {
                     spacecraftState =
                         new FieldSpacecraftState<>(new FieldCartesianOrbit<>(timeStampedFieldPVCoordinates,
                                                                              s0.getFrame(),
-                                                                             extend(s0.getMu(), freeParameters)),
+                                                                             extend(orbit.getMu(), freeParameters)),
                                                    gAttitude, gMass);
                 }
             } else {

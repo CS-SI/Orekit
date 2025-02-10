@@ -96,7 +96,7 @@ class AcmMetadataWriter extends AbstractWriter {
         // definitions
         if (metadata.getAcmDataElements() != null) {
             generator.writeEntry(AcmMetadataKey.ACM_DATA_ELEMENTS.name(),
-                                 metadata.getAcmDataElements().stream().map(e -> e.name()).collect(Collectors.toList()), false);
+                                 metadata.getAcmDataElements().stream().map(Enum::name).collect(Collectors.toList()), false);
         }
 
         // other times

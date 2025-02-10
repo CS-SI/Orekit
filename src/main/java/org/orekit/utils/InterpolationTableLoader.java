@@ -100,9 +100,9 @@ public class InterpolationTableLoader implements DataLoader {
     public void loadData(final InputStream input, final String name)
         throws IOException, ParseException {
 
-        final List<Double> xValues = new LinkedList<Double>();
-        final List<Double> yValues = new LinkedList<Double>();
-        final LinkedList<List<Double>> cellValues = new LinkedList<List<Double>>();
+        final List<Double> xValues = new LinkedList<>();
+        final List<Double> yValues = new LinkedList<>();
+        final LinkedList<List<Double>> cellValues = new LinkedList<>();
 
         final StreamTokenizer tokenizer =
             new StreamTokenizer(new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8)));
@@ -136,7 +136,7 @@ public class InterpolationTableLoader implements DataLoader {
                     } else {
                         if (tokenCount == 0) {
                             xValues.add(tokenizer.nval);
-                            cellValues.add(new LinkedList<Double>());
+                            cellValues.add(new LinkedList<>());
                         } else {
                             cellValues.getLast().add(tokenizer.nval);
                         }

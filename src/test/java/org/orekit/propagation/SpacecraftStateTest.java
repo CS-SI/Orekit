@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation;
 
-import java.text.ParseException;
-
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalStateException;
@@ -54,11 +52,9 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.AbsolutePVCoordinates;
-import org.orekit.utils.Constants;
-import org.orekit.utils.DoubleArrayDictionary;
-import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.*;
+
+import java.text.ParseException;
 
 
 class SpacecraftStateTest {
@@ -188,51 +184,59 @@ class SpacecraftStateTest {
     }
 
     @Test
+    void testGetAdditionalStateBadType() {
+        final SpacecraftState state = new SpacecraftState(orbit).addAdditionalData("string", "hello there");
+        OrekitException exception = Assertions.assertThrows(OrekitException.class, () -> state.getAdditionalState("string"));
+        Assertions.assertEquals(OrekitMessages.ADDITIONAL_STATE_BAD_TYPE, exception.getSpecifier());
+        Assertions.assertEquals("string", exception.getParts()[0]);
+    }
+
+    @Test
     void testAdditionalStates() {
         final SpacecraftState state = propagator.propagate(orbit.getDate().shiftedBy(60));
         final SpacecraftState extended =
                         state.
-                        addAdditionalState("test-1", new double[] { 1.0, 2.0 }).
-                        addAdditionalState("test-2", 42.0);
-        Assertions.assertEquals(0, state.getAdditionalStatesValues().size());
-        Assertions.assertFalse(state.hasAdditionalState("test-1"));
+                        addAdditionalData("test-1", new double[] { 1.0, 2.0 }).
+                        addAdditionalData("test-2", 42.0);
+        Assertions.assertEquals(0, state.getAdditionalDataValues().size());
+        Assertions.assertFalse(state.hasAdditionalData("test-1"));
         try {
             state.getAdditionalState("test-1");
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_DATA);
             Assertions.assertEquals(oe.getParts()[0], "test-1");
         }
         try {
             state.ensureCompatibleAdditionalStates(extended);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_DATA);
             Assertions.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
         }
         try {
             extended.ensureCompatibleAdditionalStates(state);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_DATA);
             Assertions.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
         }
         try {
-            extended.ensureCompatibleAdditionalStates(extended.addAdditionalState("test-2", new double[7]));
+            extended.ensureCompatibleAdditionalStates(extended.addAdditionalData("test-2", new double[7]));
             Assertions.fail("an exception should have been thrown");
         } catch (MathIllegalStateException mise) {
             Assertions.assertEquals(LocalizedCoreFormats.DIMENSIONS_MISMATCH, mise.getSpecifier());
             Assertions.assertEquals(7, ((Integer) mise.getParts()[0]).intValue());
         }
-        Assertions.assertEquals(2, extended.getAdditionalStatesValues().getData().size());
-        Assertions.assertTrue(extended.hasAdditionalState("test-1"));
-        Assertions.assertTrue(extended.hasAdditionalState("test-2"));
+        Assertions.assertEquals(2, extended.getAdditionalDataValues().getData().size());
+        Assertions.assertTrue(extended.hasAdditionalData("test-1"));
+        Assertions.assertTrue(extended.hasAdditionalData("test-2"));
         Assertions.assertEquals( 1.0, extended.getAdditionalState("test-1")[0], 1.0e-15);
         Assertions.assertEquals( 2.0, extended.getAdditionalState("test-1")[1], 1.0e-15);
         Assertions.assertEquals(42.0, extended.getAdditionalState("test-2")[0], 1.0e-15);
 
         // test various constructors
-        DoubleArrayDictionary dictionary = new DoubleArrayDictionary();
+        DataDictionary dictionary = new DataDictionary();
         dictionary.put("test-3", new double[] { -6.0 });
         SpacecraftState sO = new SpacecraftState(state.getOrbit(), dictionary);
         Assertions.assertEquals(-6.0, sO.getAdditionalState("test-3")[0], 1.0e-15);
@@ -258,21 +262,21 @@ class SpacecraftStateTest {
             state.getAdditionalStateDerivative("test-1");
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_DATA);
             Assertions.assertEquals(oe.getParts()[0], "test-1");
         }
         try {
             state.ensureCompatibleAdditionalStates(extended);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_DATA);
             Assertions.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
         }
         try {
             extended.ensureCompatibleAdditionalStates(state);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_DATA);
             Assertions.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
         }
         try {
@@ -293,7 +297,7 @@ class SpacecraftStateTest {
         DoubleArrayDictionary dictionary = new DoubleArrayDictionary();
         dictionary.put("test-3", new double[] { -6.0 });
         SpacecraftState s = new SpacecraftState(state.getOrbit(), state.getAttitude(), state.getMass(), null, dictionary);
-        Assertions.assertFalse(s.hasAdditionalState("test-3"));
+        Assertions.assertFalse(s.hasAdditionalData("test-3"));
         Assertions.assertEquals(-6.0, s.getAdditionalStateDerivative("test-3")[0], 1.0e-15);
 
     }
@@ -313,7 +317,7 @@ class SpacecraftStateTest {
         // Create initial state with one additional state and add it to the propagator
         final String name = "A";
         SpacecraftState initialState = new SpacecraftState(orbit).
-                                       addAdditionalState(name, new double[] { -1 });
+                                       addAdditionalData(name, new double[] { -1 });
 
         propagator.resetInitialState(initialState);
 
@@ -329,7 +333,7 @@ class SpacecraftStateTest {
 
             @Override
             public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
-                return oldState.addAdditionalState(name, new double[] { +1 });
+                return oldState.addAdditionalData(name, new double[] { +1 });
             }
 
         });
@@ -363,7 +367,7 @@ class SpacecraftStateTest {
         // Create initial state with one additional state and add it to the propagator
         final String name = "A";
         SpacecraftState initialState = new SpacecraftState(orbit).
-                        addAdditionalState(name, new double[] { -1 });
+                        addAdditionalData(name, new double[] { -1 });
 
         propagator.setInitialState(initialState);
 
@@ -379,7 +383,7 @@ class SpacecraftStateTest {
 
             @Override
             public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
-                return oldState.addAdditionalState(name, new double[] { +1 });
+                return oldState.addAdditionalData(name, new double[] { +1 });
             }
 
         });
@@ -428,42 +432,42 @@ class SpacecraftStateTest {
         add[1] = 2.;
         final SpacecraftState extended =
                 state.
-                 addAdditionalState("test-1", add).
-                  addAdditionalState("test-2", 42.0);
-        Assertions.assertEquals(0, state.getAdditionalStatesValues().size());
-        Assertions.assertFalse(state.hasAdditionalState("test-1"));
+                 addAdditionalData("test-1", add).
+                  addAdditionalData("test-2", 42.0);
+        Assertions.assertEquals(0, state.getAdditionalDataValues().size());
+        Assertions.assertFalse(state.hasAdditionalData("test-1"));
         try {
             state.getAdditionalState("test-1");
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_DATA);
             Assertions.assertEquals(oe.getParts()[0], "test-1");
         }
         try {
             state.ensureCompatibleAdditionalStates(extended);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_DATA);
             Assertions.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
         }
         try {
             extended.ensureCompatibleAdditionalStates(state);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_DATA);
             Assertions.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
         }
         try {
             double[] kk = new double[7];
-            extended.ensureCompatibleAdditionalStates(extended.addAdditionalState("test-2", kk));
+            extended.ensureCompatibleAdditionalStates(extended.addAdditionalData("test-2", kk));
             Assertions.fail("an exception should have been thrown");
         } catch (MathIllegalStateException mise) {
             Assertions.assertEquals(LocalizedCoreFormats.DIMENSIONS_MISMATCH, mise.getSpecifier());
             Assertions.assertEquals(7, ((Integer) mise.getParts()[0]).intValue());
         }
-        Assertions.assertEquals(2, extended.getAdditionalStatesValues().size());
-        Assertions.assertTrue(extended.hasAdditionalState("test-1"));
-        Assertions.assertTrue(extended.hasAdditionalState("test-2"));
+        Assertions.assertEquals(2, extended.getAdditionalDataValues().size());
+        Assertions.assertTrue(extended.hasAdditionalData("test-1"));
+        Assertions.assertTrue(extended.hasAdditionalData("test-2"));
         Assertions.assertEquals( 1.0, extended.getAdditionalState("test-1")[0], 1.0e-15);
         Assertions.assertEquals( 2.0, extended.getAdditionalState("test-1")[1], 1.0e-15);
         Assertions.assertEquals(42.0, extended.getAdditionalState("test-2")[0], 1.0e-15);
@@ -471,7 +475,7 @@ class SpacecraftStateTest {
         // test various constructors
         double[] dd = new double[1];
         dd[0] = -6.0;
-        DoubleArrayDictionary additional = new DoubleArrayDictionary();
+        DataDictionary additional = new DataDictionary();
         additional.put("test-3", dd);
         SpacecraftState sO = new SpacecraftState(state.getAbsPVA(), additional);
         Assertions.assertEquals(-6.0, sO.getAdditionalState("test-3")[0], 1.0e-15);
@@ -523,21 +527,21 @@ class SpacecraftStateTest {
             state.getAdditionalStateDerivative("test-1");
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_DATA);
             Assertions.assertEquals(oe.getParts()[0], "test-1");
         }
         try {
             state.ensureCompatibleAdditionalStates(extended);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_DATA);
             Assertions.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
         }
         try {
             extended.ensureCompatibleAdditionalStates(state);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_DATA);
             Assertions.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
         }
         try {
@@ -572,9 +576,9 @@ class SpacecraftStateTest {
         final String valueOnly          = "value-only";
         final String derivativeOnly     = "derivative-only";
         final SpacecraftState s0 = propagator.getInitialState().
-                                   addAdditionalState(valueAndDerivative,           new double[] { 1.0,  2.0 }).
+                                   addAdditionalData(valueAndDerivative,           new double[] { 1.0,  2.0 }).
                                    addAdditionalStateDerivative(valueAndDerivative, new double[] { 3.0,  2.0 }).
-                                   addAdditionalState(valueOnly,                    new double[] { 5.0,  4.0 }).
+                                   addAdditionalData(valueOnly,                    new double[] { 5.0,  4.0 }).
                                    addAdditionalStateDerivative(derivativeOnly,     new double[] { 1.0, -1.0 });
         Assertions.assertEquals( 1.0, s0.getAdditionalState(valueAndDerivative)[0],           1.0e-15);
         Assertions.assertEquals( 2.0, s0.getAdditionalState(valueAndDerivative)[1],           1.0e-15);

@@ -53,7 +53,7 @@ public enum NavigationSystem {
     EMPTY("");
 
     /** Keywords map. */
-    private static final Map<String, NavigationSystem> KEYWORDS_MAP = new HashMap<String, NavigationSystem>();
+    private static final Map<String, NavigationSystem> KEYWORDS_MAP = new HashMap<>();
     static {
         for (final NavigationSystem type : values()) {
             KEYWORDS_MAP.put(type.getKeyword(), type);

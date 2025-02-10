@@ -165,7 +165,7 @@ public class PoissonSeries {
         }
 
         // gather all series terms
-        final Map<Long, SeriesTerm> joinedMap = new HashMap<Long, SeriesTerm>();
+        final Map<Long, SeriesTerm> joinedMap = new HashMap<>();
         for (final PoissonSeries ps : poissonSeries) {
             for (Map.Entry<Long, SeriesTerm> entry : ps.series.entrySet()) {
                 final long key = entry.getKey();

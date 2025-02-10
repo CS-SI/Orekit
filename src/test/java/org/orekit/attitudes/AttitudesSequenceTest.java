@@ -16,9 +16,6 @@
  */
 package org.orekit.attitudes;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -53,24 +50,17 @@ import org.orekit.propagation.*;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
-import org.orekit.propagation.events.DateDetector;
-import org.orekit.propagation.events.EclipseDetector;
-import org.orekit.propagation.events.ElevationDetector;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.EventsLogger;
+import org.orekit.propagation.events.*;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.CountAndContinue;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.AbsolutePVCoordinates;
-import org.orekit.utils.AngularDerivativesFilter;
-import org.orekit.utils.Constants;
-import org.orekit.utils.ExtendedPositionProvider;
-import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -122,7 +112,7 @@ public class AttitudesSequenceTest {
                                                 monitored, true, false, transitionTime,
                                                 AngularDerivativesFilter.USE_RRA, nightToDayHandler);
         SpacecraftState initialState = new SpacecraftState(initialOrbit);
-        initialState = initialState.addAdditionalState("fortyTwo", 42.0);
+        initialState = initialState.addAdditionalData("fortyTwo", 42.0);
         if (ed.g(initialState) >= 0) {
             // initial position is in daytime
             setInEclipse(initialDate, false);
@@ -242,7 +232,7 @@ public class AttitudesSequenceTest {
                                                 monitored, true, false, transitionTime,
                                                 AngularDerivativesFilter.USE_RRA, nightToDayHandler);
         FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(initialOrbit);
-        initialState = initialState.addAdditionalState("fortyTwo", field.getZero().add(42.0));
+        initialState = initialState.addAdditionalData("fortyTwo", field.getZero().add(42.0));
         if (ed.g(initialState.toSpacecraftState()) >= 0) {
             // initial position is in daytime
             setInEclipse(initialDate.toAbsoluteDate(), false);
@@ -326,7 +316,7 @@ public class AttitudesSequenceTest {
         attitudesSequence.resetActiveProvider(current);
 
         SpacecraftState initialState = new SpacecraftState(initialOrbit);
-        initialState = initialState.addAdditionalState("fortyTwo", 42.0);
+        initialState = initialState.addAdditionalData("fortyTwo", 42.0);
         final Propagator propagator = new EcksteinHechlerPropagator(initialOrbit, attitudesSequence,
                                                                     Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
                                                                     Constants.EIGEN5C_EARTH_MU,  Constants.EIGEN5C_EARTH_C20,

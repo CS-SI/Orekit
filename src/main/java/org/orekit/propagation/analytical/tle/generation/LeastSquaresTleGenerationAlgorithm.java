@@ -142,7 +142,7 @@ public class LeastSquaresTleGenerationAlgorithm implements TleGenerationAlgorith
 
         // Weights
         final double[] weights = new double[6];
-        final double velocityWeight = state.getPVCoordinates().getVelocity().getNorm() * state.getPosition().getNormSq() / state.getMu();
+        final double velocityWeight = state.getPVCoordinates().getVelocity().getNorm() * state.getPosition().getNormSq() / state.getOrbit().getMu();
         for (int i = 0; i < 3; i++) {
             weights[i] = 1.0;
             weights[i + 3] = velocityWeight;
@@ -170,7 +170,7 @@ public class LeastSquaresTleGenerationAlgorithm implements TleGenerationAlgorith
         final Vector3D positionEstimated  = new Vector3D(optimum.getPoint().getSubVector(0, 3).toArray());
         final Vector3D velocityEstimated  = new Vector3D(optimum.getPoint().getSubVector(3, 3).toArray());
         final PVCoordinates pvCoordinates = new PVCoordinates(positionEstimated, velocityEstimated);
-        final KeplerianOrbit orbit = new KeplerianOrbit(pvCoordinates, teme, epoch, state.getMu());
+        final KeplerianOrbit orbit = new KeplerianOrbit(pvCoordinates, teme, epoch, state.getOrbit().getMu());
         final TLE generated = TleGenerationUtil.newTLE(orbit, templateTLE, templateTLE.getBStar(), utc);
 
         // Verify if parameters are estimated
@@ -232,7 +232,7 @@ public class LeastSquaresTleGenerationAlgorithm implements TleGenerationAlgorith
         public Pair<RealVector, RealMatrix> value(final RealVector point) {
             final RealVector objectiveOscState = MatrixUtils.createRealVector(6);
             final RealMatrix objectiveJacobian = MatrixUtils.createRealMatrix(6, 7);
-            getTransformedAndJacobian(state -> meanStateToPV(state), point, objectiveOscState, objectiveJacobian);
+            getTransformedAndJacobian(this::meanStateToPV, point, objectiveOscState, objectiveJacobian);
             return new Pair<>(objectiveOscState, objectiveJacobian);
         }
 

@@ -38,7 +38,7 @@ public enum CarrierPhase {
     L1_L2(2);
 
     /** code map. */
-    private static final Map<Integer, CarrierPhase> CODES_MAP = new HashMap<Integer, CarrierPhase>();
+    private static final Map<Integer, CarrierPhase> CODES_MAP = new HashMap<>();
     static {
         for (final CarrierPhase type : values()) {
             CODES_MAP.put(type.getCode(), type);

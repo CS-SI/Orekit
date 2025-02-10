@@ -16,9 +16,6 @@
  */
 package org.orekit.utils;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
@@ -39,6 +36,9 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.EpochDerivativesEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MultipleShooterTest {
 
@@ -70,7 +70,7 @@ public class MultipleShooterTest {
         Vector3D v = new Vector3D(0, 7500, 0);
         pv = new PVCoordinates(p, v);
         state = new SpacecraftState(new AbsolutePVCoordinates(eci,date,pv))
-                .addAdditionalState("ede", new double[2 * 3 * 6]);
+                .addAdditionalData("ede", new double[2 * 3 * 6]);
         pde.setInitialJacobians(state);
     }
 

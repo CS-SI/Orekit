@@ -301,8 +301,11 @@ PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET = <MISSING TRANSLATION>
 # scale factor for parameter {0} is too small: {1}
 TOO_SMALL_SCALE_FOR_PARAMETER = <MISSING TRANSLATION>
 
-# unknown additional state "{0}"
-UNKNOWN_ADDITIONAL_STATE = άγνωστη πρόσθετη κατάσταση "{0}"
+# state "{0}" is not a double array
+ADDITIONAL_STATE_BAD_TYPE = <MISSING TRANSLATION>
+
+# unknown additional data "{0}"
+UNKNOWN_ADDITIONAL_DATA = <MISSING TRANSLATION>
 
 # unknown month "{0}"
 UNKNOWN_MONTH = άγνωστος μήνας "{0}"
@@ -372,6 +375,30 @@ CCSDS_TDM_KEYWORD_NOT_FOUND = <MISSING TRANSLATION>
 
 # no Range Units converter configured for parsing Tracking Data Message
 CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER = <MISSING TRANSLATION>
+
+# line break(s) missing after vector number {0} in {1}
+IIRV_MISSING_LINEBREAK_IN_FILE = <MISSING TRANSLATION>
+
+# line {0} in IIRV vector is not valid: "{1}"
+IIRV_INVALID_LINE_IN_VECTOR = <MISSING TRANSLATION>
+
+# cannot embed more than 1000 vectors in a single IIRV message file: got {0}. Consider splitting the data into multiple files
+IIRV_EXCEEDS_MAX_VECTORS = <MISSING TRANSLATION>
+
+# numeric value "{0}" exceeds the maximum length of {1} for string representation
+IIRV_VALUE_TOO_LARGE = <MISSING TRANSLATION>
+
+# invalid IIRV term value: {0}
+IIRV_INVALID_TERM_VALUE = <MISSING TRANSLATION>
+
+# the "{0}" term cannot change within an IIRV message file
+IIRV_TERM_CHANGES_WITHIN_FILE = <MISSING TRANSLATION>
+
+# IIRV sequence number must increase by 1 for each subsequent vector entry. At at line {0}, expected sequence number {1}+1, but found {2}
+IIRV_SEQUENCE_NUMBER_MUST_BE_INCREASING_BY_ONE = <MISSING TRANSLATION>
+
+# IIRV coordinate system "{0}" ({1}) has not been mapped to an Orekit frame
+IIRV_UNMAPPED_COORDINATE_SYSTEM = <MISSING TRANSLATION>
 
 # Time system should have already been set before line {0} of file {1}
 CCSDS_TIME_SYSTEM_NOT_READ_YET = <MISSING TRANSLATION>
@@ -597,6 +624,12 @@ UNKNOWN_CLOCK_DATA_TYPE = άγνωστος τύπος δεδομένων ρολ�
 
 # unknown satellite antenna code {0}
 UNKNOWN_SATELLITE_ANTENNA_CODE = <MISSING TRANSLATION>
+
+# unknown GNSS antenna, name: {0}, radome code: {1}, serial number: {2}
+UNKNOWN_GNSS_ANTENNA = <MISSING TRANSLATION>
+
+# unknown GNSS frequency, system: {0}, frequency code: {1} (line {2}, file {3})
+UNKNOWN_GNSS_FREQUENCY = <MISSING TRANSLATION>
 
 # frequency {0} is not supported by antenna {1}
 UNSUPPORTED_FREQUENCY_FOR_ANTENNA = <MISSING TRANSLATION>

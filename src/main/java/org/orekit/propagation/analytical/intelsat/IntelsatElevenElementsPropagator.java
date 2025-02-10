@@ -210,7 +210,7 @@ public class IntelsatElevenElementsPropagator extends AbstractAnalyticalPropagat
      * {@inheritDoc}.
      */
     @Override
-    protected Orbit propagateOrbit(final AbsoluteDate date) {
+    public Orbit propagateOrbit(final AbsoluteDate date) {
         return new CartesianOrbit(ecefFrame.getTransformTo(inertialFrame, date).transformPVCoordinates(propagateInEcef(date)), inertialFrame, date, Constants.WGS84_EARTH_MU);
     }
 

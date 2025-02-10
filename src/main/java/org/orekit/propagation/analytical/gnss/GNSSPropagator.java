@@ -190,7 +190,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
         final GnssHarvester harvester = new GnssHarvester(this, stmName, initialStm, initialJacobianColumns);
 
         // Update the list of additional state provider
-        addAdditionalStateProvider(harvester);
+        addAdditionalDataProvider(harvester);
 
         // Return the configured harvester
         return harvester;
@@ -218,7 +218,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
 
     /** {@inheritDoc} */
     @Override
-    protected Orbit propagateOrbit(final AbsoluteDate date) {
+    public Orbit propagateOrbit(final AbsoluteDate date) {
         // Gets the PVCoordinates in ECEF frame
         final PVCoordinates pvaInECEF = propagateInEcef(date);
         // Transforms the PVCoordinates to ECI frame
@@ -239,8 +239,14 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
     public PVCoordinates propagateInEcef(final AbsoluteDate date) {
         // Duration from GNSS ephemeris Reference date
         final UnivariateDerivative2 tk = new UnivariateDerivative2(getTk(date), 1.0, 0.0);
+        // Semi-major axis
+        final UnivariateDerivative2 ak = tk.multiply(orbitalElements.getADot()).add(orbitalElements.getSma());
+        // Mean motion
+        final UnivariateDerivative2 nA = tk.multiply(orbitalElements.getDeltaN0Dot() * 0.5).
+                                         add(orbitalElements.getDeltaN0()).
+                                         add(orbitalElements.getMeanMotion0());
         // Mean anomaly
-        final UnivariateDerivative2 mk = tk.multiply(orbitalElements.getMeanMotion()).add(orbitalElements.getM0());
+        final UnivariateDerivative2 mk = tk.multiply(nA).add(orbitalElements.getM0());
         // Eccentric Anomaly
         final UnivariateDerivative2 e  = tk.newInstance(orbitalElements.getE());
         final UnivariateDerivative2 ek = FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(e, mk);
@@ -258,7 +264,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
         // Corrected Argument of Latitude
         final FieldSinCos<UnivariateDerivative2> csuk = FastMath.sinCos(phik.add(dphik));
         // Corrected Radius
-        final UnivariateDerivative2 rk = ek.cos().multiply(-orbitalElements.getE()).add(1).multiply(orbitalElements.getSma()).add(drk);
+        final UnivariateDerivative2 rk = ek.cos().multiply(-orbitalElements.getE()).add(1).multiply(ak).add(drk);
         // Corrected Inclination
         final UnivariateDerivative2 ik  = tk.multiply(orbitalElements.getIDot()).add(orbitalElements.getI0()).add(dik);
         final FieldSinCos<UnivariateDerivative2> csik = FastMath.sinCos(ik);
@@ -459,10 +465,11 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
                            nonKeplerianElements.getAngularVelocity() * nonKeplerianElements.getTime();
 
         // recover eccentricity and anomaly
-        final double rV2OMu           = rk * v.getNormSq() / initialState.getMu();
+        final double mu = initialState.getOrbit().getMu();
+        final double rV2OMu           = rk * v.getNormSq() / mu;
         final double sma              = rk / (2 - rV2OMu);
         final double eCosE            = rV2OMu - 1;
-        final double eSinE            = Vector3D.dotProduct(p, v) / FastMath.sqrt(initialState.getMu() * sma);
+        final double eSinE            = Vector3D.dotProduct(p, v) / FastMath.sqrt(mu * sma);
         final double e                = FastMath.hypot(eCosE, eSinE);
         final double eccentricAnomaly = FastMath.atan2(eSinE, eCosE);
         final double aop              = phi - eccentricAnomaly;
@@ -470,7 +477,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
 
         return new KeplerianOrbit(sma, e, i0, aop, om0, meanAnomaly, PositionAngleType.MEAN,
                                   PositionAngleType.MEAN, frozenEcef,
-                                  initialState.getDate(), initialState.getMu());
+                                  initialState.getDate(), mu);
 
     }
 

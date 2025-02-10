@@ -265,7 +265,7 @@ public class FieldImpulseManeuver<T extends CalculusFieldElement<T>> extends Abs
             // convert velocity increment in inertial frame
             final FieldVector3D<T> deltaVSat = im.fieldImpulseProvider.getImpulse(oldState, im.forward);
             final FieldVector3D<T> deltaV = rotation.applyInverseTo(deltaVSat);
-            final T one = oldState.getMu().getField().getOne();
+            final T one = oldState.getMass().getField().getOne();
             final T sign = (im.forward) ? one : one.negate();
 
             // apply increment to position/velocity
@@ -280,15 +280,15 @@ public class FieldImpulseManeuver<T extends CalculusFieldElement<T>> extends Abs
             // pack everything in a new state
             if (oldState.isOrbitDefined()) {
                 final FieldOrbit<T> newOrbit = new FieldCartesianOrbit<>(newPV, oldState.getFrame(), oldState.getDate(),
-                        oldState.getMu());
+                        oldState.getOrbit().getMu());
                 return new FieldSpacecraftState<>(oldState.getOrbit().getType().normalize(newOrbit, oldState.getOrbit()),
-                        oldState.getAttitude(), newMass, oldState.getAdditionalStatesValues(),
+                        oldState.getAttitude(), newMass, oldState.getAdditionalDataValues(),
                         oldState.getAdditionalStatesDerivatives());
             } else {
                 final FieldAbsolutePVCoordinates<T> newAbsPVA = new FieldAbsolutePVCoordinates<>(oldState.getFrame(),
                         oldState.getDate(), newPV);
                 return new FieldSpacecraftState<>(newAbsPVA, oldState.getAttitude(), newMass,
-                        oldState.getAdditionalStatesValues(), oldState.getAdditionalStatesDerivatives());
+                        oldState.getAdditionalDataValues(), oldState.getAdditionalStatesDerivatives());
             }
         }
 

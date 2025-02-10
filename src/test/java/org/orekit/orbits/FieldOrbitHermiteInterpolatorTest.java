@@ -498,7 +498,7 @@ class FieldOrbitHermiteInterpolatorTest {
             FieldVector3D<Binary64>     propagatedP   = propagator.propagate(t).getPosition();
             Binary64                    shiftedE      = initialOrbit.shiftedBy(zero.add(dt)).getE();
             Binary64                    interpolatedE = interpolator.interpolate(t, sample).getE();
-            Binary64                    propagatedE   = propagator.propagate(t).getE();
+            Binary64                    propagatedE   = propagator.propagate(t).getOrbit().getE();
             maxShiftPositionError             =
                     FastMath.max(maxShiftPositionError, shiftedP.subtract(propagatedP).getNorm().getReal());
             maxInterpolationPositionError     =
@@ -531,7 +531,7 @@ class FieldOrbitHermiteInterpolatorTest {
             FieldVector3D<Binary64>     propagatedP   = propagator.propagate(t).getPosition();
             Binary64                    shiftedE      = initialOrbit.shiftedBy(zero.add(dt)).getE();
             Binary64                    interpolatedE = interpolator.interpolate(t, sample).getE();
-            Binary64                    propagatedE   = propagator.propagate(t).getE();
+            Binary64                    propagatedE   = propagator.propagate(t).getOrbit().getE();
             maxShiftPositionError             =
                     FastMath.max(maxShiftPositionError, shiftedP.subtract(propagatedP).getNorm().getReal());
             maxInterpolationPositionError     =

@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 import org.orekit.annotation.DefaultDataContext;
@@ -160,7 +161,8 @@ public class KlobucharIonoCoefficientsLoader extends AbstractSelfFeedingLoader
         final int    doy        = dateComponents.getDayOfYear();
         final String yearString = String.valueOf(dateComponents.getYear());
 
-        this.setSupportedNames(String.format("CGIM%03d0.%2sN", doy, yearString.substring(yearString.length() - 2)));
+        this.setSupportedNames(String.format(Locale.US, "CGIM%03d0.%2sN",
+                                             doy, yearString.substring(yearString.length() - 2)));
 
         try {
             this.loadKlobucharIonosphericCoefficients();

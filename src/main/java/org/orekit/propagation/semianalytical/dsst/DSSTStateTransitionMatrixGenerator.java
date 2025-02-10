@@ -16,10 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.linear.MatrixUtils;
@@ -37,6 +33,10 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap.Span;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /** Generator for State Transition Matrix.
  * @author Luc Maisonobe
@@ -161,7 +161,7 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
     /** {@inheritDoc} */
     @Override
     public boolean yields(final SpacecraftState state) {
-        return !state.hasAdditionalState(getName());
+        return !state.hasAdditionalData(getName());
     }
 
     /** Set the initial value of the State Transition Matrix.
@@ -194,7 +194,7 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
         }
 
         // set additional state
-        return state.addAdditionalState(stmName, flat);
+        return state.addAdditionalData(stmName, flat);
 
     }
 

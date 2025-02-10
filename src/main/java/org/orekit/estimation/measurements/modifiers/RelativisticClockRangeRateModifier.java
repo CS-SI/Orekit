@@ -27,6 +27,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 
 /** Class modifying theoretical range-rate measurement with relativistic frequency deviation.
+ * It works only with orbit-based states.
  * <p>
  * Relativistic clock correction is caused by the motion of the satellite as well as
  * the change in the gravitational potential
@@ -65,7 +66,7 @@ public class RelativisticClockRangeRateModifier extends AbstractRelativisticCloc
         // Relativistic frequency deviation
         final double factor = -gm * getScaleFactor();
         final double dfRel = factor *
-                        (reciprocal(state.getA()) - reciprocal(state.getPosition().getNorm()));
+                        (reciprocal(state.getOrbit().getA()) - reciprocal(state.getPosition().getNorm()));
 
         // Update estimated value taking into account the relativistic effect.
         final double[] newValue = estimated.getEstimatedValue().clone();

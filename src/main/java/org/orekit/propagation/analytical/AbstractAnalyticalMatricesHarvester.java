@@ -26,7 +26,7 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;
-import org.orekit.propagation.AdditionalStateProvider;
+import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -44,7 +44,7 @@ import org.orekit.utils.TimeSpanMap.Span;
  * @author Bryan Cazabonne
  * @since 11.1
  */
-public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatricesHarvester implements AdditionalStateProvider {
+public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatricesHarvester implements AdditionalDataProvider<double[]> {
 
     /** Columns names for parameters. */
     private List<String> columnsNames;
@@ -105,7 +105,7 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
 
     /** {@inheritDoc} */
     @Override
-    public double[] getAdditionalState(final SpacecraftState state) {
+    public double[] getAdditionalData(final SpacecraftState state) {
         // Update the partial derivatives if needed
         updateDerivativesIfNeeded(state);
         // Return the state transition matrix in an array
@@ -116,7 +116,7 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
     @Override
     public RealMatrix getStateTransitionMatrix(final SpacecraftState state) {
         // Check if additional state is defined
-        if (!state.hasAdditionalState(getName())) {
+        if (!state.hasAdditionalData(getName())) {
             return null;
         }
         // Return the state transition matrix

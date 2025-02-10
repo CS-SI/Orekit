@@ -19,6 +19,7 @@ package org.orekit.files.ilrs;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -73,7 +74,7 @@ public class CRD {
      * @since 12.0
      */
     public static String formatIntegerOrNaN(final int value, final int valueNotAvailable) {
-        return value == valueNotAvailable ? STR_VALUE_NOT_AVAILABLE : String.format("%d", value);
+        return value == valueNotAvailable ? STR_VALUE_NOT_AVAILABLE : String.format(Locale.US, "%d", value);
     }
 
     /**
@@ -351,7 +352,7 @@ public class CRD {
 
             final String systemConfigId = systemConfigurationId == null ? getConfigurationRecords().getSystemRecord().getConfigurationId() : systemConfigurationId;
 
-            final List<Calibration> list = new ArrayList<Calibration>();
+            final List<Calibration> list = new ArrayList<>();
             // Loop to find the appropriate one
             for (Calibration calibration : calibrationData) {
                 if (systemConfigId.equalsIgnoreCase(calibration.getSystemConfigurationId())) {
@@ -402,7 +403,7 @@ public class CRD {
 
             final String systemConfigId = systemConfigurationId == null ? getConfigurationRecords().getSystemRecord().getConfigurationId() : systemConfigurationId;
 
-            final List<CalibrationDetail> list = new ArrayList<CalibrationDetail>();
+            final List<CalibrationDetail> list = new ArrayList<>();
             // Loop to find the appropriate one
             for (CalibrationDetail calibration : calibrationDetailData) {
                 if (systemConfigId.equalsIgnoreCase(calibration.getSystemConfigurationId())) {
@@ -651,7 +652,7 @@ public class CRD {
         @Override
         @DefaultDataContext
         public String toCrdString() {
-            return String.format("10 %s", toString());
+            return String.format(Locale.US, "10 %s", toString());
         }
 
         @Override
@@ -665,7 +666,7 @@ public class CRD {
                     .getComponents(TimeScalesFactory.getUTC()).getTime()
                     .getSecondsInLocalDay();
 
-            final String str = String.format(
+            final String str = String.format(Locale.US,
                     "%18.12f %18.12f %4s %1d %1d %1d %1d %5s %5s", sod,
                     getTimeOfFlight(), getSystemConfigurationId(),
                     getEpochEvent(), filterFlag, detectorChannel, stopNumber,
@@ -830,7 +831,7 @@ public class CRD {
         @Override
         @DefaultDataContext
         public String toCrdString() {
-            return String.format("11 %s", toString());
+            return String.format(Locale.US, "11 %s", toString());
         }
 
         @Override
@@ -844,7 +845,7 @@ public class CRD {
                     .getComponents(TimeScalesFactory.getUTC()).getTime()
                     .getSecondsInLocalDay();
 
-            final String str = String.format(
+            final String str = String.format(Locale.US,
                     "%18.12f %18.12f %4s %1d %6.1f %6d %9.1f %7.3f %7.3f %9.1f %5.2f %1d %5.1f",
                     sod, getTimeOfFlight(), getSystemConfigurationId(),
                     getEpochEvent(), windowLength, numberOfRawRanges,
@@ -968,7 +969,7 @@ public class CRD {
          */
         @DefaultDataContext
         public String toCrdString() {
-            return String.format("12 %s", toString());
+            return String.format(Locale.US, "12 %s", toString());
         }
 
         @Override
@@ -982,7 +983,7 @@ public class CRD {
                     .getComponents(TimeScalesFactory.getUTC()).getTime()
                     .getSecondsInLocalDay();
 
-            final String str = String.format(
+            final String str = String.format(Locale.US,
                     "%18.12f %4s %6.1f %6.4f %5.2f %8.4f %f", sod,
                     getSystemConfigurationId(),
                     troposphericRefractionCorrection * 1e12,
@@ -1090,7 +1091,7 @@ public class CRD {
          */
         @DefaultDataContext
         public String toCrdString() {
-            return String.format("20 %s", toString());
+            return String.format(Locale.US, "20 %s", toString());
         }
 
         @Override
@@ -1104,8 +1105,8 @@ public class CRD {
                     .getComponents(TimeScalesFactory.getUTC()).getTime()
                     .getSecondsInLocalDay();
 
-            final String str = String.format("%9.3f %7.2f %6.2f %4.0f %1d", sod,
-                    pressure * 1e3, temperature, humidity, originOfValues);
+            final String str = String.format(Locale.US, "%9.3f %7.2f %6.2f %4.0f %1d", sod,
+                                             pressure * 1e3, temperature, humidity, originOfValues);
             return handleNaN(str).replace(',', '.');
         }
     }
@@ -1249,7 +1250,7 @@ public class CRD {
          */
         @DefaultDataContext
         public String toCrdString() {
-            return String.format("30 %s", toString());
+            return String.format(Locale.US, "30 %s", toString());
         }
 
         @Override
@@ -1264,7 +1265,7 @@ public class CRD {
                     .getComponents(TimeScalesFactory.getUTC()).getTime()
                     .getSecondsInLocalDay();
 
-            final String str = String.format(
+            final String str = String.format(Locale.US,
                     "%9.3f %8.4f %8.4f %1d %1d %1d %10.7f %10.7f", sod,
                     FastMath.toDegrees(azimuth), FastMath.toDegrees(elevation),
                     directionFlag, originIndicator, refractionCorrected ? 1 : 0,
@@ -1317,7 +1318,7 @@ public class CRD {
             } else {
 
                 // Meteo data
-                this.meteo = new ImmutableTimeStampedCache<MeteorologicalMeasurement>(neighborsSize, meteoData);
+                this.meteo = new ImmutableTimeStampedCache<>(neighborsSize, meteoData);
 
                 // Initialize first and last available dates
                 this.firstDate = meteoData.first().getDate();
@@ -1745,7 +1746,7 @@ public class CRD {
          */
         @DefaultDataContext
         public String toCrdString() {
-            return String.format("40 %s", toString());
+            return String.format(Locale.US, "40 %s", toString());
         }
 
         @Override
@@ -1821,7 +1822,7 @@ public class CRD {
          */
         @DefaultDataContext
         public String toCrdString() {
-            return String.format("41 %s", toString());
+            return String.format(Locale.US, "41 %s", toString());
         }
 
     }
@@ -1947,14 +1948,14 @@ public class CRD {
          * @return a string representation of the instance, in the CRD format.
          */
         public String toCrdString() {
-            return String.format("50 %s", toString());
+            return String.format(Locale.US, "50 %s", toString());
         }
 
         @Override
         public String toString() {
             // CRD suggested format, excluding the record type
             // rms, peakMinusMean: s --> ps
-            final String str = String.format("%4s %6.1f %7.3f %7.3f %6.1f %1d",
+            final String str = String.format(Locale.US, "%4s %6.1f %7.3f %7.3f %6.1f %1d",
                     systemConfigurationId, rms * 1e12, skewness, kurtosis,
                     peakMinusMean * 1e12, dataQulityIndicator);
             return handleNaN(str).replace(',', '.');

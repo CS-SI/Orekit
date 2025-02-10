@@ -605,7 +605,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** {@inheritDoc} */
-    protected Orbit propagateOrbit(final AbsoluteDate date) {
+    public Orbit propagateOrbit(final AbsoluteDate date) {
         final TLE closestTle = tlesAndMasses.get(date).getKey();
         if (!tle.equals(closestTle)) {
             initializeTle(closestTle);
@@ -634,7 +634,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         // Create the harvester
         final TLEHarvester harvester = new TLEHarvester(this, stmName, initialStm, initialJacobianColumns);
         // Update the list of additional state provider
-        addAdditionalStateProvider(harvester);
+        addAdditionalDataProvider(harvester);
         // Return the configured harvester
         return harvester;
     }

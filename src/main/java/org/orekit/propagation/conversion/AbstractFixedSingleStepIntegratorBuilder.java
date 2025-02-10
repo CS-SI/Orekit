@@ -16,17 +16,17 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.hipparchus.ode.nonstiff.RungeKuttaIntegrator;
+import org.hipparchus.ode.nonstiff.FixedStepRungeKuttaIntegrator;
 
 /**
  * Abstract class for fixed-step, single-step integrator builder.
  *
  * @param <T> field type
- * @see org.hipparchus.ode.nonstiff.RungeKuttaIntegrator
+ * @see org.hipparchus.ode.nonstiff.FixedStepRungeKuttaIntegrator
  * @since 13.0
  * @author Romain Serra
  */
-public abstract class AbstractFixedSingleStepIntegratorBuilder<T extends RungeKuttaIntegrator>
+public abstract class AbstractFixedSingleStepIntegratorBuilder<T extends FixedStepRungeKuttaIntegrator>
         extends AbstractIntegratorBuilder<T> implements ExplicitRungeKuttaIntegratorBuilder {
 
     /** Default step-size. */

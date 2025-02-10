@@ -331,26 +331,17 @@ public class CssiSpaceWeatherDataLoader extends AbstractSolarActivityDataLoader<
         @Override
         public int hashCode() {
             int  result;
-            long temp;
             result = Arrays.hashCode(getThreeHourlyKp());
-            temp   = Double.doubleToLongBits(getKpSum());
-            result = 31 * result + (int) (temp ^ (temp >>> 32));
+            result = 31 * result + Double.hashCode(getKpSum());
             result = 31 * result + Arrays.hashCode(getThreeHourlyAp());
-            temp   = Double.doubleToLongBits(getApAvg());
-            result = 31 * result + (int) (temp ^ (temp >>> 32));
-            temp   = Double.doubleToLongBits(getF107Adj());
-            result = 31 * result + (int) (temp ^ (temp >>> 32));
+            result = 31 * result + Double.hashCode(getApAvg());
+            result = 31 * result + Double.hashCode(getF107Adj());
             result = 31 * result + getFluxQualifier();
-            temp   = Double.doubleToLongBits(getCtr81Adj());
-            result = 31 * result + (int) (temp ^ (temp >>> 32));
-            temp   = Double.doubleToLongBits(getLst81Adj());
-            result = 31 * result + (int) (temp ^ (temp >>> 32));
-            temp   = Double.doubleToLongBits(getF107Obs());
-            result = 31 * result + (int) (temp ^ (temp >>> 32));
-            temp   = Double.doubleToLongBits(getCtr81Obs());
-            result = 31 * result + (int) (temp ^ (temp >>> 32));
-            temp   = Double.doubleToLongBits(getLst81Obs());
-            result = 31 * result + (int) (temp ^ (temp >>> 32));
+            result = 31 * result + Double.hashCode(getCtr81Adj());
+            result = 31 * result + Double.hashCode(getLst81Adj());
+            result = 31 * result + Double.hashCode(getF107Obs());
+            result = 31 * result + Double.hashCode(getCtr81Obs());
+            result = 31 * result + Double.hashCode(getLst81Obs());
             return result;
         }
 

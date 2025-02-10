@@ -27,7 +27,7 @@ import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
  * @author Romain Serra
  * @since 13.0
  */
-abstract class ControlSwitchDetector implements EventDetector {
+public abstract class ControlSwitchDetector implements EventDetector {
 
     /** Event handler. */
     private final EventHandler handler = new ResetDerivativesOnEvent();

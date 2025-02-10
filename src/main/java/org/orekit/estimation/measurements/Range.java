@@ -189,7 +189,7 @@ public class Range extends GroundReceiverMeasurement<Range> {
                             common.getStationDownlink().shiftedBy(-common.getTauD().getValue() - tauU.getValue());
 
             // Prepare the evaluation
-            estimated = new EstimatedMeasurement<Range>(this, iteration, evaluation,
+            estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
                                                             new SpacecraftState[] {
                                                                 common.getTransitState()
                                                             }, new TimeStampedPVCoordinates[] {
@@ -205,7 +205,7 @@ public class Range extends GroundReceiverMeasurement<Range> {
 
         } else {
 
-            estimated = new EstimatedMeasurement<Range>(this, iteration, evaluation,
+            estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
                             new SpacecraftState[] {
                                 common.getTransitState()
                             }, new TimeStampedPVCoordinates[] {

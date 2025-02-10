@@ -39,7 +39,7 @@ import java.util.ArrayList;
 
 public class Rtcm1019Test {
 
-    private double eps = 1.0e-15;
+    private final double eps = 1.0e-15;
 
     @BeforeEach
     public void setUp() {
@@ -111,7 +111,8 @@ public class Rtcm1019Test {
         Assertions.assertEquals(5.721445195376873E-4,   gpsMessage.getAf0(),                eps);
         Assertions.assertEquals(695,                    gpsMessage.getIODC());
         Assertions.assertEquals(0.0,                    gpsMessage.getCrs(),                eps);
-        Assertions.assertEquals(1.458749761151065E-4,   gpsMessage.getMeanMotion(),         eps);
+        Assertions.assertEquals(1.4586338170358127E-4,  gpsMessage.getMeanMotion0(),        eps);
+        Assertions.assertEquals(1.458749761151065E-4,   gpsMessage.getMeanMotion0() + gpsMessage.getDeltaN0(),        eps);
         Assertions.assertEquals(0.1671775426328288,     gpsMessage.getM0(),                 eps);
         Assertions.assertEquals(0.0,                    gpsMessage.getCuc(),                eps);
         Assertions.assertEquals(0.03899807028938085,    gpsMessage.getE(),                  eps);
@@ -196,7 +197,7 @@ public class Rtcm1019Test {
         try {
             final byte[] array = new byte[0];
             final EncodedMessage emptyMessage = new ByteArrayEncodedMessage(array);
-            new RtcmMessagesParser(new ArrayList<Integer>()).parse(emptyMessage, false);
+            new RtcmMessagesParser(new ArrayList<>()).parse(emptyMessage, false);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.END_OF_ENCODED_MESSAGE, oe.getSpecifier());

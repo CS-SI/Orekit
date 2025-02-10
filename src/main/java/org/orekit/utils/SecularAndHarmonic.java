@@ -72,7 +72,7 @@ public class SecularAndHarmonic {
     public SecularAndHarmonic(final int secularDegree, final double... pulsations) {
         this.secularDegree  = secularDegree;
         this.pulsations     = pulsations.clone();
-        this.observedPoints = new ArrayList<WeightedObservedPoint>();
+        this.observedPoints = new ArrayList<>();
         this.convergenceRMS = 0.0;
         this.maxIter        = Integer.MAX_VALUE;
     }
@@ -318,7 +318,7 @@ public class SecularAndHarmonic {
                                                 final int meanDegree, final int meanHarmonics,
                                                 final AbsoluteDate start, final AbsoluteDate end,
                                                 final double step) {
-        final List<WeightedObservedPoint> points = new ArrayList<WeightedObservedPoint>();
+        final List<WeightedObservedPoint> points = new ArrayList<>();
         for (AbsoluteDate date = start; date.compareTo(end) < 0; date = date.shiftedBy(step)) {
             points.add(new WeightedObservedPoint(1.0,
                                                  date.durationFrom(combinedReference),

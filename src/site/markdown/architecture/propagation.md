@@ -228,29 +228,29 @@ A `NegateDetector` is provided to negate the sign of the switching function `g` 
 
 Event occurring can be automatically logged using the `EventsLogger` class.
 
-## Additional states
+## Additional data
 
-All propagators can be used to propagate user additional states on top of regular
-orbit attitude and mass state. These additional states will be available throughout
+All propagators can be used to propagate user additional data on top of regular
+orbit attitude and mass state. These additional data will be available throughout
 propagation, i.e. they can be used in the step handlers, in the event detectors and
 events handlers and they will also be available in the final propagated state.
 There are three main cases:
 
-* if a deterministic way to compute the additional state from the spacecraft state
+* if a deterministic way to compute the additional datum from the spacecraft state
   is known, then the user can put this computation in an implementation of the
-  `AdditionalStateProvider` interface and register it to the propagator, which will
+  `AdditionalDataProvider` interface and register it to the propagator, which will
   call it each time it builds a `SpacecraftState`.
 * if a differential equation drives the additional state evolution, then the user
   can put this equation in an implementation of the `AdditionalDerivativesProvider` interface
   and register it to an integrator-based propagator, which will integrated it and
   provide the integrated state.
-* if no evolution laws are provided to the propagator, but the additional state is
+* if no evolution laws are provided to the propagator, but the additional datum is
   available in the initial state, then the propagator will simply copy the initial
   value throughout propagation, without evolving it.
 
-The first two cases correspond to additional states managed by the propagator, the
+The first two cases correspond to additional data managed by the propagator, the
 last case not being considered as managed. The list of states managed by the propagator
-is available using the `getManagedAdditionalStates` and `isAdditionalStateManaged`. 
+is available using the `getManagedAdditionalData` and `isAdditionalDataManaged`. 
 
 ## Available propagators
 

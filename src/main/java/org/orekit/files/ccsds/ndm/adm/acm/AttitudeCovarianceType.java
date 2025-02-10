@@ -58,7 +58,7 @@ public enum AttitudeCovarianceType {
      */
     AttitudeCovarianceType(final String... unitsSpecifications) {
         this.units       = Stream.of(unitsSpecifications).
-                           map(s -> Unit.parse(s)).
+                           map(Unit::parse).
                            collect(Collectors.toList());
     }
 

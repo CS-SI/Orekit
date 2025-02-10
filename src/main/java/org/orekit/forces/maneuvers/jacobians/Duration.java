@@ -16,7 +16,7 @@
  */
 package org.orekit.forces.maneuvers.jacobians;
 
-import org.orekit.propagation.AdditionalStateProvider;
+import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.SpacecraftState;
 
 /** Generator for one column of a Jacobian matrix for special case of maneuver duration.
@@ -29,7 +29,7 @@ import org.orekit.propagation.SpacecraftState;
  * @see MedianDate
  * @see TriggerDate
  */
-public class Duration implements AdditionalStateProvider {
+public class Duration implements AdditionalDataProvider<double[]> {
 
     /** Name of the parameter corresponding to the start date. */
     private final String startName;
@@ -64,12 +64,12 @@ public class Duration implements AdditionalStateProvider {
      */
     @Override
     public boolean yields(final SpacecraftState state) {
-        return !(state.hasAdditionalState(startName) && state.hasAdditionalState(stopName));
+        return !(state.hasAdditionalData(startName) && state.hasAdditionalData(stopName));
     }
 
     /** {@inheritDoc} */
     @Override
-    public double[] getAdditionalState(final SpacecraftState state) {
+    public double[] getAdditionalData(final SpacecraftState state) {
 
         // compute partial derivatives with respect to start and stop dates
         final double[] dYdT0 = state.getAdditionalState(startName);

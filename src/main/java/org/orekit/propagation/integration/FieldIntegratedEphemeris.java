@@ -31,7 +31,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.propagation.FieldAdditionalStateProvider;
+import org.orekit.propagation.FieldAdditionalDataProvider;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
@@ -134,7 +134,7 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
                                     final FieldStateMapper<T> mapper, final AttitudeProvider attitudeProvider,
                                     final PropagationType type, final FieldDenseOutputModel<T> model,
                                     final FieldArrayDictionary<T> unmanaged,
-                                    final List<FieldAdditionalStateProvider<T>> providers,
+                                    final List<FieldAdditionalDataProvider<T>> providers,
                                     final String[] equations, final int[] dimensions) {
 
         super(startDate.getField(), attitudeProvider);
@@ -148,8 +148,8 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
         this.unmanaged = unmanaged;
 
         // set up the pre-integrated providers
-        for (final FieldAdditionalStateProvider<T> provider : providers) {
-            addAdditionalStateProvider(provider);
+        for (final FieldAdditionalDataProvider<T> provider : providers) {
+            addAdditionalDataProvider(provider);
         }
 
         this.equations  = equations.clone();
@@ -203,20 +203,21 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
 
     /** {@inheritDoc} */
     @Override
-    protected FieldSpacecraftState<T> basicPropagate(final FieldAbsoluteDate<T> date) {
+    public FieldSpacecraftState<T> basicPropagate(final FieldAbsoluteDate<T> date) {
         final FieldODEStateAndDerivative<T> os = getInterpolatedState(date);
         FieldSpacecraftState<T> state = mapper.mapArrayToState(mapper.mapDoubleToDate(os.getTime(), date),
                                                                os.getPrimaryState(), os.getPrimaryDerivative(),
                                                                type);
         for (FieldArrayDictionary<T>.Entry initial : unmanaged.getData()) {
-            state = state.addAdditionalState(initial.getKey(), initial.getValue());
+            state = state.addAdditionalData(initial.getKey(), initial.getValue());
         }
         return state;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
+    public FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date,
+                                        final T[] parameters) {
         return basicPropagate(date).getOrbit();
     }
 
@@ -262,14 +263,14 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
     /** {@inheritDoc} */
     @Override
     public FieldSpacecraftState<T> getInitialState() {
-        return updateAdditionalStates(basicPropagate(getMinDate()));
+        return updateAdditionalData(basicPropagate(getMinDate()));
     }
 
     /** {@inheritDoc} */
     @Override
-    protected FieldSpacecraftState<T> updateAdditionalStates(final FieldSpacecraftState<T> original) {
+    public FieldSpacecraftState<T> updateAdditionalData(final FieldSpacecraftState<T> original) {
 
-        FieldSpacecraftState<T> updated = super.updateAdditionalStates(original);
+        FieldSpacecraftState<T> updated = super.updateAdditionalData(original);
 
         if (equations.length > 0) {
             final FieldODEStateAndDerivative<T> osd                = getInterpolatedState(updated.getDate());
@@ -280,7 +281,7 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
                 final T[] state      = Arrays.copyOfRange(combinedState,      index, index + dimensions[i]);
                 final T[] derivative = Arrays.copyOfRange(combinedDerivative, index, index + dimensions[i]);
                 updated = updated.
-                          addAdditionalState(equations[i], state).
+                        addAdditionalData(equations[i], state).
                           addAdditionalStateDerivative(equations[i], derivative);
                 index += dimensions[i];
             }

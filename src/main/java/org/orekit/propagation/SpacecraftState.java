@@ -31,11 +31,13 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.AbsolutePVCoordinates;
+import org.orekit.utils.DataDictionary;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -46,8 +48,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * is no definite central body, plus the current mass and attitude at the intrinsic
  * {@link AbsoluteDate}. Quantities are guaranteed to be consistent in terms
  * of date and reference frame. The spacecraft state may also contain additional
- * states, which are simply named double arrays which can hold any user-defined
- * data.
+ * data, which are simply named.
  * </p>
  * <p>
  * The state can be slightly shifted to close dates. This actual shift varies
@@ -60,7 +61,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * <p>
  * The instance <code>SpacecraftState</code> is guaranteed to be immutable.
  * </p>
- * @see org.orekit.propagation.numerical.NumericalPropagator
+ * @see NumericalPropagator
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Luc Maisonobe
@@ -88,8 +89,8 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
     /** Current mass (kg). */
     private final double mass;
 
-    /** Additional states. */
-    private final DoubleArrayDictionary additional;
+    /** Additional data, can be any object (String, double[], etc.). */
+    private final DataDictionary additional;
 
     /** Additional states derivatives.
      * @since 11.1
@@ -103,7 +104,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
     public SpacecraftState(final Orbit orbit) {
         this(orbit, getDefaultAttitudeProvider(orbit.getFrame())
                         .getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
-             DEFAULT_MASS, (DoubleArrayDictionary) null);
+             DEFAULT_MASS,  null);
     }
 
     /** Build a spacecraft state from orbit and attitude.
@@ -115,7 +116,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      */
     public SpacecraftState(final Orbit orbit, final Attitude attitude)
         throws IllegalArgumentException {
-        this(orbit, attitude, DEFAULT_MASS, (DoubleArrayDictionary) null);
+        this(orbit, attitude, DEFAULT_MASS, null);
     }
 
     /** Create a new instance from orbit and mass.
@@ -126,7 +127,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
     public SpacecraftState(final Orbit orbit, final double mass) {
         this(orbit, getDefaultAttitudeProvider(orbit.getFrame())
                         .getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
-             mass, (DoubleArrayDictionary) null);
+             mass, null);
     }
 
     /** Build a spacecraft state from orbit, attitude and mass.
@@ -138,16 +139,16 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      */
     public SpacecraftState(final Orbit orbit, final Attitude attitude, final double mass)
         throws IllegalArgumentException {
-        this(orbit, attitude, mass, (DoubleArrayDictionary) null);
+        this(orbit, attitude, mass, null);
     }
 
     /** Build a spacecraft state from orbit and additional states.
      * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param orbit the orbit
-     * @param additional additional states
+     * @param additional additional data
      * @since 11.1
      */
-    public SpacecraftState(final Orbit orbit, final DoubleArrayDictionary additional) {
+    public SpacecraftState(final Orbit orbit, final DataDictionary additional) {
         this(orbit, getDefaultAttitudeProvider(orbit.getFrame())
                         .getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              DEFAULT_MASS, additional);
@@ -157,12 +158,12 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
      * @param orbit the orbit
      * @param attitude attitude
-     * @param additional additional states
+     * @param additional additional data
      * @exception IllegalArgumentException if orbit and attitude dates
      * or frames are not equal
      * @since 11.1
      */
-    public SpacecraftState(final Orbit orbit, final Attitude attitude, final DoubleArrayDictionary additional)
+    public SpacecraftState(final Orbit orbit, final Attitude attitude, final DataDictionary additional)
         throws IllegalArgumentException {
         this(orbit, attitude, DEFAULT_MASS, additional);
     }
@@ -171,10 +172,10 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * <p>Attitude law is set to an unspecified default attitude.</p>
      * @param orbit the orbit
      * @param mass the mass (kg)
-     * @param additional additional states
+     * @param additional additional data
      * @since 11.1
      */
-    public SpacecraftState(final Orbit orbit, final double mass, final DoubleArrayDictionary additional) {
+    public SpacecraftState(final Orbit orbit, final double mass, final DataDictionary additional) {
         this(orbit, getDefaultAttitudeProvider(orbit.getFrame())
                         .getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, additional);
@@ -184,13 +185,12 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * @param orbit the orbit
      * @param attitude attitude
      * @param mass the mass (kg)
-     * @param additional additional states (may be null if no additional states are available)
-     * @exception IllegalArgumentException if orbit and attitude dates
-     * or frames are not equal
+     * @param additional additional data (may be null if no additional data are available)
+     * @exception IllegalArgumentException if orbit and attitude dates or frames are not equal
      * @since 11.1
      */
     public SpacecraftState(final Orbit orbit, final Attitude attitude,
-                           final double mass, final DoubleArrayDictionary additional)
+                           final double mass, final DataDictionary additional)
         throws IllegalArgumentException {
         this(orbit, attitude, mass, additional, null);
     }
@@ -199,30 +199,22 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * @param orbit the orbit
      * @param attitude attitude
      * @param mass the mass (kg)
-     * @param additional additional states (may be null if no additional states are available)
+     * @param additional additional data (may be null if no additional states are available)
      * @param additionalDot additional states derivatives (may be null if no additional states derivatives are available)
      * @exception IllegalArgumentException if orbit and attitude dates
      * or frames are not equal
      * @since 11.1
      */
     public SpacecraftState(final Orbit orbit, final Attitude attitude, final double mass,
-                           final DoubleArrayDictionary additional, final DoubleArrayDictionary additionalDot)
+                           final DataDictionary additional, final DoubleArrayDictionary additionalDot)
         throws IllegalArgumentException {
         checkConsistency(orbit, attitude);
         this.orbit      = orbit;
         this.absPva     = null;
         this.attitude   = attitude;
         this.mass       = mass;
-        if (additional == null) {
-            this.additional = new DoubleArrayDictionary();
-        } else {
-            this.additional = additional;
-        }
-        if (additionalDot == null) {
-            this.additionalDot = new DoubleArrayDictionary();
-        } else {
-            this.additionalDot = new DoubleArrayDictionary(additionalDot);
-        }
+        this.additional = additional == null ? new DataDictionary() : additional;
+        this.additionalDot = additionalDot == null ? new DoubleArrayDictionary() : new DoubleArrayDictionary(additionalDot);
     }
 
     /** Build a spacecraft state from position-velocity-acceleration only.
@@ -232,7 +224,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
     public SpacecraftState(final AbsolutePVCoordinates absPva) {
         this(absPva, getDefaultAttitudeProvider(absPva.getFrame())
                         .getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
-             DEFAULT_MASS, (DoubleArrayDictionary) null);
+             DEFAULT_MASS,  null);
     }
 
     /** Build a spacecraft state from position-velocity-acceleration and attitude.
@@ -244,7 +236,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva, final Attitude attitude)
         throws IllegalArgumentException {
-        this(absPva, attitude, DEFAULT_MASS, (DoubleArrayDictionary) null);
+        this(absPva, attitude, DEFAULT_MASS,  null);
     }
 
     /** Create a new instance from position-velocity-acceleration and mass.
@@ -255,7 +247,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
     public SpacecraftState(final AbsolutePVCoordinates absPva, final double mass) {
         this(absPva, getDefaultAttitudeProvider(absPva.getFrame())
                         .getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
-             mass, (DoubleArrayDictionary) null);
+             mass,  null);
     }
 
     /** Build a spacecraft state from position-velocity-acceleration, attitude and mass.
@@ -267,16 +259,16 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva, final Attitude attitude, final double mass)
         throws IllegalArgumentException {
-        this(absPva, attitude, mass, (DoubleArrayDictionary) null);
+        this(absPva, attitude, mass, null);
     }
 
     /** Build a spacecraft state from position-velocity-acceleration and additional states.
      * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param absPva position-velocity-acceleration
-     * @param additional additional states
+     * @param additional additional data
      * @since 11.1
      */
-    public SpacecraftState(final AbsolutePVCoordinates absPva, final DoubleArrayDictionary additional) {
+    public SpacecraftState(final AbsolutePVCoordinates absPva, final DataDictionary additional) {
         this(absPva, getDefaultAttitudeProvider(absPva.getFrame())
                         .getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              DEFAULT_MASS, additional);
@@ -286,12 +278,12 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
      * @param absPva position-velocity-acceleration
      * @param attitude attitude
-     * @param additional additional states
+     * @param additional additional data
      * @exception IllegalArgumentException if orbit and attitude dates
      * or frames are not equal
      * @since 11.1
      */
-    public SpacecraftState(final AbsolutePVCoordinates absPva, final Attitude attitude, final DoubleArrayDictionary additional)
+    public SpacecraftState(final AbsolutePVCoordinates absPva, final Attitude attitude, final DataDictionary additional)
         throws IllegalArgumentException {
         this(absPva, attitude, DEFAULT_MASS, additional);
     }
@@ -300,10 +292,10 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * <p>Attitude law is set to an unspecified default attitude.</p>
      * @param absPva position-velocity-acceleration
      * @param mass the mass (kg)
-     * @param additional additional states
+     * @param additional additional data
      * @since 11.1
      */
-    public SpacecraftState(final AbsolutePVCoordinates absPva, final double mass, final DoubleArrayDictionary additional) {
+    public SpacecraftState(final AbsolutePVCoordinates absPva, final double mass, final DataDictionary additional) {
         this(absPva, getDefaultAttitudeProvider(absPva.getFrame())
                         .getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              mass, additional);
@@ -313,13 +305,13 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * @param absPva position-velocity-acceleration
      * @param attitude attitude
      * @param mass the mass (kg)
-     * @param additional additional states (may be null if no additional states are available)
+     * @param additional additional data (may be null if no additional data are available)
      * @exception IllegalArgumentException if orbit and attitude dates
      * or frames are not equal
      * @since 11.1
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva, final Attitude attitude,
-                           final double mass, final DoubleArrayDictionary additional)
+                           final double mass, final DataDictionary additional)
         throws IllegalArgumentException {
         this(absPva, attitude, mass, additional, null);
     }
@@ -328,54 +320,53 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * @param absPva position-velocity-acceleration
      * @param attitude attitude
      * @param mass the mass (kg)
-     * @param additional additional states (may be null if no additional states are available)
+     * @param additional additional data (may be null if no additional data are available)
      * @param additionalDot additional states derivatives(may be null if no additional states derivatives are available)
      * @exception IllegalArgumentException if orbit and attitude dates
      * or frames are not equal
      * @since 11.1
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva, final Attitude attitude, final double mass,
-                           final DoubleArrayDictionary additional, final DoubleArrayDictionary additionalDot)
+                           final DataDictionary additional, final DoubleArrayDictionary additionalDot)
         throws IllegalArgumentException {
         checkConsistency(absPva, attitude);
         this.orbit      = null;
         this.absPva     = absPva;
         this.attitude   = attitude;
         this.mass       = mass;
-        if (additional == null) {
-            this.additional = new DoubleArrayDictionary();
-        } else {
-            this.additional = new DoubleArrayDictionary(additional);
-        }
-        if (additionalDot == null) {
-            this.additionalDot = new DoubleArrayDictionary();
-        } else {
-            this.additionalDot = new DoubleArrayDictionary(additionalDot);
-        }
+        this.additional = additional == null ? new DataDictionary() : new DataDictionary(additional);
+        this.additionalDot = additionalDot == null ? new DoubleArrayDictionary() : new DoubleArrayDictionary(additionalDot);
     }
 
-    /** Add an additional state.
+    /** Add an additional data.
      * <p>
      * {@link SpacecraftState SpacecraftState} instances are immutable,
      * so this method does <em>not</em> change the instance, but rather
      * creates a new instance, which has the same orbit, attitude, mass
      * and additional states as the original instance, except it also
      * has the specified state. If the original instance already had an
-     * additional state with the same name, it will be overridden. If it
+     * additional data with the same name, it will be overridden. If it
      * did not have any additional state with that name, the new instance
      * will have one more additional state than the original instance.
      * </p>
-     * @param name name of the additional state (names containing "orekit"
+     * @param name name of the additional data (names containing "orekit"
      * with any case are reserved for the library internal use)
-     * @param value value of the additional state
-     * @return a new instance, with the additional state added
-     * @see #hasAdditionalState(String)
-     * @see #getAdditionalState(String)
-     * @see #getAdditionalStatesValues()
+     * @param value value of the additional data
+     * @return a new instance, with the additional data added
+     * @see #hasAdditionalData(String)
+     * @see #getAdditionalData(String)
+     * @see #getAdditionalDataValues()
+     * @since 13.0
      */
-    public SpacecraftState addAdditionalState(final String name, final double... value) {
-        final DoubleArrayDictionary newDict = new DoubleArrayDictionary(additional);
-        newDict.put(name, value.clone());
+    public SpacecraftState addAdditionalData(final String name, final Object value) {
+        final DataDictionary newDict = new DataDictionary(additional);
+        if (value instanceof double[]) {
+            newDict.put(name, ((double[]) value).clone());
+        } else if (value instanceof Double) {
+            newDict.put(name, new double[] {(double) value});
+        } else {
+            newDict.put(name, value);
+        }
         if (isOrbitDefined()) {
             return new SpacecraftState(orbit, attitude, mass, newDict, additionalDot);
         } else {
@@ -421,16 +412,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      */
     private static void checkConsistency(final Orbit orbit, final Attitude attitude)
         throws IllegalArgumentException {
-        if (FastMath.abs(orbit.getDate().durationFrom(attitude.getDate())) >
-            DATE_INCONSISTENCY_THRESHOLD) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.ORBIT_AND_ATTITUDE_DATES_MISMATCH,
-                                                     orbit.getDate(), attitude.getDate());
-        }
-        if (orbit.getFrame() != attitude.getReferenceFrame()) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.FRAMES_MISMATCH,
-                                                     orbit.getFrame().getName(),
-                                                     attitude.getReferenceFrame().getName());
-        }
+        checkDateAndFrameConsistency(attitude, orbit.getDate(), orbit.getFrame());
     }
 
     /** Defines provider for default Attitude when not passed to constructor.
@@ -466,15 +448,24 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      */
     private static void checkConsistency(final AbsolutePVCoordinates absPva, final Attitude attitude)
         throws IllegalArgumentException {
-        if (FastMath.abs(absPva.getDate().durationFrom(attitude.getDate())) >
-            DATE_INCONSISTENCY_THRESHOLD) {
+        checkDateAndFrameConsistency(attitude, absPva.getDate(), absPva.getFrame());
+    }
+
+    /** Check attitude frame and epoch.
+     * @param attitude attitude
+     * @param date epoch to verify
+     * @param frame frame to verify
+     */
+    private static void checkDateAndFrameConsistency(final Attitude attitude, final AbsoluteDate date, final Frame frame) {
+        if (FastMath.abs(date.durationFrom(attitude.getDate())) >
+                DATE_INCONSISTENCY_THRESHOLD) {
             throw new OrekitIllegalArgumentException(OrekitMessages.ORBIT_AND_ATTITUDE_DATES_MISMATCH,
-                                                     absPva.getDate(), attitude.getDate());
+                    date, attitude.getDate());
         }
-        if (absPva.getFrame() != attitude.getReferenceFrame()) {
+        if (frame != attitude.getReferenceFrame()) {
             throw new OrekitIllegalArgumentException(OrekitMessages.FRAMES_MISMATCH,
-                                                     absPva.getFrame().getName(),
-                                                     attitude.getReferenceFrame().getName());
+                    frame.getName(),
+                    attitude.getReferenceFrame().getName());
         }
     }
 
@@ -492,7 +483,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * <p>
      * As a rough order of magnitude, the following table shows the extrapolation
      * errors obtained between this simple shift method and an {@link
-     * org.orekit.propagation.numerical.NumericalPropagator numerical
+     * NumericalPropagator numerical
      * propagator} for a low Earth Sun Synchronous Orbit, with a 20x20 gravity field,
      * Sun and Moon third bodies attractions, drag and solar radiation pressure.
      * Beware that these results will be different for other orbits.
@@ -536,7 +527,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * <p>
      * As a rough order of magnitude, the following table shows the extrapolation
      * errors obtained between this simple shift method and an {@link
-     * org.orekit.propagation.numerical.NumericalPropagator numerical
+     * NumericalPropagator numerical
      * propagator} for a low Earth Sun Synchronous Orbit, with a 20x20 gravity field,
      * Sun and Moon third bodies attractions, drag and solar radiation pressure.
      * Beware that these results will be different for other orbits.
@@ -572,7 +563,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * @return shifted additional states
      * @since 11.1.1
      */
-    private DoubleArrayDictionary shiftAdditional(final double dt) {
+    private DataDictionary shiftAdditional(final double dt) {
 
         // fast handling when there are no derivatives at all
         if (additionalDot.size() == 0) {
@@ -580,9 +571,9 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
         }
 
         // there are derivatives, we need to take them into account in the additional state
-        final DoubleArrayDictionary shifted = new DoubleArrayDictionary(additional);
+        final DataDictionary shifted = new DataDictionary(additional);
         for (final DoubleArrayDictionary.Entry dotEntry : additionalDot.getData()) {
-            final DoubleArrayDictionary.Entry entry = shifted.getEntry(dotEntry.getKey());
+            final DataDictionary.Entry entry = shifted.getEntry(dotEntry.getKey());
             if (entry != null) {
                 entry.scaledIncrement(dt, dotEntry);
             }
@@ -644,14 +635,15 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
         return isOrbitDefined() ? orbit.getFrame() : absPva.getFrame();
     }
 
-    /** Check if an additional state is available.
-     * @param name name of the additional state
-     * @return true if the additional state is available
-     * @see #addAdditionalState(String, double[])
+    /** Check if an additional data is available.
+     * @param name name of the additional data
+     * @return true if the additional data is available
+     * @see #addAdditionalData(String, Object)
      * @see #getAdditionalState(String)
-     * @see #getAdditionalStatesValues()
+     * @see #getAdditionalData(String)
+     * @see #getAdditionalDataValues()
      */
-    public boolean hasAdditionalState(final String name) {
+    public boolean hasAdditionalData(final String name) {
         return additional.getEntry(name) != null;
     }
 
@@ -680,15 +672,15 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
         throws MathIllegalStateException {
 
         // check instance additional states is a subset of the other one
-        for (final DoubleArrayDictionary.Entry entry : additional.getData()) {
-            final double[] other = state.additional.get(entry.getKey());
-            if (other == null) {
-                throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE,
+        for (final DataDictionary.Entry entry : additional.getData()) {
+            final Object other = state.additional.get(entry.getKey());
+            if (other == null || !entry.getValue().getClass().equals(other.getClass())) {
+                throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_DATA,
                                           entry.getKey());
             }
-            if (other.length != entry.getValue().length) {
+            if (other instanceof double[] && ((double[]) other).length != ((double[]) entry.getValue()).length) {
                 throw new MathIllegalStateException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
-                                                    other.length, entry.getValue().length);
+                                                    ((double[]) other).length, ((double[]) entry.getValue()).length);
             }
         }
 
@@ -696,7 +688,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
         for (final DoubleArrayDictionary.Entry entry : additionalDot.getData()) {
             final double[] other = state.additionalDot.get(entry.getKey());
             if (other == null) {
-                throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE,
+                throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_DATA,
                                           entry.getKey());
             }
             if (other.length != entry.getValue().length) {
@@ -707,9 +699,9 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
 
         if (state.additional.size() > additional.size()) {
             // the other state has more additional states
-            for (final DoubleArrayDictionary.Entry entry : state.additional.getData()) {
+            for (final DataDictionary.Entry entry : state.additional.getData()) {
                 if (additional.getEntry(entry.getKey()) == null) {
-                    throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE,
+                    throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_DATA,
                                               entry.getKey());
                 }
             }
@@ -719,7 +711,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
             // the other state has more additional states
             for (final DoubleArrayDictionary.Entry entry : state.additionalDot.getData()) {
                 if (additionalDot.getEntry(entry.getKey()) == null) {
-                    throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE,
+                    throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_DATA,
                                               entry.getKey());
                 }
             }
@@ -727,17 +719,40 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
 
     }
 
-    /** Get an additional state.
+    /**
+     * Get an additional state.
+     *
      * @param name name of the additional state
      * @return value of the additional state
-     * @see #addAdditionalState(String, double[])
-     * @see #hasAdditionalState(String)
-     * @see #getAdditionalStatesValues()
+     * @see #hasAdditionalData(String)
+     * @see #getAdditionalDataValues()
      */
     public double[] getAdditionalState(final String name) {
-        final DoubleArrayDictionary.Entry entry = additional.getEntry(name);
+        final Object data = getAdditionalData(name);
+        if (!(data instanceof double[])) {
+            if (data instanceof Double) {
+                return new double[] {(double) data};
+            } else {
+                throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_BAD_TYPE, name);
+            }
+        }
+        return (double[]) data;
+    }
+
+    /**
+     * Get an additional data.
+     *
+     * @param name name of the additional state
+     * @return value of the additional state
+     * @see #addAdditionalData(String, Object)
+     * @see #hasAdditionalData(String)
+     * @see #getAdditionalDataValues()
+     * @since 13.0
+     */
+    public Object getAdditionalData(final String name) {
+        final DataDictionary.Entry entry = additional.getEntry(name);
         if (entry == null) {
-            throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE, name);
+            throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_DATA, name);
         }
         return entry.getValue();
     }
@@ -753,20 +768,20 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
     public double[] getAdditionalStateDerivative(final String name) {
         final DoubleArrayDictionary.Entry entry = additionalDot.getEntry(name);
         if (entry == null) {
-            throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE, name);
+            throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_DATA, name);
         }
         return entry.getValue();
     }
 
-    /** Get an unmodifiable map of additional states.
-     * @return unmodifiable map of additional states
-     * @see #addAdditionalState(String, double[])
-     * @see #hasAdditionalState(String)
+    /** Get an unmodifiable map of additional data.
+     * @return unmodifiable map of additional data
+     * @see #addAdditionalData(String, Object)
+     * @see #hasAdditionalData(String)
      * @see #getAdditionalState(String)
      * @since 11.1
      */
-    public DoubleArrayDictionary getAdditionalStatesValues() {
-        return additional.unmodifiableView();
+    public DataDictionary getAdditionalDataValues() {
+        return additional;
     }
 
     /** Get an unmodifiable map of additional states derivatives.
@@ -777,7 +792,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * @since 11.1
      */
     public DoubleArrayDictionary getAdditionalStatesDerivatives() {
-        return additionalDot.unmodifiableView();
+        return additionalDot;
     }
 
     /** Compute the transform from state defining frame to spacecraft frame.
@@ -798,140 +813,6 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      */
     public StaticTransform toStaticTransform() {
         return StaticTransform.of(getDate(), getPosition().negate(), attitude.getRotation());
-    }
-
-    /** Get the central attraction coefficient.
-     * @return mu central attraction coefficient (m^3/s^2), or {code Double.NaN} if the
-     * state contains an absolute position-velocity-acceleration rather than an orbit
-     */
-    public double getMu() {
-        return isOrbitDefined() ? orbit.getMu() : Double.NaN;
-    }
-
-    /** Get the Keplerian period.
-     * <p>The Keplerian period is computed directly from semi major axis
-     * and central acceleration constant.</p>
-     * @return Keplerian period in seconds, or {code Double.NaN} if the
-     * state contains an absolute position-velocity-acceleration rather
-     * than an orbit
-     */
-    public double getKeplerianPeriod() {
-        return isOrbitDefined() ? orbit.getKeplerianPeriod() : Double.NaN;
-    }
-
-    /** Get the Keplerian mean motion.
-     * <p>The Keplerian mean motion is computed directly from semi major axis
-     * and central acceleration constant.</p>
-     * @return Keplerian mean motion in radians per second, or {code Double.NaN} if the
-     * state contains an absolute position-velocity-acceleration rather
-     * than an orbit
-     */
-    public double getKeplerianMeanMotion() {
-        return isOrbitDefined() ? orbit.getKeplerianMeanMotion() : Double.NaN;
-    }
-
-    /** Get the semi-major axis.
-     * @return semi-major axis (m), or {code Double.NaN} if the
-     * state contains an absolute position-velocity-acceleration rather
-     * than an orbit
-     */
-    public double getA() {
-        return isOrbitDefined() ? orbit.getA() : Double.NaN;
-    }
-
-    /** Get the first component of the eccentricity vector (as per equinoctial parameters).
-     * @return e cos(ω + Ω), first component of eccentricity vector, or {code Double.NaN} if the
-     * state contains an absolute position-velocity-acceleration rather
-     * than an orbit
-     * @see #getE()
-     */
-    public double getEquinoctialEx() {
-        return isOrbitDefined() ? orbit.getEquinoctialEx() : Double.NaN;
-    }
-
-    /** Get the second component of the eccentricity vector (as per equinoctial parameters).
-     * @return e sin(ω + Ω), second component of the eccentricity vector, or {code Double.NaN} if the
-     * state contains an absolute position-velocity-acceleration rather
-     * than an orbit
-     * @see #getE()
-     */
-    public double getEquinoctialEy() {
-        return isOrbitDefined() ? orbit.getEquinoctialEy() : Double.NaN;
-    }
-
-    /** Get the first component of the inclination vector (as per equinoctial parameters).
-     * @return tan(i/2) cos(Ω), first component of the inclination vector, or {code Double.NaN} if the
-     * state contains an absolute position-velocity-acceleration rather
-     * than an orbit
-     * @see #getI()
-     */
-    public double getHx() {
-        return isOrbitDefined() ? orbit.getHx() : Double.NaN;
-    }
-
-    /** Get the second component of the inclination vector (as per equinoctial parameters).
-     * @return tan(i/2) sin(Ω), second component of the inclination vector, or {code Double.NaN} if the
-     * state contains an absolute position-velocity-acceleration rather
-     * than an orbit
-     * @see #getI()
-     */
-    public double getHy() {
-        return isOrbitDefined() ? orbit.getHy() : Double.NaN;
-    }
-
-    /** Get the true latitude argument (as per equinoctial parameters).
-     * @return v + ω + Ω true longitude argument (rad), or {code Double.NaN} if the
-     * state contains an absolute position-velocity-acceleration rather
-     * than an orbit
-     * @see #getLE()
-     * @see #getLM()
-     */
-    public double getLv() {
-        return isOrbitDefined() ? orbit.getLv() : Double.NaN;
-    }
-
-    /** Get the eccentric latitude argument (as per equinoctial parameters).
-     * @return E + ω + Ω eccentric longitude argument (rad), or {code Double.NaN} if the
-     * state contains an absolute position-velocity-acceleration rather
-     * than an orbit
-     * @see #getLv()
-     * @see #getLM()
-     */
-    public double getLE() {
-        return isOrbitDefined() ? orbit.getLE() : Double.NaN;
-    }
-
-    /** Get the mean longitude argument (as per equinoctial parameters).
-     * @return M + ω + Ω mean latitude argument (rad), or {code Double.NaN} if the
-     * state contains an absolute position-velocity-acceleration rather
-     * than an orbit
-     * @see #getLv()
-     * @see #getLE()
-     */
-    public double getLM() {
-        return isOrbitDefined() ? orbit.getLM() : Double.NaN;
-    }
-
-    // Additional orbital elements
-
-    /** Get the eccentricity.
-     * @return eccentricity, or {code Double.NaN} if the
-     * state contains an absolute position-velocity-acceleration rather
-     * than an orbit
-     * @see #getEquinoctialEx()
-     * @see #getEquinoctialEy()
-     */
-    public double getE() {
-        return isOrbitDefined() ? orbit.getE() : Double.NaN;
-    }
-
-    /** Get the inclination.
-     * @return inclination (rad)
-     * @see #getHx()
-     * @see #getHy()
-     */
-    public double getI() {
-        return isOrbitDefined() ? orbit.getI() : Double.NaN;
     }
 
     /** Get the position in orbit definition frame.

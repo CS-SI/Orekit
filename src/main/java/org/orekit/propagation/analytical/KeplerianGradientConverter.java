@@ -57,7 +57,7 @@ class KeplerianGradientConverter extends AbstractAnalyticalGradientConverter {
         final AttitudeProvider provider = propagator.getAttitudeProvider();
 
         // Central attraction coefficient
-        final Gradient mu = state.getA().newInstance(propagator.getInitialState().getMu());
+        final Gradient mu = state.getMass().newInstance(propagator.getInitialState().getOrbit().getMu());
 
         // Return the "Field" propagator
         return new FieldKeplerianPropagator<>(state.getOrbit(), provider, mu);

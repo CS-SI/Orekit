@@ -48,22 +48,23 @@ public enum SP3OrbitType {
      */
     public static SP3OrbitType parseType(final String s) {
         final String normalizedString = s.trim().toUpperCase(Locale.US);
-        if ("EST".equals(normalizedString)) {
-            return FIT;
-        } else if ("BHN".equals(normalizedString)) {
-            // ESOC navigation team uses BHN for files produced
-            // by their main parameter estimation program Bahn
-            return FIT;
-        } else if ("PRO".equals(normalizedString)) {
-            // ESOC navigation team uses PRO for files produced
-            // by their orbit propagation program Propag
-            return EXT;
-        } else {
-            try {
-                return valueOf(normalizedString);
-            } catch (IllegalArgumentException iae) {
-                return OTHER;
-            }
+        switch (normalizedString) {
+            case "EST":
+                return FIT;
+            case "BHN":
+                // ESOC navigation team uses BHN for files produced
+                // by their main parameter estimation program Bahn
+                return FIT;
+            case "PRO":
+                // ESOC navigation team uses PRO for files produced
+                // by their orbit propagation program Propag
+                return EXT;
+            default:
+                try {
+                    return valueOf(normalizedString);
+                } catch (IllegalArgumentException iae) {
+                    return OTHER;
+                }
         }
     }
 

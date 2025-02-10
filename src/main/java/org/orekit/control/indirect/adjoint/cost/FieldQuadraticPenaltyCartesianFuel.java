@@ -126,14 +126,14 @@ public class FieldQuadraticPenaltyCartesianFuel<T extends CalculusFieldElement<T
     /** {@inheritDoc} */
     @Override
     public Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
-        return Stream.of(new QuadraticallyPenalizedSwitchDetector(getEventDetectionSettings(), field.getZero()),
-                new QuadraticallyPenalizedSwitchDetector(getEventDetectionSettings(), getMaximumThrustMagnitude()));
+        return Stream.of(new FieldQuadraticPenalizedSwitchDetector(getEventDetectionSettings(), field.getZero()),
+                new FieldQuadraticPenalizedSwitchDetector(getEventDetectionSettings(), getMaximumThrustMagnitude()));
     }
 
     /**
-     * Event detector for bang-bang switches.
+     * Event detector for control non-differentiability.
      */
-    private class QuadraticallyPenalizedSwitchDetector extends FieldControlSwitchDetector<T> {
+    private class FieldQuadraticPenalizedSwitchDetector extends FieldControlSwitchDetector<T> {
 
         /** Critical value at which the switching function has an event. */
         private final T criticalValue;
@@ -143,8 +143,8 @@ public class FieldQuadraticPenaltyCartesianFuel<T extends CalculusFieldElement<T
          * @param detectionSettings detection settings.
          * @param criticalValue switch function value to detect
          */
-        QuadraticallyPenalizedSwitchDetector(final FieldEventDetectionSettings<T> detectionSettings,
-                                             final T criticalValue) {
+        FieldQuadraticPenalizedSwitchDetector(final FieldEventDetectionSettings<T> detectionSettings,
+                                              final T criticalValue) {
             super(detectionSettings);
             this.criticalValue = criticalValue;
         }
@@ -152,7 +152,7 @@ public class FieldQuadraticPenaltyCartesianFuel<T extends CalculusFieldElement<T
         /** {@inheritDoc} */
         @Override
         public T g(final FieldSpacecraftState<T> state) {
-            final T[] adjoint = state.getAdditionalState(getAdjointName());
+            final T[] adjoint = state.getAdditionalData(getAdjointName());
             return evaluateSwitchFunction(adjoint, state.getMass()).subtract(criticalValue);
         }
     }

@@ -171,7 +171,7 @@ public class UnscentedKalmanModel extends AbstractKalmanEstimationCommon impleme
                     new CartesianOrbit(predicted.getPVCoordinates(),
                             predicted.getFrame(),
                             measurement.getObservedMeasurement().getDate(),
-                            predicted.getMu()
+                            predicted.getOrbit().getMu()
                     )
             );
             getBuilders().get(k).resetOrbit(predictedOrbit);
@@ -289,7 +289,7 @@ public class UnscentedKalmanModel extends AbstractKalmanEstimationCommon impleme
             // If any mass changes have occurred during this estimation step, such as maneuvers,
             // the updated mass value must be carried over so that new Propagators from this builder start with the updated mass.
             if (getBuilders().get(k) instanceof AbstractPropagatorBuilder) {
-                ((AbstractPropagatorBuilder) (getBuilders().get(k))).setMass(predicted.getMass());
+                ((AbstractPropagatorBuilder<?>) (getBuilders().get(k))).setMass(predicted.getMass());
             }
 
             // The orbital parameters in the state vector are replaced with their predicted values

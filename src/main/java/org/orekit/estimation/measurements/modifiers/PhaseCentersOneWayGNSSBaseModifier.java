@@ -77,7 +77,7 @@ public class PhaseCentersOneWayGNSSBaseModifier<T extends AbstractMeasurement<T>
         final StaticTransform receptionSpacecraftToInert = receptionState.toStaticTransform().getInverse();
 
         // Orbit of the remote satellite
-        final Orbit orbitRemote = new CartesianOrbit(phaseParticipants[0], refStateLocal.getFrame(), receptionState.getMu());
+        final Orbit orbitRemote = new CartesianOrbit(phaseParticipants[0], refStateLocal.getFrame(), receptionState.getOrbit().getMu());
 
         // Transforms from spacecraft to inertial frame at emission date
         final SpacecraftState refStateRemote            = new SpacecraftState(orbitRemote,

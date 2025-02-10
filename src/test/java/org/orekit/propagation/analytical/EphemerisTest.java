@@ -33,59 +33,26 @@ import org.mockito.Mockito;
 import org.orekit.OrekitMatchers;
 import org.orekit.TestUtils;
 import org.orekit.Utils;
-import org.orekit.attitudes.AttitudeInterpolator;
-import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.AttitudesSequence;
-import org.orekit.attitudes.CelestialBodyPointed;
-import org.orekit.attitudes.LofOffset;
+import org.orekit.attitudes.*;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitIllegalArgumentException;
-import org.orekit.errors.OrekitIllegalStateException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.errors.TimeStampedCacheException;
+import org.orekit.errors.*;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.EarthStandardAtmosphereRefraction;
 import org.orekit.models.earth.ReferenceEllipsoid;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitBlender;
-import org.orekit.orbits.OrbitHermiteInterpolator;
-import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.AdditionalStateProvider;
-import org.orekit.propagation.Propagator;
-import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.SpacecraftStateInterpolator;
-import org.orekit.propagation.StateCovariance;
-import org.orekit.propagation.StateCovarianceBlender;
-import org.orekit.propagation.StateCovarianceKeplerianHermiteInterpolator;
-import org.orekit.propagation.StateCovarianceTest;
+import org.orekit.orbits.*;
+import org.orekit.propagation.*;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.RecordAndContinue;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
-import org.orekit.time.TimeComponents;
-import org.orekit.time.TimeInterpolator;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.time.TimeStampedDoubleHermiteInterpolator;
-import org.orekit.time.TimeStampedPair;
-import org.orekit.utils.AbsolutePVCoordinates;
-import org.orekit.utils.AbsolutePVCoordinatesTest;
-import org.orekit.utils.AngularDerivativesFilter;
-import org.orekit.utils.CartesianDerivativesFilter;
-import org.orekit.utils.Constants;
-import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.time.*;
+import org.orekit.utils.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -417,7 +384,7 @@ public class EphemerisTest {
 
         // Create ephemeris with attitude override
         Ephemeris ephemPropagator = new Ephemeris(states, interpolator, new LofOffset(inertialFrame, LOFType.LVLH_CCSDS));
-        Assertions.assertEquals(0, ephemPropagator.getManagedAdditionalStates().length);
+        Assertions.assertEquals(0, ephemPropagator.getManagedAdditionalData().length);
 
         //First test that we got position, velocity and attitude nailed
         int numberEphemTestIntervals = 2880;
@@ -586,7 +553,7 @@ public class EphemerisTest {
         List<SpacecraftState> states = new ArrayList<>();
         for (double dt = 0; dt >= -1200; dt -= 60.0) {
             final SpacecraftState original = propagator.propagate(initDate.shiftedBy(dt));
-            final SpacecraftState expanded = original.addAdditionalState(name2, original.getDate().durationFrom(finalDate));
+            final SpacecraftState expanded = original.addAdditionalData(name2, original.getDate().durationFrom(finalDate));
             states.add(expanded);
         }
 
@@ -594,24 +561,24 @@ public class EphemerisTest {
         final TimeInterpolator<SpacecraftState> interpolator = new SpacecraftStateInterpolator(inertialFrame);
 
         final Propagator ephem = new Ephemeris(states, interpolator);
-        ephem.addAdditionalStateProvider(new AdditionalStateProvider() {
+        ephem.addAdditionalDataProvider(new AdditionalDataProvider<double[]>() {
             public String getName() {
                 return name1;
             }
 
-            public double[] getAdditionalState(SpacecraftState state) {
+            public double[] getAdditionalData(SpacecraftState state) {
                 return new double[] { state.getDate().durationFrom(initDate) };
             }
         });
 
-        final String[] additional = ephem.getManagedAdditionalStates();
+        final String[] additional = ephem.getManagedAdditionalData();
         Arrays.sort(additional);
         Assertions.assertEquals(2, additional.length);
-        Assertions.assertEquals(name1, ephem.getManagedAdditionalStates()[0]);
-        Assertions.assertEquals(name2, ephem.getManagedAdditionalStates()[1]);
-        Assertions.assertTrue(ephem.isAdditionalStateManaged(name1));
-        Assertions.assertTrue(ephem.isAdditionalStateManaged(name2));
-        Assertions.assertFalse(ephem.isAdditionalStateManaged("not managed"));
+        Assertions.assertEquals(name1, ephem.getManagedAdditionalData()[0]);
+        Assertions.assertEquals(name2, ephem.getManagedAdditionalData()[1]);
+        Assertions.assertTrue(ephem.isAdditionalDataManaged(name1));
+        Assertions.assertTrue(ephem.isAdditionalDataManaged(name2));
+        Assertions.assertFalse(ephem.isAdditionalDataManaged("not managed"));
 
         SpacecraftState s = ephem.propagate(initDate.shiftedBy(-270.0));
         Assertions.assertEquals(-270.0, s.getAdditionalState(name1)[0], 1.0e-15);
@@ -829,7 +796,7 @@ public class EphemerisTest {
         List<SpacecraftState> states          = new ArrayList<>(numberOfIntervals + 1);
         for (int j = 0; j <= numberOfIntervals; j++) {
             states.add(propagator.propagate(initDate.shiftedBy((j * deltaT)))
-                                 .addAdditionalState(additionalName, additionalValue));
+                                 .addAdditionalData(additionalName, additionalValue));
         }
 
         // Build the ephemeris propagator
@@ -919,9 +886,9 @@ public class EphemerisTest {
 
         final Ephemeris ephemeris = new Ephemeris(states, 2);
 
-        // Setup additional state provider which use the initial state in its init method
-        final AdditionalStateProvider additionalStateProvider = TestUtils.getAdditionalProviderWithInit();
-        ephemeris.addAdditionalStateProvider(additionalStateProvider);
+        // Setup additional data provider which use the initial state in its init method
+        final AdditionalDataProvider<double[]> additionalDataProvider = TestUtils.getAdditionalProviderWithInit();
+        ephemeris.addAdditionalDataProvider(additionalDataProvider);
 
         // WHEN & THEN
         Assertions.assertDoesNotThrow(() -> ephemeris.propagate(ephemeris.getMaxDate()), "No error should have been thrown");

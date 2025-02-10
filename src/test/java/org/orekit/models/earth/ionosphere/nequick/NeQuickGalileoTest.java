@@ -73,6 +73,12 @@ public class NeQuickGalileoTest {
         // Model
         final NeQuickGalileo model = new NeQuickGalileo(high);
 
+        // Getters
+        Assertions.assertEquals(236.831641,    model.getAlpha()[0], 1.0e-6);
+        Assertions.assertEquals(-0.39362878,   model.getAlpha()[1], 1.0e-8);
+        Assertions.assertEquals(0.00402826613, model.getAlpha()[2], 1.0e-11);
+        Assertions.assertEquals("UTC", model.getUtc().getName());
+
         // Geodetic points
         final GeodeticPoint recP = new GeodeticPoint(FastMath.toRadians(82.49), FastMath.toRadians(297.66), 78.11);
         final GeodeticPoint satP = new GeodeticPoint(FastMath.toRadians(54.29), FastMath.toRadians(8.23), 20281546.18);

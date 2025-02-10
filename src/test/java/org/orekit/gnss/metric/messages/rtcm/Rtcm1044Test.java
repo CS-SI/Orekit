@@ -36,7 +36,7 @@ import java.util.ArrayList;
 
 public class Rtcm1044Test {
 
-    private double eps = 9.0e-10;
+    private final double eps = 9.0e-10;
 
     @BeforeEach
     public void setUp() {
@@ -109,7 +109,8 @@ public class Rtcm1044Test {
         Assertions.assertEquals(5.721445195376873E-4,   qzssMessage.getAf0(),                eps);
         Assertions.assertEquals(695,                    qzssMessage.getIODC());
         Assertions.assertEquals(0.0,                    qzssMessage.getCrs(),                eps);
-        Assertions.assertEquals(1.4587496546628753E-4,  qzssMessage.getMeanMotion(),         eps);
+        Assertions.assertEquals(1.4586338170358127E-4,  qzssMessage.getMeanMotion0(),        eps);
+        Assertions.assertEquals(1.4587496546628753E-4,  qzssMessage.getMeanMotion0() + qzssMessage.getDeltaN0(), eps);
         Assertions.assertEquals(0.1671775426328288,     qzssMessage.getM0(),                 eps);
         Assertions.assertEquals(0.0,                    qzssMessage.getCuc(),                eps);
         Assertions.assertEquals(0.0389980711042881,     qzssMessage.getE(),                  eps);

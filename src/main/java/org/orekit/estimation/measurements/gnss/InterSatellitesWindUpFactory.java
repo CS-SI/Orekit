@@ -56,31 +56,19 @@ public class InterSatellitesWindUpFactory {
                                            final Dipole receiverDipole) {
 
         // select emitter satellite system
-        Map<Integer, Map<SatelliteSystem, Map<Integer, InterSatellitesWindUp>>> emitterSystemModifiers =
-                        modifiers.get(emitterSystem);
-        if (emitterSystemModifiers == null) {
-            // build a new map for this satellite system
-            emitterSystemModifiers = new HashMap<>();
-            modifiers.put(emitterSystem, emitterSystemModifiers);
-        }
+        final Map<Integer, Map<SatelliteSystem, Map<Integer, InterSatellitesWindUp>>> emitterSystemModifiers =
+                modifiers.computeIfAbsent(emitterSystem, k -> new HashMap<>());
+        // build a new map for this satellite system
 
         // select emitter satellite
-        Map<SatelliteSystem, Map<Integer, InterSatellitesWindUp>> emitterSatelliteModifiers =
-                        emitterSystemModifiers.get(emitterPrnNumber);
-        if (emitterSatelliteModifiers == null) {
-            // build a new map for this satellite
-            emitterSatelliteModifiers = new HashMap<>();
-            emitterSystemModifiers.put(emitterPrnNumber, emitterSatelliteModifiers);
-        }
+        final Map<SatelliteSystem, Map<Integer, InterSatellitesWindUp>> emitterSatelliteModifiers =
+                emitterSystemModifiers.computeIfAbsent(emitterPrnNumber, k -> new HashMap<>());
+        // build a new map for this satellite
 
         // select receiver satellite system
-        Map<Integer, InterSatellitesWindUp> receiverSystemModifiers =
-                        emitterSatelliteModifiers.get(receiverSystem);
-        if (receiverSystemModifiers == null) {
-            // build a new map for this satellite system
-            receiverSystemModifiers = new HashMap<>();
-            emitterSatelliteModifiers.put(receiverSystem, receiverSystemModifiers);
-        }
+        final Map<Integer, InterSatellitesWindUp> receiverSystemModifiers =
+                emitterSatelliteModifiers.computeIfAbsent(receiverSystem, k -> new HashMap<>());
+        // build a new map for this satellite system
 
         // select receiver satellite
         InterSatellitesWindUp receiverSatelliteModifier = receiverSystemModifiers.get(receiverPrnNumber);

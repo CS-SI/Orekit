@@ -55,7 +55,7 @@ public class FieldTimeSpanMap<T, D extends CalculusFieldElement<D>> {
      * @param field_n field used by default.
      */
     public FieldTimeSpanMap(final T entry, final Field<D> field_n) {
-        data = new TreeSet<Transition<T, D>>(new ChronologicalComparator());
+        data = new TreeSet<>(new ChronologicalComparator());
         field = field_n;
         data.add(new Transition<>(FieldAbsoluteDate.getArbitraryEpoch(field), entry, entry));
     }
@@ -83,21 +83,21 @@ public class FieldTimeSpanMap<T, D extends CalculusFieldElement<D>> {
                 // the single entry was a dummy one, without a real transition
                 // we replace it entirely
                 data.clear();
-                data.add(new Transition<T, D>(latestValidityDate, entry, single.getAfter()));
+                data.add(new Transition<>(latestValidityDate, entry, single.getAfter()));
                 return;
             }
         }
 
         final Transition<T, D> previous =
-                data.floor(new Transition<T, D>(latestValidityDate, entry, null));
+                data.floor(new Transition<>(latestValidityDate, entry, null));
         if (previous == null) {
             // the new transition will be the first one
-            data.add(new Transition<T, D>(latestValidityDate, entry, data.first().getBefore()));
+            data.add(new Transition<>(latestValidityDate, entry, data.first().getBefore()));
         } else {
             // the new transition will be after the previous one
             data.remove(previous);
-            data.add(new Transition<T, D>(previous.date,      previous.getBefore(), entry));
-            data.add(new Transition<T, D>(latestValidityDate, entry,                previous.getAfter()));
+            data.add(new Transition<>(previous.date, previous.getBefore(), entry));
+            data.add(new Transition<>(latestValidityDate, entry, previous.getAfter()));
         }
 
     }
@@ -125,21 +125,21 @@ public class FieldTimeSpanMap<T, D extends CalculusFieldElement<D>> {
                 // the single entry was a dummy one, without a real transition
                 // we replace it entirely
                 data.clear();
-                data.add(new Transition<T, D>(earliestValidityDate, single.getBefore(), entry));
+                data.add(new Transition<>(earliestValidityDate, single.getBefore(), entry));
                 return;
             }
         }
 
         final Transition<T, D> next =
-                data.ceiling(new Transition<T, D>(earliestValidityDate, entry, null));
+                data.ceiling(new Transition<>(earliestValidityDate, entry, null));
         if (next == null) {
             // the new transition will be the last one
-            data.add(new Transition<T, D>(earliestValidityDate, data.last().getAfter(), entry));
+            data.add(new Transition<>(earliestValidityDate, data.last().getAfter(), entry));
         } else {
             // the new transition will be before the next one
             data.remove(next);
-            data.add(new Transition<T, D>(earliestValidityDate, next.getBefore(), entry));
-            data.add(new Transition<T, D>(next.date,            entry,            next.getAfter()));
+            data.add(new Transition<>(earliestValidityDate, next.getBefore(), entry));
+            data.add(new Transition<>(next.date, entry, next.getAfter()));
         }
 
     }
@@ -149,7 +149,7 @@ public class FieldTimeSpanMap<T, D extends CalculusFieldElement<D>> {
      * @return valid entry at specified date
      */
     public T get(final FieldAbsoluteDate<D> date) {
-        final Transition<T, D> previous = data.floor(new Transition<T, D>(date, null, null));
+        final Transition<T, D> previous = data.floor(new Transition<>(date, null, null));
         if (previous == null) {
             // there are no transition before the specified date
             // return the first valid entry

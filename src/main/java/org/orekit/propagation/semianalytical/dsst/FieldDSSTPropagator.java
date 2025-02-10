@@ -324,7 +324,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
         super.resetInitialState(state);
         if (!hasNewtonianAttraction()) {
             // use the state to define central attraction
-            setMu(state.getMu());
+            setMu(state.getOrbit().getMu());
         }
         super.setStartDate(state.getDate());
     }
@@ -545,7 +545,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
         final FieldEquinoctialOrbit<T> osculatingOrbit = computeOsculatingOrbit(mean, shortPeriodTerms);
 
         return new FieldSpacecraftState<>(osculatingOrbit, mean.getAttitude(), mean.getMass(),
-                                          mean.getAdditionalStatesValues());
+                                          mean.getAdditionalDataValues());
 
     }
 
@@ -603,7 +603,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
                                                                                            final int maxIterations) {
         final FieldOrbit<T> meanOrbit = computeMeanOrbit(osculating, attitudeProvider, forceModel, epsilon, maxIterations);
         return new FieldSpacecraftState<>(meanOrbit, osculating.getAttitude(), osculating.getMass(),
-                                          osculating.getAdditionalStatesValues());
+                                          osculating.getAdditionalDataValues());
     }
 
     /** Override the default value of the parameter.
@@ -761,12 +761,13 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
             final FieldEquinoctialOrbit<T> rebuilt = computeOsculatingOrbit(meanState, shortPeriodTerms);
 
             // adapted parameters residuals
-            final T deltaA  = osculating.getA().subtract(rebuilt.getA());
-            final T deltaEx = osculating.getEquinoctialEx().subtract(rebuilt.getEquinoctialEx());
-            final T deltaEy = osculating.getEquinoctialEy().subtract(rebuilt.getEquinoctialEy());
-            final T deltaHx = osculating.getHx().subtract(rebuilt.getHx());
-            final T deltaHy = osculating.getHy().subtract(rebuilt.getHy());
-            final T deltaLv = MathUtils.normalizeAngle(osculating.getLv().subtract(rebuilt.getLv()), zero);
+            final FieldOrbit<T> osculatingOrbit = osculating.getOrbit();
+            final T deltaA  = osculatingOrbit.getA().subtract(rebuilt.getA());
+            final T deltaEx = osculatingOrbit.getEquinoctialEx().subtract(rebuilt.getEquinoctialEx());
+            final T deltaEy = osculatingOrbit.getEquinoctialEy().subtract(rebuilt.getEquinoctialEy());
+            final T deltaHx = osculatingOrbit.getHx().subtract(rebuilt.getHx());
+            final T deltaHy = osculatingOrbit.getHy().subtract(rebuilt.getHy());
+            final T deltaLv = MathUtils.normalizeAngle(osculatingOrbit.getLv().subtract(rebuilt.getLv()), zero);
 
             // check convergence
             if (FastMath.abs(deltaA).getReal()  < thresholdA.getReal() &&
@@ -816,7 +817,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
         }
         return (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.mapArrayToOrbit(y, meanDot,
                                                                                 PositionAngleType.MEAN, meanState.getDate(),
-                                                                                meanState.getMu(), meanState.getFrame());
+                                                                                meanState.getOrbit().getMu(), meanState.getFrame());
     }
 
     /** {@inheritDoc} */
@@ -1058,9 +1059,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
          *  @param forceModel force to take into account
          *  @param state current state
          *  @param auxiliaryElements auxiliary elements related to the current orbit
-         *  @param parameters force model parameters (all span values for each parameters)
-         *  the extract parameter method {@link #extractParameters(double[], AbsoluteDate)} is called in
-         *  the method to select the right parameter.
+         *  @param parameters force model parameters
          *  @return the mean equinoctial elements rates da<sub>i</sub> / dt
          */
         private T[] elementRates(final DSSTForceModel forceModel,

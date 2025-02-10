@@ -25,6 +25,7 @@ import org.orekit.time.DateComponents;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 /**
@@ -108,7 +109,8 @@ class CCIRLoader {
 
         // The files are named ccirXX.asc where XX substitute the month of the year + 10
         final int currentMonth = dateComponents.getMonth();
-        final String fileName = String.format("/assets/org/orekit/nequick/ccir%02d.asc", currentMonth + 10);
+        final String fileName = String.format(Locale.US, "/assets/org/orekit/nequick/ccir%02d.asc",
+                                              currentMonth + 10);
         loadData(new DataSource(fileName, () -> CCIRLoader.class.getResourceAsStream(fileName)));
 
     }

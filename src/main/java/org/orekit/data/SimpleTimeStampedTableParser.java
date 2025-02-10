@@ -94,7 +94,7 @@ public class SimpleTimeStampedTableParser<T extends TimeStamped> {
         // setup the reader
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
 
-            final List<T> table = new ArrayList<T>();
+            final List<T> table = new ArrayList<>();
 
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
 

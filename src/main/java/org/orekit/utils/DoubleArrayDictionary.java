@@ -33,6 +33,8 @@ import java.util.Map;
  * features and not intended for large number of keys. For such
  * needs the regular {@code Map<String, double[]>} should be preferred.
  * </p>
+ *
+ * @see DataDictionary
  * @since 11.1
  */
 public class DoubleArrayDictionary implements Serializable {
@@ -187,16 +189,6 @@ public class DoubleArrayDictionary implements Serializable {
         return false;
     }
 
-    /** Get an unmodifiable view of the dictionary.
-     * <p>
-     * The return dictionary is backed by the original instance and offers {@code read-only}
-     * access to it, but all operations that modify it throw an {@link UnsupportedOperationException}.
-     * </p>
-     * @return unmodifiable view of the dictionary
-     */
-    public DoubleArrayDictionary unmodifiableView() {
-        return new View();
-    }
 
     /** Get a string representation of the dictionary.
      * <p>
@@ -299,73 +291,4 @@ public class DoubleArrayDictionary implements Serializable {
         }
 
     }
-
-    /** Unmodifiable view of the dictionary. */
-    private class View extends DoubleArrayDictionary {
-
-        /** {@link Serializable} UID. */
-        private static final long serialVersionUID = 20211121L;
-
-        /**  {@inheritDoc} */
-        @Override
-        public List<Entry> getData() {
-            return DoubleArrayDictionary.this.getData();
-        }
-
-        /**  {@inheritDoc} */
-        @Override
-        public int size() {
-            return DoubleArrayDictionary.this.size();
-        }
-
-        /**  {@inheritDoc} */
-        @Override
-        public Map<String, double[]> toMap() {
-            return DoubleArrayDictionary.this.toMap();
-        }
-
-        /**  {@inheritDoc} */
-        @Override
-        public void clear() {
-            throw new UnsupportedOperationException();
-        }
-
-        /**  {@inheritDoc} */
-        @Override
-        public void put(final String key, final double[] value) {
-            throw new UnsupportedOperationException();
-        }
-
-        /**  {@inheritDoc} */
-        @Override
-        public void putAll(final Map<String, double[]> map) {
-            throw new UnsupportedOperationException();
-        }
-
-        /**  {@inheritDoc} */
-        @Override
-        public void putAll(final DoubleArrayDictionary dictionary) {
-            throw new UnsupportedOperationException();
-        }
-
-        /**  {@inheritDoc} */
-        @Override
-        public double[] get(final String key) {
-            return DoubleArrayDictionary.this.get(key);
-        }
-
-        /**  {@inheritDoc} */
-        @Override
-        public Entry getEntry(final String key) {
-            return DoubleArrayDictionary.this.getEntry(key);
-        }
-
-        /**  {@inheritDoc} */
-        @Override
-        public boolean remove(final String key) {
-            throw new UnsupportedOperationException();
-        }
-
-    }
-
 }

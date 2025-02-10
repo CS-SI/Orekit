@@ -555,7 +555,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
         g0Positive = increasing;
         // check g0Positive set correctly
         check(g0.getReal() == 0.0 || g0Positive == g0.getReal() > 0);
-        return new EventOccurrence<T>(action, newState, stopTime);
+        return new EventOccurrence<>(action, newState, stopTime);
     }
 
     /**

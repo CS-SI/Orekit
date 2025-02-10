@@ -108,9 +108,9 @@ class L2TransformProvider implements TransformProvider {
         final FieldRotation<T>      rotation    = new FieldRotation<>(pv21.getPosition(), pv21.getVelocity(),
                                                                       FieldVector3D.getPlusI(field),
                                                                       FieldVector3D.getPlusJ(field));
-        return new FieldTransform<T>(date,
-                                     new FieldTransform<>(date, translation),
-                                     new FieldTransform<>(date, rotation));
+        return new FieldTransform<>(date,
+                new FieldTransform<>(date, translation),
+                new FieldTransform<>(date, rotation));
     }
 
     /** {@inheritDoc} */

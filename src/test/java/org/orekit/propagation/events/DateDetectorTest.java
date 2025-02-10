@@ -75,7 +75,7 @@ public class DateDetectorTest {
                 return new CombinedDerivatives(new double[1], null);
             }
         });
-        propagator.setInitialState(propagator.getInitialState().addAdditionalState("dummy", new double[1]));
+        propagator.setInitialState(propagator.getInitialState().addAdditionalData("dummy", new double[1]));
         propagator.getMultiplexer().add(interpolator -> {
             SpacecraftState prev = interpolator.getPreviousState();
             SpacecraftState curr = interpolator.getCurrentState();

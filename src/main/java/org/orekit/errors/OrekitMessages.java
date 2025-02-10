@@ -333,8 +333,11 @@ public enum OrekitMessages implements Localizable {
     /** TOO_SMALL_SCALE_FOR_PARAMETER. */
     TOO_SMALL_SCALE_FOR_PARAMETER("scale factor for parameter {0} is too small: {1}"),
 
-    /** UNKNOWN_ADDITIONAL_STATE. */
-    UNKNOWN_ADDITIONAL_STATE("unknown additional state \"{0}\""),
+    /** ADDITIONAL_STATE_BAD_TYPE. */
+    ADDITIONAL_STATE_BAD_TYPE("state \"{0}\" is not a double array"),
+
+    /** UNKNOWN_ADDITIONAL_DATA. */
+    UNKNOWN_ADDITIONAL_DATA("unknown additional data \"{0}\""),
 
     /** UNKNOWN_MONTH. */
     UNKNOWN_MONTH("unknown month \"{0}\""),
@@ -443,6 +446,32 @@ public enum OrekitMessages implements Localizable {
 
     /** CCSDS_MISSING_SENSOR_INDEX. */
     CCSDS_MISSING_SENSOR_INDEX("missing sensor index {0}"),
+
+    /** IIRV_MISSING_LINEBREAK_IN_FILE. */
+    IIRV_MISSING_LINEBREAK_IN_FILE("line break(s) missing after vector number {0} in {1}"),
+
+    /** IIRV_INVALID_VECTOR_FORMAT. */
+    IIRV_INVALID_LINE_IN_VECTOR("line {0} in IIRV vector is not valid: \"{1}\""),
+
+    /** IIRV_EXCEEDS_MAX_VECTORS. */
+    IIRV_EXCEEDS_MAX_VECTORS("cannot embed more than 1000 vectors in a single IIRV message file: got {0}. " +
+        "Consider splitting the data into multiple files"),
+
+    /** IIRV_VALUE_TOO_LARGE. */
+    IIRV_VALUE_TOO_LARGE("numeric value \"{0}\" exceeds the maximum length of {1} for string representation"),
+
+    /** IIRV_INVALID_TERM_VALUE. */
+    IIRV_INVALID_TERM_VALUE("invalid IIRV term value: {0}"),
+
+    /** IIRV_TERM_CHANGES_WITHIN_FILE. */
+    IIRV_TERM_CHANGES_WITHIN_FILE("the \"{0}\" term cannot change within an IIRV message file"),
+
+    /** IIRV_SEQUENCE_NUMBER_MUST_BE_INCREASING_BY_ONE. */
+    IIRV_SEQUENCE_NUMBER_MUST_BE_INCREASING_BY_ONE("IIRV sequence number must increase by 1 for each " +
+        "subsequent vector entry. At at line {0}, expected sequence number {1}+1, but found {2}"),
+
+    /** IIRV_UNMAPPED_COORDINATE_SYSTEM. */
+    IIRV_UNMAPPED_COORDINATE_SYSTEM("IIRV coordinate system \"{0}\" ({1}) has not been mapped to an Orekit frame"),
 
     /** INCONSISTENT_NUMBER_OF_ELEMENTS. */
     INCONSISTENT_NUMBER_OF_ELEMENTS("inconsistent number of elements: expected {0}, got {1}"),
@@ -631,6 +660,12 @@ public enum OrekitMessages implements Localizable {
 
     /** UNKNOWN_SATELLITE_ANTENNA_CODE. */
     UNKNOWN_SATELLITE_ANTENNA_CODE("unknown satellite antenna code {0}"),
+
+    /** UNKNOWN_GNSS_ANTENNA. */
+    UNKNOWN_GNSS_ANTENNA("unknown GNSS antenna, name: {0}, radome code: {1}, serial number: {2}"),
+
+    /** UNKNOWN_GNSS_FREQUENCY. */
+    UNKNOWN_GNSS_FREQUENCY("unknown GNSS frequency, system: {0}, frequency code: {1} (line {2}, file {3})"),
 
     /** UNSUPPORTED_FREQUENCY_FOR_ANTENNA. */
     UNSUPPORTED_FREQUENCY_FOR_ANTENNA("frequency {0} is not supported by antenna {1}"),

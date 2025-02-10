@@ -22,6 +22,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.PVCoordinates;
 
 /** Class modifying theoretical range-rate measurement with relativistic frequency deviation.
+ * It works only with orbit-based states.
  * <p>
  * Relativistic clock correction is caused by the motion of the satellite as well as
  * the change in the gravitational potential
@@ -56,7 +57,7 @@ public class RelativisticClockOneWayGNSSRangeRateModifier
         final double        aRemote = 1.0 / (2 / rRemote - vRemote * vRemote / getGm());
 
         modifyWithoutDerivatives(estimated,
-                                 local.getA(), local.getPosition().getNorm(),
+                                 local.getOrbit().getA(), local.getPosition().getNorm(),
                                  aRemote, rRemote);
 
     }

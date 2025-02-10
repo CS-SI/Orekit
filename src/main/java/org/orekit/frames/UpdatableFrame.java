@@ -183,7 +183,7 @@ public class UpdatableFrame extends Frame {
          * @param transform initial value of the transform
          */
         UpdatableProvider(final Transform transform) {
-            this.transform = new AtomicReference<Transform>(transform);
+            this.transform = new AtomicReference<>(transform);
         }
 
         /** Update the transform from the parent frame to the instance.
