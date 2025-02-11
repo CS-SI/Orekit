@@ -33,6 +33,8 @@ import org.orekit.files.general.EphemerisFile;
 import org.orekit.files.general.EphemerisFile.SatelliteEphemeris;
 import org.orekit.files.general.EphemerisFileWriter;
 import org.orekit.frames.Frame;
+import org.orekit.utils.AccurateFormatter;
+import org.orekit.utils.Formatter;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** An {@link EphemerisFileWriter} generating {@link Ocm OCM} files.
@@ -81,10 +83,59 @@ public class EphemerisOcmWriter implements EphemerisFileWriter {
     /** Maximum offset for relative dates. */
     private final double maxRelativeOffset;
 
+    /** Used to format dates and doubles to string. */
+    private final Formatter formatter;
+
     /** Central body.
      * @since 12.0
      */
     private final OneAxisEllipsoid body;
+
+    /**
+     * Constructor used to create a new OCM writer configured with the necessary parameters
+     * to successfully fill in all required fields that aren't part of a standard object.
+     * <p>
+     * If the mandatory header entries are not present (or if header is null),
+     * built-in defaults will be used
+     * </p>
+     * <p>
+     * The writer is built from the complete header and partial metadata. The template
+     * metadata is used to initialize and independent local copy, that will be updated
+     * as new segments are written (with at least the segment start and stop will change,
+     * but some other parts may change too). The {@code template} argument itself is not
+     * changed.
+     * </p>
+     * @param writer underlying writer
+     * @param header file header (may be null)
+     * @param metadata  file metadata
+     * @param template  template for trajectory metadata
+     * @param fileFormat file format to use
+     * @param outputName output name for error messages
+     * @param maxRelativeOffset maximum offset in seconds to use relative dates
+     * @param formatter used to format date and double to string.
+     * (if a date is too far from reference, it will be displayed as calendar elements)
+     * @param unitsColumn columns number for aligning units (if negative or zero, units are not output)
+     */
+    public EphemerisOcmWriter(final OcmWriter writer,
+                              final OdmHeader header, final OcmMetadata metadata,
+                              final TrajectoryStateHistoryMetadata template,
+                              final FileFormat fileFormat, final String outputName,
+                              final double maxRelativeOffset, final int unitsColumn, final Formatter formatter) {
+        this.writer             = writer;
+        this.header             = header;
+        this.metadata           = metadata.copy(header == null ? writer.getDefaultVersion() : header.getFormatVersion());
+        this.trajectoryMetadata = template.copy(header == null ? writer.getDefaultVersion() : header.getFormatVersion());
+        this.fileFormat         = fileFormat;
+        this.outputName         = outputName;
+        this.maxRelativeOffset  = maxRelativeOffset;
+        this.unitsColumn        = unitsColumn;
+        this.body               = Double.isNaN(writer.getEquatorialRadius()) ?
+                                  null :
+                                  new OneAxisEllipsoid(writer.getEquatorialRadius(),
+                                                       writer.getFlattening(),
+                                                       template.getTrajReferenceFrame().asFrame());
+        this.formatter = formatter;
+    }
 
     /**
      * Constructor used to create a new OCM writer configured with the necessary parameters
@@ -115,19 +166,7 @@ public class EphemerisOcmWriter implements EphemerisFileWriter {
                               final TrajectoryStateHistoryMetadata template,
                               final FileFormat fileFormat, final String outputName,
                               final double maxRelativeOffset, final int unitsColumn) {
-        this.writer             = writer;
-        this.header             = header;
-        this.metadata           = metadata.copy(header == null ? writer.getDefaultVersion() : header.getFormatVersion());
-        this.trajectoryMetadata = template.copy(header == null ? writer.getDefaultVersion() : header.getFormatVersion());
-        this.fileFormat         = fileFormat;
-        this.outputName         = outputName;
-        this.maxRelativeOffset  = maxRelativeOffset;
-        this.unitsColumn        = unitsColumn;
-        this.body               = Double.isNaN(writer.getEquatorialRadius()) ?
-                                  null :
-                                  new OneAxisEllipsoid(writer.getEquatorialRadius(),
-                                                       writer.getFlattening(),
-                                                       template.getTrajReferenceFrame().asFrame());
+        this(writer, header, metadata, template, fileFormat, outputName, maxRelativeOffset, unitsColumn, new AccurateFormatter());
     }
 
     /** {@inheritDoc}
@@ -179,9 +218,9 @@ public class EphemerisOcmWriter implements EphemerisFileWriter {
 
         try (Generator generator = fileFormat == FileFormat.KVN ?
                                    new KvnGenerator(appendable, OcmWriter.KVN_PADDING_WIDTH, outputName,
-                                                    maxRelativeOffset, unitsColumn) :
+                                                    maxRelativeOffset, unitsColumn, formatter) :
                                    new XmlGenerator(appendable, XmlGenerator.DEFAULT_INDENT, outputName,
-                                                    maxRelativeOffset, unitsColumn > 0, null)) {
+                                                    maxRelativeOffset, unitsColumn > 0, null, formatter)) {
 
             writer.writeHeader(generator, header);
 

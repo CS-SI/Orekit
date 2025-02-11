@@ -26,7 +26,6 @@ import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
-import org.orekit.utils.AccurateFormatter;
 import org.orekit.utils.units.Unit;
 
 /** Writer for covariance history data.
@@ -106,7 +105,7 @@ class OrbitCovarianceHistoryWriter extends AbstractWriter {
                     cij = units.get(i).fromSI(units.get(j).fromSI(matrix.getEntry(i, j)));
                 }
                 line.append(' ');
-                line.append(AccurateFormatter.format(cij));
+                line.append(generator.doubleToString(cij));
                 ordering.update(indexer);
             }
             if (generator.getFormat() == FileFormat.XML) {

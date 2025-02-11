@@ -22,7 +22,6 @@ import java.io.IOException;
 import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
-import org.orekit.utils.AccurateFormatter;
 import org.orekit.utils.units.Unit;
 
 /** Writer for attitude maneuver data.
@@ -65,11 +64,11 @@ class AttitudeManeuverWriter extends AbstractWriter {
         // target
         if (man.getTargetMomentum() != null) {
             final StringBuilder momentum = new StringBuilder();
-            momentum.append(AccurateFormatter.format(Units.N_M_S.fromSI(man.getTargetMomentum().getX())));
+            momentum.append(generator.doubleToString(Units.N_M_S.fromSI(man.getTargetMomentum().getX())));
             momentum.append(' ');
-            momentum.append(AccurateFormatter.format(Units.N_M_S.fromSI(man.getTargetMomentum().getY())));
+            momentum.append(generator.doubleToString(Units.N_M_S.fromSI(man.getTargetMomentum().getY())));
             momentum.append(' ');
-            momentum.append(AccurateFormatter.format(Units.N_M_S.fromSI(man.getTargetMomentum().getZ())));
+            momentum.append(generator.doubleToString(Units.N_M_S.fromSI(man.getTargetMomentum().getZ())));
             generator.writeEntry(AttitudeManeuverKey.TARGET_MOMENTUM.name(), momentum.toString(),                Units.N_M_S, true);
             if (man.getTargetMomFrame() != null) {
                 generator.writeEntry(AttitudeManeuverKey.TARGET_MOM_FRAME.name(), man.getTargetMomFrame().getName(), null,    false);
@@ -78,13 +77,13 @@ class AttitudeManeuverWriter extends AbstractWriter {
 
         if (man.getTargetAttitude() != null) {
             final StringBuilder attitude = new StringBuilder();
-            attitude.append(AccurateFormatter.format(man.getTargetAttitude().getQ1()));
+            attitude.append(generator.doubleToString(man.getTargetAttitude().getQ1()));
             attitude.append(' ');
-            attitude.append(AccurateFormatter.format(man.getTargetAttitude().getQ2()));
+            attitude.append(generator.doubleToString(man.getTargetAttitude().getQ2()));
             attitude.append(' ');
-            attitude.append(AccurateFormatter.format(man.getTargetAttitude().getQ3()));
+            attitude.append(generator.doubleToString(man.getTargetAttitude().getQ3()));
             attitude.append(' ');
-            attitude.append(AccurateFormatter.format(man.getTargetAttitude().getQ0()));
+            attitude.append(generator.doubleToString(man.getTargetAttitude().getQ0()));
             generator.writeEntry(AttitudeManeuverKey.TARGET_ATTITUDE.name(), attitude.toString(), null, true);
         }
 

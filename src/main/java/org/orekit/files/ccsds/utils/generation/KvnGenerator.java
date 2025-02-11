@@ -22,6 +22,7 @@ import java.util.List;
 import org.hipparchus.util.FastMath;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.utils.AccurateFormatter;
+import org.orekit.utils.Formatter;
 import org.orekit.utils.units.Unit;
 
 /** Generator for Key-Value Notation CCSDS messages.
@@ -56,6 +57,7 @@ public class KvnGenerator extends AbstractGenerator {
      * @param maxRelativeOffset maximum offset in seconds to use relative dates
      * (if a date is too far from reference, it will be displayed as calendar elements)
      * @param unitsColumn columns number for aligning units (if negative or zero, units are not output)
+     * @param formatter to format double and dates to string
      * @see org.orekit.files.ccsds.ndm.tdm.TdmWriter#KVN_PADDING_WIDTH     TdmWriter.KVN_PADDING_WIDTH
      * @see org.orekit.files.ccsds.ndm.adm.aem.AemWriter#KVN_PADDING_WIDTH AemWriter.KVN_PADDING_WIDTH
      * @see org.orekit.files.ccsds.ndm.adm.apm.ApmWriter#KVN_PADDING_WIDTH ApmWriter.KVN_PADDING_WIDTH
@@ -66,8 +68,8 @@ public class KvnGenerator extends AbstractGenerator {
      */
     public KvnGenerator(final Appendable output, final int paddingWidth,
                         final String outputName, final double maxRelativeOffset,
-                        final int unitsColumn) {
-        super(output, outputName, maxRelativeOffset, unitsColumn > 0);
+                        final int unitsColumn, final Formatter formatter) {
+        super(output, outputName, maxRelativeOffset, unitsColumn > 0, formatter);
         kvFormat = "%-" + FastMath.max(1, paddingWidth) + "s = %s";
         final StringBuilder builder = new StringBuilder(COMMENT);
         builder.append(' ');
@@ -79,6 +81,28 @@ public class KvnGenerator extends AbstractGenerator {
         this.commentFormat = builder.toString();
     }
 
+    /** Simple constructor.
+     * @param output destination of generated output
+     * @param paddingWidth padding width for aligning the '=' sign
+     * (not counting the extra blank added before the '=' sign)
+     * @param outputName output name for error messages
+     * @param maxRelativeOffset maximum offset in seconds to use relative dates
+     * (if a date is too far from reference, it will be displayed as calendar elements)
+     * @param unitsColumn columns number for aligning units (if negative or zero, units are not output)
+     * @see org.orekit.files.ccsds.ndm.tdm.TdmWriter#KVN_PADDING_WIDTH     TdmWriter.KVN_PADDING_WIDTH
+     * @see org.orekit.files.ccsds.ndm.adm.aem.AemWriter#KVN_PADDING_WIDTH AemWriter.KVN_PADDING_WIDTH
+     * @see org.orekit.files.ccsds.ndm.adm.apm.ApmWriter#KVN_PADDING_WIDTH ApmWriter.KVN_PADDING_WIDTH
+     * @see org.orekit.files.ccsds.ndm.odm.opm.OpmWriter#KVN_PADDING_WIDTH OpmWriter.KVN_PADDING_WIDTH
+     * @see org.orekit.files.ccsds.ndm.odm.omm.OmmWriter#KVN_PADDING_WIDTH OmmWriter.KVN_PADDING_WIDTH
+     * @see org.orekit.files.ccsds.ndm.odm.oem.OemWriter#KVN_PADDING_WIDTH OemWriter.KVN_PADDING_WIDTH
+     * @see org.orekit.files.ccsds.ndm.odm.ocm.OcmWriter#KVN_PADDING_WIDTH OcmWriter.KVN_PADDING_WIDTH
+     */
+    public KvnGenerator(final Appendable output, final int paddingWidth,
+                        final String outputName, final double maxRelativeOffset,
+                        final int unitsColumn) {
+        this(output, paddingWidth, outputName, maxRelativeOffset, unitsColumn, new AccurateFormatter());
+    }
+
     /** {@inheritDoc} */
     @Override
     public FileFormat getFormat() {
@@ -88,7 +112,7 @@ public class KvnGenerator extends AbstractGenerator {
     /** {@inheritDoc} */
     @Override
     public void startMessage(final String root, final String messageTypeKey, final double version) throws IOException {
-        writeEntry(messageTypeKey, String.format(AccurateFormatter.STANDARDIZED_LOCALE, "%.1f", version), null, true);
+        writeEntry(messageTypeKey, String.format(Formatter.STANDARDIZED_LOCALE, "%.1f", version), null, true);
     }
 
     /** {@inheritDoc} */
@@ -101,7 +125,7 @@ public class KvnGenerator extends AbstractGenerator {
     @Override
     public void writeComments(final List<String> comments) throws IOException {
         for (final String comment : comments) {
-            writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, commentFormat, comment));
+            writeRawData(String.format(Formatter.STANDARDIZED_LOCALE, commentFormat, comment));
         }
     }
 
@@ -111,7 +135,7 @@ public class KvnGenerator extends AbstractGenerator {
         if (value == null) {
             complain(key, mandatory);
         } else {
-            final String s = String.format(AccurateFormatter.STANDARDIZED_LOCALE, kvFormat, key, value);
+            final String s = String.format(Formatter.STANDARDIZED_LOCALE, kvFormat, key, value);
             writeRawData(s);
             if (writeUnits(unit)) {
                 for (int column = s.length(); column < unitsColumn; ++column) {

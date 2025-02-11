@@ -24,6 +24,7 @@ import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.AccurateFormatter;
+import org.orekit.utils.Formatter;
 import org.orekit.utils.units.Unit;
 
 /** Maneuver field type used in CCSDS {@link Ocm Orbit Comprehensive Messages}.
@@ -37,41 +38,41 @@ public enum ManeuverFieldType {
     /** Absolute epoch time. */
     TIME_ABSOLUTE("n/a",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setDate(context.getTimeSystem().getConverter(context).parse(field)),
-        (u, converter, maneuver) -> {
+        (u, converter, maneuver, formatter) -> {
             final DateTimeComponents dt = converter.components(maneuver.getDate());
-            return AccurateFormatter.format(dt.getDate().getYear(), dt.getDate().getMonth(), dt.getDate().getDay(),
-                                            dt.getTime().getHour(), dt.getTime().getMinute(), dt.getTime().getSecond());
+            return formatter.toString(dt.getDate().getYear(), dt.getDate().getMonth(), dt.getDate().getDay(),
+                    dt.getTime().getHour(), dt.getTime().getMinute(), dt.getTime().getSecond());
         }),
 
     /** Relative epoch time. */
     TIME_RELATIVE("s",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setDate(context.getReferenceDate().shiftedBy(toSI(field, u))),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(converter.offset(maneuver.getDate())))),
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(converter.offset(maneuver.getDate())))),
 
     /** Maneuver duration. */
     MAN_DURA("s",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setDuration(toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getDuration()))),
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(maneuver.getDuration()))),
 
     /** Mass change. */
     DELTA_MASS("kg",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setDeltaMass(toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getDeltaMass()))),
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(maneuver.getDeltaMass()))),
 
     /** Acceleration along X axis. */
     ACC_X("km/s²",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setAcceleration(0, toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getAcceleration().getX()))),
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(maneuver.getAcceleration().getX()))),
 
     /** Acceleration along Y axis. */
     ACC_Y("km/s²",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setAcceleration(1, toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getAcceleration().getY()))),
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(maneuver.getAcceleration().getY()))),
 
     /** Acceleration along Z axis. */
     ACC_Z("km/s²",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setAcceleration(2, toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getAcceleration().getZ()))),
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(maneuver.getAcceleration().getZ()))),
 
     /** Interpolation mode between current and next acceleration line. */
     ACC_INTERP("n/a",
@@ -83,62 +84,62 @@ public enum ManeuverFieldType {
                                           lineNumber, fileName, field);
             }
         },
-        (u, converter, maneuver) -> maneuver.getAccelerationInterpolation().name()),
+        (u, converter, maneuver, formatter) -> maneuver.getAccelerationInterpolation().name()),
 
     /** One σ percent error on acceleration magnitude. */
     ACC_MAG_SIGMA("%",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setAccelerationMagnitudeSigma(toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getAccelerationMagnitudeSigma()))),
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(maneuver.getAccelerationMagnitudeSigma()))),
 
     /** One σ off-nominal acceleration direction. */
     ACC_DIR_SIGMA("°",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setAccelerationDirectionSigma(toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getAccelerationDirectionSigma()))),
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(maneuver.getAccelerationDirectionSigma()))),
 
     /** Velocity increment along X axis. */
     DV_X("km/s",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setDv(0, toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getDv().getX()))),
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(maneuver.getDv().getX()))),
 
     /** Velocity increment along Y axis. */
     DV_Y("km/s",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setDv(1, toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getDv().getY()))),
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(maneuver.getDv().getY()))),
 
     /** Velocity increment along Z axis. */
     DV_Z("km/s",
         (field, u, context, maneuver, lineNumber, fileName) ->  maneuver.setDv(2, toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getDv().getZ()))),
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(maneuver.getDv().getZ()))),
 
     /** One σ percent error on ΔV magnitude. */
     DV_MAG_SIGMA("%",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setDvMagSigma(toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getDvMagSigma()))),
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(maneuver.getDvMagSigma()))),
 
     /** One σ angular off-nominal ΔV direction. */
     DV_DIR_SIGMA("°",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setDvDirSigma(toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getDvDirSigma()))),
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(maneuver.getDvDirSigma()))),
 
     /** Thrust component along X axis. */
     THR_X("N",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setThrust(0, toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getThrust().getX()))),
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(maneuver.getThrust().getX()))),
 
     /** Thrust component along Y axis. */
     THR_Y("N",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setThrust(1, toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getThrust().getY()))),
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(maneuver.getThrust().getY()))),
 
     /** Thrust component along Z axis. */
     THR_Z("N",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setThrust(2, toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getThrust().getZ()))),
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(maneuver.getThrust().getZ()))),
 
     /** Thrust efficiency η typically between 0.0 and 1.0. */
     THR_EFFIC("n/a",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setThrustEfficiency(toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getThrustEfficiency()))),
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(maneuver.getThrustEfficiency()))),
 
     /** Interpolation mode between current and next acceleration line. */
     THR_INTERP("n/a",
@@ -150,67 +151,68 @@ public enum ManeuverFieldType {
                                           lineNumber, fileName, field);
             }
         },
-        (u, converter, maneuver) -> maneuver.getThrustInterpolation().name()),
+        (u, converter, maneuver, formatter) -> maneuver.getThrustInterpolation().name()),
 
     /** Thrust specific impulse. */
     THR_ISP("s",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setThrustIsp(toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getThrustIsp()))),
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(maneuver.getThrustIsp()))),
 
     /** One σ percent error on thrust magnitude. */
     THR_MAG_SIGMA("%",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setThrustMagnitudeSigma(toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getThrustMagnitudeSigma()))),
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(maneuver.getThrustMagnitudeSigma()))),
 
     /** One σ angular off-nominal thrust direction. */
     THR_DIR_SIGMA("°",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setThrustDirectionSigma(toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getThrustDirectionSigma()))),
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(maneuver.getThrustDirectionSigma()))),
 
     /** Identifier of resulting "child" object deployed from this host. */
     DEPLOY_ID("n/a",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setDeployId(field),
-        (u, converter, maneuver) -> maneuver.getDeployId()),
+        (u, converter, maneuver, formatter) -> maneuver.getDeployId()),
 
     /** Velocity increment of deployed "child" object along X axis. */
     DEPLOY_DV_X("km/s",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setDeployDv(0, toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getDeployDv().getX()))),
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(maneuver.getDeployDv().getX()))),
 
     /** Velocity increment of deployed "child" object along Y axis. */
     DEPLOY_DV_Y("km/s",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setDeployDv(1, toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getDeployDv().getY()))),
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(maneuver.getDeployDv().getY()))),
 
     /** Velocity increment of deployed "child" object along Z axis. */
     DEPLOY_DV_Z("km/s",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setDeployDv(2, toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getDeployDv().getZ()))),
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(maneuver.getDeployDv().getZ()))),
 
     /** Decrement in host mass as a result of deployment (shall be ≤ 0). */
     DEPLOY_MASS("kg",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setDeployMass(toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getDeployMass()))),
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(maneuver.getDeployMass()))),
 
     /** One σ percent error on deployment ΔV magnitude. */
     DEPLOY_DV_SIGMA("%",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setDeployDvSigma(toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getDeployDvSigma()))),
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(maneuver.getDeployDvSigma()))),
 
     /** One σ angular off-nominal deployment vector direction. */
     DEPLOY_DIR_SIGMA("°",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setDeployDirSigma(toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getDeployDirSigma()))),
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(maneuver.getDeployDirSigma()))),
 
     /** Ratio of child-to-host ΔV vectors. */
     DEPLOY_DV_RATIO("n/a",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setDeployDvRatio(toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getDeployDvRatio()))),
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(maneuver.getDeployDvRatio()))),
 
     /** Typical (50th percentile) product of drag coefficient times cross-sectional area of deployed "child" object. */
     DEPLOY_DV_CDA("m²",
         (field, u, context, maneuver, lineNumber, fileName) -> maneuver.setDeployDvCda(toSI(field, u)),
-        (u, converter, maneuver) -> AccurateFormatter.format(u.fromSI(maneuver.getDeployDvCda())));
+        (u, converter, maneuver, formatter) -> formatter.toString(u.fromSI(maneuver.getDeployDvCda())));
+
 
     // CHECKSTYLE: resume MultipleStringLiterals check
 
@@ -281,12 +283,24 @@ public enum ManeuverFieldType {
     }
 
     /** Output one maneuver field.
-         * @param converter converter for dates
+     * @param converter converter for dates
      * @param maneuver maneuver containing the field to output
+     * @param formatter used format doubles and dates to strings
      * @return output field
      */
+    public String outputField(final TimeConverter converter, final OrbitManeuver maneuver, final Formatter formatter)  {
+        return writer.output(unit, converter, maneuver, formatter);
+    }
+
+    /** Output one maneuver field.
+     * @param converter converter for dates
+     * @param maneuver maneuver containing the field to output
+     * @return output field
+     * @deprecated since 13.0, because formatter should be specified. Use {@link ManeuverFieldType#outputField(TimeConverter, OrbitManeuver, Formatter)} instead.
+     */
+    @Deprecated
     public String outputField(final TimeConverter converter, final OrbitManeuver maneuver) {
-        return writer.output(unit, converter, maneuver);
+        return writer.output(unit, converter, maneuver, new AccurateFormatter());
     }
 
     /** Interface for processing one field. */
@@ -303,15 +317,16 @@ public enum ManeuverFieldType {
                      int lineNumber, String fileName);
     }
 
-    /** Interface for writing one field. */
+    /** Interface for writing one field based on formatting standards. */
     interface FieldWriter {
         /** Process one field.
          * @param unit unit to use
          * @param converter converter for dates
          * @param maneuver maneuver containing the field to output
+         * @param formatter used to format dates and doubles to string
          * @return output field
          */
-        String output(Unit unit, TimeConverter converter, OrbitManeuver maneuver);
+        String output(Unit unit, TimeConverter converter, OrbitManeuver maneuver, Formatter formatter);
     }
 
 }
