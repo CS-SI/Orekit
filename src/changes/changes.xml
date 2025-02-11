@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="serrof" type="update" issue="1666">
+            Generalized hasZeroField in FieldAbsoluteDate.
+        </action>
         <action dev="luc" type="add" issue="1665">
             Fixed parsing of week number in Rinex CNAV/CNAV2 messages.
         </action>
