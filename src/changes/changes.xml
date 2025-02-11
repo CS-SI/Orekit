@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="serrof" type="update" issue="1667">
+            Use non-Field Transform when possible in getTransformTo.
+        </action>
         <action dev="serrof" type="update" issue="1666">
             Generalized hasZeroField in FieldAbsoluteDate.
         </action>

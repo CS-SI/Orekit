@@ -1181,9 +1181,9 @@ public class KalmanEstimatorTest {
 
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 1.6e-6;
+        final double   posEps            = 1.7e-6;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 5.7e-10;
+        final double   velEps            = 5.8e-10;
         final double[] expectedSigmasPos = {0.341528, 8.175341, 4.634528};
         final double   sigmaPosEps       = 1e-6;
         final double[] expectedSigmasVel = {1.167859e-3, 1.036492e-3, 2.834413e-3};

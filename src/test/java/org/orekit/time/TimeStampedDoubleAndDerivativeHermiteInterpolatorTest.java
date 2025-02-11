@@ -30,7 +30,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.DoubleAccumulator;
 
-class TimeStampedDoubleAndDerivativeAndDerivativeHermiteInterpolatorTest {
+class TimeStampedDoubleAndDerivativeHermiteInterpolatorTest {
 
     @Test
     @DisplayName("Test default constructor")

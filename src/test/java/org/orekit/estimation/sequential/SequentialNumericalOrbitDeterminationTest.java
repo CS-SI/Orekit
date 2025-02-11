@@ -220,12 +220,12 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
         // Batch LS values
         //final double[] stationOffSet = { 1.659203,  0.861250,  -0.885352 };
         //final double rangeBias = -0.286275;
-        final double[] stationOffSet = { 0.043889,  0.044726,  -0.037800 };
+        final double[] stationOffSet = { 0.043893,  0.044721,  -0.037796 };
         final double rangeBias = 0.041171;
 
         // Batch LS values
         //final double[] refStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
-        final double[] refStatRange = { -5.910596, 3.306810, -0.037121, 1.454286 };
+        final double[] refStatRange = { -5.910596, 3.306617, -0.037131, 1.454304 };
 
         testLageos2(distanceAccuracy, velocityAccuracy, stationOffSet, rangeBias, refStatRange,
                 smoothDistanceAccuracy, smoothVelocityAccuracy, distanceStd, velocityStd,
@@ -461,7 +461,7 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
 
         // Prediction position/velocity accuracies
         // FIXME: debug - Comparison with batch LS is bad
-        final double predictionDistanceAccuracy = 2127.85;
+        final double predictionDistanceAccuracy = 2127.851;
         final double predictionVelocityAccuracy = 1.073;
 
         testW3B(dragCoef, leakAccelerationNorm0, leakAccelerationNorm1,

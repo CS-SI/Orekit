@@ -254,8 +254,11 @@ public class Frame {
      * @param <T> the type of the field elements
      * @return transform from the instance to the destination frame
      */
-    public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransformTo(final Frame destination, final FieldAbsoluteDate<T> date) {
-
+    public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransformTo(final Frame destination,
+                                                                                final FieldAbsoluteDate<T> date) {
+        if (date.hasZeroField()) {
+            return new FieldTransform<>(date.getField(), getTransformTo(destination, date.toAbsoluteDate()));
+        }
         return getTransformTo(destination,
                               FieldTransform.getIdentity(date.getField()),
                               frame -> frame.getTransformProvider().getTransform(date),

@@ -17,8 +17,12 @@
 package org.orekit.frames;
 
 import org.hamcrest.MatcherAssert;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1Field;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -39,10 +43,10 @@ import org.orekit.utils.PVCoordinates;
 
 import java.util.Random;
 
-public class FrameTest {
+class FrameTest {
 
     @Test
-    public void testSameFrameRoot() {
+    void testSameFrameRoot() {
         Random random = new Random(0x29448c7d58b95565l);
         Frame  frame  = FramesFactory.getEME2000();
         checkNoTransform(frame.getTransformTo(frame, new AbsoluteDate()), random);
@@ -51,7 +55,7 @@ public class FrameTest {
     }
 
     @Test
-    public void testSameFrameNoRoot() {
+    void testSameFrameNoRoot() {
         Random random = new Random(0xc6e88d0f53e29116l);
         Transform t   = randomTransform(random);
         Frame frame   = new Frame(FramesFactory.getEME2000(), t, null, true);
@@ -59,7 +63,7 @@ public class FrameTest {
     }
 
     @Test
-    public void testSimilarFrames() {
+    void testSimilarFrames() {
         Random random = new Random(0x1b868f67a83666e5l);
         Transform t   = randomTransform(random);
         Frame frame1  = new Frame(FramesFactory.getEME2000(), t, null, true);
@@ -68,7 +72,7 @@ public class FrameTest {
     }
 
     @Test
-    public void testFromParent() {
+    void testFromParent() {
         Random random = new Random(0xb92fba1183fe11b8l);
         Transform fromEME2000  = randomTransform(random);
         Frame frame = new Frame(FramesFactory.getEME2000(), fromEME2000, null);
@@ -77,7 +81,7 @@ public class FrameTest {
     }
 
     @Test
-    public void testDecomposedTransform() {
+    void testDecomposedTransform() {
         Random random = new Random(0xb7d1a155e726da57l);
         Transform t1  = randomTransform(random);
         Transform t2  = randomTransform(random);
@@ -92,7 +96,7 @@ public class FrameTest {
     }
 
     @Test
-    public void testFindCommon() {
+    void testFindCommon() {
 
         Random random = new Random(0xb7d1a155e726da57l);
         Transform t1  = randomTransform(random);
@@ -115,7 +119,7 @@ public class FrameTest {
     }
 
     @Test
-    public void testDepthAndAncestor() {
+    void testDepthAndAncestor() {
         Random random = new Random(0x01f8d3b944123044l);
         Frame root = Frame.getRoot();
 
@@ -153,7 +157,7 @@ public class FrameTest {
     }
 
     @Test
-    public void testIsChildOf() {
+    void testIsChildOf() {
         Random random = new Random(0xb7d1a155e726da78l);
         Frame eme2000 = FramesFactory.getEME2000();
 
@@ -189,7 +193,7 @@ public class FrameTest {
     }
 
     @Test
-    public void testH0m9() {
+    void testH0m9() {
         AbsoluteDate h0         = new AbsoluteDate("2010-07-01T10:42:09", TimeScalesFactory.getUTC());
         Frame itrf              = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame rotatingPadFrame  = new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -341,6 +345,34 @@ public class FrameTest {
 
     private FieldAbsoluteDate<Complex> getComplexDate() {
         return FieldAbsoluteDate.getArbitraryEpoch(ComplexField.getInstance());
+    }
+
+    @Test
+    void testGetTransformTo() {
+        // GIVEN
+        final Frame oldFrame = FramesFactory.getEME2000();
+        final Frame newFrame = FramesFactory.getGTOD(true);
+        final UnivariateDerivative1Field field = UnivariateDerivative1Field.getInstance();
+        final FieldAbsoluteDate<UnivariateDerivative1> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(field);
+        final FieldAbsoluteDate<UnivariateDerivative1> shiftedDate = fieldDate.shiftedBy(new UnivariateDerivative1(0., 1));
+        // WHEN
+        final FieldTransform<UnivariateDerivative1> fieldTransform = oldFrame.getTransformTo(newFrame, shiftedDate);
+        // THEN
+        Assertions.assertEquals(shiftedDate, fieldTransform.getFieldDate());
+        final FieldTransform<UnivariateDerivative1> referenceTransform = oldFrame.getTransformTo(newFrame, fieldDate);
+        Assertions.assertEquals(fieldTransform.getDate(), referenceTransform.getDate());
+        Assertions.assertEquals(fieldTransform.getTranslation().toVector3D(),
+                referenceTransform.getTranslation().toVector3D());
+        compareFieldVectorWithMargin(fieldTransform.getRotationRate(), referenceTransform.getRotationRate());
+        compareFieldVectorWithMargin(fieldTransform.getRotationAcceleration(), referenceTransform.getRotationAcceleration());
+        Assertions.assertEquals(0., Rotation.distance(fieldTransform.getRotation().toRotation(),
+                referenceTransform.getRotation().toRotation()));
+    }
+
+    private static <T extends CalculusFieldElement<T>> void compareFieldVectorWithMargin(final FieldVector3D<T> expectedVector,
+                                                                                         final FieldVector3D<T> actualVector) {
+        Assertions.assertEquals(0., actualVector.toVector3D().subtract(expectedVector.toVector3D()).getNorm(),
+                1e-12);
     }
 
     @BeforeEach
