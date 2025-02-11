@@ -164,7 +164,7 @@ public abstract class AbstractFixedBoundaryCartesianSingleShooting extends Abstr
             initialOrbit.getDate(), initialOrbit.getMu());
         final Attitude attitude = propagationSettings.getAttitudeProvider()
                 .getAttitude(cartesianOrbit, cartesianOrbit.getDate(), cartesianOrbit.getFrame());
-        return new SpacecraftState(cartesianOrbit, attitude);
+        return new SpacecraftState(cartesianOrbit).withAttitude(attitude);
     }
 
     /**

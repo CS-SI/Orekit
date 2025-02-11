@@ -545,7 +545,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
         final FieldEquinoctialOrbit<T> osculatingOrbit = computeOsculatingOrbit(mean, shortPeriodTerms);
 
         return new FieldSpacecraftState<>(osculatingOrbit, mean.getAttitude(), mean.getMass(),
-                                          mean.getAdditionalDataValues());
+                                          mean.getAdditionalDataValues(), null);
 
     }
 
@@ -603,7 +603,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
                                                                                            final int maxIterations) {
         final FieldOrbit<T> meanOrbit = computeMeanOrbit(osculating, attitudeProvider, forceModel, epsilon, maxIterations);
         return new FieldSpacecraftState<>(meanOrbit, osculating.getAttitude(), osculating.getMass(),
-                                          osculating.getAdditionalDataValues());
+                                          osculating.getAdditionalDataValues(), null);
     }
 
     /** Override the default value of the parameter.
@@ -933,11 +933,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
             final FieldOrbit<T> orbit       = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, yDot, PositionAngleType.MEAN, date, getMu(), getFrame());
             final FieldAttitude<T> attitude = getAttitudeProvider().getAttitude(orbit, date, getFrame());
 
-            if (coefficients == null) {
-                return new FieldSpacecraftState<>(orbit, attitude, mass);
-            } else {
-                return new FieldSpacecraftState<>(orbit, attitude, mass, coefficients);
-            }
+            return new FieldSpacecraftState<>(orbit, attitude, mass, coefficients, null);
 
         }
 
