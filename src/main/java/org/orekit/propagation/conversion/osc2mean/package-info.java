@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 /**
- * This package provides the ability to convert osculating orbits into mean
- * orbits according to different theories (Brouwer-Lyddane, Eckstein-Hechler,
- * SGP4/SDP4, DSST) with different algorithms (fixed point, least squares).
+ * This package provides the ability to convert osculating orbits into mean orbits
+ * according to different theories (Brouwer-Lyddane, Eckstein-Hechler, SGP4/SDP4,
+ * DSST) with different conversion algorithms (fixed-point, least-squares).
  *
  * @author Pascal Parraud
  * @since 13.0

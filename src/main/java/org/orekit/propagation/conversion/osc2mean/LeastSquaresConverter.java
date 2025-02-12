@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,7 +35,6 @@ import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresBuilder;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresFactory;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
-import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.MultivariateJacobianFunction;
 import org.hipparchus.util.Pair;
 import org.orekit.orbits.CartesianOrbit;
@@ -54,7 +53,7 @@ import org.orekit.utils.PVCoordinates;
  * @author Pascal Parraud
  * @since 13.0
  */
-public class LeastSquaresAlgorithm implements OsculatingToMeanConverter {
+public class LeastSquaresConverter implements OsculatingToMeanConverter {
 
     /** Default convergence threshold. */
     public static final double DEFAULT_THRESHOLD   = 1e-4;
@@ -71,6 +70,9 @@ public class LeastSquaresAlgorithm implements OsculatingToMeanConverter {
     /** Maximum number of iterations. */
     private int maxIterations;
 
+    /** Optimizer used. */
+    private LeastSquaresOptimizer optimizer;
+
     /** Convergence checker for optimization algorithm. */
     private ConvergenceChecker<LeastSquaresProblem.Evaluation> checker;
 
@@ -81,39 +83,60 @@ public class LeastSquaresAlgorithm implements OsculatingToMeanConverter {
     private int iterationsNb;
 
     /**
-     * Constructor.
+     * Default constructor.
+     * <p>
+     * The mean theory and the optimizer must be set before converting.
      */
-    public LeastSquaresAlgorithm() {
-        this(null, DEFAULT_THRESHOLD, DEFAULT_MAX_ITERATIONS);
+    public LeastSquaresConverter() {
+        this(null, null, DEFAULT_THRESHOLD, DEFAULT_MAX_ITERATIONS);
+    }
+
+    /**
+     * Constructor.
+     * <p>
+     * The optimizer must be set before converting.
+     *
+     * @param theory mean theory to be used
+     */
+    public LeastSquaresConverter(final MeanTheory theory) {
+        this(theory, null, DEFAULT_THRESHOLD, DEFAULT_MAX_ITERATIONS);
     }
 
     /**
      * Constructor.
      * @param theory mean theory to be used
+     * @param optimizer optimizer to be used
      */
-    public LeastSquaresAlgorithm(final MeanTheory theory) {
-        this(theory, DEFAULT_THRESHOLD, DEFAULT_MAX_ITERATIONS);
+    public LeastSquaresConverter(final MeanTheory theory,
+                                 final LeastSquaresOptimizer optimizer) {
+        this(theory, optimizer, DEFAULT_THRESHOLD, DEFAULT_MAX_ITERATIONS);
     }
 
     /**
      * Constructor.
+     * <p>
+     * The mean theory and the optimizer must be set before converting.
+     *
      * @param threshold convergence threshold
      * @param maxIterations maximum number of iterations
      */
-    public LeastSquaresAlgorithm(final double threshold,
+    public LeastSquaresConverter(final double threshold,
                                  final int maxIterations) {
-        this(null, threshold, maxIterations);
+        this(null, null, threshold, maxIterations);
     }
 
     /**
      * Constructor.
      * @param theory mean theory to be used
+     * @param optimizer optimizer to be used
      * @param threshold convergence threshold
      * @param maxIterations maximum number of iterations
      */
-    public LeastSquaresAlgorithm(final MeanTheory theory,
+    public LeastSquaresConverter(final MeanTheory theory,
+                                 final LeastSquaresOptimizer optimizer,
                                  final double threshold,
                                  final int maxIterations) {
+        this.optimizer     = optimizer;
         this.theory        = theory;
         this.maxIterations = maxIterations;
         setChecker(threshold);
@@ -125,7 +148,7 @@ public class LeastSquaresAlgorithm implements OsculatingToMeanConverter {
      */
     private void setChecker(final double thr) {
         this.threshold = thr;
-        final SimpleVectorValueChecker svvc = new SimpleVectorValueChecker(-1.0, thr);
+        final SimpleVectorValueChecker svvc = new SimpleVectorValueChecker(-1.0, threshold);
         this.checker = LeastSquaresFactory.evaluationChecker(svvc);
     }
 
@@ -140,6 +163,22 @@ public class LeastSquaresAlgorithm implements OsculatingToMeanConverter {
      */
     public void setMeanTheory(final MeanTheory meanTheory) {
         this.theory = meanTheory;
+    }
+
+    /**
+     * Gets the optimizer.
+     * @return the optimizer
+     */
+    public LeastSquaresOptimizer getOptimizer() {
+        return optimizer;
+    }
+
+    /**
+     * Sets the optimizer.
+     * @param optimizer the optimizer
+     */
+    public void setOptimizer(final LeastSquaresOptimizer optimizer) {
+        this.optimizer = optimizer;
     }
 
     /**
@@ -239,7 +278,6 @@ public class LeastSquaresAlgorithm implements OsculatingToMeanConverter {
                                             build();
 
         // Solve least squares
-        final LevenbergMarquardtOptimizer optimizer = new LevenbergMarquardtOptimizer();
         final LeastSquaresOptimizer.Optimum optimum = optimizer.optimize(problem);
 
         // Stores some results

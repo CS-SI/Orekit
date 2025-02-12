@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,20 +36,22 @@ import org.orekit.time.FieldAbsoluteDate;
  * @author Pascal Parraud
  * @since 13.0
  */
-public class FixedPointAlgorithm implements OsculatingToMeanConverter {
+public class FixedPointConverter implements OsculatingToMeanConverter {
 
-    /** Default convergence epsilon. */
-    public static final double DEFAULT_EPSILON     = 1e-12;
+    /** Default convergence threshold. */
+    public static final double DEFAULT_THRESHOLD   = 1e-12;
+
     /** Default maximum number of iterations. */
     public static final int DEFAULT_MAX_ITERATIONS = 100;
+
     /** Default damping ratio. */
     public static final double DEFAULT_DAMPING     = 1.;
 
     /** Mean theory used. */
     private MeanTheory theory;
 
-    /** Convergence epsilon. */
-    private double epsilon;
+    /** Convergence threshold. */
+    private double threshold;
 
     /** Maximum number of iterations. */
     private int maxIterations;
@@ -61,45 +63,50 @@ public class FixedPointAlgorithm implements OsculatingToMeanConverter {
     private int iterationsNb;
 
     /**
-     * Constructor.
+     * Default constructor.
+     * <p>
+     * The mean theory must be set before converting.
      */
-    public FixedPointAlgorithm() {
-        this(null, DEFAULT_EPSILON, DEFAULT_MAX_ITERATIONS, DEFAULT_DAMPING);
+    public FixedPointConverter() {
+        this(null, DEFAULT_THRESHOLD, DEFAULT_MAX_ITERATIONS, DEFAULT_DAMPING);
     }
 
     /**
      * Constructor.
      * @param theory mean theory to be used
      */
-    public FixedPointAlgorithm(final MeanTheory theory) {
-        this(theory, DEFAULT_EPSILON, DEFAULT_MAX_ITERATIONS, DEFAULT_DAMPING);
+    public FixedPointConverter(final MeanTheory theory) {
+        this(theory, DEFAULT_THRESHOLD, DEFAULT_MAX_ITERATIONS, DEFAULT_DAMPING);
     }
 
     /**
      * Constructor.
-     * @param epsilon tolerance for convergence
+     * <p>
+     * The mean theory must be set before converting.
+     *
+     * @param threshold tolerance for convergence
      * @param maxIterations maximum number of iterations
      * @param damping damping ratio
      */
-    public FixedPointAlgorithm(final double epsilon,
+    public FixedPointConverter(final double threshold,
                                final int maxIterations,
                                final double damping) {
-        this(null, epsilon, maxIterations, damping);
+        this(null, threshold, maxIterations, damping);
     }
 
     /**
      * Constructor.
      * @param theory mean theory to be used
-     * @param epsilon tolerance for convergence
+     * @param threshold tolerance for convergence
      * @param maxIterations maximum number of iterations
      * @param damping damping ratio
      */
-    public FixedPointAlgorithm(final MeanTheory theory,
-                               final double epsilon,
+    public FixedPointConverter(final MeanTheory theory,
+                               final double threshold,
                                final int maxIterations,
                                final double damping) {
         this.theory        = theory;
-        this.epsilon       = epsilon;
+        this.threshold     = threshold;
         this.maxIterations = maxIterations;
         this.damping       = damping;
     }
@@ -121,16 +128,16 @@ public class FixedPointAlgorithm implements OsculatingToMeanConverter {
      * Gets convergence threshold.
      * @return convergence threshold
      */
-    public double getEpsilon() {
-        return epsilon;
+    public double getThreshold() {
+        return threshold;
     }
 
     /**
      * Sets convergence threshold.
-     * @param epsilon convergence threshold
+     * @param threshold convergence threshold
      */
-    public void setEpsilon(final double epsilon) {
-        this.epsilon = epsilon;
+    public void setThreshold(final double threshold) {
+        this.threshold = threshold;
     }
 
     /**
@@ -195,10 +202,10 @@ public class FixedPointAlgorithm implements OsculatingToMeanConverter {
         double lv  = equinoctial.getLv();
 
         // Set threshold for each parameter
-        final double thresholdA  = epsilon * FastMath.abs(sma);
-        final double thresholdE  = epsilon * (1 + FastMath.hypot(ex, ey));
-        final double thresholdH  = epsilon * (1 + FastMath.hypot(hx, hy));
-        final double thresholdLv = epsilon * FastMath.PI;
+        final double thresholdA  = threshold * FastMath.abs(sma);
+        final double thresholdE  = threshold * (1 + FastMath.hypot(ex, ey));
+        final double thresholdH  = threshold * (1 + FastMath.hypot(hx, hy));
+        final double thresholdLv = threshold * FastMath.PI;
 
         // Rough initialization of the mean parameters
         Orbit mean = theory.initialize(equinoctial);
@@ -275,11 +282,11 @@ public class FixedPointAlgorithm implements OsculatingToMeanConverter {
         T hy  = equinoctial.getHy();
         T lv  = equinoctial.getLv();
 
-        // Set epsilon for each parameter
-        final T thresholdA  = sma.abs().multiply(epsilon);
-        final T thresholdE  = FastMath.hypot(ex, ey).add(1).multiply(epsilon);
-        final T thresholdH  = FastMath.hypot(hx, hy).add(1).multiply(epsilon);
-        final T thresholdLv = pi.multiply(epsilon);
+        // Set threshold for each parameter
+        final T thresholdA  = sma.abs().multiply(threshold);
+        final T thresholdE  = FastMath.hypot(ex, ey).add(1).multiply(threshold);
+        final T thresholdH  = FastMath.hypot(hx, hy).add(1).multiply(threshold);
+        final T thresholdLv = pi.multiply(threshold);
 
         // Rough initialization of the mean parameters
         FieldOrbit<T> mean = theory.initialize(equinoctial);

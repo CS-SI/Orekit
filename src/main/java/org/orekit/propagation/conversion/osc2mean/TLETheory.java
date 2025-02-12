@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -61,49 +61,39 @@ public class TLETheory implements MeanTheory {
     private final Frame teme;
 
     /**
-     * Constructor.
+     * Constructor with default data context and default TLE template.
      */
     @DefaultDataContext
     public TLETheory() {
-        this(DataContext.getDefault().getTimeScales().getUTC(),
-             DataContext.getDefault().getFrames().getTEME());
+        this(DataContext.getDefault());
     }
 
     /**
-     * Constructor.
+     * Constructor with default data context.
      * @param template template TLE
      */
     @DefaultDataContext
     public TLETheory(final TLE template) {
-        this(template,
-             DataContext.getDefault().getTimeScales().getUTC(),
-             DataContext.getDefault().getFrames().getTEME());
+        this(template, DataContext.getDefault());
     }
 
     /**
-     * Constructor.
-     * @param utc  UTC time scale
-     * @param teme TEME frame
+     * Constructor with default TLE template.
+     * @param dataContext data context
      */
-    public TLETheory(final TimeScale utc,
-                     final Frame teme) {
-        this.tmpTle = new TLE(TMP_L1, TMP_L2, utc);
-        this.utc    = utc;
-        this.teme   = teme;
+    public TLETheory(final DataContext dataContext) {
+        this(new TLE(TMP_L1, TMP_L2, dataContext.getTimeScales().getUTC()), dataContext);
     }
 
     /**
      * Constructor.
      * @param template template TLE
-     * @param utc      UTC time scale
-     * @param teme     TEME frame
+     * @param dataContext data context
      */
-    public TLETheory(final TLE template,
-                     final TimeScale utc,
-                     final Frame teme) {
+    public TLETheory(final TLE template, final DataContext dataContext) {
         this.tmpTle = template;
-        this.utc    = utc;
-        this.teme   = teme;
+        this.utc    = dataContext.getTimeScales().getUTC();
+        this.teme   = dataContext.getFrames().getTEME();
     }
 
     /** {@inheritDoc} */

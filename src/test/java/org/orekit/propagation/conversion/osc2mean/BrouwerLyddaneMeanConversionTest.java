@@ -22,9 +22,12 @@ import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.hipparchus.stat.descriptive.StorelessUnivariateStatistic;
 import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Min;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -37,6 +40,7 @@ import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -44,6 +48,7 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
@@ -53,6 +58,26 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 public class BrouwerLyddaneMeanConversionTest {
+
+    private UnnormalizedSphericalHarmonicsProvider provider;
+
+    private LeastSquaresOptimizer optimizer;
+
+    private boolean doPrint;
+
+    @BeforeEach
+    public void setUp() {
+        Utils.setDataRoot("regular-data:atmosphere:potential/icgem-format");
+        provider  = GravityFieldFactory.getUnnormalizedProvider(5, 0);
+        optimizer = new LevenbergMarquardtOptimizer();
+        doPrint   = false;
+    }
+
+    @AfterEach
+    public void tearDown() {
+        provider  = null;
+        optimizer = null;
+    }
 
     @Test
     void testIssue947() {
@@ -71,35 +96,37 @@ public class BrouwerLyddaneMeanConversionTest {
         final BrouwerLyddaneTheory theory = new BrouwerLyddaneTheory(provider,
                                                                      BrouwerLyddanePropagator.M2);
         // Mean orbit converters
-        final FixedPointAlgorithm fpConvert = new FixedPointAlgorithm(theory);
-        final LeastSquaresAlgorithm lsConvert = new LeastSquaresAlgorithm(theory);
+        final FixedPointConverter fpConvert   = new FixedPointConverter(theory);
+        final LeastSquaresConverter lsConvert = new LeastSquaresConverter(theory, optimizer);
 
-        // Converts osculating to mean using both algorithms
-        final Orbit mean0fp = fpConvert.convertToMean(osculating0);
-        final Orbit mean0ls = lsConvert.convertToMean(osculating0);
+        // Try converting osculating to mean using both algorithms
+        Assertions.assertDoesNotThrow(() -> {
+            final Orbit mean0fp = fpConvert.convertToMean(osculating0);
+            final Orbit mean0ls = lsConvert.convertToMean(osculating0);
+            if (doPrint) {
+                System.out.println("osculating : " + osculating0);
+                System.out.println("mean (fp)  : " + mean0fp);
+                System.out.println("mean (ls)  : " + mean0ls);
+                System.out.println("dP (m)     : " + Vector3D.distance(mean0ls.getPosition(mean0ls.getFrame()),
+                                                                       mean0fp.getPosition(mean0ls.getFrame())));
+                System.out.println("iter : " + lsConvert.getIterationsNb() + " ; rms : " + lsConvert.getRMS());
+                System.out.println();
+            }
+        });
 
-        if (doPrint) {
-            System.out.println("osculating : " + osculating0);
-            System.out.println("mean (fp)  : " + mean0fp);
-            System.out.println("mean (ls)  : " + mean0ls);
-            System.out.println("iter : " + lsConvert.getIterationsNb() + " ; rms : " + lsConvert.getRMS());
-            System.out.println("écart (m)  : " + Vector3D.distance(mean0ls.getPosition(mean0ls.getFrame()),
-                                                                   mean0fp.getPosition(mean0ls.getFrame())));
-            System.out.println();
-        }
-
-        final Orbit mean1fp1 = fpConvert.convertToMean(osculating1);
-        final Orbit mean1ls1 = lsConvert.convertToMean(osculating1);
-
-        if (doPrint) {
-            System.out.println("osculating : " + osculating1);
-            System.out.println("mean (fp)  : " + mean1fp1);
-            System.out.println("mean (ls)  : " + mean1ls1);
-            System.out.println("iter : " + lsConvert.getIterationsNb() + " ; rms : " + lsConvert.getRMS());
-            System.out.println("écart (m)  : " + Vector3D.distance(mean1ls1.getPosition(mean1ls1.getFrame()),
-                                                                   mean1fp1.getPosition(mean1ls1.getFrame())));
-            System.out.println();
-        }
+        Assertions.assertDoesNotThrow(() -> {
+            final Orbit mean1fp1 = fpConvert.convertToMean(osculating1);
+            final Orbit mean1ls1 = lsConvert.convertToMean(osculating1);
+            if (doPrint) {
+                System.out.println("osculating : " + osculating1);
+                System.out.println("mean (fp)  : " + mean1fp1);
+                System.out.println("mean (ls)  : " + mean1ls1);
+                System.out.println("dP (m)     : " + Vector3D.distance(mean1ls1.getPosition(mean1ls1.getFrame()),
+                                                                       mean1fp1.getPosition(mean1ls1.getFrame())));
+                System.out.println("iter : " + lsConvert.getIterationsNb() + " ; rms : " + lsConvert.getRMS());
+                System.out.println();
+            }
+        });
     }
 
     @Test
@@ -121,23 +148,34 @@ public class BrouwerLyddaneMeanConversionTest {
 
         // Get orbit at initial date and 3 days after
         final double shift = 3 * Constants.JULIAN_DAY;
-        final Orbit initialState = propagator.propagate(initDate).getOrbit();
-        final Orbit futureState  = propagator.propagate(initDate.shiftedBy(shift)).getOrbit();
+        final Orbit initialState  = propagator.propagate(initDate).getOrbit();
+        final Orbit futureState   = propagator.propagate(initDate.shiftedBy(shift)).getOrbit();
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldOrbit<?> initialField = initialState.getType().convertToFieldOrbit(field, initialState);
+        final FieldOrbit<?> futureField  = futureState.getType().convertToFieldOrbit(field, futureState);
 
         // BL theory
         final BrouwerLyddaneTheory theory = new BrouwerLyddaneTheory(provider,
                                                                      BrouwerLyddanePropagator.M2);
         // Mean orbit converters
-        final FixedPointAlgorithm fpConvert = new FixedPointAlgorithm(theory);
-        final LeastSquaresAlgorithm lsConvert = new LeastSquaresAlgorithm(theory);
+        final FixedPointConverter fpConvert   = new FixedPointConverter(theory);
+        final LeastSquaresConverter lsConvert = new LeastSquaresConverter(theory, optimizer);
 
         // Try using fixed-point algorithm
         OrekitException oei = Assertions.assertThrows(OrekitException.class, () -> {
             fpConvert.convertToMean(initialState);
         });
         Assertions.assertTrue(oei.getMessage().contains("unable to compute Brouwer-Lyddane mean parameters after"));
+        oei = Assertions.assertThrows(OrekitException.class, () -> {
+            fpConvert.convertToMean(initialField);
+        });
+        Assertions.assertTrue(oei.getMessage().contains("unable to compute Brouwer-Lyddane mean parameters after"));
         OrekitException oef = Assertions.assertThrows(OrekitException.class, () -> {
             fpConvert.convertToMean(futureState);
+        });
+        Assertions.assertTrue(oef.getMessage().contains("unable to compute Brouwer-Lyddane mean parameters after"));
+        oef = Assertions.assertThrows(OrekitException.class, () -> {
+            fpConvert.convertToMean(futureField);
         });
         Assertions.assertTrue(oef.getMessage().contains("unable to compute Brouwer-Lyddane mean parameters after"));
 
@@ -145,9 +183,9 @@ public class BrouwerLyddaneMeanConversionTest {
         Assertions.assertDoesNotThrow(() -> {
             final Orbit mean0ls = lsConvert.convertToMean(initialState);
             if (doPrint) {
-                System.out.println("iter : " + lsConvert.getIterationsNb() + " ; rms : " + lsConvert.getRMS());
                 System.out.println(initialState);
                 System.out.println(mean0ls);
+                System.out.println("iter : " + lsConvert.getIterationsNb() + " ; rms : " + lsConvert.getRMS());
                 System.out.println();
             }
         });
@@ -155,10 +193,11 @@ public class BrouwerLyddaneMeanConversionTest {
         Assertions.assertDoesNotThrow(() -> {
             final Orbit mean1ls = lsConvert.convertToMean(futureState);
             if (doPrint) {
-                System.out.println("iter : " + lsConvert.getIterationsNb() + " ; rms : " + lsConvert.getRMS());
                 System.out.println(futureState);
                 System.out.println(mean1ls);
-            }
+                System.out.println("iter : " + lsConvert.getIterationsNb() + " ; rms : " + lsConvert.getRMS());
+                System.out.println();
+           }
         });
     }
 
@@ -173,12 +212,13 @@ public class BrouwerLyddaneMeanConversionTest {
         final BrouwerLyddaneTheory theory = new BrouwerLyddaneTheory(provider,
                                                                      BrouwerLyddanePropagator.M2);
         // Mean orbit converters
-        final FixedPointAlgorithm fpConvert = new FixedPointAlgorithm(theory);
-        final LeastSquaresAlgorithm lsConvert = new LeastSquaresAlgorithm(theory);
+        final FixedPointConverter fpConvert   = new FixedPointConverter(theory);
+        final LeastSquaresConverter lsConvert = new LeastSquaresConverter(theory, optimizer);
 
         // set up a reference numerical propagator starting for the specified start orbit
         // using the same force models (i.e. the first few zonal terms)
-        double[][] tol = NumericalPropagator.tolerances(0.1, initialOsculating, OrbitType.KEPLERIAN);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.1)
+                                          .getTolerances(initialOsculating, OrbitType.KEPLERIAN);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
         integrator.setInitialStepSize(60);
         NumericalPropagator num = new NumericalPropagator(integrator);
@@ -205,9 +245,9 @@ public class BrouwerLyddaneMeanConversionTest {
             meanLsMin.increment(mean1.getA());
             meanLsMax.increment(mean1.getA());
             if (doPrint) {
+                System.out.println("dP (m)  : " + Vector3D.distance(mean0.getPosition(mean0.getFrame()),
+                                                                    mean1.getPosition(mean0.getFrame())));
                 System.out.println("iter : " + lsConvert.getIterationsNb() + " ; rms : " + lsConvert.getRMS());
-                System.out.println("écart (m)  : " + Vector3D.distance(mean0.getPosition(mean0.getFrame()),
-                                                                       mean1.getPosition(mean0.getFrame())));
                 System.out.println();
             }
         });
@@ -254,14 +294,14 @@ public class BrouwerLyddaneMeanConversionTest {
         }
 
         // BL theory
-        final BrouwerLyddaneTheory theory = new BrouwerLyddaneTheory(provider,
-                                                                     BrouwerLyddanePropagator.M2);
+        final BrouwerLyddaneTheory theory     = new BrouwerLyddaneTheory(provider,
+                                                                         BrouwerLyddanePropagator.M2);
         // Mean orbit converters
-        final FixedPointAlgorithm fpConvert = new FixedPointAlgorithm(theory,
-                                                                      FixedPointAlgorithm.DEFAULT_EPSILON,
-                                                                      FixedPointAlgorithm.DEFAULT_MAX_ITERATIONS,
-                                                                      0.75);
-        final LeastSquaresAlgorithm lsConvert = new LeastSquaresAlgorithm(theory);
+        final FixedPointConverter fpConvert   = new FixedPointConverter(theory,
+                                                                        FixedPointConverter.DEFAULT_THRESHOLD,
+                                                                        FixedPointConverter.DEFAULT_MAX_ITERATIONS,
+                                                                        0.75);
+        final LeastSquaresConverter lsConvert = new LeastSquaresConverter(theory, optimizer);
 
         // Recover mean orbit
         Assertions.assertDoesNotThrow(() -> {
@@ -301,21 +341,4 @@ public class BrouwerLyddaneMeanConversionTest {
         });
         Assertions.assertTrue(mise.getMessage().contains("unable to perform Q.R decomposition"));
     }
-
-    @BeforeEach
-    public void setUp() {
-        Utils.setDataRoot("regular-data:atmosphere:potential/icgem-format");
-        provider = GravityFieldFactory.getUnnormalizedProvider(5, 0);
-        doPrint = false;
-    }
-
-    @AfterEach
-    public void tearDown() {
-        provider = null;
-    }
-
-    private UnnormalizedSphericalHarmonicsProvider provider;
-
-    private boolean doPrint;
-
 }
