@@ -1079,7 +1079,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
 
     /** {@inheritDoc} */
     @Override
-    public CircularOrbit withFrame(final Frame inertialFrame) {
+    public CircularOrbit inFrame(final Frame inertialFrame) {
         final PVCoordinates pvCoordinates;
         if (hasNonKeplerianAcceleration()) {
             pvCoordinates = getPVCoordinates(inertialFrame);

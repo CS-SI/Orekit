@@ -253,7 +253,7 @@ class FieldOrbitTest {
         }
 
         @Override
-        public FieldOrbit<Complex> withFrame(Frame inertialFrame) {
+        public FieldOrbit<Complex> inFrame(Frame inertialFrame) {
             return null;
         }
 

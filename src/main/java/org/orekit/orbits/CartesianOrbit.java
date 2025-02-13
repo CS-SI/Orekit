@@ -390,7 +390,7 @@ public class CartesianOrbit extends Orbit {
 
     /** {@inheritDoc} */
     @Override
-    public CartesianOrbit withFrame(final Frame inertialFrame) {
+    public CartesianOrbit inFrame(final Frame inertialFrame) {
         if (hasNonKeplerianAcceleration()) {
             return new CartesianOrbit(getPVCoordinates(inertialFrame), inertialFrame, getMu());
         } else {

@@ -28,7 +28,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriversList;
@@ -71,13 +70,13 @@ public class AbstractPropagatorBuilderTest {
 
         // Shift the orbit of a minute
         // Reset the builder and check the orbits value
-        final Orbit newOrbit = initialOrbit.shiftedBy(60.).withFrame(FramesFactory.getTOD(true));
+        final Orbit newOrbit = initialOrbit.shiftedBy(60.).inFrame(FramesFactory.getTOD(true));
         propagatorBuilder.resetOrbit(newOrbit);
 
         // Check that the new orbit was properly set in the builder and
         Assertions.assertEquals(0., propagatorBuilder.getInitialOrbitDate().durationFrom(newOrbit.getDate()), 0.);
         final double[] stateVector = new double[6];
-        propagatorBuilder.getOrbitType().mapOrbitToArray(newOrbit.withFrame(context.initialOrbit.getFrame()),
+        propagatorBuilder.getOrbitType().mapOrbitToArray(newOrbit.inFrame(context.initialOrbit.getFrame()),
                 PositionAngleType.TRUE, stateVector, null);
         int i = 0;
         for (DelegatingDriver driver : propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {

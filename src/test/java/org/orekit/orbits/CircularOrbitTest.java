@@ -79,16 +79,16 @@ class CircularOrbitTest {
 
     @ParameterizedTest
     @EnumSource(PositionAngleType.class)
-    void testWithFrameKeplerian(final PositionAngleType positionAngleType) {
-        testTemplateWithFrame(Vector3D.ZERO, positionAngleType);
+    void testInFrameKeplerian(final PositionAngleType positionAngleType) {
+        testTemplateInFrame(Vector3D.ZERO, positionAngleType);
     }
 
     @Test
-    void testWithFrameNonKeplerian() {
-        testTemplateWithFrame(Vector3D.PLUS_K, PositionAngleType.TRUE);
+    void testInFrameNonKeplerian() {
+        testTemplateInFrame(Vector3D.PLUS_K, PositionAngleType.TRUE);
     }
 
-    private void testTemplateWithFrame(final Vector3D acceleration, final PositionAngleType positionAngleType) {
+    private void testTemplateInFrame(final Vector3D acceleration, final PositionAngleType positionAngleType) {
         // GIVEN
         final Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         final Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
@@ -97,7 +97,7 @@ class CircularOrbitTest {
         final CartesianOrbit cartesianOrbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, muEarth);
         final CircularOrbit circularOrbit = new CircularOrbit(cartesianOrbit).withCachedPositionAngleType(positionAngleType);
         // WHEN
-        final CircularOrbit orbitWithOtherFrame = circularOrbit.withFrame(FramesFactory.getGCRF());
+        final CircularOrbit orbitWithOtherFrame = circularOrbit.inFrame(FramesFactory.getGCRF());
         // THEN
         Assertions.assertNotEquals(circularOrbit.getFrame(), orbitWithOtherFrame.getFrame());
         Assertions.assertEquals(circularOrbit.getDate(), orbitWithOtherFrame.getDate());

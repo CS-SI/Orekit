@@ -99,17 +99,17 @@ public class FieldKeplerianOrbitTest {
     }
 
     @Test
-    void testWithFrameNonKeplerian() {
-        testTemplateWithFrame(Vector3D.MINUS_J, PositionAngleType.TRUE);
+    void testInFrameNonKeplerian() {
+        testTemplateInFrame(Vector3D.MINUS_J, PositionAngleType.TRUE);
     }
 
     @ParameterizedTest
     @EnumSource(PositionAngleType.class)
-    void testWithFrameKeplerian(final PositionAngleType positionAngleType) {
-        testTemplateWithFrame(Vector3D.ZERO, positionAngleType);
+    void testInFrameKeplerian(final PositionAngleType positionAngleType) {
+        testTemplateInFrame(Vector3D.ZERO, positionAngleType);
     }
 
-    private void testTemplateWithFrame(final Vector3D acceleration, final PositionAngleType positionAngleType) {
+    private void testTemplateInFrame(final Vector3D acceleration, final PositionAngleType positionAngleType) {
         // GIVEN
         final Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         final Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
@@ -121,7 +121,7 @@ public class FieldKeplerianOrbitTest {
         final FieldKeplerianOrbit<Binary64> fieldOrbit = new FieldKeplerianOrbit<>(Binary64Field.getInstance(),
                 keplerianOrbit).withCachedPositionAngleType(positionAngleType);
         // WHEN
-        final FieldKeplerianOrbit<Binary64> fieldOrbitWithOtherFrame = fieldOrbit.withFrame(FramesFactory.getGCRF());
+        final FieldKeplerianOrbit<Binary64> fieldOrbitWithOtherFrame = fieldOrbit.inFrame(FramesFactory.getGCRF());
         // THEN
         Assertions.assertNotEquals(fieldOrbit.getFrame(), fieldOrbitWithOtherFrame.getFrame());
         Assertions.assertEquals(fieldOrbit.getDate(), fieldOrbitWithOtherFrame.getDate());

@@ -525,7 +525,7 @@ public abstract class Orbit
      * @return orbit with different frame
      * @since 13.0
      */
-    public abstract Orbit withFrame(Frame inertialFrame);
+    public abstract Orbit inFrame(Frame inertialFrame);
 
     /** Get a time-shifted orbit.
      * <p>
