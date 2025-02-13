@@ -395,7 +395,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
                 getAttitudeProvider().getAttitude(pvProvider, date, orbit.getFrame());
 
             // build raw state
-            return new FieldSpacecraftState<>(orbit, attitude, getMass(date));
+            return new FieldSpacecraftState<>(orbit, attitude).withMass(getMass(date));
 
         } catch (OrekitException oe) {
             throw new OrekitException(oe);

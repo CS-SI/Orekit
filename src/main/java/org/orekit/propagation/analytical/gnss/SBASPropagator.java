@@ -87,7 +87,7 @@ public class SBASPropagator extends AbstractAnalyticalPropagator {
         // Sets initial state
         final Orbit orbit = propagateOrbit(getStartDate());
         final Attitude attitude = provider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
-        super.resetInitialState(new SpacecraftState(orbit, attitude, mass));
+        super.resetInitialState(new SpacecraftState(orbit, attitude).withMass(mass));
     }
 
     /**

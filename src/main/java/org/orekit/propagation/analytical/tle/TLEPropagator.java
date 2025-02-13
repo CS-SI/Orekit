@@ -219,7 +219,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         // set the initial state
         final Orbit orbit = propagateOrbit(initialTLE.getDate());
         final Attitude attitude = attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
-        super.resetInitialState(new SpacecraftState(orbit, attitude, mass));
+        super.resetInitialState(new SpacecraftState(orbit, attitude).withMass(mass));
     }
 
     /** Selects the extrapolator to use with the selected TLE.

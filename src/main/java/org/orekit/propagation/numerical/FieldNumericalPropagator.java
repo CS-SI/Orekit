@@ -456,12 +456,12 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
                 }
 
                 final FieldAttitude<T> attitude = getAttitudeProvider().getAttitude(absPva, date, getFrame());
-                return new FieldSpacecraftState<>(absPva, attitude, mass);
+                return new FieldSpacecraftState<>(absPva, attitude).withMass(mass);
             } else {
                 // propagation uses regular orbits
                 final FieldOrbit<T> orbit       = superGetOrbitType().mapArrayToOrbit(y, yDot, super.getPositionAngleType(), date, getMu(), getFrame());
                 final FieldAttitude<T> attitude = getAttitudeProvider().getAttitude(orbit, date, getFrame());
-                return new FieldSpacecraftState<>(orbit, attitude, mass);
+                return new FieldSpacecraftState<>(orbit, attitude).withMass(mass);
             }
         }
 

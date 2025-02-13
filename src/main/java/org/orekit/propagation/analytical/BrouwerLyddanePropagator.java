@@ -489,8 +489,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
         resetInitialState(new SpacecraftState(initialOrbit,
                                               attitudeProv.getAttitude(initialOrbit,
                                                                        initialOrbit.getDate(),
-                                                                       initialOrbit.getFrame()),
-                                              mass),
+                                                                       initialOrbit.getFrame())).withMass(mass),
                           initialType, epsilon, maxIterations);
 
     }

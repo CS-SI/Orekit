@@ -529,8 +529,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
         resetInitialState(new FieldSpacecraftState<>(initialOrbit,
                                                      attitudeProv.getAttitude(initialOrbit,
                                                                               initialOrbit.getDate(),
-                                                                              initialOrbit.getFrame()),
-                                                     mass),
+                                                                              initialOrbit.getFrame())).withMass(mass),
                                                      initialType, epsilon, maxIterations);
 
     }

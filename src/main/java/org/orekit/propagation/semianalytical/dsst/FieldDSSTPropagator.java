@@ -744,7 +744,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
         int i = 0;
         while (i++ < maxIterations) {
 
-            final FieldSpacecraftState<T> meanState = new FieldSpacecraftState<>(meanOrbit, osculating.getAttitude(), osculating.getMass());
+            final FieldSpacecraftState<T> meanState = new FieldSpacecraftState<>(meanOrbit, osculating.getAttitude()).withMass(osculating.getMass());
 
             //Create the auxiliary object
             final FieldAuxiliaryElements<T> aux = new FieldAuxiliaryElements<>(meanOrbit, I);

@@ -145,7 +145,7 @@ public class IntelsatElevenElementsPropagator extends AbstractAnalyticalPropagat
         setStartDate(elements.getEpoch());
         final Orbit orbitAtElementsDate = propagateOrbit(elements.getEpoch());
         final Attitude attitude = attitudeProvider.getAttitude(orbitAtElementsDate, elements.getEpoch(), inertialFrame);
-        super.resetInitialState(new SpacecraftState(orbitAtElementsDate, attitude, mass));
+        super.resetInitialState(new SpacecraftState(orbitAtElementsDate, attitude).withMass(mass));
     }
 
     /**

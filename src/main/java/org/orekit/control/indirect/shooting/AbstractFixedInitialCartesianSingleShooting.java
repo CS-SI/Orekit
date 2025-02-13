@@ -238,13 +238,7 @@ public abstract class AbstractFixedInitialCartesianSingleShooting extends Abstra
      * @return state
      */
     protected SpacecraftState createInitialStateWithMass(final double initialMass) {
-        if (initialSpacecraftStateTemplate.isOrbitDefined()) {
-            return new SpacecraftState(initialSpacecraftStateTemplate.getOrbit(),
-                    initialSpacecraftStateTemplate.getAttitude(), initialMass);
-        } else {
-            return new SpacecraftState(initialSpacecraftStateTemplate.getAbsPVA(),
-                    initialSpacecraftStateTemplate.getAttitude(), initialMass);
-        }
+        return initialSpacecraftStateTemplate.withMass(initialMass);
     }
 
     /**
@@ -302,13 +296,13 @@ public abstract class AbstractFixedInitialCartesianSingleShooting extends Abstra
             final FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<>(pvCoordinates, frame, date, mu);
             final FieldAttitude<T> attitude = getPropagationSettings().getAttitudeProvider().getAttitude(orbit,
                     orbit.getDate(), orbit.getFrame());
-            stateWithoutAdjoint = new FieldSpacecraftState<>(orbit, attitude, mass);
+            stateWithoutAdjoint = new FieldSpacecraftState<>(orbit, attitude).withMass(mass);
         } else {
             final FieldAbsolutePVCoordinates<T> absolutePVCoordinates = new FieldAbsolutePVCoordinates<>(frame, date,
                     pvCoordinates);
             final FieldAttitude<T> attitude = getPropagationSettings().getAttitudeProvider().getAttitude(absolutePVCoordinates,
                     absolutePVCoordinates.getDate(), absolutePVCoordinates.getFrame());
-            stateWithoutAdjoint = new FieldSpacecraftState<>(absolutePVCoordinates, attitude, mass);
+            stateWithoutAdjoint = new FieldSpacecraftState<>(absolutePVCoordinates, attitude).withMass(mass);
         }
         final String adjointName = getPropagationSettings().getAdjointDynamicsProvider().getAdjointName();
         return stateWithoutAdjoint.addAdditionalData(adjointName, adjoint);

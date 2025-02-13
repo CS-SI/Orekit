@@ -239,7 +239,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
                                                GNSSConstants.GLONASS_MU);
 
         // Reset the initial state to apply the transformation
-        resetInitialState(new SpacecraftState(orbit, mass));
+        resetInitialState(new SpacecraftState(orbit).withMass(mass));
     }
 
     /**
@@ -609,7 +609,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
             final Orbit orbit       = getOrbitType().mapArrayToOrbit(y, yDot, getPositionAngleType(), date, getMu(), getFrame());
             final Attitude attitude = getAttitudeProvider().getAttitude(orbit, date, getFrame());
 
-            return new SpacecraftState(orbit, attitude, mass);
+            return new SpacecraftState(orbit, attitude).withMass(mass);
         }
 
         @Override

@@ -884,7 +884,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         int i = 0;
         while (i++ < maxIterations) {
 
-            final SpacecraftState meanState = new SpacecraftState(meanOrbit, osculating.getAttitude(), osculating.getMass());
+            final SpacecraftState meanState = new SpacecraftState(meanOrbit, osculating.getAttitude()).withMass(osculating.getMass());
 
             //Create the auxiliary object
             final AuxiliaryElements aux = new AuxiliaryElements(meanOrbit, I);

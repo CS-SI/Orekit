@@ -458,8 +458,7 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
             resetInitialState(new FieldSpacecraftState<>(initialOrbit,
                                                          attitudeProv.getAttitude(initialOrbit,
                                                                                   initialOrbit.getDate(),
-                                                                                  initialOrbit.getFrame()),
-                                                         mass),
+                                                                                  initialOrbit.getFrame())).withMass(mass),
                               initialType, epsilon, maxIterations);
 
         } catch (OrekitException oe) {

@@ -217,7 +217,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
         // set the initial state
         final FieldOrbit<T> orbit = propagateOrbit(initialTLE.getDate(), parameters);
         final FieldAttitude<T> attitude = attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
-        super.resetInitialState(new FieldSpacecraftState<>(orbit, attitude, mass));
+        super.resetInitialState(new FieldSpacecraftState<>(orbit, attitude).withMass(mass));
     }
 
     /** Selects the extrapolator to use with the selected TLE.

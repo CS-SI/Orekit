@@ -149,7 +149,7 @@ public class FieldIntelsatElevenElementsPropagator<T extends CalculusFieldElemen
         setStartDate(elements.getEpoch());
         final FieldOrbit<T> orbitAtElementsDate = propagateOrbit(elements.getEpoch(), getParameters(elements.getEpoch().getField()));
         final FieldAttitude<T> attitude = attitudeProvider.getAttitude(orbitAtElementsDate, elements.getEpoch(), inertialFrame);
-        super.resetInitialState(new FieldSpacecraftState<>(orbitAtElementsDate, attitude, mass));
+        super.resetInitialState(new FieldSpacecraftState<>(orbitAtElementsDate, attitude).withMass(mass));
     }
 
     /**

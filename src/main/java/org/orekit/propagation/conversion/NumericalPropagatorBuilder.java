@@ -169,7 +169,7 @@ public class NumericalPropagatorBuilder extends AbstractIntegratedPropagatorBuil
         final Orbit           orbit    = createInitialOrbit();
         final Attitude        attitude =
                 getAttitudeProvider().getAttitude(orbit, orbit.getDate(), getFrame());
-        final SpacecraftState state    = new SpacecraftState(orbit, attitude, getMass());
+        final SpacecraftState state    = new SpacecraftState(orbit, attitude).withMass(getMass());
 
         final NumericalPropagator propagator = new NumericalPropagator(
                 getIntegratorBuilder().buildIntegrator(orbit, getOrbitType(), getPositionAngleType()),

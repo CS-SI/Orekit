@@ -170,7 +170,7 @@ public class DSSTPropagatorBuilder extends AbstractIntegratedPropagatorBuilder<D
         setParameters(normalizedParameters);
         final EquinoctialOrbit orbit    = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(createInitialOrbit());
         final Attitude         attitude = getAttitudeProvider().getAttitude(orbit, orbit.getDate(), getFrame());
-        final SpacecraftState  state    = new SpacecraftState(orbit, attitude, getMass());
+        final SpacecraftState  state    = new SpacecraftState(orbit, attitude).withMass(getMass());
 
         final DSSTPropagator propagator = new DSSTPropagator(
                 getIntegratorBuilder().buildIntegrator(orbit, OrbitType.EQUINOCTIAL, PositionAngleType.MEAN),

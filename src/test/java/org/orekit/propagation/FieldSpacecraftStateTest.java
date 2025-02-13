@@ -762,7 +762,7 @@ class FieldSpacecraftStateTest {
         FieldAbsolutePVCoordinates<T> absPV_f = new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(), t_f, pva_f);
 
         FieldSpacecraftState<T> ScS_f = new FieldSpacecraftState<>(absPV_f);
-        FieldSpacecraftState<T> withM = new FieldSpacecraftState<>(absPV_f, zero.newInstance(1234.5));
+        FieldSpacecraftState<T> withM = new FieldSpacecraftState<>(absPV_f).withMass(zero.newInstance(1234.5));
         Assertions.assertEquals(1234.5, withM.getMass().getReal(), 1.0e-10);
         SpacecraftState ScS_r = ScS_f.toSpacecraftState();
 

@@ -269,11 +269,11 @@ public class AttitudesSequence extends AbstractSwitchingAttitudeProvider {
                     if (s.isOrbitDefined()) {
                         final Orbit     sOrbit    = s.getOrbit().shiftedBy(dt);
                         final Attitude  sAttitude = getPast().getAttitude(sOrbit, shiftedDate, s.getFrame());
-                        sState    = new SpacecraftState(sOrbit, sAttitude, s.getMass());
+                        sState    = new SpacecraftState(sOrbit, sAttitude).withMass(s.getMass());
                     } else {
                         final AbsolutePVCoordinates sAPV    = s.getAbsPVA().shiftedBy(dt);
                         final Attitude  sAttitude = getPast().getAttitude(sAPV, shiftedDate, s.getFrame());
-                        sState    = new SpacecraftState(sAPV, sAttitude, s.getMass());
+                        sState    = new SpacecraftState(sAPV, sAttitude).withMass(s.getMass());
                     }
                     for (final DataDictionary.Entry entry : s.getAdditionalDataValues().getData()) {
                         sState = sState.addAdditionalData(entry.getKey(), entry.getValue());

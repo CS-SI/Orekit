@@ -89,7 +89,7 @@ public class Omm extends NdmConstituent<OdmHeader, Segment<OmmMetadata, OmmData>
      * @return the spacecraft state of the OPM
      */
     public SpacecraftState generateSpacecraftState() {
-        return new SpacecraftState(generateKeplerianOrbit(), getData().getMass());
+        return new SpacecraftState(generateKeplerianOrbit()).withMass(getData().getMass());
     }
 
     /** Generate TLE from OMM file. Launch Year, Launch Day and Launch Piece are not present in the

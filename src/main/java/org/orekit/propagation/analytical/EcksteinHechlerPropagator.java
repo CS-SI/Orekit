@@ -480,8 +480,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
         resetInitialState(new SpacecraftState(initialOrbit,
                                               attitudeProv.getAttitude(initialOrbit,
                                                                        initialOrbit.getDate(),
-                                                                       initialOrbit.getFrame()),
-                                              mass),
+                                                                       initialOrbit.getFrame())).withMass(mass),
                           initialType, epsilon, maxIterations);
 
     }

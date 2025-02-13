@@ -119,7 +119,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
         final Attitude attitude = provider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
 
         // calling the method from base class because the one overridden below recomputes the orbital elements
-        super.resetInitialState(new SpacecraftState(orbit, attitude, mass));
+        super.resetInitialState(new SpacecraftState(orbit, attitude).withMass(mass));
 
     }
 
@@ -323,7 +323,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
         orbitalElements = buildOrbitalElements(state, orbitalElements, ecef, getAttitudeProvider(), state.getMass());
         final Orbit orbit = propagateOrbit(orbitalElements.getDate());
         final Attitude attitude = getAttitudeProvider().getAttitude(orbit, orbit.getDate(), orbit.getFrame());
-        super.resetInitialState(new SpacecraftState(orbit, attitude, state.getMass()));
+        super.resetInitialState(new SpacecraftState(orbit, attitude).withMass(state.getMass()));
     }
 
     /** {@inheritDoc} */

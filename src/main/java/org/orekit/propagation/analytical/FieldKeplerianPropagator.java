@@ -141,7 +141,7 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
         type.mapOrbitToArray(orbit, positionAngleType, stateVector, null);
         final FieldOrbit<T> fixedOrbit = type.mapArrayToOrbit(stateVector, null, positionAngleType,
                                                               orbit.getDate(), mu, orbit.getFrame());
-        FieldSpacecraftState<T> fixedState = new FieldSpacecraftState<>(fixedOrbit, attitude, mass);
+        FieldSpacecraftState<T> fixedState = new FieldSpacecraftState<>(fixedOrbit, attitude).withMass(mass);
         if (additionalStates != null) {
             for (final FieldArrayDictionary<T>.Entry entry : additionalStates.getData()) {
                 fixedState = fixedState.addAdditionalData(entry.getKey(), entry.getValue());
