@@ -104,10 +104,10 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
     public SpacecraftState(final Orbit orbit) {
         this(orbit, getDefaultAttitudeProvider(orbit.getFrame())
                         .getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
-             DEFAULT_MASS,  null);
+             DEFAULT_MASS, null, null);
     }
 
-    /** Build a spacecraft state from orbit and attitude.
+    /** Build a spacecraft state from orbit and attitude. Kept for performance.
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
      * @param orbit the orbit
      * @param attitude attitude
@@ -116,18 +116,20 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      */
     public SpacecraftState(final Orbit orbit, final Attitude attitude)
         throws IllegalArgumentException {
-        this(orbit, attitude, DEFAULT_MASS, null);
+        this(orbit, attitude, DEFAULT_MASS, null, null);
     }
 
     /** Create a new instance from orbit and mass.
      * <p>Attitude law is set to an unspecified default attitude.</p>
      * @param orbit the orbit
      * @param mass the mass (kg)
+     * @deprecated since 13.0, use withXXX
      */
+    @Deprecated
     public SpacecraftState(final Orbit orbit, final double mass) {
         this(orbit, getDefaultAttitudeProvider(orbit.getFrame())
                         .getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
-             mass, null);
+             mass, null, null);
     }
 
     /** Build a spacecraft state from orbit, attitude and mass.
@@ -136,63 +138,12 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * @param mass the mass (kg)
      * @exception IllegalArgumentException if orbit and attitude dates
      * or frames are not equal
+     * @deprecated since 13.0, use withXXX
      */
+    @Deprecated
     public SpacecraftState(final Orbit orbit, final Attitude attitude, final double mass)
         throws IllegalArgumentException {
-        this(orbit, attitude, mass, null);
-    }
-
-    /** Build a spacecraft state from orbit and additional states.
-     * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
-     * @param orbit the orbit
-     * @param additional additional data
-     * @since 11.1
-     */
-    public SpacecraftState(final Orbit orbit, final DataDictionary additional) {
-        this(orbit, getDefaultAttitudeProvider(orbit.getFrame())
-                        .getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
-             DEFAULT_MASS, additional);
-    }
-
-    /** Build a spacecraft state from orbit, attitude and additional states.
-     * <p>Mass is set to an unspecified non-null arbitrary value.</p>
-     * @param orbit the orbit
-     * @param attitude attitude
-     * @param additional additional data
-     * @exception IllegalArgumentException if orbit and attitude dates
-     * or frames are not equal
-     * @since 11.1
-     */
-    public SpacecraftState(final Orbit orbit, final Attitude attitude, final DataDictionary additional)
-        throws IllegalArgumentException {
-        this(orbit, attitude, DEFAULT_MASS, additional);
-    }
-
-    /** Create a new instance from orbit, mass and additional states.
-     * <p>Attitude law is set to an unspecified default attitude.</p>
-     * @param orbit the orbit
-     * @param mass the mass (kg)
-     * @param additional additional data
-     * @since 11.1
-     */
-    public SpacecraftState(final Orbit orbit, final double mass, final DataDictionary additional) {
-        this(orbit, getDefaultAttitudeProvider(orbit.getFrame())
-                        .getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
-             mass, additional);
-    }
-
-    /** Build a spacecraft state from orbit, attitude, mass and additional states.
-     * @param orbit the orbit
-     * @param attitude attitude
-     * @param mass the mass (kg)
-     * @param additional additional data (may be null if no additional data are available)
-     * @exception IllegalArgumentException if orbit and attitude dates or frames are not equal
-     * @since 11.1
-     */
-    public SpacecraftState(final Orbit orbit, final Attitude attitude,
-                           final double mass, final DataDictionary additional)
-        throws IllegalArgumentException {
-        this(orbit, attitude, mass, additional, null);
+        this(orbit, attitude, mass, null, null);
     }
 
     /** Build a spacecraft state from orbit, attitude, mass, additional states and derivatives.
@@ -203,7 +154,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * @param additionalDot additional states derivatives (may be null if no additional states derivatives are available)
      * @exception IllegalArgumentException if orbit and attitude dates
      * or frames are not equal
-     * @since 11.1
+     * @since 13.0
      */
     public SpacecraftState(final Orbit orbit, final Attitude attitude, final double mass,
                            final DataDictionary additional, final DoubleArrayDictionary additionalDot)
@@ -224,10 +175,10 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
     public SpacecraftState(final AbsolutePVCoordinates absPva) {
         this(absPva, getDefaultAttitudeProvider(absPva.getFrame())
                         .getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
-             DEFAULT_MASS,  null);
+             DEFAULT_MASS, null, null);
     }
 
-    /** Build a spacecraft state from position-velocity-acceleration and attitude.
+    /** Build a spacecraft state from position-velocity-acceleration and attitude. Kept for performance.
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
      * @param absPva position-velocity-acceleration
      * @param attitude attitude
@@ -236,18 +187,20 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva, final Attitude attitude)
         throws IllegalArgumentException {
-        this(absPva, attitude, DEFAULT_MASS,  null);
+        this(absPva, attitude, DEFAULT_MASS, null, null);
     }
 
     /** Create a new instance from position-velocity-acceleration and mass.
      * <p>Attitude law is set to an unspecified default attitude.</p>
      * @param absPva position-velocity-acceleration
      * @param mass the mass (kg)
+     * @deprecated since 13.0, use withXXX
      */
+    @Deprecated
     public SpacecraftState(final AbsolutePVCoordinates absPva, final double mass) {
         this(absPva, getDefaultAttitudeProvider(absPva.getFrame())
                         .getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
-             mass,  null);
+             mass,  null, null);
     }
 
     /** Build a spacecraft state from position-velocity-acceleration, attitude and mass.
@@ -256,64 +209,12 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * @param mass the mass (kg)
      * @exception IllegalArgumentException if orbit and attitude dates
      * or frames are not equal
+     * @deprecated since 13.0, use withXXX
      */
+    @Deprecated
     public SpacecraftState(final AbsolutePVCoordinates absPva, final Attitude attitude, final double mass)
         throws IllegalArgumentException {
-        this(absPva, attitude, mass, null);
-    }
-
-    /** Build a spacecraft state from position-velocity-acceleration and additional states.
-     * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
-     * @param absPva position-velocity-acceleration
-     * @param additional additional data
-     * @since 11.1
-     */
-    public SpacecraftState(final AbsolutePVCoordinates absPva, final DataDictionary additional) {
-        this(absPva, getDefaultAttitudeProvider(absPva.getFrame())
-                        .getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
-             DEFAULT_MASS, additional);
-    }
-
-    /** Build a spacecraft state from position-velocity-acceleration, attitude and additional states.
-     * <p>Mass is set to an unspecified non-null arbitrary value.</p>
-     * @param absPva position-velocity-acceleration
-     * @param attitude attitude
-     * @param additional additional data
-     * @exception IllegalArgumentException if orbit and attitude dates
-     * or frames are not equal
-     * @since 11.1
-     */
-    public SpacecraftState(final AbsolutePVCoordinates absPva, final Attitude attitude, final DataDictionary additional)
-        throws IllegalArgumentException {
-        this(absPva, attitude, DEFAULT_MASS, additional);
-    }
-
-    /** Create a new instance from position-velocity-acceleration, mass and additional states.
-     * <p>Attitude law is set to an unspecified default attitude.</p>
-     * @param absPva position-velocity-acceleration
-     * @param mass the mass (kg)
-     * @param additional additional data
-     * @since 11.1
-     */
-    public SpacecraftState(final AbsolutePVCoordinates absPva, final double mass, final DataDictionary additional) {
-        this(absPva, getDefaultAttitudeProvider(absPva.getFrame())
-                        .getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
-             mass, additional);
-    }
-
-    /** Build a spacecraft state from position-velocity-acceleration, attitude, mass and additional states.
-     * @param absPva position-velocity-acceleration
-     * @param attitude attitude
-     * @param mass the mass (kg)
-     * @param additional additional data (may be null if no additional data are available)
-     * @exception IllegalArgumentException if orbit and attitude dates
-     * or frames are not equal
-     * @since 11.1
-     */
-    public SpacecraftState(final AbsolutePVCoordinates absPva, final Attitude attitude,
-                           final double mass, final DataDictionary additional)
-        throws IllegalArgumentException {
-        this(absPva, attitude, mass, additional, null);
+        this(absPva, attitude, mass, null, null);
     }
 
     /** Build a spacecraft state from position-velocity-acceleration, attitude, mass and additional states and derivatives.
@@ -324,7 +225,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * @param additionalDot additional states derivatives(may be null if no additional states derivatives are available)
      * @exception IllegalArgumentException if orbit and attitude dates
      * or frames are not equal
-     * @since 11.1
+     * @since 13.0
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva, final Attitude attitude, final double mass,
                            final DataDictionary additional, final DoubleArrayDictionary additionalDot)
@@ -336,6 +237,62 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
         this.mass       = mass;
         this.additional = additional == null ? new DataDictionary() : new DataDictionary(additional);
         this.additionalDot = additionalDot == null ? new DoubleArrayDictionary() : new DoubleArrayDictionary(additionalDot);
+    }
+
+    /**
+     * Create a new instance with input mass.
+     * @param newMass mass
+     * @return new state
+     * @since 13.0
+     */
+    public SpacecraftState withMass(final double newMass) {
+        if (isOrbitDefined()) {
+            return new SpacecraftState(orbit, attitude, newMass, additional, additionalDot);
+        } else {
+            return new SpacecraftState(absPva, attitude, newMass, additional, additionalDot);
+        }
+    }
+
+    /**
+     * Create a new instance with input attitude.
+     * @param newAttitude attitude
+     * @return new state
+     * @since 13.0
+     */
+    public SpacecraftState withAttitude(final Attitude newAttitude) {
+        if (isOrbitDefined()) {
+            return new SpacecraftState(orbit, newAttitude, mass, additional, additionalDot);
+        } else {
+            return new SpacecraftState(absPva, newAttitude, mass, additional, additionalDot);
+        }
+    }
+
+    /**
+     * Create a new instance with input additional data.
+     * @param dataDictionary additional data
+     * @return new state
+     * @since 13.0
+     */
+    public SpacecraftState withAdditionalData(final DataDictionary dataDictionary) {
+        if (isOrbitDefined()) {
+            return new SpacecraftState(orbit, attitude, mass, dataDictionary, additionalDot);
+        } else {
+            return new SpacecraftState(absPva, attitude, mass, dataDictionary, additionalDot);
+        }
+    }
+
+    /**
+     * Create a new instance with input additional data.
+     * @param additionalStateDerivatives additional state derivatives
+     * @return new state
+     * @since 13.0
+     */
+    public SpacecraftState withAdditionalStatesDerivatives(final DoubleArrayDictionary additionalStateDerivatives) {
+        if (isOrbitDefined()) {
+            return new SpacecraftState(orbit, attitude, mass, additional, additionalStateDerivatives);
+        } else {
+            return new SpacecraftState(absPva, attitude, mass, additional, additionalStateDerivatives);
+        }
     }
 
     /** Add an additional data.
@@ -367,11 +324,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
         } else {
             newDict.put(name, value);
         }
-        if (isOrbitDefined()) {
-            return new SpacecraftState(orbit, attitude, mass, newDict, additionalDot);
-        } else {
-            return new SpacecraftState(absPva, attitude, mass, newDict, additionalDot);
-        }
+        return withAdditionalData(newDict);
     }
 
     /** Add an additional state derivative.
@@ -397,11 +350,7 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
     public SpacecraftState addAdditionalStateDerivative(final String name, final double... value) {
         final DoubleArrayDictionary newDict = new DoubleArrayDictionary(additionalDot);
         newDict.put(name, value.clone());
-        if (isOrbitDefined()) {
-            return new SpacecraftState(orbit, attitude, mass, additional, newDict);
-        } else {
-            return new SpacecraftState(absPva, attitude, mass, additional, newDict);
-        }
+        return withAdditionalStatesDerivatives(newDict);
     }
 
     /** Check orbit and attitude dates are equal.

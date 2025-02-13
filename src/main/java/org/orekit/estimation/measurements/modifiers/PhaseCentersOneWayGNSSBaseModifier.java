@@ -80,7 +80,7 @@ public class PhaseCentersOneWayGNSSBaseModifier<T extends AbstractMeasurement<T>
         final Orbit orbitRemote = new CartesianOrbit(phaseParticipants[0], refStateLocal.getFrame(), receptionState.getOrbit().getMu());
 
         // Transforms from spacecraft to inertial frame at emission date
-        final SpacecraftState refStateRemote            = new SpacecraftState(orbitRemote,
+        final SpacecraftState refStateRemote            = new SpacecraftState(orbitRemote).withAttitude(
                                                                               attitudeProvider.getAttitude(orbitRemote,
                                                                                                            orbitRemote.getDate(),
                                                                                                            orbitRemote.getFrame()));
