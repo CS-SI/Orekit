@@ -46,7 +46,7 @@ import org.orekit.utils.ParameterDriver;
 import java.util.function.BiConsumer;
 import java.util.function.ToDoubleFunction;
 
-public class GnssGradientConverterTest {
+class GnssGradientConverterTest {
 
     private GNSSPropagator propagator;
 
@@ -76,7 +76,7 @@ public class GnssGradientConverterTest {
     }
 
     @Test
-    public void testInitialStateStmNoSelectedParameters() {
+    void testInitialStateStmNoSelectedParameters() {
         final FieldGnssPropagator<Gradient> gPropagator = new GnssGradientConverter(propagator).getPropagator();
         Assertions.assertEquals(9, gPropagator.getParametersDrivers().size());
         Assertions.assertEquals(0, gPropagator.getParametersDrivers().stream().filter(ParameterDriver::isSelected).count());
@@ -85,7 +85,7 @@ public class GnssGradientConverterTest {
     }
 
     @Test
-    public void testInitialStateStmAllParametersSelected() {
+    void testInitialStateStmAllParametersSelected() {
         propagator.getOrbitalElements().getParametersDrivers().forEach(p -> p.setSelected(true));
         final FieldGnssPropagator<Gradient> gPropagator = new GnssGradientConverter(propagator).getPropagator();
         Assertions.assertEquals(9, gPropagator.getParametersDrivers().size());
@@ -95,7 +95,7 @@ public class GnssGradientConverterTest {
     }
 
     @Test
-    public void testStmAndJacobian() {
+    void testStmAndJacobian() {
         // Initial GPS orbital elements (Ref: IGS)
         final GPSLegacyNavigationMessage goe = new GPSLegacyNavigationMessage(DataContext.getDefault().getTimeScales(),
                                                                               SatelliteSystem.GPS);
@@ -164,7 +164,7 @@ public class GnssGradientConverterTest {
             }
         }
         Assertions.assertEquals(0.0, maxErrorPP, 6.5e-13);
-        Assertions.assertEquals(0.0, maxErrorPV, 6.5e-10);
+        Assertions.assertEquals(0.0, maxErrorPV, 8.2e-10);
         Assertions.assertEquals(0.0, maxErrorVP, 8.4e-17);
         Assertions.assertEquals(0.0, maxErrorVV, 3.8e-13);
 

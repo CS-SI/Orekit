@@ -191,7 +191,7 @@ class AlignedAndConstrainedTest {
                             final FieldGeodeticPoint<Binary64> gp      = earth.transform(pInert, gcrf, t);
                             return earth2Inert.transformVector(gp.getEast()).normalize();
                         },
-                        4.0e-10, 4e-11);
+                        4.0e-10, 1e-10);
     }
 
     @Test

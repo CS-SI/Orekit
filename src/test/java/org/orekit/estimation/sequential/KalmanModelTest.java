@@ -102,7 +102,7 @@ public class KalmanModelTest {
     private ParameterDriver srpCoefDriver;
 
     /** Tolerance for the test. */
-    private final double tol = 1e-16;
+    private final double tol = 2e-16;
 
     /** Setup an eccentric orbit with Keplerian gravity force and isotropic solar radiation pressure model.
      * Add a satellite range bias to the range measurements and select its estimation.

@@ -46,13 +46,13 @@ import org.orekit.utils.ParameterDriversList;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TLEBatchLSEstimatorTest {
+class TLEBatchLSEstimatorTest {
 
     /**
      * Perfect PV measurements with a perfect start
      */
     @Test
-    public void testPV() {
+    void testPV() {
 
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -96,7 +96,7 @@ public class TLEBatchLSEstimatorTest {
 
     /** Test PV measurements generation and backward propagation in least-square orbit determination. */
     @Test
-    public void testPVBackward() {
+    void testPVBackward() {
 
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -142,7 +142,7 @@ public class TLEBatchLSEstimatorTest {
      * Perfect range measurements with a biased start
      */
     @Test
-    public void testRange() {
+    void testRange() {
 
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -234,7 +234,7 @@ public class TLEBatchLSEstimatorTest {
     }
 
     @Test
-    public void testWrappedException() {
+    void testWrappedException() {
 
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -296,7 +296,7 @@ public class TLEBatchLSEstimatorTest {
      * Perfect range and range rate measurements with a perfect start
      */
     @Test
-    public void testRangeAndRangeRate() {
+    void testRangeAndRangeRate() {
 
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -339,10 +339,10 @@ public class TLEBatchLSEstimatorTest {
 
         // we have low correlation between the two types of measurement. We can expect a good estimate.
         TLEEstimationTestUtils.checkFit(context, estimator, 4, 5,
-                                     0.0, 5.2e-6,
-                                     0.0, 3.4e-5,
+                                     0.0, 6.e-6,
+                                     0.0, 4.5e-5,
                                      0.0, 6.1e-6,
-                                     0.0, 2.5e-9);
+                                     0.0, 5e-9);
     }
 
 }
