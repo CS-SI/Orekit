@@ -440,7 +440,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
 
             try {
                 // copy the same additional data providers as the original propagator
-                for (FieldAdditionalDataProvider<T> provider : FieldAbstractAnalyticalPropagator.this.getAdditionalDataProviders()) {
+                for (FieldAdditionalDataProvider<?, T> provider : FieldAbstractAnalyticalPropagator.this.getAdditionalDataProviders()) {
                     addAdditionalDataProvider(provider);
                 }
             } catch (OrekitException oe) {

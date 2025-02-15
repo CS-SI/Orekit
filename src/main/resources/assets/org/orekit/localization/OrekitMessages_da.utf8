@@ -298,7 +298,7 @@ PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET = <MISSING TRANSLATION>
 # scale factor for parameter {0} is too small: {1}
 TOO_SMALL_SCALE_FOR_PARAMETER = skaleringsfaktor for parameter {0} er for lav: {1}
 
-# state "{0}" is not a double array
+# state "{0}" is not an array
 ADDITIONAL_STATE_BAD_TYPE = <MISSING TRANSLATION>
 
 # unknown additional data "{0}"

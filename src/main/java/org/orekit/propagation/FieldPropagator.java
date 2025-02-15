@@ -144,12 +144,12 @@ public interface FieldPropagator<T extends CalculusFieldElement<T>> extends Fiel
     /** Add a set of user-specified data to be computed along with the orbit propagation.
      * @param additionalDataProvider provider for additional data
      */
-    void addAdditionalDataProvider(FieldAdditionalDataProvider<T> additionalDataProvider);
+    void addAdditionalDataProvider(FieldAdditionalDataProvider<?, T> additionalDataProvider);
 
     /** Get an unmodifiable list of providers for additional data.
      * @return providers for the additional states
      */
-    List<FieldAdditionalDataProvider<T>> getAdditionalDataProviders();
+    List<FieldAdditionalDataProvider<?, T>> getAdditionalDataProviders();
 
     /** Check if an additional data is managed.
      * <p>

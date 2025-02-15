@@ -125,7 +125,7 @@ public class NewtonFixedBoundaryCartesianSingleShooting extends AbstractFixedBou
         defectsJacobianData[5] = fieldScaledTerminalVelocity.getZ().getGradient();
         if (originalShootingVariables.length != 6) {
             final String adjointName = getPropagationSettings().getAdjointDynamicsProvider().getAdjointName();
-            final Gradient terminalMassAdjoint = fieldTerminalState.getAdditionalData(adjointName)[6];
+            final Gradient terminalMassAdjoint = fieldTerminalState.getAdditionalState(adjointName)[6];
             defects[6] = terminalMassAdjoint.getValue();
             defectsJacobianData[6] = terminalMassAdjoint.getGradient();
         }

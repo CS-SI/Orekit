@@ -39,7 +39,7 @@ import org.orekit.propagation.analytical.FieldAbstractAnalyticalPropagator;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.FieldArrayDictionary;
+import org.orekit.utils.FieldDataDictionary;
 import org.orekit.utils.ParameterDriver;
 
 /** This class stores sequentially generated orbital parameters for
@@ -103,7 +103,7 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
     private final FieldDenseOutputModel<T> model;
 
     /** Unmanaged additional states that must be simply copied. */
-    private final FieldArrayDictionary<T> unmanaged;
+    private final FieldDataDictionary<T> unmanaged;
 
     /** Names of additional equations.
      * @since 11.2
@@ -133,8 +133,8 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
                                     final FieldAbsoluteDate<T> minDate, final FieldAbsoluteDate<T> maxDate,
                                     final FieldStateMapper<T> mapper, final AttitudeProvider attitudeProvider,
                                     final PropagationType type, final FieldDenseOutputModel<T> model,
-                                    final FieldArrayDictionary<T> unmanaged,
-                                    final List<FieldAdditionalDataProvider<T>> providers,
+                                    final FieldDataDictionary<T> unmanaged,
+                                    final List<FieldAdditionalDataProvider<?, T>> providers,
                                     final String[] equations, final int[] dimensions) {
 
         super(startDate.getField(), attitudeProvider);
@@ -148,7 +148,7 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
         this.unmanaged = unmanaged;
 
         // set up the pre-integrated providers
-        for (final FieldAdditionalDataProvider<T> provider : providers) {
+        for (final FieldAdditionalDataProvider<?, T> provider : providers) {
             addAdditionalDataProvider(provider);
         }
 
@@ -208,7 +208,7 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
         FieldSpacecraftState<T> state = mapper.mapArrayToState(mapper.mapDoubleToDate(os.getTime(), date),
                                                                os.getPrimaryState(), os.getPrimaryDerivative(),
                                                                type);
-        for (FieldArrayDictionary<T>.Entry initial : unmanaged.getData()) {
+        for (FieldDataDictionary<T>.Entry initial : unmanaged.getData()) {
             state = state.addAdditionalData(initial.getKey(), initial.getValue());
         }
         return state;

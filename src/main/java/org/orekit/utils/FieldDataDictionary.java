@@ -1,8 +1,8 @@
-/* Copyright 2002-2025 Airbus Defence and Space
+/* Copyright 2002-2025 Bryan Cazabonne
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * Airbus Defence and Space licenses this file to You under the Apache License, Version 2.0
+ * Bryan Cazabonne licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -16,9 +16,10 @@
  */
 package org.orekit.utils;
 
-import java.io.Serializable;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -34,78 +35,77 @@ import java.util.Map;
  * needs the regular {@code Map<String, Object>} should be preferred.
  * </p>
  *
- * @see DoubleArrayDictionary
- * @author Anne-Laure Lugan
+ * @see FieldArrayDictionary
+ * @author Bryan Cazabonne
  * @since 13.0
  */
-public class DataDictionary implements Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20250208L;
+public class FieldDataDictionary<T extends CalculusFieldElement<T>> {
 
     /** Default capacity. */
     private static final int DEFAULT_INITIAL_CAPACITY = 4;
+
+    /** Field to which elements belong. */
+    private final Field<T> field;
 
     /** Data container. */
     private final List<Entry> data;
 
     /** Constructor with {@link #DEFAULT_INITIAL_CAPACITY default initial capacity}.
+     * @param field field to which elements belong
      */
-    public DataDictionary() {
-        this(DEFAULT_INITIAL_CAPACITY);
+    public FieldDataDictionary(final Field<T> field) {
+        this(field, DEFAULT_INITIAL_CAPACITY);
     }
 
-    /** Constructor with specified capacity.
-     * @param initialCapacity initial capacity
+    /** Constructor from a map.
+     * @param field field to which the elements belong
+     * @param map map to use for initializing entries
      */
-    public DataDictionary(final int initialCapacity) {
-        data = new ArrayList<>(initialCapacity);
+    public FieldDataDictionary(final Field<T> field, final Map<String, Object> map) {
+        this(field, map.size());
+        for (final Map.Entry<String, Object> entry : map.entrySet()) {
+            // we don't call put(key, value) to avoid the overhead of the unneeded call to remove(key)
+            data.add(new Entry(entry.getKey(), entry.getValue()));
+        }
     }
 
     /** Constructor from another dictionary.
      * @param dictionary dictionary to use for initializing entries
      */
-    public DataDictionary(final DataDictionary dictionary) {
-        // take care to call dictionary.getData() and not use dictionary.data,
-        // otherwise we get an empty dictionary when using a DoubleArrayDictionary.view
-        this(DEFAULT_INITIAL_CAPACITY + dictionary.getData().size());
+    public FieldDataDictionary(final FieldDataDictionary<T> dictionary) {
+        // take care to call dictionary.getData() and not use dictionary.data
+        this(dictionary.getField(), DEFAULT_INITIAL_CAPACITY + dictionary.getData().size());
         for (final Entry entry : dictionary.getData()) {
             // we don't call put(key, value) to avoid the overhead of the unneeded call to remove(key)
             data.add(new Entry(entry.getKey(), entry.getValue()));
         }
     }
 
-    /** Creates a double values dictionary.
+    /** Constructor with specified capacity.
+     * @param field field to which elements belong
+     * @param initialCapacity initial capacity
+     */
+    public FieldDataDictionary(final Field<T> field, final int initialCapacity) {
+        this.data = new ArrayList<>(initialCapacity);
+        this.field = field;
+    }
+
+    /** Creates a "field" values dictionary.
      * <p>
      * Creates a DoubleArrayDictionary with all double[] values
      * contained in the instance.
      * </p>
      * @return a double values dictionary
      */
-    public DoubleArrayDictionary toDoubleDictionary() {
-        final DoubleArrayDictionary dictionary = new DoubleArrayDictionary();
+    @SuppressWarnings("unchecked") // cast including generic type is checked and unitary tested
+    public FieldArrayDictionary<T> toFieldArrayDictionary() {
+        final FieldArrayDictionary<T> dictionary = new FieldArrayDictionary<>(field);
         for (final Entry entry : data) {
-            if (entry.getValue() instanceof double[]) {
-                dictionary.put(entry.getKey(), (double[]) entry.getValue());
+            if (entry.getValue() instanceof CalculusFieldElement[]) {
+                dictionary.put(entry.getKey(), (T[]) entry.getValue());
             }
         }
         return dictionary;
-    }
-
-    /**
-     * Get an unmodifiable view of the dictionary entries.
-     *
-     * @return unmodifiable view of the dictionary entries
-     */
-    public List<Entry> getData() {
-        return Collections.unmodifiableList(data);
-    }
-
-    /** Get the number of dictionary entries.
-     * @return number of dictionary entries
-     */
-    public int size() {
-        return data.size();
     }
 
     /** Create a map from the instance.
@@ -128,6 +128,13 @@ public class DataDictionary implements Serializable {
         data.clear();
     }
 
+    /** Get the number of dictionary entries.
+     * @return number of dictionary entries
+     */
+    public int size() {
+        return data.size();
+    }
+
     /** Add an entry.
      * <p>
      * If an entry with the same key already exists, it will be removed first.
@@ -143,11 +150,21 @@ public class DataDictionary implements Serializable {
         data.add(new Entry(key, value));
     }
 
-    /** Put all the double[] entries from the map in the dictionary.
+    /** Put all the T[] entries from the map in the dictionary.
      * @param map map to copy into the instance
      */
-    public void putAllDoubles(final Map<String, double[]> map) {
-        for (final Map.Entry<String,  double[]> entry : map.entrySet()) {
+    public void putAllFields(final Map<String, T[]> map) {
+        for (final Map.Entry<String,  T[]> entry : map.entrySet()) {
+            put(entry.getKey(), entry.getValue());
+        }
+    }
+
+
+    /** Put all the entries from the map in the dictionary.
+     * @param map map to copy into the instance
+     */
+    public void putAll(final Map<String, Object> map) {
+        for (final Map.Entry<String, Object> entry : map.entrySet()) {
             put(entry.getKey(), entry.getValue());
         }
     }
@@ -155,8 +172,8 @@ public class DataDictionary implements Serializable {
     /** Put all the entries from another dictionary.
      * @param dictionary dictionary to copy into the instance
      */
-    public void putAll(final DataDictionary dictionary) {
-        for (final Entry entry : dictionary.data) {
+    public void putAll(final FieldDataDictionary<T> dictionary) {
+        for (final FieldDataDictionary<T>.Entry entry : dictionary.data) {
             put(entry.getKey(), entry.getValue());
         }
     }
@@ -166,10 +183,9 @@ public class DataDictionary implements Serializable {
      * @return copy of the value corresponding to the key or null if key not present
      */
     public Object get(final String key) {
-        final Entry entry = getEntry(key);
+        final FieldDataDictionary<T>.Entry entry = getEntry(key);
         return entry == null ? null : entry.getValue();
     }
-
 
     /** Get a complete entry.
      * @param key entry key
@@ -199,33 +215,21 @@ public class DataDictionary implements Serializable {
         return false;
     }
 
-    /** Get a string representation of the dictionary.
-     * <p>
-     * This string representation is intended for improving displays in debuggers only.
-     * </p>
-     * @param values dictionary
-     * @return string representation of the dictionary
+    /**
+     * Get an unmodifiable view of the dictionary entries.
+     *
+     * @return unmodifiable view of the dictionary entries
      */
-    public static String toString(final Map<String, Object> values) {
-        final StringBuilder builder = new StringBuilder();
-        builder.append('{');
-        int i = 0;
-        for (Map.Entry<String, Object> entry : values.entrySet()) {
-            if (i > 0) {
-                builder.append(", ");
-            }
-            builder.append(entry.getKey());
-            builder.append('[');
-            if (entry.getValue() instanceof double[]) {
-                builder.append(((double[]) entry.getValue()).length);
-            } else {
-                builder.append(entry.getValue());
-            }
-            builder.append(']');
-            i++;
-        }
-        builder.append('}');
-        return builder.toString();
+    public List<Entry> getData() {
+        return Collections.unmodifiableList(data);
+    }
+
+    /**
+     * Get the field to which elements belong.
+     * @return the field to which elements belong
+     */
+    public Field<T> getField() {
+        return field;
     }
 
     /** Get a string representation of the dictionary.
@@ -236,14 +240,11 @@ public class DataDictionary implements Serializable {
      */
     @Override
     public String toString() {
-        return toString(toMap());
+        return DataDictionary.toString(toMap());
     }
 
     /** Entry in a dictionary. */
-    public static class Entry implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20250208L;
+    public class Entry {
 
         /** Key. */
         private final String key;
@@ -270,25 +271,12 @@ public class DataDictionary implements Serializable {
         /** Get the value.
          * @return a copy of the value (independent from internal array if it is a double array)
          */
+        @SuppressWarnings("unchecked")
         public Object getValue() {
-            return value instanceof double[] ? ((double[]) value).clone() : value;
+            return value instanceof CalculusFieldElement[] ? ((T[]) value).clone() : value;
         }
 
-        /** Increment the value if it is a double array.
-         * <p>
-         * For the sake of performance, no checks are done on argument.
-         * </p>
-         * @param increment increment to apply to the entry value
-         */
-        public void increment(final double[] increment) {
-            if (value instanceof double[]) {
-                for (int i = 0; i < increment.length; ++i) {
-                    ((double[]) value)[i] += increment[i];
-                }
-            }
-        }
-
-        /** Increment the value with another scaled entry if it is a double array.
+        /** Increment the value with another scaled entry.
          * <p>
          * Each component {@code value[i]} will be replaced by {@code value[i] + factor * raw.value[i]}.
          * </p>
@@ -298,20 +286,34 @@ public class DataDictionary implements Serializable {
          * @param factor multiplicative factor for increment
          * @param raw raw increment to be multiplied by {@code factor} and then added
          */
-        public void scaledIncrement(final double factor, final DoubleArrayDictionary.Entry raw) {
-            if (value instanceof double[]) {
+        @SuppressWarnings("unchecked")
+        public void scaledIncrement(final double factor, final FieldArrayDictionary<T>.Entry raw) {
+            if (value instanceof CalculusFieldElement[]) {
                 for (int i = 0; i < raw.getValue().length; ++i) {
-                    ((double[]) value)[i] += factor * raw.getValue()[i];
+                    ((T[]) value)[i] = ((T[]) value)[i].add(raw.getValue()[i].multiply(factor));
                 }
             }
         }
 
-        /** Reset the value to zero if it is a double array.
+        /** Increment the value with another scaled entry.
+         * <p>
+         * Each component {@code value[i]} will be replaced by {@code value[i] + factor * raw.value[i]}.
+         * </p>
+         * <p>
+         * For the sake of performance, no checks are done on arguments.
+         * </p>
+         * @param factor multiplicative factor for increment
+         * @param raw raw increment to be multiplied by {@code factor} and then added
          */
-        public void zero() {
-            if (value instanceof double[]) {
-                Arrays.fill((double[]) value, 0.0);
+        @SuppressWarnings("unchecked")
+        public void scaledIncrement(final T factor, final FieldArrayDictionary<T>.Entry raw) {
+            if (value instanceof CalculusFieldElement[]) {
+                for (int i = 0; i < raw.getValue().length; ++i) {
+                    ((T[]) value)[i] = ((T[]) value)[i].add(raw.getValue()[i].multiply(factor));
+                }
             }
         }
+
     }
+
 }

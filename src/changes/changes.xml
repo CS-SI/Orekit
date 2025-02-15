@@ -24,6 +24,9 @@
         <action dev="serrof" type="add" issue="1669">
             Add builder for (Field)SpacecraftState.
         </action>
+        <action dev="bryan" type="update" issue="1668">
+            Generalized FieldAdditionalDataProvider to any object.
+        </action>
         <action dev="serrof" type="update" issue="1667">
             Use non-Field Transform when possible in getTransformTo.
         </action>

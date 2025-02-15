@@ -80,7 +80,7 @@ class FieldCartesianAdjointDerivativesProviderTest {
         final FieldSpacecraftState<Binary64> terminalState = propagator.propagate(initialState.getDate().shiftedBy(1000.));
         // THEN
         Assertions.assertTrue(propagator.isAdditionalDataManaged(name));
-        final Binary64[] adjoint = terminalState.getAdditionalData(name);
+        final Binary64[] adjoint = terminalState.getAdditionalState(name);
         Assertions.assertEquals(0., adjoint[0].getReal());
         Assertions.assertEquals(0., adjoint[1].getReal());
         Assertions.assertEquals(0., adjoint[2].getReal());

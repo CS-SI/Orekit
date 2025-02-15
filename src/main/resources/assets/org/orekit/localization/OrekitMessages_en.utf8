@@ -298,8 +298,8 @@ PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET = setPeriod was already called once on {0
 # scale factor for parameter {0} is too small: {1}
 TOO_SMALL_SCALE_FOR_PARAMETER = scale factor for parameter {0} is too small: {1}
 
-# state "{0}" is not a double array
-ADDITIONAL_STATE_BAD_TYPE = state "{0}" is not a double array
+# state "{0}" is not an array
+ADDITIONAL_STATE_BAD_TYPE = state "{0}" is not an array
 
 # unknown additional data "{0}"
 UNKNOWN_ADDITIONAL_DATA = unknown additional data "{0}"
