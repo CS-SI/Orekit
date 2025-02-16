@@ -65,7 +65,7 @@ import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.FieldArrayDictionary;
+import org.orekit.utils.FieldDataDictionary;
 
 
 /** Common handling of {@link org.orekit.propagation.FieldPropagator FieldPropagator}
@@ -612,7 +612,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         for (final FieldAdditionalDerivativesProvider<T> provider : additionalDerivativesProviders) {
             final String name       = provider.getName();
             final int    offset     = secondaryOffsets.get(name);
-            final T[]    additional = state.getAdditionalData(name);
+            final T[]    additional = state.getAdditionalState(name);
             System.arraycopy(additional, 0, secondary[0], offset, additional.length);
         }
 
@@ -815,7 +815,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             if (storedInitialState != null && stateMapper.mapDateToDouble(storedInitialState.getDate()).subtract(originalTime).isZero()) {
                 for (final FieldAdditionalDerivativesProvider<T> provider: additionalDerivativesProviders) {
                     final String name = provider.getName();
-                    final T[] value = storedInitialState.getAdditionalData(name);
+                    final T[] value = storedInitialState.getAdditionalState(name);
                     updatedState = updatedState.addAdditionalData(name, value);
                 }
             }
@@ -1240,8 +1240,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             }
 
             // get the initial additional data that are not managed
-            final FieldArrayDictionary<T> unmanaged = new FieldArrayDictionary<>(startDate.getField());
-            for (final FieldArrayDictionary<T>.Entry initial : getInitialState().getAdditionalDataValues().getData()) {
+            final FieldDataDictionary<T> unmanaged = new FieldDataDictionary<>(startDate.getField());
+            for (final FieldDataDictionary<T>.Entry initial : getInitialState().getAdditionalDataValues().getData()) {
                 if (!FieldAbstractIntegratedPropagator.this.isAdditionalDataManaged(initial.getKey())) {
                     // this additional state was in the initial state, but is unknown to the propagator
                     // we simply copy its initial value as is

@@ -104,8 +104,8 @@ public class TestUtils {
      *
      * @return additional state provider with custom init() method defined which use the initial state
      */
-    public static <T extends CalculusFieldElement<T>> FieldAdditionalDataProvider<T> getFieldAdditionalProviderWithInit() {
-        return new FieldAdditionalDataProvider<T>() {
+    public static <T extends CalculusFieldElement<T>> FieldAdditionalDataProvider<T[], T> getFieldAdditionalProviderWithInit() {
+        return new FieldAdditionalDataProvider<T[], T>() {
 
             @Override
             public void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target) {

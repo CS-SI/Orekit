@@ -189,7 +189,7 @@ public class FieldIntegratedEphemerisTest {
         numericalPropagator.propagate(finalDate);
         Assertions.assertTrue(numericalPropagator.getCalls() < 3200);
         FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
-        ephemeris.addAdditionalDataProvider(new FieldAdditionalDataProvider<T>() {
+        ephemeris.addAdditionalDataProvider(new FieldAdditionalDataProvider<T[], T>() {
 
             @Override
             public String getName() {
@@ -206,7 +206,7 @@ public class FieldIntegratedEphemerisTest {
 
         //action
         FieldSpacecraftState<T> s = ephemeris.propagate(initialOrbit.getDate().shiftedBy(20.0));
-        Assertions.assertEquals(20.0, s.getAdditionalData("time-since-start")[0].getReal(), 1.0e-10);
+        Assertions.assertEquals(20.0, s.getAdditionalState("time-since-start")[0].getReal(), 1.0e-10);
 
         // check various protected methods
         try {
@@ -298,7 +298,7 @@ public class FieldIntegratedEphemerisTest {
         numericalPropagator.setOrbitType(OrbitType.CARTESIAN);
 
         // Setup additional data provider which use the initial state in its init method
-        final FieldAdditionalDataProvider<T> additionalDataProvider = TestUtils.getFieldAdditionalProviderWithInit();
+        final FieldAdditionalDataProvider<T[], T> additionalDataProvider = TestUtils.getFieldAdditionalProviderWithInit();
         numericalPropagator.addAdditionalDataProvider(additionalDataProvider);
 
         // Setup integrated ephemeris
@@ -316,10 +316,10 @@ public class FieldIntegratedEphemerisTest {
                                                                 final DerivativesProvider<T> provider) {
 
         Assertions.assertTrue(state.hasAdditionalData(provider.getName()));
-        Assertions.assertEquals(provider.getDimension(), state.getAdditionalData(provider.getName()).length);
+        Assertions.assertEquals(provider.getDimension(), state.getAdditionalState(provider.getName()).length);
         for (int i = 0; i < provider.getDimension(); ++i) {
             Assertions.assertEquals(i * dt,
-                                state.getAdditionalData(provider.getName())[i].getReal(),
+                                state.getAdditionalState(provider.getName())[i].getReal(),
                                 4.0e-15 * i * dt);
         }
 

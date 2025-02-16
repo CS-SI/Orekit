@@ -1030,7 +1030,7 @@ public class FieldNumericalPropagatorTest {
             Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
         }
         try {
-            propagator.addAdditionalDataProvider(new FieldAdditionalDataProvider<T>() {
+            propagator.addAdditionalDataProvider(new FieldAdditionalDataProvider<T[], T>() {
                public String getName() {
                     return "linear";
                 }
@@ -1043,7 +1043,7 @@ public class FieldNumericalPropagatorTest {
         } catch (OrekitException oe) {
             Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
         }
-        propagator.addAdditionalDataProvider(new FieldAdditionalDataProvider<T>() {
+        propagator.addAdditionalDataProvider(new FieldAdditionalDataProvider<T[], T>() {
             public String getName() {
                 return "constant";
             }
@@ -1068,7 +1068,7 @@ public class FieldNumericalPropagatorTest {
         final FieldSpacecraftState<T> finalState =
             propagator.propagate(initDate.shiftedBy(dt));
         checking.assertEvent(true);
-        Assertions.assertEquals(3.0, finalState.getAdditionalData("linear")[0].getReal(), 1.0e-8);
+        Assertions.assertEquals(3.0, finalState.getAdditionalState("linear")[0].getReal(), 1.0e-8);
         Assertions.assertEquals(1.5, finalState.getDate().durationFrom(initDate).getReal(), 1.0e-8);
 
     }
@@ -1091,7 +1091,7 @@ public class FieldNumericalPropagatorTest {
         }
 
         public T g(FieldSpacecraftState<T> s) {
-            return s.getAdditionalData("linear")[0].subtract(3.0);
+            return s.getAdditionalState("linear")[0].subtract(3.0);
         }
 
     }
@@ -1128,7 +1128,7 @@ public class FieldNumericalPropagatorTest {
         CheckingHandler<T> checking = new CheckingHandler<T>(Action.RESET_STATE) {
             public FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector, FieldSpacecraftState<T> oldState)
                 {
-                return oldState.addAdditionalData("linear", oldState.getAdditionalData("linear")[0].multiply(2));
+                return oldState.addAdditionalData("linear", oldState.getAdditionalState("linear")[0].multiply(2));
             }
         };
 
@@ -1140,7 +1140,7 @@ public class FieldNumericalPropagatorTest {
         final FieldAbsoluteDate<T> initDate = propagator.getInitialState().getDate();
         final FieldSpacecraftState<T> finalState = propagator.propagate(initDate.shiftedBy(dt));
        // checking.assertEvent(true);
-        Assertions.assertEquals(dt + 4.5, finalState.getAdditionalData("linear")[0].getReal(), 1.0e-8);
+        Assertions.assertEquals(dt + 4.5, finalState.getAdditionalState("linear")[0].getReal(), 1.0e-8);
         Assertions.assertEquals(dt, finalState.getDate().durationFrom(initDate).getReal(), 1.0e-8);
 
     }
@@ -1260,7 +1260,7 @@ public class FieldNumericalPropagatorTest {
         FieldNumericalPropagator<T> propagator = createPropagator(field);
         FieldAbsoluteDate<T> initDate = propagator.getInitialState().getDate();
 
-        propagator.addAdditionalDataProvider(new FieldAdditionalDataProvider<T>() {
+        propagator.addAdditionalDataProvider(new FieldAdditionalDataProvider<T[], T>() {
             public String getName() {
                 return "squaredA";
             }
@@ -1309,8 +1309,8 @@ public class FieldNumericalPropagatorTest {
         Assertions.assertEquals(2, s.getAdditionalDataValues().size());
         Assertions.assertTrue(s.hasAdditionalData("squaredA"));
         Assertions.assertTrue(s.hasAdditionalData("extra"));
-        Assertions.assertEquals(s.getOrbit().getA().multiply(s.getOrbit().getA()).getReal(), s.getAdditionalData("squaredA")[0].getReal(), 1.0e-10);
-        Assertions.assertEquals(1.5 + shift * rate, s.getAdditionalData("extra")[0].getReal(), 1.0e-10);
+        Assertions.assertEquals(s.getOrbit().getA().multiply(s.getOrbit().getA()).getReal(), s.getAdditionalState("squaredA")[0].getReal(), 1.0e-10);
+        Assertions.assertEquals(1.5 + shift * rate, s.getAdditionalState("extra")[0].getReal(), 1.0e-10);
 
         try {
             ephemeris1.resetInitialState(s);
@@ -1740,12 +1740,12 @@ public class FieldNumericalPropagatorTest {
         FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
         final FieldSpacecraftState<T> finalState = ephemeris.propagate(initialOrbit.getDate().shiftedBy(300));
         Assertions.assertEquals(2,    finalState.getAdditionalDataValues().size());
-        Assertions.assertEquals(2,    finalState.getAdditionalData("test_provider_0").length);
-        Assertions.assertEquals(0.0,  finalState.getAdditionalData("test_provider_0")[0].getReal(), 1.0e-15);
-        Assertions.assertEquals(0.0,  finalState.getAdditionalData("test_provider_0")[1].getReal(), 1.0e-15);
-        Assertions.assertEquals(2,    finalState.getAdditionalData("test_provider_1").length);
-        Assertions.assertEquals(10.0, finalState.getAdditionalData("test_provider_1")[0].getReal(), 1.0e-15);
-        Assertions.assertEquals(20.0, finalState.getAdditionalData("test_provider_1")[1].getReal(), 1.0e-15);
+        Assertions.assertEquals(2,    finalState.getAdditionalState("test_provider_0").length);
+        Assertions.assertEquals(0.0,  finalState.getAdditionalState("test_provider_0")[0].getReal(), 1.0e-15);
+        Assertions.assertEquals(0.0,  finalState.getAdditionalState("test_provider_0")[1].getReal(), 1.0e-15);
+        Assertions.assertEquals(2,    finalState.getAdditionalState("test_provider_1").length);
+        Assertions.assertEquals(10.0, finalState.getAdditionalState("test_provider_1")[0].getReal(), 1.0e-15);
+        Assertions.assertEquals(20.0, finalState.getAdditionalState("test_provider_1")[1].getReal(), 1.0e-15);
     }
 
     private <T extends CalculusFieldElement<T>> void addDerivativeProvider(FieldNumericalPropagator<T> propagator,
@@ -1926,7 +1926,7 @@ public class FieldNumericalPropagatorTest {
         dates[3] = reference.shiftedBy(300.0);
         dates[4] = reference.shiftedBy(600.0);
         dates[5] = reference.shiftedBy(900.0);
-        np.addEventDetector(new FieldDateDetector<>(field, (FieldTimeStamped<T>[]) dates).
+        np.addEventDetector(new FieldDateDetector<>(field, dates).
                             withMaxCheck(30).
                             withThreshold(zero.newInstance(1.0e-9)).
                             withHandler(checker));

@@ -119,7 +119,7 @@ class GPSPropagatorTest {
         double dtRelMax = 0;
         for (double dt = 0; dt < 0.5 * Constants.JULIAN_DAY; dt += 1.0) {
             FieldSpacecraftState<Binary64> state = propagator.propagate(date0.shiftedBy(dt));
-            Binary64[] corrections = state.getAdditionalData(ClockCorrectionsProvider.CLOCK_CORRECTIONS);
+            Binary64[] corrections = state.getAdditionalState(ClockCorrectionsProvider.CLOCK_CORRECTIONS);
             Assertions.assertEquals(3, corrections.length);
             Assertions.assertEquals(1.33514404296875E-05, corrections[0].getReal(), 1.0e-19);
             dtRelMin = FastMath.min(dtRelMin, corrections[1].getReal());

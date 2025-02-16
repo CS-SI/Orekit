@@ -64,7 +64,7 @@ class AbstractFixedInitialCartesianSingleShootingTest {
         final FieldVector3D<Gradient> fieldVelocity = fieldState.getPVCoordinates().getVelocity();
         Assertions.assertEquals(state.getPosition(), fieldPosition.toVector3D());
         Assertions.assertEquals(state.getPVCoordinates().getVelocity(), fieldVelocity.toVector3D());
-        Assertions.assertEquals(1., fieldState.getAdditionalData("adjoint")[0].getGradient()[0]);
+        Assertions.assertEquals(1., fieldState.getAdditionalState("adjoint")[0].getGradient()[0]);
     }
 
     @Test
