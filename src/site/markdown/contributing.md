@@ -200,10 +200,15 @@ Checkstyle violations can be quickly verified in a Linux terminal by using
 Maven commands. Contributors can execute the following command in the same
 folder as the `pom.xml` file:
 
-    mvn checkstyle:check findbugs:check test
+    mvn checkstyle:check com.github.spotbugs:spotbugs-maven-plugin:4.2.3:check test
 
 Note that this command is also used to check that no Spotbugs warning were
-created (`findbugs:check`) and that the tests are running correctly (`test`).
+created and that the tests are running correctly. Note that we need to force
+using version 4.2.3 of the spotbugs plugin because other versions trigger a flurry
+EI_EXPOSE_REP errors that we consider false positive (they correspond to regular
+object-oriented design). This plugin may imply running on a JAVA 8 compiler
+has it may complain about too recent class file versions if used with a more
+recent compiler.
 
 ### Configure checkstyle in Eclipse
 
