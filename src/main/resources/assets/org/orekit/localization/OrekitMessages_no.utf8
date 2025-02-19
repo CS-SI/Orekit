@@ -19,15 +19,6 @@ ALMOST_CRITICALLY_INCLINED_ORBIT = banen er nær kritisk helning (i = {0} grader
 # unable to compute {0} mean parameters after {1} iterations
 UNABLE_TO_COMPUTE_MEAN_PARAMETERS = umulig å regne ut {0} middelsparameterene etter {1} iterasjoner
 
-# unable to compute Eckstein-Hechler mean parameters after {0} iterations
-UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = umulig å regne ut Eckstein-Hechlers middelsparameterene etter {0} iterasjoner
-
-# unable to compute Brouwer-Lyddane mean parameters after {0} iterations
-UNABLE_TO_COMPUTE_BROUWER_LYDDANE_MEAN_PARAMETERS = umulig å regne ut Brouwer-Lyddane middelsparameterene etter {0} iterasjoner
-
-# unable to compute TLE after {0} iterations
-UNABLE_TO_COMPUTE_TLE = umulig å regne ut TLE etter {0} iterasjoner
-
 # null parent for frame {0}
 NULL_PARENT_FOR_FRAME = null forelder for ramme {0}
 

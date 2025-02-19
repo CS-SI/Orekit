@@ -18,6 +18,8 @@ package org.orekit.propagation.conversion.osc2mean;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
@@ -35,23 +37,49 @@ import org.orekit.time.FieldAbsoluteDate;
 public class BrouwerLyddaneTheory implements MeanTheory {
 
     /** Theory used for converting from osculating to mean orbit. */
-    private static final String THEORY = "Brouwer-Lyddane";
+    public static final String THEORY = "Brouwer-Lyddane";
 
-    /** Unnormalized spherical harmonics provider. */
-    private UnnormalizedSphericalHarmonicsProvider provider;
+    /** Provider for un-normalized spherical harmonics coefficients. */
+    private final UnnormalizedSphericalHarmonicsProvider provider;
 
     /** Value of the M2 parameter. */
-    private double m2Value;
+    private final double m2Value;
 
     /**
      * Constructor.
      * @param provider unnormalized spherical harmonics provider
-     * @param m2Value  value of the M2 parameter
+     * @param m2Value  value of empirical drag coefficient in rad/s².
+     *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      */
     public BrouwerLyddaneTheory(final UnnormalizedSphericalHarmonicsProvider provider,
                                 final double m2Value) {
         this.provider = provider;
         this.m2Value  = m2Value;
+    }
+
+    /**
+     * Constructor.
+     * @param referenceRadius reference radius of the Earth for the potential model (m)
+     * @param mu central attraction coefficient (m³/s²)
+     * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
+     * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
+     * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
+     * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
+     * @param m2Value value of empirical drag coefficient in rad/s².
+     *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
+     */
+    public BrouwerLyddaneTheory(final double referenceRadius,
+                                final double mu,
+                                final double c20,
+                                final double c30,
+                                final double c40,
+                                final double c50,
+                                final double m2Value) {
+        this(GravityFieldFactory.getUnnormalizedProvider(referenceRadius, mu,
+                                                         TideSystem.UNKNOWN,
+                                                         new double[][] { { 0 }, { 0 }, { c20 }, { c30 }, { c40 }, { c50 } },
+                                                         new double[][] { { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 } }),
+             m2Value);
     }
 
     /** {@inheritDoc} */
@@ -85,5 +113,4 @@ public class BrouwerLyddaneTheory implements MeanTheory {
                         new FieldBrouwerLyddanePropagator<>(mean, provider, PropagationType.MEAN, m2Value);
         return propagator.propagateOrbit(date, propagator.getParameters(field, date));
     }
-
 }

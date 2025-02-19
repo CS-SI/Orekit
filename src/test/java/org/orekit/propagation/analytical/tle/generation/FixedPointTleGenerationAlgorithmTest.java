@@ -223,7 +223,7 @@ public class FixedPointTleGenerationAlgorithmTest {
         // reach convergence issues when converting the spacecraft's state to TLE using default
         // parameters (i.e., epsilon = 1.0e-10, maxIterations = 100, and scale = 1.0).
         final FieldTLE<T> tle = new FieldTLE<>(field, "1 33153U 08034A   21327.46310733 -.00000207  00000+0  00000+0 0  9990",
-                                               "2 33153   0.0042  20.7353 0003042 213.9370 323.2156  1.00270917 48929");
+                                                      "2 33153   0.0042  20.7353 0003042 213.9370 323.2156  1.00270917 48929");
 
         // The purpose here is to verify that reducing the scale value (from 1.0 to 0.5) while keeping
         // 1.0e-10 for epsilon value  solve the issue. In other words, keeping epsilon value to its
@@ -289,7 +289,7 @@ public class FixedPointTleGenerationAlgorithmTest {
 
     private <T extends CalculusFieldElement<T>> void doTestConversionLeoField(final Field<T> field) {
         final FieldTLE<T> leoTLE = new FieldTLE<>(field, "1 31135U 07013A   11003.00000000  .00000816  00000+0  47577-4 0    11",
-                                                  "2 31135   2.4656 183.9084 0021119 236.4164  60.4567 15.10546832    15");
+                                                         "2 31135   2.4656 183.9084 0021119 236.4164  60.4567 15.10546832    15");
         checkConversion(leoTLE, field, 5.2e-9);
     }
 
@@ -336,7 +336,7 @@ public class FixedPointTleGenerationAlgorithmTest {
         
         // Initial TLE
         final TLE initialTle = new TLE("1 31135U 07013A   11003.00000000  .00000816  00000-0  47577-4 0    12",
-                         "2 31135   2.4656 183.9084 0021119 236.4164  60.4567 15.10546832    15");
+                                       "2 31135   2.4656 183.9084 0021119 236.4164  60.4567 15.10546832    15");
         final SpacecraftState expectedState = TLEPropagator.selectExtrapolator(initialTle).getInitialState();
         final TimeStampedPVCoordinates expectedPV = expectedState.getPVCoordinates();
 

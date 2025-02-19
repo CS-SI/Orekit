@@ -17,6 +17,7 @@
 package org.orekit.propagation.conversion.osc2mean;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
@@ -51,10 +52,10 @@ import org.orekit.utils.Constants;
 public class DSSTTheory implements MeanTheory {
 
     /** Theory used for converting from osculating to mean orbit. */
-    private static final String THEORY = "DSST";
+    public static final String THEORY = "DSST";
 
     /** Force models used to compute short periodic terms. */
-    private final List<DSSTForceModel> forceModels;
+    private final Collection<DSSTForceModel> forceModels;
 
     /** Spacecraft mass (kg). */
     private final double mass;
@@ -66,7 +67,7 @@ public class DSSTTheory implements MeanTheory {
      * Constructor with default values.
      * @param forceModels the force models
      */
-    public DSSTTheory(final List<DSSTForceModel> forceModels) {
+    public DSSTTheory(final Collection<DSSTForceModel> forceModels) {
         this(forceModels, null, Propagator.DEFAULT_MASS);
     }
 
@@ -76,7 +77,7 @@ public class DSSTTheory implements MeanTheory {
      * @param attitudeProvider the attitude law
      * @param mass the mass (kg)
      */
-    public DSSTTheory(final List<DSSTForceModel> forceModels,
+    public DSSTTheory(final Collection<DSSTForceModel> forceModels,
                       final AttitudeProvider attitudeProvider,
                       final double mass) {
         this.forceModels = forceModels;

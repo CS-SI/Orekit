@@ -17,14 +17,15 @@
 package org.orekit.propagation.conversion.osc2mean;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
+import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
-import org.orekit.time.FieldAbsoluteDate;
 
 /**
  * Eckstein-Hechler theory for osculating to mean orbit conversion.
@@ -35,10 +36,10 @@ import org.orekit.time.FieldAbsoluteDate;
 public class EcksteinHechlerTheory implements MeanTheory {
 
     /** Theory used for converting from osculating to mean orbit. */
-    private static final String THEORY = "Eckstein-Hechler";
+    public static final String THEORY = "Eckstein-Hechler";
 
     /** Unnormalized spherical harmonics provider. */
-    private UnnormalizedSphericalHarmonicsProvider provider;
+    private final UnnormalizedSphericalHarmonicsProvider provider;
 
     /**
      * Constructor.
@@ -46,6 +47,29 @@ public class EcksteinHechlerTheory implements MeanTheory {
      */
     public EcksteinHechlerTheory(final UnnormalizedSphericalHarmonicsProvider provider) {
         this.provider = provider;
+    }
+
+    /**
+     * Constructor.
+     * @param referenceRadius reference radius of the Earth for the potential model (m)
+     * @param mu central attraction coefficient (m³/s²)
+     * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
+     * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
+     * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
+     * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
+     * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
+     */
+    public EcksteinHechlerTheory(final double referenceRadius,
+                                 final double mu,
+                                 final double c20,
+                                 final double c30,
+                                 final double c40,
+                                 final double c50,
+                                 final double c60) {
+        this(GravityFieldFactory.getUnnormalizedProvider(referenceRadius, mu,
+                                                         TideSystem.UNKNOWN,
+                                                         new double[][] { { 0 }, { 0 }, { c20 }, { c30 }, { c40 }, { c50 }, { c60 } },
+                                                         new double[][] { { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 } }));
     }
 
     /** {@inheritDoc} */
@@ -65,18 +89,38 @@ public class EcksteinHechlerTheory implements MeanTheory {
     public Orbit meanToOsculating(final Orbit mean) {
         final EcksteinHechlerPropagator propagator =
                         new EcksteinHechlerPropagator(mean, provider, PropagationType.MEAN);
-        return propagator.propagateOrbit(mean.getDate());
+        return propagator.getOsculatingCircularOrbit(mean.getDate());
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldOrbit<T> meanToOsculating(final FieldOrbit<T> mean) {
-
-        final FieldAbsoluteDate<T> date = mean.getDate();
-        final Field<T> field = date.getField();
-
         final FieldEcksteinHechlerPropagator<T> propagator =
                         new FieldEcksteinHechlerPropagator<>(mean, provider, PropagationType.MEAN);
-        return propagator.propagateOrbit(date, propagator.getParameters(field, date));
+        return propagator.getOsculatingCircularOrbit(mean.getDate());
+    }
+
+    /** Post-treatment of the converted mean orbit.
+     * <p>The mean orbit returned is circular.</p>
+     * @param osculating the osculating orbit to be converted
+     * @param mean the converted mean orbit
+     * @return postprocessed mean orbit
+     */
+    @Override
+    public Orbit postprocessing(final Orbit osculating, final Orbit mean) {
+        return OrbitType.CIRCULAR.convertType(mean);
+    }
+
+    /** Post-treatment of the converted mean orbit.
+     * <p>The mean orbit returned is circular.</p>
+     * @param <T> type of the field elements
+     * @param osculating the osculating orbit to be converted
+     * @param mean the converted mean orbit
+     * @return postprocessed mean orbit
+     */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldOrbit<T> postprocessing(final FieldOrbit<T> osculating,
+                                                                            final FieldOrbit<T> mean) {
+        return OrbitType.CIRCULAR.convertType(mean);
     }
 }

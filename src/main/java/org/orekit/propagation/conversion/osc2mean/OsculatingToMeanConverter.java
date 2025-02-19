@@ -24,14 +24,20 @@ import org.orekit.orbits.Orbit;
  * Interface for osculating to mean orbit converters.
  * <p>An osculating-to-mean converter consists of:
  * <ul>
- * <li>an algorithm performing the conversion,</li>
- * <li>a theory giving the meaning of the mean orbit.</li>
+ * <li>an algorithm performing the conversion, provided by an implementation of this interface,</li>
+ * <li>a theory giving the meaning of the mean orbit, to be set as the {@link MeanTheory mean theory}.</li>
  * </ul>
  *
  * @author Pascal Parraud
  * @since 13.0
  */
 public interface OsculatingToMeanConverter {
+
+    /**
+     * Sets the theory defining the mean orbit.
+     * @param theory the mean theory
+     */
+    void setMeanTheory(MeanTheory theory);
 
     /**
      * Gets the theory defining the mean orbit.

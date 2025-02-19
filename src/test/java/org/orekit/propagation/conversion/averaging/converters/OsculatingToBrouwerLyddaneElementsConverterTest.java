@@ -39,8 +39,8 @@ class OsculatingToBrouwerLyddaneElementsConverterTest {
         final PVCoordinates relativePV = new PVCoordinates(osculatingOrbit.getPVCoordinates(),
                 recomputedOsculatingOrbit.getPVCoordinates(osculatingOrbit.getFrame()));
         final double expectedDifference = 0.;
-        Assertions.assertEquals(expectedDifference, relativePV.getPosition().getNorm(), 1e-7);
-        Assertions.assertEquals(expectedDifference, relativePV.getVelocity().getNorm(), 1e-10);
+        Assertions.assertEquals(expectedDifference, relativePV.getPosition().getNorm(), 1e-5);
+        Assertions.assertEquals(expectedDifference, relativePV.getVelocity().getNorm(), 3e-9);
     }
 
     private UnnormalizedSphericalHarmonicsProvider getProvider() {

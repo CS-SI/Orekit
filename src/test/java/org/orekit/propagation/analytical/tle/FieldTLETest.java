@@ -39,8 +39,8 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
-import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
+import org.orekit.propagation.conversion.osc2mean.FixedPointConverter;
+import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
@@ -556,7 +556,6 @@ public class FieldTLETest {
                             Assertions.assertEquals(0, normDifPos, 2e-3);
                             Assertions.assertEquals(0, normDifVel, 7e-4);
 
-
                         }
                     }
                 }
@@ -674,11 +673,11 @@ public class FieldTLETest {
         // State at TLE epoch
         final FieldSpacecraftState<T> state = propagator.propagate(tleISS.getDate());
 
-        // TLE generation algorithm
-        final TleGenerationAlgorithm algorithm = new FixedPointTleGenerationAlgorithm();
+        // Osculating to mean orbit converter
+        final OsculatingToMeanConverter converter = new FixedPointConverter();
 
         // Convert to TLE
-        final FieldTLE<T> rebuilt = FieldTLE.stateToTLE(state, tleISS, algorithm);
+        final FieldTLE<T> rebuilt = FieldTLE.stateToTLE(state, tleISS, converter);
 
         // Verify
         final double eps = 1.0e-7;

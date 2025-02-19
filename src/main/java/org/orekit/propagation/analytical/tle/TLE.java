@@ -31,8 +31,13 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
+import org.orekit.propagation.analytical.tle.generation.TleGenerationUtil;
+import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
+import org.orekit.propagation.conversion.osc2mean.TLETheory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
@@ -721,10 +726,67 @@ public class TLE implements TimeStamped, ParameterDriversProvider {
      * @param generationAlgorithm TLE generation algorithm
      * @return a generated TLE
      * @since 12.0
+     * @deprecated As of release 13.0, use {@link #stateToTLE(SpacecraftState, TLE, OsculatingToMeanConverter)} instead.
      */
+    @Deprecated
     public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE,
                                  final TleGenerationAlgorithm generationAlgorithm) {
         return generationAlgorithm.generate(state, templateTLE);
+    }
+
+    /**
+     * Convert Spacecraft State into TLE.
+     * <p>
+     * Uses the {@link DataContext#getDefault() default data context}.
+     * </p>
+     * <p>
+     * The B* is not calculated. Its value is simply copied from the model to the generated TLE.
+     * </p>
+     * @param state       Spacecraft State to convert into TLE
+     * @param templateTLE only used to get identifiers like satellite number, launch year, etc.
+     *                    In other words, the keplerian elements contained in the generated TLE
+     *                    are based on the provided state and not the template TLE.
+     * @param converter   osculating to mean orbit converter
+     * @return a generated TLE
+     * @since 13.0
+     */
+    @DefaultDataContext
+    public static TLE stateToTLE(final SpacecraftState state,
+                                 final TLE templateTLE,
+                                 final OsculatingToMeanConverter converter) {
+        return stateToTLE(state, templateTLE, converter, DataContext.getDefault());
+    }
+
+    /**
+     * Convert Spacecraft State into TLE.
+     * <p>
+     * The B* is not calculated. Its value is simply copied from the model to the generated TLE.
+     * </p>
+     * @param state       Spacecraft State to convert into TLE
+     * @param templateTLE only used to get identifiers like satellite number, launch year, etc.
+     *                    In other words, the keplerian elements contained in the generated TLE
+     *                    are based on the provided state and not the template TLE.
+     * @param converter   osculating to mean orbit converter
+     * @param dataContext data context
+     * @return a generated TLE
+     * @since 13.0
+     */
+    public static TLE stateToTLE(final SpacecraftState state,
+                                 final TLE templateTLE,
+                                 final OsculatingToMeanConverter converter,
+                                 final DataContext dataContext) {
+        converter.setMeanTheory(new TLETheory(templateTLE, dataContext));
+        final KeplerianOrbit mean = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
+        final TLE tle = TleGenerationUtil.newTLE(mean, templateTLE, templateTLE.getBStar(mean.getDate()),
+                                                 dataContext.getTimeScales().getUTC());
+        // reset estimated parameters from template to generated tle
+        for (final ParameterDriver templateDrivers : templateTLE.getParametersDrivers()) {
+            if (templateDrivers.isSelected()) {
+                // set to selected for the new TLE
+                tle.getParameterDriver(templateDrivers.getName()).setSelected(true);
+            }
+        }
+        return tle;
     }
 
     /** Check the lines format validity.

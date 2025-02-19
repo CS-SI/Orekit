@@ -105,10 +105,10 @@ public class FixedPointConverter implements OsculatingToMeanConverter {
                                final double threshold,
                                final int maxIterations,
                                final double damping) {
-        this.theory        = theory;
-        this.threshold     = threshold;
-        this.maxIterations = maxIterations;
-        this.damping       = damping;
+        setMeanTheory(theory);
+        setThreshold(threshold);
+        setMaxIterations(maxIterations);
+        setDamping(damping);
     }
 
     /** {@inheritDoc} */
@@ -117,9 +117,8 @@ public class FixedPointConverter implements OsculatingToMeanConverter {
         return theory;
     }
 
-    /** Sets the theory used to calculate the mean orbit.
-     * @param meanTheory theory to calculate mean orbit
-     */
+    /** {@inheritDoc} */
+    @Override
     public void setMeanTheory(final MeanTheory meanTheory) {
         this.theory = meanTheory;
     }

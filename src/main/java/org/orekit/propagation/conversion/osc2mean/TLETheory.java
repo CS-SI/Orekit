@@ -43,13 +43,13 @@ import org.orekit.time.TimeScale;
  */
 public class TLETheory implements MeanTheory {
 
-    /** Theory used for converting from osculating to mean orbit. */
-    private static final String THEORY = "TLE";
-
     /** First line of arbitrary TLE. Should not impact conversion. */
-    private static final String TMP_L1 = "1 00000U 00000A   00001.00000000  .00000000  00000+0  00000+0 0    02";
+    public static final String TMP_L1 = "1 00000U 00000A   00001.00000000  .00000000  00000+0  00000+0 0    02";
     /** Second line of arbitrary TLE. Should not impact conversion. */
-    private static final String TMP_L2 = "2 00000   0.0000   0.0000 0000000   0.0000   0.0000  0.00000000    02";
+    public static final String TMP_L2 = "2 00000   0.0000   0.0000 0000000   0.0000   0.0000  0.00000000    02";
+
+    /** Theory used for converting from osculating to mean orbit. */
+    public static final String THEORY = "TLE";
 
     /** Template TLE. */
     private final TLE tmpTle;
@@ -78,11 +78,30 @@ public class TLETheory implements MeanTheory {
     }
 
     /**
+     * Constructor with default data context.
+     * @param <T> type of the elements
+     * @param template template TLE
+     */
+    @DefaultDataContext
+    public <T extends CalculusFieldElement<T>> TLETheory(final FieldTLE<T> template) {
+        this(template, DataContext.getDefault());
+    }
+
+    /**
      * Constructor with default TLE template.
      * @param dataContext data context
      */
     public TLETheory(final DataContext dataContext) {
-        this(new TLE(TMP_L1, TMP_L2, dataContext.getTimeScales().getUTC()), dataContext);
+        this(dataContext.getTimeScales().getUTC(), dataContext.getFrames().getTEME());
+    }
+
+    /**
+     * Constructor.
+     * @param utc      UTC scale
+     * @param teme     TEME frame scale
+     */
+    public TLETheory(final TimeScale utc, final Frame teme) {
+        this(new TLE(TMP_L1, TMP_L2, utc), utc, teme);
     }
 
     /**
@@ -91,9 +110,42 @@ public class TLETheory implements MeanTheory {
      * @param dataContext data context
      */
     public TLETheory(final TLE template, final DataContext dataContext) {
+        this(template, dataContext.getTimeScales().getUTC(), dataContext.getFrames().getTEME());
+    }
+
+    /**
+     * Constructor.
+     * @param template template TLE
+     * @param utc      UTC scale
+     * @param teme     TEME frame scale
+     */
+    public TLETheory(final TLE template, final TimeScale utc, final Frame teme) {
         this.tmpTle = template;
-        this.utc    = dataContext.getTimeScales().getUTC();
-        this.teme   = dataContext.getFrames().getTEME();
+        this.utc    = utc;
+        this.teme   = teme;
+    }
+
+    /**
+     * Constructor.
+     * @param <T> type of the elements
+     * @param template template TLE
+     * @param dataContext data context
+     */
+    public <T extends CalculusFieldElement<T>> TLETheory(final FieldTLE<T> template, final DataContext dataContext) {
+        this(template.toTLE(), dataContext.getTimeScales().getUTC(), dataContext.getFrames().getTEME());
+    }
+
+    /**
+     * Constructor.
+     * @param <T> type of the elements
+     * @param template template TLE
+     * @param utc      UTC scale
+     * @param teme     TEME frame scale
+     */
+    public <T extends CalculusFieldElement<T>> TLETheory(final FieldTLE<T> template, final TimeScale utc, final Frame teme) {
+        this.tmpTle = template.toTLE();
+        this.utc    = utc;
+        this.teme   = teme;
     }
 
     /** {@inheritDoc} */

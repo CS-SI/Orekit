@@ -32,7 +32,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
-import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianAnomalyUtility;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
@@ -41,6 +40,10 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.analytical.tle.FieldTLE;
+import org.orekit.propagation.conversion.osc2mean.BrouwerLyddaneTheory;
+import org.orekit.propagation.conversion.osc2mean.FixedPointConverter;
+import org.orekit.propagation.conversion.osc2mean.MeanTheory;
+import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTimeSpanMap;
@@ -131,16 +134,16 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      *
      * @param initialOrbit initial orbit
      * @param provider for un-normalized zonal coefficients
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see #FieldBrouwerLyddanePropagator(FieldOrbit, UnnormalizedSphericalHarmonicsProvider, PropagationType, double)
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
                                          final UnnormalizedSphericalHarmonicsProvider provider,
-                                         final double M2) {
+                                         final double m2Value) {
         this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              initialOrbit.getMu().newInstance(DEFAULT_MASS), provider,
-             provider.onDate(initialOrbit.getDate().toAbsoluteDate()), M2);
+             provider.onDate(initialOrbit.getDate().toAbsoluteDate()), m2Value);
     }
 
     /**
@@ -151,7 +154,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
      * @param harmonics {@code provider.onDate(initialOrbit.getDate())}
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement,
      * UnnormalizedSphericalHarmonicsProvider, UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics, PropagationType, double)
@@ -161,13 +164,13 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                          final T mass,
                                          final UnnormalizedSphericalHarmonicsProvider provider,
                                          final UnnormalizedSphericalHarmonics harmonics,
-                                         final double M2) {
+                                         final double m2Value) {
         this(initialOrbit, attitude,  mass, provider.getAe(), initialOrbit.getMu().newInstance(provider.getMu()),
              harmonics.getUnnormalizedCnm(2, 0),
              harmonics.getUnnormalizedCnm(3, 0),
              harmonics.getUnnormalizedCnm(4, 0),
              harmonics.getUnnormalizedCnm(5, 0),
-             M2);
+             m2Value);
     }
 
     /** Build a propagator from orbit and potential.
@@ -191,18 +194,22 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see org.orekit.utils.Constants
      * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, double, CalculusFieldElement, double, double, double, double, double)
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
-                                         final double referenceRadius, final T mu,
-                                         final double c20, final double c30, final double c40,
-                                         final double c50, final double M2) {
+                                         final double referenceRadius,
+                                         final T mu,
+                                         final double c20,
+                                         final double c30,
+                                         final double c40,
+                                         final double c50,
+                                         final double m2Value) {
         this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              initialOrbit.getMu().newInstance(DEFAULT_MASS),
-             referenceRadius, mu, c20, c30, c40, c50, M2);
+             referenceRadius, mu, c20, c30, c40, c50, m2Value);
     }
 
     /** Build a propagator from orbit, mass and potential provider.
@@ -213,15 +220,16 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param initialOrbit initial orbit
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement, UnnormalizedSphericalHarmonicsProvider, double)
      */
-    public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit, final T mass,
+    public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
+                                         final T mass,
                                          final UnnormalizedSphericalHarmonicsProvider provider,
-                                         final double M2) {
+                                         final double m2Value) {
         this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
-             mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()), M2);
+             mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()), m2Value);
     }
 
     /** Build a propagator from orbit, mass and potential.
@@ -246,16 +254,16 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement, double, CalculusFieldElement, double, double, double, double, double)
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit, final T mass,
                                          final double referenceRadius, final T mu,
                                          final double c20, final double c30, final double c40,
-                                         final double c50, final double M2) {
+                                         final double c50, final double m2Value) {
         this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
-             mass, referenceRadius, mu, c20, c30, c40, c50, M2);
+             mass, referenceRadius, mu, c20, c30, c40, c50, m2Value);
     }
 
     /** Build a propagator from orbit, attitude provider and potential provider.
@@ -264,15 +272,15 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param initialOrbit initial orbit
      * @param attitudeProv attitude provider
      * @param provider for un-normalized zonal coefficients
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
                                          final AttitudeProvider attitudeProv,
                                          final UnnormalizedSphericalHarmonicsProvider provider,
-                                         final double M2) {
+                                         final double m2Value) {
         this(initialOrbit, attitudeProv, initialOrbit.getMu().newInstance(DEFAULT_MASS), provider,
-             provider.onDate(initialOrbit.getDate().toAbsoluteDate()), M2);
+             provider.onDate(initialOrbit.getDate().toAbsoluteDate()), m2Value);
     }
 
     /** Build a propagator from orbit, attitude provider and potential.
@@ -297,16 +305,16 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
                                          final AttitudeProvider attitudeProv,
                                          final double referenceRadius, final T mu,
                                          final double c20, final double c30, final double c40,
-                                         final double c50, final double M2) {
+                                         final double c50, final double m2Value) {
         this(initialOrbit, attitudeProv, initialOrbit.getMu().newInstance(DEFAULT_MASS),
-             referenceRadius, mu, c20, c30, c40, c50, M2);
+             referenceRadius, mu, c20, c30, c40, c50, m2Value);
     }
 
     /** Build a propagator from orbit, attitude provider, mass and potential provider.
@@ -315,7 +323,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param attitudeProv attitude provider
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement, UnnormalizedSphericalHarmonicsProvider, PropagationType, double)
      */
@@ -323,8 +331,8 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                          final AttitudeProvider attitudeProv,
                                          final T mass,
                                          final UnnormalizedSphericalHarmonicsProvider provider,
-                                         final double M2) {
-        this(initialOrbit, attitudeProv, mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()), M2);
+                                         final double m2Value) {
+        this(initialOrbit, attitudeProv, mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()), m2Value);
     }
 
     /** Build a propagator from orbit, attitude provider, mass and potential.
@@ -349,7 +357,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement, double, CalculusFieldElement, double, double, double, double, PropagationType, double)
      */
@@ -358,8 +366,8 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                          final T mass,
                                          final double referenceRadius, final T mu,
                                          final double c20, final double c30, final double c40,
-                                         final double c50, final double M2) {
-        this(initialOrbit, attitudeProv, mass, referenceRadius, mu, c20, c30, c40, c50, PropagationType.OSCULATING, M2);
+                                         final double c50, final double m2Value) {
+        this(initialOrbit, attitudeProv, mass, referenceRadius, mu, c20, c30, c40, c50, PropagationType.OSCULATING, m2Value);
     }
 
 
@@ -372,16 +380,16 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param initialOrbit initial orbit
      * @param provider for un-normalized zonal coefficients
      * @param initialType initial orbit type (mean Brouwer-Lyddane orbit or osculating orbit)
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
                                          final UnnormalizedSphericalHarmonicsProvider provider,
                                          final PropagationType initialType,
-                                         final double M2) {
+                                         final double m2Value) {
         this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              initialOrbit.getMu().newInstance(DEFAULT_MASS), provider,
-             provider.onDate(initialOrbit.getDate().toAbsoluteDate()), initialType, M2);
+             provider.onDate(initialOrbit.getDate().toAbsoluteDate()), initialType, m2Value);
     }
 
     /** Build a propagator from orbit, attitude provider, mass and potential provider.
@@ -392,7 +400,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
      * @param initialType initial orbit type (mean Brouwer-Lyddane orbit or osculating orbit)
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
@@ -400,9 +408,9 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                          final T mass,
                                          final UnnormalizedSphericalHarmonicsProvider provider,
                                          final PropagationType initialType,
-                                         final double M2) {
+                                         final double m2Value) {
         this(initialOrbit, attitudeProv, mass, provider,
-             provider.onDate(initialOrbit.getDate().toAbsoluteDate()), initialType, M2);
+             provider.onDate(initialOrbit.getDate().toAbsoluteDate()), initialType, m2Value);
     }
 
     /**
@@ -415,7 +423,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param provider for un-normalized zonal coefficients
      * @param harmonics {@code provider.onDate(initialOrbit.getDate())}
      * @param initialType initial orbit type (mean Brouwer-Lyddane orbit or osculating orbit)
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
@@ -424,13 +432,13 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                          final UnnormalizedSphericalHarmonicsProvider provider,
                                          final UnnormalizedSphericalHarmonics harmonics,
                                          final PropagationType initialType,
-                                         final double M2) {
+                                         final double m2Value) {
         this(initialOrbit, attitude, mass, provider.getAe(), initialOrbit.getMu().newInstance(provider.getMu()),
              harmonics.getUnnormalizedCnm(2, 0),
              harmonics.getUnnormalizedCnm(3, 0),
              harmonics.getUnnormalizedCnm(4, 0),
              harmonics.getUnnormalizedCnm(5, 0),
-             initialType, M2);
+             initialType, m2Value);
     }
 
     /** Build a propagator from orbit, attitude provider, mass and potential.
@@ -457,7 +465,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param initialType initial orbit type (mean Brouwer-Lyddane orbit or osculating orbit)
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
@@ -467,11 +475,12 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                          final double c20, final double c30, final double c40,
                                          final double c50,
                                          final PropagationType initialType,
-                                         final double M2) {
+                                         final double m2Value) {
         this(initialOrbit, attitudeProv, mass, referenceRadius, mu,
-             c20, c30, c40, c50, initialType, M2,
-             BrouwerLyddanePropagator.EPSILON_DEFAULT,
-             BrouwerLyddanePropagator.MAX_ITERATIONS_DEFAULT);
+             c20, c30, c40, c50, initialType, m2Value,
+             new FixedPointConverter(BrouwerLyddanePropagator.EPSILON_DEFAULT,
+                                     BrouwerLyddanePropagator.MAX_ITERATIONS_DEFAULT,
+                                     FixedPointConverter.DEFAULT_DAMPING));
     }
 
     /** Build a propagator from orbit, attitude provider, mass and potential.
@@ -498,7 +507,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param initialType initial orbit type (mean Brouwer-Lyddane orbit or osculating orbit)
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @param epsilon convergence threshold for mean parameters conversion
      * @param maxIterations maximum iterations for mean parameters conversion
@@ -507,11 +516,62 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
                                          final AttitudeProvider attitudeProv,
                                          final T mass,
-                                         final double referenceRadius, final T mu,
-                                         final double c20, final double c30, final double c40,
+                                         final double referenceRadius,
+                                         final T mu,
+                                         final double c20,
+                                         final double c30,
+                                         final double c40,
                                          final double c50,
                                          final PropagationType initialType,
-                                         final double M2, final double epsilon, final int maxIterations) {
+                                         final double m2Value,
+                                         final double epsilon,
+                                         final int maxIterations) {
+        this(initialOrbit, attitudeProv, mass, referenceRadius, mu, c20, c30, c40, c50,
+             initialType, m2Value, new FixedPointConverter(epsilon, maxIterations,
+                                                           FixedPointConverter.DEFAULT_DAMPING));
+    }
+
+    /** Build a propagator from orbit, attitude provider, mass and potential.
+     * <p>The C<sub>n,0</sub> coefficients are the denormalized zonal coefficients, they
+     * are related to both the normalized coefficients
+     * <span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *  and the J<sub>n</sub> one as follows:</p>
+     *
+     * <p> C<sub>n,0</sub> = [(2-δ<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>½</sup>
+     * <span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *
+     * <p> C<sub>n,0</sub> = -J<sub>n</sub>
+     *
+     * <p>Using this constructor, it is possible to define the initial orbit as
+     * a mean Brouwer-Lyddane orbit or an osculating one.</p>
+     *
+     * @param initialOrbit initial orbit
+     * @param attitudeProv attitude provider
+     * @param mass spacecraft mass
+     * @param referenceRadius reference radius of the Earth for the potential model (m)
+     * @param mu central attraction coefficient (m³/s²)
+     * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
+     * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
+     * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
+     * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
+     * @param initialType initial orbit type (mean Brouwer-Lyddane orbit or osculating orbit)
+     * @param m2Value value of empirical drag coefficient in rad/s².
+     *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
+     * @param converter osculating to mean orbit converter
+     * @since 13.0
+     */
+    public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
+                                         final AttitudeProvider attitudeProv,
+                                         final T mass,
+                                         final double referenceRadius,
+                                         final T mu,
+                                         final double c20,
+                                         final double c30,
+                                         final double c40,
+                                         final double c50,
+                                         final PropagationType initialType,
+                                         final double m2Value,
+                                         final OsculatingToMeanConverter converter) {
 
         super(mass.getField(), attitudeProv);
 
@@ -521,7 +581,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
         this.ck0 = new double[] {0.0, 0.0, c20, c30, c40, c50};
 
         // initialize M2 driver
-        this.M2Driver = new ParameterDriver(BrouwerLyddanePropagator.M2_NAME, M2, SCALE,
+        this.M2Driver = new ParameterDriver(BrouwerLyddanePropagator.M2_NAME, m2Value, SCALE,
                                             Double.NEGATIVE_INFINITY,
                                             Double.POSITIVE_INFINITY);
 
@@ -531,7 +591,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                                                               initialOrbit.getDate(),
                                                                               initialOrbit.getFrame()),
                                                      mass),
-                                                     initialType, epsilon, maxIterations);
+                          initialType, converter);
 
     }
 
@@ -553,7 +613,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param osculating osculating orbit to convert
      * @param provider for un-normalized zonal coefficients
      * @param harmonics {@code provider.onDate(osculating.getDate())}
-     * @param M2Value value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@code BrouwerLyddanePropagator.M2} drag is not considered
      * @return mean orbit in a Brouwer-Lyddane sense
      * @since 11.2
@@ -561,8 +621,8 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
     public static <T extends CalculusFieldElement<T>> FieldKeplerianOrbit<T> computeMeanOrbit(final FieldOrbit<T> osculating,
                                                                                               final UnnormalizedSphericalHarmonicsProvider provider,
                                                                                               final UnnormalizedSphericalHarmonics harmonics,
-                                                                                              final double M2Value) {
-        return computeMeanOrbit(osculating, provider, harmonics, M2Value,
+                                                                                              final double m2Value) {
+        return computeMeanOrbit(osculating, provider, harmonics, m2Value,
                                 BrouwerLyddanePropagator.EPSILON_DEFAULT,
                                 BrouwerLyddanePropagator.MAX_ITERATIONS_DEFAULT);
     }
@@ -585,7 +645,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param osculating osculating orbit to convert
      * @param provider for un-normalized zonal coefficients
      * @param harmonics {@code provider.onDate(osculating.getDate())}
-     * @param M2Value value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@code BrouwerLyddanePropagator.M2} drag is not considered
      * @param epsilon convergence threshold for mean parameters conversion
      * @param maxIterations maximum iterations for mean parameters conversion
@@ -595,15 +655,16 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
     public static <T extends CalculusFieldElement<T>> FieldKeplerianOrbit<T> computeMeanOrbit(final FieldOrbit<T> osculating,
                                                                                               final UnnormalizedSphericalHarmonicsProvider provider,
                                                                                               final UnnormalizedSphericalHarmonics harmonics,
-                                                                                              final double M2Value,
-                                                                                              final double epsilon, final int maxIterations) {
+                                                                                              final double m2Value,
+                                                                                              final double epsilon,
+                                                                                              final int maxIterations) {
         return computeMeanOrbit(osculating,
                                 provider.getAe(), provider.getMu(),
                                 harmonics.getUnnormalizedCnm(2, 0),
                                 harmonics.getUnnormalizedCnm(3, 0),
                                 harmonics.getUnnormalizedCnm(4, 0),
                                 harmonics.getUnnormalizedCnm(5, 0),
-                                M2Value, epsilon, maxIterations);
+                                m2Value, epsilon, maxIterations);
     }
 
     /** Conversion from osculating to mean orbit.
@@ -628,7 +689,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
-     * @param M2Value value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@code BrouwerLyddanePropagator.M2} drag is not considered
      * @param epsilon convergence threshold for mean parameters conversion
      * @param maxIterations maximum iterations for mean parameters conversion
@@ -642,18 +703,56 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                                                                               final double c30,
                                                                                               final double c40,
                                                                                               final double c50,
-                                                                                              final double M2Value,
+                                                                                              final double m2Value,
                                                                                               final double epsilon,
                                                                                               final int maxIterations) {
-        final FieldBrouwerLyddanePropagator<T> propagator =
-                        new FieldBrouwerLyddanePropagator<>(osculating,
-                                                            FrameAlignedProvider.of(osculating.getFrame()),
-                                                            osculating.getMu().newInstance(DEFAULT_MASS),
-                                                            referenceRadius, osculating.getMu().newInstance(mu),
-                                                            c20, c30, c40, c50,
-                                                            PropagationType.OSCULATING, M2Value,
-                                                            epsilon, maxIterations);
-        return propagator.initialModel.mean;
+        // Build a fixed-point converter
+        final OsculatingToMeanConverter converter = new FixedPointConverter(epsilon, maxIterations,
+                                                                            FixedPointConverter.DEFAULT_DAMPING);
+        return computeMeanOrbit(osculating, referenceRadius, mu, c20, c30, c40, c50, m2Value, converter);
+    }
+
+    /** Conversion from osculating to mean orbit.
+     * <p>
+     * Compute mean orbit <b>in a Brouwer-Lyddane sense</b>, corresponding to the
+     * osculating SpacecraftState in input.
+     * </p>
+     * <p>
+     * Since the osculating orbit is obtained with the computation of
+     * short-periodic variation, the resulting output will depend on
+     * both the gravity field parameterized in input and the
+     * atmospheric drag represented by the {@code m2} parameter.
+     * </p>
+     * <p>
+     * The computation is done through the given osculating to mean orbit converter.
+     * </p>
+     * @param <T> type of the filed elements
+     * @param osculating osculating orbit to convert
+     * @param referenceRadius reference radius of the Earth for the potential model (m)
+     * @param mu central attraction coefficient (m³/s²)
+     * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
+     * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
+     * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
+     * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
+     * @param m2Value value of empirical drag coefficient in rad/s².
+     *        If equal to {@code BrouwerLyddanePropagator.M2} drag is not considered
+     * @param converter osculating to mean orbit converter
+     * @return mean orbit in a Brouwer-Lyddane sense
+     * @since 13.0
+     */
+    public static <T extends CalculusFieldElement<T>> FieldKeplerianOrbit<T> computeMeanOrbit(final FieldOrbit<T> osculating,
+                                                                                              final double referenceRadius,
+                                                                                              final double mu,
+                                                                                              final double c20,
+                                                                                              final double c30,
+                                                                                              final double c40,
+                                                                                              final double c50,
+                                                                                              final double m2Value,
+                                                                                              final OsculatingToMeanConverter converter) {
+        // Set BL as the mean theory for converting
+        final MeanTheory theory = new BrouwerLyddaneTheory(referenceRadius, mu, c20, c30, c40, c50, m2Value);
+        converter.setMeanTheory(theory);
+        return (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(converter.convertToMean(osculating));
     }
 
     /** {@inheritDoc}
@@ -670,10 +769,12 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param state new initial state to consider
      * @param stateType mean Brouwer-Lyddane orbit or osculating orbit
      */
-    public void resetInitialState(final FieldSpacecraftState<T> state, final PropagationType stateType) {
-        resetInitialState(state, stateType,
-                          BrouwerLyddanePropagator.EPSILON_DEFAULT,
-                          BrouwerLyddanePropagator.MAX_ITERATIONS_DEFAULT);
+    public void resetInitialState(final FieldSpacecraftState<T> state,
+                                  final PropagationType stateType) {
+        final OsculatingToMeanConverter converter = new FixedPointConverter(BrouwerLyddanePropagator.EPSILON_DEFAULT,
+                                                                            BrouwerLyddanePropagator.MAX_ITERATIONS_DEFAULT,
+                                                                            FixedPointConverter.DEFAULT_DAMPING);
+        resetInitialState(state, stateType, converter);
     }
 
     /** Reset the propagator initial state.
@@ -683,36 +784,80 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param maxIterations maximum iterations for mean parameters conversion
      * @since 11.2
      */
-    public void resetInitialState(final FieldSpacecraftState<T> state, final PropagationType stateType,
-                                  final double epsilon, final int maxIterations) {
+    public void resetInitialState(final FieldSpacecraftState<T> state,
+                                  final PropagationType stateType,
+                                  final double epsilon,
+                                  final int maxIterations) {
+        final OsculatingToMeanConverter converter = new FixedPointConverter(epsilon, maxIterations,
+                                                                            FixedPointConverter.DEFAULT_DAMPING);
+        resetInitialState(state, stateType, converter);
+    }
+
+    /** Reset the propagator initial state.
+     * @param state     new initial state to consider
+     * @param stateType mean Brouwer-Lyddane orbit or osculating orbit
+     * @param converter osculating to mean orbit converter
+     * @since 13.0
+     */
+    public void resetInitialState(final FieldSpacecraftState<T> state,
+                                  final PropagationType stateType,
+                                  final OsculatingToMeanConverter converter) {
         super.resetInitialState(state);
-        final FieldKeplerianOrbit<T> keplerian = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(state.getOrbit());
-        this.initialModel = (stateType == PropagationType.MEAN) ?
-                             new FieldBLModel<>(keplerian, state.getMass(), referenceRadius, mu, ck0) :
-                             computeMeanParameters(keplerian, state.getMass(), epsilon, maxIterations);
+        FieldKeplerianOrbit<T> keplerian = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(state.getOrbit());
+        if (stateType == PropagationType.OSCULATING) {
+            final MeanTheory theory = new BrouwerLyddaneTheory(referenceRadius, mu.getReal(),
+                                                               ck0[2], ck0[3], ck0[4], ck0[5],
+                                                               getM2());
+            converter.setMeanTheory(theory);
+            keplerian = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(converter.convertToMean(keplerian));
+        }
+        this.initialModel = new FieldBLModel<>(keplerian, state.getMass(), referenceRadius, mu, ck0);
         this.models = new FieldTimeSpanMap<>(initialModel, state.getMass().getField());
     }
 
     /** {@inheritDoc} */
     @Override
-    protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward) {
-        resetIntermediateState(state, forward,
-                               BrouwerLyddanePropagator.EPSILON_DEFAULT,
-                               BrouwerLyddanePropagator.MAX_ITERATIONS_DEFAULT);
+    protected void resetIntermediateState(final FieldSpacecraftState<T> state,
+                                          final boolean forward) {
+        final OsculatingToMeanConverter converter = new FixedPointConverter(BrouwerLyddanePropagator.EPSILON_DEFAULT,
+                                                                            BrouwerLyddanePropagator.MAX_ITERATIONS_DEFAULT,
+                                                                            FixedPointConverter.DEFAULT_DAMPING);
+        resetIntermediateState(state, forward, converter);
     }
 
     /** Reset an intermediate state.
      * @param state new intermediate state to consider
      * @param forward if true, the intermediate state is valid for
-     * propagations after itself
+     *                propagations after itself
      * @param epsilon convergence threshold for mean parameters conversion
      * @param maxIterations maximum iterations for mean parameters conversion
      * @since 11.2
      */
-    protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward,
-                                          final double epsilon, final int maxIterations) {
-        final FieldBLModel<T> newModel = computeMeanParameters((FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(state.getOrbit()),
-                                                               state.getMass(), epsilon, maxIterations);
+    protected void resetIntermediateState(final FieldSpacecraftState<T> state,
+                                          final boolean forward,
+                                          final double epsilon,
+                                          final int maxIterations) {
+        final OsculatingToMeanConverter converter = new FixedPointConverter(epsilon, maxIterations,
+                                                                            FixedPointConverter.DEFAULT_DAMPING);
+        resetIntermediateState(state, forward, converter);
+    }
+
+    /** Reset an intermediate state.
+     * @param state     new intermediate state to consider
+     * @param forward   if true, the intermediate state is valid for
+     *                  propagations after itself
+     * @param converter osculating to mean orbit converter
+     * @since 13.0
+     */
+    protected void resetIntermediateState(final FieldSpacecraftState<T> state,
+                                          final boolean forward,
+                                          final OsculatingToMeanConverter converter) {
+        final MeanTheory theory = new BrouwerLyddaneTheory(referenceRadius, mu.getReal(),
+                                                           ck0[2], ck0[3], ck0[4], ck0[5],
+                                                           getM2());
+        converter.setMeanTheory(theory);
+        final FieldKeplerianOrbit<T> mean = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
+        final FieldBLModel<T> newModel = new FieldBLModel<>(mean, state.getMass(), referenceRadius, mu, ck0);
         if (forward) {
             models.addValidAfter(newModel, state.getDate());
         } else {
@@ -720,96 +865,6 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
         }
         stateChanged(state);
     }
-
-    /** Compute mean parameters according to the Brouwer-Lyddane analytical model computation
-     * in order to do the propagation.
-     * @param osculating osculating orbit
-     * @param mass constant mass
-     * @param epsilon convergence threshold for mean parameters conversion
-     * @param maxIterations maximum iterations for mean parameters conversion
-     * @return Brouwer-Lyddane mean model
-     */
-    private FieldBLModel<T> computeMeanParameters(final FieldKeplerianOrbit<T> osculating, final T mass,
-                                                  final double epsilon, final int maxIterations) {
-
-        // damping factor
-        final double damping = BrouwerLyddanePropagator.DAMPING_DEFAULT;
-
-        // sanity check
-        if (osculating.getA().getReal() < referenceRadius) {
-            throw new OrekitException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE,
-                                           osculating.getA());
-        }
-
-        final Field<T> field = osculating.getDate().getField();
-        final T zero = field.getZero();
-        final T pi   = zero.getPi();
-
-        // rough initialization of the mean parameters
-        FieldBLModel<T> current = new FieldBLModel<>(osculating, mass, referenceRadius, mu, ck0);
-
-        // Get equinoctial parameters
-        T sma = osculating.getA();
-        T ex  = osculating.getEquinoctialEx();
-        T ey  = osculating.getEquinoctialEy();
-        T hx  = osculating.getHx();
-        T hy  = osculating.getHy();
-        T lv  = osculating.getLv();
-
-        // threshold for each parameter
-        final T thresholdA  = osculating.getA().abs().add(1).multiply(epsilon);
-        final T thresholdE  = FastMath.hypot(ex, ey).add(1).multiply(epsilon);
-        final T thresholdH  = FastMath.hypot(hx, hy).add(1).multiply(epsilon);
-        final T thresholdLv = pi.multiply(epsilon);
-
-        int i = 0;
-        while (i++ < maxIterations) {
-
-            // recompute the osculating parameters from the current mean parameters
-            final FieldKeplerianOrbit<T> parameters = current.propagateParameters(current.mean.getDate(),
-                                                                                  getParameters(field,
-                                                                                                current.mean.getDate()));
-
-            // adapted parameters residuals
-            final T deltaA  = osculating.getA().subtract(parameters.getA());
-            final T deltaEx = osculating.getEquinoctialEx().subtract(parameters.getEquinoctialEx());
-            final T deltaEy = osculating.getEquinoctialEy().subtract(parameters.getEquinoctialEy());
-            final T deltaHx = osculating.getHx().subtract(parameters.getHx());
-            final T deltaHy = osculating.getHy().subtract(parameters.getHy());
-            final T deltaLv = MathUtils.normalizeAngle(osculating.getLv().subtract(parameters.getLv()), zero);
-
-            // update state
-            sma = sma.add(deltaA.multiply(damping));
-            ex  = ex.add(deltaEx.multiply(damping));
-            ey  = ey.add(deltaEy.multiply(damping));
-            hx  = hx.add(deltaHx.multiply(damping));
-            hy  = hy.add(deltaHy.multiply(damping));
-            lv  = lv.add(deltaLv.multiply(damping));
-
-            // Update mean orbit
-            final FieldEquinoctialOrbit<T> meanEquinoctial =
-                            new FieldEquinoctialOrbit<>(sma, ex, ey, hx, hy, lv, PositionAngleType.TRUE,
-                                                        osculating.getFrame(), osculating.getDate(),
-                                                        osculating.getMu());
-            final FieldKeplerianOrbit<T> meanKeplerian =
-                            (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(meanEquinoctial);
-
-            // update mean parameters
-            current = new FieldBLModel<>(meanKeplerian, mass, referenceRadius, mu, ck0);
-
-            // check convergence
-            if (FastMath.abs(deltaA.getReal())  < thresholdA.getReal() &&
-                FastMath.abs(deltaEx.getReal()) < thresholdE.getReal() &&
-                FastMath.abs(deltaEy.getReal()) < thresholdE.getReal() &&
-                FastMath.abs(deltaHx.getReal()) < thresholdH.getReal() &&
-                FastMath.abs(deltaHy.getReal()) < thresholdH.getReal() &&
-                FastMath.abs(deltaLv.getReal()) < thresholdLv.getReal()) {
-                return current;
-            }
-        }
-        throw new OrekitException(OrekitMessages.UNABLE_TO_COMPUTE_BROUWER_LYDDANE_MEAN_PARAMETERS, i);
-    }
-
 
     /** {@inheritDoc} */
     public FieldKeplerianOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {

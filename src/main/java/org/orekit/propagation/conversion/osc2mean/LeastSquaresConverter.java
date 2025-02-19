@@ -117,7 +117,7 @@ public class LeastSquaresConverter implements OsculatingToMeanConverter {
      * <p>
      * The mean theory and the optimizer must be set before converting.
      *
-     * @param threshold convergence threshold
+     * @param threshold     convergence threshold
      * @param maxIterations maximum number of iterations
      */
     public LeastSquaresConverter(final double threshold,
@@ -127,29 +127,19 @@ public class LeastSquaresConverter implements OsculatingToMeanConverter {
 
     /**
      * Constructor.
-     * @param theory mean theory to be used
-     * @param optimizer optimizer to be used
-     * @param threshold convergence threshold
+     * @param theory        mean theory to be used
+     * @param optimizer     optimizer to be used
+     * @param threshold     convergence threshold
      * @param maxIterations maximum number of iterations
      */
     public LeastSquaresConverter(final MeanTheory theory,
                                  final LeastSquaresOptimizer optimizer,
                                  final double threshold,
                                  final int maxIterations) {
-        this.optimizer     = optimizer;
-        this.theory        = theory;
-        this.maxIterations = maxIterations;
-        setChecker(threshold);
-    }
-
-    /**
-     * Sets the convergence checker from the given threshold.
-     * @param thr convergence threshold
-     */
-    private void setChecker(final double thr) {
-        this.threshold = thr;
-        final SimpleVectorValueChecker svvc = new SimpleVectorValueChecker(-1.0, threshold);
-        this.checker = LeastSquaresFactory.evaluationChecker(svvc);
+        setMeanTheory(theory);
+        setOptimizer(optimizer);
+        setThreshold(threshold);
+        setMaxIterations(maxIterations);
     }
 
     /** {@inheritDoc} */
@@ -158,9 +148,8 @@ public class LeastSquaresConverter implements OsculatingToMeanConverter {
         return theory;
     }
 
-    /** Sets the theory used to calculate the mean orbit.
-     * @param meanTheory theory to calculate mean orbit
-     */
+    /** {@inheritDoc} */
+    @Override
     public void setMeanTheory(final MeanTheory meanTheory) {
         this.theory = meanTheory;
     }
@@ -194,7 +183,9 @@ public class LeastSquaresConverter implements OsculatingToMeanConverter {
      * @param threshold convergence threshold
      */
     public void setThreshold(final double threshold) {
-        setChecker(threshold);
+        this.threshold = threshold;
+        final SimpleVectorValueChecker svvc = new SimpleVectorValueChecker(-1.0, threshold);
+        this.checker = LeastSquaresFactory.evaluationChecker(svvc);
     }
 
     /**

@@ -19,15 +19,6 @@ ALMOST_CRITICALLY_INCLINED_ORBIT = órbita case con inclinación critica (i = {0
 # unable to compute {0} mean parameters after {1} iterations
 UNABLE_TO_COMPUTE_MEAN_PARAMETERS = imposible de calcula-los parámetros medios de {0} despois de {1} iteracións
 
-# unable to compute Eckstein-Hechler mean parameters after {0} iterations
-UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = imposible de calcula-los parámetros medios de Eckstein-Hechler despois de {0} iteracións
-
-# unable to compute Brouwer-Lyddane mean parameters after {0} iterations
-UNABLE_TO_COMPUTE_BROUWER_LYDDANE_MEAN_PARAMETERS = imposible de calcula-los parámetros medios de Brouwer-Lyddane despois de {0} iteracións
-
-# unable to compute TLE after {0} iterations
-UNABLE_TO_COMPUTE_TLE = imposible de calcula-el TLE despois de {0} iteracións
-
 # null parent for frame {0}
 NULL_PARENT_FOR_FRAME = pai do sistema de referencia {0} nulo
 

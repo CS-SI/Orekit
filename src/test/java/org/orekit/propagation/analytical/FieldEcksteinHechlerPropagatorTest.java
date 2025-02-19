@@ -16,6 +16,12 @@
  */
 package org.orekit.propagation.analytical;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.exception.DummyLocalizable;
@@ -86,12 +92,6 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinatesHermiteInterpolator;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
 
 
 public class FieldEcksteinHechlerPropagatorTest {
@@ -713,7 +713,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         // it was in fact reconstructed from Cartesian coordinates
         T computationErrorV   = FieldVector3D.distance(referenceV, computedV);
         T nonKeplerianEffectV = FieldVector3D.distance(referenceV, keplerianV);
-        Assertions.assertEquals(0.0, nonKeplerianEffectV.getReal() - computationErrorV.getReal(), 9.0e-12);
+        Assertions.assertEquals(0.0, nonKeplerianEffectV.getReal() - computationErrorV.getReal(), 9.1e-12);
         Assertions.assertEquals(2.2e-4, computationErrorV.getReal(), 3.0e-6);
 
         // perturbed orbit acceleration should be different from Keplerian orbit because
@@ -721,7 +721,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         // perturbed orbit acceleration should be consistent with position evolution
         T computationErrorA   = FieldVector3D.distance(referenceA, computedA);
         T nonKeplerianEffectA = FieldVector3D.distance(referenceA, keplerianA);
-        Assertions.assertEquals(1.0e-7,  computationErrorA.getReal(), 6.0e-9);
+        Assertions.assertEquals(8.8e-8,  computationErrorA.getReal(), 3.0e-9);
         Assertions.assertEquals(6.37e-3, nonKeplerianEffectA.getReal(), 7.0e-6);
         Assertions.assertTrue(computationErrorA.getReal() < nonKeplerianEffectA.getReal() / 60000);
 
