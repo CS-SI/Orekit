@@ -16,6 +16,9 @@
  */
 package org.orekit.orbits;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.Binary64;
@@ -35,9 +38,6 @@ import org.orekit.time.FieldTimeInterpolator;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.FieldPVCoordinates;
 
-import java.util.ArrayList;
-import java.util.List;
-
 class FieldOrbitHermiteInterpolatorTest {
 
     private final Field<Binary64> field = Binary64Field.getInstance();
@@ -56,14 +56,14 @@ class FieldOrbitHermiteInterpolatorTest {
 
         // Non regression test
         doTestCartesianInterpolation(true, CartesianDerivativesFilter.USE_PV,
-                                     394, 9.1042E-9, 3.21, 2.2348E-10,
-                                     2474, 0.07998, 6.6, 0.001539);
+                                     394, 1.085E-8, 3.21, 2.41518E-10,
+                                     2474, 0.06249, 6.6, 0.001170);
 
         // Solution with PVA less precise than with PV only as the interpolating polynomial begins to oscillate heavily
         // outside the interpolating interval
         doTestCartesianInterpolation(true, CartesianDerivativesFilter.USE_PVA,
-                                     394, 2.28e-8, 3.21, 1.39e-9,
-                                     2474, 6826, 6.55, 186);
+                                     394, 1.92e-8, 3.21, 1.15e-9,
+                                     2474, 5227, 6.55, 142);
     }
 
     @Test
@@ -75,8 +75,8 @@ class FieldOrbitHermiteInterpolatorTest {
 
         // Non regression test
         doTestCartesianInterpolation(false, CartesianDerivativesFilter.USE_PV,
-                                     394, 9.1042E-9, 3.21, 2.2348E-10,
-                                     2474, 0.07998, 6.55, 0.001539);
+                                     394, 1.0857E-8, 3.21, 2.4151E-10,
+                                     2474, 0.06249, 6.55, 0.001170);
 
         // Interpolation without derivatives is very wrong in PVA as we force first and second derivatives to be 0 i.e. we
         // give false information to the interpolator
@@ -88,9 +88,9 @@ class FieldOrbitHermiteInterpolatorTest {
     @Test
     public void testCircularInterpolationWithDerivatives() {
         doTestCircularInterpolation(true,
-                                    397, 1.88e-8,
-                                    610, 3.52e-6,
-                                    4870, 115);
+                                    397, 2.53e-8,
+                                    610, 4.72e-6,
+                                    4870, 110);
     }
 
     @Test
@@ -104,9 +104,9 @@ class FieldOrbitHermiteInterpolatorTest {
     @Test
     public void testEquinoctialInterpolationWithDerivatives() {
         doTestEquinoctialInterpolation(true,
-                                       397, 1.17e-8,
-                                       610, 4.49e-6,
-                                       4870, 115);
+                                       397, 1.28e-8,
+                                       610, 4.35e-6,
+                                       4870, 114);
     }
 
     @Test

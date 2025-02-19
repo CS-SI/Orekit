@@ -16,6 +16,9 @@
  */
 package org.orekit.estimation.leastsquares;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Evaluation;
@@ -31,8 +34,8 @@ import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
-import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -43,10 +46,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-import java.util.ArrayList;
-import java.util.List;
-
-class TLEBatchLSEstimatorTest {
+public class TLEBatchLSEstimatorTest {
 
     /**
      * Perfect PV measurements with a perfect start
@@ -339,10 +339,10 @@ class TLEBatchLSEstimatorTest {
 
         // we have low correlation between the two types of measurement. We can expect a good estimate.
         TLEEstimationTestUtils.checkFit(context, estimator, 4, 5,
-                                     0.0, 6.e-6,
-                                     0.0, 4.5e-5,
-                                     0.0, 6.1e-6,
-                                     0.0, 5e-9);
+                                        0.0, 6.0e-6,
+                                        0.0, 4.6e-5,
+                                        0.0, 6.1e-6,
+                                        0.0, 4.1e-9);
     }
 
 }

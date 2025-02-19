@@ -33,8 +33,13 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
+import org.orekit.propagation.analytical.tle.generation.TleGenerationUtil;
+import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
+import org.orekit.propagation.conversion.osc2mean.TLETheory;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
@@ -729,10 +734,67 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
      * @param <T> type of the element
      * @return a generated TLE
      * @since 12.0
+     * @deprecated As of release 13.0, use {@link #stateToTLE(FieldSpacecraftState, FieldTLE, OsculatingToMeanConverter)} instead.
      */
+    @Deprecated
     public static <T extends CalculusFieldElement<T>> FieldTLE<T> stateToTLE(final FieldSpacecraftState<T> state, final FieldTLE<T> templateTLE,
                                                                              final TleGenerationAlgorithm generationAlgorithm) {
         return generationAlgorithm.generate(state, templateTLE);
+    }
+
+    /**
+     * Convert Spacecraft State into TLE.
+     * <p>
+     * Uses the {@link DataContext#getDefault() default data context}.
+     * </p>
+     * <p>
+     * The B* is not calculated. Its value is simply copied from the template to the generated TLE.
+     * </p>
+     * @param <T>         type of the elements
+     * @param state       Spacecraft State to convert into TLE
+     * @param templateTLE only used to get identifiers like satellite number, launch year, etc.
+     *                    In other words, the keplerian elements contained in the generated TLE
+     *                    are based on the provided state and not the template TLE.
+     * @param converter   osculating to mean orbit converter
+     * @return a generated TLE
+     * @since 13.0
+     */
+    @DefaultDataContext
+    public static <T extends CalculusFieldElement<T>> FieldTLE<T> stateToTLE(final FieldSpacecraftState<T> state, final FieldTLE<T> templateTLE,
+                                                                             final OsculatingToMeanConverter converter) {
+        return stateToTLE(state, templateTLE, converter, DataContext.getDefault());
+    }
+
+    /**
+     * Convert Spacecraft State into TLE.
+     * <p>
+     * The B* is not calculated. Its value is simply copied from the template to the generated TLE.
+     * </p>
+     * @param <T>         type of the elements
+     * @param state       Spacecraft State to convert into TLE
+     * @param templateTLE only used to get identifiers like satellite number, launch year, etc.
+     *                    In other words, the keplerian elements contained in the generated TLE
+     *                    are based on the provided state and not the template TLE.
+     * @param converter   osculating to mean orbit converter
+     * @param dataContext data context
+     * @return a generated TLE
+     * @since 13.0
+     */
+    public static <T extends CalculusFieldElement<T>> FieldTLE<T> stateToTLE(final FieldSpacecraftState<T> state, final FieldTLE<T> templateTLE,
+                                                                             final OsculatingToMeanConverter converter,
+                                                                             final DataContext dataContext) {
+        converter.setMeanTheory(new TLETheory(templateTLE.toTLE(), dataContext));
+        final T bStar = state.getMass().getField().getZero().newInstance(templateTLE.getBStar());
+        final FieldKeplerianOrbit<T> mean = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
+        final FieldTLE<T> tle =  TleGenerationUtil.newTLE(mean, templateTLE, bStar, dataContext.getTimeScales().getUTC());
+        // reset estimated parameters from template to generated tle
+        for (final ParameterDriver templateDrivers : templateTLE.getParametersDrivers()) {
+            if (templateDrivers.isSelected()) {
+                // set to selected for the new TLE
+                tle.getParameterDriver(templateDrivers.getName()).setSelected(true);
+            }
+        }
+        return tle;
     }
 
     /** Check the lines format validity.

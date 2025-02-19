@@ -187,12 +187,12 @@ public class BrouwerLyddanePropagatorTest {
         Assertions.assertEquals(0.0,
                                 Vector3D.distance(initialOrbit.getPosition(),
                                                   finalOrbit.getPosition()),
-                                2.4e-8);
+                                4.7e-7);
         Assertions.assertEquals(0.0,
                                 Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                                   finalOrbit.getPVCoordinates().getVelocity()),
-                                1.9e-11);
-        Assertions.assertEquals(0.0, finalOrbit.getOrbit().getA() - initialOrbit.getA(), 9.4e-10);
+                                2.8e-10);
+        Assertions.assertEquals(0.0, finalOrbit.getOrbit().getA() - initialOrbit.getA(), 1.3e-8);
 
     }
 
@@ -215,12 +215,12 @@ public class BrouwerLyddanePropagatorTest {
         Assertions.assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPosition(),
                                               finalOrbit.getPosition()),
-                            1.3e-7);
+                            4.0e-7);
         Assertions.assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                               finalOrbit.getPVCoordinates().getVelocity()),
-                            9.0e-11);
-        Assertions.assertEquals(0.0, finalOrbit.getOrbit().getA() - initialOrbit.getA(), 1.9e-9);
+                            2.9e-10);
+        Assertions.assertEquals(0.0, finalOrbit.getOrbit().getA() - initialOrbit.getA(), 3.8e-9);
     }
 
 

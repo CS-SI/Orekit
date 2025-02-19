@@ -16,14 +16,8 @@ ALMOST_EQUATORIAL_ORBIT = σχεδόν ισημερινή τροχιά (i = {0} 
 # almost critically inclined orbit (i = {0} degrees)
 ALMOST_CRITICALLY_INCLINED_ORBIT = σχεδόν κρίσιμα κεκλιμένη τροχιά (i = {0} μοίρες)
 
-# unable to compute Eckstein-Hechler mean parameters after {0} iterations
-UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS =  αδύνατο να υπολογιστούν οι Eckstein-Hechler μέσες παράμετροι μετά από {0} επαναλήψεις
-
-# unable to compute Brouwer-Lyddane mean parameters after {0} iterations
-UNABLE_TO_COMPUTE_BROUWER_LYDDANE_MEAN_PARAMETERS = αδύνατο να υπολογιστούν οι Brouwer-Lyddane μέσες παράμετροι μετά από {0} επαναλήψεις
-
-# unable to compute TLE after {0} iterations
-UNABLE_TO_COMPUTE_TLE =  αδύνατο να υπολογιστούν οι TLE μετά από {0} επαναλήψεις
+# unable to compute {0} mean parameters after {1} iterations
+UNABLE_TO_COMPUTE_MEAN_PARAMETERS = αδύνατο να υπολογιστούν οι {0} μέσες παράμετροι μετά από {1} επαναλήψεις
 
 # null parent for frame {0}
 NULL_PARENT_FOR_FRAME = null γονέας πλαισiου {0} 

@@ -16,14 +16,8 @@ ALMOST_EQUATORIAL_ORBIT = orbite quasiment équatoriale (i = {0} degrés)
 # almost critically inclined orbit (i = {0} degrees)
 ALMOST_CRITICALLY_INCLINED_ORBIT = orbite quasiment à inclinaison critique (i = {0} degrés)
 
-# unable to compute Eckstein-Hechler mean parameters after {0} iterations
-UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = impossible de calculer les paramètres moyens au sens de Eckstein-Hechler après {0} itérations
-
-# unable to compute Brouwer-Lyddane mean parameters after {0} iterations
-UNABLE_TO_COMPUTE_BROUWER_LYDDANE_MEAN_PARAMETERS = impossible de calculer les paramètres moyens au sens de Brouwer-Lyddane après {0} itérations
-
-# unable to compute TLE after {0} iterations
-UNABLE_TO_COMPUTE_TLE = impossible de calculer le TLE après {0} itérations
+# unable to compute {0} mean parameters after {1} iterations
+UNABLE_TO_COMPUTE_MEAN_PARAMETERS = impossible de calculer les paramètres moyens au sens de {0} après {1} itérations
 
 # null parent for frame {0}
 NULL_PARENT_FOR_FRAME = parent du repère {0} nul

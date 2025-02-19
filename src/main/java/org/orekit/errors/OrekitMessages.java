@@ -16,9 +16,9 @@
  */
 package org.orekit.errors;
 
-import org.hipparchus.exception.Localizable;
-
 import java.util.Locale;
+
+import org.hipparchus.exception.Localizable;
 
 /**
  * Enumeration for localized messages formats.
@@ -54,14 +54,8 @@ public enum OrekitMessages implements Localizable {
     /** ALMOST_CRITICALLY_INCLINED_ORBIT. */
     ALMOST_CRITICALLY_INCLINED_ORBIT("almost critically inclined orbit (i = {0} degrees)"),
 
-    /** UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS. */
-    UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS("unable to compute Eckstein-Hechler mean parameters after {0} iterations"),
-
-    /** UNABLE_TO_COMPUTE_BROUWER_LYDDANE_MEAN_PARAMETERS. */
-    UNABLE_TO_COMPUTE_BROUWER_LYDDANE_MEAN_PARAMETERS("unable to compute Brouwer-Lyddane mean parameters after {0} iterations"),
-
-    /** UNABLE_TO_COMPUTE_TLE. */
-    UNABLE_TO_COMPUTE_TLE("unable to compute TLE after {0} iterations"),
+    /** UNABLE_TO_COMPUTE_MEAN_PARAMETERS. */
+    UNABLE_TO_COMPUTE_MEAN_PARAMETERS("unable to compute {0} mean parameters after {1} iterations"),
 
     /** NULL_PARENT_FOR_FRAME. */
     NULL_PARENT_FOR_FRAME("null parent for frame {0}"),

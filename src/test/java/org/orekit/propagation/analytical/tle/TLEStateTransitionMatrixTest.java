@@ -59,7 +59,7 @@ public class TLEStateTransitionMatrixTest {
 
     @Test
     public void testPropagationSGP4() {
-        doTestStateJacobian(7.65e-10, tleSPOT);
+        doTestStateJacobian(8.35e-10, tleSPOT);
     }
 
     @Test

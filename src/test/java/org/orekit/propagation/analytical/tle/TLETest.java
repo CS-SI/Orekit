@@ -32,8 +32,8 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
-import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
+import org.orekit.propagation.conversion.osc2mean.FixedPointConverter;
+import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -535,11 +535,11 @@ public class TLETest {
         // State at TLE epoch
         final SpacecraftState state = propagator.propagate(tleISS.getDate());
 
-        // TLE generation algorithm
-        final TleGenerationAlgorithm algorithm = new FixedPointTleGenerationAlgorithm();
+        // Osculating to mean orbit converter
+        final OsculatingToMeanConverter converter = new FixedPointConverter();
 
         // Convert to TLE
-        final TLE rebuilt = TLE.stateToTLE(state, tleISS, algorithm);
+        final TLE rebuilt = TLE.stateToTLE(state, tleISS, converter);
 
         // Verify
         final double eps = 1.0e-7;

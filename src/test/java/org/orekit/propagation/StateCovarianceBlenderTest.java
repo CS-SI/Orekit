@@ -299,12 +299,12 @@ class StateCovarianceBlenderTest {
         // When & Then
         doTestBlending(DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP, blendingFunction,
                        propagator,
-                       0.092022772752,
-                       0.175328981233,
-                       0.085754375965,
-                       0.19331997037,
-                       0.169348422249,
-                       0.347302066034,
+                       0.092022772744,
+                       0.175328981237,
+                       0.085754375985,
+                       0.193319970362,
+                       0.169348422233,
+                       0.347302066023,
                        tolerance,
                        showResults);
 

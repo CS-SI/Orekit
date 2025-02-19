@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.conversion;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,9 +41,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class EcksteinHechlerConverterTest {
 
     private Orbit orbit;
@@ -48,12 +48,12 @@ public class EcksteinHechlerConverterTest {
 
     @Test
     public void testConversionPositionVelocity() {
-        checkFit(orbit, 86400, 300, 1.0e-3, false, 2.610e-8);
+        checkFit(orbit, 86400, 300, 1.0e-3, false, 2.446e-8);
     }
 
     @Test
     public void testConversionPositionOnly() {
-        checkFit(orbit, 86400, 300, 1.0e-3, true, 3.673e-8);
+        checkFit(orbit, 86400, 300, 1.0e-3, true, 2.350e-8);
     }
 
     protected void checkFit(final Orbit orbit,

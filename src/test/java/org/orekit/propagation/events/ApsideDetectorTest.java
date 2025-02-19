@@ -73,12 +73,12 @@ class ApsideDetectorTest {
 
     @Test
     void testFixedMaxCheck() {
-        doTestMaxcheck(AdaptableInterval.of(20.0), 4738);
+        doTestMaxcheck(AdaptableInterval.of(20.0), 4718);
     }
 
     @Test
     void testAnomalyAwareMaxCheck() {
-        doTestMaxcheck(ApsideDetectionAdaptableIntervalFactory.getApsideDetectionAdaptableInterval(), 726);
+        doTestMaxcheck(ApsideDetectionAdaptableIntervalFactory.getApsideDetectionAdaptableInterval(), 663);
     }
 
     private void doTestMaxcheck(final AdaptableInterval maxCheck, int expectedCalls) {

@@ -126,7 +126,7 @@ public class EcksteinHechlerPropagatorTest {
         Assertions.assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPosition(),
                                               finalOrbit.getPosition()),
-                            1.0e-8);
+                            1.3e-6);
 
         // velocity and circular parameters do *not* match, this is EXPECTED!
         // the reason is that we ensure position/velocity are consistent with the
@@ -168,7 +168,7 @@ public class EcksteinHechlerPropagatorTest {
         Assertions.assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPosition(),
                                               finalOrbit.getPosition()),
-                            3.0e-8);
+                            1.3e-6);
 
         // velocity and circular parameters do *not* match, this is EXPECTED!
         // the reason is that we ensure position/velocity are consistent with the
@@ -603,9 +603,9 @@ public class EcksteinHechlerPropagatorTest {
         // perturbed orbit acceleration should be consistent with position evolution
         double computationErrorA   = Vector3D.distance(referenceA, computedA);
         double nonKeplerianEffectA = Vector3D.distance(referenceA, keplerianA);
-        Assertions.assertEquals(8.0e-8,  computationErrorA, 2.0e-9);
+        Assertions.assertEquals(1.36e-7,  computationErrorA, 1.0e-9);
         Assertions.assertEquals(6.37e-3, nonKeplerianEffectA, 7.0e-6);
-        Assertions.assertTrue(computationErrorA < nonKeplerianEffectA / 60000);
+        Assertions.assertTrue(computationErrorA < nonKeplerianEffectA / 40000);
 
     }
 
@@ -755,7 +755,7 @@ public class EcksteinHechlerPropagatorTest {
         Assertions.assertEquals(0.0,
                             Vector3D.distance(defaultOrbit.getPosition(),
                                               initial.getPosition()),
-                            1.0e-8);
+                            2.0e-6);
 
         // set up a reference numerical propagator starting for the specified start orbit
         // using the same force models (i.e. the first few zonal terms)

@@ -29,7 +29,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.*;
+import org.orekit.orbits.FieldCartesianOrbit;
+import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
@@ -79,7 +83,7 @@ class FieldApsideDetectorTest {
 
     @Test
     void testFixedMaxCheck() {
-        doTestMaxcheck(Binary64Field.getInstance(), FieldAdaptableInterval.of(20.), 4687);
+        doTestMaxcheck(Binary64Field.getInstance(), FieldAdaptableInterval.of(20.), 4818);
     }
 
     @Test
@@ -103,7 +107,7 @@ class FieldApsideDetectorTest {
         final AdaptableInterval adaptableInterval = ApsideDetectionAdaptableIntervalFactory
                 .getApsideDetectionAdaptableInterval();
         doTestMaxcheck(Binary64Field.getInstance(), (state, isForward) -> adaptableInterval.currentInterval(state.toSpacecraftState(), true),
-                643);
+                706);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestMaxcheck(final Field<T> field,

@@ -62,7 +62,11 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.*;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
+import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -141,14 +145,14 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertEquals(0.0,
                                 FieldVector3D.distance(initialOrbit.getPosition(),
                                                        finalOrbit.getPosition()).getReal(),
-                                1.9e-8);
+                                4.8e-7);
         Assertions.assertEquals(0.0,
                                 FieldVector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                                        finalOrbit.getPVCoordinates().getVelocity()).getReal(),
-                                1.2e-11);
+                                2.9e-10);
         Assertions.assertEquals(0.0, 
                                 finalOrbit.getA().getReal() - initialOrbit.getA().getReal(),
-                                9.4e-10);
+                                6.6e-9);
 
     }
 
@@ -177,11 +181,11 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertEquals(0.0,
                                 FieldVector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
                                                        finalOrbit.getPVCoordinates().getPosition()).getReal(),
-                                6.7e-7);
+                                1.2e-6);
         Assertions.assertEquals(0.0,
                                 FieldVector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                                        finalOrbit.getPVCoordinates().getVelocity()).getReal(),
-                                4.2e-10);
+                                7.0e-10);
         Assertions.assertEquals(0.0,
                                 finalOrbit.getA().getReal() - initialOrbit.getA().getReal(),
                                 9.4e-9);
@@ -943,7 +947,6 @@ public class FieldBrouwerLyddanePropagatorTest {
 
         Assertions.assertEquals(3188.347, oscMax.getResult()  - oscMin.getResult(),  1.0e-3);
         Assertions.assertEquals(  25.794, meanMax.getResult() - meanMin.getResult(), 1.0e-3);
-
     }
 
     @Test

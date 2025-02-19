@@ -62,7 +62,8 @@ public class TLEConverterTest {
         try {
             propagatorBuilderError.buildPropagator();
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNABLE_TO_COMPUTE_TLE, oe.getSpecifier());
+            System.out.println(oe.getMessage());
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_COMPUTE_MEAN_PARAMETERS, oe.getSpecifier());
         }
 
         // Now try using different convergence threshold

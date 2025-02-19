@@ -30,9 +30,7 @@ import org.hipparchus.ode.FieldODEIntegrator;
 import org.hipparchus.ode.FieldODEStateAndDerivative;
 import org.hipparchus.ode.sampling.FieldODEStateInterpolator;
 import org.hipparchus.ode.sampling.FieldODEStepHandler;
-import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
@@ -51,6 +49,10 @@ import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
+import org.orekit.propagation.conversion.osc2mean.DSSTTheory;
+import org.orekit.propagation.conversion.osc2mean.FixedPointConverter;
+import org.orekit.propagation.conversion.osc2mean.MeanTheory;
+import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
 import org.orekit.propagation.integration.FieldStateMapper;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -528,8 +530,8 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
      */
     @SuppressWarnings("unchecked")
     public static <T extends CalculusFieldElement<T>> FieldSpacecraftState<T> computeOsculatingState(final FieldSpacecraftState<T> mean,
-                                                                                                 final AttitudeProvider attitudeProvider,
-                                                                                                 final Collection<DSSTForceModel> forces) {
+                                                                                                     final AttitudeProvider attitudeProvider,
+                                                                                                     final Collection<DSSTForceModel> forces) {
 
         //Create the auxiliary object
         final FieldAuxiliaryElements<T> aux = new FieldAuxiliaryElements<>(mean.getOrbit(), I);
@@ -569,9 +571,11 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * @return mean state in a DSST sense
      */
     public static <T extends CalculusFieldElement<T>> FieldSpacecraftState<T> computeMeanState(final FieldSpacecraftState<T> osculating,
-                                                                                           final AttitudeProvider attitudeProvider,
-                                                                                           final Collection<DSSTForceModel> forceModel) {
-        return computeMeanState(osculating, attitudeProvider, forceModel, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+                                                                                               final AttitudeProvider attitudeProvider,
+                                                                                               final Collection<DSSTForceModel> forceModel) {
+        final OsculatingToMeanConverter converter = new FixedPointConverter(EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT,
+                                                                            FixedPointConverter.DEFAULT_DAMPING);
+        return computeMeanState(osculating, attitudeProvider, forceModel, converter);
     }
 
     /** Conversion from osculating to mean orbit.
@@ -597,11 +601,44 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * @since 10.1
      */
     public static <T extends CalculusFieldElement<T>> FieldSpacecraftState<T> computeMeanState(final FieldSpacecraftState<T> osculating,
-                                                                                           final AttitudeProvider attitudeProvider,
-                                                                                           final Collection<DSSTForceModel> forceModel,
-                                                                                           final double epsilon,
-                                                                                           final int maxIterations) {
-        final FieldOrbit<T> meanOrbit = computeMeanOrbit(osculating, attitudeProvider, forceModel, epsilon, maxIterations);
+                                                                                               final AttitudeProvider attitudeProvider,
+                                                                                               final Collection<DSSTForceModel> forceModel,
+                                                                                               final double epsilon,
+                                                                                               final int maxIterations) {
+        final OsculatingToMeanConverter converter = new FixedPointConverter(epsilon, maxIterations,
+                                                                            FixedPointConverter.DEFAULT_DAMPING);
+        return computeMeanState(osculating, attitudeProvider, forceModel, converter);
+    }
+
+    /** Conversion from osculating to mean orbit.
+     * <p>
+     * Compute mean state <b>in a DSST sense</b>, corresponding to the
+     * osculating SpacecraftState in input, and according to the Force models
+     * taken into account.
+     * </p><p>
+     * Since the osculating state is obtained with the computation of
+     * short-periodic variation of each force model, the resulting output will
+     * depend on the force models parameterized in input.
+     * </p><p>
+     * The computation is done using the given osculating to mean orbit converter.
+     * </p>
+     * @param <T> type of the elements
+     * @param osculating       osculating state to convert
+     * @param attitudeProvider attitude provider (may be null if there are no Gaussian force models
+     *                         like atmospheric drag, radiation pressure or specific user-defined models)
+     * @param forceModel       forces to take into account
+     * @param converter        osculating to mean orbit converter
+     * @return mean state in a DSST sense
+     * @since 13.0
+     */
+    public static <T extends CalculusFieldElement<T>> FieldSpacecraftState<T>  computeMeanState(final FieldSpacecraftState<T> osculating,
+                                                                                                final AttitudeProvider attitudeProvider,
+                                                                                                final Collection<DSSTForceModel> forceModel,
+                                                                                                final OsculatingToMeanConverter converter) {
+
+        final MeanTheory theory = new DSSTTheory(forceModel, attitudeProvider, osculating.getMass().getReal());
+        converter.setMeanTheory(theory);
+        final FieldOrbit<T> meanOrbit = converter.convertToMean(osculating.getOrbit());
         return new FieldSpacecraftState<>(meanOrbit, osculating.getAttitude(), osculating.getMass(),
                                           osculating.getAdditionalDataValues(), null);
     }
@@ -703,96 +740,6 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
         }
     }
 
-    /** Compute mean state from osculating state.
-     * <p>
-     * Compute in a DSST sense the mean state corresponding to the input osculating state.
-     * </p><p>
-     * The computing is done through a fixed-point iteration process.
-     * </p>
-     * @param osculating initial osculating state
-     * @param attitudeProvider attitude provider (may be null if there are no Gaussian force models
-     * like atmospheric drag, radiation pressure or specific user-defined models)
-     * @param forceModel force models
-     * @param epsilon convergence threshold for mean parameters conversion
-     * @param maxIterations maximum iterations for mean parameters conversion
-     * @param <T> type of the elements
-     * @return mean state
-     * @since 10.1
-     */
-    @SuppressWarnings("unchecked")
-    private static <T extends CalculusFieldElement<T>> FieldOrbit<T> computeMeanOrbit(final FieldSpacecraftState<T> osculating, final AttitudeProvider attitudeProvider, final Collection<DSSTForceModel> forceModel,
-                                                                                  final double epsilon, final int maxIterations) {
-
-        // zero
-        final T zero = osculating.getDate().getField().getZero();
-
-        // rough initialization of the mean parameters
-        FieldEquinoctialOrbit<T> meanOrbit = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(osculating.getOrbit());
-
-        // threshold for each parameter
-        final T epsilonT   = zero.newInstance(epsilon);
-        final T thresholdA = epsilonT.multiply(FastMath.abs(meanOrbit.getA()).add(1.));
-        final T thresholdE = epsilonT.multiply(meanOrbit.getE().add(1.));
-        final T thresholdI = epsilonT.multiply(meanOrbit.getI().add(1.));
-        final T thresholdL = epsilonT.multiply(zero.getPi());
-
-        // ensure all Gaussian force models can rely on attitude
-        for (final DSSTForceModel force : forceModel) {
-            force.registerAttitudeProvider(attitudeProvider);
-        }
-
-        int i = 0;
-        while (i++ < maxIterations) {
-
-            final FieldSpacecraftState<T> meanState = new FieldSpacecraftState<>(meanOrbit, osculating.getAttitude()).withMass(osculating.getMass());
-
-            //Create the auxiliary object
-            final FieldAuxiliaryElements<T> aux = new FieldAuxiliaryElements<>(meanOrbit, I);
-
-            // Set the force models
-            final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<>();
-            for (final DSSTForceModel force : forceModel) {
-                shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING,
-                                 force.getParameters(osculating.getDate().getField(), osculating.getDate())));
-                force.updateShortPeriodTerms(force.getParametersAllValues(osculating.getDate().getField()), meanState);
-            }
-
-            // recompute the osculating parameters from the current mean parameters
-            final FieldEquinoctialOrbit<T> rebuilt = computeOsculatingOrbit(meanState, shortPeriodTerms);
-
-            // adapted parameters residuals
-            final FieldOrbit<T> osculatingOrbit = osculating.getOrbit();
-            final T deltaA  = osculatingOrbit.getA().subtract(rebuilt.getA());
-            final T deltaEx = osculatingOrbit.getEquinoctialEx().subtract(rebuilt.getEquinoctialEx());
-            final T deltaEy = osculatingOrbit.getEquinoctialEy().subtract(rebuilt.getEquinoctialEy());
-            final T deltaHx = osculatingOrbit.getHx().subtract(rebuilt.getHx());
-            final T deltaHy = osculatingOrbit.getHy().subtract(rebuilt.getHy());
-            final T deltaLv = MathUtils.normalizeAngle(osculatingOrbit.getLv().subtract(rebuilt.getLv()), zero);
-
-            // check convergence
-            if (FastMath.abs(deltaA).getReal()  < thresholdA.getReal() &&
-                FastMath.abs(deltaEx).getReal() < thresholdE.getReal() &&
-                FastMath.abs(deltaEy).getReal() < thresholdE.getReal() &&
-                FastMath.abs(deltaHx).getReal() < thresholdI.getReal() &&
-                FastMath.abs(deltaHy).getReal() < thresholdI.getReal() &&
-                FastMath.abs(deltaLv).getReal() < thresholdL.getReal()) {
-                return meanOrbit;
-            }
-
-            // update mean parameters
-            meanOrbit = new FieldEquinoctialOrbit<>(meanOrbit.getA().add(deltaA),
-                                                    meanOrbit.getEquinoctialEx().add(deltaEx),
-                                                    meanOrbit.getEquinoctialEy().add(deltaEy),
-                                                    meanOrbit.getHx().add(deltaHx),
-                                                    meanOrbit.getHy().add(deltaHy),
-                                                    meanOrbit.getLv().add(deltaLv),
-                                                    PositionAngleType.TRUE, meanOrbit.getFrame(),
-                                                    meanOrbit.getDate(), meanOrbit.getMu());
-        }
-
-        throw new OrekitException(OrekitMessages.UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS, i);
-    }
-
     /** Compute osculating state from mean state.
      * <p>
      * Compute and add the short periodic variation to the mean {@link SpacecraftState}.
@@ -803,7 +750,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * @return osculating state
      */
     private static <T extends CalculusFieldElement<T>> FieldEquinoctialOrbit<T> computeOsculatingOrbit(final FieldSpacecraftState<T> meanState,
-                                                                                                   final List<FieldShortPeriodTerms<T>> shortPeriodTerms) {
+                                                                                                       final List<FieldShortPeriodTerms<T>> shortPeriodTerms) {
 
         final T[] mean = MathArrays.buildArray(meanState.getDate().getField(), 6);
         final T[] meanDot = MathArrays.buildArray(meanState.getDate().getField(), 6);

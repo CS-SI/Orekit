@@ -16,14 +16,8 @@ ALMOST_EQUATORIAL_ORBIT = orbită aproape ecuatorială (i = {0} grade)
 # almost critically inclined orbit (i = {0} degrees)
 ALMOST_CRITICALLY_INCLINED_ORBIT = orbită cu înclinație aproape critică (i = {0} grade)
 
-# unable to compute Eckstein-Hechler mean parameters after {0} iterations
-UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = imposibil de calculat parametrii medii Eckstein-Hechler după {0} iterații
-
-# unable to compute Brouwer-Lyddane mean parameters after {0} iterations
-UNABLE_TO_COMPUTE_BROUWER_LYDDANE_MEAN_PARAMETERS = imposibil de calculat parametrii medii Brouwer-Lyddane după {0} iterații
-
-# unable to compute TLE after {0} iterations
-UNABLE_TO_COMPUTE_TLE = imposibil de calculat TLE după {0} iterații
+# unable to compute {0} mean parameters after {1} iterations
+UNABLE_TO_COMPUTE_MEAN_PARAMETERS = imposibil de calculat parametrii medii {0} după {1} iterații
 
 # null parent for frame {0}
 NULL_PARENT_FOR_FRAME = părintele sistemului de coordonate {0} este nul

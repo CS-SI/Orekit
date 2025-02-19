@@ -16,14 +16,8 @@ ALMOST_EQUATORIAL_ORBIT = orbita quasi equatoriale (i = {0} gradi)
 # almost critically inclined orbit (i = {0} degrees)
 ALMOST_CRITICALLY_INCLINED_ORBIT = orbita con inclinazione quasi critica (i = {0} gradi)
 
-# unable to compute Eckstein-Hechler mean parameters after {0} iterations
-UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = impossibile calcolare i parametri medi secondo Eckstein-Hechler dopo {0} iterazioni
-
-# unable to compute Brouwer-Lyddane mean parameters after {0} iterations
-UNABLE_TO_COMPUTE_BROUWER_LYDDANE_MEAN_PARAMETERS = impossibile calcolare i parametri medi secondo Brouwer-Lyddane dopo {0} iterazioni
-
-# unable to compute TLE after {0} iterations
-UNABLE_TO_COMPUTE_TLE = impossibile calcolare il TLE dopo {0} iterazioni
+# unable to compute {0} mean parameters after {1} iterations
+UNABLE_TO_COMPUTE_MEAN_PARAMETERS = impossibile calcolare i parametri medi secondo {0} dopo {1} iterazioni
 
 # null parent for frame {0}
 NULL_PARENT_FOR_FRAME = padre del sistema di riferimento {0} nullo
