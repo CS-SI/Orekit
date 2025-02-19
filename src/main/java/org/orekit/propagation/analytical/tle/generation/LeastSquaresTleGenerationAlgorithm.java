@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical.tle.generation;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
@@ -51,10 +52,12 @@ public class LeastSquaresTleGenerationAlgorithm implements TleGenerationAlgorith
 
     /**
      * Default constructor.
-     * <p>
-     * Uses the {@link DataContext#getDefault() default data context}  as well as
-     * {@link #DEFAULT_MAX_ITERATIONS}.
-     * </p>
+     * <p>Uses:
+     * <ul>
+     * <li>the {@link DataContext#getDefault() default data context}</li>
+     * <li>{@link #DEFAULT_MAX_ITERATIONS}</li>
+     * <li>the {@link LevenbergMarquardtOptimizer}</li>
+     * </ul>
      */
     @DefaultDataContext
     public LeastSquaresTleGenerationAlgorithm() {
@@ -63,9 +66,11 @@ public class LeastSquaresTleGenerationAlgorithm implements TleGenerationAlgorith
 
     /**
      * Default constructor.
-     * <p>
-     * Uses the {@link DataContext#getDefault() default data context}.
-     * </p>
+     * <p>Uses:
+     * <ul>
+     * <li>the {@link DataContext#getDefault() default data context}</li>
+     * <li>the {@link LevenbergMarquardtOptimizer}</li>
+     * </ul>
      * @param maxIterations maximum number of iterations for convergence
      */
     @DefaultDataContext
@@ -76,6 +81,7 @@ public class LeastSquaresTleGenerationAlgorithm implements TleGenerationAlgorith
 
     /**
      * Constructor.
+     * <p>Uses the {@link LevenbergMarquardtOptimizer}.</p>
      * @param maxIterations maximum number of iterations for convergence
      * @param utc  UTC time scale
      * @param teme TEME frame
@@ -83,11 +89,26 @@ public class LeastSquaresTleGenerationAlgorithm implements TleGenerationAlgorith
     public LeastSquaresTleGenerationAlgorithm(final int maxIterations,
                                               final TimeScale utc,
                                               final Frame teme) {
-        this.converter = new LeastSquaresConverter(new TLETheory(utc, teme),
-                                                   new LevenbergMarquardtOptimizer(),
-                                                   LeastSquaresConverter.DEFAULT_THRESHOLD,
-                                                   maxIterations);
+        this(utc, teme, new LeastSquaresConverter(new TLETheory(utc, teme),
+                                                  new LevenbergMarquardtOptimizer(),
+                                                  LeastSquaresConverter.DEFAULT_THRESHOLD,
+                                                  maxIterations));
+    }
+
+    /**
+     * Constructor.
+     * <p>Enables to select the {@link LeastSquaresOptimizer optimizer}
+     * for the {@link LeastSquaresConverter least-squares converter).</p>
+     * @param utc  UTC time scale
+     * @param teme TEME frame
+     * @param converter osculating to mean orbit converter using a least-squares algorithm
+     */
+    public LeastSquaresTleGenerationAlgorithm(final TimeScale utc,
+                                              final Frame teme,
+                                              final LeastSquaresConverter converter) {
         this.utc       = utc;
+        this.converter = converter;
+        converter.setMeanTheory(new TLETheory(utc, teme));
     }
 
     /** {@inheritDoc} */
