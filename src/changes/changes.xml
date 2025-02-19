@@ -243,6 +243,9 @@
         <action dev="luc" type="fix" issue="1561">
             Allow moving a transition between two spans in a TimeSpanMap.
         </action>
+        <action dev="pascal" type="fix" issue="1558">
+            Fixed Brouwer-Lyddane non converging for perfect circular orbit.
+        </action>
         <action dev="serrof" type="update" issue="1553">
             Make AttitudeProvider implement EventDetectorsProvider.
         </action>
