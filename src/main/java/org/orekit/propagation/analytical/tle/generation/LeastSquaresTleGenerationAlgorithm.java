@@ -98,7 +98,7 @@ public class LeastSquaresTleGenerationAlgorithm implements TleGenerationAlgorith
     /**
      * Constructor.
      * <p>Enables to select the {@link LeastSquaresOptimizer optimizer}
-     * for the {@link LeastSquaresConverter least-squares converter).</p>
+     * for the {@link LeastSquaresConverter least-squares converter}.</p>
      * @param utc  UTC time scale
      * @param teme TEME frame
      * @param converter osculating to mean orbit converter using a least-squares algorithm
