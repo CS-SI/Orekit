@@ -398,7 +398,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
                 getAttitudeProvider().getAttitude(pvProvider, date, orbit.getFrame());
 
             // build raw state
-            return new SpacecraftState(orbit, attitude, getMass(date));
+            return new SpacecraftState(orbit, attitude).withMass(getMass(date));
 
         } catch (OrekitException oe) {
             throw new OrekitException(oe);

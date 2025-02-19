@@ -179,6 +179,34 @@ public class FixedPointTleGenerationAlgorithmTest {
     }
 
     @Test
+    public void testIssue864Field() {
+        doTestIssue864Field(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>>  void doTestIssue864Field(final Field<T> field) {
+
+        // Initialize TLE
+        final FieldTLE<T>  tleISS = new FieldTLE<> (field, "1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
+                                                           "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
+
+        // TLE propagator
+        final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tleISS, tleISS.getParameters(field));
+
+        // State at TLE epoch
+        final FieldSpacecraftState<T> state = propagator.propagate(tleISS.getDate());
+
+        // Set the BStar driver to selected
+        tleISS.getParametersDrivers().forEach(driver -> driver.setSelected(true));
+
+        // Convert to TLE
+        final FieldTLE<T> rebuilt = new FixedPointTleGenerationAlgorithm().generate(state, tleISS);
+
+        // Verify if driver is still selected
+        rebuilt.getParametersDrivers().forEach(driver -> Assertions.assertTrue(driver.isSelected()));
+
+    }
+
+    @Test
     public void testIssue859() {
 
         // INTELSAT 25 TLE taken from Celestrak the 2021-11-24T07:45:00.000

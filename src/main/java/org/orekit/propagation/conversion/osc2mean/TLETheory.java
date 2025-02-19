@@ -132,7 +132,7 @@ public class TLETheory implements MeanTheory {
      * @param dataContext data context
      */
     public <T extends CalculusFieldElement<T>> TLETheory(final FieldTLE<T> template, final DataContext dataContext) {
-        this(template.toTLE(), dataContext.getTimeScales().getUTC(), dataContext.getFrames().getTEME());
+        this(template, dataContext.getTimeScales().getUTC(), dataContext.getFrames().getTEME());
     }
 
     /**

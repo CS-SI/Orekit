@@ -32,6 +32,7 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldArrayDictionary;
+import org.orekit.utils.FieldDataDictionary;
 import org.orekit.utils.FieldTimeSpanMap;
 import org.orekit.utils.ParameterDriver;
 
@@ -133,7 +134,7 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
      * @return fixed orbit
      */
     private FieldSpacecraftState<T> fixState(final FieldOrbit<T> orbit, final FieldAttitude<T> attitude, final T mass, final T mu,
-                                             final FieldArrayDictionary<T> additionalStates,
+                                             final FieldDataDictionary<T> additionalStates,
                                              final FieldArrayDictionary<T> additionalStatesderivatives) {
         final OrbitType type = orbit.getType();
         final T[] stateVector = MathArrays.buildArray(mass.getField(), 6);
@@ -141,9 +142,9 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
         type.mapOrbitToArray(orbit, positionAngleType, stateVector, null);
         final FieldOrbit<T> fixedOrbit = type.mapArrayToOrbit(stateVector, null, positionAngleType,
                                                               orbit.getDate(), mu, orbit.getFrame());
-        FieldSpacecraftState<T> fixedState = new FieldSpacecraftState<>(fixedOrbit, attitude, mass);
+        FieldSpacecraftState<T> fixedState = new FieldSpacecraftState<>(fixedOrbit, attitude).withMass(mass);
         if (additionalStates != null) {
-            for (final FieldArrayDictionary<T>.Entry entry : additionalStates.getData()) {
+            for (final FieldDataDictionary<T>.Entry entry : additionalStates.getData()) {
                 fixedState = fixedState.addAdditionalData(entry.getKey(), entry.getValue());
             }
         }

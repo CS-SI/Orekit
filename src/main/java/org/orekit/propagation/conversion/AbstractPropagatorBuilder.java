@@ -458,7 +458,7 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
 
         // Map the new orbit in an array of double
         final double[] orbitArray = new double[6];
-        final Orbit orbitInCorrectFrame = (newOrbit.getFrame() == frame) ? newOrbit : newOrbit.withFrame(frame);
+        final Orbit orbitInCorrectFrame = (newOrbit.getFrame() == frame) ? newOrbit : newOrbit.inFrame(frame);
         orbitType.mapOrbitToArray(orbitInCorrectFrame, getPositionAngleType(), orbitArray, null);
 
         // Update all the orbital drivers, selected or unselected

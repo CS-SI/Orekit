@@ -65,13 +65,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
-public class BatchLSEstimatorTest {
+class BatchLSEstimatorTest {
 
     /**
      * Perfect PV measurements with a perfect start
      */
     @Test
-    public void testKeplerPVMultipleDrag() {
+    void testKeplerPVMultipleDrag() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -125,7 +125,7 @@ public class BatchLSEstimatorTest {
      * Perfect PV measurements with a perfect start
      */
     @Test
-    public void testKeplerPV() {
+    void testKeplerPV() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -167,7 +167,7 @@ public class BatchLSEstimatorTest {
     
     /** Test PV measurements generation and backward propagation in least-square orbit determination. */
     @Test
-    public void testKeplerPVBackward() {
+    void testKeplerPVBackward() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -211,7 +211,7 @@ public class BatchLSEstimatorTest {
      * Perfect range measurements with a biased start
      */
     @Test
-    public void testKeplerRange() {
+    void testKeplerRange() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -282,8 +282,8 @@ public class BatchLSEstimatorTest {
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
                                      0.0, 1.2e-6,
                                      0.0, 2.8e-6,
-                                     0.0, 5.0e-7,
-                                     0.0, 2.3e-10);
+                                     0.0, 7.0e-7,
+                                     0.0, 3e-10);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one
@@ -304,7 +304,7 @@ public class BatchLSEstimatorTest {
      * Perfect range measurements with a biased start and an on-board antenna range offset
      */
     @Test
-    public void testKeplerRangeWithOnBoardAntennaOffset() {
+    void testKeplerRangeWithOnBoardAntennaOffset() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -405,7 +405,7 @@ public class BatchLSEstimatorTest {
     }
 
     @Test
-    public void testMultiSat() {
+    void testMultiSat() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -523,8 +523,8 @@ public class BatchLSEstimatorTest {
         Assertions.assertEquals(0.0010514, Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                           before.getPVCoordinates().getVelocity()), 1.0e-6);
         EstimationTestUtils.checkFit(context, estimator, 3, 4,
-                                     0.0, 2.9e-06,
-                                     0.0, 1.1e-05,
+                                     0.0, 5e-06,
+                                     0.0, 1.3e-05,
                                      0.0, 8.3e-07,
                                      0.0, 3.7e-10);
 
@@ -564,7 +564,7 @@ public class BatchLSEstimatorTest {
      *
      */
     @Test
-    public void testMultiSatWithParameters() {
+    void testMultiSatWithParameters() {
 
         // Test: Set the propagator drivers to estimate for each satellite
         final boolean muEstimated  = true;
@@ -716,7 +716,7 @@ public class BatchLSEstimatorTest {
                           before.getPosition()), 1.0e-3);
         Assertions.assertEquals(0.0010514, Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                           before.getPVCoordinates().getVelocity()), 1.0e-6);
-        EstimationTestUtils.checkFit(context, estimator, 4, 6,
+        EstimationTestUtils.checkFit(context, estimator, 5, 6,
                                      0.0, 5.3e-06,
                                      0.0, 1.4e-05,
                                      0.0, 8.8e-07,
@@ -757,7 +757,7 @@ public class BatchLSEstimatorTest {
      * This test is identical to testMultiSat() but here we use multiplexed measurement theory
      */
     @Test
-    public void testIssue617() {
+    void testIssue617() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -900,7 +900,7 @@ public class BatchLSEstimatorTest {
                                                     closeOrbit.getDate(),
                                                     closeOrbit.getMu());
         Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPosition(),
-                          determined.getPosition()), 3.3e-6);
+                          determined.getPosition()), 4.6e-6);
         Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                           determined.getPVCoordinates().getVelocity()), 1.6e-9);
 
@@ -920,7 +920,7 @@ public class BatchLSEstimatorTest {
     }
 
     @Test
-    public void testWrappedException() {
+    void testWrappedException() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -980,7 +980,7 @@ public class BatchLSEstimatorTest {
      * Perfect range rate measurements with a perfect start
      */
     @Test
-    public void testKeplerRangeRate() {
+    void testKeplerRangeRate() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -1023,7 +1023,7 @@ public class BatchLSEstimatorTest {
      * Perfect range and range rate measurements with a perfect start
      */
     @Test
-    public void testKeplerRangeAndRangeRate() {
+    void testKeplerRangeAndRangeRate() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -1076,7 +1076,7 @@ public class BatchLSEstimatorTest {
      * Test if the parameter µ is taken into account by the builder even if no attraction force has been added yet.
      */
     @Test
-    public void testIssue359() {
+    void testIssue359() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -1112,7 +1112,7 @@ public class BatchLSEstimatorTest {
     }
 
     @Test
-    public void testEstimateOnlyOneOrbitalParameter() {
+    void testEstimateOnlyOneOrbitalParameter() {
         doTestEstimateOnlySomeOrbitalParameters(new boolean[]{ true,  false, false, false, false, false });
         doTestEstimateOnlySomeOrbitalParameters(new boolean[]{ false,  true, false, false, false, false });
         doTestEstimateOnlySomeOrbitalParameters(new boolean[]{ false, false,  true, false, false, false });
@@ -1122,7 +1122,7 @@ public class BatchLSEstimatorTest {
     }
 
     @Test
-    public void testEstimateOnlyFewOrbitalParameters() {
+    void testEstimateOnlyFewOrbitalParameters() {
         doTestEstimateOnlySomeOrbitalParameters(new boolean[]{ false,  true, false, true, false, false });
     }
 

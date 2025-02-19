@@ -46,6 +46,9 @@ import org.orekit.utils.FieldPVCoordinates;
 public class FieldAdditionalDataProviderTest {
 
     private double mu;
+    private static final double DURATION = 600.0;
+    private static final String STRING_BEFORE = "Let's go!";
+    private static final String STRING_AFTER = "Good job!";
 
     @BeforeEach
     public void setUp() {
@@ -129,7 +132,7 @@ public class FieldAdditionalDataProviderTest {
 
         // Verify
         Assertions.assertTrue(provider.wasCalled());
-        Assertions.assertEquals(dt, propagated.getAdditionalData(name)[0].getReal(), 0.01);
+        Assertions.assertEquals(dt, propagated.getAdditionalState(name)[0].getReal(), 0.01);
 
     }
 
@@ -160,32 +163,13 @@ public class FieldAdditionalDataProviderTest {
 
         // Verify
         Assertions.assertTrue(provider.wasCalled());
-        Assertions.assertEquals(dt, propagated.getAdditionalData(name)[0].getReal(), 0.01);
+        Assertions.assertEquals(dt, propagated.getAdditionalState(name)[0].getReal(), 0.01);
 
     }
 
     @Test
     public void testIssue900BrouwerLyddane() {
         doTestIssue900BrouwerLyddane(Binary64Field.getInstance());
-    }
-
-    private static class MainStateModifier<T extends CalculusFieldElement<T>> extends FieldAbstractStateModifier<T> {
-        /** {@inheritDoc} */
-        @Override
-        public FieldSpacecraftState<T> change(final FieldSpacecraftState<T> state) {
-            final Field<T> field = state.getDate().getField();
-            return new FieldSpacecraftState<>(state.getOrbit(),
-                                              new FieldAttitude<>(state.getDate(),
-                                                                  state.getFrame(),
-                                                                  new FieldRotation<>(field.getZero(),
-                                                                                      field.getZero(),
-                                                                                      field.getZero(),
-                                                                                      field.getOne(),
-                                                                                      false),
-                                                                  FieldVector3D.getZero(field),
-                                                                  FieldVector3D.getZero(field)),
-                                              field.getZero().newInstance(2 * SpacecraftState.DEFAULT_MASS));
-        }
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue900BrouwerLyddane(final Field<T> field) {
@@ -209,11 +193,95 @@ public class FieldAdditionalDataProviderTest {
 
         // Verify
         Assertions.assertTrue(provider.wasCalled());
-        Assertions.assertEquals(dt, propagated.getAdditionalData(name)[0].getReal(), 0.01);
+        Assertions.assertEquals(dt, propagated.getAdditionalState(name)[0].getReal(), 0.01);
 
     }
 
-    private static class TimeDifferenceProvider<T extends CalculusFieldElement<T>> implements FieldAdditionalDataProvider<T> {
+    @Test
+    void testPropagateAdditionalStringData() {
+        doTestPropagateAdditionalStringData(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestPropagateAdditionalStringData(Field<T> field) {
+
+        final FieldSpacecraftState<T> state = createState(field);
+        final AdaptiveStepsizeFieldIntegrator<T> integrator = createIntegrator(field, state);
+        final FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        propagator.setInitialState(state);
+
+        final MainStringDataModifier<T> modifier = new MainStringDataModifier<>();
+        propagator.addAdditionalDataProvider(modifier);
+
+        final FieldSpacecraftState<T> propagated = propagator.propagate(state.getDate().shiftedBy(DURATION));
+        Assertions.assertEquals(STRING_AFTER, propagated.getAdditionalData(MainStringDataModifier.class.getSimpleName()));
+    }
+
+    @Test
+    void testInterpolationAdditionalStringData() {
+        doTestInterpolationAdditionalStringData(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestInterpolationAdditionalStringData(Field<T> field) {
+        final FieldSpacecraftState<T> state = createState(field);
+        final AdaptiveStepsizeFieldIntegrator<T> integrator = createIntegrator(field, state);
+        final FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        propagator.setInitialState(state);
+
+        final MainStringDataModifier<T> modifier = new MainStringDataModifier<>();
+        propagator.addAdditionalDataProvider(modifier);
+        FieldEphemerisGenerator<T> generator = propagator.getEphemerisGenerator();
+        propagator.propagate(state.getDate().shiftedBy(DURATION));
+        FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
+
+        Assertions.assertEquals(STRING_BEFORE, getAdditionalDataAt(ephemeris, state.getDate().shiftedBy(DURATION / 2 - 0.1)));
+        Assertions.assertEquals(STRING_AFTER, getAdditionalDataAt(ephemeris, state.getDate().shiftedBy(DURATION / 2)));
+        Assertions.assertEquals(STRING_AFTER, getAdditionalDataAt(ephemeris, state.getDate().shiftedBy(DURATION / 2 + 0.1)));
+    }
+
+    private <T extends CalculusFieldElement<T>> Object getAdditionalDataAt(FieldPropagator<T> propagator, FieldAbsoluteDate<T> date) {
+        return propagator.propagate(date).getAdditionalData(MainStringDataModifier.class.getSimpleName());
+    }
+
+    private static class MainStringDataModifier<T extends CalculusFieldElement<T>> implements FieldAdditionalDataProvider<String, T> {
+
+        private String value;
+
+        @Override
+        public void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target) {
+            value = target.getDate().isBefore(initialState.getDate().shiftedBy(DURATION / 2)) ? STRING_BEFORE : STRING_AFTER;
+        }
+
+        @Override
+        public String getAdditionalData(FieldSpacecraftState<T> state) {
+            return value;
+        }
+
+        @Override
+        public String getName() {
+            return MainStringDataModifier.class.getSimpleName();
+        }
+    }
+
+    private static class MainStateModifier<T extends CalculusFieldElement<T>> extends FieldAbstractStateModifier<T> {
+        /** {@inheritDoc} */
+        @Override
+        public FieldSpacecraftState<T> change(final FieldSpacecraftState<T> state) {
+            final Field<T> field = state.getDate().getField();
+            return new FieldSpacecraftState<>(state.getOrbit(),
+                    new FieldAttitude<>(state.getDate(),
+                            state.getFrame(),
+                            new FieldRotation<>(field.getZero(),
+                                    field.getZero(),
+                                    field.getZero(),
+                                    field.getOne(),
+                                    false),
+                            FieldVector3D.getZero(field),
+                            FieldVector3D.getZero(field)),
+                    field.getZero().newInstance(2 * SpacecraftState.DEFAULT_MASS));
+        }
+    }
+
+    private static class TimeDifferenceProvider<T extends CalculusFieldElement<T>> implements FieldAdditionalDataProvider<T[], T> {
 
         private final String   name;
         private boolean  called;

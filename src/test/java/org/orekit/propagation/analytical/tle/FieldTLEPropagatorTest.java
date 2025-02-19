@@ -301,7 +301,7 @@ public class FieldTLEPropagatorTest {
         final Gradient unexpectedMass = initialState.getMass();
         final Gradient expectedMass = unexpectedMass.multiply(2);
         final FieldSpacecraftState<Gradient> newState = new FieldSpacecraftState<>(initialState.getOrbit(),
-                initialState.getAttitude(), expectedMass);
+                                                                                   initialState.getAttitude()).withMass(expectedMass);
 
         // WHEN
         tlePropagator.resetInitialState(newState);
@@ -338,8 +338,8 @@ public class FieldTLEPropagatorTest {
         final FieldTLEPropagator<Gradient> tlePropagator = FieldTLEPropagator.selectExtrapolator(tle, parameters);
         final double expectedMass = 2000.;
         final FieldSpacecraftState<Gradient> propagatedState = tlePropagator.propagate(tle.getDate().shiftedBy(1));
-        final FieldSpacecraftState<Gradient> modifiedState = new FieldSpacecraftState<>(propagatedState.getOrbit(),
-                field.getZero().newInstance(expectedMass));
+        final FieldSpacecraftState<Gradient> modifiedState = new FieldSpacecraftState<>(propagatedState.getOrbit())
+                                                                 .withMass(field.getZero().newInstance(expectedMass));
 
         // WHEN
         tlePropagator.resetIntermediateState(modifiedState, isForward);

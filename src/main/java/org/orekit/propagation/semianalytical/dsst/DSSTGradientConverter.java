@@ -77,7 +77,7 @@ class DSSTGradientConverter extends AbstractGradientConverter {
         gAttitude = provider.getAttitude(gOrbit, gOrbit.getDate(), gOrbit.getFrame());
 
         // initialize the list with the state having 0 force model parameters
-        initStates(new FieldSpacecraftState<>(gOrbit, gAttitude, gM));
+        initStates(new FieldSpacecraftState<>(gOrbit, gAttitude).withMass(gM));
 
     }
 

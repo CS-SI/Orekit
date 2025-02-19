@@ -109,12 +109,12 @@ class FieldPropagatorTest {
         }
 
         @Override
-        public void addAdditionalDataProvider(FieldAdditionalDataProvider<Complex> additionalDataProvider) {
+        public void addAdditionalDataProvider(FieldAdditionalDataProvider<?, Complex> additionalDataProvider) {
             // not used in test
         }
 
         @Override
-        public List<FieldAdditionalDataProvider<Complex>> getAdditionalDataProviders() {
+        public List<FieldAdditionalDataProvider<?, Complex>> getAdditionalDataProviders() {
             return null;
         }
 

@@ -29,6 +29,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -58,6 +59,126 @@ import java.text.ParseException;
 
 
 class SpacecraftStateTest {
+
+    @Test
+    void testWithAttitudeAbsolutePV() {
+        // GIVEN
+        final AbsolutePVCoordinates absolutePVCoordinates = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
+                AbsoluteDate.ARBITRARY_EPOCH, new PVCoordinates());
+        final SpacecraftState state = new SpacecraftState(absolutePVCoordinates);
+        final Attitude attitude = Mockito.mock(Attitude.class);
+        Mockito.when(attitude.getDate()).thenReturn(state.getDate());
+        Mockito.when(attitude.getReferenceFrame()).thenReturn(state.getFrame());
+        // WHEN
+        final SpacecraftState stateWithAttitude = state.withAttitude(attitude);
+        // THEN
+        Assertions.assertEquals(attitude, stateWithAttitude.getAttitude());
+        Assertions.assertEquals(state.getMass(), stateWithAttitude.getMass());
+        Assertions.assertEquals(state.getAbsPVA(), stateWithAttitude.getAbsPVA());
+    }
+
+    @Test
+    void testWithMassAbsolutePV() {
+        // GIVEN
+        final AbsolutePVCoordinates absolutePVCoordinates = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
+                AbsoluteDate.ARBITRARY_EPOCH, new PVCoordinates());
+        final SpacecraftState state = new SpacecraftState(absolutePVCoordinates);
+        final double expectedMass = 123;
+        // WHEN
+        final SpacecraftState stateWithMass = state.withMass(expectedMass);
+        // THEN
+        Assertions.assertEquals(expectedMass, stateWithMass.getMass());
+        Assertions.assertEquals(state.getAttitude(), stateWithMass.getAttitude());
+        Assertions.assertEquals(state.getAbsPVA(), stateWithMass.getAbsPVA());
+    }
+
+    @Test
+    void testWithAdditionalDataAndAbsolutePV() {
+        // GIVEN
+        final AbsolutePVCoordinates absolutePVCoordinates = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
+                AbsoluteDate.ARBITRARY_EPOCH, new PVCoordinates());
+        final SpacecraftState state = new SpacecraftState(absolutePVCoordinates);
+        final DataDictionary dictionary = Mockito.mock(DataDictionary.class);
+        // WHEN
+        final SpacecraftState stateWithData = state.withAdditionalData(dictionary);
+        // THEN
+        Assertions.assertEquals(dictionary.getData(), stateWithData.getAdditionalDataValues().getData());
+        Assertions.assertEquals(state.getMass(), stateWithData.getMass());
+        Assertions.assertEquals(state.getAttitude(), stateWithData.getAttitude());
+        Assertions.assertEquals(state.getAbsPVA(), stateWithData.getAbsPVA());
+    }
+
+    @Test
+    void testWithAdditionalStatesDerivativesAndAbsolutePV() {
+        // GIVEN
+        final AbsolutePVCoordinates absolutePVCoordinates = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
+                AbsoluteDate.ARBITRARY_EPOCH, new PVCoordinates());
+        final SpacecraftState state = new SpacecraftState(absolutePVCoordinates);
+        final DoubleArrayDictionary dictionary = Mockito.mock(DoubleArrayDictionary.class);
+        // WHEN
+        final SpacecraftState stateWithDerivatives = state.withAdditionalStatesDerivatives(dictionary);
+        // THEN
+        Assertions.assertEquals(dictionary.getData(), stateWithDerivatives.getAdditionalStatesDerivatives().getData());
+        Assertions.assertEquals(state.getAbsPVA(), stateWithDerivatives.getAbsPVA());
+        Assertions.assertEquals(state.getAttitude(), stateWithDerivatives.getAttitude());
+        Assertions.assertEquals(state.getMass(), stateWithDerivatives.getMass());
+    }
+
+    @Test
+    void testWithAttitudeAndOrbit() {
+        // GIVEN
+        final SpacecraftState state = new SpacecraftState(orbit);
+        final Attitude attitude = Mockito.mock(Attitude.class);
+        Mockito.when(attitude.getDate()).thenReturn(state.getDate());
+        Mockito.when(attitude.getReferenceFrame()).thenReturn(state.getFrame());
+        // WHEN
+        final SpacecraftState stateWithAttitude = state.withAttitude(attitude);
+        // THEN
+        Assertions.assertEquals(attitude, stateWithAttitude.getAttitude());
+        Assertions.assertEquals(state.getMass(), stateWithAttitude.getMass());
+        Assertions.assertEquals(state.getOrbit(), stateWithAttitude.getOrbit());
+    }
+
+    @Test
+    void testWithMassAndOrbit() {
+        // GIVEN
+        final SpacecraftState state = new SpacecraftState(orbit);
+        final double expectedMass = 123;
+        // WHEN
+        final SpacecraftState stateWithMass = state.withMass(expectedMass);
+        // THEN
+        Assertions.assertEquals(expectedMass, stateWithMass.getMass());
+        Assertions.assertEquals(state.getAttitude(), stateWithMass.getAttitude());
+        Assertions.assertEquals(state.getOrbit(), stateWithMass.getOrbit());
+    }
+
+    @Test
+    void testWithAdditionalDataAndOrbit() {
+        // GIVEN
+        final SpacecraftState state = new SpacecraftState(orbit);
+        final DataDictionary dictionary = Mockito.mock(DataDictionary.class);
+        // WHEN
+        final SpacecraftState stateWithData = state.withAdditionalData(dictionary);
+        // THEN
+        Assertions.assertEquals(dictionary, stateWithData.getAdditionalDataValues());
+        Assertions.assertEquals(state.getMass(), stateWithData.getMass());
+        Assertions.assertEquals(state.getAttitude(), stateWithData.getAttitude());
+        Assertions.assertEquals(state.getOrbit(), stateWithData.getOrbit());
+    }
+
+    @Test
+    void testWithAdditionalStatesDerivativesAndOrbit() {
+        // GIVEN
+        final SpacecraftState state = new SpacecraftState(orbit);
+        final DoubleArrayDictionary dictionary = Mockito.mock(DoubleArrayDictionary.class);
+        // WHEN
+        final SpacecraftState stateWithDerivatives = state.withAdditionalStatesDerivatives(dictionary);
+        // THEN
+        Assertions.assertEquals(dictionary.getData(), stateWithDerivatives.getAdditionalStatesDerivatives().getData());
+        Assertions.assertEquals(state.getOrbit(), stateWithDerivatives.getOrbit());
+        Assertions.assertEquals(state.getAttitude(), stateWithDerivatives.getAttitude());
+        Assertions.assertEquals(state.getMass(), stateWithDerivatives.getMass());
+    }
 
     @Test
     void testShiftVsEcksteinHechlerError()
@@ -238,14 +359,8 @@ class SpacecraftStateTest {
         // test various constructors
         DataDictionary dictionary = new DataDictionary();
         dictionary.put("test-3", new double[] { -6.0 });
-        SpacecraftState sO = new SpacecraftState(state.getOrbit(), dictionary);
+        SpacecraftState sO = new SpacecraftState(state.getOrbit()).withAdditionalData(dictionary);
         Assertions.assertEquals(-6.0, sO.getAdditionalState("test-3")[0], 1.0e-15);
-        SpacecraftState sOA = new SpacecraftState(state.getOrbit(), state.getAttitude(), dictionary);
-        Assertions.assertEquals(-6.0, sOA.getAdditionalState("test-3")[0], 1.0e-15);
-        SpacecraftState sOM = new SpacecraftState(state.getOrbit(), state.getMass(), dictionary);
-        Assertions.assertEquals(-6.0, sOM.getAdditionalState("test-3")[0], 1.0e-15);
-        SpacecraftState sOAM = new SpacecraftState(state.getOrbit(), state.getAttitude(), state.getMass(), dictionary);
-        Assertions.assertEquals(-6.0, sOAM.getAdditionalState("test-3")[0], 1.0e-15);
 
     }
 
@@ -477,14 +592,8 @@ class SpacecraftStateTest {
         dd[0] = -6.0;
         DataDictionary additional = new DataDictionary();
         additional.put("test-3", dd);
-        SpacecraftState sO = new SpacecraftState(state.getAbsPVA(), additional);
+        SpacecraftState sO = state.withAdditionalData(additional);
         Assertions.assertEquals(-6.0, sO.getAdditionalState("test-3")[0], 1.0e-15);
-        SpacecraftState sOA = new SpacecraftState(state.getAbsPVA(), state.getAttitude(), additional);
-        Assertions.assertEquals(-6.0, sOA.getAdditionalState("test-3")[0], 1.0e-15);
-        SpacecraftState sOM = new SpacecraftState(state.getAbsPVA(), state.getMass(), additional);
-        Assertions.assertEquals(-6.0, sOM.getAdditionalState("test-3")[0], 1.0e-15);
-        SpacecraftState sOAM = new SpacecraftState(state.getAbsPVA(), state.getAttitude(), state.getMass(), additional);
-        Assertions.assertEquals(-6.0, sOAM.getAdditionalState("test-3")[0], 1.0e-15);
 
     }
 

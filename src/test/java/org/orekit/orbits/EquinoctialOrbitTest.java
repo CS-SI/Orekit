@@ -79,16 +79,16 @@ public class EquinoctialOrbitTest {
 
     @ParameterizedTest
     @EnumSource(PositionAngleType.class)
-    void testWithFrameKeplerian(final PositionAngleType positionAngleType) {
-        testTemplateWithFrame(Vector3D.ZERO, positionAngleType);
+    void testInFrameKeplerian(final PositionAngleType positionAngleType) {
+        testTemplateInFrame(Vector3D.ZERO, positionAngleType);
     }
 
     @Test
-    void testWithFrameNonKeplerian() {
-        testTemplateWithFrame(Vector3D.PLUS_K, PositionAngleType.TRUE);
+    void testInFrameNonKeplerian() {
+        testTemplateInFrame(Vector3D.PLUS_K, PositionAngleType.TRUE);
     }
 
-    private void testTemplateWithFrame(final Vector3D acceleration, final PositionAngleType positionAngleType) {
+    private void testTemplateInFrame(final Vector3D acceleration, final PositionAngleType positionAngleType) {
         // GIVEN
         final Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         final Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
@@ -97,7 +97,7 @@ public class EquinoctialOrbitTest {
         final CartesianOrbit cartesianOrbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, muEarth);
         final EquinoctialOrbit equinoctialOrbit = new EquinoctialOrbit(cartesianOrbit).withCachedPositionAngleType(positionAngleType);
         // WHEN
-        final EquinoctialOrbit orbitWithOtherFrame = equinoctialOrbit.withFrame(FramesFactory.getGCRF());
+        final EquinoctialOrbit orbitWithOtherFrame = equinoctialOrbit.inFrame(FramesFactory.getGCRF());
         // THEN
         Assertions.assertNotEquals(equinoctialOrbit.getFrame(), orbitWithOtherFrame.getFrame());
         Assertions.assertEquals(equinoctialOrbit.getDate(), orbitWithOtherFrame.getDate());

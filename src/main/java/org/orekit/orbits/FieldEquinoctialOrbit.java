@@ -907,7 +907,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
 
     /** {@inheritDoc} */
     @Override
-    public FieldEquinoctialOrbit<T> withFrame(final Frame inertialFrame) {
+    public FieldEquinoctialOrbit<T> inFrame(final Frame inertialFrame) {
         final FieldPVCoordinates<T> fieldPVCoordinates;
         if (hasNonKeplerianAcceleration()) {
             fieldPVCoordinates = getPVCoordinates(inertialFrame);

@@ -1038,11 +1038,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             final Orbit orbit       = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, yDot, PositionAngleType.MEAN, date, getMu(), getFrame());
             final Attitude attitude = getAttitudeProvider().getAttitude(orbit, date, getFrame());
 
-            if (coefficients == null) {
-                return new SpacecraftState(orbit, attitude, mass);
-            } else {
-                return new SpacecraftState(orbit, attitude, mass, coefficients);
-            }
+            return new SpacecraftState(orbit, attitude, mass, coefficients, null);
 
         }
 

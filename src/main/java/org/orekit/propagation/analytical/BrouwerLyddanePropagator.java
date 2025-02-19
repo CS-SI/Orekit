@@ -566,8 +566,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
         resetInitialState(new SpacecraftState(initialOrbit,
                                               attitudeProv.getAttitude(initialOrbit,
                                                                        initialOrbit.getDate(),
-                                                                       initialOrbit.getFrame()),
-                                              mass),
+                                                                       initialOrbit.getFrame())).withMass(mass),
                           initialType, converter);
 
     }
@@ -874,10 +873,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
 
     /** {@inheritDoc} */
     protected void resetIntermediateState(final SpacecraftState state, final boolean forward) {
-        final OsculatingToMeanConverter converter = new FixedPointConverter(EPSILON_DEFAULT,
-                                                                            MAX_ITERATIONS_DEFAULT,
-                                                                            FixedPointConverter.DEFAULT_DAMPING);
-        resetIntermediateState(state, forward, converter);
+        resetIntermediateState(state, forward, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
     }
 
     /** Reset an intermediate state.

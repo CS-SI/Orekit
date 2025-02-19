@@ -64,7 +64,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldInterpolationGr
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldMaxGapInterpolationGrid;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.FieldArrayDictionary;
+import org.orekit.utils.FieldDataDictionary;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
@@ -547,7 +547,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
         final FieldEquinoctialOrbit<T> osculatingOrbit = computeOsculatingOrbit(mean, shortPeriodTerms);
 
         return new FieldSpacecraftState<>(osculatingOrbit, mean.getAttitude(), mean.getMass(),
-                                          mean.getAdditionalDataValues());
+                                          mean.getAdditionalDataValues(), null);
 
     }
 
@@ -640,7 +640,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
         converter.setMeanTheory(theory);
         final FieldOrbit<T> meanOrbit = converter.convertToMean(osculating.getOrbit());
         return new FieldSpacecraftState<>(meanOrbit, osculating.getAttitude(), osculating.getMass(),
-                                          osculating.getAdditionalDataValues());
+                                          osculating.getAdditionalDataValues(), null);
     }
 
     /** Override the default value of the parameter.
@@ -850,21 +850,21 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
             // (the loop may not be performed if there are no force models and in the
             //  case we want to remain in mean parameters only)
             final T[] elements = y.clone();
-            final FieldArrayDictionary<T> coefficients;
+            final FieldDataDictionary<T> coefficients;
             switch (type) {
                 case MEAN:
                     coefficients = null;
                     break;
                 case OSCULATING:
                     final FieldOrbit<T> meanOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, yDot, PositionAngleType.MEAN, date, getMu(), getFrame());
-                    coefficients = selectedCoefficients == null ? null : new FieldArrayDictionary<>(date.getField());
+                    coefficients = selectedCoefficients == null ? null : new FieldDataDictionary<>(date.getField());
                     for (final FieldShortPeriodTerms<T> spt : shortPeriodTerms) {
                         final T[] shortPeriodic = spt.value(meanOrbit);
                         for (int i = 0; i < shortPeriodic.length; i++) {
                             elements[i] = elements[i].add(shortPeriodic[i]);
                         }
                         if (selectedCoefficients != null) {
-                            coefficients.putAll(spt.getCoefficients(date, selectedCoefficients));
+                            coefficients.putAllFields(spt.getCoefficients(date, selectedCoefficients));
                         }
                     }
                     break;
@@ -880,11 +880,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
             final FieldOrbit<T> orbit       = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, yDot, PositionAngleType.MEAN, date, getMu(), getFrame());
             final FieldAttitude<T> attitude = getAttitudeProvider().getAttitude(orbit, date, getFrame());
 
-            if (coefficients == null) {
-                return new FieldSpacecraftState<>(orbit, attitude, mass);
-            } else {
-                return new FieldSpacecraftState<>(orbit, attitude, mass, coefficients);
-            }
+            return new FieldSpacecraftState<>(orbit, attitude, mass, coefficients, null);
 
         }
 

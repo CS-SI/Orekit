@@ -191,8 +191,7 @@ public class J2DifferentialEffect
             return state1;
         }
 
-        return new SpacecraftState(updateOrbit(state1.getOrbit()),
-                                   state1.getAttitude(), state1.getMass());
+        return new SpacecraftState(updateOrbit(state1.getOrbit()), state1.getAttitude()).withMass(state1.getMass());
 
     }
 

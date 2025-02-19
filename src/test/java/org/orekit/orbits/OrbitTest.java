@@ -202,7 +202,7 @@ class OrbitTest {
         }
 
         @Override
-        public Orbit withFrame(Frame inertialFrame) {
+        public Orbit inFrame(Frame inertialFrame) {
             return null;
         }
 

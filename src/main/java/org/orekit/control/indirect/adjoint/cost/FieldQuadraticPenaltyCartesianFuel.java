@@ -152,7 +152,7 @@ public class FieldQuadraticPenaltyCartesianFuel<T extends CalculusFieldElement<T
         /** {@inheritDoc} */
         @Override
         public T g(final FieldSpacecraftState<T> state) {
-            final T[] adjoint = state.getAdditionalData(getAdjointName());
+            final T[] adjoint = state.getAdditionalState(getAdjointName());
             return evaluateSwitchFunction(adjoint, state.getMass()).subtract(criticalValue);
         }
     }

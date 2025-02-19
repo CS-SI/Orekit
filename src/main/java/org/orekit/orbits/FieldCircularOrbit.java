@@ -1076,7 +1076,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
 
     /** {@inheritDoc} */
     @Override
-    public FieldCircularOrbit<T> withFrame(final Frame inertialFrame) {
+    public FieldCircularOrbit<T> inFrame(final Frame inertialFrame) {
         final FieldPVCoordinates<T> fieldPVCoordinates;
         if (hasNonKeplerianAcceleration()) {
             fieldPVCoordinates = getPVCoordinates(inertialFrame);

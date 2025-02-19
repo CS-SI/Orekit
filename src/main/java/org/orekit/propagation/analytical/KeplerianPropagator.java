@@ -134,7 +134,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
         type.mapOrbitToArray(orbit, positionAngleType, stateVector, null);
         final Orbit fixedOrbit = type.mapArrayToOrbit(stateVector, null, positionAngleType,
                                                       orbit.getDate(), mu, orbit.getFrame());
-        SpacecraftState fixedState = new SpacecraftState(fixedOrbit, attitude, mass);
+        SpacecraftState fixedState = new SpacecraftState(fixedOrbit, attitude).withMass(mass);
         if (additionalStates != null) {
             for (final DataDictionary.Entry entry : additionalStates.getData()) {
                 fixedState = fixedState.addAdditionalData(entry.getKey(), entry.getValue());

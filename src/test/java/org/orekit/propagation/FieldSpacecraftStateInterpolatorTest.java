@@ -459,7 +459,7 @@ class FieldSpacecraftStateInterpolatorTest {
             maxErrorM =
                     FastMath.max(maxErrorM, FastMath.abs(interpolated.getMass().getReal() - propagated.getMass().getReal()));
             maxErrorQ = FastMath.max(maxErrorQ,
-                                     FastMath.abs(interpolated.getAdditionalData("quadratic")[0].getReal() - dt * dt));
+                                     FastMath.abs(interpolated.getAdditionalState("quadratic")[0].getReal() - dt * dt));
             maxErrorD =
                     FastMath.max(maxErrorD,
                                  FastMath.abs(interpolated.getAdditionalStateDerivative("quadratic-dot")[0].getReal()

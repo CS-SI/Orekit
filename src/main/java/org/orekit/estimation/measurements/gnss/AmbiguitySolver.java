@@ -113,7 +113,6 @@ public class AmbiguitySolver {
 
         }
 
-        final int n = freeDrivers.size();
         final int[] indirection = new int[totalValuesToEstimate];
         int nb = 0;
         for (ParameterDriver freeDriver : freeDrivers) {

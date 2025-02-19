@@ -1049,7 +1049,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
 
     /** {@inheritDoc} */
     @Override
-    public KeplerianOrbit withFrame(final Frame inertialFrame) {
+    public KeplerianOrbit inFrame(final Frame inertialFrame) {
         final PVCoordinates pvCoordinates;
         if (hasNonKeplerianAcceleration()) {
             pvCoordinates = getPVCoordinates(inertialFrame);

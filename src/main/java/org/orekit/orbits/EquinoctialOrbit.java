@@ -842,7 +842,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
 
     /** {@inheritDoc} */
     @Override
-    public EquinoctialOrbit withFrame(final Frame inertialFrame) {
+    public EquinoctialOrbit inFrame(final Frame inertialFrame) {
         final PVCoordinates pvCoordinates;
         if (hasNonKeplerianAcceleration()) {
             pvCoordinates = getPVCoordinates(inertialFrame);

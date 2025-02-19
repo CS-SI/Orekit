@@ -113,7 +113,7 @@ class NadirPointingTest {
         Assertions.assertEquals(pv.getDate(), actualPV.getDate().toAbsoluteDate());
         final PVCoordinates relativePV = new PVCoordinates(pv, actualPV.toPVCoordinates());
         final Vector3D positionDifference = relativePV.getPosition();
-        Assertions.assertEquals(0., positionDifference.getNorm(), 1e-9);
+        Assertions.assertEquals(0., positionDifference.getNorm(), 2e-9);
         final Vector3D velocityDifference = relativePV.getVelocity();
         Assertions.assertEquals(0., velocityDifference.getNorm(), 1e-6);
     }

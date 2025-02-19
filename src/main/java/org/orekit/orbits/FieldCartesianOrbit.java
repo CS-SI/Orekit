@@ -426,7 +426,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     @Override
-    public FieldCartesianOrbit<T> withFrame(final Frame inertialFrame) {
+    public FieldCartesianOrbit<T> inFrame(final Frame inertialFrame) {
         if (hasNonKeplerianAcceleration()) {
             return new FieldCartesianOrbit<>(getPVCoordinates(inertialFrame), inertialFrame, getMu());
         } else {

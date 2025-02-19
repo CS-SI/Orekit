@@ -325,7 +325,7 @@ public enum OrekitMessages implements Localizable {
     TOO_SMALL_SCALE_FOR_PARAMETER("scale factor for parameter {0} is too small: {1}"),
 
     /** ADDITIONAL_STATE_BAD_TYPE. */
-    ADDITIONAL_STATE_BAD_TYPE("state \"{0}\" is not a double array"),
+    ADDITIONAL_STATE_BAD_TYPE("state \"{0}\" is not an array"),
 
     /** UNKNOWN_ADDITIONAL_DATA. */
     UNKNOWN_ADDITIONAL_DATA("unknown additional data \"{0}\""),

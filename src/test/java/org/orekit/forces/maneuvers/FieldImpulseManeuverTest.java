@@ -494,7 +494,7 @@ class FieldImpulseManeuverTest {
         final FieldAbsoluteDate<UnivariateDerivative1> targetDate = initialState.getDate().shiftedBy(zero.add(10000.));
         final FieldSpacecraftState<UnivariateDerivative1> terminalState = fieldPropagator.propagate(targetDate);
         // Then
-        final UnivariateDerivative1 actualValue = terminalState.getAdditionalData(name)[0];
+        final UnivariateDerivative1 actualValue = terminalState.getAdditionalState(name)[0];
         Assertions.assertEquals(zero, actualValue);
     }
 

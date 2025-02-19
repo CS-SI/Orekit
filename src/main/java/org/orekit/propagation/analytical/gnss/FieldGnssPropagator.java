@@ -106,7 +106,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
         final FieldAttitude<T> attitude = provider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
 
         // calling the method from base class because the one overridden below recomputes the orbital elements
-        super.resetInitialState(new FieldSpacecraftState<>(orbit, attitude, mass));
+        super.resetInitialState(new FieldSpacecraftState<>(orbit, attitude).withMass(mass));
 
     }
 
@@ -298,7 +298,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
         orbitalElements = buildOrbitalElements(state, orbitalElements, ecef, getAttitudeProvider(), state.getMass());
         final FieldOrbit<T> orbit = propagateOrbit(orbitalElements.getDate(), defaultParameters());
         final FieldAttitude<T> attitude = getAttitudeProvider().getAttitude(orbit, orbit.getDate(), orbit.getFrame());
-        super.resetInitialState(new FieldSpacecraftState<>(orbit, attitude, state.getMass()));
+        super.resetInitialState(new FieldSpacecraftState<>(orbit, attitude).withMass(state.getMass()));
     }
 
     /** {@inheritDoc} */

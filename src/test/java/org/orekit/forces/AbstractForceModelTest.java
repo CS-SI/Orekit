@@ -177,20 +177,21 @@ public abstract class AbstractForceModelTest {
                                         new FieldVector3D<>(factory.constant(a.getX()),
                                                             factory.constant(a.getY()),
                                                             factory.constant(a.getZ())));
+        final DerivativeStructure fMass = field.getZero().newInstance(state.getMass());
         if (state.isOrbitDefined()) {
             final FieldCartesianOrbit<DerivativeStructure> orbit =
                     new FieldCartesianOrbit<>(fPVA, state.getFrame(), field.getZero().newInstance(state.getOrbit().getMu()));
             final FieldAttitude<DerivativeStructure> attitude =
                     attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
 
-            return new FieldSpacecraftState<>(orbit, attitude, field.getZero().newInstance(state.getMass()));
+            return new FieldSpacecraftState<>(orbit, attitude).withMass(fMass);
         } else {
             final FieldAbsolutePVCoordinates<DerivativeStructure> absolutePVCoordinates =
                     new FieldAbsolutePVCoordinates<>(state.getFrame(), fPVA);
             final FieldAttitude<DerivativeStructure> attitude =
                     attitudeProvider.getAttitude(absolutePVCoordinates, absolutePVCoordinates.getDate(), absolutePVCoordinates.getFrame());
 
-            return new FieldSpacecraftState<>(absolutePVCoordinates, attitude, field.getZero().add(state.getMass()));
+            return new FieldSpacecraftState<>(absolutePVCoordinates, attitude).withMass(fMass);
         }
 
     }
@@ -215,20 +216,21 @@ public abstract class AbstractForceModelTest {
                                         new FieldVector3D<>(Gradient.constant(freeParameters, a.getX()),
                                                         Gradient.constant(freeParameters, a.getY()),
                                                         Gradient.constant(freeParameters, a.getZ())));
+        final Gradient gMass = field.getZero().newInstance(state.getMass());
         if (state.isOrbitDefined()) {
             final FieldCartesianOrbit<Gradient> orbit =
                     new FieldCartesianOrbit<>(fPVA, state.getFrame(), field.getZero().add(state.getOrbit().getMu()));
             final FieldAttitude<Gradient> attitude =
                     attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
 
-            return new FieldSpacecraftState<>(orbit, attitude, field.getZero().add(state.getMass()));
+            return new FieldSpacecraftState<>(orbit, attitude).withMass(gMass);
         } else {
             final FieldAbsolutePVCoordinates<Gradient> absolutePVCoordinates =
                     new FieldAbsolutePVCoordinates<>(state.getFrame(), fPVA);
             final FieldAttitude<Gradient> attitude =
                     attitudeProvider.getAttitude(absolutePVCoordinates, absolutePVCoordinates.getDate(), absolutePVCoordinates.getFrame());
 
-            return new FieldSpacecraftState<>(absolutePVCoordinates, attitude, field.getZero().add(state.getMass()));
+            return new FieldSpacecraftState<>(absolutePVCoordinates, attitude).withMass(gMass);
         }
 
     }

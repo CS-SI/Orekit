@@ -194,9 +194,9 @@ public abstract class AbstractGradientConverter {
         }
 
         if (state.isOrbitDefined()) {
-            return new FieldSpacecraftState<>(gOrbit, gAttitude, gMass);
+            return new FieldSpacecraftState<>(gOrbit, gAttitude).withMass(gMass);
         } else {
-            return new FieldSpacecraftState<>(gAbsolutePV, gAttitude, gMass);
+            return new FieldSpacecraftState<>(gAbsolutePV, gAttitude).withMass(gMass);
         }
 
     }
@@ -263,20 +263,19 @@ public abstract class AbstractGradientConverter {
                                                                                s0.getFrame(),
                                                                                extend(s0.getDate(), freeParameters),
                                                                                extend(orbit.getMu(), freeParameters)),
-                            gAttitude,
-                            gMass);
+                            gAttitude).withMass(gMass);
                 } else {
                     spacecraftState =
                         new FieldSpacecraftState<>(new FieldCartesianOrbit<>(timeStampedFieldPVCoordinates,
                                                                              s0.getFrame(),
                                                                              extend(orbit.getMu(), freeParameters)),
-                                                   gAttitude, gMass);
+                                                   gAttitude).withMass(gMass);
                 }
             } else {
                 spacecraftState =
                     new FieldSpacecraftState<>(new FieldAbsolutePVCoordinates<>(s0.getFrame(),
                                                                                 timeStampedFieldPVCoordinates),
-                                               gAttitude, gMass);
+                                               gAttitude).withMass(gMass);
             }
 
             gStates.set(nbParams, spacecraftState);

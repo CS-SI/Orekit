@@ -1107,7 +1107,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     @Override
-    public FieldKeplerianOrbit<T> withFrame(final Frame inertialFrame) {
+    public FieldKeplerianOrbit<T> inFrame(final Frame inertialFrame) {
         final FieldPVCoordinates<T> fieldPVCoordinates;
         if (hasNonKeplerianAcceleration()) {
             fieldPVCoordinates = getPVCoordinates(inertialFrame);

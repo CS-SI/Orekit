@@ -63,16 +63,16 @@ public class FieldCartesianOrbitTest {
     }
 
     @Test
-    void testWithFrameNonKeplerian() {
-        testTemplateWithFrame(Vector3D.MINUS_J);
+    void testInFrameNonKeplerian() {
+        testTemplateInFrame(Vector3D.MINUS_J);
     }
 
     @Test
-    void testWithFrameKeplerian() {
-        testTemplateWithFrame(Vector3D.ZERO);
+    void testInFrameKeplerian() {
+        testTemplateInFrame(Vector3D.ZERO);
     }
 
-    private void testTemplateWithFrame(final Vector3D acceleration) {
+    private void testTemplateInFrame(final Vector3D acceleration) {
         // GIVEN
         final Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         final Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
@@ -82,7 +82,7 @@ public class FieldCartesianOrbitTest {
                 AbsoluteDate.ARBITRARY_EPOCH, muEarth);
         final FieldCartesianOrbit<Binary64> fieldOrbit = new FieldCartesianOrbit<>(Binary64Field.getInstance(), cartesianOrbit);
         // WHEN
-        final FieldCartesianOrbit<Binary64> fieldOrbitWithOtherFrame = fieldOrbit.withFrame(FramesFactory.getGCRF());
+        final FieldCartesianOrbit<Binary64> fieldOrbitWithOtherFrame = fieldOrbit.inFrame(FramesFactory.getGCRF());
         // THEN
         Assertions.assertNotEquals(fieldOrbit.getFrame(), fieldOrbitWithOtherFrame.getFrame());
         Assertions.assertEquals(fieldOrbit.getDate(), fieldOrbitWithOtherFrame.getDate());

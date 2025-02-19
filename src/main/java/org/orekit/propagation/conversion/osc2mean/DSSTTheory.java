@@ -119,7 +119,7 @@ public class DSSTTheory implements MeanTheory {
 
         // Create the spacecraft state
         final Attitude attitude = attitudeProvider.getAttitude(mean, mean.getDate(), mean.getFrame());
-        final SpacecraftState meanState = new SpacecraftState(mean, attitude, mass);
+        final SpacecraftState meanState = new SpacecraftState(mean, attitude).withMass(mass);
 
         // Create the auxiliary object
         final AuxiliaryElements aux = new AuxiliaryElements(mean, +1);
@@ -189,7 +189,7 @@ public class DSSTTheory implements MeanTheory {
         // Create the spacecraft state
         final T fieldMass = field.getZero().newInstance(mass);
         final FieldAttitude<T> attitude = attitudeProvider.getAttitude(mean, mean.getDate(), mean.getFrame());
-        final FieldSpacecraftState<T> meanState = new FieldSpacecraftState<>(mean, attitude, fieldMass);
+        final FieldSpacecraftState<T> meanState = new FieldSpacecraftState<>(mean, attitude).withMass(fieldMass);
 
         //Create the auxiliary object
         final FieldAuxiliaryElements<T> aux = new FieldAuxiliaryElements<>(mean, +1);

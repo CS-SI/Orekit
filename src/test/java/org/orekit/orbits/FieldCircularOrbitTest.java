@@ -98,16 +98,16 @@ class FieldCircularOrbitTest {
     }
 
     @Test
-    void testWithFrameNonKeplerian() {
-        testTemplateWithFrame(Vector3D.MINUS_J);
+    void testInFrameNonKeplerian() {
+        testTemplateInFrame(Vector3D.MINUS_J);
     }
 
     @Test
-    void testWithFrameKeplerian() {
-        testTemplateWithFrame(Vector3D.ZERO);
+    void testInFrameKeplerian() {
+        testTemplateInFrame(Vector3D.ZERO);
     }
 
-    private void testTemplateWithFrame(final Vector3D acceleration) {
+    private void testTemplateInFrame(final Vector3D acceleration) {
         // GIVEN
         final Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         final Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
@@ -118,7 +118,7 @@ class FieldCircularOrbitTest {
         final KeplerianOrbit keplerianOrbit = new KeplerianOrbit(cartesianOrbit);
         final FieldCircularOrbit<Binary64> fieldOrbit = new FieldCircularOrbit<>(Binary64Field.getInstance(), keplerianOrbit);
         // WHEN
-        final FieldCircularOrbit<Binary64> fieldOrbitWithOtherFrame = fieldOrbit.withFrame(FramesFactory.getGCRF());
+        final FieldCircularOrbit<Binary64> fieldOrbitWithOtherFrame = fieldOrbit.inFrame(FramesFactory.getGCRF());
         // THEN
         Assertions.assertNotEquals(fieldOrbit.getFrame(), fieldOrbitWithOtherFrame.getFrame());
         Assertions.assertEquals(fieldOrbit.getDate(), fieldOrbitWithOtherFrame.getDate());

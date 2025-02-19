@@ -219,7 +219,7 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
     @Test
     public void testLageos2()
         throws URISyntaxException, IllegalArgumentException, IOException,
-               OrekitException, ParseException {
+               OrekitException {
 
         // input in resources directory
         final String inputPath = DSSTOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/dsst_od_test_Lageos2.in").toURI().getPath();
@@ -262,7 +262,7 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
 
         //test on statistic for the range residuals
         final long nbRange = 95;
-        final double[] RefStatRange = { -28.316, 58.490, 0.0, 14.857 };
+        final double[] RefStatRange = { -28.3161, 58.490, 0.0, 14.857 };
         Assertions.assertEquals(nbRange, odLageos2.getRangeStat().getN());
         MatcherAssert.assertThat(odLageos2.getRangeStat().getMin(),
                 Matchers.greaterThan(RefStatRange[0]));

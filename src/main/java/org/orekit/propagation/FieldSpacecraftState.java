@@ -23,6 +23,7 @@ import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -36,11 +37,12 @@ import org.orekit.orbits.Orbit;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeShiftable;
 import org.orekit.time.FieldTimeStamped;
-import org.orekit.utils.DoubleArrayDictionary;
-import org.orekit.utils.FieldArrayDictionary;
-import org.orekit.utils.FieldAbsolutePVCoordinates;
-import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.DataDictionary;
+import org.orekit.utils.DoubleArrayDictionary;
+import org.orekit.utils.FieldAbsolutePVCoordinates;
+import org.orekit.utils.FieldArrayDictionary;
+import org.orekit.utils.FieldDataDictionary;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -97,8 +99,8 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     /** Current mass (kg). */
     private final T mass;
 
-    /** Additional data. */
-    private final FieldArrayDictionary<T> additional;
+    /** Additional data, can be any object (String, T[], etc.). */
+    private final FieldDataDictionary<T> additional;
 
     /** Additional states derivatives.
      * @since 11.1
@@ -112,10 +114,10 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     public FieldSpacecraftState(final FieldOrbit<T> orbit) {
         this(orbit, SpacecraftState.getDefaultAttitudeProvider(orbit.getFrame())
                         .getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
-             orbit.getA().getField().getZero().newInstance(DEFAULT_MASS), null);
+             orbit.getA().getField().getZero().newInstance(DEFAULT_MASS), null, null);
     }
 
-    /** Build a spacecraft state from orbit and attitude.
+    /** Build a spacecraft state from orbit and attitude. Kept for performance.
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
      * @param orbit the orbit
      * @param attitude attitude
@@ -124,18 +126,20 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      */
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final FieldAttitude<T> attitude)
         throws IllegalArgumentException {
-        this(orbit, attitude, orbit.getA().getField().getZero().newInstance(DEFAULT_MASS), null);
+        this(orbit, attitude, orbit.getA().getField().getZero().newInstance(DEFAULT_MASS), null, null);
     }
 
     /** Create a new instance from orbit and mass.
      * <p>FieldAttitude law is set to an unspecified default attitude.</p>
      * @param orbit the orbit
      * @param mass the mass (kg)
+     * @deprecated since 13.0, use withXXX
      */
+    @Deprecated
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final T mass) {
         this(orbit, SpacecraftState.getDefaultAttitudeProvider(orbit.getFrame())
                         .getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
-             mass, null);
+             mass, null, null);
     }
 
     /** Build a spacecraft state from orbit, attitude and mass.
@@ -144,61 +148,12 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @param mass the mass (kg)
      * @exception IllegalArgumentException if orbit and attitude dates
      * or frames are not equal
+     * @deprecated since 13.0, use withXXX
      */
+    @Deprecated
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final FieldAttitude<T> attitude, final T mass)
         throws IllegalArgumentException {
-        this(orbit, attitude, mass, null);
-    }
-
-    /** Build a spacecraft state from orbit and additional states.
-     * <p>FieldAttitude and mass are set to unspecified non-null arbitrary values.</p>
-     * @param orbit the orbit
-     * @param additional additional states
-     * @since 11.1
-     */
-    public FieldSpacecraftState(final FieldOrbit<T> orbit, final FieldArrayDictionary<T> additional) {
-        this(orbit, SpacecraftState.getDefaultAttitudeProvider(orbit.getFrame())
-                        .getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
-             orbit.getA().getField().getZero().newInstance(DEFAULT_MASS), additional);
-    }
-
-    /** Build a spacecraft state from orbit attitude and additional states.
-     * <p>Mass is set to an unspecified non-null arbitrary value.</p>
-     * @param orbit the orbit
-     * @param attitude attitude
-     * @param additional additional states
-     * @exception IllegalArgumentException if orbit and attitude dates
-     * or frames are not equal
-     * @since 11.1
-     */
-    public FieldSpacecraftState(final FieldOrbit<T> orbit, final FieldAttitude<T> attitude, final FieldArrayDictionary<T> additional)
-        throws IllegalArgumentException {
-        this(orbit, attitude, orbit.getA().getField().getZero().newInstance(DEFAULT_MASS), additional);
-    }
-
-    /** Create a new instance from orbit, mass and additional states.
-     * <p>FieldAttitude law is set to an unspecified default attitude.</p>
-     * @param orbit the orbit
-     * @param mass the mass (kg)
-     * @param additional additional states
-     * @since 11.1
-     */
-    public FieldSpacecraftState(final FieldOrbit<T> orbit, final T mass, final FieldArrayDictionary<T> additional) {
-        this(orbit, SpacecraftState.getDefaultAttitudeProvider(orbit.getFrame())
-                        .getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
-             mass, additional);
-    }
-
-    /** Build a spacecraft state from orbit, attitude, mass and additional states.
-     * @param orbit the orbit
-     * @param attitude attitude
-     * @param mass the mass (kg)
-     * @param additional additional states (may be null if no additional states are available)
-     * @since 11.1
-     */
-    public FieldSpacecraftState(final FieldOrbit<T> orbit, final FieldAttitude<T> attitude,
-                                final T mass, final FieldArrayDictionary<T> additional) {
-        this(orbit, attitude, mass, additional, null);
+        this(orbit, attitude, mass, null, null);
     }
 
     /** Build a spacecraft state from orbit, attitude, mass, additional states and derivatives.
@@ -212,7 +167,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @since 11.1
      */
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final FieldAttitude<T> attitude, final T mass,
-                                final FieldArrayDictionary<T> additional,
+                                final FieldDataDictionary<T> additional,
                                 final FieldArrayDictionary<T> additionalDot)
         throws IllegalArgumentException {
         checkConsistency(orbit, attitude);
@@ -220,19 +175,8 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         this.attitude   = attitude;
         this.mass       = mass;
         this.absPva     = null;
-
-        if (additional == null) {
-            this.additional = new FieldArrayDictionary<>(orbit.getDate().getField());
-        } else {
-            this.additional = new FieldArrayDictionary<>(additional);
-        }
-
-        if (additionalDot == null) {
-            this.additionalDot = new FieldArrayDictionary<>(orbit.getDate().getField());
-        } else {
-
-            this.additionalDot = new FieldArrayDictionary<>(additionalDot);
-        }
+        this.additional = additional == null ? new FieldDataDictionary<>(orbit.getDate().getField()) : new FieldDataDictionary<>(additional);
+        this.additionalDot = additionalDot == null ? new FieldArrayDictionary<>(orbit.getDate().getField()) : new FieldArrayDictionary<>(additionalDot);
 
     }
 
@@ -264,12 +208,19 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
 
         final DataDictionary additionalD = state.getAdditionalDataValues();
         if (additionalD.size() == 0) {
-            this.additional = new FieldArrayDictionary<>(field);
+            this.additional = new FieldDataDictionary<>(field);
         } else {
-            this.additional = new FieldArrayDictionary<>(field, additionalD.size());
+            this.additional = new FieldDataDictionary<>(field, additionalD.size());
             for (final DataDictionary.Entry entry : additionalD.getData()) {
                 if (entry.getValue() instanceof double[]) {
-                    this.additional.put(entry.getKey(), (double[]) entry.getValue());
+                    final double[] realValues = (double[]) entry.getValue();
+                    final T[] fieldArray = MathArrays.buildArray(field, realValues.length);
+                    for (int i = 0; i < fieldArray.length; i++) {
+                        fieldArray[i] = field.getZero().add(realValues[i]);
+                    }
+                    this.additional.put(entry.getKey(), fieldArray);
+                } else {
+                    this.additional.put(entry.getKey(), entry.getValue());
                 }
             }
         }
@@ -293,10 +244,10 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         this(absPva,
              SpacecraftState.getDefaultAttitudeProvider(absPva.getFrame()).
                      getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
-             absPva.getDate().getField().getZero().newInstance(DEFAULT_MASS), null);
+             absPva.getDate().getField().getZero().newInstance(DEFAULT_MASS), null, null);
     }
 
-    /** Build a spacecraft state from orbit and attitude.
+    /** Build a spacecraft state from orbit and attitude. Kept for performance.
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
      * @param absPva position-velocity-acceleration
      * @param attitude attitude
@@ -305,18 +256,20 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      */
     public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final FieldAttitude<T> attitude)
         throws IllegalArgumentException {
-        this(absPva, attitude, absPva.getDate().getField().getZero().newInstance(DEFAULT_MASS), null);
+        this(absPva, attitude, absPva.getDate().getField().getZero().newInstance(DEFAULT_MASS), null, null);
     }
 
     /** Create a new instance from orbit and mass.
      * <p>Attitude law is set to an unspecified default attitude.</p>
      * @param absPva position-velocity-acceleration
      * @param mass the mass (kg)
+     * @deprecated since 13.0, use withXXX
      */
+    @Deprecated
     public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final T mass) {
         this(absPva, SpacecraftState.getDefaultAttitudeProvider(absPva.getFrame())
                         .getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
-             mass, null);
+             mass, null, null);
     }
 
     /** Build a spacecraft state from orbit, attitude and mass.
@@ -325,62 +278,12 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @param mass the mass (kg)
      * @exception IllegalArgumentException if orbit and attitude dates
      * or frames are not equal
+     * @deprecated since 13.0, use withXXX
      */
+    @Deprecated
     public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final FieldAttitude<T> attitude, final T mass)
         throws IllegalArgumentException {
-        this(absPva, attitude, mass, null);
-    }
-
-    /** Build a spacecraft state from orbit only.
-     * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
-     * @param absPva position-velocity-acceleration
-     * @param additional additional states
-     * @since 11.1
-     */
-    public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final FieldArrayDictionary<T> additional) {
-        this(absPva, SpacecraftState.getDefaultAttitudeProvider(absPva.getFrame())
-                        .getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
-             absPva.getDate().getField().getZero().newInstance(DEFAULT_MASS), additional);
-    }
-
-    /** Build a spacecraft state from orbit and attitude.
-     * <p>Mass is set to an unspecified non-null arbitrary value.</p>
-     * @param absPva position-velocity-acceleration
-     * @param attitude attitude
-     * @param additional additional states
-     * @exception IllegalArgumentException if orbit and attitude dates
-     * or frames are not equal
-     * @since 11.1
-     */
-    public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final FieldAttitude<T> attitude,
-                                final FieldArrayDictionary<T> additional)
-        throws IllegalArgumentException {
-        this(absPva, attitude, absPva.getDate().getField().getZero().newInstance(DEFAULT_MASS), additional);
-    }
-
-    /** Create a new instance from orbit and mass.
-     * <p>Attitude law is set to an unspecified default attitude.</p>
-     * @param absPva position-velocity-acceleration
-     * @param mass the mass (kg)
-     * @param additional additional states
-     * @since 11.1
-     */
-    public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final T mass, final FieldArrayDictionary<T> additional) {
-        this(absPva, SpacecraftState.getDefaultAttitudeProvider(absPva.getFrame())
-                        .getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
-             mass, additional);
-    }
-
-    /** Build a spacecraft state from orbit, attitude and mass.
-     * @param absPva position-velocity-acceleration
-     * @param attitude attitude
-     * @param mass the mass (kg)
-     * @param additional additional states (may be null if no additional states are available)
-     * @since 11.1
-     */
-    public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final FieldAttitude<T> attitude,
-                           final T mass, final FieldArrayDictionary<T> additional) {
-        this(absPva, attitude, mass, additional, null);
+        this(absPva, attitude, mass, null, null);
     }
 
     /** Build a spacecraft state from orbit, attitude and mass.
@@ -394,22 +297,70 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @since 11.1
      */
     public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final FieldAttitude<T> attitude, final T mass,
-                                final FieldArrayDictionary<T> additional, final FieldArrayDictionary<T> additionalDot)
+                                final FieldDataDictionary<T> additional, final FieldArrayDictionary<T> additionalDot)
         throws IllegalArgumentException {
         checkConsistency(absPva, attitude);
         this.orbit      = null;
         this.absPva     = absPva;
         this.attitude   = attitude;
         this.mass       = mass;
-        if (additional == null) {
-            this.additional = new FieldArrayDictionary<>(absPva.getDate().getField());
+        this.additional = additional == null ? new FieldDataDictionary<>(absPva.getDate().getField()) : new FieldDataDictionary<>(additional);
+        this.additionalDot = additionalDot == null ? new FieldArrayDictionary<>(absPva.getDate().getField()) : new FieldArrayDictionary<>(additionalDot);
+    }
+
+    /**
+     * Create a new instance with input mass.
+     * @param newMass mass
+     * @return new state
+     * @since 13.0
+     */
+    public FieldSpacecraftState<T> withMass(final T newMass) {
+        if (isOrbitDefined()) {
+            return new FieldSpacecraftState<>(orbit, attitude, newMass, additional, additionalDot);
         } else {
-            this.additional = new FieldArrayDictionary<>(additional);
+            return new FieldSpacecraftState<>(absPva, attitude, newMass, additional, additionalDot);
         }
-        if (additionalDot == null) {
-            this.additionalDot = new FieldArrayDictionary<>(absPva.getDate().getField());
+    }
+
+    /**
+     * Create a new instance with input attitude.
+     * @param newAttitude attitude
+     * @return new state
+     * @since 13.0
+     */
+    public FieldSpacecraftState<T> withAttitude(final FieldAttitude<T> newAttitude) {
+        if (isOrbitDefined()) {
+            return new FieldSpacecraftState<>(orbit, newAttitude, mass, additional, additionalDot);
         } else {
-            this.additionalDot = new FieldArrayDictionary<>(additionalDot);
+            return new FieldSpacecraftState<>(absPva, newAttitude, mass, additional, additionalDot);
+        }
+    }
+
+    /**
+     * Create a new instance with input additional data.
+     * @param newAdditional data
+     * @return new state
+     * @since 13.0
+     */
+    public FieldSpacecraftState<T> withAdditionalData(final FieldDataDictionary<T> newAdditional) {
+        if (isOrbitDefined()) {
+            return new FieldSpacecraftState<>(orbit, attitude, mass, newAdditional, additionalDot);
+        } else {
+            return new FieldSpacecraftState<>(absPva, attitude, mass, newAdditional, additionalDot);
+        }
+    }
+
+    /**
+     * Create a new instance with input additional data.
+     * @param newAdditionalDot additional derivatives
+     * @return new state
+     * @since 13.0
+     */
+    public FieldSpacecraftState<T> withAdditionalStatesDerivatives(final FieldArrayDictionary<T> newAdditionalDot) {
+        if (isOrbitDefined()) {
+            return new FieldSpacecraftState<>(orbit, attitude, mass, additional, newAdditionalDot);
+        } else {
+            return new FieldSpacecraftState<>(absPva, attitude, mass, additional, newAdditionalDot);
         }
     }
 
@@ -432,15 +383,20 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @see #getAdditionalData(String)
      * @see #getAdditionalDataValues()
      */
-    @SafeVarargs
-    public final FieldSpacecraftState<T> addAdditionalData(final String name, final T... value) {
-        final FieldArrayDictionary<T> newDict = new FieldArrayDictionary<>(additional);
-        newDict.put(name, value.clone());
-        if (isOrbitDefined()) {
-            return new FieldSpacecraftState<>(orbit, attitude, mass, newDict, additionalDot);
+    @SuppressWarnings("unchecked") // cast including generic type is checked and unitary tested
+    public final FieldSpacecraftState<T> addAdditionalData(final String name, final Object value) {
+        final FieldDataDictionary<T> newDict = new FieldDataDictionary<>(additional);
+        if (value instanceof CalculusFieldElement[]) {
+            final CalculusFieldElement<T>[] valueArray = (CalculusFieldElement<T>[]) value;
+            newDict.put(name, valueArray.clone());
+        } else if (value instanceof CalculusFieldElement) {
+            final CalculusFieldElement<T>[] valueArray = MathArrays.buildArray(mass.getField(), 1);
+            valueArray[0] = (CalculusFieldElement<T>) value;
+            newDict.put(name, valueArray);
         } else {
-            return new FieldSpacecraftState<>(absPva, attitude, mass, newDict, additionalDot);
+            newDict.put(name, value);
         }
+        return withAdditionalData(newDict);
     }
 
     /** Add an additional state derivative.
@@ -463,11 +419,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     public final FieldSpacecraftState<T> addAdditionalStateDerivative(final String name, final T... value) {
         final FieldArrayDictionary<T> newDict = new FieldArrayDictionary<>(additionalDot);
         newDict.put(name, value.clone());
-        if (isOrbitDefined()) {
-            return new FieldSpacecraftState<>(orbit, attitude, mass, additional, newDict);
-        } else {
-            return new FieldSpacecraftState<>(absPva, attitude, mass, additional, newDict);
-        }
+        return withAdditionalStatesDerivatives(newDict);
     }
 
     /** Check orbit and attitude dates are equal.
@@ -617,7 +569,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @return shifted additional data
      * @since 11.1.1
      */
-    private FieldArrayDictionary<T> shiftAdditional(final double dt) {
+    private FieldDataDictionary<T> shiftAdditional(final double dt) {
 
         // fast handling when there are no derivatives at all
         if (additionalDot.size() == 0) {
@@ -625,9 +577,9 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         }
 
         // there are derivatives, we need to take them into account in the additional state
-        final FieldArrayDictionary<T> shifted = new FieldArrayDictionary<>(additional);
+        final FieldDataDictionary<T> shifted = new FieldDataDictionary<>(additional);
         for (final FieldArrayDictionary<T>.Entry dotEntry : additionalDot.getData()) {
-            final FieldArrayDictionary<T>.Entry entry = shifted.getEntry(dotEntry.getKey());
+            final FieldDataDictionary<T>.Entry entry = shifted.getEntry(dotEntry.getKey());
             if (entry != null) {
                 entry.scaledIncrement(dt, dotEntry);
             }
@@ -642,7 +594,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @return shifted additional states
      * @since 11.1.1
      */
-    private FieldArrayDictionary<T> shiftAdditional(final T dt) {
+    private FieldDataDictionary<T> shiftAdditional(final T dt) {
 
         // fast handling when there are no derivatives at all
         if (additionalDot.size() == 0) {
@@ -650,9 +602,9 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         }
 
         // there are derivatives, we need to take them into account in the additional state
-        final FieldArrayDictionary<T> shifted = new FieldArrayDictionary<>(additional);
+        final FieldDataDictionary<T> shifted = new FieldDataDictionary<>(additional);
         for (final FieldArrayDictionary<T>.Entry dotEntry : additionalDot.getData()) {
-            final FieldArrayDictionary<T>.Entry entry = shifted.getEntry(dotEntry.getKey());
+            final FieldDataDictionary<T>.Entry entry = shifted.getEntry(dotEntry.getKey());
             if (entry != null) {
                 entry.scaledIncrement(dt, dotEntry);
             }
@@ -718,7 +670,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     /** Check if an additional data is available.
      * @param name name of the additional data
      * @return true if the additional data is available
-     * @see #addAdditionalData(String, CalculusFieldElement...)
+     * @see #addAdditionalData(String, Object)
      * @see #getAdditionalData(String)
      * @see #getAdditionalDataValues()
      */
@@ -746,19 +698,23 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @exception MathIllegalArgumentException if an additional state does not have
      * the same dimension in both states
      */
+    @SuppressWarnings("unchecked") // cast including generic type is checked and unitary tested
     public void ensureCompatibleAdditionalStates(final FieldSpacecraftState<T> state)
         throws MathIllegalArgumentException {
 
         // check instance additional states is a subset of the other one
-        for (final FieldArrayDictionary<T>.Entry entry : additional.getData()) {
-            final T[] other = state.additional.get(entry.getKey());
+        for (final FieldDataDictionary<T>.Entry entry : additional.getData()) {
+            final Object other = state.additional.get(entry.getKey());
             if (other == null) {
                 throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_DATA,
                                           entry.getKey());
             }
-            if (other.length != entry.getValue().length) {
-                throw new MathIllegalStateException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
-                                                    other.length, entry.getValue().length);
+            if (other instanceof CalculusFieldElement[]) {
+                final CalculusFieldElement<T>[] arrayOther = (CalculusFieldElement<T>[]) other;
+                final CalculusFieldElement<T>[] arrayEntry = (CalculusFieldElement<T>[]) entry.getValue();
+                if (arrayEntry.length != arrayOther.length) {
+                    throw new MathIllegalStateException(LocalizedCoreFormats.DIMENSIONS_MISMATCH, arrayOther.length, arrayEntry.length);
+                }
             }
         }
 
@@ -777,7 +733,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
 
         if (state.additional.size() > additional.size()) {
             // the other state has more additional states
-            for (final FieldArrayDictionary<T>.Entry entry : state.additional.getData()) {
+            for (final FieldDataDictionary<T>.Entry entry : state.additional.getData()) {
                 if (additional.getEntry(entry.getKey()) == null) {
                     throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_DATA,
                                               entry.getKey());
@@ -797,15 +753,41 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
 
     }
 
-    /** Get an additional data.
-     * @param name name of the additional data
-     * @return value of the additional data
-          * @see #addAdditionalData(String, CalculusFieldElement...)
+    /**
+     * Get an additional state.
+     *
+     * @param name name of the additional state
+     * @return value of the additional state
      * @see #hasAdditionalData(String)
      * @see #getAdditionalDataValues()
      */
-    public T[] getAdditionalData(final String name) {
-        final FieldArrayDictionary<T>.Entry entry = additional.getEntry(name);
+    @SuppressWarnings("unchecked") // cast including generic type is checked and unitary tested
+    public T[] getAdditionalState(final String name) {
+        final Object data = getAdditionalData(name);
+        if (data instanceof CalculusFieldElement[]) {
+            return (T[]) data;
+        } else if (data instanceof CalculusFieldElement) {
+            final T[] values = MathArrays.buildArray(mass.getField(), 1);
+            values[0] = (T) data;
+            return values;
+        } else {
+            throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_BAD_TYPE, name);
+        }
+    }
+
+
+    /**
+     * Get an additional data.
+     *
+     * @param name name of the additional state
+     * @return value of the additional state
+     * @see #addAdditionalData(String, Object)
+     * @see #hasAdditionalData(String)
+     * @see #getAdditionalDataValues()
+     * @since 13.0
+     */
+    public Object getAdditionalData(final String name) {
+        final FieldDataDictionary<T>.Entry entry = additional.getEntry(name);
         if (entry == null) {
             throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_DATA, name);
         }
@@ -830,13 +812,13 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
 
     /** Get an unmodifiable map of additional states.
      * @return unmodifiable map of additional states
-     * @see #addAdditionalData(String, CalculusFieldElement...)
+     * @see #addAdditionalData(String, Object)
      * @see #hasAdditionalData(String)
      * @see #getAdditionalData(String)
      * @since 11.1
      */
-    public FieldArrayDictionary<T> getAdditionalDataValues() {
-        return additional.unmodifiableView();
+    public FieldDataDictionary<T> getAdditionalDataValues() {
+        return additional;
     }
 
     /** Get an unmodifiable map of additional states derivatives.
@@ -936,18 +918,24 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      *
      * @return SpacecraftState instance with the same properties
      */
+    @SuppressWarnings("unchecked") // cast including generic type is checked and unitary tested
     public SpacecraftState toSpacecraftState() {
         final DataDictionary dictionary;
         if (additional.size() == 0) {
             dictionary = new DataDictionary();
         } else {
             dictionary = new DataDictionary(additional.size());
-            for (final FieldArrayDictionary<T>.Entry entry : additional.getData()) {
-                final double[] array = new double[entry.getValue().length];
-                for (int k = 0; k < array.length; ++k) {
-                    array[k] = entry.getValue()[k].getReal();
+            for (final FieldDataDictionary<T>.Entry entry : additional.getData()) {
+                if (entry.getValue() instanceof CalculusFieldElement[]) {
+                    final CalculusFieldElement<T>[] entryArray  = (CalculusFieldElement<T>[]) entry.getValue();
+                    final double[] realArray = new double[entryArray.length];
+                    for (int k = 0; k < realArray.length; ++k) {
+                        realArray[k] = entryArray[k].getReal();
+                    }
+                    dictionary.put(entry.getKey(), realArray);
+                } else {
+                    dictionary.put(entry.getKey(), entry.getValue());
                 }
-                dictionary.put(entry.getKey(), array);
             }
         }
         final DoubleArrayDictionary dictionaryDot;

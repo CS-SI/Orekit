@@ -147,7 +147,7 @@ public class Opm extends NdmConstituent<OdmHeader, Segment<OdmCommonMetadata, Op
      * @return the spacecraft state of the OPM
      */
     public SpacecraftState generateSpacecraftState() {
-        return new SpacecraftState(generateCartesianOrbit(), getData().getMass());
+        return new SpacecraftState(generateCartesianOrbit()).withMass(getData().getMass());
     }
 
 }

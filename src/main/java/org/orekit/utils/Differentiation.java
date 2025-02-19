@@ -183,8 +183,7 @@ public class Differentiation {
                                                           baseState.getFrame());
             final SpacecraftState state =
                     new SpacecraftState(orbit,
-                                        provider.getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
-                                        baseState.getMass());
+                                        provider.getAttitude(orbit, orbit.getDate(), orbit.getFrame())).withMass(baseState.getMass());
             return f.value(state);
         }
 

@@ -88,9 +88,8 @@ public class EphemerisSegmentPropagator<C extends TimeStampedPVCoordinates> exte
                         getAttitudeProvider().getAttitude(
                                 icInertial.toTaylorProvider(inertialFrame),
                                 ic.getDate(),
-                                inertialFrame),
-                        DEFAULT_MASS
-                )
+                                inertialFrame)
+                        ).withMass(DEFAULT_MASS)
         );
     }
 

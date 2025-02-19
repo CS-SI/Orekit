@@ -53,16 +53,16 @@ public class CartesianOrbitTest {
     private double mu;
 
     @Test
-    void testWithFrameKeplerian() {
-        testTemplateWithFrame(Vector3D.ZERO);
+    void testInFrameKeplerian() {
+        testTemplateInFrame(Vector3D.ZERO);
     }
 
     @Test
-    void testWithFrameNonKeplerian() {
-        testTemplateWithFrame(Vector3D.PLUS_K);
+    void testInFrameNonKeplerian() {
+        testTemplateInFrame(Vector3D.PLUS_K);
     }
 
-    private void testTemplateWithFrame(final Vector3D acceleration) {
+    private void testTemplateInFrame(final Vector3D acceleration) {
         // GIVEN
         final Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         final Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
@@ -70,7 +70,7 @@ public class CartesianOrbitTest {
         final double muEarth = 3.9860047e14;
         final CartesianOrbit cartesianOrbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, muEarth);
         // WHEN
-        final CartesianOrbit orbitWithOtherFrame = cartesianOrbit.withFrame(FramesFactory.getGCRF());
+        final CartesianOrbit orbitWithOtherFrame = cartesianOrbit.inFrame(FramesFactory.getGCRF());
         // THEN
         Assertions.assertNotEquals(cartesianOrbit.getFrame(), orbitWithOtherFrame.getFrame());
         Assertions.assertEquals(cartesianOrbit.getDate(), orbitWithOtherFrame.getDate());

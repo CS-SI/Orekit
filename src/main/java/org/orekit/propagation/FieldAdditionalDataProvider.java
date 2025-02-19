@@ -23,7 +23,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * <p>
  * {@link FieldPropagator Propagators} generate {@link FieldSpacecraftState states} that contain at
  * least orbit, attitude, and mass. These states may however also contain {@link
- * FieldSpacecraftState#addAdditionalData(String, CalculusFieldElement...) additional data}.
+ * FieldSpacecraftState#addAdditionalData(String, Object)}  additional data}.
  * Instances of classes implementing this interface are intended to be registered to propagators
  * so they can either modify the basic components (orbit, attitude and mass) or add additional
  * data incrementally after having computed the basic components.
@@ -72,10 +72,11 @@ import org.orekit.time.FieldAbsoluteDate;
  * @see org.orekit.propagation.integration.FieldAdditionalDerivativesProvider
  * @see FieldAbstractStateModifier
  * @author Luc Maisonobe
+ * @param <O> type of the additional data
  * @param <T> type of the field elements
  * @since 13.0
  */
-public interface FieldAdditionalDataProvider<T extends CalculusFieldElement<T>> {
+public interface FieldAdditionalDataProvider<O, T extends CalculusFieldElement<T>> {
 
     /** Get the name of the additional data.
      * <p>
@@ -125,9 +126,9 @@ public interface FieldAdditionalDataProvider<T extends CalculusFieldElement<T>> 
 
     /** Get the additional data.
      * @param state spacecraft state to which additional data should correspond
-     * @return additional stadatate corresponding to spacecraft state
+     * @return additional data corresponding to spacecraft state
      */
-    T[] getAdditionalData(FieldSpacecraftState<T> state);
+    O getAdditionalData(FieldSpacecraftState<T> state);
 
     /** Update a state.
      * @param state spacecraft state to update

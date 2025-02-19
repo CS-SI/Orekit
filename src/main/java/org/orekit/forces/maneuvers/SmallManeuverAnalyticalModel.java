@@ -229,7 +229,7 @@ public class SmallManeuverAnalyticalModel implements AdapterPropagator.Different
         }
 
         return new SpacecraftState(state1.getOrbit().getType().convertType(updateOrbit(state1.getOrbit())),
-                                   state1.getAttitude(), updateMass(state1.getMass()));
+                                   state1.getAttitude()).withMass(updateMass(state1.getMass()));
 
     }
 

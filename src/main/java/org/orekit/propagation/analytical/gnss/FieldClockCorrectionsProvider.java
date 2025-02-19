@@ -45,7 +45,7 @@ import org.orekit.utils.FieldPVCoordinates;
  * @since 13.0
  */
 public class FieldClockCorrectionsProvider<T extends CalculusFieldElement<T>>
-    implements FieldAdditionalDataProvider<T> {
+    implements FieldAdditionalDataProvider<T[], T> {
 
     /** The GPS clock elements. */
     private final FieldGNSSClockElements<T> gnssClk;

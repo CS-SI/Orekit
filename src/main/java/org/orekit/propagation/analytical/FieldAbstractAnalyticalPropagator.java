@@ -395,7 +395,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
                 getAttitudeProvider().getAttitude(pvProvider, date, orbit.getFrame());
 
             // build raw state
-            return new FieldSpacecraftState<>(orbit, attitude, getMass(date));
+            return new FieldSpacecraftState<>(orbit, attitude).withMass(getMass(date));
 
         } catch (OrekitException oe) {
             throw new OrekitException(oe);
@@ -440,7 +440,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
 
             try {
                 // copy the same additional data providers as the original propagator
-                for (FieldAdditionalDataProvider<T> provider : FieldAbstractAnalyticalPropagator.this.getAdditionalDataProviders()) {
+                for (FieldAdditionalDataProvider<?, T> provider : FieldAbstractAnalyticalPropagator.this.getAdditionalDataProviders()) {
                     addAdditionalDataProvider(provider);
                 }
             } catch (OrekitException oe) {

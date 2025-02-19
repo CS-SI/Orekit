@@ -574,7 +574,7 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      * @return orbit with different frame
      * @since 13.0
      */
-    public abstract FieldOrbit<T> withFrame(Frame inertialFrame);
+    public abstract FieldOrbit<T> inFrame(Frame inertialFrame);
 
     /** Get a time-shifted orbit.
      * <p>
