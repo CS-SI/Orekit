@@ -29,6 +29,20 @@ import org.orekit.files.ccsds.section.Data;
 import org.orekit.time.AbsoluteDate;
 
 /** Container for OPM/OMM/OCM Cartesian covariance matrix.
+ * <p>
+ * Beware that the Orekit getters and setters all rely on SI units. The parsers
+ * and writers take care of converting these SI units into CCSDS mandatory units.
+ * The {@link org.orekit.utils.units.Unit Unit} class provides useful
+ * {@link org.orekit.utils.units.Unit#fromSI(double) fromSi} and
+ * {@link org.orekit.utils.units.Unit#toSI(double) toSI} methods in case the callers
+ * already use CCSDS units instead of the API SI units. The general-purpose
+ * {@link org.orekit.utils.units.Unit Unit} class (without an 's') and the
+ * CCSDS-specific {@link org.orekit.files.ccsds.definitions.Units Units} class
+ * (with an 's') also provide some predefined units. These predefined units and the
+ * {@link org.orekit.utils.units.Unit#fromSI(double) fromSi} and
+ * {@link org.orekit.utils.units.Unit#toSI(double) toSI} conversion methods are indeed
+ * what the parsers and writers use for the conversions.
+ * </p>
  * @author sports
  * @since 6.1
  */
@@ -49,7 +63,7 @@ public class CartesianCovariance extends CommentsContainer implements Data {
     private FrameFacade referenceFrame;
 
     /** Position/Velocity covariance matrix. */
-    private RealMatrix covarianceMatrix;
+    private final RealMatrix covarianceMatrix;
 
     /** Create an empty data set.
      * @param defaultFrameSupplier supplier for default reference frame

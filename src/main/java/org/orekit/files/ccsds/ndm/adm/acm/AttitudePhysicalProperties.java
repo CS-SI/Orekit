@@ -22,9 +22,22 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.section.CommentsContainer;
-import org.orekit.time.AbsoluteDate;
 
 /** Spacecraft physical properties.
+ * <p>
+ * Beware that the Orekit getters and setters all rely on SI units. The parsers
+ * and writers take care of converting these SI units into CCSDS mandatory units.
+ * The {@link org.orekit.utils.units.Unit Unit} class provides useful
+ * {@link org.orekit.utils.units.Unit#fromSI(double) fromSi} and
+ * {@link org.orekit.utils.units.Unit#toSI(double) toSI} methods in case the callers
+ * already use CCSDS units instead of the API SI units. The general-purpose
+ * {@link org.orekit.utils.units.Unit Unit} class (without an 's') and the
+ * CCSDS-specific {@link org.orekit.files.ccsds.definitions.Units Units} class
+ * (with an 's') also provide some predefined units. These predefined units and the
+ * {@link org.orekit.utils.units.Unit#fromSI(double) fromSi} and
+ * {@link org.orekit.utils.units.Unit#toSI(double) toSI} conversion methods are indeed
+ * what the parsers and writers use for the conversions.
+ * </p>
  * @author Luc Maisonobe
  * @since 12.0
  */
@@ -49,12 +62,12 @@ public class AttitudePhysicalProperties extends CommentsContainer {
     private FrameFacade inertiaReferenceFrame;
 
     /** Inertia matrix. */
-    private RealMatrix inertiaMatrix;
+    private final RealMatrix inertiaMatrix;
 
-    /** Simple constructor.
-     * @param epochT0 T0 epoch from file metadata
+    /**
+     * Simple constructor.
      */
-    public AttitudePhysicalProperties(final AbsoluteDate epochT0) {
+    public AttitudePhysicalProperties() {
         dragCoefficient = Double.NaN;
         wetMass         = Double.NaN;
         dryMass         = Double.NaN;

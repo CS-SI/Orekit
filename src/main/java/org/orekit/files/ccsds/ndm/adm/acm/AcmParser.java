@@ -272,7 +272,7 @@ public class AcmParser extends AdmParser<Acm, AcmParser> implements AttitudeEphe
      */
     boolean managePhysicalPropertiesSection(final boolean starting) {
         if (starting) {
-            physicBlock = new AttitudePhysicalProperties(metadata.getEpochT0());
+            physicBlock = new AttitudePhysicalProperties();
             anticipateNext(this::processPhysicalPropertyToken);
         } else {
             anticipateNext(structureProcessor);
