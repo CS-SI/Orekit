@@ -75,7 +75,10 @@ public class GeoMagneticModelParser {
         // nothing to do
     }
 
-    /** {@inheritDoc} */
+    /** Parse a model.
+     * @param dataSource source data
+     * @return parsed fields
+     */
     public List<GeoMagneticField> parse(final DataSource dataSource) throws IOException {
 
         // open data file and parse values
