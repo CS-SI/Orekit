@@ -24,14 +24,32 @@ import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Data;
 import org.orekit.time.AbsoluteDate;
 
-/** The Observations Block class contain metadata and the list of observation data lines.<p>
+/** The Observations Block class contain metadata and the list of observation data lines.
+ * <p>
+ * Beware that the Orekit getters and setters all rely on SI units. The parsers
+ * and writers take care of converting these SI units into CCSDS mandatory units.
+ * The {@link org.orekit.utils.units.Unit Unit} class provides useful
+ * {@link org.orekit.utils.units.Unit#fromSI(double) fromSi} and
+ * {@link org.orekit.utils.units.Unit#toSI(double) toSI} methods in case the callers
+ * already use CCSDS units instead of the API SI units. The general-purpose
+ * {@link org.orekit.utils.units.Unit Unit} class (without an 's') and the
+ * CCSDS-specific {@link org.orekit.files.ccsds.definitions.Units Units} class
+ * (with an 's') also provide some predefined units. These predefined units and the
+ * {@link org.orekit.utils.units.Unit#fromSI(double) fromSi} and
+ * {@link org.orekit.utils.units.Unit#toSI(double) toSI} conversion methods are indeed
+ * what the parsers and writers use for the conversions.
+ * </p>
+ * <p>
  * The reason for which the observations have been separated into blocks is that the different
- * data blocks in a TDM file usually refers to different types of observations.<p>
- * An observation block is associated with a TDM metadata object and contains a list of observations.<p>
- * At this level, an observation is not an Orekit object, it is a custom object containing:<p>
- *  - a keyword, the type of the observation;<p>
- *  - a timetag, the date of the observation;<p>
- *  - a measurement, the value of the observation.
+ * data blocks in a TDM file usually refers to different types of observations.
+ * An observation block is associated with a TDM metadata object and contains a list of observations.
+ * At this level, an observation is not an Orekit object, it is a custom object containing:
+ * </p>
+ * <ul>
+ *  <li>a keyword, the type of the observation;</li>
+ *  <li>a timetag, the date of the observation;</li>
+ *  <li>a measurement, the value of the observation.</li>
+ * </ul>
  * @author Maxime Journot
  */
 public class ObservationsBlock extends CommentsContainer implements Data {

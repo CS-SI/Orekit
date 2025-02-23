@@ -22,6 +22,20 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.section.CommentsContainer;
 
 /** Attitude determination sensor data.
+ * <p>
+ * Beware that the Orekit getters and setters all rely on SI units. The parsers
+ * and writers take care of converting these SI units into CCSDS mandatory units.
+ * The {@link org.orekit.utils.units.Unit Unit} class provides useful
+ * {@link org.orekit.utils.units.Unit#fromSI(double) fromSi} and
+ * {@link org.orekit.utils.units.Unit#toSI(double) toSI} methods in case the callers
+ * already use CCSDS units instead of the API SI units. The general-purpose
+ * {@link org.orekit.utils.units.Unit Unit} class (without an 's') and the
+ * CCSDS-specific {@link org.orekit.files.ccsds.definitions.Units Units} class
+ * (with an 's') also provide some predefined units. These predefined units and the
+ * {@link org.orekit.utils.units.Unit#fromSI(double) fromSi} and
+ * {@link org.orekit.utils.units.Unit#toSI(double) toSI} conversion methods are indeed
+ * what the parsers and writers use for the conversions.
+ * </p>
  * @author Luc Maisonobe
  * @since 12.0
  */
