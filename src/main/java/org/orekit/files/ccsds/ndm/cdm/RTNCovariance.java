@@ -39,8 +39,8 @@ import org.orekit.files.ccsds.section.CommentsContainer;
  * <p>
  * This class has a RealMatrix as attribute which can be access with
  * {@code getRTNCovariaxMatrix} method. Beware that there are thus two
- * ways to modify the RTN covariance : {@code setC...} ({@code setCrr},
- * {@code setCtr]…) which should be prioritized and
+ * ways to modify the RTN covariance : {@code setC…} ({@code setCrr},
+ * {@code setCtr}…) which should be prioritized and
  * {@code getRTNCovariaxMatrix.setEntry(row, col, value)}.
  * </p>
  * <p>
