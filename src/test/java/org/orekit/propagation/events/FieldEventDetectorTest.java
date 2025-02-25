@@ -24,18 +24,17 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.FieldODEIntegrator;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.Utils;
@@ -66,58 +65,67 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 
-public class FieldEventDetectorTest {
+class FieldEventDetectorTest {
 
     private double mu;
 
-    // TODO: temporarily disabling test that fails when run with maven
-    @Disabled
     @Test
+    @SuppressWarnings("unchecked")
     void testFinish() {
         // GIVEN
         final FinishingHandler handler = new FinishingHandler();
-        final FieldEventDetector<?> detector =
-            new DummyDetector(new FieldEventDetectionSettings<>(1.0, Complex.ONE, 100), handler);
+        final FieldEventDetector<?> detector = new DummyDetector(new FieldEventDetectionSettings<>(1.0, Binary64.ONE, 100), handler);
         // WHEN
         detector.finish(Mockito.mock(FieldSpacecraftState.class));
         // THEN
         Assertions.assertTrue(handler.isFinished);
     }
 
-    private static class FinishingHandler extends FieldContinueOnEvent {
+    private static class FinishingHandler extends FieldContinueOnEvent<Binary64> {
         boolean isFinished = false;
 
         @Override
-        public void finish(FieldSpacecraftState finalState, FieldEventDetector detector) {
+        public void finish(FieldSpacecraftState<Binary64> finalState, FieldEventDetector<Binary64> detector) {
             isFinished = true;
         }
     }
 
-    private static class DummyDetector<T extends CalculusFieldElement<T>>
-        extends FieldAbstractDetector<DummyDetector<T>, T> {
+    private static class DummyDetector implements FieldEventDetector<Binary64> {
 
-        public DummyDetector(final FieldEventDetectionSettings<T> detectionSettings, final FieldEventHandler<T> handler) {
-            super(detectionSettings, handler);
+        private final FieldEventDetectionSettings<Binary64> detectionSettings;
+        private final FieldEventHandler<Binary64> handler;
+
+        public DummyDetector(final FieldEventDetectionSettings<Binary64> detectionSettings,
+                             final FieldEventHandler<Binary64> handler) {
+            this.detectionSettings = detectionSettings;
+            this.handler = handler;
         }
 
-        public T g(final FieldSpacecraftState<T> s) {
+        public Binary64 g(final FieldSpacecraftState<Binary64> s) {
             return s.getDate().getField().getZero();
         }
 
-        protected DummyDetector create(final FieldEventDetectionSettings<T> detectionSettings, final FieldEventHandler<T> newHandler) {
-            return new DummyDetector(detectionSettings, newHandler);
+        @Override
+        public FieldEventHandler<Binary64> getHandler() {
+            return handler;
+        }
+
+        @Override
+        public FieldEventDetectionSettings<Binary64> getDetectionSettings() {
+            return detectionSettings;
         }
 
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void testGetDetectionSettings() {
         // GIVEN
-        final FieldAdaptableInterval<Complex> mockedInterval = Mockito.mock(FieldAdaptableInterval.class);
-        final FieldEventDetectionSettings<Complex> settings = new FieldEventDetectionSettings<>(mockedInterval, Complex.ONE, 10);
-        final FieldEventDetector<Complex> detector = new DummyDetector(settings, null);
+        final FieldAdaptableInterval<Binary64> mockedInterval = Mockito.mock(FieldAdaptableInterval.class);
+        final FieldEventDetectionSettings<Binary64> settings = new FieldEventDetectionSettings<>(mockedInterval, Binary64.ONE, 10);
+        final FieldEventDetector<Binary64> detector = new DummyDetector(settings, null);
         // WHEN
-        final FieldEventDetectionSettings<Complex> actualSettings = detector.getDetectionSettings();
+        final FieldEventDetectionSettings<Binary64> actualSettings = detector.getDetectionSettings();
         // THEN
         Assertions.assertEquals(mockedInterval, actualSettings.getMaxCheckInterval());
         Assertions.assertEquals(settings.getMaxIterationCount(), actualSettings.getMaxIterationCount());
@@ -125,7 +133,7 @@ public class FieldEventDetectorTest {
     }
 
     @Test
-    public void testEventHandlerInit() {
+    void testEventHandlerInit() {
         doTestEventHandlerInit(Binary64Field.getInstance());
     }
 
@@ -175,7 +183,7 @@ public class FieldEventDetectorTest {
     }
 
     @Test
-    public void testBasicScheduling() {
+    void testBasicScheduling() {
         doTestBasicScheduling(Binary64Field.getInstance());
     }
 
@@ -209,7 +217,7 @@ public class FieldEventDetectorTest {
 
         private FieldAbsoluteDate<T> triggerDate;
         private boolean outOfOrderCallDetected;
-        private T stepSize;
+        private final T stepSize;
 
         public OutOfOrderChecker(final T stepSize) {
             triggerDate = null;
@@ -242,7 +250,7 @@ public class FieldEventDetectorTest {
     }
 
     @Test
-    public void testIssue108Numerical() {
+    void testIssue108Numerical() {
         doTestIssue108Numerical(Binary64Field.getInstance());
     }
 
@@ -264,14 +272,14 @@ public class FieldEventDetectorTest {
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.resetInitialState(new FieldSpacecraftState<>(orbit));
         GCallsCounter<T> counter = new GCallsCounter<>(FieldAdaptableInterval.of(100000.0), zero.add(1.0e-6), 20,
-                                                       new FieldStopOnEvent<T>());
+                                                       new FieldStopOnEvent<>());
         propagator.addEventDetector(counter);
         propagator.propagate(date.shiftedBy(step.multiply(n)));
         Assertions.assertEquals(n + 1, counter.getCount());
     }
 
     @Test
-    public void testIssue108Analytical() {
+    void testIssue108Analytical() {
         doTestIssue108Analytical(Binary64Field.getInstance());
     }
 
@@ -291,7 +299,7 @@ public class FieldEventDetectorTest {
         final int    n    = 100;
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         GCallsCounter<T> counter = new GCallsCounter<>(FieldAdaptableInterval.of(100000.0), zero.add(1.0e-6), 20,
-                                                       new FieldStopOnEvent<T>());
+                                                       new FieldStopOnEvent<>());
         propagator.addEventDetector(counter);
         propagator.setStepHandler(step, currentState -> {});
         propagator.propagate(date.shiftedBy(step.multiply(n)));
@@ -327,7 +335,7 @@ public class FieldEventDetectorTest {
     }
 
     @Test
-    public void testNoisyGFunction() {
+    void testNoisyGFunction() {
         doTestNoisyGFunction(Binary64Field.getInstance());
     }
 
@@ -362,7 +370,7 @@ public class FieldEventDetectorTest {
                                                                                                                         zero.add(-5172.2177085540500))),
                                                              eme2000, initialDate, zero.add(Constants.WGS84_EARTH_MU)));
         k2.addEventDetector(new FieldCloseApproachDetector<>(FieldAdaptableInterval.of(2015.243454166727), zero.add(0.0001), 100,
-                                                             new FieldContinueOnEvent<T>(),
+                                                             new FieldContinueOnEvent<>(),
                                                              k1));
         k2.addEventDetector(new FieldDateDetector<>(field, interruptDates).
                             withMaxCheck(FieldAdaptableInterval.of(Constants.JULIAN_DAY)).
@@ -388,8 +396,7 @@ public class FieldEventDetectorTest {
             FieldPVCoordinates<T> pv2     = s.getPVCoordinates();
             FieldVector3D<T> deltaP       = pv1.getPosition().subtract(pv2.getPosition());
             FieldVector3D<T> deltaV       = pv1.getVelocity().subtract(pv2.getVelocity());
-            T radialVelocity = FieldVector3D.dotProduct(deltaP.normalize(), deltaV);
-            return radialVelocity;
+            return FieldVector3D.dotProduct(deltaP.normalize(), deltaV);
         }
 
         protected FieldCloseApproachDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
@@ -401,7 +408,7 @@ public class FieldEventDetectorTest {
     }
 
     @Test
-    public void testWrappedException() {
+    void testWrappedException() {
         doTestWrappedException(Binary64Field.getInstance());
     }
 
@@ -446,7 +453,7 @@ public class FieldEventDetectorTest {
     }
 
     @Test
-    public void testDefaultMethods() {
+    void testDefaultMethods() {
         doTestDefaultMethods(Binary64Field.getInstance());
     }
 
@@ -487,22 +494,22 @@ public class FieldEventDetectorTest {
     }
 
     @Test
-    public void testForwardAnalytical() {
+    void testForwardAnalytical() {
         doTestScheduling(Binary64Field.getInstance(), 0.0, 1.0, 21, this::buildAnalytical);
     }
 
     @Test
-    public void testBackwardAnalytical() {
+    void testBackwardAnalytical() {
         doTestScheduling(Binary64Field.getInstance(), 1.0, 0.0, 21, this::buildAnalytical);
     }
 
     @Test
-    public void testForwardNumerical() {
+    void testForwardNumerical() {
         doTestScheduling(Binary64Field.getInstance(), 0.0, 1.0, 23, this::buildNumerical);
     }
 
     @Test
-    public void testBackwardNumerical() {
+    void testBackwardNumerical() {
         doTestScheduling(Binary64Field.getInstance(), 1.0, 0.0, 23, this::buildNumerical);
     }
 
@@ -542,9 +549,7 @@ public class FieldEventDetectorTest {
         // to check they are called in consistent order
         final ScheduleChecker<T> checker = new ScheduleChecker<>(initialDate.shiftedBy(start),
                                                                  initialDate.shiftedBy(stop));
-        propagator.setStepHandler((interpolator) -> {
-            checker.callDate(interpolator.getCurrentState().getDate());
-        });
+        propagator.setStepHandler(interpolator -> checker.callDate(interpolator.getCurrentState().getDate()));
 
         for (int i = 0; i < 10; ++i) {
             FieldDateDetector<T> detector = new FieldDateDetector<>(field, initialDate.shiftedBy(0.0625 * (i + 1))).
