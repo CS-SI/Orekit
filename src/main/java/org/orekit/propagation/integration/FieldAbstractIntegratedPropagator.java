@@ -1008,6 +1008,14 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         }
 
         /** {@inheritDoc} */
+        @Override
+        public void reset(final FieldODEStateAndDerivative<T> intermediateState, final T finalTime) {
+            detector.reset(convert(intermediateState), stateMapper.mapDoubleToDate(finalTime));
+            this.lastT = getField().getZero().add(Double.NaN);
+            this.lastG = getField().getZero().add(Double.NaN);
+        }
+
+        /** {@inheritDoc} */
         public T g(final FieldODEStateAndDerivative<T> s) {
             if (!Precision.equals(lastT.getReal(), s.getTime().getReal(), 0)) {
                 lastT = s.getTime();

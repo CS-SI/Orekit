@@ -52,18 +52,17 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EventEnablingPredicateFilterTest {
+class EventEnablingPredicateFilterTest {
 
     private OneAxisEllipsoid earth;
     private GeodeticPoint gp;
     private Orbit orbit;
 
     @Test
-    public void testForward0Degrees() {
+    void testForward0Degrees() {
         doElevationTest(FastMath.toRadians(0.0),
                orbit.getDate(),
                orbit.getDate().shiftedBy(Constants.JULIAN_DAY),
@@ -71,7 +70,7 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testForward5Degrees() {
+    void testForward5Degrees() {
         doElevationTest(FastMath.toRadians(5.0),
                orbit.getDate(),
                orbit.getDate().shiftedBy(Constants.JULIAN_DAY),
@@ -79,7 +78,7 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testForward5DegreesStartEnabled() {
+    void testForward5DegreesStartEnabled() {
         doElevationTest(FastMath.toRadians(5.0),
                orbit.getDate().shiftedBy(12614.0),
                orbit.getDate().shiftedBy(Constants.JULIAN_DAY),
@@ -87,7 +86,7 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testBackward0Degrees() {
+    void testBackward0Degrees() {
         doElevationTest(FastMath.toRadians(0.0),
                orbit.getDate().shiftedBy(Constants.JULIAN_DAY),
                orbit.getDate(),
@@ -95,7 +94,7 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testBackward5Degrees() {
+    void testBackward5Degrees() {
         doElevationTest(FastMath.toRadians(5.0),
                orbit.getDate().shiftedBy(Constants.JULIAN_DAY),
                orbit.getDate(),
@@ -103,7 +102,7 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testBackward5DegreesStartEnabled() {
+    void testBackward5DegreesStartEnabled() {
         doElevationTest(FastMath.toRadians(5.0),
                orbit.getDate().shiftedBy(73112.0),
                orbit.getDate(),
@@ -119,13 +118,7 @@ public class EventEnablingPredicateFilterTest {
                 withHandler(new ContinueOnEvent());
         final EventEnablingPredicateFilter aboveGroundElevationDetector =
                 new EventEnablingPredicateFilter(raw,
-                                new EnablingPredicate() {
-                                    public boolean eventIsEnabled(final SpacecraftState state,
-                                                                  final EventDetector eventDetector,
-                                                                  final double g) {
-                                        return ((ElevationExtremumDetector) eventDetector).getElevation(state) > minElevation;
-                                    }
-                }).withMaxCheck(60.0);
+                        (state, eventDetector, g) -> ((ElevationExtremumDetector) eventDetector).getElevation(state) > minElevation).withMaxCheck(60.0);
 
         Assertions.assertSame(raw, aboveGroundElevationDetector.getDetector());
         Assertions.assertEquals(0.001, raw.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
@@ -176,8 +169,8 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testResetState() {
-        final List<AbsoluteDate> reset = new ArrayList<AbsoluteDate>();
+    void testResetState() {
+        final List<AbsoluteDate> reset = new ArrayList<>();
         DateDetector raw = new DateDetector(orbit.getDate().shiftedBy(3600.0)).
                         withMaxCheck(1000.0).
                         withHandler(new EventHandler() {
@@ -193,13 +186,7 @@ public class EventEnablingPredicateFilterTest {
             raw.addEventDate(orbit.getDate().shiftedBy(i * 3600.0));
         }
         EventEnablingPredicateFilter filtered =
-                        new EventEnablingPredicateFilter(raw, new EnablingPredicate() {
-                            public boolean eventIsEnabled(SpacecraftState state,
-                                                          EventDetector eventDetector,
-                                                          double g) {
-                                return state.getDate().durationFrom(orbit.getDate()) > 20000.0;
-                            }
-                        });
+                        new EventEnablingPredicateFilter(raw, (state, eventDetector, g) -> state.getDate().durationFrom(orbit.getDate()) > 20000.0);
         Propagator propagator = new KeplerianPropagator(orbit);
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(logger.monitorDetector(filtered));
@@ -219,7 +206,7 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testExceedHistoryForward() throws IOException {
+    void testExceedHistoryForward() {
         final double period = 900.0;
 
         // the raw detector should trigger one event at each 900s period
@@ -232,13 +219,9 @@ public class EventEnablingPredicateFilterTest {
 
         // in fact, we will filter out half of these events, so we get only one event every 2 periods
         final EventEnablingPredicateFilter filtered =
-                        new EventEnablingPredicateFilter(raw, new EnablingPredicate() {
-                            public boolean eventIsEnabled(SpacecraftState state,
-                                                          EventDetector eventDetector,
-                                                          double g) {
-                                double nbPeriod = state.getDate().durationFrom(orbit.getDate()) / period;
-                                return ((int) FastMath.floor(nbPeriod)) % 2 == 1;
-                            }
+                        new EventEnablingPredicateFilter(raw, (state, eventDetector, g) -> {
+                            double nbPeriod = state.getDate().durationFrom(orbit.getDate()) / period;
+                            return ((int) FastMath.floor(nbPeriod)) % 2 == 1;
                         });
         Propagator propagator = new KeplerianPropagator(orbit);
         EventsLogger logger = new EventsLogger();
@@ -272,7 +255,7 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testExceedHistoryBackward() throws IOException {
+    void testExceedHistoryBackward() {
         final double period = 900.0;
 
         // the raw detector should trigger one event at each 900s period
@@ -285,13 +268,9 @@ public class EventEnablingPredicateFilterTest {
 
         // in fact, we will filter out half of these events, so we get only one event every 2 periods
         final EventEnablingPredicateFilter filtered =
-                        new EventEnablingPredicateFilter(raw, new EnablingPredicate() {
-                            public boolean eventIsEnabled(SpacecraftState state,
-                                                          EventDetector eventDetector,
-                                                          double g) {
-                                double nbPeriod = orbit.getDate().durationFrom(state.getDate()) / period;
-                                return ((int) FastMath.floor(nbPeriod)) % 2 == 1;
-                            }
+                        new EventEnablingPredicateFilter(raw, (state, eventDetector, g) -> {
+                            double nbPeriod = orbit.getDate().durationFrom(state.getDate()) / period;
+                            return ((int) FastMath.floor(nbPeriod)) % 2 == 1;
                         });
         Propagator propagator = new KeplerianPropagator(orbit);
         EventsLogger logger = new EventsLogger();
@@ -325,7 +304,7 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testGenerics() {
+    void testGenerics() {
         // setup
         DateDetector detector = new DateDetector(orbit.getDate());
         EnablingPredicate predicate = (state, eventDetector, g) -> true;
@@ -334,22 +313,28 @@ public class EventEnablingPredicateFilterTest {
         new EventEnablingPredicateFilter(detector, predicate);
     }
 
-    @Disabled
+    @Disabled("Awaiting fix")
     @ParameterizedTest
     @ValueSource(doubles = {1, 2.6, 3.5, 4.5, 5.2, 6})
-    void testIssue1647(final double factor) {
+    void testIssue1647Analytical(final double enablingFactor) {
+        final Orbit initialOrbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
+        final KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit);
+        testTemplateWithStateResetter(2.8, enablingFactor, propagator);
+    }
+
+    private void testTemplateWithStateResetter(final double maneuverDelayFactor, final double enablingFactor,
+                                               final Propagator propagator) {
         // GIVEN
-        final AbsoluteDate epoch = AbsoluteDate.ARBITRARY_EPOCH;
-        final Orbit initialOrbit = TestUtils.getDefaultOrbit(epoch);
+        final Orbit initialOrbit = propagator.getInitialState().getOrbit();
+        final AbsoluteDate epoch = initialOrbit.getDate();
         final double period = initialOrbit.getKeplerianPeriod();
         final ApsideDetector apsideDetector = new ApsideDetector(initialOrbit);
-        final AbsoluteDate maneuverDate = epoch.shiftedBy(period * 2.8);
+        final AbsoluteDate maneuverDate = epoch.shiftedBy(period * maneuverDelayFactor);
         final ImpulseManeuver maneuver = new ImpulseManeuver(new DateDetector(maneuverDate),
                 new LofOffset(initialOrbit.getFrame(), LOFType.TNW), Vector3D.PLUS_I.scalarMultiply(100.), Double.POSITIVE_INFINITY);
-        final KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit);
         propagator.addEventDetector(maneuver);
         final RecordAndContinue recordAndContinue = new RecordAndContinue();
-        final AbsoluteDate date = epoch.shiftedBy(maneuverDate.shiftedBy(period * factor));
+        final AbsoluteDate date = epoch.shiftedBy(maneuverDate.shiftedBy(period * enablingFactor));
         // WHEN
         propagator.addEventDetector(new EventEnablingPredicateFilter(apsideDetector.withHandler(recordAndContinue),
                 ((state, detector, g) -> state.getDate().isAfterOrEqualTo(date))));
@@ -365,7 +350,7 @@ public class EventEnablingPredicateFilterTest {
 
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
 
         Utils.setDataRoot("regular-data");
         earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -383,7 +368,7 @@ public class EventEnablingPredicateFilterTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         earth = null;
         gp    = null;
         orbit = null;
