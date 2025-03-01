@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="serrof" type="add" issue="1674">
+            Use detector reset mechanism in integrator-based propagation.
+        </action>
         <action dev="serrof" type="add" issue="1673">
             Add reset in (Field)EventDetector and use it in analytical propagation.
         </action>
