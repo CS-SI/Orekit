@@ -90,6 +90,19 @@ class DetectorModifierTest {
     }
 
     @Test
+    void testReset() {
+        // GIVEN
+        final EventDetector detector = Mockito.mock(EventDetector.class);
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        final AbsoluteDate mockedDate = Mockito.mock(AbsoluteDate.class);
+        final DetectorModifier detectorModifier = new TestDetectorModifier(detector);
+        // WHEN
+        detectorModifier.reset(mockedState, mockedDate);
+        // THEN
+        Mockito.verify(detector).reset(mockedState, mockedDate);
+    }
+
+    @Test
     void testG() {
         // GIVEN
         final EventDetector detector = Mockito.mock(EventDetector.class);

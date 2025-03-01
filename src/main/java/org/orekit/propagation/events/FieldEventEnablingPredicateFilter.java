@@ -60,7 +60,7 @@ import org.orekit.time.FieldAbsoluteDate;
  */
 
 public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>>
-    extends FieldAbstractDetector<FieldEventEnablingPredicateFilter<T>, T> {
+    extends FieldAbstractDetector<FieldEventEnablingPredicateFilter<T>, T> implements FieldDetectorModifier<T> {
 
     /** Number of past transformers updates stored. */
     private static final int HISTORY_SIZE = 100;
@@ -138,13 +138,10 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
     @Override
     public void init(final FieldSpacecraftState<T> s0,
                      final FieldAbsoluteDate<T> t) {
-        super.init(s0, t);
-
-        // delegate to raw detector
-        rawDetector.init(s0, t);
+        FieldDetectorModifier.super.init(s0, t);
 
         // initialize events triggering logic
-        forward  = t.compareTo(s0.getDate()) >= 0;
+        forward  = checkIfForward(s0, t);
         extremeT = forward ?
                    FieldAbsoluteDate.getPastInfinity(t.getField()) :
                    FieldAbsoluteDate.getFutureInfinity(t.getField());
@@ -152,6 +149,16 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
         Arrays.fill(transformers, Transformer.UNINITIALIZED);
         Arrays.fill(updates, extremeT);
 
+    }
+
+    @Override
+    public void reset(final FieldSpacecraftState<T> state, final FieldAbsoluteDate<T> target) {
+        FieldDetectorModifier.super.reset(state, target);
+        forward  = checkIfForward(state, target);
+        extremeT = forward ?
+                FieldAbsoluteDate.getPastInfinity(target.getField()) :
+                FieldAbsoluteDate.getFutureInfinity(target.getField());
+        extremeG = target.getField().getZero().newInstance(Double.NaN);
     }
 
     /**  {@inheritDoc} */
@@ -165,7 +172,7 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
         }
 
         // search which transformer should be applied to g
-        if (forward) {
+        if (isForward()) {
             final int last = transformers.length - 1;
             if (extremeT.compareTo(s.getDate()) < 0) {
                 // we are at the forward end of the history
@@ -285,6 +292,11 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
                     return previous;
             }
         }
+    }
+
+    @Override
+    public boolean isForward() {
+        return forward;
     }
 
     /** Local handler.

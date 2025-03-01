@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="serrof" type="add" issue="1673">
+            Add reset in (Field)EventDetector and use it in analytical propagation.
+        </action>
         <action dev="luc" type="fix" issue="1671">
             Improved javadoc on CCSDS containers.
         </action>

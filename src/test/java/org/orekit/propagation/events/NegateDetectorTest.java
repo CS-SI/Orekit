@@ -22,43 +22,32 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.time.AbsoluteDate;
 
 /**
  * Unit tests for {@link NegateDetector}.
  *
  * @author Evan Ward
  */
-public class NegateDetectorTest {
+class NegateDetectorTest {
 
-    /**
-     * check {@link NegateDetector#init(SpacecraftState, AbsoluteDate)}.
-     */
     @Test
-    public void testInit() {
+    void testGetDetector() {
         //setup
-        EventDetector a = Mockito.mock(EventDetector.class);
-        Mockito.when(a.getDetectionSettings()).thenReturn(EventDetectionSettings.getDefaultEventDetectionSettings());
-        EventHandler c = Mockito.mock(EventHandler.class);
-        NegateDetector detector = new NegateDetector(a).withHandler(c);
-        AbsoluteDate t = AbsoluteDate.GPS_EPOCH;
-        SpacecraftState s = Mockito.mock(SpacecraftState.class);
-        Mockito.when(s.getDate()).thenReturn(t.shiftedBy(60.0));
+        EventDetector expectedDetector = new DateDetector();
 
         //action
-        detector.init(s, t);
+        NegateDetector detector = new NegateDetector(expectedDetector);
 
         //verify
-        Mockito.verify(a).init(s, t);
-        Mockito.verify(c).init(s, t, detector);
+        Assertions.assertEquals(expectedDetector, detector.getDetector());
+        Assertions.assertEquals(expectedDetector, detector.getOriginal());
     }
 
     /**
      * check g function is negated.
      */
     @Test
-    public void testG() {
+    void testG() {
         //setup
         EventDetector a = Mockito.mock(EventDetector.class);
         Mockito.when(a.getDetectionSettings()).thenReturn(EventDetectionSettings.getDefaultEventDetectionSettings());
@@ -75,7 +64,7 @@ public class NegateDetectorTest {
 
     /** Check a with___ method. */
     @Test
-    public void testCreate() {
+    void testCreate() {
         //setup
         EventDetector a = Mockito.mock(EventDetector.class);
         Mockito.when(a.getDetectionSettings()).thenReturn(EventDetectionSettings.getDefaultEventDetectionSettings());

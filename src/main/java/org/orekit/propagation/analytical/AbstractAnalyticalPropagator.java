@@ -303,6 +303,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
                         // invalidate the derivatives, we need to recompute them
                         final SpacecraftState resetState = occurrence.getNewState();
                         resetIntermediateState(resetState, interpolator.isForward());
+                        eventStates.forEach(es -> es.getEventDetector().reset(resetState, target));
                         return resetState;
                     }
                     // at this point action == Action.CONTINUE or Action.RESET_EVENTS

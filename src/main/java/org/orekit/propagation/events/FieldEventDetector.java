@@ -66,10 +66,10 @@ import org.orekit.time.FieldAbsoluteDate;
  */
 public interface FieldEventDetector <T extends CalculusFieldElement<T>> {
 
-    /** Initialize event handler at the start of a propagation.
+    /** Initialize event detector at the start of a propagation.
      * <p>
      * This method is called once at the start of the propagation. It
-     * may be used by the event handler to initialize some internal data
+     * may be used by the event detector to initialize some internal data
      * if needed.
      * </p>
      * <p>
@@ -81,6 +81,18 @@ public interface FieldEventDetector <T extends CalculusFieldElement<T>> {
      */
     default void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t) {
         getHandler().init(s0, t, this);
+    }
+
+    /** Reset the event detector during propagation when the state is modified by an event or an additional data provider.
+     * <p>
+     * The default implementation does nothing.
+     * </p>
+     * @param state current state
+     * @param target target time for the integration
+     * @since 13.0
+     */
+    default void reset(FieldSpacecraftState<T> state, FieldAbsoluteDate<T> target) {
+        // nothing by default
     }
 
     /** Compute the value of the switching function.

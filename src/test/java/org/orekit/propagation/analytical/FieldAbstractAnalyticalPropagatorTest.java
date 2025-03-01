@@ -22,16 +22,23 @@ import org.hipparchus.Field;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.ode.events.Action;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.orekit.TestUtils;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.*;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.FieldDateDetector;
+import org.orekit.propagation.events.FieldEventDetectionSettings;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
+import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -43,6 +50,36 @@ import java.util.List;
 import java.util.stream.Stream;
 
 class FieldAbstractAnalyticalPropagatorTest {
+
+    @ParameterizedTest
+    @EnumSource(value = Action.class, names = {"RESET_STATE", "RESET_DERIVATIVES"})
+    void testReset(final Action action) {
+        // GIVEN
+        final FieldAbsoluteDate<Complex> date = FieldAbsoluteDate.getArbitraryEpoch(ComplexField.getInstance());
+        final Orbit orbit = TestUtils.getDefaultOrbit(date.toAbsoluteDate());
+        final TestAnalyticalPropagator propagator = new TestAnalyticalPropagator(orbit);
+        final FieldEventHandler<Complex> handler = (s, detector, increasing) -> action;
+        final TestDetector detector = new TestDetector(date.shiftedBy(0.5), handler);
+        propagator.addEventDetector(detector);
+        // WHEN
+        propagator.propagate(propagator.getInitialState().getDate().shiftedBy(1.));
+        // THEN
+        Assertions.assertTrue(detector.resetted);
+    }
+
+    private static class TestDetector extends FieldDateDetector<Complex> {
+        boolean resetted = false;
+
+        TestDetector(final FieldAbsoluteDate<Complex> date, final FieldEventHandler<Complex> handler) {
+            super(new FieldEventDetectionSettings<>(date.getField(), EventDetectionSettings.getDefaultEventDetectionSettings()),
+                    handler, 1., date);
+        }
+
+        @Override
+        public void reset(FieldSpacecraftState<Complex> state, FieldAbsoluteDate<Complex> target) {
+            resetted = true;
+        }
+    }
 
     @Test
     void testInternalEventDetectors() {
