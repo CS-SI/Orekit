@@ -17,8 +17,11 @@
 package org.orekit.propagation.analytical;
 
 import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.ode.events.Action;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
@@ -27,8 +30,10 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -52,6 +57,35 @@ class AbstractAnalyticalPropagatorTest {
         Assertions.assertEquals(state.getDate(), interruptingDate);
     }
 
+    @ParameterizedTest
+    @EnumSource(value = Action.class, names = {"RESET_STATE", "RESET_DERIVATIVES"})
+    void testReset(final Action action) {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Orbit orbit = getOrbit(date);
+        final TestAnalyticalPropagator propagator = new TestAnalyticalPropagator(orbit);
+        final EventHandler handler = (s, detector, increasing) -> action;
+        final TestDetector detector = new TestDetector(date.shiftedBy(0.5), handler);
+        propagator.addEventDetector(detector);
+        // WHEN
+        propagator.propagate(propagator.getInitialState().getDate().shiftedBy(1.));
+        // THEN
+        Assertions.assertTrue(detector.resetted);
+    }
+
+    private static class TestDetector extends DateDetector {
+        boolean resetted = false;
+
+        TestDetector(final AbsoluteDate date, final EventHandler handler) {
+            super(EventDetectionSettings.getDefaultEventDetectionSettings(), handler, 1., date);
+        }
+
+        @Override
+        public void reset(SpacecraftState state, AbsoluteDate target) {
+            resetted = true;
+        }
+    }
+
     @Test
     void testFinish() {
         // GIVEN
@@ -59,7 +93,7 @@ class AbstractAnalyticalPropagatorTest {
         final Orbit orbit = getOrbit(date);
         final TestAnalyticalPropagator propagator = new TestAnalyticalPropagator(orbit);
         final TestHandler handler = new TestHandler();
-        propagator.addEventDetector(new DateDetector(AbsoluteDate.ARBITRARY_EPOCH).withHandler(handler));
+        propagator.addEventDetector(new DateDetector().withHandler(handler));
         // WHEN
         propagator.propagate(propagator.getInitialState().getDate().shiftedBy(1.));
         // THEN

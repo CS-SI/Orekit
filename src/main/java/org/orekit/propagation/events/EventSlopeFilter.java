@@ -137,15 +137,15 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
     }
 
     /**  {@inheritDoc} */
-    public void init(final SpacecraftState s0,
-                     final AbsoluteDate t) {
+    @Override
+    public void init(final SpacecraftState s0, final AbsoluteDate t) {
         super.init(s0, t);
 
         // delegate to raw detector
         rawDetector.init(s0, t);
 
         // initialize events triggering logic
-        forward  = t.compareTo(s0.getDate()) >= 0;
+        forward  = checkIfForward(s0, t);
         extremeT = forward ? AbsoluteDate.PAST_INFINITY : AbsoluteDate.FUTURE_INFINITY;
         Arrays.fill(transformers, Transformer.UNINITIALIZED);
         Arrays.fill(updates, extremeT);
@@ -153,12 +153,27 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
     }
 
     /**  {@inheritDoc} */
+    @Override
+    public void reset(final SpacecraftState state, final AbsoluteDate target) {
+        super.reset(state, target);
+        rawDetector.reset(state, target);
+    }
+
+    /**  {@inheritDoc} */
+    @Override
+    public void finish(final SpacecraftState state) {
+        super.finish(state);
+        rawDetector.finish(state);
+    }
+
+    /**  {@inheritDoc} */
+    @Override
     public double g(final SpacecraftState s) {
 
         final double rawG = rawDetector.g(s);
 
         // search which transformer should be applied to g
-        if (forward) {
+        if (isForward()) {
             final int last = transformers.length - 1;
             if (extremeT.compareTo(s.getDate()) < 0) {
                 // we are at the forward end of the history
@@ -239,6 +254,12 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
             }
         }
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isForward() {
+        return forward;
     }
 
     /** Local handler. */

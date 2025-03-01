@@ -20,12 +20,12 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.FieldAbsoluteDate;
 
 /**
@@ -33,43 +33,26 @@ import org.orekit.time.FieldAbsoluteDate;
  *
  * @author Evan Ward
  */
-public class FieldNegateDetectorTest {
+class FieldNegateDetectorTest {
 
-    /**
-     * check {@link FieldNegateDetector#init(FieldSpacecraftState, FieldAbsoluteDate)}.
-     */
     @Test
-    public void testInit() {
-        doTestInit(Binary64Field.getInstance());
-    }
-
-    private <T extends CalculusFieldElement<T>> void doTestInit(final Field<T> field) {
-        //setup
-        @SuppressWarnings("unchecked")
-        FieldEventDetector<T> a = Mockito.mock(FieldEventDetector.class);
-        Mockito.when(a.getDetectionSettings()).thenReturn(new FieldEventDetectionSettings<>(field,
-                EventDetectionSettings.getDefaultEventDetectionSettings()));
-        @SuppressWarnings("unchecked")
-        FieldEventHandler<T> c = Mockito.mock(FieldEventHandler.class);
-        FieldNegateDetector<T> detector = new FieldNegateDetector<>(a).withHandler(c);
-        FieldAbsoluteDate<T> t = FieldAbsoluteDate.getGPSEpoch(field);
-        @SuppressWarnings("unchecked")
-        FieldSpacecraftState<T> s = Mockito.mock(FieldSpacecraftState.class);
-        Mockito.when(s.getDate()).thenReturn(t.shiftedBy(60.0));
-
-        //action
-        detector.init(s, t);
-
-        //verify
-        Mockito.verify(a).init(s, t);
-        Mockito.verify(c).init(s, t, detector);
+    void testGetDetector() {
+        // GIVEN
+        final FieldDateDetector<Binary64> expectedDetector = new FieldDateDetector<>(FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance()));
+        
+        // WHEN
+        final FieldNegateDetector<Binary64> negateDetector = new FieldNegateDetector<>(expectedDetector);
+        
+        // THEN
+        Assertions.assertEquals(expectedDetector, negateDetector.getDetector());
+        Assertions.assertEquals(expectedDetector, negateDetector.getOriginal());
     }
 
     /**
      * check g function is negated.
      */
     @Test
-    public void testG() {
+    void testG() {
         doTestG(Binary64Field.getInstance());
     }
 
@@ -93,7 +76,7 @@ public class FieldNegateDetectorTest {
 
     /** Check a with___ method. */
     @Test
-    public void testCreate() {
+    void testCreate() {
         doTestCreate(Binary64Field.getInstance());
     }
 

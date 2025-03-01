@@ -22,11 +22,18 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
+import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
@@ -37,6 +44,7 @@ import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.EventsLogger.LoggedEvent;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.RecordAndContinue;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -325,6 +333,36 @@ public class EventEnablingPredicateFilterTest {
         // action + verify. Just make sure it compiles with generics
         new EventEnablingPredicateFilter(detector, predicate);
     }
+
+    @Disabled
+    @ParameterizedTest
+    @ValueSource(doubles = {1, 2.6, 3.5, 4.5, 5.2, 6})
+    void testIssue1647(final double factor) {
+        // GIVEN
+        final AbsoluteDate epoch = AbsoluteDate.ARBITRARY_EPOCH;
+        final Orbit initialOrbit = TestUtils.getDefaultOrbit(epoch);
+        final double period = initialOrbit.getKeplerianPeriod();
+        final ApsideDetector apsideDetector = new ApsideDetector(initialOrbit);
+        final AbsoluteDate maneuverDate = epoch.shiftedBy(period * 2.8);
+        final ImpulseManeuver maneuver = new ImpulseManeuver(new DateDetector(maneuverDate),
+                new LofOffset(initialOrbit.getFrame(), LOFType.TNW), Vector3D.PLUS_I.scalarMultiply(100.), Double.POSITIVE_INFINITY);
+        final KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit);
+        propagator.addEventDetector(maneuver);
+        final RecordAndContinue recordAndContinue = new RecordAndContinue();
+        final AbsoluteDate date = epoch.shiftedBy(maneuverDate.shiftedBy(period * factor));
+        // WHEN
+        propagator.addEventDetector(new EventEnablingPredicateFilter(apsideDetector.withHandler(recordAndContinue),
+                ((state, detector, g) -> state.getDate().isAfterOrEqualTo(date))));
+        propagator.propagate(epoch.shiftedBy(period * 10));
+        // THEN
+        final List<RecordAndContinue.Event> eventList = recordAndContinue.getEvents();
+        Assertions.assertFalse(eventList.isEmpty());
+        for (final RecordAndContinue.Event event: eventList) {
+            final SpacecraftState state = event.getState();
+            Assertions.assertEquals(0., apsideDetector.g(state), 1e-3);
+        }
+    }
+
 
     @BeforeEach
     public void setUp() {

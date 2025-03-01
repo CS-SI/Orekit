@@ -71,6 +71,17 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
         this.forward   = true;
     }
 
+    /**
+     * Check if propagation is forward or not.
+     * @param state initial state
+     * @param targetDate target propagation date
+     * @return forward flag
+     * @since 13.0
+     */
+    public static boolean checkIfForward(final SpacecraftState state, final AbsoluteDate targetDate) {
+        return targetDate.durationFrom(state.getDate()) >= 0.0;
+    }
+
     /** Check value is strictly positive.
      * @param value value to check
      * @exception OrekitException if value is not strictly positive
@@ -93,7 +104,7 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
     public void init(final SpacecraftState s0,
                      final AbsoluteDate t) {
         EventDetector.super.init(s0, t);
-        forward = t.durationFrom(s0.getDate()) >= 0.0;
+        forward = checkIfForward(s0, t);
     }
 
     /** {@inheritDoc} */

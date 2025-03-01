@@ -145,7 +145,7 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
         rawDetector.init(s0, t);
 
         // initialize events triggering logic
-        forward  = t.compareTo(s0.getDate()) >= 0;
+        forward  = checkIfForward(s0, t);
         extremeT = forward ?
                    FieldAbsoluteDate.getPastInfinity(t.getField()) :
                    FieldAbsoluteDate.getFutureInfinity(t.getField());
@@ -155,12 +155,27 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
     }
 
     /**  {@inheritDoc} */
+    @Override
+    public void reset(final FieldSpacecraftState<T> state, final FieldAbsoluteDate<T> target) {
+        super.reset(state, target);
+        rawDetector.reset(state, target);
+    }
+
+    /**  {@inheritDoc} */
+    @Override
+    public void finish(final FieldSpacecraftState<T> state) {
+        super.finish(state);
+        rawDetector.finish(state);
+    }
+
+    /**  {@inheritDoc} */
+    @Override
     public T g(final FieldSpacecraftState<T> s) {
 
         final T rawG = rawDetector.g(s);
 
         // search which transformer should be applied to g
-        if (forward) {
+        if (isForward()) {
             final int last = transformers.length - 1;
             if (extremeT.compareTo(s.getDate()) < 0) {
                 // we are at the forward end of the history
@@ -243,11 +258,16 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
 
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean isForward() {
+        return forward;
+    }
+
     /** Local handler. */
     private static class LocalHandler<D extends FieldEventDetector<T>, T extends CalculusFieldElement<T>> implements FieldEventHandler<T> {
 
         /** {@inheritDoc} */
-        @SuppressWarnings("unchecked")
         public Action eventOccurred(final FieldSpacecraftState<T> s, final FieldEventDetector<T> detector, final boolean increasing) {
             final FieldEventSlopeFilter<D, T> esf = (FieldEventSlopeFilter<D, T>) detector;
             return esf.rawDetector.getHandler().eventOccurred(s, esf.rawDetector, esf.filter.getTriggeredIncreasing());
@@ -255,7 +275,6 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
 
         /** {@inheritDoc} */
         @Override
-        @SuppressWarnings("unchecked")
         public FieldSpacecraftState<T> resetState(final FieldEventDetector<T> detector, final FieldSpacecraftState<T> oldState) {
             final FieldEventSlopeFilter<D, T> esf = (FieldEventSlopeFilter<D, T>) detector;
             return esf.rawDetector.getHandler().resetState(esf.rawDetector, oldState);

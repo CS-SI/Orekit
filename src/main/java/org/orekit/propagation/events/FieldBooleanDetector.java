@@ -256,6 +256,22 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
         }
     }
 
+    @Override
+    public void reset(final FieldSpacecraftState<T> state, final FieldAbsoluteDate<T> target) {
+        super.reset(state, target);
+        for (final FieldEventDetector<T> detector : detectors) {
+            detector.reset(state, target);
+        }
+    }
+
+    @Override
+    public void finish(final FieldSpacecraftState<T> state) {
+        super.finish(state);
+        for (final FieldEventDetector<T> detector : detectors) {
+            detector.finish(state);
+        }
+    }
+
     /**
      * Get the list of original detectors.
      * @return the list of original detectors
