@@ -124,7 +124,7 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
      * @since 12.0
      */
     public D withMaxCheck(final FieldAdaptableInterval<T> newMaxCheck) {
-        return create(new FieldEventDetectionSettings<>(newMaxCheck, getThreshold(), getMaxIterationCount()), getHandler());
+        return withDetectionSettings(new FieldEventDetectionSettings<>(newMaxCheck, getThreshold(), getMaxIterationCount()));
     }
 
     /**
@@ -137,7 +137,7 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
      * @since 6.1
      */
     public D withMaxIter(final int newMaxIter) {
-        return create(new FieldEventDetectionSettings<>(getMaxCheckInterval(), getThreshold(), newMaxIter), getHandler());
+        return withDetectionSettings(new FieldEventDetectionSettings<>(getMaxCheckInterval(), getThreshold(), newMaxIter));
     }
 
     /**
@@ -150,7 +150,7 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
      * @since 6.1
      */
     public D withThreshold(final T newThreshold) {
-        return create(new FieldEventDetectionSettings<>(getMaxCheckInterval(), newThreshold, getMaxIterationCount()), getHandler());
+        return withDetectionSettings(new FieldEventDetectionSettings<>(getMaxCheckInterval(), newThreshold, getMaxIterationCount()));
     }
 
     /**

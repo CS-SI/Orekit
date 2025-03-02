@@ -136,7 +136,7 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
      * @since 12.0
      */
     public T withMaxCheck(final AdaptableInterval newMaxCheck) {
-        return create(new EventDetectionSettings(newMaxCheck, getThreshold(), getMaxIterationCount()), getHandler());
+        return withDetectionSettings(new EventDetectionSettings(newMaxCheck, getThreshold(), getMaxIterationCount()));
     }
 
     /**
@@ -149,7 +149,7 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
      * @since 6.1
      */
     public T withMaxIter(final int newMaxIter) {
-        return create(new EventDetectionSettings(getMaxCheckInterval(), getThreshold(), newMaxIter), getHandler());
+        return withDetectionSettings(new EventDetectionSettings(getMaxCheckInterval(), getThreshold(), newMaxIter));
     }
 
     /**
@@ -162,7 +162,7 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
      * @since 6.1
      */
     public T withThreshold(final double newThreshold) {
-        return create(new EventDetectionSettings(getMaxCheckInterval(), newThreshold, getMaxIterationCount()), getHandler());
+        return withDetectionSettings(new EventDetectionSettings(getMaxCheckInterval(), newThreshold, getMaxIterationCount()));
     }
 
     /**
