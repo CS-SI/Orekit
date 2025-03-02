@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,38 +16,50 @@
  */
 package org.orekit.propagation.events;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.FieldEventHandler;
 
 /** Wrapper shifting events occurrences times.
- * <p>This class wraps an {@link EventDetector event detector} to slightly
+ * <p>This class wraps an {@link FieldEventDetector event detector} to slightly
  * shift the events occurrences times. A typical use case is for handling
  * operational delays before or after some physical event really occurs.</p>
  * <p>For example, the satellite attitude mode may be switched from sun pointed
  * to spin-stabilized a few minutes before eclipse entry, and switched back
  * to sun pointed a few minutes after eclipse exit. This behavior is handled
- * by wrapping an {@link EclipseDetector eclipse detector} into an instance
+ * by wrapping an {@link FieldEclipseDetector eclipse detector} into an instance
  * of this class with a positive times shift for increasing events (eclipse exit)
  * and a negative times shift for decreasing events (eclipse entry).</p>
- * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
- * @see EventDetector
+ * @see org.orekit.propagation.FieldPropagator#addEventDetector(FieldEventDetector)
+ * @see FieldEventDetector
+ * @see EventShifter
  * @author Luc Maisonobe
+ * @author Romain Serra
+ * @since 13.0
  */
-public class EventShifter extends AbstractDetector<EventShifter> implements DetectorModifier {
+public class FieldEventShifter<T extends CalculusFieldElement<T>> implements FieldDetectorModifier<T> {
 
     /** Event detector for the raw unshifted event. */
-    private final EventDetector detector;
+    private final FieldEventDetector<T> detector;
 
     /** Indicator for using shifted or unshifted states at event occurrence. */
     private final boolean useShiftedStates;
 
     /** Offset to apply to find increasing events. */
-    private final double increasingOffset;
+    private final T increasingOffset;
 
     /** Offset to apply to find decreasing events. */
-    private final double decreasingOffset;
+    private final T decreasingOffset;
+
+    /** Specialized event handler. */
+    private final LocalHandler<T> handler;
+
+    /** Event detection settings. */
+    private final FieldEventDetectionSettings<T> detectionSettings;
 
     /** Build a new instance.
      * <p>The {@link #getMaxCheckInterval() max check interval}, the
@@ -65,10 +77,9 @@ public class EventShifter extends AbstractDetector<EventShifter> implements Dete
      * @param increasingTimeShift increasing events time shift.
      * @param decreasingTimeShift decreasing events time shift.
      */
-    public EventShifter(final EventDetector detector, final boolean useShiftedStates,
-                        final double increasingTimeShift, final double decreasingTimeShift) {
-        this(detector.getDetectionSettings(), new LocalHandler(),
-             detector, useShiftedStates, increasingTimeShift, decreasingTimeShift);
+    public FieldEventShifter(final FieldEventDetector<T> detector, final boolean useShiftedStates,
+                             final T increasingTimeShift, final T decreasingTimeShift) {
+        this(detector.getDetectionSettings(), detector, useShiftedStates, increasingTimeShift, decreasingTimeShift);
     }
 
     /** Protected constructor with full parameters.
@@ -78,7 +89,6 @@ public class EventShifter extends AbstractDetector<EventShifter> implements Dete
      * in a readable manner without using a huge amount of parameters.
      * </p>
      * @param detectionSettings event detection settings
-     * @param handler event handler to call at event occurrences
      * @param detector event detector for the raw unshifted event
      * @param useShiftedStates if true, the state provided to {@link
      * EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean) eventOccurred} method of
@@ -88,70 +98,75 @@ public class EventShifter extends AbstractDetector<EventShifter> implements Dete
      * @param decreasingTimeShift decreasing events time shift.
      * @since 13.0
      */
-    protected EventShifter(final EventDetectionSettings detectionSettings, final EventHandler handler,
-                           final EventDetector detector, final boolean useShiftedStates,
-                           final double increasingTimeShift, final double decreasingTimeShift) {
-        super(detectionSettings, handler);
+    protected FieldEventShifter(final FieldEventDetectionSettings<T> detectionSettings,
+                                final FieldEventDetector<T> detector, final boolean useShiftedStates,
+                                final T increasingTimeShift, final T decreasingTimeShift) {
+        this.detectionSettings = detectionSettings;
+        this.handler          = new LocalHandler<>();
         this.detector         = detector;
         this.useShiftedStates = useShiftedStates;
-        this.increasingOffset = -increasingTimeShift;
-        this.decreasingOffset = -decreasingTimeShift;
+        this.increasingOffset = increasingTimeShift.negate();
+        this.decreasingOffset = decreasingTimeShift.negate();
     }
 
-    /** {@inheritDoc} */
     @Override
-    protected EventShifter create(final EventDetectionSettings detectionSettings, final EventHandler newHandler) {
-        return new EventShifter(detectionSettings, newHandler,
-                                detector, useShiftedStates, -increasingOffset, -decreasingOffset);
+    public FieldEventHandler<T> getHandler() {
+        return handler;
+    }
+
+    @Override
+    public FieldEventDetectionSettings<T> getDetectionSettings() {
+        return detectionSettings;
     }
 
     /**
      * Get the detector for the raw unshifted event.
      * @return the detector for the raw unshifted event
-     * @since 11.1
      */
-    public EventDetector getDetector() {
+    public FieldEventDetector<T> getDetector() {
         return detector;
     }
 
     /** Get the increasing events time shift.
      * @return increasing events time shift
      */
-    public double getIncreasingTimeShift() {
-        return -increasingOffset;
+    public T getIncreasingTimeShift() {
+        return increasingOffset.negate();
     }
 
     /** Get the decreasing events time shift.
      * @return decreasing events time shift
      */
-    public double getDecreasingTimeShift() {
-        return -decreasingOffset;
+    public T getDecreasingTimeShift() {
+        return decreasingOffset.negate();
     }
 
     /** {@inheritDoc} */
-    public double g(final SpacecraftState s) {
-        final double incShiftedG = detector.g(s.shiftedBy(increasingOffset));
-        final double decShiftedG = detector.g(s.shiftedBy(decreasingOffset));
-        return (increasingOffset >= decreasingOffset) ?
+    @Override
+    public T g(final FieldSpacecraftState<T> s) {
+        final T incShiftedG = detector.g(s.shiftedBy(increasingOffset));
+        final T decShiftedG = detector.g(s.shiftedBy(decreasingOffset));
+        return (increasingOffset.getReal() >= decreasingOffset.getReal()) ?
                FastMath.max(incShiftedG, decShiftedG) : FastMath.min(incShiftedG, decShiftedG);
     }
 
     /** Local class for handling events. */
-    private static class LocalHandler implements EventHandler {
+    private static class LocalHandler<W extends CalculusFieldElement<W>> implements FieldEventHandler<W> {
 
         /** Shifted state at even occurrence. */
-        private SpacecraftState shiftedState;
+        private FieldSpacecraftState<W> shiftedState;
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
+        public Action eventOccurred(final FieldSpacecraftState<W> s, final FieldEventDetector<W> detector,
+                                    final boolean increasing) {
 
-            final EventShifter shifter = (EventShifter) detector;
+            final FieldEventShifter<W> shifter = (FieldEventShifter<W>) detector;
             if (shifter.useShiftedStates) {
                 // the state provided by the caller already includes the time shift
                 shiftedState = s;
             } else {
                 // we need to "unshift" the state
-                final double offset = increasing ? shifter.increasingOffset : shifter.decreasingOffset;
+                final W offset = increasing ? shifter.increasingOffset : shifter.decreasingOffset;
                 shiftedState = s.shiftedBy(offset);
             }
 
@@ -161,8 +176,9 @@ public class EventShifter extends AbstractDetector<EventShifter> implements Dete
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
-            final EventShifter shifter = (EventShifter) detector;
+        public FieldSpacecraftState<W> resetState(final FieldEventDetector<W> detector,
+                                                  final FieldSpacecraftState<W> oldState) {
+            final FieldEventShifter<W> shifter = (FieldEventShifter<W>) detector;
             return shifter.detector.getHandler().resetState(shifter.detector, shiftedState);
         }
 
