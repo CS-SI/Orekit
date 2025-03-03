@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="bryan" type="update" issue="1676">
+            Allowed initialization of minGap in DataDetector constructors.
+        </action>
         <action dev="John Ajamian" type="fix" issue="1297" due-to="Brad Kelly">
             Add options for CCSDS writers to use 16 digits.
         </action>
