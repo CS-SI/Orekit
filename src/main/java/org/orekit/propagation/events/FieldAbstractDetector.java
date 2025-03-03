@@ -64,6 +64,19 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
         this.forward   = true;
     }
 
+    /**
+     * Check if propagation is forward or not.
+     * @param <W> field type
+     * @param state initial state
+     * @param targetDate target propagation date
+     * @return forward flag
+     * @since 13.0
+     */
+    public static <W extends CalculusFieldElement<W>> boolean checkIfForward(final FieldSpacecraftState<W> state,
+                                                                             final FieldAbsoluteDate<W> targetDate) {
+        return targetDate.durationFrom(state.getDate()).getReal() >= 0.0;
+    }
+
     /** Check value is strictly positive.
      * @param value value to check
      * @exception OrekitException if value is not strictly positive
@@ -79,7 +92,7 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
     @Override
     public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
         FieldEventDetector.super.init(s0, t);
-        forward = t.durationFrom(s0.getDate()).getReal() >= 0.0;
+        forward = checkIfForward(s0, t);
     }
 
     /** {@inheritDoc} */
@@ -111,7 +124,7 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
      * @since 12.0
      */
     public D withMaxCheck(final FieldAdaptableInterval<T> newMaxCheck) {
-        return create(new FieldEventDetectionSettings<>(newMaxCheck, getThreshold(), getMaxIterationCount()), getHandler());
+        return withDetectionSettings(new FieldEventDetectionSettings<>(newMaxCheck, getThreshold(), getMaxIterationCount()));
     }
 
     /**
@@ -124,7 +137,7 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
      * @since 6.1
      */
     public D withMaxIter(final int newMaxIter) {
-        return create(new FieldEventDetectionSettings<>(getMaxCheckInterval(), getThreshold(), newMaxIter), getHandler());
+        return withDetectionSettings(new FieldEventDetectionSettings<>(getMaxCheckInterval(), getThreshold(), newMaxIter));
     }
 
     /**
@@ -137,7 +150,7 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
      * @since 6.1
      */
     public D withThreshold(final T newThreshold) {
-        return create(new FieldEventDetectionSettings<>(getMaxCheckInterval(), newThreshold, getMaxIterationCount()), getHandler());
+        return withDetectionSettings(new FieldEventDetectionSettings<>(getMaxCheckInterval(), newThreshold, getMaxIterationCount()));
     }
 
     /**

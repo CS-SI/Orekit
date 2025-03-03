@@ -49,6 +49,13 @@ public interface FieldDetectorModifier<T extends CalculusFieldElement<T>> extend
 
     /** {@inheritDoc} */
     @Override
+    default void reset(FieldSpacecraftState<T> state, FieldAbsoluteDate<T> target) {
+        FieldEventDetector.super.reset(state, target);
+        getDetector().reset(state, target);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     default T g(final FieldSpacecraftState<T> s) {
         return getDetector().g(s);
     }

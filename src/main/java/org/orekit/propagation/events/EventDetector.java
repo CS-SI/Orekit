@@ -64,7 +64,7 @@ import org.orekit.time.AbsoluteDate;
  */
 public interface EventDetector {
 
-    /** Initialize event handler at the start of a propagation.
+    /** Initialize event detector at the start of a propagation.
      * <p>
      * This method is called once at the start of the propagation. It
      * may be used by the event handler to initialize some internal data
@@ -79,6 +79,18 @@ public interface EventDetector {
      */
     default void init(SpacecraftState s0, AbsoluteDate t) {
         getHandler().init(s0, t, this);
+    }
+
+    /** Reset the event detector during propagation when the state is modified by an event or an additional data provider.
+     * <p>
+     * The default implementation does nothing.
+     * </p>
+     * @param state current state
+     * @param target target time for the integration
+     * @since 13.0
+     */
+    default void reset(SpacecraftState state, AbsoluteDate target) {
+        // nothing by default
     }
 
     /** Compute the value of the switching function.

@@ -75,6 +75,21 @@ class FieldDetectorModifierTest {
 
     @Test
     @SuppressWarnings("unchecked")
+    void testReset() {
+        // GIVEN
+        final FieldEventDetector<?> detector = Mockito.mock(FieldEventDetector.class);
+        Mockito.when(detector.getHandler()).thenReturn(new FieldStopOnEvent<>());
+        final FieldSpacecraftState mockedState = Mockito.mock(FieldSpacecraftState.class);
+        final FieldAbsoluteDate mockedDate = Mockito.mock(FieldAbsoluteDate.class);
+        final TestFieldDetector<?> modifierDetector = new TestFieldDetector<>(detector);
+        // WHEN
+        modifierDetector.reset(mockedState, mockedDate);
+        // THEN
+        Mockito.verify(detector).reset(mockedState, mockedDate);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
     void testG() {
         // GIVEN
         final Binary64Field field = Binary64Field.getInstance();

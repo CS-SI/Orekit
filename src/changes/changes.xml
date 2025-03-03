@@ -24,6 +24,15 @@
         <action dev="John Ajamian" type="fix" issue="1297" due-to="Brad Kelly">
             Add options for CCSDS writers to use 16 digits.
         </action>
+        <action dev="serrof" type="add" issue="1675">
+            Added FieldEventShifter.
+        </action>
+        <action dev="serrof" type="add" issue="1674">
+            Use detector reset mechanism in integrator-based propagation.
+        </action>
+        <action dev="serrof" type="add" issue="1673">
+            Add reset in (Field)EventDetector and use it in analytical propagation.
+        </action>
         <action dev="luc" type="fix" issue="1671">
             Improved javadoc on CCSDS containers.
         </action>

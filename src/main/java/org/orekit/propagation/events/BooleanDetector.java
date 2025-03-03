@@ -200,7 +200,7 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
      * ContinueOnEvent}.
      *
      * @param detector to negate.
-     * @return an new event detector whose g function is the same magnitude but opposite
+     * @return a new event detector whose g function is the same magnitude but opposite
      * sign of {@code detector}.
      * @see #andCombine(Collection)
      * @see #orCombine(Collection)
@@ -235,11 +235,26 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
     }
 
     @Override
-    public void init(final SpacecraftState s0,
-                     final AbsoluteDate t) {
+    public void init(final SpacecraftState s0, final AbsoluteDate t) {
         super.init(s0, t);
         for (final EventDetector detector : detectors) {
             detector.init(s0, t);
+        }
+    }
+
+    @Override
+    public void reset(final SpacecraftState state, final AbsoluteDate target) {
+        super.init(state, target);
+        for (final EventDetector detector : detectors) {
+            detector.reset(state, target);
+        }
+    }
+
+    @Override
+    public void finish(final SpacecraftState state) {
+        super.finish(state);
+        for (final EventDetector detector : detectors) {
+            detector.finish(state);
         }
     }
 

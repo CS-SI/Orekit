@@ -987,6 +987,14 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
+        @Override
+        public void reset(final ODEStateAndDerivative intermediateState, final double finalTime) {
+            detector.reset(convert(intermediateState), stateMapper.mapDoubleToDate(finalTime));
+            this.lastT = Double.NaN;
+            this.lastG = Double.NaN;
+        }
+
+        /** {@inheritDoc} */
         public double g(final ODEStateAndDerivative s) {
             if (!Precision.equals(lastT, s.getTime(), 0)) {
                 lastT = s.getTime();
