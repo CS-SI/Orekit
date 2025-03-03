@@ -22,7 +22,7 @@ import java.io.IOException;
 import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
-import org.orekit.utils.AccurateFormatter;
+
 import org.orekit.utils.units.Unit;
 
 /** Writer for attitude determination data.
@@ -83,7 +83,7 @@ class AttitudeDeterminationWriter extends AbstractWriter {
                     if (k > 0) {
                         stddev.append(' ');
                     }
-                    stddev.append(AccurateFormatter.format(Unit.DEGREE.fromSI(stddevDouble[k])));
+                    stddev.append(generator.doubleToString(Unit.DEGREE.fromSI(stddevDouble[k])));
                 }
                 generator.writeEntry(AttitudeDeterminationSensorKey.SENSOR_NOISE_STDDEV.name(),
                                      stddev.toString(), Unit.DEGREE, false);

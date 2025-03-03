@@ -415,7 +415,8 @@ public class AemWriter extends AbstractMessageWriter<AdmHeader, AemSegment, Aem>
                                                                           metadata.getEndpoints().isExternal2SpacecraftBody(),
                                                                           metadata.getEulerRotSeq(),
                                                                           metadata.isSpacecraftBodyRate(),
-                                                                          attitude);
+                                                                          attitude,
+                                                                          generator.getFormatter());
 
         if (generator.getFormat() == FileFormat.KVN) {
 

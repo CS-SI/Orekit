@@ -26,7 +26,7 @@ import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
-import org.orekit.utils.AccurateFormatter;
+import org.orekit.utils.Formatter;
 import org.orekit.utils.units.Unit;
 
 /** Writer for maneuvers history data.
@@ -103,11 +103,11 @@ class OrbitManeuverHistoryWriter extends AbstractWriter {
         generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_TIME_PULSE_DURATION.name(), metadata.getDcTimePulseDuration(), Unit.SECOND,  notContinuous);
         generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_TIME_PULSE_PERIOD.name(),   metadata.getDcTimePulsePeriod(),   Unit.SECOND,  notContinuous);
         if (timeAndAngle) {
-            generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_REF_DIR.name(), toString(metadata.getDcRefDir()), null, timeAndAngle);
+            generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_REF_DIR.name(), toString(metadata.getDcRefDir(), generator.getFormatter()), null, timeAndAngle);
             generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_BODY_FRAME.name(),
                                  metadata.getDcBodyFrame().toString().replace(' ', '_'),
                                  null, timeAndAngle);
-            generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_BODY_TRIGGER.name(),   toString(metadata.getDcBodyTrigger()), null,   timeAndAngle);
+            generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_BODY_TRIGGER.name(),   toString(metadata.getDcBodyTrigger(), generator.getFormatter()), null,   timeAndAngle);
             generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_PA_START_ANGLE.name(), metadata.getDcPhaseStartAngle(), Unit.DEGREE,  timeAndAngle);
             generator.writeEntry(OrbitManeuverHistoryMetadataKey.DC_PA_STOP_ANGLE.name(),  metadata.getDcPhaseStopAngle(),  Unit.DEGREE,  timeAndAngle);
         }
@@ -131,7 +131,7 @@ class OrbitManeuverHistoryWriter extends AbstractWriter {
                 if (i > 0) {
                     line.append(' ');
                 }
-                line.append(types.get(i).outputField(timeConverter, maneuver));
+                line.append(types.get(i).outputField(timeConverter, maneuver, generator.getFormatter()));
             }
             if (generator.getFormat() == FileFormat.XML) {
                 generator.writeEntry(Ocm.MAN_LINE, line.toString(), null, true);
@@ -144,15 +144,16 @@ class OrbitManeuverHistoryWriter extends AbstractWriter {
 
     /** Convert a vector to a space separated string.
      * @param vector vector to convert
-     * @return orrespondong string
+     * @param formatter to use for double and date to string
+     * @return corresponding string
      */
-    private String toString(final Vector3D vector) {
+    private String toString(final Vector3D vector, final Formatter formatter) {
         final StringBuilder builder = new StringBuilder();
-        builder.append(AccurateFormatter.format(Unit.ONE.fromSI(vector.getX())));
+        builder.append(formatter.toString(Unit.ONE.fromSI(vector.getX())));
         builder.append(' ');
-        builder.append(AccurateFormatter.format(Unit.ONE.fromSI(vector.getY())));
+        builder.append(formatter.toString(Unit.ONE.fromSI(vector.getY())));
         builder.append(' ');
-        builder.append(AccurateFormatter.format(Unit.ONE.fromSI(vector.getZ())));
+        builder.append(formatter.toString(Unit.ONE.fromSI(vector.getZ())));
         return builder.toString();
     }
 

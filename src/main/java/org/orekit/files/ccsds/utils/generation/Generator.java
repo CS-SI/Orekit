@@ -22,6 +22,7 @@ import java.util.List;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Formatter;
 import org.orekit.utils.units.Unit;
 
 /** Generation interface for CCSDS messages.
@@ -39,6 +40,12 @@ public interface Generator extends AutoCloseable {
      * @return generated file format
      */
     FileFormat getFormat();
+
+    /**
+     *  Used to format dates and doubles to string.
+     * @return formatter
+     */
+    Formatter getFormatter();
 
     /** Start CCSDS message.
      * @param messageTypeKey key for message type

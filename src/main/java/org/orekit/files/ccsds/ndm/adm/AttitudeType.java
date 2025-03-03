@@ -40,6 +40,7 @@ import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AccurateFormatter;
 import org.orekit.utils.AngularDerivativesFilter;
+import org.orekit.utils.Formatter;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.units.Unit;
 
@@ -750,12 +751,13 @@ public enum AttitudeType {
      * @param eulerRotSequence sequance of Euler angles
      * @param isSpacecraftBodyRate if true Euler rates are specified in spacecraft body frame
      * @param attitude angular coordinates, using {@link Attitude Attitude} convention
+     * @param formatter used to format doubles and dates
      * (i.e. from inertial frame to spacecraft frame)
      * @return the attitude data in CCSDS units
      */
     public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
                                      final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                     final TimeStampedAngularCoordinates attitude) {
+                                     final TimeStampedAngularCoordinates attitude, final Formatter formatter) {
 
         // generate the double data
         final double[] data = generateData(isFirst, isExternal2SpacecraftBody,
@@ -764,11 +766,31 @@ public enum AttitudeType {
         // format as string array with CCSDS units
         final String[] fields = new String[data.length];
         for (int i = 0; i < data.length; ++i) {
-            fields[i] = AccurateFormatter.format(units[i].fromSI(data[i]));
+            fields[i] = formatter.toString(units[i].fromSI(data[i]));
         }
 
         return fields;
 
+    }
+
+    /**
+     * Get the attitude data fields corresponding to the attitude type.
+     * <p>
+     * This method returns the components in CCSDS units (i.e. degrees, degrees per seconds…).
+     * </p>
+     * @param isFirst if true the first quaternion component is the scalar component
+     * @param isExternal2SpacecraftBody true attitude is from external frame to spacecraft body frame
+     * @param eulerRotSequence sequance of Euler angles
+     * @param isSpacecraftBodyRate if true Euler rates are specified in spacecraft body frame
+     * @param attitude angular coordinates, using {@link Attitude Attitude} convention
+     * (i.e. from inertial frame to spacecraft frame)
+     * @return the attitude data in CCSDS units
+     */
+    public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
+                                     final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
+                                     final TimeStampedAngularCoordinates attitude) {
+
+        return this.createDataFields(isFirst, isExternal2SpacecraftBody, eulerRotSequence, isSpacecraftBodyRate, attitude, new AccurateFormatter());
     }
 
     /**

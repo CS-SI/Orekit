@@ -24,7 +24,6 @@ import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
-import org.orekit.utils.AccurateFormatter;
 import org.orekit.utils.units.Unit;
 
 /** Writer for trajectory state history data.
@@ -142,7 +141,7 @@ class TrajectoryStateHistoryWriter extends AbstractWriter {
         line.append(generator.dateToString(timeConverter, state.getDate()));
         for (int i = 0; i < units.size(); ++i) {
             line.append(' ');
-            line.append(AccurateFormatter.format(units.get(i).fromSI(elements[i])));
+            line.append(generator.doubleToString(units.get(i).fromSI(elements[i])));
         }
         if (generator.getFormat() == FileFormat.XML) {
             generator.writeEntry(Ocm.TRAJ_LINE, line.toString(), null, true);

@@ -32,6 +32,7 @@ import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.AccurateFormatter;
+import org.orekit.utils.Formatter;
 import org.orekit.utils.units.Parser;
 import org.orekit.utils.units.PowerTerm;
 import org.orekit.utils.units.Unit;
@@ -65,21 +66,42 @@ public abstract class AbstractGenerator implements Generator {
     /** Map from SI Units name to CCSDS unit names. */
     private final Map<String, String> siToCcsds;
 
+    /** Used to format dates and doubles to string. */
+    private final Formatter formatter;
+
     /** Simple constructor.
      * @param output destination of generated output
      * @param outputName output name for error messages
      * @param maxRelativeOffset maximum offset in seconds to use relative dates
      * (if a date is too far from reference, it will be displayed as calendar elements)
+     * @param formatter how to format date and double to string.
      * @param writeUnits if true, units must be written
      */
     public AbstractGenerator(final Appendable output, final String outputName,
-                             final double maxRelativeOffset, final boolean writeUnits) {
+                             final double maxRelativeOffset, final boolean writeUnits,
+                             final Formatter formatter) {
         this.output            = output;
         this.outputName        = outputName;
         this.maxRelativeOffset = maxRelativeOffset;
         this.writeUnits        = writeUnits;
         this.sections          = new ArrayDeque<>();
         this.siToCcsds         = new HashMap<>();
+        this.formatter = formatter;
+    }
+
+    /** Simple constructor.
+     * @param output destination of generated output
+     * @param outputName output name for error messages
+     * @param maxRelativeOffset maximum offset in seconds to use relative dates
+     * (if a date is too far from reference, it will be displayed as calendar elements)
+     * @param writeUnits if true, units must be written
+     * @deprecated since 13.0, since does not allow user to specify formatter. This defaults to {@link AccurateFormatter}
+     * Use {@link AbstractGenerator#AbstractGenerator(Appendable, String, double, boolean, Formatter)} instead.
+     */
+    @Deprecated
+    public AbstractGenerator(final Appendable output, final String outputName,
+                             final double maxRelativeOffset, final boolean writeUnits) {
+        this(output, outputName, maxRelativeOffset, writeUnits, new AccurateFormatter());
     }
 
     /** {@inheritDoc} */
@@ -87,6 +109,10 @@ public abstract class AbstractGenerator implements Generator {
     public String getOutputName() {
         return outputName;
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public Formatter getFormatter() { return formatter; }
 
     /** Check if unit must be written.
      * @param unit entry unit
@@ -217,7 +243,7 @@ public abstract class AbstractGenerator implements Generator {
     /** {@inheritDoc} */
     @Override
     public String doubleToString(final double value) {
-        return Double.isNaN(value) ? null : AccurateFormatter.format(value);
+        return Double.isNaN(value) ? null : formatter.toString(value);
     }
 
     /** {@inheritDoc} */
@@ -228,7 +254,7 @@ public abstract class AbstractGenerator implements Generator {
             final double relative = date.durationFrom(converter.getReferenceDate());
             if (FastMath.abs(relative) <= maxRelativeOffset) {
                 // we can use a relative date
-                return AccurateFormatter.format(relative);
+                return formatter.toString(relative);
             }
         }
 
@@ -249,7 +275,7 @@ public abstract class AbstractGenerator implements Generator {
     @Override
     public String dateToString(final int year, final int month, final int day,
                                final int hour, final int minute, final double seconds) {
-        return AccurateFormatter.format(year, month, day, hour, minute, seconds);
+        return formatter.toString(year, month, day, hour, minute, seconds);
     }
 
     /** {@inheritDoc} */

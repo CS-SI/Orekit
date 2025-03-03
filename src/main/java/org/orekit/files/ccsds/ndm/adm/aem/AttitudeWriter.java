@@ -30,6 +30,8 @@ import org.orekit.files.ccsds.utils.generation.XmlGenerator;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.files.general.AttitudeEphemerisFile.SatelliteAttitudeEphemeris;
 import org.orekit.files.general.AttitudeEphemerisFileWriter;
+import org.orekit.utils.AccurateFormatter;
+import org.orekit.utils.Formatter;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
 /** An {@link AttitudeEphemerisFileWriter} generating {@link Aem AEM} files.
@@ -60,6 +62,52 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
 
     /** Column number for aligning units. */
     private final int unitsColumn;
+
+    /** Used to format dates and doubles to string. */
+    private final Formatter formatter;
+
+    /**
+     * Constructor used to create a new AEM writer configured with the necessary parameters
+     * to successfully fill in all required fields that aren't part of a standard object.
+     * <p>
+     * If the mandatory header entries are not present (or if header is null),
+     * built-in defaults will be used
+     * </p>
+     * <p>
+     * The writer is built from the complete header and partial metadata. The template
+     * metadata is used to initialize and independent local copy, that will be updated
+     * as new segments are written (with at least the segment start and stop will change,
+     * but some other parts may change too). The {@code template} argument itself is not
+     * changed.
+     * </p>
+     * <p>
+     * Calling this constructor directly is not recommended. Users should rather use
+     * {@link org.orekit.files.ccsds.ndm.WriterBuilder#buildAemWriter()}.
+     * </p>
+     * @param writer underlying writer
+     * @param header file header (may be null)
+     * @param template template for metadata
+     * @param fileFormat file format to use
+     * @param outputName output name for error messages
+     * @param maxRelativeOffset maximum offset in seconds to use relative dates
+     * (if a date is too far from reference, it will be displayed as calendar elements)
+     * @param unitsColumn columns number for aligning units (if negative or zero, units are not output)
+     * @param formatter how to format date and double to string.
+     * @since 13.0
+     */
+    public AttitudeWriter(final AemWriter writer,
+                          final AdmHeader header, final AemMetadata template,
+                          final FileFormat fileFormat, final String outputName,
+                          final double maxRelativeOffset, final int unitsColumn, final Formatter formatter) {
+        this.writer            = writer;
+        this.header            = header;
+        this.metadata          = template.copy(header == null ? writer.getDefaultVersion() : header.getFormatVersion());
+        this.fileFormat        = fileFormat;
+        this.outputName        = outputName;
+        this.maxRelativeOffset = maxRelativeOffset;
+        this.unitsColumn       = unitsColumn;
+        this.formatter = formatter;
+    }
 
     /**
      * Constructor used to create a new AEM writer configured with the necessary parameters
@@ -93,13 +141,7 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
                           final AdmHeader header, final AemMetadata template,
                           final FileFormat fileFormat, final String outputName,
                           final double maxRelativeOffset, final int unitsColumn) {
-        this.writer            = writer;
-        this.header            = header;
-        this.metadata          = template.copy(header == null ? writer.getDefaultVersion() : header.getFormatVersion());
-        this.fileFormat        = fileFormat;
-        this.outputName        = outputName;
-        this.maxRelativeOffset = maxRelativeOffset;
-        this.unitsColumn       = unitsColumn;
+        this(writer, header, template, fileFormat, outputName, maxRelativeOffset, unitsColumn, new AccurateFormatter());
     }
 
     /** {@inheritDoc}
@@ -141,9 +183,9 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
 
         try (Generator generator = fileFormat == FileFormat.KVN ?
              new KvnGenerator(appendable, AemWriter.KVN_PADDING_WIDTH, outputName,
-                              maxRelativeOffset, unitsColumn) :
+                              maxRelativeOffset, unitsColumn, formatter) :
              new XmlGenerator(appendable, XmlGenerator.DEFAULT_INDENT, outputName,
-                              maxRelativeOffset, unitsColumn > 0, null)) {
+                              maxRelativeOffset, unitsColumn > 0, null, formatter)) {
 
             writer.writeHeader(generator, header);
 

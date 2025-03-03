@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="John Ajamian" type="fix" issue="1297" due-to="Brad Kelly">
+            Add options for CCSDS writers to use 16 digits.
+        </action>
         <action dev="serrof" type="add" issue="1675">
             Added FieldEventShifter.
         </action>
