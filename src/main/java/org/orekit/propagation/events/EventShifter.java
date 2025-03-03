@@ -130,7 +130,7 @@ public class EventShifter extends AbstractDetector<EventShifter> implements Dete
     }
 
     @Override
-    public void init(SpacecraftState s0, AbsoluteDate t) {
+    public void init(final SpacecraftState s0, final AbsoluteDate t) {
         super.init(s0, t);
         getDetector().init(s0, t);
     }
