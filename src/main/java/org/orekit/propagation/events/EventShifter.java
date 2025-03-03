@@ -20,6 +20,7 @@ import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.time.AbsoluteDate;
 
 /** Wrapper shifting events occurrences times.
  * <p>This class wraps an {@link EventDetector event detector} to slightly
@@ -126,6 +127,12 @@ public class EventShifter extends AbstractDetector<EventShifter> implements Dete
      */
     public double getDecreasingTimeShift() {
         return -decreasingOffset;
+    }
+
+    @Override
+    public void init(SpacecraftState s0, AbsoluteDate t) {
+        super.init(s0, t);
+        getDetector().init(s0, t);
     }
 
     /** {@inheritDoc} */
