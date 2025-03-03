@@ -100,6 +100,32 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
         this((TimeStamped) date);
     }
 
+    /** Build a new instance.
+     * <p>First event dates are set here, but others can be
+     * added later with {@link #addEventDate(AbsoluteDate)}, although the max. check should probably be changed then.</p>
+     * @param minGap minimum gap between added dates (s)
+     * @param dates list of event dates
+     * @see #addEventDate(AbsoluteDate)
+     * @since 13.0
+     */
+    public DateDetector(final double minGap, final TimeStamped... dates) {
+        this(new EventDetectionSettings(DateDetectionAdaptableIntervalFactory.getDatesDetectionConstantInterval(dates),
+                                        DEFAULT_THRESHOLD, EventDetectionSettings.DEFAULT_MAX_ITER),
+             new StopOnEvent(), minGap, dates);
+    }
+
+    /** Build a new instance from a single time.
+     * <p>First event dates are set here, but others can be
+     * added later with {@link #addEventDate(AbsoluteDate)}, although the max. check should probably be changed then.</p>
+     * @param minGap minimum gap between added dates (s)
+     * @param date event date
+     * @see #addEventDate(AbsoluteDate)
+     * @since 13.0
+     */
+    public DateDetector(final double minGap, final AbsoluteDate date) {
+        this(minGap, (TimeStamped) date);
+    }
+
     /** Protected constructor with full parameters.
      * <p>
      * This constructor is not public as users are expected to use the builder
@@ -174,6 +200,13 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
      */
     public AbsoluteDate getDate() {
         return currentIndex < 0 ? null : eventDateList.get(currentIndex).getDate();
+    }
+
+    /** Get the minimum gap between added dates.
+     * @return the minimum gap between added dates (s)
+     */
+    public double getMinGap() {
+        return minGap;
     }
 
     /** Add an event date.
