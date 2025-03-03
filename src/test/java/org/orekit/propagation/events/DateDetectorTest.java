@@ -63,6 +63,13 @@ public class DateDetectorTest {
     private NumericalPropagator propagator;
 
     @Test
+    public void testIssue1676() {
+        final double expectedMinGap = 0.001;
+        Assertions.assertEquals(expectedMinGap, new DateDetector(expectedMinGap, iniDate).getMinGap(), 1.0e-10);
+
+    }
+
+    @Test
     public void testSimpleTimer() {
         DateDetector dateDetector = new DateDetector(iniDate.shiftedBy(2.0*dt)).
                                     withMaxCheck(maxCheck).
