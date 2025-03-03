@@ -65,7 +65,7 @@ public class DateDetectorTest {
     @Test
     public void testIssue1676() {
         final double expectedMinGap = 0.001;
-        Assertions.assertEquals(expectedMinGap, new DateDetector(expectedMinGap, iniDate), 1.0e-10);
+        Assertions.assertEquals(expectedMinGap, new DateDetector(expectedMinGap, iniDate).getMinGap(), 1.0e-10);
 
     }
 
