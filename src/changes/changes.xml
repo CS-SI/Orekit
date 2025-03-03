@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="serrof" type="update" issue="1677">
+            Generalize event detectors in StartStopFiringEventsTrigger and IntervalEventTrigger.
+        </action>
         <action dev="bryan" type="update" issue="1676">
             Allowed initialization of minGap in DataDetector constructors.
         </action>

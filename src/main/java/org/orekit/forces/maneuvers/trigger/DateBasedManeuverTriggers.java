@@ -23,7 +23,8 @@ import java.util.List;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.orekit.propagation.events.EventDetectionSettings;
-import org.orekit.propagation.events.FieldAbstractDetector;
+import org.orekit.propagation.events.FieldEventDetectionSettings;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.FieldParameterDrivenDateIntervalDetector;
 import org.orekit.propagation.events.ParameterDrivenDateIntervalDetector;
 import org.orekit.time.AbsoluteDate;
@@ -126,20 +127,21 @@ public class DateBasedManeuverTriggers extends IntervalEventTrigger<ParameterDri
 
     /** {@inheritDoc} */
     @Override
-    protected <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>> FieldAbstractDetector<D, S> convertIntervalDetector(final Field<S> field,
-                                                                                                                                             final ParameterDrivenDateIntervalDetector detector) {
+    protected <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>> D convertIntervalDetector(final Field<S> field,
+                                                                                                             final ParameterDrivenDateIntervalDetector detector) {
 
         final FieldParameterDrivenDateIntervalDetector<S> fd =
                         new FieldParameterDrivenDateIntervalDetector<>(field, "",
                                         detector.getStartDriver().getBaseDate(),
-                                        detector.getStopDriver().getBaseDate());
+                                        detector.getStopDriver().getBaseDate())
+                                .withDetectionSettings(new FieldEventDetectionSettings<>(field, detector.getDetectionSettings()));
         fd.getStartDriver().setName(detector.getStartDriver().getName());
         fd.getStopDriver().setName(detector.getStopDriver().getName());
         fd.getMedianDriver().setName(detector.getMedianDriver().getName());
         fd.getDurationDriver().setName(detector.getDurationDriver().getName());
 
         @SuppressWarnings("unchecked")
-        final FieldAbstractDetector<D, S> converted = (FieldAbstractDetector<D, S>) fd;
+        final D converted = (D) fd;
         return converted;
 
     }

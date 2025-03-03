@@ -27,8 +27,6 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldAbstractDetector;
-import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -50,13 +48,13 @@ import org.orekit.time.FieldAbsoluteDate;
  * @author Luc Maisonobe
  * @since 11.1
  */
-public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O extends AbstractDetector<O>> extends AbstractManeuverTriggers {
+public abstract class StartStopEventsTrigger<A extends EventDetector, O extends EventDetector> extends AbstractManeuverTriggers {
 
     /** Start detector. */
-    private final A startDetector;
+    private final ManeuverTriggerDetector<A> startDetector;
 
     /** Stop detector. */
-    private final O stopDetector;
+    private final ManeuverTriggerDetector<O> stopDetector;
 
     /** Cached field-based start detectors. */
     private final transient Map<Field<? extends CalculusFieldElement<?>>, FieldEventDetector<? extends CalculusFieldElement<?>>> cachedStart;
@@ -84,8 +82,8 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
      */
     protected StartStopEventsTrigger(final A prototypeStartDetector, final O prototypeStopDetector) {
 
-        this.startDetector = prototypeStartDetector.withHandler(new StartHandler());
-        this.stopDetector  = prototypeStopDetector.withHandler(new StopHandler());
+        this.startDetector = new ManeuverTriggerDetector<>(prototypeStartDetector, new StartHandler());
+        this.stopDetector  = new ManeuverTriggerDetector<>(prototypeStopDetector, new StopHandler());
         this.cachedStart   = new HashMap<>();
         this.cachedStop    = new HashMap<>();
 
@@ -96,7 +94,7 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
      * @return firing start detector
      */
     public A getStartDetector() {
-        return startDetector;
+        return startDetector.getDetector();
     }
 
     /**
@@ -104,7 +102,7 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
      * @return firing stop detector
      */
     public O getStopDetector() {
-        return stopDetector;
+        return stopDetector.getDetector();
     }
 
     /** {@inheritDoc} */
@@ -199,13 +197,9 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
      * @param <S> type of the field elements
      * @return converted firing intervals detector
      */
-    private <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>> D convertAndSetUpStartHandler(final Field<S> field) {
-        final FieldAbstractDetector<D, S> converted = convertStartDetector(field, startDetector);
-        final FieldAdaptableInterval<S>   maxCheck  = (s, isForward) -> startDetector.getMaxCheckInterval().currentInterval(s.toSpacecraftState(), isForward);
-        return converted.
-               withMaxCheck(maxCheck).
-               withThreshold(field.getZero().newInstance(startDetector.getThreshold())).
-               withHandler(new FieldStartHandler<>());
+    private <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>> FieldManeuverTriggerDetector<S, D> convertAndSetUpStartHandler(final Field<S> field) {
+        final D converted = convertStartDetector(field, startDetector.getDetector());
+        return new FieldManeuverTriggerDetector<>(converted, new FieldStartHandler<>());
     }
 
     /** Convert a detector and set up new handler.
@@ -218,34 +212,29 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
      * @param <S> type of the field elements
      * @return converted firing intervals detector
      */
-    private <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>> D convertAndSetUpStopHandler(final Field<S> field) {
-        final FieldAbstractDetector<D, S> converted = convertStopDetector(field, stopDetector);
-        final FieldAdaptableInterval<S>   maxCheck  = (s, isForward) -> stopDetector.getMaxCheckInterval().currentInterval(s.toSpacecraftState(), isForward);
-        return converted.
-               withMaxCheck(maxCheck).
-               withThreshold(field.getZero().newInstance(stopDetector.getThreshold())).
-               withHandler(new FieldStopHandler<>());
+    private <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>> FieldManeuverTriggerDetector<S, D> convertAndSetUpStopHandler(final Field<S> field) {
+        final D converted = convertStopDetector(field, stopDetector.getDetector());
+        return new FieldManeuverTriggerDetector<>(converted, new FieldStopHandler<>());
     }
 
     /** Convert a primitive firing start detector into a field firing start detector.
      * <p>
-     * There is not need to set up {@link FieldAbstractDetector#withMaxCheck(FieldAdaptableInterval) withMaxCheck},
-     * {@link FieldAbstractDetector#withThreshold(CalculusFieldElement) withThreshold}, or
-     * {@link FieldAbstractDetector#withHandler(org.orekit.propagation.events.handlers.FieldEventHandler) withHandler}
-     * in the converted detector, this will be done by caller.
+     * The {@link org.orekit.propagation.events.FieldEventDetectionSettings} must be set up in conformance with the
+     * non-field detector.
      * </p>
      * <p>
      * A skeleton implementation of this method to convert some {@code XyzDetector} into {@code FieldXyzDetector},
-     * considering these detectors are created from a date and a number parameter is:
+     * considering these detectors have a withDetectionSettings method and are created from a date and a number parameter is:
      * </p>
      * <pre>{@code
-     *     protected <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>>
-     *         FieldAbstractDetector<D, S> convertStartDetector(final Field<S> field, final XyzDetector detector) {
+     *     protected <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>>
+     *         D convertStartDetector(final Field<S> field, final XyzDetector detector) {
      *
      *         final FieldAbsoluteDate<S> date  = new FieldAbsoluteDate<>(field, detector.getDate());
      *         final S                    param = field.getZero().newInstance(detector.getParam());
      *
-     *         final FieldAbstractDetector<D, S> converted = (FieldAbstractDetector<D, S>) new FieldXyzDetector<>(date, param);
+     *         final D converted = (D) new FieldXyzDetector<>(date, param)
+     *         .withDetectionSettings(field, detector.getDetectionSettings());
      *         return converted;
      *
      *     }
@@ -257,28 +246,27 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
      * @param <S> type of the field elements
      * @return converted firing start detector
      */
-    protected abstract <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>> FieldAbstractDetector<D, S>
+    protected abstract <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>> D
         convertStartDetector(Field<S> field, A detector);
 
     /** Convert a primitive firing stop detector into a field firing stop detector.
      * <p>
-     * There is not need to set up {@link FieldAbstractDetector#withMaxCheck(FieldAdaptableInterval) withMaxCheck},
-     * {@link FieldAbstractDetector#withThreshold(CalculusFieldElement) withThreshold}, or
-     * {@link FieldAbstractDetector#withHandler(org.orekit.propagation.events.handlers.FieldEventHandler) withHandler}
-     * in the converted detector, this will be done by caller.
+     * The {@link org.orekit.propagation.events.FieldEventDetectionSettings} must be set up in conformance with the
+     * non-field detector.
      * </p>
      * <p>
      * A skeleton implementation of this method to convert some {@code XyzDetector} into {@code FieldXyzDetector},
-     * considering these detectors are created from a date and a number parameter is:
+     * considering these detectors have a withDetectionSettings method and are created from a date and a number parameter is:
      * </p>
      * <pre>{@code
-     *     protected <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>>
-     *         FieldAbstractDetector<D, S> convertStopDetector(final Field<S> field, final XyzDetector detector) {
+     *     protected <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>>
+     *         D convertEndDetector(final Field<S> field, final XyzDetector detector) {
      *
      *         final FieldAbsoluteDate<S> date  = new FieldAbsoluteDate<>(field, detector.getDate());
      *         final S                    param = field.getZero().newInstance(detector.getParam());
      *
-     *         final FieldAbstractDetector<D, S> converted = (FieldAbstractDetector<D, S>) new FieldXyzDetector<>(date, param);
+     *         final D converted = (D) new FieldXyzDetector<>(date, param)
+     *         .withDetectionSettings(field, detector.getDetectionSettings());
      *         return converted;
      *
      *     }
@@ -290,7 +278,7 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
      * @param <S> type of the field elements
      * @return converted firing stop detector
      */
-    protected abstract <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>> FieldAbstractDetector<D, S>
+    protected abstract <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>> D
         convertStopDetector(Field<S> field, O detector);
 
     /** Local handler for start triggers. */

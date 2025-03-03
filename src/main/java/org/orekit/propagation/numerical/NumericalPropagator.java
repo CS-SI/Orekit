@@ -40,6 +40,7 @@ import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.forces.maneuvers.jacobians.Duration;
 import org.orekit.forces.maneuvers.jacobians.MedianDate;
 import org.orekit.forces.maneuvers.jacobians.TriggerDate;
+import org.orekit.forces.maneuvers.trigger.ManeuverTriggerDetector;
 import org.orekit.forces.maneuvers.trigger.ResettableManeuverTriggers;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
@@ -71,8 +72,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /** This class propagates {@link org.orekit.orbits.Orbit orbits} using
  * numerical integration.
@@ -523,71 +526,75 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                 final Maneuver maneuver = (Maneuver) forceModel;
                 final ResettableManeuverTriggers maneuverTriggers = (ResettableManeuverTriggers) maneuver.getManeuverTriggers();
 
-                maneuverTriggers.getEventDetectors().
-                        filter(ParameterDrivenDateIntervalDetector.class::isInstance).
-                        map(d -> (ParameterDrivenDateIntervalDetector) d).
-                        forEach(d -> {
-                            TriggerDate start;
-                            TriggerDate stop;
+                final Collection<EventDetector> selectedDetectors = maneuverTriggers.getEventDetectors().
+                        filter(ManeuverTriggerDetector.class::isInstance).
+                        map(triggerDetector -> ((ManeuverTriggerDetector<?>) triggerDetector).getDetector())
+                        .collect(Collectors.toList());
+                for (final EventDetector detector: selectedDetectors) {
+                    if (detector instanceof ParameterDrivenDateIntervalDetector) {
+                        final ParameterDrivenDateIntervalDetector d = (ParameterDrivenDateIntervalDetector) detector;
+                        TriggerDate start;
+                        TriggerDate stop;
 
-                            if (d.getStartDriver().isSelected() || d.getMedianDriver().isSelected() || d.getDurationDriver().isSelected()) {
-                                // normally datedriver should have only 1 span but just in case the user defines several span, there will
-                                // be no problem here
-                                for (Span<String> span = d.getStartDriver().getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                                    start = manageTriggerDate(stmName, maneuver, maneuverTriggers, span.getData(), true, d.getThreshold());
-                                    names.add(start.getName());
-                                    start = null;
-                                }
+                        if (d.getStartDriver().isSelected() || d.getMedianDriver().isSelected() || d.getDurationDriver().isSelected()) {
+                            // normally datedriver should have only 1 span but just in case the user defines several span, there will
+                            // be no problem here
+                            for (Span<String> span = d.getStartDriver().getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                                start = manageTriggerDate(stmName, maneuver, maneuverTriggers, span.getData(), true, d.getThreshold());
+                                names.add(start.getName());
+                                start = null;
                             }
-                            if (d.getStopDriver().isSelected() || d.getMedianDriver().isSelected() || d.getDurationDriver().isSelected()) {
-                                // normally datedriver should have only 1 span but just in case the user defines several span, there will
-                                // be no problem here
-                                for (Span<String> span = d.getStopDriver().getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                                    stop = manageTriggerDate(stmName, maneuver, maneuverTriggers, span.getData(), false, d.getThreshold());
-                                    names.add(stop.getName());
-                                    stop = null;
-                                }
+                        }
+                        if (d.getStopDriver().isSelected() || d.getMedianDriver().isSelected() || d.getDurationDriver().isSelected()) {
+                            // normally datedriver should have only 1 span but just in case the user defines several span, there will
+                            // be no problem here
+                            for (Span<String> span = d.getStopDriver().getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                                stop = manageTriggerDate(stmName, maneuver, maneuverTriggers, span.getData(), false, d.getThreshold());
+                                names.add(stop.getName());
+                                stop = null;
                             }
-                            if (d.getMedianDriver().isSelected()) {
-                                // for first span
-                                Span<String> currentMedianNameSpan = d.getMedianDriver().getNamesSpanMap().getFirstSpan();
-                                MedianDate median =
-                                        manageMedianDate(d.getStartDriver().getNamesSpanMap().getFirstSpan().getData(),
-                                                d.getStopDriver().getNamesSpanMap().getFirstSpan().getData(), currentMedianNameSpan.getData());
+                        }
+                        if (d.getMedianDriver().isSelected()) {
+                            // for first span
+                            Span<String> currentMedianNameSpan = d.getMedianDriver().getNamesSpanMap().getFirstSpan();
+                            MedianDate median =
+                                    manageMedianDate(d.getStartDriver().getNamesSpanMap().getFirstSpan().getData(),
+                                            d.getStopDriver().getNamesSpanMap().getFirstSpan().getData(), currentMedianNameSpan.getData());
+                            names.add(median.getName());
+                            // for all span
+                            // normally datedriver should have only 1 span but just in case the user defines several span, there will
+                            // be no problem here. /!\ medianDate driver, startDate driver and stopDate driver must have same span number
+                            for (int spanNumber = 1; spanNumber < d.getMedianDriver().getNamesSpanMap().getSpansNumber(); ++spanNumber) {
+                                currentMedianNameSpan = d.getMedianDriver().getNamesSpanMap().getSpan(currentMedianNameSpan.getEnd());
+                                median =
+                                        manageMedianDate(d.getStartDriver().getNamesSpanMap().getSpan(currentMedianNameSpan.getStart()).getData(),
+                                                d.getStopDriver().getNamesSpanMap().getSpan(currentMedianNameSpan.getStart()).getData(),
+                                                currentMedianNameSpan.getData());
                                 names.add(median.getName());
-                                // for all span
-                                // normally datedriver should have only 1 span but just in case the user defines several span, there will
-                                // be no problem here. /!\ medianDate driver, startDate driver and stopDate driver must have same span number
-                                for (int spanNumber = 1; spanNumber < d.getMedianDriver().getNamesSpanMap().getSpansNumber(); ++spanNumber) {
-                                    currentMedianNameSpan = d.getMedianDriver().getNamesSpanMap().getSpan(currentMedianNameSpan.getEnd());
-                                    median =
-                                            manageMedianDate(d.getStartDriver().getNamesSpanMap().getSpan(currentMedianNameSpan.getStart()).getData(),
-                                                    d.getStopDriver().getNamesSpanMap().getSpan(currentMedianNameSpan.getStart()).getData(),
-                                                    currentMedianNameSpan.getData());
-                                    names.add(median.getName());
-
-                                }
 
                             }
-                            if (d.getDurationDriver().isSelected()) {
-                                // for first span
-                                Span<String> currentDurationNameSpan = d.getDurationDriver().getNamesSpanMap().getFirstSpan();
-                                Duration duration =
-                                        manageManeuverDuration(d.getStartDriver().getNamesSpanMap().getFirstSpan().getData(),
-                                                d.getStopDriver().getNamesSpanMap().getFirstSpan().getData(), currentDurationNameSpan.getData());
+
+                        }
+                        if (d.getDurationDriver().isSelected()) {
+                            // for first span
+                            Span<String> currentDurationNameSpan = d.getDurationDriver().getNamesSpanMap().getFirstSpan();
+                            Duration duration =
+                                    manageManeuverDuration(d.getStartDriver().getNamesSpanMap().getFirstSpan().getData(),
+                                            d.getStopDriver().getNamesSpanMap().getFirstSpan().getData(), currentDurationNameSpan.getData());
+                            names.add(duration.getName());
+                            // for all span
+                            for (int spanNumber = 1; spanNumber < d.getDurationDriver().getNamesSpanMap().getSpansNumber(); ++spanNumber) {
+                                currentDurationNameSpan = d.getDurationDriver().getNamesSpanMap().getSpan(currentDurationNameSpan.getEnd());
+                                duration =
+                                        manageManeuverDuration(d.getStartDriver().getNamesSpanMap().getSpan(currentDurationNameSpan.getStart()).getData(),
+                                                d.getStopDriver().getNamesSpanMap().getSpan(currentDurationNameSpan.getStart()).getData(),
+                                                currentDurationNameSpan.getData());
                                 names.add(duration.getName());
-                                // for all span
-                                for (int spanNumber = 1; spanNumber < d.getDurationDriver().getNamesSpanMap().getSpansNumber(); ++spanNumber) {
-                                    currentDurationNameSpan = d.getDurationDriver().getNamesSpanMap().getSpan(currentDurationNameSpan.getEnd());
-                                    duration =
-                                            manageManeuverDuration(d.getStartDriver().getNamesSpanMap().getSpan(currentDurationNameSpan.getStart()).getData(),
-                                                    d.getStopDriver().getNamesSpanMap().getSpan(currentDurationNameSpan.getStart()).getData(),
-                                                    currentDurationNameSpan.getData());
-                                    names.add(duration.getName());
 
-                                }
                             }
-                        });
+                        }
+                    }
+                }
             }
         }
 

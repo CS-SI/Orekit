@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.FieldAbstractDetector;
 import org.orekit.propagation.events.FieldDateDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -49,20 +50,20 @@ public class StartStopEventTriggerTest extends AbstractManeuverTriggersTest<Star
         }
 
         @Override
-        protected <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>>
-            FieldAbstractDetector<D, S> convertStartDetector(Field<S> field, DateDetector detector) {
+        protected <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>>
+            D convertStartDetector(Field<S> field, DateDetector detector) {
             final FieldAbsoluteDate<S> target = new FieldAbsoluteDate<>(field, detector.getDates().get(0).getDate());
             @SuppressWarnings("unchecked")
-            final FieldAbstractDetector<D, S> converted = (FieldAbstractDetector<D, S>) new FieldDateDetector<>(field, target);
+            final D converted = (D) new FieldDateDetector<>(field, target);
             return converted;
         }
 
         @Override
-        protected <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>>
-            FieldAbstractDetector<D, S> convertStopDetector(Field<S> field, DateDetector detector) {
+        protected <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>>
+        D convertStopDetector(Field<S> field, DateDetector detector) {
             final FieldAbsoluteDate<S> target = new FieldAbsoluteDate<>(field, detector.getDates().get(0).getDate());
             @SuppressWarnings("unchecked")
-            final FieldAbstractDetector<D, S> converted = (FieldAbstractDetector<D, S>) new FieldDateDetector<>(field, target);
+            final D converted = (D) new FieldDateDetector<>(field, target);
             return converted;
         }
 
