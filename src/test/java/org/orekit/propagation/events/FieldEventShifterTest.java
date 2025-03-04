@@ -18,9 +18,11 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mockito;
 import org.orekit.TestUtils;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
@@ -78,6 +80,22 @@ class FieldEventShifterTest {
         assertEquals(increasingTimeShift, fieldEventShifter.getIncreasingTimeShift());
         assertEquals(decreasingTimeShift, fieldEventShifter.getDecreasingTimeShift());
         assertEquals(dateDetector, fieldEventShifter.getDetector());
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void testWithDetectionSettings() {
+        // GIVEN
+        final FieldDateDetector<Binary64> detector = new FieldDateDetector<>(FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance()));
+        final FieldEventShifter<Binary64> template = new FieldEventShifter<>(detector, true, Binary64.ONE, new Binary64(2));
+        final FieldEventDetectionSettings<Binary64> detectionSettings = Mockito.mock();
+        // WHEN
+        final FieldEventShifter<Binary64> shifter = template.withDetectionSettings(detectionSettings);
+        // THEN
+        Assertions.assertEquals(detector, shifter.getDetector());
+        Assertions.assertEquals(detectionSettings, shifter.getDetectionSettings());
+        Assertions.assertEquals(template.getIncreasingTimeShift(), shifter.getIncreasingTimeShift());
+        Assertions.assertEquals(template.getDecreasingTimeShift(), shifter.getDecreasingTimeShift());
     }
 
     @ParameterizedTest

@@ -66,7 +66,7 @@ import org.orekit.time.FieldAbsoluteDate;
  */
 
 public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends CalculusFieldElement<T>>
-    extends FieldAbstractDetector<FieldEventSlopeFilter<D, T>, T> {
+    implements FieldEventDetector<T> {
 
     /** Number of past transformers updates stored. */
     private static final int HISTORY_SIZE = 100;
@@ -83,6 +83,12 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
     /** Update time of the transformers. */
     private final FieldAbsoluteDate<T>[] updates;
 
+    /** Event detection settings. */
+    private final FieldEventDetectionSettings<T> detectionSettings;
+
+    /** Specialized event handler. */
+    private final LocalHandler<D, T> handler;
+
     /** Indicator for forward integration. */
     private boolean forward;
 
@@ -94,7 +100,7 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
      * @param filter filter to use
      */
     public FieldEventSlopeFilter(final D rawDetector, final FilterType filter) {
-        this(rawDetector.getDetectionSettings(), new LocalHandler<>(), rawDetector, filter);
+        this(rawDetector.getDetectionSettings(), rawDetector, filter);
     }
 
     /** Protected constructor with full parameters.
@@ -104,27 +110,46 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
      * in a readable manner without using a huge amount of parameters.
      * </p>
      * @param detectionSettings event detection settings
-     * @param handler event handler to call at event occurrences
      * @param rawDetector event detector to wrap
      * @param filter filter to use
      * since 13.0
      */
     @SuppressWarnings("unchecked")
     protected FieldEventSlopeFilter(final FieldEventDetectionSettings<T> detectionSettings,
-                                    final FieldEventHandler<T> handler,
                                     final D rawDetector, final FilterType filter) {
-        super(detectionSettings, handler);
+        this.detectionSettings = detectionSettings;
+        this.handler = new LocalHandler<>();
         this.rawDetector  = rawDetector;
         this.filter       = filter;
         this.transformers = new Transformer[HISTORY_SIZE];
         this.updates      = (FieldAbsoluteDate<T>[]) Array.newInstance(FieldAbsoluteDate.class, HISTORY_SIZE);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Builds a new instance from the input detection settings.
+     * @param settings event detection settings to be used
+     * @return a new detector
+     */
+    public FieldEventSlopeFilter<D, T> withDetectionSettings(final FieldEventDetectionSettings<T> settings) {
+        return new FieldEventSlopeFilter<>(settings, rawDetector, filter);
+    }
+
+    /** Get filter type.
+     * @return filter type
+     * @since 13.0
+     */
+    public FilterType getFilterType() {
+        return filter;
+    }
+
     @Override
-    protected FieldEventSlopeFilter<D, T> create(final FieldEventDetectionSettings<T> detectionSettings,
-                                                 final FieldEventHandler<T> newHandler) {
-        return new FieldEventSlopeFilter<>(detectionSettings, newHandler, rawDetector, filter);
+    public FieldEventHandler<T> getHandler() {
+        return handler;
+    }
+
+    @Override
+    public FieldEventDetectionSettings<T> getDetectionSettings() {
+        return detectionSettings;
     }
 
     /**
@@ -139,13 +164,13 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
     @Override
     public void init(final FieldSpacecraftState<T> s0,
                      final FieldAbsoluteDate<T> t) {
-        super.init(s0, t);
+        FieldEventDetector.super.init(s0, t);
 
         // delegate to raw detector
         rawDetector.init(s0, t);
 
         // initialize events triggering logic
-        forward  = checkIfForward(s0, t);
+        forward  = FieldAbstractDetector.checkIfForward(s0, t);
         extremeT = forward ?
                    FieldAbsoluteDate.getPastInfinity(t.getField()) :
                    FieldAbsoluteDate.getFutureInfinity(t.getField());
@@ -157,14 +182,14 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
     /**  {@inheritDoc} */
     @Override
     public void reset(final FieldSpacecraftState<T> state, final FieldAbsoluteDate<T> target) {
-        super.reset(state, target);
+        FieldEventDetector.super.reset(state, target);
         rawDetector.reset(state, target);
     }
 
     /**  {@inheritDoc} */
     @Override
     public void finish(final FieldSpacecraftState<T> state) {
-        super.finish(state);
+        FieldEventDetector.super.finish(state);
         rawDetector.finish(state);
     }
 
@@ -258,8 +283,9 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
 
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /** Check if the current propagation is forward or backward.
+     * @return true if the current propagation is forward
+     */
     public boolean isForward() {
         return forward;
     }

@@ -141,6 +141,15 @@ public class FieldEventShifter<T extends CalculusFieldElement<T>> implements Fie
         return decreasingOffset.negate();
     }
 
+    /**
+     * Builds a new instance from the input detection settings.
+     * @param settings event detection settings to be used
+     * @return a new detector
+     */
+    public FieldEventShifter<T> withDetectionSettings(final FieldEventDetectionSettings<T> settings) {
+        return new FieldEventShifter<>(settings, detector, useShiftedStates, getIncreasingTimeShift(), getDecreasingTimeShift());
+    }
+
     /** {@inheritDoc} */
     @Override
     public T g(final FieldSpacecraftState<T> s) {

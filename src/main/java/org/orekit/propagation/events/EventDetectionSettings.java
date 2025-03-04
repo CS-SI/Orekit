@@ -120,7 +120,7 @@ public class EventDetectionSettings {
      * @return new object
      * @since 13.0
      */
-    public EventDetectionSettings withMaxIterationCount(final int newMaxIterationCount) {
+    public EventDetectionSettings withMaxIter(final int newMaxIterationCount) {
         return new EventDetectionSettings(maxCheckInterval, threshold, newMaxIterationCount);
     }
 

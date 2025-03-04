@@ -94,13 +94,13 @@ class FieldEventDetectionSettingsTest {
     }
 
     @Test
-    void testWithMaxIterationCount() {
+    void testWithMaxIter() {
         // GIVEN
         final FieldEventDetectionSettings<Binary64> defaultSettings = FieldEventDetectionSettings
                 .getDefaultEventDetectionSettings(Binary64Field.getInstance());
         final int expectedCount = 123;
         // WHEN
-        final FieldEventDetectionSettings<Binary64> detectionSettings = defaultSettings.withMaxIterationCount(expectedCount);
+        final FieldEventDetectionSettings<Binary64> detectionSettings = defaultSettings.withMaxIter(expectedCount);
         // THEN
         Assertions.assertEquals(expectedCount, detectionSettings.getMaxIterationCount());
     }

@@ -62,7 +62,7 @@ import org.orekit.time.AbsoluteDate;
  * @param <T> type of the detector
  */
 
-public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<EventSlopeFilter<T>> {
+public class EventSlopeFilter<T extends EventDetector> implements EventDetector {
 
     /** Number of past transformers updates stored. */
     private static final int HISTORY_SIZE = 100;
@@ -85,12 +85,18 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
     /** Extreme time encountered so far. */
     private AbsoluteDate extremeT;
 
+    /** Event detection settings. */
+    private final EventDetectionSettings detectionSettings;
+
+    /** Specialized event handler. */
+    private final LocalHandler<T> handler;
+
     /** Wrap an {@link EventDetector event detector}.
      * @param rawDetector event detector to wrap
      * @param filter filter to use
      */
     public EventSlopeFilter(final T rawDetector, final FilterType filter) {
-        this(rawDetector.getDetectionSettings(), new LocalHandler<>(), rawDetector, filter);
+        this(rawDetector.getDetectionSettings(), rawDetector, filter);
     }
 
     /** Protected constructor with full parameters.
@@ -100,14 +106,14 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
      * in a readable manner without using a huge amount of parameters.
      * </p>
      * @param detectionSettings event detection settings
-     * @param handler event handler to call at event occurrences
      * @param rawDetector event detector to wrap
      * @param filter filter to use
      * @since 13.0
      */
-    protected EventSlopeFilter(final EventDetectionSettings detectionSettings, final EventHandler handler,
+    protected EventSlopeFilter(final EventDetectionSettings detectionSettings,
                                final T rawDetector, final FilterType filter) {
-        super(detectionSettings, handler);
+        this.detectionSettings = detectionSettings;
+        this.handler = new LocalHandler<>();
         this.rawDetector  = rawDetector;
         this.filter       = filter;
         this.transformers = new Transformer[HISTORY_SIZE];
@@ -116,8 +122,23 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
 
     /** {@inheritDoc} */
     @Override
-    protected EventSlopeFilter<T> create(final EventDetectionSettings detectionSettings, final EventHandler newHandler) {
-        return new EventSlopeFilter<>(detectionSettings, newHandler, rawDetector, filter);
+    public EventHandler getHandler() {
+        return handler;
+    }
+
+
+    @Override
+    public EventDetectionSettings getDetectionSettings() {
+        return detectionSettings;
+    }
+
+    /**
+     * Builds a new instance from the input detection settings.
+     * @param settings event detection settings to be used
+     * @return a new detector
+     */
+    public EventSlopeFilter<T> withDetectionSettings(final EventDetectionSettings settings) {
+        return new EventSlopeFilter<>(settings, rawDetector, filter);
     }
 
     /**
@@ -131,21 +152,31 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
 
     /** Get filter type.
      * @return filter type
+     * @deprecated since 13.0 (use getFilterType)
      */
+    @Deprecated
     public FilterType getFilter() {
+        return getFilterType();
+    }
+
+    /** Get filter type.
+     * @return filter type
+     * @since 13.0
+     */
+    public FilterType getFilterType() {
         return filter;
     }
 
     /**  {@inheritDoc} */
     @Override
     public void init(final SpacecraftState s0, final AbsoluteDate t) {
-        super.init(s0, t);
+        EventDetector.super.init(s0, t);
 
         // delegate to raw detector
         rawDetector.init(s0, t);
 
         // initialize events triggering logic
-        forward  = checkIfForward(s0, t);
+        forward  = AbstractDetector.checkIfForward(s0, t);
         extremeT = forward ? AbsoluteDate.PAST_INFINITY : AbsoluteDate.FUTURE_INFINITY;
         Arrays.fill(transformers, Transformer.UNINITIALIZED);
         Arrays.fill(updates, extremeT);
@@ -155,14 +186,14 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
     /**  {@inheritDoc} */
     @Override
     public void reset(final SpacecraftState state, final AbsoluteDate target) {
-        super.reset(state, target);
+        EventDetector.super.reset(state, target);
         rawDetector.reset(state, target);
     }
 
     /**  {@inheritDoc} */
     @Override
     public void finish(final SpacecraftState state) {
-        super.finish(state);
+        EventDetector.super.finish(state);
         rawDetector.finish(state);
     }
 
@@ -256,8 +287,9 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
 
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /** Check if the current propagation is forward or backward.
+     * @return true if the current propagation is forward
+     */
     public boolean isForward() {
         return forward;
     }
