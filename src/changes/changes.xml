@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="serrof" type="add" issue="1679">
+            Add builder in (Field)EventDetectionSettings.
+        </action>
         <action dev="serrof" type="update" issue="1677">
             Generalize event detectors in StartStopFiringEventsTrigger and IntervalEventTrigger.
         </action>
