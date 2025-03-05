@@ -18,6 +18,7 @@ package org.orekit.utils;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 
 /** Formatter used to produce strings from data that are compliant with CCSDS standards.
  * <p>
@@ -54,7 +55,8 @@ public class TruncatedCcsdsFormatter implements Formatter {
      */
     @Override
     public String toString(final double value) {
-        final DecimalFormat formatter = new DecimalFormat(CCSDS_FORMAT);
+        final DecimalFormat formatter = (DecimalFormat) NumberFormat.getInstance(STANDARDIZED_LOCALE);
+        formatter.applyLocalizedPattern(CCSDS_FORMAT);
         formatter.setRoundingMode(RoundingMode.HALF_UP);
         formatter.setMaximumFractionDigits(MAXIMUM_ODM_DIGITS - 1);
         return formatter.format(value);
@@ -67,7 +69,8 @@ public class TruncatedCcsdsFormatter implements Formatter {
     public String toString(final int year, final int month, final int day,
                            final int hour, final int minute, final double seconds) {
 
-        final DecimalFormat formatter = new DecimalFormat(SECOND_FORMAT);
+        final DecimalFormat formatter = (DecimalFormat) NumberFormat.getInstance(STANDARDIZED_LOCALE);
+        formatter.applyLocalizedPattern(SECOND_FORMAT);
         formatter.setRoundingMode(RoundingMode.DOWN);
         formatter.setMaximumFractionDigits(MAXIMUM_ODM_DIGITS - 2);
         formatter.setMinimumIntegerDigits(2);
