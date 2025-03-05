@@ -95,6 +95,36 @@ public class EventDetectionSettings {
     }
 
     /**
+     * Builds a new instance with a new max. check interval.
+     * @param newMaxCheckInterval new max. check.
+     * @return new object
+     * @since 13.0
+     */
+    public EventDetectionSettings withMaxCheckInterval(final AdaptableInterval newMaxCheckInterval) {
+        return new EventDetectionSettings(newMaxCheckInterval, threshold, maxIterationCount);
+    }
+
+    /**
+     * Builds a new instance with a new threshold value.
+     * @param newThreshold detection threshold in seconds
+     * @return new object
+     * @since 13.0
+     */
+    public EventDetectionSettings withThreshold(final double newThreshold) {
+        return new EventDetectionSettings(maxCheckInterval, newThreshold, maxIterationCount);
+    }
+
+    /**
+     * Builds a new instance with a new max. iteration count.
+     * @param newMaxIterationCount new max iteration count.
+     * @return new object
+     * @since 13.0
+     */
+    public EventDetectionSettings withMaxIterationCount(final int newMaxIterationCount) {
+        return new EventDetectionSettings(maxCheckInterval, threshold, newMaxIterationCount);
+    }
+
+    /**
      * Returns default settings for event detections.
      * @return default settings
      */
