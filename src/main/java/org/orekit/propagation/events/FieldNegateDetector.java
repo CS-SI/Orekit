@@ -20,6 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
+import org.orekit.time.FieldAbsoluteDate;
 
 /**
  * An event detector that negates the sign on another event detector's {@link
@@ -76,6 +77,12 @@ public class FieldNegateDetector<T extends CalculusFieldElement<T>>  extends Fie
     @Override
     public FieldEventDetector<T> getDetector() {
         return getOriginal();
+    }
+
+    @Override
+    public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
+        super.init(s0, t);
+        getDetector().init(s0, t);
     }
 
     @Override

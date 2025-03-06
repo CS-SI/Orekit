@@ -191,7 +191,9 @@ abstract class AbstractSwitchingAttitudeProvider implements AttitudeProvider {
         };
     }
 
-    /** Abstract class to manage attitude switches. */
+    /** Abstract class to manage attitude switches.
+     * @since 13.0
+     */
     abstract static class AbstractAttitudeSwitch implements DetectorModifier, EventHandler {
 
         /**

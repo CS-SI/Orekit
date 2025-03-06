@@ -25,7 +25,6 @@ import org.hipparchus.Field;
 import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -65,9 +64,8 @@ public abstract class StartStopEventsTrigger<A extends EventDetector, O extends 
     /** Simple constructor.
      * <p>
      * Note that the {@code startDetector} and {@code stopDetector} passed as an argument are used only
-     * as a <em>prototypes</em> from which new detectors will be built using their
-     * {@link AbstractDetector#withHandler(EventHandler) withHandler} methods to
-     * set up internal handlers. The original event handlers from the prototype
+     * as a <em>prototypes</em> from which new detectors will be built using
+     * {@link ManeuverTriggerDetector}. The original event handlers from the prototype
      * will be <em>ignored</em> and never called.
      * </p>
      * <p>
