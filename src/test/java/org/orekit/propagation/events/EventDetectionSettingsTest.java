@@ -49,12 +49,12 @@ class EventDetectionSettingsTest {
     }
 
     @Test
-    void testWithMaxIterationCount() {
+    void testWithMaxIter() {
         // GIVEN
         final EventDetectionSettings defaultSettings = EventDetectionSettings.getDefaultEventDetectionSettings();
         final int expectedCount = 123;
         // WHEN
-        final EventDetectionSettings detectionSettings = defaultSettings.withMaxIterationCount(expectedCount);
+        final EventDetectionSettings detectionSettings = defaultSettings.withMaxIter(expectedCount);
         // THEN
         Assertions.assertEquals(expectedCount, detectionSettings.getMaxIterationCount());
     }

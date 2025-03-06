@@ -135,7 +135,7 @@ public class FieldEventDetectionSettings <T extends CalculusFieldElement<T>> {
      * @return new object
      * @since 13.0
      */
-    public FieldEventDetectionSettings<T> withMaxIterationCount(final int newMaxIterationCount) {
+    public FieldEventDetectionSettings<T> withMaxIter(final int newMaxIterationCount) {
         return new FieldEventDetectionSettings<>(maxCheckInterval, threshold, newMaxIterationCount);
     }
 

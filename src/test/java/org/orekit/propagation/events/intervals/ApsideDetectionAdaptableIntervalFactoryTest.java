@@ -32,6 +32,8 @@ import org.orekit.utils.Constants;
 
 class ApsideDetectionAdaptableIntervalFactoryTest {
 
+    private static final EventDetectionSettings DEFAULT_SETTINGS = EventDetectionSettings.getDefaultEventDetectionSettings();
+
     @Test
     void testGetForwardApsideDetectionAdaptableInterval() {
         // GIVEN
@@ -66,7 +68,7 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
         final AdaptableIntervalWithCounter forwardAdaptableIntervalWithCounter = new AdaptableIntervalWithCounter(
                 forwardAdaptableInterval);
         final Propagator propagator = createPropagatorWithDetector(initialOrbit,
-                periapsisDetector.withMaxCheck(forwardAdaptableIntervalWithCounter));
+                periapsisDetector.withDetectionSettings(DEFAULT_SETTINGS.withMaxCheckInterval(forwardAdaptableIntervalWithCounter)));
         // WHEN
         final AbsoluteDate targetDate = initialOrbit.getDate().shiftedBy(initialOrbit.getKeplerianPeriod() * 2);
         final SpacecraftState terminalState = propagator.propagate(targetDate);
@@ -87,7 +89,7 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
         final AdaptableIntervalWithCounter backwardAdaptableIntervalWithCounter = new AdaptableIntervalWithCounter(
                 backwardAdaptableInterval);
         final Propagator propagator = createPropagatorWithDetector(initialOrbit,
-                periapsisDetector.withMaxCheck(backwardAdaptableIntervalWithCounter));
+                periapsisDetector.withDetectionSettings(DEFAULT_SETTINGS.withMaxCheckInterval(backwardAdaptableIntervalWithCounter)));
         // WHEN
         final AbsoluteDate targetDate = initialOrbit.getDate().shiftedBy(-initialOrbit.getKeplerianPeriod() * 2);
         final SpacecraftState terminalState = propagator.propagate(targetDate);
@@ -108,7 +110,7 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
         final AdaptableIntervalWithCounter forwardAdaptableIntervalWithCounter = new AdaptableIntervalWithCounter(
                 forwardAdaptableInterval);
         final Propagator propagator = createPropagatorWithDetector(initialOrbit,
-                apoapsisDetector.withMaxCheck(forwardAdaptableIntervalWithCounter));
+                apoapsisDetector.withDetectionSettings(DEFAULT_SETTINGS.withMaxCheckInterval(forwardAdaptableIntervalWithCounter)));
         // WHEN
         final AbsoluteDate targetDate = initialOrbit.getDate().shiftedBy(initialOrbit.getKeplerianPeriod() * 2);
         final SpacecraftState terminalState = propagator.propagate(targetDate);
@@ -129,7 +131,7 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
         final AdaptableIntervalWithCounter backwardAdaptableIntervalWithCounter = new AdaptableIntervalWithCounter(
                 backwardAdaptableInterval);
         final Propagator propagator = createPropagatorWithDetector(initialOrbit,
-                apoapsisDetector.withMaxCheck(backwardAdaptableIntervalWithCounter));
+                apoapsisDetector.withDetectionSettings(DEFAULT_SETTINGS.withMaxCheckInterval(backwardAdaptableIntervalWithCounter)));
         // WHEN
         final AbsoluteDate targetDate = initialOrbit.getDate().shiftedBy(-initialOrbit.getKeplerianPeriod() * 2);
         final SpacecraftState terminalState = propagator.propagate(targetDate);
@@ -149,13 +151,13 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
     }
 
     private EventSlopeFilter<ApsideDetector> createPeriapsisDetector(final Orbit initialOrbit) {
-        return new EventSlopeFilter<>(new ApsideDetector(initialOrbit), FilterType.TRIGGER_ONLY_DECREASING_EVENTS)
-                .withHandler(new StopOnEvent());
+        return new EventSlopeFilter<>(new ApsideDetector(initialOrbit).withHandler(new StopOnEvent()),
+                FilterType.TRIGGER_ONLY_DECREASING_EVENTS);
     }
 
     private EventSlopeFilter<ApsideDetector> createApoapsisDetector(final Orbit initialOrbit) {
-        return new EventSlopeFilter<>(new ApsideDetector(initialOrbit), FilterType.TRIGGER_ONLY_INCREASING_EVENTS)
-                .withHandler(new StopOnEvent());
+        return new EventSlopeFilter<>(new ApsideDetector(initialOrbit).withHandler(new StopOnEvent()),
+                FilterType.TRIGGER_ONLY_INCREASING_EVENTS);
     }
 
     private AdaptableInterval getConstantAdaptableInterval() {
@@ -172,7 +174,7 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
         final AdaptableIntervalWithCounter adaptableIntervalWithCounter = new AdaptableIntervalWithCounter(
                 getConstantAdaptableInterval());
         final Propagator otherPropagator = createPropagatorWithDetector(initialOrbit,
-                apsideDetector.withMaxCheck(adaptableIntervalWithCounter));
+                apsideDetector.withDetectionSettings(DEFAULT_SETTINGS.withMaxCheckInterval(adaptableIntervalWithCounter)));
         otherPropagator.propagate(targetDate);
         return adaptableIntervalWithCounter.count;
     }

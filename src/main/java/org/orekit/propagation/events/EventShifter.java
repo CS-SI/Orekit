@@ -20,7 +20,6 @@ import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.time.AbsoluteDate;
 
 /** Wrapper shifting events occurrences times.
  * <p>This class wraps an {@link EventDetector event detector} to slightly
@@ -36,7 +35,7 @@ import org.orekit.time.AbsoluteDate;
  * @see EventDetector
  * @author Luc Maisonobe
  */
-public class EventShifter extends AbstractDetector<EventShifter> implements DetectorModifier {
+public class EventShifter implements DetectorModifier {
 
     /** Event detector for the raw unshifted event. */
     private final EventDetector detector;
@@ -49,6 +48,12 @@ public class EventShifter extends AbstractDetector<EventShifter> implements Dete
 
     /** Offset to apply to find decreasing events. */
     private final double decreasingOffset;
+
+    /** Event detection settings. */
+    private final EventDetectionSettings detectionSettings;
+
+    /** Specialized event handler. */
+    private final LocalHandler handler;
 
     /** Build a new instance.
      * <p>The {@link #getMaxCheckInterval() max check interval}, the
@@ -68,8 +73,7 @@ public class EventShifter extends AbstractDetector<EventShifter> implements Dete
      */
     public EventShifter(final EventDetector detector, final boolean useShiftedStates,
                         final double increasingTimeShift, final double decreasingTimeShift) {
-        this(detector.getDetectionSettings(), new LocalHandler(),
-             detector, useShiftedStates, increasingTimeShift, decreasingTimeShift);
+        this(detector.getDetectionSettings(), detector, useShiftedStates, increasingTimeShift, decreasingTimeShift);
     }
 
     /** Protected constructor with full parameters.
@@ -79,7 +83,6 @@ public class EventShifter extends AbstractDetector<EventShifter> implements Dete
      * in a readable manner without using a huge amount of parameters.
      * </p>
      * @param detectionSettings event detection settings
-     * @param handler event handler to call at event occurrences
      * @param detector event detector for the raw unshifted event
      * @param useShiftedStates if true, the state provided to {@link
      * EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean) eventOccurred} method of
@@ -89,10 +92,11 @@ public class EventShifter extends AbstractDetector<EventShifter> implements Dete
      * @param decreasingTimeShift decreasing events time shift.
      * @since 13.0
      */
-    protected EventShifter(final EventDetectionSettings detectionSettings, final EventHandler handler,
+    protected EventShifter(final EventDetectionSettings detectionSettings,
                            final EventDetector detector, final boolean useShiftedStates,
                            final double increasingTimeShift, final double decreasingTimeShift) {
-        super(detectionSettings, handler);
+        this.detectionSettings = detectionSettings;
+        this.handler = new LocalHandler();
         this.detector         = detector;
         this.useShiftedStates = useShiftedStates;
         this.increasingOffset = -increasingTimeShift;
@@ -101,9 +105,14 @@ public class EventShifter extends AbstractDetector<EventShifter> implements Dete
 
     /** {@inheritDoc} */
     @Override
-    protected EventShifter create(final EventDetectionSettings detectionSettings, final EventHandler newHandler) {
-        return new EventShifter(detectionSettings, newHandler,
-                                detector, useShiftedStates, -increasingOffset, -decreasingOffset);
+    public EventHandler getHandler() {
+        return handler;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public EventDetectionSettings getDetectionSettings() {
+        return detectionSettings;
     }
 
     /**
@@ -129,18 +138,22 @@ public class EventShifter extends AbstractDetector<EventShifter> implements Dete
         return -decreasingOffset;
     }
 
-    @Override
-    public void init(final SpacecraftState s0, final AbsoluteDate t) {
-        super.init(s0, t);
-        getDetector().init(s0, t);
-    }
-
     /** {@inheritDoc} */
+    @Override
     public double g(final SpacecraftState s) {
         final double incShiftedG = detector.g(s.shiftedBy(increasingOffset));
         final double decShiftedG = detector.g(s.shiftedBy(decreasingOffset));
         return (increasingOffset >= decreasingOffset) ?
                FastMath.max(incShiftedG, decShiftedG) : FastMath.min(incShiftedG, decShiftedG);
+    }
+
+    /**
+     * Builds a new instance from the input detection settings.
+     * @param settings event detection settings to be used
+     * @return a new detector
+     */
+    public EventShifter withDetectionSettings(final EventDetectionSettings settings) {
+        return new EventShifter(settings, detector, useShiftedStates, getIncreasingTimeShift(), getDecreasingTimeShift());
     }
 
     /** Local class for handling events. */

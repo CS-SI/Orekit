@@ -58,9 +58,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @see FieldEventSlopeFilter
  * @since 12.0
  */
-
-public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>>
-    extends FieldAbstractDetector<FieldEventEnablingPredicateFilter<T>, T> implements FieldDetectorModifier<T> {
+public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>> implements FieldDetectorModifier<T> {
 
     /** Number of past transformers updates stored. */
     private static final int HISTORY_SIZE = 100;
@@ -77,6 +75,12 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
     /** Update time of the transformers. */
     private final FieldAbsoluteDate<T>[] updates;
 
+    /** Event detection settings. */
+    private final FieldEventDetectionSettings<T> detectionSettings;
+
+    /** Specialized event handler. */
+    private final LocalHandler<T> handler;
+
     /** Indicator for forward integration. */
     private boolean forward;
 
@@ -92,7 +96,7 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
      */
     public FieldEventEnablingPredicateFilter(final FieldEventDetector<T> rawDetector,
                                              final FieldEnablingPredicate<T> enabler) {
-        this(rawDetector.getDetectionSettings(), new LocalHandler<>(), rawDetector, enabler);
+        this(rawDetector.getDetectionSettings(), rawDetector, enabler);
     }
 
     /** Protected constructor with full parameters.
@@ -102,28 +106,29 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
      * in a readable manner without using a huge amount of parameters.
      * </p>
      * @param detectionSettings event detection settings
-     * @param handler event handler to call at event occurrences
      * @param rawDetector event detector to wrap
      * @param enabler event enabling function to use
      * @since 13.0
      */
     @SuppressWarnings("unchecked")
     protected FieldEventEnablingPredicateFilter(final FieldEventDetectionSettings<T> detectionSettings,
-                                                final FieldEventHandler<T> handler,
                                                 final FieldEventDetector<T> rawDetector,
                                                 final FieldEnablingPredicate<T> enabler) {
-        super(detectionSettings, handler);
+        this.detectionSettings = detectionSettings;
+        this.handler = new LocalHandler<>();
         this.rawDetector  = rawDetector;
         this.enabler      = enabler;
         this.transformers = new Transformer[HISTORY_SIZE];
         this.updates      = (FieldAbsoluteDate<T>[]) Array.newInstance(FieldAbsoluteDate.class, HISTORY_SIZE);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    protected FieldEventEnablingPredicateFilter<T> create(final FieldEventDetectionSettings<T> detectionSettings,
-                                                          final FieldEventHandler<T> newHandler) {
-        return new FieldEventEnablingPredicateFilter<>(detectionSettings, newHandler, rawDetector, enabler);
+    /**
+     * Builds a new instance from the input detection settings.
+     * @param settings event detection settings to be used
+     * @return a new detector
+     */
+    public FieldEventEnablingPredicateFilter<T> withDetectionSettings(final FieldEventDetectionSettings<T> settings) {
+        return new FieldEventEnablingPredicateFilter<>(settings, rawDetector, enabler);
     }
 
     /**
@@ -136,12 +141,23 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
 
     /**  {@inheritDoc} */
     @Override
-    public void init(final FieldSpacecraftState<T> s0,
-                     final FieldAbsoluteDate<T> t) {
+    public FieldEventHandler<T> getHandler() {
+        return handler;
+    }
+
+    /**  {@inheritDoc} */
+    @Override
+    public FieldEventDetectionSettings<T> getDetectionSettings() {
+        return detectionSettings;
+    }
+
+    /**  {@inheritDoc} */
+    @Override
+    public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
         FieldDetectorModifier.super.init(s0, t);
 
         // initialize events triggering logic
-        forward  = checkIfForward(s0, t);
+        forward  = FieldAbstractDetector.checkIfForward(s0, t);
         extremeT = forward ?
                    FieldAbsoluteDate.getPastInfinity(t.getField()) :
                    FieldAbsoluteDate.getFutureInfinity(t.getField());
@@ -154,7 +170,7 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
     @Override
     public void reset(final FieldSpacecraftState<T> state, final FieldAbsoluteDate<T> target) {
         FieldDetectorModifier.super.reset(state, target);
-        forward  = checkIfForward(state, target);
+        forward  = FieldAbstractDetector.checkIfForward(state, target);
         extremeT = forward ?
                 FieldAbsoluteDate.getPastInfinity(target.getField()) :
                 FieldAbsoluteDate.getFutureInfinity(target.getField());
@@ -294,7 +310,9 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
         }
     }
 
-    @Override
+    /** Check if the current propagation is forward or backward.
+     * @return true if the current propagation is forward
+     */
     public boolean isForward() {
         return forward;
     }

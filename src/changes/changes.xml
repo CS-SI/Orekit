@@ -24,6 +24,9 @@
         <action dev="serrof" type="add" issue="1679">
             Add builder in (Field)EventDetectionSettings.
         </action>
+        <action dev="serrof" type="update" issue="1678">
+            Prevent from using withHandler on EventShifter, EventSloperFilter and EventPredicateEnablingFilter!.
+        </action>
         <action dev="serrof" type="update" issue="1677">
             Generalize event detectors in StartStopFiringEventsTrigger and IntervalEventTrigger.
         </action>

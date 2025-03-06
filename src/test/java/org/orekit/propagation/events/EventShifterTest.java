@@ -54,6 +54,21 @@ class EventShifterTest {
     private double earthRadius = 6400000.;
 
     @Test
+    void testWithDetectionSettings() {
+        // GIVEN
+        final EventDetector detector = new DateDetector();
+        final EventShifter template = new EventShifter(detector, true, 1., 2.);
+        final EventDetectionSettings detectionSettings = Mockito.mock();
+        // WHEN
+        final EventShifter shifter = template.withDetectionSettings(detectionSettings);
+        // THEN
+        Assertions.assertEquals(detector, shifter.getDetector());
+        Assertions.assertEquals(detectionSettings, shifter.getDetectionSettings());
+        Assertions.assertEquals(template.getIncreasingTimeShift(), shifter.getIncreasingTimeShift());
+        Assertions.assertEquals(template.getDecreasingTimeShift(), shifter.getDecreasingTimeShift());
+    }
+
+    @Test
     void testInit() {
         // GIVEN
         final TestDetector detector = new TestDetector();
@@ -98,7 +113,8 @@ class EventShifterTest {
             }
 
         });
-        EventShifter shifter = new EventShifter(raw, true, -15, -20).withMaxIter(200);
+        final EventDetectionSettings settings = EventDetectionSettings.getDefaultEventDetectionSettings().withMaxIter(200);
+        EventShifter shifter = new EventShifter(raw, true, -15, -20).withDetectionSettings(settings);
         Assertions.assertEquals(-15, shifter.getIncreasingTimeShift(), 1.0e-15);
         Assertions.assertEquals(-20, shifter.getDecreasingTimeShift(), 1.0e-15);
         Assertions.assertEquals(200, shifter.getMaxIterationCount());
