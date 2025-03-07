@@ -92,9 +92,9 @@ public class EventShifter implements DetectorModifier {
      * @param decreasingTimeShift decreasing events time shift.
      * @since 13.0
      */
-    protected EventShifter(final EventDetectionSettings detectionSettings,
-                           final EventDetector detector, final boolean useShiftedStates,
-                           final double increasingTimeShift, final double decreasingTimeShift) {
+    public EventShifter(final EventDetectionSettings detectionSettings,
+                        final EventDetector detector, final boolean useShiftedStates,
+                        final double increasingTimeShift, final double decreasingTimeShift) {
         this.detectionSettings = detectionSettings;
         this.handler = new LocalHandler();
         this.detector         = detector;

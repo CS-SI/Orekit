@@ -75,7 +75,7 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
     private final D rawDetector;
 
     /** Filter to use. */
-    private final FilterType filter;
+    private final FilterType filterType;
 
     /** Transformers of the g function. */
     private final Transformer[] transformers;
@@ -97,30 +97,25 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
 
     /** Wrap an {@link EventDetector event detector}.
      * @param rawDetector event detector to wrap
-     * @param filter filter to use
+     * @param filterType filter to use
      */
-    public FieldEventSlopeFilter(final D rawDetector, final FilterType filter) {
-        this(rawDetector.getDetectionSettings(), rawDetector, filter);
+    public FieldEventSlopeFilter(final D rawDetector, final FilterType filterType) {
+        this(rawDetector.getDetectionSettings(), rawDetector, filterType);
     }
 
-    /** Protected constructor with full parameters.
-     * <p>
-     * This constructor is not public as users are expected to use the builder
-     * API with the various {@code withXxx()} methods to set up the instance
-     * in a readable manner without using a huge amount of parameters.
-     * </p>
+    /** Constructor with full parameters.
      * @param detectionSettings event detection settings
      * @param rawDetector event detector to wrap
-     * @param filter filter to use
+     * @param filterType filter to use
      * since 13.0
      */
     @SuppressWarnings("unchecked")
-    protected FieldEventSlopeFilter(final FieldEventDetectionSettings<T> detectionSettings,
-                                    final D rawDetector, final FilterType filter) {
+    public FieldEventSlopeFilter(final FieldEventDetectionSettings<T> detectionSettings,
+                                 final D rawDetector, final FilterType filterType) {
         this.detectionSettings = detectionSettings;
         this.handler = new LocalHandler<>();
         this.rawDetector  = rawDetector;
-        this.filter       = filter;
+        this.filterType = filterType;
         this.transformers = new Transformer[HISTORY_SIZE];
         this.updates      = (FieldAbsoluteDate<T>[]) Array.newInstance(FieldAbsoluteDate.class, HISTORY_SIZE);
     }
@@ -131,7 +126,7 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
      * @return a new detector
      */
     public FieldEventSlopeFilter<D, T> withDetectionSettings(final FieldEventDetectionSettings<T> settings) {
-        return new FieldEventSlopeFilter<>(settings, rawDetector, filter);
+        return new FieldEventSlopeFilter<>(settings, rawDetector, filterType);
     }
 
     /** Get filter type.
@@ -139,7 +134,7 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
      * @since 13.0
      */
     public FilterType getFilterType() {
-        return filter;
+        return filterType;
     }
 
     @Override
@@ -207,7 +202,7 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
 
                 // check if a new rough root has been crossed
                 final Transformer previous = transformers[last];
-                final Transformer next     = filter.selectTransformer(previous, rawG.getReal(), forward);
+                final Transformer next     = filterType.selectTransformer(previous, rawG.getReal(), forward);
                 if (next != previous) {
                     // there is a root somewhere between extremeT and t.
                     // the new transformer is valid for t (this is how we have just computed
@@ -246,7 +241,7 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
 
                 // check if a new rough root has been crossed
                 final Transformer previous = transformers[0];
-                final Transformer next     = filter.selectTransformer(previous, rawG.getReal(), forward);
+                final Transformer next     = filterType.selectTransformer(previous, rawG.getReal(), forward);
                 if (next != previous) {
                     // there is a root somewhere between extremeT and t.
                     // the new transformer is valid for t (this is how we have just computed
@@ -296,7 +291,7 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
         /** {@inheritDoc} */
         public Action eventOccurred(final FieldSpacecraftState<T> s, final FieldEventDetector<T> detector, final boolean increasing) {
             final FieldEventSlopeFilter<D, T> esf = (FieldEventSlopeFilter<D, T>) detector;
-            return esf.rawDetector.getHandler().eventOccurred(s, esf.rawDetector, esf.filter.getTriggeredIncreasing());
+            return esf.rawDetector.getHandler().eventOccurred(s, esf.rawDetector, esf.filterType.getTriggeredIncreasing());
         }
 
         /** {@inheritDoc} */

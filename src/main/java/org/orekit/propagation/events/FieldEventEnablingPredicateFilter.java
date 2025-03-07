@@ -99,21 +99,16 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
         this(rawDetector.getDetectionSettings(), rawDetector, enabler);
     }
 
-    /** Protected constructor with full parameters.
-     * <p>
-     * This constructor is not public as users are expected to use the builder
-     * API with the various {@code withXxx()} methods to set up the instance
-     * in a readable manner without using a huge amount of parameters.
-     * </p>
+    /** Constructor with full parameters.
      * @param detectionSettings event detection settings
      * @param rawDetector event detector to wrap
      * @param enabler event enabling function to use
      * @since 13.0
      */
     @SuppressWarnings("unchecked")
-    protected FieldEventEnablingPredicateFilter(final FieldEventDetectionSettings<T> detectionSettings,
-                                                final FieldEventDetector<T> rawDetector,
-                                                final FieldEnablingPredicate<T> enabler) {
+    public FieldEventEnablingPredicateFilter(final FieldEventDetectionSettings<T> detectionSettings,
+                                             final FieldEventDetector<T> rawDetector,
+                                             final FieldEnablingPredicate<T> enabler) {
         this.detectionSettings = detectionSettings;
         this.handler = new LocalHandler<>();
         this.rawDetector  = rawDetector;

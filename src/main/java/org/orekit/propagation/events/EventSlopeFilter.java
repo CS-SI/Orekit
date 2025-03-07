@@ -71,7 +71,7 @@ public class EventSlopeFilter<T extends EventDetector> implements EventDetector 
     private final T rawDetector;
 
     /** Filter to use. */
-    private final FilterType filter;
+    private final FilterType filterType;
 
     /** Transformers of the g function. */
     private final Transformer[] transformers;
@@ -99,23 +99,18 @@ public class EventSlopeFilter<T extends EventDetector> implements EventDetector 
         this(rawDetector.getDetectionSettings(), rawDetector, filter);
     }
 
-    /** Protected constructor with full parameters.
-     * <p>
-     * This constructor is not public as users are expected to use the builder
-     * API with the various {@code withXxx()} methods to set up the instance
-     * in a readable manner without using a huge amount of parameters.
-     * </p>
+    /** Constructor with full parameters.
      * @param detectionSettings event detection settings
      * @param rawDetector event detector to wrap
-     * @param filter filter to use
+     * @param filterType filter to use
      * @since 13.0
      */
-    protected EventSlopeFilter(final EventDetectionSettings detectionSettings,
-                               final T rawDetector, final FilterType filter) {
+    public EventSlopeFilter(final EventDetectionSettings detectionSettings,
+                            final T rawDetector, final FilterType filterType) {
         this.detectionSettings = detectionSettings;
         this.handler = new LocalHandler<>();
         this.rawDetector  = rawDetector;
-        this.filter       = filter;
+        this.filterType = filterType;
         this.transformers = new Transformer[HISTORY_SIZE];
         this.updates      = new AbsoluteDate[HISTORY_SIZE];
     }
@@ -138,7 +133,7 @@ public class EventSlopeFilter<T extends EventDetector> implements EventDetector 
      * @return a new detector
      */
     public EventSlopeFilter<T> withDetectionSettings(final EventDetectionSettings settings) {
-        return new EventSlopeFilter<>(settings, rawDetector, filter);
+        return new EventSlopeFilter<>(settings, rawDetector, filterType);
     }
 
     /**
@@ -164,7 +159,7 @@ public class EventSlopeFilter<T extends EventDetector> implements EventDetector 
      * @since 13.0
      */
     public FilterType getFilterType() {
-        return filter;
+        return filterType;
     }
 
     /**  {@inheritDoc} */
@@ -211,7 +206,7 @@ public class EventSlopeFilter<T extends EventDetector> implements EventDetector 
 
                 // check if a new rough root has been crossed
                 final Transformer previous = transformers[last];
-                final Transformer next     = filter.selectTransformer(previous, rawG, forward);
+                final Transformer next     = filterType.selectTransformer(previous, rawG, forward);
                 if (next != previous) {
                     // there is a root somewhere between extremeT and t.
                     // the new transformer is valid for t (this is how we have just computed
@@ -250,7 +245,7 @@ public class EventSlopeFilter<T extends EventDetector> implements EventDetector 
 
                 // check if a new rough root has been crossed
                 final Transformer previous = transformers[0];
-                final Transformer next     = filter.selectTransformer(previous, rawG, forward);
+                final Transformer next     = filterType.selectTransformer(previous, rawG, forward);
                 if (next != previous) {
                     // there is a root somewhere between extremeT and t.
                     // the new transformer is valid for t (this is how we have just computed
@@ -301,7 +296,7 @@ public class EventSlopeFilter<T extends EventDetector> implements EventDetector 
         public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
             @SuppressWarnings("unchecked")
             final EventSlopeFilter<T> esf = (EventSlopeFilter<T>) detector;
-            return esf.rawDetector.getHandler().eventOccurred(s, esf.rawDetector, esf.filter.getTriggeredIncreasing());
+            return esf.rawDetector.getHandler().eventOccurred(s, esf.rawDetector, esf.filterType.getTriggeredIncreasing());
         }
 
         /** {@inheritDoc} */

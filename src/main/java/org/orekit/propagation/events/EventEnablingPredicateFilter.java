@@ -89,7 +89,7 @@ public class EventEnablingPredicateFilter implements DetectorModifier {
     private double extremeG;
 
     /** Wrap an {@link EventDetector event detector}.
-     * @param rawDetector event detector to wrap
+     * @param rawDetector event detector to wrap (its detection settings are taken as well)
      * @param enabler event enabling predicate function to use
      */
     public EventEnablingPredicateFilter(final EventDetector rawDetector,
@@ -97,20 +97,14 @@ public class EventEnablingPredicateFilter implements DetectorModifier {
         this(rawDetector.getDetectionSettings(), rawDetector, enabler);
     }
 
-    /** Protected constructor with full parameters.
-     * <p>
-     * This constructor is not public as users are expected to use the builder
-     * API with the various {@code withXxx()} methods to set up the instance
-     * in a readable manner without using a huge amount of parameters.
-     * </p>
+    /** Constructor with full parameters.
      * @param detectionSettings event detection settings
      * @param rawDetector event detector to wrap
      * @param enabler event enabling function to use
      * @since 13.0
      */
-    protected EventEnablingPredicateFilter(final EventDetectionSettings detectionSettings,
-                                           final EventDetector rawDetector,
-                                           final EnablingPredicate enabler) {
+    public EventEnablingPredicateFilter(final EventDetectionSettings detectionSettings,
+                                        final EventDetector rawDetector, final EnablingPredicate enabler) {
         this.detectionSettings = detectionSettings;
         this.handler = new LocalHandler();
         this.rawDetector  = rawDetector;
