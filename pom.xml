@@ -36,7 +36,7 @@
     <orekit.plantuml-maven-plugin.version>1.2</orekit.plantuml-maven-plugin.version>
     <orekit.plantuml.version>1.2025.2</orekit.plantuml.version>
     <orekit.maven-resources-plugin.version>3.3.1</orekit.maven-resources-plugin.version>
-    <orekit.maven-site-plugin.version>3.21.0</orekit.maven-site-plugin.version>
+    <orekit.maven-site-plugin.version>3.12.1</orekit.maven-site-plugin.version>
     <orekit.maven-project-info-reports-plugin.version>3.9.0</orekit.maven-project-info-reports-plugin.version>
     <orekit.maven-wagon-ssh-external-plugin.version>3.5.3</orekit.maven-wagon-ssh-external-plugin.version>
     <orekit.maven-source-plugin.version>3.3.1</orekit.maven-source-plugin.version>
