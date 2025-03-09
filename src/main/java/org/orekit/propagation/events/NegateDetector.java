@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.time.AbsoluteDate;
 
 /**
  * An event detector that negates the sign on another event detector's {@link
@@ -71,7 +72,13 @@ public class NegateDetector extends AbstractDetector<NegateDetector> implements 
 
     @Override
     public EventDetector getDetector() {
-        return original;
+        return getOriginal();
+    }
+
+    @Override
+    public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        super.init(s0, t);
+        getDetector().init(s0, t);
     }
 
     @Override

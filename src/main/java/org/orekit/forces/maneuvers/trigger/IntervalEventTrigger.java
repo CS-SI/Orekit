@@ -25,7 +25,6 @@ import org.hipparchus.Field;
 import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -55,9 +54,8 @@ public abstract class IntervalEventTrigger<T extends EventDetector> extends Abst
     /** Simple constructor.
      * <p>
      * Note that the {@code intervalDetector} passed as an argument is used only
-     * as a <em>prototype</em> from which a new detector will be built using its
-     * {@link AbstractDetector#withHandler(EventHandler) withHandler} method to
-     * set up an internal handler. The original event handler from the prototype
+     * as a <em>prototype</em> from which a new detector will be built using
+     * {@link ManeuverTriggerDetector}. The original event handler from the prototype
      * will be <em>ignored</em> and never called.
      * </p>
      * <p>
@@ -129,6 +127,7 @@ public abstract class IntervalEventTrigger<T extends EventDetector> extends Abst
     }
 
     /** {@inheritDoc} */
+    @Override
     public <S extends CalculusFieldElement<S>> Stream<FieldEventDetector<S>> getFieldEventDetectors(final Field<S> field) {
 
         @SuppressWarnings("unchecked")

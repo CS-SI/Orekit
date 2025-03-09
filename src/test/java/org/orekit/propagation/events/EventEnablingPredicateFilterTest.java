@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mockito;
 import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
@@ -45,6 +46,7 @@ import org.orekit.propagation.events.EventsLogger.LoggedEvent;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.RecordAndContinue;
+import org.orekit.propagation.events.intervals.AdaptableInterval;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -60,6 +62,20 @@ class EventEnablingPredicateFilterTest {
     private OneAxisEllipsoid earth;
     private GeodeticPoint gp;
     private Orbit orbit;
+
+    @Test
+    void testWithDetectionSettings() {
+        // GIVEN
+        final EventDetector detector = new DateDetector();
+        final EnablingPredicate enablingPredicate = Mockito.mock();
+        final EventEnablingPredicateFilter template = new EventEnablingPredicateFilter(detector, enablingPredicate);
+        final EventDetectionSettings detectionSettings = Mockito.mock();
+        // WHEN
+        final EventEnablingPredicateFilter predicateFilter = template.withDetectionSettings(detectionSettings);
+        // THEN
+        Assertions.assertEquals(detector, predicateFilter.getDetector());
+        Assertions.assertEquals(detectionSettings, predicateFilter.getDetectionSettings());
+    }
 
     @Test
     void testForward0Degrees() {
@@ -116,9 +132,12 @@ class EventEnablingPredicateFilterTest {
         final ElevationExtremumDetector raw =
                 new ElevationExtremumDetector(0.001, 1.e-6, new TopocentricFrame(earth, gp, "test")).
                 withHandler(new ContinueOnEvent());
+        final EventDetectionSettings settings = EventDetectionSettings.getDefaultEventDetectionSettings()
+                .withMaxCheckInterval(AdaptableInterval.of(60.));
         final EventEnablingPredicateFilter aboveGroundElevationDetector =
                 new EventEnablingPredicateFilter(raw,
-                        (state, eventDetector, g) -> ((ElevationExtremumDetector) eventDetector).getElevation(state) > minElevation).withMaxCheck(60.0);
+                        (state, eventDetector, g) -> ((ElevationExtremumDetector) eventDetector).getElevation(state) > minElevation)
+                        .withDetectionSettings(settings);
 
         Assertions.assertSame(raw, aboveGroundElevationDetector.getDetector());
         Assertions.assertEquals(0.001, raw.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);

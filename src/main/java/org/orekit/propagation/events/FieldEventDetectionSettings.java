@@ -110,6 +110,48 @@ public class FieldEventDetectionSettings <T extends CalculusFieldElement<T>> {
     }
 
     /**
+     * Builds a new instance with a new max. check interval.
+     * @param newMaxCheckInterval new max. check.
+     * @return new object
+     * @since 13.0
+     */
+    public FieldEventDetectionSettings<T> withMaxCheckInterval(final FieldAdaptableInterval<T> newMaxCheckInterval) {
+        return new FieldEventDetectionSettings<>(newMaxCheckInterval, threshold, maxIterationCount);
+    }
+
+    /**
+     * Builds a new instance with a new threshold value.
+     * @param newThreshold detection threshold in seconds
+     * @return new object
+     * @since 13.0
+     */
+    public FieldEventDetectionSettings<T> withThreshold(final T newThreshold) {
+        return new FieldEventDetectionSettings<>(maxCheckInterval, newThreshold, maxIterationCount);
+    }
+
+    /**
+     * Builds a new instance with a new max. iteration count.
+     * @param newMaxIterationCount new max iteration count.
+     * @return new object
+     * @since 13.0
+     */
+    public FieldEventDetectionSettings<T> withMaxIter(final int newMaxIterationCount) {
+        return new FieldEventDetectionSettings<>(maxCheckInterval, threshold, newMaxIterationCount);
+    }
+
+    /**
+     * Returns default settings for event detections.
+     * @param <T> field type
+     * @param field field
+     * @return default settings
+     * @since 13.0
+     */
+    public static <T extends CalculusFieldElement<T>> FieldEventDetectionSettings<T> getDefaultEventDetectionSettings(final Field<T> field) {
+        return new FieldEventDetectionSettings<>(FieldAdaptableInterval.of(DEFAULT_MAX_CHECK),
+                field.getZero().newInstance(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER);
+    }
+
+    /**
      * Create a non-Field equivalent object.
      * @return event detection settings
      */

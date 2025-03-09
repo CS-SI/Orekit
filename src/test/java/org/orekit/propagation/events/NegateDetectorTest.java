@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 
 /**
  * Unit tests for {@link NegateDetector}.
@@ -29,6 +30,36 @@ import org.orekit.propagation.SpacecraftState;
  * @author Evan Ward
  */
 class NegateDetectorTest {
+
+    @Test
+    void testInitBackward() {
+        //setup
+        final DateDetector dateDetector = new DateDetector();
+        final NegateDetector negateDetector = new NegateDetector(dateDetector);
+        final SpacecraftState state = Mockito.mock(SpacecraftState.class);
+        Mockito.when(state.getDate()).thenReturn(AbsoluteDate.ARBITRARY_EPOCH);
+
+        //action
+        negateDetector.init(state, AbsoluteDate.PAST_INFINITY);
+
+        //verify
+        Assertions.assertEquals(dateDetector.isForward(), negateDetector.isForward());
+    }
+
+    @Test
+    void testInitForward() {
+        //setup
+        final DateDetector dateDetector = new DateDetector();
+        final NegateDetector negateDetector = new NegateDetector(dateDetector);
+        final SpacecraftState state = Mockito.mock(SpacecraftState.class);
+        Mockito.when(state.getDate()).thenReturn(AbsoluteDate.ARBITRARY_EPOCH);
+
+        //action
+        negateDetector.init(state, AbsoluteDate.FUTURE_INFINITY);
+
+        //verify
+        Assertions.assertEquals(dateDetector.isForward(), negateDetector.isForward());
+    }
 
     @Test
     void testGetDetector() {
@@ -75,6 +106,6 @@ class NegateDetectorTest {
 
         //verify
         MatcherAssert.assertThat(actual.getMaxCheckInterval().currentInterval(null, true), CoreMatchers.is(100.0));
-        Assertions.assertTrue(actual.getOriginal() == a);
+        Assertions.assertSame(actual.getOriginal(), a);
     }
 }

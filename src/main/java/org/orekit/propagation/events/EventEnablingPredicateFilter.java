@@ -56,8 +56,7 @@ import org.orekit.time.AbsoluteDate;
  * @since 7.1
  */
 
-public class EventEnablingPredicateFilter
-    extends AbstractDetector<EventEnablingPredicateFilter> implements DetectorModifier {
+public class EventEnablingPredicateFilter implements DetectorModifier {
 
     /** Number of past transformers updates stored. */
     private static final int HISTORY_SIZE = 100;
@@ -74,6 +73,12 @@ public class EventEnablingPredicateFilter
     /** Update time of the transformers. */
     private final AbsoluteDate[] updates;
 
+    /** Event detection settings. */
+    private final EventDetectionSettings detectionSettings;
+
+    /** Specialized event handler. */
+    private final LocalHandler handler;
+
     /** Indicator for forward integration. */
     private boolean forward;
 
@@ -84,41 +89,37 @@ public class EventEnablingPredicateFilter
     private double extremeG;
 
     /** Wrap an {@link EventDetector event detector}.
-     * @param rawDetector event detector to wrap
+     * @param rawDetector event detector to wrap (its detection settings are taken as well)
      * @param enabler event enabling predicate function to use
      */
     public EventEnablingPredicateFilter(final EventDetector rawDetector,
                                         final EnablingPredicate enabler) {
-        this(rawDetector.getDetectionSettings(), new LocalHandler(), rawDetector, enabler);
+        this(rawDetector.getDetectionSettings(), rawDetector, enabler);
     }
 
-    /** Protected constructor with full parameters.
-     * <p>
-     * This constructor is not public as users are expected to use the builder
-     * API with the various {@code withXxx()} methods to set up the instance
-     * in a readable manner without using a huge amount of parameters.
-     * </p>
+    /** Constructor with full parameters.
      * @param detectionSettings event detection settings
-     * @param handler event handler to call at event occurrences
      * @param rawDetector event detector to wrap
      * @param enabler event enabling function to use
      * @since 13.0
      */
-    protected EventEnablingPredicateFilter(final EventDetectionSettings detectionSettings, final EventHandler handler,
-                                           final EventDetector rawDetector,
-                                           final EnablingPredicate enabler) {
-        super(detectionSettings, handler);
+    public EventEnablingPredicateFilter(final EventDetectionSettings detectionSettings,
+                                        final EventDetector rawDetector, final EnablingPredicate enabler) {
+        this.detectionSettings = detectionSettings;
+        this.handler = new LocalHandler();
         this.rawDetector  = rawDetector;
         this.enabler      = enabler;
         this.transformers = new Transformer[HISTORY_SIZE];
         this.updates      = new AbsoluteDate[HISTORY_SIZE];
     }
 
-    /** {@inheritDoc} */
-    @Override
-    protected EventEnablingPredicateFilter create(final EventDetectionSettings detectionSettings,
-                                                  final EventHandler newHandler) {
-        return new EventEnablingPredicateFilter(detectionSettings, newHandler, rawDetector, enabler);
+    /**
+     * Builds a new instance from the input detection settings.
+     * @param settings event detection settings to be used
+     * @return a new detector
+     */
+    public EventEnablingPredicateFilter withDetectionSettings(final EventDetectionSettings settings) {
+        return new EventEnablingPredicateFilter(settings, rawDetector, enabler);
     }
 
     /**
@@ -130,13 +131,25 @@ public class EventEnablingPredicateFilter
         return rawDetector;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public EventHandler getHandler() {
+        return handler;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public EventDetectionSettings getDetectionSettings() {
+        return detectionSettings;
+    }
+
     /**  {@inheritDoc} */
     @Override
     public void init(final SpacecraftState s0, final AbsoluteDate t) {
         DetectorModifier.super.init(s0, t);
 
         // initialize events triggering logic
-        forward  = checkIfForward(s0, t);
+        forward  = AbstractDetector.checkIfForward(s0, t);
         extremeT = forward ? AbsoluteDate.PAST_INFINITY : AbsoluteDate.FUTURE_INFINITY;
         extremeG = Double.NaN;
 
@@ -149,7 +162,7 @@ public class EventEnablingPredicateFilter
     @Override
     public void reset(final SpacecraftState state, final AbsoluteDate target) {
         DetectorModifier.super.reset(state, target);
-        forward  = checkIfForward(state, target);
+        forward  = AbstractDetector.checkIfForward(state, target);
         extremeT = forward ? AbsoluteDate.PAST_INFINITY : AbsoluteDate.FUTURE_INFINITY;
         extremeG = Double.NaN;
     }
@@ -287,7 +300,9 @@ public class EventEnablingPredicateFilter
         }
     }
 
-    @Override
+    /** Check if the current propagation is forward or backward.
+     * @return true if the current propagation is forward
+     */
     public boolean isForward() {
         return forward;
     }
