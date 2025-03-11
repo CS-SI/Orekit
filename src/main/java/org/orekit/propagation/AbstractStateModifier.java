@@ -49,6 +49,7 @@ public abstract class AbstractStateModifier implements AdditionalDataProvider<do
     public SpacecraftState update(final SpacecraftState state) {
         return change(state);
     }
+
     /** Change main state.
      * @param state spacecraft state to change
      * @return changed state

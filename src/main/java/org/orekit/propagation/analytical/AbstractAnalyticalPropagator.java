@@ -384,7 +384,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
      * <p>This method is similar in spirit to the {@link #propagate} method,
      * except that it does <strong>not</strong> call any handler during
      * propagation, nor any discrete events, not additional states. It always
-     * stop exactly at the specified date.</p>
+     * stops exactly at the specified date.</p>
      * @param date target date for propagation
      * @return state at specified date
      */
