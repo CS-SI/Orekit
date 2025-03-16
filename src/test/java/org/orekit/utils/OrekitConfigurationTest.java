@@ -16,8 +16,13 @@
  */
 package org.orekit.utils;
 
+import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.regex.Pattern;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Hank Grabowski
@@ -43,4 +48,12 @@ public class OrekitConfigurationTest {
         Assertions.assertEquals(getSlots, setSlots);
 
     }
+
+    @Test
+    public void testVersions() {
+        final Pattern pattern = Pattern.compile("unknown|[0-9.]*(?:-SNAPSHOT)?");
+        assertTrue(pattern.matcher(MathUtils.getHipparchusVersion()).matches());
+        assertTrue(pattern.matcher(OrekitConfiguration.getOrekitVersion()).matches());
+    }
+
 }
