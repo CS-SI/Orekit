@@ -45,6 +45,7 @@ public enum LOFType implements LOF {
      * <p>
      * The axes of this frame are parallel to the axes of the {@link #VNC}
      * and {@link #NTW} frames:
+     * </p>
      * <ul>
      *   <li>X<sub>TNW</sub> =  X<sub>VNC</sub> =  Y<sub>NTW</sub></li>
      *   <li>Y<sub>TNW</sub> = -Z<sub>VNC</sub> = -X<sub>NTW</sub></li>
@@ -83,6 +84,7 @@ public enum LOFType implements LOF {
      * Constant for TNW frame considered inertial (X axis aligned with velocity, Z axis aligned with orbital momentum).
      * <p>
      * The axes of this frame are parallel to the axes of the {@link #VNC} and {@link #NTW} frames:
+     * </p>
      * <ul>
      *   <li>X<sub>TNW</sub> =  X<sub>VNC</sub> =  Y<sub>NTW</sub></li>
      *   <li>Y<sub>TNW</sub> = -Z<sub>VNC</sub> = -X<sub>NTW</sub></li>
@@ -127,6 +129,7 @@ public enum LOFType implements LOF {
      * </p>
      * <p>
      * The axes of these frames are parallel to the axes of the {@link #VVLH} frame:
+     * </p>
      * <ul>
      *   <li>X<sub>QSW/LVLH</sub> = -Z<sub>VVLH</sub></li>
      *   <li>Y<sub>QSW/LVLH</sub> =  X<sub>VVLH</sub></li>
@@ -168,6 +171,7 @@ public enum LOFType implements LOF {
      * </p>
      * <p>
      * The axes of these frames are parallel to the axes of the {@link #VVLH} frame:
+     * </p>
      * <ul>
      *   <li>X<sub>QSW/LVLH</sub> = -Z<sub>VVLH</sub></li>
      *   <li>Y<sub>QSW/LVLH</sub> =  X<sub>VVLH</sub></li>
@@ -218,6 +222,7 @@ public enum LOFType implements LOF {
      * </p>
      * <p>
      * The axes of these frames are parallel to the axes of the {@link #LVLH_CCSDS} frame:
+     * </p>
      * <ul>
      *   <li>X<sub>LVLH/QSW</sub> = -Z<sub>LVLH_CCSDS</sub></li>
      *   <li>Y<sub>LVLH/QSW</sub> =  X<sub>LVLH_CCSDS</sub></li>
@@ -265,6 +270,7 @@ public enum LOFType implements LOF {
      * </p>
      * <p>
      * The axes of these frames are parallel to the axes of the {@link #LVLH_CCSDS} frame:
+     * </p>
      * <ul>
      *   <li>X<sub>LVLH/QSW</sub> = -Z<sub>LVLH_CCSDS</sub></li>
      *   <li>Y<sub>LVLH/QSW</sub> =  X<sub>LVLH_CCSDS</sub></li>
@@ -312,6 +318,7 @@ public enum LOFType implements LOF {
      * </p>
      * <p>
      * The axes of this frame are parallel to the axes of both the {@link #QSW} and {@link #LVLH} frames:
+     * </p>
      * <ul>
      *   <li>X<sub>LVLH_CCSDS/VVLH</sub> =  Y<sub>QSW/LVLH</sub></li>
      *   <li>Y<sub>LVLH_CCSDS/VVLH</sub> = -Z<sub>QSW/LVLH</sub></li>
@@ -357,6 +364,7 @@ public enum LOFType implements LOF {
      * </p>
      * <p>
      * The axes of this frame are parallel to the axes of both the {@link #QSW} and {@link #LVLH} frames:
+     * </p>
      * <ul>
      *   <li>X<sub>LVLH_CCSDS/VVLH</sub> =  Y<sub>QSW/LVLH</sub></li>
      *   <li>Y<sub>LVLH_CCSDS/VVLH</sub> = -Z<sub>QSW/LVLH</sub></li>
@@ -407,6 +415,7 @@ public enum LOFType implements LOF {
      * </p>
      * <p>
      * The axes of this frame are parallel to the axes of both the {@link #QSW} and {@link #LVLH} frames:
+     * </p>
      * <ul>
      *   <li>X<sub>LVLH_CCSDS/VVLH</sub> =  Y<sub>QSW/LVLH</sub></li>
      *   <li>Y<sub>LVLH_CCSDS/VVLH</sub> = -Z<sub>QSW/LVLH</sub></li>
@@ -448,6 +457,7 @@ public enum LOFType implements LOF {
      * </p>
      * <p>
      * The axes of this frame are parallel to the axes of both the {@link #QSW} and {@link #LVLH} frames:
+     * </p>
      * <ul>
      *   <li>X<sub>LVLH_CCSDS/VVLH</sub> =  Y<sub>QSW/LVLH</sub></li>
      *   <li>Y<sub>LVLH_CCSDS/VVLH</sub> = -Z<sub>QSW/LVLH</sub></li>
@@ -489,6 +499,7 @@ public enum LOFType implements LOF {
      * <p>
      * The axes of this frame are parallel to the axes of the {@link #TNW}
      * and {@link #NTW} frames:
+     * </p>
      * <ul>
      *   <li>X<sub>VNC</sub> =  X<sub>TNW</sub> = Y<sub>NTW</sub></li>
      *   <li>Y<sub>VNC</sub> =  Z<sub>TNW</sub> = Z<sub>NTW</sub></li>
@@ -528,6 +539,7 @@ public enum LOFType implements LOF {
      * aligned with orbital momentum).
      * <p>
      * The axes of this frame are parallel to the axes of the {@link #TNW} and {@link #NTW} frames:
+     * </p>
      * <ul>
      *   <li>X<sub>VNC</sub> =  X<sub>TNW</sub> = Y<sub>NTW</sub></li>
      *   <li>Y<sub>VNC</sub> =  Z<sub>TNW</sub> = Z<sub>NTW</sub></li>
@@ -610,6 +622,7 @@ public enum LOFType implements LOF {
      * <p>
      * The axes of this frame are parallel to the axes of the {@link #TNW}
      * and {@link #VNC} frames:
+     * </p>
      * <ul>
      *   <li>X<sub>NTW</sub> = -Y<sub>TNW</sub> = Z<sub>VNC</sub></li>
      *   <li>Y<sub>NTW</sub> =  X<sub>TNW</sub> = X<sub>VNC</sub></li>
@@ -649,6 +662,7 @@ public enum LOFType implements LOF {
      * axis aligned with orbital momentum).
      * <p>
      * The axes of this frame are parallel to the axes of the {@link #TNW} and {@link #VNC} frames:
+     * </p>
      * <ul>
      *   <li>X<sub>NTW</sub> = -Y<sub>TNW</sub> = Z<sub>VNC</sub></li>
      *   <li>Y<sub>NTW</sub> =  X<sub>TNW</sub> = X<sub>VNC</sub></li>
