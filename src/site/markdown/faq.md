@@ -223,8 +223,8 @@ USNO tai-utc.dat file. If either file is found in the Orekit configuration, it w
 and the message should not appear.
 
 Configuring data loading is explained in the configuration page. For a start, the simplest configuration
- is to download the [orekit-data-master.zip](https://gitlab.orekit.org/orekit/orekit-data/-/archive/master/orekit-data-master.zip)
-file from the forge, to unzip it anywhere you want, rename the `orekit-data-master` folder that will be created
+ is to download the [orekit-data-main.zip](https://gitlab.orekit.org/orekit/orekit-data/-/archive/main/orekit-data-main.zip)
+file from the forge, to unzip it anywhere you want, rename the `orekit-data-main` folder that will be created
 into `orekit-data` and add the following lines at the start of your program:
 
     File orekitData = new File("/path/to/the/folder/orekit-data");

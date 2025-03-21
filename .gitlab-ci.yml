@@ -95,7 +95,7 @@ changelog:
     paths:
       - CHANGELOG.md
 
-# On main branches (develop, release-*, master) the produced artifacts are
+# On main branches (develop, release-*, main) the produced artifacts are
 # deployed on the Nexus of the project (https://packages.orekit.org/)
 deploy:artifacts:
   stage: deploy
@@ -105,7 +105,7 @@ deploy:artifacts:
     paths:
       - target/*.jar
   only:
-    - master@orekit/orekit
+    - main@orekit/orekit
     - /^release-[.0-9]+$/@orekit/orekit
     - develop@orekit/orekit
 
@@ -123,7 +123,7 @@ deploy:site:
     - rsync -rz --links --checksum --no-perms --chmod=u=rwX,go=rX --delete-after
             target/site/ ${TARGET_URL_PREFIX}-${PROJECT_VERSION}
   only:
-    - master@orekit/orekit
+    - main@orekit/orekit
     - /^release-[.0-9]+$/@orekit/orekit
     - develop@orekit/orekit
 
