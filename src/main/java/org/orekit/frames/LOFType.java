@@ -699,6 +699,78 @@ public enum LOFType implements LOF {
             return OrbitRelativeFrame.NTW_INERTIAL;
         }
 
+    },
+
+    /**
+     * Constant for East-North-Up frame
+     * (Z aligned with position, North Pole in the (+Y,±Z) half-plane)
+     * @see #NED
+     * @since 13.0
+     */
+    ENU {
+        /** {@inheritDoc} */
+        @Override
+        public Rotation rotationFromInertial(final PVCoordinates pv) {
+            return new Rotation(pv.getPosition(), east(pv),
+                                Vector3D.PLUS_K, Vector3D.PLUS_I);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
+                                                                                         final FieldPVCoordinates<T> pv) {
+            return new FieldRotation<>(pv.getPosition(), east(pv),
+                                       FieldVector3D.getPlusK(field), FieldVector3D.getPlusI(field));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public boolean isQuasiInertial() {
+            return false;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public OrbitRelativeFrame toOrbitRelativeFrame() {
+            return null;
+        }
+
+    },
+
+    /**
+     * Constant for North-East-Down frame
+     * (Z aligned with opposite of position, North Pole in the (+X,±Z) half-plane)
+     * @see #ENU
+     * @since 13.0
+     */
+    NED {
+        /** {@inheritDoc} */
+        @Override
+        public Rotation rotationFromInertial(final PVCoordinates pv) {
+            return new Rotation(pv.getPosition(), east(pv),
+                                Vector3D.MINUS_K, Vector3D.PLUS_J);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
+                                                                                         final FieldPVCoordinates<T> pv) {
+            return new FieldRotation<>(pv.getPosition(), east(pv),
+                                       FieldVector3D.getMinusK(field), FieldVector3D.getPlusJ(field));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public boolean isQuasiInertial() {
+            return false;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public OrbitRelativeFrame toOrbitRelativeFrame() {
+            return null;
+        }
+
     };
 
     /** {@inheritDoc} */
@@ -856,5 +928,31 @@ public enum LOFType implements LOF {
      * @see OrbitRelativeFrame
      */
     public abstract OrbitRelativeFrame toOrbitRelativeFrame();
+
+    /** Compute East direction.
+     * @param pv position-velocity of the spacecraft in some inertial frame
+     * @return East direction
+     * @since 13.0
+     */
+    private static Vector3D east(final PVCoordinates pv) {
+        final Vector3D p = pv.getPosition();
+        final double px = p.getX();
+        final double py = p.getY();
+        return (px == 0.0 && py == 0.0) ? Vector3D.PLUS_J : new Vector3D(-py, px, 0);
+    }
+
+    /** Compute East direction.
+     * @param <T> type of the field elements
+     * @param pv position-velocity of the spacecraft in some inertial frame
+     * @return East direction
+     * @since 13.0
+     */
+    private static <T extends CalculusFieldElement<T>> FieldVector3D<T> east(final FieldPVCoordinates<T> pv) {
+        final FieldVector3D<T> p = pv.getPosition();
+        final T px = p.getX();
+        final T py = p.getY();
+        return (px.isZero() && py.isZero()) ? FieldVector3D.getPlusJ(px.getField()) :
+            new FieldVector3D<>(py.negate(), px, px.getField().getZero());
+    }
 
 }
