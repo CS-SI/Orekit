@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="luc" type="add" issue="1685">
+            Added support for Rinex 4.01.
+        </action>
         <action dev="luc" type="add" issue="1653">
             Added OrekitConfiguration.getOrekitVersion().
         </action>
