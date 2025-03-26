@@ -293,9 +293,9 @@ public class RinexNavigationParser {
         HEADER_VERSION(line -> RinexUtils.matchesLabel(line, "RINEX VERSION / TYPE"),
                        (line, pi) -> {
                            RinexUtils.parseVersionFileTypeSatelliteSystem(line, pi.name, pi.file.getHeader(),
-                                                                                    2.0, 2.01, 2.10, 2.11,
-                                                                                    3.01, 3.02, 3.03, 3.04, 3.05,
-                                                                                    4.00);
+                                                                          2.0, 2.01, 2.10, 2.11,
+                                                                          3.01, 3.02, 3.03, 3.04, 3.05,
+                                                                          4.00, 4.01);
                            pi.initialSpaces = pi.file.getHeader().getFormatVersion() < 3.0 ? 3 : 4;
                        },
                        LineParser::headerNext),
@@ -659,8 +659,8 @@ public class RinexNavigationParser {
                    },
                    pi -> Collections.singleton(EOP_LINE_2)),
 
-        /** Parser for Earth orientation parameter message space vehicle epoch and clock. */
-        EOP_SV_EPOCH_CLOCK(line -> true,
+        /** Parser for Earth orientation parameter message model. */
+        EOP_LINE_0(line -> true,
                            (line, pi) -> {
                                final int year  = RinexUtils.parseInt(line, 4, 4);
                                final int month = RinexUtils.parseInt(line, 9, 2);
@@ -684,7 +684,7 @@ public class RinexNavigationParser {
                                                                    RinexUtils.parseInt(line, 7, 2),
                                                                    RinexUtils.parseString(line, 10, 4));
                  },
-                 pi -> Collections.singleton(EOP_SV_EPOCH_CLOCK)),
+                 pi -> Collections.singleton(EOP_LINE_0)),
 
         /** Parser for ionosphere Klobuchar message model. */
         KLOBUCHAR_LINE_2(line -> true,
