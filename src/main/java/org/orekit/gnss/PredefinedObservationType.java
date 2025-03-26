@@ -128,8 +128,8 @@ public enum PredefinedObservationType implements ObservationType {
     /** Pseudorange GPS L1 C/A / GLONASS G1 C/A / Galileo E1 C / SBAS L1 C/A / QZSS L1 C/A for Rinex3. */
     C1C(MeasurementType.PSEUDO_RANGE, SignalCode.C, PredefinedGnssSignal.G01, PredefinedGnssSignal.R01, PredefinedGnssSignal.E01, PredefinedGnssSignal.S01, PredefinedGnssSignal.J01),
 
-    /** Pseudorange Beidou B1 Data for Rinex3. */
-    C1D(MeasurementType.PSEUDO_RANGE, SignalCode.D, PredefinedGnssSignal.B1A),
+    /** Pseudorange Beidou B1 Data / NavIC L1 Data. */
+    C1D(MeasurementType.PSEUDO_RANGE, SignalCode.D, PredefinedGnssSignal.B1A, PredefinedGnssSignal.I01),
 
     /** Pseudorange QZSS L1 C/B for Rinex4. */
     C1E(MeasurementType.PSEUDO_RANGE, SignalCode.C, PredefinedGnssSignal.J01),
@@ -143,11 +143,16 @@ public enum PredefinedObservationType implements ObservationType {
     /** Pseudorange GPS L1 M for Rinex3. */
     C1M(MeasurementType.PSEUDO_RANGE, SignalCode.M, PredefinedGnssSignal.G01),
 
-    /** Pseudorange GPS L1 P(AS off) / GLONASS G1 P / Beidou C1 Pilot for Rinex3. */
-    C1P(MeasurementType.PSEUDO_RANGE, SignalCode.P, PredefinedGnssSignal.G01, PredefinedGnssSignal.R01, PredefinedGnssSignal.B1A),
+    /** Pseudorange GPS L1 P(AS off) / GLONASS G1 P / Beidou C1 Pilot / NavIC L1 Pilot. */
+    C1P(MeasurementType.PSEUDO_RANGE, SignalCode.P, PredefinedGnssSignal.G01, PredefinedGnssSignal.R01, PredefinedGnssSignal.B1A, PredefinedGnssSignal.I01),
 
     /** Pseudorange Beidou B1 Q for Rinex3.02. */
     C1Q(MeasurementType.PSEUDO_RANGE, SignalCode.Q, PredefinedGnssSignal.B01),
+
+    /** Pseudorange GPS L1 M (RMP antenna) for Rinex4.01.
+     * @since 13.0
+     */
+    C1R(MeasurementType.PSEUDO_RANGE, SignalCode.M, PredefinedGnssSignal.G01),
 
     /** Pseudorange GPS L1 L1C(D) / QZSS L1 L1C(D) for Rinex3, Beidou B1A for Rinex3.03. */
     C1S(MeasurementType.PSEUDO_RANGE, SignalCode.S, PredefinedGnssSignal.G01, PredefinedGnssSignal.J01, PredefinedGnssSignal.B1A),
@@ -155,8 +160,8 @@ public enum PredefinedObservationType implements ObservationType {
     /** Pseudorange GPS L1 Z-tracking and similar (AS on) for Rinex3. */
     C1W(MeasurementType.PSEUDO_RANGE, SignalCode.W, PredefinedGnssSignal.G01),
 
-    /** Pseudorange GPS L1 L1C (D+P) / Galileo E1 B+C / QZSS L1 L1C(D+P) / Beidou B1 Data+Pilot for Rinex3. */
-    C1X(MeasurementType.PSEUDO_RANGE, SignalCode.X, PredefinedGnssSignal.G01, PredefinedGnssSignal.E01, PredefinedGnssSignal.J01, PredefinedGnssSignal.B1A),
+    /** Pseudorange GPS L1 L1C (D+P) / Galileo E1 B+C / QZSS L1 L1C(D+P) / Beidou B1 Data+Pilot / NavIC L1 Data+Pilot. */
+    C1X(MeasurementType.PSEUDO_RANGE, SignalCode.X, PredefinedGnssSignal.G01, PredefinedGnssSignal.E01, PredefinedGnssSignal.J01, PredefinedGnssSignal.B1A, PredefinedGnssSignal.I01),
 
     /** Pseudorange GPS L1 Y for Rinex3. */
     C1Y(MeasurementType.PSEUDO_RANGE, SignalCode.Y, PredefinedGnssSignal.G01),
@@ -184,6 +189,11 @@ public enum PredefinedObservationType implements ObservationType {
 
     /** Pseudorange Beidou B1 Q for Rinex3.03. */
     C2Q(MeasurementType.PSEUDO_RANGE, SignalCode.Q, PredefinedGnssSignal.B01),
+
+    /** Pseudorange GPS L2 M (RMP antenna) for Rinex4.01.
+     * @since 13.0
+     */
+    C2R(MeasurementType.PSEUDO_RANGE, SignalCode.M, PredefinedGnssSignal.G02),
 
     /** Pseudorange GPS L2 L2C(M) / QZSS L2 L2C(M) for Rinex3. */
     C2S(MeasurementType.PSEUDO_RANGE, SignalCode.S, PredefinedGnssSignal.G02, PredefinedGnssSignal.J02),
@@ -347,8 +357,8 @@ public enum PredefinedObservationType implements ObservationType {
     /** Doppler GPS L1 C/A / GLONASS G1 C/A / Galileo E1 C / SBAS L1 C/A / QZSS L1 C/A for Rinex3. */
     D1C(MeasurementType.DOPPLER, SignalCode.C, PredefinedGnssSignal.G01, PredefinedGnssSignal.R01, PredefinedGnssSignal.E01, PredefinedGnssSignal.S01, PredefinedGnssSignal.J01),
 
-    /** Doppler Beidou B1 Data for Rinex3. */
-    D1D(MeasurementType.DOPPLER, SignalCode.D, PredefinedGnssSignal.B1A),
+    /** Doppler Beidou B1 Data / NavIC L1 Data. */
+    D1D(MeasurementType.DOPPLER, SignalCode.D, PredefinedGnssSignal.B1A, PredefinedGnssSignal.I01),
 
     /** Doppler QZSS L1 C/B for Rinex4. */
     D1E(MeasurementType.DOPPLER, SignalCode.C, PredefinedGnssSignal.J01),
@@ -365,8 +375,13 @@ public enum PredefinedObservationType implements ObservationType {
     /** Doppler GPS L1 codeless / Beidou B1 codeless for Rinex3. */
     D1N(MeasurementType.DOPPLER, SignalCode.CODELESS, PredefinedGnssSignal.G01, PredefinedGnssSignal.B1A),
 
-    /** Doppler GPS L2 P(AS off) / GLONASS G2 P / Beidou B1 Pilot for Rinex3. */
-    D1P(MeasurementType.DOPPLER, SignalCode.P, PredefinedGnssSignal.G02, PredefinedGnssSignal.R02, PredefinedGnssSignal.B1A),
+    /** Doppler GPS L2 P(AS off) / GLONASS G2 P / Beidou B1 Pilot / NavIC L1 Pilot. */
+    D1P(MeasurementType.DOPPLER, SignalCode.P, PredefinedGnssSignal.G02, PredefinedGnssSignal.R02, PredefinedGnssSignal.B1A, PredefinedGnssSignal.I01),
+
+    /** Doppler GPS L2 M (RMP antenna) for Rinex4.01.
+     * @since 13.0
+     */
+    D1R(MeasurementType.DOPPLER, SignalCode.M, PredefinedGnssSignal.G02),
 
     /** Doppler GPS L1 L1C(D) / QZSS L1 L1C(D) for Rinex3, Beidou B1A for Rinex3.03. */
     D1S(MeasurementType.DOPPLER, SignalCode.S, PredefinedGnssSignal.G01, PredefinedGnssSignal.J01, PredefinedGnssSignal.B1A),
@@ -374,8 +389,8 @@ public enum PredefinedObservationType implements ObservationType {
     /** Doppler GPS L1 Z-tracking and similar (AS on) for Rinex3. */
     D1W(MeasurementType.DOPPLER, SignalCode.W, PredefinedGnssSignal.G01),
 
-    /** Doppler GPS L1 L1C (D+P) / Galileo E1 B+C / QZSS L1 L1C(D+P) / Beidou B1 Data+Pilot for Rinex3. */
-    D1X(MeasurementType.DOPPLER, SignalCode.X, PredefinedGnssSignal.G01, PredefinedGnssSignal.E01, PredefinedGnssSignal.J01, PredefinedGnssSignal.B1A),
+    /** Doppler GPS L1 L1C (D+P) / Galileo E1 B+C / QZSS L1 L1C(D+P) / Beidou B1 Data+Pilot / NavIC L1 Data+Pilot. */
+    D1X(MeasurementType.DOPPLER, SignalCode.X, PredefinedGnssSignal.G01, PredefinedGnssSignal.E01, PredefinedGnssSignal.J01, PredefinedGnssSignal.B1A, PredefinedGnssSignal.I01),
 
     /** Doppler GPS L1 Y for Rinex3. */
     D1Y(MeasurementType.DOPPLER, SignalCode.Y, PredefinedGnssSignal.G01),
@@ -406,6 +421,11 @@ public enum PredefinedObservationType implements ObservationType {
 
     /** Doppler Beidou B1 Q for Rinex3.03. */
     D2Q(MeasurementType.DOPPLER, SignalCode.Q, PredefinedGnssSignal.B01),
+
+    /** Doppler GPS L2 M (RMP antenna) for Rinex4.01.
+     * @since 13.0
+     */
+    D2R(MeasurementType.DOPPLER, SignalCode.M, PredefinedGnssSignal.G02),
 
     /** Doppler GPS L2 L2C(M) / QZSS L2 L2C(M) for Rinex3. */
     D2S(MeasurementType.DOPPLER, SignalCode.S, PredefinedGnssSignal.G02, PredefinedGnssSignal.J02),
@@ -569,8 +589,8 @@ public enum PredefinedObservationType implements ObservationType {
     /** Carrier-phase GPS L1 C/A / GLONASS G1 C/A / Galileo E1 C / SBAS L1 C/A / QZSS L1 C/A for Rinex3. */
     L1C(MeasurementType.CARRIER_PHASE, SignalCode.C, PredefinedGnssSignal.G01, PredefinedGnssSignal.R01, PredefinedGnssSignal.E01, PredefinedGnssSignal.S01, PredefinedGnssSignal.J01),
 
-    /** Carrier-phase Beidou B1 Data for Rinex3. */
-    L1D(MeasurementType.CARRIER_PHASE, SignalCode.D, PredefinedGnssSignal.B1A),
+    /** Carrier-phase Beidou B1 Data / NavIC L1 Data. */
+    L1D(MeasurementType.CARRIER_PHASE, SignalCode.D, PredefinedGnssSignal.B1A, PredefinedGnssSignal.I01),
 
     /** Carrier-phase QZSS L1 C/B for Rinex4. */
     L1E(MeasurementType.CARRIER_PHASE, SignalCode.C, PredefinedGnssSignal.J01),
@@ -587,8 +607,13 @@ public enum PredefinedObservationType implements ObservationType {
     /** Carrier-phase GPS L1 codeless for Rinex3. */
     L1N(MeasurementType.CARRIER_PHASE, SignalCode.CODELESS, PredefinedGnssSignal.G01),
 
-    /** Carrier-phase GPS L2 P(AS off) / GLONASS G2 P / Beidou B1 Pilot for Rinex3. */
-    L1P(MeasurementType.CARRIER_PHASE, SignalCode.P, PredefinedGnssSignal.G02, PredefinedGnssSignal.R02, PredefinedGnssSignal.B1A),
+    /** Carrier-phase GPS L2 P(AS off) / GLONASS G2 P / Beidou B1 Pilot / NavIC L1 Pilot. */
+    L1P(MeasurementType.CARRIER_PHASE, SignalCode.P, PredefinedGnssSignal.G02, PredefinedGnssSignal.R02, PredefinedGnssSignal.B1A, PredefinedGnssSignal.I01),
+
+    /** Carrier-phase GPS L2 M (RMP antenna) for Rinex4.01.
+     * @since 13.0
+     */
+    L1R(MeasurementType.CARRIER_PHASE, SignalCode.M, PredefinedGnssSignal.G02),
 
     /** Carrier-phase GPS L1 L1C(D) / QZSS L1 L1C(D) for Rinex3, Beidou B1A for Rinex3.03. */
     L1S(MeasurementType.CARRIER_PHASE, SignalCode.S, PredefinedGnssSignal.G01, PredefinedGnssSignal.J01, PredefinedGnssSignal.B1A),
@@ -596,8 +621,8 @@ public enum PredefinedObservationType implements ObservationType {
     /** Carrier-phase GPS L1 Z-tracking and similar (AS on) for Rinex3. */
     L1W(MeasurementType.CARRIER_PHASE, SignalCode.W, PredefinedGnssSignal.G01),
 
-    /** Carrier-phase GPS L1 L1C (D+P) / Galileo E1 B+C / QZSS L1 L1C(D+P) / Beidou B1 Data+Pilot for Rinex3. */
-    L1X(MeasurementType.CARRIER_PHASE, SignalCode.X, PredefinedGnssSignal.G01, PredefinedGnssSignal.E01, PredefinedGnssSignal.J01, PredefinedGnssSignal.B1A),
+    /** Carrier-phase GPS L1 L1C (D+P) / Galileo E1 B+C / QZSS L1 L1C(D+P) / Beidou B1 Data+Pilot / NavIC L1 Data+Pilot. */
+    L1X(MeasurementType.CARRIER_PHASE, SignalCode.X, PredefinedGnssSignal.G01, PredefinedGnssSignal.E01, PredefinedGnssSignal.J01, PredefinedGnssSignal.B1A, PredefinedGnssSignal.I01),
 
     /** Carrier-phase GPS L1 Y for Rinex3. */
     L1Y(MeasurementType.CARRIER_PHASE, SignalCode.Y, PredefinedGnssSignal.G01),
@@ -628,6 +653,11 @@ public enum PredefinedObservationType implements ObservationType {
 
     /** Carrier-phase Beidou B1 Q for Rinex3.03. */
     L2Q(MeasurementType.CARRIER_PHASE, SignalCode.Q, PredefinedGnssSignal.B01),
+
+    /** Carrier-phase GPS L2 M (RMP antenna) for Rinex4.01.
+     * @since 13.0
+     */
+    L2R(MeasurementType.CARRIER_PHASE, SignalCode.M, PredefinedGnssSignal.G02),
 
     /** Carrier-phase GPS L2 L2C(M) / QZSS L2 L2C(M) for Rinex3. */
     L2S(MeasurementType.CARRIER_PHASE, SignalCode.S, PredefinedGnssSignal.G02, PredefinedGnssSignal.J02),
@@ -779,8 +809,8 @@ public enum PredefinedObservationType implements ObservationType {
     /** Signal-strength GPS L1 C/A / GLONASS G1 C/A / Galileo E1 C / SBAS L1 C/A / QZSS L1 C/A for Rinex3. */
     S1C(MeasurementType.SIGNAL_STRENGTH, SignalCode.C, PredefinedGnssSignal.G01, PredefinedGnssSignal.R01, PredefinedGnssSignal.E01, PredefinedGnssSignal.S01, PredefinedGnssSignal.J01),
 
-    /** Signal-strength Beidou B1 Data for Rinex3. */
-    S1D(MeasurementType.SIGNAL_STRENGTH, SignalCode.D, PredefinedGnssSignal.B1A),
+    /** Signal-strength Beidou B1 Data / NavIC L1 Data. */
+    S1D(MeasurementType.SIGNAL_STRENGTH, SignalCode.D, PredefinedGnssSignal.B1A, PredefinedGnssSignal.I01),
 
     /** Signal-strength QZSS L1 C/B for Rinex3. */
     S1E(MeasurementType.SIGNAL_STRENGTH, SignalCode.C, PredefinedGnssSignal.J01),
@@ -797,8 +827,13 @@ public enum PredefinedObservationType implements ObservationType {
     /** Signal-strength GPS L1 codeless / Beidou B1 codeless for Rinex3. */
     S1N(MeasurementType.SIGNAL_STRENGTH, SignalCode.CODELESS, PredefinedGnssSignal.G01, PredefinedGnssSignal.B1A),
 
-    /** Signal-strength GPS L2 P(AS off) / GLONASS G2 P / Beidou B1 Pilot for Rinex3. */
-    S1P(MeasurementType.SIGNAL_STRENGTH, SignalCode.P, PredefinedGnssSignal.G02, PredefinedGnssSignal.R02, PredefinedGnssSignal.B1A),
+    /** Signal-strength GPS L2 P(AS off) / GLONASS G2 P / Beidou B1 Pilot / NavIC L1 Pilot. */
+    S1P(MeasurementType.SIGNAL_STRENGTH, SignalCode.P, PredefinedGnssSignal.G02, PredefinedGnssSignal.R02, PredefinedGnssSignal.B1A, PredefinedGnssSignal.I01),
+
+    /** Signal-strength GPS L2 M (RMP antenna) for Rinex4.01.
+     * @since 13.0
+     */
+    S1R(MeasurementType.SIGNAL_STRENGTH, SignalCode.M, PredefinedGnssSignal.G02),
 
     /** Signal-strength GPS L1 L1C(D) / QZSS L1 L1C(D) for Rinex3, Beidou B1A for Rinex3.03. */
     S1S(MeasurementType.SIGNAL_STRENGTH, SignalCode.S, PredefinedGnssSignal.G01, PredefinedGnssSignal.J01, PredefinedGnssSignal.B1A),
@@ -806,8 +841,8 @@ public enum PredefinedObservationType implements ObservationType {
     /** Signal-strength GPS L1 Z-tracking and similar (AS on) for Rinex3. */
     S1W(MeasurementType.SIGNAL_STRENGTH, SignalCode.W, PredefinedGnssSignal.G01),
 
-    /** Signal-strength GPS L1 L1C (D+P) / Galileo E1 B+C / QZSS L1 L1C(D+P) / Beidou B1 Data+Pilot for Rinex3. */
-    S1X(MeasurementType.SIGNAL_STRENGTH, SignalCode.X, PredefinedGnssSignal.G01, PredefinedGnssSignal.E01, PredefinedGnssSignal.J01, PredefinedGnssSignal.B1A),
+    /** Signal-strength GPS L1 L1C (D+P) / Galileo E1 B+C / QZSS L1 L1C(D+P) / Beidou B1 Data+Pilot / NavIC L1 Data+Pilot. */
+    S1X(MeasurementType.SIGNAL_STRENGTH, SignalCode.X, PredefinedGnssSignal.G01, PredefinedGnssSignal.E01, PredefinedGnssSignal.J01, PredefinedGnssSignal.B1A, PredefinedGnssSignal.I01),
 
     /** Signal-strength GPS L1 Y for Rinex3. */
     S1Y(MeasurementType.SIGNAL_STRENGTH, SignalCode.Y, PredefinedGnssSignal.G01),
@@ -838,6 +873,11 @@ public enum PredefinedObservationType implements ObservationType {
 
     /** Signal-strength Beidou B1 Q for Rinex3.03. */
     S2Q(MeasurementType.SIGNAL_STRENGTH, SignalCode.Q, PredefinedGnssSignal.B01),
+
+    /** Signal-strength GPS L2 M (RMP antenna) for Rinex4.01.
+     * @since 13.0
+     */
+    S2R(MeasurementType.SIGNAL_STRENGTH, SignalCode.M, PredefinedGnssSignal.G02),
 
     /** Signal-strength GPS L2 L2C(M) / QZSS L2 L2C(M) for Rinex3. */
     S2S(MeasurementType.SIGNAL_STRENGTH, SignalCode.S, PredefinedGnssSignal.G02, PredefinedGnssSignal.J02),
