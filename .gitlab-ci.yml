@@ -29,9 +29,15 @@ variables:
   SONAR_PROJECT_NAME: "${CI_PROJECT_TITLE} (${CI_PROJECT_NAMESPACE}:${CI_PROJECT_NAME})"
   # Deployment target properties
   TARGET_URL_PREFIX: "cochise@ganymede.orekit.org:/var/www/mvn-sites/site-orekit"
+  # Default number of CPUs required for a job
+  KUBERNETES_CPU_REQUEST: "2"
 
 verify:
   stage: verify
+  variables:
+    # This is a heavy job, requiring all the CPUs available. VMs have 8 cores,
+    # but we need to save some for the K8S core services.
+    KUBERNETES_CPU_REQUEST: "7"
   script:
     - mvn $MAVEN_CLI_OPTS checkstyle:check verify site
     - test -z "$SONAR_TOKEN" || mvn $MAVEN_CLI_OPTS sonar:sonar
