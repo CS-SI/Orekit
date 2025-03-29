@@ -260,7 +260,7 @@ public enum OrbitElementsType {
             return new KeplerianOrbit(elements[0], elements[1], elements[2],
                                       elements[4], elements[3], // BEWARE! the inversion here is intentional
                                       elements[5], PositionAngleType.TRUE,
-                                      FramesFactory.getGCRF(), date, mu).
+                                      Frame.getRoot(), date, mu).
                    getPVCoordinates();
         }
 
