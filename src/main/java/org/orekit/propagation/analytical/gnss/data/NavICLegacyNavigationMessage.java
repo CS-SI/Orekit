@@ -27,16 +27,7 @@ import org.orekit.time.TimeScales;
  * @since 11.0
  */
 public class NavICLegacyNavigationMessage
-    extends AbstractNavigationMessage<NavICLegacyNavigationMessage>  {
-
-    /** Issue of Data, Ephemeris and Clock. */
-    private int iodec;
-
-    /** User range accuracy (m). */
-    private double ura;
-
-    /** Satellite health status. */
-    private double svHealth;
+    extends LegacyNavigationMessage<NavICLegacyNavigationMessage>  {
 
     /** Constructor.
      * @param timeScales known time scales
@@ -55,9 +46,6 @@ public class NavICLegacyNavigationMessage
      */
     public <T extends CalculusFieldElement<T>> NavICLegacyNavigationMessage(final FieldNavicLegacyNavigationMessage<T> original) {
         super(original);
-        setIODEC(original.getIODEC());
-        setURA(original.getURA().getReal());
-        setSvHealth(original.getSvHealth().getReal());
     }
 
     /** {@inheritDoc} */
@@ -66,55 +54,6 @@ public class NavICLegacyNavigationMessage
     public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, NavICLegacyNavigationMessage>>
         F toField(final Field<T> field) {
         return (F) new FieldNavicLegacyNavigationMessage<>(field, this);
-    }
-
-    /**
-     * Getter for the Issue Of Data Ephemeris and Clock (IODEC).
-     * @return the Issue Of Data Ephemeris and Clock (IODEC)
-     */
-    public int getIODEC() {
-        return iodec;
-    }
-
-    /**
-     * Setter for the Issue of Data, Ephemeris and Clock.
-     * @param value the IODEC to set
-     */
-    public void setIODEC(final double value) {
-        // The value is given as a floating number in the navigation message
-        this.iodec = (int) value;
-    }
-
-    /**
-     * Getter for the user range accuray (meters).
-     * @return the user range accuracy
-     */
-    public double getURA() {
-        return ura;
-    }
-
-    /**
-     * Setter for the user range accuracy.
-     * @param accuracy the value to set
-     */
-    public void setURA(final double accuracy) {
-        this.ura = accuracy;
-    }
-
-    /**
-     * Getter for the satellite health status.
-     * @return the satellite health status
-     */
-    public double getSvHealth() {
-        return svHealth;
-    }
-
-    /**
-     * Setter for the satellite health status.
-     * @param svHealth the value to set
-     */
-    public void setSvHealth(final double svHealth) {
-        this.svHealth = svHealth;
     }
 
 }

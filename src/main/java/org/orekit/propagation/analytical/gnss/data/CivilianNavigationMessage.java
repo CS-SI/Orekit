@@ -34,6 +34,11 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
     /** Identifier for message type. */
     public static final String CNV2 = "CNV2";
 
+    /** Identifier for message type.
+     * @since 13.0
+     */
+    public static final String L1NV = "L1NV";
+
     /** Indicator for CNV 2 messages. */
     private final boolean cnv2;
 
