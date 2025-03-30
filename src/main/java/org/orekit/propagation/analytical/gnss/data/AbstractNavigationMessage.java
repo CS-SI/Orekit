@@ -32,7 +32,7 @@ import org.orekit.time.TimeScales;
  * @see GalileoNavigationMessage
  * @see BeidouLegacyNavigationMessage
  * @see QZSSLegacyNavigationMessage
- * @see IRNSSNavigationMessage
+ * @see NavICLegacyNavigationMessage
  */
 public abstract class AbstractNavigationMessage<O extends AbstractNavigationMessage<O>> extends AbstractAlmanac<O> {
 

@@ -17,7 +17,6 @@
 package org.orekit.time;
 
 import java.io.Serializable;
-import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -69,8 +68,8 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
     /** Reference epoch for QZSS weeks: 1980-01-06. */
     public static final DateComponents QZSS_EPOCH;
 
-    /** Reference epoch for IRNSS weeks: 1999-08-22. */
-    public static final DateComponents IRNSS_EPOCH;
+    /** Reference epoch for NavIC weeks: 1999-08-22. */
+    public static final DateComponents NAVIC_EPOCH;
 
     /** Reference epoch for BeiDou weeks: 2006-01-01. */
     public static final DateComponents BEIDOU_EPOCH;
@@ -123,9 +122,6 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
     /** Factory for non-leap years. */
     private static final MonthDayFactory COMMON_YEAR_FACTORY  = new CommonYearFactory();
 
-    /** Formatting symbols used in {@link #toString()}. */
-    private static final DecimalFormatSymbols US_SYMBOLS = new DecimalFormatSymbols(Locale.US);
-
     /** Offset between J2000 epoch and modified julian day epoch. */
     private static final int MJD_TO_J2000 = 51544;
 
@@ -149,7 +145,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
         GALILEO_EPOCH         = new DateComponents(1999, 8, 22);
         GPS_EPOCH             = new DateComponents(1980, 1, 6);
         QZSS_EPOCH            = new DateComponents(1980, 1, 6);
-        IRNSS_EPOCH           = new DateComponents(1999, 8, 22);
+        NAVIC_EPOCH           = new DateComponents(1999, 8, 22);
         BEIDOU_EPOCH          = new DateComponents(2006, 1, 1);
         GLONASS_EPOCH         = new DateComponents(1996, 1, 1);
         J2000_EPOCH           = new DateComponents(2000, 1, 1);
@@ -529,7 +525,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
 
         /** {@inheritDoc} */
         public int getYear(final int j2000Day) {
-            return  (int) -((-4l * j2000Day - 2920488l) / 1461l);
+            return  (int) -((-4L * j2000Day - 2920488L) / 1461L);
         }
 
         /** {@inheritDoc} */
@@ -549,7 +545,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
 
         /** {@inheritDoc} */
         public int getYear(final int j2000Day) {
-            return  (int) ((4l * j2000Day + 2921948l) / 1461l);
+            return  (int) ((4L * j2000Day + 2921948L) / 1461L);
         }
 
         /** {@inheritDoc} */
@@ -571,7 +567,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
         public int getYear(final int j2000Day) {
 
             // year estimate
-            int year = (int) ((400l * j2000Day + 292194288l) / 146097l);
+            int year = (int) ((400L * j2000Day + 292194288L) / 146097L);
 
             // the previous estimate is one unit too high in some rare cases
             // (240 days in the 400 years gregorian cycle, about 0.16%)

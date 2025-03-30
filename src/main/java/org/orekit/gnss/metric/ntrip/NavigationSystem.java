@@ -46,7 +46,7 @@ public enum NavigationSystem {
     /** SBAS. */
     SBAS("SBAS"),
 
-    /** IRNSS. */
+    /** NavIC. */
     IRS("IRS", "IRNSS"),
 
     /** No navigation system for this stream. */

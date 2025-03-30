@@ -627,8 +627,8 @@ public enum IgsSsrMessageType implements MessageType {
             // SBAS messages
             return SatelliteSystem.SBAS;
         } else {
-            // IRNSS messages
-            return SatelliteSystem.IRNSS;
+            // NavIC messages
+            return SatelliteSystem.NAVIC;
         }
 
     }

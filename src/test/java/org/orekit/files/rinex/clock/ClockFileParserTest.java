@@ -973,8 +973,8 @@ public class ClockFileParserTest {
                 TimeSystem.UTC.getTimeScale(DataContext.getDefault().getTimeScales()));
         Assertions.assertEquals(TimeScalesFactory.getBDT(),
                 TimeSystem.BEIDOU.getTimeScale(DataContext.getDefault().getTimeScales()));
-        Assertions.assertEquals(TimeScalesFactory.getIRNSS(),
-                TimeSystem.IRNSS.getTimeScale(DataContext.getDefault().getTimeScales()));
+        Assertions.assertEquals(TimeScalesFactory.getNavIC(),
+                TimeSystem.NAVIC.getTimeScale(DataContext.getDefault().getTimeScales()));
         Assertions.assertEquals(TimeScalesFactory.getUTC(),
                                 TimeSystem.GMT.getTimeScale(DataContext.getDefault().getTimeScales()));
         Assertions.assertEquals(TimeScalesFactory.getGPS(),

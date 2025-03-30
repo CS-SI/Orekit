@@ -173,14 +173,14 @@ public class AbsoluteDate
     @DefaultDataContext
     public static final AbsoluteDate QZSS_EPOCH = DataContext.getDefault().getTimeScales().getQzssEpoch();
 
-    /** Reference epoch for IRNSS weeks: 1999-08-22T00:00:00 IRNSS time.
+    /** Reference epoch for NavIC weeks: 1999-08-22T00:00:00 NavIC time.
      *
      * <p>This constant uses the {@link DataContext#getDefault() default data context}.
      *
-     * @see TimeScales#getIrnssEpoch()
+     * @see TimeScales#getNavicEpoch()
      */
     @DefaultDataContext
-    public static final AbsoluteDate IRNSS_EPOCH = DataContext.getDefault().getTimeScales().getIrnssEpoch();
+    public static final AbsoluteDate NAVIC_EPOCH = DataContext.getDefault().getTimeScales().getNavicEpoch();
 
     /** Reference epoch for BeiDou weeks: 2006-01-01T00:00:00 UTC.
      *

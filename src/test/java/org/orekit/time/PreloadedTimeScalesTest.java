@@ -96,7 +96,7 @@ public class PreloadedTimeScalesTest {
         Assertions.assertEquals(-19, timeScales.getGPS().offsetFromTAI(date).toDouble(), 0);
         Assertions.assertEquals(-19, timeScales.getQZSS().offsetFromTAI(date).toDouble(), 0);
         Assertions.assertEquals(-19, timeScales.getGST().offsetFromTAI(date).toDouble(), 0);
-        Assertions.assertEquals(-19, timeScales.getIRNSS().offsetFromTAI(date).toDouble(), 0);
+        Assertions.assertEquals(-19, timeScales.getNavIC().offsetFromTAI(date).toDouble(), 0);
         Assertions.assertEquals(32.184, timeScales.getTT().offsetFromTAI(date).toDouble(), 0);
         Assertions.assertEquals(32.184, timeScales.getTDB().offsetFromTAI(j2000Epoch.shiftedBy(216525.908119)).toDouble(), 0);
         Assertions.assertEquals(32.184, timeScales.getTCB().offsetFromTAI(date2).toDouble(), 1e-4);

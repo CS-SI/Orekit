@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,46 +18,53 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.TimeScales;
+
+import java.util.function.Function;
 
 /**
- * Class for IRNSS almanac.
+ * Class for NavIC almanac.
  *
  * @see "Indian Regional Navigation Satellite System, Signal In Space ICD
  *       for standard positioning service, version 1.1 - Table 28"
  *
- * @author Bryan Cazabonne
- * @since 10.1
+ * @param <T> type of the field elements
+ * @author Luc Maisonobe
+ * @since 13.0
  *
  */
-public class IRNSSAlmanac extends AbstractAlmanac<IRNSSAlmanac> {
+public class FieldNavICAlmanac<T extends CalculusFieldElement<T>>
+    extends FieldAbstractAlmanac<T, NavICAlmanac> {
 
-    /**
-     * Constructor.
-     * @param timeScales known time scales
-     * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav, weeks
-     *                   are always according to GPS)
+    /** Constructor from non-field instance.
+     * @param field    field to which elements belong
+     * @param original regular non-field instance
      */
-    public IRNSSAlmanac(final TimeScales timeScales, final SatelliteSystem system) {
-        super(GNSSConstants.IRNSS_MU, GNSSConstants.IRNSS_AV, GNSSConstants.IRNSS_WEEK_NB, timeScales, system);
+    public FieldNavICAlmanac(final Field<T> field, final NavICAlmanac original) {
+        super(field, original);
     }
 
-    /** Constructor from field instance.
-     * @param <T> type of the field elements
-     * @param original regular field instance
+    /** Constructor from different field instance.
+     * @param <V> type of the old field elements
+     * @param original regular non-field instance
+     * @param converter for field elements
      */
-    public <T extends CalculusFieldElement<T>> IRNSSAlmanac(final FieldIRNSSAlmanac<T> original) {
-        super(original);
+    public <V extends CalculusFieldElement<V>> FieldNavICAlmanac(final Function<V, T> converter,
+                                                                 final FieldNavICAlmanac<V> original) {
+        super(converter, original);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public NavICAlmanac toNonField() {
+        return new NavICAlmanac(this);
     }
 
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, IRNSSAlmanac>>
-        F toField(final Field<T> field) {
-        return (F) new FieldIRNSSAlmanac<>(field, this);
+    public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, NavICAlmanac>>
+        G changeField(final Function<T, U> converter) {
+        return (G) new FieldNavICAlmanac<>(converter, this);
     }
 
     /**
@@ -67,8 +74,8 @@ public class IRNSSAlmanac extends AbstractAlmanac<IRNSSAlmanac> {
      * </p>
      * @param sqrtA the Square Root of Semi-Major Axis (m^1/2)
      */
-    public void setSqrtA(final double sqrtA) {
-        setSma(sqrtA * sqrtA);
+    public void setSqrtA(final T sqrtA) {
+        setSma(sqrtA.square());
     }
 
 }

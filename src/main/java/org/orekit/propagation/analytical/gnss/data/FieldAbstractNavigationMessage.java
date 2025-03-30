@@ -34,7 +34,7 @@ import java.util.function.Function;
  * @see FieldGalileoNavigationMessage
  * @see FieldBeidouLegacyNavigationMessage
  * @see FieldQZSSLegacyNavigationMessage
- * @see FieldIRNSSNavigationMessage
+ * @see FieldNavicLegacyNavigationMessage
  */
 public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElement<T>,
                                                      O extends AbstractNavigationMessage<O>>

@@ -129,11 +129,11 @@ public interface TimeScales {
     GMSTScale getGMST(IERSConventions conventions, boolean simpleEOP);
 
     /**
-     * Get the Indian Regional Navigation Satellite System time scale.
+     * Get the Navigation with Indian Constellation time scale.
      *
-     * @return Indian Regional Navigation Satellite System time scale
+     * @return Navigation with Indian Constellation time scale
      */
-    IRNSSScale getIRNSS();
+    NavicScale getNavIC();
 
     /**
      * Get the BeiDou Navigation Satellite System time scale.
@@ -198,11 +198,11 @@ public interface TimeScales {
     AbsoluteDate getQzssEpoch();
 
     /**
-     * Reference epoch for IRNSS weeks: 1999-08-22T00:00:00 IRNSS time.
+     * Reference epoch for NavIC weeks: 1999-08-22T00:00:00 NavIC time.
      *
-     * @return IRNSS Epoch
+     * @return NavIC Epoch
      */
-    AbsoluteDate getIrnssEpoch();
+    AbsoluteDate getNavicEpoch();
 
     /**
      * Reference epoch for BeiDou weeks: 2006-01-01T00:00:00 UTC.

@@ -31,7 +31,6 @@ import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ilrs.CPFParser;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
@@ -730,7 +729,7 @@ public class SP3ParserTest {
 
         // Verify
         Assertions.assertEquals(TimeSystem.UTC, file.getHeader().getTimeSystem());
-        Assertions.assertEquals(SP3FileType.IRNSS, file.getHeader().getType());
+        Assertions.assertEquals(SP3FileType.NAVIC, file.getHeader().getType());
 
     }
 

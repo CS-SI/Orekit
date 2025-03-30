@@ -125,16 +125,16 @@ public enum PredefinedGnssSignal implements GnssSignal {
     /** QZSS LEX (1278.75 MHz). */
     J06(SatelliteSystem.QZSS,    "LEX", 125),
 
-    /** IRNSS L1. (1575.42 MHz)
+    /** NavIC L1. (1575.42 MHz)
      * @since 13.0
      */
-    I01(SatelliteSystem.IRNSS,   "L1", 154),
+    I01(SatelliteSystem.NAVIC, "L1", 154),
 
-    /** IRNSS L5. (1176.45 MHz) */
-    I05(SatelliteSystem.IRNSS,   "L5", 115),
+    /** NavIC L5. (1176.45 MHz) */
+    I05(SatelliteSystem.NAVIC, "L5", 115),
 
-    /** IRNSS S (2492.028 MHz). */
-    I09(SatelliteSystem.IRNSS,   "S", 243.6),
+    /** NavIC S (2492.028 MHz). */
+    I09(SatelliteSystem.NAVIC, "S", 243.6),
 
     /** SBAS L1 (1575.42 MHz). */
     S01(SatelliteSystem.SBAS,    "L1", 154),

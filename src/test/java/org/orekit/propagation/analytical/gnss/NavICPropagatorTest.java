@@ -29,7 +29,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
-import org.orekit.propagation.analytical.gnss.data.IRNSSAlmanac;
+import org.orekit.propagation.analytical.gnss.data.NavICAlmanac;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeInterpolator;
@@ -43,9 +43,9 @@ import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 import java.util.ArrayList;
 import java.util.List;
 
-public class IRNSSPropagatorTest {
+public class NavICPropagatorTest {
 
-    private static IRNSSAlmanac almanac;
+    private static NavICAlmanac almanac;
     private static Frames frames;
 
     @BeforeAll
@@ -53,7 +53,7 @@ public class IRNSSPropagatorTest {
         Utils.setDataRoot("gnss");
 
         // Almanac for satellite 1 for April 1st 2014 (Source: Rinex 3.04 format - Table A19)
-        almanac = new IRNSSAlmanac(DataContext.getDefault().getTimeScales(), SatelliteSystem.IRNSS);
+        almanac = new NavICAlmanac(DataContext.getDefault().getTimeScales(), SatelliteSystem.NAVIC);
         almanac.setPRN(1);
         almanac.setWeek(1786);
         almanac.setTime(172800.0);
@@ -71,10 +71,10 @@ public class IRNSSPropagatorTest {
     }
 
     @Test
-    public void testIRNSSCycle() {
-        // Builds the IRNSS propagator from the almanac
+    public void testNavICCycle() {
+        // Builds the NavIC propagator from the almanac
         final GNSSPropagator propagator = almanac.getPropagator(frames);
-        // Propagate at the IRNSS date and one IRNSS cycle later
+        // Propagate at the NavIC date and one NavIC cycle later
         final AbsoluteDate date0 = almanac.getDate();
         final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();
         final double bdtCycleDuration = almanac.getCycleDuration();
@@ -87,7 +87,7 @@ public class IRNSSPropagatorTest {
 
     @Test
     public void testFrames() {
-        // Builds the IRNSS propagator from the almanac
+        // Builds the NavIC propagator from the almanac
         final GNSSPropagator propagator = almanac.getPropagator(frames);
         Assertions.assertEquals("EME2000", propagator.getFrame().getName());
         Assertions.assertEquals(3.986005e+14, almanac.getMu(), 1.0e6);
@@ -129,7 +129,7 @@ public class IRNSSPropagatorTest {
         double errorA = 0;
         final GNSSPropagator propagator = almanac.getPropagator(frames);
         GNSSOrbitalElements<?> elements = propagator.getOrbitalElements();
-        AbsoluteDate t0 = new GNSSDate(elements.getWeek(), elements.getTime(), SatelliteSystem.IRNSS).getDate();
+        AbsoluteDate t0 = new GNSSDate(elements.getWeek(), elements.getTime(), SatelliteSystem.NAVIC).getDate();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
             final AbsoluteDate central = t0.shiftedBy(dt);
             final PVCoordinates pv = propagator.getPVCoordinates(central, eme2000);
@@ -157,7 +157,7 @@ public class IRNSSPropagatorTest {
 
     @Test
     public void testIssue544() {
-        // Builds the IRNSSPropagator from the almanac
+        // Builds the NavICPropagator from the almanac
         final GNSSPropagator propagator = almanac.getPropagator(frames);
         // In order to test the issue, we voluntary set a Double.NaN value in the date.
         final AbsoluteDate date0 = new AbsoluteDate(2010, 5, 7, 7, 50, Double.NaN, TimeScalesFactory.getUTC());

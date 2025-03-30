@@ -22,13 +22,13 @@ import org.hipparchus.Field;
 import java.util.function.Function;
 
 /**
- * Container for data contained in an IRNSS navigation message.
+ * Container for data contained in an NavIC navigation message.
  * @param <T> type of the field elements
  * @author Luc Maisonobe
  * @since 13.0
  */
-public class FieldIRNSSNavigationMessage<T extends CalculusFieldElement<T>>
-    extends FieldAbstractNavigationMessage<T, IRNSSNavigationMessage>  {
+public class FieldNavicLegacyNavigationMessage<T extends CalculusFieldElement<T>>
+    extends FieldAbstractNavigationMessage<T, NavICLegacyNavigationMessage>  {
 
     /** Issue of Data, Ephemeris and Clock. */
     private int iodec;
@@ -43,7 +43,7 @@ public class FieldIRNSSNavigationMessage<T extends CalculusFieldElement<T>>
      * @param field    field to which elements belong
      * @param original regular non-field instance
      */
-    public FieldIRNSSNavigationMessage(final Field<T> field, final IRNSSNavigationMessage original) {
+    public FieldNavicLegacyNavigationMessage(final Field<T> field, final NavICLegacyNavigationMessage original) {
         super(field, original);
         setIODEC(field.getZero().newInstance(original.getIODEC()));
         setURA(field.getZero().newInstance(original.getURA()));
@@ -55,8 +55,8 @@ public class FieldIRNSSNavigationMessage<T extends CalculusFieldElement<T>>
      * @param original regular non-field instance
      * @param converter for field elements
      */
-    public <V extends CalculusFieldElement<V>> FieldIRNSSNavigationMessage(final Function<V, T> converter,
-                                                                           final FieldIRNSSNavigationMessage<V> original) {
+    public <V extends CalculusFieldElement<V>> FieldNavicLegacyNavigationMessage(final Function<V, T> converter,
+                                                                                 final FieldNavicLegacyNavigationMessage<V> original) {
         super(converter, original);
         setIODEC(getMu().newInstance(original.getIODEC()));
         setURA(converter.apply(original.getURA()));
@@ -65,16 +65,16 @@ public class FieldIRNSSNavigationMessage<T extends CalculusFieldElement<T>>
 
     /** {@inheritDoc} */
     @Override
-    public IRNSSNavigationMessage toNonField() {
-        return new IRNSSNavigationMessage(this);
+    public NavICLegacyNavigationMessage toNonField() {
+        return new NavICLegacyNavigationMessage(this);
     }
 
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, IRNSSNavigationMessage>>
+    public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, NavICLegacyNavigationMessage>>
         G changeField(final Function<T, U> converter) {
-        return (G) new FieldIRNSSNavigationMessage<>(converter, this);
+        return (G) new FieldNavicLegacyNavigationMessage<>(converter, this);
     }
 
     /**
