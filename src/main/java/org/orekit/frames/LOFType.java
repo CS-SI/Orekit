@@ -702,7 +702,7 @@ public enum LOFType implements LOF {
     },
 
     /**
-     * Constant for East-North-Up frame
+     * Constant for East-North-Up frame.
      * (Z aligned with position, North Pole in the (+Y, ±Z) half-plane)
      * @see #NED
      * @since 13.0
@@ -738,7 +738,7 @@ public enum LOFType implements LOF {
     },
 
     /**
-     * Constant for North-East-Down frame
+     * Constant for North-East-Down frame.
      * (Z aligned with opposite of position, North Pole in the (+X, ±Z) half-plane)
      * @see #ENU
      * @since 13.0
