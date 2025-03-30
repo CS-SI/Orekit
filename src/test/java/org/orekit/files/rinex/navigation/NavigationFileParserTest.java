@@ -2264,6 +2264,9 @@ public class NavigationFileParserTest {
         for (final List<NavICLegacyNavigationMessage> messages : file.getNavICLegacyNavigationMessages().values()) {
             messages.forEach(GnssTestUtils::checkFieldConversion);
         }
+        for (final List<NavICL1NVNavigationMessage> messages : file.getNavICL1NVNavigationMessages().values()) {
+            messages.forEach(GnssTestUtils::checkFieldConversion);
+        }
         for (final List<GPSLegacyNavigationMessage> messages : file.getGPSLegacyNavigationMessages().values()) {
             messages.forEach(GnssTestUtils::checkFieldConversion);
         }
