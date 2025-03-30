@@ -16,19 +16,20 @@
  */
 package org.orekit.time;
 
-/** IRNSS time scale (also called IRNWT for IRNSS NetWork Time).
- * <p>By convention, TIRNSS = TAI - 19 s.</p>
+/** NavIC time scale (also called IRNWT for IRNSS NetWork Time).
+ * <p>By convention, TNAVIC = TAI - 19 s.</p>
  * <p>This is intended to be accessed thanks to {@link TimeScales},
  * so there is no public constructor.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate
  */
-public class IRNSSScale extends ConstantOffsetTimeScale {
+public class NavicScale
+    extends ConstantOffsetTimeScale {
 
     /** Package private constructor for the factory.
      */
-    IRNSSScale() {
-        super("IRNSS", new TimeOffset(-19L, 0L));
+    NavicScale() {
+        super("NAVIC", new TimeOffset(-19L, 0L));
     }
 
 }

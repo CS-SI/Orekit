@@ -22,11 +22,12 @@ import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.TimeScales;
 
 /**
- * Container for data contained in an IRNSS navigation message.
+ * Container for data contained in an NavIC navigation message.
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class IRNSSNavigationMessage extends AbstractNavigationMessage<IRNSSNavigationMessage>  {
+public class NavICLegacyNavigationMessage
+    extends AbstractNavigationMessage<NavICLegacyNavigationMessage>  {
 
     /** Issue of Data, Ephemeris and Clock. */
     private int iodec;
@@ -43,8 +44,8 @@ public class IRNSSNavigationMessage extends AbstractNavigationMessage<IRNSSNavig
      *                   (may be different from real system, for example in Rinex nav, weeks
      *                   are always according to GPS)
      */
-    public IRNSSNavigationMessage(final TimeScales timeScales, final SatelliteSystem system) {
-        super(GNSSConstants.IRNSS_MU, GNSSConstants.IRNSS_AV, GNSSConstants.IRNSS_WEEK_NB,
+    public NavICLegacyNavigationMessage(final TimeScales timeScales, final SatelliteSystem system) {
+        super(GNSSConstants.NAVIC_MU, GNSSConstants.NAVIC_AV, GNSSConstants.NAVIC_WEEK_NB,
               timeScales, system);
     }
 
@@ -52,7 +53,7 @@ public class IRNSSNavigationMessage extends AbstractNavigationMessage<IRNSSNavig
      * @param <T> type of the field elements
      * @param original regular field instance
      */
-    public <T extends CalculusFieldElement<T>> IRNSSNavigationMessage(final FieldIRNSSNavigationMessage<T> original) {
+    public <T extends CalculusFieldElement<T>> NavICLegacyNavigationMessage(final FieldNavicLegacyNavigationMessage<T> original) {
         super(original);
         setIODEC(original.getIODEC());
         setURA(original.getURA().getReal());
@@ -62,9 +63,9 @@ public class IRNSSNavigationMessage extends AbstractNavigationMessage<IRNSSNavig
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, IRNSSNavigationMessage>>
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, NavICLegacyNavigationMessage>>
         F toField(final Field<T> field) {
-        return (F) new FieldIRNSSNavigationMessage<>(field, this);
+        return (F) new FieldNavicLegacyNavigationMessage<>(field, this);
     }
 
     /**

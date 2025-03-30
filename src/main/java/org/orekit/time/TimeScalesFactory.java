@@ -244,12 +244,12 @@ public class TimeScalesFactory implements Serializable {
         return getTimeScales().getGMST(conventions, simpleEOP);
     }
 
-    /** Get the Indian Regional Navigation Satellite System time scale.
-     * @return  Indian Regional Navigation Satellite System time scale
+    /** Get the Navigation with Indian Constellation time scale.
+     * @return Navigation with Indian Constellation time scale
      */
     @DefaultDataContext
-    public static IRNSSScale getIRNSS() {
-        return getTimeScales().getIRNSS();
+    public static NavicScale getNavIC() {
+        return getTimeScales().getNavIC();
     }
 
     /** Get the BeiDou Navigation Satellite System time scale.

@@ -22,21 +22,21 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.utils.Constants;
 
-public class IRNSSScaleTest {
+public class NavicScaleTest {
 
     @Test
     public void testArbitrary() {
-        AbsoluteDate tIRNSS =
-            new AbsoluteDate(new DateComponents(1999, 3, 4), TimeComponents.H00, TimeScalesFactory.getIRNSS());
+        AbsoluteDate tNavIC =
+            new AbsoluteDate(new DateComponents(1999, 3, 4), TimeComponents.H00, TimeScalesFactory.getNavIC());
         AbsoluteDate tUTC =
             new AbsoluteDate(new DateComponents(1999, 3, 3), new TimeComponents(23, 59, 47),
                              TimeScalesFactory.getUTC());
-        Assertions.assertEquals(tUTC, tIRNSS);
+        Assertions.assertEquals(tUTC, tNavIC);
     }
 
     @Test
     public void testConstant() {
-        TimeScale scale = TimeScalesFactory.getIRNSS();
+        TimeScale scale = TimeScalesFactory.getNavIC();
         double reference = scale.offsetFromTAI(AbsoluteDate.J2000_EPOCH).toDouble();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_DAY);
@@ -46,7 +46,7 @@ public class IRNSSScaleTest {
 
     @Test
     public void testSymmetry() {
-        TimeScale scale = TimeScalesFactory.getIRNSS();
+        TimeScale scale = TimeScalesFactory.getNavIC();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_DAY);
             double dt1 = scale.offsetFromTAI(date).toDouble();
@@ -59,7 +59,7 @@ public class IRNSSScaleTest {
     @Test
     public void testDuringLeap() {
         final TimeScale utc   = TimeScalesFactory.getUTC();
-        final TimeScale scale = TimeScalesFactory.getIRNSS();
+        final TimeScale scale = TimeScalesFactory.getNavIC();
         final AbsoluteDate before = new AbsoluteDate(new DateComponents(1983, 6, 30),
                                                      new TimeComponents(23, 59, 59),
                                                      utc);

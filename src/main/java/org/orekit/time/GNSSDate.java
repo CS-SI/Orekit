@@ -62,9 +62,6 @@ public class GNSSDate implements Serializable, TimeStamped {
     /** Number of seconds since week start. */
     private final TimeOffset secondsInWeek;
 
-    /** Satellite system to consider. */
-    private final SatelliteSystem system;
-
     /** Corresponding date. */
     private final transient AbsoluteDate date;
 
@@ -206,7 +203,6 @@ public class GNSSDate implements Serializable, TimeStamped {
 
         this.weekNumber    = w;
         this.secondsInWeek = secondsInWeek;
-        this.system        = system;
 
         date = new AbsoluteDate(dc, new TimeComponents(secondsInDay), getTimeScale(system, timeScales));
 
@@ -274,7 +270,6 @@ public class GNSSDate implements Serializable, TimeStamped {
 
         this.weekNumber    = w;
         this.secondsInWeek = secondsInWeek;
-        this.system        = system;
 
         date = new AbsoluteDate(dc, new TimeComponents(secondsInDay), getTimeScale(system, timeScales));
 
@@ -306,7 +301,6 @@ public class GNSSDate implements Serializable, TimeStamped {
                     final SatelliteSystem system,
                     final TimeScales timeScales) {
 
-        this.system = system;
         final AbsoluteDate epoch = getWeekReferenceAbsoluteDate(system, timeScales);
         this.weekNumber  = (int) FastMath.floor(date.durationFrom(epoch) / WEEK_S);
         final AbsoluteDate weekStart = new AbsoluteDate(epoch, WEEK_S * weekNumber);
@@ -351,7 +345,7 @@ public class GNSSDate implements Serializable, TimeStamped {
      * The week number returned here has been fixed for GNSS week rollover, i.e.
      * it may be larger than the corresponding week cycle of the constellation.
      * </p>
-     * @return week number since since the GNSS reference epoch
+     * @return week number since the GNSS reference epoch
      */
     public int getWeekNumber() {
         return weekNumber;
@@ -369,7 +363,7 @@ public class GNSSDate implements Serializable, TimeStamped {
      * @since 12.0
      */
     public double getSecondsInWeek() {
-        return secondsInWeek.toDouble();
+        return getSplitSecondsInWeek().toDouble();
     }
 
     /** Get the number of seconds since week start.
@@ -398,7 +392,7 @@ public class GNSSDate implements Serializable, TimeStamped {
             case GALILEO : return timeScales.getGST();
             case QZSS    : return timeScales.getQZSS();
             case BEIDOU  : return timeScales.getBDT();
-            case IRNSS   : return timeScales.getIRNSS();
+            case NAVIC   : return timeScales.getNavIC();
             case SBAS    : return timeScales.getGPS();
             default      : throw new OrekitException(OrekitMessages.INVALID_SATELLITE_SYSTEM, satellite);
         }
@@ -417,7 +411,7 @@ public class GNSSDate implements Serializable, TimeStamped {
             case GALILEO : return timeScales.getGalileoEpoch();
             case QZSS    : return timeScales.getQzssEpoch();
             case BEIDOU  : return timeScales.getBeidouEpoch();
-            case IRNSS   : return timeScales.getIrnssEpoch();
+            case NAVIC   : return timeScales.getNavicEpoch();
             case SBAS    : return timeScales.getGpsEpoch();
             default      : throw new OrekitException(OrekitMessages.INVALID_SATELLITE_SYSTEM, satellite);
         }
@@ -434,7 +428,7 @@ public class GNSSDate implements Serializable, TimeStamped {
             case GALILEO : return DateComponents.GALILEO_EPOCH;
             case QZSS    : return DateComponents.QZSS_EPOCH;
             case BEIDOU  : return DateComponents.BEIDOU_EPOCH;
-            case IRNSS   : return DateComponents.IRNSS_EPOCH;
+            case NAVIC   : return DateComponents.NAVIC_EPOCH;
             case SBAS    : return DateComponents.GPS_EPOCH;
             default      : throw new OrekitException(OrekitMessages.INVALID_SATELLITE_SYSTEM, satellite);
         }
@@ -455,8 +449,8 @@ public class GNSSDate implements Serializable, TimeStamped {
         /** BeiDou. */
         BEIDOU(SatelliteSystem.BEIDOU, 8192),
 
-        /** IRNSS. */
-        IRNSS(SatelliteSystem.IRNSS, 1024),
+        /** NavIC. */
+        NAVIC(SatelliteSystem.NAVIC, 1024),
 
         /** SBAS. */
         SBAS(SatelliteSystem.SBAS, 1024);

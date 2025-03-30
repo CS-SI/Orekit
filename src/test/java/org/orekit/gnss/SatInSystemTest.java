@@ -60,8 +60,8 @@ public class SatInSystemTest {
     }
 
     @Test
-    public void testIrnss() {
-        Assertions.assertEquals(SatelliteSystem.IRNSS, new SatInSystem("I14").getSystem());
+    public void testNavIC() {
+        Assertions.assertEquals(SatelliteSystem.NAVIC, new SatInSystem("I14").getSystem());
         Assertions.assertEquals(14, new SatInSystem("I14").getPRN());
     }
 

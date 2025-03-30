@@ -45,7 +45,7 @@ import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
-import org.orekit.propagation.analytical.gnss.data.IRNSSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.NavICLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.LegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
@@ -238,8 +238,8 @@ public class RinexNavigationParser {
         /** Container for QZSS navigation message. */
         private QZSSCivilianNavigationMessage qzssCNav;
 
-        /** Container for IRNSS navigation message. */
-        private IRNSSNavigationMessage irnssNav;
+        /** Container for NavIC navigation message. */
+        private NavICLegacyNavigationMessage navicNav;
 
         /** Container for GLONASS navigation message. */
         private GLONASSNavigationMessage glonassNav;
@@ -860,7 +860,7 @@ public class RinexNavigationParser {
         private static Iterable<LineParser> navigationNext(final ParseInfo parseInfo) {
             if (parseInfo.gpsLNav    != null || parseInfo.gpsCNav    != null || parseInfo.galileoNav != null ||
                 parseInfo.beidouLNav != null || parseInfo.beidouCNav != null || parseInfo.qzssLNav   != null ||
-                parseInfo.qzssCNav   != null || parseInfo.irnssNav   != null || parseInfo.sbasNav    != null) {
+                parseInfo.qzssCNav   != null || parseInfo.navicNav != null || parseInfo.sbasNav    != null) {
                 return Collections.singleton(BROADCAST_ORBIT);
             } else if (parseInfo.glonassNav != null) {
                 if (parseInfo.messageLineNumber < 3) {
@@ -1736,80 +1736,80 @@ public class RinexNavigationParser {
 
         },
 
-        /** IRNSS. */
-        IRNSS() {
+        /** NavIC. */
+        NAVIC() {
 
             /** {@inheritDoc} */
             @Override
             public void parseSvEpochSvClockLine(final String line, final ParseInfo pi) {
-                parseSvEpochSvClockLine(line, pi.timeScales.getIRNSS(), pi.irnssNav);
+                parseSvEpochSvClockLine(line, pi.timeScales.getNavIC(), pi.navicNav);
             }
 
             /** {@inheritDoc} */
             @Override
             public void parseFirstBroadcastOrbit(final String line, final ParseInfo pi) {
-                pi.irnssNav.setIODEC(parseBroadcastDouble1(line, pi.initialSpaces, Unit.SECOND));
-                pi.irnssNav.setCrs(parseBroadcastDouble2(line,     pi.initialSpaces, Unit.METRE));
-                pi.irnssNav.setDeltaN0(parseBroadcastDouble3(line,  pi.initialSpaces, RAD_PER_S));
-                pi.irnssNav.setM0(parseBroadcastDouble4(line,      pi.initialSpaces, Unit.RADIAN));
+                pi.navicNav.setIODEC(parseBroadcastDouble1(line, pi.initialSpaces, Unit.SECOND));
+                pi.navicNav.setCrs(parseBroadcastDouble2(line, pi.initialSpaces, Unit.METRE));
+                pi.navicNav.setDeltaN0(parseBroadcastDouble3(line, pi.initialSpaces, RAD_PER_S));
+                pi.navicNav.setM0(parseBroadcastDouble4(line, pi.initialSpaces, Unit.RADIAN));
             }
 
             /** {@inheritDoc} */
             @Override
             public void parseSecondBroadcastOrbit(final String line, final ParseInfo pi) {
-                pi.irnssNav.setCuc(parseBroadcastDouble1(line, pi.initialSpaces, Unit.RADIAN));
-                pi.irnssNav.setE(parseBroadcastDouble2(line,     pi.initialSpaces, Unit.NONE));
-                pi.irnssNav.setCus(parseBroadcastDouble3(line,   pi.initialSpaces, Unit.RADIAN));
-                pi.irnssNav.setSqrtA(parseBroadcastDouble4(line, pi.initialSpaces, SQRT_M));
+                pi.navicNav.setCuc(parseBroadcastDouble1(line, pi.initialSpaces, Unit.RADIAN));
+                pi.navicNav.setE(parseBroadcastDouble2(line, pi.initialSpaces, Unit.NONE));
+                pi.navicNav.setCus(parseBroadcastDouble3(line, pi.initialSpaces, Unit.RADIAN));
+                pi.navicNav.setSqrtA(parseBroadcastDouble4(line, pi.initialSpaces, SQRT_M));
             }
 
             /** {@inheritDoc} */
             @Override
             public void parseThirdBroadcastOrbit(final String line, final ParseInfo pi) {
-                pi.irnssNav.setTime(parseBroadcastDouble1(line, pi.initialSpaces, Unit.SECOND));
-                pi.irnssNav.setCic(parseBroadcastDouble2(line,    pi.initialSpaces, Unit.RADIAN));
-                pi.irnssNav.setOmega0(parseBroadcastDouble3(line, pi.initialSpaces, Unit.RADIAN));
-                pi.irnssNav.setCis(parseBroadcastDouble4(line,    pi.initialSpaces, Unit.RADIAN));
+                pi.navicNav.setTime(parseBroadcastDouble1(line, pi.initialSpaces, Unit.SECOND));
+                pi.navicNav.setCic(parseBroadcastDouble2(line, pi.initialSpaces, Unit.RADIAN));
+                pi.navicNav.setOmega0(parseBroadcastDouble3(line, pi.initialSpaces, Unit.RADIAN));
+                pi.navicNav.setCis(parseBroadcastDouble4(line, pi.initialSpaces, Unit.RADIAN));
             }
 
             /** {@inheritDoc} */
             @Override
             public void parseFourthBroadcastOrbit(final String line, final ParseInfo pi) {
-                pi.irnssNav.setI0(parseBroadcastDouble1(line, pi.initialSpaces, Unit.RADIAN));
-                pi.irnssNav.setCrc(parseBroadcastDouble2(line,      pi.initialSpaces, Unit.METRE));
-                pi.irnssNav.setPa(parseBroadcastDouble3(line,       pi.initialSpaces, Unit.RADIAN));
-                pi.irnssNav.setOmegaDot(parseBroadcastDouble4(line, pi.initialSpaces, RAD_PER_S));
+                pi.navicNav.setI0(parseBroadcastDouble1(line, pi.initialSpaces, Unit.RADIAN));
+                pi.navicNav.setCrc(parseBroadcastDouble2(line, pi.initialSpaces, Unit.METRE));
+                pi.navicNav.setPa(parseBroadcastDouble3(line, pi.initialSpaces, Unit.RADIAN));
+                pi.navicNav.setOmegaDot(parseBroadcastDouble4(line, pi.initialSpaces, RAD_PER_S));
             }
 
             /** {@inheritDoc} */
             @Override
             public void parseFifthBroadcastOrbit(final String line, final ParseInfo pi) {
                 // iDot
-                pi.irnssNav.setIDot(parseBroadcastDouble1(line, pi.initialSpaces, RAD_PER_S));
-                // IRNSS week (to go with Toe)
-                pi.irnssNav.setWeek(parseBroadcastInt3(line, pi.initialSpaces));
+                pi.navicNav.setIDot(parseBroadcastDouble1(line, pi.initialSpaces, RAD_PER_S));
+                // NavIC week (to go with Toe)
+                pi.navicNav.setWeek(parseBroadcastInt3(line, pi.initialSpaces));
             }
 
             /** {@inheritDoc} */
             @Override
             public void parseSixthBroadcastOrbit(final String line, final ParseInfo pi) {
-                pi.irnssNav.setURA(parseBroadcastDouble1(line,      pi.initialSpaces, Unit.METRE));
-                pi.irnssNav.setSvHealth(parseBroadcastDouble2(line, pi.initialSpaces, Unit.NONE));
-                pi.irnssNav.setTGD(parseBroadcastDouble3(line,      pi.initialSpaces, Unit.SECOND));
+                pi.navicNav.setURA(parseBroadcastDouble1(line, pi.initialSpaces, Unit.METRE));
+                pi.navicNav.setSvHealth(parseBroadcastDouble2(line, pi.initialSpaces, Unit.NONE));
+                pi.navicNav.setTGD(parseBroadcastDouble3(line, pi.initialSpaces, Unit.SECOND));
             }
 
             /** {@inheritDoc} */
             @Override
             public void parseSeventhBroadcastOrbit(final String line, final ParseInfo pi) {
-                pi.irnssNav.setTransmissionTime(parseBroadcastDouble1(line, pi.initialSpaces, Unit.SECOND));
+                pi.navicNav.setTransmissionTime(parseBroadcastDouble1(line, pi.initialSpaces, Unit.SECOND));
                 pi.closePendingMessage();
             }
 
             /** {@inheritDoc} */
             @Override
             public void closeMessage(final ParseInfo pi) {
-                pi.file.addIRNSSNavigationMessage(pi.irnssNav);
-                pi.irnssNav = null;
+                pi.file.addNavICNavigationMessage(pi.navicNav);
+                pi.navicNav = null;
             }
 
         };
@@ -1906,12 +1906,12 @@ public class RinexNavigationParser {
                         return BEIDOU_CNV_123;
                     }
                     break;
-                case IRNSS :
+                case NAVIC:
                     if (type == null || type.equals("LNAV")) {
                         // in Rinex, week number is aligned to GPS week!
-                        parseInfo.irnssNav = new IRNSSNavigationMessage(parseInfo.timeScales,
-                                                                        SatelliteSystem.GPS);
-                        return IRNSS;
+                        parseInfo.navicNav = new NavICLegacyNavigationMessage(parseInfo.timeScales,
+                                                                              SatelliteSystem.GPS);
+                        return NAVIC;
                     }
                     break;
                 case SBAS :

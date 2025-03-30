@@ -128,8 +128,8 @@ public abstract class AbstractTimeScales implements TimeScales {
     }
 
     @Override
-    public AbsoluteDate getIrnssEpoch() {
-        return new AbsoluteDate(DateComponents.IRNSS_EPOCH, TimeComponents.H00, this.getIRNSS());
+    public AbsoluteDate getNavicEpoch() {
+        return new AbsoluteDate(DateComponents.NAVIC_EPOCH, TimeComponents.H00, this.getNavIC());
     }
 
     @Override

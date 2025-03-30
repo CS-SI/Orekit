@@ -24,12 +24,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.SatelliteSystem;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
 public class GNSSDateTest {
 
     @Test
@@ -61,10 +55,10 @@ public class GNSSDateTest {
     }
 
     @Test
-    public void testFromWeekAndSecondsIRNSS() {
+    public void testFromWeekAndSecondsNavIC() {
         final DateComponents date = new DateComponents(2006, 8, 9);
         final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
-        doTestFromWeekAndSeconds(SatelliteSystem.IRNSS, date, time, 363, 318677.0);
+        doTestFromWeekAndSeconds(SatelliteSystem.NAVIC, date, time, 363, 318677.0);
     }
 
     @Test
@@ -114,10 +108,10 @@ public class GNSSDateTest {
     }
 
     @Test
-    public void testFromAbsoluteDateIRNSS() {
+    public void testFromAbsoluteDateNavIC() {
         final DateComponents date = new DateComponents(2006, 8, 9);
         final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
-        doTestFromAbsoluteDate(SatelliteSystem.IRNSS, date, time, 363, 318677000.0);
+        doTestFromAbsoluteDate(SatelliteSystem.NAVIC, date, time, 363, 318677000.0);
     }
 
     @Test
@@ -156,8 +150,8 @@ public class GNSSDateTest {
     }
 
     @Test
-    public void testZeroIRNSS() {
-        doTestZero(SatelliteSystem.IRNSS);
+    public void testZeroNavIC() {
+        doTestZero(SatelliteSystem.NAVIC);
     }
 
     @Test
@@ -181,8 +175,8 @@ public class GNSSDateTest {
             case BEIDOU:
                 epoch = AbsoluteDate.BEIDOU_EPOCH;
                 break;
-            case IRNSS:
-                epoch = AbsoluteDate.IRNSS_EPOCH;
+            case NAVIC:
+                epoch = AbsoluteDate.NAVIC_EPOCH;
                 break;
             default:
                 break;
@@ -233,12 +227,12 @@ public class GNSSDateTest {
     }
 
     @Test
-    public void testZeroZeroIRNSS() {
-        GNSSDate.setRolloverReference(new DateComponents(DateComponents.IRNSS_EPOCH, 7 * 512));
-        GNSSDate date1 = new GNSSDate(0, 0.0, SatelliteSystem.IRNSS);
-        Assertions.assertEquals(0.0, date1.getDate().durationFrom(AbsoluteDate.IRNSS_EPOCH), 1.0e-15);
+    public void testZeroZeroNavIC() {
+        GNSSDate.setRolloverReference(new DateComponents(DateComponents.NAVIC_EPOCH, 7 * 512));
+        GNSSDate date1 = new GNSSDate(0, 0.0, SatelliteSystem.NAVIC);
+        Assertions.assertEquals(0.0, date1.getDate().durationFrom(AbsoluteDate.NAVIC_EPOCH), 1.0e-15);
         GNSSDate.setRolloverReference(new DateComponents(GNSSDate.getRolloverReference(), 1));
-        GNSSDate date2 = new GNSSDate(0, 0.0, SatelliteSystem.IRNSS);
+        GNSSDate date2 = new GNSSDate(0, 0.0, SatelliteSystem.NAVIC);
         Assertions.assertEquals(1024, date2.getWeekNumber());
     }
 
@@ -268,31 +262,6 @@ public class GNSSDateTest {
         GNSSDate date = new GNSSDate(305, 1.5e-3, SatelliteSystem.GPS);
         Assertions.assertEquals("2048-09-13", GNSSDate.getRolloverReference().toString());
         Assertions.assertEquals(305 + 3 * 1024, date.getWeekNumber());
-    }
-
-    private void doTestSerialization(final SatelliteSystem system,
-                                     final DateComponents date, final TimeComponents time,
-                                     final int refWeek, final TimeOffset refSeconds,
-                                     final int size)
-        throws IOException, ClassNotFoundException {
-        GNSSDate GNSSDate = new GNSSDate(refWeek, refSeconds, system);
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(GNSSDate);
-
-        Assertions.assertEquals(size, bos.size());
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        GNSSDate deserialized  = (GNSSDate) ois.readObject();
-        AbsoluteDate ref  = new AbsoluteDate(date, time, utc);
-        Assertions.assertEquals(refWeek, deserialized.getWeekNumber());
-        Assertions.assertEquals(1000 * refSeconds.toDouble(), deserialized.getMilliInWeek(), 1.0e-15);
-        Assertions.assertEquals(refSeconds.toDouble(), deserialized.getSecondsInWeek(), 1.0e-15);
-        Assertions.assertEquals(refSeconds, deserialized.getSplitSecondsInWeek());
-        Assertions.assertEquals(0, deserialized.getDate().durationFrom(ref), 1.0e-15);
-
     }
 
     @Test

@@ -35,7 +35,7 @@ public enum IonosphericCorrectionType {
     /** Beidou α/β. */
     BDS,
 
-    /** IRNSS α/β. */
-    IRN;
+    /** NavIC α/β. */
+    IRN
 
 }

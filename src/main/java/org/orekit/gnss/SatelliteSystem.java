@@ -64,8 +64,13 @@ public enum SatelliteSystem {
      */
     USER_DEFINED_H('H', null),
 
-    /** Indian Regional Navigation Satellite System system (NavIC). */
-    IRNSS('I', ObservationTimeScale.IRN),
+    /** Navigation with Indian Constellation (NavIC).
+     * <p>
+     * This system was known as Indian Regional Navigation Satellite System (IRNSS).
+     * </p>
+     * @since 13.0
+     */
+    NAVIC('I', ObservationTimeScale.IRN),
 
     /** Quasi-Zenith Satellite System system. */
     QZSS('J', ObservationTimeScale.QZS),

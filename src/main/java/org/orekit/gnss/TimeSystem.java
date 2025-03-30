@@ -55,8 +55,8 @@ public enum TimeSystem {
     /** Beidou. */
     BEIDOU("BDT", "BD", "C", TimeScales::getBDT),
 
-    /** IRNSS. */
-    IRNSS("IRN", "IR", "I", TimeScales::getIRNSS),
+    /** NavIC. */
+    NAVIC("IRN", "IR", "I", TimeScales::getNavIC),
 
     /** SBAS.
      * @since 12.0

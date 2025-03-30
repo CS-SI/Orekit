@@ -36,8 +36,8 @@ public class IgsSsrMessageTypeTest {
     }
 
     @Test
-    public void testIrnssMessage() {
-        Assertions.assertEquals(SatelliteSystem.IRNSS, IgsSsrMessageType.messageNumberToSatelliteSystem(141));
+    public void testNavICMessage() {
+        Assertions.assertEquals(SatelliteSystem.NAVIC, IgsSsrMessageType.messageNumberToSatelliteSystem(141));
     }
 
 }

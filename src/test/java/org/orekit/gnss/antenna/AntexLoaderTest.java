@@ -162,16 +162,16 @@ public class AntexLoaderTest {
                        SatelliteSystem.QZSS,    "QZSS",        SatelliteType.QZSS, 1, 193,
                        "2010-045A", PredefinedGnssSignal.J01, 113.0, 6.0, 0.0);
 
-        checkSatellite(loader.getSatellitesAntennas().get(13), 2013,  7,  1, 9999, 12, 31,
-                       SatelliteSystem.IRNSS,   "IRNSS-1IGSO", SatelliteType.IRNSS_1IGSO, 1, 1,
+        checkSatellite(loader.getSatellitesAntennas().get(13), 2013, 7, 1, 9999, 12, 31,
+                       SatelliteSystem.NAVIC, "IRNSS-1IGSO", SatelliteType.NAVIC_1IGSO, 1, 1,
                        "2013-034A", PredefinedGnssSignal.I05, 34.0, 9.0, 0.0);
 
         checkSatellite(loader.getSatellitesAntennas().get(14), 2014, 10, 15, 9999, 12, 31,
-                       SatelliteSystem.IRNSS,   "IRNSS-1GEO",  SatelliteType.IRNSS_1GEO, 3, 3,
+                       SatelliteSystem.NAVIC, "IRNSS-1GEO", SatelliteType.NAVIC_1GEO, 3, 3,
                        "2014-061A", PredefinedGnssSignal.I09, 23.0, 10.0, 0.0);
 
-        checkSatellite(loader.getSatellitesAntennas().get(15), 2015,  3, 28, 9999, 12, 31,
-                       SatelliteSystem.IRNSS,   "IRNSS-1IGSO", SatelliteType.IRNSS_1IGSO, 4, 4,
+        checkSatellite(loader.getSatellitesAntennas().get(15), 2015, 3, 28, 9999, 12, 31,
+                       SatelliteSystem.NAVIC, "IRNSS-1IGSO", SatelliteType.NAVIC_1IGSO, 4, 4,
                        "2015-018A", PredefinedGnssSignal.I05, 321.0, 13.0, 0.0);
 
         Assertions.assertEquals( 3, loader.getReceiversAntennas().size());

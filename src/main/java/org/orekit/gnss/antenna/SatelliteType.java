@@ -392,28 +392,47 @@ public enum SatelliteType {
         }
     },
 
-    /** IRNSS-1 GEO. */
-    IRNSS_1GEO("IRNSS-1GEO") {
+    /** IRNSS-1 GEO.
+     * @since 13.0
+     */
+    NAVIC_1GEO("IRNSS-1GEO") {
         /** {@inheritDoc} */
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
                                                           final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
-            // we don't have yet a specific mode for IRNSS, we use generic GNSS (simple yaw steering)
+            // we don't have yet a specific mode for NavIC, we use generic GNSS (simple yaw steering)
             return new GenericGNSS(validityStart, validityEnd, sun, inertialFrame);
         }
     },
 
-    /** IRNSS-1 IGSO. */
-    IRNSS_1IGSO("IRNSS-1IGSO") {
+    /** IRNSS-2 GEO.
+     * @since 13.0
+     */
+    NAVIC_2GEO("IRNSS-2GEO") {
         /** {@inheritDoc} */
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
                                                           final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
-            // we don't have yet a specific mode for IRNSS, we use generic GNSS (simple yaw steering)
+            // we don't have yet a specific mode for NavIC, we use generic GNSS (simple yaw steering)
+            return new GenericGNSS(validityStart, validityEnd, sun, inertialFrame);
+        }
+    },
+
+    /** IRNSS-1 IGSO.
+     * @since 13.0
+     */
+    NAVIC_1IGSO("IRNSS-1IGSO") {
+        /** {@inheritDoc} */
+        @Override
+        public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
+                                                          final AbsoluteDate validityEnd,
+                                                          final ExtendedPositionProvider sun,
+                                                          final Frame inertialFrame, final int prnNumber) {
+            // we don't have yet a specific mode for NavIC, we use generic GNSS (simple yaw steering)
             return new GenericGNSS(validityStart, validityEnd, sun, inertialFrame);
         }
     },
@@ -524,7 +543,7 @@ public enum SatelliteType {
     /** Parse a string to get the satellite type.
      * <p>
      * The name must be either a strict IGS name (like "BLOCK IIR-B") or
-     * an IGS name canonicalized by removing all spaces, hypen and underscore
+     * an IGS name canonicalized by removing all spaces, hyphen and underscore
      * characters (like BLOCKIIRB").
      * </p>
      * @param s string to parse (must be a strict IGS name)

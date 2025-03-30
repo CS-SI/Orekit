@@ -58,10 +58,10 @@ public enum ObservationTimeScale {
         }
     },
 
-    /** IRNSS time scale. */
+    /** NavIC time scale. */
     IRN {
         public TimeScale getTimeScale(final TimeScales timeScales) {
-            return timeScales.getIRNSS();
+            return timeScales.getNavIC();
         }
     };
 
