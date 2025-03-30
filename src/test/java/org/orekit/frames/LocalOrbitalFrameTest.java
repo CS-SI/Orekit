@@ -35,6 +35,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.orekit.TestUtils;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
@@ -50,8 +53,8 @@ public class LocalOrbitalFrameTest {
     @Test
     public void testIssue1282() {
         // GIVEN
-        final Vector3D position = new Vector3D(0,0,1);
-        final Vector3D velocity = new Vector3D(0,1,0);
+        final Vector3D position = new Vector3D(0, 0, 1);
+        final Vector3D velocity = new Vector3D(0, 1, 0);
         final PVCoordinates pvCoordinates  = new PVCoordinates(position, velocity);
 
         // WHEN
@@ -66,9 +69,8 @@ public class LocalOrbitalFrameTest {
     public void testIssue977() {
         LOFType type = LOFType.TNW;
         LocalOrbitalFrame lof = new LocalOrbitalFrame(FramesFactory.getGCRF(), type, provider, type.name());
-        Assertions.assertThrows(UnsupportedOperationException.class, () -> {
-            lof.getTransformProvider().getTransform(FieldAbsoluteDate.getJ2000Epoch(Binary64Field.getInstance()));
-        });
+        Assertions.assertThrows(UnsupportedOperationException.class,
+                                () -> lof.getTransformProvider().getTransform(FieldAbsoluteDate.getJ2000Epoch(Binary64Field.getInstance())));
     }
 
     @Test
@@ -80,6 +82,7 @@ public class LocalOrbitalFrameTest {
                    Vector3D.crossProduct(pv.getMomentum(), pv.getVelocity()),
                    pv.getMomentum(),
                    pv.getMomentum().negate());
+        Assertions.assertEquals(OrbitRelativeFrame.TNW, LOFType.TNW.toOrbitRelativeFrame());
     }
 
     @Test
@@ -91,6 +94,7 @@ public class LocalOrbitalFrameTest {
                    Vector3D.crossProduct(pv.getMomentum(), pv.getPosition()),
                    pv.getMomentum(),
                    pv.getMomentum().negate());
+        Assertions.assertEquals(OrbitRelativeFrame.QSW, LOFType.QSW.toOrbitRelativeFrame());
     }
 
     @Test
@@ -102,6 +106,12 @@ public class LocalOrbitalFrameTest {
                    Vector3D.crossProduct(pv.getMomentum(), pv.getPosition()),
                    pv.getMomentum(),
                    pv.getMomentum().negate());
+        try {
+            LOFType.LVLH.toOrbitRelativeFrame();
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.CCSDS_DIFFERENT_LVLH_DEFINITION, oe.getSpecifier());
+        }
     }
 
     @Test
@@ -113,6 +123,7 @@ public class LocalOrbitalFrameTest {
                    pv.getMomentum().negate(),
                    pv.getPosition().negate(),
                    pv.getMomentum().negate());
+        Assertions.assertEquals(OrbitRelativeFrame.LVLH, LOFType.LVLH_CCSDS.toOrbitRelativeFrame());
     }
 
     @Test
@@ -124,6 +135,7 @@ public class LocalOrbitalFrameTest {
                    pv.getMomentum().negate(),
                    pv.getPosition().negate(),
                    pv.getMomentum().negate());
+        Assertions.assertEquals(OrbitRelativeFrame.LVLH, LOFType.VVLH.toOrbitRelativeFrame());
     }
 
     @Test
@@ -135,6 +147,214 @@ public class LocalOrbitalFrameTest {
                    pv.getMomentum(),
                    Vector3D.crossProduct(pv.getVelocity(), pv.getMomentum()),
                    pv.getMomentum().negate());
+        Assertions.assertEquals(OrbitRelativeFrame.VNC_ROTATING, LOFType.VNC.toOrbitRelativeFrame());
+    }
+
+    @Test
+    public void testENU() {
+        AbsoluteDate      date = initDate.shiftedBy(400);
+        PVCoordinates     pv   = provider.getPVCoordinates(date, inertialFrame);
+        Transform         t    = LOFType.ENU.transformFromInertial(date, pv).getInverse();
+        Assertions.assertEquals("ENU", LOFType.ENU.getName());
+        Assertions.assertNull(LOFType.ENU.toOrbitRelativeFrame());
+
+        // Z aligned with position
+        Assertions.assertEquals(0.0,
+                                Vector3D.angle(t.transformVector(Vector3D.PLUS_K), pv.getPosition()),
+                                2.0e-16);
+
+        // North Pole in the (+Y, ±Z) half-plane
+        Vector3D northPole = t.getInverse().transformVector(Vector3D.PLUS_K);
+        Assertions.assertEquals(0.0, northPole.getX(), 2.0e-16);
+        Assertions.assertTrue(northPole.getY() > 0.0);
+
+    }
+
+    @Test
+    public void testENUField() {
+        final Field<Binary64>        field = Binary64Field.getInstance();
+        FieldAbsoluteDate<Binary64>  date  = new FieldAbsoluteDate<>(field, initDate.shiftedBy(400));
+        FieldPVCoordinates<Binary64> pv    = new FieldPVCoordinates<>(field,
+                                                                      provider.getPVCoordinates(date.toAbsoluteDate(),
+                                                                                                inertialFrame));
+        FieldTransform<Binary64>     t     = LOFType.ENU.transformFromInertial(date, pv).getInverse();
+        FieldVector3D<Binary64>      pK    = FieldVector3D.getPlusK(field);
+
+        // Z aligned with position
+        Assertions.assertEquals(0.0,
+                                FieldVector3D.angle(t.transformVector(pK), pv.getPosition()).getReal(),
+                                2.0e-16);
+
+        // North Pole in the (+Y, ±Z) half-plane
+        FieldVector3D<Binary64> northPole = t.getInverse().transformVector(pK);
+        Assertions.assertEquals(0.0, northPole.getX().getReal(), 2.0e-16);
+        Assertions.assertTrue(northPole.getY().getReal() > 0.0);
+
+    }
+
+    @Test
+    public void testENUAtNorthPole() {
+        AbsoluteDate  date    = initDate.shiftedBy(400);
+        PVCoordinates atNorth = new PVCoordinates(new Vector3D(0.0, 0.0, 8.0e6),
+                                                  new Vector3D(8.0e3, 0.0, 0.0));
+        Transform     t       = LOFType.ENU.transformFromInertial(date, atNorth).getInverse();
+        Assertions.assertEquals(0, Vector3D.angle(Vector3D.PLUS_J,  t.transformVector(Vector3D.PLUS_I)), 3.0e-16);
+        Assertions.assertEquals(0, Vector3D.angle(Vector3D.MINUS_I, t.transformVector(Vector3D.PLUS_J)), 3.0e-16);
+        Assertions.assertEquals(0, Vector3D.angle(Vector3D.PLUS_K,  t.transformVector(Vector3D.PLUS_K)), 3.0e-16);
+    }
+
+    @Test
+    public void testENUAtNorthPoleField() {
+        final Field<Binary64>        field   = Binary64Field.getInstance();
+        FieldAbsoluteDate<Binary64>  date    = new FieldAbsoluteDate<>(field, initDate.shiftedBy(400));
+        FieldPVCoordinates<Binary64> atNorth = new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64(0.0),
+                                                                                            new Binary64(0.0),
+                                                                                            new Binary64(8.0e6)),
+                                                                        new FieldVector3D<>(new Binary64(8.0e3),
+                                                                                            new Binary64(0.0),
+                                                                                            new Binary64(0.0)));
+        FieldTransform<Binary64>    t        = LOFType.ENU.transformFromInertial(date, atNorth).getInverse();
+        FieldVector3D<Binary64>     pI       = FieldVector3D.getPlusI(field);
+        FieldVector3D<Binary64>     mI       = FieldVector3D.getMinusI(field);
+        FieldVector3D<Binary64>     pJ       = FieldVector3D.getPlusJ(field);
+        FieldVector3D<Binary64>     pK       = FieldVector3D.getPlusK(field);
+        Assertions.assertEquals(0, FieldVector3D.angle(pJ, t.transformVector(pI)).getReal(), 3.0e-16);
+        Assertions.assertEquals(0, FieldVector3D.angle(mI, t.transformVector(pJ)).getReal(), 3.0e-16);
+        Assertions.assertEquals(0, FieldVector3D.angle(pK, t.transformVector(pK)).getReal(), 3.0e-16);
+    }
+
+    @Test
+    public void testENUAtSouthPole() {
+        AbsoluteDate date     = initDate.shiftedBy(400);
+        PVCoordinates atSouth = new PVCoordinates(new Vector3D(0.0, 0.0, -8.0e6),
+                                                  new Vector3D(-8.0e3, 0.0, 0.0));
+        Transform     t       = LOFType.ENU.transformFromInertial(date, atSouth).getInverse();
+        Assertions.assertEquals(0, Vector3D.angle(Vector3D.PLUS_J,  t.transformVector(Vector3D.PLUS_I)), 3.0e-16);
+        Assertions.assertEquals(0, Vector3D.angle(Vector3D.PLUS_I,  t.transformVector(Vector3D.PLUS_J)), 3.0e-16);
+        Assertions.assertEquals(0, Vector3D.angle(Vector3D.MINUS_K, t.transformVector(Vector3D.PLUS_K)), 3.0e-16);
+    }
+
+    @Test
+    public void testENUAtSouthPoleField() {
+        final Field<Binary64>        field   = Binary64Field.getInstance();
+        FieldAbsoluteDate<Binary64>  date    = new FieldAbsoluteDate<>(field, initDate.shiftedBy(400));
+        FieldPVCoordinates<Binary64> atSouth = new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64(0.0),
+                                                                                            new Binary64(0.0),
+                                                                                            new Binary64(-8.0e6)),
+                                                                        new FieldVector3D<>(new Binary64(-8.0e3),
+                                                                                            new Binary64(0.0),
+                                                                                            new Binary64(0.0)));
+        FieldTransform<Binary64>    t        = LOFType.ENU.transformFromInertial(date, atSouth).getInverse();
+        FieldVector3D<Binary64>     pI       = FieldVector3D.getPlusI(field);
+        FieldVector3D<Binary64>     pJ       = FieldVector3D.getPlusJ(field);
+        FieldVector3D<Binary64>     pK       = FieldVector3D.getPlusK(field);
+        FieldVector3D<Binary64>     mK       = FieldVector3D.getMinusK(field);
+        Assertions.assertEquals(0, FieldVector3D.angle(pJ, t.transformVector(pI)).getReal(), 3.0e-16);
+        Assertions.assertEquals(0, FieldVector3D.angle(pI, t.transformVector(pJ)).getReal(), 3.0e-16);
+        Assertions.assertEquals(0, FieldVector3D.angle(mK, t.transformVector(pK)).getReal(), 3.0e-16);
+    }
+
+    @Test
+    public void testNED() {
+        AbsoluteDate      date = initDate.shiftedBy(400);
+        PVCoordinates     pv   = provider.getPVCoordinates(date, inertialFrame);
+        Transform         t    = LOFType.NED.transformFromInertial(date, pv).getInverse();
+        Assertions.assertNull(LOFType.NED.toOrbitRelativeFrame());
+
+        // Z aligned with opposite of position
+        Assertions.assertEquals(0.0,
+                                Vector3D.angle(t.transformVector(Vector3D.PLUS_K), pv.getPosition().negate()),
+                                2.0e-16);
+
+        // North Pole in the (+X, ±Z) half-plane
+        Vector3D northPole = t.getInverse().transformVector(Vector3D.PLUS_K);
+        Assertions.assertEquals(0.0, northPole.getY(), 2.0e-16);
+        Assertions.assertTrue(northPole.getX() > 0.0);
+
+    }
+
+    @Test
+    public void testNEDField() {
+        final Field<Binary64>        field = Binary64Field.getInstance();
+        FieldAbsoluteDate<Binary64>  date  = new FieldAbsoluteDate<>(field, initDate.shiftedBy(400));
+        FieldPVCoordinates<Binary64> pv    = new FieldPVCoordinates<>(field,
+                                                                      provider.getPVCoordinates(date.toAbsoluteDate(),
+                                                                                                inertialFrame));
+        FieldTransform<Binary64>     t     = LOFType.NED.transformFromInertial(date, pv).getInverse();
+        FieldVector3D<Binary64>      pK    = FieldVector3D.getPlusK(field);
+
+        // Z aligned with opposite of position
+        Assertions.assertEquals(0.0,
+                                FieldVector3D.angle(t.transformVector(pK), pv.getPosition().negate()).getReal(),
+                                2.0e-16);
+
+        // North Pole in the (+X, ±Z) half-plane
+        FieldVector3D<Binary64> northPole = t.getInverse().transformVector(pK);
+        Assertions.assertEquals(0.0, northPole.getY().getReal(), 2.0e-16);
+        Assertions.assertTrue(northPole.getX().getReal() > 0.0);
+
+    }
+
+    @Test
+    public void testNEDAtNorthPole() {
+        AbsoluteDate  date    = initDate.shiftedBy(400);
+        PVCoordinates atNorth = new PVCoordinates(new Vector3D(0.0, 0.0, 8.0e6),
+                                                  new Vector3D(8.0e3, 0.0, 0.0));
+        Transform     t       = LOFType.NED.transformFromInertial(date, atNorth).getInverse();
+        Assertions.assertEquals(0, Vector3D.angle(Vector3D.MINUS_I, t.transformVector(Vector3D.PLUS_I)), 3.0e-16);
+        Assertions.assertEquals(0, Vector3D.angle(Vector3D.PLUS_J,  t.transformVector(Vector3D.PLUS_J)), 3.0e-16);
+        Assertions.assertEquals(0, Vector3D.angle(Vector3D.MINUS_K, t.transformVector(Vector3D.PLUS_K)), 3.0e-16);
+    }
+
+    @Test
+    public void testNEDAtNorthPoleField() {
+        final Field<Binary64>        field   = Binary64Field.getInstance();
+        FieldAbsoluteDate<Binary64>  date    = new FieldAbsoluteDate<>(field, initDate.shiftedBy(400));
+        FieldPVCoordinates<Binary64> atNorth = new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64(0.0),
+                                                                                            new Binary64(0.0),
+                                                                                            new Binary64(8.0e6)),
+                                                                        new FieldVector3D<>(new Binary64(8.0e3),
+                                                                                            new Binary64(0.0),
+                                                                                            new Binary64(0.0)));
+        FieldTransform<Binary64>    t        = LOFType.NED.transformFromInertial(date, atNorth).getInverse();
+        FieldVector3D<Binary64>     pI       = FieldVector3D.getPlusI(field);
+        FieldVector3D<Binary64>     mI       = FieldVector3D.getMinusI(field);
+        FieldVector3D<Binary64>     pJ       = FieldVector3D.getPlusJ(field);
+        FieldVector3D<Binary64>     pK       = FieldVector3D.getPlusK(field);
+        FieldVector3D<Binary64>     mK       = FieldVector3D.getMinusK(field);
+        Assertions.assertEquals(0, FieldVector3D.angle(mI, t.transformVector(pI)).getReal(), 3.0e-16);
+        Assertions.assertEquals(0, FieldVector3D.angle(pJ, t.transformVector(pJ)).getReal(), 3.0e-16);
+        Assertions.assertEquals(0, FieldVector3D.angle(mK, t.transformVector(pK)).getReal(), 3.0e-16);
+    }
+
+    @Test
+    public void testNEDAtSouthPole() {
+        AbsoluteDate  date    = initDate.shiftedBy(400);
+        PVCoordinates atSouth = new PVCoordinates(new Vector3D(0.0, 0.0, -8.0e6),
+                                                  new Vector3D(-8.0e3, 0.0, 0.0));
+        Transform     t       = LOFType.NED.transformFromInertial(date, atSouth).getInverse();
+        Assertions.assertEquals(0, Vector3D.angle(Vector3D.PLUS_I, t.transformVector(Vector3D.PLUS_I)), 3.0e-16);
+        Assertions.assertEquals(0, Vector3D.angle(Vector3D.PLUS_J, t.transformVector(Vector3D.PLUS_J)), 3.0e-16);
+        Assertions.assertEquals(0, Vector3D.angle(Vector3D.PLUS_K, t.transformVector(Vector3D.PLUS_K)), 3.0e-16);
+    }
+
+    @Test
+    public void testNEDAtSouthPoleField() {
+        final Field<Binary64>        field   = Binary64Field.getInstance();
+        FieldAbsoluteDate<Binary64>  date    = new FieldAbsoluteDate<>(field, initDate.shiftedBy(400));
+        FieldPVCoordinates<Binary64> atSouth = new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64(0.0),
+                                                                                            new Binary64(0.0),
+                                                                                            new Binary64(-8.0e6)),
+                                                                        new FieldVector3D<>(new Binary64(-8.0e3),
+                                                                                            new Binary64(0.0),
+                                                                                            new Binary64(0.0)));
+        FieldTransform<Binary64>    t        = LOFType.NED.transformFromInertial(date, atSouth).getInverse();
+        FieldVector3D<Binary64>     pI       = FieldVector3D.getPlusI(field);
+        FieldVector3D<Binary64>     pJ       = FieldVector3D.getPlusJ(field);
+        FieldVector3D<Binary64>     pK       = FieldVector3D.getPlusK(field);
+        Assertions.assertEquals(0, FieldVector3D.angle(pI, t.transformVector(pI)).getReal(), 3.0e-16);
+        Assertions.assertEquals(0, FieldVector3D.angle(pJ, t.transformVector(pJ)).getReal(), 3.0e-16);
+        Assertions.assertEquals(0, FieldVector3D.angle(pK, t.transformVector(pK)).getReal(), 3.0e-16);
     }
 
     @Test
@@ -222,9 +442,9 @@ public class LocalOrbitalFrameTest {
         // Then
         final Vector3D expectedTranslation = new Vector3D(-(6378000 + 400000), 0, 0);
         final RealMatrix expectedRotation = new BlockRealMatrix(new double[][] {
-                { 0, 1, 0 },
+                {  0, 1, 0 },
                 { -1, 0, 0 },
-                { 0, 0, 1 }
+                {  0, 0, 1 }
         });
 
         TestUtils.validateVector3D(expectedTranslation, computedTranslation, 1e-15);
@@ -255,9 +475,9 @@ public class LocalOrbitalFrameTest {
         // Then
         final Vector3D expectedTranslation = new Vector3D(-(6378000 + 400000), 0, 0);
         final RealMatrix expectedRotation = new BlockRealMatrix(new double[][] {
-                { 0, 1, 0 },
+                {  0, 1, 0 },
                 { -1, 0, 0 },
-                { 0, 0, 1 }
+                {  0, 0, 1 }
         });
 
         TestUtils.validateFieldVector3D(expectedTranslation, computedTranslation, 1e-15);
@@ -316,8 +536,14 @@ public class LocalOrbitalFrameTest {
         final Rotation rotationFromNTWInertialToEQW =
                 LOFType.EQW.rotationFromLOF(LOFType.NTW_INERTIAL, arbitraryEpoch, pv);
 
-        final Rotation rotationFromEQWToTNW =
-                LOF.rotationFromLOFInToLOFOut(LOFType.EQW, LOFType.TNW, arbitraryEpoch, pv);
+        final Rotation rotationFromEQWToENU =
+                LOFType.ENU.rotationFromLOF(LOFType.EQW, arbitraryEpoch, pv);
+
+        final Rotation rotationFromENUToNED =
+                LOFType.NED.rotationFromLOF(LOFType.ENU, arbitraryEpoch, pv);
+
+        final Rotation rotationFromNEDToTNW =
+                LOF.rotationFromLOFInToLOFOut(LOFType.NED, LOFType.TNW, arbitraryEpoch, pv);
 
         final Rotation rotationFromTNWToTNW =
                 composeRotations(rotationFromTNWToTNWInertial,
@@ -334,7 +560,9 @@ public class LocalOrbitalFrameTest {
                                  rotationFromVNCInertialToNTW,
                                  rotationFromNTWToNTWInertial,
                                  rotationFromNTWInertialToEQW,
-                                 rotationFromEQWToTNW);
+                                 rotationFromEQWToENU,
+                                 rotationFromENUToNED,
+                                 rotationFromNEDToTNW);
 
         final RealMatrix rotationMatrixFromTNWToTNW =
                 new BlockRealMatrix(rotationFromTNWToTNW.getMatrix());
@@ -403,8 +631,14 @@ public class LocalOrbitalFrameTest {
         final FieldRotation<Binary64> rotationFromNTWInertialToEQW =
                 LOFType.EQW.rotationFromLOF(field, LOFType.NTW_INERTIAL, arbitraryEpoch, pv);
 
-        final FieldRotation<Binary64> rotationFromEQWToTNW =
-                LOF.rotationFromLOFInToLOFOut(field, LOFType.EQW, LOFType.TNW, arbitraryEpoch, pv);
+        final FieldRotation<Binary64> rotationFromEQWToENU =
+                LOFType.ENU.rotationFromLOF(field, LOFType.EQW, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromENUToNED =
+                LOFType.NED.rotationFromLOF(field, LOFType.ENU, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromNEDToTNW =
+                LOF.rotationFromLOFInToLOFOut(field, LOFType.NED, LOFType.TNW, arbitraryEpoch, pv);
 
         final FieldRotation<Binary64> rotationFromTNWToTNW =
                 composeFieldRotations(rotationFromTNWToTNWInertial,
@@ -421,7 +655,9 @@ public class LocalOrbitalFrameTest {
                                       rotationFromVNCInertialToNTW,
                                       rotationFromNTWToNTWInertial,
                                       rotationFromNTWInertialToEQW,
-                                      rotationFromEQWToTNW);
+                                      rotationFromEQWToENU,
+                                      rotationFromENUToNED,
+                                      rotationFromNEDToTNW);
 
         final FieldMatrix<Binary64> rotationMatrixFromTNWToTNW =
                 new BlockFieldMatrix<>(rotationFromTNWToTNW.getMatrix());
@@ -483,8 +719,14 @@ public class LocalOrbitalFrameTest {
         final Rotation rotationFromNTWInertialToEQW =
                 LOFType.EQW.rotationFromLOF(LOFType.NTW_INERTIAL, pv);
 
-        final Rotation rotationFromEQWToTNW =
-                LOFType.rotationFromLOFInToLOFOut(LOFType.EQW, LOFType.TNW, pv);
+        final Rotation rotationFromEQWToENU =
+                LOFType.ENU.rotationFromLOF(LOFType.EQW, pv);
+
+        final Rotation rotationFromENUToNED =
+                LOFType.NED.rotationFromLOF(LOFType.ENU, pv);
+
+        final Rotation rotationFromNEDToTNW =
+                LOFType.rotationFromLOFInToLOFOut(LOFType.NED, LOFType.TNW, pv);
 
         final Rotation rotationFromTNWToTNW =
                 composeRotations(rotationFromTNWToTNWInertial,
@@ -501,7 +743,9 @@ public class LocalOrbitalFrameTest {
                         rotationFromVNCInertialToNTW,
                         rotationFromNTWToNTWInertial,
                         rotationFromNTWInertialToEQW,
-                        rotationFromEQWToTNW);
+                        rotationFromEQWToENU,
+                        rotationFromENUToNED,
+                        rotationFromNEDToTNW);
 
         final RealMatrix rotationMatrixFromTNWToTNW =
                 new BlockRealMatrix(rotationFromTNWToTNW.getMatrix());
@@ -569,8 +813,14 @@ public class LocalOrbitalFrameTest {
         final FieldRotation<Binary64> rotationFromNTWInertialToEQW =
                 LOFType.EQW.rotationFromLOF(field, LOFType.NTW_INERTIAL, pv);
 
-        final FieldRotation<Binary64> rotationFromEQWToTNW =
-                LOFType.rotationFromLOFInToLOFOut(field, LOFType.EQW, LOFType.TNW, pv);
+        final FieldRotation<Binary64> rotationFromEQWToENU =
+                LOFType.ENU.rotationFromLOF(field, LOFType.EQW, pv);
+
+        final FieldRotation<Binary64> rotationFromENUToNED =
+                LOFType.NED.rotationFromLOF(field, LOFType.ENU, pv);
+
+        final FieldRotation<Binary64> rotationFromNEDToTNW =
+                LOFType.rotationFromLOFInToLOFOut(field, LOFType.NED, LOFType.TNW, pv);
 
         final FieldRotation<Binary64> rotationFromTNWToTNW =
                 composeFieldRotations(rotationFromTNWToTNWInertial,
@@ -587,7 +837,9 @@ public class LocalOrbitalFrameTest {
                                       rotationFromVNCInertialToNTW,
                                       rotationFromNTWToNTWInertial,
                                       rotationFromNTWInertialToEQW,
-                                      rotationFromEQWToTNW);
+                                      rotationFromEQWToENU,
+                                      rotationFromENUToNED,
+                                      rotationFromNEDToTNW);
 
         final FieldMatrix<Binary64> rotationMatrixFromTNWToTNW =
                 new BlockFieldMatrix<>(rotationFromTNWToTNW.getMatrix());
@@ -621,6 +873,8 @@ public class LocalOrbitalFrameTest {
         Assertions.assertFalse(LOFType.LVLH.isQuasiInertial());
         Assertions.assertFalse(LOFType.LVLH_CCSDS.isQuasiInertial());
         Assertions.assertFalse(LOFType.VVLH.isQuasiInertial());
+        Assertions.assertFalse(LOFType.ENU.isQuasiInertial());
+        Assertions.assertFalse(LOFType.NED.isQuasiInertial());
 
     }
 
