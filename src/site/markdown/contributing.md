@@ -312,7 +312,7 @@ step to perform are:
 1. Select *Orekit Checkstyle* as *Active*.
 2. Verify that *Scan Scope* is equal to *Only Java sources (but not tests)*.
 3. The *Checkstyle version* shall be equal to the version used by the project. The current version of checkstyle in 
-   Orekit is available in the [pom.xml](https://gitlab.orekit.org/orekit/orekit/-/blob/master/pom.xml) file.
+   Orekit is available in the [pom.xml](https://gitlab.orekit.org/orekit/orekit/-/blob/main/pom.xml) file.
 
 ![properties-checkstyle-intellij](./images/properties-checkstyle-intellij.png)
 
@@ -344,10 +344,10 @@ initialize the project in SonarQube. Here is how to do it.
    This will allow Gitlab to connect to Orekit SonarQube instance.
 
 6. SonarQube dynamically initiates the project on the first submission, but
-   this first submission must be on the **master** branch. You can cause this
+   this first submission must be on the **main** branch. You can cause this
    by manually triggering a pipeline. Starting with Orekit version 11, you
    just need to go to the pipelines page (*Project homepage* -> *CI/CD* ->
-   *Pipelines*), then click on *Run pipeline*, then select the **master**
+   *Pipelines*), then click on *Run pipeline*, then select the **main**
    branch, then click on the *Run pipeline* button. Then wait for half an
    hour, which is approximately the time needed to compile and run the tests.
 
@@ -361,7 +361,7 @@ commands:
 
 ```bash
 $ cd orekit-repository
-$ git switch master
+$ git switch main
 
 $ export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 

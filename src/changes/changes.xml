@@ -24,6 +24,9 @@
         <action dev="luc" type="add" issue="1684">
             Added East-North-Up (ENU) and North-East-Down (NED) local orbital frames.
         </action>
+        <action dev="luc" type="add" issue="1685">
+            Added support for Rinex 4.01.
+        </action>
         <action dev="luc" type="add" issue="1653">
             Added OrekitConfiguration.getOrekitVersion().
         </action>
@@ -90,8 +93,15 @@
         <action dev="serrof" type="add" issue="1654">
             Add easy way to integrate cost with indirect control.
         </action>
+        <action dev="bryan" type="add" issue="1645">
+            Replaced FieldAdditionalStateProvider by FieldAdditionalDataProvider
+            for consistency with non-field feature.
+        </action>
         <action dev="luc" type="add" issue="1652">
             Added createMedian factory method to {Field}AbsoluteDate.
+        </action>
+        <action dev="quentin" type="add" issue="1651">
+            Modified the 7th toCartesian method of OrbitElementsType.
         </action>
         <action dev="serrof" type="update" issue="1650">
             Removed orbit-related chained getters in (Field)SpacecraftState.
@@ -99,10 +109,6 @@
         <action dev="luc" type="add" issue="1649">
             Adding parsing of SITE/GPS_PHASE_CENTER, SITE/GAL_PHASE_CENTER,
             and SATELLITE/PHASE_CENTER from Sinex files.
-        </action>
-        <action dev="bryan" type="add" issue="1645">
-            Replaced FieldAdditionalStateProvider by FieldAdditionalDataProvider
-            for consistency with non-field feature.
         </action>
         <action dev="bryan" type="add" issue="1645">
             Removed AdditionalStateProvider to use AdditionalDataProvider.

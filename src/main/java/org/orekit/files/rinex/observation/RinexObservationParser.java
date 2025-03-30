@@ -51,7 +51,7 @@ import org.orekit.time.TimeScales;
 /** Parser for Rinex measurements files.
  * <p>
  * Supported versions are: 2.00, 2.10, 2.11, 2.12 (unofficial), 2.20 (unofficial),
- * 3.00, 3.01, 3.02, 3.03, 3.04, 3.05, and 4.00.
+ * 3.00, 3.01, 3.02, 3.03, 3.04, 3.05, 4.00, and 4.01.
  * </p>
  * @see <a href="https://files.igs.org/pub/data/format/rinex2.txt">rinex 2.0</a>
  * @see <a href="https://files.igs.org/pub/data/format/rinex210.txt">rinex 2.10</a>
@@ -65,6 +65,7 @@ import org.orekit.time.TimeScales;
  * @see <a href="https://files.igs.org/pub/data/format/rinex304.pdf">rinex 3.04</a>
  * @see <a href="https://files.igs.org/pub/data/format/rinex305.pdf">rinex 3.05</a>
  * @see <a href="https://files.igs.org/pub/data/format/rinex_4.00.pdf">rinex 4.00</a>
+ * @see <a href="https://files.igs.org/pub/data/format/rinex_4.01.pdf">rinex 4.01</a>
  * @since 12.0
  */
 public class RinexObservationParser {
@@ -342,10 +343,11 @@ public class RinexObservationParser {
         VERSION(line -> RinexLabels.VERSION.matches(RinexUtils.getLabel(line)),
                 (line, parseInfo) ->  RinexUtils.parseVersionFileTypeSatelliteSystem(line, parseInfo.name, parseInfo.file.getHeader(),
                                                                                      2.00, 2.10, 2.11, 2.12, 2.20,
-                                                                                     3.00, 3.01, 3.02, 3.03, 3.04, 3.05, 4.00),
+                                                                                     3.00, 3.01, 3.02, 3.03, 3.04, 3.05,
+                                                                                     4.00, 4.01),
                 LineParser::headerNext),
 
-        /** Parser for generating program and emiting agency. */
+        /** Parser for generating program and emitting agency. */
         PROGRAM(line -> RinexLabels.PROGRAM.matches(RinexUtils.getLabel(line)),
                 (line, parseInfo) -> RinexUtils.parseProgramRunByDate(line, parseInfo.lineNumber, parseInfo.name,
                                                                       parseInfo.timeScales, parseInfo.file.getHeader()),

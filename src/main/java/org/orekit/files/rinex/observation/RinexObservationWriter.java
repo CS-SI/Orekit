@@ -133,11 +133,6 @@ public class RinexObservationWriter implements AutoCloseable {
     /** Time scale for writing dates. */
     private TimeScale timeScale;
 
-    /** Name of the time scale to put in header lines.
-     * @since 13.0
-     */
-    private String timeScaleName;
-
     /** Saved header. */
     private RinexObservationHeader savedHeader;
 
@@ -265,6 +260,7 @@ public class RinexObservationWriter implements AutoCloseable {
         savedHeader = header;
         lineNumber  = 1;
 
+        final String timeScaleName;
         if (timeScaleBuilder.apply(header.getSatelliteSystem(), timeScales) != null) {
             timeScale     = timeScaleBuilder.apply(header.getSatelliteSystem(), timeScales);
             timeScaleName = "   ";

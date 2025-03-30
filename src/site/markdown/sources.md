@@ -27,12 +27,12 @@ orekit-data.zip file which is an example file suitable for a quick start (see
 
 It is also possible to retrieve published versions from the Git repository
 (see next section below), if retrieving either release-x.y branches or the
-master branch.
+main branch.
 
 ## Development version
 
 The development of the Orekit project is done using the [Git](http://git-scm.com/)
-source code control system. Orekit Git master repository is available online. The
+source code control system. Orekit Git main repository is available online. The
 latest developments are in the develop branch. This is the one you want to retrieve
 if you need the latest feature before they are published in an official release.
 See [guidelines](./guidelines.html) for the branching workflow used in Orekit.

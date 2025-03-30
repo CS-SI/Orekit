@@ -69,7 +69,7 @@ that everything is fine on develop branch (i.e. all stages are passed).
 
 ## 2. Prepare Git branch for release
 
-Release will be performed on a dedicated branch, not directly on master or
+Release will be performed on a dedicated branch, not directly on main or
 develop branch. So a new branch must be created as follows and used for
 everything else:
 
@@ -182,7 +182,7 @@ The site is generated locally using:
     LANG=C mvn site
 
 The official site is automatically updated on the hosting platform when work is 
-merged into branches `develop`, `release-*` or `master`.
+merged into branches `develop`, `release-*` or `main`.
 
 ## 9. Tag and sign the git repository
 
@@ -299,23 +299,23 @@ candidate, verified and pushed:
     git tag -v X.Y
     git push --tags
 
-## 14. Merge release branch into master
+## 14. Merge release branch into main
 
-Merge the release branch into the `master` branch to include any changes made.
+Merge the release branch into the `main` branch to include any changes made.
 
-    git checkout master
+    git checkout main
     git merge --no-ff release-X.Y
 
 Then commit and push.
 
-*Good practice*: Again, wait for the CI to succeed and check on SonarQube that the master branch report is fine.
+*Good practice*: Again, wait for the CI to succeed and check on SonarQube that the main branch report is fine.
 
-## 15. Merge master branch into develop
+## 15. Merge main branch into develop
 
-Merge the `master` branch into the `develop` branch to include any changes made.
+Merge the `main` branch into the `develop` branch to include any changes made.
 
     git checkout develop
-    git merge --no-ff master
+    git merge --no-ff main
 
 Then updated the version numbers to prepare for the next development cycle.
 Edit pom.xml version to SNAPSHOT and make space in the `/src/changes/changes.xml`
@@ -370,7 +370,7 @@ Create a new post for the release in `_post/`, it will be visible in the `News` 
 
 Push the modifications on `develop` branch, wait until the pipeline on Gitlab is finished, then the [test website](https://test.orekit.org/) will be updated.
 
-Check that everything looks nice and then merge `develop` on `master` branch and push the modifications.  
+Check that everything looks nice and then merge `develop` on `main` branch and push the modifications.  
 When the Gitlab pipeline is finished, the [official website](https://orekit.org/) should be updated according to your changes.
 
 ## 20. Close X.Y milestone
