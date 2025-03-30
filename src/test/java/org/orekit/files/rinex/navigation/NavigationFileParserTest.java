@@ -55,6 +55,7 @@ import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
 import org.orekit.propagation.analytical.gnss.data.GPSCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.NavICL1NVNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.NavICLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
@@ -148,7 +149,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouCivilianNavigationMessages().size());
-        Assertions.assertEquals(0, file.getNavICNavigationMessages().size());
+        Assertions.assertEquals(0, file.getNavICLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
         Assertions.assertEquals(2, file.getGPSLegacyNavigationMessages().size());
@@ -225,7 +226,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouCivilianNavigationMessages().size());
-        Assertions.assertEquals(0, file.getNavICNavigationMessages().size());
+        Assertions.assertEquals(0, file.getNavICLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
         Assertions.assertEquals(1, file.getGPSLegacyNavigationMessages().size());
@@ -282,7 +283,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouCivilianNavigationMessages().size());
-        Assertions.assertEquals(0, file.getNavICNavigationMessages().size());
+        Assertions.assertEquals(0, file.getNavICLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(2, file.getSBASNavigationMessages().size());
         Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
@@ -350,7 +351,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
         Assertions.assertEquals(2, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouCivilianNavigationMessages().size());
-        Assertions.assertEquals(0, file.getNavICNavigationMessages().size());
+        Assertions.assertEquals(0, file.getNavICLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
         Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
@@ -426,7 +427,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
         Assertions.assertEquals(2, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(1, file.getBeidouCivilianNavigationMessages().size());
-        Assertions.assertEquals(0, file.getNavICNavigationMessages().size());
+        Assertions.assertEquals(0, file.getNavICLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
         Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
@@ -528,7 +529,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouCivilianNavigationMessages().size());
-        Assertions.assertEquals(0, file.getNavICNavigationMessages().size());
+        Assertions.assertEquals(0, file.getNavICLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
         Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
@@ -606,7 +607,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouCivilianNavigationMessages().size());
-        Assertions.assertEquals(0, file.getNavICNavigationMessages().size());
+        Assertions.assertEquals(0, file.getNavICLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
         Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
@@ -658,7 +659,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouCivilianNavigationMessages().size());
-        Assertions.assertEquals(0, file.getNavICNavigationMessages().size());
+        Assertions.assertEquals(0, file.getNavICLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
         Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
@@ -738,7 +739,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(1, file.getQZSSCivilianNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouCivilianNavigationMessages().size());
-        Assertions.assertEquals(0, file.getNavICNavigationMessages().size());
+        Assertions.assertEquals(0, file.getNavICLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
         Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
@@ -796,7 +797,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouCivilianNavigationMessages().size());
-        Assertions.assertEquals(0, file.getNavICNavigationMessages().size());
+        Assertions.assertEquals(0, file.getNavICLegacyNavigationMessages().size());
         Assertions.assertEquals(3, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
         Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
@@ -855,18 +856,18 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouCivilianNavigationMessages().size());
-        Assertions.assertEquals(3, file.getNavICNavigationMessages().size());
+        Assertions.assertEquals(3, file.getNavICLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
         Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
 
-        final NavICLegacyNavigationMessage navic = file.getNavICNavigationMessages("I05").get(0);
+        final NavICLegacyNavigationMessage navic = file.getNavICLegacyNavigationMessages("I05").get(0);
         Assertions.assertEquals(0.0, navic.getEpochToc().durationFrom(new AbsoluteDate(2019, 10, 27, 0, 0, 0, TimeScalesFactory.getNavIC())), Double.MIN_VALUE);
         Assertions.assertEquals(4.232432693243e-04,  navic.getAf0(), 1.0e-15);
         Assertions.assertEquals(2.000888343900e-11,  navic.getAf1(), 1.0e-15);
         Assertions.assertEquals(0.000000000000e+00,  navic.getAf2(), 1.0e-15);
-        Assertions.assertEquals(0,                   navic.getIODEC());
+        Assertions.assertEquals(0,                   navic.getIODC());
         Assertions.assertEquals(4.608125000000e+02,  navic.getCrs(), 1.0e-15);
         Assertions.assertEquals(-2.259193667639e+00, navic.getM0(), 1.0e-15);
         Assertions.assertEquals(1.492351293564e-05,  navic.getCuc(), 1.0e-15);
@@ -883,7 +884,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(-5.227360597694e-09, navic.getOmegaDot(), 1.0e-15);
         Assertions.assertEquals(4.421612749348e-10,  navic.getIDot(), 1.0e-15);
         Assertions.assertEquals(2077,                navic.getWeek());
-        Assertions.assertEquals(2.000000000000e+00,  navic.getURA(), 1.0e-15);
+        Assertions.assertEquals(4.85,                navic.getSvAccuracy(), 1.0e-15);
         Assertions.assertEquals(0.000000000000e+00,  navic.getSvHealth(), 1.0e-15);
         Assertions.assertEquals(-4.656613000000e-10, navic.getTGD(), 1.0e-15);
 
@@ -932,14 +933,88 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouCivilianNavigationMessages().size());
-        Assertions.assertEquals(1, file.getNavICNavigationMessages().size());
+        Assertions.assertEquals(1, file.getNavICLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getNavICL1NVNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
         Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
 
-        final NavICLegacyNavigationMessage navICL = file.getNavICNavigationMessages().get("I02").get(0);
+        final NavICLegacyNavigationMessage navICL = file.getNavICLegacyNavigationMessages().get("I02").get(0);
         Assertions.assertEquals(0.0, navICL.getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 5, 36, TimeScalesFactory.getNavIC())), Double.MIN_VALUE);
+    }
+
+    @Test
+    public void testNavICRinex402() throws IOException {
+
+        // Parse file
+        final String ex = "/gnss/navigation/Example_NavIC_Rinex402.n";
+        final RinexNavigation file = new RinexNavigationParser().
+                        parse(new DataSource(ex, () -> getClass().getResourceAsStream(ex)));
+
+        // Verify Header
+        Assertions.assertEquals(4.02,                                 file.getHeader().getFormatVersion(), Double.MIN_VALUE);
+        Assertions.assertEquals(RinexFileType.NAVIGATION,             file.getHeader().getFileType());
+        Assertions.assertEquals(SatelliteSystem.MIXED,                file.getHeader().getSatelliteSystem());
+        Assertions.assertEquals("editor",                             file.getHeader().getProgramName());
+        Assertions.assertEquals("developer",                          file.getHeader().getRunByName());
+        Assertions.assertNull(file.getHeader().getDoi());
+        Assertions.assertNull(file.getHeader().getLicense());
+        Assertions.assertNull(file.getHeader().getStationInformation());
+
+        // Verify data
+        checkFieldConversion(file);
+        Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
+        Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
+        Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getBeidouCivilianNavigationMessages().size());
+        Assertions.assertEquals(0, file.getNavICLegacyNavigationMessages().size());
+        Assertions.assertEquals(1, file.getNavICL1NVNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
+        Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
+        Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
+
+        final NavICL1NVNavigationMessage navICL1 = file.getNavICL1NVNavigationMessages("I10").get(0);
+        Assertions.assertEquals(0.0,
+                                navICL1.getEpochToc().durationFrom(new AbsoluteDate(2023, 6, 24, 0, 5, 0,
+                                                                                    TimeScalesFactory.getNavIC())),
+                                Double.MIN_VALUE);
+        Assertions.assertEquals( 0.000000000000e+00, navICL1.getADot(),       1.0e-15);
+        Assertions.assertEquals(-2.593125000000e+02, navICL1.getCrs(),        1.0e-10);
+        Assertions.assertEquals( 7.028864208979e-09, navICL1.getDeltaN0(),    1.0e-21);
+        Assertions.assertEquals( 2.300305834983e+00, navICL1.getM0(),         1.0e-12);
+        Assertions.assertEquals(-8.691102266312e-06, navICL1.getCuc(),        1.0e-18);
+        Assertions.assertEquals( 4.531537415460e-04, navICL1.getE(),          1.0e-16);
+        Assertions.assertEquals(-3.855675458908e-06, navICL1.getCus(),        1.0e-18);
+        Assertions.assertEquals( 6.493495117188e+03, navICL1.getSqrtA(),      1.0e-15);
+        Assertions.assertEquals( 7.000000000000e+00, navICL1.getTime(),       1.0e-15);
+        Assertions.assertEquals( 1.341104507446e-07, navICL1.getCic(),        1.0e-19);
+        Assertions.assertEquals( 1.359342162629e-01, navICL1.getOmega0(),     1.0e-13);
+        Assertions.assertEquals(-7.078051567078e-08, navICL1.getCis(),        1.0e-20);
+        Assertions.assertEquals( 8.594830530333e-02, navICL1.getI0(),         1.0e-14);
+        Assertions.assertEquals( 1.214375000000e+02, navICL1.getCrc(),        1.0e-10);
+        Assertions.assertEquals(-5.136403830694e-02, navICL1.getPa(),         1.0e-14);
+        Assertions.assertEquals(-5.858815471753e-09, navICL1.getOmegaDot(),   1.0e-21);
+        Assertions.assertEquals(-4.846630453041e-10, navICL1.getIDot(),       1.0e-22);
+        Assertions.assertEquals( 0.000000000000e+00, navICL1.getDeltaN0Dot(), 1.0e-15);
+        Assertions.assertEquals( 1,                  navICL1.getReferenceSignalFlag());
+        Assertions.assertEquals(0, navICL1.getSvHealth());
+        Assertions.assertTrue(Double.isNaN(navICL1.getSvAccuracy()));
+
+        // as reference signal flag is set to 1, ISC S are *not* broadcast
+        Assertions.assertTrue(Double.isNaN(navICL1.getTGD()));
+        Assertions.assertTrue(Double.isNaN(navICL1.getIscSL1P()));
+        Assertions.assertTrue(Double.isNaN(navICL1.getIscL1DL1P()));
+
+        // as reference signal flag is set to 1, ISC L1P are broadcast*
+        Assertions.assertEquals(-3.608874976635e-09, navICL1.getTGDSL5(),  1.0e-21);
+        Assertions.assertEquals( 6.984919309616e-09, navICL1.getIscL1PS(), 1.0e-21);
+        Assertions.assertEquals( 5.995389074087e-09, navICL1.getIscL1DS(), 1.0e-21);
+
+        Assertions.assertEquals( 5.191380000000e+05, navICL1.getTransmissionTime(), 1.0e-07);
+
     }
 
     @Test
@@ -982,7 +1057,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
         Assertions.assertEquals(2, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouCivilianNavigationMessages().size());
-        Assertions.assertEquals(0, file.getNavICNavigationMessages().size());
+        Assertions.assertEquals(0, file.getNavICLegacyNavigationMessages().size());
         Assertions.assertEquals(1, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
         Assertions.assertEquals(2, file.getGPSLegacyNavigationMessages().size());
@@ -1042,7 +1117,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouCivilianNavigationMessages().size());
-        Assertions.assertEquals(0, file.getNavICNavigationMessages().size());
+        Assertions.assertEquals(0, file.getNavICLegacyNavigationMessages().size());
         Assertions.assertEquals(2, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
         Assertions.assertEquals(2, file.getGPSLegacyNavigationMessages().size());
@@ -1095,7 +1170,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouCivilianNavigationMessages().size());
-        Assertions.assertEquals(0, file.getNavICNavigationMessages().size());
+        Assertions.assertEquals(0, file.getNavICLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
         Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
@@ -1187,7 +1262,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouCivilianNavigationMessages().size());
-        Assertions.assertEquals(0, file.getNavICNavigationMessages().size());
+        Assertions.assertEquals(0, file.getNavICLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
         Assertions.assertEquals(3, file.getGPSLegacyNavigationMessages().size());
@@ -1270,7 +1345,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouCivilianNavigationMessages().size());
-        Assertions.assertEquals(0, file.getNavICNavigationMessages().size());
+        Assertions.assertEquals(0, file.getNavICLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
         Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
@@ -1348,7 +1423,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouCivilianNavigationMessages().size());
-        Assertions.assertEquals(0, file.getNavICNavigationMessages().size());
+        Assertions.assertEquals(0, file.getNavICLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(3, file.getSBASNavigationMessages().size());
         Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
@@ -1421,7 +1496,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouCivilianNavigationMessages().size());
-        Assertions.assertEquals(0, file.getNavICNavigationMessages().size());
+        Assertions.assertEquals(0, file.getNavICLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(1, file.getSBASNavigationMessages().size());
         Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
@@ -1456,18 +1531,18 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouCivilianNavigationMessages().size());
-        Assertions.assertEquals(2, file.getNavICNavigationMessages().size());
+        Assertions.assertEquals(2, file.getNavICLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
         Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
 
-        final NavICLegacyNavigationMessage navic = file.getNavICNavigationMessages("I05").get(0);
+        final NavICLegacyNavigationMessage navic = file.getNavICLegacyNavigationMessages("I05").get(0);
         Assertions.assertEquals(0.0, navic.getEpochToc().durationFrom(new AbsoluteDate(2021, 3, 7, 0, 0, 0, TimeScalesFactory.getNavIC())), Double.MIN_VALUE);
         Assertions.assertEquals(6.514852866530e-04,  navic.getAf0(), 1.0e-15);
         Assertions.assertEquals(-7.560174708487e-11, navic.getAf1(), 1.0e-15);
         Assertions.assertEquals(0.000000000000e+00,  navic.getAf2(), 1.0e-15);
-        Assertions.assertEquals(0,                   navic.getIODEC());
+        Assertions.assertEquals(0,                   navic.getIODC());
         Assertions.assertEquals(-3.893125000000e+02, navic.getCrs(), 1.0e-15);
         Assertions.assertEquals(-7.075087446362e-02, navic.getM0(), 1.0e-15);
         Assertions.assertEquals(-1.282989978790e-05, navic.getCuc(), 1.0e-15);
@@ -1484,7 +1559,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(-2.734399613005e-09, navic.getOmegaDot(), 1.0e-15);
         Assertions.assertEquals(6.389551864768e-10,  navic.getIDot(), 1.0e-15);
         Assertions.assertEquals(2148,                navic.getWeek());
-        Assertions.assertEquals(4.000000000000e+00,  navic.getURA(), 1.0e-15);
+        Assertions.assertEquals(9.65,                navic.getSvAccuracy(), 1.0e-15);
         Assertions.assertEquals(0.000000000000e+00,  navic.getSvHealth(), 1.0e-15);
         Assertions.assertEquals(-4.656613000000e-10, navic.getTGD(), 1.0e-15);
 
@@ -1530,7 +1605,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
         Assertions.assertEquals(1, file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getBeidouCivilianNavigationMessages().size());
-        Assertions.assertEquals(0, file.getNavICNavigationMessages().size());
+        Assertions.assertEquals(0, file.getNavICLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0, file.getSBASNavigationMessages().size());
         Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
@@ -1607,7 +1682,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0,  file.getQZSSCivilianNavigationMessages().size());
         Assertions.assertEquals(0,  file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0,  file.getBeidouCivilianNavigationMessages().size());
-        Assertions.assertEquals(0,  file.getNavICNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getNavICLegacyNavigationMessages().size());
         Assertions.assertEquals(0,  file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0,  file.getSBASNavigationMessages().size());
         Assertions.assertEquals(0,  file.getGPSLegacyNavigationMessages().size());
@@ -1709,7 +1784,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0,  file.getQZSSCivilianNavigationMessages().size());
         Assertions.assertEquals(0,  file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0,  file.getBeidouCivilianNavigationMessages().size());
-        Assertions.assertEquals(0,  file.getNavICNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getNavICLegacyNavigationMessages().size());
         Assertions.assertEquals(0,  file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0,  file.getSBASNavigationMessages().size());
         Assertions.assertEquals(0,  file.getGPSLegacyNavigationMessages().size());
@@ -1802,7 +1877,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0,  file.getQZSSCivilianNavigationMessages().size());
         Assertions.assertEquals(0,  file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0,  file.getBeidouCivilianNavigationMessages().size());
-        Assertions.assertEquals(0,  file.getNavICNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getNavICLegacyNavigationMessages().size());
         Assertions.assertEquals(0,  file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0,  file.getSBASNavigationMessages().size());
         Assertions.assertEquals(0,  file.getGPSLegacyNavigationMessages().size());
@@ -1899,7 +1974,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0,  file.getQZSSCivilianNavigationMessages().size());
         Assertions.assertEquals(0,  file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0,  file.getBeidouCivilianNavigationMessages().size());
-        Assertions.assertEquals(0,  file.getNavICNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getNavICLegacyNavigationMessages().size());
         Assertions.assertEquals(0,  file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0,  file.getSBASNavigationMessages().size());
         Assertions.assertEquals(3,  file.getGPSLegacyNavigationMessages().size());
@@ -1958,7 +2033,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0,  file.getQZSSCivilianNavigationMessages().size());
         Assertions.assertEquals(0,  file.getBeidouLegacyNavigationMessages().size());
         Assertions.assertEquals(0,  file.getBeidouCivilianNavigationMessages().size());
-        Assertions.assertEquals(0,  file.getNavICNavigationMessages().size());
+        Assertions.assertEquals(0,  file.getNavICLegacyNavigationMessages().size());
         Assertions.assertEquals(23, file.getGlonassNavigationMessages().size());
         Assertions.assertEquals(0,  file.getSBASNavigationMessages().size());
         Assertions.assertEquals(0,  file.getGPSLegacyNavigationMessages().size());
@@ -2186,7 +2261,7 @@ public class NavigationFileParserTest {
         for (final List<BeidouCivilianNavigationMessage> messages : file.getBeidouCivilianNavigationMessages().values()) {
             messages.forEach(GnssTestUtils::checkFieldConversion);
         }
-        for (final List<NavICLegacyNavigationMessage> messages : file.getNavICNavigationMessages().values()) {
+        for (final List<NavICLegacyNavigationMessage> messages : file.getNavICLegacyNavigationMessages().values()) {
             messages.forEach(GnssTestUtils::checkFieldConversion);
         }
         for (final List<GPSLegacyNavigationMessage> messages : file.getGPSLegacyNavigationMessages().values()) {

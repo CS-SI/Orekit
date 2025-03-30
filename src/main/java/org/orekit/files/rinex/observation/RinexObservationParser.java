@@ -47,11 +47,12 @@ import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
+import org.orekit.utils.units.Unit;
 
 /** Parser for Rinex measurements files.
  * <p>
  * Supported versions are: 2.00, 2.10, 2.11, 2.12 (unofficial), 2.20 (unofficial),
- * 3.00, 3.01, 3.02, 3.03, 3.04, 3.05, 4.00, and 4.01.
+ * 3.00, 3.01, 3.02, 3.03, 3.04, 3.05, 4.00, 4.01, and 4.02.
  * </p>
  * @see <a href="https://files.igs.org/pub/data/format/rinex2.txt">rinex 2.0</a>
  * @see <a href="https://files.igs.org/pub/data/format/rinex210.txt">rinex 2.10</a>
@@ -66,6 +67,7 @@ import org.orekit.time.TimeScales;
  * @see <a href="https://files.igs.org/pub/data/format/rinex305.pdf">rinex 3.05</a>
  * @see <a href="https://files.igs.org/pub/data/format/rinex_4.00.pdf">rinex 4.00</a>
  * @see <a href="https://files.igs.org/pub/data/format/rinex_4.01.pdf">rinex 4.01</a>
+ * @see <a href="https://files.igs.org/pub/data/format/rinex_4.02.pdf">rinex 4.02</a>
  * @since 12.0
  */
 public class RinexObservationParser {
@@ -81,6 +83,9 @@ public class RinexObservationParser {
 
     /** Maximum number of observations per line in Rinex 2 format. */
     private static final int MAX_OBS_PER_RINEX_2_LINE = 5;
+
+    /** Pico seconds. */
+    private static final Unit PICO_SECOND = Unit.parse("ps");
 
     /** Set of time scales. */
     private final TimeScales timeScales;
@@ -344,7 +349,7 @@ public class RinexObservationParser {
                 (line, parseInfo) ->  RinexUtils.parseVersionFileTypeSatelliteSystem(line, parseInfo.name, parseInfo.file.getHeader(),
                                                                                      2.00, 2.10, 2.11, 2.12, 2.20,
                                                                                      3.00, 3.01, 3.02, 3.03, 3.04, 3.05,
-                                                                                     4.00, 4.01),
+                                                                                     4.00, 4.01, 4.02),
                 LineParser::headerNext),
 
         /** Parser for generating program and emitting agency. */
@@ -1056,7 +1061,8 @@ public class RinexObservationParser {
                                                                       RinexUtils.parseInt(line, 10, 2),
                                                                       RinexUtils.parseInt(line, 13, 2),
                                                                       RinexUtils.parseInt(line, 16, 2),
-                                                                      RinexUtils.parseDouble(line, 18, 11),
+                                                                      RinexUtils.parseDouble(line, 18, 11) +
+                                                                      PICO_SECOND.toSI(RinexUtils.parseInt(line, 57, 5)),
                                                                       parseInfo.timeScale));
 
                                }

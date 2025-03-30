@@ -28,16 +28,7 @@ import java.util.function.Function;
  * @since 13.0
  */
 public class FieldNavicLegacyNavigationMessage<T extends CalculusFieldElement<T>>
-    extends FieldAbstractNavigationMessage<T, NavICLegacyNavigationMessage>  {
-
-    /** Issue of Data, Ephemeris and Clock. */
-    private int iodec;
-
-    /** User range accuracy (m). */
-    private T ura;
-
-    /** Satellite health status. */
-    private T svHealth;
+    extends FieldLegacyNavigationMessage<T, NavICLegacyNavigationMessage>  {
 
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
@@ -45,9 +36,6 @@ public class FieldNavicLegacyNavigationMessage<T extends CalculusFieldElement<T>
      */
     public FieldNavicLegacyNavigationMessage(final Field<T> field, final NavICLegacyNavigationMessage original) {
         super(field, original);
-        setIODEC(field.getZero().newInstance(original.getIODEC()));
-        setURA(field.getZero().newInstance(original.getURA()));
-        setSvHealth(field.getZero().newInstance(original.getSvHealth()));
     }
 
     /** Constructor from different field instance.
@@ -58,9 +46,6 @@ public class FieldNavicLegacyNavigationMessage<T extends CalculusFieldElement<T>
     public <V extends CalculusFieldElement<V>> FieldNavicLegacyNavigationMessage(final Function<V, T> converter,
                                                                                  final FieldNavicLegacyNavigationMessage<V> original) {
         super(converter, original);
-        setIODEC(getMu().newInstance(original.getIODEC()));
-        setURA(converter.apply(original.getURA()));
-        setSvHealth(converter.apply(original.getSvHealth()));
     }
 
     /** {@inheritDoc} */
@@ -75,55 +60,6 @@ public class FieldNavicLegacyNavigationMessage<T extends CalculusFieldElement<T>
     public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, NavICLegacyNavigationMessage>>
         G changeField(final Function<T, U> converter) {
         return (G) new FieldNavicLegacyNavigationMessage<>(converter, this);
-    }
-
-    /**
-     * Getter for the Issue Of Data Ephemeris and Clock (IODEC).
-     * @return the Issue Of Data Ephemeris and Clock (IODEC)
-     */
-    public int getIODEC() {
-        return iodec;
-    }
-
-    /**
-     * Setter for the Issue of Data, Ephemeris and Clock.
-     * @param value the IODEC to set
-     */
-    public void setIODEC(final T value) {
-        // The value is given as a floating number in the navigation message
-        this.iodec = (int) value.getReal();
-    }
-
-    /**
-     * Getter for the user range accuray (meters).
-     * @return the user range accuracy
-     */
-    public T getURA() {
-        return ura;
-    }
-
-    /**
-     * Setter for the user range accuracy.
-     * @param accuracy the value to set
-     */
-    public void setURA(final T accuracy) {
-        this.ura = accuracy;
-    }
-
-    /**
-     * Getter for the satellite health status.
-     * @return the satellite health status
-     */
-    public T getSvHealth() {
-        return svHealth;
-    }
-
-    /**
-     * Setter for the satellite health status.
-     * @param svHealth the value to set
-     */
-    public void setSvHealth(final T svHealth) {
-        this.svHealth = svHealth;
     }
 
 }
