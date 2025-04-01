@@ -263,8 +263,7 @@ public class StreamingCpfWriter {
         /**
          * Create a new segment writer.
          *
-         * @param frame    for the output states. Used by {@link #handleStep(SpacecraftState,
-         *                 boolean)}.
+         * @param frame    for the output states. Used by {@link #handleStep(SpacecraftState)}.
          */
         private Segment(final Frame frame) {
             this.frame = frame;
@@ -321,7 +320,7 @@ public class StreamingCpfWriter {
 
             // Epoch
             final AbsoluteDate epoch = pv.getDate();
-            final DateTimeComponents dtc = epoch.getComponents(timeScale);
+            final DateTimeComponents dtc = epoch.getComponents(timeScale).roundIfNeeded(60, 6);
             writeValue(writer, I5, dtc.getDate().getMJD(),                  true);
             writeValue(writer, F13_6, dtc.getTime().getSecondsInLocalDay(), true);
 

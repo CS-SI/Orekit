@@ -440,7 +440,7 @@ public class RinexObservationWriter implements AutoCloseable {
         }
 
         // TIME OF FIRST OBS
-        final DateTimeComponents dtcFirst = header.getTFirstObs().getComponents(timeScale);
+        final DateTimeComponents dtcFirst = header.getTFirstObs().getComponents(timeScale).roundIfNeeded(60, 7);
         outputField(SIX_DIGITS_INTEGER,          dtcFirst.getDate().getYear(), 6);
         outputField(SIX_DIGITS_INTEGER,          dtcFirst.getDate().getMonth(), 12);
         outputField(SIX_DIGITS_INTEGER,          dtcFirst.getDate().getDay(), 18);
@@ -452,7 +452,7 @@ public class RinexObservationWriter implements AutoCloseable {
 
         // TIME OF LAST OBS
         if (!header.getTLastObs().equals(AbsoluteDate.FUTURE_INFINITY)) {
-            final DateTimeComponents dtcLast = header.getTLastObs().getComponents(timeScale);
+            final DateTimeComponents dtcLast = header.getTLastObs().getComponents(timeScale).roundIfNeeded(60, 7);
             outputField(SIX_DIGITS_INTEGER,          dtcLast.getDate().getYear(), 6);
             outputField(SIX_DIGITS_INTEGER,          dtcLast.getDate().getMonth(), 12);
             outputField(SIX_DIGITS_INTEGER,          dtcLast.getDate().getDay(), 18);
@@ -685,7 +685,7 @@ public class RinexObservationWriter implements AutoCloseable {
         final ObservationDataSet first = pending.get(0);
 
         // EPOCH/SAT
-        final DateTimeComponents dtc = first.getDate().getComponents(timeScale);
+        final DateTimeComponents dtc = first.getDate().getComponents(timeScale).roundIfNeeded(60, 7);
         outputField("",  1, true);
         outputField(PADDED_TWO_DIGITS_INTEGER,   dtc.getDate().getYear() % 100,    3);
         outputField("",  4, true);
@@ -766,7 +766,7 @@ public class RinexObservationWriter implements AutoCloseable {
         final ObservationDataSet first = pending.get(0);
 
         // EPOCH/SAT
-        final DateTimeComponents dtc = first.getDate().getComponents(timeScale);
+        final DateTimeComponents dtc = first.getDate().getComponents(timeScale).roundIfNeeded(60, 7);
         outputField(">",  2, true);
         outputField(FOUR_DIGITS_INTEGER,         dtc.getDate().getYear(),    6);
         outputField("",   7, true);
