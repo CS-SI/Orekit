@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="luc" type="add" issue="1690">
+            Fixed dates formatting in some files format using fixed accuracy.
+        </action>
         <action dev="luc" type="add" issue="1686">
             Added partial support for Rinex 4.02 files
             (NavIC ionosphere type L1NV, GLONASS L1OC, L3OC and LXOC messages are still missing).

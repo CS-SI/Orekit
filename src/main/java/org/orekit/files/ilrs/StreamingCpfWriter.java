@@ -321,7 +321,7 @@ public class StreamingCpfWriter {
 
             // Epoch
             final AbsoluteDate epoch = pv.getDate();
-            final DateTimeComponents dtc = epoch.getComponents(timeScale);
+            final DateTimeComponents dtc = epoch.getComponents(timeScale).roundIfNeeded(60, 6);
             writeValue(writer, I5, dtc.getDate().getMJD(),                  true);
             writeValue(writer, F13_6, dtc.getTime().getSecondsInLocalDay(), true);
 

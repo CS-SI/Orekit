@@ -662,9 +662,11 @@ public class CRD {
             // 'local' is already utc.
             // Seconds of day (sod) is typically to 1 milllisec precision.
             // receiveAmplitude, transmitAmplitude: -1 if not available
-            final double sod = getDate()
-                    .getComponents(TimeScalesFactory.getUTC()).getTime()
-                    .getSecondsInLocalDay();
+            final double sod = getDate().
+                               getComponents(TimeScalesFactory.getUTC()).
+                               roundIfNeeded(60, 12).
+                               getTime().
+                               getSecondsInLocalDay();
 
             final String str = String.format(Locale.US,
                     "%18.12f %18.12f %4s %1d %1d %1d %1d %5s %5s", sod,
@@ -841,9 +843,11 @@ public class CRD {
             // binRms, binPeakMinusMean: s --> ps
             // 'local' is already utc.
             // Seconds of day (sod) is typically to 1 milllisec precision.
-            final double sod = getDate()
-                    .getComponents(TimeScalesFactory.getUTC()).getTime()
-                    .getSecondsInLocalDay();
+            final double sod = getDate().
+                               getComponents(TimeScalesFactory.getUTC()).
+                               roundIfNeeded(60, 12).
+                               getTime().
+                               getSecondsInLocalDay();
 
             final String str = String.format(Locale.US,
                     "%18.12f %18.12f %4s %1d %6.1f %6d %9.1f %7.3f %7.3f %9.1f %5.2f %1d %5.1f",
@@ -979,9 +983,11 @@ public class CRD {
             // troposphericRefractionCorrection: s --> ps
             // 'local' is already utc.
             // Seconds of day (sod) is typically to 1 milllisec precision.
-            final double sod = getDate()
-                    .getComponents(TimeScalesFactory.getUTC()).getTime()
-                    .getSecondsInLocalDay();
+            final double sod = getDate().
+                               getComponents(TimeScalesFactory.getUTC()).
+                               roundIfNeeded(60, 12).
+                               getTime().
+                               getSecondsInLocalDay();
 
             final String str = String.format(Locale.US,
                     "%18.12f %4s %6.1f %6.4f %5.2f %8.4f %f", sod,
@@ -1101,12 +1107,14 @@ public class CRD {
             // pressure: bar --> mbar
             // 'local' is already utc.
             // Seconds of day (sod) is typically to 1 milllisec precision.
-            final double sod = getDate()
-                    .getComponents(TimeScalesFactory.getUTC()).getTime()
-                    .getSecondsInLocalDay();
+            final double sod = getDate().
+                               getComponents(TimeScalesFactory.getUTC()).
+                               roundIfNeeded(60, 3).
+                               getTime().
+                               getSecondsInLocalDay();
 
-            final String str = String.format(Locale.US, "%9.3f %7.2f %6.2f %4.0f %1d", sod,
-                                             pressure * 1e3, temperature, humidity, originOfValues);
+            final String str = String.format(Locale.US, "%9.3f %7.2f %6.2f %4.0f %1d",
+                                             sod, pressure * 1e3, temperature, humidity, originOfValues);
             return handleNaN(str).replace(',', '.');
         }
     }
@@ -1261,16 +1269,19 @@ public class CRD {
             // azimuthRate, elevationRate: rad/s --> deg/s
             // 'local' is already utc.
             // Seconds of day (sod) is typically to 1 milllisec precision.
-            final double sod = getDate()
-                    .getComponents(TimeScalesFactory.getUTC()).getTime()
-                    .getSecondsInLocalDay();
+            final double sod = getDate().
+                               getComponents(TimeScalesFactory.getUTC()).
+                               roundIfNeeded(60, 3).
+                               getTime().
+                               getSecondsInLocalDay();
 
             final String str = String.format(Locale.US,
-                    "%9.3f %8.4f %8.4f %1d %1d %1d %10.7f %10.7f", sod,
-                    FastMath.toDegrees(azimuth), FastMath.toDegrees(elevation),
-                    directionFlag, originIndicator, refractionCorrected ? 1 : 0,
-                    FastMath.toDegrees(azimuthRate),
-                    FastMath.toDegrees(elevationRate));
+                                             "%9.3f %8.4f %8.4f %1d %1d %1d %10.7f %10.7f",
+                                             sod,
+                                             FastMath.toDegrees(azimuth), FastMath.toDegrees(elevation),
+                                             directionFlag, originIndicator, refractionCorrected ? 1 : 0,
+                                             FastMath.toDegrees(azimuthRate),
+                                             FastMath.toDegrees(elevationRate));
             return handleNaN(str).replace(',', '.');
         }
     }
@@ -1757,9 +1768,11 @@ public class CRD {
             // rms, peakMinusMean: s --> ps
             // 'local' is already utc.
             // Seconds of day (sod) is typically to 1 milllisec precision.
-            final double sod = getDate()
-                    .getComponents(TimeScalesFactory.getUTC()).getTime()
-                    .getSecondsInLocalDay();
+            final double sod = getDate().
+                               getComponents(TimeScalesFactory.getUTC()).
+                               roundIfNeeded(60, 12).
+                               getTime().
+                               getSecondsInLocalDay();
 
             final String str = String.format(
                     "%18.12f %1d %4s %8s %8s %8.4f %10.1f %8.1f %6.1f %7.3f %7.3f %6.1f %1d %1d %1d %1d %5.1f",
