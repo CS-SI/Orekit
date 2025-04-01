@@ -152,7 +152,7 @@ TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = orden demasiado alto (n = {0}, el orden de p
 WRONG_DEGREE_OR_ORDER = ningún término ({0}, {1}) en una descomposición armónica esférica de {2}x{3}
 
 # wrong orbital elements for averaging theory
-WRONG_ELEMENTS_FOR_AVERAGING_THEORY = <MISSING TRANSLATION>
+WRONG_ELEMENTS_FOR_AVERAGING_THEORY = tipos de elementos orbitales incorrectos para esta teoría de de promediado
 
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = se han encontrado varias fechas de referencia ({0} y {1} difieren de {3,number,0.0##############E0} s) en el fichero de campo gravitacional {2}
@@ -242,7 +242,7 @@ INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = estado inicial no especifica
 EVENT_DATE_TOO_CLOSE = la fecha objetivo del evento debe ser anterior a {1} de {3,number,0.0##############E0} segundos o posterior a {2} de {3,number,0.0##############E0} segundos; sin embargo, la fecha objetivo {0} es {4,number,0.0##############E0} segundos antes de {1} y {5,number,0.0##############E0} segundos después de {2}, por lo que no puede añadirse
 
 # trying to propagate Cartesian adjoint whilst integration equations of motion with non-Cartesian coordinates
-WRONG_COORDINATES_FOR_ADJOINT_EQUATION = <MISSING TRANSLATION>
+WRONG_COORDINATES_FOR_ADJOINT_EQUATION = se intentaron propagar variables adjuntas cartesianas mientras que las ecuaciones de movimiento se integraban con coordenadas no cartesianas 
 
 # unable to read header record from JPL ephemerides binary file {0}
 UNABLE_TO_READ_JPL_HEADER = imposible de leer el encabezado del fichero binario de efemérides del JPL {0}
@@ -293,10 +293,10 @@ PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET = la función setPeriod ya ha sido utiliz
 TOO_SMALL_SCALE_FOR_PARAMETER = el factor de escala para el parámetro {0} es demasiado pequeño: {1}
 
 # state "{0}" is not an array
-ADDITIONAL_STATE_BAD_TYPE = <MISSING TRANSLATION>
+ADDITIONAL_STATE_BAD_TYPE = el estado "{0}" no es un vector
 
 # unknown additional data "{0}"
-UNKNOWN_ADDITIONAL_DATA = <MISSING TRANSLATION>
+UNKNOWN_ADDITIONAL_DATA = datos adicionales "{0}" desconocidos
 
 # unknown month "{0}"
 UNKNOWN_MONTH = mes desconocido "{0}"
@@ -368,28 +368,28 @@ CCSDS_TDM_KEYWORD_NOT_FOUND = no se encontró palabra clave para CCSDS TDM en la
 CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER = no se ha encontrado ningún convertidor de unidades de pseudo-distancia configurado para la lectura de los mensajes de seguimiento de datos (« Tracking Data Message »)
 
 # line break(s) missing after vector number {0} in {1}
-IIRV_MISSING_LINEBREAK_IN_FILE = <MISSING TRANSLATION>
+IIRV_MISSING_LINEBREAK_IN_FILE = falta(n) salto(s) de línea después del vector número {0} en {1}
 
 # line {0} in IIRV vector is not valid: "{1}"
-IIRV_INVALID_LINE_IN_VECTOR = <MISSING TRANSLATION>
+IIRV_INVALID_LINE_IN_VECTOR = la línea {0} en el vector IIRV no es válida : "{1}"
 
 # cannot embed more than 1000 vectors in a single IIRV message file: got {0}. Consider splitting the data into multiple files
-IIRV_EXCEEDS_MAX_VECTORS = <MISSING TRANSLATION>
+IIRV_EXCEEDS_MAX_VECTORS = no se pueden incluir más de 1000 vectores en un único fichero de mensaje IIRV: se recibieron {0}. Debería considerarse dividir los datos en varios ficheros
 
 # numeric value "{0}" exceeds the maximum length of {1} for string representation
-IIRV_VALUE_TOO_LARGE = <MISSING TRANSLATION>
+IIRV_VALUE_TOO_LARGE = valor numérico "{0}" excede la longitud máxima de {1} para la representación como cadena
 
 # invalid IIRV term value: {0}
-IIRV_INVALID_TERM_VALUE = <MISSING TRANSLATION>
+IIRV_INVALID_TERM_VALUE = valor de término IIRV inválido: {0}
 
 # the "{0}" term cannot change within an IIRV message file
-IIRV_TERM_CHANGES_WITHIN_FILE = <MISSING TRANSLATION>
+IIRV_TERM_CHANGES_WITHIN_FILE = no se puede cambiar el término "{0}" en un archivo de mensaje IIRV
 
 # IIRV sequence number must increase by 1 for each subsequent vector entry. At at line {0}, expected sequence number {1}+1, but found {2}
-IIRV_SEQUENCE_NUMBER_MUST_BE_INCREASING_BY_ONE = <MISSING TRANSLATION>
+IIRV_SEQUENCE_NUMBER_MUST_BE_INCREASING_BY_ONE = el número de secuencia IIRB debe aumentar en 1 por cada vector sucesivo. En la línea {0}, se esperaba el número de secuencia {1}+1, pero se encontró {2}
 
 # IIRV coordinate system "{0}" ({1}) has not been mapped to an Orekit frame
-IIRV_UNMAPPED_COORDINATE_SYSTEM = <MISSING TRANSLATION>
+IIRV_UNMAPPED_COORDINATE_SYSTEM = el sistema de coordenadas IIRV "{0}" ({1}) no tiene correspondencia con un sistema de referencia de Orekit
 
 # Time system should have already been set before line {0} of file {1}
 CCSDS_TIME_SYSTEM_NOT_READ_YET = el sistema temporal tendría que haber sido inicializado antes de la línea {0} del fichero {1}
@@ -419,10 +419,10 @@ DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = la órbita tiene una excentricidad ({0}
 SP3_UNSUPPORTED_VERSION = versión de formato sp3 "{0}" no reconocida
 
 # invalid header entry {0} "{1}" in file {2} (format version {3})
-SP3_INVALID_HEADER_ENTRY = <MISSING TRANSLATION>
+SP3_INVALID_HEADER_ENTRY = entrada de cabecera {0} "{1}" inválida en archivo {2} (versión {3} del formato) <MISSING TRANSLATION>
 
 # version "{0}" supports only up to {1} satellites, found {2} in file {3}
-SP3_TOO_MANY_SATELLITES_FOR_VERSION = <MISSING TRANSLATION>
+SP3_TOO_MANY_SATELLITES_FOR_VERSION = la versión "{0}" del formato está limitada a {1} satélites como máximo, se han encontrado {2} en el fichero {3}
 
 # found {0} epochs in file {1}, expected {2}
 SP3_NUMBER_OF_EPOCH_MISMATCH = se han encontrado {0} épocas en el fichero {1} en vez de {2}
@@ -434,7 +434,7 @@ SP3_INCOMPATIBLE_FILE_METADATA = imposible de adjuntar los ficheros sp3 teniendo
 SP3_INCOMPATIBLE_SATELLITE_MEDATADA = imposible de adjuntar los ficheros sp3 teniendo metadata del satéllite {0} diferente 
 
 # frame {0} not allowed here
-FRAME_NOT_ALLOWED = <MISSING TRANSLATION>
+FRAME_NOT_ALLOWED = sistema de referencia {0} no permitido aquí
 
 # STK coordinate system "{0}" is invalid or not yet supported
 STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM = el sistema de coordenadas "{0}" de STK es inválido o no aún implementado
@@ -473,7 +473,7 @@ NO_CACHED_ENTRIES = ninguna entrada almacenada
 NON_CHRONOLOGICALLY_SORTED_ENTRIES = las entradas generadas no están ordenadas: {0} > {1} de {2,number,0.0##############E0} segundos
 
 # moving transition date from {0} to {1} collides with existing transition at {2}
-TRANSITION_DATES_COLLISION = <MISSING TRANSLATION>
+TRANSITION_DATES_COLLISION = cambiar la fecha de transición de {0} a {1} entra en conflicto con la transición existente en {2}
 
 # no data generated around date: {0}
 NO_DATA_GENERATED = ningún dato generado alrededor de la fecha: {0}
@@ -617,10 +617,10 @@ UNKNOWN_CLOCK_DATA_TYPE = tipo de datos de reloj desconocido {0}
 UNKNOWN_SATELLITE_ANTENNA_CODE = código de antena de satélite desconocido {0}
 
 # unknown GNSS antenna, name: {0}, radome code: {1}, serial number: {2}
-UNKNOWN_GNSS_ANTENNA = <MISSING TRANSLATION>
+UNKNOWN_GNSS_ANTENNA = antena GNSS desconocida, nombre: {0}, código de radomo: {1}, número de serie: {2}
 
 # unknown GNSS frequency, system: {0}, frequency code: {1} (line {2}, file {3})
-UNKNOWN_GNSS_FREQUENCY = <MISSING TRANSLATION>
+UNKNOWN_GNSS_FREQUENCY = frecuencia GNSS desconocida, sistema: {0}, código de frecuencia: {1} (línea {2}, archivo {3})
 
 # frequency {0} is not supported by antenna {1}
 UNSUPPORTED_FREQUENCY_FOR_ANTENNA = frecuencia {0} no tenida en cuenta por la antena {1}
@@ -907,40 +907,40 @@ HEADER_NOT_WRITTEN = la cabezera del fichero {0} aún no se ha escrito
 HEADER_ALREADY_WRITTEN = la cabezera del fichero {0} ya se ha escrito
 
 # Cannot start the propagation from an infinitely far date
-CANNOT_START_PROPAGATION_FROM_INFINITY = <MISSING TRANSLATION>
+CANNOT_START_PROPAGATION_FROM_INFINITY = no se puede iniciar una propagación a partir de una fecha infinitamente lejana
 
 # Too long time gap between data points: {0} s
-TOO_LONG_TIME_GAP_BETWEEN_DATA_POINTS = <MISSING TRANSLATION>
+TOO_LONG_TIME_GAP_BETWEEN_DATA_POINTS = intervalo de tiempo demasiado largo entre puntos de datos: {0} s
 
 # invalid satellite id {0}
-INVALID_SATELLITE_ID = <MISSING TRANSLATION>
+INVALID_SATELLITE_ID = identificador de satélite inválido {0}
 
 # EOP interpolation degree must be of the form 4k-1, got {0}
-WRONG_EOP_INTERPOLATION_DEGREE = <MISSING TRANSLATION>
+WRONG_EOP_INTERPOLATION_DEGREE = el grado de interpolación para los EOP debe ser de la forma 4k-1, se ha recibió {0}
 
 # number of planes {0} is inconsistent with number of satellites {1} in Walker constellation
-WALKER_INCONSISTENT_PLANES = <MISSING TRANSLATION>
+WALKER_INCONSISTENT_PLANES = número de planos {0} inconsistente con el número de satélites {1} en una constelación Walker 
 
 # Infinite value appears during computation of atmospheric density in NRLMSISE00 model
-INFINITE_NRLMSISE00_DENSITY = <MISSING TRANSLATION>
+INFINITE_NRLMSISE00_DENSITY = valor infinito obtenido durante el cálculo de la densidad atmosférica en modelo NRLMSISE00
 
 # Propagator builder cannot be cloned
-PROPAGATOR_BUILDER_NOT_CLONEABLE = <MISSING TRANSLATION>
+PROPAGATOR_BUILDER_NOT_CLONEABLE = el constructor de propagador no se puede clonar
 
 # field "{0}" is too long, maximum length is {1} characters
-FIELD_TOO_LONG = <MISSING TRANSLATION>
+FIELD_TOO_LONG = campo "{0}" demasiado largo, la longitud máxima es {1} caracteres
 
 # Process covariance expecting dimension {0}, got {1}
-WRONG_PROCESS_COVARIANCE_DIMENSION = <MISSING TRANSLATION>
+WRONG_PROCESS_COVARIANCE_DIMENSION = la dimensión esperada para la covarianza de modelo es {0}, pero se recibió {1}
 
 # Measurement covariance expecting dimension {0}, got {1}
-WRONG_MEASUREMENT_COVARIANCE_DIMENSION = <MISSING TRANSLATION>
+WRONG_MEASUREMENT_COVARIANCE_DIMENSION = la dimensión esperada para la covarianza de medidas es {0}, pero se recibió {1}
 
 # cannot parse data {0}
-CANNOT_PARSE_DATA = <MISSING TRANSLATION>
+CANNOT_PARSE_DATA = no se puede procesar el dato {0}
 
 # covariance must be square
-COVARIANCE_MUST_BE_SQUARE = <MISSING TRANSLATION>
+COVARIANCE_MUST_BE_SQUARE = la matriz de covarianza debe ser cuadrada
 
 # state vector (dimension {0}) and covariance (dimension {1}) are inconsistent
-INCONSISTENT_STATE_DIMENSIONS = <MISSING TRANSLATION>
+INCONSISTENT_STATE_DIMENSIONS = las dimensiones del vector de estado ({0}) y de la covarianza ({1}) son incompatibles
