@@ -52,10 +52,10 @@ public class CRD {
     public static final Pattern PATTERN_NAN = Pattern.compile(STR_NAN);
 
     /** List of comments contained in the file. */
-    private List<String> comments;
+    private final List<String> comments;
 
     /** List of data blocks contain in the CDR file. */
-    private List<CRDDataBlock> dataBlocks;
+    private final List<CRDDataBlock> dataBlocks;
 
     /**
      * Constructor.
@@ -127,25 +127,25 @@ public class CRD {
         private CRDConfiguration configurationRecords;
 
         /** Range records. */
-        private List<RangeMeasurement> rangeData;
+        private final List<RangeMeasurement> rangeData;
 
         /** Meteorological records. */
         private final SortedSet<MeteorologicalMeasurement> meteoData;
 
         /** Pointing angles records. */
-        private List<AnglesMeasurement> anglesData;
+        private final List<AnglesMeasurement> anglesData;
 
         /** RangeSupplement records. */
-        private List<RangeSupplement> rangeSupplementData;
+        private final List<RangeSupplement> rangeSupplementData;
 
         /** Session statistics record(s). */
-        private List<SessionStatistics> sessionStatisticsData;
+        private final List<SessionStatistics> sessionStatisticsData;
 
         /** Calibration Record(s). */
-        private List<Calibration> calibrationData;
+        private final List<Calibration> calibrationData;
 
         /** Calibration detail record(s). */
-        private List<CalibrationDetail> calibrationDetailData;
+        private final List<CalibrationDetail> calibrationDetailData;
 
         /**
          * Constructor.
@@ -431,7 +431,7 @@ public class CRD {
     public static class RangeMeasurement implements TimeStamped {
 
         /** Data epoch. */
-        private AbsoluteDate date;
+        private final AbsoluteDate date;
 
         /** Time of flight [s]. */
         private final double timeOfFlight;
@@ -868,7 +868,7 @@ public class CRD {
     public static class RangeSupplement implements TimeStamped {
 
         /** Data epoch. */
-        private AbsoluteDate date;
+        private final AbsoluteDate date;
 
         /** System configuration ID. */
         private final String systemConfigurationId;
@@ -1004,7 +1004,7 @@ public class CRD {
     public static class MeteorologicalMeasurement implements TimeStamped {
 
         /** Data epoch. */
-        private AbsoluteDate date;
+        private final AbsoluteDate date;
 
         /** Surface pressure [bar]. */
         private final double pressure;
@@ -1123,7 +1123,7 @@ public class CRD {
     public static class AnglesMeasurement implements TimeStamped {
 
         /** Data epoch. */
-        private AbsoluteDate date;
+        private final AbsoluteDate date;
 
         /** Azimuth [rad]. */
         private final double azimuth;
@@ -1441,7 +1441,6 @@ public class CRD {
 
         /**
          * Type of data.
-         *
          * 0=station combined transmit and receive calibration (“normal” SLR/LLR)
          * 1=station transmit calibration (e.g., one-way ranging to transponders)
          * 2=station receive calibration
@@ -1483,7 +1482,6 @@ public class CRD {
 
         /**
          * Calibration Type Indicator.
-         *
          * 0=not used or undefined
          * 1=nominal (from once off assessment)
          * 2=external calibrations
@@ -1496,7 +1494,6 @@ public class CRD {
 
         /**
          * Calibration Shift Type Indicator.
-         *
          * 0=not used or undefined
          * 1=nominal (from once off assessment)
          * 2=pre- to post- Shift
@@ -1506,7 +1503,6 @@ public class CRD {
         private final int shiftTypeIndicator;
 
         /** Detector Channel.
-         *
          * 0=not applicable or “all”
          * 1-4 for quadrant
          * 1-n for many channels
@@ -1515,7 +1511,6 @@ public class CRD {
 
         /**
          * Calibration Span.
-         *
          * 0 = not applicable (e.g. Calibration type indicator is “nominal”)
          * 1 = Pre-calibration only
          * 2 = Post-calibration only

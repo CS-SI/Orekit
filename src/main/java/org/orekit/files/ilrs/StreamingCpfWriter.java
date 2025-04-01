@@ -263,8 +263,7 @@ public class StreamingCpfWriter {
         /**
          * Create a new segment writer.
          *
-         * @param frame    for the output states. Used by {@link #handleStep(SpacecraftState,
-         *                 boolean)}.
+         * @param frame    for the output states. Used by {@link #handleStep(SpacecraftState)}.
          */
         private Segment(final Frame frame) {
             this.frame = frame;
