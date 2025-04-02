@@ -220,6 +220,7 @@
         * implementation of the Extended Semi-analytical Kalman Filter
         * implementation of the Unscented Kalman Filter
         * implementation of the Unscented Semi-analytical Kalman Filter
+        * RTS (Rauch-Tung-Striebel) smoothing step over results
     * parameters estimation
         * orbital parameters estimation (or only a subset if desired)
         * force model parameters estimation (drag coefficients, radiation pressure coefficients,
