@@ -727,6 +727,31 @@ public class HatanakaCompressFilterTest {
         Assertions.assertEquals(89, mapE11.get(PredefinedObservationType.S8Q));
 
         digester.checkDigest();
+    }
+
+    @Test
+    public void testBundleByDates() {
+        final String name = "rinex/YEBE00ESP_R_20230891800_01H_30S_MO.crx.gz";
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
+                                            () -> Utils.class.getClassLoader().getResourceAsStream(name));
+        final DataSource dataSource = new HatanakaCompressFilter().filter(new GzipFilter().filter(raw));
+        final RinexObservation rinexObservation = new RinexObservationParser().parse(dataSource);
+        int index = 0;
+        AbsoluteDate previous = null;
+        int bundleCount = 0;
+        for (final List<ObservationDataSet> bundle : rinexObservation.bundleByDates()) {
+            ++bundleCount;
+            final AbsoluteDate date = bundle.get(0).getDate();
+            if (previous != null) {
+                Assertions.assertEquals(rinexObservation.getHeader().getInterval(), date.durationFrom(previous), 1.0e-15);
+            }
+            for (final ObservationDataSet obs : bundle) {
+                Assertions.assertSame(rinexObservation.getObservationDataSets().get(index++), obs);
+                Assertions.assertEquals(0, obs.getDate().durationFrom(date), 1.0e-15);
+            }
+            previous = date;
+        }
+        Assertions.assertEquals(120, bundleCount);
 
     }
 

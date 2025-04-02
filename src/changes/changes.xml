@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="luc" type="add" issue="1695">
+            Allowed retrieval of Rinex observations bundled by dates.
+        </action>
         <action dev="luc" type="add" issue="1690">
             Fixed dates formatting in some files format using fixed accuracy.
         </action>
