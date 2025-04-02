@@ -28,6 +28,56 @@ import org.orekit.utils.ParameterDriversList;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Perform an RTS (Rauch-Tung-Striebel) smoothing step over results from a sequential estimator.
+ *
+ * <p>The Kalman and Unscented sequential estimators produce a state (mean and covariance) after processing each
+ * measurement.  This state is a statistical summary of all the information provided to the filter, from the
+ * measurements and model of the spacecraft motion, up until the latest measurement.  A smoother produces estimates that
+ * are summaries of information over <em>all</em> measurements, both past and future.</p>
+ *
+ * <p>For example, if a filter processes
+ * measurements from time 1 to 10, then the filter state at time 5 uses measurement information up to time 5, while
+ * the smoother state at time 5 uses measurement information from the entire interval, times 1 to 10.  This typically
+ * results in more accurate estimates, with more information reducing the uncertainty.</p>
+ *
+ * <p>This smoother is implemented using the {@link KalmanObserver} mechanism.  The
+ * smoother collects data from the forward estimation over the measurements, then applies a backward pass to
+ * calculate the smoothed estimates.  Smoothed estimates are collected into a list of
+ * {@link PhysicalEstimatedState}, containing a timestamp, mean and covariance over all estimated parameters
+ * (orbital, propagation and measurement).  The order of the parameters in these states is the same as the
+ * underlying sequential estimator, for example from a call to {@link KalmanEstimator#getPhysicalEstimatedState()}.</p>
+ *
+ * <p>The smoother is compatible with the Kalman and Unscented sequential estimators, but does not support the
+ * semi-analytical equivalents.</p>
+ *
+ * <p>The following code snippet demonstrates how to attach the smoother to a filter and retrieve smoothed states:</p>
+ *
+ * <pre>
+ *     // Build the Kalman filter
+ *     final KalmanEstimator kalmanEstimator = new KalmanEstimatorBuilder().
+ *         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
+ *         build();
+ *
+ *     // Add smoother observer to filter
+ *     final RtsSmoother rtsSmoother = new RtsSmoother(kalmanEstimator);
+ *     kalmanEstimator.setObserver(rtsSmoother);
+ *
+ *     // Perform forward filtering over the measurements
+ *     Propagator[] estimated = kalmanEstimator.processMeasurements(measurements);
+ *
+ *     // Perform backwards smoothing and collect the results
+ *     List<PhysicalEstimatedState> smoothedStates = rtsSmoother.backwardsSmooth();
+ * </pre>
+ *
+ * <p>Note that the smoother stores data from every filter step, leading to high memory usage for long-duration runs
+ * with numerous measurements.</p>
+ *
+ * @see KalmanEstimatorBuilder
+ * @see UnscentedKalmanEstimatorBuilder
+ * @see "S&auml;rkk&auml; S. Bayesian Filtering and Smoothing. Cambridge University Press, 2013."
+ * @author Mark Rutten
+ * @since 13.0
+ */
 public class RtsSmoother implements KalmanObserver {
 
     /** Smoother. */
@@ -51,7 +101,10 @@ public class RtsSmoother implements KalmanObserver {
     /** Reference states for unnormalising estimates. */
     private final List<RealVector> referenceStates;
 
-    /** Constructor.
+    /** Smoother observer constructor from a sequential estimator.
+     * This smoother constructor requires access to the underlying estimator to initialise some information not
+     * available from {@link KalmanEstimation} during {@link RtsSmoother#init}, including the estimated parameters
+     * drivers (orbital, propagation and measurements).
      * @param estimator the Kalman estimator
      */
     public RtsSmoother(final AbstractKalmanEstimator estimator) {
@@ -67,18 +120,24 @@ public class RtsSmoother implements KalmanObserver {
         estimator.getKalmanFilter().setObserver(smoother);
     }
 
-
+    /** {@inheritDoc}
+     */
     @Override
     public void init(final KalmanEstimation estimation) {
         // Get the first reference state
         referenceStates.add(getReferenceState());
     }
 
+    /** {@inheritDoc} This accumulates the filter states as the sequential estimator processes measurements.
+     */
     @Override
     public void evaluationPerformed(final KalmanEstimation estimation) {
         referenceStates.add(getReferenceState());
     }
 
+    /** Perform a RTS backwards smoothing recursion over the filtered states collected by the observer.
+     * @return a list of {@link PhysicalEstimatedState}
+     */
     public List<PhysicalEstimatedState> backwardsSmooth() {
 
         // Backwards smoothing step
