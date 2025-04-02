@@ -28,6 +28,9 @@ package org.orekit.estimation.sequential;
 @FunctionalInterface
 public interface KalmanObserver {
 
+    /** Initialise the observer on the initial state of the filter, before processing the first measurement.
+     * @param estimation estimation performed by Kalman estimator
+     */
     default void init(KalmanEstimation estimation) {
     }
 
