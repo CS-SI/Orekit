@@ -78,6 +78,7 @@ public class GeoMagneticModelParser {
     /** Parse a model.
      * @param dataSource source data
      * @return parsed fields
+     * @throws IOException if an I/O error occurs
      */
     public List<GeoMagneticField> parse(final DataSource dataSource) throws IOException {
 

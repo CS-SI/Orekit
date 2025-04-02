@@ -66,7 +66,7 @@ import java.util.List;
  *     Propagator[] estimated = kalmanEstimator.processMeasurements(measurements);
  *
  *     // Perform backwards smoothing and collect the results
- *     List<PhysicalEstimatedState> smoothedStates = rtsSmoother.backwardsSmooth();
+ *     rtsSmoother.backwardsSmooth();
  * </pre>
  *
  * <p>Note that the smoother stores data from every filter step, leading to high memory usage for long-duration runs
