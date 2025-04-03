@@ -1,946 +1,946 @@
 # internal error, please notify development team by creating a new topic at {0}
-INTERNAL_ERROR = error intern, si us plau, informi del problem crant un nou tema {0}
+INTERNAL_ERROR=error intern, si us plau, informi del problem crant un nou tema {0}
 
 # altitude ({0} m) is below the {1} m allowed threshold
-ALTITUDE_BELOW_ALLOWED_THRESHOLD = altitud ({0} m) inferior al llindar permès {1} m
+ALTITUDE_BELOW_ALLOWED_THRESHOLD=altitud ({0} m) inferior al llindar permès {1} m
 
 # point is inside ellipsoid
-POINT_INSIDE_ELLIPSOID = el punt es troba dins de l''el·lipsoide
+POINT_INSIDE_ELLIPSOID=el punt es troba dins de l''el·lipsoide
 
 # trajectory inside the Brillouin sphere (r = {0})
-TRAJECTORY_INSIDE_BRILLOUIN_SPHERE = trajectòria dins l''esfera de Brillouin (r = {0})
+TRAJECTORY_INSIDE_BRILLOUIN_SPHERE=trajectòria dins l''esfera de Brillouin (r = {0})
 
 # almost equatorial orbit (i = {0} degrees)
-ALMOST_EQUATORIAL_ORBIT = òrbita quasi equatorial (i = {0} grados)
+ALMOST_EQUATORIAL_ORBIT=òrbita quasi equatorial (i = {0} grados)
 
 # almost critically inclined orbit (i = {0} degrees)
-ALMOST_CRITICALLY_INCLINED_ORBIT = òrbita amb inclinació quasi crítica (i = {0} graus)
+ALMOST_CRITICALLY_INCLINED_ORBIT=òrbita amb inclinació quasi crítica (i = {0} graus)
 
 # unable to compute {0} mean parameters after {1} iterations
-UNABLE_TO_COMPUTE_MEAN_PARAMETERS = després de {1} iteracions els paramètres mitjans de {0} no s''han aconseguit calcular
+UNABLE_TO_COMPUTE_MEAN_PARAMETERS=després de {1} iteracions els paramètres mitjans de {0} no s''han aconseguit calcular
 
 # null parent for frame {0}
-NULL_PARENT_FOR_FRAME = sistema de referencia {0} orfe en l'arbre de sistemes de referencia
+NULL_PARENT_FOR_FRAME=sistema de referencia {0} orfe en l'arbre de sistemes de referencia
 
 # frame {0} is already attached to frame {1}
-FRAME_ALREADY_ATTACHED = el sistema de referencia {0} ja está lligat al sistema de referencia {1}
+FRAME_ALREADY_ATTACHED=el sistema de referencia {0} ja está lligat al sistema de referencia {1}
 
 # frame {0} is not attached to the main frames tree
-FRAME_NOT_ATTACHED = el sistema de referencia {0} encara no está lligat a l''arbre principal de sistemas de referencia
+FRAME_NOT_ATTACHED=el sistema de referencia {0} encara no está lligat a l''arbre principal de sistemas de referencia
 
 # frame {0} is an ancestor of both frames {1} and {2}
-FRAME_ANCESTOR_OF_BOTH_FRAMES = el sistema de referencia {0} és avantpassat de ambdós sistemes de referencia {1} y {2}
+FRAME_ANCESTOR_OF_BOTH_FRAMES=el sistema de referencia {0} és avantpassat de ambdós sistemes de referencia {1} y {2}
 
 # frame {0} is an ancestor of neither frame {1} nor {2}
-FRAME_ANCESTOR_OF_NEITHER_FRAME = el sistema de referencia {0} no és avantpassat ni del sistema de referencia {1} ni del sistema de referencia {2}
+FRAME_ANCESTOR_OF_NEITHER_FRAME=el sistema de referencia {0} no és avantpassat ni del sistema de referencia {1} ni del sistema de referencia {2}
 
 # frame {0} has depth {1}, it cannot have an ancestor {2} levels above
-FRAME_NO_NTH_ANCESTOR = el sistema de referencia {0} está a una profunditat {1}, no pot tenir un avantpassat {2} nivells per sobre
+FRAME_NO_NTH_ANCESTOR=el sistema de referencia {0} está a una profunditat {1}, no pot tenir un avantpassat {2} nivells per sobre
 
 # ITRF frame {0} not found
-NO_SUCH_ITRF_FRAME = no s''ha trobat el sistema de referencia ITRF {0}
+NO_SUCH_ITRF_FRAME=no s''ha trobat el sistema de referencia ITRF {0}
 
 # unsupported local orbital frame {0}
-UNSUPPORTED_LOCAL_ORBITAL_FRAME = sistema de referencia orbital local no reconegut {0}
+UNSUPPORTED_LOCAL_ORBITAL_FRAME=sistema de referencia orbital local no reconegut {0}
 
 # non pseudo-inertial frame "{0}"
-NON_PSEUDO_INERTIAL_FRAME = sistema de referencia no pseudo-inercial "{0}"
+NON_PSEUDO_INERTIAL_FRAME=sistema de referencia no pseudo-inercial "{0}"
 
 # data root directory {0} does not exist
-DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = repertori de dades arrel {0} inexistent
+DATA_ROOT_DIRECTORY_DOES_NOT_EXIST=repertori de dades arrel {0} inexistent
 
 # {0} is not a directory
-NOT_A_DIRECTORY = {0} no és un repertori
+NOT_A_DIRECTORY={0} no és un repertori
 
 # {0} is neither a directory nor a zip/jar archive file
-NEITHER_DIRECTORY_NOR_ZIP_OR_JAR = {0} no és ni un repertori ni un fitxer de arxiu zip/jar
+NEITHER_DIRECTORY_NOR_ZIP_OR_JAR={0} no és ni un repertori ni un fitxer de arxiu zip/jar
 
 # unable to find resource {0} in classpath
-UNABLE_TO_FIND_RESOURCE = {0} no existeix en el "classpath"
+UNABLE_TO_FIND_RESOURCE={0} no existeix en el "classpath"
 
 # no Earth Orientation Parameters loaded
-NO_EARTH_ORIENTATION_PARAMETERS_LOADED = no s''han carregat els paràmetres d''orientació de la Terra
+NO_EARTH_ORIENTATION_PARAMETERS_LOADED=no s''han carregat els paràmetres d''orientació de la Terra
 
 # missing Earth Orientation Parameters between {0} and {1}
-MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = falten paràmetred d''orientació de la Terra entre {0} i {1}
+MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES=falten paràmetred d''orientació de la Terra entre {0} i {1}
 
 # missing Earth Orientation Parameters between {0} and {1}, gap is {2,number,0.0##############E0} s
-MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES_GAP = falten paràmetred d''orientació de la Terra entre {0} y {1}, la diferència es {2,number,0.0##############E0} s
+MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES_GAP=falten paràmetred d''orientació de la Terra entre {0} y {1}, la diferència es {2,number,0.0##############E0} s
 
 # missing Earth Orientation Parameters
-NO_EARTH_ORIENTATION_PARAMETERS = falten paràmetred d''orientació de la Terra
+NO_EARTH_ORIENTATION_PARAMETERS=falten paràmetred d''orientació de la Terra
 
 # file {0} is not a supported IERS data file
-NOT_A_SUPPORTED_IERS_DATA_FILE = el fitxer {0} no és un fitxer de dades IERS reconegut
+NOT_A_SUPPORTED_IERS_DATA_FILE=el fitxer {0} no és un fitxer de dades IERS reconegut
 
 # inconsistent dates in IERS file {0}: {1}-{2}-{3} and MJD {4}
-INCONSISTENT_DATES_IN_IERS_FILE = dates {1}-{2}-{3} y MJD {4} incoherents en el fitxer IERS {0}
+INCONSISTENT_DATES_IN_IERS_FILE=dates {1}-{2}-{3} y MJD {4} incoherents en el fitxer IERS {0}
 
 # unexpected data after line {0} in file {1}: {2}
-UNEXPECTED_DATA_AFTER_LINE_IN_FILE = dades imprevistes en la linea {0} del fitxer {1} : {2}
+UNEXPECTED_DATA_AFTER_LINE_IN_FILE=dades imprevistes en la linea {0} del fitxer {1} : {2}
 
 # unexpected data at line {0} in file {1}
-UNEXPECTED_DATA_AT_LINE_IN_FILE = dades imprevistes en la linea {0} del fitxer {1}
+UNEXPECTED_DATA_AT_LINE_IN_FILE=dades imprevistes en la linea {0} del fitxer {1}
 
 # non-chronological dates in file {0}, line {1}
-NON_CHRONOLOGICAL_DATES_IN_FILE = dates no cronològiques en el fitxer {0} en la linea {1}
+NON_CHRONOLOGICAL_DATES_IN_FILE=dates no cronològiques en el fitxer {0} en la linea {1}
 
 # inconsistent sampling date: expected {0} but got {1}
-INCONSISTENT_SAMPLING_DATE = dates de les mostres incoherents: s''esperava {0} , però s''ha donat {1}
+INCONSISTENT_SAMPLING_DATE=dates de les mostres incoherents: s''esperava {0} , però s''ha donat {1}
 
 # no IERS UTC-TAI history data loaded
-NO_IERS_UTC_TAI_HISTORY_DATA_LOADED = les dades històriques IERSD UTC-TAI no estan carregades
+NO_IERS_UTC_TAI_HISTORY_DATA_LOADED=les dades històriques IERSD UTC-TAI no estan carregades
 
 # no entries found in IERS UTC-TAI history file {0}
-NO_ENTRIES_IN_IERS_UTC_TAI_HISTORY_FILE =  no es troben dades en el fitxer històric UTC-TAI del IERS {0}
+NO_ENTRIES_IN_IERS_UTC_TAI_HISTORY_FILE=no es troben dades en el fitxer històric UTC-TAI del IERS {0}
 
 # missing serie j = {0} in file {1} (line {2})
-MISSING_SERIE_J_IN_FILE = falta la sèrie j = {0} en el fitxer {1} (linea {2})
+MISSING_SERIE_J_IN_FILE=falta la sèrie j = {0} en el fitxer {1} (linea {2})
 
 # cannot parse both τ and γ from the same Poissons series file
-CANNOT_PARSE_BOTH_TAU_AND_GAMMA = no se pueden llegir a la vegada τ i γ de un mateix fitxer de sèrie de Poisson
+CANNOT_PARSE_BOTH_TAU_AND_GAMMA=no se pueden llegir a la vegada τ i γ de un mateix fitxer de sèrie de Poisson
 
 # unexpected end of file {0} (after line {1})
-UNEXPECTED_END_OF_FILE_AFTER_LINE = fi imprevista del fitxer {0} (després de la linea {1})
+UNEXPECTED_END_OF_FILE_AFTER_LINE=fi imprevista del fitxer {0} (després de la linea {1})
 
 # unable to parse line {0} of file {1}:\n{2}
-UNABLE_TO_PARSE_LINE_IN_FILE = impossible d''analitzar la linea {0} del fitxer {1} :\n{2}
+UNABLE_TO_PARSE_LINE_IN_FILE=impossible d''analitzar la linea {0} del fitxer {1} :\n{2}
 
 # unable to parse element {0} at line {1}, file {2}
-UNABLE_TO_PARSE_ELEMENT_IN_FILE = impossible d''analizar l''element {0} de la linea {1} del fitxer {2}
+UNABLE_TO_PARSE_ELEMENT_IN_FILE=impossible d''analizar l''element {0} de la linea {1} del fitxer {2}
 
 # unable to find file {0}
-UNABLE_TO_FIND_FILE = impossible de trobar el fitxer {0}
+UNABLE_TO_FIND_FILE=impossible de trobar el fitxer {0}
 
 # positive flow rate (q: {0})
-POSITIVE_FLOW_RATE = flux de massa positiu (q : {0})
+POSITIVE_FLOW_RATE=flux de massa positiu (q : {0})
 
 # no gravity field data loaded
-NO_GRAVITY_FIELD_DATA_LOADED = les dades del camp gravitacional no estan carregades
+NO_GRAVITY_FIELD_DATA_LOADED=les dades del camp gravitacional no estan carregades
 
 # gravity field normalization underflow for degree {0} and order {1}
-GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = desbordament aritmètic en la normalització d''un camp gravitacional pel grau {0} i l''ordre {1}
+GRAVITY_FIELD_NORMALIZATION_UNDERFLOW=desbordament aritmètic en la normalització d''un camp gravitacional pel grau {0} i l''ordre {1}
 
 # no ocean tide data loaded
-NO_OCEAN_TIDE_DATA_LOADED = les dades de les marees oceàniques no estan carregades
+NO_OCEAN_TIDE_DATA_LOADED=les dades de les marees oceàniques no estan carregades
 
 # ocean tide data file {0} limited to degree {1} and order {2}
-OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS = el fitxer de dades de les marees oceàniques {0} està limitat al grau {1} i l''ordre {2}
+OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS=el fitxer de dades de les marees oceàniques {0} està limitat al grau {1} i l''ordre {2}
 
 # load deformation coefficients limited to degree {0}, cannot parse degree {1} term from file {2}
-OCEAN_TIDE_LOAD_DEFORMATION_LIMITS = els coeficient de deformació sota càrrega estan limitats a grau {0}, no es poden llegir termes de grado {1} en el fitxer {2}
+OCEAN_TIDE_LOAD_DEFORMATION_LIMITS=els coeficient de deformació sota càrrega estan limitats a grau {0}, no es poden llegir termes de grado {1} en el fitxer {2}
 
 # polar trajectory (distance to polar axis: {0})
-POLAR_TRAJECTORY = trajectòria polar (distància al eix dels pols: {0})
+POLAR_TRAJECTORY=trajectòria polar (distància al eix dels pols: {0})
 
 # unexpected format error for file {0} with loader {1}
-UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER = error de format imprevist pel fitxer {0} al carregar-lo amb {1}
+UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER=error de format imprevist pel fitxer {0} al carregar-lo amb {1}
 
 # duplicated gravity field coefficient {0}({1}, {2}) in file {3}
-DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE = coeficient {0}({1}, {2}) de camp gravitacional duplicat en el fitxer {3}
+DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE=coeficient {0}({1}, {2}) de camp gravitacional duplicat en el fitxer {3}
 
 # missing gravity field coefficient {0}({1}, {2}) in file {3}
-MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE = falta el coeficient {0}({1}, {2}) del camp gravitacional en el fitxer {3}
+MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE=falta el coeficient {0}({1}, {2}) del camp gravitacional en el fitxer {3}
 
 # too large degree (n = {0}, potential maximal degree is {1})
-TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = grau massa alt (n = {0}, el grau de potencial màxim és {1})
+TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD=grau massa alt (n = {0}, el grau de potencial màxim és {1})
 
 # too large order (m = {0}, potential maximal order is {1})
-TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = ordre massa alt (n = {0}, l''ordre de potencial màxim és {1})
+TOO_LARGE_ORDER_FOR_GRAVITY_FIELD=ordre massa alt (n = {0}, l''ordre de potencial màxim és {1})
 
 # no term ({0}, {1}) in a {2}x{3} spherical harmonics decomposition
-WRONG_DEGREE_OR_ORDER = cap terme ({0}, {1}) en una descomposició armònica esfèrica de {2}x{3}
+WRONG_DEGREE_OR_ORDER=cap terme ({0}, {1}) en una descomposició armònica esfèrica de {2}x{3}
 
 # wrong orbital elements for averaging theory
-WRONG_ELEMENTS_FOR_AVERAGING_THEORY = <MISSING TRANSLATION>
+WRONG_ELEMENTS_FOR_AVERAGING_THEORY=<MISSING TRANSLATION>
 
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
-SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = s''han trobat varies dates de referència ({0} i {1} difereixen de {3,number,0.0##############E0} s) en el fitxer de camp gravitacional {2}
+SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD=s''han trobat varies dates de referència ({0} i {1} difereixen de {3,number,0.0##############E0} s) en el fitxer de camp gravitacional {2}
 
 # no TLE data available for object {0}
-NO_TLE_FOR_OBJECT = no hi ha dades TLE disponibles per l''objecte {0}
+NO_TLE_FOR_OBJECT=no hi ha dades TLE disponibles per l''objecte {0}
 
 # no TLE data available for launch year {0}, launch number {1}, launch piece {2}
-NO_TLE_FOR_LAUNCH_YEAR_NUMBER_PIECE = no hi ha dades TLE disponibles per l''any de llançament {0}, número de llançament {1}, objecte llançat {2}
+NO_TLE_FOR_LAUNCH_YEAR_NUMBER_PIECE=no hi ha dades TLE disponibles per l''any de llançament {0}, número de llançament {1}, objecte llançat {2}
 
 # lines {0} and {1} are not TLE lines:\n{0}: "{2}"\n{1}: "{3}"
-NOT_TLE_LINES = les lineas {0} i {1} no són lineas TLE:\n{0}: "{2}"\n{1}: "{3}"
+NOT_TLE_LINES=les lineas {0} i {1} no són lineas TLE:\n{0}: "{2}"\n{1}: "{3}"
 
 # expected a second TLE line after line {0}:\n{0}: "{1}"
-MISSING_SECOND_TLE_LINE = esperava una segona linea TLE després de la linea {0}:\n{0}: "{1}"
+MISSING_SECOND_TLE_LINE=esperava una segona linea TLE després de la linea {0}:\n{0}: "{1}"
 
 # TLE lines do not refer to the same object:\n{0}\n{1}
-TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = les lineas TLE no es refereixen al mateix objecte:\n{0}\n{1}
+TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT=les lineas TLE no es refereixen al mateix objecte:\n{0}\n{1}
 
 # invalid TLE parameter for object {0}: {1} = {2}
-TLE_INVALID_PARAMETER = parámetre del TLE invàlid per l''objecte {0}: {1} = {2}
+TLE_INVALID_PARAMETER=parámetre del TLE invàlid per l''objecte {0}: {1} = {2}
 
 # wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
-TLE_CHECKSUM_ERROR = suma de control incorrecta per la linea TLE {0}, en comptes del valor esperat {1} s''obté {2} ({3})
+TLE_CHECKSUM_ERROR=suma de control incorrecta per la linea TLE {0}, en comptes del valor esperat {1} s''obté {2} ({3})
 
 # no TLE data available
-NO_TLE_DATA_AVAILABLE = no hi ha dades TLE disponibles
+NO_TLE_DATA_AVAILABLE=no hi ha dades TLE disponibles
 
 # spacecraft mass is not positive: {0} kg
-NOT_POSITIVE_SPACECRAFT_MASS = la massa del vehícle espacial no és positiva: {0} kg
+NOT_POSITIVE_SPACECRAFT_MASS=la massa del vehícle espacial no és positiva: {0} kg
 
 # too large eccentricity for propagation model: e = {0}
-TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL = l''excentricitat és massa alta pel model de propagació (e : {0})
+TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL=l''excentricitat és massa alta pel model de propagació (e : {0})
 
 # no solar activity available at {0}, data available only in range [{1}, {2}]
-NO_SOLAR_ACTIVITY_AT_DATE = no hi ha paràmetres d''activitat solar disponibles el {0}, dades disponibles únicament per l''interval [{1}, {2}]
+NO_SOLAR_ACTIVITY_AT_DATE=no hi ha paràmetres d''activitat solar disponibles el {0}, dades disponibles únicament per l''interval [{1}, {2}]
 
 # non-existent month {0}
-NON_EXISTENT_MONTH = mes inexistent {0}
+NON_EXISTENT_MONTH=mes inexistent {0}
 
 # non-existent date {0}-{1}-{2}
-NON_EXISTENT_YEAR_MONTH_DAY = data inexistent {0}-{1}-{2}
+NON_EXISTENT_YEAR_MONTH_DAY=data inexistent {0}-{1}-{2}
 
 # non-existent week date {0}-W{1}-{2}
-NON_EXISTENT_WEEK_DATE = data de la semana inexistent {0}-W{1}-{2}
+NON_EXISTENT_WEEK_DATE=data de la semana inexistent {0}-W{1}-{2}
 
 # non-existent date {0}
-NON_EXISTENT_DATE = fecha inexistente {0}
+NON_EXISTENT_DATE=fecha inexistente {0}
 
 # no day number {0} in year {1}
-NON_EXISTENT_DAY_NUMBER_IN_YEAR = no hi ha número del dia {0} en l''any {1}
+NON_EXISTENT_DAY_NUMBER_IN_YEAR=no hi ha número del dia {0} en l''any {1}
 
 # non-existent time {0}:{1}:{2}
-NON_EXISTENT_HMS_TIME = hora inexistent {0}:{1}:{2}
+NON_EXISTENT_HMS_TIME=hora inexistent {0}:{1}:{2}
 
 # non-existent time {0}
-NON_EXISTENT_TIME = hora inexistent {0}
+NON_EXISTENT_TIME=hora inexistent {0}
 
 # out of range seconds number: {0}
-OUT_OF_RANGE_SECONDS_NUMBER = número de segons fora de rang : {0}
+OUT_OF_RANGE_SECONDS_NUMBER=número de segons fora de rang : {0}
 
 # out of range seconds number: {0} is not in [{1}, {2}]
-OUT_OF_RANGE_SECONDS_NUMBER_DETAIL = número de segoms fora de rang : {0} no es troba entre [{1}, {2}]
+OUT_OF_RANGE_SECONDS_NUMBER_DETAIL=número de segoms fora de rang : {0} no es troba entre [{1}, {2}]
 
 # angle type not supported, supported angles: {0}, {1} and {2}
-ANGLE_TYPE_NOT_SUPPORTED = tipus d''angle no reconegut, angles reconeguts: {0}, {1} i {2}
+ANGLE_TYPE_NOT_SUPPORTED=tipus d''angle no reconegut, angles reconeguts: {0}, {1} i {2}
 
 # satellite collided with target
-SATELLITE_COLLIDED_WITH_TARGET = el satèl·lit col·lisiona contra el seu objectiu
+SATELLITE_COLLIDED_WITH_TARGET=el satèl·lit col·lisiona contra el seu objectiu
 
 # attitude pointing law misses ground
-ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND = la llei d''actitud no apunta cap al terra
+ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND=la llei d''actitud no apunta cap al terra
 
 # {0} seconds transition time for attitudes switch is too short, should be longer than {1} seconds
-TOO_SHORT_TRANSITION_TIME_FOR_ATTITUDES_SWITCH = {0} segons per una transició entre actituds és poc temps, es necesitarien al menys {1} segons
+TOO_SHORT_TRANSITION_TIME_FOR_ATTITUDES_SWITCH={0} segons per una transició entre actituds és poc temps, es necesitarien al menys {1} segons
 
 # orbit date ({0}) does not match attitude date ({1})
-ORBIT_AND_ATTITUDE_DATES_MISMATCH = la data de la òrbita({0}) no és coherent amb la data de l''actitud ({1})
+ORBIT_AND_ATTITUDE_DATES_MISMATCH=la data de la òrbita({0}) no és coherent amb la data de l''actitud ({1})
 
 # frame ({0}) does not match frame ({1})
-FRAMES_MISMATCH = el sistema de referència ({0}) no correspon al sistema de referència ({1})
+FRAMES_MISMATCH=el sistema de referència ({0}) no correspon al sistema de referència ({1})
 
 # initial state not specified for orbit propagation
-INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = estat inicial no especificat per l''extrapolació d''òrbita
+INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION=estat inicial no especificat per l''extrapolació d''òrbita
 
 # target event date must be before {1} by {3,number,0.0##############E0} seconds or after {2} by {3,number,0.0##############E0} seconds, but target event date {0} is {4,number,0.0##############E0} seconds before {1} and {5,number,0.0##############E0} seconds after {2} so it cannot be added
-EVENT_DATE_TOO_CLOSE = la data objectiu de l''esdeveniment ha de ser anterior a {1} de {3,number,0.0##############E0} segons o posterior a {2} de {3,number,0.0##############E0} segons; no obstant, la data objectiu {0} és {4,number,0.0##############E0} segons abans de {1} i {5,number,0.0##############E0} segons després de {2}, per això no es pot afegir
+EVENT_DATE_TOO_CLOSE=la data objectiu de l''esdeveniment ha de ser anterior a {1} de {3,number,0.0##############E0} segons o posterior a {2} de {3,number,0.0##############E0} segons; no obstant, la data objectiu {0} és {4,number,0.0##############E0} segons abans de {1} i {5,number,0.0##############E0} segons després de {2}, per això no es pot afegir
 
 # trying to propagate Cartesian adjoint whilst integration equations of motion with non-Cartesian coordinates
-WRONG_COORDINATES_FOR_ADJOINT_EQUATION = <MISSING TRANSLATION>
+WRONG_COORDINATES_FOR_ADJOINT_EQUATION=<MISSING TRANSLATION>
 
 # unable to read header record from JPL ephemerides binary file {0}
-UNABLE_TO_READ_JPL_HEADER = impossible de llegir la capçalera del fitxer binari d''efemèrides del JPL {0}
+UNABLE_TO_READ_JPL_HEADER=impossible de llegir la capçalera del fitxer binari d''efemèrides del JPL {0}
 
 # inconsistent values of astronomical unit in JPL ephemerides files: ({0} and {1})
-INCONSISTENT_ASTRONOMICAL_UNIT_IN_FILES = valors incoherents de l''unitat astronòmica en els fitxers d''efemèrides del JPL : ({0} y {1})
+INCONSISTENT_ASTRONOMICAL_UNIT_IN_FILES=valors incoherents de l''unitat astronòmica en els fitxers d''efemèrides del JPL : ({0} y {1})
 
 # inconsistent values of Earth/Moon mass ratio in JPL ephemerides files: ({0} and {1})
-INCONSISTENT_EARTH_MOON_RATIO_IN_FILES = valors incoherents de la relació de massa Terra/Lluna en els fitxers d''efemèrides del JPL : ({0} y {1})
+INCONSISTENT_EARTH_MOON_RATIO_IN_FILES=valors incoherents de la relació de massa Terra/Lluna en els fitxers d''efemèrides del JPL : ({0} y {1})
 
 # no data loaded for celestial body {0}
-NO_DATA_LOADED_FOR_CELESTIAL_BODY = no hi ha dades carregades pel cos celestial {0}
+NO_DATA_LOADED_FOR_CELESTIAL_BODY=no hi ha dades carregades pel cos celestial {0}
 
 # file {0} is not a JPL ephemerides binary file
-NOT_A_JPL_EPHEMERIDES_BINARY_FILE = el fitxer {0} no és un fitxer d''efemèrides binari del JPL
+NOT_A_JPL_EPHEMERIDES_BINARY_FILE=el fitxer {0} no és un fitxer d''efemèrides binari del JPL
 
 # file {0} is not a Marshall Solar Activity Future Estimation (MSAFE) file
-NOT_A_MARSHALL_SOLAR_ACTIVITY_FUTURE_ESTIMATION_FILE = el fitxer {0} no és un fitxer d''Estimació d''Activitat Solar Futura Marshall (MSAFE)
+NOT_A_MARSHALL_SOLAR_ACTIVITY_FUTURE_ESTIMATION_FILE=el fitxer {0} no és un fitxer d''Estimació d''Activitat Solar Futura Marshall (MSAFE)
 
 # no JPL ephemerides binary files found
-NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND = no s''ha trobat cap fitxer binari de les efemèrides JPL
+NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND=no s''ha trobat cap fitxer binari de les efemèrides JPL
 
 # out of range date for {0} ephemerides: {1}
-OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = data fora del rang de validesa de les efemèrides « {0} » : {1}
+OUT_OF_RANGE_BODY_EPHEMERIDES_DATE=data fora del rang de validesa de les efemèrides « {0} » : {1}
 
 # out of range date: {0}, [{1}, {2}]
-OUT_OF_RANGE_DATE = data fora del rang de validesa : {0}, [{1}, {2}]
+OUT_OF_RANGE_DATE=data fora del rang de validesa : {0}, [{1}, {2}]
 
 # out of range date for ephemerides: {0} is {3,number,0.0##############E0} s before [{1}, {2}]
-OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE = data fora del rang de validesa de les efemèrides: {0} és {3,number,0.0##############E0} segons anterior a [{1}, {2}]
+OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE=data fora del rang de validesa de les efemèrides: {0} és {3,number,0.0##############E0} segons anterior a [{1}, {2}]
 
 # out of range date for ephemerides: {0} is {3,number,0.0##############E0} s after [{1}, {2}]
-OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER = data fora del rang de validesa de les efemèrides: {0} es {3,number,0.0##############E0} segons posterior a [{1}, {2}]
+OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER=data fora del rang de validesa de les efemèrides: {0} es {3,number,0.0##############E0} segons posterior a [{1}, {2}]
 
 # unexpected two elevation values: {0} and {1}, for one azimuth: {2}
-UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = dades inesperades, dos valors d''elevació: {0} i {1}, per un azimut : {2}
+UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH=dades inesperades, dos valors d''elevació: {0} i {1}, per un azimut : {2}
 
 # unsupported parameter name {0}, supported names: {1}
-UNSUPPORTED_PARAMETER_NAME = nombre de paràmetre no conegut {0}, paràmetre conegut {1}
+UNSUPPORTED_PARAMETER_NAME=nombre de paràmetre no conegut {0}, paràmetre conegut {1}
 
 # {0} parameter contains several span in its value TimeSpanMap, the {1} method must be called
-PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES = {0} paràmetre conté varis intervals en el seu valor TimeSpanMap, és necessari utiitzar {1}
+PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES={0} paràmetre conté varis intervals en el seu valor TimeSpanMap, és necessari utiitzar {1}
 
 # setPeriod was already called once on {0} parameter, another parameter should be created if the periods have to be changed
-PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET = la funció setPeriod ja ha sigut utilitzada pel paràmetre {0}, s''ha de crear un nou paràmetre
+PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET=la funció setPeriod ja ha sigut utilitzada pel paràmetre {0}, s''ha de crear un nou paràmetre
 
 # scale factor for parameter {0} is too small: {1}
-TOO_SMALL_SCALE_FOR_PARAMETER = el factor d''escala pel paràmetre {0} és massa petit: {1}
+TOO_SMALL_SCALE_FOR_PARAMETER=el factor d''escala pel paràmetre {0} és massa petit: {1}
 
 # state "{0}" is not an array
-ADDITIONAL_STATE_BAD_TYPE = <MISSING TRANSLATION>
+ADDITIONAL_STATE_BAD_TYPE=<MISSING TRANSLATION>
 
 # unknown additional data "{0}"
-UNKNOWN_ADDITIONAL_DATA = <MISSING TRANSLATION>
+UNKNOWN_ADDITIONAL_DATA=<MISSING TRANSLATION>
 
 # unknown month "{0}"
-UNKNOWN_MONTH = mes desconegut "{0}"
+UNKNOWN_MONTH=mes desconegut "{0}"
 
 # Jacobian matrix for type {0} is singular with current orbit
-SINGULAR_JACOBIAN_FOR_ORBIT_TYPE = la matriu jacobiana associada al tipus {0} és singular per l''òrbita actual
+SINGULAR_JACOBIAN_FOR_ORBIT_TYPE=la matriu jacobiana associada al tipus {0} és singular per l''òrbita actual
 
 # state Jacobian has not been initialized yet
-STATE_JACOBIAN_NOT_INITIALIZED = la matriu jacobiana de l''estat no ha estat encara inicialitzada
+STATE_JACOBIAN_NOT_INITIALIZED=la matriu jacobiana de l''estat no ha estat encara inicialitzada
 
 # state Jacobian is a {0}x{1} matrix, it should be a 6x6 matrix
-STATE_JACOBIAN_NOT_6X6 = la matriu jacobiana de l''estat és una matriu {0}x{1}, i hauria de ser una matriu 6x6
+STATE_JACOBIAN_NOT_6X6=la matriu jacobiana de l''estat és una matriu {0}x{1}, i hauria de ser una matriu 6x6
 
 # state Jacobian has {0} rows but parameters Jacobian has {1} rows
-STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = la matriu jacobiana de l''estat té {0} lineas mentres que la matriu jacobiana de paràmetres en té {1}
+STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH=la matriu jacobiana de l''estat té {0} lineas mentres que la matriu jacobiana de paràmetres en té {1}
 
 # initial Jacobian matrix has {0} columns, but {1} parameters have been selected
-INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH = la matriu jacobiana inicial té {0} columnas, mentres que {1} paràmetres han estat seleccionats
+INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH=la matriu jacobiana inicial té {0} columnas, mentres que {1} paràmetres han estat seleccionats
 
 # orbit should be either elliptic with a > 0 and e < 1 or hyperbolic with a < 0 and e > 1, a = {0}, e = {1}
-ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE = l''òrbita hauria de ser el·líptica amb a > 0 i e < 1 o, més aviat, hiperbòlica amb a < 0 i e > 1, a = {0}, e = {1}
+ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE=l''òrbita hauria de ser el·líptica amb a > 0 i e < 1 o, més aviat, hiperbòlica amb a < 0 i e > 1, a = {0}, e = {1}
 
 # true anomaly {0} out of hyperbolic range (e = {1}, {2} < v < {3})
-ORBIT_ANOMALY_OUT_OF_HYPERBOLIC_RANGE = l''anomalia verdadera {0} està fora del rang per l''òrbita hiperbòlica (e = {1}, {2} < v < {3})
+ORBIT_ANOMALY_OUT_OF_HYPERBOLIC_RANGE=l''anomalia verdadera {0} està fora del rang per l''òrbita hiperbòlica (e = {1}, {2} < v < {3})
 
 # hyperbolic orbits cannot be handled as {0} instances
-HYPERBOLIC_ORBIT_NOT_HANDLED_AS = les òrbites hiperbòliques no poden ser casos de {0}
+HYPERBOLIC_ORBIT_NOT_HANDLED_AS=les òrbites hiperbòliques no poden ser casos de {0}
 
 # invalid preamble field in CCSDS date: {0}
-CCSDS_DATE_INVALID_PREAMBLE_FIELD = camp de preàmbul invàlid en una data CCSDS : {0}
+CCSDS_DATE_INVALID_PREAMBLE_FIELD=camp de preàmbul invàlid en una data CCSDS : {0}
 
 # invalid time field length in CCSDS date: {0}, expected {1}
-CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = longitud invàlidq pel camp data en una data CCSDS : {0} en comptes del valor esperat {1}
+CCSDS_DATE_INVALID_LENGTH_TIME_FIELD=longitud invàlidq pel camp data en una data CCSDS : {0} en comptes del valor esperat {1}
 
 # missing agency epoch in CCSDS date
-CCSDS_DATE_MISSING_AGENCY_EPOCH = falta agencia de l''època de referència específica en una data CCSDS
+CCSDS_DATE_MISSING_AGENCY_EPOCH=falta agencia de l''època de referència específica en una data CCSDS
 
 # missing mandatory key {0} in CCSDS file {1}
-CCSDS_MISSING_KEYWORD = falta paraula clau {0} en el fitxer CCSDS {1}
+CCSDS_MISSING_KEYWORD=falta paraula clau {0} en el fitxer CCSDS {1}
 
 # key {0} is not allowed in format version {1}
-CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION = la paraula clau {0} no està permesa en la versió {1} del format
+CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION=la paraula clau {0} no està permesa en la versió {1} del format
 
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
-CCSDS_UNEXPECTED_KEYWORD = paraula clau inesperada en la linea {0} del fitxer CCSDS {1}:\n{2}
+CCSDS_UNEXPECTED_KEYWORD=paraula clau inesperada en la linea {0} del fitxer CCSDS {1}:\n{2}
 
 # the central body gravitational coefficient cannot be retrieved from the ODM
-CCSDS_UNKNOWN_GM = el coeficient gravitacional del cos central no es pot recuperar del ODM
+CCSDS_UNKNOWN_GM=el coeficient gravitacional del cos central no es pot recuperar del ODM
 
 # there is no spacecraft mass associated with this ODM file
-CCSDS_UNKNOWN_SPACECRAFT_MASS = no hi ha massa de satèl·lit asociada a aquest fitxer ODM
+CCSDS_UNKNOWN_SPACECRAFT_MASS=no hi ha massa de satèl·lit asociada a aquest fitxer ODM
 
 # no IERS conventions have been set before parsing
-CCSDS_UNKNOWN_CONVENTIONS = no s''ha inicialitzat cap convenció IERS abans de la lectura
+CCSDS_UNKNOWN_CONVENTIONS=no s''ha inicialitzat cap convenció IERS abans de la lectura
 
 # frame {0} is not valid in this CCSDS file context
-CCSDS_INVALID_FRAME = el sistema de referència {0} no és vàlid en aquest context de fitxer CCSDS
+CCSDS_INVALID_FRAME=el sistema de referència {0} no és vàlid en aquest context de fitxer CCSDS
 
 # this LVLH local orbital frame uses a different definition, please use LVLH_CCSDS instead
-CCSDS_DIFFERENT_LVLH_DEFINITION = aquest punt de referència local LVLH utilitza una definició diferent, utilitzi el punt de referència LVLH_CCSDS en el seu lloc
+CCSDS_DIFFERENT_LVLH_DEFINITION=aquest punt de referència local LVLH utilitza una definició diferent, utilitzi el punt de referència LVLH_CCSDS en el seu lloc
 
 # inconsistent time systems: {0} ≠ {1}
-CCSDS_INCONSISTENT_TIME_SYSTEMS = sistemes temporals inconsistents: {0} ≠ {1}
+CCSDS_INCONSISTENT_TIME_SYSTEMS=sistemes temporals inconsistents: {0} ≠ {1}
 
 # No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}
-CCSDS_TDM_KEYWORD_NOT_FOUND = no s''ha trobat la paraula clau per CCSDS TDM en la linea {0} del fitxer {1}:\n{2}
+CCSDS_TDM_KEYWORD_NOT_FOUND=no s''ha trobat la paraula clau per CCSDS TDM en la linea {0} del fitxer {1}:\n{2}
 
 # no Range Units converter configured for parsing Tracking Data Message
-CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER = no s''ha trobat cap convertidor d''unitats de pseudo-distància configurat per la lectura dels missatges de seguimient de dades (« Tracking Data Message »)
+CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER=no s''ha trobat cap convertidor d''unitats de pseudo-distància configurat per la lectura dels missatges de seguimient de dades (« Tracking Data Message »)
 
 # Time system should have already been set before line {0} of file {1}
-CCSDS_TIME_SYSTEM_NOT_READ_YET = el sistema temporal hauria d''haver sigut inicialitzat abans de la linea {0} del fitxer {1}
+CCSDS_TIME_SYSTEM_NOT_READ_YET=el sistema temporal hauria d''haver sigut inicialitzat abans de la linea {0} del fitxer {1}
 
 # line break(s) missing after vector number {0} in {1}
-IIRV_MISSING_LINEBREAK_IN_FILE = <MISSING TRANSLATION>
+IIRV_MISSING_LINEBREAK_IN_FILE=<MISSING TRANSLATION>
 
 # line {0} in IIRV vector is not valid: "{1}"
-IIRV_INVALID_LINE_IN_VECTOR = <MISSING TRANSLATION>
+IIRV_INVALID_LINE_IN_VECTOR=<MISSING TRANSLATION>
 
 # cannot embed more than 1000 vectors in a single IIRV message file: got {0}. Consider splitting the data into multiple files
-IIRV_EXCEEDS_MAX_VECTORS = <MISSING TRANSLATION>
+IIRV_EXCEEDS_MAX_VECTORS=<MISSING TRANSLATION>
 
 # numeric value "{0}" exceeds the maximum length of {1} for string representation
-IIRV_VALUE_TOO_LARGE = <MISSING TRANSLATION>
+IIRV_VALUE_TOO_LARGE=<MISSING TRANSLATION>
 
 # invalid IIRV term value: {0}
-IIRV_INVALID_TERM_VALUE = <MISSING TRANSLATION>
+IIRV_INVALID_TERM_VALUE=<MISSING TRANSLATION>
 
 # the "{0}" term cannot change within an IIRV message file
-IIRV_TERM_CHANGES_WITHIN_FILE = <MISSING TRANSLATION>
+IIRV_TERM_CHANGES_WITHIN_FILE=<MISSING TRANSLATION>
 
 # IIRV sequence number must increase by 1 for each subsequent vector entry. At at line {0}, expected sequence number {1}+1, but found {2}
-IIRV_SEQUENCE_NUMBER_MUST_BE_INCREASING_BY_ONE = <MISSING TRANSLATION>
+IIRV_SEQUENCE_NUMBER_MUST_BE_INCREASING_BY_ONE=<MISSING TRANSLATION>
 
 # IIRV coordinate system "{0}" ({1}) has not been mapped to an Orekit frame
-IIRV_UNMAPPED_COORDINATE_SYSTEM = <MISSING TRANSLATION>
+IIRV_UNMAPPED_COORDINATE_SYSTEM=<MISSING TRANSLATION>
 
 # cannot estimate precession without proper derivatives
-CANNOT_ESTIMATE_PRECESSION_WITHOUT_PROPER_DERIVATIVES = impossible d''estimar la precisió sense les derivades correctes
+CANNOT_ESTIMATE_PRECESSION_WITHOUT_PROPER_DERIVATIVES=impossible d''estimar la precisió sense les derivades correctes
 
 # name "{0}" is already used for an additional state
-ADDITIONAL_STATE_NAME_ALREADY_IN_USE =  el nombre "{0}" ja s''està utilitzant per un estat adicional
+ADDITIONAL_STATE_NAME_ALREADY_IN_USE=el nombre "{0}" ja s''està utilitzant per un estat adicional
 
 # reset state not allowed
-NON_RESETABLE_STATE = reinicialització de l''estat no autoritzada
+NON_RESETABLE_STATE=reinicialització de l''estat no autoritzada
 
 # Cannot compute Newcomb operators for sigma > rho ({0} > {1})
-DSST_NEWCOMB_OPERATORS_COMPUTATION = no es pueden calcular els operadors de Newcomb amb sigma ({0}) > rho ({1})
+DSST_NEWCOMB_OPERATORS_COMPUTATION=no es pueden calcular els operadors de Newcomb amb sigma ({0}) > rho ({1})
 
 # Cannot compute the Vmns coefficient with m > n ({0} > {1})
-DSST_VMNS_COEFFICIENT_ERROR_MS = no es pueden calcular els coeficients Vmns amb  m > n ({0} > {1})
+DSST_VMNS_COEFFICIENT_ERROR_MS=no es pueden calcular els coeficients Vmns amb  m > n ({0} > {1})
 
 # inconsistent shadow computation: entry = {0} whereas exit = {1}
-DSST_SPR_SHADOW_INCONSISTENT = càlcul de sombra incoherent : entrada = {0} mentres que sortida = {1}
+DSST_SPR_SHADOW_INCONSISTENT=càlcul de sombra incoherent : entrada = {0} mentres que sortida = {1}
 
 # The current orbit has an eccentricity ({0} > 0.5). DSST needs an unimplemented time dependent numerical method to compute the averaged rates
-DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = l''òrbita té una excentricitat ({0} > 0.5). DSST necessita per calcular les derivades mesurades un mètode numèric dependent del temps que no està implementat
+DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD=l''òrbita té una excentricitat ({0} > 0.5). DSST necessita per calcular les derivades mesurades un mètode numèric dependent del temps que no està implementat
 
 # unsupported sp3 file version {0}
-SP3_UNSUPPORTED_VERSION = versió de format sp3 {0} no reconeguda
+SP3_UNSUPPORTED_VERSION=versió de format sp3 {0} no reconeguda
 
 # invalid header entry {0} "{1}" in file {2} (format version {3})
-SP3_INVALID_HEADER_ENTRY = Entrada {0} "{1}" de la capçalera invàlida dins del fitxer {2} (versió del format {3})
+SP3_INVALID_HEADER_ENTRY=Entrada {0} "{1}" de la capçalera invàlida dins del fitxer {2} (versió del format {3})
 
 # version "{0}" supports only up to {1} satellites, found {2} in file {3}
-SP3_TOO_MANY_SATELLITES_FOR_VERSION = La versió "{0}" accepta fins a {1} satèl·lits, però se n’’han trobat {2} dins el fitxer {3}
+SP3_TOO_MANY_SATELLITES_FOR_VERSION=La versió "{0}" accepta fins a {1} satèl·lits, però se n’’han trobat {2} dins el fitxer {3}
 
 # found {0} epochs in file {1}, expected {2}
-SP3_NUMBER_OF_EPOCH_MISMATCH = s''han trobat {0} èpoques en el fitxer {1} en comptes de {2}
+SP3_NUMBER_OF_EPOCH_MISMATCH=s''han trobat {0} èpoques en el fitxer {1} en comptes de {2}
 
 # cannot splice sp3 files with incompatible metadata
-SP3_INCOMPATIBLE_FILE_METADATA = impossible d''adjuntar els fitxers sp3 tenint metadata diferent
+SP3_INCOMPATIBLE_FILE_METADATA=impossible d''adjuntar els fitxers sp3 tenint metadata diferent
 
 # cannot splice sp3 files with incompatible satellite metadata for satellite {0}
-SP3_INCOMPATIBLE_SATELLITE_MEDATADA = impossible d''adjuntar els fitxers sp3 tenint metadata del satèl·lit {0} diferent 
+SP3_INCOMPATIBLE_SATELLITE_MEDATADA=impossible d''adjuntar els fitxers sp3 tenint metadata del satèl·lit {0} diferent
 
 # frame {0} not allowed here
-FRAME_NOT_ALLOWED = <MISSING TRANSLATION>
+FRAME_NOT_ALLOWED=<MISSING TRANSLATION>
 
 # STK coordinate system "{0}" is invalid or not yet supported
-STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM = el sistema de coordenades "{0}" de STK és invàlid o no s''ha implementat encara
+STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM=el sistema de coordenades "{0}" de STK és invàlid o no s''ha implementat encara
 
 # STK coordinate system "{0}" has not been mapped to an Orekit frame
-STK_UNMAPPED_COORDINATE_SYSTEM = el sistema de coordenades "{0}" de STK encara no ha estat mapejat a una estructura Orekit
+STK_UNMAPPED_COORDINATE_SYSTEM=el sistema de coordenades "{0}" de STK encara no ha estat mapejat a una estructura Orekit
 
 # unexpected end of STK file (after line {0})
-STK_UNEXPECTED_END_OF_FILE = final inesperat d''un fitxer STK (després de la linea {0})
+STK_UNEXPECTED_END_OF_FILE=final inesperat d''un fitxer STK (després de la linea {0})
 
 # unsupported clock file version {0}
-CLOCK_FILE_UNSUPPORTED_VERSION = versió de l''arxiu de rellotge {0} no reconeguda
+CLOCK_FILE_UNSUPPORTED_VERSION=versió de l''arxiu de rellotge {0} no reconeguda
 
 # version {0} from file {1} is not supported, supported version: {2}
-UNSUPPORTED_FILE_FORMAT_VERSION = versió {0} del fitxer {1} no s''ha tingut en compte, versions tingudes en compte: {2}
+UNSUPPORTED_FILE_FORMAT_VERSION=versió {0} del fitxer {1} no s''ha tingut en compte, versions tingudes en compte: {2}
 
 # non-existent geomagnetic model {0} for year {1}
-NON_EXISTENT_GEOMAGNETIC_MODEL = no existeix el fitxer del model geomagnètic {0} per l''any {1}
+NON_EXISTENT_GEOMAGNETIC_MODEL=no existeix el fitxer del model geomagnètic {0} per l''any {1}
 
 # geomagnetic model {0} with epoch {1} does not support time transformation, no secular variation coefficients defined
-UNSUPPORTED_TIME_TRANSFORM = el model geomagnètic {0} en l''època {1} no té en coñpte les transformacions temporals, no hi ha definit cap coefficient de variació secular
+UNSUPPORTED_TIME_TRANSFORM=el model geomagnètic {0} en l''època {1} no té en coñpte les transformacions temporals, no hi ha definit cap coefficient de variació secular
 
 # time transformation of geomagnetic model {0} with epoch {1} is outside its validity range: {2} != [{3}, {4}]
-OUT_OF_RANGE_TIME_TRANSFORM = la transformació temporal del model geomagnètic {0} en l''època {1} està fora del domini de validesa: {2} != [{3}, {4}]
+OUT_OF_RANGE_TIME_TRANSFORM=la transformació temporal del model geomagnètic {0} en l''època {1} està fora del domini de validesa: {2} != [{3}, {4}]
 
 # not enough data (sample size = {0})
-NOT_ENOUGH_DATA = no hi ha dades suficients (mida de la mostra = {0})
+NOT_ENOUGH_DATA=no hi ha dades suficients (mida de la mostra = {0})
 
 # too small number of cached neighbors: {0} (must be at least {1})
-NOT_ENOUGH_CACHED_NEIGHBORS = número de veïns emmagatzemada massa petit : {0} (deu ser almenys {1})
+NOT_ENOUGH_CACHED_NEIGHBORS=número de veïns emmagatzemada massa petit : {0} (deu ser almenys {1})
 
 # no cached entries
-NO_CACHED_ENTRIES = cap entrada emmagatzemada
+NO_CACHED_ENTRIES=cap entrada emmagatzemada
 
 # generated entries not sorted: {0} > {1} by {2,number,0.0##############E0} s
-NON_CHRONOLOGICALLY_SORTED_ENTRIES = les entrades generades no estan ordenades: {0} > {1} de {2,number,0.0##############E0} segons
+NON_CHRONOLOGICALLY_SORTED_ENTRIES=les entrades generades no estan ordenades: {0} > {1} de {2,number,0.0##############E0} segons
 
 # moving transition date from {0} to {1} collides with existing transition at {2}
-TRANSITION_DATES_COLLISION = <MISSING TRANSLATION>
+TRANSITION_DATES_COLLISION=<MISSING TRANSLATION>
 
 # no data generated around date: {0}
-NO_DATA_GENERATED = cap dada generada al voltant de la data: {0}
+NO_DATA_GENERATED=cap dada generada al voltant de la data: {0}
 
 # unable to generate new data before {0}, but data is requested for {1} which is {2,number,0.0##############E0} s before
-UNABLE_TO_GENERATE_NEW_DATA_BEFORE = no es pot generar noves dades abans de {0}, les dades solicitades per {1} són de {2,number,0.0##############E0} segons abans
+UNABLE_TO_GENERATE_NEW_DATA_BEFORE=no es pot generar noves dades abans de {0}, les dades solicitades per {1} són de {2,number,0.0##############E0} segons abans
 
 # unable to generate new data after {0}, but data is requested for {1} which is {2,number,0.0##############E0} s after
-UNABLE_TO_GENERATE_NEW_DATA_AFTER = no es poden generar noves dades després de {0}, les dades sol·licitades per a {1} són de {2,number,0.0##############E0} segonds després
+UNABLE_TO_GENERATE_NEW_DATA_AFTER=no es poden generar noves dades després de {0}, les dades sol·licitades per a {1} són de {2,number,0.0##############E0} segonds després
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
-UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = després de {0} iteracins no s''ha aconseguit calcular l''anomalia excèntrica hiperbòlica a partir de l''anomalia mitjana
+UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY=després de {0} iteracins no s''ha aconseguit calcular l''anomalia excèntrica hiperbòlica a partir de l''anomalia mitjana
 
 # unable to compute eccentric longitude argument from the mean one after {0} iterations
-UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT = <MISSING TRANSLATION>
+UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT=<MISSING TRANSLATION>
 
 # unable to compute eccentric latitude argument from the mean one after {0} iterations
-UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT = <MISSING TRANSLATION>
+UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT=<MISSING TRANSLATION>
 
 # unable to compute mean orbit from osculating orbit after {0} iterations
-UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = no es pot calcular l''òrbita mitjana a partir de l''òrbita osculating al cap de {0} iteracions
+UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS=no es pot calcular l''òrbita mitjana a partir de l''òrbita osculating al cap de {0} iteracions
 
 # derivation order {0} is out of range
-OUT_OF_RANGE_DERIVATION_ORDER = l''ordre de derivació {0} està fora del rang
+OUT_OF_RANGE_DERIVATION_ORDER=l''ordre de derivació {0} està fora del rang
 
 # orbit type {0} not allowed here, allowed types: {1}
-ORBIT_TYPE_NOT_ALLOWED = tipus d''òrbita {0} no permesa, els tipus permesos són: {1}
+ORBIT_TYPE_NOT_ALLOWED=tipus d''òrbita {0} no permesa, els tipus permesos són: {1}
 
 # non pseudo-inertial frame {0} is not suitable as reference for inertial forces
-NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES = sistema de referència no pseudo-inèrcial {0} no és adeqüat com referència per a les forces inercials
+NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES=sistema de referència no pseudo-inèrcial {0} no és adeqüat com referència per a les forces inercials
 
 # method not available in the absence of a central body
-METHOD_NOT_AVAILABLE_WITHOUT_CENTRAL_BODY = mètode no disponible en absència d''un cos central
+METHOD_NOT_AVAILABLE_WITHOUT_CENTRAL_BODY=mètode no disponible en absència d''un cos central
 
 # operation not available between frames {0} and {1}
-INCOMPATIBLE_FRAMES = operació no disponible entre els sistemes de referència {0} i {1}
+INCOMPATIBLE_FRAMES=operació no disponible entre els sistemes de referència {0} i {1}
 
 # orbit not defined, state rather contains an absolute position-velocity-acceleration
-UNDEFINED_ORBIT = òrbita no definida, l''estat conté més aviat una posició-velocitat-acceleració absoluta
+UNDEFINED_ORBIT=òrbita no definida, l''estat conté més aviat una posició-velocitat-acceleració absoluta
 
 # absolute position-velocity-acceleration not defined, state rather contains an orbit
-UNDEFINED_ABSOLUTE_PVCOORDINATES = posició-velocitat-acceleració absoluta no definida, l''estat conté més aviat una òrbita
+UNDEFINED_ABSOLUTE_PVCOORDINATES=posició-velocitat-acceleració absoluta no definida, l''estat conté més aviat una òrbita
 
 # an inertial force model has to be used when propagating in non-inertial frame {0}
-INERTIAL_FORCE_MODEL_MISSING = és necesari un model de força inercial per propagar en un sistema de refèrencia no inercial {0}
+INERTIAL_FORCE_MODEL_MISSING=és necesari un model de força inercial per propagar en un sistema de refèrencia no inercial {0}
 
 # no SEM almanac file found
-NO_SEM_ALMANAC_AVAILABLE = no s''ha trobat fitxer d''almanacs SEM
+NO_SEM_ALMANAC_AVAILABLE=no s''ha trobat fitxer d''almanacs SEM
 
 # file {0} is not a supported SEM almanac file
-NOT_A_SUPPORTED_SEM_ALMANAC_FILE = el fitxer {0} no es reconeix com fitxer vàlid d''almanacs SEM
+NOT_A_SUPPORTED_SEM_ALMANAC_FILE=el fitxer {0} no es reconeix com fitxer vàlid d''almanacs SEM
 
 # no Yuma almanac file found
-NO_YUMA_ALMANAC_AVAILABLE = no es troba el fitxer d''almanacs Yuma
+NO_YUMA_ALMANAC_AVAILABLE=no es troba el fitxer d''almanacs Yuma
 
 # file {0} is not a supported Yuma almanac file
-NOT_A_SUPPORTED_YUMA_ALMANAC_FILE = el fitxer {0} no es reconeix com fitxer vàlid d''almanacs Yuma
+NOT_A_SUPPORTED_YUMA_ALMANAC_FILE=el fitxer {0} no es reconeix com fitxer vàlid d''almanacs Yuma
 
 # only {0} GNSS orbits are provided while {1} are needed to compute the DOP
-NOT_ENOUGH_GNSS_FOR_DOP = tan sols s''han especificat {0} òrbites GNSS i es necessiten {1} per calcular el DOP
+NOT_ENOUGH_GNSS_FOR_DOP=tan sols s''han especificat {0} òrbites GNSS i es necessiten {1} per calcular el DOP
 
 # use of time system {0} in CCSDS files requires an additional ICD and is not implemented in Orekit
-CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = per utilitzar el sistema temporal {0} en els fitxers CCSDS es necessita un ICD adicional i no està disponible en Orekit
+CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED=per utilitzar el sistema temporal {0} en els fitxers CCSDS es necessita un ICD adicional i no està disponible en Orekit
 
 # unknown attitude type {0}
-CCSDS_UNKNOWN_ATTITUDE_TYPE = tipus d''orientació {0} desconeguda
+CCSDS_UNKNOWN_ATTITUDE_TYPE=tipus d''orientació {0} desconeguda
 
 # incomplete data
-CCSDS_INCOMPLETE_DATA = dades incompletes
+CCSDS_INCOMPLETE_DATA=dades incompletes
 
 # invalid rotation sequence {0} at line {1} of file {2}
-CCSDS_INVALID_ROTATION_SEQUENCE = sequència de rotació {0} invàlida en la linea {1} del fitxer {2}
+CCSDS_INVALID_ROTATION_SEQUENCE=sequència de rotació {0} invàlida en la linea {1} del fitxer {2}
 
 # element set type {0} ({1}) is not supported yet
-CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE = encara no hi ha suport pel tipus d''elements {0} ({1})
+CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE=encara no hi ha suport pel tipus d''elements {0} ({1})
 
 # retrograde factor not supported in element set {0}
-CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL = factor retrògrad sense suport en el tipus d''elements {0}
+CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL=factor retrògrad sense suport en el tipus d''elements {0}
 
 # wrong number of units for maneuver {0}
-CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS = número incorrecte d''unitats per la maniobra {0}
+CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS=número incorrecte d''unitats per la maniobra {0}
 
 # missing time field for maneuver {0}
-CCSDS_MANEUVER_MISSING_TIME = falta camp temporal per la maniobra {0}
+CCSDS_MANEUVER_MISSING_TIME=falta camp temporal per la maniobra {0}
 
 # attitude type {0} and rate type {1} calls for {2} states, got {3}
-CCSDS_INCONSISTENT_NUMBER_OF_ATTITUDE_STATES = el tipus d''orientació {0} i el tipus de velocitat {1} necessiten {2} estats, però {3} s''han donat 
+CCSDS_INCONSISTENT_NUMBER_OF_ATTITUDE_STATES=el tipus d''orientació {0} i el tipus de velocitat {1} necessiten {2} estats, però {3} s''han donat
 
 # incompatible keys {0} and {1} should not both be used
-CCSDS_INCOMPATIBLE_KEYS_BOTH_USED = les claus incompatibles {0} i {1}  no s''haurien d''utilitzar juntes
+CCSDS_INCOMPATIBLE_KEYS_BOTH_USED=les claus incompatibles {0} i {1}  no s''haurien d''utilitzar juntes
 
 # sensor index {0} is already used
-CCSDS_SENSOR_INDEX_ALREADY_USED = índex de captor {0} ja utilitzat 
+CCSDS_SENSOR_INDEX_ALREADY_USED=índex de captor {0} ja utilitzat
 
 # missing sensor index {0}
-CCSDS_MISSING_SENSOR_INDEX = falta l''índex de captor {0}
+CCSDS_MISSING_SENSOR_INDEX=falta l''índex de captor {0}
 
 # inconsistent number of elements: expected {0}, got {1}
-INCONSISTENT_NUMBER_OF_ELEMENTS = número d''elements incoherents: esperats {0}, donats {1}
+INCONSISTENT_NUMBER_OF_ELEMENTS=número d''elements incoherents: esperats {0}, donats {1}
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
-NOT_ENOUGH_PROPAGATORS = per crear un propagador combinat es necesita al menys un propagador, però no s''en ha especificat cap
+NOT_ENOUGH_PROPAGATORS=per crear un propagador combinat es necesita al menys un propagador, però no s''en ha especificat cap
 
 # Creating an aggregate attitude provider requires at least one constituent attitude provider, but none were provided.
-NOT_ENOUGH_ATTITUDE_PROVIDERS = la creació d''un proveïdor d''actitud agregat necessita al menys un proveïdor d''actitud, però no se n''ha previst cap
+NOT_ENOUGH_ATTITUDE_PROVIDERS=la creació d''un proveïdor d''actitud agregat necessita al menys un proveïdor d''actitud, però no se n''ha previst cap
 
 # argument {0} cannot be null
-NULL_ARGUMENT = l''entrada {0} no pot ser nul·la
+NULL_ARGUMENT=l''entrada {0} no pot ser nul·la
 
 # value {0} not found in {1}
-VALUE_NOT_FOUND = no es troba el valor {0} en {1}
+VALUE_NOT_FOUND=no es troba el valor {0} en {1}
 
 # Klobuchar coefficients α or β could not be loaded from {0}
-KLOBUCHAR_ALPHA_BETA_NOT_LOADED = els coeficients Klobuchar α o β no s''han pogut carregar de {0}
+KLOBUCHAR_ALPHA_BETA_NOT_LOADED=els coeficients Klobuchar α o β no s''han pogut carregar de {0}
 
 # Klobuchar coefficients α or β not available for date {0}
-KLOBUCHAR_ALPHA_BETA_NOT_AVAILABLE_FOR_DATE = falten els coeficients Klobuchar α o β per la data {0}
+KLOBUCHAR_ALPHA_BETA_NOT_AVAILABLE_FOR_DATE=falten els coeficients Klobuchar α o β per la data {0}
 
 # file {0} does not contain Klobuchar coefficients α or β
-NO_KLOBUCHAR_ALPHA_BETA_IN_FILE = el fitxer {0} no conté els coeficients Klobuchar α o β
+NO_KLOBUCHAR_ALPHA_BETA_IN_FILE=el fitxer {0} no conté els coeficients Klobuchar α o β
 
 # no reference date set for parameter {0}
-NO_REFERENCE_DATE_FOR_PARAMETER = la data de referència per el paràmetre {0} no està inicialitzada
+NO_REFERENCE_DATE_FOR_PARAMETER=la data de referència per el paràmetre {0} no està inicialitzada
 
 # station {0} not found, known stations: {1}
-STATION_NOT_FOUND = no es troba l''estació {0}, estaciones conegudes: {1}
+STATION_NOT_FOUND=no es troba l''estació {0}, estaciones conegudes: {1}
 
 # unknown satellite system {0}
-UNKNOWN_SATELLITE_SYSTEM = sistema de satèl·lits desconeguts {0}
+UNKNOWN_SATELLITE_SYSTEM=sistema de satèl·lits desconeguts {0}
 
 # unknown time system {0}
-UNKNOWN_TIME_SYSTEM = sistema de temps desconegut {0}
+UNKNOWN_TIME_SYSTEM=sistema de temps desconegut {0}
 
 # unknown UTC Id {0}
-UNKNOWN_UTC_ID = identificador UTC {0} desconegut
+UNKNOWN_UTC_ID=identificador UTC {0} desconegut
 
 # unknown clock data type {0}
-UNKNOWN_CLOCK_DATA_TYPE = tipus de dades de rellotge desconegudes {0}
+UNKNOWN_CLOCK_DATA_TYPE=tipus de dades de rellotge desconegudes {0}
 
 # unknown satellite antenna code {0}
-UNKNOWN_SATELLITE_ANTENNA_CODE = codi d''antena de satèl·lit desconegut {0}
+UNKNOWN_SATELLITE_ANTENNA_CODE=codi d''antena de satèl·lit desconegut {0}
 
 # unknown GNSS antenna, name: {0}, radome code: {1}, serial number: {2}
-UNKNOWN_GNSS_ANTENNA = <MISSING TRANSLATION>
+UNKNOWN_GNSS_ANTENNA=<MISSING TRANSLATION>
 
 # unknown GNSS frequency, system: {0}, frequency code: {1} (line {2}, file {3})
-UNKNOWN_GNSS_FREQUENCY = <MISSING TRANSLATION>
+UNKNOWN_GNSS_FREQUENCY=<MISSING TRANSLATION>
 
 # frequency {0} is not supported by antenna {1}
-UNSUPPORTED_FREQUENCY_FOR_ANTENNA = frequència {0} no presa en compte per l''antena {1}
+UNSUPPORTED_FREQUENCY_FOR_ANTENNA=frequència {0} no presa en compte per l''antena {1}
 
 # cannot find satellite {0} in satellite system {1}
-CANNOT_FIND_SATELLITE_IN_SYSTEM = no es pot trobar el satèl·lit {0} en el sistema de satèl·lits {1}
+CANNOT_FIND_SATELLITE_IN_SYSTEM=no es pot trobar el satèl·lit {0} en el sistema de satèl·lits {1}
 
 # unknown RINEX frequency {0} in file {1}, line {2}
-UNKNOWN_RINEX_FREQUENCY = frequència RINEX desconeguda en el fitxer {1}, linea {2}
+UNKNOWN_RINEX_FREQUENCY=frequència RINEX desconeguda en el fitxer {1}, linea {2}
 
 # mismatched frequencies in file {0}, line {1} (expected {2}, got {3})
-MISMATCHED_FREQUENCIES = frequències incoherents en el fitxer {0}, linea {1} (s''esperava {2} i s''ha trobat {3})
+MISMATCHED_FREQUENCIES=frequències incoherents en el fitxer {0}, linea {1} (s''esperava {2} i s''ha trobat {3})
 
 # wrong parsing type for file {0}
-WRONG_PARSING_TYPE = tipus d''anàlisis incorrecte pel fitxer {0}
+WRONG_PARSING_TYPE=tipus d''anàlisis incorrecte pel fitxer {0}
 
 # wrong number of columns in file {0}, line {1} (expected {2} columns, got {3} columns)
-WRONG_COLUMNS_NUMBER = número de columnes erròni en el fitxer {0}, linea {1} (s''esperavan {2} columnes i s''han trobat {3})
+WRONG_COLUMNS_NUMBER=número de columnes erròni en el fitxer {0}, linea {1} (s''esperavan {2} columnes i s''han trobat {3})
 
 # unsupported format for file {0}
-UNSUPPORTED_FILE_FORMAT = format no reconegut pel fitxer {0}
+UNSUPPORTED_FILE_FORMAT=format no reconegut pel fitxer {0}
 
 # incomplete header in file {0}
-INCOMPLETE_HEADER = capçalera incompleta en el fitxer {0}
+INCOMPLETE_HEADER=capçalera incompleta en el fitxer {0}
 
 # inconsistent number of satellites in line {0}, file {1}: observation with {2} satellites and number of max satellites is {3}
-INCONSISTENT_NUMBER_OF_SATS = número incoherent de satèl·lits en la linea {0}, fitxer {1}: observació amb {2} satèl·lits, no obstant el número màxim de satèl·lits és {3}
+INCONSISTENT_NUMBER_OF_SATS=número incoherent de satèl·lits en la linea {0}, fitxer {1}: observació amb {2} satèl·lits, no obstant el número màxim de satèl·lits és {3}
 
 # the satellite system {3} from line {0}, file {1} is not consistent with the Rinex Satellite System {2} in header
-INCONSISTENT_SATELLITE_SYSTEM = el sistema de satèl·lits {3} en la linea {0}, fitxer {1} no és coherent amb el Sistema de Satèl·lits Rinex {2} en la capçalera
+INCONSISTENT_SATELLITE_SYSTEM=el sistema de satèl·lits {3} en la linea {0}, fitxer {1} no és coherent amb el Sistema de Satèl·lits Rinex {2} en la capçalera
 
 # no propagator configured
-NO_PROPAGATOR_CONFIGURED = cap propagador ha estat configurat
+NO_PROPAGATOR_CONFIGURED=cap propagador ha estat configurat
 
 # dimension {0} is inconsistent with parameters list: {1}
-DIMENSION_INCONSISTENT_WITH_PARAMETERS = la dimensió {0} no és coherent amb la llista de paràmetres: {1}
+DIMENSION_INCONSISTENT_WITH_PARAMETERS=la dimensió {0} no és coherent amb la llista de paràmetres: {1}
 
 # file {0} is not a supported Unix-compressed file
-NOT_A_SUPPORTED_UNIX_COMPRESSED_FILE = el fitxer {0} no respecta el format Unix-compressed reconegut
+NOT_A_SUPPORTED_UNIX_COMPRESSED_FILE=el fitxer {0} no respecta el format Unix-compressed reconegut
 
 # unexpected end of file {0}
-UNEXPECTED_END_OF_FILE = fi inesperada del fitxer {0}
+UNEXPECTED_END_OF_FILE=fi inesperada del fitxer {0}
 
 # file {0} is corrupted
-CORRUPTED_FILE = l''arxiu {0} està fet malbé
+CORRUPTED_FILE=l''arxiu {0} està fet malbé
 
 # Vienna coefficients ah or aw or zh or zw could not be loaded from {0}
-VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_LOADED = els coeficients ah o aw o zh o zw del model de Viena no han pogut carregar-se des de {0}
+VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_LOADED=els coeficients ah o aw o zh o zw del model de Viena no han pogut carregar-se des de {0}
 
 # Vienna coefficients ah or aw or zh or zw not available for date {0}
-VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE = els coeficients ah o aw o zh o zw del model de Viena no estan disponibles per la data {0}
+VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE=els coeficients ah o aw o zh o zw del model de Viena no estan disponibles per la data {0}
 
 # file {0} does not contain Vienna coefficients ah, aw, zh or zw
-NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE = el fitxer {0} no conté els coeficients ah o aw o zh o zw del model de Viena
+NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE=el fitxer {0} no conté els coeficients ah o aw o zh o zw del model de Viena
 
 # irregular or incomplete grid in file {0}
-IRREGULAR_OR_INCOMPLETE_GRID = quadrícula irregular o incompleta en el fitxer {0}
+IRREGULAR_OR_INCOMPLETE_GRID=quadrícula irregular o incompleta en el fitxer {0}
 
 # invalid satellite system {0}
-INVALID_SATELLITE_SYSTEM = el sistema de satèl·lits {0} no és vàlid
+INVALID_SATELLITE_SYSTEM=el sistema de satèl·lits {0} no és vàlid
 
 # IONEX files {0} does not contain TEC data for date {1}
-NO_TEC_DATA_IN_FILES_FOR_DATE = els fitxers IONEX {0} no contenent dades TEC per la data {1}
+NO_TEC_DATA_IN_FILES_FOR_DATE=els fitxers IONEX {0} no contenent dades TEC per la data {1}
 
 # number of maps {0} is inconsistent with header specification: {1}
-INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE = el número de mapes {0} no és coherent amb l''especificació de la capçalera {1}
+INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE=el número de mapes {0} no és coherent amb l''especificació de la capçalera {1}
 
 # file {0} does not contain latitude or longitude bondaries in its header section
-NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER = el fitxer {0} no conté límits de latitud o longitud en la secció de la capçalera
+NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER=el fitxer {0} no conté límits de latitud o longitud en la secció de la capçalera
 
 # file {0} does not contain epoch of first or last map in its header section
-NO_EPOCH_IN_IONEX_HEADER = el fitxer {0} no conté èpoques del primer o últim mapa en la secció de la capçalera
+NO_EPOCH_IN_IONEX_HEADER=el fitxer {0} no conté èpoques del primer o últim mapa en la secció de la capçalera
 
 # The first column of itrf-versions.conf is a plain prefix that is matched against the
 # name of each loaded file. It should not contain any regular expression syntax or
 # directory components, i.e. \"/\" or \"\\\". Actual value: \"{0}\".
-ITRF_VERSIONS_PREFIX_ONLY = la primera columna del fitxer itrf-versions.conf és un prèfix simple que es compara als noms de cada un dels fitxers carregats. No hauria contenir cap expresió racional ni cap separador de directori, per exemple: \"/\" o \"\\\". El valor real és: \"{0}\".
+ITRF_VERSIONS_PREFIX_ONLY=la primera columna del fitxer itrf-versions.conf és un prèfix simple que es compara als noms de cada un dels fitxers carregats. No hauria contenir cap expresió racional ni cap separador de directori, per exemple: \"/\" o \"\\\". El valor real és: \"{0}\".
 
 # cannot compute aiming direction at singular point: latitude = {0}, longitude = {1}
-CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT = no es pot calcular la direcció objectiu en el punt singular latitud = {0}, longitud = {1}
+CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT=no es pot calcular la direcció objectiu en el punt singular latitud = {0}, longitud = {1}
 
 # STEC integration did not converge
-STEC_INTEGRATION_DID_NOT_CONVERGE = l''integració STEC no ha arribat a la convergència
+STEC_INTEGRATION_DID_NOT_CONVERGE=l''integració STEC no ha arribat a la convergència
 
 # MODIP grid not be loaded from {0}
-MODIP_GRID_NOT_LOADED = no s''ha pogut carregar la quadrícula MODIP des de {0}
+MODIP_GRID_NOT_LOADED=no s''ha pogut carregar la quadrícula MODIP des de {0}
 
 # NeQuick coefficient f2 or fm3 not be loaded from {0}
-NEQUICK_F2_FM3_NOT_LOADED = impossible de carregar els coeficients NeQuick f2 y fm3 des de {0}
+NEQUICK_F2_FM3_NOT_LOADED=impossible de carregar els coeficients NeQuick f2 y fm3 des de {0}
 
 # file {0} is not a supported Hatanaka-compressed file
-NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE = no es reconeix el fitxer {0} com fitxer comprimit per el mètodo de Hatanaka
+NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE=no es reconeix el fitxer {0} com fitxer comprimit per el mètodo de Hatanaka
 
 # Cannot compute around {0}
-CANNOT_COMPUTE_LAGRANGIAN = no es poden realitzar els calculs al voltant de {0}
+CANNOT_COMPUTE_LAGRANGIAN=no es poden realitzar els calculs al voltant de {0}
 
 # The trajectory does not cross XZ Plane, it will not result in a Halo Orbit
-TRAJECTORY_NOT_CROSSING_XZPLANE = la trajectoria no intersecciona amb el Pla XZ, no pot derivar en una òrbita Halo
+TRAJECTORY_NOT_CROSSING_XZPLANE=la trajectoria no intersecciona amb el Pla XZ, no pot derivar en una òrbita Halo
 
 # The multiple shooting problem is underconstrained : {0} free variables, {1} constraints
-MULTIPLE_SHOOTING_UNDERCONSTRAINED = el problema multiple-shooting no té suficients restriccions: {0} variables lliures, {1} restriccions
+MULTIPLE_SHOOTING_UNDERCONSTRAINED=el problema multiple-shooting no té suficients restriccions: {0} variables lliures, {1} restriccions
 
 # invalid measurement types {0} and {1} for the combination of measurements {2}
-INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS = tipus de mesures {0} i {1} incompatibles per la combinació de mesures {2}
+INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS=tipus de mesures {0} i {1} incompatibles per la combinació de mesures {2}
 
 # frequencies {0} and {1} are incompatibles for the {2} combination
-INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS = les frequències {0} i {1} són incompatibles per la combinació {2}
+INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS=les frequències {0} i {1} són incompatibles per la combinació {2}
 
 # observations are not in chronological order: {0} is {2} s after {1}
-NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = les observacions no es troben en ordre cronològic: {0} és {2} s després de {1}
+NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS=les observacions no es troben en ordre cronològic: {0} és {2} s després de {1}
 
 # Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
-EXCEPTIONAL_DATA_CONTEXT = s''ha detectat una utilització de ExceptionalDataContext. Això s''utilitza normalment per detectar errors del desenvolupador
+EXCEPTIONAL_DATA_CONTEXT=s''ha detectat una utilització de ExceptionalDataContext. Això s''utilitza normalment per detectar errors del desenvolupador
 
 # Observations must have different dates: {0}, {1} ({3,number,0.0##############E0} s from first observation), and {2} ({4,number,0.0##############E0} s from first observation, {5,number,0.0##############E0} s from second observation)
-NON_DIFFERENT_DATES_FOR_OBSERVATIONS = les observacions han de tenir dates diferents: {0}, {1} ({3,number,0.0##############E0} s des de la primera observació), i {2} ({4,number,0.0##############E0} des de la primera observació, {5,number,0.0##############E0} des de la segona observació)
+NON_DIFFERENT_DATES_FOR_OBSERVATIONS=les observacions han de tenir dates diferents: {0}, {1} ({3,number,0.0##############E0} s des de la primera observació), i {2} ({4,number,0.0##############E0} des de la primera observació, {5,number,0.0##############E0} des de la segona observació)
 
 # observations are not in the same plane
-NON_COPLANAR_POINTS = les observacions no estan en el mateix pla
+NON_COPLANAR_POINTS=les observacions no estan en el mateix pla
 
 # invalid parameter {0}: {1} not in range [{2}, {3}]
-INVALID_PARAMETER_RANGE = invalidesa del paràmetre {0}: {1} fora del rang [{2}, {3}]
+INVALID_PARAMETER_RANGE=invalidesa del paràmetre {0}: {1} fora del rang [{2}, {3}]
 
 # The parameter {0} should not be null in {1}
-PARAMETER_NOT_SET = el paràmetre {0} no hauria de ser nul en {1}
+PARAMETER_NOT_SET=el paràmetre {0} no hauria de ser nul en {1}
 
 # {0} is not implemented
-FUNCTION_NOT_IMPLEMENTED = {0} no està implementat
+FUNCTION_NOT_IMPLEMENTED={0} no està implementat
 
 # Impossible to execute {0} with {1} set to {2}
-INVALID_TYPE_FOR_FUNCTION = impossible ejecutar {0} amb {1} establit a {2} 
+INVALID_TYPE_FOR_FUNCTION=impossible ejecutar {0} amb {1} establit a {2}
 
 # No data could be parsed from file {0}
-NO_DATA_IN_FILE = cap dada ha pogut llegir-se des del fitxer {0}
+NO_DATA_IN_FILE=cap dada ha pogut llegir-se des del fitxer {0}
 
 # Unexpected end of CPF file (after line {0})
-CPF_UNEXPECTED_END_OF_FILE = fi inesperada del fitxer CPF (després de la linea {0})
+CPF_UNEXPECTED_END_OF_FILE=fi inesperada del fitxer CPF (després de la linea {0})
 
 # Unexpected file format. Must be {0} but is {1}
-UNEXPECTED_FORMAT_FOR_ILRS_FILE = Format de fitxer inesperat. Deu ser {0} però és {1}
+UNEXPECTED_FORMAT_FOR_ILRS_FILE=Format de fitxer inesperat. Deu ser {0} però és {1}
 
 # Invalid range indicator {0} in CRD file header
-INVALID_RANGE_INDICATOR_IN_CRD_FILE = Indicador de rang invàlid {0} en la capçalera del fitxer CRD
+INVALID_RANGE_INDICATOR_IN_CRD_FILE=Indicador de rang invàlid {0} en la capçalera del fitxer CRD
 
 # Unexpected end of CRD file (after line {0})
-CRD_UNEXPECTED_END_OF_FILE = fi inesperada del fitxer CRD (després de la linea {0})
+CRD_UNEXPECTED_END_OF_FILE=fi inesperada del fitxer CRD (després de la linea {0})
 
 # end of encoded message reached
-END_OF_ENCODED_MESSAGE = s''ha arribat al final del missatge codificat
+END_OF_ENCODED_MESSAGE=s''ha arribat al final del missatge codificat
 
 # too large data type ({0} bits)
-TOO_LARGE_DATA_TYPE = tipus de dades massa grans ({0} bits)
+TOO_LARGE_DATA_TYPE=tipus de dades massa grans ({0} bits)
 
 # unknown encoded message number {0}
-UNKNOWN_ENCODED_MESSAGE_NUMBER = número de missatge codificat {0} desconegut 
+UNKNOWN_ENCODED_MESSAGE_NUMBER=número de missatge codificat {0} desconegut
 
 # unknown authentication method: {0}
-UNKNOWN_AUTHENTICATION_METHOD = el mètode d''autentificació és desconegut: {0}
+UNKNOWN_AUTHENTICATION_METHOD=el mètode d''autentificació és desconegut: {0}
 
 # unknown carrier phase code: {0}
-UNKNOWN_CARRIER_PHASE_CODE = el codi de la fase portadora {0} és desconegut
+UNKNOWN_CARRIER_PHASE_CODE=el codi de la fase portadora {0} és desconegut
 
 # unknown data format: {0}
-UNKNOWN_DATA_FORMAT = el format de dades {0} és desconegut
+UNKNOWN_DATA_FORMAT=el format de dades {0} és desconegut
 
 # unknown navigation system: {0}
-UNKNOWN_NAVIGATION_SYSTEM = sistema de navegació {0} desconegut 
+UNKNOWN_NAVIGATION_SYSTEM=sistema de navegació {0} desconegut
 
 # data stream {0} requires a NMEA fix data
-STREAM_REQUIRES_NMEA_FIX = el flux de dades {0} requereix una dada fixa NMEA
+STREAM_REQUIRES_NMEA_FIX=el flux de dades {0} requereix una dada fixa NMEA
 
 # failed authentication for mountpoint {0}
-FAILED_AUTHENTICATION = fallo de l''autentificació pel punt de montatge {0}
+FAILED_AUTHENTICATION=fallo de l''autentificació pel punt de montatge {0}
 
 # error connecting to {0}: {1}
-CONNECTION_ERROR = error de conexió a {0}: {1}
+CONNECTION_ERROR=error de conexió a {0}: {1}
 
 # unexpected content type {0}
-UNEXPECTED_CONTENT_TYPE = tipus de contingut {0} inesperat
+UNEXPECTED_CONTENT_TYPE=tipus de contingut {0} inesperat
 
 # cannot parse GNSS data from {0}
-CANNOT_PARSE_GNSS_DATA = no es poden analitzar les dades GNSS de {0}
+CANNOT_PARSE_GNSS_DATA=no es poden analitzar les dades GNSS de {0}
 
 # invalid GNSS data: {0}
-INVALID_GNSS_DATA = dades GNSS invàides: {0}
+INVALID_GNSS_DATA=dades GNSS invàides: {0}
 
 # GNSS parity error on word {0}
-GNSS_PARITY_ERROR = error de paritat GNSS en la paraula {0}
+GNSS_PARITY_ERROR=error de paritat GNSS en la paraula {0}
 
 # unknown host {0}
-UNKNOWN_HOST = anfitrió {0} desconegut
+UNKNOWN_HOST=anfitrió {0} desconegut
 
 # error parsing sourcetable line {0} from {1}: {2}
-SOURCETABLE_PARSE_ERROR = error d''anàlisis de la linea {0} de la taula d''origen {1}: {2}
+SOURCETABLE_PARSE_ERROR=error d''anàlisis de la linea {0} de la taula d''origen {1}: {2}
 
 # cannot parse sourcetable from {0}
-CANNOT_PARSE_SOURCETABLE = no es pot analitzar la taula d''origen des de {0} 
+CANNOT_PARSE_SOURCETABLE=no es pot analitzar la taula d''origen des de {0}
 
 # mount point {0} is already connected
-MOUNPOINT_ALREADY_CONNECTED = el punt de montatge {0} ja està conectat
+MOUNPOINT_ALREADY_CONNECTED=el punt de montatge {0} ja està conectat
 
 # missing header from {0}: {1}
-MISSING_HEADER = falta capçalera de {0}: {1}
+MISSING_HEADER=falta capçalera de {0}: {1}
 
 # {0} is not a valid international designator
-NOT_VALID_INTERNATIONAL_DESIGNATOR = {0} no és un designador internacional vàlid 
+NOT_VALID_INTERNATIONAL_DESIGNATOR={0} no és un designador internacional vàlid
 
 # value for key {0} has not been initialized
-UNINITIALIZED_VALUE_FOR_KEY = el valor no s''ha inicialitzat per la clau {0}
+UNINITIALIZED_VALUE_FOR_KEY=el valor no s''ha inicialitzat per la clau {0}
 
 # unknown unit {0}
-UNKNOWN_UNIT = unitat {0} desconeguda
+UNKNOWN_UNIT=unitat {0} desconeguda
 
 # units {0} and {1} are not compatible
-INCOMPATIBLE_UNITS = les unitats {0} i {1} no són compatibles
+INCOMPATIBLE_UNITS=les unitats {0} i {1} no són compatibles
 
 # missing velocity data
-MISSING_VELOCITY = falten dades de velocitat
+MISSING_VELOCITY=falten dades de velocitat
 
 # attempt to generate file {0} with a formatting error
-ATTEMPT_TO_GENERATE_MALFORMED_FILE = tentativa de generar el fitxer {0} amb un error de format
+ATTEMPT_TO_GENERATE_MALFORMED_FILE=tentativa de generar el fitxer {0} amb un error de format
 
 # {0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})
-FIND_ROOT = {0} ha fallat buscant una solució entre {1} (g={2,number,0.0##############E0}) i {3} (g={4,number,0.0##############E0})\nÚltima iteració en {5} (g={6,number,0.0##############E0})
+FIND_ROOT={0} ha fallat buscant una solució entre {1} (g={2,number,0.0##############E0}) i {3} (g={4,number,0.0##############E0})\nÚltima iteració en {5} (g={6,number,0.0##############E0})
 
 # missing station data for epoch {0}
-MISSING_STATION_DATA_FOR_EPOCH = Falten dades de l''estació per l''època {0}
+MISSING_STATION_DATA_FOR_EPOCH=Falten dades de l''estació per l''època {0}
 
 # inconsistent parameters selection between pairs {0}/{1} and {2}/{3}
-INCONSISTENT_SELECTION = selecció de paràmetres inconsistents entre els pars {0}/{1} i {2}/{3}
+INCONSISTENT_SELECTION=selecció de paràmetres inconsistents entre els pars {0}/{1} i {2}/{3}
 
 # no unscented transform configured
-NO_UNSCENTED_TRANSFORM_CONFIGURED = cap transformació unscented configurada
+NO_UNSCENTED_TRANSFORM_CONFIGURED=cap transformació unscented configurada
 
 # value is not strictly positive: {0}
-NOT_STRICTLY_POSITIVE = el valor {0} no és estrictament positiu
+NOT_STRICTLY_POSITIVE=el valor {0} no és estrictament positiu
 
 # value is not positive: {0}
-NOT_POSITIVE = el valor {0} no és positiu
+NOT_POSITIVE=el valor {0} no és positiu
 
 # transform from {0} to {1} is not implemented
-UNSUPPORTED_TRANSFORM = la transformació de {0} a {1} no s''ha implementat
+UNSUPPORTED_TRANSFORM=la transformació de {0} a {1} no s''ha implementat
 
 # orbital parameters type: {0} is different from expected orbital type : {1}
-WRONG_ORBIT_PARAMETERS_TYPE = paràmetre orbital de tipus: {0} és diferent del paràmetre orbital esperat de tipus: {1}
+WRONG_ORBIT_PARAMETERS_TYPE=paràmetre orbital de tipus: {0} és diferent del paràmetre orbital esperat de tipus: {1}
 
 # {0} expects {1} elements, got {2}
-WRONG_NB_COMPONENTS = {0} necessita {1} elements, en té {2}
+WRONG_NB_COMPONENTS={0} necessita {1} elements, en té {2}
 
 # cannot change covariance type if defined in a local orbital frame
-CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF = no pot camviar el tipis de covariança si es defineix en el el marc de referència de l''orbita local
+CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF=no pot camviar el tipis de covariança si es defineix en el el marc de referència de l''orbita local
 
 # cannot change covariance type if defined in a non pseudo-inertial reference frame
-CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME = no pot camviar el tipis de covariança si es defineix en el el marc de referència no pseudo-inercial
+CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME=no pot camviar el tipis de covariança si es defineix en el el marc de referència no pseudo-inercial
 
 # primary collision object time of closest approach is different from the secondary collision object's one
-DIFFERENT_TIME_OF_CLOSEST_APPROACH = el temps del major apropament del primer objecte de col·lisió és diferent del segon objecte de col·lisió
+DIFFERENT_TIME_OF_CLOSEST_APPROACH=el temps del major apropament del primer objecte de col·lisió és diferent del segon objecte de col·lisió
 
 # first date {0} does not match second date {1}
-DATES_MISMATCH = la primera data {0} no coincideix amb la segona data {1}
+DATES_MISMATCH=la primera data {0} no coincideix amb la segona data {1}
 
 # first orbit mu {0} does not match second orbit mu {1}
-ORBITS_MUS_MISMATCH = la mu {0} de la primera òrbita no coincideix amb la mu de la segona òrbita {1}
+ORBITS_MUS_MISMATCH=la mu {0} de la primera òrbita no coincideix amb la mu de la segona òrbita {1}
 
 # one state is defined using an orbit while the other is defined using an absolute position-velocity-acceleration
-DIFFERENT_STATE_DEFINITION = un estat està definit utilizant una òrbita mentres que l''altre estat està definit utilizant una posició-velocitat-acceleració absolutes
+DIFFERENT_STATE_DEFINITION=un estat està definit utilizant una òrbita mentres que l''altre estat està definit utilizant una posició-velocitat-acceleració absolutes
 
 # state date {0} does not match its covariance date {1}
-STATE_AND_COVARIANCE_DATES_MISMATCH = la data {0} de l''estat no coincideix amb la data {1} de la seva covariança
+STATE_AND_COVARIANCE_DATES_MISMATCH=la data {0} de l''estat no coincideix amb la data {1} de la seva covariança
 
 # creating a spacecraft state interpolator requires at least one orbit interpolator or an absolute position-velocity-acceleration interpolator
-NO_INTERPOLATOR_FOR_STATE_DEFINITION = crear un interpolador pel vehicle espacial requereix al menys un in interpolador d''òrbita o un interpolador absolut de posició-velocitat-acceleració
+NO_INTERPOLATOR_FOR_STATE_DEFINITION=crear un interpolador pel vehicle espacial requereix al menys un in interpolador d''òrbita o un interpolador absolut de posició-velocitat-acceleració
 
 # wrong interpolator defined for this spacecraft state type (orbit or absolute PV)
-WRONG_INTERPOLATOR_DEFINED_FOR_STATE_INTERPOLATION = interpolador mal definit per aquest tipus de definició del vehicle espacial (òrbita o PV absoluts)
+WRONG_INTERPOLATOR_DEFINED_FOR_STATE_INTERPOLATION=interpolador mal definit per aquest tipus de definició del vehicle espacial (òrbita o PV absoluts)
 
 # multiple interpolators are used so they may use different numbers of interpolation points
-MULTIPLE_INTERPOLATOR_USED = mala interpolació definida per aquest tipus de definició del vehícule espacial (òrbita o PV)
+MULTIPLE_INTERPOLATOR_USED=mala interpolació definida per aquest tipus de definició del vehícule espacial (òrbita o PV)
 
 # header for file {0} has not been written yet
-HEADER_NOT_WRITTEN = la capçalera del fitxer {0} encara no s''ha escrit
+HEADER_NOT_WRITTEN=la capçalera del fitxer {0} encara no s''ha escrit
 
 # header for file {0} has already been written
-HEADER_ALREADY_WRITTEN = la capçalera del fitxer {0} ja s''ha escrit
+HEADER_ALREADY_WRITTEN=la capçalera del fitxer {0} ja s''ha escrit
 
 # Cannot start the propagation from an infinitely far date
-CANNOT_START_PROPAGATION_FROM_INFINITY = La propagagació no pot començar a partir d’’una data infinita
+CANNOT_START_PROPAGATION_FROM_INFINITY=La propagagació no pot començar a partir d’’una data infinita
 
 # Too long time gap between data points: {0} s
-TOO_LONG_TIME_GAP_BETWEEN_DATA_POINTS = <MISSING TRANSLATION>
+TOO_LONG_TIME_GAP_BETWEEN_DATA_POINTS=<MISSING TRANSLATION>
 
 # invalid satellite id {0}
-INVALID_SATELLITE_ID = Id {0} del satél·lit invàlid
+INVALID_SATELLITE_ID=Id {0} del satél·lit invàlid
 
 # EOP interpolation degree must be of the form 4k-1, got {0}
-WRONG_EOP_INTERPOLATION_DEGREE = El grau de l’’interpolador EOP ha de tenir la forma 4k-1, ara és {0}
+WRONG_EOP_INTERPOLATION_DEGREE=El grau de l’’interpolador EOP ha de tenir la forma 4k-1, ara és {0}
 
 # number of planes {0} is inconsistent with number of satellites {1} in Walker constellation
-WALKER_INCONSISTENT_PLANES = <MISSING TRANSLATION>
+WALKER_INCONSISTENT_PLANES=<MISSING TRANSLATION>
 
 # Infinite value appears during computation of atmospheric density in NRLMSISE00 model
-INFINITE_NRLMSISE00_DENSITY = <MISSING TRANSLATION>
+INFINITE_NRLMSISE00_DENSITY=<MISSING TRANSLATION>
 
 # Propagator builder cannot be cloned
-PROPAGATOR_BUILDER_NOT_CLONEABLE = <MISSING TRANSLATION>
+PROPAGATOR_BUILDER_NOT_CLONEABLE=<MISSING TRANSLATION>
 
 # field "{0}" is too long, maximum length is {1} characters
-FIELD_TOO_LONG = <MISSING TRANSLATION>
+FIELD_TOO_LONG=<MISSING TRANSLATION>
 
 # Process covariance expecting dimension {0}, got {1}
-WRONG_PROCESS_COVARIANCE_DIMENSION = <MISSING TRANSLATION>
+WRONG_PROCESS_COVARIANCE_DIMENSION=<MISSING TRANSLATION>
 
 # cannot parse data {0}
-CANNOT_PARSE_DATA = <MISSING TRANSLATION>
+CANNOT_PARSE_DATA=<MISSING TRANSLATION>
 
 # Measurement covariance expecting dimension {0}, got {1}
-WRONG_MEASUREMENT_COVARIANCE_DIMENSION = <MISSING TRANSLATION>
+WRONG_MEASUREMENT_COVARIANCE_DIMENSION=<MISSING TRANSLATION>
 
 # covariance must be square
-COVARIANCE_MUST_BE_SQUARE = <MISSING TRANSLATION>
+COVARIANCE_MUST_BE_SQUARE=<MISSING TRANSLATION>
 
 # state vector (dimension {0}) and covariance (dimension {1}) are inconsistent
-INCONSISTENT_STATE_DIMENSIONS = <MISSING TRANSLATION>
+INCONSISTENT_STATE_DIMENSIONS=<MISSING TRANSLATION>
