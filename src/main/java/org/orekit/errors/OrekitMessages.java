@@ -724,8 +724,8 @@ public enum OrekitMessages implements Localizable {
     /** INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE. */
     INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE("number of maps {0} is inconsistent with header specification: {1}"),
 
-    /** NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER. */
-    NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER("file {0} does not contain latitude or longitude bondaries in its header section"),
+    /** NO_LATITUDE_LONGITUDE_BOUNDARIES_IN_IONEX_HEADER. */
+    NO_LATITUDE_LONGITUDE_BOUNDARIES_IN_IONEX_HEADER("file {0} does not contain latitude or longitude boundaries in its header section"),
 
     /** NO_EPOCH_IN_IONEX_HEADER. */
     NO_EPOCH_IN_IONEX_HEADER("file {0} does not contain epoch of first or last map in its header section"),

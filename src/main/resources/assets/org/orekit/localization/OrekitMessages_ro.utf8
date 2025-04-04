@@ -688,8 +688,8 @@ NO_TEC_DATA_IN_FILES_FOR_DATE=fișierul IONEX {0} nu conține informații TEC pe
 # number of maps {0} is inconsistent with header specification: {1}
 INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE=numărul de hărți {0} este incompatibil cu specificațiile din antet: {1}
 
-# file {0} does not contain latitude and longitude bondaries in its header section
-NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER=fișierul {0} nu conține limite pentru latitudine și longitudine în antet
+# file {0} does not contain latitude and longitude boundaries in its header section
+NO_LATITUDE_LONGITUDE_BOUNDARIES_IN_IONEX_HEADER=fișierul {0} nu conține limite pentru latitudine și longitudine în antet
 
 # file {0} does not contain epoch of first or last map in its header section
 NO_EPOCH_IN_IONEX_HEADER=fișierul {0} nu conține data de început sau de final a hărții în antetul său

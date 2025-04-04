@@ -508,9 +508,9 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
                                 longitudes = parseCoordinate(line);
                                 break;
                             case "END OF HEADER" :
-                                // Check that latitude and longitude bondaries were found
+                                // Check that latitude and longitude boundaries were found
                                 if (latitudes == null || longitudes == null) {
-                                    throw new OrekitException(OrekitMessages.NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER, name);
+                                    throw new OrekitException(OrekitMessages.NO_LATITUDE_LONGITUDE_BOUNDARIES_IN_IONEX_HEADER, name);
                                 }
                                 // Check that first and last epochs were found
                                 if (firstEpoch == null || lastEpoch == null) {

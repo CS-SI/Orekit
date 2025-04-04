@@ -688,8 +688,8 @@ NO_TEC_DATA_IN_FILES_FOR_DATE=les fichiers IONEX {0} ne contiennent pas de donn�
 # number of maps {0} is inconsistent with header specification: {1}
 INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE=le nombre de cartes {0} est incompatible avec les specifications de l''en-tête: {1}
 
-# file {0} does not contain latitude or longitude bondaries in its header section
-NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER={0} ne contient pas de limites en latitude ou en longitude dans son en-tête
+# file {0} does not contain latitude or longitude boundaries in its header section
+NO_LATITUDE_LONGITUDE_BOUNDARIES_IN_IONEX_HEADER={0} ne contient pas de limites en latitude ou en longitude dans son en-tête
 
 # file {0} does not contain epoch of first or last map in its header section
 NO_EPOCH_IN_IONEX_HEADER={0} ne contient pas de date de début ou de fin de carte dans son en-tête
