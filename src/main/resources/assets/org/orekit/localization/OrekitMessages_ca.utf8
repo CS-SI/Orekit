@@ -152,7 +152,7 @@ TOO_LARGE_ORDER_FOR_GRAVITY_FIELD=ordre massa alt (n = {0}, l''ordre de potencia
 WRONG_DEGREE_OR_ORDER=cap terme ({0}, {1}) en una descomposició armònica esfèrica de {2}x{3}
 
 # wrong orbital elements for averaging theory
-WRONG_ELEMENTS_FOR_AVERAGING_THEORY=<MISSING TRANSLATION>
+WRONG_ELEMENTS_FOR_AVERAGING_THEORY=
 
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD=s''han trobat varies dates de referència ({0} i {1} difereixen de {3,number,0.0##############E0} s) en el fitxer de camp gravitacional {2}
@@ -242,7 +242,7 @@ INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION=estat inicial no especificat p
 EVENT_DATE_TOO_CLOSE=la data objectiu de l''esdeveniment ha de ser anterior a {1} de {3,number,0.0##############E0} segons o posterior a {2} de {3,number,0.0##############E0} segons; no obstant, la data objectiu {0} és {4,number,0.0##############E0} segons abans de {1} i {5,number,0.0##############E0} segons després de {2}, per això no es pot afegir
 
 # trying to propagate Cartesian adjoint whilst integration equations of motion with non-Cartesian coordinates
-WRONG_COORDINATES_FOR_ADJOINT_EQUATION=<MISSING TRANSLATION>
+WRONG_COORDINATES_FOR_ADJOINT_EQUATION=
 
 # unable to read header record from JPL ephemerides binary file {0}
 UNABLE_TO_READ_JPL_HEADER=impossible de llegir la capçalera del fitxer binari d''efemèrides del JPL {0}
@@ -293,10 +293,10 @@ PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET=la funció setPeriod ja ha sigut utilitza
 TOO_SMALL_SCALE_FOR_PARAMETER=el factor d''escala pel paràmetre {0} és massa petit: {1}
 
 # state "{0}" is not an array
-ADDITIONAL_STATE_BAD_TYPE=<MISSING TRANSLATION>
+ADDITIONAL_STATE_BAD_TYPE=
 
 # unknown additional data "{0}"
-UNKNOWN_ADDITIONAL_DATA=<MISSING TRANSLATION>
+UNKNOWN_ADDITIONAL_DATA=
 
 # unknown month "{0}"
 UNKNOWN_MONTH=mes desconegut "{0}"
@@ -371,28 +371,28 @@ CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER=no s''ha trobat cap convertidor d''unita
 CCSDS_TIME_SYSTEM_NOT_READ_YET=el sistema temporal hauria d''haver sigut inicialitzat abans de la linea {0} del fitxer {1}
 
 # line break(s) missing after vector number {0} in {1}
-IIRV_MISSING_LINEBREAK_IN_FILE=<MISSING TRANSLATION>
+IIRV_MISSING_LINEBREAK_IN_FILE=
 
 # line {0} in IIRV vector is not valid: "{1}"
-IIRV_INVALID_LINE_IN_VECTOR=<MISSING TRANSLATION>
+IIRV_INVALID_LINE_IN_VECTOR=
 
 # cannot embed more than 1000 vectors in a single IIRV message file: got {0}. Consider splitting the data into multiple files
-IIRV_EXCEEDS_MAX_VECTORS=<MISSING TRANSLATION>
+IIRV_EXCEEDS_MAX_VECTORS=
 
 # numeric value "{0}" exceeds the maximum length of {1} for string representation
-IIRV_VALUE_TOO_LARGE=<MISSING TRANSLATION>
+IIRV_VALUE_TOO_LARGE=
 
 # invalid IIRV term value: {0}
-IIRV_INVALID_TERM_VALUE=<MISSING TRANSLATION>
+IIRV_INVALID_TERM_VALUE=
 
 # the "{0}" term cannot change within an IIRV message file
-IIRV_TERM_CHANGES_WITHIN_FILE=<MISSING TRANSLATION>
+IIRV_TERM_CHANGES_WITHIN_FILE=
 
 # IIRV sequence number must increase by 1 for each subsequent vector entry. At at line {0}, expected sequence number {1}+1, but found {2}
-IIRV_SEQUENCE_NUMBER_MUST_BE_INCREASING_BY_ONE=<MISSING TRANSLATION>
+IIRV_SEQUENCE_NUMBER_MUST_BE_INCREASING_BY_ONE=
 
 # IIRV coordinate system "{0}" ({1}) has not been mapped to an Orekit frame
-IIRV_UNMAPPED_COORDINATE_SYSTEM=<MISSING TRANSLATION>
+IIRV_UNMAPPED_COORDINATE_SYSTEM=
 
 # cannot estimate precession without proper derivatives
 CANNOT_ESTIMATE_PRECESSION_WITHOUT_PROPER_DERIVATIVES=impossible d''estimar la precisió sense les derivades correctes
@@ -434,7 +434,7 @@ SP3_INCOMPATIBLE_FILE_METADATA=impossible d''adjuntar els fitxers sp3 tenint met
 SP3_INCOMPATIBLE_SATELLITE_MEDATADA=impossible d''adjuntar els fitxers sp3 tenint metadata del satèl·lit {0} diferent
 
 # frame {0} not allowed here
-FRAME_NOT_ALLOWED=<MISSING TRANSLATION>
+FRAME_NOT_ALLOWED=
 
 # STK coordinate system "{0}" is invalid or not yet supported
 STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM=el sistema de coordenades "{0}" de STK és invàlid o no s''ha implementat encara
@@ -473,7 +473,7 @@ NO_CACHED_ENTRIES=cap entrada emmagatzemada
 NON_CHRONOLOGICALLY_SORTED_ENTRIES=les entrades generades no estan ordenades: {0} > {1} de {2,number,0.0##############E0} segons
 
 # moving transition date from {0} to {1} collides with existing transition at {2}
-TRANSITION_DATES_COLLISION=<MISSING TRANSLATION>
+TRANSITION_DATES_COLLISION=
 
 # no data generated around date: {0}
 NO_DATA_GENERATED=cap dada generada al voltant de la data: {0}
@@ -488,10 +488,10 @@ UNABLE_TO_GENERATE_NEW_DATA_AFTER=no es poden generar noves dades després de {0
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY=després de {0} iteracins no s''ha aconseguit calcular l''anomalia excèntrica hiperbòlica a partir de l''anomalia mitjana
 
 # unable to compute eccentric longitude argument from the mean one after {0} iterations
-UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT=<MISSING TRANSLATION>
+UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT=
 
 # unable to compute eccentric latitude argument from the mean one after {0} iterations
-UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT=<MISSING TRANSLATION>
+UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT=
 
 # unable to compute mean orbit from osculating orbit after {0} iterations
 UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS=no es pot calcular l''òrbita mitjana a partir de l''òrbita osculating al cap de {0} iteracions
@@ -617,10 +617,10 @@ UNKNOWN_CLOCK_DATA_TYPE=tipus de dades de rellotge desconegudes {0}
 UNKNOWN_SATELLITE_ANTENNA_CODE=codi d''antena de satèl·lit desconegut {0}
 
 # unknown GNSS antenna, name: {0}, radome code: {1}, serial number: {2}
-UNKNOWN_GNSS_ANTENNA=<MISSING TRANSLATION>
+UNKNOWN_GNSS_ANTENNA=
 
 # unknown GNSS frequency, system: {0}, frequency code: {1} (line {2}, file {3})
-UNKNOWN_GNSS_FREQUENCY=<MISSING TRANSLATION>
+UNKNOWN_GNSS_FREQUENCY=
 
 # frequency {0} is not supported by antenna {1}
 UNSUPPORTED_FREQUENCY_FOR_ANTENNA=frequència {0} no presa en compte per l''antena {1}
@@ -910,7 +910,7 @@ HEADER_ALREADY_WRITTEN=la capçalera del fitxer {0} ja s''ha escrit
 CANNOT_START_PROPAGATION_FROM_INFINITY=La propagagació no pot començar a partir d’’una data infinita
 
 # Too long time gap between data points: {0} s
-TOO_LONG_TIME_GAP_BETWEEN_DATA_POINTS=<MISSING TRANSLATION>
+TOO_LONG_TIME_GAP_BETWEEN_DATA_POINTS=
 
 # invalid satellite id {0}
 INVALID_SATELLITE_ID=Id {0} del satél·lit invàlid
@@ -919,28 +919,28 @@ INVALID_SATELLITE_ID=Id {0} del satél·lit invàlid
 WRONG_EOP_INTERPOLATION_DEGREE=El grau de l’’interpolador EOP ha de tenir la forma 4k-1, ara és {0}
 
 # number of planes {0} is inconsistent with number of satellites {1} in Walker constellation
-WALKER_INCONSISTENT_PLANES=<MISSING TRANSLATION>
+WALKER_INCONSISTENT_PLANES=
 
 # Infinite value appears during computation of atmospheric density in NRLMSISE00 model
-INFINITE_NRLMSISE00_DENSITY=<MISSING TRANSLATION>
+INFINITE_NRLMSISE00_DENSITY=
 
 # Propagator builder cannot be cloned
-PROPAGATOR_BUILDER_NOT_CLONEABLE=<MISSING TRANSLATION>
+PROPAGATOR_BUILDER_NOT_CLONEABLE=
 
 # field "{0}" is too long, maximum length is {1} characters
-FIELD_TOO_LONG=<MISSING TRANSLATION>
+FIELD_TOO_LONG=
 
 # Process covariance expecting dimension {0}, got {1}
-WRONG_PROCESS_COVARIANCE_DIMENSION=<MISSING TRANSLATION>
+WRONG_PROCESS_COVARIANCE_DIMENSION=
 
 # cannot parse data {0}
-CANNOT_PARSE_DATA=<MISSING TRANSLATION>
+CANNOT_PARSE_DATA=
 
 # Measurement covariance expecting dimension {0}, got {1}
-WRONG_MEASUREMENT_COVARIANCE_DIMENSION=<MISSING TRANSLATION>
+WRONG_MEASUREMENT_COVARIANCE_DIMENSION=
 
 # covariance must be square
-COVARIANCE_MUST_BE_SQUARE=<MISSING TRANSLATION>
+COVARIANCE_MUST_BE_SQUARE=
 
 # state vector (dimension {0}) and covariance (dimension {1}) are inconsistent
-INCONSISTENT_STATE_DIMENSIONS=<MISSING TRANSLATION>
+INCONSISTENT_STATE_DIMENSIONS=
