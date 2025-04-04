@@ -419,7 +419,7 @@ DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD=la órbita tiene una excentricidad ({0} >
 SP3_UNSUPPORTED_VERSION=versión de formato sp3 "{0}" no reconocida
 
 # invalid header entry {0} "{1}" in file {2} (format version {3})
-SP3_INVALID_HEADER_ENTRY=entrada de cabecera {0} "{1}" inválida en archivo {2} (versión {3} del formato) <MISSING TRANSLATION>
+SP3_INVALID_HEADER_ENTRY=entrada de cabecera {0} "{1}" inválida en archivo {2} (versión {3} del formato)
 
 # version "{0}" supports only up to {1} satellites, found {2} in file {3}
 SP3_TOO_MANY_SATELLITES_FOR_VERSION=la versión "{0}" del formato está limitada a {1} satélites como máximo, se han encontrado {2} en el fichero {3}
