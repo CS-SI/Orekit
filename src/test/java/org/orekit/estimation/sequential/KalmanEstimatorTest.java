@@ -358,7 +358,9 @@ public class KalmanEstimatorTest {
 
         // Build the filter (should not succeed)
         OrekitException thrown = Assertions.assertThrows(OrekitException.class, kalmanBuilderBadInitial::build);
-        Assertions.assertTrue(thrown.getMessage().contains("Process covariance expecting dimension 2, got 3"));
+        Assertions.assertEquals(OrekitMessages.WRONG_PROCESS_COVARIANCE_DIMENSION, thrown.getSpecifier());
+        Assertions.assertEquals(2, thrown.getParts()[0]);
+        Assertions.assertEquals(3, thrown.getParts()[1]);
 
         // Build the Kalman filter
         final KalmanEstimator kalmanBadProcessNoise = new KalmanEstimatorBuilder()
@@ -367,7 +369,9 @@ public class KalmanEstimatorTest {
 
         // Run the filter (should not succeed)
         thrown = Assertions.assertThrows(OrekitException.class, () -> kalmanBadProcessNoise.estimationStep(measurement));
-        Assertions.assertTrue(thrown.getMessage().contains("Process covariance expecting dimension 2, got 3"));
+        Assertions.assertEquals(OrekitMessages.WRONG_PROCESS_COVARIANCE_DIMENSION, thrown.getSpecifier());
+        Assertions.assertEquals(2, thrown.getParts()[0]);
+        Assertions.assertEquals(3, thrown.getParts()[1]);
 
         // Initialize the Kalman builder
         final KalmanEstimatorBuilder kalmanBadProcessNoiseWithMeasurementProcessNoise = new KalmanEstimatorBuilder()
@@ -376,7 +380,9 @@ public class KalmanEstimatorTest {
 
         // Build the filter (should not succeed)
         thrown = Assertions.assertThrows(OrekitException.class, kalmanBadProcessNoiseWithMeasurementProcessNoise::build);
-        Assertions.assertTrue(thrown.getMessage().contains("Process covariance expecting dimension 2, got 3"));
+        Assertions.assertEquals(OrekitMessages.WRONG_PROCESS_COVARIANCE_DIMENSION, thrown.getSpecifier());
+        Assertions.assertEquals(2, thrown.getParts()[0]);
+        Assertions.assertEquals(3, thrown.getParts()[1]);
 
         // Add a measurement parameter
         final Bias<PV> pvBias = new Bias<>(new String[]{"x bias"},
@@ -394,7 +400,10 @@ public class KalmanEstimatorTest {
 
         // Run the filter (should not succeed)
         thrown = Assertions.assertThrows(OrekitException.class, () -> estimatorBadMeasurementNoise.estimationStep(measurement));
-        Assertions.assertTrue(thrown.getMessage().contains("Process covariance expecting dimension 2, got 3"));
+        Assertions.assertEquals(OrekitMessages.WRONG_PROCESS_COVARIANCE_DIMENSION, thrown.getSpecifier());
+        Assertions.assertEquals(2, thrown.getParts()[0]);
+        Assertions.assertEquals(3, thrown.getParts()[1]);
+
     }
 
     @Test
@@ -465,7 +474,9 @@ public class KalmanEstimatorTest {
         // Build the filter (should not succeed)
         final OrekitException thrownBadInitial =
                 Assertions.assertThrows(OrekitException.class, kalmanBuilderBadInitial::build);
-        Assertions.assertTrue(thrownBadInitial.getMessage().contains("Process covariance expecting dimension 7, got 6"));
+        Assertions.assertEquals(OrekitMessages.WRONG_PROCESS_COVARIANCE_DIMENSION, thrownBadInitial.getSpecifier());
+        Assertions.assertEquals(7, thrownBadInitial.getParts()[0]);
+        Assertions.assertEquals(6, thrownBadInitial.getParts()[1]);
 
         // Build the Kalman filter
         final KalmanEstimator kalmanBadProcessNoise = new KalmanEstimatorBuilder()
@@ -476,7 +487,9 @@ public class KalmanEstimatorTest {
         // Run the filter (should not succeed)
         final OrekitException thrownBadQ = Assertions.assertThrows(OrekitException.class,
                 () -> kalmanBadProcessNoise.processMeasurements(measurements));
-        Assertions.assertTrue(thrownBadQ.getMessage().contains("Process covariance expecting dimension 7, got 6"));
+        Assertions.assertEquals(OrekitMessages.WRONG_PROCESS_COVARIANCE_DIMENSION, thrownBadQ.getSpecifier());
+        Assertions.assertEquals(7, thrownBadQ.getParts()[0]);
+        Assertions.assertEquals(6, thrownBadQ.getParts()[1]);
 
         // Measurement covariance providers
         final ConstantProcessNoise badMeasurementInitialNoise =
@@ -494,8 +507,9 @@ public class KalmanEstimatorTest {
         // Build the filter (should not succeed)
         final OrekitException thrownBadInitialMeas =
                 Assertions.assertThrows(OrekitException.class, kalmanBuilderBadInitialMeas::build);
-        Assertions.assertTrue(thrownBadInitialMeas.getMessage()
-                .contains("Measurement covariance expecting dimension 1, got 2"));
+        Assertions.assertEquals(OrekitMessages.WRONG_MEASUREMENT_COVARIANCE_DIMENSION, thrownBadInitialMeas.getSpecifier());
+        Assertions.assertEquals(1, thrownBadInitialMeas.getParts()[0]);
+        Assertions.assertEquals(2, thrownBadInitialMeas.getParts()[1]);
 
         // Build the Kalman filter
         final KalmanEstimator kalmanBadProcessNoiseMeas = new KalmanEstimatorBuilder()
@@ -506,8 +520,10 @@ public class KalmanEstimatorTest {
         // Run the filter (should not succeed)
         final OrekitException thrownBadQMeas = Assertions.assertThrows(OrekitException.class,
                 () -> kalmanBadProcessNoiseMeas.processMeasurements(measurements));
-        Assertions.assertTrue(thrownBadQMeas.getMessage()
-                .contains("Measurement covariance expecting dimension 1, got 2"));
+        Assertions.assertEquals(OrekitMessages.WRONG_MEASUREMENT_COVARIANCE_DIMENSION, thrownBadQMeas.getSpecifier());
+        Assertions.assertEquals(1, thrownBadQMeas.getParts()[0]);
+        Assertions.assertEquals(2, thrownBadQMeas.getParts()[1]);
+
     }
 
     @Test
