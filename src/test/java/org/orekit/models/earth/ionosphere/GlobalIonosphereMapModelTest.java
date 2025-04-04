@@ -432,7 +432,7 @@ public class GlobalIonosphereMapModelTest {
             Assertions.fail("An exception should have been thrown");
 
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NO_LATITUDE_LONGITUDE_BOUNDARIES_IN_IONEX_HEADER, oe.getSpecifier());
         }
     }
 

@@ -688,8 +688,8 @@ NO_TEC_DATA_IN_FILES_FOR_DATE=els fitxers IONEX {0} no contenent dades TEC per l
 # number of maps {0} is inconsistent with header specification: {1}
 INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE=el número de mapes {0} no és coherent amb l''especificació de la capçalera {1}
 
-# file {0} does not contain latitude or longitude bondaries in its header section
-NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER=el fitxer {0} no conté límits de latitud o longitud en la secció de la capçalera
+# file {0} does not contain latitude or longitude boundaries in its header section
+NO_LATITUDE_LONGITUDE_BOUNDARIES_IN_IONEX_HEADER=el fitxer {0} no conté límits de latitud o longitud en la secció de la capçalera
 
 # file {0} does not contain epoch of first or last map in its header section
 NO_EPOCH_IN_IONEX_HEADER=el fitxer {0} no conté èpoques del primer o últim mapa en la secció de la capçalera
