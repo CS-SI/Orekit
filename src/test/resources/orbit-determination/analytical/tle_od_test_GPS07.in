@@ -105,7 +105,7 @@ general.relativity = false
 ## LOF_ALIGNED_LVLH, LOF_ALIGNED_QSW, LOF_ALIGNED_TNW, LOF_ALIGNED_VNC, LOF_ALIGNED_VVLH
 attitude.mode = CENTER_POINTING_WITH_YAW_STEERING
 
-## Use range and range-rate measurements
+## Use range and range-rate measurements
 use.range.measurements = true
 use.range.rate.measurements = false
 
