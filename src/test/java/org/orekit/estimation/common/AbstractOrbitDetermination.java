@@ -1661,7 +1661,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
                 } else {
                     // Empirical tropospheric model
-                    model = ModifiedSaastamoinenModel.getStandardModel();
+                    model = new ModifiedSaastamoinenModel(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
                 }
 
                 rangeTroposphericCorrection = new RangeTroposphericDelayModifier(model);
