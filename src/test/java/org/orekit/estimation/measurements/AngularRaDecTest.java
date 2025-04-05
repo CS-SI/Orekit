@@ -35,7 +35,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
@@ -311,8 +310,7 @@ class AngularRaDecTest {
 
         final GeodeticPoint point = new GeodeticPoint(0., 0., 100.);
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "name");
-        final GroundStation station = new GroundStation(baseFrame,
-                                                        TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+        final GroundStation station = new GroundStation(baseFrame);
 
         final Frame[] frames = {FramesFactory.getEME2000(), FramesFactory.getGCRF(), FramesFactory.getICRF(), FramesFactory.getTOD(false)};
         final double[][] raDec = new double[frames.length][];

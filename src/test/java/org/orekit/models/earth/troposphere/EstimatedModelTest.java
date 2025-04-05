@@ -128,8 +128,7 @@ public class EstimatedModelTest extends AbstractPathDelayTest<EstimatedModel> {
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
 
         // Station
-        final GroundStation station = new GroundStation(baseFrame,
-                                                        TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+        final GroundStation station = new GroundStation(baseFrame);
 
         // Tropospheric model
         final TroposphericModel model = new EstimatedModel(func, 2.0);

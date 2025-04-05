@@ -32,7 +32,6 @@ import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.PredefinedGnssSignal;
-import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
@@ -56,8 +55,7 @@ public class RelativisticClockPhaseModifierTest {
                                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         final GeodeticPoint point    = new GeodeticPoint(FastMath.toRadians(42.0), FastMath.toRadians(1.0), 100.0);
         final TopocentricFrame topo  = new TopocentricFrame(earth, point, "");
-        final GroundStation station  = new GroundStation(topo,
-                                                         TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+        final GroundStation station  = new GroundStation(topo);
 
         // Satellite (GPS orbit from TLE)
         final TLE tle = new TLE("1 28474U 04045A   20252.59334296 -.00000043  00000-0  00000-0 0  9998",
@@ -117,8 +115,7 @@ public class RelativisticClockPhaseModifierTest {
                                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         final GeodeticPoint point    = new GeodeticPoint(FastMath.toRadians(42.0), FastMath.toRadians(1.0), 100.0);
         final TopocentricFrame topo  = new TopocentricFrame(earth, point, "");
-        final GroundStation station  = new GroundStation(topo,
-                                                         TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+        final GroundStation station  = new GroundStation(topo);
 
         // Satellite (GPS orbit from TLE)
         final TLE tle = new TLE("1 28474U 04045A   20252.59334296 -.00000043  00000-0  00000-0 0  9998",

@@ -1470,7 +1470,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             final TopocentricFrame topo = new TopocentricFrame(body, position, stationNames[i]);
             final PressureTemperatureHumidityProvider pth0Provider =
                             TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER;
-            final GroundStation station = new GroundStation(topo, pth0Provider, eopHistory, displacements);
+            final GroundStation station = new GroundStation(topo, eopHistory, displacements);
             station.getClockOffsetDriver().setReferenceValue(stationClockOffsets[i]);
             station.getClockOffsetDriver().setValue(stationClockOffsets[i]);
             station.getClockOffsetDriver().setMinValue(stationClockOffsetsMin[i]);

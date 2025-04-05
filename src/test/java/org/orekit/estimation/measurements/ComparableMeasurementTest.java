@@ -25,7 +25,6 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -47,8 +46,7 @@ public class ComparableMeasurementTest {
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, false));
         TopocentricFrame stationFrame = new TopocentricFrame(earth, new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(0.0), 0.0), "station");
-        GroundStation station = new GroundStation(stationFrame,
-                                                  TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+        GroundStation station = new GroundStation(stationFrame);
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
 
         // Create a Range and Azel at same date,

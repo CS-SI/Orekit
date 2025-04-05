@@ -42,7 +42,6 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.ReferenceEllipsoid;
-import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -75,8 +74,7 @@ public class AberrationModifierTest {
                 51.8);
         TopocentricFrame stationFrame = new TopocentricFrame(ReferenceEllipsoid.getWgs84(fixedFrame),
                 stationLocation, "station");
-        groundStation = new GroundStation(stationFrame,
-                                          TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+        groundStation = new GroundStation(stationFrame);
 
         // Select parameters and set reference date
         List<ParameterDriver> parameterDrivers = new ArrayList<>();

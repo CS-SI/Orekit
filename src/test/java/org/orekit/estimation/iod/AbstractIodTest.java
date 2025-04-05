@@ -31,7 +31,6 @@ import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -83,8 +82,7 @@ public abstract class AbstractIodTest {
         this.observer = new GroundStation(new TopocentricFrame(body,
                                                                new GeodeticPoint(FastMath.toRadians(40),
                                                                                  FastMath.toRadians(-110),
-                                                                                 2000.0), ""),
-                                          TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+                                                                                 2000.0), ""));
         this.observer.getPrimeMeridianOffsetDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
         this.observer.getPolarOffsetXDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
         this.observer.getPolarOffsetYDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
