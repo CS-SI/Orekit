@@ -629,7 +629,7 @@ UNSUPPORTED_FREQUENCY_FOR_ANTENNA=frecuencia {0} no tenida en cuenta por la ante
 CANNOT_FIND_SATELLITE_IN_SYSTEM=no puede encontrarse el satélite {0} en el sistema de satélites {1}
 
 # unknown RINEX frequency {0} in file {1}, line {2}
-UNKNOWN_RINEX_FREQUENCY=frecuencia RINEX desconocida en el fichero {1}, línea {2}
+UNKNOWN_RINEX_FREQUENCY=frecuencia RINEX {0} desconocida en el fichero {1}, línea {2}
 
 # mismatched frequencies in file {0}, line {1} (expected {2}, got {3})
 MISMATCHED_FREQUENCIES=frecuencias incoherentes en el fichero {0}, línea {1} (se esperaba {2} y se encontró {3})
