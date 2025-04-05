@@ -20,15 +20,45 @@ import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Test;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.models.earth.weather.HeightDependentPressureTemperatureHumidityConverter;
+import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
+import org.orekit.models.earth.weather.water.CIPM2007;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TrackingCoordinates;
 
 public class MariniMurrayTest extends AbstractPathDelayTest<MariniMurray> {
 
-    protected MariniMurray buildTroposphericModel() {
+    protected MariniMurray buildTroposphericModel(final PressureTemperatureHumidityProvider provider) {
         // ruby laser with wavelength 694.3 nm
-        return new MariniMurray(694.3, TroposphericModelUtils.NANO_M,
-                                TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+        return new MariniMurray(694.3, TroposphericModelUtils.NANO_M, provider);
+    }
+
+    @Override
+    @Test
+    public void testFixedHeight() {
+        doTestFixedHeight(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+    }
+
+    @Override
+    @Test
+    public void testFieldFixedHeight() {
+        doTestFieldFixedHeight(Binary64Field.getInstance(),
+                               TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+    }
+
+    @Override
+    @Test
+    public void testFixedElevation() {
+        doTestFixedElevation(new HeightDependentPressureTemperatureHumidityConverter(new CIPM2007()).
+                             getProvider(TroposphericModelUtils.STANDARD_ATMOSPHERE));
+    }
+
+    @Override
+    @Test
+    public void testFieldFixedElevation() {
+        doTestFieldFixedElevation(Binary64Field.getInstance(),
+                                  new HeightDependentPressureTemperatureHumidityConverter(new CIPM2007()).
+                                  getProvider(TroposphericModelUtils.STANDARD_ATMOSPHERE));
     }
 
     @Test
@@ -36,6 +66,7 @@ public class MariniMurrayTest extends AbstractPathDelayTest<MariniMurray> {
     public void testDelay() {
         doTestDelay(AbsoluteDate.J2000_EPOCH,
                     new GeodeticPoint(FastMath.toRadians(45), FastMath.toRadians(45), 100), new TrackingCoordinates(0.0, FastMath.toRadians(10), 0.0),
+                    TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
                     2.3883, 0.001656, 13.2516, 0.009522, 13.2611);
     }
 
@@ -45,6 +76,7 @@ public class MariniMurrayTest extends AbstractPathDelayTest<MariniMurray> {
         doTestDelay(Binary64Field.getInstance(),
                     AbsoluteDate.J2000_EPOCH,
                     new GeodeticPoint(FastMath.toRadians(45), FastMath.toRadians(45), 100), new TrackingCoordinates(0.0, FastMath.toRadians(10), 0.0),
+                    TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
                     2.3883, 0.001656, 13.2516, 0.009522, 13.2611);
     }
 

@@ -33,6 +33,7 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
+import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
@@ -56,14 +57,14 @@ import java.util.List;
 public class EstimatedModelTest extends AbstractPathDelayTest<EstimatedModel> {
 
     @Override
-    protected EstimatedModel buildTroposphericModel() {
+    protected EstimatedModel buildTroposphericModel(final PressureTemperatureHumidityProvider provider) {
         return new EstimatedModel(new NiellMappingFunctionModel(), 2.0);
     }
 
     @Test
     @Override
     public void testDelay() {
-        doTestDelay(defaultDate, defaultPoint, defaultTrackingCoordinates,
+        doTestDelay(defaultDate, defaultPoint, defaultTrackingCoordinates, null,
                     2.09133, -0.09133, 3.39014, -0.14822, 3.24193);
     }
 
@@ -71,8 +72,32 @@ public class EstimatedModelTest extends AbstractPathDelayTest<EstimatedModel> {
     @Override
     public void testFieldDelay() {
         doTestDelay(Binary64Field.getInstance(),
-                    defaultDate, defaultPoint, defaultTrackingCoordinates,
+                    defaultDate, defaultPoint, defaultTrackingCoordinates, null,
                     2.09133, -0.09133, 3.39014, -0.14822, 3.24193);
+    }
+
+    @Override
+    @Test
+    public void testFixedHeight() {
+        doTestFixedHeight(null);
+    }
+
+    @Override
+    @Test
+    public void testFieldFixedHeight() {
+        doTestFieldFixedHeight(Binary64Field.getInstance(), null);
+    }
+
+    @Override
+    @Test
+    public void testFixedElevation() {
+        doTestFixedElevation(null);
+    }
+
+    @Override
+    @Test
+    public void testFieldFixedElevation() {
+        doTestFieldFixedElevation(Binary64Field.getInstance(), null);
     }
 
     @Test
@@ -388,7 +413,7 @@ public class EstimatedModelTest extends AbstractPathDelayTest<EstimatedModel> {
     }
 
     private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
-                                  boolean withMass) {
+                                    boolean withMass) {
         double[][] array = new double[2][withMass ? 7 : 6];
         orbitType.mapOrbitToArray(state.getOrbit(), angleType, array[0], array[1]);
         if (withMass) {
@@ -402,7 +427,7 @@ public class EstimatedModelTest extends AbstractPathDelayTest<EstimatedModel> {
         Orbit orbit = orbitType.mapArrayToOrbit(array[0], array[1], angleType, date, mu, frame);
         return (array.length > 6) ?
                new SpacecraftState(orbit, attitude) :
-               new SpacecraftState(orbit, attitude, array[0][6]);
+               new SpacecraftState(orbit, attitude).withMass(array[0][6]);
     }
 
     private void fillJacobianColumn(double[][] jacobian, int column, double h,

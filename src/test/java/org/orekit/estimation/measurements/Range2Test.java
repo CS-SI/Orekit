@@ -29,6 +29,7 @@ import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
+import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -295,7 +296,7 @@ public class Range2Test {
     void genericTestStateDerivatives(final boolean isModifier, final boolean printResults,
                                      final double refErrorsPMedian, final double refErrorsPMean, final double refErrorsPMax,
                                      final double refErrorsVMedian, final double refErrorsVMean, final double refErrorsVMax)
-                    {
+    {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -329,7 +330,7 @@ public class Range2Test {
 
                     // Add modifiers if test implies it
                     final RangeTroposphericDelayModifier modifier =
-                        new RangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
+                        new RangeTroposphericDelayModifier(new ModifiedSaastamoinenModel(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER));
                     if (isModifier) {
                         ((Range) measurement).addModifier(modifier);
                     }

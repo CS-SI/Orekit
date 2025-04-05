@@ -103,8 +103,18 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
      * @see HeightDependentPressureTemperatureHumidityConverter
      */
     public CanonicalSaastamoinenModel() {
+        this(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+    }
+
+    /**
+     * Create a new Saastamoinen model for the troposphere using the given environmental
+     * conditions and table from the reference book.
+     * @param pthProvider provider for pressure, temperature and humidity
+     * @since 13.0
+     */
+    public CanonicalSaastamoinenModel(final PressureTemperatureHumidityProvider pthProvider) {
         this.lowElevationThreshold = DEFAULT_LOW_ELEVATION_THRESHOLD;
-        this.pthProvider           = TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER;
+        this.pthProvider           = pthProvider;
     }
 
     /** {@inheritDoc}

@@ -177,8 +177,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
     /** Orbit determination for GNSS satellite based on range measurements */
     @Test
     public void testGNSS()
-        throws URISyntaxException, IllegalArgumentException, IOException,
-               OrekitException, ParseException {
+        throws URISyntaxException, IllegalArgumentException, IOException, OrekitException {
 
         // input in resources directory
         final String inputPath = TLEOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/analytical/tle_od_test_GPS07.in").toURI().getPath();

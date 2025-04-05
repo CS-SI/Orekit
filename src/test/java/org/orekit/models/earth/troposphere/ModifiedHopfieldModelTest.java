@@ -48,8 +48,34 @@ public class ModifiedHopfieldModelTest extends AbstractPathDelayTest<ModifiedHop
     private double[] heights;
 
     @Override
-    protected ModifiedHopfieldModel buildTroposphericModel() {
-        return new ModifiedHopfieldModel(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+    protected ModifiedHopfieldModel buildTroposphericModel(final PressureTemperatureHumidityProvider provider) {
+        return new ModifiedHopfieldModel(provider);
+    }
+
+    @Test
+    @Override
+    public void testFixedHeight() {
+        doTestFixedHeight(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+    }
+
+    @Test
+    @Override
+    public void testFieldFixedHeight() {
+        doTestFieldFixedHeight(Binary64Field.getInstance(),
+                               TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+    }
+
+    @Test
+    @Override
+    public void testFixedElevation() {
+        doTestFixedElevation(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+    }
+
+    @Test
+    @Override
+    public void testFieldFixedElevation() {
+        doTestFieldFixedElevation(Binary64Field.getInstance(),
+                                  TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
     }
 
     @Test
@@ -57,6 +83,7 @@ public class ModifiedHopfieldModelTest extends AbstractPathDelayTest<ModifiedHop
     public void testDelay() {
         doTestDelay(defaultDate, defaultPoint,
                     new TrackingCoordinates(FastMath.toRadians(192), FastMath.toRadians(5), 1.4e6),
+                    TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
                     2.31371, 0.00942, 23.62185, 0.10438, 23.72623);
     }
 
@@ -66,6 +93,7 @@ public class ModifiedHopfieldModelTest extends AbstractPathDelayTest<ModifiedHop
         doTestDelay(Binary64Field.getInstance(),
                     defaultDate, defaultPoint,
                     new TrackingCoordinates(FastMath.toRadians(192), FastMath.toRadians(5), 1.4e6),
+                    TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
                     2.31371, 0.00942, 23.62185, 0.10438, 23.72623);
     }
 
@@ -93,7 +121,7 @@ public class ModifiedHopfieldModelTest extends AbstractPathDelayTest<ModifiedHop
     private <T extends CalculusFieldElement<T>> void doTestFieldNegativeHeight(final Field<T> field) {
         final T zero = field.getZero();
         Utils.setDataRoot("atmosphere");
-        ModifiedHopfieldModel model = new ModifiedHopfieldModel(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+        ModifiedHopfieldModel model = buildTroposphericModel(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
         final T height = zero.subtract(500.0);
         for (double elevation = 0; elevation < FastMath.PI; elevation += 0.1) {
             Assertions.assertEquals(model.pathDelay(new FieldTrackingCoordinates<>(zero,
@@ -120,27 +148,9 @@ public class ModifiedHopfieldModelTest extends AbstractPathDelayTest<ModifiedHop
         // as well as the delay scale at 0m and 40m
         final HeightDependentPressureTemperatureHumidityConverter converter =
                         new HeightDependentPressureTemperatureHumidityConverter(new CIPM2007());
-        final PressureTemperatureHumidityProvider provider = new PressureTemperatureHumidityProvider() {
-
-            /** {@inheritDoc} */
-            @Override
-            public PressureTemperatureHumidity getWeatherParameters(final GeodeticPoint location,
-                                                                    final AbsoluteDate date) {
-                return converter.convert(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER.
-                                         getWeatherParameters(location, date),
-                                         location.getAltitude());
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public <T extends CalculusFieldElement<T>> FieldPressureTemperatureHumidity<T> getWeatherParameters(
-                final FieldGeodeticPoint<T> location, final FieldAbsoluteDate<T> date) {
-                return converter.convert(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER.
-                                         getWeatherParameters(location, date),
-                                         location.getAltitude());
-            }
-        };
-        ModifiedHopfieldModel model = new ModifiedHopfieldModel(provider);
+        final PressureTemperatureHumidityProvider provider =
+            converter.getProvider(TroposphericModelUtils.STANDARD_ATMOSPHERE);
+        ModifiedHopfieldModel model = buildTroposphericModel(provider);
 
         for (int h = 0; h < heights.length; h++) {
             for (int e = 0; e < elevations.length; e++) {

@@ -48,6 +48,7 @@ import org.orekit.models.earth.ITURP834AtmosphericRefraction;
 import org.orekit.models.earth.troposphere.EstimatedModel;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
 import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
+import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -359,7 +360,7 @@ public class TropoModifierTest {
         propagator.clearStepHandlers();
 
         final BistaticRangeTroposphericDelayModifier modifier =
-                        new BistaticRangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
+                        new BistaticRangeTroposphericDelayModifier(new ModifiedSaastamoinenModel(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER));
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             BistaticRange biRange = (BistaticRange) measurement;

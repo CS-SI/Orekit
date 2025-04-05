@@ -18,7 +18,13 @@ package org.orekit.models.earth.weather;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
+import org.orekit.bodies.FieldGeodeticPoint;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.models.earth.troposphere.TroposphericModelUtils;
+import org.orekit.models.earth.weather.water.CIPM2007;
 import org.orekit.models.earth.weather.water.WaterVaporPressureProvider;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 
 /** Converter for weather parameters that change with height.
  * <p>
@@ -83,6 +89,31 @@ public class HeightDependentPressureTemperatureHumidityConverter {
         final T rh = rh0.multiply(FastMath.exp(dh.multiply(-6.396e-4)));
         return new FieldPressureTemperatureHumidity<>(h, p, t, provider.waterVaporPressure(p, t, rh),
                                                       pth0.getTm(), pth0.getLambda());
+    }
+
+    /** Generate a provider applying altitude dependency to fixed weather parameters.
+     * @param basePTH base weather parameters
+     * @return a provider that applies altitude dependency
+     * @since 13.0
+     */
+    public PressureTemperatureHumidityProvider getProvider(final PressureTemperatureHumidity basePTH) {
+        return new PressureTemperatureHumidityProvider() {
+
+            /** {@inheritDoc} */
+            @Override
+            public PressureTemperatureHumidity getWeatherParameters(final GeodeticPoint location,
+                                                                    final AbsoluteDate date) {
+                return convert(basePTH, location.getAltitude());
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public <T extends CalculusFieldElement<T>> FieldPressureTemperatureHumidity<T>
+            getWeatherParameters(final FieldGeodeticPoint<T> location, final FieldAbsoluteDate<T> date) {
+                return convert(new FieldPressureTemperatureHumidity<>(date.getField(), basePTH),
+                               location.getAltitude());
+            }
+        };
     }
 
 }

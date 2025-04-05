@@ -21,13 +21,14 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.TrackingCoordinates;
 
 public class ViennaThreePathDelayTest extends AbstractPathDelayTest<ViennaThree> {
 
-    protected ViennaThree buildTroposphericModel() {
+    protected ViennaThree buildTroposphericModel(final PressureTemperatureHumidityProvider provider) {
         return new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(0.00123462, 0.00047101)),
                                                   new ConstantAzimuthalGradientProvider(null),
                                                   new ConstantTroposphericModel(new TroposphericDelay(2.1993, 0.0690, 0, 0)),
@@ -36,9 +37,34 @@ public class ViennaThreePathDelayTest extends AbstractPathDelayTest<ViennaThree>
 
     @Test
     @Override
+    public void testFixedHeight() {
+        doTestFixedHeight(null);
+    }
+
+    @Test
+    @Override
+    public void testFieldFixedHeight() {
+        doTestFieldFixedHeight(Binary64Field.getInstance(), null);
+    }
+
+    @Test
+    @Override
+    public void testFixedElevation() {
+        doTestFixedElevation(null);
+    }
+
+    @Test
+    @Override
+    public void testFieldFixedElevation() {
+        doTestFieldFixedElevation(Binary64Field.getInstance(), null);
+    }
+
+    @Test
+    @Override
     public void testDelay() {
         doTestDelay(new AbsoluteDate(),
                     new GeodeticPoint(FastMath.toRadians(37.5), FastMath.toRadians(277.5), 100.0), new TrackingCoordinates(FastMath.toRadians(30.0), FastMath.toRadians(10.0), 0.0),
+                    null,
                     2.1993, 0.069, 12.2124, 0.3916, 12.6041);
     }
 
@@ -48,6 +74,7 @@ public class ViennaThreePathDelayTest extends AbstractPathDelayTest<ViennaThree>
         doTestDelay(Binary64Field.getInstance(),
                     new AbsoluteDate(),
                     new GeodeticPoint(FastMath.toRadians(37.5), FastMath.toRadians(277.5), 100.0), new TrackingCoordinates(FastMath.toRadians(30.0), FastMath.toRadians(10.0), 0.0),
+                    null,
                     2.1993, 0.069, 12.2124, 0.3916, 12.6041);
     }
 

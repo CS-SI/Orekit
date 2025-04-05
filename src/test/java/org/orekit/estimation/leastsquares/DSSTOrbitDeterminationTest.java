@@ -293,8 +293,7 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
      */
     @Test
     public void testGNSS()
-        throws URISyntaxException, IllegalArgumentException, IOException,
-               OrekitException, ParseException {
+        throws URISyntaxException, IllegalArgumentException, IOException, OrekitException {
 
         // input in resources directory
         final String inputPath = DSSTOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/GNSS/dsst_od_test_GPS07.in").toURI().getPath();

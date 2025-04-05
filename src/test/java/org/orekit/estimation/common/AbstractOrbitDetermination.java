@@ -1598,8 +1598,8 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
                     if (useTimeSpanModel) {
                         // Initial model used to initialize the time span tropospheric model
-                        final EstimatedModel initialModel = new EstimatedModel(station.getBaseFrame().getPoint().getAltitude(),
-                                                                               temperature, pressure, mappingModel,
+                        final EstimatedModel initialModel = new EstimatedModel(new ModifiedSaastamoinenModel(pth0Provider),
+                                                                               mappingModel,
                                                                                stationTroposphericZenithDelay[i]);
 
                         // Initialize the time span tropospheric model
@@ -1612,16 +1612,16 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                         final String subName = stationNames[i].substring(0, 5);
 
                         // Estimated tropospheric model BEFORE the median date
-                        final EstimatedModel modelBefore = new EstimatedModel(station.getBaseFrame().getPoint().getAltitude(),
-                                                                              temperature, pressure, mappingModel,
+                        final EstimatedModel modelBefore = new EstimatedModel(new ModifiedSaastamoinenModel(pth0Provider),
+                                                                              mappingModel,
                                                                               stationTroposphericZenithDelay[i]);
                         final ParameterDriver totalDelayBefore = modelBefore.getParametersDrivers().get(0);
                         totalDelayBefore.setSelected(stationZenithDelayEstimated[i]);
                         totalDelayBefore.setName(subName + TimeSpanEstimatedModel.DATE_BEFORE + epoch.toString(TimeScalesFactory.getUTC()) + " " + EstimatedModel.TOTAL_ZENITH_DELAY);
 
                         // Estimated tropospheric model AFTER the median date
-                        final EstimatedModel modelAfter = new EstimatedModel(station.getBaseFrame().getPoint().getAltitude(),
-                                                                             temperature, pressure, mappingModel,
+                        final EstimatedModel modelAfter = new EstimatedModel(new ModifiedSaastamoinenModel(pth0Provider),
+                                                                             mappingModel,
                                                                              stationTroposphericZenithDelay[i]);
                         final ParameterDriver totalDelayAfter = modelAfter.getParametersDrivers().get(0);
                         totalDelayAfter.setSelected(stationZenithDelayEstimated[i]);
@@ -1651,8 +1651,8 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
                     } else {
 
-                        model = new EstimatedModel(station.getBaseFrame().getPoint().getAltitude(),
-                                                   temperature, pressure, mappingModel, stationTroposphericZenithDelay[i]);
+                        model = new EstimatedModel(new ModifiedSaastamoinenModel(pth0Provider),
+                                                   mappingModel, stationTroposphericZenithDelay[i]);
                         final ParameterDriver driver = model.getParametersDrivers().get(0);
                         driver.setName(stationNames[i].substring(0, 4) + "/ " + EstimatedModel.TOTAL_ZENITH_DELAY);
                         driver.setSelected(stationZenithDelayEstimated[i]);

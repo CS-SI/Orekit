@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTrackingCoordinates;
@@ -37,14 +38,14 @@ public class FixedTroposphericModelTest extends AbstractPathDelayTest<FixedTropo
     private static final double epsilon = 1e-6;
 
     @Override
-    protected FixedTroposphericDelay buildTroposphericModel() {
+    protected FixedTroposphericDelay buildTroposphericModel(final PressureTemperatureHumidityProvider provider) {
         return FixedTroposphericDelay.getDefaultModel();
     }
 
     @Test
     @Override
     public void testDelay() {
-        doTestDelay(defaultDate, defaultPoint, defaultTrackingCoordinates,
+        doTestDelay(defaultDate, defaultPoint, defaultTrackingCoordinates, null,
                     2.1298, 0.0, 3.4346, 0.0, 3.4346);
     }
 
@@ -52,13 +53,37 @@ public class FixedTroposphericModelTest extends AbstractPathDelayTest<FixedTropo
     @Override
     public void testFieldDelay() {
         doTestDelay(Binary64Field.getInstance(),
-                    defaultDate, defaultPoint, defaultTrackingCoordinates,
+                    defaultDate, defaultPoint, defaultTrackingCoordinates, null,
                     2.1298, 0.0, 3.4346, 0.0, 3.4346);
+    }
+
+    @Override
+    @Test
+    public void testFixedHeight() {
+        doTestFixedHeight(null);
+    }
+
+    @Override
+    @Test
+    public void testFieldFixedHeight() {
+        doTestFieldFixedHeight(Binary64Field.getInstance(), null);
+    }
+
+    @Override
+    @Test
+    public void testFixedElevation() {
+        doTestFixedElevation(null);
+    }
+
+    @Override
+    @Test
+    public void testFieldFixedElevation() {
+        doTestFieldFixedElevation(Binary64Field.getInstance(), null);
     }
 
     @Test
     public void testModel() {
-        final FixedTroposphericDelay model = buildTroposphericModel();
+        final FixedTroposphericDelay model = buildTroposphericModel(null);
         // check with (artificial) test values from tropospheric-delay.txt
         Assertions.assertEquals(2.4,
                                 model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(90.0), 0.0),
@@ -108,7 +133,7 @@ public class FixedTroposphericModelTest extends AbstractPathDelayTest<FixedTropo
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldModel(final Field<T> field) {
-        final FixedTroposphericDelay model = buildTroposphericModel();
+        final FixedTroposphericDelay model = buildTroposphericModel(null);
         final T zero = field.getZero();
         // check with (artificial) test values from tropospheric-delay.txt
         Assertions.assertEquals(2.4,
@@ -155,7 +180,7 @@ public class FixedTroposphericModelTest extends AbstractPathDelayTest<FixedTropo
 
     @Test
     public void testSymmetry() {
-        final FixedTroposphericDelay model = buildTroposphericModel();
+        final FixedTroposphericDelay model = buildTroposphericModel(null);
         for (int elevation = 0; elevation < 90; elevation += 10) {
             final double delay1 = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elevation), 0.0),
                                                   new GeodeticPoint(0., 0., 100.),
@@ -174,7 +199,7 @@ public class FixedTroposphericModelTest extends AbstractPathDelayTest<FixedTropo
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldSymmetry(final Field<T> field) {
-        final FixedTroposphericDelay model = buildTroposphericModel();
+        final FixedTroposphericDelay model = buildTroposphericModel(null);
         final T zero = field.getZero();
         for (int elevation = 0; elevation < 90; elevation += 10) {
             final T delay1 = model.pathDelay(new FieldTrackingCoordinates<>(zero, zero.newInstance(FastMath.toRadians(elevation)), zero),

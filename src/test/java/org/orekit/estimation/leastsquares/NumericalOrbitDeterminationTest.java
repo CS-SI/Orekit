@@ -98,8 +98,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
 
     /** {@inheritDoc} */
     @Override
-    protected void setMass(final NumericalPropagatorBuilder propagatorBuilder,
-                                final double mass) {
+    protected void setMass(final NumericalPropagatorBuilder propagatorBuilder, final double mass) {
         propagatorBuilder.setMass(mass);
     }
 
@@ -208,8 +207,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
     @Test
     // Orbit determination for Lageos2 based on SLR (range) measurements
     public void testLageos2()
-        throws URISyntaxException, IllegalArgumentException, IOException,
-               OrekitException, ParseException {
+        throws URISyntaxException, IllegalArgumentException, IOException, OrekitException {
 
     	// input in resources directory
         final String inputPath = NumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/od_test_Lageos2.in").toURI().getPath();
@@ -256,8 +254,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
     @Test
     // Orbit determination for GNSS satellite based on range measurements
     public void testGNSS()
-        throws URISyntaxException, IllegalArgumentException, IOException,
-               OrekitException, ParseException {
+        throws URISyntaxException, IllegalArgumentException, IOException, OrekitException {
 
     	// input in resources directory
         final String inputPath = NumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/GNSS/od_test_GPS07.in").toURI().getPath();

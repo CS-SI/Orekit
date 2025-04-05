@@ -55,8 +55,32 @@ public class ModifiedSaastamoinenModelTest extends AbstractPathDelayTest<Modifie
     private double[] heights;
 
     @Override
-    protected ModifiedSaastamoinenModel buildTroposphericModel() {
-        return ModifiedSaastamoinenModel.getStandardModel();
+    protected ModifiedSaastamoinenModel buildTroposphericModel(final PressureTemperatureHumidityProvider provider) {
+        return new ModifiedSaastamoinenModel(provider);
+    }
+
+    @Test
+    @Override
+    public void testFixedHeight() {
+        doTestFixedHeight(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+    }
+
+    @Test
+    @Override
+    public void testFieldFixedHeight() {
+        doTestFieldFixedHeight(Binary64Field.getInstance(), TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+    }
+
+    @Test
+    @Override
+    public void testFixedElevation() {
+        doTestFixedElevation(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+    }
+
+    @Test
+    @Override
+    public void testFieldFixedElevation() {
+        doTestFieldFixedElevation(Binary64Field.getInstance(), TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
     }
 
     @Test
@@ -64,6 +88,7 @@ public class ModifiedSaastamoinenModelTest extends AbstractPathDelayTest<Modifie
     public void testDelay() {
         doTestDelay(defaultDate, defaultPoint,
                     new TrackingCoordinates(FastMath.toRadians(192), FastMath.toRadians(5), 1.4e6),
+                    TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
                     2.09133, 0.049441, 23.99537, -2.85060, 21.14477);
     }
 
@@ -73,6 +98,7 @@ public class ModifiedSaastamoinenModelTest extends AbstractPathDelayTest<Modifie
         doTestDelay(Binary64Field.getInstance(),
                     defaultDate, defaultPoint,
                     new TrackingCoordinates(FastMath.toRadians(192), FastMath.toRadians(5), 1.4e6),
+                    TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
                     2.09133, 0.049441, 23.995378, -2.85060, 21.14477);
     }
 
@@ -80,6 +106,7 @@ public class ModifiedSaastamoinenModelTest extends AbstractPathDelayTest<Modifie
     public void testDelayHighElevation() {
         doTestDelay(defaultDate, defaultPoint,
                     new TrackingCoordinates(FastMath.toRadians(192), FastMath.toRadians(60), 1.4e6),
+                    TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
                     2.09133, 0.049441, 2.41486, 0.05736, 2.47223);
     }
 
@@ -88,6 +115,7 @@ public class ModifiedSaastamoinenModelTest extends AbstractPathDelayTest<Modifie
         doTestDelay(Binary64Field.getInstance(),
                     defaultDate, defaultPoint,
                     new TrackingCoordinates(FastMath.toRadians(192), FastMath.toRadians(60), 1.4e6),
+                    TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
                     2.09133, 0.049441, 2.41486, 0.05736, 2.47223);
     }
 
@@ -364,7 +392,7 @@ public class ModifiedSaastamoinenModelTest extends AbstractPathDelayTest<Modifie
     private <T extends CalculusFieldElement<T>> void doTestFieldIssue572(final Field<T> field) {
         final T zero = field.getZero();
         Utils.setDataRoot("atmosphere");
-        ModifiedSaastamoinenModel model = ModifiedSaastamoinenModel.getStandardModel();
+        ModifiedSaastamoinenModel model = new ModifiedSaastamoinenModel(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
         final T height = zero.add(6000.0);
         for (double elevation = 0; elevation < FastMath.PI; elevation += 0.1) {
             Assertions.assertEquals(model.pathDelay(new FieldTrackingCoordinates<>(zero,
@@ -385,10 +413,9 @@ public class ModifiedSaastamoinenModelTest extends AbstractPathDelayTest<Modifie
     public void testVsCanonicalSaastamoinen() throws IOException, URISyntaxException {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final URL url = ModifiedSaastamoinenModelTest.class.getClassLoader().getResource("gpt-grid/gpt3_5.grd");
-        final PressureTemperatureHumidityProvider provider =
-            new GlobalPressureTemperature3(new DataSource(url.toURI()), utc);
-        doTestVsOtherModel(new CanonicalSaastamoinenModel(), provider,
-                           buildTroposphericModel(), provider,
+        final PressureTemperatureHumidityProvider provider = new GlobalPressureTemperature3(new DataSource(url.toURI()), utc);
+        doTestVsOtherModel(new CanonicalSaastamoinenModel(provider),
+                           new ModifiedSaastamoinenModel(provider),
                            1.9e-3, 5.5e-6, 2.2e-3, 0.12);
     }
 

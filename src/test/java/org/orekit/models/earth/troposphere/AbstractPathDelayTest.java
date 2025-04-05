@@ -18,7 +18,6 @@ package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
@@ -30,9 +29,7 @@ import org.orekit.Utils;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
-import org.orekit.models.earth.weather.HeightDependentPressureTemperatureHumidityConverter;
 import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
-import org.orekit.models.earth.weather.water.CIPM2007;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -41,7 +38,7 @@ import org.orekit.utils.TrackingCoordinates;
 
 public abstract class AbstractPathDelayTest<T extends TroposphericModel> {
 
-    protected abstract T buildTroposphericModel();
+    protected abstract T buildTroposphericModel(final PressureTemperatureHumidityProvider provider);
 
     // default values for doTestMappingFactors
     protected AbsoluteDate                        defaultDate;
@@ -61,10 +58,11 @@ public abstract class AbstractPathDelayTest<T extends TroposphericModel> {
 
     protected void doTestDelay(final AbsoluteDate date, final GeodeticPoint point,
                                final TrackingCoordinates trackingCoordinates,
+                               final PressureTemperatureHumidityProvider provider,
                                final double expectedZh, final double expectedZw,
                                final double expectedSh, final double expectedSw,
                                final double expectedDelay) {
-        T model = buildTroposphericModel();
+        T model = buildTroposphericModel(provider);
         final TroposphericDelay td = model.pathDelay(trackingCoordinates, point,
                                                      model.getParameters(date), date);
         Assertions.assertEquals(expectedZh,    td.getZh(),    0.0001);
@@ -80,10 +78,11 @@ public abstract class AbstractPathDelayTest<T extends TroposphericModel> {
     protected <F extends CalculusFieldElement<F>> void doTestDelay(final Field<F> field,
                                                                    final AbsoluteDate date, final GeodeticPoint point,
                                                                    final TrackingCoordinates trackingCoordinates,
+                                                                   final PressureTemperatureHumidityProvider provider,
                                                                    final double expectedZh, final double expectedZw,
                                                                    final double expectedSh, final double expectedSw,
                                                                    final double expectedDelay) {
-        T model = buildTroposphericModel();
+        T model = buildTroposphericModel(provider);
 
         F zero = field.getZero();
         FieldTrackingCoordinates<F> trackingCoordinatesF =
@@ -106,10 +105,12 @@ public abstract class AbstractPathDelayTest<T extends TroposphericModel> {
     }
 
     @Test
-    public void testFixedHeight() {
+    public abstract void testFixedHeight();
+
+    protected void doTestFixedHeight(final PressureTemperatureHumidityProvider provider) {
         final AbsoluteDate date = new AbsoluteDate();
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), 350.0);
-        T model = buildTroposphericModel();
+        T model = buildTroposphericModel(provider);
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
@@ -122,18 +123,17 @@ public abstract class AbstractPathDelayTest<T extends TroposphericModel> {
     }
 
     @Test
-    public void testFieldFixedHeight() {
-        doTestFixedHeight(Binary64Field.getInstance());
-    }
+    public abstract void testFieldFixedHeight();
 
-    private <F extends CalculusFieldElement<F>> void doTestFixedHeight(final Field<F> field) {
+    protected <F extends CalculusFieldElement<F>> void doTestFieldFixedHeight(final Field<F> field,
+                                                                              final PressureTemperatureHumidityProvider provider) {
         final F zero = field.getZero();
         final FieldAbsoluteDate<F> date = new FieldAbsoluteDate<>(field);
         final FieldGeodeticPoint<F>
             point = new FieldGeodeticPoint<>(zero.newInstance(FastMath.toRadians(45.0)),
                                              zero.newInstance(FastMath.toRadians(45.0)),
                                              zero.newInstance(350.0));
-        T model = buildTroposphericModel();
+        T model = buildTroposphericModel(provider);
         F lastDelay = zero.newInstance(Double.MAX_VALUE);
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
@@ -148,10 +148,10 @@ public abstract class AbstractPathDelayTest<T extends TroposphericModel> {
     }
 
     @Test
-    public void testFixedElevation() {
-        T model = buildTroposphericModel();
-        HeightDependentPressureTemperatureHumidityConverter converter =
-                        new HeightDependentPressureTemperatureHumidityConverter(new CIPM2007());
+    public abstract void testFixedElevation();
+
+    protected void doTestFixedElevation(final PressureTemperatureHumidityProvider provider) {
+        T model = buildTroposphericModel(provider);
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing height of the station
         for (double height = 0; height < 5000; height += 100) {
@@ -167,15 +167,12 @@ public abstract class AbstractPathDelayTest<T extends TroposphericModel> {
     }
 
     @Test
-    public void testFieldFixedElevation() {
-        doTestFieldFixedElevation(Binary64Field.getInstance());
-    }
+    public abstract void testFieldFixedElevation();
 
-    private <F extends CalculusFieldElement<F>> void doTestFieldFixedElevation(final Field<F> field) {
+    protected <F extends CalculusFieldElement<F>> void doTestFieldFixedElevation(final Field<F> field,
+                                                                                 final PressureTemperatureHumidityProvider provider) {
         final F zero = field.getZero();
-        T model = buildTroposphericModel();
-        HeightDependentPressureTemperatureHumidityConverter converter =
-                        new HeightDependentPressureTemperatureHumidityConverter(new CIPM2007());
+        T model = buildTroposphericModel(provider);
         F lastDelay = zero.newInstance(Double.MAX_VALUE);
         // delay shall decline with increasing height of the station
         final FieldAbsoluteDate<F> date = new FieldAbsoluteDate<>(field, defaultDate);
@@ -192,9 +189,7 @@ public abstract class AbstractPathDelayTest<T extends TroposphericModel> {
     }
 
     protected void doTestVsOtherModel(final TroposphericModel referenceModel,
-                                      final PressureTemperatureHumidityProvider referenceWeatherProvider,
                                       final TroposphericModel testedModel,
-                                      final PressureTemperatureHumidityProvider testedWeatherProvider,
                                       final double tolZh, final double tolZw, final double tolSh, final double tolSw) {
         double maxErrorZh = 0;
         double maxErrorZw = 0;
