@@ -86,7 +86,7 @@ UNEXPECTED_DATA_AT_LINE_IN_FILE=il file {1} contiene un dato inatteso alla linea
 NON_CHRONOLOGICAL_DATES_IN_FILE=date non cronologiche nel file {0} alla linea {1}
 
 # inconsistent sampling date: expected {0} but got {1}
-INCONSISTENT_SAMPLING_DATE=<MISSING TRANSLATION>
+INCONSISTENT_SAMPLING_DATE=
 
 # no IERS UTC-TAI history data loaded
 NO_IERS_UTC_TAI_HISTORY_DATA_LOADED=nessun dato storico IERS UTC-TAI caricato
@@ -152,7 +152,7 @@ TOO_LARGE_ORDER_FOR_GRAVITY_FIELD=ordine troppo elevato (m = {0}, l''ordine mass
 WRONG_DEGREE_OR_ORDER=nessun termine ({0}, {1}) nella decomposizione armonica sferica {2}x{3}
 
 # wrong orbital elements for averaging theory
-WRONG_ELEMENTS_FOR_AVERAGING_THEORY=<MISSING TRANSLATION>
+WRONG_ELEMENTS_FOR_AVERAGING_THEORY=
 
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD=sono state trovate varie date di riferimento ({0} e {1} differenti di {3,number,0.0##############E0} s) nel file del campo gravitazionale {2}
@@ -242,7 +242,7 @@ INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION=stato iniziale non specificato
 EVENT_DATE_TOO_CLOSE=la data obiettivo dell'evento deve essere prima del {1} di {3,number,0.0##############E0} secondi o dopo il {2} di {3,number,0.0##############E0} secondi, ma la data obiettivo dell'evento {0} è {4,number,0.0##############E0} secondi prima del {1} e {5,number,0.0##############E0} secondi dopo il {2} quindi non può essere aggiunta
 
 # trying to propagate Cartesian adjoint whilst integration equations of motion with non-Cartesian coordinates
-WRONG_COORDINATES_FOR_ADJOINT_EQUATION=<MISSING TRANSLATION>
+WRONG_COORDINATES_FOR_ADJOINT_EQUATION=
 
 # unable to read header record from JPL ephemerides binary file {0}
 UNABLE_TO_READ_JPL_HEADER=impossibile leggere l''intestazione del file di effemeridi del JPL {0}
@@ -284,19 +284,19 @@ UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH=due valori di elevazione inattes
 UNSUPPORTED_PARAMETER_NAME=nome del parametro {0} sconosciuto, parametri conosciuti: {1}
 
 # {0} parameter contains several span in its value TimeSpanMap, the {1} method must be called
-PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES=<MISSING TRANSLATION>
+PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES=
 
 # setPeriod was already called once on {0} parameter, another parameter should be created if the periods have to be changed
-PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET=<MISSING TRANSLATION>
+PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET=
 
 # scale factor for parameter {0} is too small: {1}
 TOO_SMALL_SCALE_FOR_PARAMETER=il fattore di scala per il parametro {0} è troppo piccolo: {1}
 
 # state "{0}" is not an array
-ADDITIONAL_STATE_BAD_TYPE=<MISSING TRANSLATION>
+ADDITIONAL_STATE_BAD_TYPE=
 
 # unknown additional data "{0}"
-UNKNOWN_ADDITIONAL_DATA=<MISSING TRANSLATION>
+UNKNOWN_ADDITIONAL_DATA=
 
 # unknown month "{0}"
 UNKNOWN_MONTH=mese sconosciuto "{0}"
@@ -356,7 +356,7 @@ CCSDS_UNKNOWN_CONVENTIONS=le convenzioni IERS non sono state inizializzate prima
 CCSDS_INVALID_FRAME=il sistema di riferimento {0} non è valido in questo contesto del file CCSDS
 
 # this LVLH local orbital frame uses a different definition, please use LVLH_CCSDS instead
-CCSDS_DIFFERENT_LVLH_DEFINITION=<MISSING TRANSLATION>
+CCSDS_DIFFERENT_LVLH_DEFINITION=
 
 # inconsistent time systems: {0} ≠ {1}
 CCSDS_INCONSISTENT_TIME_SYSTEMS=sistemi temporali incoerenti: {0} ≠ {1}
@@ -368,34 +368,34 @@ CCSDS_TDM_KEYWORD_NOT_FOUND=nessuna parola chiave CCSDS TDM trovata alla linea {
 CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER=non è stato configurato un convertitore di unità di pseudo-distanza per la lettura dei Tracking Data Message
 
 # line break(s) missing after vector number {0} in {1}
-IIRV_MISSING_LINEBREAK_IN_FILE=<MISSING TRANSLATION>
+IIRV_MISSING_LINEBREAK_IN_FILE=
 
 # line {0} in IIRV vector is not valid: "{1}"
-IIRV_INVALID_LINE_IN_VECTOR=<MISSING TRANSLATION>
+IIRV_INVALID_LINE_IN_VECTOR=
 
 # cannot embed more than 1000 vectors in a single IIRV message file: got {0}. Consider splitting the data into multiple files
-IIRV_EXCEEDS_MAX_VECTORS=<MISSING TRANSLATION>
+IIRV_EXCEEDS_MAX_VECTORS=
 
 # numeric value "{0}" exceeds the maximum length of {1} for string representation
-IIRV_VALUE_TOO_LARGE=<MISSING TRANSLATION>
+IIRV_VALUE_TOO_LARGE=
 
 # invalid IIRV term value: {0}
-IIRV_INVALID_TERM_VALUE=<MISSING TRANSLATION>
+IIRV_INVALID_TERM_VALUE=
 
 # the "{0}" term cannot change within an IIRV message file
-IIRV_TERM_CHANGES_WITHIN_FILE=<MISSING TRANSLATION>
+IIRV_TERM_CHANGES_WITHIN_FILE=
 
 # IIRV sequence number must increase by 1 for each subsequent vector entry. At at line {0}, expected sequence number {1}+1, but found {2}
-IIRV_SEQUENCE_NUMBER_MUST_BE_INCREASING_BY_ONE=<MISSING TRANSLATION>
+IIRV_SEQUENCE_NUMBER_MUST_BE_INCREASING_BY_ONE=
 
 # IIRV coordinate system "{0}" ({1}) has not been mapped to an Orekit frame
-IIRV_UNMAPPED_COORDINATE_SYSTEM=<MISSING TRANSLATION>
+IIRV_UNMAPPED_COORDINATE_SYSTEM=
 
 # Time system should have already been set before line {0} of file {1}
 CCSDS_TIME_SYSTEM_NOT_READ_YET=Nel file {1}, il sistema temporale deve essere impostato prima della linea {0}
 
 # cannot estimate precession without proper derivatives
-CANNOT_ESTIMATE_PRECESSION_WITHOUT_PROPER_DERIVATIVES=<MISSING TRANSLATION>
+CANNOT_ESTIMATE_PRECESSION_WITHOUT_PROPER_DERIVATIVES=
 
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE=il nome "{0}" è già utilizzato per uno stato aggiuntivo
@@ -419,28 +419,28 @@ DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD=l''orbita attuale ha un''eccentricità {0
 SP3_UNSUPPORTED_VERSION=versione del file sp3 "{0}" non supportata
 
 # invalid header entry {0} "{1}" in file {2} (format version {3})
-SP3_INVALID_HEADER_ENTRY=<MISSING TRANSLATION>
+SP3_INVALID_HEADER_ENTRY=
 
 # version "{0}" supports only up to {1} satellites, found {2} in file {3}
-SP3_TOO_MANY_SATELLITES_FOR_VERSION=<MISSING TRANSLATION>
+SP3_TOO_MANY_SATELLITES_FOR_VERSION=
 
 # found {0} epochs in file {1}, expected {2}
 SP3_NUMBER_OF_EPOCH_MISMATCH={0} epoche trovate nel file {1} invece di {2} attese
 
 # cannot splice sp3 files with incompatible metadata
-SP3_INCOMPATIBLE_FILE_METADATA=<MISSING TRANSLATION>
+SP3_INCOMPATIBLE_FILE_METADATA=
 
 # cannot splice sp3 files with incompatible satellite metadata for satellite {0}
-SP3_INCOMPATIBLE_SATELLITE_MEDATADA=<MISSING TRANSLATION>
+SP3_INCOMPATIBLE_SATELLITE_MEDATADA=
 
 # frame {0} not allowed here
-FRAME_NOT_ALLOWED=<MISSING TRANSLATION>
+FRAME_NOT_ALLOWED=
 
 # STK coordinate system "{0}" is invalid or not yet supported
-STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM=<MISSING TRANSLATION>
+STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM=
 
 # STK coordinate system "{0}" has not been mapped to an Orekit frame
-STK_UNMAPPED_COORDINATE_SYSTEM=<MISSING TRANSLATION>
+STK_UNMAPPED_COORDINATE_SYSTEM=
 
 # unexpected end of STK file (after line {0})
 STK_UNEXPECTED_END_OF_FILE=fine inattesa di un file STK (dopo la linea {0})
@@ -449,7 +449,7 @@ STK_UNEXPECTED_END_OF_FILE=fine inattesa di un file STK (dopo la linea {0})
 CLOCK_FILE_UNSUPPORTED_VERSION=versione del file orologio {0} non supportata
 
 # version {0} from file {1} is not supported, supported version: {2}
-UNSUPPORTED_FILE_FORMAT_VERSION=<MISSING TRANSLATION>
+UNSUPPORTED_FILE_FORMAT_VERSION=
 
 # non-existent geomagnetic model {0} for year {1}
 NON_EXISTENT_GEOMAGNETIC_MODEL=modello geomagnetico {0} inesistente per l''anno {1}
@@ -473,7 +473,7 @@ NO_CACHED_ENTRIES=nessun dato nella cache
 NON_CHRONOLOGICALLY_SORTED_ENTRIES=le voci generate non sono ordinate cronologicamente: {0} > {1} di {2,number,0.0##############E0} s
 
 # moving transition date from {0} to {1} collides with existing transition at {2}
-TRANSITION_DATES_COLLISION=<MISSING TRANSLATION>
+TRANSITION_DATES_COLLISION=
 
 # no data generated around date: {0}
 NO_DATA_GENERATED=nessun dato generato intorno alla data: {0}
@@ -539,10 +539,10 @@ NOT_ENOUGH_GNSS_FOR_DOP=solo {0} orbite GNSS fornite, mentre ne servono {1} per 
 CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED=l''utilizzo del sistema temporale {0} nei file CCSDS richiede un ICD aggiuntivo e non è implementato in Orekit
 
 # unknown attitude type {0}
-CCSDS_UNKNOWN_ATTITUDE_TYPE=<MISSING TRANSLATION>
+CCSDS_UNKNOWN_ATTITUDE_TYPE=
 
 # incomplete data
-CCSDS_INCOMPLETE_DATA=<MISSING TRANSLATION>
+CCSDS_INCOMPLETE_DATA=
 
 # invalid rotation sequence {0} at line {1} of file {2}
 CCSDS_INVALID_ROTATION_SEQUENCE=la sequenza di rotazione {0} presente alla linea {1} del file {2} è inconsistente
@@ -560,19 +560,19 @@ CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS=errato numero di unità per la manovra 
 CCSDS_MANEUVER_MISSING_TIME=campo temporale manacante per la manovra {0}
 
 # attitude type {0} and rate type {1} calls for {2} states, got {3}
-CCSDS_INCONSISTENT_NUMBER_OF_ATTITUDE_STATES=<MISSING TRANSLATION>
+CCSDS_INCONSISTENT_NUMBER_OF_ATTITUDE_STATES=
 
 # incompatible keys {0} and {1} should not both be used
-CCSDS_INCOMPATIBLE_KEYS_BOTH_USED=<MISSING TRANSLATION>
+CCSDS_INCOMPATIBLE_KEYS_BOTH_USED=
 
 # sensor index {0} is already used
-CCSDS_SENSOR_INDEX_ALREADY_USED=<MISSING TRANSLATION>
+CCSDS_SENSOR_INDEX_ALREADY_USED=
 
 # missing sensor index {0}
-CCSDS_MISSING_SENSOR_INDEX=<MISSING TRANSLATION>
+CCSDS_MISSING_SENSOR_INDEX=
 
 # inconsistent number of elements: expected {0}, got {1}
-INCONSISTENT_NUMBER_OF_ELEMENTS=<MISSING TRANSLATION>
+INCONSISTENT_NUMBER_OF_ELEMENTS=
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS=la creazione di un propagatore combinato richiede almeno un propagatore, ma non ne è stato fornito alcuno
@@ -608,7 +608,7 @@ UNKNOWN_SATELLITE_SYSTEM=sistema satellitare {0} sconosciuto
 UNKNOWN_TIME_SYSTEM=sistema orario sconosciuto {0}
 
 # unknown UTC Id {0}
-UNKNOWN_UTC_ID=<MISSING TRANSLATION>
+UNKNOWN_UTC_ID=
 
 # unknown clock data type {0}
 UNKNOWN_CLOCK_DATA_TYPE=tipo di dati dell''orologio sconosciuto {0}
@@ -617,10 +617,10 @@ UNKNOWN_CLOCK_DATA_TYPE=tipo di dati dell''orologio sconosciuto {0}
 UNKNOWN_SATELLITE_ANTENNA_CODE=codice d''antenna satellite {0} sconosciuto
 
 # unknown GNSS antenna, name: {0}, radome code: {1}, serial number: {2}
-UNKNOWN_GNSS_ANTENNA=<MISSING TRANSLATION>
+UNKNOWN_GNSS_ANTENNA=
 
 # unknown GNSS frequency, system: {0}, frequency code: {1} (line {2}, file {3})
-UNKNOWN_GNSS_FREQUENCY=<MISSING TRANSLATION>
+UNKNOWN_GNSS_FREQUENCY=
 
 # frequency {0} is not supported by antenna {1}
 UNSUPPORTED_FREQUENCY_FOR_ANTENNA=l'' antenna {1} non supporta la frequenza {0}
@@ -635,7 +635,7 @@ UNKNOWN_RINEX_FREQUENCY=frequenza RINEX {0} sconociuta alla linea {2} del file {
 MISMATCHED_FREQUENCIES=frequenza incoerente alla linea {1} del file {0} (letta {3}, attesa {2})
 
 # wrong parsing type for file {0}
-WRONG_PARSING_TYPE=<MISSING TRANSLATION>
+WRONG_PARSING_TYPE=
 
 # wrong number of columns in file {0}, line {1} (expected {2} columns, got {3} columns)
 WRONG_COLUMNS_NUMBER=numero di colonne errato alla linea {1} del file {0} ({3} colonne invece di {2} attese)
@@ -805,10 +805,10 @@ UNEXPECTED_CONTENT_TYPE=tipo di contenuto {0} inatteso
 CANNOT_PARSE_GNSS_DATA=impossibile ricavare dati GNSS da {0}
 
 # invalid GNSS data: {0}
-INVALID_GNSS_DATA=<MISSING TRANSLATION>
+INVALID_GNSS_DATA=
 
 # GNSS parity error on word {0}
-GNSS_PARITY_ERROR=<MISSING TRANSLATION>
+GNSS_PARITY_ERROR=
 
 # unknown host {0}
 UNKNOWN_HOST=host {0} sconosciuto
@@ -847,100 +847,100 @@ ATTEMPT_TO_GENERATE_MALFORMED_FILE=tentativo di generare il file {0} con un erro
 FIND_ROOT={0} non ha trovato una soluzione tra {1} (g={2,number,0.0##############E0}) e {3} (g={4,number,0.0##############E0})\nUltima iterazione a {5} (g={6,number,0.0##############E0})
 
 # missing station data for epoch {0}
-MISSING_STATION_DATA_FOR_EPOCH=<MISSING TRANSLATION>
+MISSING_STATION_DATA_FOR_EPOCH=
 
 # inconsistent parameters selection between pairs {0}/{1} and {2}/{3}
-INCONSISTENT_SELECTION=<MISSING TRANSLATION>
+INCONSISTENT_SELECTION=
 
 # no unscented transform configured
-NO_UNSCENTED_TRANSFORM_CONFIGURED=<MISSING TRANSLATION>
+NO_UNSCENTED_TRANSFORM_CONFIGURED=
 
 # value is not strictly positive: {0}
-NOT_STRICTLY_POSITIVE=<MISSING TRANSLATION>
+NOT_STRICTLY_POSITIVE=
 
 # value is not positive: {0}
-NOT_POSITIVE=<MISSING TRANSLATION>
+NOT_POSITIVE=
 
 # transform from {0} to {1} is not implemented
-UNSUPPORTED_TRANSFORM=<MISSING TRANSLATION>
+UNSUPPORTED_TRANSFORM=
 
 # orbital parameters type: {0} is different from expected orbital type : {1}
-WRONG_ORBIT_PARAMETERS_TYPE=<MISSING TRANSLATION>
+WRONG_ORBIT_PARAMETERS_TYPE=
 
 # {0} expects {1} elements, got {2}
-WRONG_NB_COMPONENTS=<MISSING TRANSLATION>
+WRONG_NB_COMPONENTS=
 
 # cannot change covariance type if defined in a local orbital frame
-CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF=<MISSING TRANSLATION>
+CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF=
 
 # cannot change covariance type if defined in a non pseudo-inertial reference frame
-CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME=<MISSING TRANSLATION>
+CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME=
 
 # primary collision object time of closest approach is different from the secondary collision object's one
-DIFFERENT_TIME_OF_CLOSEST_APPROACH=<MISSING TRANSLATION>
+DIFFERENT_TIME_OF_CLOSEST_APPROACH=
 
 # first date {0} does not match second date {1}
-DATES_MISMATCH=<MISSING TRANSLATION>
+DATES_MISMATCH=
 
 # first orbit mu {0} does not match second orbit mu {1}
-ORBITS_MUS_MISMATCH=<MISSING TRANSLATION>
+ORBITS_MUS_MISMATCH=
 
 # one state is defined using an orbit while the other is defined using an absolute position-velocity-acceleration
-DIFFERENT_STATE_DEFINITION=<MISSING TRANSLATION>
+DIFFERENT_STATE_DEFINITION=
 
 # state date {0} does not match its covariance date {1}
-STATE_AND_COVARIANCE_DATES_MISMATCH=<MISSING TRANSLATION>
+STATE_AND_COVARIANCE_DATES_MISMATCH=
 
 # creating a spacecraft state interpolator requires at least one orbit interpolator or an absolute position-velocity-acceleration interpolator
-NO_INTERPOLATOR_FOR_STATE_DEFINITION=<MISSING TRANSLATION>
+NO_INTERPOLATOR_FOR_STATE_DEFINITION=
 
 # wrong interpolator defined for this spacecraft state type (orbit or absolute PV)
-WRONG_INTERPOLATOR_DEFINED_FOR_STATE_INTERPOLATION=<MISSING TRANSLATION>
+WRONG_INTERPOLATOR_DEFINED_FOR_STATE_INTERPOLATION=
 
 # multiple interpolators are used so they may use different numbers of interpolation points
-MULTIPLE_INTERPOLATOR_USED=<MISSING TRANSLATION>
+MULTIPLE_INTERPOLATOR_USED=
 
 # header for file {0} has not been written yet
-HEADER_NOT_WRITTEN=<MISSING TRANSLATION>
+HEADER_NOT_WRITTEN=
 
 # header for file {0} has already been written
-HEADER_ALREADY_WRITTEN=<MISSING TRANSLATION>
+HEADER_ALREADY_WRITTEN=
 
 # Cannot start the propagation from an infinitely far date
-CANNOT_START_PROPAGATION_FROM_INFINITY=<MISSING TRANSLATION>
+CANNOT_START_PROPAGATION_FROM_INFINITY=
 
 # Too long time gap between data points: {0} s
-TOO_LONG_TIME_GAP_BETWEEN_DATA_POINTS=<MISSING TRANSLATION>
+TOO_LONG_TIME_GAP_BETWEEN_DATA_POINTS=
 
 # invalid satellite id {0}
-INVALID_SATELLITE_ID=<MISSING TRANSLATION>
+INVALID_SATELLITE_ID=
 
 # EOP interpolation degree must be of the form 4k-1, got {0}
-WRONG_EOP_INTERPOLATION_DEGREE=<MISSING TRANSLATION>
+WRONG_EOP_INTERPOLATION_DEGREE=
 
 # number of planes {0} is inconsistent with number of satellites {1} in Walker constellation
-WALKER_INCONSISTENT_PLANES=<MISSING TRANSLATION>
+WALKER_INCONSISTENT_PLANES=
 
 # Infinite value appears during computation of atmospheric density in NRLMSISE00 model
-INFINITE_NRLMSISE00_DENSITY=<MISSING TRANSLATION>
+INFINITE_NRLMSISE00_DENSITY=
 
 # Propagator builder cannot be cloned
-PROPAGATOR_BUILDER_NOT_CLONEABLE=<MISSING TRANSLATION>
+PROPAGATOR_BUILDER_NOT_CLONEABLE=
 
 # field "{0}" is too long, maximum length is {1} characters
-FIELD_TOO_LONG=<MISSING TRANSLATION>
+FIELD_TOO_LONG=
 
 # Process covariance expecting dimension {0}, got {1}
-WRONG_PROCESS_COVARIANCE_DIMENSION=<MISSING TRANSLATION>
+WRONG_PROCESS_COVARIANCE_DIMENSION=
 
 # Measurement covariance expecting dimension {0}, got {1}
-WRONG_MEASUREMENT_COVARIANCE_DIMENSION=<MISSING TRANSLATION>
+WRONG_MEASUREMENT_COVARIANCE_DIMENSION=
 
 # cannot parse data {0}
-CANNOT_PARSE_DATA=<MISSING TRANSLATION>
+CANNOT_PARSE_DATA=
 
 # covariance must be square
-COVARIANCE_MUST_BE_SQUARE=<MISSING TRANSLATION>
+COVARIANCE_MUST_BE_SQUARE=
 
 # state vector (dimension {0}) and covariance (dimension {1}) are inconsistent
-INCONSISTENT_STATE_DIMENSIONS=<MISSING TRANSLATION>
+INCONSISTENT_STATE_DIMENSIONS=
