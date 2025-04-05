@@ -24,6 +24,7 @@ import org.hipparchus.linear.LUDecomposition;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
+import org.hipparchus.util.FastMath;
 import org.orekit.control.indirect.shooting.boundary.CartesianBoundaryConditionChecker;
 import org.orekit.control.indirect.shooting.boundary.FixedTimeBoundaryOrbits;
 import org.orekit.control.indirect.shooting.boundary.FixedTimeCartesianBoundaryStates;
@@ -44,7 +45,10 @@ public class NewtonFixedBoundaryCartesianSingleShooting extends AbstractFixedBou
     private static final double DEFAULT_SINGULARITY_THRESHOLD = 1e-11;
 
     /** Threshold for singularity exception in linear system inversion. */
-    private double singularityThreshold;
+    private double singularityThreshold = DEFAULT_SINGULARITY_THRESHOLD;
+
+    /** Multiplying (positive) factor for the Newton correction step. */
+    private double stepFactor = 1.;
 
     /**
      * Constructor with boundary conditions as orbits.
@@ -56,7 +60,6 @@ public class NewtonFixedBoundaryCartesianSingleShooting extends AbstractFixedBou
                                                       final FixedTimeCartesianBoundaryStates boundaryConditions,
                                                       final CartesianBoundaryConditionChecker convergenceChecker) {
         super(propagationSettings, boundaryConditions, convergenceChecker);
-        this.singularityThreshold = DEFAULT_SINGULARITY_THRESHOLD;
     }
 
     /**
@@ -69,7 +72,6 @@ public class NewtonFixedBoundaryCartesianSingleShooting extends AbstractFixedBou
                                                       final FixedTimeBoundaryOrbits boundaryConditions,
                                                       final CartesianBoundaryConditionChecker convergenceChecker) {
         super(propagationSettings, boundaryConditions, convergenceChecker);
-        this.singularityThreshold = DEFAULT_SINGULARITY_THRESHOLD;
     }
 
     @Override
@@ -93,6 +95,15 @@ public class NewtonFixedBoundaryCartesianSingleShooting extends AbstractFixedBou
      */
     public double getSingularityThreshold() {
         return singularityThreshold;
+    }
+
+    /**
+     * Setter for the step factor.
+     * @param stepFactor new value for the step factor
+     * @since 13.0
+     */
+    public void setStepFactor(final double stepFactor) {
+        this.stepFactor = FastMath.abs(stepFactor);
     }
 
     /** {@inheritDoc} */
@@ -151,7 +162,7 @@ public class NewtonFixedBoundaryCartesianSingleShooting extends AbstractFixedBou
         final RealVector solved = solver.solve(negatedDefects);
         final double[] corrections = new double[solved.getDimension()];
         for (int i = 0; i < corrections.length; i++) {
-            corrections[i] = solved.getEntry(i) * getScales()[i];
+            corrections[i] = solved.getEntry(i) * getScales()[i] * stepFactor;
         }
         return corrections;
     }
