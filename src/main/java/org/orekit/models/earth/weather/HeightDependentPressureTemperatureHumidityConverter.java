@@ -107,7 +107,7 @@ public class HeightDependentPressureTemperatureHumidityConverter {
             /** {@inheritDoc} */
             @Override
             public <T extends CalculusFieldElement<T>> FieldPressureTemperatureHumidity<T>
-            getWeatherParameters(final FieldGeodeticPoint<T> location, final FieldAbsoluteDate<T> date) {
+                getWeatherParameters(final FieldGeodeticPoint<T> location, final FieldAbsoluteDate<T> date) {
                 return convert(new FieldPressureTemperatureHumidity<>(date.getField(), basePTH),
                                location.getAltitude());
             }

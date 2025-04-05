@@ -19,8 +19,6 @@ package org.orekit.models.earth.troposphere;
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
-import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTrackingCoordinates;
