@@ -235,14 +235,14 @@ public class ModifiedSaastamoinenModel implements TroposphericModel {
     @Override
     public TroposphericDelay pathDelay(final TrackingCoordinates trackingCoordinates,
                                        final GeodeticPoint point,
-                                       final PressureTemperatureHumidity weather,
                                        final double[] parameters, final AbsoluteDate date) {
 
         // limit the height to model range
         final double fixedHeight = FastMath.min(FastMath.max(point.getAltitude(), X_VALUES_FOR_B[0]),
                                                 X_VALUES_FOR_B[X_VALUES_FOR_B.length - 1]);
 
-        final PressureTemperatureHumidity pth = converter.convert(weather, fixedHeight);
+        final PressureTemperatureHumidity pth0 = pth0Provider.getWeatherParameters(point, date);
+        final PressureTemperatureHumidity pth  = converter.convert(pth0, fixedHeight);
 
         // interpolate the b correction term
         final double B = B_FUNCTION.value(fixedHeight);
@@ -282,14 +282,14 @@ public class ModifiedSaastamoinenModel implements TroposphericModel {
     @Override
     public <T extends CalculusFieldElement<T>> FieldTroposphericDelay<T> pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                                                    final FieldGeodeticPoint<T> point,
-                                                                                   final FieldPressureTemperatureHumidity<T> weather,
                                                                                    final T[] parameters, final FieldAbsoluteDate<T> date) {
 
         // limit the height to model range
         final T fixedHeight = FastMath.min(FastMath.max(point.getAltitude(), X_VALUES_FOR_B[0]),
                                            X_VALUES_FOR_B[X_VALUES_FOR_B.length - 1]);
 
-        final FieldPressureTemperatureHumidity<T> pth = converter.convert(weather, fixedHeight);
+        final FieldPressureTemperatureHumidity<T> pth0 = pth0Provider.getWeatherParameters(point, date);
+        final FieldPressureTemperatureHumidity<T> pth  = converter.convert(pth0, fixedHeight);
 
         final Field<T> field = date.getField();
         final T zero = field.getZero();
@@ -432,8 +432,8 @@ public class ModifiedSaastamoinenModel implements TroposphericModel {
 
     /** Get the low elevation threshold value for path delay computation.
      * @return low elevation threshold, in rad.
-     * @see #pathDelay(TrackingCoordinates, GeodeticPoint, PressureTemperatureHumidity, double[], AbsoluteDate)
-     * @see #pathDelay(FieldTrackingCoordinates, FieldGeodeticPoint, FieldPressureTemperatureHumidity, CalculusFieldElement[], FieldAbsoluteDate)
+     * @see #pathDelay(TrackingCoordinates, GeodeticPoint, double[], AbsoluteDate)
+     * @see #pathDelay(FieldTrackingCoordinates, FieldGeodeticPoint, CalculusFieldElement[], FieldAbsoluteDate)
      * @since 10.2
      */
     public double getLowElevationThreshold() {
@@ -442,8 +442,8 @@ public class ModifiedSaastamoinenModel implements TroposphericModel {
 
     /** Set the low elevation threshold value for path delay computation.
      * @param lowElevationThreshold The new value for the threshold [rad]
-     * @see #pathDelay(TrackingCoordinates, GeodeticPoint, PressureTemperatureHumidity, double[], AbsoluteDate)
-     * @see #pathDelay(FieldTrackingCoordinates, FieldGeodeticPoint, FieldPressureTemperatureHumidity, CalculusFieldElement[], FieldAbsoluteDate)
+     * @see #pathDelay(TrackingCoordinates, GeodeticPoint, double[], AbsoluteDate)
+     * @see #pathDelay(FieldTrackingCoordinates, FieldGeodeticPoint, CalculusFieldElement[], FieldAbsoluteDate)
      * @since 10.2
      */
     public void setLowElevationThreshold(final double lowElevationThreshold) {

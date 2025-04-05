@@ -29,7 +29,7 @@ import org.orekit.models.earth.troposphere.ViennaACoefficients;
 import org.orekit.models.earth.troposphere.ViennaOne;
 import org.orekit.models.earth.troposphere.ViennaThree;
 import org.orekit.models.earth.weather.GlobalPressureTemperature2;
-import org.orekit.models.earth.weather.GlobalPressureTemperature3;
+import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 
@@ -39,80 +39,74 @@ import java.net.URL;
 
 public class ITURP834PathDelayTest extends AbstractPathDelayTest<ITURP834PathDelay> {
 
-    protected ITURP834PathDelay buildTroposphericModel() {
-        return new ITURP834PathDelay(TimeScalesFactory.getUTC());
+    protected ITURP834PathDelay buildTroposphericModel(final PressureTemperatureHumidityProvider provider) {
+        return new ITURP834PathDelay(provider, TimeScalesFactory.getUTC());
     }
 
     @Test
     @Override
     public void testDelay() {
-        resetWeatherProvider(new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()));
         doTestDelay(defaultDate, defaultPoint, defaultTrackingCoordinates,
+                    new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()),
                     2.07738, 0.05483, 3.36742, 0.088969, 3.456389);
     }
 
     @Test
     @Override
     public void testFieldDelay() {
-        resetWeatherProvider(new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()));
         doTestDelay(Binary64Field.getInstance(),
                     defaultDate, defaultPoint, defaultTrackingCoordinates,
+                    new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()),
                     2.07738, 0.05483, 3.36742, 0.088969, 3.456389);
     }
 
     @Test
     @Override
-    public void testFixedElevation() {
-        resetWeatherProvider(new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()));
-        super.testFixedElevation();
-    }
-
-    @Test
-    @Override
-    public void testFieldFixedElevation() {
-        resetWeatherProvider(new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()));
-        super.testFieldFixedElevation();
-    }
-
-    @Test
-    @Override
     public void testFixedHeight() {
-        resetWeatherProvider(new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()));
-        super.testFixedHeight();
+        doTestFixedHeight(new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()));
     }
 
     @Test
     @Override
     public void testFieldFixedHeight() {
-        resetWeatherProvider(new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()));
-        super.testFieldFixedHeight();
+        doTestFieldFixedHeight(Binary64Field.getInstance(),
+                               new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()));
+    }
+
+    @Test
+    @Override
+    public void testFixedElevation() {
+        doTestFixedElevation(new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()));
+    }
+
+    @Test
+    @Override
+    public void testFieldFixedElevation() {
+        doTestFieldFixedElevation(Binary64Field.getInstance(),
+                                  new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()));
     }
 
     @Test
     public void testVsVienna1WithCanonicalSaastamoinenAndGPT2() throws IOException, URISyntaxException {
         final TimeScale utc = TimeScalesFactory.getUTC();
-        final URL       url = ITURP834PathDelayTest.class.getClassLoader().getResource("gpt-grid/gpt2_5.grd");
+        final URL url = ITURP834PathDelayTest.class.getClassLoader().getResource("gpt-grid/gpt2_5.grd");
+        final PressureTemperatureHumidityProvider gpt2 = new GlobalPressureTemperature2(new DataSource(url.toURI()));
         doTestVsOtherModel(new ViennaOne(new ConstantViennaAProvider(new ViennaACoefficients(0.00127683, 0.00060955)),
                                          new ConstantAzimuthalGradientProvider(null),
-                                         new CanonicalSaastamoinenModel(),
+                                         new CanonicalSaastamoinenModel(gpt2),
                                          utc),
-                           new GlobalPressureTemperature2(new DataSource(url.toURI())),
-                           buildTroposphericModel(),
-                           new ITURP834WeatherParametersProvider(utc),
+                           buildTroposphericModel(new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC())),
                            0.017, 0.019, 0.144, 0.191);
     }
 
     @Test
-    public void testVsVienna3WithModifiedSaastamoinenAndGPT3() throws IOException, URISyntaxException {
+    public void testVsVienna3WithModifiedSaastamoinenAndGPT3() {
         final TimeScale utc = TimeScalesFactory.getUTC();
-        final URL       url = ITURP834PathDelayTest.class.getClassLoader().getResource("gpt-grid/gpt3_5.grd");
         doTestVsOtherModel(new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(0.00127683, 0.00060955)),
                                            new ConstantAzimuthalGradientProvider(null),
                                            new ModifiedSaastamoinenModel(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER),
                                            utc),
-                           new GlobalPressureTemperature3(new DataSource(url.toURI()), utc),
-                           buildTroposphericModel(),
-                           new ITURP834WeatherParametersProvider(utc),
+                           buildTroposphericModel(new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC())),
                            0.017, 0.008, 0.098, 0.076);
     }
 

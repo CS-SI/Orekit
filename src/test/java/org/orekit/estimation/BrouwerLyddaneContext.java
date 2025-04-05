@@ -26,7 +26,6 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.displacement.StationDisplacement;
-import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
@@ -76,11 +75,7 @@ public class BrouwerLyddaneContext implements StationDataProvider {
         }
 
         // Initialize builder
-        final BrouwerLyddanePropagatorBuilder propagatorBuilder =
-                        new BrouwerLyddanePropagatorBuilder(startOrbit, gravity, angleType, dP, BrouwerLyddanePropagator.M2);
-
-        // Return
-        return propagatorBuilder;
+        return new BrouwerLyddanePropagatorBuilder(startOrbit, gravity, angleType, dP, BrouwerLyddanePropagator.M2);
 
     }
 
@@ -89,9 +84,7 @@ public class BrouwerLyddaneContext implements StationDataProvider {
         final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(latitudeInDegrees),
                                                    FastMath.toRadians(longitudeInDegrees),
                                                    altitude);
-        return new GroundStation(new TopocentricFrame(earth, gp, name),
-                                 TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
-                                 ut1.getEOPHistory(), displacements);
+        return new GroundStation(new TopocentricFrame(earth, gp, name), ut1.getEOPHistory(), displacements);
     }
 
     @Override

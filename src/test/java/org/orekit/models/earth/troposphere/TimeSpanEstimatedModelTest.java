@@ -84,7 +84,6 @@ public class TimeSpanEstimatedModelTest {
         for (double elev = 10d; elev < 90d; elev += 8d) {
             final double delay = timeSpanModel.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elev), 0.0),
                                                          point,
-                                                         TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                          timeSpanModel.getParameters(), date).getDelay();
             Assertions.assertTrue(Precision.compareTo(delay, lastDelay, 1.0e-6) < 0);
             lastDelay = delay;
@@ -102,7 +101,6 @@ public class TimeSpanEstimatedModelTest {
         TroposphericModel  timeSpanModel = new TimeSpanEstimatedModel(model);
         final double path = timeSpanModel.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elevation), 0.0),
                                                     point,
-                                                    TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                     timeSpanModel.getParameters(), date).getDelay();
         Assertions.assertTrue(Precision.compareTo(path, 20d, 1.0e-6) < 0);
         Assertions.assertTrue(Precision.compareTo(path, 0d, 1.0e-6) > 0);
@@ -176,7 +174,6 @@ public class TimeSpanEstimatedModelTest {
         // Compute Delay with state derivatives
         final FieldGeodeticPoint<DerivativeStructure> dsPoint = new FieldGeodeticPoint<>(zero.add(point.getLatitude()), zero.add(point.getLongitude()), zero.add(point.getAltitude()));
         final DerivativeStructure delay = timeSpanModel.pathDelay(dsTrackingCoordinates, dsPoint,
-                                                                  new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                                   timeSpanModel.getParameters(field), dsDate).getDelay();
 
         final double[] compDeriv = delay.getAllDerivatives();
@@ -196,56 +193,56 @@ public class TimeSpanEstimatedModelTest {
             final Vector3D positionM4 = stateM4.getPosition();
             final TrackingCoordinates trackingCoordinatesM4  = station.getBaseFrame().
                                         getTrackingCoordinates(positionM4, stateM4.getFrame(), stateM4.getDate());
-            double  delayM4 = timeSpanModel.pathDelay(trackingCoordinatesM4, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+            double  delayM4 = timeSpanModel.pathDelay(trackingCoordinatesM4, point,
                                                       timeSpanModel.getParameters(), stateM4.getDate()).getDelay();
             
             SpacecraftState stateM3 = shiftState(state, orbitType, angleType, -3 * steps[i], i);
             final Vector3D positionM3 = stateM3.getPosition();
             final TrackingCoordinates trackingCoordinatesM3  = station.getBaseFrame().
                                         getTrackingCoordinates(positionM3, stateM3.getFrame(), stateM3.getDate());
-            double  delayM3 = timeSpanModel.pathDelay(trackingCoordinatesM3, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+            double  delayM3 = timeSpanModel.pathDelay(trackingCoordinatesM3, point,
                                                       timeSpanModel.getParameters(), stateM3.getDate()).getDelay();
             
             SpacecraftState stateM2 = shiftState(state, orbitType, angleType, -2 * steps[i], i);
             final Vector3D positionM2 = stateM2.getPosition();
             final TrackingCoordinates trackingCoordinatesM2  = station.getBaseFrame().
                                         getTrackingCoordinates(positionM2, stateM2.getFrame(), stateM2.getDate());
-            double  delayM2 = timeSpanModel.pathDelay(trackingCoordinatesM2, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+            double  delayM2 = timeSpanModel.pathDelay(trackingCoordinatesM2, point,
                                                       timeSpanModel.getParameters(), stateM2.getDate()).getDelay();
  
             SpacecraftState stateM1 = shiftState(state, orbitType, angleType, -1 * steps[i], i);
             final Vector3D positionM1 = stateM1.getPosition();
             final TrackingCoordinates trackingCoordinatesM1  = station.getBaseFrame().
                                         getTrackingCoordinates(positionM1, stateM1.getFrame(), stateM1.getDate());
-            double  delayM1 = timeSpanModel.pathDelay(trackingCoordinatesM1, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+            double  delayM1 = timeSpanModel.pathDelay(trackingCoordinatesM1, point,
                                                       timeSpanModel.getParameters(), stateM1.getDate()).getDelay();
            
             SpacecraftState stateP1 = shiftState(state, orbitType, angleType, 1 * steps[i], i);
             final Vector3D positionP1 = stateP1.getPosition();
             final TrackingCoordinates trackingCoordinatesP1  = station.getBaseFrame().
                                         getTrackingCoordinates(positionP1, stateP1.getFrame(), stateP1.getDate());
-            double  delayP1 = timeSpanModel.pathDelay(trackingCoordinatesP1, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+            double  delayP1 = timeSpanModel.pathDelay(trackingCoordinatesP1, point,
                                                       timeSpanModel.getParameters(), stateP1.getDate()).getDelay();
             
             SpacecraftState stateP2 = shiftState(state, orbitType, angleType, 2 * steps[i], i);
             final Vector3D positionP2 = stateP2.getPosition();
             final TrackingCoordinates trackingCoordinatesP2  = station.getBaseFrame().
                                         getTrackingCoordinates(positionP2, stateP2.getFrame(), stateP2.getDate());
-            double  delayP2 = timeSpanModel.pathDelay(trackingCoordinatesP2, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+            double  delayP2 = timeSpanModel.pathDelay(trackingCoordinatesP2, point,
                                                       timeSpanModel.getParameters(), stateP2.getDate()).getDelay();
             
             SpacecraftState stateP3 = shiftState(state, orbitType, angleType, 3 * steps[i], i);
             final Vector3D positionP3 = stateP3.getPosition();
             final TrackingCoordinates trackingCoordinatesP3  = station.getBaseFrame().
                                         getTrackingCoordinates(positionP3, stateP3.getFrame(), stateP3.getDate());
-            double  delayP3 = timeSpanModel.pathDelay(trackingCoordinatesP3, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+            double  delayP3 = timeSpanModel.pathDelay(trackingCoordinatesP3, point,
                                                       timeSpanModel.getParameters(), stateP3.getDate()).getDelay();
             
             SpacecraftState stateP4 = shiftState(state, orbitType, angleType, 4 * steps[i], i);
             final Vector3D positionP4 = stateP4.getPosition();
             final TrackingCoordinates trackingCoordinatesP4  = station.getBaseFrame().
                                         getTrackingCoordinates(positionP4, stateP4.getFrame(), stateP4.getDate());
-            double  delayP4 = timeSpanModel.pathDelay(trackingCoordinatesP4, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+            double  delayP4 = timeSpanModel.pathDelay(trackingCoordinatesP4, point,
                                                       timeSpanModel.getParameters(), stateP4.getDate()).getDelay();
             
             fillJacobianColumn(refDeriv, i, orbitType, angleType, steps[i],
@@ -342,7 +339,6 @@ public class TimeSpanEstimatedModelTest {
         // Compute delay state derivatives
         final FieldGeodeticPoint<DerivativeStructure> dsPoint = new FieldGeodeticPoint<>(zero.add(point.getLatitude()), zero.add(point.getLongitude()), zero.add(point.getAltitude()));
         final DerivativeStructure delay = model.pathDelay(dsTrackingCoordinates, dsPoint,
-                                                          new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                           parameters, dsState.getDate()).getDelay();
 
         final double[] compDeriv = delay.getAllDerivatives();
@@ -372,35 +368,35 @@ public class TimeSpanEstimatedModelTest {
         final PositionAngleType angleType = PositionAngleType.MEAN;
 
         selected.setValue(p0 - 4 * h);
-        double  delayM4 = model.pathDelay(trackingCoordinates, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+        double  delayM4 = model.pathDelay(trackingCoordinates, point,
                                           model.getParameters(), state.getDate()).getDelay();
         
         selected.setValue(p0 - 3 * h);
-        double  delayM3 = model.pathDelay(trackingCoordinates, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+        double  delayM3 = model.pathDelay(trackingCoordinates, point,
                                           model.getParameters(), state.getDate()).getDelay();
         
         selected.setValue(p0 - 2 * h);
-        double  delayM2 = model.pathDelay(trackingCoordinates, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+        double  delayM2 = model.pathDelay(trackingCoordinates, point,
                                           model.getParameters(), state.getDate()).getDelay();
 
         selected.setValue(p0 - 1 * h);
-        double  delayM1 = model.pathDelay(trackingCoordinates, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+        double  delayM1 = model.pathDelay(trackingCoordinates, point,
                                           model.getParameters(), state.getDate()).getDelay();
 
         selected.setValue(p0 + 1 * h);
-        double  delayP1 = model.pathDelay(trackingCoordinates, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+        double  delayP1 = model.pathDelay(trackingCoordinates, point,
                                           model.getParameters(), state.getDate()).getDelay();
 
         selected.setValue(p0 + 2 * h);
-        double  delayP2 = model.pathDelay(trackingCoordinates, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+        double  delayP2 = model.pathDelay(trackingCoordinates, point,
                                           model.getParameters(), state.getDate()).getDelay();
 
         selected.setValue(p0 + 3 * h);
-        double  delayP3 = model.pathDelay(trackingCoordinates, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+        double  delayP3 = model.pathDelay(trackingCoordinates, point,
                                           model.getParameters(), state.getDate()).getDelay();
 
         selected.setValue(p0 + 4 * h);
-        double  delayP4 = model.pathDelay(trackingCoordinates, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+        double  delayP4 = model.pathDelay(trackingCoordinates, point,
                                           model.getParameters(), state.getDate()).getDelay();
             
         fillJacobianColumn(refDeriv, 0, orbitType, angleType, h,
@@ -424,10 +420,10 @@ public class TimeSpanEstimatedModelTest {
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
 
         Assertions.assertEquals(estimatedModel.pathDelay(new TrackingCoordinates(0.0, elevation, 0.0),
-                                                         point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                                         point,
                                                          estimatedParameters, date).getDelay(),
                                 timeSpanModel.pathDelay(new TrackingCoordinates(0.0, elevation, 0.0),
-                                                        point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                                        point,
                                                         timeSpanParameters, date).getDelay(),
                                 Double.MIN_VALUE);
     }
@@ -452,10 +448,8 @@ public class TimeSpanEstimatedModelTest {
         final FieldGeodeticPoint<T> dsPoint = new FieldGeodeticPoint<>(zero.add(FastMath.toRadians(45.0)), zero.add(FastMath.toRadians(45.0)), height);
 
         Assertions.assertEquals(estimatedModel.pathDelay(trackingCoordinates, dsPoint,
-                                                         new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                          estimatedParameters, date).getDelay().getReal(),
                                 timeSpanModel.pathDelay(trackingCoordinates, dsPoint,
-                                                        new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                         timeSpanParameters, date).getDelay().getReal(),
                                 Double.MIN_VALUE);
     }

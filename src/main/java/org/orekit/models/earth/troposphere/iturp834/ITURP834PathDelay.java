@@ -26,6 +26,7 @@ import org.orekit.models.earth.troposphere.TroposphericDelay;
 import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
+import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -67,21 +68,29 @@ public class ITURP834PathDelay implements TroposphericModel {
     /** Wet factor (K²/Pa). */
     private static final double K2 = K_PER_HPA.toSI(373900);
 
+    /** Provider for pressure, temperature and humidity. */
+    private final PressureTemperatureHumidityProvider pthProvider;
+
     /** Mapping function. */
     private final TroposphereMappingFunction mappingFunction;
 
     /** Simple constructor.
+     * @param pthProvider provider for pressure, temperature and humidity
      * @param utc UTC time scale
      */
-    public ITURP834PathDelay(final TimeScale utc) {
+    public ITURP834PathDelay(final PressureTemperatureHumidityProvider pthProvider,
+                             final TimeScale utc) {
+        this.pthProvider     = pthProvider;
         this.mappingFunction = new ITURP834MappingFunction(utc);
     }
 
     /** {@inheritDoc} */
     @Override
     public TroposphericDelay pathDelay(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
-                                       final PressureTemperatureHumidity weather,
                                        final double[] parameters, final AbsoluteDate date) {
+
+        // compute weather parameters
+        final PressureTemperatureHumidity weather = pthProvider.getWeatherParameters(point, date);
 
         // calculate path delay
         final double gm       = Gravity.getGravityAtAltitude(point).evaluate();
@@ -90,7 +99,7 @@ public class ITURP834PathDelay implements TroposphericModel {
                                 (MD * gm * (1 + weather.getLambda()) * weather.getTm());
 
         // apply mapping function
-        final double[] mapping = mappingFunction.mappingFactors(trackingCoordinates, point, weather, date);
+        final double[] mapping = mappingFunction.mappingFactors(trackingCoordinates, point, date);
         return new TroposphericDelay(deltaLvh, deltaLvw,
                                      mapping[0] * deltaLvh, mapping[1] * deltaLvw);
 
@@ -100,8 +109,10 @@ public class ITURP834PathDelay implements TroposphericModel {
     @Override
     public <T extends CalculusFieldElement<T>> FieldTroposphericDelay<T> pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                                                    final FieldGeodeticPoint<T> point,
-                                                                                   final FieldPressureTemperatureHumidity<T> weather,
                                                                                    final T[] parameters, final FieldAbsoluteDate<T> date) {
+
+        // compute weather parameters
+        final FieldPressureTemperatureHumidity<T> weather = pthProvider.getWeatherParameters(point, date);
 
         // calculate path delay
         final T gm       = Gravity.getGravityAtAltitude(point).evaluate();
@@ -111,7 +122,7 @@ public class ITURP834PathDelay implements TroposphericModel {
                            divide(weather.getTm().multiply(weather.getLambda().add(1)).multiply(gm).multiply(MD));
 
         // apply mapping function
-        final T[] mapping = mappingFunction.mappingFactors(trackingCoordinates, point, weather, date);
+        final T[] mapping = mappingFunction.mappingFactors(trackingCoordinates, point, date);
         return new FieldTroposphericDelay<>(deltaLvh, deltaLvw,
                                             mapping[0].multiply(deltaLvh), mapping[1].multiply(deltaLvw));
 

@@ -22,8 +22,6 @@ import java.util.List;
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
-import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTrackingCoordinates;
@@ -50,7 +48,6 @@ public class ConstantTroposphericModel implements TroposphericModel {
     @Override
     public TroposphericDelay pathDelay(final TrackingCoordinates trackingCoordinates,
                                        final GeodeticPoint point,
-                                       final PressureTemperatureHumidity weather,
                                        final double[] parameters,
                                        final AbsoluteDate date) {
         return delay;
@@ -60,7 +57,6 @@ public class ConstantTroposphericModel implements TroposphericModel {
     @Override
     public <T extends CalculusFieldElement<T>> FieldTroposphericDelay<T> pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                                                    final FieldGeodeticPoint<T> point,
-                                                                                   final FieldPressureTemperatureHumidity<T> weather,
                                                                                    final T[] parameters,
                                                                                    final FieldAbsoluteDate<T> date) {
         final T zero = date.getField().getZero();

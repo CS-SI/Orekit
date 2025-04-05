@@ -92,7 +92,6 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
             // Delay in meters
             return tropoModel.pathDelay(trackingCoordinates,
                                         station.getOffsetGeodeticPoint(state.getDate()),
-                                        station.getPressureTemperatureHumidity(state.getDate()),
                                         tropoModel.getParameters(state.getDate()), state.getDate()).
                                  getDelay();
         }
@@ -124,7 +123,6 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
             // Delay in meters
             return tropoModel.pathDelay(trackingCoordinates,
                                         station.getOffsetGeodeticPoint(state.getDate()),
-                                        station.getPressureTemperatureHumidity(state.getDate()),
                                         parameters, state.getDate()).
                             getDelay();
         }

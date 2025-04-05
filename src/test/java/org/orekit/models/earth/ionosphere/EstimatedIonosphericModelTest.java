@@ -37,7 +37,6 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.PredefinedGnssSignal;
-import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -47,7 +46,6 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
-import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -241,8 +239,7 @@ public class EstimatedIonosphericModelTest {
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
 
         // Station
-        final GroundStation station = new GroundStation(baseFrame,
-                                                        TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+        final GroundStation station = new GroundStation(baseFrame);
 
         // Ionospheric model
         final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction();
@@ -526,7 +523,7 @@ public class EstimatedIonosphericModelTest {
         Orbit orbit = orbitType.mapArrayToOrbit(array[0], array[1], angleType, date, mu, frame);
         return (array.length > 6) ?
                new SpacecraftState(orbit, attitude) :
-               new SpacecraftState(orbit, attitude, array[0][6]);
+               new SpacecraftState(orbit, attitude).withMass(array[0][6]);
     }
 
     private void fillJacobianColumn(double[][] jacobian, int column, double h,

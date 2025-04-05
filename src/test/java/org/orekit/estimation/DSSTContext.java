@@ -27,7 +27,6 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.displacement.StationDisplacement;
-import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
@@ -60,7 +59,7 @@ public class DSSTContext implements StationDataProvider {
     public Map<GroundStation, GroundStation>      TARstations;
 
     /**
-     * By default propagation type and initial state type are set to {@link PropagationType.MEAN}
+     * By default propagation type and initial state type are set to {@link PropagationType#MEAN}
      * @see #createBuilder(PropagationType, PropagationType, boolean, double, double, double, DSSTForce...)
      */
     public DSSTPropagatorBuilder createBuilder(final boolean perfectStart,
@@ -107,9 +106,7 @@ public class DSSTContext implements StationDataProvider {
         final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(latitudeInDegrees),
                                                    FastMath.toRadians(longitudeInDegrees),
                                                    altitude);
-        return new GroundStation(new TopocentricFrame(earth, gp, name),
-                                 TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
-                                 ut1.getEOPHistory(), displacements);
+        return new GroundStation(new TopocentricFrame(earth, gp, name), ut1.getEOPHistory(), displacements);
     }
 
     @Override

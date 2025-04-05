@@ -101,7 +101,7 @@ albedo.infrared.angular.resolution = 15.0
 # Post-Newtonian correction force due to general relativity (true/false) [false]
 general.relativity = true
 
-## Use range and range-rate measurements
+## Use range and range-rate measurements
 use.range.measurements = true
 use.range.rate.measurements = false
 

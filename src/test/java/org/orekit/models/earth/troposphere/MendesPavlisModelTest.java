@@ -38,7 +38,8 @@ import java.net.URL;
 
 public class MendesPavlisModelTest extends AbstractPathDelayTest<MendesPavlisModel> {
 
-    protected MendesPavlisModel buildTroposphericModel() {
+    protected MendesPavlisModel buildTroposphericModel(PressureTemperatureHumidityProvider provider) {
+        // the provider for Mendes-Pavlis model is hard-coded
         final double height      = 2010.344;
         final double pressure    = TroposphericModelUtils.HECTO_PASCAL.toSI(798.4188);
         final double temperature = 300.15;
@@ -49,6 +50,30 @@ public class MendesPavlisModelTest extends AbstractPathDelayTest<MendesPavlisMod
                                             Double.NaN,  Double.NaN);
         return new MendesPavlisModel(new ConstantPressureTemperatureHumidityProvider(pth),
                                      0.532, TroposphericModelUtils.MICRO_M);
+    }
+
+    @Test
+    @Override
+    public void testFixedHeight() {
+        doTestFixedHeight(null);
+    }
+
+    @Test
+    @Override
+    public void testFieldFixedHeight() {
+        doTestFieldFixedHeight(Binary64Field.getInstance(), null);
+    }
+
+    @Test
+    @Override
+    public void testFixedElevation() {
+        doTestFixedElevation(null);
+    }
+
+    @Test
+    @Override
+    public void testFieldFixedElevation() {
+        doTestFieldFixedElevation(Binary64Field.getInstance(), null);
     }
 
     @Test
@@ -70,6 +95,7 @@ public class MendesPavlisModelTest extends AbstractPathDelayTest<MendesPavlisMod
 
         doTestDelay(new AbsoluteDate(2009, 8, 12, TimeScalesFactory.getUTC()),
                     new GeodeticPoint(FastMath.toRadians(30.67166667), FastMath.toRadians(-104.0250), 2010.344), new TrackingCoordinates(0, FastMath.toRadians(38.0), 0),
+                    null,
                     1.932992, 0.223375e-2, 3.1334, 0.00362, 3.136995);
 
     }
@@ -97,6 +123,7 @@ public class MendesPavlisModelTest extends AbstractPathDelayTest<MendesPavlisMod
                                       FastMath.toRadians(-104.0250),
                                       2010.344),
                     new TrackingCoordinates(0, FastMath.toRadians(38.0), 0),
+                    null,
                     1.932992, 0.223375e-2, 3.1334, 0.00362, 3.136995);
 
     }
@@ -109,8 +136,8 @@ public class MendesPavlisModelTest extends AbstractPathDelayTest<MendesPavlisMod
             new GlobalPressureTemperature3(new DataSource(url.toURI()), utc);
         final double lambda = 0.532;
         final Unit lambdaUnits = TroposphericModelUtils.MICRO_M;
-        doTestVsOtherModel(new MariniMurray(lambda, lambdaUnits), provider,
-                           new MendesPavlisModel(provider, lambda, lambdaUnits), provider,
+        doTestVsOtherModel(new MariniMurray(lambda, lambdaUnits, provider),
+                           new MendesPavlisModel(provider, lambda, lambdaUnits),
                            1.2e-3, 6.7e-5, 0.18, 3.3e-4);
     }
 

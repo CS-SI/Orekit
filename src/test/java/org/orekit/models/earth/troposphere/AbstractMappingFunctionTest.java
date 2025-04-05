@@ -25,8 +25,6 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
-import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -50,7 +48,6 @@ public abstract class AbstractMappingFunctionTest<T extends TroposphereMappingFu
                                         final double expectedHydro, final double expectedWet) {
         final T model = buildMappingFunction();
         final double[] computedMapping = model.mappingFactors(trackingCoordinates, point,
-                                                              TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                               date);
         Assertions.assertEquals(expectedHydro, computedMapping[0], 1.0e-3);
         Assertions.assertEquals(expectedWet,   computedMapping[1], 1.0e-3);
@@ -69,7 +66,6 @@ public abstract class AbstractMappingFunctionTest<T extends TroposphereMappingFu
         for (double elev = 10d; elev < 90d; elev += 8d) {
             final double[] factors = model.mappingFactors(new TrackingCoordinates(0.0, FastMath.toRadians(elev), 0.0),
                                                           point,
-                                                          TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                           date);
             Assertions.assertTrue(Precision.compareTo(factors[0], lastFactors[0], 1.0e-6) < 0);
             Assertions.assertTrue(Precision.compareTo(factors[1], lastFactors[1], 1.0e-6) < 0);
@@ -92,7 +88,6 @@ public abstract class AbstractMappingFunctionTest<T extends TroposphereMappingFu
         final AbsoluteDate dateD = new AbsoluteDate(2004, 11, 16, 10, 54, 17.0, TimeScalesFactory.getUTC());
         final GeodeticPoint kuroishiD =
             new GeodeticPoint(FastMath.toRadians(40.64236), FastMath.toRadians(140.59590), 59.0);
-        final PressureTemperatureHumidity weatherD = TroposphericModelUtils.STANDARD_ATMOSPHERE;
         final TrackingCoordinates trackingCoordinatesD = new TrackingCoordinates(FastMath.toRadians(210.0),
                                                                                  FastMath.toRadians(15.0),
                                                                                  1.4e6);
@@ -101,17 +96,15 @@ public abstract class AbstractMappingFunctionTest<T extends TroposphereMappingFu
         final FieldAbsoluteDate<Gradient> dateG = new FieldAbsoluteDate<>(dateD, Gradient.variable(4, 0, 0.0));
         final FieldGeodeticPoint<Gradient> kuroishiG =
             new FieldGeodeticPoint<>(dateG.getField(), kuroishiD);
-        final FieldPressureTemperatureHumidity<Gradient> weatherG =
-            new FieldPressureTemperatureHumidity<>(dateG.getField(), weatherD);
         final FieldTrackingCoordinates<Gradient> trackingCoordinatesG =
             new FieldTrackingCoordinates<>(Gradient.variable(4, 1, trackingCoordinatesD.getAzimuth()),
                                            Gradient.variable(4, 2, trackingCoordinatesD.getElevation()),
                                            Gradient.variable(4, 3, trackingCoordinatesD.getRange()));
 
         final Gradient[] finiteDifferences = mappingFactorsGradient(model,
-                                                                    trackingCoordinatesD, kuroishiD, weatherD, dateD,
+                                                                    trackingCoordinatesD, kuroishiD, dateD,
                                                                     1000.0, 1.0e-2, 1.0e-2, 100.0);
-        final Gradient[] direct = model.mappingFactors(trackingCoordinatesG, kuroishiG, weatherG, dateG);
+        final Gradient[] direct = model.mappingFactors(trackingCoordinatesG, kuroishiG, dateG);
 
         // values
         Assertions.assertEquals(finiteDifferences[0].getValue(), direct[0].getValue(), tolValue);
@@ -137,46 +130,46 @@ public abstract class AbstractMappingFunctionTest<T extends TroposphereMappingFu
 
     private Gradient[] mappingFactorsGradient(final T model,
                                               final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
-                                              final PressureTemperatureHumidity weather, final AbsoluteDate date,
+                                              final AbsoluteDate date,
                                               final double dt, final double da, final double de, final double dr) {
         return new Gradient[] {
-            new Gradient(model.mappingFactors(trackingCoordinates, point, weather, date)[0],
-                         mappingFactorsDerivative(model, trackingCoordinates, point, weather, date, dt, 0)[0],
-                         mappingFactorsDerivative(model, trackingCoordinates, point, weather, date, da, 1)[0],
-                         mappingFactorsDerivative(model, trackingCoordinates, point, weather, date, de, 2)[0],
-                         mappingFactorsDerivative(model, trackingCoordinates, point, weather, date, dr, 3)[0]),
-            new Gradient(model.mappingFactors(trackingCoordinates, point, weather, date)[1],
-                         mappingFactorsDerivative(model, trackingCoordinates, point, weather, date, dt, 0)[1],
-                         mappingFactorsDerivative(model, trackingCoordinates, point, weather, date, da, 1)[1],
-                         mappingFactorsDerivative(model, trackingCoordinates, point, weather, date, de, 2)[1],
-                         mappingFactorsDerivative(model, trackingCoordinates, point, weather, date, dr, 3)[1])
+            new Gradient(model.mappingFactors(trackingCoordinates, point, date)[0],
+                         mappingFactorsDerivative(model, trackingCoordinates, point, date, dt, 0)[0],
+                         mappingFactorsDerivative(model, trackingCoordinates, point, date, da, 1)[0],
+                         mappingFactorsDerivative(model, trackingCoordinates, point, date, de, 2)[0],
+                         mappingFactorsDerivative(model, trackingCoordinates, point, date, dr, 3)[0]),
+            new Gradient(model.mappingFactors(trackingCoordinates, point, date)[1],
+                         mappingFactorsDerivative(model, trackingCoordinates, point, date, dt, 0)[1],
+                         mappingFactorsDerivative(model, trackingCoordinates, point, date, da, 1)[1],
+                         mappingFactorsDerivative(model, trackingCoordinates, point, date, de, 2)[1],
+                         mappingFactorsDerivative(model, trackingCoordinates, point, date, dr, 3)[1])
         };
     }
 
     private double[] mappingFactorsDerivative(final T model,
                                               final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
-                                              final PressureTemperatureHumidity weather, final AbsoluteDate date,
+                                              final AbsoluteDate date,
                                               final double delta, final int index) {
 
         final double dt = index == 0 ? delta : 0.0;
         final double da = index == 1 ? delta : 0.0;
         final double de = index == 2 ? delta : 0.0;
         final double dr = index == 3 ? delta : 0.0;
-        final double[] mM4h = shiftedMappingFactors(model, trackingCoordinates, point, weather, date,
+        final double[] mM4h = shiftedMappingFactors(model, trackingCoordinates, point, date,
                                                     -4 * dt, -4 * da, -4 * de, -4 * dr);
-        final double[] mM3h = shiftedMappingFactors(model, trackingCoordinates, point, weather, date,
+        final double[] mM3h = shiftedMappingFactors(model, trackingCoordinates, point, date,
                                                     -3 * dt, -3 * da, -3 * de, -3 * dr);
-        final double[] mM2h = shiftedMappingFactors(model, trackingCoordinates, point, weather, date,
+        final double[] mM2h = shiftedMappingFactors(model, trackingCoordinates, point, date,
                                                     -2 * dt, -2 * da, -2 * de, -2 * dr);
-        final double[] mM1h = shiftedMappingFactors(model, trackingCoordinates, point, weather, date,
+        final double[] mM1h = shiftedMappingFactors(model, trackingCoordinates, point, date,
                                                     -1 * dt, -1 * da, -1 * de, -1 * dr);
-        final double[] mP1h = shiftedMappingFactors(model, trackingCoordinates, point, weather, date,
+        final double[] mP1h = shiftedMappingFactors(model, trackingCoordinates, point, date,
                                                      1 * dt,  1 * da,  1 * de,  1 * dr);
-        final double[] mP2h = shiftedMappingFactors(model, trackingCoordinates, point, weather, date,
+        final double[] mP2h = shiftedMappingFactors(model, trackingCoordinates, point, date,
                                                      2 * dt,  2 * da,  2 * de,  2 * dr);
-        final double[] mP3h = shiftedMappingFactors(model, trackingCoordinates, point, weather, date,
+        final double[] mP3h = shiftedMappingFactors(model, trackingCoordinates, point, date,
                                                      3 * dt,  3 * da,  3 * de,  3 * dr);
-        final double[] mP4h = shiftedMappingFactors(model, trackingCoordinates, point, weather, date,
+        final double[] mP4h = shiftedMappingFactors(model, trackingCoordinates, point, date,
                                                      4 * dt,  4 * da,  4 * de,  4 * dr);
 
         return new double[] {
@@ -186,14 +179,13 @@ public abstract class AbstractMappingFunctionTest<T extends TroposphereMappingFu
 
     }
 
-    private double[] shiftedMappingFactors(final T model,
-                                           final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
-                                           final PressureTemperatureHumidity weather, final AbsoluteDate date,
+    private double[] shiftedMappingFactors(final T model, final TrackingCoordinates trackingCoordinates,
+                                           final GeodeticPoint point, final AbsoluteDate date,
                                            final double dt, final double da, final double de, final double dr) {
         return model.mappingFactors(new TrackingCoordinates(trackingCoordinates.getAzimuth()   + da,
                                                             trackingCoordinates.getElevation() + de,
                                                             trackingCoordinates.getRange()     + dr),
-                                    point, weather, date.shiftedBy(dt));
+                                    point, date.shiftedBy(dt));
     }
 
     private double differential8(final double fM4h, final double fM3h, final double fM2h, final double fM1h,

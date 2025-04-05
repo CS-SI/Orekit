@@ -19,14 +19,15 @@ package org.orekit.models.earth.troposphere;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Test;
+import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.utils.TrackingCoordinates;
 
 
 public class CanonicalSaastamoinenModelTest extends AbstractPathDelayTest<CanonicalSaastamoinenModel> {
 
     @Override
-    protected CanonicalSaastamoinenModel buildTroposphericModel() {
-        return new CanonicalSaastamoinenModel();
+    protected CanonicalSaastamoinenModel buildTroposphericModel(final PressureTemperatureHumidityProvider provider) {
+        return new CanonicalSaastamoinenModel(provider);
     }
 
     @Test
@@ -34,6 +35,7 @@ public class CanonicalSaastamoinenModelTest extends AbstractPathDelayTest<Canoni
     public void testDelay() {
         doTestDelay(defaultDate, defaultPoint,
                     new TrackingCoordinates(FastMath.toRadians(192), FastMath.toRadians(5), 1.4e6),
+                    TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
                     2.30697, 0.115797, 26.46948, -2.20852, 24.26096);
     }
 
@@ -43,13 +45,41 @@ public class CanonicalSaastamoinenModelTest extends AbstractPathDelayTest<Canoni
         doTestDelay(Binary64Field.getInstance(),
                     defaultDate, defaultPoint,
                     new TrackingCoordinates(FastMath.toRadians(192), FastMath.toRadians(5), 1.4e6),
+                    TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
                     2.30697, 0.115797, 26.46948, -2.20852, 24.26096);
+    }
+
+    @Override
+    @Test
+    public void testFixedHeight() {
+        doTestFixedHeight(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+    }
+
+    @Override
+    @Test
+    public void testFieldFixedHeight() {
+        doTestFieldFixedHeight(Binary64Field.getInstance(),
+                               TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+    }
+
+    @Override
+    @Test
+    public void testFixedElevation() {
+        doTestFixedElevation(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+    }
+
+    @Override
+    @Test
+    public void testFieldFixedElevation() {
+        doTestFieldFixedElevation(Binary64Field.getInstance(),
+                                  TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
     }
 
     @Test
     public void testDelayHighElevation() {
         doTestDelay(defaultDate, defaultPoint,
                     new TrackingCoordinates(FastMath.toRadians(192), FastMath.toRadians(60), 1.4e6),
+                    TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
                     2.30697, 0.115797, 2.66386, 0.13280, 2.79666);
     }
 
@@ -58,6 +88,7 @@ public class CanonicalSaastamoinenModelTest extends AbstractPathDelayTest<Canoni
         doTestDelay(Binary64Field.getInstance(),
                     defaultDate, defaultPoint,
                     new TrackingCoordinates(FastMath.toRadians(192), FastMath.toRadians(60), 1.4e6),
+                    TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
                     2.30697, 0.115797, 2.66386, 0.13280, 2.79666);
     }
 

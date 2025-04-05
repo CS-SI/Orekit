@@ -31,53 +31,47 @@ import java.net.URL;
 public class AskneNordiusModelTest extends AbstractPathDelayTest<AskneNordiusModel> {
 
     @Override
-    protected AskneNordiusModel buildTroposphericModel() {
-        return new AskneNordiusModel(new GlobalMappingFunctionModel());
+    protected AskneNordiusModel buildTroposphericModel(final PressureTemperatureHumidityProvider provider) {
+        return new AskneNordiusModel(new GlobalMappingFunctionModel(), provider);
     }
 
     @Test
     @Override
     public void testDelay() {
-        resetWeatherProvider(getGPT());
-        doTestDelay(defaultDate, defaultPoint, defaultTrackingCoordinates,
+        doTestDelay(defaultDate, defaultPoint, defaultTrackingCoordinates, getGPT(),
                     2.0938, 6.80095, 3.39416, 11.03650, 14.43066);
     }
 
     @Test
     @Override
     public void testFieldDelay() {
-        resetWeatherProvider(getGPT());
         doTestDelay(Binary64Field.getInstance(),
-                    defaultDate, defaultPoint, defaultTrackingCoordinates,
+                    defaultDate, defaultPoint, defaultTrackingCoordinates, getGPT(),
                     2.0938, 6.80095, 3.39416, 11.03650, 14.43066);
     }
 
     @Test
     @Override
     public void testFixedElevation() {
-        resetWeatherProvider(getGPT());
-        super.testFixedElevation();
+        doTestFixedElevation(getGPT());
     }
 
     @Test
     @Override
     public void testFieldFixedElevation() {
-        resetWeatherProvider(getGPT());
-        super.testFieldFixedElevation();
+        doTestFieldFixedElevation(Binary64Field.getInstance(), getGPT());
     }
 
     @Test
     @Override
     public void testFixedHeight() {
-        resetWeatherProvider(getGPT());
-        super.testFixedHeight();
+        doTestFixedHeight(getGPT());
     }
 
     @Test
     @Override
     public void testFieldFixedHeight() {
-        resetWeatherProvider(getGPT());
-        super.testFieldFixedHeight();
+        doTestFieldFixedHeight(Binary64Field.getInstance(), getGPT());
     }
 
     private PressureTemperatureHumidityProvider getGPT() {

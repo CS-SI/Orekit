@@ -46,7 +46,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
-import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -58,7 +57,6 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -90,9 +88,7 @@ class GroundStationTest {
         final double deltaClock      = 0.00084532;
         final String changedSuffix   = "-changed";
         final GroundStation changed  = new GroundStation(new TopocentricFrame(parent, base.getPoint(),
-                                                                              base.getName() + changedSuffix),
-                                                         TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
-                                                         context.ut1.getEOPHistory(),
+                                                                              base.getName() + changedSuffix), context.ut1.getEOPHistory(),
                                                          context.stations.get(0).getDisplacements());
 
         // create orbit estimator
@@ -171,9 +167,7 @@ class GroundStationTest {
                                                                            parent.transform(baseOrigin.subtract(deltaParent),
                                                                                             parent.getBodyFrame(),
                                                                                             null),
-                                                                           base.getName() + movedSuffix),
-                                                      TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
-                                                      context.ut1.getEOPHistory(),
+                                                                           base.getName() + movedSuffix), context.ut1.getEOPHistory(),
                                                       context.stations.get(0).getDisplacements());
 
         // create orbit estimator
@@ -1246,8 +1240,7 @@ class GroundStationTest {
                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         final GroundStation station = new GroundStation(new TopocentricFrame(earth,
                                                                              new GeodeticPoint(0.1, 0.2, 100),
-                                                                             "dummy"),
-                                                        TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+                                                                             "dummy"));
         try {
             station.getOffsetToInertial(eme2000, date, false);
             Assertions.fail("an exception should have been thrown");
@@ -1294,8 +1287,7 @@ class GroundStationTest {
                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         final GroundStation station = new GroundStation(new TopocentricFrame(earth,
                                                                              new GeodeticPoint(latitude, longitude, altitude),
-                                                                             "dummy"),
-                                                        TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+                                                                             "dummy"));
         final GradientField gradientField = GradientField.getField(parameterPattern.length);
         ParameterDriver[] selectedDrivers = new ParameterDriver[parameterPattern.length];
         UnivariateDifferentiableVectorFunction[] dFCartesian = new UnivariateDifferentiableVectorFunction[parameterPattern.length];
@@ -1404,8 +1396,7 @@ class GroundStationTest {
                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         final GroundStation station = new GroundStation(new TopocentricFrame(earth,
                                                                              new GeodeticPoint(latitude, longitude, altitude),
-                                                                             "dummy"),
-                                                        TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+                                                                             "dummy"));
         ParameterDriver[] selectedDrivers = new ParameterDriver[parameterPattern.length];
         UnivariateDifferentiableVectorFunction[] dFAngular   = new UnivariateDifferentiableVectorFunction[parameterPattern.length];
         final ParameterDriver[] allDrivers = selectAllDrivers(station);

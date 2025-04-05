@@ -26,8 +26,6 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.data.DataContext;
-import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
-import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -164,7 +162,6 @@ public class NiellMappingFunctionModel implements TroposphereMappingFunction {
     /** {@inheritDoc} */
     @Override
     public double[] mappingFactors(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
-                                   final PressureTemperatureHumidity weather,
                                    final AbsoluteDate date) {
 
         // Temporal factor
@@ -209,7 +206,6 @@ public class NiellMappingFunctionModel implements TroposphereMappingFunction {
     @Override
     public <T extends CalculusFieldElement<T>> T[] mappingFactors(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                                   final FieldGeodeticPoint<T> point,
-                                                                  final FieldPressureTemperatureHumidity<T> weather,
                                                                   final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
         final T zero = field.getZero();

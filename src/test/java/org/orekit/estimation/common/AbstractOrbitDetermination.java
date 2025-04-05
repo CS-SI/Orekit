@@ -1470,7 +1470,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             final TopocentricFrame topo = new TopocentricFrame(body, position, stationNames[i]);
             final PressureTemperatureHumidityProvider pth0Provider =
                             TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER;
-            final GroundStation station = new GroundStation(topo, pth0Provider, eopHistory, displacements);
+            final GroundStation station = new GroundStation(topo, eopHistory, displacements);
             station.getClockOffsetDriver().setReferenceValue(stationClockOffsets[i]);
             station.getClockOffsetDriver().setValue(stationClockOffsets[i]);
             station.getClockOffsetDriver().setMinValue(stationClockOffsetsMin[i]);
@@ -1579,27 +1579,10 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                 if (stationModelEstimated[i] && mappingModel != null) {
                     // Estimated tropospheric model
 
-                    // Compute pressure and temperature for estimated tropospheric model
-                    final double pressure;
-                    final double temperature;
-                    if (stationWeatherEstimated[i]) {
-                        // Empirical models to compute the pressure and the temperature
-                        PressureTemperature weather = gpt.getWeatherParameters(station.getBaseFrame().getPoint(),
-                                                                               parser.getDate(ParameterKey.ORBIT_DATE,
-                                                                                              TimeScalesFactory.getUTC()));
-                        temperature = weather.getTemperature();
-                        pressure    = weather.getPressure();
-
-                    } else {
-                        // Standard atmosphere model : temperature: 18 degree Celsius and pressure: 1013.25 mbar
-                        temperature = 273.15 + 18.0;
-                        pressure    = 1013.25;
-                    }
-
                     if (useTimeSpanModel) {
                         // Initial model used to initialize the time span tropospheric model
-                        final EstimatedModel initialModel = new EstimatedModel(station.getBaseFrame().getPoint().getAltitude(),
-                                                                               temperature, pressure, mappingModel,
+                        final EstimatedModel initialModel = new EstimatedModel(new ModifiedSaastamoinenModel(pth0Provider),
+                                                                               mappingModel,
                                                                                stationTroposphericZenithDelay[i]);
 
                         // Initialize the time span tropospheric model
@@ -1612,16 +1595,16 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                         final String subName = stationNames[i].substring(0, 5);
 
                         // Estimated tropospheric model BEFORE the median date
-                        final EstimatedModel modelBefore = new EstimatedModel(station.getBaseFrame().getPoint().getAltitude(),
-                                                                              temperature, pressure, mappingModel,
+                        final EstimatedModel modelBefore = new EstimatedModel(new ModifiedSaastamoinenModel(pth0Provider),
+                                                                              mappingModel,
                                                                               stationTroposphericZenithDelay[i]);
                         final ParameterDriver totalDelayBefore = modelBefore.getParametersDrivers().get(0);
                         totalDelayBefore.setSelected(stationZenithDelayEstimated[i]);
                         totalDelayBefore.setName(subName + TimeSpanEstimatedModel.DATE_BEFORE + epoch.toString(TimeScalesFactory.getUTC()) + " " + EstimatedModel.TOTAL_ZENITH_DELAY);
 
                         // Estimated tropospheric model AFTER the median date
-                        final EstimatedModel modelAfter = new EstimatedModel(station.getBaseFrame().getPoint().getAltitude(),
-                                                                             temperature, pressure, mappingModel,
+                        final EstimatedModel modelAfter = new EstimatedModel(new ModifiedSaastamoinenModel(pth0Provider),
+                                                                             mappingModel,
                                                                              stationTroposphericZenithDelay[i]);
                         final ParameterDriver totalDelayAfter = modelAfter.getParametersDrivers().get(0);
                         totalDelayAfter.setSelected(stationZenithDelayEstimated[i]);
@@ -1651,8 +1634,8 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
                     } else {
 
-                        model = new EstimatedModel(station.getBaseFrame().getPoint().getAltitude(),
-                                                   temperature, pressure, mappingModel, stationTroposphericZenithDelay[i]);
+                        model = new EstimatedModel(new ModifiedSaastamoinenModel(pth0Provider),
+                                                   mappingModel, stationTroposphericZenithDelay[i]);
                         final ParameterDriver driver = model.getParametersDrivers().get(0);
                         driver.setName(stationNames[i].substring(0, 4) + "/ " + EstimatedModel.TOTAL_ZENITH_DELAY);
                         driver.setSelected(stationZenithDelayEstimated[i]);
@@ -1661,7 +1644,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
                 } else {
                     // Empirical tropospheric model
-                    model = ModifiedSaastamoinenModel.getStandardModel();
+                    model = new ModifiedSaastamoinenModel(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
                 }
 
                 rangeTroposphericCorrection = new RangeTroposphericDelayModifier(model);

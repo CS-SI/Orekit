@@ -83,7 +83,6 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
             // delay in meters
             final double delay = tropoModel.pathDelay(trackingCoordinates,
                                                       station.getOffsetGeodeticPoint(state.getDate()),
-                                                      station.getPressureTemperatureHumidity(state.getDate()),
                                                       tropoModel.getParameters(state.getDate()), state.getDate()).
                                  getDelay();
 
@@ -119,7 +118,6 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
             // delay in meters
             final T delay = tropoModel.pathDelay(trackingCoordinates,
                                                  station.getOffsetGeodeticPoint(state.getDate()),
-                                                 station.getPressureTemperatureHumidity(state.getDate()),
                                                  parameters, state.getDate()).
                             getDelay();
 
