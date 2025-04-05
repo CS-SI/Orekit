@@ -19,7 +19,6 @@ package org.orekit.estimation.leastsquares;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -209,12 +208,12 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
         propagatorBuilder.setAttitudeProvider(attitudeProvider);
     }
 
-    /**
-     * Lageos 2 orbit determination test using laser data.
-     *
+    /** Lageos 2 orbit determination test using laser data.
+     * <p>
      * This test uses both mean and osculating elements to perform the orbit determination.
      * It is possible to consider only mean elements by changing propagationType and
      * stateType keys.
+     * </p>
      */
     @Test
     public void testLageos2()
@@ -274,18 +273,14 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
 
     /**
      * GNSS orbit determination test.
-     *
      * This test uses both mean and osculating elements to perform the orbit determination.
      * It is possible to consider only mean elements by changing propagationType and
      * stateType keys.
-     *
      * Using only mean elements, results are:
      *    ΔP = 59 meters
      *    ΔV = 0.23 meters per second
-     *
      *    nb iterations  = 2
      *    nb evaluations = 3
-     *
      *    min residual  = -83.945 meters
      *    max residual  = 59.365 meters
      *    mean residual = 0.23 meters

@@ -387,8 +387,8 @@ public class AberrationModifierTest {
                                                                                                                groundStation,
                                                                                                                epoch, itrf));
         // Assert that the expected kind of error is thrown
-        Assertions.assertEquals(exceptionNToP.getSpecifier(), OrekitMessages.NON_PSEUDO_INERTIAL_FRAME);
-        Assertions.assertEquals(exceptionPToN.getSpecifier(), OrekitMessages.NON_PSEUDO_INERTIAL_FRAME);
+        Assertions.assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, exceptionNToP.getSpecifier());
+        Assertions.assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, exceptionPToN.getSpecifier());
     }
 
     private static AngularRaDec defaultRaDec(Frame frame, AbsoluteDate date) {

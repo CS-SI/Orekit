@@ -26,16 +26,13 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.models.earth.weather.HeightDependentPressureTemperatureHumidityConverter;
-import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.models.earth.weather.water.CIPM2007;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.TrackingCoordinates;
-
 
 public class ModifiedHopfieldModelTest extends AbstractPathDelayTest<ModifiedHopfieldModel> {
 
@@ -183,26 +180,7 @@ public class ModifiedHopfieldModelTest extends AbstractPathDelayTest<ModifiedHop
         // as well as the delay scale at 0m and 40m
         final HeightDependentPressureTemperatureHumidityConverter converter =
                         new HeightDependentPressureTemperatureHumidityConverter(new CIPM2007());
-        final PressureTemperatureHumidityProvider provider = new PressureTemperatureHumidityProvider() {
-
-            /** {@inheritDoc} */
-            @Override
-            public PressureTemperatureHumidity getWeatherParameters(final GeodeticPoint location,
-                                                                    final AbsoluteDate date) {
-                return converter.convert(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER.
-                                         getWeatherParameters(location, date),
-                                         location.getAltitude());
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public <T extends CalculusFieldElement<T>> FieldPressureTemperatureHumidity<T> getWeatherParameters(
-                final FieldGeodeticPoint<T> location, final FieldAbsoluteDate<T> date) {
-                return converter.convert(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER.
-                                         getWeatherParameters(location, date),
-                                         location.getAltitude());
-            }
-        };
+        final PressureTemperatureHumidityProvider provider = converter.getProvider(TroposphericModelUtils.STANDARD_ATMOSPHERE);
         ModifiedHopfieldModel model = new ModifiedHopfieldModel(provider);
 
         for (int h = 0; h < heights.length; h++) {

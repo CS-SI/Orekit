@@ -72,10 +72,8 @@ public class TLEKalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final PositionAngleType positionAngleType = PositionAngleType.MEAN;
-        final double        minStep       = 1.e-6;
-        final double        maxStep       = 60.;
         final double        dP            = 1.;
-        final TLEPropagatorBuilder propagatorBuilder = context.createBuilder(minStep, maxStep, dP);
+        final TLEPropagatorBuilder propagatorBuilder = context.createBuilder(dP);
 
         // Create perfect PV measurements
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
@@ -132,11 +130,9 @@ public class TLEKalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final PositionAngleType positionAngleType = PositionAngleType.MEAN;
-        final double        minStep       = 1.e-6;
-        final double        maxStep       = 60.;
         final double        dP            = 1.;
         final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(minStep, maxStep, dP);
+                        context.createBuilder(dP);
 
         // Create perfect range measurements
         Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
@@ -197,11 +193,9 @@ public class TLEKalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final PositionAngleType positionAngleType = PositionAngleType.MEAN;
-        final double        minStep       = 1.e-6;
-        final double        maxStep       = 60.;
         final double        dP            = 1.;
         final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(minStep, maxStep, dP);
+                        context.createBuilder(dP);
         propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
 
         // Antenna phase center definition
@@ -276,11 +270,9 @@ public class TLEKalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final PositionAngleType positionAngleType = PositionAngleType.MEAN;
-        final double        minStep       = 1.e-6;
-        final double        maxStep       = 60.;
         final double        dP            = 1.;
         final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(minStep, maxStep, dP);
+                        context.createBuilder(dP);
 
         // Create perfect range & range rate measurements
         Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
@@ -349,11 +341,9 @@ public class TLEKalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final PositionAngleType positionAngleType = PositionAngleType.TRUE;
-        final double        minStep       = 1.e-6;
-        final double        maxStep       = 60.;
         final double        dP            = 1.;
         final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(minStep, maxStep, dP);
+                        context.createBuilder(dP);
 
         // Create perfect range measurements
         Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();

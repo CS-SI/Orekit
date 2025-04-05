@@ -59,7 +59,7 @@ public class DSSTContext implements StationDataProvider {
     public Map<GroundStation, GroundStation>      TARstations;
 
     /**
-     * By default propagation type and initial state type are set to {@link PropagationType.MEAN}
+     * By default propagation type and initial state type are set to {@link PropagationType#MEAN}
      * @see #createBuilder(PropagationType, PropagationType, boolean, double, double, double, DSSTForce...)
      */
     public DSSTPropagatorBuilder createBuilder(final boolean perfectStart,

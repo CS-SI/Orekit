@@ -351,8 +351,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         Assertions.assertEquals(3.060e-10, leakAcceleration1.getNorm(), 1.0e-12);
 
         //test on measurements parameters
-        final List<DelegatingDriver> list = new ArrayList<DelegatingDriver>();
-        list.addAll(odsatW3.getMeasurementsParameters().getDrivers());
+        final List<DelegatingDriver> list = new ArrayList<>(odsatW3.getMeasurementsParameters().getDrivers());
         sortParametersChanges(list);
 
         //station CastleRock

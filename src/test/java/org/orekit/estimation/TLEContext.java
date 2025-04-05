@@ -51,14 +51,9 @@ public class TLEContext implements StationDataProvider {
     // Map value = secondary station associated
     public Map<GroundStation, GroundStation>     TARstations;
 
-    public TLEPropagatorBuilder createBuilder(final double minStep, final double maxStep, final double dP) {
-
-        final TLEPropagatorBuilder propagatorBuilder =
-                        new TLEPropagatorBuilder(initialTLE, PositionAngleType.MEAN, dP,
-                                                 new FixedPointTleGenerationAlgorithm());
-
-        return propagatorBuilder;
-
+    public TLEPropagatorBuilder createBuilder(final double dP) {
+        return new TLEPropagatorBuilder(initialTLE, PositionAngleType.MEAN, dP,
+                                        new FixedPointTleGenerationAlgorithm());
     }
 
     GroundStation createStation(double latitudeInDegrees, double longitudeInDegrees,

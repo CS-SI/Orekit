@@ -168,7 +168,7 @@ public class GroundStation {
      * @since 13.0
      */
     public GroundStation(final TopocentricFrame baseFrame) {
-        this(baseFrame, FramesFactory.findEOP(baseFrame), new StationDisplacement[0]);
+        this(baseFrame, FramesFactory.findEOP(baseFrame));
     }
 
     /**

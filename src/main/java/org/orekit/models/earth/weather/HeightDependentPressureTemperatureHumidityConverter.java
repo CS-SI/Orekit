@@ -20,8 +20,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.models.earth.troposphere.TroposphericModelUtils;
-import org.orekit.models.earth.weather.water.CIPM2007;
 import org.orekit.models.earth.weather.water.WaterVaporPressureProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;

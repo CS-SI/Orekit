@@ -45,7 +45,7 @@ public class TLEPVTest {
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(1.0e-6, 60.0, 0.001);
+                        context.createBuilder(0.001);
 
         // create perfect range measurements
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();

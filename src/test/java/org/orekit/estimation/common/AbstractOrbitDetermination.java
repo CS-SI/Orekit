@@ -1579,23 +1579,6 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                 if (stationModelEstimated[i] && mappingModel != null) {
                     // Estimated tropospheric model
 
-                    // Compute pressure and temperature for estimated tropospheric model
-                    final double pressure;
-                    final double temperature;
-                    if (stationWeatherEstimated[i]) {
-                        // Empirical models to compute the pressure and the temperature
-                        PressureTemperature weather = gpt.getWeatherParameters(station.getBaseFrame().getPoint(),
-                                                                               parser.getDate(ParameterKey.ORBIT_DATE,
-                                                                                              TimeScalesFactory.getUTC()));
-                        temperature = weather.getTemperature();
-                        pressure    = weather.getPressure();
-
-                    } else {
-                        // Standard atmosphere model : temperature: 18 degree Celsius and pressure: 1013.25 mbar
-                        temperature = 273.15 + 18.0;
-                        pressure    = 1013.25;
-                    }
-
                     if (useTimeSpanModel) {
                         // Initial model used to initialize the time span tropospheric model
                         final EstimatedModel initialModel = new EstimatedModel(new ModifiedSaastamoinenModel(pth0Provider),

@@ -169,7 +169,7 @@ class AngularRaDecTest {
             Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
 
-            final double smallest = FastMath.ulp((double) 1.0);
+            final double smallest = FastMath.ulp(1.0);
 
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {

@@ -60,22 +60,26 @@ public class ITURP834PathDelayTest extends AbstractPathDelayTest<ITURP834PathDel
                     2.07738, 0.05483, 3.36742, 0.088969, 3.456389);
     }
 
+    @Test
     @Override
     public void testFixedHeight() {
         doTestFixedHeight(new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()));
     }
 
+    @Test
     @Override
     public void testFieldFixedHeight() {
         doTestFieldFixedHeight(Binary64Field.getInstance(),
                                new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()));
     }
 
+    @Test
     @Override
     public void testFixedElevation() {
         doTestFixedElevation(new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()));
     }
 
+    @Test
     @Override
     public void testFieldFixedElevation() {
         doTestFieldFixedElevation(Binary64Field.getInstance(),
@@ -96,7 +100,7 @@ public class ITURP834PathDelayTest extends AbstractPathDelayTest<ITURP834PathDel
     }
 
     @Test
-    public void testVsVienna3WithModifiedSaastamoinenAndGPT3() throws IOException, URISyntaxException {
+    public void testVsVienna3WithModifiedSaastamoinenAndGPT3() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         doTestVsOtherModel(new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(0.00127683, 0.00060955)),
                                            new ConstantAzimuthalGradientProvider(null),
