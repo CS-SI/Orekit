@@ -482,10 +482,12 @@ public class KnockeRediffusedForceModel implements ForceModel {
         final double solarFlux = computeSolarFlux(sunPosition);
 
         // Get satellite viewing angle as seen from current elementary area
-        final double alpha = Vector3D.angle(elementCenter, satellitePosition);
+        final double centerNorm = elementCenter.getNorm();
+        final double cosAlpha   = Vector3D.dotProduct(elementCenter, satellitePosition) /
+                                  (centerNorm * satellitePosition.getNorm());
 
         // Check that satellite sees the current area
-        if (FastMath.abs(alpha) < MathUtils.SEMI_PI) {
+        if (cosAlpha > 0) {
 
             // Get current elementary area center latitude
             final double currentLatitude = elementCenter.getDelta();
@@ -498,7 +500,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
 
             // Check if elementary area is in daylight
             final double cosSunAngle = Vector3D.dotProduct(elementCenter, sunPosition) /
-                                       (elementCenter.getNorm() * sunPosition.getNorm());
+                                       (centerNorm * sunPosition.getNorm());
 
             if (cosSunAngle > 0) {
                 // Elementary area is in daylight, compute albedo value
@@ -513,7 +515,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
             final double rNorm = r.getNorm();
 
             // Compute attenuated projected elementary area vector
-            final Vector3D projectedAreaVector = r.scalarMultiply(elementArea * FastMath.cos(alpha) /
+            final Vector3D projectedAreaVector = r.scalarMultiply(elementArea * cosAlpha /
                                                                  (FastMath.PI * rNorm * rNorm * rNorm));
 
             // Compute elementary radiation flux from current elementary area
@@ -554,10 +556,12 @@ public class KnockeRediffusedForceModel implements ForceModel {
         final T solarFlux = computeSolarFlux(sunPosition);
 
         // Get satellite viewing angle as seen from current elementary area
-        final T alpha = FieldVector3D.angle(elementCenter, satellitePosition);
+        final T centerNorm = elementCenter.getNorm();
+        final T cosAlpha   = FieldVector3D.dotProduct(elementCenter, satellitePosition).
+                             divide(centerNorm.multiply(satellitePosition.getNorm()));
 
         // Check that satellite sees the current area
-        if (FastMath.abs(alpha).getReal() < MathUtils.SEMI_PI) {
+        if (cosAlpha.getReal() > 0) {
 
             // Get current elementary area center latitude
             final T currentLatitude = elementCenter.getDelta();
@@ -570,7 +574,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
 
             // Check if elementary area is in daylight
             final T cosSunAngle = FieldVector3D.dotProduct(elementCenter, sunPosition).
-                                  divide(elementCenter.getNorm().multiply(sunPosition.getNorm()));
+                                  divide(centerNorm.multiply(sunPosition.getNorm()));
 
             if (cosSunAngle.getReal() > 0) {
                 // Elementary area is in daylight, compute albedo value
@@ -586,8 +590,8 @@ public class KnockeRediffusedForceModel implements ForceModel {
             final T rNorm = r.getNorm();
 
             // Compute attenuated projected elementary area vector
-            final FieldVector3D<T> projectedAreaVector = r.scalarMultiply(elementArea.multiply(FastMath.cos(alpha)).divide(
-                                                                          rNorm.square().multiply(rNorm).multiply(zero.getPi())));
+            final FieldVector3D<T> projectedAreaVector = r.scalarMultiply(elementArea.multiply(cosAlpha).
+                                                                          divide(rNorm.square().multiply(rNorm).multiply(zero.getPi())));
 
             // Compute elementary radiation flux from current elementary area
             return projectedAreaVector.scalarMultiply(albedoAndIR.divide(Constants.SPEED_OF_LIGHT));
