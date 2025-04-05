@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="luc" type="add" issue="1696">
+            Improved Knocke Earth Albedo and IR emission force model efficiency.
+        </action>
         <action dev="luc" type="add" issue="1695">
             Allowed retrieval of Rinex observations bundled by dates.
         </action>
