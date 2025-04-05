@@ -75,7 +75,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
     void testJacobianVsFiniteDifferences() {
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 3, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         double i     = FastMath.toRadians(98.7);
@@ -135,7 +135,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         {
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 3, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         double i     = FastMath.toRadians(98.7);
@@ -346,7 +346,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         final Frame frame = FramesFactory.getTEME();
 
         final KeplerianOrbit keplerian = new KeplerianOrbit(a, e, i, pa, raan, nu, PositionAngleType.TRUE, frame, date0, Constants.IERS2010_EARTH_MU);
-        final SpacecraftState initState = new SpacecraftState(keplerian, mass);
+        final SpacecraftState initState = new SpacecraftState(keplerian).withMass(mass);
 
         // Celestial objects
 
@@ -384,7 +384,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
 
         final SpacecraftState finalState = propagator.propagate(date0.shiftedBy(duration));
 
-        Assertions.assertTrue(finalState.getDate().equals(date0.shiftedBy(duration)));
+        Assertions.assertEquals(date0.shiftedBy(duration), finalState.getDate());
     }
 
     /** Knocke model specialized step handler. */

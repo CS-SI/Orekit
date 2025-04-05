@@ -198,6 +198,12 @@ public class KnockeRediffusedForceModel implements ForceModel {
             // Get first elementary crown sector center
             final Vector3D firstCrownSectorCenter = eastRotation.applyTo(projectedToGround);
 
+            // Compute current elementary crown sector area, it results of the integration of an elementary crown sector
+            // over the angular resolution
+            final double sectorArea = equatorialRadius * equatorialRadius *
+                                      2.0 * angularResolution * FastMath.sin(0.5 * angularResolution) *
+                                      FastMath.sin(eastAxisOffset);
+
             // Browse the entire crown
             for (double radialAxisOffset = 0.5 * angularResolution;
                  radialAxisOffset < MathUtils.TWO_PI;
@@ -208,11 +214,6 @@ public class KnockeRediffusedForceModel implements ForceModel {
 
                 // Get current elementary crown sector center
                 final Vector3D currentCenter = radialRotation.applyTo(firstCrownSectorCenter);
-
-                // Compute current elementary crown sector area, it results of the integration of an elementary crown sector
-                // over the angular resolution
-                final double sectorArea = equatorialRadius * equatorialRadius *
-                                          2.0 * angularResolution * FastMath.sin(0.5 * angularResolution) * FastMath.sin(eastAxisOffset);
 
                 // Add current sector contribution to total rediffused flux
                 rediffusedFlux = rediffusedFlux.add(computeElementaryFlux(s, currentCenter, sunPosition, sectorArea));
@@ -268,6 +269,12 @@ public class KnockeRediffusedForceModel implements ForceModel {
             // Get first elementary crown sector center
             final FieldVector3D<T> firstCrownSectorCenter = eastRotation.applyTo(projectedToGround);
 
+            // Compute current elementary crown sector area, it results of the integration of an elementary crown sector
+            // over the angular resolution
+            final T sectorArea = zero.newInstance(equatorialRadius * equatorialRadius *
+                                                  2.0 * angularResolution * FastMath.sin(0.5 * angularResolution) *
+                                                  FastMath.sin(eastAxisOffset));
+
             // Browse the entire crown
             for (double radialAxisOffset = 0.5 * angularResolution;
                  radialAxisOffset < MathUtils.TWO_PI;
@@ -280,11 +287,6 @@ public class KnockeRediffusedForceModel implements ForceModel {
 
                 // Get current elementary crown sector center
                 final FieldVector3D<T> currentCenter = radialRotation.applyTo(firstCrownSectorCenter);
-
-                // Compute current elementary crown sector area, it results of the integration of an elementary crown sector
-                // over the angular resolution
-                final T sectorArea = zero.newInstance(equatorialRadius * equatorialRadius *
-                        2.0 * angularResolution * FastMath.sin(0.5 * angularResolution) * FastMath.sin(eastAxisOffset));
 
                 // Add current sector contribution to total rediffused flux
                 rediffusedFlux = rediffusedFlux.add(computeElementaryFlux(s, currentCenter, sunPosition, sectorArea));
@@ -476,9 +478,6 @@ public class KnockeRediffusedForceModel implements ForceModel {
         // Get current date
         final AbsoluteDate date = state.getDate();
 
-        // Get frame
-        final Frame frame = state.getFrame();
-
         // Get solar flux impacting Earth
         final double solarFlux = computeSolarFlux(sunPosition);
 
@@ -497,23 +496,23 @@ public class KnockeRediffusedForceModel implements ForceModel {
             // Initialize albedo
             double a = 0.0;
 
-            // Check if elementary area is in day light
-            final double sunAngle = Vector3D.angle(elementCenter, sunPosition);
+            // Check if elementary area is in daylight
+            final double cosSunAngle = Vector3D.dotProduct(elementCenter, sunPosition) /
+                                       (elementCenter.getNorm() * sunPosition.getNorm());
 
-            if (FastMath.abs(sunAngle) < MathUtils.SEMI_PI) {
-                // Elementary area is in day light, compute albedo value
+            if (cosSunAngle > 0) {
+                // Elementary area is in daylight, compute albedo value
                 a = computeAlbedo(date, currentLatitude);
             }
 
             // Compute elementary area contribution to rediffused flux
-            final double albedoAndIR = a * solarFlux * FastMath.cos(sunAngle) +
-                                       e * solarFlux * 0.25;
+            final double albedoAndIR = a * solarFlux * cosSunAngle + e * solarFlux * 0.25;
 
             // Compute elementary area - satellite vector and distance
             final Vector3D r = satellitePosition.subtract(elementCenter);
             final double rNorm = r.getNorm();
 
-            // Compute attenuated projected elemetary area vector
+            // Compute attenuated projected elementary area vector
             final Vector3D projectedAreaVector = r.scalarMultiply(elementArea * FastMath.cos(alpha) /
                                                                  (FastMath.PI * rNorm * rNorm * rNorm));
 
@@ -548,9 +547,6 @@ public class KnockeRediffusedForceModel implements ForceModel {
         // Get current date
         final FieldAbsoluteDate<T> date = state.getDate();
 
-        // Get frame
-        final Frame frame = state.getFrame();
-
         // Get zero
         final T zero = date.getField().getZero();
 
@@ -572,23 +568,24 @@ public class KnockeRediffusedForceModel implements ForceModel {
             // Initialize albedo
             T a = zero;
 
-            // Check if elementary area is in day light
-            final T sunAngle = FieldVector3D.angle(elementCenter, sunPosition);
+            // Check if elementary area is in daylight
+            final T cosSunAngle = FieldVector3D.dotProduct(elementCenter, sunPosition).
+                                  divide(elementCenter.getNorm().multiply(sunPosition.getNorm()));
 
-            if (FastMath.abs(sunAngle).getReal() < MathUtils.SEMI_PI) {
-                // Elementary area is in day light, compute albedo value
+            if (cosSunAngle.getReal() > 0) {
+                // Elementary area is in daylight, compute albedo value
                 a = computeAlbedo(date, currentLatitude);
             }
 
             // Compute elementary area contribution to rediffused flux
-            final T albedoAndIR = a.multiply(solarFlux).multiply(FastMath.cos(sunAngle)).add(
-                                  e.multiply(solarFlux).multiply(0.25));
+            final T albedoAndIR = a.multiply(solarFlux).multiply(cosSunAngle).
+                                  add(e.multiply(solarFlux).multiply(0.25));
 
             // Compute elementary area - satellite vector and distance
             final FieldVector3D<T> r = satellitePosition.subtract(elementCenter);
             final T rNorm = r.getNorm();
 
-            // Compute attenuated projected elemetary area vector
+            // Compute attenuated projected elementary area vector
             final FieldVector3D<T> projectedAreaVector = r.scalarMultiply(elementArea.multiply(FastMath.cos(alpha)).divide(
                                                                           rNorm.square().multiply(rNorm).multiply(zero.getPi())));
 
