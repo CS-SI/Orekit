@@ -32,13 +32,12 @@ public class AskneNordiusModelTest extends AbstractPathDelayTest<AskneNordiusMod
 
     @Override
     protected AskneNordiusModel buildTroposphericModel() {
-        return new AskneNordiusModel(new GlobalMappingFunctionModel());
+        return new AskneNordiusModel(new GlobalMappingFunctionModel(), getGPT());
     }
 
     @Test
     @Override
     public void testDelay() {
-        resetWeatherProvider(getGPT());
         doTestDelay(defaultDate, defaultPoint, defaultTrackingCoordinates,
                     2.0938, 6.80095, 3.39416, 11.03650, 14.43066);
     }
@@ -46,7 +45,6 @@ public class AskneNordiusModelTest extends AbstractPathDelayTest<AskneNordiusMod
     @Test
     @Override
     public void testFieldDelay() {
-        resetWeatherProvider(getGPT());
         doTestDelay(Binary64Field.getInstance(),
                     defaultDate, defaultPoint, defaultTrackingCoordinates,
                     2.0938, 6.80095, 3.39416, 11.03650, 14.43066);
@@ -55,28 +53,24 @@ public class AskneNordiusModelTest extends AbstractPathDelayTest<AskneNordiusMod
     @Test
     @Override
     public void testFixedElevation() {
-        resetWeatherProvider(getGPT());
         super.testFixedElevation();
     }
 
     @Test
     @Override
     public void testFieldFixedElevation() {
-        resetWeatherProvider(getGPT());
         super.testFieldFixedElevation();
     }
 
     @Test
     @Override
     public void testFixedHeight() {
-        resetWeatherProvider(getGPT());
         super.testFixedHeight();
     }
 
     @Test
     @Override
     public void testFieldFixedHeight() {
-        resetWeatherProvider(getGPT());
         super.testFieldFixedHeight();
     }
 

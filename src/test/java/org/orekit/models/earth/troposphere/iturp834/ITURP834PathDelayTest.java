@@ -40,13 +40,13 @@ import java.net.URL;
 public class ITURP834PathDelayTest extends AbstractPathDelayTest<ITURP834PathDelay> {
 
     protected ITURP834PathDelay buildTroposphericModel() {
-        return new ITURP834PathDelay(TimeScalesFactory.getUTC());
+        return new ITURP834PathDelay(new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()),
+                                     TimeScalesFactory.getUTC());
     }
 
     @Test
     @Override
     public void testDelay() {
-        resetWeatherProvider(new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()));
         doTestDelay(defaultDate, defaultPoint, defaultTrackingCoordinates,
                     2.07738, 0.05483, 3.36742, 0.088969, 3.456389);
     }
@@ -54,7 +54,6 @@ public class ITURP834PathDelayTest extends AbstractPathDelayTest<ITURP834PathDel
     @Test
     @Override
     public void testFieldDelay() {
-        resetWeatherProvider(new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()));
         doTestDelay(Binary64Field.getInstance(),
                     defaultDate, defaultPoint, defaultTrackingCoordinates,
                     2.07738, 0.05483, 3.36742, 0.088969, 3.456389);
@@ -63,28 +62,24 @@ public class ITURP834PathDelayTest extends AbstractPathDelayTest<ITURP834PathDel
     @Test
     @Override
     public void testFixedElevation() {
-        resetWeatherProvider(new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()));
         super.testFixedElevation();
     }
 
     @Test
     @Override
     public void testFieldFixedElevation() {
-        resetWeatherProvider(new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()));
         super.testFieldFixedElevation();
     }
 
     @Test
     @Override
     public void testFixedHeight() {
-        resetWeatherProvider(new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()));
         super.testFixedHeight();
     }
 
     @Test
     @Override
     public void testFieldFixedHeight() {
-        resetWeatherProvider(new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()));
         super.testFieldFixedHeight();
     }
 

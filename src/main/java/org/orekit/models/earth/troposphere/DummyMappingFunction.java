@@ -20,8 +20,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
-import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTrackingCoordinates;
@@ -47,7 +45,6 @@ public class DummyMappingFunction implements TroposphereMappingFunction {
     /** {@inheritDoc} */
     @Override
     public double[] mappingFactors(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
-                                   final PressureTemperatureHumidity weather,
                                    final AbsoluteDate date) {
         return new double[] {
             1.0, 1.0
@@ -58,7 +55,6 @@ public class DummyMappingFunction implements TroposphereMappingFunction {
     @Override
     public <T extends CalculusFieldElement<T>> T[] mappingFactors(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                                   final FieldGeodeticPoint<T> point,
-                                                                  final FieldPressureTemperatureHumidity<T> weather,
                                                                   final FieldAbsoluteDate<T> date) {
         final T[] mapping = MathArrays.buildArray(date.getField(), 2);
         mapping[0] = date.getField().getOne();

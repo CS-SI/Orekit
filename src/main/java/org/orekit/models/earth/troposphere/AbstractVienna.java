@@ -25,8 +25,6 @@ import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.SinCos;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
-import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -78,15 +76,13 @@ public abstract class AbstractVienna implements TroposphericModel, TroposphereMa
     @Override
     public TroposphericDelay pathDelay(final TrackingCoordinates trackingCoordinates,
                                        final GeodeticPoint point,
-                                       final PressureTemperatureHumidity weather,
                                        final double[] parameters, final AbsoluteDate date) {
         // zenith delay
         final TroposphericDelay delays =
-                        zenithDelayProvider.pathDelay(trackingCoordinates, point, weather, parameters, date);
+                        zenithDelayProvider.pathDelay(trackingCoordinates, point, parameters, date);
 
         // mapping function
-        final double[] mappingFunction =
-                        mappingFactors(trackingCoordinates, point, weather, date);
+        final double[] mappingFunction = mappingFactors(trackingCoordinates, point, date);
 
         // horizontal gradient
         final AzimuthalGradientCoefficients agc = gProvider.getGradientCoefficients(point, date);
@@ -120,15 +116,13 @@ public abstract class AbstractVienna implements TroposphericModel, TroposphereMa
     @Override
     public <T extends CalculusFieldElement<T>> FieldTroposphericDelay<T> pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                                                    final FieldGeodeticPoint<T> point,
-                                                                                   final FieldPressureTemperatureHumidity<T> weather,
                                                                                    final T[] parameters, final FieldAbsoluteDate<T> date) {
         // zenith delay
         final FieldTroposphericDelay<T> delays =
-                        zenithDelayProvider.pathDelay(trackingCoordinates, point, weather, parameters, date);
+                        zenithDelayProvider.pathDelay(trackingCoordinates, point, parameters, date);
 
         // mapping function
-        final T[] mappingFunction =
-                        mappingFactors(trackingCoordinates, point, weather, date);
+        final T[] mappingFunction = mappingFactors(trackingCoordinates, point, date);
 
         // horizontal gradient
         final FieldAzimuthalGradientCoefficients<T> agc = gProvider.getGradientCoefficients(point, date);

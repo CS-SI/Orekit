@@ -62,7 +62,6 @@ public class ViennaThreePathDelayTest extends AbstractPathDelayTest<ViennaThree>
                                                         TimeScalesFactory.getUTC());
         final TroposphericDelay delay = model.pathDelay(new TrackingCoordinates(FastMath.toRadians(30.0), FastMath.toRadians(10.0), 0.0),
                                                         point,
-                                                        TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                         model.getParameters(date), date);
         Assertions.assertEquals( 2.1993,                      delay.getZh(),    1.0e-4);
         Assertions.assertEquals( 0.069,                       delay.getZw(),    1.0e-4);

@@ -148,12 +148,11 @@ public class MendesPavlisModel implements TroposphericModel, TroposphereMappingF
     @Override
     public TroposphericDelay pathDelay(final TrackingCoordinates trackingCoordinates,
                                        final GeodeticPoint point,
-                                       final PressureTemperatureHumidity weather,
                                        final double[] parameters, final AbsoluteDate date) {
         // Zenith delay
         final double[] zenithDelay = computeZenithDelay(point, date);
         // Mapping function
-        final double[] mappingFunction = mappingFactors(trackingCoordinates, point, weather, date);
+        final double[] mappingFunction = mappingFactors(trackingCoordinates, point, date);
         // Tropospheric path delay
         return new TroposphericDelay(zenithDelay[0],
                                      zenithDelay[1],
@@ -165,12 +164,11 @@ public class MendesPavlisModel implements TroposphericModel, TroposphereMappingF
     @Override
     public <T extends CalculusFieldElement<T>> FieldTroposphericDelay<T> pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                                                    final FieldGeodeticPoint<T> point,
-                                                                                   final FieldPressureTemperatureHumidity<T> weather,
                                                                                    final T[] parameters, final FieldAbsoluteDate<T> date) {
         // Zenith delay
         final T[] zenithDelay = computeZenithDelay(point, date);
         // Mapping function
-        final T[] mappingFunction = mappingFactors(trackingCoordinates, point, weather, date);
+        final T[] mappingFunction = mappingFactors(trackingCoordinates, point, date);
         // Tropospheric path delay
         return new FieldTroposphericDelay<>(zenithDelay[0],
                                             zenithDelay[1],
@@ -261,7 +259,6 @@ public class MendesPavlisModel implements TroposphericModel, TroposphereMappingF
     @Override
     public double[] mappingFactors(final TrackingCoordinates trackingCoordinates,
                                    final GeodeticPoint point,
-                                   final PressureTemperatureHumidity weather,
                                    final AbsoluteDate date) {
         final double sinE = FastMath.sin(trackingCoordinates.getElevation());
 
@@ -308,7 +305,6 @@ public class MendesPavlisModel implements TroposphericModel, TroposphereMappingF
     @Override
     public <T extends CalculusFieldElement<T>> T[] mappingFactors(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                                   final FieldGeodeticPoint<T> point,
-                                                                  final FieldPressureTemperatureHumidity<T> weather,
                                                                   final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
 

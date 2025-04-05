@@ -40,12 +40,12 @@ public interface TroposphereMappingFunction {
      * </ul>
      * @param trackingCoordinates tracking coordinates of the satellite
      * @param point station location
-     * @param weather weather parameters
      * @param date current date
      * @return a two components array containing the hydrostatic and wet mapping functions.
+     * @since 13.0
      */
     double[] mappingFactors(TrackingCoordinates trackingCoordinates, GeodeticPoint point,
-                            PressureTemperatureHumidity weather, AbsoluteDate date);
+                            AbsoluteDate date);
 
     /** This method allows the computation of the hydrostatic and
      * wet mapping functions. The resulting element is an array having the following form:
@@ -55,14 +55,13 @@ public interface TroposphereMappingFunction {
      * </ul>
      * @param trackingCoordinates tracking coordinates of the satellite
      * @param point station location
-     * @param weather weather parameters
      * @param date current date
      * @param <T> type of the elements
      * @return a two components array containing the hydrostatic and wet mapping functions.
+     * @since 13.0
      */
     <T extends CalculusFieldElement<T>> T[] mappingFactors(FieldTrackingCoordinates<T> trackingCoordinates,
                                                            FieldGeodeticPoint<T> point,
-                                                           FieldPressureTemperatureHumidity<T> weather,
                                                            FieldAbsoluteDate<T> date);
 
 }

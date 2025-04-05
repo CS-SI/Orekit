@@ -109,7 +109,7 @@ public class MendesPavlisModelTest extends AbstractPathDelayTest<MendesPavlisMod
             new GlobalPressureTemperature3(new DataSource(url.toURI()), utc);
         final double lambda = 0.532;
         final Unit lambdaUnits = TroposphericModelUtils.MICRO_M;
-        doTestVsOtherModel(new MariniMurray(lambda, lambdaUnits), provider,
+        doTestVsOtherModel(new MariniMurray(lambda, lambdaUnits, provider), provider,
                            new MendesPavlisModel(provider, lambda, lambdaUnits), provider,
                            1.2e-3, 6.7e-5, 0.18, 3.3e-4);
     }

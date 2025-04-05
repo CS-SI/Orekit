@@ -28,8 +28,6 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.models.earth.troposphere.TroposphereMappingFunction;
-import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
-import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -281,7 +279,7 @@ public class ITURP834MappingFunction implements TroposphereMappingFunction {
 
     @Override
     public double[] mappingFactors(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
-                                   final PressureTemperatureHumidity weather, final AbsoluteDate date) {
+                                   final AbsoluteDate date) {
 
         final double doy = date.getDayOfYear(utc);
 
@@ -326,7 +324,6 @@ public class ITURP834MappingFunction implements TroposphereMappingFunction {
     @Override
     public <T extends CalculusFieldElement<T>> T[] mappingFactors(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                                   final FieldGeodeticPoint<T> point,
-                                                                  final FieldPressureTemperatureHumidity<T> weather,
                                                                   final FieldAbsoluteDate<T> date) {
 
         final T doy = date.getDayOfYear(utc);

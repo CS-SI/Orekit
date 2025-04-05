@@ -94,7 +94,6 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
             // tropospheric delay in meters
             final double d1 = tropoModel.pathDelay(trackingCoordinates1,
                                                    station.getOffsetGeodeticPoint(state.getDate()),
-                                                   station.getPressureTemperatureHumidity(state.getDate()),
                                                    tropoModel.getParameters(state.getDate()), state.getDate()).
                               getDelay();
 
@@ -111,7 +110,6 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
             // tropospheric delay dt after
             final double d2 = tropoModel.pathDelay(trackingCoordinates2,
                                                    station.getOffsetGeodeticPoint(state.getDate()),
-                                                   station.getPressureTemperatureHumidity(state.getDate()),
                                                    tropoModel.getParameters(state2.getDate()), state2.getDate()).
                               getDelay();
 
@@ -151,7 +149,6 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
             // tropospheric delay in meters
             final T d1 = tropoModel.pathDelay(trackingCoordinates1,
                                               station.getOffsetGeodeticPoint(state.getDate()),
-                                              station.getPressureTemperatureHumidity(state.getDate()),
                                               parameters, state.getDate()).
                          getDelay();
 
@@ -169,7 +166,6 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
             // tropospheric delay dt after
             final T d2 = tropoModel.pathDelay(trackingCoordinates2,
                                               station.getOffsetGeodeticPoint(state.getDate()),
-                                              station.getPressureTemperatureHumidity(state.getDate()),
                                               parameters, state2.getDate()).
                          getDelay();
 

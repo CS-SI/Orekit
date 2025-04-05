@@ -24,6 +24,7 @@ import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
+import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
@@ -70,22 +71,32 @@ public class AskneNordiusModel implements TroposphericModel {
     /** Mapping function. */
     private final TroposphereMappingFunction mappingFunction;
 
+    /** Provider for pressure, temperature and humidity.
+     * @since 13.0
+     */
+    private final PressureTemperatureHumidityProvider pthProvider;
+
     /** Create a new Askne Nordius model.
      * @param mappingFunction mapping function
+     * @param pthProvider provider for pressure, temperature and humidity
      */
-    public AskneNordiusModel(final TroposphereMappingFunction mappingFunction) {
+    public AskneNordiusModel(final TroposphereMappingFunction mappingFunction,
+                             final PressureTemperatureHumidityProvider pthProvider) {
         this.mappingFunction = mappingFunction;
+        this.pthProvider     = pthProvider;
     }
 
     /** {@inheritDoc} */
     @Override
     public TroposphericDelay pathDelay(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
-                                       final PressureTemperatureHumidity weather,
                                        final double[] parameters, final AbsoluteDate date) {
 
-        final double[] mf = mappingFunction.mappingFactors(trackingCoordinates, point, weather, date);
+        final double[] mf = mappingFunction.mappingFactors(trackingCoordinates, point, date);
 
-        // calculate the path delay
+        // compute weather parameters
+        final PressureTemperatureHumidity weather = pthProvider.getWeatherParameters(point, date);
+
+        // compute the path delay
         final double zh     = L0 * weather.getPressure();
         final double zw     = FACTOR * (K_PRIME_2 + K_3 / weather.getTm()) *
                               RD * weather.getWaterVaporPressure() /
@@ -100,12 +111,14 @@ public class AskneNordiusModel implements TroposphericModel {
     @Override
     public <T extends CalculusFieldElement<T>> FieldTroposphericDelay<T> pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                                                    final FieldGeodeticPoint<T> point,
-                                                                                   final FieldPressureTemperatureHumidity<T> weather,
                                                                                    final T[] parameters, final FieldAbsoluteDate<T> date) {
 
-        final T[] mf = mappingFunction.mappingFactors(trackingCoordinates, point, weather, date);
+        final T[] mf = mappingFunction.mappingFactors(trackingCoordinates, point, date);
 
-        // calculate the path delay in m
+        // compute weather parameters
+        final FieldPressureTemperatureHumidity<T> weather = pthProvider.getWeatherParameters(point, date);
+
+        // compute the path delay
         final T zh     = weather.getPressure().multiply(L0);
         final T zw     = weather.getTm().reciprocal().multiply(K_3).add(K_PRIME_2).
                          multiply(weather.getWaterVaporPressure().multiply(RD)).

@@ -27,7 +27,8 @@ public class MariniMurrayTest extends AbstractPathDelayTest<MariniMurray> {
 
     protected MariniMurray buildTroposphericModel() {
         // ruby laser with wavelength 694.3 nm
-        return new MariniMurray(694.3, TroposphericModelUtils.NANO_M);
+        return new MariniMurray(694.3, TroposphericModelUtils.NANO_M,
+                                TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
     }
 
     @Test
