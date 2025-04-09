@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.SatelliteSystem;
@@ -87,7 +88,8 @@ public class Rtcm1019Test {
         ArrayList<Integer> messages = new ArrayList<>();
         messages.add(1019);
 
-        final Rtcm1019             rtcm1019      = (Rtcm1019) new RtcmMessagesParser(messages).parse(message, false);
+        final Rtcm1019             rtcm1019      = (Rtcm1019) new RtcmMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+                                                   parse(message, false);
         final Rtcm1019Data         ephemerisData = rtcm1019.getEphemerisData();
         final GPSLegacyNavigationMessage gpsMessage    = ephemerisData.getGpsNavigationMessage();
 
@@ -180,7 +182,8 @@ public class Rtcm1019Test {
        ArrayList<Integer> messages = new ArrayList<>();
        messages.add(9999999);
 
-       final Rtcm1019 rtcm1019 = (Rtcm1019) new RtcmMessagesParser(messages).parse(message, false);
+       final Rtcm1019 rtcm1019 = (Rtcm1019) new RtcmMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+                                 parse(message, false);
 
        Assertions.assertNull(rtcm1019);
     }
@@ -197,7 +200,8 @@ public class Rtcm1019Test {
         try {
             final byte[] array = new byte[0];
             final EncodedMessage emptyMessage = new ByteArrayEncodedMessage(array);
-            new RtcmMessagesParser(new ArrayList<>()).parse(emptyMessage, false);
+            new RtcmMessagesParser(new ArrayList<>(), DataContext.getDefault().getTimeScales()).
+                parse(emptyMessage, false);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.END_OF_ENCODED_MESSAGE, oe.getSpecifier());

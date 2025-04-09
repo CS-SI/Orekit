@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1020;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1020Data;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
@@ -90,7 +91,8 @@ public class Rtcm1020Test {
         ArrayList<Integer> messages = new ArrayList<>();
         messages.add(1020);
 
-        final Rtcm1020                 rtcm1020       = (Rtcm1020) new RtcmMessagesParser(messages).parse(message, false);
+        final Rtcm1020                 rtcm1020       = (Rtcm1020) new RtcmMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+                                                        parse(message, false);
         final Rtcm1020Data             ephemerisData  = rtcm1020.getEphemerisData();
         final GLONASSNavigationMessage glonassMessage = ephemerisData.getGlonassNavigationMessage();
 
@@ -180,7 +182,8 @@ public class Rtcm1020Test {
        ArrayList<Integer> messages = new ArrayList<>();
        messages.add(9999999);
 
-       final Rtcm1020 rtcm1020 = (Rtcm1020) new RtcmMessagesParser(messages).parse(message, false);
+       final Rtcm1020 rtcm1020 = (Rtcm1020) new RtcmMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+                                 parse(message, false);
 
        Assertions.assertNull(rtcm1020);
     }

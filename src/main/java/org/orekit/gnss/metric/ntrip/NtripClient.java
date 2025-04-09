@@ -48,6 +48,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.metric.messages.ParsedMessage;
+import org.orekit.time.TimeScales;
 
 /** Source table for ntrip streams retrieval.
  * <p>
@@ -141,6 +142,11 @@ public class NtripClient {
     /** Executor for stream monitoring tasks. */
     private ExecutorService executorService;
 
+    /** Known time scales.
+     * @since 13.0
+     */
+    private final TimeScales timeScales;
+
     /** Build a client for NTRIP.
      * <p>
      * The default configuration uses default timeout, default reconnection
@@ -148,9 +154,11 @@ public class NtripClient {
      * </p>
      * @param host caster host providing the source table
      * @param port port to use for connection
+     * @param timeScales known time scales
+     * @since 13.0
      * see {@link #DEFAULT_PORT}
      */
-    public NtripClient(final String host, final int port) {
+    public NtripClient(final String host, final int port, final TimeScales timeScales) {
         this.host         = host;
         this.port         = port;
         this.observers    = new ArrayList<>();
@@ -163,6 +171,7 @@ public class NtripClient {
         this.gga             = new AtomicReference<>(null);
         this.sourceTable     = null;
         this.executorService = null;
+        this.timeScales      = timeScales;
     }
 
     /** Get the caster host.
@@ -177,6 +186,14 @@ public class NtripClient {
      */
     public int getPort() {
         return port;
+    }
+
+    /** Get the known time scales.
+     * @return known time scales
+     * @since 13.0
+     */
+    public TimeScales getTimeScales() {
+        return timeScales;
     }
 
     /** Set timeout for connections and reads.
