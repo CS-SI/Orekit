@@ -20,7 +20,7 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="13.0" date="2025-04-13" description="Orekit 13.0 is a major new release.
+    <release version="13.0" date="2025-04-14" description="Orekit 13.0 is a major new release.
            It includes both new features, accuracy and performances improvements, and bug fixes.
            The main new features introduced in 13.0 are: revamp of tropospheric models, revamp
            of {Field}ImpulseManeuver, revamp of absolute dates with attoseconds precision,
@@ -38,7 +38,16 @@
            {Field}EventDetectionSettings, Walker constellation for star pattern, magnetic field
            loading from DataSource, removed orbit-related chained getters in (Field)SpacecraftState,
            a posteriori filtering feature for generated measurements, switched default
-           PositionAngleType in (Field)NumericalPropagator to ECCENTRIC.
+           PositionAngleType in (Field)NumericalPropagator to ECCENTRIC, improvement in the conversion
+           of osculating elements into mean elements for analytical theories: Brouwer-Lyddane,
+           Eckstein-Hechler, DSST, SGP4/SDP4 (i.e. forTLE), generalized ProfileThrustPropulsionModel,
+           all ForceModel and AttitudeProvider working with AbsolutePVCoordinates, alternative to
+           AttitudesSequence with instantaneous switches, AttitudeProvider now inheriting from
+           EventDetectorsProvider and ParameterDriverProvider, {Field}Orbit always containing rates
+           (possibly Keplerian), ThirdBodyAttraction can be defined without CelestialBody,
+           AdaptableInterval now taking boolean argument on direction of propagation,
+           native AdaptableInterval for date detection, changed production branch name in the git
+           repository from master to main.
            See the list below for a full description of the changes.">
         <action dev="luc" type="add" issue="1696">
             Improved Knocke Earth Albedo and IR emission force model
