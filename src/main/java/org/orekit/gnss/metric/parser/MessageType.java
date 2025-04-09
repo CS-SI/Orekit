@@ -35,6 +35,6 @@ public interface MessageType {
      * @param timeScales known time scales
      * @return parsed message
      */
-    ParsedMessage parse(EncodedMessage encodedMessage, int messageNumber, final TimeScales timeScales);
+    ParsedMessage parse(EncodedMessage encodedMessage, int messageNumber, TimeScales timeScales);
 
 }
