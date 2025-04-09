@@ -21,6 +21,7 @@ import java.util.List;
 import org.orekit.gnss.metric.parser.IgsSsrMessagesParser;
 import org.orekit.gnss.metric.parser.MessagesParser;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
+import org.orekit.time.TimeScales;
 
 /**
  * Enumerate for messages type.
@@ -34,8 +35,8 @@ public enum Type {
 
         /** {@inheritDoc} */
         @Override
-        public MessagesParser getParser(final List<Integer> messages) {
-            return new RtcmMessagesParser(messages);
+        public MessagesParser getParser(final List<Integer> messages, final TimeScales timeScales) {
+            return new RtcmMessagesParser(messages, timeScales);
         }
 
     },
@@ -45,8 +46,8 @@ public enum Type {
 
         /** {@inheritDoc} */
         @Override
-        public MessagesParser getParser(final List<Integer> messages) {
-            return new IgsSsrMessagesParser(messages);
+        public MessagesParser getParser(final List<Integer> messages, final TimeScales timeScales) {
+            return new IgsSsrMessagesParser(messages, timeScales);
         }
 
     };
@@ -54,8 +55,10 @@ public enum Type {
     /**
      * Get the message parser associated to the SSR type.
      * @param messages list of needed messages
+     * @param timeScales known time scales
      * @return a configured message parser
+     * @since 13.0
      */
-    public abstract MessagesParser getParser(List<Integer> messages);
+    public abstract MessagesParser getParser(List<Integer> messages, TimeScales timeScales);
 
 }

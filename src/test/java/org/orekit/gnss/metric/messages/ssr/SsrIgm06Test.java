@@ -18,6 +18,7 @@ package org.orekit.gnss.metric.messages.ssr;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.SatelliteSystem;
@@ -65,7 +66,8 @@ public class SsrIgm06Test {
         ArrayList<Integer> messages = new ArrayList<>();
         messages.add(126);
 
-        final SsrIgm06 igm06 = (SsrIgm06) new IgsSsrMessagesParser(messages).parse(message, false);
+        final SsrIgm06 igm06 = (SsrIgm06) new IgsSsrMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+                               parse(message, false);
 
         // Verify size
         Assertions.assertEquals(1,                            igm06.getData().size());
@@ -129,7 +131,8 @@ public class SsrIgm06Test {
         ArrayList<Integer> messages = new ArrayList<>();
         messages.add(66);
 
-        final SsrIgm06 igm06 = (SsrIgm06) new IgsSsrMessagesParser(messages).parse(message, false);
+        final SsrIgm06 igm06 = (SsrIgm06) new IgsSsrMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+                               parse(message, false);
 
         // Verify size
         Assertions.assertEquals(1,                            igm06.getData().size());
@@ -194,7 +197,8 @@ public class SsrIgm06Test {
        ArrayList<Integer> messages = new ArrayList<>();
        messages.add(9999999);
 
-       final SsrIgm06 igm06 = (SsrIgm06) new IgsSsrMessagesParser(messages).parse(message, false);
+       final SsrIgm06 igm06 = (SsrIgm06) new IgsSsrMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+                              parse(message, false);
 
        Assertions.assertNull(igm06);
     }
@@ -204,7 +208,8 @@ public class SsrIgm06Test {
         try {
             final byte[] array = new byte[0];
             final EncodedMessage emptyMessage = new ByteArrayEncodedMessage(array);
-            new IgsSsrMessagesParser(new ArrayList<Integer>()).parse(emptyMessage, false);
+            new IgsSsrMessagesParser(new ArrayList<>(), DataContext.getDefault().getTimeScales()).
+                parse(emptyMessage, false);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.END_OF_ENCODED_MESSAGE, oe.getSpecifier());

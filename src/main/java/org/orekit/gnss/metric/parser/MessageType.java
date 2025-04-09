@@ -17,6 +17,7 @@
 package org.orekit.gnss.metric.parser;
 
 import org.orekit.gnss.metric.messages.ParsedMessage;
+import org.orekit.time.TimeScales;
 
 /**
  * Interface for encoded message types.
@@ -26,11 +27,14 @@ import org.orekit.gnss.metric.messages.ParsedMessage;
  */
 public interface MessageType {
 
-    /** Parse an encoded message.
+    /**
+     * Parse an encoded message.
+     *
      * @param encodedMessage encoded message to parse
-     * @param messageNumber message number
+     * @param messageNumber  message number
+     * @param timeScales known time scales
      * @return parsed message
      */
-    ParsedMessage parse(EncodedMessage encodedMessage, int messageNumber);
+    ParsedMessage parse(EncodedMessage encodedMessage, int messageNumber, final TimeScales timeScales);
 
 }
