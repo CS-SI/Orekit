@@ -18,6 +18,7 @@ package org.orekit.models.earth.troposphere.iturp834;
 
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Test;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.models.earth.troposphere.AbstractPathDelayTest;
 import org.orekit.models.earth.troposphere.CanonicalSaastamoinenModel;
@@ -90,7 +91,8 @@ public class ITURP834PathDelayTest extends AbstractPathDelayTest<ITURP834PathDel
     public void testVsVienna1WithCanonicalSaastamoinenAndGPT2() throws IOException, URISyntaxException {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final URL url = ITURP834PathDelayTest.class.getClassLoader().getResource("gpt-grid/gpt2_5.grd");
-        final PressureTemperatureHumidityProvider gpt2 = new GlobalPressureTemperature2(new DataSource(url.toURI()));
+        final PressureTemperatureHumidityProvider gpt2 = new GlobalPressureTemperature2(new DataSource(url.toURI()),
+                                                                                        DataContext.getDefault().getTimeScales());
         doTestVsOtherModel(new ViennaOne(new ConstantViennaAProvider(new ViennaACoefficients(0.00127683, 0.00060955)),
                                          new ConstantAzimuthalGradientProvider(null),
                                          new CanonicalSaastamoinenModel(gpt2),
