@@ -16,6 +16,8 @@
  */
 package org.orekit.gnss.metric.parser;
 
+import org.orekit.time.TimeScales;
+
 import java.util.List;
 
 /** Parser for RTCM encoded messages.
@@ -28,9 +30,11 @@ public class RtcmMessagesParser extends MessagesParser {
     /**
      * Constructor.
      * @param messages list of needed messages
+     * @param timeScales known time scales
+     * @since 13.0
      */
-    public RtcmMessagesParser(final List<Integer> messages) {
-        super(messages);
+    public RtcmMessagesParser(final List<Integer> messages, final TimeScales timeScales) {
+        super(messages, timeScales);
     }
 
     /** {@inheritDoc} */

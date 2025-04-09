@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.data.DataContext;
 import org.orekit.gnss.metric.messages.rtcm.correction.Rtcm1057;
 import org.orekit.gnss.metric.messages.rtcm.correction.RtcmOrbitCorrectionData;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
@@ -66,7 +67,8 @@ public class Rtcm1057Test {
 
     @Test
     public void testPerfectValue() {
-        final Rtcm1057 rtcm1057 = (Rtcm1057) new RtcmMessagesParser(messages).parse(message, false);
+        final Rtcm1057 rtcm1057 = (Rtcm1057) new RtcmMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+                                  parse(message, false);
 
         // Verify size
         Assertions.assertEquals(1,                            rtcm1057.getData().size());

@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1044;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1044Data;
@@ -85,7 +86,8 @@ public class Rtcm1044Test {
         ArrayList<Integer> messages = new ArrayList<>();
         messages.add(1044);
 
-        final Rtcm1044              rtcm1044      = (Rtcm1044) new RtcmMessagesParser(messages).parse(message, false);
+        final Rtcm1044              rtcm1044      = (Rtcm1044) new RtcmMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+                                                    parse(message, false);
         final Rtcm1044Data          ephemerisData = rtcm1044.getEphemerisData();
         final QZSSLegacyNavigationMessage qzssMessage   = ephemerisData.getQzssNavigationMessage();
 
@@ -176,7 +178,8 @@ public class Rtcm1044Test {
        ArrayList<Integer> messages = new ArrayList<>();
        messages.add(9999999);
 
-       final Rtcm1044 rtcm1044 = (Rtcm1044) new RtcmMessagesParser(messages).parse(message, false);
+       final Rtcm1044 rtcm1044 = (Rtcm1044) new RtcmMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+                                 parse(message, false);
 
        Assertions.assertNull(rtcm1044);
     }

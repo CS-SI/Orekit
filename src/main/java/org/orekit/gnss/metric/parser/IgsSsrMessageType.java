@@ -55,6 +55,7 @@ import org.orekit.gnss.metric.messages.ssr.igm.SsrIgm07Header;
 import org.orekit.gnss.metric.messages.ssr.subtype.SsrIm201;
 import org.orekit.gnss.metric.messages.ssr.subtype.SsrIm201Data;
 import org.orekit.gnss.metric.messages.ssr.subtype.SsrIm201Header;
+import org.orekit.time.TimeScales;
 
 /** Enum containing the supported IGS SSR messages types.
  *
@@ -72,7 +73,9 @@ public enum IgsSsrMessageType implements MessageType {
 
         /** {@inheritDoc} */
         @Override
-        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber) {
+        public ParsedMessage parse(final EncodedMessage encodedMessage,
+                                   final int messageNumber,
+                                   final TimeScales timeScales) {
 
             // Satellite system
             final SatelliteSystem system = messageNumberToSatelliteSystem(messageNumber);
@@ -135,7 +138,8 @@ public enum IgsSsrMessageType implements MessageType {
 
         /** {@inheritDoc} */
         @Override
-        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber) {
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
+                                   final TimeScales timeScales) {
 
             // Satellite system
             final SatelliteSystem system = messageNumberToSatelliteSystem(messageNumber);
@@ -190,7 +194,8 @@ public enum IgsSsrMessageType implements MessageType {
 
         /** {@inheritDoc} */
         @Override
-        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber) {
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
+                                   final TimeScales timeScales) {
 
             // Satellite system
             final SatelliteSystem system = messageNumberToSatelliteSystem(messageNumber);
@@ -260,7 +265,8 @@ public enum IgsSsrMessageType implements MessageType {
 
         /** {@inheritDoc} */
         @Override
-        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber) {
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
+                                   final TimeScales timeScales) {
 
             // Satellite system
             final SatelliteSystem system = messageNumberToSatelliteSystem(messageNumber);
@@ -306,7 +312,8 @@ public enum IgsSsrMessageType implements MessageType {
 
         /** {@inheritDoc} */
         @Override
-        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber) {
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
+                                   final TimeScales timeScales) {
 
             // Satellite system
             final SatelliteSystem system = messageNumberToSatelliteSystem(messageNumber);
@@ -364,7 +371,8 @@ public enum IgsSsrMessageType implements MessageType {
 
         /** {@inheritDoc} */
         @Override
-        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber) {
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
+                                   final TimeScales timeScales) {
 
             // Satellite system
             final SatelliteSystem system = messageNumberToSatelliteSystem(messageNumber);
@@ -431,7 +439,8 @@ public enum IgsSsrMessageType implements MessageType {
 
         /** {@inheritDoc} */
         @Override
-        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber) {
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
+                                   final TimeScales timeScales) {
 
             // Satellite system
             final SatelliteSystem system = messageNumberToSatelliteSystem(messageNumber);
@@ -477,7 +486,8 @@ public enum IgsSsrMessageType implements MessageType {
 
         /** {@inheritDoc} */
         @Override
-        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber) {
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
+                                   final TimeScales timeScales) {
 
             // Header data
             final SsrIm201Header im201Header = new SsrIm201Header();
