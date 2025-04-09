@@ -36,7 +36,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.metric.messages.ParsedMessage;
 import org.orekit.gnss.metric.parser.AbstractEncodedMessage;
 import org.orekit.gnss.metric.parser.MessagesParser;
-import org.orekit.time.TimeScales;
 
 /** Monitor for retrieving streamed data from one mount point.
  * @author Luc Maisonobe
