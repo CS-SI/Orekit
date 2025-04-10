@@ -20,7 +20,35 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="13.0" date="TBD" description="TBD">
+    <release version="13.0" date="2025-04-14" description="Orekit 13.0 is a major new release.
+           It includes both new features, accuracy and performances improvements, and bug fixes.
+           The main new features introduced in 13.0 are: revamp of tropospheric models, revamp
+           of {Field}ImpulseManeuver, revamp of absolute dates with attoseconds precision,
+           revamp of numerical integration tolerances, many improvements in optimal control
+           (min time Hamiltonian, cost evaluation, differential information at control switches,
+           linear system tuning, logarithmic barrier for fuel cost, cost/penalty barrier for
+           indirect fuel optimization, scales in Newton updates), new Kalman/unscented smoother,
+           many improvements in GNSS (Rinex files, Sinex files, partial derivatives in GNSS
+           propagators, handling of ambiguities, non-standard signals and systems), new ITU models
+           (ITU-R P.531 NeQuick 2 ionospheric model, ITU-R P.834 tropospheric model), replacement
+           of AdditionalStateProvider by AdditionalDataProvider, builders for
+           {Field}SpacecraftState, moved position angles conversions methods, IIRV messages
+           reader/writer, sexagesimal angles, moving transition dates in TimeSpanMap, new
+           East-North-Up (ENU) and North-East-Down (NED) local orbital frames,
+           {Field}EventDetectionSettings, Walker constellation for star pattern, magnetic field
+           loading from DataSource, removed orbit-related chained getters in (Field)SpacecraftState,
+           a posteriori filtering feature for generated measurements, switched default
+           PositionAngleType in (Field)NumericalPropagator to ECCENTRIC, improvement in the conversion
+           of osculating elements into mean elements for analytical theories: Brouwer-Lyddane,
+           Eckstein-Hechler, DSST, SGP4/SDP4 (i.e. forTLE), generalized ProfileThrustPropulsionModel,
+           all ForceModel and AttitudeProvider working with AbsolutePVCoordinates, alternative to
+           AttitudesSequence with instantaneous switches, AttitudeProvider now inheriting from
+           EventDetectorsProvider and ParameterDriverProvider, {Field}Orbit always containing rates
+           (possibly Keplerian), ThirdBodyAttraction can be defined without CelestialBody,
+           AdaptableInterval now taking boolean argument on direction of propagation,
+           native AdaptableInterval for date detection, changed production branch name in the git
+           repository from master to main.
+           See the list below for a full description of the changes.">
         <action dev="luc" type="add" issue="1700">
             Removed dependency to default data context in RtcmMessageType.
         </action>
