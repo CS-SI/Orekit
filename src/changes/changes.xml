@@ -20,6 +20,8 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="13.1" date="TBD" description="TBD">
+    </release>
     <release version="13.0" date="2025-04-14" description="Orekit 13.0 is a major new release.
            It includes both new features, accuracy and performances improvements, and bug fixes.
            The main new features introduced in 13.0 are: revamp of tropospheric models, revamp
