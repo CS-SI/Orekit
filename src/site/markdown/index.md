@@ -25,7 +25,7 @@
   * Time
 
     * high accuracy absolute dates
-    * time scales (TAI, UTC, UT1, GPS, TT, TCG, TDB, TCB, GMST, GST, GLONASS, QZSS, BDT, IRNSS ...)
+    * time scales (TAI, UTC, UT1, GPS, TT, TCG, TDB, TCB, GMST, GST, GLONASS, QZSS, BDT, NavIC ...)
     * transparent handling of leap seconds
     * support for CCSDS time code standards
 
@@ -67,9 +67,9 @@
   * Covariance
 
     * covariance propagation using the state transition matrix
-	* covariance extrapolation using a Keplerian model
+    * covariance extrapolation using a Keplerian model
     * covariance frame transformation (inertial, Earth fixed, and local orbital frames)
-    * covariance type transformation (cartesian, keplerian, circular, and equinoctial)
+    * covariance type transformation (Cartesian, Keplerian, circular, and equinoctial)
     * covariance interpolation based on the blending model
 
   * Maneuvers
@@ -89,7 +89,7 @@
         * Brouwer-Lyddane with Warren Phipps' correction for the critical inclination of 63.4°
           and the perturbative acceleration due to atmospheric drag
         * SDP4/SGP4 with 2006 corrections
-        * GNSS: GPS, QZSS, Galileo, GLONASS, Beidou, IRNSS and SBAS
+        * GNSS: GPS, QZSS, Galileo, GLONASS, Beidou, NavIC and SBAS
         * Intelsat's 11 elements
     * numerical propagators
         * central attraction
@@ -98,7 +98,7 @@
           EGM, SHA (GRGM1200B and GRGM1200L) and GRGS gravity field files formats, even compressed)
         * atmospheric drag
         * third body attraction (with data for Sun, Moon and all solar systems planets)
-        * radiation pressure with eclipses (multiple oblate spheroids occulting bodies, multiple coefficients for bow and wing models)
+        * radiation pressure with eclipses (multiple oblate spheroids occulting bodies, multiple coefficients for box and wing models)
         * solid tides, with or without solid pole tide
         * ocean tides, with or without ocean pole tide
         * Earth's albedo and infrared
@@ -107,8 +107,6 @@
         * multiple maneuvers
         * state of the art ODE integrators (adaptive stepsize with error control,
           continuous output, switching functions, G-stop, step normalization ...)
-        * serialization mechanism to store complete results on persistent storage for
-          later use
         * propagation in non-inertial frames (e.g. for Lagrange point halo orbits)
     * semi-analytical propagation model (DSST)
         * central attraction
@@ -175,7 +173,7 @@
         * ground at night
         * impulse maneuvers occurrence
         * geomagnetic intensity
-		* extremum approach for TCA (Time of Closest Approach) computing
+	* extremum approach for TCA (Time of Closest Approach) computing
         * beta angle
         * relative distance with another object
     * possibility of slightly shifting events in time (for example to switch from
@@ -228,7 +226,7 @@
         * measurements parameters estimation (biases, satellite clock offset, station clock offset,
           station position, pole motion and rate, prime meridian correction and rate, total zenith
           delay in tropospheric correction)
-    * orbit determination can be performed with numerical, DSST, SDP4/SGP4, Eckstein-Hechler, Brouwer-Lyddane, or Keplerian propagators
+    * orbit determination can be performed with numerical, DSST, SDP4/SGP4, Eckstein-Hechler, Brouwer-Lyddane, Keplerian or GNSS propagators
     * ephemeris-based orbit determination to estimate measurement parameters like station biases or clock offsets
     * multi-satellites orbit determination
     * initial orbit determination methods (Gibbs, Gooding, Lambert, Gauss, and Laplace)
@@ -309,7 +307,7 @@
 
   * Earth models
   
-    * atmospheric models (DTM2000, Jacchia-Bowman 2008, NRL MSISE 2000, Harris-Priester and simple exponential models), and Marshall solar Activity Future Estimation, optionally with lift component
+    * atmospheric models (DTM2000, Jacchia-Bowman 2008, NRL MSISE 2000, Harris-Priester and simple exponential models), and Marshall Solar Activity Future Estimation, optionally with lift component
     * support for CSSI space weather data
     * support for SOLFSMY and DTC data for JB2008 atmospheric model
     * tropospheric delay for radio propagation (canonical Saastamoinen, modified Saastamoinen, Askne-Nordius, modified Hopfield, ITU-R P.834, Vienna 1, Vienna 3, estimated, fixed)
@@ -327,7 +325,7 @@
     * displacement of ground points (tides, ocean loading, Post-Seismic Deformation, tectonics plates)
     * tessellation of zones of interest as tiles
     * sampling of zones of interest as grids of points
-	* construction of trajectories using loxodromes (commonly, a rhumb line)
+    * construction of trajectories using loxodromes (commonly, a rhumb line)
 
   * Indirect optimal control
 
