@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,7 +41,6 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
-import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.MeasurementCreator;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.sequential.UnscentedKalmanEstimator;
@@ -112,7 +111,7 @@ public class UnscentedEstimationTestUtils {
 		// Turn-around range stations
 		// Map entry = primary station
 		// Map value = secondary station associated
-		context.TARstations = new HashMap<GroundStation, GroundStation>();
+		context.TARstations = new HashMap<>();
 
 		context.TARstations.put(context.createStation(-53.05388, -75.01551, 1750.0, "Isla Desolación"),
 				context.createStation(-54.815833, -68.317778, 6.0, "Ushuaïa"));
@@ -123,13 +122,13 @@ public class UnscentedEstimationTestUtils {
 		// Bistatic range rate stations
 		// key/first = emitter station
 		// value/second = receiver station
-		context.BRRstations = new Pair<GroundStation, GroundStation>(context.createStation(40.0, 0.0, 0.0, "Emitter"),
+		context.BRRstations = new Pair<>(context.createStation(40.0, 0.0, 0.0, "Emitter"),
 				context.createStation(45.0, 0.0, 0.0, "Receiver"));
 
 		// TDOA stations
 		// key/first = primary station that dates the measurement
 		// value/second = secondary station associated
-		context.TDOAstations = new Pair<GroundStation, GroundStation>(
+		context.TDOAstations = new Pair<>(
 				context.createStation(40.0, 0.0, 0.0, "TDOA_Prime"),
 				context.createStation(45.0, 0.0, 0.0, "TDOA_Second"));
 
@@ -151,7 +150,6 @@ public class UnscentedEstimationTestUtils {
 		final Vector3D rotationRate = new Vector3D(0.0, 0.0, omega);
 
 		TransformProvider MyEarthFrame = new TransformProvider() {
-			private static final long serialVersionUID = 1L;
 
 			public Transform getTransform(final AbsoluteDate date) {
 				final double rotationduration = date.durationFrom(datedef);
@@ -221,7 +219,7 @@ public class UnscentedEstimationTestUtils {
 		// Turn-around range stations
 		// Map entry = primary station
 		// Map value = secondary station associated
-		context.TARstations = new HashMap<GroundStation, GroundStation>();
+		context.TARstations = new HashMap<>();
 
 		context.TARstations.put(context.createStation(41.977, 13.600, 671.354, "Fucino"),
 				context.createStation(43.604, 1.444, 263.0, "Toulouse"));
@@ -232,13 +230,13 @@ public class UnscentedEstimationTestUtils {
 		// Bistatic range rate stations
 		// key/first = emitter station
 		// value/second = receiver station
-		context.BRRstations = new Pair<GroundStation, GroundStation>(context.createStation(40.0, 0.0, 0.0, "Emitter"),
+		context.BRRstations = new Pair<>(context.createStation(40.0, 0.0, 0.0, "Emitter"),
 				context.createStation(45.0, 0.0, 0.0, "Receiver"));
 
 		// TDOA stations
 		// key/first = primary station that dates the measurement
 		// value/second = secondary station associated
-		context.TDOAstations = new Pair<GroundStation, GroundStation>(
+		context.TDOAstations = new Pair<>(
 				context.createStation(40.0, 0.0, 0.0, "TDOA_Prime"),
 				context.createStation(45.0, 0.0, 0.0, "TDOA_Second"));
 
@@ -261,10 +259,10 @@ public class UnscentedEstimationTestUtils {
 	}
 
 	public static List<ObservedMeasurement<?>> createMeasurements(final Propagator propagator,
-			final MeasurementCreator creator, final double startPeriod, final double endPeriod, final double step) {
+																  final MeasurementCreator creator, final double startPeriod, final double endPeriod, final double step) {
 
 		propagator.setStepHandler(step, creator);
-		final double period = propagator.getInitialState().getKeplerianPeriod();
+		final double period = propagator.getInitialState().getOrbit().getKeplerianPeriod();
 		final AbsoluteDate start = propagator.getInitialState().getDate().shiftedBy(startPeriod * period);
 		final AbsoluteDate end = propagator.getInitialState().getDate().shiftedBy(endPeriod * period);
 		propagator.propagate(start, end);

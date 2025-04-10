@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,8 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.gnss.InterSatellitesPhase;
 import org.orekit.estimation.measurements.gnss.InterSatellitesPhaseMeasurementCreator;
 import org.orekit.frames.LOFType;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
+import org.orekit.gnss.RadioWave;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -43,7 +44,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class OnBoardAntennaInterSatellitesPhaseModifierTest {
 
-    private static final Frequency FREQUENCY = Frequency.G01;
+    private static final RadioWave RADIO_WAVE = PredefinedGnssSignal.G01;
 
     @Test
     public void testPreliminary() {
@@ -78,7 +79,7 @@ public class OnBoardAntennaInterSatellitesPhaseModifierTest {
         final List<ObservedMeasurement<?>> spacecraftCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p1,
                                                                new InterSatellitesPhaseMeasurementCreator(ephemeris,
-                                                                                                          FREQUENCY,
+                                                                                                          RADIO_WAVE,
                                                                                                           ambiguity,
                                                                                                           localClockOffset,
                                                                                                           remoteClockOffset,
@@ -94,7 +95,7 @@ public class OnBoardAntennaInterSatellitesPhaseModifierTest {
         final List<ObservedMeasurement<?>> antennaCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p2,
                                                                new InterSatellitesPhaseMeasurementCreator(ephemeris,
-                                                                                                          FREQUENCY,
+                                                                                                          RADIO_WAVE,
                                                                                                           ambiguity,
                                                                                                           localClockOffset,
                                                                                                           remoteClockOffset,
@@ -106,8 +107,8 @@ public class OnBoardAntennaInterSatellitesPhaseModifierTest {
             InterSatellitesPhase sr = (InterSatellitesPhase) spacecraftCenteredMeasurements.get(i);
             InterSatellitesPhase ar = (InterSatellitesPhase) antennaCenteredMeasurements.get(i);
             Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
-            Assertions.assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * FREQUENCY.getWavelength() >= -1.0);
-            Assertions.assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * FREQUENCY.getWavelength() <= -0.36);
+            Assertions.assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * RADIO_WAVE.getWavelength() >= -1.0);
+            Assertions.assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * RADIO_WAVE.getWavelength() <= -0.36);
         }
     }
 
@@ -141,7 +142,7 @@ public class OnBoardAntennaInterSatellitesPhaseModifierTest {
         final List<ObservedMeasurement<?>> spacecraftCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p1,
                                                                new InterSatellitesPhaseMeasurementCreator(ephemeris,
-                                                                                                          FREQUENCY,
+                                                                                                          RADIO_WAVE,
                                                                                                           ambiguity,
                                                                                                           localClockOffset,
                                                                                                           remoteClockOffset,
@@ -157,7 +158,7 @@ public class OnBoardAntennaInterSatellitesPhaseModifierTest {
         final List<ObservedMeasurement<?>> antennaCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p2,
                                                                new InterSatellitesPhaseMeasurementCreator(ephemeris,
-                                                                                                          FREQUENCY,
+                                                                                                          RADIO_WAVE,
                                                                                                           ambiguity,
                                                                                                           localClockOffset,
                                                                                                           remoteClockOffset,
@@ -177,7 +178,10 @@ public class OnBoardAntennaInterSatellitesPhaseModifierTest {
                                                                                                      });
             InterSatellitesPhase ar = (InterSatellitesPhase) antennaCenteredMeasurements.get(i);
             Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
-            Assertions.assertEquals(ar.getObservedValue()[0] * FREQUENCY.getWavelength(), estimated.getEstimatedValue()[0] * FREQUENCY.getWavelength(), 2.0e-5);
+            Assertions.assertEquals(ar.getObservedValue()[0] * RADIO_WAVE.getWavelength(), estimated.getEstimatedValue()[0] * RADIO_WAVE.getWavelength(), 2.0e-5);
+            Assertions.assertEquals(1,
+                                    estimated.getAppliedEffects().entrySet().stream().
+                                    filter(e -> e.getKey().getEffectName().equals("mean phase center")).count());
         }
 
     }

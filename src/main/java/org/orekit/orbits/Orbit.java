@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,6 @@
  */
 package org.orekit.orbits;
 
-import java.io.Serializable;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.MatrixUtils;
@@ -32,6 +30,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.PVCoordinates;
@@ -62,10 +61,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 public abstract class Orbit
-    implements TimeStamped, TimeShiftable<Orbit>, Serializable, PVCoordinatesProvider {
+    implements TimeStamped, TimeShiftable<Orbit>, PVCoordinatesProvider {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 438733454597999578L;
+    /** Absolute tolerance when checking if the rate of the position angle is Keplerian or not. */
+    protected static final double TOLERANCE_POSITION_ANGLE_RATE = 1e-15;
 
     /** Frame in which are defined the orbital parameters. */
     private final Frame frame;
@@ -79,28 +78,28 @@ public abstract class Orbit
     /** Computed position.
      * @since 12.0
      */
-    private transient Vector3D position;
+    private Vector3D position;
 
     /** Computed PVCoordinates. */
-    private transient TimeStampedPVCoordinates pvCoordinates;
+    private TimeStampedPVCoordinates pvCoordinates;
 
     /** Jacobian of the orbital parameters with mean angle with respect to the Cartesian coordinates. */
-    private transient double[][] jacobianMeanWrtCartesian;
+    private double[][] jacobianMeanWrtCartesian;
 
     /** Jacobian of the Cartesian coordinates with respect to the orbital parameters with mean angle. */
-    private transient double[][] jacobianWrtParametersMean;
+    private double[][] jacobianWrtParametersMean;
 
     /** Jacobian of the orbital parameters with eccentric angle with respect to the Cartesian coordinates. */
-    private transient double[][] jacobianEccentricWrtCartesian;
+    private double[][] jacobianEccentricWrtCartesian;
 
     /** Jacobian of the Cartesian coordinates with respect to the orbital parameters with eccentric angle. */
-    private transient double[][] jacobianWrtParametersEccentric;
+    private double[][] jacobianWrtParametersEccentric;
 
     /** Jacobian of the orbital parameters with true angle with respect to the Cartesian coordinates. */
-    private transient double[][] jacobianTrueWrtCartesian;
+    private double[][] jacobianTrueWrtCartesian;
 
     /** Jacobian of the Cartesian coordinates with respect to the orbital parameters with true angle. */
-    private transient double[][] jacobianWrtParametersTrue;
+    private double[][] jacobianWrtParametersTrue;
 
     /** Default constructor.
      * Build a new instance with arbitrary default elements.
@@ -236,7 +235,6 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return semi-major axis  derivative (m/s)
-     * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getADot();
@@ -251,7 +249,6 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return first component of the equinoctial eccentricity vector derivative
-     * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getEquinoctialExDot();
@@ -266,7 +263,6 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return second component of the equinoctial eccentricity vector derivative
-     * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getEquinoctialEyDot();
@@ -281,7 +277,7 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return first component of the inclination vector derivative
-     * @see #hasDerivatives()
+
      * @since 9.0
      */
     public abstract double getHxDot();
@@ -296,7 +292,6 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return second component of the inclination vector derivative
-     * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getHyDot();
@@ -311,7 +306,6 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return d(E + ω + Ω)/dt eccentric longitude argument derivative (rad/s)
-     * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getLEDot();
@@ -326,7 +320,6 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return d(v + ω + Ω)/dt true longitude argument derivative (rad/s)
-     * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getLvDot();
@@ -341,7 +334,6 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return d(M + ω + Ω)/dt mean longitude argument derivative (rad/s)
-     * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getLMDot();
@@ -358,7 +350,6 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return eccentricity derivative
-     * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getEDot();
@@ -373,13 +364,12 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return inclination derivative (rad/s)
-     * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getIDot();
 
-    /** Check if orbit includes derivatives.
-     * @return true if orbit includes derivatives
+    /** Check if orbit includes non-Keplerian rates.
+     * @return true if orbit includes non-Keplerian derivatives
      * @see #getADot()
      * @see #getEquinoctialExDot()
      * @see #getEquinoctialEyDot()
@@ -390,10 +380,10 @@ public abstract class Orbit
      * @see #getLMDot()
      * @see #getEDot()
      * @see #getIDot()
-     * @since 9.0
+     * @since 13.0
      */
-    public boolean hasDerivatives() {
-        return !Double.isNaN(getADot());
+    public boolean hasNonKeplerianAcceleration() {
+        return hasNonKeplerianAcceleration(getPVCoordinates(), getMu());
     }
 
     /** Get the central acceleration constant.
@@ -527,6 +517,16 @@ public abstract class Orbit
      */
     protected abstract TimeStampedPVCoordinates initPVCoordinates();
 
+    /**
+     * Create a new object representing the same physical orbital state, but attached to a different reference frame.
+     * If the new frame is not inertial, an exception will be thrown.
+     *
+     * @param inertialFrame reference frame of output orbit
+     * @return orbit with different frame
+     * @since 13.0
+     */
+    public abstract Orbit inFrame(Frame inertialFrame);
+
     /** Get a time-shifted orbit.
      * <p>
      * The orbit can be slightly shifted to close dates. The shifting model is a
@@ -539,7 +539,23 @@ public abstract class Orbit
      * @param dt time shift in seconds
      * @return a new orbit, shifted with respect to the instance (which is immutable)
      */
+    @Override
     public abstract Orbit shiftedBy(double dt);
+
+    /** Get a time-shifted orbit.
+     * <p>
+     * The orbit can be slightly shifted to close dates. The shifting model is a
+     * Keplerian one if no derivatives are available in the orbit, or Keplerian
+     * plus quadratic effect of the non-Keplerian acceleration if derivatives are
+     * available. Shifting is <em>not</em> intended as a replacement for proper
+     * orbit propagation but should be sufficient for small time shifts or coarse
+     * accuracy.
+     * </p>
+     * @param dt time shift
+     * @return a new orbit, shifted with respect to the instance (which is immutable)
+     */
+    @Override
+    public abstract Orbit shiftedBy(TimeOffset dt);
 
     /** Compute the Jacobian of the orbital parameters with respect to the Cartesian parameters.
      * <p>

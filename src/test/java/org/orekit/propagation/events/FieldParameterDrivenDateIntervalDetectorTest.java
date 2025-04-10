@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -82,7 +82,7 @@ public class FieldParameterDrivenDateIntervalDetectorTest {
                         withThreshold(zero.newInstance(1.0e-12)).
                         withHandler(new FieldContinueOnEvent<>());
 
-        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-12, detector.getThreshold().getReal(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
         Assertions.assertEquals("no-shift_START", detector.getStartDriver().getName());
@@ -128,7 +128,7 @@ public class FieldParameterDrivenDateIntervalDetectorTest {
                         withThreshold(zero.newInstance(1.0e-12)).
                         withHandler(new FieldContinueOnEvent<>());
 
-        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-12, detector.getThreshold().getReal(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
         Assertions.assertEquals("no-shift_START", detector.getStartDriver().getName());
@@ -178,7 +178,7 @@ public class FieldParameterDrivenDateIntervalDetectorTest {
                         withThreshold(zero.newInstance(1.0e-12)).
                         withHandler(new FieldContinueOnEvent<>());
 
-        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-12, detector.getThreshold().getReal(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
         Assertions.assertEquals("no-shift_START", detector.getStartDriver().getName());

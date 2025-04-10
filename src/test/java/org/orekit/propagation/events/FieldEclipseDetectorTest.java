@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,11 +24,13 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.LocalizedODEFormats;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -49,6 +51,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.OccultationEngine;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 public class FieldEclipseDetectorTest {
@@ -98,7 +101,19 @@ public class FieldEclipseDetectorTest {
         testTooSmallMaxIterationCount(Binary64Field.getInstance());
     }
 
-
+    @Test
+    void testGetDetectionSettings() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final OccultationEngine mockedEngine = Mockito.mock(OccultationEngine.class);
+        // WHEN
+        final FieldEclipseDetector<Binary64> fieldEclipseDetector = new FieldEclipseDetector<>(field,
+                Mockito.mock(OccultationEngine.class));
+        // THEN
+        final EventDetectionSettings expectedSettings = new EclipseDetector(mockedEngine).getDetectionSettings();
+        Assertions.assertEquals(expectedSettings.getMaxIterationCount(), fieldEclipseDetector.getMaxIterationCount());
+        Assertions.assertEquals(expectedSettings.getThreshold(), fieldEclipseDetector.getThreshold().getReal());
+    }
 
     private <T extends CalculusFieldElement<T>> void doTestEclipse(Field<T> field) {
         T zero = field.getZero();
@@ -116,7 +131,7 @@ public class FieldEclipseDetectorTest {
                                     withThreshold(zero.newInstance(1e-3)).
                                     withHandler(new FieldStopOnDecreasing<T>()).
                                     withUmbra();
-        Assertions.assertEquals(60.0, e.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(60.0, e.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-3, e.getThreshold().getReal(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, e.getMaxIterationCount());
         Assertions.assertEquals(0.0, e.getMargin().getReal(), 1.0e-15);
@@ -184,10 +199,10 @@ public class FieldEclipseDetectorTest {
         FieldEclipseDetector<T> e = new FieldEclipseDetector<>(field, sun, sunRadius, earth).
                                     withMaxCheck(120.0).
                                     withThreshold(zero.newInstance(1e-4)).
-                                    withHandler(new FieldStopOnDecreasing<T>()).
+                                    withHandler(new FieldStopOnDecreasing<>()).
                                     withMaxIter(12).
                                     withMargin(zero.newInstance(0.001));
-        Assertions.assertEquals(120.0, e.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(120.0, e.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-4, e.getThreshold().getReal(), 1.0e-15);
         Assertions.assertEquals(12, e.getMaxIterationCount());
         propagator.addEventDetector(e);

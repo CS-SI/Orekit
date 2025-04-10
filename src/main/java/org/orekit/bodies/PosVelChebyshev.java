@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 package org.orekit.bodies;
-
-import java.io.Serializable;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -35,10 +33,7 @@ import org.orekit.utils.PVCoordinates;
  * @see JPLEphemeridesLoader
  * @author Luc Maisonobe
  */
-class PosVelChebyshev implements TimeStamped, Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20151023L;
+class PosVelChebyshev implements TimeStamped {
 
     /** Time scale in which the ephemeris is defined. */
     private final TimeScale timeScale;

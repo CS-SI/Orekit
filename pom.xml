@@ -5,7 +5,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>12.2.1</version>
+  <version>13.0</version>
   <name>OREKIT</name>
   <url>https://www.orekit.org/</url>
 
@@ -25,37 +25,37 @@
     <orekit.jacoco-maven-plugin.version>0.8.12</orekit.jacoco-maven-plugin.version>
     <orekit.maven-bundle-plugin.version>5.1.9</orekit.maven-bundle-plugin.version>
     <orekit.maven-changes-plugin.version>2.12.1</orekit.maven-changes-plugin.version>
-    <orekit.maven-checkstyle-plugin.version>3.4.0</orekit.maven-checkstyle-plugin.version>
+    <orekit.maven-checkstyle-plugin.version>3.6.0</orekit.maven-checkstyle-plugin.version>
     <!-- Checkstyle 9.3 seems to be the last version usable with JDK 8 -->
     <orekit.checkstyle.version>9.3</orekit.checkstyle.version>
-    <orekit.maven-clean-plugin.version>3.3.2</orekit.maven-clean-plugin.version>
-    <orekit.maven-compiler-plugin.version>3.13.0</orekit.maven-compiler-plugin.version>
-    <orekit.maven-javadoc-plugin.version>3.7.0</orekit.maven-javadoc-plugin.version>
-    <orekit.maven-jar-plugin.version>3.4.1</orekit.maven-jar-plugin.version>
-    <orekit.maven-jxr-plugin.version>3.4.0</orekit.maven-jxr-plugin.version>
+    <orekit.maven-clean-plugin.version>3.4.1</orekit.maven-clean-plugin.version>
+    <orekit.maven-compiler-plugin.version>3.14.0</orekit.maven-compiler-plugin.version>
+    <orekit.maven-javadoc-plugin.version>3.11.2</orekit.maven-javadoc-plugin.version>
+    <orekit.maven-jar-plugin.version>3.4.2</orekit.maven-jar-plugin.version>
+    <orekit.maven-jxr-plugin.version>3.6.0</orekit.maven-jxr-plugin.version>
     <orekit.plantuml-maven-plugin.version>1.2</orekit.plantuml-maven-plugin.version>
-    <orekit.plantuml.version>1.2024.7</orekit.plantuml.version>
+    <orekit.plantuml.version>1.2025.2</orekit.plantuml.version>
     <orekit.maven-resources-plugin.version>3.3.1</orekit.maven-resources-plugin.version>
     <orekit.maven-site-plugin.version>3.12.1</orekit.maven-site-plugin.version>
-    <orekit.maven-project-info-reports-plugin.version>3.6.0</orekit.maven-project-info-reports-plugin.version>
+    <orekit.maven-project-info-reports-plugin.version>3.9.0</orekit.maven-project-info-reports-plugin.version>
     <orekit.maven-wagon-ssh-external-plugin.version>3.5.3</orekit.maven-wagon-ssh-external-plugin.version>
     <orekit.maven-source-plugin.version>3.3.1</orekit.maven-source-plugin.version>
     <!-- Surefire 2.22.2 is the last to support CentOS/RedHat 7 due to
          https://issues.apache.org/jira/browse/SUREFIRE-1628 -->
     <orekit.maven-surefire-plugin.version>2.22.2</orekit.maven-surefire-plugin.version>
-    <orekit.maven-surefire-report-plugin.version>3.2.1</orekit.maven-surefire-report-plugin.version>
+    <orekit.maven-surefire-report-plugin.version>3.5.2</orekit.maven-surefire-report-plugin.version>
     <!-- Mockito 4.11.0 is the last supported version with java 8
          https://github.com/mockito/mockito/releases -->
     <orekit.mockito-core.version>4.11.0</orekit.mockito-core.version>
     <orekit.jgit.buildnumber.version>1.2.12</orekit.jgit.buildnumber.version>
     <orekit.build-helper-maven-plugin.version>3.6.0</orekit.build-helper-maven-plugin.version>
     <orekit.nexus-staging-maven-plugin.version>1.7.0</orekit.nexus-staging-maven-plugin.version>
-    <orekit.maven-gpg-plugin.version>3.2.4</orekit.maven-gpg-plugin.version>
-    <orekit.maven-install-plugin.version>3.1.2</orekit.maven-install-plugin.version>
+    <orekit.maven-gpg-plugin.version>3.2.7</orekit.maven-gpg-plugin.version>
+    <orekit.maven-install-plugin.version>3.1.4</orekit.maven-install-plugin.version>
     <orekit.mathjax.config>&lt;script type=&quot;text/x-mathjax-config&quot;&gt;MathJax.Hub.Config({ TeX: { extensions: [&quot;autoload.js&quot;]}});&lt;/script&gt;</orekit.mathjax.config>
     <orekit.mathjax.enable>&lt;script type=&quot;text/javascript&quot; src=&quot;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML&quot;&gt;&lt;/script&gt;</orekit.mathjax.enable>
-    <orekit.hipparchus.version>3.1</orekit.hipparchus.version>
-    <orekit.junit.version>5.11.2</orekit.junit.version>
+    <orekit.hipparchus.version>4.0.1</orekit.hipparchus.version>
+    <orekit.junit.version>5.11.4</orekit.junit.version>
     <orekit.hamcrest.version>3.0</orekit.hamcrest.version>
     <orekit.compiler.source>1.8</orekit.compiler.source>
     <orekit.compiler.target>1.8</orekit.compiler.target>
@@ -208,6 +208,9 @@
 
   <contributors>
     <contributor>
+      <name>John Ajamian</name>
+    </contributor>
+    <contributor>
       <name>Roberto Alacevich</name>
     </contributor>
     <contributor>
@@ -280,6 +283,9 @@
       <name>Laura Garcia</name>
     </contributor>
     <contributor>
+      <name>Quentin Gegoue</name>
+    </contributor>
+    <contributor>
       <name>Dorian Gegout</name>
     </contributor>
     <contributor>
@@ -310,7 +316,13 @@
       <name>Dimuthu Jayasingha</name>
     </contributor>
     <contributor>
+      <name>Nick LaFarge</name>
+    </contributor>
+    <contributor>
       <name>Fran&#231;ois-Xavier Laffont</name>
+    </contributor>
+    <contributor>
+      <name>Julien Leblond</name>
     </contributor>
     <contributor>
       <name>Anne-Laure Lugan</name>
@@ -397,7 +409,7 @@
 
   <organization>
     <name>CS GROUP</name>
-    <url>https://www.csgroup.eu/</url>
+    <url>https://www.cs-soprasteria.com/</url>
   </organization>
 
   <licenses>
@@ -597,6 +609,9 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
         <version>${orekit.maven-resources-plugin.version}</version>
+        <configuration>
+          <propertiesEncoding>${project.build.sourceEncoding}</propertiesEncoding>
+        </configuration>
         <executions>
           <execution>
             <phase>process-resources</phase>
@@ -856,6 +871,12 @@
         </configuration>
       </plugin>
     </plugins>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
   </build>
 
   <reporting>

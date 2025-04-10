@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -144,8 +144,8 @@ public class MelbourneWubbenaCombination implements MeasurementCombination {
         final double[] frequency = new double[4];
         int j = 0;
         for (int i = 0; i < odWL.getUsedObservationData().size(); i++) {
-            frequency[j++] = odWL.getUsedObservationData().get(i).getObservationType().getFrequency(system).getFrequency();
-            frequency[j++] = odNL.getUsedObservationData().get(i).getObservationType().getFrequency(system).getFrequency();
+            frequency[j++] = odWL.getUsedObservationData().get(i).getObservationType().getSignal(system).getFrequency();
+            frequency[j++] = odNL.getUsedObservationData().get(i).getObservationType().getSignal(system).getFrequency();
         }
         // Verify if used frequencies are the same.
         // Possible numerical error is taken into account by using a threshold of acceptance

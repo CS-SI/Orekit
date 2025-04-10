@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -303,7 +303,7 @@ public class FieldHansenTesseralLinear <T extends CalculusFieldElement<T>> {
             final T coef       = zero.subtract(mnm1 + 1.5);
             final T derivative = coef.multiply(chi2).multiply(value).
                             add(FastMath.pow(chi2, -mnm1 - 1).multiply(serie.getPartialDerivative(0)).divide(chi));
-            return new FieldGradient<T>(value, derivative);
+            return new FieldGradient<>(value, derivative);
         }
 
         /** Generate the serie expansion in e².

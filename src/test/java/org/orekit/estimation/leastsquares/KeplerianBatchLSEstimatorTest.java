@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,7 +43,6 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.KeplerianPropagatorBuilder;
 import org.orekit.utils.ParameterDriversList;
 
-import java.util.ArrayList;
 import java.util.List;
 
 class KeplerianBatchLSEstimatorTest {
@@ -163,11 +162,11 @@ class KeplerianBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        KeplerianEstimationTestUtils.checkFit(context, estimator, 1, 4,
+        KeplerianEstimationTestUtils.checkFit(context, estimator, 1, 2,
                                                    0.0, 8.5e-7,
-                                                   0.0, 2.0e-6,
-                                                   0.0, 1.9e-8,
-                                                   0.0, 9.0e-12);
+                                                   0.0, 2.6e-6,
+                                                   0.0, 7e-8,
+                                                   0.0, 4.0e-11);
 
     }
 
@@ -209,7 +208,7 @@ class KeplerianBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        KeplerianEstimationTestUtils.checkFit(context, estimator, 1, 12,
+        KeplerianEstimationTestUtils.checkFit(context, estimator, 1, 13,
                                                    0.0, 5.9e-5,
                                                    0.0, 1.5e-4,
                                                    0.0, 4.3e-9,
@@ -236,13 +235,10 @@ class KeplerianBatchLSEstimatorTest {
             station.getClockDriftDriver().setValue(groundClockDrift);
         }
         final double satClkDrift = 3.2e-10;
-        final List<ObservedMeasurement<?>> measurements1 =
+        final List<ObservedMeasurement<?>> measurements =
                         KeplerianEstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
-
-        final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
-        measurements.addAll(measurements1);
 
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),

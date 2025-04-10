@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,6 @@ package org.orekit.estimation.leastsquares;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -209,17 +208,17 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
         propagatorBuilder.setAttitudeProvider(attitudeProvider);
     }
 
-    /**
-     * Lageos 2 orbit determination test using laser data.
-     *
+    /** Lageos 2 orbit determination test using laser data.
+     * <p>
      * This test uses both mean and osculating elements to perform the orbit determination.
      * It is possible to consider only mean elements by changing propagationType and
      * stateType keys.
+     * </p>
      */
     @Test
     public void testLageos2()
         throws URISyntaxException, IllegalArgumentException, IOException,
-               OrekitException, ParseException {
+               OrekitException {
 
         // input in resources directory
         final String inputPath = DSSTOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/dsst_od_test_Lageos2.in").toURI().getPath();
@@ -262,7 +261,7 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
 
         //test on statistic for the range residuals
         final long nbRange = 95;
-        final double[] RefStatRange = { -28.316, 58.490, 0.0, 14.857 };
+        final double[] RefStatRange = { -28.3161, 58.490, 0.0, 14.857 };
         Assertions.assertEquals(nbRange, odLageos2.getRangeStat().getN());
         MatcherAssert.assertThat(odLageos2.getRangeStat().getMin(),
                 Matchers.greaterThan(RefStatRange[0]));
@@ -274,18 +273,14 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
 
     /**
      * GNSS orbit determination test.
-     *
      * This test uses both mean and osculating elements to perform the orbit determination.
      * It is possible to consider only mean elements by changing propagationType and
      * stateType keys.
-     *
      * Using only mean elements, results are:
      *    ΔP = 59 meters
      *    ΔV = 0.23 meters per second
-     *
      *    nb iterations  = 2
      *    nb evaluations = 3
-     *
      *    min residual  = -83.945 meters
      *    max residual  = 59.365 meters
      *    mean residual = 0.23 meters
@@ -293,8 +288,7 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
      */
     @Test
     public void testGNSS()
-        throws URISyntaxException, IllegalArgumentException, IOException,
-               OrekitException, ParseException {
+        throws URISyntaxException, IllegalArgumentException, IOException, OrekitException {
 
         // input in resources directory
         final String inputPath = DSSTOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/GNSS/dsst_od_test_GPS07.in").toURI().getPath();

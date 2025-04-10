@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -110,7 +110,7 @@ public class FieldEventsLoggerTest {
 
 
         FieldEventsLogger<T> logger = new FieldEventsLogger<>();
-        FieldEventDetector<T> monitored = logger.monitorDetector(umbraDetector).withMaxIter(200);
+        FieldEventDetector<T> monitored = logger.monitorDetector(umbraDetector.withMaxIter(200));
         Assertions.assertEquals(100, umbraDetector.getMaxIterationCount());
         Assertions.assertEquals(200, monitored.getMaxIterationCount());
 
@@ -119,7 +119,7 @@ public class FieldEventsLoggerTest {
         count = 0;
         propagator.propagate(iniDate.shiftedBy(16215)).getDate();
         Assertions.assertEquals(11, count);
-        checkCounts(logger, 3, 3, 0, 0, umbraDetector, penumbraDetector);
+        checkCounts(logger, 3, 3, 0, 0);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestLogPenumbra(final Field<T> field) {
@@ -156,7 +156,7 @@ public class FieldEventsLoggerTest {
         count = 0;
         propagator.propagate(iniDate.shiftedBy(16215)).getDate();
         Assertions.assertEquals(11, count);
-        checkCounts(logger, 0, 0, 2, 3, umbraDetector, penumbraDetector);
+        checkCounts(logger, 0, 0, 2, 3);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestLogAll(final Field<T> field) {
@@ -199,7 +199,7 @@ public class FieldEventsLoggerTest {
         count = 0;
         propagator.propagate(iniDate.shiftedBy(16215));
         Assertions.assertEquals(11, count);
-        checkCounts(logger, 3, 3, 2, 3, umbraDetector, penumbraDetector);
+        checkCounts(logger, 3, 3, 2, 3);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestImmutableList(final Field<T> field) {
@@ -304,21 +304,21 @@ public class FieldEventsLoggerTest {
 
     private <T extends CalculusFieldElement<T>> void checkCounts(FieldEventsLogger<T> logger,
                              int expectedUmbraIncreasingCount, int expectedUmbraDecreasingCount,
-                             int expectedPenumbraIncreasingCount, int expectedPenumbraDecreasingCount,
-                             FieldEventDetector<T> umbraDetector, FieldEventDetector<T> penumbraDetector) {
+                             int expectedPenumbraIncreasingCount, int expectedPenumbraDecreasingCount) {
         int umbraIncreasingCount = 0;
         int umbraDecreasingCount = 0;
         int penumbraIncreasingCount = 0;
         int penumbraDecreasingCount = 0;
         for (FieldEventsLogger.FieldLoggedEvent<T> event : logger.getLoggedEvents()) {
-            if (event.getEventDetector() == umbraDetector) {
+            final FieldEclipseDetector<T> eclipseDetector = (FieldEclipseDetector<T>) (event.getEventDetector());
+            if (eclipseDetector.getTotalEclipse()) {
                 if (event.isIncreasing()) {
                     ++umbraIncreasingCount;
                 } else {
                     ++umbraDecreasingCount;
                 }
             }
-            if (event.getEventDetector() == penumbraDetector) {
+            else {
                 if (event.isIncreasing()) {
                     ++penumbraIncreasingCount;
                 } else {

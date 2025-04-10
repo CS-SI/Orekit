@@ -118,11 +118,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class Geoid implements EarthShape {
 
     /**
-     * uid is date of last modification.
-     */
-    private static final long serialVersionUID = 20150312L;
-
-    /**
      * A number larger than the largest undulation. Wikipedia says the geoid
      * height is in [-106, 85]. I chose 100 to be safe.
      */
@@ -411,17 +406,14 @@ public class Geoid implements EarthShape {
         final double highPoint = FastMath.sqrt(maxAbscissa2);
 
         // line search function
-        final UnivariateFunction heightFunction = new UnivariateFunction() {
-            @Override
-            public double value(final double x) {
-                try {
-                    final GeodeticPoint geodetic =
-                            transform(line.pointAt(x), bodyFrame, date);
-                    return geodetic.getAltitude();
-                } catch (OrekitException e) {
-                    // due to frame transform -> re-throw
-                    throw new RuntimeException(e);
-                }
+        final UnivariateFunction heightFunction = x1 -> {
+            try {
+                final GeodeticPoint geodetic =
+                        transform(line.pointAt(x1), bodyFrame, date);
+                return geodetic.getAltitude();
+            } catch (OrekitException e) {
+                // due to frame transform -> re-throw
+                throw new RuntimeException(e);
             }
         };
 

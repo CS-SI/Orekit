@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,6 +29,7 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -46,7 +47,7 @@ public class OsculatingToMeanElementsConverterTest {
                                                date, Constants.WGS84_EARTH_MU);
         final SpacecraftState initialState = new SpacecraftState(orbit1);
         // Set up the numerical propagator
-        final double[][] tol = NumericalPropagator.tolerances(1.0, initialState.getOrbit(), initialState.getOrbit().getType());
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1.).getTolerances(initialState.getOrbit(), initialState.getOrbit().getType());
         final double minStep = 1.;
         final double maxStep = 200.;
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
@@ -59,13 +60,13 @@ public class OsculatingToMeanElementsConverterTest {
 
         final double eps  = 1.e-15;
 
-        Assertions.assertEquals(orbit1.getA(), meanOrbit.getA(), eps * orbit1.getA());
-        Assertions.assertEquals(orbit1.getEquinoctialEx(), meanOrbit.getEquinoctialEx(), eps);
-        Assertions.assertEquals(orbit1.getEquinoctialEy(), meanOrbit.getEquinoctialEy(), eps);
-        Assertions.assertEquals(orbit1.getHx(), meanOrbit.getHx(), eps);
-        Assertions.assertEquals(orbit1.getHy(), meanOrbit.getHy(), eps);
+        Assertions.assertEquals(orbit1.getA(), meanOrbit.getOrbit().getA(), eps * orbit1.getA());
+        Assertions.assertEquals(orbit1.getEquinoctialEx(), meanOrbit.getOrbit().getEquinoctialEx(), eps);
+        Assertions.assertEquals(orbit1.getEquinoctialEy(), meanOrbit.getOrbit().getEquinoctialEy(), eps);
+        Assertions.assertEquals(orbit1.getHx(), meanOrbit.getOrbit().getHx(), eps);
+        Assertions.assertEquals(orbit1.getHy(), meanOrbit.getOrbit().getHy(), eps);
         Assertions.assertEquals(MathUtils.normalizeAngle(orbit1.getLM(), FastMath.PI),
-                            MathUtils.normalizeAngle(meanOrbit.getLM(), FastMath.PI), eps);
+                            MathUtils.normalizeAngle(meanOrbit.getOrbit().getLM(), FastMath.PI), eps);
     }
 
     @BeforeEach

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -48,21 +48,6 @@ public class RangeRateModifierUtil {
      * @param estimated estimated measurement to modify
      * @param station ground station
      * @param modelEffect model effect
-     * @deprecated as of 12.1, replaced by {@link #modifyWithoutDerivatives(EstimatedMeasurementBase,
-     * GroundStation, ParametricModelEffect, EstimationModifier)}
-     */
-    @Deprecated
-    public static <T extends ObservedMeasurement<T>> void modifyWithoutDerivatives(final EstimatedMeasurementBase<T> estimated,
-                                                                                   final GroundStation station,
-                                                                                   final ParametricModelEffect modelEffect) {
-        modifyWithoutDerivatives(estimated, station, modelEffect, null);
-    }
-
-    /** Apply a modifier to an estimated measurement.
-     * @param <T> type of the measurement
-     * @param estimated estimated measurement to modify
-     * @param station ground station
-     * @param modelEffect model effect
      * @param modifier applied modifier
      * @since 12.1
      */
@@ -73,36 +58,11 @@ public class RangeRateModifierUtil {
 
         final SpacecraftState state    = estimated.getStates()[0];
 
-        // update estimated value taking into account the ionospheric delay.
-        // The ionospheric delay is directly added to the range.
+        // update estimated value taking into account the delay. The  delay is directly added to the range.
         final double[] newValue = estimated.getEstimatedValue();
         final double delay = modelEffect.evaluate(station, state);
         newValue[0] = newValue[0] + delay;
         estimated.modifyEstimatedValue(modifier, newValue);
-
-    }
-
-    /** Apply a modifier to an estimated measurement.
-     * @param <T> type of the measurement
-     * @param estimated estimated measurement to modify
-     * @param station ground station
-     * @param converter gradient converter
-     * @param parametricModel parametric modifier model
-     * @param modelEffect model effect
-     * @param modelEffectGradient model effect gradient
-     * @deprecated as of 12.1, replaced by {@link #modify(EstimatedMeasurement,
-     * ParameterDriversProvider, AbstractGradientConverter, GroundStation,
-     * ParametricModelEffect, ParametricModelEffectGradient, EstimationModifier)}
-     */
-    @Deprecated
-    public static <T extends ObservedMeasurement<T>> void modify(final EstimatedMeasurement<T> estimated,
-                                                                 final ParameterDriversProvider parametricModel,
-                                                                 final AbstractGradientConverter converter,
-                                                                 final GroundStation station,
-                                                                 final ParametricModelEffect modelEffect,
-                                                                 final ParametricModelEffectGradient modelEffectGradient) {
-        modify(estimated, parametricModel, converter, station,
-               modelEffect, modelEffectGradient, null);
 
     }
 
@@ -145,7 +105,7 @@ public class RangeRateModifierUtil {
             if (driver.isSelected()) {
                 for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 
-                    // update estimated derivatives with derivative of the modification wrt ionospheric parameters
+                    // update estimated derivatives with derivative of the modification wrt modifier parameters
                     double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
                     parameterDerivative += derivatives[index + converter.getFreeStateParameters()];
                     estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
@@ -171,7 +131,7 @@ public class RangeRateModifierUtil {
             }
         }
 
-        // update estimated value taking into account the ionospheric delay.
+        // update estimated value taking into account the delay.
         modifyWithoutDerivatives(estimated, station, modelEffect, modifier);
 
     }

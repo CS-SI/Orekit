@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -66,11 +66,11 @@ public class EOPFitter implements Serializable {
      * @return fitted model
      */
     public EOPFittedModel fit(final EOPHistory rawHistory) {
-        return new EOPFittedModel(dut1Fitter.fit(rawHistory, entry -> entry.getUT1MinusUTC()),
-                                  xPFitter.fit(rawHistory, entry -> entry.getX()),
-                                  yPFitter.fit(rawHistory, entry -> entry.getY()),
-                                  dxFitter.fit(rawHistory, entry -> entry.getDx()),
-                                  dyFitter.fit(rawHistory, entry -> entry.getDy()));
+        return new EOPFittedModel(dut1Fitter.fit(rawHistory, EOPEntry::getUT1MinusUTC),
+                                  xPFitter.fit(rawHistory, EOPEntry::getX),
+                                  yPFitter.fit(rawHistory, EOPEntry::getY),
+                                  dxFitter.fit(rawHistory, EOPEntry::getDx),
+                                  dyFitter.fit(rawHistory, EOPEntry::getDy));
     }
 
 }

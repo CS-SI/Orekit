@@ -1,4 +1,4 @@
-/* Copyright 2023-2024 Alberto Ferrero
+/* Copyright 2023-2025 Alberto Ferrero
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.time.FieldAbsoluteDate;
 
 /** Detector for geographic longitude crossing.
@@ -41,7 +42,7 @@ public class FieldLongitudeCrossingDetector <T extends CalculusFieldElement<T>>
     /**
     * Body on which the longitude is defined.
     */
-    private OneAxisEllipsoid body;
+    private final OneAxisEllipsoid body;
 
     /**
     * Fixed longitude to be crossed.
@@ -56,7 +57,7 @@ public class FieldLongitudeCrossingDetector <T extends CalculusFieldElement<T>>
     /**
     * Build a new detector.
     * <p>The new instance uses default values for maximal checking interval
-    * ({@link #DEFAULT_MAXCHECK}) and convergence threshold ({@link
+    * ({@link #DEFAULT_MAX_CHECK}) and convergence threshold ({@link
     * #DEFAULT_THRESHOLD}).</p>
     *
     * @param field     the type of numbers to use.
@@ -64,8 +65,8 @@ public class FieldLongitudeCrossingDetector <T extends CalculusFieldElement<T>>
     * @param longitude longitude to be crossed
     */
     public FieldLongitudeCrossingDetector(final Field<T> field, final OneAxisEllipsoid body, final double longitude) {
-        this(FieldAdaptableInterval.of(DEFAULT_MAXCHECK),
-            field.getZero().newInstance(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(), body, longitude);
+        this(new FieldEventDetectionSettings<>(field, EventDetectionSettings.getDefaultEventDetectionSettings()),
+                new FieldStopOnIncreasing<>(), body, longitude);
     }
 
     /**
@@ -80,7 +81,8 @@ public class FieldLongitudeCrossingDetector <T extends CalculusFieldElement<T>>
                                           final T threshold,
                                           final OneAxisEllipsoid body,
                                           final double longitude) {
-        this(FieldAdaptableInterval.of(maxCheck.getReal()), threshold, DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(), body, longitude);
+        this(new FieldEventDetectionSettings<>(FieldAdaptableInterval.of(maxCheck.getReal()), threshold, DEFAULT_MAX_ITER),
+                new FieldStopOnIncreasing<>(), body, longitude);
     }
 
     /**
@@ -91,28 +93,24 @@ public class FieldLongitudeCrossingDetector <T extends CalculusFieldElement<T>>
     * in a readable manner without using a huge amount of parameters.
     * </p>
     *
-    * @param maxCheck  maximum checking interval
-    * @param threshold convergence threshold (s)
-    * @param maxIter   maximum number of iterations in the event time search
+    * @param detectionSettings event detection settings
     * @param handler   event handler to call at event occurrences
     * @param body      body on which the longitude is defined
     * @param longitude longitude to be crossed
     */
     protected FieldLongitudeCrossingDetector(
-        final FieldAdaptableInterval<T> maxCheck,
-        final T threshold,
-        final int maxIter,
+        final FieldEventDetectionSettings<T> detectionSettings,
         final FieldEventHandler<T> handler,
         final OneAxisEllipsoid body,
         final double longitude) {
 
-        super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
+        super(detectionSettings, handler);
 
         this.body = body;
         this.longitude = longitude;
 
         // we filter out spurious longitude crossings occurring at the antimeridian
-        final FieldRawLongitudeCrossingDetector<T> raw = new FieldRawLongitudeCrossingDetector<>(maxCheck, threshold, maxIter,
+        final FieldRawLongitudeCrossingDetector<T> raw = new FieldRawLongitudeCrossingDetector<>(detectionSettings,
             new FieldContinueOnEvent<>());
         final FieldEnablingPredicate<T> predicate =
             (state, detector, g) -> FastMath.abs(g).getReal() < 0.5 * FastMath.PI;
@@ -125,12 +123,8 @@ public class FieldLongitudeCrossingDetector <T extends CalculusFieldElement<T>>
     */
     @Override
     protected FieldLongitudeCrossingDetector<T> create(
-        final FieldAdaptableInterval<T> newMaxCheck,
-        final T newThreshold,
-        final int newMaxIter,
-        final FieldEventHandler<T> newHandler) {
-        return new FieldLongitudeCrossingDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler,
-            body, longitude);
+        final FieldEventDetectionSettings<T> detectionSettings, final FieldEventHandler<T> newHandler) {
+        return new FieldLongitudeCrossingDetector<>(detectionSettings, newHandler, body, longitude);
     }
 
     /**
@@ -156,6 +150,7 @@ public class FieldLongitudeCrossingDetector <T extends CalculusFieldElement<T>>
     */
     @Override
     public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
+        super.init(s0, t);
         filtering.init(s0, t);
     }
 
@@ -192,17 +187,13 @@ public class FieldLongitudeCrossingDetector <T extends CalculusFieldElement<T>>
         * in a readable manner without using a huge amount of parameters.
         * </p>
         *
-        * @param maxCheck  maximum checking interval
-        * @param threshold convergence threshold (s)
-        * @param maxIter   maximum number of iterations in the event time search
+        * @param detectionSettings event detection settings
         * @param handler   event handler to call at event occurrences
         */
         protected FieldRawLongitudeCrossingDetector(
-            final FieldAdaptableInterval<TT> maxCheck,
-            final TT threshold,
-            final int maxIter,
+            final FieldEventDetectionSettings<TT> detectionSettings,
             final FieldEventHandler<TT> handler) {
-            super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
+            super(detectionSettings, handler);
         }
 
         /**
@@ -210,11 +201,9 @@ public class FieldLongitudeCrossingDetector <T extends CalculusFieldElement<T>>
         */
         @Override
         protected FieldRawLongitudeCrossingDetector<TT> create(
-            final FieldAdaptableInterval<TT> newMaxCheck,
-            final TT newThreshold,
-            final int newMaxIter,
+            final FieldEventDetectionSettings<TT> detectionSettings,
             final FieldEventHandler<TT> newHandler) {
-            return new FieldRawLongitudeCrossingDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler);
+            return new FieldRawLongitudeCrossingDetector<>(detectionSettings, newHandler);
         }
 
         /**

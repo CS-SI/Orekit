@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,6 +28,7 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.time.AbsoluteDate;
@@ -45,7 +46,7 @@ import java.util.List;
  * @author Pascal Parraud
  * @since 7.1
  */
-public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
+public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> implements PropagatorBuilder {
 
     /** Central attraction scaling factor.
      * <p>
@@ -213,7 +214,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
             final ParameterDriver muDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
                                                                  mu, MU_SCALE, 0, Double.POSITIVE_INFINITY);
             muDriver.addObserver(new ParameterObserver() {
-                /** {@inheridDoc} */
+                /** {@inheritDoc} */
                 @Override
                 public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
                     // getValue(), can be called without argument as mu driver should have only one span
@@ -232,7 +233,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     }
 
     /** Get the mass.
-     * @return the mass
+     * @return the mass (kg)
      * @since 9.2
      */
     public double getMass()
@@ -278,9 +279,9 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     }
 
     @Override
-    public AbstractPropagatorBuilder clone() {
+    public AbstractPropagatorBuilder<T> clone() {
         try {
-            return (AbstractPropagatorBuilder) super.clone();
+            return (AbstractPropagatorBuilder<T>) super.clone();
         } catch (CloneNotSupportedException cnse) {
             throw new OrekitException(OrekitMessages.PROPAGATOR_BUILDER_NOT_CLONEABLE);
         }
@@ -371,6 +372,16 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
 
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public abstract T buildPropagator(double[] normalizedParameters);
+
+    /** {@inheritDoc} */
+    @Override
+    public T buildPropagator() {
+        return buildPropagator(getSelectedNormalizedParameters());
+    }
+
     /** Build an initial orbit using the current selected parameters.
      * <p>
      * This method is a stripped down version of {@link #buildPropagator(double[])}
@@ -447,7 +458,8 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
 
         // Map the new orbit in an array of double
         final double[] orbitArray = new double[6];
-        orbitType.mapOrbitToArray(newOrbit, getPositionAngleType(), orbitArray, null);
+        final Orbit orbitInCorrectFrame = (newOrbit.getFrame() == frame) ? newOrbit : newOrbit.inFrame(frame);
+        orbitType.mapOrbitToArray(orbitInCorrectFrame, getPositionAngleType(), orbitArray, null);
 
         // Update all the orbital drivers, selected or unselected
         // Reset values and reference values

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -156,8 +156,8 @@ public class TurnAroundRange extends GroundReceiverMeasurement<TurnAroundRange> 
                                                                                            Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
 
         // Compute propagation times
-        final double primaryTauD = signalTimeOfFlight(pva, primaryArrival.getPosition(), measurementDate,
-                                                      state.getFrame());
+        final double primaryTauD = signalTimeOfFlightAdjustableEmitter(pva, primaryArrival.getPosition(), measurementDate,
+                                                                       state.getFrame());
 
         // Elapsed time between state date t' and signal arrival to the transit state of the 2nd leg
         final double dtLeg2 = delta - primaryTauD;
@@ -180,10 +180,10 @@ public class TurnAroundRange extends GroundReceiverMeasurement<TurnAroundRange> 
                                                                                                    Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
 
         // Uplink time of flight from secondary station to transit state of leg2
-        final double secondaryTauU = signalTimeOfFlight(QSecondaryApprox,
-                                                        transitStateLeg2PV.getPosition(),
-                                                        transitStateLeg2PV.getDate(),
-                                                        state.getFrame());
+        final double secondaryTauU = signalTimeOfFlightAdjustableEmitter(QSecondaryApprox,
+                                                                         transitStateLeg2PV.getPosition(),
+                                                                         transitStateLeg2PV.getDate(),
+                                                                         state.getFrame());
 
         // Total time of flight for leg 2
         final double tauLeg2 = primaryTauD + secondaryTauU;
@@ -201,10 +201,10 @@ public class TurnAroundRange extends GroundReceiverMeasurement<TurnAroundRange> 
                                                                                              Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
 
         // Downlink time of flight from transitStateLeg1 to secondary station at rebound date
-        final double secondaryTauD = signalTimeOfFlight(transitStateLeg2PV,
-                                                        secondaryRebound.getPosition(),
-                                                        reboundDate,
-                                                        state.getFrame());
+        final double secondaryTauD = signalTimeOfFlightAdjustableEmitter(transitStateLeg2PV,
+                                                                         secondaryRebound.getPosition(),
+                                                                         reboundDate,
+                                                                         state.getFrame());
 
 
         // Elapsed time between state date t' and signal arrival to the transit state of the 1st leg
@@ -223,10 +223,10 @@ public class TurnAroundRange extends GroundReceiverMeasurement<TurnAroundRange> 
                                                                                                  Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
 
         // Uplink time of flight from primary station to transit state of leg1
-        final double primaryTauU = signalTimeOfFlight(QPrimaryApprox,
-                                                      transitStateLeg1PV.getPosition(),
-                                                      transitStateLeg1PV.getDate(),
-                                                      state.getFrame());
+        final double primaryTauU = signalTimeOfFlightAdjustableEmitter(QPrimaryApprox,
+                                                                       transitStateLeg1PV.getPosition(),
+                                                                       transitStateLeg1PV.getDate(),
+                                                                       state.getFrame());
 
         // Primary station PV in inertial frame at exact emission date
         final AbsoluteDate emissionDate = transitStateLeg1PV.getDate().shiftedBy(-primaryTauU);
@@ -344,8 +344,8 @@ public class TurnAroundRange extends GroundReceiverMeasurement<TurnAroundRange> 
                                                                                                   zero, zero, zero));
 
         // Compute propagation times
-        final Gradient primaryTauD = signalTimeOfFlight(pvaDS, primaryArrival.getPosition(),
-                                                        measurementDateDS, state.getFrame());
+        final Gradient primaryTauD = signalTimeOfFlightAdjustableEmitter(pvaDS, primaryArrival.getPosition(),
+                                                                         measurementDateDS, state.getFrame());
 
         // Elapsed time between state date t' and signal arrival to the transit state of the 2nd leg
         final Gradient dtLeg2 = primaryTauD.negate().add(delta);
@@ -368,10 +368,10 @@ public class TurnAroundRange extends GroundReceiverMeasurement<TurnAroundRange> 
                                                                                                           zero, zero, zero));
 
         // Uplink time of flight from secondary station to transit state of leg2
-        final Gradient secondaryTauU = signalTimeOfFlight(QSecondaryApprox,
-                                                          transitStateLeg2PV.getPosition(),
-                                                          transitStateLeg2PV.getDate(),
-                                                          state.getFrame());
+        final Gradient secondaryTauU = signalTimeOfFlightAdjustableEmitter(QSecondaryApprox,
+                                                                           transitStateLeg2PV.getPosition(),
+                                                                           transitStateLeg2PV.getDate(),
+                                                                           state.getFrame());
 
         // Total time of flight for leg 2
         final Gradient tauLeg2 = primaryTauD.add(secondaryTauU);
@@ -390,10 +390,10 @@ public class TurnAroundRange extends GroundReceiverMeasurement<TurnAroundRange> 
                                                                                                     FieldPVCoordinates.getZero(field)));
 
         // Downlink time of flight from transitStateLeg1 to secondary station at rebound date
-        final Gradient secondaryTauD = signalTimeOfFlight(transitStateLeg2PV,
-                                                          secondaryRebound.getPosition(),
-                                                          reboundDateDS,
-                                                          state.getFrame());
+        final Gradient secondaryTauD = signalTimeOfFlightAdjustableEmitter(transitStateLeg2PV,
+                                                                           secondaryRebound.getPosition(),
+                                                                           reboundDateDS,
+                                                                           state.getFrame());
 
 
         // Elapsed time between state date t' and signal arrival to the transit state of the 1st leg
@@ -415,10 +415,10 @@ public class TurnAroundRange extends GroundReceiverMeasurement<TurnAroundRange> 
                                                                                                         zero, zero, zero));
 
         // Uplink time of flight from primary station to transit state of leg1
-        final Gradient primaryTauU = signalTimeOfFlight(QPrimaryApprox,
-                                                        transitStateLeg1PV.getPosition(),
-                                                        transitStateLeg1PV.getDate(),
-                                                        state.getFrame());
+        final Gradient primaryTauU = signalTimeOfFlightAdjustableEmitter(QPrimaryApprox,
+                                                                         transitStateLeg1PV.getPosition(),
+                                                                         transitStateLeg1PV.getDate(),
+                                                                         state.getFrame());
 
         // Primary station PV in inertial frame at exact emission date
         final AbsoluteDate emissionDate = transitStateLeg1PV.getDate().toAbsoluteDate().shiftedBy(-primaryTauU.getValue());

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -114,7 +114,7 @@ public class FixedPointTleGenerationAlgorithmTest {
         // Changes frame
         final Frame eme2000 = FramesFactory.getEME2000();
         final TimeStampedPVCoordinates pv = state.getPVCoordinates(eme2000);
-        final CartesianOrbit orbit = new CartesianOrbit(pv, eme2000, state.getMu());
+        final CartesianOrbit orbit = new CartesianOrbit(pv, eme2000, state.getOrbit().getMu());
 
         // Convert to TLE
         final TLE rebuilt = new FixedPointTleGenerationAlgorithm().generate(new SpacecraftState(orbit), tleISS);
@@ -144,7 +144,7 @@ public class FixedPointTleGenerationAlgorithmTest {
         // Changes frame
         final Frame eme2000 = FramesFactory.getEME2000();
         final TimeStampedFieldPVCoordinates<T> pv = state.getPVCoordinates(eme2000);
-        final FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<T>(pv, eme2000, state.getMu());
+        final FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<T>(pv, eme2000, state.getOrbit().getMu());
 
         // Convert to TLE
         final FieldTLE<T> rebuilt = new FixedPointTleGenerationAlgorithm().generate(new FieldSpacecraftState<T>(orbit), tleISS);
@@ -172,6 +172,34 @@ public class FixedPointTleGenerationAlgorithmTest {
 
         // Convert to TLE
         final TLE rebuilt = new FixedPointTleGenerationAlgorithm().generate(state, tleISS);
+
+        // Verify if driver is still selected
+        rebuilt.getParametersDrivers().forEach(driver -> Assertions.assertTrue(driver.isSelected()));
+
+    }
+
+    @Test
+    public void testIssue864Field() {
+        doTestIssue864Field(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>>  void doTestIssue864Field(final Field<T> field) {
+
+        // Initialize TLE
+        final FieldTLE<T>  tleISS = new FieldTLE<> (field, "1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
+                                                           "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
+
+        // TLE propagator
+        final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tleISS, tleISS.getParameters(field));
+
+        // State at TLE epoch
+        final FieldSpacecraftState<T> state = propagator.propagate(tleISS.getDate());
+
+        // Set the BStar driver to selected
+        tleISS.getParametersDrivers().forEach(driver -> driver.setSelected(true));
+
+        // Convert to TLE
+        final FieldTLE<T> rebuilt = new FixedPointTleGenerationAlgorithm().generate(state, tleISS);
 
         // Verify if driver is still selected
         rebuilt.getParametersDrivers().forEach(driver -> Assertions.assertTrue(driver.isSelected()));
@@ -223,7 +251,7 @@ public class FixedPointTleGenerationAlgorithmTest {
         // reach convergence issues when converting the spacecraft's state to TLE using default
         // parameters (i.e., epsilon = 1.0e-10, maxIterations = 100, and scale = 1.0).
         final FieldTLE<T> tle = new FieldTLE<>(field, "1 33153U 08034A   21327.46310733 -.00000207  00000+0  00000+0 0  9990",
-                                               "2 33153   0.0042  20.7353 0003042 213.9370 323.2156  1.00270917 48929");
+                                                      "2 33153   0.0042  20.7353 0003042 213.9370 323.2156  1.00270917 48929");
 
         // The purpose here is to verify that reducing the scale value (from 1.0 to 0.5) while keeping
         // 1.0e-10 for epsilon value  solve the issue. In other words, keeping epsilon value to its
@@ -289,7 +317,7 @@ public class FixedPointTleGenerationAlgorithmTest {
 
     private <T extends CalculusFieldElement<T>> void doTestConversionLeoField(final Field<T> field) {
         final FieldTLE<T> leoTLE = new FieldTLE<>(field, "1 31135U 07013A   11003.00000000  .00000816  00000+0  47577-4 0    11",
-                                                  "2 31135   2.4656 183.9084 0021119 236.4164  60.4567 15.10546832    15");
+                                                         "2 31135   2.4656 183.9084 0021119 236.4164  60.4567 15.10546832    15");
         checkConversion(leoTLE, field, 5.2e-9);
     }
 
@@ -336,7 +364,7 @@ public class FixedPointTleGenerationAlgorithmTest {
         
         // Initial TLE
         final TLE initialTle = new TLE("1 31135U 07013A   11003.00000000  .00000816  00000-0  47577-4 0    12",
-                         "2 31135   2.4656 183.9084 0021119 236.4164  60.4567 15.10546832    15");
+                                       "2 31135   2.4656 183.9084 0021119 236.4164  60.4567 15.10546832    15");
         final SpacecraftState expectedState = TLEPropagator.selectExtrapolator(initialTle).getInitialState();
         final TimeStampedPVCoordinates expectedPV = expectedState.getPVCoordinates();
 

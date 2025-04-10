@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -73,8 +73,8 @@ public class LazyLoadedTimeScalesTest {
 
                 // verify
                 Assertions.assertSame(gmst, timeScales.getGMST(conventions, simpleEop), message);
-                double expected = 24110.54841 + ut1.offsetFromTAI(date);
-                Assertions.assertEquals(expected, gmst.offsetFromTAI(date), 0, message);
+                double expected = 24110.54841 + ut1.offsetFromTAI(date).toDouble();
+                Assertions.assertEquals(expected, gmst.offsetFromTAI(date).toDouble(), 0, message);
                 Assertions.assertTrue(!scales.contains(gmst), message + " " + scales);
                 scales.add(gmst);
             }
@@ -98,14 +98,14 @@ public class LazyLoadedTimeScalesTest {
                 // verify
                 Assertions.assertSame(ut1, timeScales.getUT1(conventions, simpleEop), message);
                 Assertions.assertSame(ut1.getEOPHistory().getConventions(), conventions);
-                double expected = utc.offsetFromTAI(date);
+                double expected = utc.offsetFromTAI(date).toDouble();
                 if (conventions != IERSConventions.IERS_1996) {
                     expected += -0.4051590;
                 }
                 if (!simpleEop) {
                     expected += conventions.getEOPTidalCorrection(timeScales).value(date)[2];
                 }
-                Assertions.assertEquals(expected, ut1.offsetFromTAI(date), 0, message);
+                Assertions.assertEquals(expected, ut1.offsetFromTAI(date).toDouble(), 0, message);
                 Assertions.assertTrue(!scales.contains(ut1), message + " " + scales);
                 scales.add(ut1);
             }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,16 @@
  */
 package org.orekit.orbits;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
 import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -29,10 +34,12 @@ import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.PVCoordinates;
 
-import java.util.ArrayList;
-import java.util.List;
-
 class OrbitHermiteInterpolatorTest {
+
+    @BeforeEach
+    public void setUp() {
+        Utils.setDataRoot("regular-data");
+    }
 
     @Test
     public void testCartesianInterpolationWithDerivatives() {
@@ -41,14 +48,14 @@ class OrbitHermiteInterpolatorTest {
                                      2474, 2707.6418, 6.6, 26.28);
 
         doTestCartesianInterpolation(true, CartesianDerivativesFilter.USE_PV,
-                                     394, 9.1042E-9, 3.21, 2.2348E-10,
-                                     2474, 0.07998, 6.6, 0.001539);
+                                     394, 8.2392E-9, 3.21, 1.3236E-10,
+                                     2474, 0.07474, 6.6, 0.001450);
 
         // Solution with PVA less precise than with PV only as the interpolating polynomial begins to oscillate heavily
         // outside the interpolating interval
         doTestCartesianInterpolation(true, CartesianDerivativesFilter.USE_PVA,
-                                     394, 2.28e-8, 3.21, 1.39e-9,
-                                     2474, 6826, 6.55, 186);
+                                     394, 9.60e-9, 3.21, 5.39e-10,
+                                     2474, 2614, 6.55, 71);
 
     }
 
@@ -59,8 +66,8 @@ class OrbitHermiteInterpolatorTest {
                                      2474, 2707.6419, 6.55, 26.2826);
 
         doTestCartesianInterpolation(false, CartesianDerivativesFilter.USE_PV,
-                                     394, 9.1042E-9, 3.21, 2.2348E-10,
-                                     2474, 0.07998, 6.55, 0.001539);
+                                     394, 8.2392E-9, 3.21, 1.3236E-10,
+                                     2474, 0.07474, 6.55, 0.001450);
 
         // Interpolation without derivatives is very wrong in PVA as we force first and second derivatives to be 0 i.e. we
         // give false information to the interpolator
@@ -72,9 +79,9 @@ class OrbitHermiteInterpolatorTest {
     @Test
     public void testCircularInterpolationWithDerivatives() {
         doTestCircularInterpolation(true,
-                                    397, 1.88e-8,
-                                    610, 3.52e-6,
-                                    4870, 115);
+                                    397, 2.26e-8,
+                                    610, 3.99e-6,
+                                    4870, 113.8);
     }
 
     @Test
@@ -88,8 +95,8 @@ class OrbitHermiteInterpolatorTest {
     @Test
     public void testEquinoctialInterpolationWithDerivatives() {
         doTestEquinoctialInterpolation(true,
-                                       397, 1.17e-8,
-                                       610, 4.48e-6,
+                                       397, 9.84e-9,
+                                       610, 4.28e-6,
                                        4870, 115);
     }
 
@@ -456,7 +463,7 @@ class OrbitHermiteInterpolatorTest {
             Vector3D     propagatedP   = propagator.propagate(t).getPosition();
             double       shiftedE      = initialOrbit.shiftedBy(dt).getE();
             double       interpolatedE = interpolator.interpolate(t, sample).getE();
-            double       propagatedE   = propagator.propagate(t).getE();
+            double       propagatedE   = propagator.propagate(t).getOrbit().getE();
             maxShiftPositionError             =
                     FastMath.max(maxShiftPositionError, shiftedP.subtract(propagatedP).getNorm());
             maxInterpolationPositionError     =
@@ -489,7 +496,7 @@ class OrbitHermiteInterpolatorTest {
             Vector3D     propagatedP   = propagator.propagate(t).getPosition();
             double       shiftedE      = initialOrbit.shiftedBy(dt).getE();
             double       interpolatedE = interpolator.interpolate(t, sample).getE();
-            double       propagatedE   = propagator.propagate(t).getE();
+            double       propagatedE   = propagator.propagate(t).getOrbit().getE();
             maxShiftPositionError             =
                     FastMath.max(maxShiftPositionError, shiftedP.subtract(propagatedP).getNorm());
             maxInterpolationPositionError     =

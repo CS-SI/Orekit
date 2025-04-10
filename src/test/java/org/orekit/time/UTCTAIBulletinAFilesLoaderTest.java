@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -161,7 +161,7 @@ public class UTCTAIBulletinAFilesLoaderTest {
 
     private void checkOffset(final String s, final double expected) {
         final AbsoluteDate date = new AbsoluteDate(s, TimeScalesFactory.getTAI());
-        Assertions.assertEquals(expected, TimeScalesFactory.getUTC().offsetFromTAI(date), 10e-8);
+        Assertions.assertEquals(expected, TimeScalesFactory.getUTC().offsetFromTAI(date).toDouble(), 10e-8);
     }
 
     private void checkException(String name, OrekitMessages message) {

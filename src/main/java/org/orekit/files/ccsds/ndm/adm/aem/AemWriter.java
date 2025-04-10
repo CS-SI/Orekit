@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -415,7 +415,8 @@ public class AemWriter extends AbstractMessageWriter<AdmHeader, AemSegment, Aem>
                                                                           metadata.getEndpoints().isExternal2SpacecraftBody(),
                                                                           metadata.getEulerRotSeq(),
                                                                           metadata.isSpacecraftBodyRate(),
-                                                                          attitude);
+                                                                          attitude,
+                                                                          generator.getFormatter());
 
         if (generator.getFormat() == FileFormat.KVN) {
 
@@ -423,9 +424,9 @@ public class AemWriter extends AbstractMessageWriter<AdmHeader, AemSegment, Aem>
             generator.writeRawData(generator.dateToString(getTimeConverter(), attitude.getDate()));
 
             // data
-            for (int index = 0; index < data.length; index++) {
+            for (String datum : data) {
                 generator.writeRawData(' ');
-                generator.writeRawData(data[index]);
+                generator.writeRawData(datum);
             }
 
             // end the line

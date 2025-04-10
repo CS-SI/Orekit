@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -48,8 +48,8 @@ public class ConstantViennaAProvider implements ViennaAProvider {
     @Override
     public <T extends CalculusFieldElement<T>> FieldViennaACoefficients<T> getA(final FieldGeodeticPoint<T> location,
                                                                                 final FieldAbsoluteDate<T> date) {
-        return new FieldViennaACoefficients<T>(date.getField().getZero().newInstance(a.getAh()),
-                                               date.getField().getZero().newInstance(a.getAw()));
+        return new FieldViennaACoefficients<>(date.getField().getZero().newInstance(a.getAh()),
+                date.getField().getZero().newInstance(a.getAw()));
     }
 
 }

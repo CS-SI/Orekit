@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -55,6 +55,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -316,8 +317,8 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         final double massTolerance =
                 FastMath.abs(maneuver.getFlowRate()) * maneuver.getEventDetectors().findFirst().get().getThreshold();
         Assertions.assertEquals(2007.8824544261233, finalorb.getMass(), massTolerance);
-        Assertions.assertEquals(2.6872, FastMath.toDegrees(MathUtils.normalizeAngle(finalorb.getI(), FastMath.PI)), 1e-4);
-        Assertions.assertEquals(28970, finalorb.getA()/1000, 1);
+        Assertions.assertEquals(2.6872, FastMath.toDegrees(MathUtils.normalizeAngle(finalorb.getOrbit().getI(), FastMath.PI)), 1e-4);
+        Assertions.assertEquals(28970, finalorb.getOrbit().getA()/1000, 1);
 
     }
 
@@ -354,7 +355,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         SpacecraftState iSR = initialState.toSpacecraftState();
 
         final OrbitType type = OrbitType.KEPLERIAN;
-        double[][] tolerance = NumericalPropagator.tolerances(10.0, FKO.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(FKO.toOrbit(), type);
 
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
@@ -416,7 +417,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         SpacecraftState iSR = initialState.toSpacecraftState();
 
         final OrbitType type = OrbitType.KEPLERIAN;
-        double[][] tolerance = NumericalPropagator.tolerances(10.0, FKO.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(FKO.toOrbit(), type);
 
 
         AdaptiveStepsizeFieldIntegrator<Gradient> integrator =
@@ -477,7 +478,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         SpacecraftState iSR = initialState.toSpacecraftState();
 
         final OrbitType type = OrbitType.KEPLERIAN;
-        double[][] tolerance = NumericalPropagator.tolerances(10.0, FKO.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(FKO.toOrbit(), type);
 
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
@@ -546,7 +547,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         Assertions.assertEquals(isp, maneuver.getIsp(),    1.0e-10);
 
         final OrbitType orbitType = OrbitType.KEPLERIAN;
-        double[][] tol = NumericalPropagator.tolerances(1.0e-5, orbit, orbitType);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-5).getTolerances(orbit, orbitType);
         AdaptiveStepsizeIntegrator integrator1 =
             new DormandPrince853Integrator(1.0e-5, 1000, tol[0], tol[1]);
         integrator1.setInitialStepSize(60);
@@ -669,7 +670,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         // reference propagation:
         // propagator already uses inertial law
         // maneuver does not need to override it to get an inertial maneuver
-        double[][] tol = NumericalPropagator.tolerances(1.0, orbit, OrbitType.KEPLERIAN);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1.).getTolerances(orbit, OrbitType.KEPLERIAN);
         AdaptiveStepsizeIntegrator integrator1 =
             new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
         integrator1.setInitialStepSize(60);
@@ -770,7 +771,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         // reference propagation:
         // propagator already uses inertial law
         // maneuver does not need to override it to get an inertial maneuver
-        double[][] tol = NumericalPropagator.tolerances(1.0, orbit, OrbitType.KEPLERIAN);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1.).getTolerances(orbit, OrbitType.KEPLERIAN);
         AdaptiveStepsizeIntegrator integrator1 =
             new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
         integrator1.setInitialStepSize(60);
@@ -826,7 +827,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         final double maxStep = 3600;
 
         // Defining integrator
-        final double[][]          tolerances = NumericalPropagator.tolerances(dP, cartesianOrbit, OrbitType.CARTESIAN);
+        final double[][]          tolerances = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(cartesianOrbit, OrbitType.CARTESIAN);
         final ODEIntegrator       integrator = new DormandPrince853Integrator(minStep, maxStep, tolerances[0],
                 tolerances[1]);
         final NumericalPropagator numProp = new NumericalPropagator(integrator);
@@ -838,7 +839,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
 
         // Propagation
         final SpacecraftState finalState = numProp.propagate(initialDate.shiftedBy(60));
-        Assertions.assertEquals(cartesianOrbit.getA(), finalState.getA(), 1.0e-15);
+        Assertions.assertEquals(cartesianOrbit.getA(), finalState.getOrbit().getA(), 1.0e-15);
 
     }
 

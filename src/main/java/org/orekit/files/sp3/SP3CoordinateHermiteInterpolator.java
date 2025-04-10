@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -91,32 +91,28 @@ public class SP3CoordinateHermiteInterpolator extends AbstractTimeInterpolator<S
         // Add sample points
         if (useRates) {
             // populate sample with position, clock, velocity and clock rate data
-            sample.forEach(c -> {
-                interpolator.addSamplePoint(c.getDate().durationFrom(date),
-                                            new double[] {
-                                                c.getPosition().getX(),
-                                                c.getPosition().getY(),
-                                                c.getPosition().getZ(),
-                                                c.getClockCorrection(),
-                                            },
-                                            new double[] {
-                                                c.getVelocity().getX(),
-                                                c.getVelocity().getY(),
-                                                c.getVelocity().getZ(),
-                                                c.getClockRateChange(),
-                                            });
-            });
+            sample.forEach(c -> interpolator.addSamplePoint(c.getDate().durationFrom(date),
+                                        new double[] {
+                                            c.getPosition().getX(),
+                                            c.getPosition().getY(),
+                                            c.getPosition().getZ(),
+                                            c.getClockCorrection(),
+                                        },
+                                        new double[] {
+                                            c.getVelocity().getX(),
+                                            c.getVelocity().getY(),
+                                            c.getVelocity().getZ(),
+                                            c.getClockRateChange(),
+                                        }));
         } else {
             // populate sample with position and clock data, ignoring velocity and clock rate
-            sample.forEach(c -> {
-                interpolator.addSamplePoint(c.getDate().durationFrom(date),
-                                            new double[] {
-                                                c.getPosition().getX(),
-                                                c.getPosition().getY(),
-                                                c.getPosition().getZ(),
-                                                c.getClockCorrection(),
-                                            });
-            });
+            sample.forEach(c -> interpolator.addSamplePoint(c.getDate().durationFrom(date),
+                                        new double[] {
+                                            c.getPosition().getX(),
+                                            c.getPosition().getY(),
+                                            c.getPosition().getZ(),
+                                            c.getClockCorrection(),
+                                        }));
         }
 
         // Interpolate

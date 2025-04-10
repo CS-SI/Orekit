@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -97,5 +97,16 @@ public interface ExtendedPositionProvider extends PVCoordinatesProvider {
                 return ExtendedPositionProvider.this.getPVCoordinates(date, frame);
             }
         };
+    }
+
+    /**
+     * Method to convert as {@link ExtendedPVCoordinatesProvider}.
+     * @return converted object
+     * @since 13.0
+     * @deprecated since 13.0. Only there to help transition out.
+     */
+    @Deprecated
+    default ExtendedPVCoordinatesProvider toExtendedPVCoordinatesProvider() {
+        return ExtendedPositionProvider.this::getPVCoordinates;
     }
 }

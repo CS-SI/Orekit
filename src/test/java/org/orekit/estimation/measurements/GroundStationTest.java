@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -46,7 +46,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
-import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -58,21 +57,16 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class GroundStationTest {
+class GroundStationTest {
 
     @Test
-    public void testEstimateClockOffset() throws IOException, ClassNotFoundException {
+    void testEstimateClockOffset() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -94,9 +88,7 @@ public class GroundStationTest {
         final double deltaClock      = 0.00084532;
         final String changedSuffix   = "-changed";
         final GroundStation changed  = new GroundStation(new TopocentricFrame(parent, base.getPoint(),
-                                                                              base.getName() + changedSuffix),
-                                                         TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
-                                                         context.ut1.getEOPHistory(),
+                                                                              base.getName() + changedSuffix), context.ut1.getEOPHistory(),
                                                          context.stations.get(0).getDisplacements());
 
         // create orbit estimator
@@ -129,8 +121,8 @@ public class GroundStationTest {
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
                                      0.0, 6.8e-7,
                                      0.0, 2.0e-6,
-                                     0.0, 1.7e-7,
-                                     0.0, 5.9e-11);
+                                     0.0, 1.8e-7,
+                                     0.0, 8e-11);
         Assertions.assertEquals(deltaClock, changed.getClockOffsetDriver().getValue(), 9.6e-11);
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
@@ -144,7 +136,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testEstimateStationPosition() throws IOException, ClassNotFoundException {
+    void testEstimateStationPosition() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -161,7 +153,7 @@ public class GroundStationTest {
                                                                1.0, 3.0, 300.0);
 
         // move one station
-        final RandomGenerator random = new Well19937a(0x4adbecfc743bda60l);
+        final RandomGenerator random = new Well19937a(0x4adbecfc743bda60L);
         final TopocentricFrame base = context.stations.get(0).getBaseFrame();
         final BodyShape parent = base.getParentShape();
         final Vector3D baseOrigin = parent.transform(base.getPoint());
@@ -175,9 +167,7 @@ public class GroundStationTest {
                                                                            parent.transform(baseOrigin.subtract(deltaParent),
                                                                                             parent.getBodyFrame(),
                                                                                             null),
-                                                                           base.getName() + movedSuffix),
-                                                      TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
-                                                      context.ut1.getEOPHistory(),
+                                                                           base.getName() + movedSuffix), context.ut1.getEOPHistory(),
                                                       context.stations.get(0).getDisplacements());
 
         // create orbit estimator
@@ -206,11 +196,11 @@ public class GroundStationTest {
         moved.getNorthOffsetDriver().setSelected(true);
         moved.getZenithOffsetDriver().setSelected(true);
 
-        EstimationTestUtils.checkFit(context, estimator, 2, 3,
-                                     0.0, 5.8e-7,
+        EstimationTestUtils.checkFit(context, estimator, 2, 7,
+                                     0.0, 6.3e-7,
                                      0.0, 1.8e-6,
-                                     0.0, 4.8e-7,
-                                     0.0, 2.6e-10);
+                                     0.0, 9e-7,
+                                     0.0, 5e-10);
         Assertions.assertEquals(deltaTopo.getX(), moved.getEastOffsetDriver().getValue(),   4.5e-7);
         Assertions.assertEquals(deltaTopo.getY(), moved.getNorthOffsetDriver().getValue(),  6.2e-7);
         Assertions.assertEquals(deltaTopo.getZ(), moved.getZenithOffsetDriver().getValue(), 2.6e-7);
@@ -219,7 +209,7 @@ public class GroundStationTest {
 
         GeodeticPoint reference = context.stations.get(0).getBaseFrame().getPoint();
         Assertions.assertEquals(reference.getLatitude(),  result.getLatitude(),  3.3e-14);
-        Assertions.assertEquals(reference.getLongitude(), result.getLongitude(), 2.9e-14);
+        Assertions.assertEquals(reference.getLongitude(), result.getLongitude(), 1e-13);
         Assertions.assertEquals(reference.getAltitude(),  result.getAltitude(),  2.6e-7);
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
@@ -231,40 +221,10 @@ public class GroundStationTest {
         Assertions.assertEquals(0.55431, physicalCovariances.getEntry(6, 6), 1.0e-5);
         Assertions.assertEquals(0.22694, physicalCovariances.getEntry(7, 7), 1.0e-5);
         Assertions.assertEquals(0.13106, physicalCovariances.getEntry(8, 8), 1.0e-5);
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(moved.getEstimatedEarthFrame().getTransformProvider());
-
-        Assertions.assertTrue(bos.size() > 138000);
-        Assertions.assertTrue(bos.size() < 139000);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        EstimatedEarthFrameProvider deserialized  = (EstimatedEarthFrameProvider) ois.readObject();
-        Assertions.assertEquals(moved.getPrimeMeridianOffsetDriver().getValue(),
-                            deserialized.getPrimeMeridianOffsetDriver().getValue(),
-                            1.0e-15);
-        Assertions.assertEquals(moved.getPrimeMeridianDriftDriver().getValue(),
-                            deserialized.getPrimeMeridianDriftDriver().getValue(),
-                            1.0e-15);
-        Assertions.assertEquals(moved.getPolarOffsetXDriver().getValue(),
-                            deserialized.getPolarOffsetXDriver().getValue(),
-                            1.0e-15);
-        Assertions.assertEquals(moved.getPolarDriftXDriver().getValue(),
-                            deserialized.getPolarDriftXDriver().getValue(),
-                            1.0e-15);
-        Assertions.assertEquals(moved.getPolarOffsetYDriver().getValue(),
-                            deserialized.getPolarOffsetYDriver().getValue(),
-                            1.0e-15);
-        Assertions.assertEquals(moved.getPolarDriftYDriver().getValue(),
-                            deserialized.getPolarDriftYDriver().getValue(),
-                            1.0e-15);
-
     }
 
     @Test
-    public void testEstimateEOP() {
+    void testEstimateEOP() {
 
         Context linearEOPContext = EstimationTestUtils.eccentricContext("linear-EOP:regular-data/de431-ephemerides:potential:tides");
 
@@ -371,8 +331,8 @@ public class GroundStationTest {
         final double computedYpDot = station.getPolarDriftYDriver().getValue()  / Constants.ARC_SECONDS_TO_RADIANS * Constants.JULIAN_DAY;
         Assertions.assertEquals(0.0, FastMath.abs(dut10 - computedDut1),  4.3e-10);
         Assertions.assertEquals(0.0, FastMath.abs(lod - computedLOD),     4.9e-10);
-        Assertions.assertEquals(0.0, FastMath.abs(xp0 - computedXp),      5.7e-9);
-        Assertions.assertEquals(0.0, FastMath.abs(xpDot - computedXpDot), 7.3e-9);
+        Assertions.assertEquals(0.0, FastMath.abs(xp0 - computedXp),      5.9e-9);
+        Assertions.assertEquals(0.0, FastMath.abs(xpDot - computedXpDot), 7.5e-9);
         Assertions.assertEquals(0.0, FastMath.abs(yp0 - computedYp),      1.1e-9);
         Assertions.assertEquals(0.0, FastMath.abs(ypDot - computedYpDot), 1.1e-10);
 
@@ -388,7 +348,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testClockOffsetCartesianDerivativesOctantPxPyPz() {
+    void testClockOffsetCartesianDerivativesOctantPxPyPz() {
         double relativeTolerancePositionValue      =  2.3e-15;
         double relativeTolerancePositionDerivative =  2.5e-10;
         double relativeToleranceVelocityValue      =  3.0e-15;
@@ -400,7 +360,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testClockOffsetAngularDerivativesOctantPxPyPz() {
+    void testClockOffsetAngularDerivativesOctantPxPyPz() {
         double toleranceRotationValue              =  1.9e-15;
         double toleranceRotationDerivative         =  4.9e-15;
         double toleranceRotationRateValue          =  1.1e-19;
@@ -412,7 +372,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testClockOffsetCartesianDerivativesOctantPxPyMz() {
+    void testClockOffsetCartesianDerivativesOctantPxPyMz() {
         double relativeTolerancePositionValue      =  1.4e-15;
         double relativeTolerancePositionDerivative =  1.7e-10;
         double relativeToleranceVelocityValue      =  2.5e-15;
@@ -424,7 +384,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testClockOffsetAngularDerivativesOctantPxPyMz() {
+    void testClockOffsetAngularDerivativesOctantPxPyMz() {
         double toleranceRotationValue              =  1.7e-15;
         double toleranceRotationDerivative         =  5.0e-15;
         double toleranceRotationRateValue          =  1.1e-19;
@@ -436,7 +396,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testClockOffsetCartesianDerivativesOctantPxMyPz() {
+    void testClockOffsetCartesianDerivativesOctantPxMyPz() {
         double relativeTolerancePositionValue      =  1.7e-15;
         double relativeTolerancePositionDerivative =  2.6e-10;
         double relativeToleranceVelocityValue      =  2.8e-15;
@@ -448,7 +408,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testClockOffsetAngularDerivativesOctantPxMyPz() {
+    void testClockOffsetAngularDerivativesOctantPxMyPz() {
         double toleranceRotationValue              =  1.6e-15;
         double toleranceRotationDerivative         =  4.9e-15;
         double toleranceRotationRateValue          =  1.1e-19;
@@ -460,7 +420,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testClockOffsetCartesianDerivativesOctantPxMyMz() {
+    void testClockOffsetCartesianDerivativesOctantPxMyMz() {
         double relativeTolerancePositionValue      =  1.5e-15;
         double relativeTolerancePositionDerivative =  1.6e-10;
         double relativeToleranceVelocityValue      =  2.3e-15;
@@ -472,7 +432,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testClockOffsetAngularDerivativesOctantPxMyMz() {
+    void testClockOffsetAngularDerivativesOctantPxMyMz() {
         double toleranceRotationValue              =  1.5e-15;
         double toleranceRotationDerivative         =  5.0e-15;
         double toleranceRotationRateValue          =  1.1e-19;
@@ -484,7 +444,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testClockOffsetCartesianDerivativesOctantMxPyPz() {
+    void testClockOffsetCartesianDerivativesOctantMxPyPz() {
         double relativeTolerancePositionValue      =  1.9e-15;
         double relativeTolerancePositionDerivative =  2.6e-10;
         double relativeToleranceVelocityValue      =  2.6e-15;
@@ -496,7 +456,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testClockOffsetAngularDerivativesOctantMxPyPz() {
+    void testClockOffsetAngularDerivativesOctantMxPyPz() {
         double toleranceRotationValue              =  1.4e-15;
         double toleranceRotationDerivative         =  5.2e-15;
         double toleranceRotationRateValue          =  1.1e-19;
@@ -508,7 +468,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testClockOffsetCartesianDerivativesOctantMxPyMz() {
+    void testClockOffsetCartesianDerivativesOctantMxPyMz() {
         double relativeTolerancePositionValue      =  1.9e-15;
         double relativeTolerancePositionDerivative =  2.6e-10;
         double relativeToleranceVelocityValue      =  2.6e-15;
@@ -520,7 +480,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testClockOffsetAngularDerivativesOctantMxPyMz() {
+    void testClockOffsetAngularDerivativesOctantMxPyMz() {
         double toleranceRotationValue              =  1.4e-15;
         double toleranceRotationDerivative         =  5.2e-15;
         double toleranceRotationRateValue          =  1.1e-19;
@@ -532,7 +492,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testClockOffsetCartesianDerivativesOctantMxMyPz() {
+    void testClockOffsetCartesianDerivativesOctantMxMyPz() {
         double relativeTolerancePositionValue      =  1.5e-15;
         double relativeTolerancePositionDerivative =  1.7e-10;
         double relativeToleranceVelocityValue      =  2.9e-15;
@@ -544,7 +504,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testClockOffsetAngularDerivativesOctantMxMyPz() {
+    void testClockOffsetAngularDerivativesOctantMxMyPz() {
         double toleranceRotationValue              =  1.6e-15;
         double toleranceRotationDerivative         =  4.9e-15;
         double toleranceRotationRateValue          =  1.1e-19;
@@ -556,7 +516,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testClockOffsetCartesianDerivativesOctantMxMyMz() {
+    void testClockOffsetCartesianDerivativesOctantMxMyMz() {
         double relativeTolerancePositionValue      =  1.5e-15;
         double relativeTolerancePositionDerivative =  1.7e-10;
         double relativeToleranceVelocityValue      =  2.9e-15;
@@ -568,7 +528,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testClockOffsetAngularDerivativesOctantMxMyMz() {
+    void testClockOffsetAngularDerivativesOctantMxMyMz() {
         double toleranceRotationValue              =  1.6e-15;
         double toleranceRotationDerivative         =  4.9e-15;
         double toleranceRotationRateValue          =  1.1e-19;
@@ -580,7 +540,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testClockOffsetCartesianDerivativesNearPole() {
+    void testClockOffsetCartesianDerivativesNearPole() {
         double relativeTolerancePositionValue      =  1.2e-15;
         double relativeTolerancePositionDerivative =  1.6e-04;
         double relativeToleranceVelocityValue      =  1.0e-13;
@@ -592,7 +552,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testClockOffsetAngularDerivativesNearPole() {
+    void testClockOffsetAngularDerivativesNearPole() {
         double toleranceRotationValue              =  1.5e-15;
         double toleranceRotationDerivative         =  5.7e-15;
         double toleranceRotationRateValue          =  1.1e-19;
@@ -604,7 +564,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetCartesianDerivativesOctantPxPyPz() {
+    void testStationOffsetCartesianDerivativesOctantPxPyPz() {
         double relativeTolerancePositionValue      =  2.3e-15;
         double relativeTolerancePositionDerivative =  1.1e-10;
         double relativeToleranceVelocityValue      =  3.3e-15;
@@ -616,7 +576,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetAngularDerivativesOctantPxPyPz() {
+    void testStationOffsetAngularDerivativesOctantPxPyPz() {
         double toleranceRotationValue              =  1.9e-15;
         double toleranceRotationDerivative         =  3.1e-18;
         double toleranceRotationRateValue          =  1.5e-19;
@@ -628,7 +588,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetCartesianDerivativesOctantPxPyMz() {
+    void testStationOffsetCartesianDerivativesOctantPxPyMz() {
         double relativeTolerancePositionValue      =  1.4e-15;
         double relativeTolerancePositionDerivative =  7.3e-11;
         double relativeToleranceVelocityValue      =  2.8e-15;
@@ -640,7 +600,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetAngularDerivativesOctantPxPyMz() {
+    void testStationOffsetAngularDerivativesOctantPxPyMz() {
         double toleranceRotationValue            =  1.7e-15;
         double toleranceRotationDerivative       =  3.6e-18;
         double toleranceRotationRateValue        =  1.5e-19;
@@ -652,7 +612,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetCartesianDerivativesOctantPxMyPz() {
+    void testStationOffsetCartesianDerivativesOctantPxMyPz() {
         double relativeTolerancePositionValue      =  1.7e-15;
         double relativeTolerancePositionDerivative =  9.0e-11;
         double relativeToleranceVelocityValue      =  2.9e-15;
@@ -664,7 +624,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetAngularDerivativesOctantPxMyPz() {
+    void testStationOffsetAngularDerivativesOctantPxMyPz() {
         double toleranceRotationValue              =  1.6e-15;
         double toleranceRotationDerivative         =  3.6e-18;
         double toleranceRotationRateValue          =  1.5e-19;
@@ -676,7 +636,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetCartesianDerivativesOctantPxMyMz() {
+    void testStationOffsetCartesianDerivativesOctantPxMyMz() {
         double relativeTolerancePositionValue      =  1.5e-15;
         double relativeTolerancePositionDerivative =  4.2e-11;
         double relativeToleranceVelocityValue      =  2.7e-15;
@@ -688,7 +648,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetAngularDerivativesOctantPxMyMz() {
+    void testStationOffsetAngularDerivativesOctantPxMyMz() {
         double toleranceRotationValue            =  1.6e-15;
         double toleranceRotationDerivative       =  2.6e-18;
         double toleranceRotationRateValue        =  1.5e-19;
@@ -700,7 +660,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetCartesianDerivativesOctantMxPyPz() {
+    void testStationOffsetCartesianDerivativesOctantMxPyPz() {
         double relativeTolerancePositionValue      =  1.6e-15;
         double relativeTolerancePositionDerivative =  9.9e-11;
         double relativeToleranceVelocityValue      =  2.6e-15;
@@ -712,7 +672,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetAngularDerivativesOctantMxPyPz() {
+    void testStationOffsetAngularDerivativesOctantMxPyPz() {
         double toleranceRotationValue            =  1.5e-15;
         double toleranceRotationDerivative       =  3.1e-18;
         double toleranceRotationRateValue        =  1.5e-19;
@@ -724,7 +684,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetCartesianDerivativesOctantMxPyMz() {
+    void testStationOffsetCartesianDerivativesOctantMxPyMz() {
         double relativeTolerancePositionValue      =  1.6e-15;
         double relativeTolerancePositionDerivative =  9.9e-11;
         double relativeToleranceVelocityValue      =  2.6e-15;
@@ -736,7 +696,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetAngularDerivativesOctantMxPyMz() {
+    void testStationOffsetAngularDerivativesOctantMxPyMz() {
         double toleranceRotationValue            =  1.5e-15;
         double toleranceRotationDerivative       =  3.1e-18;
         double toleranceRotationRateValue        =  1.5e-19;
@@ -748,7 +708,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetCartesianDerivativesOctantMxMyPz() {
+    void testStationOffsetCartesianDerivativesOctantMxMyPz() {
         double relativeTolerancePositionValue      =  1.5e-15;
         double relativeTolerancePositionDerivative =  6.2e-11;
         double relativeToleranceVelocityValue      =  3.2e-15;
@@ -760,7 +720,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetAngularDerivativesOctantMxMyPz() {
+    void testStationOffsetAngularDerivativesOctantMxMyPz() {
         double toleranceRotationValue            =  1.6e-15;
         double toleranceRotationDerivative       =  3.4e-18;
         double toleranceRotationRateValue        =  1.5e-19;
@@ -772,7 +732,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetCartesianDerivativesOctantMxMyMz() {
+    void testStationOffsetCartesianDerivativesOctantMxMyMz() {
         double relativeTolerancePositionValue      =  1.5e-15;
         double relativeTolerancePositionDerivative =  6.2e-11;
         double relativeToleranceVelocityValue      =  3.2e-15;
@@ -784,7 +744,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetAngularDerivativesOctantMxMyMz() {
+    void testStationOffsetAngularDerivativesOctantMxMyMz() {
         double toleranceRotationValue            =  1.6e-15;
         double toleranceRotationDerivative       =  3.4e-18;
         double toleranceRotationRateValue        =  1.5e-19;
@@ -796,9 +756,9 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetCartesianDerivativesNearPole() {
-        double relativeTolerancePositionValue      =  2.1e-15;
-        double relativeTolerancePositionDerivative =  9.4e-10;
+    void testStationOffsetCartesianDerivativesNearPole() {
+        double relativeTolerancePositionValue      =  2.4e-15;
+        double relativeTolerancePositionDerivative =  2e-9;
         double relativeToleranceVelocityValue      =  7.5e-14;
         double relativeToleranceVelocityDerivative =  3.9e-10;
         doTestCartesianDerivatives(FastMath.toRadians(89.99995), FastMath.toRadians(90), 1200.0, 100.0,
@@ -808,7 +768,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testStationOffsetAngularDerivativesNearPole() {
+    void testStationOffsetAngularDerivativesNearPole() {
         double toleranceRotationValue              =  3.9e-15;
         double toleranceRotationDerivative         =  8.0e-02; // near pole, the East and North directions are singular
         double toleranceRotationRateValue          =  1.5e-19;
@@ -820,7 +780,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionCartesianDerivativesOctantPxPyPz() {
+    void testPolarMotionCartesianDerivativesOctantPxPyPz() {
         double relativeTolerancePositionValue      =  2.3e-15;
         double relativeTolerancePositionDerivative =  7.3e-09;
         double relativeToleranceVelocityValue      =  3.3e-15;
@@ -833,7 +793,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionAngularDerivativesOctantPxPyPz() {
+    void testPolarMotionAngularDerivativesOctantPxPyPz() {
         double toleranceRotationValue              =  1.9e-15;
         double toleranceRotationDerivative         =  6.6e-09;
         double toleranceRotationRateValue          =  1.5e-19;
@@ -846,7 +806,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionCartesianDerivativesOctantPxPyMz() {
+    void testPolarMotionCartesianDerivativesOctantPxPyMz() {
         double relativeTolerancePositionValue      =  1.4e-15;
         double relativeTolerancePositionDerivative =  4.1e-09;
         double relativeToleranceVelocityValue      =  2.8e-15;
@@ -859,7 +819,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionAngularDerivativesOctantPxPyMz() {
+    void testPolarMotionAngularDerivativesOctantPxPyMz() {
         double toleranceRotationValue              =  1.7e-15;
         double toleranceRotationDerivative         =  6.9e-09;
         double toleranceRotationRateValue          =  1.5e-19;
@@ -872,7 +832,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionCartesianDerivativesOctantPxMyPz() {
+    void testPolarMotionCartesianDerivativesOctantPxMyPz() {
         double relativeTolerancePositionValue      =  1.7e-15;
         double relativeTolerancePositionDerivative =  7.8e-09;
         double relativeToleranceVelocityValue      =  2.9e-15;
@@ -885,7 +845,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionAngularDerivativesOctantPxMyPz() {
+    void testPolarMotionAngularDerivativesOctantPxMyPz() {
         double toleranceRotationValue              =  1.6e-15;
         double toleranceRotationDerivative         =  7.5e-09;
         double toleranceRotationRateValue          =  1.5e-19;
@@ -898,7 +858,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionCartesianDerivativesOctantPxMyMz() {
+    void testPolarMotionCartesianDerivativesOctantPxMyMz() {
         double relativeTolerancePositionValue      =  1.5e-15;
         double relativeTolerancePositionDerivative =  4.1e-09;
         double relativeToleranceVelocityValue      =  2.7e-15;
@@ -911,7 +871,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionAngularDerivativesOctantPxMyMz() {
+    void testPolarMotionAngularDerivativesOctantPxMyMz() {
         double toleranceRotationValue            =  1.6e-15;
         double toleranceRotationDerivative       =  7.3e-09;
         double toleranceRotationRateValue        =  1.5e-19;
@@ -924,7 +884,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionCartesianDerivativesOctantMxPyPz() {
+    void testPolarMotionCartesianDerivativesOctantMxPyPz() {
         double relativeTolerancePositionValue      =  1.6e-15;
         double relativeTolerancePositionDerivative =  8.4e-09;
         double relativeToleranceVelocityValue      =  2.6e-15;
@@ -937,7 +897,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionAngularDerivativesOctantMxPyPz() {
+    void testPolarMotionAngularDerivativesOctantMxPyPz() {
         double toleranceRotationValue              =  1.4e-15;
         double toleranceRotationDerivative         =  6.3e-09;
         double toleranceRotationRateValue          =  1.5e-19;
@@ -950,7 +910,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionCartesianDerivativesOctantMxPyMz() {
+    void testPolarMotionCartesianDerivativesOctantMxPyMz() {
         double relativeTolerancePositionValue      =  1.6e-15;
         double relativeTolerancePositionDerivative =  8.4e-09;
         double relativeToleranceVelocityValue      =  2.6e-15;
@@ -963,7 +923,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionAngularDerivativesOctantMxPyMz() {
+    void testPolarMotionAngularDerivativesOctantMxPyMz() {
         double toleranceRotationValue              =  1.4e-15;
         double toleranceRotationDerivative         =  6.3e-09;
         double toleranceRotationRateValue          =  1.5e-19;
@@ -976,7 +936,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionCartesianDerivativesOctantMxMyPz() {
+    void testPolarMotionCartesianDerivativesOctantMxMyPz() {
         double relativeTolerancePositionValue      =  1.5e-15;
         double relativeTolerancePositionDerivative =  5.0e-09;
         double relativeToleranceVelocityValue      =  3.2e-15;
@@ -989,7 +949,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionAngularDerivativesOctantMxMyPz() {
+    void testPolarMotionAngularDerivativesOctantMxMyPz() {
         double toleranceRotationValue              =  1.6e-15;
         double toleranceRotationDerivative         =  7.7e-09;
         double toleranceRotationRateValue          =  1.5e-19;
@@ -1002,7 +962,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionCartesianDerivativesOctantMxMyMz() {
+    void testPolarMotionCartesianDerivativesOctantMxMyMz() {
         double relativeTolerancePositionValue      =  1.5e-15;
         double relativeTolerancePositionDerivative =  5.0e-09;
         double relativeToleranceVelocityValue      =  3.2e-15;
@@ -1015,7 +975,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionAngularDerivativesOctantMxMyMz() {
+    void testPolarMotionAngularDerivativesOctantMxMyMz() {
         double toleranceRotationValue              =  1.6e-15;
         double toleranceRotationDerivative         =  7.7e-09;
         double toleranceRotationRateValue          =  1.5e-19;
@@ -1028,10 +988,10 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionCartesianDerivativesNearPole() {
+    void testPolarMotionCartesianDerivativesNearPole() {
         double relativeTolerancePositionValue      =  1.2e-15;
         double relativeTolerancePositionDerivative =  5.7e-09;
-        double relativeToleranceVelocityValue      =  9.4e-13;
+        double relativeToleranceVelocityValue      =  9.7e-13;
         double relativeToleranceVelocityDerivative =  1.2e-09;
         doTestCartesianDerivatives(FastMath.toRadians(89.99995), FastMath.toRadians(90), 1200.0, 1.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
@@ -1041,7 +1001,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPolarMotionAngularDerivativesNearPole() {
+    void testPolarMotionAngularDerivativesNearPole() {
         double toleranceRotationValue              =  1.5e-15;
         double toleranceRotationDerivative         =  6.5e-09;
         double toleranceRotationRateValue          =  1.5e-19;
@@ -1054,7 +1014,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianCartesianDerivativesOctantPxPyPz() {
+    void testPrimeMeridianCartesianDerivativesOctantPxPyPz() {
         double relativeTolerancePositionValue      =  2.3e-15;
         double relativeTolerancePositionDerivative =  5.7e-09;
         double relativeToleranceVelocityValue      =  3.3e-15;
@@ -1066,7 +1026,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianAngularDerivativesOctantPxPyPz() {
+    void testPrimeMeridianAngularDerivativesOctantPxPyPz() {
         double toleranceRotationValue              =  1.9e-15;
         double toleranceRotationDerivative         =  4.9e-09;
         double toleranceRotationRateValue          =  1.5e-19;
@@ -1078,7 +1038,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianCartesianDerivativesOctantPxPyMz() {
+    void testPrimeMeridianCartesianDerivativesOctantPxPyMz() {
         double relativeTolerancePositionValue      =  1.4e-15;
         double relativeTolerancePositionDerivative =  3.1e-09;
         double relativeToleranceVelocityValue      =  2.8e-15;
@@ -1090,7 +1050,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianAngularDerivativesOctantPxPyMz() {
+    void testPrimeMeridianAngularDerivativesOctantPxPyMz() {
         double toleranceRotationValue            =  1.7e-15;
         double toleranceRotationDerivative       =  5.7e-09;
         double toleranceRotationRateValue        =  1.5e-19;
@@ -1102,7 +1062,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianCartesianDerivativesOctantPxMyPz() {
+    void testPrimeMeridianCartesianDerivativesOctantPxMyPz() {
         double relativeTolerancePositionValue      =  1.7e-15;
         double relativeTolerancePositionDerivative =  5.3e-09;
         double relativeToleranceVelocityValue      =  2.9e-15;
@@ -1114,7 +1074,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianAngularDerivativesOctantPxMyPz() {
+    void testPrimeMeridianAngularDerivativesOctantPxMyPz() {
         double toleranceRotationValue              =  1.6e-15;
         double toleranceRotationDerivative         =  6.4e-09;
         double toleranceRotationRateValue          =  1.5e-19;
@@ -1126,7 +1086,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianCartesianDerivativesOctantPxMyMz() {
+    void testPrimeMeridianCartesianDerivativesOctantPxMyMz() {
         double relativeTolerancePositionValue      =  1.5e-15;
         double relativeTolerancePositionDerivative =  3.1e-09;
         double relativeToleranceVelocityValue      =  2.7e-15;
@@ -1138,7 +1098,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianAngularDerivativesOctantPxMyMz() {
+    void testPrimeMeridianAngularDerivativesOctantPxMyMz() {
         double toleranceRotationValue              =  1.5e-15;
         double toleranceRotationDerivative         =  6.3e-09;
         double toleranceRotationRateValue          =  1.5e-19;
@@ -1150,7 +1110,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianCartesianDerivativesOctantMxPyPz() {
+    void testPrimeMeridianCartesianDerivativesOctantMxPyPz() {
         double relativeTolerancePositionValue      =  1.6e-15;
         double relativeTolerancePositionDerivative =  5.5e-09;
         double relativeToleranceVelocityValue      =  2.6e-15;
@@ -1162,7 +1122,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianAngularDerivativesOctantMxPyPz() {
+    void testPrimeMeridianAngularDerivativesOctantMxPyPz() {
         double toleranceRotationValue            =  1.5e-15;
         double toleranceRotationDerivative       =  6.8e-09;
         double toleranceRotationRateValue        =  1.5e-19;
@@ -1174,7 +1134,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianCartesianDerivativesOctantMxPyMz() {
+    void testPrimeMeridianCartesianDerivativesOctantMxPyMz() {
         double relativeTolerancePositionValue      =  1.6e-15;
         double relativeTolerancePositionDerivative =  5.5e-09;
         double relativeToleranceVelocityValue      =  2.6e-15;
@@ -1186,7 +1146,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianAngularDerivativesOctantMxPyMz() {
+    void testPrimeMeridianAngularDerivativesOctantMxPyMz() {
         double toleranceRotationValue            =  1.5e-15;
         double toleranceRotationDerivative       =  6.8e-09;
         double toleranceRotationRateValue        =  1.5e-19;
@@ -1198,7 +1158,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianCartesianDerivativesOctantMxMyPz() {
+    void testPrimeMeridianCartesianDerivativesOctantMxMyPz() {
         double relativeTolerancePositionValue      =  1.5e-15;
         double relativeTolerancePositionDerivative =  3.1e-09;
         double relativeToleranceVelocityValue      =  3.2e-15;
@@ -1210,7 +1170,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianAngularDerivativesOctantMxMyPz() {
+    void testPrimeMeridianAngularDerivativesOctantMxMyPz() {
         double toleranceRotationValue              =  1.6e-15;
         double toleranceRotationDerivative         =  6.2e-09;
         double toleranceRotationRateValue          =  1.5e-19;
@@ -1222,7 +1182,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianCartesianDerivativesOctantMxMyMz() {
+    void testPrimeMeridianCartesianDerivativesOctantMxMyMz() {
         double relativeTolerancePositionValue      =  1.5e-15;
         double relativeTolerancePositionDerivative =  3.1e-09;
         double relativeToleranceVelocityValue      =  3.2e-15;
@@ -1234,7 +1194,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianAngularDerivativesOctantMxMyMz() {
+    void testPrimeMeridianAngularDerivativesOctantMxMyMz() {
         double toleranceRotationValue              =  1.6e-15;
         double toleranceRotationDerivative         =  6.2e-09;
         double toleranceRotationRateValue          =  1.5e-19;
@@ -1246,7 +1206,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianCartesianDerivativesNearPole() {
+    void testPrimeMeridianCartesianDerivativesNearPole() {
         double relativeTolerancePositionValue      =  1.2e-15;
         double relativeTolerancePositionDerivative =  1.6e-03;
         double relativeToleranceVelocityValue      =  5.8e-14;
@@ -1258,7 +1218,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testPrimeMeridianAngularDerivativesNearPole() {
+    void testPrimeMeridianAngularDerivativesNearPole() {
         double toleranceRotationValue              =  1.5e-15;
         double toleranceRotationDerivative         =  7.3e-09;
         double toleranceRotationRateValue          =  1.5e-19;
@@ -1270,7 +1230,7 @@ public class GroundStationTest {
     }
 
     @Test
-    public void testNoReferenceDateGradient() {
+    void testNoReferenceDateGradient() {
         Utils.setDataRoot("regular-data");
         final Frame eme2000 = FramesFactory.getEME2000();
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
@@ -1280,14 +1240,13 @@ public class GroundStationTest {
                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         final GroundStation station = new GroundStation(new TopocentricFrame(earth,
                                                                              new GeodeticPoint(0.1, 0.2, 100),
-                                                                             "dummy"),
-                                                        TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+                                                                             "dummy"));
         try {
             station.getOffsetToInertial(eme2000, date, false);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER, oe.getSpecifier());
-            Assertions.assertEquals("prime-meridian-offset", (String) oe.getParts()[0]);
+            Assertions.assertEquals("prime-meridian-offset", oe.getParts()[0]);
         }
 
         try {
@@ -1309,7 +1268,7 @@ public class GroundStationTest {
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER, oe.getSpecifier());
-            Assertions.assertEquals("prime-meridian-offset", (String) oe.getParts()[0]);
+            Assertions.assertEquals("prime-meridian-offset", oe.getParts()[0]);
         }
 
     }
@@ -1328,8 +1287,7 @@ public class GroundStationTest {
                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         final GroundStation station = new GroundStation(new TopocentricFrame(earth,
                                                                              new GeodeticPoint(latitude, longitude, altitude),
-                                                                             "dummy"),
-                                                        TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+                                                                             "dummy"));
         final GradientField gradientField = GradientField.getField(parameterPattern.length);
         ParameterDriver[] selectedDrivers = new ParameterDriver[parameterPattern.length];
         UnivariateDifferentiableVectorFunction[] dFCartesian = new UnivariateDifferentiableVectorFunction[parameterPattern.length];
@@ -1339,16 +1297,16 @@ public class GroundStationTest {
         }
         Map<String, Integer> indices = new HashMap<>();
         for (int k = 0; k < dFCartesian.length; ++k) {
-            for (int i = 0; i < allDrivers.length; ++i) {
-                if (allDrivers[i].getName().matches(parameterPattern[k])) {
-                    selectedDrivers[k] = allDrivers[i];
+            for (final ParameterDriver allDriver : allDrivers) {
+                if (allDriver.getName().matches(parameterPattern[k])) {
+                    selectedDrivers[k] = allDriver;
                     dFCartesian[k] = differentiatedStationPV(station, eme2000, date, selectedDrivers[k], stepFactor);
                     indices.put(selectedDrivers[k].getNameSpan(date0), k);
                 }
             }
-        };
+        }
 
-        RandomGenerator generator = new Well19937a(0x084d58a19c498a54l);
+        RandomGenerator generator = new Well19937a(0x084d58a19c498a54L);
 
         double maxPositionValueRelativeError      = 0;
         double maxPositionDerivativeRelativeError = 0;
@@ -1438,8 +1396,7 @@ public class GroundStationTest {
                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         final GroundStation station = new GroundStation(new TopocentricFrame(earth,
                                                                              new GeodeticPoint(latitude, longitude, altitude),
-                                                                             "dummy"),
-                                                        TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+                                                                             "dummy"));
         ParameterDriver[] selectedDrivers = new ParameterDriver[parameterPattern.length];
         UnivariateDifferentiableVectorFunction[] dFAngular   = new UnivariateDifferentiableVectorFunction[parameterPattern.length];
         final ParameterDriver[] allDrivers = selectAllDrivers(station);
@@ -1448,15 +1405,15 @@ public class GroundStationTest {
         }
         Map<String, Integer> indices = new HashMap<>();
         for (int k = 0; k < dFAngular.length; ++k) {
-            for (int i = 0; i < allDrivers.length; ++i) {
-                if (allDrivers[i].getName().matches(parameterPattern[k])) {
-                    selectedDrivers[k] = allDrivers[i];
-                    dFAngular[k]   = differentiatedTransformAngular(station, eme2000, date, selectedDrivers[k], stepFactor);
+            for (final ParameterDriver allDriver : allDrivers) {
+                if (allDriver.getName().matches(parameterPattern[k])) {
+                    selectedDrivers[k] = allDriver;
+                    dFAngular[k] = differentiatedTransformAngular(station, eme2000, date, selectedDrivers[k], stepFactor);
                     indices.put(selectedDrivers[k].getNameSpan(date0), k);
                 }
             }
-        };
-        RandomGenerator generator = new Well19937a(0xa01a1d8fe5d80af7l);
+        }
+        RandomGenerator generator = new Well19937a(0xa01a1d8fe5d80af7L);
 
         double maxRotationValueError          = 0;
         double maxRotationDerivativeError     = 0;
@@ -1551,27 +1508,24 @@ public class GroundStationTest {
         final FiniteDifferencesDifferentiator differentiator =
                         new FiniteDifferencesDifferentiator(5, stepFactor * driver.getScale());
 
-        return differentiator.differentiate(new UnivariateVectorFunction() {
-            @Override
-            public double[] value(double x) {
-                final double[] result = new double[6];
-                try {
-                    final double previouspI = driver.getValue(date);
-                    driver.setValue(x, new AbsoluteDate());
-                    Transform t = station.getOffsetToInertial(eme2000, date, false);
-                    driver.setValue(previouspI, date);
-                    PVCoordinates stationPV = t.transformPVCoordinates(PVCoordinates.ZERO);
-                    result[ 0] = stationPV.getPosition().getX();
-                    result[ 1] = stationPV.getPosition().getY();
-                    result[ 2] = stationPV.getPosition().getZ();
-                    result[ 3] = stationPV.getVelocity().getX();
-                    result[ 4] = stationPV.getVelocity().getY();
-                    result[ 5] = stationPV.getVelocity().getZ();
-                } catch (OrekitException oe) {
-                    Assertions.fail(oe.getLocalizedMessage());
-                }
-                return result;
+        return differentiator.differentiate((UnivariateVectorFunction) x -> {
+            final double[] result = new double[6];
+            try {
+                final double previouspI = driver.getValue(date);
+                driver.setValue(x, new AbsoluteDate());
+                Transform t = station.getOffsetToInertial(eme2000, date, false);
+                driver.setValue(previouspI, date);
+                PVCoordinates stationPV = t.transformPVCoordinates(PVCoordinates.ZERO);
+                result[ 0] = stationPV.getPosition().getX();
+                result[ 1] = stationPV.getPosition().getY();
+                result[ 2] = stationPV.getPosition().getZ();
+                result[ 3] = stationPV.getVelocity().getX();
+                result[ 4] = stationPV.getVelocity().getY();
+                result[ 5] = stationPV.getVelocity().getZ();
+            } catch (OrekitException oe) {
+                Assertions.fail(oe.getLocalizedMessage());
             }
+            return result;
         });
     }
 

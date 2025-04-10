@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1045;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1045Data;
@@ -36,7 +37,7 @@ import java.util.ArrayList;
 
 public class Rtcm1045Test {
 
-    private double eps = 8.2e-10;
+    private final double eps = 8.2e-10;
 
     @BeforeEach
     public void setUp() {
@@ -83,7 +84,8 @@ public class Rtcm1045Test {
         ArrayList<Integer> messages = new ArrayList<>();
         messages.add(1045);
 
-        final Rtcm1045                 rtcm1045      = (Rtcm1045) new RtcmMessagesParser(messages).parse(message, false);
+        final Rtcm1045                 rtcm1045      = (Rtcm1045) new RtcmMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+                                                       parse(message, false);
         final Rtcm1045Data             ephemerisData = rtcm1045.getEphemerisData();
         final GalileoNavigationMessage galileoMessage   = ephemerisData.getGalileoNavigationMessage();
 
@@ -106,7 +108,8 @@ public class Rtcm1045Test {
         Assertions.assertEquals(1.279588E-9,            galileoMessage.getAf1(),                eps);
         Assertions.assertEquals(0.036617268982809,      galileoMessage.getAf0(),                eps);
         Assertions.assertEquals(0.0,                    galileoMessage.getCrs(),                eps);
-        Assertions.assertEquals(1.4587496546628753E-4,  galileoMessage.getMeanMotion(),         eps);
+        Assertions.assertEquals(1.458633710547623E-4,   galileoMessage.getMeanMotion0(),        eps);
+        Assertions.assertEquals(1.4587496546628753E-4,  galileoMessage.getMeanMotion0() + galileoMessage.getDeltaN0(), eps);
         Assertions.assertEquals(0.1671775426328288,     galileoMessage.getM0(),                 eps);
         Assertions.assertEquals(0.0,                    galileoMessage.getCuc(),                eps);
         Assertions.assertEquals(0.0389980711042881,     galileoMessage.getE(),                  eps);
@@ -169,7 +172,8 @@ public class Rtcm1045Test {
        ArrayList<Integer> messages = new ArrayList<>();
        messages.add(9999999);
 
-       final Rtcm1045 rtcm1045 = (Rtcm1045) new RtcmMessagesParser(messages).parse(message, false);
+       final Rtcm1045 rtcm1045 = (Rtcm1045) new RtcmMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+                                 parse(message, false);
 
        Assertions.assertNull(rtcm1045);
     }

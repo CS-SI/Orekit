@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,11 +20,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
@@ -49,22 +45,8 @@ import org.orekit.orbits.OrbitHermiteInterpolator;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.AbstractTimeInterpolator;
-import org.orekit.time.DateComponents;
-import org.orekit.time.TimeComponents;
-import org.orekit.time.TimeInterpolator;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.time.TimeStamped;
-import org.orekit.time.TimeStampedDouble;
-import org.orekit.time.TimeStampedDoubleHermiteInterpolator;
-import org.orekit.utils.AbsolutePVCoordinates;
-import org.orekit.utils.AbsolutePVCoordinatesHermiteInterpolator;
-import org.orekit.utils.AngularDerivativesFilter;
-import org.orekit.utils.CartesianDerivativesFilter;
-import org.orekit.utils.Constants;
-import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinates;
+import org.orekit.time.*;
+import org.orekit.utils.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -99,7 +81,7 @@ class SpacecraftStateInterpolatorTest {
             double OMEGA = FastMath.toRadians(261);
             double lv    = 0;
 
-            AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01),
+            AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 1, 1),
                     TimeComponents.H00,
                     TimeScalesFactory.getUTC());
             final Frame frame = FramesFactory.getEME2000();
@@ -248,7 +230,7 @@ class SpacecraftStateInterpolatorTest {
         final double     dP         = 1;
         final double     minStep    = 0.001;
         final double     maxStep    = 100;
-        final double[][] tolerances = NumericalPropagator.tolerances(dP, absPV);
+        final double[][] tolerances = ToleranceProvider.of(CartesianToleranceProvider.of(dP)).getTolerances(absPV);
 
         return new DormandPrince853Integrator(minStep, maxStep, tolerances[0], tolerances[1]);
     }
@@ -303,7 +285,7 @@ class SpacecraftStateInterpolatorTest {
             double          dt    = i * 900.0 / (n - 1);
             SpacecraftState state = orbitPropagator.propagate(centerDate.shiftedBy(dt));
             state = state.
-                    addAdditionalState("quadratic", dt * dt).
+                    addAdditionalData("quadratic", dt * dt).
                     addAdditionalStateDerivative("quadratic-dot", dt * dt);
             sample.add(state);
         }
@@ -357,7 +339,7 @@ class SpacecraftStateInterpolatorTest {
             double          dt    = i * 900.0 / (n - 1);
             SpacecraftState state = absPVPropagator.propagate(centerDate.shiftedBy(dt));
             state = state.
-                    addAdditionalState("quadratic", dt * dt).
+                    addAdditionalData("quadratic", dt * dt).
                     addAdditionalStateDerivative("quadratic-dot", dt * dt);
             sample.add(state);
         }
@@ -560,8 +542,10 @@ class SpacecraftStateInterpolatorTest {
         Mockito.when(additionalStateInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(additionalStateInterpolator));
 
         final SpacecraftStateInterpolator stateInterpolator =
-                new SpacecraftStateInterpolator(frame, orbitInterpolator, absPVAInterpolator, massInterpolator,
-                        attitudeInterpolator, additionalStateInterpolator);
+                new SpacecraftStateInterpolator(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                                                AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+                                                frame, orbitInterpolator, absPVAInterpolator, massInterpolator,
+                                                attitudeInterpolator, additionalStateInterpolator);
 
         // WHEN
         final int returnedNbInterpolationPoints = stateInterpolator.getNbInterpolationPoints();

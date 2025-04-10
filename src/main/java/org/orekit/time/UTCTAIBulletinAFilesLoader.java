@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -143,7 +143,7 @@ public class UTCTAIBulletinAFilesLoader extends AbstractSelfFeedingLoader
                     }
                 }
                 if (before != null) {
-                    if (refTaiMUtc.getValue() != (int) FastMath.rint(before.getOffset())) {
+                    if (refTaiMUtc.getValue() != (int) FastMath.rint(before.getOffset().toDouble())) {
                         throw new OrekitException(OrekitMessages.MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES,
                                                   before.getStart(), refDC);
                     }
@@ -151,12 +151,16 @@ public class UTCTAIBulletinAFilesLoader extends AbstractSelfFeedingLoader
             }
 
             // make sure we stop the linear drift that was used before 1972
+            final DateComponents dc1972 = new DateComponents(1972, 1, 1);
             if (offsets.isEmpty()) {
-                offsets.add(0, new OffsetModel(new DateComponents(1972, 1, 1), taiUtc.get(taiUtc.firstKey())));
+                offsets.add(0, new OffsetModel(dc1972, taiUtc.get(taiUtc.firstKey())));
             } else {
                 if (offsets.get(0).getStart().getYear() > 1972) {
-                    offsets.add(0, new OffsetModel(new DateComponents(1972, 1, 1),
-                                                ((int) FastMath.rint(offsets.get(0).getOffset())) - 1));
+                    offsets.add(0,
+                                new OffsetModel(dc1972,
+                                                dc1972.getMJD(),
+                                                offsets.get(0).getOffset().subtract(TimeOffset.SECOND),
+                                                0));
                 }
             }
 

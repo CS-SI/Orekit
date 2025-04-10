@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Airbus Defence and Space
+/* Copyright 2002-2025 Airbus Defence and Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -145,7 +145,7 @@ public class IntelsatElevenElementsPropagator extends AbstractAnalyticalPropagat
         setStartDate(elements.getEpoch());
         final Orbit orbitAtElementsDate = propagateOrbit(elements.getEpoch());
         final Attitude attitude = attitudeProvider.getAttitude(orbitAtElementsDate, elements.getEpoch(), inertialFrame);
-        super.resetInitialState(new SpacecraftState(orbitAtElementsDate, attitude, mass));
+        super.resetInitialState(new SpacecraftState(orbitAtElementsDate, attitude).withMass(mass));
     }
 
     /**
@@ -210,7 +210,7 @@ public class IntelsatElevenElementsPropagator extends AbstractAnalyticalPropagat
      * {@inheritDoc}.
      */
     @Override
-    protected Orbit propagateOrbit(final AbsoluteDate date) {
+    public Orbit propagateOrbit(final AbsoluteDate date) {
         return new CartesianOrbit(ecefFrame.getTransformTo(inertialFrame, date).transformPVCoordinates(propagateInEcef(date)), inertialFrame, date, Constants.WGS84_EARTH_MU);
     }
 

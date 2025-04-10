@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -127,7 +127,7 @@ public class BatchLSEstimator {
                             final PropagatorBuilder... propagatorBuilder) {
 
         this.builders                       = propagatorBuilder;
-        this.measurements                   = new ArrayList<ObservedMeasurement<?>>();
+        this.measurements                   = new ArrayList<>();
         this.optimizer                      = optimizer;
         this.lsBuilder                      = new LeastSquaresBuilder();
         this.observer                       = null;

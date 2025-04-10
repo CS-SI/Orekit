@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -51,6 +51,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -76,7 +77,7 @@ public class OmmParserTest {
 
         // Check Header Block;
         Assertions.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
-        Assertions.assertEquals(new AbsoluteDate(2007, 03, 06, 16, 00, 00,
+        Assertions.assertEquals(new AbsoluteDate(2007, 3, 6, 16, 0, 0,
                                              TimeScalesFactory.getUTC()),
                                              file.getHeader().getCreationDate());
         Assertions.assertEquals("NOAA/USA", file.getHeader().getOriginator());
@@ -97,7 +98,7 @@ public class OmmParserTest {
 
         // Check Mean Keplerian elements data block;
         KeplerianElements kep = file.getData().getKeplerianElementsBlock();
-        Assertions.assertEquals(new AbsoluteDate(2007, 03, 05, 10, 34, 41.4264,
+        Assertions.assertEquals(new AbsoluteDate(2007, 3, 5, 10, 34, new TimeOffset(41L, 426400000000000000L),
                                              TimeScalesFactory.getUTC()),
                             file.getDate());
         Assertions.assertEquals(1.00273272 * FastMath.PI / 43200.0, kep.getMeanMotion(), 1e-10);
@@ -185,7 +186,7 @@ public class OmmParserTest {
 
     }
 
-    private void validateOMM2(final Omm file) throws URISyntaxException {
+    private void validateOMM2(final Omm file) {
         Assertions.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
         Assertions.assertEquals(OmmMetadata.SGP_SGP4_THEORY, file.getMetadata().getMeanElementTheory());
         final KeplerianElements kep = file.getData().getKeplerianElementsBlock();
@@ -250,7 +251,7 @@ public class OmmParserTest {
     }
 
     @Test
-    public void testParseOMM3() throws URISyntaxException {
+    public void testParseOMM3() {
         // simple test for OMM file, contains p/v entries and other mandatory
         // data.
         final String name = "/ccsds/odm/omm/OMMExample3.txt";
@@ -274,12 +275,12 @@ public class OmmParserTest {
         Assertions.assertEquals(0.001, sp.getSolarRadCoeff(), 1e-10);
 
         CartesianCovariance covariance = file.getData().getCovarianceBlock();
-        Assertions.assertEquals(null, covariance.getReferenceFrame().asFrame());
-        Assertions.assertEquals(null, covariance.getReferenceFrame().asCelestialBodyFrame());
+        Assertions.assertNull(covariance.getReferenceFrame().asFrame());
+        Assertions.assertNull(covariance.getReferenceFrame().asCelestialBodyFrame());
         Assertions.assertEquals(LOFType.TNW, covariance.getReferenceFrame().asOrbitRelativeFrame().getLofType());
 
         UserDefined ud = file.getData().getUserDefinedBlock();
-        HashMap<String, String> userDefinedParameters = new HashMap<String, String>();
+        HashMap<String, String> userDefinedParameters = new HashMap<>();
         userDefinedParameters.put("EARTH_MODEL", "WGS-84");
         Assertions.assertEquals(userDefinedParameters, ud.getParameters());
         Assertions.assertEquals(Arrays.asList("this is a comment", "here is another one"),
@@ -301,7 +302,7 @@ public class OmmParserTest {
     }
 
     @Test
-    public void testParseOMM5() throws URISyntaxException {
+    public void testParseOMM5() {
         // simple test for OMM file, contains SGP4-XP elements with BTERM
         final String name = "/ccsds/odm/omm/OMMExample5.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -322,7 +323,7 @@ public class OmmParserTest {
     }
 
     @Test
-    public void testWrongKeyword() throws URISyntaxException {
+    public void testWrongKeyword() {
         // simple test for OMM file, contains p/v entries and other mandatory
         // data.
         final String name = "/ccsds/odm/omm/OMM-wrong-keyword.txt";
@@ -343,7 +344,7 @@ public class OmmParserTest {
     }
 
     @Test
-    public void testEmptyObjectID() throws URISyntaxException {
+    public void testEmptyObjectID() {
         // test with an OMM file that does not fulfills CCSDS standard and uses an empty OBJECT_ID
         final String name = "/ccsds/odm/omm/OMM-empty-object-id.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -384,7 +385,7 @@ public class OmmParserTest {
     }
 
     @Test
-    public void testEmptyObjectIDXml() throws URISyntaxException {
+    public void testEmptyObjectIDXml() {
         // test with an OMM file that does not fulfills CCSDS standard and uses an empty OBJECT_ID
         String name = "/ccsds/odm/omm/OMM-empty-object-id.xml";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -424,7 +425,7 @@ public class OmmParserTest {
     }
 
     @Test
-    public void testRemoveUserData() throws URISyntaxException {
+    public void testRemoveUserData() {
         final String name = "/ccsds/odm/omm/OMMExample3.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final AbsoluteDate missionReferenceDate = new AbsoluteDate(2000, 1, 1, DataContext.getDefault().getTimeScales().getUTC());
@@ -445,7 +446,7 @@ public class OmmParserTest {
     }
 
     @Test
-    public void testChangeVersionAndAddMessageId() throws URISyntaxException {
+    public void testChangeVersionAndAddMessageId() {
         final String name = "/ccsds/odm/omm/OMMExample3.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final AbsoluteDate missionReferenceDate = new AbsoluteDate(2000, 1, 1, DataContext.getDefault().getTimeScales().getUTC());
@@ -521,7 +522,7 @@ public class OmmParserTest {
     }
 
     @Test
-    public void testSpuriousMetaDataSection() throws URISyntaxException {
+    public void testSpuriousMetaDataSection() {
         final String name = "/ccsds/odm/omm/spurious-metadata.xml";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -555,7 +556,7 @@ public class OmmParserTest {
     }
 
     @Test
-    public void testNonExistentFile() throws URISyntaxException {
+    public void testNonExistentFile() {
         final String realName = "/ccsds/odm/omm/OMMExample1.txt";
         final String wrongName = realName + "xxxxx";
         final DataSource source = new DataSource(wrongName, () -> getClass().getResourceAsStream(wrongName));

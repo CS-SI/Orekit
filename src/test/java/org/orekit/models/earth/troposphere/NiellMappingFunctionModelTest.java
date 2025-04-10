@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,15 +18,21 @@ package org.orekit.models.earth.troposphere;
 
 import org.junit.jupiter.api.Test;
 
-public class NiellMappingFunctionModelTest extends AbstractMappingFunctionTest {
+public class NiellMappingFunctionModelTest extends AbstractMappingFunctionTest<NiellMappingFunctionModel> {
 
-    protected TroposphereMappingFunction buildMappingFunction() {
+    protected NiellMappingFunctionModel buildMappingFunction() {
         return new NiellMappingFunctionModel();
     }
 
     @Test
     public void testMappingFactors() {
-        doTestMappingFactors(10.16, 10.75);
+        doTestMappingFactors(defaultDate, defaultPoint, defaultTrackingCoordinates,
+                             10.156, 10.748);
+    }
+
+    @Test
+    public void testDerivatives() {
+        doTestDerivatives(1.0e-15, 2.0e-17, 1.0e-100, 3.0e-8, 1.0e-100);
     }
 
 }

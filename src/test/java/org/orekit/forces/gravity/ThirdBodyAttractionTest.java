@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -54,6 +54,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -76,7 +77,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         try {
             final AbsoluteDate                       date     = state.getDate().toAbsoluteDate();
             final FieldVector3D<DerivativeStructure> position = state.getPVCoordinates().getPosition();
-            java.lang.reflect.Field bodyField = AbstractBodyAttraction.class.getDeclaredField("body");
+            java.lang.reflect.Field bodyField = AbstractBodyAttraction.class.getDeclaredField("positionProvider");
             bodyField.setAccessible(true);
             CelestialBody body = (CelestialBody) bodyField.get(forceModel);
             double gm = forceModel.
@@ -108,7 +109,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         try {
             final AbsoluteDate                       date     = state.getDate().toAbsoluteDate();
             final FieldVector3D<Gradient> position = state.getPVCoordinates().getPosition();
-            java.lang.reflect.Field bodyField = AbstractBodyAttraction.class.getDeclaredField("body");
+            java.lang.reflect.Field bodyField = AbstractBodyAttraction.class.getDeclaredField("positionProvider");
             bodyField.setAccessible(true);
             CelestialBody body = (CelestialBody) bodyField.get(forceModel);
             double gm = forceModel.
@@ -136,7 +137,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
 
     @Test
-    public void testSunContrib() {
+    void testSunContrib() {
         Assertions.assertThrows(OrekitException.class, () -> {
             // initialization
             AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 07, 01),
@@ -202,7 +203,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
         SpacecraftState iSR = initialState.toSpacecraftState();
         OrbitType type = OrbitType.KEPLERIAN;
-        double[][] tolerance = NumericalPropagator.tolerances(10.0, FKO.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(FKO.toOrbit(), type);
 
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
@@ -263,7 +264,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
         SpacecraftState iSR = initialState.toSpacecraftState();
         OrbitType type = OrbitType.KEPLERIAN;
-        double[][] tolerance = NumericalPropagator.tolerances(10.0, FKO.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(FKO.toOrbit(), type);
 
 
         AdaptiveStepsizeFieldIntegrator<Gradient> integrator =
@@ -323,7 +324,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
         SpacecraftState iSR = initialState.toSpacecraftState();
         OrbitType type = OrbitType.KEPLERIAN;
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(FKO.toOrbit(), type);
 
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
@@ -357,7 +358,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
     }
     @Test
-    public void testMoonContrib() {
+    void testMoonContrib() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 07, 01),
@@ -404,8 +405,8 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
         public void handleStep(SpacecraftState currentState) {
             double t = currentState.getDate().durationFrom(reference);
-            Assertions.assertEquals(hXRef(t), currentState.getHx(), 1e-4);
-            Assertions.assertEquals(hYRef(t), currentState.getHy(), 1e-4);
+            Assertions.assertEquals(hXRef(t), currentState.getOrbit().getHx(), 1e-4);
+            Assertions.assertEquals(hYRef(t), currentState.getOrbit().getHy(), 1e-4);
         }
 
         protected abstract double hXRef(double t);
@@ -415,7 +416,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testParameterDerivative() {
+    void testParameterDerivative() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -434,7 +435,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testParameterDerivativeGradient() {
+    void testParameterDerivativeGradient() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -453,7 +454,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testJacobianVs80Implementation() {
+    void testJacobianVs80Implementation() {
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
                                              new TimeComponents(13, 59, 27.816),
@@ -472,7 +473,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testJacobianVs80ImplementationGradient() {
+    void testJacobianVs80ImplementationGradient() {
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
                                              new TimeComponents(13, 59, 27.816),
@@ -491,7 +492,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testGlobalStateJacobian()
+    void testGlobalStateJacobian()
         {
 
         // initialization
@@ -505,7 +506,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
                                          0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
-        double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, integrationType);
 
         NumericalPropagator propagator =
                 new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
@@ -523,7 +524,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
     @Test
     @DisplayName("Test that acceleration derivatives with respect to absolute date are not equal to zero.")
-    public void testIssue1070() {
+    void testIssue1070() {
         // GIVEN
         // Define possibly shifted absolute date
         final int freeParameters = 1;

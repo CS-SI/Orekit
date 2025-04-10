@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,7 +41,9 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
+import org.orekit.gnss.RadioWave;
+import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -129,8 +131,7 @@ public class AntexLoader {
      */
     private void addSatelliteAntenna(final SatelliteAntenna antenna) {
         try {
-            final TimeSpanMap<SatelliteAntenna> existing =
-                            findSatelliteAntenna(antenna.getSatelliteSystem(), antenna.getPrnNumber());
+            final TimeSpanMap<SatelliteAntenna> existing = findSatelliteAntenna(antenna.getSatInSystem());
             // this is an update for a satellite antenna, with new time span
             existing.addValidAfter(antenna, antenna.getValidFrom(), false);
         } catch (OrekitException oe) {
@@ -147,25 +148,20 @@ public class AntexLoader {
     }
 
     /** Find the time map for a specific satellite antenna.
-     * @param satelliteSystem satellite system
-     * @param prnNumber number within the satellite system
+     * @param satInSystem satellite in system
      * @return time map for the antenna
      */
-    public TimeSpanMap<SatelliteAntenna> findSatelliteAntenna(final SatelliteSystem satelliteSystem,
-                                                              final int prnNumber) {
+    public TimeSpanMap<SatelliteAntenna> findSatelliteAntenna(final SatInSystem satInSystem) {
         final Optional<TimeSpanMap<SatelliteAntenna>> existing =
                         satellitesAntennas.
                         stream().
-                        filter(m -> {
-                            final SatelliteAntenna first = m.getFirstSpan().getData();
-                            return first.getSatelliteSystem() == satelliteSystem &&
-                                   first.getPrnNumber() == prnNumber;
-                        }).findFirst();
+                        filter(m -> m.getFirstSpan().getData().getSatInSystem().equals(satInSystem)).
+                        findFirst();
         if (existing.isPresent()) {
             return existing.get();
         } else {
             throw new OrekitException(OrekitMessages.CANNOT_FIND_SATELLITE_IN_SYSTEM,
-                                      prnNumber, satelliteSystem);
+                                      satInSystem.getPRN(), satInSystem.getSystem());
         }
     }
 
@@ -213,11 +209,10 @@ public class AntexLoader {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
                 // placeholders for parsed data
-                SatelliteSystem                  satelliteSystem      = null;
+                SatInSystem                      satInSystem          = null;
                 String                           antennaType          = null;
                 SatelliteType                    satelliteType        = null;
                 String                           serialNumber         = null;
-                int                              prnNumber            = -1;
                 int                              satelliteCode        = -1;
                 String                           cosparID             = null;
                 AbsoluteDate                     validFrom            = AbsoluteDate.PAST_INFINITY;
@@ -231,8 +226,8 @@ public class AntexLoader {
                 double[][]                       grid2D               = null;
                 Vector3D                         eccentricities       = Vector3D.ZERO;
                 int                              nbFrequencies        = -1;
-                Frequency                        frequency            = null;
-                Map<Frequency, FrequencyPattern> patterns             = null;
+                PredefinedGnssSignal             predefinedGnssSignal = null;
+                Map<RadioWave, FrequencyPattern> patterns             = null;
                 boolean                          inFrequency          = false;
                 boolean                          inRMS                = false;
 
@@ -258,11 +253,10 @@ public class AntexLoader {
                             break;
                         case "START OF ANTENNA" :
                             // reset antenna data
-                            satelliteSystem      = null;
+                            satInSystem          = null;
                             antennaType          = null;
                             satelliteType        = null;
                             serialNumber         = null;
-                            prnNumber            = -1;
                             satelliteCode        = -1;
                             cosparID             = null;
                             validFrom            = AbsoluteDate.PAST_INFINITY;
@@ -275,8 +269,7 @@ public class AntexLoader {
                             grid1D               = null;
                             grid2D               = null;
                             eccentricities       = Vector3D.ZERO;
-                            nbFrequencies        = -1;
-                            frequency            = null;
+                            predefinedGnssSignal = null;
                             patterns             = null;
                             inFrequency          = false;
                             inRMS                = false;
@@ -286,27 +279,12 @@ public class AntexLoader {
                             try {
                                 satelliteType = SatelliteType.parseSatelliteType(antennaType);
                                 final String satField = parseString(line, 20, 20);
-                                if (satField.length() > 0) {
-                                    satelliteSystem = SatelliteSystem.parseSatelliteSystem(satField);
-                                    final int n = parseInt(satField, 1, 19);
-                                    switch (satelliteSystem) {
-                                        case GPS:
-                                        case GLONASS:
-                                        case GALILEO:
-                                        case BEIDOU:
-                                        case IRNSS:
-                                            prnNumber = n;
-                                            break;
-                                        case QZSS:
-                                            prnNumber = n + 192;
-                                            break;
-                                        case SBAS:
-                                            prnNumber = n + 100;
-                                            break;
-                                        default:
-                                            // MIXED satellite system is not allowed here
-                                            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                                      lineNumber, name, line);
+                                if (!satField.isEmpty()) {
+                                    satInSystem = new SatInSystem(satField);
+                                    if (satInSystem.getSystem() == SatelliteSystem.MIXED) {
+                                        // MIXED satellite system is not allowed here
+                                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                                  lineNumber, name, line);
                                     }
                                     satelliteCode = parseInt(line, 41, 9); // we drop the system type
                                     cosparID      = parseString(line, 50, 10);
@@ -354,7 +332,7 @@ public class AntexLoader {
                             break;
                         case "START OF FREQUENCY" :
                             try {
-                                frequency = Frequency.valueOf(parseString(line, 3, 3));
+                                predefinedGnssSignal = PredefinedGnssSignal.valueOf(parseString(line, 3, 3));
                                 grid1D    = new double[1 + (int) FastMath.round((polarStop - polarStart) / polarStep)];
                                 if (azimuthStep > 0.001) {
                                     grid2D = new double[1 + (int) FastMath.round(2 * FastMath.PI / azimuthStep)][grid1D.length];
@@ -374,9 +352,9 @@ public class AntexLoader {
                             break;
                         case "END OF FREQUENCY" : {
                             final String endFrequency = parseString(line, 3, 3);
-                            if (frequency == null || !frequency.toString().equals(endFrequency)) {
+                            if (predefinedGnssSignal == null || !predefinedGnssSignal.toString().equals(endFrequency)) {
                                 throw new OrekitException(OrekitMessages.MISMATCHED_FREQUENCIES,
-                                                          name, lineNumber, frequency, endFrequency);
+                                                          name, lineNumber, predefinedGnssSignal, endFrequency);
 
                             }
 
@@ -402,11 +380,11 @@ public class AntexLoader {
                             } else {
                                 phaseCenterVariation = new TwoDVariation(polarStart, polarStep, azimuthStep, grid2D);
                             }
-                            patterns.put(frequency, new FrequencyPattern(eccentricities, phaseCenterVariation));
-                            frequency   = null;
-                            grid1D      = null;
-                            grid2D      = null;
-                            inFrequency = false;
+                            patterns.put(predefinedGnssSignal, new FrequencyPattern(eccentricities, phaseCenterVariation));
+                            predefinedGnssSignal = null;
+                            grid1D               = null;
+                            grid2D               = null;
+                            inFrequency          = false;
                             break;
                         }
                         case "START OF FREQ RMS" :
@@ -420,8 +398,7 @@ public class AntexLoader {
                                 addReceiverAntenna(new ReceiverAntenna(antennaType, sinexCode, patterns, serialNumber));
                             } else {
                                 addSatelliteAntenna(new SatelliteAntenna(antennaType, sinexCode, patterns,
-                                                                         satelliteSystem, prnNumber,
-                                                                         satelliteType, satelliteCode,
+                                                                         satInSystem, satelliteType, satelliteCode,
                                                                          cosparID, validFrom, validUntil));
                             }
                             break;
@@ -440,9 +417,19 @@ public class AntexLoader {
 
                                 } else {
                                     // azimuth-dependent phase
-                                    final int k = (int) FastMath.round(FastMath.toRadians(Double.parseDouble(fields[0])) / azimuthStep);
+                                    // azimuth is counted from Y/North to X/East in Antex files
+                                    // we will interpolate using phase angle in right-handed frame,
+                                    // so we have to change azimuth to 90-α and renormalize to have
+                                    // a 0° to 360° range with same values at both ends, closing the circle
+                                    final double antexAziDeg      = Double.parseDouble(fields[0]);
+                                    final double normalizedAziDeg = (antexAziDeg <= 90.0 ? 90.0 : 450.0) - antexAziDeg;
+                                    final int k = (int) FastMath.round(FastMath.toRadians(normalizedAziDeg) / azimuthStep);
                                     for (int i = 0; i < grid2D[k].length; ++i) {
                                         grid2D[k][i] = Double.parseDouble(fields[i + 1]) * MM_TO_M;
+                                    }
+                                    if (k == 0) {
+                                        // copy X/East azimuth values to close the circle
+                                        System.arraycopy(grid2D[0], 0, grid2D[grid2D.length - 1], 0, grid2D[0].length);
                                     }
                                 }
                             } else if (inRMS) {

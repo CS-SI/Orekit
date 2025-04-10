@@ -169,7 +169,7 @@ polynomial.acceleration.direction.Z  [2] = 1.0
 polynomial.acceleration.coefficients [2] = 0.0, 0.0
 polynomial.acceleration.estimated    [2] = true
 
-## Use range and range-rate measurements
+## Use range and range-rate measurements
 use.range.measurements = true
 use.range.rate.measurements = false
 

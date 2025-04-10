@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,7 +30,7 @@ import org.orekit.utils.Constants;
 public class SHMFormatReaderTest {
 
     @Test
-    public void testReadLimits() {
+    void testReadLimits() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen_cg03c_coef", false));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(3, 2);
@@ -57,7 +57,7 @@ public class SHMFormatReaderTest {
     }
 
     @Test
-    public void testRegular03cNormalized() {
+    void testRegular03cNormalized() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen_cg03c_coef", false));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
@@ -80,7 +80,7 @@ public class SHMFormatReaderTest {
     }
 
     @Test
-    public void testRegular03cUnnormalized() {
+    void testRegular03cUnnormalized() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen_cg03c_coef", false));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
@@ -104,7 +104,7 @@ public class SHMFormatReaderTest {
     }
 
     @Test
-    public void testReadCompressed01c() {
+    void testReadCompressed01c() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("compressed-eigen-cg01c_coef", false));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
@@ -128,7 +128,7 @@ public class SHMFormatReaderTest {
     }
 
     @Test
-    public void testCorruptedFile1() {
+    void testCorruptedFile1() {
         Assertions.assertThrows(OrekitException.class, () -> {
             Utils.setDataRoot("potential");
             GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("corrupted-1-eigen_coef", false));
@@ -137,7 +137,7 @@ public class SHMFormatReaderTest {
     }
 
     @Test
-    public void testCorruptedFile2() {
+    void testCorruptedFile2() {
         Assertions.assertThrows(OrekitException.class, () -> {
             Utils.setDataRoot("potential");
             GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("corrupted-2-eigen_coef", false));
@@ -146,7 +146,7 @@ public class SHMFormatReaderTest {
     }
 
     @Test
-    public void testCorruptedFile3() {
+    void testCorruptedFile3() {
         Assertions.assertThrows(OrekitException.class, () -> {
             Utils.setDataRoot("potential");
             GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("corrupted-3-eigen_coef", false));
@@ -155,7 +155,7 @@ public class SHMFormatReaderTest {
     }
 
     @Test
-    public void testCorruptedFile4() {
+    void testCorruptedFile4() {
         Assertions.assertThrows(OrekitException.class, () -> {
             Utils.setDataRoot("potential");
             GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("corrupted-4-eigen_coef", false));
@@ -164,7 +164,7 @@ public class SHMFormatReaderTest {
     }
 
     @Test
-    public void testZeroTide() {
+    void testZeroTide() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("dummy_unknown_tide_shm", false));
         Assertions.assertEquals(TideSystem.UNKNOWN,

@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2024 CS GROUP
+<!--- Copyright 2002-2025 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -220,6 +220,7 @@
         * implementation of the Extended Semi-analytical Kalman Filter
         * implementation of the Unscented Kalman Filter
         * implementation of the Unscented Semi-analytical Kalman Filter
+        * RTS (Rauch-Tung-Striebel) smoothing step over results
     * parameters estimation
         * orbital parameters estimation (or only a subset if desired)
         * force model parameters estimation (drag coefficients, radiation pressure coefficients,
@@ -311,18 +312,19 @@
     * atmospheric models (DTM2000, Jacchia-Bowman 2008, NRL MSISE 2000, Harris-Priester and simple exponential models), and Marshall solar Activity Future Estimation, optionally with lift component
     * support for CSSI space weather data
     * support for SOLFSMY and DTC data for JB2008 atmospheric model
-    * tropospheric delay (modified Saastamoinen, estimated, fixed)
-    * tropospheric mapping functions (Vienna 1, Vienna 3, Global, Niell)
-    * tropospheric refraction correction angle (Recommendation ITU-R P.834-7 and Saemundssen's formula quoted by Meeus)
-    * tropospheric model for laser ranging (Marini-Murray, Mendes-Pavlis)
+    * tropospheric delay for radio propagation (canonical Saastamoinen, modified Saastamoinen, Askne-Nordius, modified Hopfield, ITU-R P.834, Vienna 1, Vienna 3, estimated, fixed)
+    * tropospheric delay for laser ranging (Marini-Murray, Mendes-Pavlis)
+    * tropospheric refraction correction angle (ITU-R P.834-7 and Saemundssen's formula quoted by Meeus)
+    * tropospheric mapping functions (Chao, revised Chao, Global Mapping Function, ITU-R P.834, Vienna 1, Vienna 3, Niell, Mendes-Pavlis)
     * Klobuchar ionospheric model (including parsing α and β coefficients from University of Bern Astronomical Institute files)
     * Global Ionospheric Map (GIM) model
-    * NeQuick ionospheric model
+    * NeQuick ionospheric models (both Galileo-specific and original ITU-R P.531 versions)
     * VTEC estimated ionospheric model with Single Layer Model (SLM) ionospheric mapping function
-    * Global Pressure and Temperature models (GPT, GPT2, GPT2w, GPT3)
+    * Pressure, Temperature and Humidity models (GPT, GPT2, GPT2w, GPT3, ITU-R P.834)
+    * Water Vapor pressure evolution (CIPM-2007, NBS-SRC, Wang 1988)
     * geomagnetic field (WMM, IGRF)
     * geoid model from any gravity field
-    * displacement of ground points due to tides
+    * displacement of ground points (tides, ocean loading, Post-Seismic Deformation, tectonics plates)
     * tessellation of zones of interest as tiles
     * sampling of zones of interest as grids of points
 	* construction of trajectories using loxodromes (commonly, a rhumb line)

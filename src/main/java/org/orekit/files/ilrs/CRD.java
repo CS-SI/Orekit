@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.orekit.files.ilrs;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -51,10 +52,10 @@ public class CRD {
     public static final Pattern PATTERN_NAN = Pattern.compile(STR_NAN);
 
     /** List of comments contained in the file. */
-    private List<String> comments;
+    private final List<String> comments;
 
     /** List of data blocks contain in the CDR file. */
-    private List<CRDDataBlock> dataBlocks;
+    private final List<CRDDataBlock> dataBlocks;
 
     /**
      * Constructor.
@@ -73,7 +74,7 @@ public class CRD {
      * @since 12.0
      */
     public static String formatIntegerOrNaN(final int value, final int valueNotAvailable) {
-        return value == valueNotAvailable ? STR_VALUE_NOT_AVAILABLE : String.format("%d", value);
+        return value == valueNotAvailable ? STR_VALUE_NOT_AVAILABLE : String.format(Locale.US, "%d", value);
     }
 
     /**
@@ -126,25 +127,25 @@ public class CRD {
         private CRDConfiguration configurationRecords;
 
         /** Range records. */
-        private List<RangeMeasurement> rangeData;
+        private final List<RangeMeasurement> rangeData;
 
         /** Meteorological records. */
         private final SortedSet<MeteorologicalMeasurement> meteoData;
 
         /** Pointing angles records. */
-        private List<AnglesMeasurement> anglesData;
+        private final List<AnglesMeasurement> anglesData;
 
         /** RangeSupplement records. */
-        private List<RangeSupplement> rangeSupplementData;
+        private final List<RangeSupplement> rangeSupplementData;
 
         /** Session statistics record(s). */
-        private List<SessionStatistics> sessionStatisticsData;
+        private final List<SessionStatistics> sessionStatisticsData;
 
         /** Calibration Record(s). */
-        private List<Calibration> calibrationData;
+        private final List<Calibration> calibrationData;
 
         /** Calibration detail record(s). */
-        private List<CalibrationDetail> calibrationDetailData;
+        private final List<CalibrationDetail> calibrationDetailData;
 
         /**
          * Constructor.
@@ -351,7 +352,7 @@ public class CRD {
 
             final String systemConfigId = systemConfigurationId == null ? getConfigurationRecords().getSystemRecord().getConfigurationId() : systemConfigurationId;
 
-            final List<Calibration> list = new ArrayList<Calibration>();
+            final List<Calibration> list = new ArrayList<>();
             // Loop to find the appropriate one
             for (Calibration calibration : calibrationData) {
                 if (systemConfigId.equalsIgnoreCase(calibration.getSystemConfigurationId())) {
@@ -402,7 +403,7 @@ public class CRD {
 
             final String systemConfigId = systemConfigurationId == null ? getConfigurationRecords().getSystemRecord().getConfigurationId() : systemConfigurationId;
 
-            final List<CalibrationDetail> list = new ArrayList<CalibrationDetail>();
+            final List<CalibrationDetail> list = new ArrayList<>();
             // Loop to find the appropriate one
             for (CalibrationDetail calibration : calibrationDetailData) {
                 if (systemConfigId.equalsIgnoreCase(calibration.getSystemConfigurationId())) {
@@ -430,7 +431,7 @@ public class CRD {
     public static class RangeMeasurement implements TimeStamped {
 
         /** Data epoch. */
-        private AbsoluteDate date;
+        private final AbsoluteDate date;
 
         /** Time of flight [s]. */
         private final double timeOfFlight;
@@ -651,7 +652,7 @@ public class CRD {
         @Override
         @DefaultDataContext
         public String toCrdString() {
-            return String.format("10 %s", toString());
+            return String.format(Locale.US, "10 %s", toString());
         }
 
         @Override
@@ -661,11 +662,13 @@ public class CRD {
             // 'local' is already utc.
             // Seconds of day (sod) is typically to 1 milllisec precision.
             // receiveAmplitude, transmitAmplitude: -1 if not available
-            final double sod = getDate()
-                    .getComponents(TimeScalesFactory.getUTC()).getTime()
-                    .getSecondsInLocalDay();
+            final double sod = getDate().
+                               getComponents(TimeScalesFactory.getUTC()).
+                               roundIfNeeded(60, 12).
+                               getTime().
+                               getSecondsInLocalDay();
 
-            final String str = String.format(
+            final String str = String.format(Locale.US,
                     "%18.12f %18.12f %4s %1d %1d %1d %1d %5s %5s", sod,
                     getTimeOfFlight(), getSystemConfigurationId(),
                     getEpochEvent(), filterFlag, detectorChannel, stopNumber,
@@ -830,7 +833,7 @@ public class CRD {
         @Override
         @DefaultDataContext
         public String toCrdString() {
-            return String.format("11 %s", toString());
+            return String.format(Locale.US, "11 %s", toString());
         }
 
         @Override
@@ -840,11 +843,13 @@ public class CRD {
             // binRms, binPeakMinusMean: s --> ps
             // 'local' is already utc.
             // Seconds of day (sod) is typically to 1 milllisec precision.
-            final double sod = getDate()
-                    .getComponents(TimeScalesFactory.getUTC()).getTime()
-                    .getSecondsInLocalDay();
+            final double sod = getDate().
+                               getComponents(TimeScalesFactory.getUTC()).
+                               roundIfNeeded(60, 12).
+                               getTime().
+                               getSecondsInLocalDay();
 
-            final String str = String.format(
+            final String str = String.format(Locale.US,
                     "%18.12f %18.12f %4s %1d %6.1f %6d %9.1f %7.3f %7.3f %9.1f %5.2f %1d %5.1f",
                     sod, getTimeOfFlight(), getSystemConfigurationId(),
                     getEpochEvent(), windowLength, numberOfRawRanges,
@@ -863,7 +868,7 @@ public class CRD {
     public static class RangeSupplement implements TimeStamped {
 
         /** Data epoch. */
-        private AbsoluteDate date;
+        private final AbsoluteDate date;
 
         /** System configuration ID. */
         private final String systemConfigurationId;
@@ -968,7 +973,7 @@ public class CRD {
          */
         @DefaultDataContext
         public String toCrdString() {
-            return String.format("12 %s", toString());
+            return String.format(Locale.US, "12 %s", toString());
         }
 
         @Override
@@ -978,11 +983,13 @@ public class CRD {
             // troposphericRefractionCorrection: s --> ps
             // 'local' is already utc.
             // Seconds of day (sod) is typically to 1 milllisec precision.
-            final double sod = getDate()
-                    .getComponents(TimeScalesFactory.getUTC()).getTime()
-                    .getSecondsInLocalDay();
+            final double sod = getDate().
+                               getComponents(TimeScalesFactory.getUTC()).
+                               roundIfNeeded(60, 12).
+                               getTime().
+                               getSecondsInLocalDay();
 
-            final String str = String.format(
+            final String str = String.format(Locale.US,
                     "%18.12f %4s %6.1f %6.4f %5.2f %8.4f %f", sod,
                     getSystemConfigurationId(),
                     troposphericRefractionCorrection * 1e12,
@@ -997,7 +1004,7 @@ public class CRD {
     public static class MeteorologicalMeasurement implements TimeStamped {
 
         /** Data epoch. */
-        private AbsoluteDate date;
+        private final AbsoluteDate date;
 
         /** Surface pressure [bar]. */
         private final double pressure;
@@ -1090,7 +1097,7 @@ public class CRD {
          */
         @DefaultDataContext
         public String toCrdString() {
-            return String.format("20 %s", toString());
+            return String.format(Locale.US, "20 %s", toString());
         }
 
         @Override
@@ -1100,12 +1107,14 @@ public class CRD {
             // pressure: bar --> mbar
             // 'local' is already utc.
             // Seconds of day (sod) is typically to 1 milllisec precision.
-            final double sod = getDate()
-                    .getComponents(TimeScalesFactory.getUTC()).getTime()
-                    .getSecondsInLocalDay();
+            final double sod = getDate().
+                               getComponents(TimeScalesFactory.getUTC()).
+                               roundIfNeeded(60, 3).
+                               getTime().
+                               getSecondsInLocalDay();
 
-            final String str = String.format("%9.3f %7.2f %6.2f %4.0f %1d", sod,
-                    pressure * 1e3, temperature, humidity, originOfValues);
+            final String str = String.format(Locale.US, "%9.3f %7.2f %6.2f %4.0f %1d",
+                                             sod, pressure * 1e3, temperature, humidity, originOfValues);
             return handleNaN(str).replace(',', '.');
         }
     }
@@ -1114,7 +1123,7 @@ public class CRD {
     public static class AnglesMeasurement implements TimeStamped {
 
         /** Data epoch. */
-        private AbsoluteDate date;
+        private final AbsoluteDate date;
 
         /** Azimuth [rad]. */
         private final double azimuth;
@@ -1249,7 +1258,7 @@ public class CRD {
          */
         @DefaultDataContext
         public String toCrdString() {
-            return String.format("30 %s", toString());
+            return String.format(Locale.US, "30 %s", toString());
         }
 
         @Override
@@ -1260,16 +1269,19 @@ public class CRD {
             // azimuthRate, elevationRate: rad/s --> deg/s
             // 'local' is already utc.
             // Seconds of day (sod) is typically to 1 milllisec precision.
-            final double sod = getDate()
-                    .getComponents(TimeScalesFactory.getUTC()).getTime()
-                    .getSecondsInLocalDay();
+            final double sod = getDate().
+                               getComponents(TimeScalesFactory.getUTC()).
+                               roundIfNeeded(60, 3).
+                               getTime().
+                               getSecondsInLocalDay();
 
-            final String str = String.format(
-                    "%9.3f %8.4f %8.4f %1d %1d %1d %10.7f %10.7f", sod,
-                    FastMath.toDegrees(azimuth), FastMath.toDegrees(elevation),
-                    directionFlag, originIndicator, refractionCorrected ? 1 : 0,
-                    FastMath.toDegrees(azimuthRate),
-                    FastMath.toDegrees(elevationRate));
+            final String str = String.format(Locale.US,
+                                             "%9.3f %8.4f %8.4f %1d %1d %1d %10.7f %10.7f",
+                                             sod,
+                                             FastMath.toDegrees(azimuth), FastMath.toDegrees(elevation),
+                                             directionFlag, originIndicator, refractionCorrected ? 1 : 0,
+                                             FastMath.toDegrees(azimuthRate),
+                                             FastMath.toDegrees(elevationRate));
             return handleNaN(str).replace(',', '.');
         }
     }
@@ -1317,7 +1329,7 @@ public class CRD {
             } else {
 
                 // Meteo data
-                this.meteo = new ImmutableTimeStampedCache<MeteorologicalMeasurement>(neighborsSize, meteoData);
+                this.meteo = new ImmutableTimeStampedCache<>(neighborsSize, meteoData);
 
                 // Initialize first and last available dates
                 this.firstDate = meteoData.first().getDate();
@@ -1429,7 +1441,6 @@ public class CRD {
 
         /**
          * Type of data.
-         *
          * 0=station combined transmit and receive calibration (“normal” SLR/LLR)
          * 1=station transmit calibration (e.g., one-way ranging to transponders)
          * 2=station receive calibration
@@ -1471,7 +1482,6 @@ public class CRD {
 
         /**
          * Calibration Type Indicator.
-         *
          * 0=not used or undefined
          * 1=nominal (from once off assessment)
          * 2=external calibrations
@@ -1484,7 +1494,6 @@ public class CRD {
 
         /**
          * Calibration Shift Type Indicator.
-         *
          * 0=not used or undefined
          * 1=nominal (from once off assessment)
          * 2=pre- to post- Shift
@@ -1494,7 +1503,6 @@ public class CRD {
         private final int shiftTypeIndicator;
 
         /** Detector Channel.
-         *
          * 0=not applicable or “all”
          * 1-4 for quadrant
          * 1-n for many channels
@@ -1503,7 +1511,6 @@ public class CRD {
 
         /**
          * Calibration Span.
-         *
          * 0 = not applicable (e.g. Calibration type indicator is “nominal”)
          * 1 = Pre-calibration only
          * 2 = Post-calibration only
@@ -1745,7 +1752,7 @@ public class CRD {
          */
         @DefaultDataContext
         public String toCrdString() {
-            return String.format("40 %s", toString());
+            return String.format(Locale.US, "40 %s", toString());
         }
 
         @Override
@@ -1756,9 +1763,11 @@ public class CRD {
             // rms, peakMinusMean: s --> ps
             // 'local' is already utc.
             // Seconds of day (sod) is typically to 1 milllisec precision.
-            final double sod = getDate()
-                    .getComponents(TimeScalesFactory.getUTC()).getTime()
-                    .getSecondsInLocalDay();
+            final double sod = getDate().
+                               getComponents(TimeScalesFactory.getUTC()).
+                               roundIfNeeded(60, 12).
+                               getTime().
+                               getSecondsInLocalDay();
 
             final String str = String.format(
                     "%18.12f %1d %4s %8s %8s %8.4f %10.1f %8.1f %6.1f %7.3f %7.3f %6.1f %1d %1d %1d %1d %5.1f",
@@ -1821,7 +1830,7 @@ public class CRD {
          */
         @DefaultDataContext
         public String toCrdString() {
-            return String.format("41 %s", toString());
+            return String.format(Locale.US, "41 %s", toString());
         }
 
     }
@@ -1947,14 +1956,14 @@ public class CRD {
          * @return a string representation of the instance, in the CRD format.
          */
         public String toCrdString() {
-            return String.format("50 %s", toString());
+            return String.format(Locale.US, "50 %s", toString());
         }
 
         @Override
         public String toString() {
             // CRD suggested format, excluding the record type
             // rms, peakMinusMean: s --> ps
-            final String str = String.format("%4s %6.1f %7.3f %7.3f %6.1f %1d",
+            final String str = String.format(Locale.US, "%4s %6.1f %7.3f %7.3f %6.1f %1d",
                     systemConfigurationId, rms * 1e12, skewness, kurtosis,
                     peakMinusMean * 1e12, dataQulityIndicator);
             return handleNaN(str).replace(',', '.');

@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,18 +42,6 @@ class AbstractBodyAttractionTest {
         final boolean actualDependsOnPositionOnly = mockedAttraction.dependsOnPositionOnly();
         // THEN
         Assertions.assertTrue(actualDependsOnPositionOnly);
-    }
-
-    @Deprecated
-    @Test
-    void TestGetBody() {
-        // GIVEN
-        final CelestialBody mockedBody = Mockito.mock(CelestialBody.class);
-        final TestBodyAttraction testBodyAttraction = new TestBodyAttraction(mockedBody);
-        // WHEN
-        final CelestialBody actualName = testBodyAttraction.getBody();
-        // THEN
-        Assertions.assertEquals(mockedBody, actualName);
     }
 
     @Test
@@ -117,7 +105,7 @@ class AbstractBodyAttractionTest {
     private static class TestBodyAttraction extends AbstractBodyAttraction {
 
         protected TestBodyAttraction(CelestialBody body) {
-            super(body);
+            super(body, body.getName(), body.getGM());
         }
 
         @Override

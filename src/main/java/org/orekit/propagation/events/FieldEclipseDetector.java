@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.OccultationEngine;
 
 /** Finder for satellite eclipse related events.
@@ -45,14 +45,14 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
     private final OccultationEngine occultationEngine;
 
     /** Umbra, if true, or penumbra, if false, detection flag. */
-    private boolean totalEclipse;
+    private final boolean totalEclipse;
 
     /** Margin to apply to eclipse angle. */
     private final T margin;
 
     /** Build a new eclipse detector.
      * <p>The new instance is a total eclipse (umbra) detector with default
-     * values for maximal checking interval ({@link #DEFAULT_MAXCHECK})
+     * values for maximal checking interval ({@link #DEFAULT_MAX_CHECK})
      * and convergence threshold ({@link #DEFAULT_THRESHOLD}).</p>
      * @param field field used by default
      * @param occulted the body to be occulted
@@ -61,23 +61,22 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
      * @since 12.0
      */
     public FieldEclipseDetector(final Field<T> field,
-                                final ExtendedPVCoordinatesProvider occulted, final double occultedRadius,
+                                final ExtendedPositionProvider occulted, final double occultedRadius,
                                 final OneAxisEllipsoid occulting) {
         this(field, new OccultationEngine(occulted, occultedRadius, occulting));
     }
 
     /** Build a new eclipse detector.
      * <p>The new instance is a total eclipse (umbra) detector with default
-     * values for maximal checking interval ({@link #DEFAULT_MAXCHECK})
+     * values for maximal checking interval ({@link #DEFAULT_MAX_CHECK})
      * and convergence threshold ({@link #DEFAULT_THRESHOLD}).</p>
      * @param field field used by default
      * @param occultationEngine occultation engine
      * @since 12.0
      */
     public FieldEclipseDetector(final Field<T> field, final OccultationEngine occultationEngine) {
-        this(FieldAdaptableInterval.of(DEFAULT_MAXCHECK), field.getZero().newInstance(DEFAULT_THRESHOLD),
-             DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(),
-             occultationEngine, field.getZero(), true);
+        this(new FieldEventDetectionSettings<>(field, EventDetectionSettings.getDefaultEventDetectionSettings()),
+                new FieldStopOnIncreasing<>(), occultationEngine, field.getZero(), true);
     }
 
     /** Protected constructor with full parameters.
@@ -86,19 +85,16 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param occultationEngine occultation engine
      * @param margin to apply to eclipse angle (rad)
      * @param totalEclipse umbra (true) or penumbra (false) detection flag
-     * @since 12.0
+     * @since 13.0
      */
-    protected FieldEclipseDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold,
-                                   final int maxIter, final FieldEventHandler<T> handler,
+    protected FieldEclipseDetector(final FieldEventDetectionSettings<T> detectionSettings, final FieldEventHandler<T> handler,
                                    final OccultationEngine occultationEngine, final T margin, final boolean totalEclipse) {
-        super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
+        super(detectionSettings, handler);
         this.occultationEngine = occultationEngine;
         this.margin            = margin;
         this.totalEclipse      = totalEclipse;
@@ -106,10 +102,9 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
 
     /** {@inheritDoc} */
     @Override
-    protected FieldEclipseDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold, final int nawMaxIter,
+    protected FieldEclipseDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                              final FieldEventHandler<T> newHandler) {
-        return new FieldEclipseDetector<>(newMaxCheck, newThreshold, nawMaxIter, newHandler,
-                                          occultationEngine, margin, totalEclipse);
+        return new FieldEclipseDetector<>(detectionSettings, newHandler, occultationEngine, margin, totalEclipse);
     }
 
     /**
@@ -122,7 +117,7 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
      * @since 6.1
      */
     public FieldEclipseDetector<T> withUmbra() {
-        return new FieldEclipseDetector<>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
+        return new FieldEclipseDetector<>(getDetectionSettings(), getHandler(),
                                           occultationEngine, margin, true);
     }
 
@@ -136,7 +131,7 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
      * @since 6.1
      */
     public FieldEclipseDetector<T> withPenumbra() {
-        return new FieldEclipseDetector<>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
+        return new FieldEclipseDetector<>(getDetectionSettings(), getHandler(),
                                           occultationEngine, margin, false);
     }
 
@@ -151,7 +146,7 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
      * @since 12.0
      */
     public FieldEclipseDetector<T> withMargin(final T newMargin) {
-        return new FieldEclipseDetector<>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
+        return new FieldEclipseDetector<>(getDetectionSettings(), getHandler(),
                                           occultationEngine, newMargin, totalEclipse);
     }
 

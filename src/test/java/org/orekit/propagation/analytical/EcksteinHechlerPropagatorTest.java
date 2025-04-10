@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -65,6 +65,7 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.conversion.EcksteinHechlerPropagatorBuilder;
 import org.orekit.propagation.conversion.FiniteDifferencePropagatorConverter;
 import org.orekit.propagation.conversion.PropagatorConverter;
@@ -125,7 +126,7 @@ public class EcksteinHechlerPropagatorTest {
         Assertions.assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPosition(),
                                               finalOrbit.getPosition()),
-                            1.0e-8);
+                            1.3e-6);
 
         // velocity and circular parameters do *not* match, this is EXPECTED!
         // the reason is that we ensure position/velocity are consistent with the
@@ -140,7 +141,7 @@ public class EcksteinHechlerPropagatorTest {
                             Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                               finalOrbit.getPVCoordinates().getVelocity()),
                             1.0e-3);
-        Assertions.assertEquals(125.2, finalOrbit.getA() - initialOrbit.getA(), 0.1);
+        Assertions.assertEquals(125.2, finalOrbit.getOrbit().getA() - initialOrbit.getA(), 0.1);
 
     }
 
@@ -167,7 +168,7 @@ public class EcksteinHechlerPropagatorTest {
         Assertions.assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPosition(),
                                               finalOrbit.getPosition()),
-                            3.0e-8);
+                            1.3e-6);
 
         // velocity and circular parameters do *not* match, this is EXPECTED!
         // the reason is that we ensure position/velocity are consistent with the
@@ -182,7 +183,7 @@ public class EcksteinHechlerPropagatorTest {
                             Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                               finalOrbit.getPVCoordinates().getVelocity()),
                             1.0e-3);
-        Assertions.assertEquals(126.8, finalOrbit.getA() - initialOrbit.getA(), 0.1);
+        Assertions.assertEquals(126.8, finalOrbit.getOrbit().getA() - initialOrbit.getA(), 0.1);
 
     }
 
@@ -225,8 +226,8 @@ public class EcksteinHechlerPropagatorTest {
         double delta_t = 100.0; // extrapolation duration in seconds
         AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
 
-        SpacecraftState finalOrbitAna = extrapolatorAna.propagate(extrapDate);
-        SpacecraftState finalOrbitKep = extrapolatorKep.propagate(extrapDate);
+        Orbit finalOrbitAna = extrapolatorAna.propagate(extrapDate).getOrbit();
+        Orbit finalOrbitKep = extrapolatorKep.propagate(extrapDate).getOrbit();
 
         Assertions.assertEquals(finalOrbitAna.getDate().durationFrom(extrapDate), 0.0,
                      Utils.epsilonTest);
@@ -280,7 +281,7 @@ public class EcksteinHechlerPropagatorTest {
         double delta_t = 100000.0; // extrapolation duration in seconds
         AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
 
-        SpacecraftState finalOrbit = extrapolator.propagate(extrapDate);
+        Orbit finalOrbit = extrapolator.propagate(extrapDate).getOrbit();
 
         Assertions.assertEquals(0.0, finalOrbit.getDate().durationFrom(extrapDate), 1.0e-9);
 
@@ -362,7 +363,7 @@ public class EcksteinHechlerPropagatorTest {
         double delta_t = 100000.0; // extrapolation duration in seconds
         AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
 
-        SpacecraftState finalOrbit = extrapolator.propagate(extrapDate);
+        Orbit finalOrbit = extrapolator.propagate(extrapDate).getOrbit();
 
         Assertions.assertEquals(0.0, finalOrbit.getDate().durationFrom(extrapDate), 1.0e-9);
 
@@ -602,9 +603,9 @@ public class EcksteinHechlerPropagatorTest {
         // perturbed orbit acceleration should be consistent with position evolution
         double computationErrorA   = Vector3D.distance(referenceA, computedA);
         double nonKeplerianEffectA = Vector3D.distance(referenceA, keplerianA);
-        Assertions.assertEquals(8.0e-8,  computationErrorA, 2.0e-9);
+        Assertions.assertEquals(1.36e-7,  computationErrorA, 1.0e-9);
         Assertions.assertEquals(6.37e-3, nonKeplerianEffectA, 7.0e-6);
-        Assertions.assertTrue(computationErrorA < nonKeplerianEffectA / 60000);
+        Assertions.assertTrue(computationErrorA < nonKeplerianEffectA / 40000);
 
     }
 
@@ -625,10 +626,10 @@ public class EcksteinHechlerPropagatorTest {
         Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()) < 4000.0);
         Assertions.assertEquals(0, pv.getPosition().getZ(), 1.0e-6);
         Assertions.assertTrue(pv.getVelocity().getZ() > 0);
-        Collection<EventDetector> detectors = propagator.getEventsDetectors();
+        Collection<EventDetector> detectors = propagator.getEventDetectors();
         Assertions.assertEquals(1, detectors.size());
         propagator.clearEventsDetectors();
-        Assertions.assertEquals(0, propagator.getEventsDetectors().size());
+        Assertions.assertEquals(0, propagator.getEventDetectors().size());
     }
 
     @Test
@@ -754,11 +755,11 @@ public class EcksteinHechlerPropagatorTest {
         Assertions.assertEquals(0.0,
                             Vector3D.distance(defaultOrbit.getPosition(),
                                               initial.getPosition()),
-                            1.0e-8);
+                            2.0e-6);
 
         // set up a reference numerical propagator starting for the specified start orbit
         // using the same force models (i.e. the first few zonal terms)
-        double[][] tol = NumericalPropagator.tolerances(0.1, initial, OrbitType.CIRCULAR);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.1).getTolerances(initial, OrbitType.CIRCULAR);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
         integrator.setInitialStepSize(60);
         NumericalPropagator num = new NumericalPropagator(integrator);
@@ -812,11 +813,13 @@ public class EcksteinHechlerPropagatorTest {
         final SpacecraftState finalState = propagator.propagate(initDate);
 
         // Verify
-        Assertions.assertEquals(initialState.getA(),             finalState.getA(),             18.0);
-        Assertions.assertEquals(initialState.getEquinoctialEx(), finalState.getEquinoctialEx(), 1.0e-6);
-        Assertions.assertEquals(initialState.getEquinoctialEy(), finalState.getEquinoctialEy(), 5.0e-6);
-        Assertions.assertEquals(initialState.getHx(),            finalState.getHx(),            1.0e-6);
-        Assertions.assertEquals(initialState.getHy(),            finalState.getHy(),            2.0e-6);
+        final Orbit initialOrbit = initialState.getOrbit();
+        final Orbit finalOrbit = finalState.getOrbit();
+        Assertions.assertEquals(initialOrbit.getA(),             finalOrbit.getA(),             18.0);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEx(), finalOrbit.getEquinoctialEx(), 1.0e-6);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEy(), finalOrbit.getEquinoctialEy(), 5.0e-6);
+        Assertions.assertEquals(initialOrbit.getHx(),            finalOrbit.getHx(),            1.0e-6);
+        Assertions.assertEquals(initialOrbit.getHy(),            finalOrbit.getHy(),            2.0e-6);
         Assertions.assertEquals(0.0,
                             Vector3D.distance(initialState.getPosition(),
                                               finalState.getPosition()),
@@ -848,11 +851,13 @@ public class EcksteinHechlerPropagatorTest {
         final SpacecraftState finalState = propagator.propagate(initDate);
 
         // Verify
-        Assertions.assertEquals(initialState.getA(),             finalState.getA(),             18.0);
-        Assertions.assertEquals(initialState.getEquinoctialEx(), finalState.getEquinoctialEx(), 1.0e-6);
-        Assertions.assertEquals(initialState.getEquinoctialEy(), finalState.getEquinoctialEy(), 5.0e-6);
-        Assertions.assertEquals(initialState.getHx(),            finalState.getHx(),            1.0e-6);
-        Assertions.assertEquals(initialState.getHy(),            finalState.getHy(),            2.0e-6);
+        final Orbit initialOrbit = initialState.getOrbit();
+        final Orbit finalOrbit = finalState.getOrbit();
+        Assertions.assertEquals(initialOrbit.getA(),             finalOrbit.getA(),             18.0);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEx(), finalOrbit.getEquinoctialEx(), 1.0e-6);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEy(), finalOrbit.getEquinoctialEy(), 5.0e-6);
+        Assertions.assertEquals(initialOrbit.getHx(),            finalOrbit.getHx(),            1.0e-6);
+        Assertions.assertEquals(initialOrbit.getHy(),            finalOrbit.getHy(),            2.0e-6);
         Assertions.assertEquals(0.0,
                             Vector3D.distance(initialState.getPosition(),
                                               finalState.getPosition()),
@@ -873,7 +878,7 @@ public class EcksteinHechlerPropagatorTest {
 
         // set up a reference numerical propagator starting for the specified start orbit
         // using the same force models (i.e. the first few zonal terms)
-        double[][] tol = NumericalPropagator.tolerances(0.1, initialOsculating, OrbitType.CIRCULAR);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.1).getTolerances(initialOsculating, OrbitType.CIRCULAR);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
         integrator.setInitialStepSize(60);
         NumericalPropagator num = new NumericalPropagator(integrator);

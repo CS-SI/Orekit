@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -58,14 +58,14 @@ import org.orekit.utils.TimeSpanMap.Transition;
  * for the driver, the {@link #addSpans} method will cut the interval of name and value time span map
  * from start date to date end in several interval of validity period duration. This method should not
  * be called on orbital drivers and must be called only once at beginning of the process (for example
- * beginning of orbit determination). <b>WARNING : In order to ensure converge for orbit determination,
- * the start, end date and driver periodicity must be wisely choosen </b>. There must be enough measurements
- * on each interval or convergence won't reach or singular matrixes will appear.  </li>
+ * beginning of orbit determination). <b>WARNING : In order to ensure convergence for orbit determination,
+ * the start, end date and driver periodicity must be wisely chosen </b>. There must be enough measurements
+ * on each interval or convergence won't reach or singular matrices will appear.  </li>
  * <li> Active cut calling the {@link #addSpanAtDate(AbsoluteDate)} method.
  * Given a date, the method will cut the value and name time span name, in order to have a new span starting at
  * the given date. Can be called several time to cut the time map as wished. <b>WARNING : In order to ensure
- * converge for orbit determination, if the method is called several time, the start date must be wisely choosen </b>.
- * There must be enough measurements on each interval or convergence won't reach or singular matrixes will appear.  </li>
+ * convergence for orbit determination, if the method is called several time, the start date must be wisely chosen </b>.
+ * There must be enough measurements on each interval or convergence won't reach or singular matrices will appear.  </li>
  * </ul>
  * <p>
  * Several ways exist in order to get a ParameterDriver value at a certain
@@ -75,7 +75,7 @@ import org.orekit.utils.TimeSpanMap.Transition;
  * <li>First of all, the step estimation, that is to say, if a value wants
  * to be known at a certain date, the value returned is the one of span
  * beginning corresponding to the date. With this definition a value
- * will be kept all along the span duration and will be the value of the span
+ * will be kept constant all along the span duration and will be the value at span
  * start.</li>
  * <li> The continuous estimation, that is to say, when a value wants be to
  * known at a date t, the value returned would be a linear interpolation between
@@ -88,7 +88,7 @@ import org.orekit.utils.TimeSpanMap.Transition;
  * ParameterObserver} for this purpose.
  * <p>
  * This design has two major goals. First, it allows an external
- * algorithm to drive internal parameters almost anonymously, as it only
+ * algorithm to drive internal parameters blindly, as it only
  * needs to get a list of instances of this class, without knowing
  * what they really drive. Second, it allows the physical model to
  * not expose directly setters methods for its parameters. In order
@@ -218,7 +218,7 @@ public class ParameterDriver {
                                       name, scale);
         }
         this.name                   = name;
-        this.nameSpanMap            = new TimeSpanMap<>(SPAN + name + Integer.toString(0));
+        this.nameSpanMap            = new TimeSpanMap<>(SPAN + name + 0);
         this.referenceValue         = referenceValue;
         this.scale                  = scale;
         this.minValue               = minValue;
@@ -274,8 +274,8 @@ public class ParameterDriver {
         return valueSpanMap.getSpansNumber();
     }
 
-    /** Get the dates of the transitions for the drag sensitive models {@link TimeSpanMap}.
-     * @return dates of the transitions for the drag sensitive models {@link TimeSpanMap}
+    /** Get the dates of the transitions {@link TimeSpanMap}.
+     * @return dates of the transitions {@link TimeSpanMap}
      * @since 12.0
      */
     public AbsoluteDate[] getTransitionDates() {
@@ -381,13 +381,13 @@ public class ParameterDriver {
         // the names time span map must also be updated with the new name
         if (nameSpanMap.getSpansNumber() > 1) {
             Span<String> currentNameSpan = nameSpanMap.getFirstSpan();
-            nameSpanMap.addValidBefore(SPAN + name + Integer.toString(0), currentNameSpan.getEnd(), false);
+            nameSpanMap.addValidBefore(SPAN + name + 0, currentNameSpan.getEnd(), false);
             for (int spanNumber = 1; spanNumber < nameSpanMap.getSpansNumber(); ++spanNumber) {
                 currentNameSpan = nameSpanMap.getSpan(currentNameSpan.getEnd());
-                nameSpanMap.addValidAfter(SPAN + name + Integer.toString(spanNumber), currentNameSpan.getStart(), false);
+                nameSpanMap.addValidAfter(SPAN + name + spanNumber, currentNameSpan.getStart(), false);
             }
         } else {
-            nameSpanMap = new TimeSpanMap<>(SPAN + name + Integer.toString(0));
+            nameSpanMap = new TimeSpanMap<>(SPAN + name + 0);
         }
     }
 
@@ -443,7 +443,7 @@ public class ParameterDriver {
             //in order to assure orbit determination convergence
             while (currentDate.isBefore(orbitDeterminationEndDate) && orbitDeterminationEndDate.durationFrom(currentDate) > validityPeriodForDriver / 3.0) {
                 valueSpanMap.addValidAfter(getValue(currentDate), currentDate, false);
-                nameSpanMap.addValidAfter(SPAN + getName() + Integer.toString(spanNumber++), currentDate, false);
+                nameSpanMap.addValidAfter(SPAN + getName() + spanNumber++, currentDate, false);
                 currentDate = currentDate.shiftedBy(validityPeriodForDriver);
             }
         }
@@ -467,11 +467,11 @@ public class ParameterDriver {
         nameSpanMap.addValidAfter(name, spanStartDate, false);
         // Rename spans recursively
         Span<String> currentNameSpan = nameSpanMap.getFirstSpan();
-        nameSpanMap.addValidBefore(SPAN + name + Integer.toString(0), currentNameSpan.getEnd(), false);
+        nameSpanMap.addValidBefore(SPAN + name + 0, currentNameSpan.getEnd(), false);
 
         for (int spanNumber = 1; spanNumber < nameSpanMap.getSpansNumber(); spanNumber++) {
             currentNameSpan = nameSpanMap.getSpan(currentNameSpan.getEnd());
-            nameSpanMap.addValidAfter(SPAN + name + Integer.toString(spanNumber), currentNameSpan.getStart(), false);
+            nameSpanMap.addValidAfter(SPAN + name + spanNumber, currentNameSpan.getStart(), false);
         }
     }
 

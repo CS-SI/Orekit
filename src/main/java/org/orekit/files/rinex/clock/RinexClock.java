@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -49,11 +49,11 @@ import org.orekit.utils.TimeSpanMap;
  * regarding the satellite system. If it is mixed or not specified, default time system will be UTC. </p>
  * <p> Some fields might be null after parsing. It is expected because of the numerous kind of data that can be stored in clock data file. </p>
  * <p> Caution, files with missing information in header can lead to wrong data dates and station positions.
- * It is adviced to check the correctness and format compliance of the clock file to be parsed.
+ * It is advised to check the correctness and format compliance of the clock file to be parsed.
  * Some values such as file time scale still can be set by user. </p>
- * @see <a href="ftp://igs.org/pub/data/format/rinex_clock300.txt"> 3.00 clock file format</a>
- * @see <a href="ftp://igs.org/pub/data/format/rinex_clock302.txt"> 3.02 clock file format</a>
- * @see <a href="ftp://igs.org/pub/data/format/rinex_clock304.txt"> 3.04 clock file format</a>
+ * @see <a href="https://files.igs.org/pub/data/format/rinex_clock300.txt"> 3.00 clock file format</a>
+ * @see <a href="https://files.igs.org/pub/data/format/rinex_clock302.txt"> 3.02 clock file format</a>
+ * @see <a href="https://files.igs.org/pub/data/format/rinex_clock304.txt"> 3.04 clock file format</a>
  *
  * @author Thomas Paulet
  * @since 11.0
@@ -832,9 +832,9 @@ public class RinexClock {
     }
 
     /** Clock data for a single station.
-     * <p> Data epoch is not linked to any time system in order to pars files with missing lines.
+     * <p> Data epoch is not linked to any time system in order to parse files with missing lines.
      * Though, the default version of the getEpoch() method links the data time components with the clock file object time scale.
-     * The latter can be set with a default value (UTC). Caution is recommanded.
+     * The latter can be set with a default value (UTC). Caution is recommended.
      */
     public class ClockDataLine {
 

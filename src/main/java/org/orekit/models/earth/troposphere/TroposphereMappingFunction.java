@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,8 +19,6 @@ package org.orekit.models.earth.troposphere;
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
-import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTrackingCoordinates;
@@ -40,12 +38,12 @@ public interface TroposphereMappingFunction {
      * </ul>
      * @param trackingCoordinates tracking coordinates of the satellite
      * @param point station location
-     * @param weather weather parameters
      * @param date current date
      * @return a two components array containing the hydrostatic and wet mapping functions.
+     * @since 13.0
      */
     double[] mappingFactors(TrackingCoordinates trackingCoordinates, GeodeticPoint point,
-                            PressureTemperatureHumidity weather, AbsoluteDate date);
+                            AbsoluteDate date);
 
     /** This method allows the computation of the hydrostatic and
      * wet mapping functions. The resulting element is an array having the following form:
@@ -55,14 +53,13 @@ public interface TroposphereMappingFunction {
      * </ul>
      * @param trackingCoordinates tracking coordinates of the satellite
      * @param point station location
-     * @param weather weather parameters
      * @param date current date
      * @param <T> type of the elements
      * @return a two components array containing the hydrostatic and wet mapping functions.
+     * @since 13.0
      */
     <T extends CalculusFieldElement<T>> T[] mappingFactors(FieldTrackingCoordinates<T> trackingCoordinates,
                                                            FieldGeodeticPoint<T> point,
-                                                           FieldPressureTemperatureHumidity<T> weather,
                                                            FieldAbsoluteDate<T> date);
 
 }

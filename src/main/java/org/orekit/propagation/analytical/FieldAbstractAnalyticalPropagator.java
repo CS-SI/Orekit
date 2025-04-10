@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
+import java.util.stream.Collectors;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -36,7 +37,7 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.FieldAbstractPropagator;
-import org.orekit.propagation.FieldAdditionalStateProvider;
+import org.orekit.propagation.FieldAdditionalDataProvider;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -63,11 +64,12 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @param <T> type of the field elements
  */
 
-public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractPropagator<T>
-                                                                                           implements ParameterDriversProvider {
+public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldElement<T>>
+    extends FieldAbstractPropagator<T>
+    implements ParameterDriversProvider {
 
     /** Provider for attitude computation. */
-    private FieldPVCoordinatesProvider<T> pvProvider;
+    private final FieldPVCoordinatesProvider<T> pvProvider;
 
     /** Start date of last propagation. */
     private FieldAbsoluteDate<T> lastPropagationStart;
@@ -81,8 +83,11 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
     /** Indicator for last step. */
     private boolean isLastStep;
 
-    /** Event steps. */
-    private final Collection<FieldEventState<?, T>> eventsStates;
+    /** User-defined event states. */
+    private final Collection<FieldEventState<?, T>> userEventsStates;
+
+    /** All event states, including internal ones. */
+    private Collection<FieldEventState<?, T>> eventsStates;
 
     /** Build a new instance.
      * @param attitudeProvider provider for attitude computation
@@ -95,7 +100,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
         lastPropagationStart = FieldAbsoluteDate.getPastInfinity(field);
         lastPropagationEnd   = FieldAbsoluteDate.getFutureInfinity(field);
         statesInitialized    = false;
-        eventsStates         = new ArrayList<>();
+        userEventsStates     = new ArrayList<>();
     }
 
     /** {@inheritDoc} */
@@ -106,14 +111,14 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
 
     /** {@inheritDoc} */
     public <D extends FieldEventDetector<T>> void addEventDetector(final D detector) {
-        eventsStates.add(new FieldEventState<>(detector));
+        userEventsStates.add(new FieldEventState<>(detector));
     }
 
     /** {@inheritDoc} */
     @Override
-    public Collection<FieldEventDetector<T>> getEventsDetectors() {
+    public Collection<FieldEventDetector<T>> getEventDetectors() {
         final List<FieldEventDetector<T>> list = new ArrayList<>();
-        for (final FieldEventState<?, T> state : eventsStates) {
+        for (final FieldEventState<?, T> state : userEventsStates) {
             list.add(state.getEventDetector());
         }
         return Collections.unmodifiableCollection(list);
@@ -122,8 +127,9 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
     /** {@inheritDoc} */
     @Override
     public void clearEventsDetectors() {
-        eventsStates.clear();
+        userEventsStates.clear();
     }
+
     /** {@inheritDoc} */
     @Override
     public FieldSpacecraftState<T> propagate(final FieldAbsoluteDate<T> start, final FieldAbsoluteDate<T> target) {
@@ -134,12 +140,16 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
             lastPropagationStart = start;
 
             // Initialize additional states
-            initializeAdditionalStates(target);
+            initializeAdditionalData(target);
 
             final boolean           isForward = target.compareTo(start) >= 0;
-            FieldSpacecraftState<T> state   = updateAdditionalStates(basicPropagate(start));
+            FieldSpacecraftState<T> state   = updateAdditionalData(basicPropagate(start));
 
             // initialize event detectors
+            eventsStates = getAttitudeProvider().
+                           getFieldEventDetectors(getField()).map(FieldEventState::new).
+                           collect(Collectors.toList());
+            eventsStates.addAll(userEventsStates);
             for (final FieldEventState<?, T> es : eventsStates) {
                 es.init(state, target);
             }
@@ -154,7 +164,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
 
                 // attempt to advance to the target date
                 final FieldSpacecraftState<T> previous = state;
-                final FieldSpacecraftState<T> current = updateAdditionalStates(basicPropagate(target));
+                final FieldSpacecraftState<T> current = updateAdditionalData(basicPropagate(target));
                 final FieldBasicStepInterpolator interpolator =
                         new FieldBasicStepInterpolator(isForward, previous, current);
 
@@ -163,7 +173,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
 
                 // Update the potential changes in the spacecraft state due to the events
                 // especially the potential attitude transition
-                state = updateAdditionalStates(basicPropagate(state.getDate()));
+                state = updateAdditionalData(basicPropagate(state.getDate()));
 
             } while (!isLastStep);
 
@@ -295,6 +305,9 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
                         // invalidate the derivatives, we need to recompute them
                         final FieldSpacecraftState<T> resetState = occurrence.getNewState();
                         resetIntermediateState(resetState, interpolator.isForward());
+                        for (final FieldEventState<?, T> fieldEventState: eventsStates) {
+                            fieldEventState.getEventDetector().reset(resetState, target);
+                        }
                         return resetState;
                     }
                     // at this point action == Action.CONTINUE or Action.RESET_EVENTS
@@ -351,13 +364,6 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
      */
     protected abstract T getMass(FieldAbsoluteDate<T> date);
 
-    /** Get PV coordinates provider.
-     * @return PV coordinates provider
-     */
-    public FieldPVCoordinatesProvider<T> getPvProvider() {
-        return pvProvider;
-    }
-
     /** Reset an intermediate state.
      * @param state new intermediate state to consider
      * @param forward if true, the intermediate state is valid for
@@ -365,12 +371,13 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
      */
     protected abstract void resetIntermediateState(FieldSpacecraftState<T> state, boolean forward);
 
-    /** Extrapolate an orbit up to a specific target date.
+    /** Propagate an orbit up to a specific target date.
      * @param date target date for the orbit
      * @param parameters model parameters
-     * @return extrapolated parameters
+     * @return propagated orbit
      */
-    protected abstract FieldOrbit<T> propagateOrbit(FieldAbsoluteDate<T> date, T[] parameters);
+    public abstract FieldOrbit<T> propagateOrbit(FieldAbsoluteDate<T> date,
+                                                 T[] parameters);
 
     /** Propagate an orbit without any fancy features.
      * <p>This method is similar in spirit to the {@link #propagate} method,
@@ -380,7 +387,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
      * @param date target date for propagation
      * @return state at specified date
      */
-    protected FieldSpacecraftState<T> basicPropagate(final FieldAbsoluteDate<T> date) {
+    public FieldSpacecraftState<T> basicPropagate(final FieldAbsoluteDate<T> date) {
         try {
 
             // evaluate orbit
@@ -391,7 +398,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
                 getAttitudeProvider().getAttitude(pvProvider, date, orbit.getFrame());
 
             // build raw state
-            return new FieldSpacecraftState<>(orbit, attitude, getMass(date));
+            return new FieldSpacecraftState<>(orbit, attitude).withMass(getMass(date));
 
         } catch (OrekitException oe) {
             throw new OrekitException(oe);
@@ -435,9 +442,9 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
             }
 
             try {
-                // copy the same additional state providers as the original propagator
-                for (FieldAdditionalStateProvider<T> provider : FieldAbstractAnalyticalPropagator.this.getAdditionalStateProviders()) {
-                    addAdditionalStateProvider(provider);
+                // copy the same additional data providers as the original propagator
+                for (FieldAdditionalDataProvider<?, T> provider : FieldAbstractAnalyticalPropagator.this.getAdditionalDataProviders()) {
+                    addAdditionalDataProvider(provider);
                 }
             } catch (OrekitException oe) {
                 // as the providers are already compatible with each other,
@@ -461,7 +468,8 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
 
         /** {@inheritDoc} */
         @Override
-        protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> target, final T[] parameters) {
+        public FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> target,
+                                            final T[] parameters) {
             return FieldAbstractAnalyticalPropagator.this.propagateOrbit(target, parameters);
         }
 
@@ -548,7 +556,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
             final FieldSpacecraftState<T> basicState = basicPropagate(date);
 
             // add the additional states
-            return updateAdditionalStates(basicState);
+            return updateAdditionalData(basicState);
 
         }
 

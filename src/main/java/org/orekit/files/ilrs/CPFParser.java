@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -56,6 +56,9 @@ import org.orekit.utils.IERSConventions;
  */
 public class CPFParser implements EphemerisFileParser<CPF> {
 
+    /** Default number of sample for interpolating data (See: reference documents). */
+    public static final int DEFAULT_INTERPOLATION_SAMPLE = 10;
+
     /** File format. */
     private static final String FILE_FORMAT = "CPF";
 
@@ -64,9 +67,6 @@ public class CPFParser implements EphemerisFileParser<CPF> {
 
     /** Pattern for delimiting regular expressions. */
     private static final Pattern SEPARATOR = Pattern.compile("\\s+");
-
-    /** Default number of sample for interpolating data (See: reference documents. */
-    private static final int DEFAULT_INTERPOLATION_SAMPLE = 10;
 
     /** Standard gravitational parameter in m^3 / s^2. */
     private final double mu;

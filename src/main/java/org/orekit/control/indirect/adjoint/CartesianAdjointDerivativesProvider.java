@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,10 +40,13 @@ import org.orekit.utils.PVCoordinates;
  * @see org.orekit.propagation.numerical.NumericalPropagator
  * @since 12.2
  */
-public class CartesianAdjointDerivativesProvider extends AbstractCartesianAdjointDerivativesProvider implements AdditionalDerivativesProvider {
+public class CartesianAdjointDerivativesProvider implements AdditionalDerivativesProvider {
 
     /** Contributing terms to the adjoint equation. */
     private final CartesianAdjointEquationTerm[] adjointEquationTerms;
+
+    /** Cost function. */
+    private final CartesianCost cost;
 
     /**
      * Constructor.
@@ -52,8 +55,29 @@ public class CartesianAdjointDerivativesProvider extends AbstractCartesianAdjoin
      */
     public CartesianAdjointDerivativesProvider(final CartesianCost cost,
                                                final CartesianAdjointEquationTerm... adjointEquationTerms) {
-        super(cost);
+        this.cost = cost;
         this.adjointEquationTerms = adjointEquationTerms;
+    }
+
+    /**
+     * Getter for the cost.
+     * @return cost
+     */
+    public CartesianCost getCost() {
+        return cost;
+    }
+
+    /** Getter for the name.
+     * @return name */
+    public String getName() {
+        return cost.getAdjointName();
+    }
+
+    /** Getter for the dimension.
+     * @return dimension
+     */
+    public int getDimension() {
+        return cost.getAdjointDimension();
     }
 
     /** {@inheritDoc} */
@@ -81,7 +105,7 @@ public class CartesianAdjointDerivativesProvider extends AbstractCartesianAdjoin
         mainDerivativesIncrements[3] = thrustAccelerationVector.getX();
         mainDerivativesIncrements[4] = thrustAccelerationVector.getY();
         mainDerivativesIncrements[5] = thrustAccelerationVector.getZ();
-        mainDerivativesIncrements[6] = -getCost().getMassFlowRateFactor() * thrustAccelerationVector.getNorm() * mass;
+        mainDerivativesIncrements[6] = -thrustAccelerationVector.getNorm() * mass * getCost().getMassFlowRateFactor();
 
         // Cartesian position adjoint
         additionalDerivatives[3] = -adjointVariables[0];
@@ -135,12 +159,12 @@ public class CartesianAdjointDerivativesProvider extends AbstractCartesianAdjoin
             hamiltonian += adjointEquationTerm.getHamiltonianContribution(date, adjointVariables, adjointVariables,
                     propagationFrame);
         }
+        final double mass = state.getMass();
         if (adjointVariables.length != 6) {
-            final double mass = state.getMass();
             final double thrustAccelerationNorm = getCost().getThrustAccelerationVector(adjointVariables, mass).getNorm();
-            hamiltonian -= getCost().getMassFlowRateFactor() * adjointVariables[6] * thrustAccelerationNorm * mass;
+            hamiltonian -= adjointVariables[6] * getCost().getMassFlowRateFactor() * thrustAccelerationNorm * mass;
         }
-        hamiltonian += getCost().getHamiltonianContribution(adjointVariables, state.getMass());
+        hamiltonian += getCost().getHamiltonianContribution(adjointVariables, mass);
         return hamiltonian;
     }
 }

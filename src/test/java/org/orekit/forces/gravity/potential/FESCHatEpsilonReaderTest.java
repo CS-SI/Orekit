@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,7 +32,7 @@ import java.util.Map;
 public class FESCHatEpsilonReaderTest {
 
     @Test
-    public void testTooLargeDegree()
+    void testTooLargeDegree()
         {
 
         try {
@@ -55,14 +55,14 @@ public class FESCHatEpsilonReaderTest {
     }
 
     @Test
-    public void testCoefficientsConversion2010()
+    void testCoefficientsConversion2010()
         throws SecurityException, NoSuchFieldException,
                IllegalArgumentException, IllegalAccessException {
         checkConversion(OceanLoadDeformationCoefficients.IERS_2010, 1.0e-14);
     }
 
     @Test
-    public void testCoefficientsConversionGegout()
+    void testCoefficientsConversionGegout()
         throws SecurityException, NoSuchFieldException,
                IllegalArgumentException, IllegalAccessException {
         checkConversion(OceanLoadDeformationCoefficients.GEGOUT, 1.7e-12);

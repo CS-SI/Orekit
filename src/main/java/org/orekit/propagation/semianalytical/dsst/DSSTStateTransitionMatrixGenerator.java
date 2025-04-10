@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,10 +15,6 @@
  * limitations under the License.
  */
 package org.orekit.propagation.semianalytical.dsst;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -37,6 +33,10 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap.Span;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /** Generator for State Transition Matrix.
  * @author Luc Maisonobe
@@ -99,9 +99,9 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
 
     /** Register an observer for partial derivatives.
      * <p>
-     * The observer {@link DSSTPartialsObserver#partialsComputed(double[], double[]) partialsComputed}
+     * The observer {@link DSSTPartialsObserver#partialsComputed(SpacecraftState, RealMatrix, double[])} partialsComputed}
      * method will be called when partial derivatives are computed, as a side effect of
-     * calling {@link #generate(SpacecraftState)}
+     * calling {@link #computePartials(SpacecraftState)} (SpacecraftState)}
      * </p>
      * @param name name of the parameter driver this observer is interested in (may be null)
      * @param observer observer to register
@@ -161,7 +161,7 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
     /** {@inheritDoc} */
     @Override
     public boolean yields(final SpacecraftState state) {
-        return !state.hasAdditionalState(getName());
+        return !state.hasAdditionalData(getName());
     }
 
     /** Set the initial value of the State Transition Matrix.
@@ -194,7 +194,7 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
         }
 
         // set additional state
-        return state.addAdditionalState(stmName, flat);
+        return state.addAdditionalData(stmName, flat);
 
     }
 
@@ -304,6 +304,7 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
     }
 
     /** Interface for observing partials derivatives. */
+    @FunctionalInterface
     public interface DSSTPartialsObserver {
 
         /** Callback called when partial derivatives have been computed.

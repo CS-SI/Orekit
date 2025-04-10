@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,9 +17,13 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -27,6 +31,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.time.AbsoluteDate;
@@ -40,6 +45,21 @@ public class ParameterDrivenDateIntervalDetectorTest {
 
     private Propagator propagator;
 
+    @ParameterizedTest
+    @ValueSource(doubles = {-1e3, -1e1, 0.0, 1.0, 1e2})
+    void testGetDefaultDetectionSettings(final double timeShift) {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        Mockito.when(mockedState.getDate()).thenReturn(date);
+        // WHEN
+        final EventDetectionSettings detectionSettings = ParameterDrivenDateIntervalDetector.getDefaultDetectionSettings(date,
+                date.shiftedBy(timeShift));
+        // THEN
+        Assertions.assertEquals(DateDetector.DEFAULT_THRESHOLD, detectionSettings.getThreshold());
+        Assertions.assertTrue(detectionSettings.getMaxCheckInterval().currentInterval(mockedState, true) >= FastMath.abs(timeShift) / 2);
+    }
+
     @Test
     public void testNoShift() {
         final AbsoluteDate t0    = propagator.getInitialState().getDate();
@@ -50,7 +70,7 @@ public class ParameterDrivenDateIntervalDetectorTest {
                                                        withThreshold(1.0e-12).
                                                        withHandler(new ContinueOnEvent());
 
-        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-12, detector.getThreshold(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
         Assertions.assertEquals("no-shift_START", detector.getStartDriver().getName());
@@ -77,7 +97,7 @@ public class ParameterDrivenDateIntervalDetectorTest {
                                                        withThreshold(1.0e-12).
                                                        withHandler(new ContinueOnEvent());
 
-        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-12, detector.getThreshold(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
         Assertions.assertEquals("small-shift_START", detector.getStartDriver().getName());
@@ -109,7 +129,7 @@ public class ParameterDrivenDateIntervalDetectorTest {
                                                        withThreshold(1.0e-12).
                                                        withHandler(new ContinueOnEvent());
 
-        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-12, detector.getThreshold(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
         Assertions.assertEquals("large-shift_START", detector.getStartDriver().getName());

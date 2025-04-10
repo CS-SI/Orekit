@@ -55,6 +55,11 @@ import org.orekit.utils.TimeSpanMap;
 public class SP3ParserTest {
 
     @Test
+    public void testIssue1614() {
+        Assertions.assertEquals(7, SP3Parser.DEFAULT_INTERPOLATION_SAMPLES);
+    }
+
+    @Test
     public void testParseSP3a1() {
         // simple test for version sp3-a, only contains position entries
         final String    ex     = "/sp3/example-a-1.sp3";
@@ -283,14 +288,6 @@ public class SP3ParserTest {
                                        Vector3D.ZERO),
                      coord);
         Assertions.assertEquals(0.00000029942, coord.getClockCorrection(), 1.0e-15);
-    }
-
-    @Deprecated
-    @Test
-    public void testDeprecated() {
-        for (String name : Arrays.asList("IGS14", "ITR20", "SLR08", "UNDEF", "WGS84")) {
-            Assertions.assertSame(SP3Parser.guessFrame(name), IGSUtils.guessFrame(name));
-        }
     }
 
     @Test
@@ -732,7 +729,7 @@ public class SP3ParserTest {
 
         // Verify
         Assertions.assertEquals(TimeSystem.UTC, file.getHeader().getTimeSystem());
-        Assertions.assertEquals(SP3FileType.IRNSS, file.getHeader().getType());
+        Assertions.assertEquals(SP3FileType.NAVIC, file.getHeader().getType());
 
     }
 

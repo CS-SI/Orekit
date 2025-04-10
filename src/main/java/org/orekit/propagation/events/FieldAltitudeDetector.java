@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,13 +47,13 @@ public class FieldAltitudeDetector<T extends CalculusFieldElement<T>> extends Fi
 
     /** Build a new altitude detector.
      * <p>This simple constructor takes default values for maximal checking
-     *  interval ({@link #DEFAULT_MAXCHECK}) and convergence threshold
+     *  interval ({@link #DEFAULT_MAX_CHECK}) and convergence threshold
      * ({@link #DEFAULT_THRESHOLD}).</p>
      * @param altitude threshold altitude value
      * @param bodyShape body shape with respect to which altitude should be evaluated
      */
     public FieldAltitudeDetector(final T altitude, final BodyShape bodyShape) {
-        this(altitude.getField().getZero().newInstance(DEFAULT_MAXCHECK),
+        this(altitude.getField().getZero().newInstance(DEFAULT_MAX_CHECK),
              altitude.getField().getZero().newInstance(DEFAULT_THRESHOLD),
              altitude, bodyShape);
     }
@@ -90,7 +90,7 @@ public class FieldAltitudeDetector<T extends CalculusFieldElement<T>> extends Fi
                                  final T threshold,
                                  final T altitude,
                                  final BodyShape bodyShape) {
-        this(FieldAdaptableInterval.of(maxCheck.getReal()), threshold, DEFAULT_MAX_ITER, new FieldStopOnDecreasing<T>(),
+        this(new FieldEventDetectionSettings<>(maxCheck.getReal(), threshold, DEFAULT_MAX_ITER), new FieldStopOnDecreasing<>(),
              altitude, bodyShape);
     }
 
@@ -100,30 +100,24 @@ public class FieldAltitudeDetector<T extends CalculusFieldElement<T>> extends Fi
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param altitude threshold altitude value (m)
      * @param bodyShape body shape with respect to which altitude should be evaluated
-     * @since 6.1
+     * @since 13.0
      */
-    protected FieldAltitudeDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold,
-                                    final int maxIter, final FieldEventHandler<T> handler,
-                                    final T altitude,
-                                    final BodyShape bodyShape) {
-        super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
+    protected FieldAltitudeDetector(final FieldEventDetectionSettings<T> detectionSettings,
+                                    final FieldEventHandler<T> handler, final T altitude, final BodyShape bodyShape) {
+        super(detectionSettings, handler);
         this.altitude  = altitude;
         this.bodyShape = bodyShape;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected FieldAltitudeDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
-                                              final int newMaxIter,
+    protected FieldAltitudeDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                               final FieldEventHandler<T> newHandler) {
-        return new FieldAltitudeDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                           altitude, bodyShape);
+        return new FieldAltitudeDetector<>(detectionSettings, newHandler, altitude, bodyShape);
     }
 
     /** Get the threshold altitude value.

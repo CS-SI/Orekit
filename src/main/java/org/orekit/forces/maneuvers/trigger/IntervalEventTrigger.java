@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,10 +25,7 @@ import org.hipparchus.Field;
 import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldAbstractDetector;
-import org.orekit.propagation.events.FieldAdaptableInterval;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -46,10 +43,10 @@ import org.orekit.time.FieldAbsoluteDate;
  * @author Luc Maisonobe
  * @since 11.1
  */
-public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extends AbstractManeuverTriggers {
+public abstract class IntervalEventTrigger<T extends EventDetector> extends AbstractManeuverTriggers {
 
     /** Intervals detector. */
-    private final T firingIntervalDetector;
+    private final ManeuverTriggerDetector<T> firingIntervalDetector;
 
     /** Cached field-based detectors. */
     private final transient Map<Field<? extends CalculusFieldElement<?>>, FieldEventDetector<? extends CalculusFieldElement<?>>> cached;
@@ -57,9 +54,8 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
     /** Simple constructor.
      * <p>
      * Note that the {@code intervalDetector} passed as an argument is used only
-     * as a <em>prototype</em> from which a new detector will be built using its
-     * {@link AbstractDetector#withHandler(EventHandler) withHandler} method to
-     * set up an internal handler. The original event handler from the prototype
+     * as a <em>prototype</em> from which a new detector will be built using
+     * {@link ManeuverTriggerDetector}. The original event handler from the prototype
      * will be <em>ignored</em> and never called.
      * </p>
      * <p>
@@ -71,8 +67,8 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
      * </p>
      * @param prototypeFiringIntervalDetector prototype detector for firing interval
      */
-    public IntervalEventTrigger(final T prototypeFiringIntervalDetector) {
-        this.firingIntervalDetector = prototypeFiringIntervalDetector.withHandler(new Handler());
+    protected IntervalEventTrigger(final T prototypeFiringIntervalDetector) {
+        this.firingIntervalDetector = new ManeuverTriggerDetector<>(prototypeFiringIntervalDetector, new Handler());
         this.cached                 = new HashMap<>();
     }
 
@@ -96,7 +92,7 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
      * @return firing interval detector
      */
     public T getFiringIntervalDetector() {
-        return firingIntervalDetector;
+        return firingIntervalDetector.getDetector();
     }
 
     /** {@inheritDoc} */
@@ -131,6 +127,7 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
     }
 
     /** {@inheritDoc} */
+    @Override
     public <S extends CalculusFieldElement<S>> Stream<FieldEventDetector<S>> getFieldEventDetectors(final Field<S> field) {
 
         @SuppressWarnings("unchecked")
@@ -154,21 +151,15 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
      * @param <S> type of the field elements
      * @return converted firing intervals detector
      */
-    private <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>> D convertAndSetUpHandler(final Field<S> field) {
-        final FieldAbstractDetector<D, S> converted = convertIntervalDetector(field, firingIntervalDetector);
-        final FieldAdaptableInterval<S>   maxCheck  = s -> firingIntervalDetector.getMaxCheckInterval().currentInterval(s.toSpacecraftState());
-        return converted.
-               withMaxCheck(maxCheck).
-               withThreshold(field.getZero().newInstance(firingIntervalDetector.getThreshold())).
-               withHandler(new FieldHandler<>());
+    private <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>> FieldManeuverTriggerDetector<S, D> convertAndSetUpHandler(final Field<S> field) {
+        final D converted = convertIntervalDetector(field, firingIntervalDetector.getDetector());
+        return new FieldManeuverTriggerDetector<>(converted, new FieldHandler<>());
     }
 
     /** Convert a primitive firing intervals detector into a field firing intervals detector.
      * <p>
-     * There is not need to set up {@link FieldAbstractDetector#withMaxCheck(FieldAdaptableInterval) withMaxCheck},
-     * {@link FieldAbstractDetector#withThreshold(CalculusFieldElement) withThreshold}, or
-     * {@link FieldAbstractDetector#withHandler(org.orekit.propagation.events.handlers.FieldEventHandler) withHandler}
-     * in the converted detector, this will be done by caller.
+     * The {@link org.orekit.propagation.events.FieldEventDetectionSettings} must be set up in conformance with the
+     * non-field detector.
      * </p>
      * <p>
      * A skeleton implementation of this method to convert some {@code XyzDetector} into {@code FieldXyzDetector},
@@ -176,12 +167,12 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
      * </p>
      * <pre>{@code
      *     protected <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>>
-     *         FieldAbstractDetector<D, S> convertIntervalDetector(final Field<S> field, final XyzDetector detector) {
+     *         D convertIntervalDetector(final Field<S> field, final XyzDetector detector) {
      *
      *         final FieldAbsoluteDate<S> date  = new FieldAbsoluteDate<>(field, detector.getDate());
      *         final S                    param = field.getZero().newInstance(detector.getParam());
      *
-     *         final FieldAbstractDetector<D, S> converted = (FieldAbstractDetector<D, S>) new FieldXyzDetector<>(date, param);
+     *         D converted = (D) new FieldXyzDetector<>(date, param).withDetectionSettings(field, detector.getDetectionSettings());
      *         return converted;
      *
      *     }
@@ -193,8 +184,8 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
      * @param <S> type of the field elements
      * @return converted firing intervals detector
      */
-    protected abstract <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>>
-        FieldAbstractDetector<D, S> convertIntervalDetector(Field<S> field, T detector);
+    protected abstract <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>>
+        D convertIntervalDetector(Field<S> field, T detector);
 
     /** Local handler for both start and stop triggers. */
     private class Handler implements EventHandler {
@@ -232,7 +223,7 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
     /** Local handler for both start and stop triggers.
      * @param <S> type of the field elements
      */
-    private class FieldHandler<D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>> implements FieldEventHandler<S> {
+    private class FieldHandler<S extends CalculusFieldElement<S>> implements FieldEventHandler<S> {
 
         /** Propagation direction. */
         private boolean forward;

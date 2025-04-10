@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,21 +20,21 @@ import org.hipparchus.CalculusFieldElement;
 
 /** Abstract base class for modifying state during propagation.
  * <p>
- * This class is a specialized implementation of {@link AdditionalStateProvider}
- * with a name set to the empty string and returning a null additional state.
+ * This class is a specialized implementation of {@link FieldAdditionalDataProvider}
+ * with a name set to the empty string and returning a null additional data.
  * </p>
  * <p>
  * Beware that changing the state undercover from the propagator may have
  * many side effects. Using this class should therefore be done cautiously.
  * </p>
  * @see Propagator
- * @see AdditionalStateProvider
+ * @see FieldAdditionalDataProvider
  * @author Luc Maisonobe
  * @param <T> type of the field elements
  * @since 12.1
  */
 public abstract class FieldAbstractStateModifier<T extends CalculusFieldElement<T>>
-    implements FieldAdditionalStateProvider<T> {
+    implements FieldAdditionalDataProvider<T[], T> {
 
     /** {@inheritDoc} */
     @Override
@@ -44,7 +44,7 @@ public abstract class FieldAbstractStateModifier<T extends CalculusFieldElement<
 
     /** {@inheritDoc} */
     @Override
-    public T[] getAdditionalState(final FieldSpacecraftState<T> state) {
+    public T[] getAdditionalData(final FieldSpacecraftState<T> state) {
         return null;
     }
 
@@ -53,6 +53,7 @@ public abstract class FieldAbstractStateModifier<T extends CalculusFieldElement<
     public FieldSpacecraftState<T> update(final FieldSpacecraftState<T> state) {
         return change(state);
     }
+
     /** Change main state.
      * @param state spacecraft state to change
      * @return changed state

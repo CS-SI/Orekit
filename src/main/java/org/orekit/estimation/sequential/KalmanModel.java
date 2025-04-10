@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -44,7 +44,7 @@ import java.util.Map;
  * @author Maxime Journot
  * @since 9.2
  */
-public class KalmanModel extends KalmanEstimationCommon implements NonLinearProcess<MeasurementDecorator> {
+public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLinearProcess<MeasurementDecorator> {
 
 
     /** Harvesters for extracting Jacobians from integrated states. */
@@ -347,7 +347,6 @@ public class KalmanModel extends KalmanEstimationCommon implements NonLinearProc
 
         return new NonLinearEvolution(measurement.getTime(), predictedState,
                                       stateTransitionMatrix, normalizedProcessNoise, measurementMatrix);
-
     }
 
 
@@ -418,7 +417,7 @@ public class KalmanModel extends KalmanEstimationCommon implements NonLinearProc
             // If any mass changes have occurred during this estimation step, such as maneuvers,
             // the updated mass value must be carried over so that new Propagators from this builder start with the updated mass.
             if (getBuilders().get(k) instanceof AbstractPropagatorBuilder) {
-                ((AbstractPropagatorBuilder) (getBuilders().get(k))).setMass(predictedSpacecraftState.getMass());
+                ((AbstractPropagatorBuilder<?>) (getBuilders().get(k))).setMass(predictedSpacecraftState.getMass());
             }
 
             // The orbital parameters in the state vector are replaced with their predicted values

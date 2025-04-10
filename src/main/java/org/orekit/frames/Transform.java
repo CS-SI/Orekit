@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.orekit.frames;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,6 +29,7 @@ import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeShiftable;
 import org.orekit.utils.AngularCoordinates;
@@ -99,16 +99,10 @@ import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
  * @author Luc Maisonobe
  * @author Fabien Maussion
  */
-public class Transform implements
-        TimeShiftable<Transform>,
-        Serializable,
-        KinematicTransform {
+public class Transform implements TimeShiftable<Transform>, KinematicTransform {
 
     /** Identity transform. */
     public static final Transform IDENTITY = new IdentityTransform();
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 210140410L;
 
     /** Date of the transform. */
     private final AbsoluteDate date;
@@ -322,6 +316,12 @@ public class Transform implements
 
     /** {@inheritDoc} */
     public Transform shiftedBy(final double dt) {
+        return shiftedBy(new TimeOffset(dt));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Transform shiftedBy(final TimeOffset dt) {
         return new Transform(date.shiftedBy(dt), cartesian.shiftedBy(dt), angular.shiftedBy(dt));
     }
 
@@ -700,9 +700,6 @@ public class Transform implements
     /** Specialized class for identity transform. */
     private static class IdentityTransform extends Transform {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = -9042082036141830517L;
-
         /** Simple constructor. */
         IdentityTransform() {
             super(AbsoluteDate.ARBITRARY_EPOCH, PVCoordinates.ZERO, AngularCoordinates.IDENTITY);
@@ -722,6 +719,12 @@ public class Transform implements
         @Override
         public StaticTransform getStaticInverse() {
             return toStaticTransform();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Transform shiftedBy(final TimeOffset dt) {
+            return this;
         }
 
         /** {@inheritDoc} */

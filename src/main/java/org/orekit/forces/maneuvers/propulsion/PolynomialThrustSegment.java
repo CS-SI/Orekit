@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,11 +24,11 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
-/** One polynomial segment of a thrust profile.
+/** Thrust vector given as polynomials for the Cartesian coordinates.
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class PolynomialThrustSegment {
+public class PolynomialThrustSegment implements ThrustVectorProvider {
 
     /** Reference date. */
     private final AbsoluteDate referenceDate;
@@ -58,23 +58,18 @@ public class PolynomialThrustSegment {
         this.zThrust       = zThrust;
     }
 
-    /** Get thrust vector at a specified date.
-     * @param date date to consider
-     * @return thrust at {@code date} (N)
-     */
-    public Vector3D getThrustVector(final AbsoluteDate date) {
+    /** {@inheritDoc} */
+    @Override
+    public Vector3D getThrustVector(final AbsoluteDate date, final double mass) {
         final double dt = date.durationFrom(referenceDate);
         return new Vector3D(xThrust.value(dt), yThrust.value(dt), zThrust.value(dt));
     }
 
-    /** Get thrust vector at a specified date.
-     * @param <T> type of the field elements
-     * @param date date to consider
-     * @return thrust at {@code date} (N)
-     */
-    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(final FieldAbsoluteDate<T> date) {
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(final FieldAbsoluteDate<T> date,
+                                                                                final T mass) {
         final T dt = date.durationFrom(referenceDate);
         return new FieldVector3D<>(xThrust.value(dt), yThrust.value(dt), zThrust.value(dt));
     }
-
 }

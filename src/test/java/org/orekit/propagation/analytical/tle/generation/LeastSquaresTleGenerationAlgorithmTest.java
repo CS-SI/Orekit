@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Bryan Cazabonne
+/* Copyright 2002-2025 Bryan Cazabonne
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,14 +16,23 @@
  */
 package org.orekit.propagation.analytical.tle.generation;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.GaussNewtonOptimizer;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.tle.FieldTLE;
+import org.orekit.propagation.analytical.tle.FieldTLEPropagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
+import org.orekit.propagation.conversion.osc2mean.LeastSquaresConverter;
 
 
 public class LeastSquaresTleGenerationAlgorithmTest {
@@ -98,6 +107,31 @@ public class LeastSquaresTleGenerationAlgorithmTest {
         // Verify if driver is still selected
         rebuilt.getParametersDrivers().forEach(driver -> Assertions.assertTrue(driver.isSelected()));
 
+    }
+
+    @Test
+    public void testUnsupportedField() {
+        doTestUnsupportedField(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestUnsupportedField(final Field<T> field) {
+        // Initialize TLE
+        final FieldTLE<T> tleISS = new FieldTLE<>(field, "1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
+                                                         "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
+        // TLE propagator
+        final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tleISS, tleISS.getParameters(field));
+        // State at TLE epoch
+        final FieldSpacecraftState<T> state = propagator.propagate(tleISS.getDate());
+        // LeastSquaresConverter
+        final LeastSquaresConverter converter = new LeastSquaresConverter(null, new GaussNewtonOptimizer());
+        // LeastSquaresTleGenerationAlgorithm
+        final LeastSquaresTleGenerationAlgorithm ls = new LeastSquaresTleGenerationAlgorithm(DataContext.getDefault().getTimeScales().getUTC(),
+                                                                                             DataContext.getDefault().getFrames().getTEME(),
+                                                                                             converter);
+        // Should throw an exception
+        Assertions.assertThrows(UnsupportedOperationException.class, () -> {
+            ls.generate(state, tleISS);
+        });
     }
 
 }

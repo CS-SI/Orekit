@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -115,7 +115,7 @@ class FieldAbsolutePVCoordinatesHermiteInterpolatorTest {
     void testInterpolatePolynomialPositionOnly() {
         final Field<Binary64>       field  = Binary64Field.getInstance();
         final Binary64              one    = field.getOne();
-        Random                      random = new Random(0x88740a12e4299003l);
+        Random                      random = new Random(0x88740a12e4299003L);
         FieldAbsoluteDate<Binary64> t0     = FieldAbsoluteDate.getJ2000Epoch(field);
         Frame                       frame  = FramesFactory.getEME2000();
         for (int i = 0; i < 20; ++i) {
@@ -152,12 +152,12 @@ class FieldAbsolutePVCoordinatesHermiteInterpolatorTest {
                 FieldVector3D<Binary64> p = interpolated.getPosition();
                 FieldVector3D<Binary64> v = interpolated.getVelocity();
                 FieldVector3D<Binary64> a = interpolated.getAcceleration();
-                Assertions.assertEquals(px.value(dt), p.getX().getReal(), 5.0e-16 * p.getNorm().getReal());
-                Assertions.assertEquals(py.value(dt), p.getY().getReal(), 5.0e-16 * p.getNorm().getReal());
-                Assertions.assertEquals(pz.value(dt), p.getZ().getReal(), 5.0e-16 * p.getNorm().getReal());
-                Assertions.assertEquals(pxDot.value(dt), v.getX().getReal(), 7.0e-15 * v.getNorm().getReal());
-                Assertions.assertEquals(pyDot.value(dt), v.getY().getReal(), 7.0e-15 * v.getNorm().getReal());
-                Assertions.assertEquals(pzDot.value(dt), v.getZ().getReal(), 7.0e-15 * v.getNorm().getReal());
+                Assertions.assertEquals(px.value(dt),       p.getX().getReal(), 6.0e-16 * p.getNorm().getReal());
+                Assertions.assertEquals(py.value(dt),       p.getY().getReal(), 6.0e-16 * p.getNorm().getReal());
+                Assertions.assertEquals(pz.value(dt),       p.getZ().getReal(), 6.0e-16 * p.getNorm().getReal());
+                Assertions.assertEquals(pxDot.value(dt),    v.getX().getReal(), 1.0e-14 * v.getNorm().getReal());
+                Assertions.assertEquals(pyDot.value(dt),    v.getY().getReal(), 1.0e-14 * v.getNorm().getReal());
+                Assertions.assertEquals(pzDot.value(dt),    v.getZ().getReal(), 1.0e-14 * v.getNorm().getReal());
                 Assertions.assertEquals(pxDotDot.value(dt), a.getX().getReal(), 2.0e-13 * a.getNorm().getReal());
                 Assertions.assertEquals(pyDotDot.value(dt), a.getY().getReal(), 2.0e-13 * a.getNorm().getReal());
                 Assertions.assertEquals(pzDotDot.value(dt), a.getZ().getReal(), 2.0e-13 * a.getNorm().getReal());
@@ -170,7 +170,7 @@ class FieldAbsolutePVCoordinatesHermiteInterpolatorTest {
     void testInterpolatePolynomialPV() {
         final Field<Binary64>       field  = Binary64Field.getInstance();
         final Binary64              one    = field.getOne();
-        Random                      random = new Random(0xae7771c9933407bdl);
+        Random                      random = new Random(0xae7771c9933407bdL);
         FieldAbsoluteDate<Binary64> t0     = FieldAbsoluteDate.getJ2000Epoch(field);
         Frame                       frame  = FramesFactory.getEME2000();
         for (int i = 0; i < 20; ++i) {
@@ -210,12 +210,12 @@ class FieldAbsolutePVCoordinatesHermiteInterpolatorTest {
                 FieldVector3D<Binary64> p = interpolated.getPosition();
                 FieldVector3D<Binary64> v = interpolated.getVelocity();
                 FieldVector3D<Binary64> a = interpolated.getAcceleration();
-                Assertions.assertEquals(px.value(dt), p.getX().getReal(), 4.0e-16 * p.getNorm().getReal());
-                Assertions.assertEquals(py.value(dt), p.getY().getReal(), 4.0e-16 * p.getNorm().getReal());
-                Assertions.assertEquals(pz.value(dt), p.getZ().getReal(), 4.0e-16 * p.getNorm().getReal());
-                Assertions.assertEquals(pxDot.value(dt), v.getX().getReal(), 9.0e-16 * v.getNorm().getReal());
-                Assertions.assertEquals(pyDot.value(dt), v.getY().getReal(), 9.0e-16 * v.getNorm().getReal());
-                Assertions.assertEquals(pzDot.value(dt), v.getZ().getReal(), 9.0e-16 * v.getNorm().getReal());
+                Assertions.assertEquals(px.value(dt),       p.getX().getReal(), 4.0e-16 * p.getNorm().getReal());
+                Assertions.assertEquals(py.value(dt),       p.getY().getReal(), 4.0e-16 * p.getNorm().getReal());
+                Assertions.assertEquals(pz.value(dt),       p.getZ().getReal(), 4.0e-16 * p.getNorm().getReal());
+                Assertions.assertEquals(pxDot.value(dt),    v.getX().getReal(), 2.0e-15 * v.getNorm().getReal());
+                Assertions.assertEquals(pyDot.value(dt),    v.getY().getReal(), 2.0e-15 * v.getNorm().getReal());
+                Assertions.assertEquals(pzDot.value(dt),    v.getZ().getReal(), 2.0e-15 * v.getNorm().getReal());
                 Assertions.assertEquals(pxDotDot.value(dt), a.getX().getReal(), 1.0e-14 * a.getNorm().getReal());
                 Assertions.assertEquals(pyDotDot.value(dt), a.getY().getReal(), 1.0e-14 * a.getNorm().getReal());
                 Assertions.assertEquals(pzDotDot.value(dt), a.getZ().getReal(), 1.0e-14 * a.getNorm().getReal());
@@ -229,7 +229,7 @@ class FieldAbsolutePVCoordinatesHermiteInterpolatorTest {
     void testInterpolatePolynomialPVA() {
         final Field<Binary64>       field  = Binary64Field.getInstance();
         final Binary64              one    = field.getOne();
-        Random                      random = new Random(0xfe3945fcb8bf47cel);
+        Random                      random = new Random(0xfe3945fcb8bf47ceL);
         FieldAbsoluteDate<Binary64> t0     = FieldAbsoluteDate.getJ2000Epoch(field);
         Frame                       frame  = FramesFactory.getEME2000();
         for (int i = 0; i < 20; ++i) {
@@ -275,12 +275,12 @@ class FieldAbsolutePVCoordinatesHermiteInterpolatorTest {
                 FieldVector3D<Binary64> p = interpolated.getPosition();
                 FieldVector3D<Binary64> v = interpolated.getVelocity();
                 FieldVector3D<Binary64> a = interpolated.getAcceleration();
-                Assertions.assertEquals(px.value(dt), p.getX().getReal(), 4.0e-16 * p.getNorm().getReal());
-                Assertions.assertEquals(py.value(dt), p.getY().getReal(), 4.0e-16 * p.getNorm().getReal());
-                Assertions.assertEquals(pz.value(dt), p.getZ().getReal(), 4.0e-16 * p.getNorm().getReal());
-                Assertions.assertEquals(pxDot.value(dt), v.getX().getReal(), 9.0e-16 * v.getNorm().getReal());
-                Assertions.assertEquals(pyDot.value(dt), v.getY().getReal(), 9.0e-16 * v.getNorm().getReal());
-                Assertions.assertEquals(pzDot.value(dt), v.getZ().getReal(), 9.0e-16 * v.getNorm().getReal());
+                Assertions.assertEquals(px.value(dt),       p.getX().getReal(), 5.0e-16 * p.getNorm().getReal());
+                Assertions.assertEquals(py.value(dt),       p.getY().getReal(), 5.0e-16 * p.getNorm().getReal());
+                Assertions.assertEquals(pz.value(dt),       p.getZ().getReal(), 5.0e-16 * p.getNorm().getReal());
+                Assertions.assertEquals(pxDot.value(dt),    v.getX().getReal(), 2.0e-15 * v.getNorm().getReal());
+                Assertions.assertEquals(pyDot.value(dt),    v.getY().getReal(), 2.0e-15 * v.getNorm().getReal());
+                Assertions.assertEquals(pzDot.value(dt),    v.getZ().getReal(), 2.0e-15 * v.getNorm().getReal());
                 Assertions.assertEquals(pxDotDot.value(dt), a.getX().getReal(), 9.0e-15 * a.getNorm().getReal());
                 Assertions.assertEquals(pyDotDot.value(dt), a.getY().getReal(), 9.0e-15 * a.getNorm().getReal());
                 Assertions.assertEquals(pzDotDot.value(dt), a.getZ().getReal(), 9.0e-15 * a.getNorm().getReal());

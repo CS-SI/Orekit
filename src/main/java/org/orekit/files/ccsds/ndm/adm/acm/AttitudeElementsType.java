@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -83,7 +83,7 @@ public enum AttitudeElementsType {
     AttitudeElementsType(final String description, final String... unitsSpecifications) {
         this.description = description;
         this.units       = Stream.of(unitsSpecifications).
-                           map(s -> Unit.parse(s)).
+                           map(Unit::parse).
                            collect(Collectors.toList());
     }
 

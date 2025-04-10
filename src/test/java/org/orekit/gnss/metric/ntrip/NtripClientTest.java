@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.orekit.gnss.metric.ntrip;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -33,7 +34,8 @@ public class NtripClientTest {
 
     @Test
     public void testProxy() {
-        NtripClient client = new NtripClient("ntrip.example.org", NtripClient.DEFAULT_PORT);
+        NtripClient client = new NtripClient("ntrip.example.org", NtripClient.DEFAULT_PORT,
+                                             DataContext.getDefault().getTimeScales());
         client.setProxy(Proxy.Type.SOCKS, "localhost", 1080);
         Assertions.assertEquals(Proxy.Type.SOCKS, client.getProxy().type());
         Assertions.assertEquals("localhost", ((InetSocketAddress) client.getProxy().address()).getHostName());
@@ -44,7 +46,8 @@ public class NtripClientTest {
     public void testUnknownProxy() {
         final String nonExistant = "socks.invalid";
         try {
-            NtripClient client = new NtripClient("ntrip.example.org", NtripClient.DEFAULT_PORT);
+            NtripClient client = new NtripClient("ntrip.example.org", NtripClient.DEFAULT_PORT,
+                                                 DataContext.getDefault().getTimeScales());
             client.setProxy(Proxy.Type.SOCKS, nonExistant, 1080);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException me) {
@@ -57,7 +60,8 @@ public class NtripClientTest {
     public void testUnknownCaster() {
         final String nonExistant = "caster.invalid";
         try {
-            NtripClient client = new NtripClient(nonExistant, NtripClient.DEFAULT_PORT);
+            NtripClient client = new NtripClient(nonExistant, NtripClient.DEFAULT_PORT,
+                                                 DataContext.getDefault().getTimeScales());
             client.setTimeout(100);
             client.getSourceTable();
             Assertions.fail("an exception should have been thrown");
@@ -72,7 +76,8 @@ public class NtripClientTest {
         try {
             DummyServer server = prepareServer("/gnss/ntrip/wrong-content-type.txt");
             server.run();
-            NtripClient client = new NtripClient("localhost", server.getServerPort());
+            NtripClient client = new NtripClient("localhost", server.getServerPort(),
+                                                 DataContext.getDefault().getTimeScales());
             client.setTimeout(500);
             client.getSourceTable();
             Assertions.fail("an exception should have been thrown");
@@ -87,7 +92,8 @@ public class NtripClientTest {
         DummyServer server = prepareServer("/gnss/ntrip/sourcetable-products.igs-ip.net.txt",
                                            "/gnss/ntrip/wrong-content-type.txt");
         server.run();
-        NtripClient client = new NtripClient("localhost", server.getServerPort());
+        NtripClient client = new NtripClient("localhost", server.getServerPort(),
+                                             DataContext.getDefault().getTimeScales());
         client.setTimeout(500);
         client.setReconnectParameters(0.001, 2.0, 2);
         try {
@@ -110,7 +116,8 @@ public class NtripClientTest {
         DummyServer server = prepareServer("/gnss/ntrip/sourcetable-products.igs-ip.net.txt",
                                            "/gnss/ntrip/gone.txt");
         server.run();
-        NtripClient client = new NtripClient("localhost", server.getServerPort());
+        NtripClient client = new NtripClient("localhost", server.getServerPort(),
+                                             DataContext.getDefault().getTimeScales());
         client.setTimeout(500);
         client.setReconnectParameters(0.001, 2.0, 2);
         try {
@@ -134,7 +141,8 @@ public class NtripClientTest {
         try {
             DummyServer server = prepareServer("/gnss/ntrip/wrong-record-type.txt");
             server.run();
-            NtripClient client = new NtripClient("localhost", server.getServerPort());
+            NtripClient client = new NtripClient("localhost", server.getServerPort(),
+                                                 DataContext.getDefault().getTimeScales());
             client.setTimeout(500);
             client.getSourceTable();
             Assertions.fail("an exception should have been thrown");
@@ -150,7 +158,8 @@ public class NtripClientTest {
     public void testLocalSourceTable() {
         DummyServer server = prepareServer("/gnss/ntrip/sourcetable-products.igs-ip.net.txt");
         server.run();
-        NtripClient client = new NtripClient("localhost", server.getServerPort());
+        NtripClient client = new NtripClient("localhost", server.getServerPort(),
+                                             DataContext.getDefault().getTimeScales());
         client.setTimeout(500);
         Assertions.assertEquals("localhost", client.getHost());
         Assertions.assertEquals(server.getServerPort(), client.getPort());
@@ -167,7 +176,8 @@ public class NtripClientTest {
         DummyServer server = prepareServer("/gnss/ntrip/sourcetable-products.igs-ip.net.txt",
                                            "/gnss/ntrip/RTCM3EPH01.dat");
         server.run();
-        NtripClient client = new NtripClient("localhost", server.getServerPort());
+        NtripClient client = new NtripClient("localhost", server.getServerPort(),
+                                             DataContext.getDefault().getTimeScales());
         client.setTimeout(100);
         client.setReconnectParameters(0.001, 2.0, 2);
         final CountingObserver counter = new CountingObserver(m -> true);
@@ -194,7 +204,8 @@ public class NtripClientTest {
         DummyServer server = prepareServer("/gnss/ntrip/sourcetable-products.igs-ip.net.txt",
                                            "/gnss/ntrip/RTCM3EPH01.dat");
         server.run();
-        NtripClient client = new NtripClient("localhost", server.getServerPort());
+        NtripClient client = new NtripClient("localhost", server.getServerPort(),
+                                             DataContext.getDefault().getTimeScales());
         client.setTimeout(100);
         client.setReconnectParameters(0.001, 2.0, 2);
         client.startStreaming("RTCM3EPH01", Type.RTCM, false, false);
@@ -212,7 +223,8 @@ public class NtripClientTest {
         DummyServer server = prepareServer("/gnss/ntrip/sourcetable-products.igs-ip.net.txt",
                                            "/gnss/ntrip/zero-length-response.txt");
         server.run();
-        NtripClient client = new NtripClient("localhost", server.getServerPort());
+        NtripClient client = new NtripClient("localhost", server.getServerPort(),
+                                             DataContext.getDefault().getTimeScales());
         client.setTimeout(100);
         client.setFix(2, 42, 13.456, FastMath.toRadians(43.5), FastMath.toRadians(-1.25), 317.5, 12.2);
         client.startStreaming("", Type.IGS_SSR, true, true);
@@ -231,7 +243,8 @@ public class NtripClientTest {
         DummyServer server = prepareServer("/gnss/ntrip/sourcetable-products.igs-ip.net.txt",
                                            "/gnss/ntrip/zero-length-response.txt");
         server.run();
-        NtripClient client = new NtripClient("localhost", server.getServerPort());
+        NtripClient client = new NtripClient("localhost", server.getServerPort(),
+                                             DataContext.getDefault().getTimeScales());
         client.setTimeout(100);
         client.setFix(2, 42, 13.456, FastMath.toRadians(-43.5), FastMath.toRadians(1.25), 317.5, 12.2);
         client.startStreaming("", Type.IGS_SSR, true, true);
@@ -250,7 +263,8 @@ public class NtripClientTest {
         DummyServer server = prepareServer("/gnss/ntrip/sourcetable-products.igs-ip.net.txt",
                                            "/gnss/ntrip/zero-length-response.txt");
         server.run();
-        NtripClient client = new NtripClient("localhost", server.getServerPort());
+        NtripClient client = new NtripClient("localhost", server.getServerPort(),
+                                             DataContext.getDefault().getTimeScales());
         client.setTimeout(100);
         try {
             client.startStreaming("", Type.IGS_SSR, true, true);
@@ -270,7 +284,8 @@ public class NtripClientTest {
         DummyServer server = prepareServer("/gnss/ntrip/sourcetable-products.igs-ip.net.txt",
                                            "/gnss/ntrip/requires-basic-authentication.txt");
         server.run();
-        NtripClient client = new NtripClient("localhost", server.getServerPort());
+        NtripClient client = new NtripClient("localhost", server.getServerPort(),
+                                             DataContext.getDefault().getTimeScales());
         client.setTimeout(100);
         try {
             client.startStreaming("RTCM3EPH01", Type.RTCM, false, false);
@@ -291,7 +306,8 @@ public class NtripClientTest {
     public void testAuthenticationCaster() {
         DummyServer server = prepareServer("/gnss/ntrip/requires-basic-authentication.txt");
         server.run();
-        NtripClient client = new NtripClient("localhost", server.getServerPort());
+        NtripClient client = new NtripClient("localhost", server.getServerPort(),
+                                             DataContext.getDefault().getTimeScales());
         client.setTimeout(100);
         try {
             client.getSourceTable();
@@ -312,7 +328,8 @@ public class NtripClientTest {
     public void testForbiddenRequest() {
         DummyServer server = prepareServer("/gnss/ntrip/forbidden-request.txt");
         server.run();
-        NtripClient client = new NtripClient("localhost", server.getServerPort());
+        NtripClient client = new NtripClient("localhost", server.getServerPort(),
+                                             DataContext.getDefault().getTimeScales());
         client.setTimeout(100);
         try {
             client.getSourceTable();
@@ -334,7 +351,8 @@ public class NtripClientTest {
     public void testMissingFlags() {
         DummyServer server = prepareServer("/gnss/ntrip/missing-flags.txt");
         server.run();
-        NtripClient client = new NtripClient("localhost", server.getServerPort());
+        NtripClient client = new NtripClient("localhost", server.getServerPort(),
+                                             DataContext.getDefault().getTimeScales());
         client.setTimeout(100);
         try {
             client.getSourceTable();

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -55,9 +55,6 @@ import org.orekit.time.FieldAbsoluteDate;
  * @author Luc Maisonobe
  */
 public class UpdatableFrame extends Frame {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = -2075893064211339303L;
 
     /** Build a non-inertial frame from its transform with respect to its parent.
      * <p>calling this constructor is equivalent to call
@@ -179,9 +176,6 @@ public class UpdatableFrame extends Frame {
     /** Local provider for transforms. */
     private static class UpdatableProvider implements TransformProvider {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 4436954500689776331L;
-
         /** Current transform. */
         private AtomicReference<Transform> transform;
 
@@ -189,7 +183,7 @@ public class UpdatableFrame extends Frame {
          * @param transform initial value of the transform
          */
         UpdatableProvider(final Transform transform) {
-            this.transform = new AtomicReference<Transform>(transform);
+            this.transform = new AtomicReference<>(transform);
         }
 
         /** Update the transform from the parent frame to the instance.

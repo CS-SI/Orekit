@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -50,15 +50,14 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class PointingPanelTest {
 
     @Test
-    public void testBestPointing() {
+    void testBestPointing() {
 
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
@@ -84,7 +83,7 @@ public class PointingPanelTest {
     }
 
     @Test
-    public void testNormalOptimalRotationDouble() {
+    void testNormalOptimalRotationDouble() {
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
         final Panel absorbingSolarArray = new PointingPanel(Vector3D.PLUS_J, sun, 20.0, 0.0, 0.0, 1.0, 0.0);
@@ -97,7 +96,7 @@ public class PointingPanelTest {
     }
 
     @Test
-    public void testNormalOptimalRotationField() {
+    void testNormalOptimalRotationField() {
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
         final Panel absorbingSolarArray = new PointingPanel(Vector3D.PLUS_J, sun, 20.0, 0.0, 0.0, 1.0, 0.0);
@@ -110,17 +109,17 @@ public class PointingPanelTest {
         }
     }
 
-    public void testNormalSunAlignedDouble() {
-        ExtendedPVCoordinatesProvider ep = new ExtendedPVCoordinatesProvider() {
+    void testNormalSunAlignedDouble() {
+        ExtendedPositionProvider ep = new ExtendedPositionProvider() {
             
             @Override
-            public TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame) {
-                return new TimeStampedPVCoordinates(date, new Vector3D(0, 1e6, 0), Vector3D.ZERO);
+            public Vector3D getPosition(AbsoluteDate date, Frame frame) {
+                return new Vector3D(0, 1e6, 0);
             }
             
             @Override
-            public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T>
-                getPVCoordinates(FieldAbsoluteDate<T> date, Frame frame) {
+            public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPosition(FieldAbsoluteDate<T> date,
+                                                                                    Frame frame) {
                 // not used in this test
                 return null;
             }
@@ -142,8 +141,8 @@ public class PointingPanelTest {
     }
 
     @Test
-    public void testNormalSunAlignedField() {
-        ExtendedPVCoordinatesProvider ep = new ExtendedPVCoordinatesProvider() {
+    void testNormalSunAlignedField() {
+        ExtendedPositionProvider ep = new ExtendedPositionProvider() {
             
             @Override
             public TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame) {
@@ -152,12 +151,9 @@ public class PointingPanelTest {
             }
             
             @Override
-            public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T>
-                getPVCoordinates(FieldAbsoluteDate<T> date, Frame frame) {
-                return new TimeStampedFieldPVCoordinates<>(date,
-                                                           new FieldVector3D<>(date.getField(), new Vector3D(0, 1e6, 0)),
-                                                           FieldVector3D.getZero(date.getField()),
-                                                           FieldVector3D.getZero(date.getField()));
+            public <T extends CalculusFieldElement<T>> FieldVector3D<T>
+                getPosition(FieldAbsoluteDate<T> date, Frame frame) {
+                return new FieldVector3D<>(date.getField(), new Vector3D(0, 1e6, 0));
             }
         };
         final Panel panel = new PointingPanel(Vector3D.PLUS_J, ep, 20.0, 0.0, 0.0, 1.0, 0.0);

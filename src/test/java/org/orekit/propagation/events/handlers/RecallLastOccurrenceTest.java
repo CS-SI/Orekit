@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,13 +31,13 @@ class RecallLastOccurrenceTest {
     @Test
     void testFinish() {
         // GIVEN
-        final TestHandler testHandler = new TestHandler();
-        final RecallLastOccurrence recallLastOccurrence = new RecallLastOccurrence(testHandler);
-        final SpacecraftState mockedState = mockState(AbsoluteDate.ARBITRARY_EPOCH);
+        final EventHandler mockedHandler = Mockito.mock(EventHandler.class);
+        final RecallLastOccurrence wrappingHandler = new RecallLastOccurrence(mockedHandler);
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
         // WHEN
-        recallLastOccurrence.finish(mockedState, null);
+        wrappingHandler.finish(mockedState, null);
         // THEN
-        Assertions.assertEquals(true, testHandler.isFinished);
+        Mockito.verify(mockedHandler, Mockito.times(1)).finish(mockedState, null);
     }
 
     @Test

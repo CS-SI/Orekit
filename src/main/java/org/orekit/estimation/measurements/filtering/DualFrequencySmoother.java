@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ package org.orekit.estimation.measurements.filtering;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.orekit.files.rinex.observation.ObservationData;
 import org.orekit.files.rinex.observation.ObservationDataSet;
@@ -37,16 +38,16 @@ import org.orekit.time.ChronologicalComparator;
 public class DualFrequencySmoother {
 
     /** Window size for the hatch filter. */
-    private int N;
+    private final int N;
 
     /** Threshold for the difference between smoothed and measured values. */
-    private double threshold;
+    private final double threshold;
 
     /**
      * Map storing the filters for each observation type.
      * Observation types should not overlap for a single RINEX file.
      */
-    private HashMap<ObservationType, DualFrequencyHatchFilter> mapFilters;
+    private final HashMap<ObservationType, DualFrequencyHatchFilter> mapFilters;
 
 
     /**
@@ -55,7 +56,7 @@ public class DualFrequencySmoother {
      * stores a pseudo-range ObservationData object with the filtered value, and the initial ObservationDataSet,
      * needed for further processing.
      */
-    private HashMap<ObservationType, List<SmoothedObservationDataSet>> mapFilteredData;
+    private final HashMap<ObservationType, List<SmoothedObservationDataSet>> mapFilteredData;
 
     /**
      * Simple constructor.
@@ -85,8 +86,8 @@ public class DualFrequencySmoother {
                                                  final ObservationData phaseDataF2,
                                                  final SatelliteSystem satSystem) {
         // Wavelengths in meters
-        final double wavelengthF1 = phaseDataF1.getObservationType().getFrequency(satSystem).getWavelength();
-        final double wavelengthF2 = phaseDataF2.getObservationType().getFrequency(satSystem).getWavelength();
+        final double wavelengthF1 = phaseDataF1.getObservationType().getSignal(satSystem).getWavelength();
+        final double wavelengthF2 = phaseDataF2.getObservationType().getSignal(satSystem).getWavelength();
         // Return a Dual Frequency Hatch Filter
         return new DualFrequencyHatchFilter(codeData, phaseDataF1, phaseDataF2, wavelengthF1, wavelengthF2, threshold, N);
     }
@@ -95,7 +96,7 @@ public class DualFrequencySmoother {
      * Get the map of the filtered data.
      * @return a map containing the filtered data.
      */
-    public HashMap<ObservationType, List<SmoothedObservationDataSet>> getFilteredDataMap() {
+    public Map<ObservationType, List<SmoothedObservationDataSet>> getFilteredDataMap() {
         return mapFilteredData;
     }
 
@@ -103,7 +104,7 @@ public class DualFrequencySmoother {
      * Get the map storing the filters for each observation type.
      * @return the map storing the filters for each observation type
      */
-    public final HashMap<ObservationType, DualFrequencyHatchFilter> getMapFilters() {
+    public final Map<ObservationType, DualFrequencyHatchFilter> getMapFilters() {
         return mapFilters;
     }
 
@@ -173,7 +174,7 @@ public class DualFrequencySmoother {
                             if (filterObject == null && obsDataPhaseF1 != null && obsDataPhaseF2 != null) {
                                 filterObject = createFilter(obsData, obsDataPhaseF1, obsDataPhaseF2, satSystem);
                                 mapFilters.put(obsTypeRange, filterObject);
-                                final List<SmoothedObservationDataSet> odList = new ArrayList<SmoothedObservationDataSet>();
+                                final List<SmoothedObservationDataSet> odList = new ArrayList<>();
                                 odList.add(new SmoothedObservationDataSet(obsData, obsSet));
                                 mapFilteredData.put(obsTypeRange, odList);
                             // If filter exist, check if a phase object is null, then reset the filter at the next step,
@@ -186,7 +187,7 @@ public class DualFrequencySmoother {
                                     mapFilteredData.get(obsTypeRange).add(new SmoothedObservationDataSet(filteredRange, obsSet));
                                 }
                             } else {
-                                // IF the filter does not exist and one of the phase is equal to NaN or absent
+                                // If the filter does not exist and one of the phase is equal to NaN or absent
                                 // just skip to the next ObservationDataSet.
                             }
 

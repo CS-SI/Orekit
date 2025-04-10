@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,7 +40,7 @@ import org.orekit.time.AbsoluteDate;
  * </p>
  * <p>
  * This interface is the numerical (read not already integrated) counterpart of
- * the {@link org.orekit.propagation.AdditionalStateProvider} interface.
+ * the {@link org.orekit.propagation.AdditionalDataProvider} interface.
  * It allows to append various additional state parameters to any {@link
  * org.orekit.propagation.numerical.NumericalPropagator numerical propagator} or {@link
  * org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSST propagator}.
@@ -72,7 +72,7 @@ public interface AdditionalDerivativesProvider {
 
     /** Check if this provider should yield so another provider has an opportunity to add missing parts.
      * <p>
-     * Decision to yield is often based on an additional state being {@link SpacecraftState#hasAdditionalState(String)
+     * Decision to yield is often based on an additional state being {@link SpacecraftState#hasAdditionalData(String)
      * already available} in the provided {@code state} (but it could theoretically also depend on
      * an additional state derivative being {@link SpacecraftState#hasAdditionalStateDerivative(String)
      * already available}, or any other criterion). If for example a provider needs the state transition

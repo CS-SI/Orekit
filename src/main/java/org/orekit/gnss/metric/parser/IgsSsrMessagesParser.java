@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,8 @@
  */
 package org.orekit.gnss.metric.parser;
 
+import org.orekit.time.TimeScales;
+
 import java.util.List;
 
 /** Parser for SSR encoded messages.
@@ -28,9 +30,11 @@ public class IgsSsrMessagesParser extends MessagesParser {
     /**
      * Constructor.
      * @param messages list of needed messages
+     * @param timeScales known time scales
+     * @since 13.0
      */
-    public IgsSsrMessagesParser(final List<Integer> messages) {
-        super(messages);
+    public IgsSsrMessagesParser(final List<Integer> messages, final TimeScales timeScales) {
+        super(messages, timeScales);
     }
 
     /** {@inheritDoc} */

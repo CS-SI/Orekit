@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,26 +45,6 @@ public class CombinedObservationData {
 
     /**
      * Constructor.
-     * @param combinationType combination of measurements used to build the combined observation data
-     * @param measurementType measurement type used for the combination of measurement
-     * @param combinedValue combined observed value
-     * (may be {@code Double.NaN} if combined observation not available)
-     * @param combinedFrequencyMHz frequency of the combined observation data in MHz
-     * (may be {@code Double.NaN} if combined frequency is not available)
-     * @param usedData observation data used to perform the combination of measurements
-     * @deprecated as of 12.1, replaced by {@link #CombinedObservationData(double, double,
-     * CombinationType, MeasurementType, List)}
-     */
-    @Deprecated
-    public CombinedObservationData(final CombinationType combinationType, final MeasurementType measurementType,
-                                   final double combinedValue, final double combinedFrequencyMHz,
-                                   final List<ObservationData> usedData) {
-        this(combinedValue, combinedFrequencyMHz * AbstractDualFrequencyCombination.MHZ_TO_HZ,
-             combinationType, measurementType, usedData);
-    }
-
-    /**
-     * Constructor.
      * @param combinedValue combined observed value
      * (may be {@code Double.NaN} if combined observation not available)
      * @param combinedFrequency frequency of the combined observation data in Hz
@@ -101,19 +81,6 @@ public class CombinedObservationData {
      */
     public double getCombinedFrequency() {
         return combinedFrequency;
-    }
-
-    /** Get the value of the combined frequency in MHz.
-     * <p>
-     * For the single frequency combinations, this method returns
-     * the common frequency of both measurements.
-     * </p>
-     * @return value of the combined frequency in MHz
-     * @deprecated as of 12.1, replaced by {@link #getCombinedFrequency()}
-     */
-    @Deprecated
-    public double getCombinedMHzFrequency() {
-        return getCombinedFrequency() / AbstractDualFrequencyCombination.MHZ_TO_HZ;
     }
 
     /** Get the type of the combination of measurements used to build the instance.

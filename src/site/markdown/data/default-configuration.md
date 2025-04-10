@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2024 CS GROUP
+<!--- Copyright 2002-2025 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -216,8 +216,8 @@ register them to the `DataProvidersManager` instance.
 ## Quick recommended setup
 
 For convenience, the simplest configuration
-is to download the [orekit-data-master.zip](https://gitlab.orekit.org/orekit/orekit-data/-/archive/master/orekit-data-master.zip)
-file from the forge, to unzip it anywhere users want, rename the `orekit-data-master` folder that will be created
+is to download the [orekit-data-main.zip](https://gitlab.orekit.org/orekit/orekit-data/-/archive/main/orekit-data-main.zip)
+file from the forge, to unzip it anywhere users want, rename the `orekit-data-main` folder that will be created
 into `orekit-data` and add the following lines at the start of users programs:
 
 

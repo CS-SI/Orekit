@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -48,6 +48,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.metric.messages.ParsedMessage;
+import org.orekit.time.TimeScales;
 
 /** Source table for ntrip streams retrieval.
  * <p>
@@ -141,6 +142,11 @@ public class NtripClient {
     /** Executor for stream monitoring tasks. */
     private ExecutorService executorService;
 
+    /** Known time scales.
+     * @since 13.0
+     */
+    private final TimeScales timeScales;
+
     /** Build a client for NTRIP.
      * <p>
      * The default configuration uses default timeout, default reconnection
@@ -148,9 +154,11 @@ public class NtripClient {
      * </p>
      * @param host caster host providing the source table
      * @param port port to use for connection
+     * @param timeScales known time scales
+     * @since 13.0
      * see {@link #DEFAULT_PORT}
      */
-    public NtripClient(final String host, final int port) {
+    public NtripClient(final String host, final int port, final TimeScales timeScales) {
         this.host         = host;
         this.port         = port;
         this.observers    = new ArrayList<>();
@@ -160,9 +168,10 @@ public class NtripClient {
                                DEFAULT_RECONNECT_DELAY_FACTOR,
                                DEFAULT_MAX_RECONNECT);
         setProxy(Type.DIRECT, null, -1);
-        this.gga             = new AtomicReference<String>(null);
+        this.gga             = new AtomicReference<>(null);
         this.sourceTable     = null;
         this.executorService = null;
+        this.timeScales      = timeScales;
     }
 
     /** Get the caster host.
@@ -177,6 +186,14 @@ public class NtripClient {
      */
     public int getPort() {
         return port;
+    }
+
+    /** Get the known time scales.
+     * @return known time scales
+     * @since 13.0
+     */
+    public TimeScales getTimeScales() {
+        return timeScales;
     }
 
     /** Set timeout for connections and reads.

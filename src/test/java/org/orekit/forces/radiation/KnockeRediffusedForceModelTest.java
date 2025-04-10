@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,6 +42,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -53,7 +54,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.PVCoordinates;
 
 /**
@@ -74,7 +75,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
     void testJacobianVsFiniteDifferences() {
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 3, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         double i     = FastMath.toRadians(98.7);
@@ -85,7 +86,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
                                          Constants.EIGEN5C_EARTH_MU);
 
         // Sun
-        final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final ExtendedPositionProvider sun = CelestialBodyFactory.getSun();
 
         // Radiation sensitive model
         final RadiationSensitive radiationSensitive = new IsotropicRadiationSingleCoefficient(1, 1.5);
@@ -114,7 +115,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
                                                        Constants.EIGEN5C_EARTH_MU));
 
         // Sun
-        final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final ExtendedPositionProvider sun = CelestialBodyFactory.getSun();
 
         // Radiation sensitive model
         final RadiationSensitive radiationSensitive = new IsotropicRadiationSingleCoefficient(1, 1.5);
@@ -134,7 +135,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         {
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 3, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         double i     = FastMath.toRadians(98.7);
@@ -144,7 +145,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
                                          0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
-        double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, integrationType);
 
         NumericalPropagator propagator =
                 new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
@@ -152,7 +153,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         propagator.setOrbitType(integrationType);
 
         // Sun
-        final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final ExtendedPositionProvider sun = CelestialBodyFactory.getSun();
 
         // Radiation sensitive model
         final RadiationSensitive radiationSensitive = new IsotropicRadiationSingleCoefficient(1, 1.5);
@@ -220,7 +221,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         NP.setInitialState(iSR);
 
         // Sun
-        final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final ExtendedPositionProvider sun = CelestialBodyFactory.getSun();
 
         // Radiation sensitive model
         final RadiationSensitive radiationSensitive = new IsotropicRadiationSingleCoefficient(1, 1.5);
@@ -290,7 +291,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         NP.setInitialState(iSR);
 
         // Sun
-        final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final ExtendedPositionProvider sun = CelestialBodyFactory.getSun();
 
         // Radiation sensitive model
         final RadiationSensitive radiationSensitive = new IsotropicRadiationSingleCoefficient(1, 1.5);
@@ -345,12 +346,12 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         final Frame frame = FramesFactory.getTEME();
 
         final KeplerianOrbit keplerian = new KeplerianOrbit(a, e, i, pa, raan, nu, PositionAngleType.TRUE, frame, date0, Constants.IERS2010_EARTH_MU);
-        final SpacecraftState initState = new SpacecraftState(keplerian, mass);
+        final SpacecraftState initState = new SpacecraftState(keplerian).withMass(mass);
 
         // Celestial objects
 
         // Sun
-        final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final ExtendedPositionProvider sun = CelestialBodyFactory.getSun();
 
         // Earth
         final double equatorialRadius = Constants.EGM96_EARTH_EQUATORIAL_RADIUS;
@@ -371,8 +372,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         final double maxStep = duration * 0.5;
         final double handlerStep = duration / 20;
         final double positionTolerance = 1e-3;
-        final double[][] tolerances =
-                        NumericalPropagator.tolerances(positionTolerance, keplerian, OrbitType.KEPLERIAN);
+        final double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(positionTolerance).getTolerances(keplerian, OrbitType.KEPLERIAN);
         AdaptiveStepsizeIntegrator integrator =
             new DormandPrince853Integrator(minStep, maxStep, tolerances[0], tolerances[1]);
 
@@ -384,7 +384,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
 
         final SpacecraftState finalState = propagator.propagate(date0.shiftedBy(duration));
 
-        Assertions.assertTrue(finalState.getDate().equals(date0.shiftedBy(duration)));
+        Assertions.assertEquals(date0.shiftedBy(duration), finalState.getDate());
     }
 
     /** Knocke model specialized step handler. */

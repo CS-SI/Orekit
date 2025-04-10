@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,6 +31,7 @@ import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
@@ -42,10 +43,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
-
-    /** First order integrator builder for propagation. */
-    private final ODEIntegratorBuilder builder;
+public class NumericalPropagatorBuilder extends AbstractIntegratedPropagatorBuilder<NumericalPropagator> {
 
     /** Force models used during the extrapolation of the orbit. */
     private final List<ForceModel> forceModels;
@@ -103,8 +101,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
                                       final PositionAngleType positionAngleType,
                                       final double positionScale,
                                       final AttitudeProvider attitudeProvider) {
-        super(referenceOrbit, positionAngleType, positionScale, true, attitudeProvider, Propagator.DEFAULT_MASS);
-        this.builder     = builder;
+        super(referenceOrbit, builder, positionAngleType, positionScale, PropagationType.OSCULATING, attitudeProvider, Propagator.DEFAULT_MASS);
         this.forceModels = new ArrayList<>();
         this.impulseManeuvers = new ArrayList<>();
     }
@@ -124,34 +121,6 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
      */
     public void clearImpulseManeuvers() {
         impulseManeuvers.clear();
-    }
-
-    /** Create a copy of a NumericalPropagatorBuilder object.
-     * @return Copied version of the NumericalPropagatorBuilder
-     */
-    @Deprecated
-    public NumericalPropagatorBuilder copy() {
-        final NumericalPropagatorBuilder copyBuilder =
-                        new NumericalPropagatorBuilder(createInitialOrbit(),
-                                                       builder,
-                                                       getPositionAngleType(),
-                                                       getPositionScale(),
-                                                       getAttitudeProvider());
-        copyBuilder.setMass(getMass());
-        for (ForceModel model : forceModels) {
-            copyBuilder.addForceModel(model);
-        }
-        impulseManeuvers.forEach(copyBuilder::addImpulseManeuver);
-        return copyBuilder;
-    }
-
-    /** Get the integrator builder.
-     * @return the integrator builder
-     * @since 9.2
-     */
-    public ODEIntegratorBuilder getIntegratorBuilder()
-    {
-        return builder;
     }
 
     /** Get the list of all force models.
@@ -200,10 +169,10 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
         final Orbit           orbit    = createInitialOrbit();
         final Attitude        attitude =
                 getAttitudeProvider().getAttitude(orbit, orbit.getDate(), getFrame());
-        final SpacecraftState state    = new SpacecraftState(orbit, attitude, getMass());
+        final SpacecraftState state    = new SpacecraftState(orbit, attitude).withMass(getMass());
 
         final NumericalPropagator propagator = new NumericalPropagator(
-                builder.buildIntegrator(orbit, getOrbitType()),
+                getIntegratorBuilder().buildIntegrator(orbit, getOrbitType(), getPositionAngleType()),
                 getAttitudeProvider());
         propagator.setOrbitType(getOrbitType());
         propagator.setPositionAngleType(getPositionAngleType());

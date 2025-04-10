@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -54,6 +54,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -63,11 +64,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.Constants;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
-import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.*;
 
 import java.io.FileNotFoundException;
 import java.text.ParseException;
@@ -89,7 +86,7 @@ public class ECOM2Test extends AbstractForceModelTest {
         final double minStep = 0.001;
         final double maxStep = 1000;
 
-        double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, orbitType);
         NumericalPropagator propagator =
             new NumericalPropagator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]));
         propagator.setOrbitType(orbitType);
@@ -107,7 +104,7 @@ public class ECOM2Test extends AbstractForceModelTest {
         array[0][column] += delta;
 
         return arrayToState(array, orbitType, angleType, state.getFrame(), state.getDate(),
-                            state.getMu(), state.getAttitude());
+                            state.getOrbit().getMu(), state.getAttitude());
 
     }
 
@@ -152,7 +149,7 @@ public class ECOM2Test extends AbstractForceModelTest {
     }
 
     @Test
-    public void testJacobianModelMatrix() {
+    void testJacobianModelMatrix() {
         final DSFactory factory = new DSFactory(6, 1);
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(2, 0);
         ForceModel gravityField =
@@ -193,7 +190,7 @@ public class ECOM2Test extends AbstractForceModelTest {
         final OrbitType     orbitType = orbit.getType();
         final PositionAngleType angleType = PositionAngleType.MEAN;
         double dP = 0.001;
-        double[] steps = NumericalPropagator.tolerances(1000000 * dP, orbit, orbitType)[0];
+        double[] steps = ToleranceProvider.getDefaultToleranceProvider(1000000 * dP).getTolerances(orbit, orbitType)[0];
         AbstractIntegratedPropagator propagator = setUpPropagator(orbit, dP, orbitType, angleType, gravityField, forceModel);
 
         //Compute derivatives with finite-difference method
@@ -247,7 +244,7 @@ public class ECOM2Test extends AbstractForceModelTest {
     }
 
     @Test
-    public void testRealField() {
+    void testRealField() {
 
         // Initial field Keplerian orbit
         // The variables are the six orbital parameters
@@ -308,7 +305,7 @@ public class ECOM2Test extends AbstractForceModelTest {
     }
 
     @Test
-    public void testRealFieldGradient() {
+    void testRealFieldGradient() {
 
         // Initial field Keplerian orbit
         // The variables are the six orbital parameters
@@ -369,7 +366,7 @@ public class ECOM2Test extends AbstractForceModelTest {
     }
 
     @Test
-    public void testParameterDerivative() {
+    void testParameterDerivative() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -390,7 +387,7 @@ public class ECOM2Test extends AbstractForceModelTest {
     }
 
     @Test
-    public void testParameterDerivativeGradient() {
+    void testParameterDerivativeGradient() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -411,7 +408,7 @@ public class ECOM2Test extends AbstractForceModelTest {
     }
 
     @Test
-    public void testJacobianVsFiniteDifferences() {
+    void testJacobianVsFiniteDifferences() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -433,7 +430,7 @@ public class ECOM2Test extends AbstractForceModelTest {
     }
 
     @Test
-    public void testJacobianVsFiniteDifferencesGradient() {
+    void testJacobianVsFiniteDifferencesGradient() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -455,7 +452,7 @@ public class ECOM2Test extends AbstractForceModelTest {
     }
 
     @Test
-    public void testRoughOrbitalModifs() throws ParseException, OrekitException, FileNotFoundException {
+    void testRoughOrbitalModifs() throws ParseException, OrekitException, FileNotFoundException {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 7, 1),
@@ -467,7 +464,7 @@ public class ECOM2Test extends AbstractForceModelTest {
                                            0.1, PositionAngleType.TRUE, FramesFactory.getEME2000(), date, Constants.WGS84_EARTH_MU);
         final double period = orbit.getKeplerianPeriod();
         Assertions.assertEquals(86164, period, 1);
-        ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        ExtendedPositionProvider sun = CelestialBodyFactory.getSun();
 
         // creation of the force model
         OneAxisEllipsoid earth =
@@ -497,7 +494,7 @@ public class ECOM2Test extends AbstractForceModelTest {
     }
 
     @Test
-    public void testRealAndFieldComparison() {
+    void testRealAndFieldComparison() {
 
         // Orbital parameters from GNSS almanac
         final int freeParameters = 6;
@@ -538,8 +535,8 @@ public class ECOM2Test extends AbstractForceModelTest {
     private static class SolarStepHandler implements OrekitFixedStepHandler {
 
         public void handleStep(SpacecraftState currentState) {
-            final double dex = currentState.getEquinoctialEx() - 0.01071166;
-            final double dey = currentState.getEquinoctialEy() - 0.00654848;
+            final double dex = currentState.getOrbit().getEquinoctialEx() - 0.01071166;
+            final double dey = currentState.getOrbit().getEquinoctialEy() - 0.00654848;
             final double alpha = FastMath.toDegrees(FastMath.atan2(dey, dex));
             Assertions.assertTrue(alpha > 100.0);
             Assertions.assertTrue(alpha < 112.0);

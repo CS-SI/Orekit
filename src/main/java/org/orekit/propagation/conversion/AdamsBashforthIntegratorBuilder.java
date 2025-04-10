@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,32 +16,28 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.AdamsBashforthIntegrator;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.ToleranceProvider;
 
 /** Builder for AdamsBashforthIntegrator.
  * @author Pascal Parraud
  * @since 6.0
  */
-public class AdamsBashforthIntegratorBuilder extends AbstractVariableStepIntegratorBuilder {
+public class AdamsBashforthIntegratorBuilder extends AbstractVariableStepIntegratorBuilder<AdamsBashforthIntegrator> {
 
     /** Number of steps. */
     private final int nSteps;
 
-    /** Build a new instance. Should only use this constructor with {@link Orbit}.
+    /** Build a new instance using default integration tolerances.
      * @param nSteps number of steps
      * @param minStep minimum step size (s)
      * @param maxStep maximum step size (s)
      * @param dP position error (m)
      * @see AdamsBashforthIntegrator
-     * @see NumericalPropagator#tolerances(double, Orbit, OrbitType)
      */
     public AdamsBashforthIntegratorBuilder(final int nSteps, final double minStep,
                                            final double maxStep, final double dP) {
-        super(minStep, maxStep, dP);
+        super(minStep, maxStep, getDefaultToleranceProvider(dP));
         this.nSteps  = nSteps;
     }
 
@@ -49,24 +45,21 @@ public class AdamsBashforthIntegratorBuilder extends AbstractVariableStepIntegra
      * @param nSteps number of steps
      * @param minStep minimum step size (s)
      * @param maxStep maximum step size (s)
-     * @param dP position error (m)
-     * @param dV velocity error (m/s)
+     * @param toleranceProvider integration tolerance provider
      *
-     * @since 12.2
+     * @since 13.0
      * @see AdamsBashforthIntegrator
-     * @see NumericalPropagator#tolerances(double, Orbit, OrbitType)
      */
     public AdamsBashforthIntegratorBuilder(final int nSteps, final double minStep,
-                                           final double maxStep, final double dP, final double dV) {
-        super(minStep, maxStep, dP, dV);
+                                           final double maxStep, final ToleranceProvider toleranceProvider) {
+        super(minStep, maxStep, toleranceProvider);
         this.nSteps  = nSteps;
     }
 
     /** {@inheritDoc} */
     @Override
-    public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType) {
-        final double[][] tol = getTolerances(orbit, orbitType);
-        return new AdamsBashforthIntegrator(nSteps, minStep, maxStep, tol[0], tol[1]);
+    protected AdamsBashforthIntegrator buildIntegrator(final double[][] tolerances) {
+        return new AdamsBashforthIntegrator(nSteps, getMinStep(), getMaxStep(), tolerances[0], tolerances[1]);
     }
 
 }

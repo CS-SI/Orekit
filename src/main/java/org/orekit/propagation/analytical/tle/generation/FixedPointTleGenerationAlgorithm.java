@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,32 +17,18 @@
 package org.orekit.propagation.analytical.tle.generation;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
-import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.EquinoctialOrbit;
-import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.FieldTLE;
-import org.orekit.propagation.analytical.tle.FieldTLEPropagator;
 import org.orekit.propagation.analytical.tle.TLE;
-import org.orekit.propagation.analytical.tle.TLEConstants;
-import org.orekit.propagation.analytical.tle.TLEPropagator;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.propagation.conversion.osc2mean.FixedPointConverter;
+import org.orekit.propagation.conversion.osc2mean.TLETheory;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.ParameterDriver;
 
@@ -68,20 +54,11 @@ public class FixedPointTleGenerationAlgorithm implements TleGenerationAlgorithm 
     /** Default value for scale. */
     public static final double SCALE_DEFAULT = 1.0;
 
-    /** Used to compute threshold for convergence check. */
-    private final double epsilon;
+    /** Osculating to mean orbit converter. */
+    private final FixedPointConverter converter;
 
-    /** Maximum number of iterations for convergence. */
-    private final int maxIterations;
-
-    /** Scale factor of the Fixed Point algorithm. */
-    private final double scale;
-
-    /** UTC scale. */
+    /** UTC time scale. */
     private final TimeScale utc;
-
-    /** TEME frame. */
-    private final Frame teme;
 
     /**
      * Default constructor.
@@ -106,7 +83,8 @@ public class FixedPointTleGenerationAlgorithm implements TleGenerationAlgorithm 
      * @param scale scale factor of the Fixed Point algorithm
      */
     @DefaultDataContext
-    public FixedPointTleGenerationAlgorithm(final double epsilon, final int maxIterations,
+    public FixedPointTleGenerationAlgorithm(final double epsilon,
+                                            final int maxIterations,
                                             final double scale) {
         this(epsilon, maxIterations, scale,
              DataContext.getDefault().getTimeScales().getUTC(),
@@ -121,198 +99,48 @@ public class FixedPointTleGenerationAlgorithm implements TleGenerationAlgorithm 
      * @param utc UTC time scale
      * @param teme TEME frame
      */
-    public FixedPointTleGenerationAlgorithm(final double epsilon, final int maxIterations,
-                                            final double scale, final TimeScale utc,
+    public FixedPointTleGenerationAlgorithm(final double epsilon,
+                                            final int maxIterations,
+                                            final double scale,
+                                            final TimeScale utc,
                                             final Frame teme) {
-        this.epsilon       = epsilon;
-        this.maxIterations = maxIterations;
-        this.scale         = scale;
-        this.utc           = utc;
-        this.teme          = teme;
+        this.converter = new FixedPointConverter(new TLETheory(utc, teme),
+                                                 epsilon,
+                                                 maxIterations,
+                                                 scale);
+        this.utc       = utc;
     }
 
     /** {@inheritDoc} */
     @Override
     public TLE generate(final SpacecraftState state, final TLE templateTLE) {
-
-        // Generation epoch
-        final AbsoluteDate epoch = state.getDate();
-
-        // gets equinoctial parameters in TEME frame and with TLE gravity parameter from state
-        final EquinoctialOrbit equinoctialOrbit = convert(state.getOrbit());
-        double sma = equinoctialOrbit.getA();
-        double ex  = equinoctialOrbit.getEquinoctialEx();
-        double ey  = equinoctialOrbit.getEquinoctialEy();
-        double hx  = equinoctialOrbit.getHx();
-        double hy  = equinoctialOrbit.getHy();
-        double lv  = equinoctialOrbit.getLv();
-
-        // rough initialization of the TLE
-        final KeplerianOrbit keplerianOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(equinoctialOrbit);
-        TLE current = TleGenerationUtil.newTLE(keplerianOrbit, templateTLE, templateTLE.getBStar(epoch), utc);
-
-        // threshold for each parameter
-        final double thrA = epsilon * (1 + sma);
-        final double thrE = epsilon * (1 + FastMath.hypot(ex, ey));
-        final double thrH = epsilon * (1 + FastMath.hypot(hx, hy));
-        final double thrV = epsilon * FastMath.PI;
-
-        int k = 0;
-        while (k++ < maxIterations) {
-
-            // recompute the state from the current TLE
-            final TLEPropagator propagator = TLEPropagator.selectExtrapolator(current,
-                                                                              new FrameAlignedProvider(Rotation.IDENTITY, teme),
-                                                                              state.getMass(), teme);
-            final Orbit recoveredOrbit = propagator.getInitialState().getOrbit();
-            final EquinoctialOrbit recoveredEquiOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(recoveredOrbit);
-
-            // adapted parameters residuals
-            final double deltaSma = equinoctialOrbit.getA() - recoveredEquiOrbit.getA();
-            final double deltaEx  = equinoctialOrbit.getEquinoctialEx() - recoveredEquiOrbit.getEquinoctialEx();
-            final double deltaEy  = equinoctialOrbit.getEquinoctialEy() - recoveredEquiOrbit.getEquinoctialEy();
-            final double deltaHx  = equinoctialOrbit.getHx() - recoveredEquiOrbit.getHx();
-            final double deltaHy  = equinoctialOrbit.getHy() - recoveredEquiOrbit.getHy();
-            final double deltaLv  = MathUtils.normalizeAngle(equinoctialOrbit.getLv() - recoveredEquiOrbit.getLv(), 0.0);
-
-            // check convergence
-            if (FastMath.abs(deltaSma) < thrA &&
-                FastMath.abs(deltaEx)  < thrE &&
-                FastMath.abs(deltaEy)  < thrE &&
-                FastMath.abs(deltaHx)  < thrH &&
-                FastMath.abs(deltaHy)  < thrH &&
-                FastMath.abs(deltaLv)  < thrV) {
-
-                // verify if parameters are estimated
-                for (final ParameterDriver templateDrivers : templateTLE.getParametersDrivers()) {
-                    if (templateDrivers.isSelected()) {
-                        // set to selected for the new TLE
-                        current.getParameterDriver(templateDrivers.getName()).setSelected(true);
-                    }
-                }
-
-                // return
-                return current;
+        final KeplerianOrbit mean = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
+        final TLE tle = TleGenerationUtil.newTLE(mean, templateTLE, templateTLE.getBStar(mean.getDate()), utc);
+        // reset estimated parameters from template to generated tle
+        for (final ParameterDriver templateDrivers : templateTLE.getParametersDrivers()) {
+            if (templateDrivers.isSelected()) {
+                // set to selected for the new TLE
+                tle.getParameterDriver(templateDrivers.getName()).setSelected(true);
             }
-
-            // update state
-            sma += scale * deltaSma;
-            ex  += scale * deltaEx;
-            ey  += scale * deltaEy;
-            hx  += scale * deltaHx;
-            hy  += scale * deltaHy;
-            lv  += scale * deltaLv;
-            final EquinoctialOrbit newEquinoctialOrbit =
-                                    new EquinoctialOrbit(sma, ex, ey, hx, hy, lv, PositionAngleType.TRUE,
-                                                         equinoctialOrbit.getFrame(), equinoctialOrbit.getDate(), equinoctialOrbit.getMu());
-            final KeplerianOrbit newKeplerianOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(newEquinoctialOrbit);
-
-            // update TLE
-            current = TleGenerationUtil.newTLE(newKeplerianOrbit, templateTLE, templateTLE.getBStar(epoch), utc);
-
         }
-
-        // unable to generate a TLE
-        throw new OrekitException(OrekitMessages.UNABLE_TO_COMPUTE_TLE, k);
-
+        return tle;
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldTLE<T> generate(final FieldSpacecraftState<T> state,
                                                                     final FieldTLE<T> templateTLE) {
-
-        // gets equinoctial parameters in TEME frame and with TLE gravity parameter from state
-        final FieldEquinoctialOrbit<T> equinoctialOrbit = convert(state.getOrbit());
-        T sma = equinoctialOrbit.getA();
-        T ex  = equinoctialOrbit.getEquinoctialEx();
-        T ey  = equinoctialOrbit.getEquinoctialEy();
-        T hx  = equinoctialOrbit.getHx();
-        T hy  = equinoctialOrbit.getHy();
-        T lv  = equinoctialOrbit.getLv();
-
-        // rough initialization of the TLE
-        final T bStar = state.getA().getField().getZero().newInstance(templateTLE.getBStar());
-        final FieldKeplerianOrbit<T> keplerianOrbit = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(equinoctialOrbit);
-        FieldTLE<T> current = TleGenerationUtil.newTLE(keplerianOrbit, templateTLE, bStar, utc);
-
-        // field
-        final Field<T> field = state.getDate().getField();
-
-        // threshold for each parameter
-        final T thrA = sma.add(1).multiply(epsilon);
-        final T thrE = FastMath.hypot(ex, ey).add(1).multiply(epsilon);
-        final T thrH = FastMath.hypot(hx, hy).add(1).multiply(epsilon);
-        final T thrV = sma.getPi().multiply(epsilon);
-
-        int k = 0;
-        while (k++ < maxIterations) {
-
-            // recompute the state from the current TLE
-            final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(current, new FrameAlignedProvider(Rotation.IDENTITY, teme),
-                                                                                           state.getMass(), teme, templateTLE.getParameters(field));
-            final FieldOrbit<T> recoveredOrbit = propagator.getInitialState().getOrbit();
-            final FieldEquinoctialOrbit<T> recoveredEquinoctialOrbit = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(recoveredOrbit);
-
-            // adapted parameters residuals
-            final T deltaSma = equinoctialOrbit.getA().subtract(recoveredEquinoctialOrbit.getA());
-            final T deltaEx  = equinoctialOrbit.getEquinoctialEx().subtract(recoveredEquinoctialOrbit.getEquinoctialEx());
-            final T deltaEy  = equinoctialOrbit.getEquinoctialEy().subtract(recoveredEquinoctialOrbit.getEquinoctialEy());
-            final T deltaHx  = equinoctialOrbit.getHx().subtract(recoveredEquinoctialOrbit.getHx());
-            final T deltaHy  = equinoctialOrbit.getHy().subtract(recoveredEquinoctialOrbit.getHy());
-            final T deltaLv  = MathUtils.normalizeAngle(equinoctialOrbit.getLv().subtract(recoveredEquinoctialOrbit.getLv()), field.getZero());
-
-            // check convergence
-            if (FastMath.abs(deltaSma.getReal()) < thrA.getReal() &&
-                FastMath.abs(deltaEx.getReal())  < thrE.getReal() &&
-                FastMath.abs(deltaEy.getReal())  < thrE.getReal() &&
-                FastMath.abs(deltaHx.getReal())  < thrH.getReal() &&
-                FastMath.abs(deltaHy.getReal())  < thrH.getReal() &&
-                FastMath.abs(deltaLv.getReal())  < thrV.getReal()) {
-
-                // return
-                return current;
-
+        final T bStar = state.getMass().getField().getZero().newInstance(templateTLE.getBStar());
+        final FieldKeplerianOrbit<T> mean = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
+        final FieldTLE<T> tle = TleGenerationUtil.newTLE(mean, templateTLE, bStar, utc);
+        // reset estimated parameters from template to generated tle
+        for (final ParameterDriver templateDrivers : templateTLE.getParametersDrivers()) {
+            if (templateDrivers.isSelected()) {
+                // set to selected for the new TLE
+                tle.getParameterDriver(templateDrivers.getName()).setSelected(true);
             }
-
-            // update state
-            sma = sma.add(deltaSma.multiply(scale));
-            ex  = ex.add(deltaEx.multiply(scale));
-            ey  = ey.add(deltaEy.multiply(scale));
-            hx  = hx.add(deltaHx.multiply(scale));
-            hy  = hy.add(deltaHy.multiply(scale));
-            lv  = lv.add(deltaLv.multiply(scale));
-            final FieldEquinoctialOrbit<T> newEquinoctialOrbit =
-                                    new FieldEquinoctialOrbit<>(sma, ex, ey, hx, hy, lv, PositionAngleType.TRUE,
-                                    equinoctialOrbit.getFrame(), equinoctialOrbit.getDate(), equinoctialOrbit.getMu());
-            final FieldKeplerianOrbit<T> newKeplerianOrbit = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(newEquinoctialOrbit);
-
-            // update TLE
-            current = TleGenerationUtil.newTLE(newKeplerianOrbit, templateTLE, bStar, utc);
-
         }
-
-        throw new OrekitException(OrekitMessages.UNABLE_TO_COMPUTE_TLE, k);
-
-    }
-
-    /**
-     * Converts an orbit into an equinoctial orbit expressed in TEME frame with the TLE gravity parameter.
-     * @param orbitIn the orbit to convert
-     * @return the converted orbit, i.e. equinoctial in TEME frame
-     */
-    private EquinoctialOrbit convert(final Orbit orbitIn) {
-        return new EquinoctialOrbit(orbitIn.getPVCoordinates(teme), teme, TLEConstants.MU);
-    }
-
-    /**
-     * Converts an orbit into an equinoctial orbit expressed in TEME frame with the TLE gravity parameter.
-     * @param orbitIn the orbit to convert
-     * @param <T> type of the element
-     * @return the converted orbit, i.e. equinoctial in TEME frame
-     */
-    private <T extends CalculusFieldElement<T>> FieldEquinoctialOrbit<T> convert(final FieldOrbit<T> orbitIn) {
-        return new FieldEquinoctialOrbit<T>(orbitIn.getPVCoordinates(teme), teme, orbitIn.getMu().newInstance(TLEConstants.MU));
+        return tle;
     }
 
 }

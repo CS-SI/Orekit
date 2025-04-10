@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.events;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +28,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -43,6 +43,7 @@ import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.events.FieldEventsLogger.FieldLoggedEvent;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -51,14 +52,30 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 
-public class FieldEventEnablingPredicateFilterTest {
+class FieldEventEnablingPredicateFilterTest {
 
     private OneAxisEllipsoid earth;
     private GeodeticPoint gp;
     private FieldOrbit<Binary64> orbit;
 
     @Test
-    public void testForward0Degrees() {
+    @SuppressWarnings("unchecked")
+    void testWithDetectionSettings() {
+        // GIVEN
+        final FieldDateDetector<Binary64> detector = new FieldDateDetector<>(FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance()));
+        final FieldEnablingPredicate<Binary64> predicate = (s, e, t) -> true;
+        final FieldEventEnablingPredicateFilter<Binary64> template = new FieldEventEnablingPredicateFilter<>(detector,
+                predicate);
+        final FieldEventDetectionSettings<Binary64> detectionSettings = Mockito.mock();
+        // WHEN
+        final FieldEventEnablingPredicateFilter<Binary64> filter = template.withDetectionSettings(detectionSettings);
+        // THEN
+        Assertions.assertEquals(detector, filter.getDetector());
+        Assertions.assertEquals(detectionSettings, filter.getDetectionSettings());
+    }
+
+    @Test
+    void testForward0Degrees() {
         doElevationTest(FastMath.toRadians(0.0),
                orbit.getDate(),
                orbit.getDate().shiftedBy(Constants.JULIAN_DAY),
@@ -66,7 +83,7 @@ public class FieldEventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testForward5Degrees() {
+    void testForward5Degrees() {
         doElevationTest(FastMath.toRadians(5.0),
                orbit.getDate(),
                orbit.getDate().shiftedBy(Constants.JULIAN_DAY),
@@ -74,7 +91,7 @@ public class FieldEventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testForward5DegreesStartEnabled() {
+    void testForward5DegreesStartEnabled() {
         doElevationTest(FastMath.toRadians(5.0),
                orbit.getDate().shiftedBy(12614.0),
                orbit.getDate().shiftedBy(Constants.JULIAN_DAY),
@@ -82,7 +99,7 @@ public class FieldEventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testBackward0Degrees() {
+    void testBackward0Degrees() {
         doElevationTest(FastMath.toRadians(0.0),
                orbit.getDate().shiftedBy(Constants.JULIAN_DAY),
                orbit.getDate(),
@@ -90,7 +107,7 @@ public class FieldEventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testBackward5Degrees() {
+    void testBackward5Degrees() {
         doElevationTest(FastMath.toRadians(5.0),
                orbit.getDate().shiftedBy(Constants.JULIAN_DAY),
                orbit.getDate(),
@@ -98,7 +115,7 @@ public class FieldEventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testBackward5DegreesStartEnabled() {
+    void testBackward5DegreesStartEnabled() {
         doElevationTest(FastMath.toRadians(5.0),
                orbit.getDate().shiftedBy(73112.0),
                orbit.getDate(),
@@ -114,17 +131,14 @@ public class FieldEventEnablingPredicateFilterTest {
                 withHandler(new FieldContinueOnEvent<>());
         final FieldEventEnablingPredicateFilter<Binary64> aboveGroundElevationDetector =
                 new FieldEventEnablingPredicateFilter<>(raw,
-                                                        new FieldEnablingPredicate<Binary64>() {
-                    public boolean eventIsEnabled(final FieldSpacecraftState<Binary64> state,
-                                                  final FieldEventDetector<Binary64> eventDetector,
-                                                  final Binary64 g) {
-                        return ((FieldElevationExtremumDetector<Binary64>) eventDetector).getElevation(state).getReal() > minElevation;
-                    }
-                }).withMaxCheck(60.0);
+                                                        (state, eventDetector, g) ->
+                                                            ((FieldElevationExtremumDetector<Binary64>) eventDetector).getElevation(state).getReal() > minElevation).
+                    withDetectionSettings(FieldEventDetectionSettings.getDefaultEventDetectionSettings(end.getField())
+                            .withMaxCheckInterval(FieldAdaptableInterval.of(60.0)));
 
         Assertions.assertSame(raw, aboveGroundElevationDetector.getDetector());
-        Assertions.assertEquals(0.001, raw.getMaxCheckInterval().currentInterval(null), 1.0e-15);
-        Assertions.assertEquals(60.0, aboveGroundElevationDetector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(0.001, raw.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
+        Assertions.assertEquals(60.0, aboveGroundElevationDetector.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-6, aboveGroundElevationDetector.getThreshold().getReal(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, aboveGroundElevationDetector.getMaxIterationCount());
 
@@ -171,7 +185,7 @@ public class FieldEventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testResetState() {
+    void testResetState() {
         final List<FieldAbsoluteDate<Binary64>> reset = new ArrayList<>();
         FieldDateDetector<Binary64> raw = new FieldDateDetector<>(Binary64Field.getInstance(), orbit.getDate().shiftedBy(3600.0)).
                         withMaxCheck(1000.0).
@@ -191,13 +205,8 @@ public class FieldEventEnablingPredicateFilterTest {
             raw.addEventDate(orbit.getDate().shiftedBy(i * 3600.0));
         }
         FieldEventEnablingPredicateFilter<Binary64> filtered =
-                        new FieldEventEnablingPredicateFilter<Binary64>(raw, new FieldEnablingPredicate<Binary64>() {
-                            public boolean eventIsEnabled(FieldSpacecraftState<Binary64> state,
-                                                          FieldEventDetector<Binary64> eventDetector,
-                                                          Binary64 g) {
-                                return state.getDate().durationFrom(orbit.getDate()).getReal() > 20000.0;
-                            }
-                        });
+                        new FieldEventEnablingPredicateFilter<>(raw,
+                                                                (state, eventDetector, g) -> state.getDate().durationFrom(orbit.getDate()).getReal() > 20000.0);
         FieldPropagator<Binary64> propagator = new FieldKeplerianPropagator<>(orbit);
         FieldEventsLogger<Binary64> logger = new FieldEventsLogger<>();
         propagator.addEventDetector(logger.monitorDetector(filtered));
@@ -217,7 +226,7 @@ public class FieldEventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testExceedHistoryForward() throws IOException {
+    void testExceedHistoryForward() {
         final double period = 900.0;
 
         // the raw detector should trigger one event at each 900s period
@@ -231,13 +240,9 @@ public class FieldEventEnablingPredicateFilterTest {
 
         // in fact, we will filter out half of these events, so we get only one event every 2 periods
         final FieldEventEnablingPredicateFilter<Binary64> filtered =
-                        new FieldEventEnablingPredicateFilter<>(raw, new FieldEnablingPredicate<Binary64>() {
-                            public boolean eventIsEnabled(FieldSpacecraftState<Binary64> state,
-                                                          FieldEventDetector<Binary64> eventDetector,
-                                                          Binary64 g) {
-                                double nbPeriod = state.getDate().durationFrom(orbit.getDate()).getReal() / period;
-                                return ((int) FastMath.floor(nbPeriod)) % 2 == 1;
-                            }
+                        new FieldEventEnablingPredicateFilter<>(raw, (state, eventDetector, g) -> {
+                            double nbPeriod = state.getDate().durationFrom(orbit.getDate()).getReal() / period;
+                            return ((int) FastMath.floor(nbPeriod)) % 2 == 1;
                         });
         FieldPropagator<Binary64> propagator = new FieldKeplerianPropagator<>(orbit);
         FieldEventsLogger<Binary64> logger = new FieldEventsLogger<>();
@@ -271,7 +276,7 @@ public class FieldEventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testExceedHistoryBackward() throws IOException {
+    void testExceedHistoryBackward() {
         final double period = 900.0;
 
         // the raw detector should trigger one event at each 900s period
@@ -285,13 +290,9 @@ public class FieldEventEnablingPredicateFilterTest {
 
         // in fact, we will filter out half of these events, so we get only one event every 2 periods
         final FieldEventEnablingPredicateFilter<Binary64> filtered =
-                        new FieldEventEnablingPredicateFilter<>(raw, new FieldEnablingPredicate<Binary64>() {
-                            public boolean eventIsEnabled(FieldSpacecraftState<Binary64> state,
-                                                          FieldEventDetector<Binary64> eventDetector,
-                                                          Binary64 g) {
-                                double nbPeriod = orbit.getDate().durationFrom(state.getDate()).getReal() / period;
-                                return ((int) FastMath.floor(nbPeriod)) % 2 == 1;
-                            }
+                        new FieldEventEnablingPredicateFilter<>(raw, (state, eventDetector, g) -> {
+                            double nbPeriod = orbit.getDate().durationFrom(state.getDate()).getReal() / period;
+                            return ((int) FastMath.floor(nbPeriod)) % 2 == 1;
                         });
         FieldPropagator<Binary64> propagator = new FieldKeplerianPropagator<>(orbit);
         FieldEventsLogger<Binary64> logger = new FieldEventsLogger<>();
@@ -325,7 +326,7 @@ public class FieldEventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testGenerics() {
+    void testGenerics() {
         // setup
         FieldDateDetector<Binary64> detector = new FieldDateDetector<>(orbit.getDate().getField(), orbit.getDate());
         FieldEnablingPredicate<Binary64> predicate = (state, eventDetector, g) -> true;

@@ -1,0 +1,32 @@
+%=BIA 1.00 COD 2024:267:32885 IGS 2024:237:00000 2024:267:00000 A 00000341
+*-------------------------------------------------------------------------------
+* Bias Solution INdependent EXchange Format (Bias-SINEX)
+*-------------------------------------------------------------------------------
+* dummy file created for tests only
+*-------------------------------------------------------------------------------
++BIAS/DESCRIPTION
+*KEYWORD________________________________ VALUE(S)_______________________________
+ OBSERVATION_SAMPLING                             123
+ PARAMETER_SPACING                              43200
+ DETERMINATION_METHOD                    COMBINED_ANALYSIS
+ BIAS_MODE                               ABSOLUTE
+ APC_MODEL                               IGS20
+ TIME_SYSTEM                             E  
+-BIAS/DESCRIPTION
+*-------------------------------------------------------------------------------
++BIAS/SOLUTION
+*BIAS SVN_ PRN STATION__ OBS1 OBS2 BIAS_START____ BIAS_END______ UNIT __ESTIMATED_VALUE____ _STD_DEV___ __ESTIMATED_SLOPE____ _STD_DEV___
+ OSB  E    E   AGGO      C1C       2024:237:00000 2024:266:00000 ns                 -6.0527      0.0178
+ OSB  E    E   AGGO      C1X       2024:237:00000 2024:267:00000 ns                 -5.0577      0.0069
+ OSB  E    E   AGGO      C5I       2024:237:00000 2024:267:00000 ns                -11.9244      0.0948
+ OSB  E    E   AGGO      C6A       2024:237:00000 2024:267:00000 ns                 -8.3298      0.0094
+ OSB  E    E   TUKT      C1C       2024:237:00000 2024:267:00000 ns                 -9.4955      0.0076
+ OSB  E    E   TUKT      C1X       2024:237:00000 2024:267:00000 ns                -11.2431      0.0062
+ OSB  E    E   TUKT      C6A       2024:237:00000 2024:267:00000 ns                -18.5167      0.0080
+ OSB  E    E   BRUX      C1C       2024:237:00000 2024:267:00000 ns                  7.0889      0.0076
+ OSB  E    E   BRUX      C1X       2024:237:00000 2024:267:00000 ns                  7.8379      0.0062
+ OSB  E    E   BRUX      C5I       2024:243:00000 2024:267:00000 ns                 11.5133      0.0651
+ OSB  E    E   BRUX      C6A       2024:237:00000 2024:267:00000 ns                 12.9086      0.0079
+ OSB  E    E   BRUX      L6A       2024:237:00000 2024:267:00000 cyc                 0.0017      0.0002
+-BIAS/SOLUTION
+%=ENDBIA

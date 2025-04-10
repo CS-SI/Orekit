@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,6 +47,7 @@ import org.orekit.propagation.events.EventsLogger.LoggedEvent;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
+import org.orekit.propagation.events.intervals.AdaptableInterval;
 import org.orekit.propagation.events.intervals.ElevationDetectionAdaptableIntervalFactory;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
@@ -537,7 +538,8 @@ public class ElevationDetectorTest {
                                                            "Colorado Springs");
         final AdaptableInterval maxCheck = ElevationDetectionAdaptableIntervalFactory.
             getAdaptableInterval(topo,
-                                 ElevationDetectionAdaptableIntervalFactory.DEFAULT_ELEVATION_SWITCH,
+                                 ElevationDetectionAdaptableIntervalFactory.DEFAULT_ELEVATION_SWITCH_INF,
+                                 ElevationDetectionAdaptableIntervalFactory.DEFAULT_ELEVATION_SWITCH_SUP,
                                  60.0);
         final ElevationDetector detector = new ElevationDetector(maxCheck, 1.0e-3, topo).
                                            withConstantElevation(FastMath.toRadians(10.0)).

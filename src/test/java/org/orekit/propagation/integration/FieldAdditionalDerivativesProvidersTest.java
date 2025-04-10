@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,8 +36,8 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
-import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.FieldDSSTPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -93,7 +93,7 @@ public class FieldAdditionalDerivativesProvidersTest {
         integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagatorNumerical = new FieldNumericalPropagator<>(field, integrator);
         propagatorNumerical.setInitialState(new FieldSpacecraftState<>(field, initialState).
-                                            addAdditionalState(linear.getName(), field.getZero().newInstance(reference)));
+                addAdditionalData(linear.getName(), field.getZero().newInstance(reference)));
         propagatorNumerical.addAdditionalDerivativesProvider(linear);
         FieldSpacecraftState<T> finalState = propagatorNumerical.propagate(new FieldAbsoluteDate<>(field, initDate).shiftedBy(dt));
 
@@ -117,7 +117,7 @@ public class FieldAdditionalDerivativesProvidersTest {
         integrator.setInitialStepSize(60);
         FieldDSSTPropagator<T> propagatorDSST = new FieldDSSTPropagator<>(field, integrator);
         propagatorDSST.setInitialState(new FieldSpacecraftState<>(field, initialState).
-                                       addAdditionalState(linear.getName(), field.getZero().newInstance(reference)));
+                addAdditionalData(linear.getName(), field.getZero().newInstance(reference)));
         propagatorDSST.addAdditionalDerivativesProvider(linear);
         FieldSpacecraftState<T> finalState = propagatorDSST.propagate(new FieldAbsoluteDate<>(field, initDate).shiftedBy(dt));
 
@@ -145,8 +145,8 @@ public class FieldAdditionalDerivativesProvidersTest {
         integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagatorNumerical = new FieldNumericalPropagator<>(field, integrator);
         propagatorNumerical.setInitialState(new FieldSpacecraftState<>(field, initialState).
-                                            addAdditionalState(linear1.getName(), field.getZero().newInstance(reference1)).
-                                            addAdditionalState(linear2.getName(), field.getZero().newInstance(reference2)));
+                addAdditionalData(linear1.getName(), field.getZero().newInstance(reference1)).
+                addAdditionalData(linear2.getName(), field.getZero().newInstance(reference2)));
         propagatorNumerical.addAdditionalDerivativesProvider(linear1);
         propagatorNumerical.addAdditionalDerivativesProvider(linear2);
         FieldSpacecraftState<T> finalState = propagatorNumerical.propagate(new FieldAbsoluteDate<>(field, initDate).shiftedBy(dt));
@@ -175,8 +175,8 @@ public class FieldAdditionalDerivativesProvidersTest {
         integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagatorNumerical = new FieldNumericalPropagator<>(field, integrator);
         propagatorNumerical.setInitialState(new FieldSpacecraftState<>(field, initialState).
-                                            addAdditionalState(yield1.getName(), field.getZero().newInstance(init1)).
-                                            addAdditionalState(yield2.getName(), field.getZero().newInstance(init2)));
+                addAdditionalData(yield1.getName(), field.getZero().newInstance(init1)).
+                addAdditionalData(yield2.getName(), field.getZero().newInstance(init2)));
         propagatorNumerical.addAdditionalDerivativesProvider(yield2); // we intentionally register yield2 before yield 1 to check reordering
         propagatorNumerical.addAdditionalDerivativesProvider(yield1);
         FieldSpacecraftState<T> finalState = propagatorNumerical.propagate(new FieldAbsoluteDate<>(field, initDate).shiftedBy(dt));
@@ -202,7 +202,7 @@ public class FieldAdditionalDerivativesProvidersTest {
         integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> propagatorNumerical = new FieldNumericalPropagator<>(field, integrator);
         propagatorNumerical.setInitialState(new FieldSpacecraftState<>(field, initialState).
-                                            addAdditionalState(coupling.getName(),
+                addAdditionalData(coupling.getName(),
                                                                field.getZero().newInstance(coupling.secondaryInit)));
         propagatorNumerical.addAdditionalDerivativesProvider(coupling);
         FieldSpacecraftState<T> finalState = propagatorNumerical.propagate(new FieldAbsoluteDate<>(field, initDate).shiftedBy(dt));
@@ -211,8 +211,8 @@ public class FieldAdditionalDerivativesProvidersTest {
         Assertions.assertEquals(coupling.secondaryInit + dt.getReal() * coupling.secondaryRate,
                             finalState.getAdditionalState(coupling.getName())[0].getReal(),
                             1.0e-10);
-        Assertions.assertEquals(initialState.getA() + dt.getReal() * coupling.smaRate,
-                            finalState.getA().getReal(),
+        Assertions.assertEquals(initialState.getOrbit().getA() + dt.getReal() * coupling.smaRate,
+                            finalState.getOrbit().getA().getReal(),
                             1.0e-10);
 
     }
@@ -228,7 +228,7 @@ public class FieldAdditionalDerivativesProvidersTest {
         final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
                                                  FramesFactory.getEME2000(), initDate, mu);
         initialState = new SpacecraftState(orbit);
-        tolerance = NumericalPropagator.tolerances(0.001, orbit, OrbitType.EQUINOCTIAL);
+        tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(orbit, OrbitType.EQUINOCTIAL);
     }
 
     @AfterEach

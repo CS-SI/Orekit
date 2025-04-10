@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,7 +32,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.gnss.metric.messages.ssr.subtype.SsrIm201;
 import org.orekit.gnss.metric.messages.ssr.subtype.SsrIm201Data;
 import org.orekit.gnss.metric.messages.ssr.subtype.SsrIm201Header;
@@ -44,7 +44,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
@@ -88,7 +88,7 @@ public class SsrVtecIonosphericModelTest {
     public void testDelay() {
 
         // Frequency
-        final double frequency = Frequency.G01.getFrequency();
+        final double frequency = PredefinedGnssSignal.G01.getFrequency();
 
         // Geodetic point
         final double height       = 0.0;
@@ -125,7 +125,7 @@ public class SsrVtecIonosphericModelTest {
     private <T extends CalculusFieldElement<T>> void doTestFieldDelay(final Field<T> field) {
         final T zero = field.getZero();
         // Frequency
-        final double frequency = Frequency.G01.getFrequency();
+        final double frequency = PredefinedGnssSignal.G01.getFrequency();
 
         // Geodetic point
         final double height       = 0.0;
@@ -156,7 +156,7 @@ public class SsrVtecIonosphericModelTest {
     @Test
     public void testZeroDelay() {
         // Frequency
-        final double frequency = Frequency.G01.getFrequency();
+        final double frequency = PredefinedGnssSignal.G01.getFrequency();
 
         // Geodetic point
         final double height       = 0.0;
@@ -192,7 +192,7 @@ public class SsrVtecIonosphericModelTest {
     private <T extends CalculusFieldElement<T>> void doTestFieldZeroDelay(final Field<T> field) {
         final T zero = field.getZero();
         // Frequency
-        final double frequency = Frequency.G01.getFrequency();
+        final double frequency = PredefinedGnssSignal.G01.getFrequency();
 
         // Geodetic point
         final double height       = 0.0;
@@ -224,7 +224,7 @@ public class SsrVtecIonosphericModelTest {
     public void testDelayStateDerivatives() {
 
         // Frequency
-        final double frequency = Frequency.G01.getFrequency();
+        final double frequency = PredefinedGnssSignal.G01.getFrequency();
 
         // Geodetic point
         final double height       = 0.0;
@@ -279,7 +279,7 @@ public class SsrVtecIonosphericModelTest {
         final OrbitType orbitType = OrbitType.KEPLERIAN;
         final PositionAngleType angleType = PositionAngleType.MEAN;
         double dP = 0.001;
-        double[] steps = NumericalPropagator.tolerances(1000000 * dP, orbit, orbitType)[0];
+        double[] steps = ToleranceProvider.getDefaultToleranceProvider(1000000 * dP).getTolerances(orbit, orbitType)[0];
         for (int i = 0; i < 6; i++) {
             SpacecraftState stateM4 = shiftState(state, orbitType, angleType, -4 * steps[i], i);
             double  delayM4 = model.pathDelay(stateM4, baseFrame, frequency, model.getParameters());
@@ -319,7 +319,7 @@ public class SsrVtecIonosphericModelTest {
     public void testDelayRange() {
 
         // Frequency
-        final double frequency = Frequency.G01.getFrequency();
+        final double frequency = PredefinedGnssSignal.G01.getFrequency();
 
         // Geodetic point
         final double height = 0.0;
@@ -360,7 +360,7 @@ public class SsrVtecIonosphericModelTest {
     private <T extends CalculusFieldElement<T>> void doTestFieldDelayRange(final Field<T> field) {
         final T zero = field.getZero();
         // Frequency
-        final double frequency = Frequency.G01.getFrequency();
+        final double frequency = PredefinedGnssSignal.G01.getFrequency();
 
         // Geodetic point
         final double height       = 0.0;
@@ -400,7 +400,7 @@ public class SsrVtecIonosphericModelTest {
         array[0][column] += delta;
 
         return arrayToState(array, orbitType, angleType, state.getFrame(), state.getDate(),
-                            state.getMu(), state.getAttitude());
+                            state.getOrbit().getMu(), state.getAttitude());
 
     }
 

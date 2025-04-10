@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,6 @@
  */
 package org.orekit.frames;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.stream.Collectors;
 
 import org.hipparchus.util.FastMath;
@@ -146,8 +141,7 @@ public class PredictedEOPHistoryTest {
 
         EOPHistory predicted = new PredictedEOPHistory(truncatedEOP,
                                                        30 * Constants.JULIAN_DAY,
-                                                       new EOPFitter(new SingleParameterFitter(3 * Constants.JULIAN_YEAR,
-                                                                                               Constants.JULIAN_DAY,
+                                                       new EOPFitter(new SingleParameterFitter(Constants.JULIAN_DAY,
                                                                                                1.0e-12, 3,
                                                                                                SingleParameterFitter.SUN_PULSATION,
                                                                                                2 * SingleParameterFitter.SUN_PULSATION,
@@ -262,48 +256,6 @@ public class PredictedEOPHistoryTest {
         Assertions.assertEquals(expectedMax030, maxError030Days, 0.001);
         Assertions.assertEquals(expectedMax060, maxError060Days, 0.001);
         Assertions.assertEquals(expectedMax090, maxError090Days, 0.001);
-
-    }
-
-    @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
-        final EOPHistory raw = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
-
-        PredictedEOPHistory predicted = new PredictedEOPHistory(raw,
-        		                                                30 * Constants.JULIAN_DAY,
-        		                                                new EOPFitter(SingleParameterFitter.createDefaultDut1FitterShortTermPrediction(),
-        		                                                              SingleParameterFitter.createDefaultPoleFitterShortTermPrediction(),
-        		                                                              SingleParameterFitter.createDefaultPoleFitterShortTermPrediction(),
-        		                                                              SingleParameterFitter.createDefaultNutationFitterShortTermPrediction(),
-        		                                                              SingleParameterFitter.createDefaultNutationFitterShortTermPrediction()));
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(predicted);
-
-        Assertions.assertTrue(bos.size() > 215000);
-        Assertions.assertTrue(bos.size() < 216000);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        PredictedEOPHistory deserialized  = (PredictedEOPHistory) ois.readObject();
-        Assertions.assertEquals(predicted.getStartDate(), deserialized.getStartDate());
-        Assertions.assertEquals(predicted.getEndDate(), deserialized.getEndDate());
-        Assertions.assertEquals(predicted.getEntries().size(), deserialized.getEntries().size());
-        for (int i = 0; i < predicted.getEntries().size(); ++i) {
-            EOPEntry e1 = predicted.getEntries().get(i);
-            EOPEntry e2 = deserialized.getEntries().get(i);
-            Assertions.assertEquals(e1.getMjd(),         e2.getMjd());
-            Assertions.assertEquals(e1.getDate(),        e2.getDate());
-            Assertions.assertEquals(e1.getUT1MinusUTC(), e2.getUT1MinusUTC(), 1.0e-10);
-            Assertions.assertEquals(e1.getLOD(),         e2.getLOD(),         1.0e-10);
-            Assertions.assertEquals(e1.getDdEps(),       e2.getDdEps(),       1.0e-10);
-            Assertions.assertEquals(e1.getDdPsi(),       e2.getDdPsi(),       1.0e-10);
-            Assertions.assertEquals(e1.getDx(),          e2.getDx(),          1.0e-10);
-            Assertions.assertEquals(e1.getDy(),          e2.getDy(),          1.0e-10);
-            Assertions.assertEquals(e1.getX(),           e2.getX(),           1.0e-10);
-            Assertions.assertEquals(e1.getY(),           e2.getY(),           1.0e-10);
-        }
 
     }
 

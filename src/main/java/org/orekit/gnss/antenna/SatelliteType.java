@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,7 +34,7 @@ import org.orekit.gnss.attitude.Galileo;
 import org.orekit.gnss.attitude.GenericGNSS;
 import org.orekit.gnss.attitude.Glonass;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 
 /**
  * Enumerate for satellite types.
@@ -50,7 +50,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             return new BeidouGeo(validityStart, validityEnd, sun, inertialFrame);
         }
@@ -62,7 +62,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             return new BeidouIGSO(validityStart, validityEnd, sun, inertialFrame);
         }
@@ -74,7 +74,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             return new BeidouMeo(validityStart, validityEnd, sun, inertialFrame);
         }
@@ -86,7 +86,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             // it seems Beidou III satellites use Galileo mode
             return new Galileo(Galileo.DEFAULT_YAW_RATE,
@@ -100,7 +100,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             // it seems Beidou III satellites use Galileo mode
             return new Galileo(Galileo.DEFAULT_YAW_RATE,
@@ -114,7 +114,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             // it seems Beidou III satellites use Galileo mode
             return new Galileo(Galileo.DEFAULT_YAW_RATE,
@@ -128,7 +128,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             // it seems Beidou III satellites use Galileo mode
             return new Galileo(Galileo.DEFAULT_YAW_RATE,
@@ -142,7 +142,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             // it seems Beidou III satellites use Galileo mode
             return new Galileo(Galileo.DEFAULT_YAW_RATE,
@@ -156,7 +156,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             // it seems Beidou III satellites use Galileo mode
             return new Galileo(Galileo.DEFAULT_YAW_RATE,
@@ -170,7 +170,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             // it seems Beidou III satellites use Galileo mode
             return new Galileo(Galileo.DEFAULT_YAW_RATE,
@@ -184,7 +184,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             return new GPSBlockIIA(GPSBlockIIA.getDefaultYawRate(prnNumber),
                                    GPSBlockIIA.DEFAULT_YAW_BIAS,
@@ -198,7 +198,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             return new GPSBlockIIA(GPSBlockIIA.getDefaultYawRate(prnNumber),
                                    GPSBlockIIA.DEFAULT_YAW_BIAS,
@@ -212,7 +212,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             return new GPSBlockIIA(GPSBlockIIA.getDefaultYawRate(prnNumber),
                                    GPSBlockIIA.DEFAULT_YAW_BIAS,
@@ -226,7 +226,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             return new GPSBlockIIR(GPSBlockIIR.DEFAULT_YAW_RATE,
                                    validityStart, validityEnd, sun, inertialFrame);
@@ -239,7 +239,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             return new GPSBlockIIR(GPSBlockIIR.DEFAULT_YAW_RATE,
                                    validityStart, validityEnd, sun, inertialFrame);
@@ -252,7 +252,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             return new GPSBlockIIR(GPSBlockIIR.DEFAULT_YAW_RATE,
                                    validityStart, validityEnd, sun, inertialFrame);
@@ -265,7 +265,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             return new GPSBlockIIF(GPSBlockIIF.DEFAULT_YAW_RATE,
                                    GPSBlockIIF.DEFAULT_YAW_BIAS,
@@ -279,7 +279,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             // we don't have yet a specific mode for block IIIA, we reuse block IIF
             return new GPSBlockIIF(GPSBlockIIF.DEFAULT_YAW_RATE,
@@ -294,7 +294,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             return new Galileo(Galileo.DEFAULT_YAW_RATE,
                                validityStart, validityEnd, sun, inertialFrame);
@@ -307,7 +307,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             return new Galileo(Galileo.DEFAULT_YAW_RATE,
                                validityStart, validityEnd, sun, inertialFrame);
@@ -320,7 +320,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             return new Galileo(Galileo.DEFAULT_YAW_RATE,
                                validityStart, validityEnd, sun, inertialFrame);
@@ -333,7 +333,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             return new Galileo(Galileo.DEFAULT_YAW_RATE,
                                validityStart, validityEnd, sun, inertialFrame);
@@ -346,7 +346,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             return new Glonass(Glonass.DEFAULT_YAW_RATE,
                                validityStart, validityEnd, sun, inertialFrame);
@@ -359,7 +359,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             return new Glonass(Glonass.DEFAULT_YAW_RATE,
                                validityStart, validityEnd, sun, inertialFrame);
@@ -372,7 +372,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             return new Glonass(Glonass.DEFAULT_YAW_RATE,
                                validityStart, validityEnd, sun, inertialFrame);
@@ -385,35 +385,54 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             return new Glonass(Glonass.DEFAULT_YAW_RATE,
                                validityStart, validityEnd, sun, inertialFrame);
         }
     },
 
-    /** IRNSS-1 GEO. */
-    IRNSS_1GEO("IRNSS-1GEO") {
+    /** IRNSS-1 GEO.
+     * @since 13.0
+     */
+    NAVIC_1GEO("IRNSS-1GEO") {
         /** {@inheritDoc} */
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
-            // we don't have yet a specific mode for IRNSS, we use generic GNSS (simple yaw steering)
+            // we don't have yet a specific mode for NavIC, we use generic GNSS (simple yaw steering)
             return new GenericGNSS(validityStart, validityEnd, sun, inertialFrame);
         }
     },
 
-    /** IRNSS-1 IGSO. */
-    IRNSS_1IGSO("IRNSS-1IGSO") {
+    /** IRNSS-2 GEO.
+     * @since 13.0
+     */
+    NAVIC_2GEO("IRNSS-2GEO") {
         /** {@inheritDoc} */
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
-            // we don't have yet a specific mode for IRNSS, we use generic GNSS (simple yaw steering)
+            // we don't have yet a specific mode for NavIC, we use generic GNSS (simple yaw steering)
+            return new GenericGNSS(validityStart, validityEnd, sun, inertialFrame);
+        }
+    },
+
+    /** IRNSS-1 IGSO.
+     * @since 13.0
+     */
+    NAVIC_1IGSO("IRNSS-1IGSO") {
+        /** {@inheritDoc} */
+        @Override
+        public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
+                                                          final AbsoluteDate validityEnd,
+                                                          final ExtendedPositionProvider sun,
+                                                          final Frame inertialFrame, final int prnNumber) {
+            // we don't have yet a specific mode for NavIC, we use generic GNSS (simple yaw steering)
             return new GenericGNSS(validityStart, validityEnd, sun, inertialFrame);
         }
     },
@@ -424,7 +443,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             // we don't have yet a specific mode for QZSS, we use generic GNSS (simple yaw steering)
             return new GenericGNSS(validityStart, validityEnd, sun, inertialFrame);
@@ -437,7 +456,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             // we don't have yet a specific mode for QZSS, we use generic GNSS (simple yaw steering)
             return new GenericGNSS(validityStart, validityEnd, sun, inertialFrame);
@@ -450,7 +469,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             // we don't have yet a specific mode for QZSS, we use generic GNSS (simple yaw steering)
             return new GenericGNSS(validityStart, validityEnd, sun, inertialFrame);
@@ -463,7 +482,7 @@ public enum SatelliteType {
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
                                                           final AbsoluteDate validityEnd,
-                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final ExtendedPositionProvider sun,
                                                           final Frame inertialFrame, final int prnNumber) {
             // we don't have yet a specific mode for QZSS, we use generic GNSS (simple yaw steering)
             return new GenericGNSS(validityStart, validityEnd, sun, inertialFrame);
@@ -518,13 +537,13 @@ public enum SatelliteType {
      */
     public abstract GNSSAttitudeProvider buildAttitudeProvider(AbsoluteDate validityStart,
                                                                AbsoluteDate validityEnd,
-                                                               ExtendedPVCoordinatesProvider sun,
+                                                               ExtendedPositionProvider sun,
                                                                Frame inertialFrame, int prnNumber);
 
     /** Parse a string to get the satellite type.
      * <p>
      * The name must be either a strict IGS name (like "BLOCK IIR-B") or
-     * an IGS name canonicalized by removing all spaces, hypen and underscore
+     * an IGS name canonicalized by removing all spaces, hyphen and underscore
      * characters (like BLOCKIIRB").
      * </p>
      * @param s string to parse (must be a strict IGS name)

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,7 +34,7 @@ public class OccultationEngine {
     private final OneAxisEllipsoid occulting;
 
     /** Occulted body. */
-    private final ExtendedPVCoordinatesProvider occulted;
+    private final ExtendedPositionProvider occulted;
 
     /** Occulted body radius (m). */
     private final double occultedRadius;
@@ -44,7 +44,7 @@ public class OccultationEngine {
      * @param occultedRadius the radius of the body to be occulted (m)
      * @param occulting the occulting body
      */
-    public OccultationEngine(final ExtendedPVCoordinatesProvider occulted,  final double occultedRadius,
+    public OccultationEngine(final ExtendedPositionProvider occulted,  final double occultedRadius,
                              final OneAxisEllipsoid occulting) {
         this.occulted       = occulted;
         this.occultedRadius = FastMath.abs(occultedRadius);
@@ -61,7 +61,7 @@ public class OccultationEngine {
     /** Getter for the occulted body.
      * @return the occulted body
      */
-    public ExtendedPVCoordinatesProvider getOcculted() {
+    public ExtendedPositionProvider getOcculted() {
         return occulted;
     }
 

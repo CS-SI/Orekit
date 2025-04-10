@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,6 @@
  */
 package org.orekit.utils;
 
-import java.util.Locale;
-
 import org.hipparchus.util.RyuDouble;
 
 /** Formatter used to produce strings from data with high accuracy.
@@ -34,35 +32,35 @@ import org.hipparchus.util.RyuDouble;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class AccurateFormatter {
-
-    /**
-     * Standardized locale to use, to ensure files can be exchanged without
-     * internationalization issues.
-     */
-    public static final Locale STANDARDIZED_LOCALE = Locale.US;
-
-    /** String format used for dates. **/
-    private static final String DATE_FORMAT = "%04d-%02d-%02dT%02d:%02d:%s";
+public class AccurateFormatter implements Formatter {
 
     /** Low switch level for exponential format in dates (will never be reached due to {@link #LOW_TRUNCATION}). */
     private static final int LOW_EXP = -18;
 
-    /** Truncation level for seconds, to avoid scientific format). */
+    /** Truncation level for seconds, to avoid scientific format. */
     private static final double LOW_TRUNCATION = 1.0e-15;
 
-    /** Private constructor for a utility class.
+    /** Public constructor.
      */
-    private AccurateFormatter() {
+    public AccurateFormatter() {
         // nothing to do
     }
 
-    /** Format a double number.
-     * @param value number to format
-     * @return number formatted to full accuracy
+    /** Formats to full accuracy.
+     * {@inheritDoc}
      */
-    public static String format(final double value) {
-        return RyuDouble.doubleToString(value);
+    @Override
+    public String toString(final double value) {
+        return format(value);
+    }
+
+    /** Formats the seconds variable with maximum precision needed.
+     * {@inheritDoc}
+     */
+    @Override
+    public String toString(final int year, final int month, final int day,
+                           final int hour, final int minute, final double seconds) {
+        return format(year, month, day, hour, minute, seconds);
     }
 
     /** Format a date.
@@ -73,7 +71,10 @@ public class AccurateFormatter {
      * @param minute minute
      * @param seconds seconds
      * @return date formatted to full accuracy
+     * @deprecated As of 13.0, because static method does not utilize inheritance benefits from {@link Formatter} and
+     * does not check format standards of date time. Use {@link #toString(int, int, int, int, int, double)} instead.
      */
+    @Deprecated
     public static String format(final int year, final int month, final int day,
                                 final int hour, final int minute, final double seconds) {
         final double truncated = seconds < LOW_TRUNCATION ? 0.0 : seconds;
@@ -83,4 +84,14 @@ public class AccurateFormatter {
                              hour, minute, s.charAt(1) == '.' ? "0" + s : s);
     }
 
+    /** Format a double number.
+     * @param value number to format
+     * @return number formatted to full accuracy
+     * @deprecated As of 13.0, because Static method does not utilize inheritance benefits from {@link Formatter}.
+     * Use {@link #toString(double)} instead.
+     */
+    @Deprecated
+    public static String format(final double value) {
+        return RyuDouble.doubleToString(value);
+    }
 }

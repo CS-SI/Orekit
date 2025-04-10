@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,6 +41,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -59,7 +60,7 @@ import java.util.List;
 public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
 
     @Test
-    public void testGetParameterDrivers() {
+    void testGetParameterDrivers() {
 
         // A date
         final TimeScale utc = TimeScalesFactory.getUTC();
@@ -127,7 +128,7 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testParameterDerivative() {
+    void testParameterDerivative() {
 
         // Time scale
         final TimeScale tai = TimeScalesFactory.getTAI();
@@ -183,7 +184,7 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testStateJacobian() {
+    void testStateJacobian() {
 
         // Initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -196,7 +197,7 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
                                          0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
-        double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, integrationType);
 
         // Time span acceleration force model init
         double dt = 1. * 3600.;
@@ -245,7 +246,7 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testStateJacobianAttitudeOverride() {
+    void testStateJacobianAttitudeOverride() {
 
         // Initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -258,7 +259,7 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
                                          0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
-        double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, integrationType);
 
         // Time span acceleration force model init
         final AttitudeProvider attitudeOverride = new LofOffset(orbit.getFrame(), LOFType.VNC);

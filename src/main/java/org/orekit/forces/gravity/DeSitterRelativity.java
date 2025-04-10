@@ -30,6 +30,7 @@ import org.orekit.forces.ForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.Constants;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
@@ -62,7 +63,7 @@ public class DeSitterRelativity implements ForceModel {
     private final CelestialBody sun;
 
     /** The Earth. */
-    private final CelestialBody earth;
+    private final ExtendedPositionProvider earth;
 
     /** Driver for gravitational parameter. */
     private final ParameterDriver gmParameterDriver;
@@ -83,7 +84,7 @@ public class DeSitterRelativity implements ForceModel {
      * @param sun the Sun
      */
     public DeSitterRelativity(final CelestialBody earth, final CelestialBody sun) {
-        gmParameterDriver = new ParameterDriver(sun.getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX,
+        gmParameterDriver = new ParameterDriver(sun.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
                                                 sun.getGM(), MU_SCALE,
                                                 0.0, Double.POSITIVE_INFINITY);
         this.earth = earth;
@@ -102,7 +103,7 @@ public class DeSitterRelativity implements ForceModel {
      * Get the Earth model used to compute De Sitter effect.
      * @return the earth model
      */
-    public CelestialBody getEarth() {
+    public ExtendedPositionProvider getEarth() {
         return earth;
     }
 

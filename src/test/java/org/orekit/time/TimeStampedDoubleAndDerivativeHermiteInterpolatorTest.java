@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,7 +30,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.DoubleAccumulator;
 
-class TimeStampedDoubleAndDerivativeAndDerivativeHermiteInterpolatorTest {
+class TimeStampedDoubleAndDerivativeHermiteInterpolatorTest {
 
     @Test
     @DisplayName("Test default constructor")

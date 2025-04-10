@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,11 +22,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
+import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.data.BeidouAlmanac;
 import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
@@ -53,7 +53,8 @@ public class BeidouPropagatorTest {
         Utils.setDataRoot("gnss");
 
         // Almanac for satellite 18 for May 28th 2019
-        almanac = new BeidouAlmanac();
+        almanac = new BeidouAlmanac(DataContext.getDefault().getTimeScales(),
+                                    SatelliteSystem.BEIDOU);
         almanac.setPRN(18);
         almanac.setWeek(694);
         almanac.setTime(4096.0);
@@ -67,7 +68,6 @@ public class BeidouPropagatorTest {
         almanac.setAf0(0.0001096725);
         almanac.setAf1(7.27596e-12);
         almanac.setHealth(0);
-        almanac.setDate(new GNSSDate(almanac.getWeek(), almanac.getTime(), SatelliteSystem.BEIDOU).getDate());
     }
 
     @Test
@@ -104,26 +104,25 @@ public class BeidouPropagatorTest {
         final PVCoordinates pv1 = propagator.getPVCoordinates(date, propagator.getECEF());
 
         // Checks
-        Assertions.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()), 3.3e-8);
+        Assertions.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()), 4.6e-8);
         Assertions.assertEquals(0., pv0.getVelocity().distance(pv1.getVelocity()), 3.9e-12);
     }
 
     @Test
-    public void testNoReset() {
-        try {
-            final GNSSPropagator propagator = almanac.getPropagator();
-            propagator.resetInitialState(propagator.getInitialState());
-            Assertions.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
-        }
-        try {
-            GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
-            propagator.resetIntermediateState(propagator.getInitialState(), true);
-            Assertions.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
-        }
+    public void testResetInitialState() {
+        final GNSSPropagator propagator = almanac.getPropagator();
+        final SpacecraftState old = propagator.getInitialState();
+        propagator.resetInitialState(new SpacecraftState(old.getOrbit(), old.getAttitude(), old.getMass() + 1000));
+        Assertions.assertEquals(old.getMass() + 1000, propagator.getInitialState().getMass(), 1.0e-9);
+    }
+
+    @Test
+    public void testResetIntermediateState() {
+        GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
+        final SpacecraftState old = propagator.getInitialState();
+        propagator.resetIntermediateState(new SpacecraftState(old.getOrbit(), old.getAttitude(), old.getMass() + 1000),
+                                          true);
+        Assertions.assertEquals(old.getMass() + 1000, propagator.getInitialState().getMass(), 1.0e-9);
     }
 
     @Test
@@ -134,13 +133,13 @@ public class BeidouPropagatorTest {
         double errorV = 0;
         double errorA = 0;
         final GNSSPropagator propagator = almanac.getPropagator();
-        GNSSOrbitalElements elements = propagator.getOrbitalElements();
+        GNSSOrbitalElements<?> elements = propagator.getOrbitalElements();
         AbsoluteDate t0 = new GNSSDate(elements.getWeek(), elements.getTime(), SatelliteSystem.BEIDOU).getDate();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
             final AbsoluteDate central = t0.shiftedBy(dt);
             final PVCoordinates pv = propagator.getPVCoordinates(central, eme2000);
             final double h = 60.0;
-            List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
+            List<TimeStampedPVCoordinates> sample = new ArrayList<>();
             for (int i = -3; i <= 3; ++i) {
                 sample.add(propagator.getPVCoordinates(central.shiftedBy(i * h), eme2000));
             }
@@ -164,13 +163,15 @@ public class BeidouPropagatorTest {
     @Test
     public void testPosition() {
         // Initial BeiDou orbital elements (Ref: IGS)
-        final BeidouLegacyNavigationMessage boe = new BeidouLegacyNavigationMessage();
+        final BeidouLegacyNavigationMessage boe =
+            new BeidouLegacyNavigationMessage(DataContext.getDefault().getTimeScales(),
+                                              SatelliteSystem.BEIDOU);
         boe.setPRN(7);
         boe.setWeek(713);
         boe.setTime(284400.0);
         boe.setSqrtA(6492.84515953064);
         boe.setE(0.00728036486543715);
-        boe.setDeltaN(2.1815194404696853E-9);
+        boe.setDeltaN0(2.1815194404696853E-9);
         boe.setI0(0.9065628903946735);
         boe.setIDot(0.0);
         boe.setOmega0(-0.6647664535282437);
@@ -183,7 +184,6 @@ public class BeidouPropagatorTest {
         boe.setCrs(225.9375);
         boe.setCic(-7.450580596923828E-9);
         boe.setCis(-1.4062970876693726E-7);
-        boe.setDate(new GNSSDate(boe.getWeek(), boe.getTime(), SatelliteSystem.BEIDOU).getDate());
         // Date of the BeiDou orbital elements (GPStime - BDTtime = 14s)
         final AbsoluteDate target = boe.getDate().shiftedBy(-14.0);
         // Build the BeiDou propagator
@@ -208,6 +208,11 @@ public class BeidouPropagatorTest {
         Assertions.assertEquals(Vector3D.NaN, pv0.getPosition());
         Assertions.assertEquals(Vector3D.NaN, pv0.getVelocity());
 
+    }
+
+    @Test
+    public void testConversion() {
+        GnssTestUtils.checkFieldConversion(almanac);
     }
 
 }

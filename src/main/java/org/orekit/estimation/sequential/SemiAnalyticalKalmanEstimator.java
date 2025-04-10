@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.filtering.kalman.KalmanFilter;
 import org.hipparchus.filtering.kalman.extended.ExtendedKalmanFilter;
 import org.hipparchus.linear.MatrixDecomposer;
 import org.orekit.errors.OrekitException;
@@ -81,7 +82,7 @@ public class SemiAnalyticalKalmanEstimator extends AbstractKalmanEstimator {
                                          final CovarianceMatrixProvider covarianceMatrixProvider,
                                          final ParameterDriversList estimatedMeasurementParameters,
                                          final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
-        super(Collections.singletonList(propagatorBuilder));
+        super(decomposer, Collections.singletonList(propagatorBuilder));
         // Build the process model and measurement model
         this.processModel = new SemiAnalyticalKalmanModel(propagatorBuilder, covarianceMatrixProvider,
                                                           estimatedMeasurementParameters,  measurementProcessNoiseMatrix);
@@ -97,11 +98,29 @@ public class SemiAnalyticalKalmanEstimator extends AbstractKalmanEstimator {
         return processModel;
     }
 
-    /** Set the observer.
-     * @param observer the observer
-     */
+    /** {@inheritDoc}. */
+    @Override
+    protected KalmanFilter<MeasurementDecorator> getKalmanFilter() {
+        return filter;
+    }
+
+    /** {@inheritDoc}. */
+    @Override
+    protected double[] getScale() {
+        return processModel.getScale();
+    }
+
+    /** {@inheritDoc}. */
+    @Override
     public void setObserver(final KalmanObserver observer) {
         processModel.setObserver(observer);
+        observer.init(getKalmanEstimation());
+    }
+
+    /** {@inheritDoc}. */
+    @Override
+    public KalmanObserver getObserver() {
+        return processModel.getObserver();
     }
 
     /** Process a single measurement.

@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,6 +25,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.Orbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -94,7 +95,7 @@ class AbstractGradientConverterTest {
         Assertions.assertEquals(mockedState.getPosition(), fieldState.getPosition().toVector3D());
         Assertions.assertEquals(mockedState.isOrbitDefined(), fieldState.isOrbitDefined());
         if (isOrbitDefined) {
-            Assertions.assertEquals(mockedState.getMu(), fieldState.getMu().getReal());
+            Assertions.assertEquals(mockedState.getOrbit().getMu(), fieldState.getOrbit().getMu().getReal());
         }
         final Gradient expectedFieldZero = Gradient.constant(freeParameters, 0.);
         Assertions.assertEquals(expectedFieldZero, fieldState.getDate().getField().getZero());
@@ -113,7 +114,9 @@ class AbstractGradientConverterTest {
         Mockito.when(state.getMass()).thenReturn(1000.);
         Mockito.when(state.getFrame()).thenReturn(frame);
         if (isOrbitDefined) {
-            Mockito.when(state.getMu()).thenReturn(Constants.EGM96_EARTH_MU);
+            final Orbit mockedOrbit = Mockito.mock();
+            Mockito.when(mockedOrbit.getMu()).thenReturn(Constants.EGM96_EARTH_MU);
+            Mockito.when(state.getOrbit()).thenReturn(mockedOrbit);
         }
         return state;
     }

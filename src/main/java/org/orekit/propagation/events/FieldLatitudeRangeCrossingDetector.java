@@ -1,4 +1,4 @@
-/* Copyright 2023-2024 Alberto Ferrero
+/* Copyright 2023-2025 Alberto Ferrero
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 
 
 /** Detector for geographic latitude crossing.
@@ -59,7 +60,7 @@ public class FieldLatitudeRangeCrossingDetector <T extends CalculusFieldElement<
     /**
      * Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
-     * ({@link #DEFAULT_MAXCHECK}) and convergence threshold ({@link
+     * ({@link #DEFAULT_MAX_CHECK}) and convergence threshold ({@link
      * #DEFAULT_THRESHOLD}).</p>
      * @param field        the type of numbers to use.
      * @param body         body on which the latitude is defined
@@ -70,9 +71,7 @@ public class FieldLatitudeRangeCrossingDetector <T extends CalculusFieldElement<
                                               final OneAxisEllipsoid body,
                                               final double fromLatitude,
                                               final double toLatitude) {
-        this(FieldAdaptableInterval.of(DEFAULT_MAXCHECK),
-            field.getZero().add(DEFAULT_THRESHOLD),
-            DEFAULT_MAX_ITER,
+        this(new FieldEventDetectionSettings<>(field, EventDetectionSettings.getDefaultEventDetectionSettings()),
             new FieldStopOnIncreasing<>(),
             body,
             fromLatitude,
@@ -90,8 +89,8 @@ public class FieldLatitudeRangeCrossingDetector <T extends CalculusFieldElement<
      */
     public FieldLatitudeRangeCrossingDetector(final T maxCheck, final T threshold,
                                               final OneAxisEllipsoid body, final double fromLatitude, final double toLatitude) {
-        this(FieldAdaptableInterval.of(maxCheck.getReal()), threshold, DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(),
-            body, fromLatitude, toLatitude);
+        this(new FieldEventDetectionSettings<>(FieldAdaptableInterval.of(maxCheck.getReal()), threshold, DEFAULT_MAX_ITER),
+                new FieldStopOnIncreasing<>(), body, fromLatitude, toLatitude);
     }
 
     /**
@@ -102,22 +101,19 @@ public class FieldLatitudeRangeCrossingDetector <T extends CalculusFieldElement<
      * in a readable manner without using a huge amount of parameters.
      * </p>
      *
-     * @param maxCheck     maximum checking interval (s)
-     * @param threshold    convergence threshold (s)
-     * @param maxIter      maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler      event handler to call at event occurrences
      * @param body         body on which the latitude is defined
      * @param fromLatitude latitude to be crossed, lower range boundary
      * @param toLatitude   latitude to be crossed, upper range boundary
+     * @since 13.0
      */
-    protected FieldLatitudeRangeCrossingDetector(final FieldAdaptableInterval<T> maxCheck,
-                                                 final T threshold,
-                                                 final int maxIter,
+    protected FieldLatitudeRangeCrossingDetector(final FieldEventDetectionSettings<T> detectionSettings,
                                                  final FieldEventHandler<T> handler,
                                                  final OneAxisEllipsoid body,
                                                  final double fromLatitude,
                                                  final double toLatitude) {
-        super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
+        super(detectionSettings, handler);
         this.body = body;
         this.fromLatitude = fromLatitude;
         this.toLatitude = toLatitude;
@@ -128,11 +124,9 @@ public class FieldLatitudeRangeCrossingDetector <T extends CalculusFieldElement<
      * {@inheritDoc}
      */
     @Override
-    protected FieldLatitudeRangeCrossingDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck,
-                                                           final T newThreshold,
-                                                           final int newMaxIter,
+    protected FieldLatitudeRangeCrossingDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                                            final FieldEventHandler<T> newHandler) {
-        return new FieldLatitudeRangeCrossingDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler,
+        return new FieldLatitudeRangeCrossingDetector<>(detectionSettings, newHandler,
             body, fromLatitude, toLatitude);
     }
 

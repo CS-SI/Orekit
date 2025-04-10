@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,31 +16,30 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.LutherIntegrator;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngleType;
 
 /** Builder for LutherIntegrator.
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class LutherIntegratorBuilder implements ODEIntegratorBuilder {
-
-    /** Step size (s). */
-    private final double step;
+public class LutherIntegratorBuilder extends AbstractFixedSingleStepIntegratorBuilder<LutherIntegrator> {
 
     /** Build a new instance.
      * @param step step size (s)
      * @see LutherIntegrator
      */
     public LutherIntegratorBuilder(final double step) {
-        this.step = step;
+        super(step);
     }
 
     /** {@inheritDoc} */
-    public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType) {
-        return new LutherIntegrator(step);
+    @Override
+    public LutherIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType,
+                                            final PositionAngleType angleType) {
+        return new LutherIntegrator(getStep());
     }
 
 }

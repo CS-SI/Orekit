@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,6 +25,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
+import org.orekit.propagation.events.intervals.DateDetectionAdaptableIntervalFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DateDriver;
 import org.orekit.utils.ParameterDriver;
@@ -63,20 +64,17 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
     /** Default suffix for duration driver. */
     public static final String DURATION_SUFFIX = "_DURATION";
 
-    /** Detection threshold. */
-    private static final double THRESHOLD = 1.0e-10;
-
     /** Reference interval start driver. */
-    private DateDriver start;
+    private final DateDriver start;
 
     /** Reference interval stop driver. */
-    private DateDriver stop;
+    private final DateDriver stop;
 
     /** Median date driver. */
-    private DateDriver median;
+    private final DateDriver median;
 
     /** Duration driver. */
-    private ParameterDriver duration;
+    private final ParameterDriver duration;
 
     /** Build a new instance.
      * @param prefix prefix to use for parameter drivers names
@@ -87,7 +85,7 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
                                                final AbsoluteDate refMedian, final double refDuration) {
         this(prefix,
              refMedian.shiftedBy(-0.5 * refDuration),
-             refMedian.shiftedBy(+0.5 * refDuration));
+             refMedian.shiftedBy(0.5 * refDuration));
     }
 
     /** Build a new instance.
@@ -97,8 +95,7 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
      */
     public ParameterDrivenDateIntervalDetector(final String prefix,
                                                final AbsoluteDate refStart, final AbsoluteDate refStop) {
-        this(s -> FastMath.max(0.5 * refStop.durationFrom(refStart), THRESHOLD),
-             THRESHOLD, DEFAULT_MAX_ITER,
+        this(getDefaultDetectionSettings(refStart, refStop),
              new StopOnDecreasing(),
              new DateDriver(refStart, prefix + START_SUFFIX, true),
              new DateDriver(refStop, prefix + STOP_SUFFIX, false),
@@ -112,20 +109,19 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param start reference interval start driver
      * @param stop reference interval stop driver
      * @param median median date driver
      * @param duration duration driver
+     * @since 13.0
      */
-    protected ParameterDrivenDateIntervalDetector(final AdaptableInterval maxCheck, final double threshold, final int maxIter,
+    protected ParameterDrivenDateIntervalDetector(final EventDetectionSettings detectionSettings,
                                                   final EventHandler handler,
                                                   final DateDriver start, final DateDriver stop,
                                                   final DateDriver median, final ParameterDriver duration) {
-        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
+        super(detectionSettings, handler);
         this.start    = start;
         this.stop     = stop;
         this.median   = median;
@@ -137,6 +133,19 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
         replaceBindingObserver(median,   new MedianObserver());
         replaceBindingObserver(duration, new DurationObserver());
 
+    }
+
+    /**
+     * Get default detection settings.
+     * @param refStart reference interval start date
+     * @param refStop reference interval stop date
+     * @return default detection settings
+     * @since 13.0
+     */
+    public static EventDetectionSettings getDefaultDetectionSettings(final AbsoluteDate refStart,
+                                                                     final AbsoluteDate refStop) {
+        return new EventDetectionSettings(DateDetectionAdaptableIntervalFactory.getDatesDetectionInterval(refStart, refStop),
+                DateDetector.DEFAULT_THRESHOLD, EventDetectionSettings.DEFAULT_MAX_ITER);
     }
 
     /** Replace binding observers.
@@ -159,10 +168,9 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDrivenDateIntervalDetector create(final AdaptableInterval newMaxCheck, final double newThreshold, final int newMaxIter,
+    protected ParameterDrivenDateIntervalDetector create(final EventDetectionSettings detectionSettings,
                                                          final EventHandler newHandler) {
-        return new ParameterDrivenDateIntervalDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                                       start, stop, median, duration);
+        return new ParameterDrivenDateIntervalDetector(detectionSettings, newHandler, start, stop, median, duration);
     }
 
     /** Get the driver for start date.

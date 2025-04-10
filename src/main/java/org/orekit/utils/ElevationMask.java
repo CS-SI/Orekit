@@ -18,7 +18,6 @@ package org.orekit.utils;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Comparator;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -85,11 +84,7 @@ public class ElevationMask implements Serializable {
         }
 
         // Sorting the mask with respect to azimuth
-        Arrays.sort(mask, 1, mask.length - 1, new Comparator<double[]>() {
-            public int compare(final double[] d1, final double[] d2) {
-                return Double.compare(d1[0], d2[0]);
-            }
-        });
+        Arrays.sort(mask, 1, mask.length - 1, (d1, d2) -> Double.compare(d1[0], d2[0]));
 
         // Extending the mask in order to cover [0, 2PI] in azimuth
         mask[0][0] = mask[mask.length - 2][0] - MathUtils.TWO_PI;

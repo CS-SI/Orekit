@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,9 +32,9 @@ import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
 import org.orekit.estimation.measurements.BistaticRangeRate;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
@@ -72,12 +72,12 @@ public class BistaticRangeRateBuilderTest {
 
     @Test
     public void testForward() {
-        doTest(0xf50c0ce7c8c1dab2l, 0.0, 1.2, 3.2 * SIGMA);
+        doTest(0xf50c0ce7c8c1dab2L, 0.0, 1.2, 3.2 * SIGMA);
     }
 
     @Test
     public void testBackward() {
-        doTest(0x453a681440d01832l, 0.0, -1.2, 2.9 * SIGMA);
+        doTest(0x453a681440d01832L, 0.0, -1.2, 2.9 * SIGMA);
     }
 
     private Propagator buildPropagator() {
@@ -107,13 +107,13 @@ public class BistaticRangeRateBuilderTest {
         AbsoluteDate t0     = context.initialOrbit.getDate().shiftedBy(startPeriod * period);
         AbsoluteDate t1     = context.initialOrbit.getDate().shiftedBy(endPeriod   * period);
         generator.generate(t0, t1);
-        SortedSet<ObservedMeasurement<?>> measurements = gatherer.getGeneratedMeasurements();
+        SortedSet<EstimatedMeasurementBase<?>> measurements = gatherer.getGeneratedMeasurements();
         Propagator propagator = buildPropagator();
         double maxError = 0;
         AbsoluteDate previous = null;
         AbsoluteDate tInf = t0.isBefore(t1) ? t0 : t1;
         AbsoluteDate tSup = t0.isBefore(t1) ? t1 : t0;
-        for (ObservedMeasurement<?> measurement : measurements) {
+        for (EstimatedMeasurementBase<?> measurement : measurements) {
             AbsoluteDate date = measurement.getDate();
             double[] m = measurement.getObservedValue();
             Assertions.assertTrue(date.compareTo(tInf) >= 0);
@@ -129,7 +129,10 @@ public class BistaticRangeRateBuilderTest {
             }
             previous = date;
             SpacecraftState state = propagator.propagate(date);
-            double[] e = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state }).getEstimatedValue();
+            double[] e = measurement.
+                getObservedMeasurement().
+                estimateWithoutDerivatives(new SpacecraftState[] { state }).
+                getEstimatedValue();
             for (int i = 0; i < m.length; ++i) {
                 maxError = FastMath.max(maxError, FastMath.abs(e[i] - m[i]));
             }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
@@ -33,12 +34,23 @@ import org.orekit.utils.PVCoordinates;
 public class SingleBodyRelativeAttraction extends AbstractBodyAttraction {
 
     /** Simple constructor.
+     * @param positionProvider extended position provider for the body to consider
+     * @param name name of the body
+     * @param mu body gravitational constant
+     * @since 13.0
+     */
+    public SingleBodyRelativeAttraction(final ExtendedPositionProvider positionProvider, final String name,
+                                        final double mu) {
+        super(positionProvider, name, mu);
+    }
+
+    /** Constructor.
      * @param body the body to consider
      * (ex: {@link CelestialBodies#getSun()} or
      * {@link CelestialBodies#getMoon()})
      */
     public SingleBodyRelativeAttraction(final CelestialBody body) {
-        super(body);
+        this(body, body.getName(), body.getGM());
     }
 
     /** {@inheritDoc} */

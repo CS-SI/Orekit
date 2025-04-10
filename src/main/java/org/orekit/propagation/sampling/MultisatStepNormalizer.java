@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -85,7 +85,7 @@ public class MultisatStepNormalizer implements MultiSatStepHandler {
 
         if (lastStates == null) {
             // initialize lastState in the first step case
-            lastStates = interpolators.stream().map(i -> i.getPreviousState()).collect(Collectors.toList());
+            lastStates = interpolators.stream().map(OrekitStepInterpolator::getPreviousState).collect(Collectors.toList());
         }
 
         // take the propagation direction into account

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,7 +37,7 @@ import java.util.List;
  * @author Thomas Paulet
  * @since 6.0
  */
-public class TLEPropagatorBuilder extends AbstractAnalyticalPropagatorBuilder {
+public class TLEPropagatorBuilder extends AbstractAnalyticalPropagatorBuilder<TLEPropagator> {
 
     /** Data context used to access frames and time scales. */
     private final DataContext dataContext;
@@ -130,15 +130,6 @@ public class TLEPropagatorBuilder extends AbstractAnalyticalPropagatorBuilder {
         this.generationAlgorithm = generationAlgorithm;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public TLEPropagatorBuilder copy() {
-        final TLEPropagatorBuilder builder = new TLEPropagatorBuilder(templateTLE, getPositionAngleType(), getPositionScale(),
-                                        dataContext, generationAlgorithm, getAttitudeProvider());
-        builder.setMass(getMass());
-        return builder;
-    }
 
     /** {@inheritDoc} */
     @Override

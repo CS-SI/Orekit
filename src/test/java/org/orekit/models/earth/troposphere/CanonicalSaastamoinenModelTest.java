@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,66 +18,78 @@ package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathArrays;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.orekit.Utils;
-import org.orekit.bodies.FieldGeodeticPoint;
-import org.orekit.bodies.GeodeticPoint;
-import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.FieldTrackingCoordinates;
+import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.utils.TrackingCoordinates;
 
 
-public class CanonicalSaastamoinenModelTest {
+public class CanonicalSaastamoinenModelTest extends AbstractPathDelayTest<CanonicalSaastamoinenModel> {
 
-    @Test
-    public void testComparisonToModifiedModelLowElevation() {
-        doTestComparisonToModifiedModel(FastMath.toRadians(5), -13.4, 0.14);
+    @Override
+    protected CanonicalSaastamoinenModel buildTroposphericModel(final PressureTemperatureHumidityProvider provider) {
+        return new CanonicalSaastamoinenModel(provider);
     }
 
     @Test
-    public void testComparisonToModifiedModelHighElevation() {
-        doTestComparisonToModifiedModel(FastMath.toRadians(60), -1.36, 0.002);
+    @Override
+    public void testDelay() {
+        doTestDelay(defaultDate, defaultPoint,
+                    new TrackingCoordinates(FastMath.toRadians(192), FastMath.toRadians(5), 1.4e6),
+                    TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
+                    2.30697, 0.115797, 26.46948, -2.20852, 24.26096);
     }
 
-    private void doTestComparisonToModifiedModel(final double elevation,
-                                                 final double minDifference, final double maxDifference) {
-        final TrackingCoordinates trackingCoordinates = new TrackingCoordinates(0.0, elevation, 0.0);
-        final CanonicalSaastamoinenModel canonical = new CanonicalSaastamoinenModel();
-        final ModifiedSaastamoinenModel  modified  = ModifiedSaastamoinenModel.getStandardModel();
-        Assertions.assertTrue(canonical.getParametersDrivers().isEmpty());
-        canonical.setLowElevationThreshold(0.125);
-        Assertions.assertEquals(0.125, canonical.getLowElevationThreshold(), 1.0e-12);
-        canonical.setLowElevationThreshold(CanonicalSaastamoinenModel.DEFAULT_LOW_ELEVATION_THRESHOLD);
-        for (double height = 0; height < 5000; height += 100) {
-            final GeodeticPoint location = new GeodeticPoint(0.0, 0.0, height);
-            final double canonicalDelay = canonical.pathDelay(trackingCoordinates, location,
-                                                              TroposphericModelUtils.STANDARD_ATMOSPHERE,
-                                                              null, AbsoluteDate.J2000_EPOCH).getDelay();
-            final double modifiedDelay  = modified.pathDelay(trackingCoordinates, location,
-                                                             TroposphericModelUtils.STANDARD_ATMOSPHERE,
-                                                             null, AbsoluteDate.J2000_EPOCH).getDelay();
-            Assertions.assertTrue(modifiedDelay - canonicalDelay > minDifference);
-            Assertions.assertTrue(modifiedDelay - canonicalDelay < maxDifference);
-            final Binary64Field field = Binary64Field.getInstance();
-            Assertions.assertEquals(canonicalDelay,
-                                    canonical.pathDelay(new FieldTrackingCoordinates<>(field, trackingCoordinates),
-                                                        new FieldGeodeticPoint<>(field, location),
-                                                        new FieldPressureTemperatureHumidity<>(field,
-                                                                                               TroposphericModelUtils.STANDARD_ATMOSPHERE),
-                                                        MathArrays.buildArray(field, 0),
-                                                        FieldAbsoluteDate.getJ2000Epoch(field)).getDelay().getReal(),
-                                     1.0e-10);
-        }
+    @Test
+    @Override
+    public void testFieldDelay() {
+        doTestDelay(Binary64Field.getInstance(),
+                    defaultDate, defaultPoint,
+                    new TrackingCoordinates(FastMath.toRadians(192), FastMath.toRadians(5), 1.4e6),
+                    TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
+                    2.30697, 0.115797, 26.46948, -2.20852, 24.26096);
     }
 
-    @BeforeEach
-    public void setUp() {
-        Utils.setDataRoot("atmosphere");
+    @Override
+    @Test
+    public void testFixedHeight() {
+        doTestFixedHeight(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+    }
+
+    @Override
+    @Test
+    public void testFieldFixedHeight() {
+        doTestFieldFixedHeight(Binary64Field.getInstance(),
+                               TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+    }
+
+    @Override
+    @Test
+    public void testFixedElevation() {
+        doTestFixedElevation(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+    }
+
+    @Override
+    @Test
+    public void testFieldFixedElevation() {
+        doTestFieldFixedElevation(Binary64Field.getInstance(),
+                                  TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+    }
+
+    @Test
+    public void testDelayHighElevation() {
+        doTestDelay(defaultDate, defaultPoint,
+                    new TrackingCoordinates(FastMath.toRadians(192), FastMath.toRadians(60), 1.4e6),
+                    TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
+                    2.30697, 0.115797, 2.66386, 0.13280, 2.79666);
+    }
+
+    @Test
+    public void testFieldDelayHighElevation() {
+        doTestDelay(Binary64Field.getInstance(),
+                    defaultDate, defaultPoint,
+                    new TrackingCoordinates(FastMath.toRadians(192), FastMath.toRadians(60), 1.4e6),
+                    TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
+                    2.30697, 0.115797, 2.66386, 0.13280, 2.79666);
     }
 
 }

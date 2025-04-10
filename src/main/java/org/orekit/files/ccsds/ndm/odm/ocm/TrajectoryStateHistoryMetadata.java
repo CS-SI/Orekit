@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,6 +31,20 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.units.Unit;
 
 /** Metadata for trajectory state history.
+ * <p>
+ * Beware that the Orekit getters and setters all rely on SI units. The parsers
+ * and writers take care of converting these SI units into CCSDS mandatory units.
+ * The {@link org.orekit.utils.units.Unit Unit} class provides useful
+ * {@link org.orekit.utils.units.Unit#fromSI(double) fromSi} and
+ * {@link org.orekit.utils.units.Unit#toSI(double) toSI} methods in case the callers
+ * already use CCSDS units instead of the API SI units. The general-purpose
+ * {@link org.orekit.utils.units.Unit Unit} class (without an 's') and the
+ * CCSDS-specific {@link org.orekit.files.ccsds.definitions.Units Units} class
+ * (with an 's') also provide some predefined units. These predefined units and the
+ * {@link org.orekit.utils.units.Unit#fromSI(double) fromSi} and
+ * {@link org.orekit.utils.units.Unit#toSI(double) toSI} conversion methods are indeed
+ * what the parsers and writers use for the conversions.
+ * </p>
  * @author Luc Maisonobe
  * @since 11.0
  */
@@ -116,7 +130,7 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     public TrajectoryStateHistoryMetadata(final AbsoluteDate epochT0, final DataContext dataContext) {
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
-        trajBasis           = "PREDICTED";
+        trajBasis           = null;
         interpolationMethod = DEFAULT_INTERPOLATION_METHOD;
         interpolationDegree = DEFAULT_INTERPOLATION_DEGREE;
         orbAveraging        = "OSCULATING";

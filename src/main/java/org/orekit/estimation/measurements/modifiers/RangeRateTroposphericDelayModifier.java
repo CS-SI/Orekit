@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,23 +45,6 @@ public class RangeRateTroposphericDelayModifier extends BaseRangeRateTropospheri
 
     /** Two-way measurement factor. */
     private final double fTwoWay;
-
-    /** Constructor.
-    *
-    * @param model  Tropospheric delay model appropriate for the current range-rate measurement method.
-    * @param tw     Flag indicating whether the measurement is two-way.
-    * @deprecated as of 12.1, replaced byb {@link #RangeRateTroposphericDelayModifier(TroposphericModel, boolean)}
-    */
-    @Deprecated
-    public RangeRateTroposphericDelayModifier(final org.orekit.models.earth.troposphere.DiscreteTroposphericModel model,
-                                              final boolean tw) {
-        super(model);
-        if (tw) {
-            fTwoWay = 2.;
-        } else {
-            fTwoWay = 1.;
-        }
-    }
 
     /** Constructor.
      *

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,6 +28,7 @@ import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
+import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTrackingCoordinates;
@@ -70,21 +71,30 @@ public class ModifiedHopfieldModel implements TroposphericModel {
     /** BAse radius. */
     private static final double RE = 6378137.0;
 
-    /** Create a new Hopfield model.
+    /** Provider for pressure, temperature and humidity.
+     * @since 13.0
      */
-    public ModifiedHopfieldModel() {
-        // nothing to do
+    private final PressureTemperatureHumidityProvider pthProvider;
+
+    /** Create a new Hopfield model.
+     * @param pthProvider provider for pressure, temperature and humidity
+     * @since 13.0
+     */
+    public ModifiedHopfieldModel(final PressureTemperatureHumidityProvider pthProvider) {
+        this.pthProvider = pthProvider;
     }
 
     /** {@inheritDoc} */
     @Override
     public TroposphericDelay pathDelay(final TrackingCoordinates trackingCoordinates,
                                        final GeodeticPoint point,
-                                       final PressureTemperatureHumidity weather,
                                        final double[] parameters, final AbsoluteDate date) {
 
         // zenith angle
         final double zenithAngle = MathUtils.SEMI_PI - trackingCoordinates.getElevation();
+
+        // compute weather parameters
+        final PressureTemperatureHumidity weather = pthProvider.getWeatherParameters(point, date);
 
         // dry component
         final double hd  = HD0 + HD1 * (weather.getTemperature() - T0);
@@ -116,11 +126,13 @@ public class ModifiedHopfieldModel implements TroposphericModel {
     @Override
     public <T extends CalculusFieldElement<T>> FieldTroposphericDelay<T> pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                                                    final FieldGeodeticPoint<T> point,
-                                                                                   final FieldPressureTemperatureHumidity<T> weather,
                                                                                    final T[] parameters, final FieldAbsoluteDate<T> date) {
 
         // zenith angle
         final T zenithAngle = trackingCoordinates.getElevation().negate().add(MathUtils.SEMI_PI);
+
+        // compute weather parameters
+        final FieldPressureTemperatureHumidity<T> weather = pthProvider.getWeatherParameters(point, date);
 
         // dry component
         final T hd = weather.getTemperature().subtract(T0).multiply(HD1).add(HD0);

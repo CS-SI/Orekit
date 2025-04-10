@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -112,16 +112,6 @@ public class DSSTTesseralContext extends DSSTGravityContext {
      */
     public double getTheta() {
         return theta;
-    }
-
-    /**
-     * Get μ / a .
-     * @return moa
-     *@deprecated since 12.2 Use getMuoa() instead
-     */
-    @Deprecated
-    public double getMoa() {
-        return getMuoa();
     }
 
     /**

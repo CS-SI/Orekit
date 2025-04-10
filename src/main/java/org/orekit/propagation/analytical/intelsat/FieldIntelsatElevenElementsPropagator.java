@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Airbus Defence and Space
+/* Copyright 2002-2025 Airbus Defence and Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -149,7 +149,7 @@ public class FieldIntelsatElevenElementsPropagator<T extends CalculusFieldElemen
         setStartDate(elements.getEpoch());
         final FieldOrbit<T> orbitAtElementsDate = propagateOrbit(elements.getEpoch(), getParameters(elements.getEpoch().getField()));
         final FieldAttitude<T> attitude = attitudeProvider.getAttitude(orbitAtElementsDate, elements.getEpoch(), inertialFrame);
-        super.resetInitialState(new FieldSpacecraftState<>(orbitAtElementsDate, attitude, mass));
+        super.resetInitialState(new FieldSpacecraftState<>(orbitAtElementsDate, attitude).withMass(mass));
     }
 
     /**
@@ -216,7 +216,8 @@ public class FieldIntelsatElevenElementsPropagator<T extends CalculusFieldElemen
      * {@inheritDoc}.
      */
     @Override
-    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
+    public FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date,
+                                        final T[] parameters) {
         return new FieldCartesianOrbit<>(ecefFrame.getTransformTo(inertialFrame, date).transformPVCoordinates(propagateInEcef(date)), inertialFrame, date,
                                          date.getField().getZero().add(Constants.WGS84_EARTH_MU));
     }

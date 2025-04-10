@@ -95,7 +95,7 @@ solar.radiation.pressure.area = 0.28270
 # Post-Newtonian correction force due to general relativity (true/false) [false]
 general.relativity = false
 
-## Use range and range-rate measurements
+## Use range and range-rate measurements
 use.range.measurements = true
 use.range.rate.measurements = false
 

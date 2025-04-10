@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -72,10 +72,8 @@ public class TLEKalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final PositionAngleType positionAngleType = PositionAngleType.MEAN;
-        final double        minStep       = 1.e-6;
-        final double        maxStep       = 60.;
         final double        dP            = 1.;
-        final TLEPropagatorBuilder propagatorBuilder = context.createBuilder(minStep, maxStep, dP);
+        final TLEPropagatorBuilder propagatorBuilder = context.createBuilder(dP);
 
         // Create perfect PV measurements
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
@@ -132,11 +130,9 @@ public class TLEKalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final PositionAngleType positionAngleType = PositionAngleType.MEAN;
-        final double        minStep       = 1.e-6;
-        final double        maxStep       = 60.;
         final double        dP            = 1.;
         final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(minStep, maxStep, dP);
+                        context.createBuilder(dP);
 
         // Create perfect range measurements
         Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
@@ -197,11 +193,9 @@ public class TLEKalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final PositionAngleType positionAngleType = PositionAngleType.MEAN;
-        final double        minStep       = 1.e-6;
-        final double        maxStep       = 60.;
         final double        dP            = 1.;
         final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(minStep, maxStep, dP);
+                        context.createBuilder(dP);
         propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
 
         // Antenna phase center definition
@@ -276,11 +270,9 @@ public class TLEKalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final PositionAngleType positionAngleType = PositionAngleType.MEAN;
-        final double        minStep       = 1.e-6;
-        final double        maxStep       = 60.;
         final double        dP            = 1.;
         final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(minStep, maxStep, dP);
+                        context.createBuilder(dP);
 
         // Create perfect range & range rate measurements
         Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
@@ -297,7 +289,7 @@ public class TLEKalmanEstimatorTest {
                                                                1.0, 3.0, 300.0);
 
         // Concatenate measurements
-        final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
+        final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
         measurements.addAll(measurementsRange);
         measurements.addAll(measurementsRangeRate);
 
@@ -349,11 +341,9 @@ public class TLEKalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final PositionAngleType positionAngleType = PositionAngleType.TRUE;
-        final double        minStep       = 1.e-6;
-        final double        maxStep       = 60.;
         final double        dP            = 1.;
         final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(minStep, maxStep, dP);
+                        context.createBuilder(dP);
 
         // Create perfect range measurements
         Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();

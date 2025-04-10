@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.*;
@@ -51,7 +52,8 @@ import org.orekit.utils.PVCoordinates;
 public class FixedRateTest {
 
     @Test
-    public void testZeroRate() {
+    @DefaultDataContext
+    void testZeroRate() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 3, 2),
                                              new TimeComponents(13, 17, 7.865),
                                              TimeScalesFactory.getUTC());
@@ -73,7 +75,8 @@ public class FixedRateTest {
     }
 
     @Test
-    public void testNonZeroRate() {
+    @DefaultDataContext
+    void testNonZeroRate() {
         final AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 3, 2),
                                                    new TimeComponents(13, 17, 7.865),
                                                    TimeScalesFactory.getUTC());
@@ -101,9 +104,10 @@ public class FixedRateTest {
     }
 
     @Test
-    public void testSpin() {
+    @DefaultDataContext
+    void testSpin() {
 
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
 
@@ -148,12 +152,13 @@ public class FixedRateTest {
     }
 
     @Test
-    public void testZeroRateField() {
+    @DefaultDataContext
+    void testZeroRateField() {
         doTestZeroRate(Binary64Field.getInstance());
     }
 
-    private <T extends CalculusFieldElement<T>> void doTestZeroRate(final Field<T> field)
-        {
+    @DefaultDataContext
+    private <T extends CalculusFieldElement<T>> void doTestZeroRate(final Field<T> field) {
         final T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field,
                                                             new DateComponents(2004, 3, 2),
@@ -180,10 +185,12 @@ public class FixedRateTest {
     }
 
     @Test
-    public void testNonZeroRateField() {
+    @DefaultDataContext
+    void testNonZeroRateField() {
         doTestNonZeroRate(Binary64Field.getInstance());
     }
 
+    @DefaultDataContext
     private <T extends CalculusFieldElement<T>> void doTestNonZeroRate(final Field<T> field) {
         final T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field,
@@ -213,15 +220,17 @@ public class FixedRateTest {
     }
 
     @Test
-    public void testSpinField() {
+    @DefaultDataContext
+    void testSpinField() {
         doTestSpin(Binary64Field.getInstance());
     }
 
+    @DefaultDataContext
     private <T extends CalculusFieldElement<T>> void doTestSpin(final Field<T> field) {
 
         final T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field,
-                                                            new DateComponents(1970, 01, 01),
+                                                            new DateComponents(1970, 1, 1),
                                                             new TimeComponents(3, 25, 45.6789),
                                                             TimeScalesFactory.getUTC());
 

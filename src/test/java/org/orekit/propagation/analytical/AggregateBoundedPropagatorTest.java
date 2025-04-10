@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -64,7 +64,7 @@ public class AggregateBoundedPropagatorTest {
     }
 
     /**
-     * Check {@link AggregateBoundedPropagator#propagateOrbit(AbsoluteDate)} when the
+     * Check {@link AbstractAnalyticalPropagator#propagateOrbit(AbsoluteDate)} when the
      * constituent propagators are exactly adjacent.
      */
     @Test
@@ -104,13 +104,10 @@ public class AggregateBoundedPropagatorTest {
             Assertions.assertEquals(span.getStart(), span.getData().getMinDate());
         }
 
-        // test deprecated method
-        Assertions.assertEquals(2, actual.getPropagators().size());
-
     }
 
     /**
-     * Check {@link AggregateBoundedPropagator#propagateOrbit(AbsoluteDate)} when the
+     * Check {@link AbstractAnalyticalPropagator#propagateOrbit(AbsoluteDate)} when the
      * constituent propagators overlap.
      */
     @Test
@@ -146,7 +143,7 @@ public class AggregateBoundedPropagatorTest {
     }
 
     /**
-     * Check {@link AggregateBoundedPropagator#propagateOrbit(AbsoluteDate)} with a gap
+     * Check {@link AbstractAnalyticalPropagator#propagateOrbit(AbsoluteDate)} with a gap
      * between the constituent propagators.
      */
     @Test

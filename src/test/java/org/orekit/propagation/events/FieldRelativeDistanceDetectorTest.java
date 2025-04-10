@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -58,8 +58,8 @@ class FieldRelativeDistanceDetectorTest {
                 mockProvider(), distanceThreshold);
         final FieldStopOnDecreasing<Complex> expectedHandler = new FieldStopOnDecreasing<>();
         // WHEN
-        final FieldRelativeDistanceDetector<Complex> detector = distanceDetector.create(distanceDetector.getMaxCheckInterval(),
-                distanceDetector.getThreshold(), distanceDetector.getMaxIterationCount(), expectedHandler);
+        final FieldRelativeDistanceDetector<Complex> detector = distanceDetector.create(distanceDetector.getDetectionSettings(),
+                expectedHandler);
         // THEN
         Assertions.assertEquals(expectedHandler, detector.getHandler());
     }

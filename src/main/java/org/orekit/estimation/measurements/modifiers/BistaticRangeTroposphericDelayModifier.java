@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Mark Rutten
+/* Copyright 2002-2025 Mark Rutten
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,16 +41,6 @@ import org.orekit.propagation.SpacecraftState;
  * @since 11.2
  */
 public class BistaticRangeTroposphericDelayModifier extends BaseRangeTroposphericDelayModifier implements EstimationModifier<BistaticRange> {
-
-    /** Constructor.
-     *
-     * @param model Tropospheric delay model appropriate for the current range measurement method.
-     * @deprecated as of 12.1 replaced by {@link #BistaticRangeTroposphericDelayModifier(TroposphericModel)}
-     */
-    @Deprecated
-    public BistaticRangeTroposphericDelayModifier(final org.orekit.models.earth.troposphere.DiscreteTroposphericModel model) {
-        this(new org.orekit.models.earth.troposphere.TroposphericModelAdapter(model));
-    }
 
     /** Constructor.
      *

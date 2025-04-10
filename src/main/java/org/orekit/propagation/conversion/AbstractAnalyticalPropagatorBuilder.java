@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,6 +25,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.utils.ParameterDriversList;
 
 import java.util.ArrayList;
@@ -36,7 +37,8 @@ import java.util.List;
  * @author Romain Serra
  * @since 12.2
  */
-public abstract class AbstractAnalyticalPropagatorBuilder extends AbstractPropagatorBuilder {
+public abstract class AbstractAnalyticalPropagatorBuilder<T extends AbstractAnalyticalPropagator>
+        extends AbstractPropagatorBuilder<T> {
 
     /** Impulse maneuvers. */
     private final List<ImpulseManeuver> impulseManeuvers;
@@ -106,4 +108,5 @@ public abstract class AbstractAnalyticalPropagatorBuilder extends AbstractPropag
                                                        final ModelObserver observer) {
         return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
     }
+
 }

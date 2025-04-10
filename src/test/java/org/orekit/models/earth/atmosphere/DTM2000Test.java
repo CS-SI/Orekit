@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -55,7 +55,7 @@ public class DTM2000Test {
     public void testWithOriginalTestsCases() {
 
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        CelestialBody sun = CelestialBodyFactory.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
         SolarInputs97to05 in = SolarInputs97to05.getInstance();
         earth.setAngularThreshold(1e-10);
@@ -161,7 +161,7 @@ public class DTM2000Test {
         Vector3D pEcef = new Vector3D(6378137 + 300e3, 0, 0);
         Vector3D pFrame = ecef.getStaticTransformTo(frame, date)
                 .transformPosition(pEcef);
-        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        CelestialBody sun = CelestialBodyFactory.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(
                 6378136.460, 1.0 / 298.257222101, ecef);
         SolarInputs97to05 in = SolarInputs97to05.getInstance();
@@ -178,7 +178,7 @@ public class DTM2000Test {
     @Test
     public void testField() {
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        CelestialBody sun = CelestialBodyFactory.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
         SolarInputs97to05 in = SolarInputs97to05.getInstance();
         earth.setAngularThreshold(1e-10);
@@ -267,7 +267,7 @@ public class DTM2000Test {
 
         // Get ITRF and Earth ellipsoid
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        CelestialBody sun = CelestialBodyFactory.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.GRIM5C1_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.GRIM5C1_EARTH_FLATTENING, itrf);
         SolarInputs97to05 in = SolarInputs97to05.getInstance();
@@ -332,12 +332,12 @@ public class DTM2000Test {
         }
         
         @Override
-        public TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame) {
-            return new TimeStampedPVCoordinates(date, sunPositionItrf, Vector3D.ZERO);
+        public Vector3D getPosition(AbsoluteDate date, Frame frame) {
+            return sunPositionItrf;
         }
         @Override
-        public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(FieldAbsoluteDate<T> date, Frame frame) {
-            return new TimeStampedFieldPVCoordinates<T>(date, date.getField().getOne(), getPVCoordinates(date.toAbsoluteDate(), frame));
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPosition(FieldAbsoluteDate<T> date, Frame frame) {
+            return new FieldVector3D<>(date.getField(), getPosition(date.toAbsoluteDate(), frame));
         }
         @Override
         public String getName() { return "SUN"; }

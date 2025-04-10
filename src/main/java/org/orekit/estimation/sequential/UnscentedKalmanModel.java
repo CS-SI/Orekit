@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,8 @@ import org.hipparchus.linear.RealVector;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.AbstractPropagatorBuilder;
@@ -42,7 +44,7 @@ import java.util.List;
  * @author Bryan Cazabonne
  * @since 11.3
  */
-public class UnscentedKalmanModel extends KalmanEstimationCommon implements UnscentedProcess<MeasurementDecorator> {
+public class UnscentedKalmanModel extends AbstractKalmanEstimationCommon implements UnscentedProcess<MeasurementDecorator> {
 
     /** Reference values. */
     private final double[] referenceValues;
@@ -147,11 +149,41 @@ public class UnscentedKalmanModel extends KalmanEstimationCommon implements Unsc
             d += 1;
         }
 
-        // compute process noise matrix
-        final RealMatrix normalizedProcessNoise = getNormalizedProcessNoise(sigmaPoints[0].getDimension());
-
         // Return
-        return new UnscentedEvolution(measurement.getTime(), predictedSigmaPoints, normalizedProcessNoise);
+        return new UnscentedEvolution(measurement.getTime(), predictedSigmaPoints);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RealMatrix getProcessNoiseMatrix(final double previousTime, final RealVector predictedState,
+                                            final MeasurementDecorator measurement) {
+        // Set parameters from predicted state
+        final RealVector predictedStateCopy = predictedState.copy();
+        updateParameters(predictedStateCopy);
+
+        // Get propagators
+        Propagator[] propagators = getEstimatedPropagators();
+
+        // "updateParameters" sets the correct orbital info, but doesn't reset the time.
+        for (int k = 0; k < propagators.length; ++k) {
+            final SpacecraftState predicted = propagators[k].getInitialState();
+            final Orbit predictedOrbit = getBuilders().get(k).getOrbitType().convertType(
+                    new CartesianOrbit(predicted.getPVCoordinates(),
+                            predicted.getFrame(),
+                            measurement.getObservedMeasurement().getDate(),
+                            predicted.getOrbit().getMu()
+                    )
+            );
+            getBuilders().get(k).resetOrbit(predictedOrbit);
+        }
+        propagators = getEstimatedPropagators();
+
+        // Predicted states
+        for (int k = 0; k < propagators.length; ++k) {
+            setPredictedSpacecraftState(propagators[k].getInitialState(), k);
+        }
+
+        return getNormalizedProcessNoise(predictedState.getDimension());
     }
 
     /** {@inheritDoc} */
@@ -200,10 +232,6 @@ public class UnscentedKalmanModel extends KalmanEstimationCommon implements Unsc
     @Override
     public RealVector getInnovation(final MeasurementDecorator measurement, final RealVector predictedMeas,
                                     final RealVector predictedState, final RealMatrix innovationCovarianceMatrix) {
-        // Set parameters from predicted state
-        final RealVector predictedStateCopy = predictedState.copy();
-        updateParameters(predictedStateCopy);
-
         // Standard deviation as a vector
         final RealVector theoreticalStandardDeviation =
                 MatrixUtils.createRealVector(measurement.getObservedMeasurement().getTheoreticalStandardDeviation());
@@ -261,7 +289,7 @@ public class UnscentedKalmanModel extends KalmanEstimationCommon implements Unsc
             // If any mass changes have occurred during this estimation step, such as maneuvers,
             // the updated mass value must be carried over so that new Propagators from this builder start with the updated mass.
             if (getBuilders().get(k) instanceof AbstractPropagatorBuilder) {
-                ((AbstractPropagatorBuilder) (getBuilders().get(k))).setMass(predicted.getMass());
+                ((AbstractPropagatorBuilder<?>) (getBuilders().get(k))).setMass(predicted.getMass());
             }
 
             // The orbital parameters in the state vector are replaced with their predicted values

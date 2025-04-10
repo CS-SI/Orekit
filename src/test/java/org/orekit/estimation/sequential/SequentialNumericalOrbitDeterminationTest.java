@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -62,10 +62,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDetermination<NumericalPropagatorBuilder> {
 
@@ -211,50 +208,69 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
     public void testLageos2Extended() throws URISyntaxException, IOException {
 
         // Position/velocity accuracy
-        final double distanceAccuracy = 0.541;
-        final double velocityAccuracy = 4.12e-3;
+        final double distanceAccuracy = 2.47;
+        final double velocityAccuracy = 1.1e-3;
+
+        // Smoother position/velocity accuracy
+        final double smoothDistanceAccuracy = 5.13;
+        final double smoothVelocityAccuracy = 2.6e-3;
+        final double distanceStd = 12.79;
+        final double velocityStd = 6.2e-3;
 
         // Batch LS values
         //final double[] stationOffSet = { 1.659203,  0.861250,  -0.885352 };
         //final double rangeBias = -0.286275;
-        final double[] stationOffSet = { 0.2983710,  -0.137384,  0.0156606 };
-        final double rangeBias = -0.00129569;
+        final double[] stationOffSet = { 0.043893,  0.044721,  -0.037796 };
+        final double rangeBias = 0.041171;
 
         // Batch LS values
         //final double[] refStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
-        final double[] refStatRange = { -23.537659, 20.444514, 0.973118, 5.686005 };
+        final double[] refStatRange = { -5.910596, 3.306617, -0.037131, 1.454304 };
 
-        testLageos2(distanceAccuracy, velocityAccuracy, stationOffSet, rangeBias, refStatRange, false, false);
+        testLageos2(distanceAccuracy, velocityAccuracy, stationOffSet, rangeBias, refStatRange,
+                smoothDistanceAccuracy, smoothVelocityAccuracy, distanceStd, velocityStd,
+                false, false);
     }
 
     @Test
     public void testLageos2Unscented() throws URISyntaxException, IOException {
 
         // Position/velocity accuracy
-        final double distanceAccuracy = 0.482;
-        final double velocityAccuracy = 3.97e-3;
+        final double distanceAccuracy = 2.46;
+        final double velocityAccuracy = 1.8e-4;
+
+        // Smoother position/velocity accuracy
+        final double smoothDistanceAccuracy = 3.97;
+        final double smoothVelocityAccuracy = 2.0e-3;
+        final double distanceStd = 19.65;
+        final double velocityStd = 0.011;
 
         // Batch LS values
         //final double[] stationOffSet = { 1.659203,  0.861250,  -0.885352 };
         //final double rangeBias = -0.286275;
-        final double[] stationOffSet = { 0.302324,  -0.127179,  0.0172399 };
-        final double rangeBias = -0.008282;
+        final double[] stationOffSet = { 0.044850,  0.030216,  -0.035853 };
+        final double rangeBias = 0.035252;
 
         // Batch LS values
         //final double[] refStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
-        final double[] refStatRange = { -16.560410, 21.362738, 0.665356, 5.657324 };
+        final double[] refStatRange = { -6.212086, 3.196686, -0.012196, 1.456780 };
 
-        testLageos2(distanceAccuracy, velocityAccuracy, stationOffSet, rangeBias, refStatRange, false, true);
+        testLageos2(distanceAccuracy, velocityAccuracy, stationOffSet, rangeBias, refStatRange,
+                smoothDistanceAccuracy, smoothVelocityAccuracy, distanceStd, velocityStd,
+                false, true);
     }
 
 
     // Orbit determination for Lageos2 based on SLR (range) measurements
     protected void testLageos2(final double distanceAccuracy, final double velocityAccuracy,
                                final double[] stationOffSet, final double rangeBias, final double[] refStatRange,
+                               final double smoothDistanceAccuracy, final double smoothVelocityAccuracy,
+                               final double smoothDistanceStd, final double smoothVelocityStd,
                                final boolean print, final boolean isUnscented) throws URISyntaxException, IOException {
 
         // input in resources directory
-        final String inputPath = SequentialNumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/kalman_od_test_Lageos2.in").toURI().getPath();
+        final String inputPath = SequentialNumericalOrbitDeterminationTest.class.getClassLoader()
+                .getResource("orbit-determination/Lageos2/kalman_od_test_Lageos2.in").toURI().getPath();
         final File input  = new File(inputPath);
 
         // configure Orekit data acces
@@ -265,26 +281,22 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
         // Default for test is Cartesian
         final OrbitType orbitType = OrbitType.CARTESIAN;
 
-        // Initial orbital Cartesian covariance matrix
-        // These covariances are derived from the deltas between initial and reference orbits
-        // So in a way they are "perfect"...
         // Cartesian covariance matrix initialization
+        final double posVar = FastMath.pow(1e3, 2);
+        final double velVar = FastMath.pow(1.0, 2);
         final RealMatrix cartesianOrbitalP = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            1e4, 4e3, 1, 5e-3, 6e-5, 1e-4
+                posVar, posVar, posVar, velVar, velVar, velVar
         });
 
         // Orbital Cartesian process noise matrix (Q)
-        final RealMatrix cartesianOrbitalQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            1.e-4, 1.e-4, 1.e-4, 1.e-10, 1.e-10, 1.e-10
-        });
+        final RealMatrix cartesianOrbitalQ = MatrixUtils.createRealMatrix(6, 6);
 
         // Initial measurement covariance matrix and process noise matrix
+        final double measVar = FastMath.pow(1.0, 2);
         final RealMatrix measurementP = MatrixUtils.createRealDiagonalMatrix(new double [] {
-           1., 1., 1., 1.
+                measVar, measVar, measVar, measVar
         });
-        final RealMatrix measurementQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            1e-6, 1e-6, 1e-6, 1e-6
-         });
+        final RealMatrix measurementQ = MatrixUtils.createRealMatrix(4, 4);
 
         // Kalman orbit determination run.
         ResultKalman kalmanLageos2 = runKalman(input, orbitType, print,
@@ -317,8 +329,6 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
         // Check distances
         final double dP = Vector3D.distance(refPos, estimatedPos);
         final double dV = Vector3D.distance(refVel, estimatedVel);
-        Assertions.assertEquals(0.0, dP, distanceAccuracy);
-        Assertions.assertEquals(0.0, dV, velocityAccuracy);
 
         // Print orbit deltas
         if (print) {
@@ -331,11 +341,51 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
                               "ΔV [m/s]", dV);
         }
 
+        Assertions.assertEquals(0.0, dP, distanceAccuracy);
+        Assertions.assertEquals(0.0, dV, velocityAccuracy);
+
+        // Run the reference to initial date
+        final Orbit initialOrbit = runReference(input, orbitType, refPos0, refVel0, null,
+                kalmanLageos2.getSmoothedState().getDate());
+        final Vector3D initialPos = initialOrbit.getPosition();
+        final Vector3D initialVel = initialOrbit.getPVCoordinates().getVelocity();
+
+        // Check smoother distances
+        final double[] smoothedState = kalmanLageos2.getSmoothedState().getState().toArray();
+        final Vector3D smoothedPos = new Vector3D(smoothedState[0], smoothedState[1], smoothedState[2]);
+        final Vector3D smoothedVel = new Vector3D(smoothedState[3], smoothedState[4], smoothedState[5]);
+        final double dPSmooth = Vector3D.distance(initialPos, smoothedPos);
+        final double dVSmooth = Vector3D.distance(initialVel, smoothedVel);
+
+        // Check smoother variances
+        final RealMatrix smoothedCov = kalmanLageos2.getSmoothedState().getCovarianceMatrix();
+        final double posStd = FastMath.sqrt(smoothedCov.getEntry(0, 0) +
+                smoothedCov.getEntry(1, 1) + smoothedCov.getEntry(2, 2));
+        final double velStd = FastMath.sqrt(smoothedCov.getEntry(3, 3) +
+                smoothedCov.getEntry(4, 4) + smoothedCov.getEntry(5, 5));
+
+        // Print smoother orbit deltas
+        if (print) {
+            System.out.println("Smoother performances:");
+            System.out.format("\t%-30s\n",
+                    "ΔEstimated / Reference & std. dev.");
+            System.out.format(Locale.US, "\t%-10s %20.6f %20.6f\n",
+                    "ΔP [m]", dPSmooth, posStd);
+            System.out.format(Locale.US, "\t%-10s %20.6f %20.6f\n",
+                    "ΔV [m/s]", dVSmooth, velStd);
+        }
+
+        Assertions.assertEquals(0.0, dPSmooth, smoothDistanceAccuracy);
+        Assertions.assertEquals(0.0, dVSmooth, smoothVelocityAccuracy);
+        Assertions.assertEquals(0.0, posStd, smoothDistanceStd);
+        Assertions.assertEquals(0.0, velStd, smoothVelocityStd);
+
+
         // Accuracy for tests
         final double parametersAccuracy = 1e-6;
 
         // Test on measurements parameters
-        final List<DelegatingDriver> list = new ArrayList<DelegatingDriver>(kalmanLageos2.getMeasurementsParameters().getDrivers());
+        final List<DelegatingDriver> list = new ArrayList<>(kalmanLageos2.getMeasurementsParameters().getDrivers());
         sortParametersChanges(list);
 
         Assertions.assertEquals(stationOffSet[0], list.get(0).getValue(), parametersAccuracy);
@@ -356,63 +406,63 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
     @Test
     public void testW3BExtended() throws URISyntaxException, IOException {
         // Batch LS result: -0.2154;
-        final double dragCoef  = 0.1932;
+        final double dragCoef  = 2.0010;
 
         // Batch LS results: 8.002e-6
-        final double leakAccelerationNorm0 = 5.994e-6;
+        final double leakAccelerationNorm0 = 2.7e-9;
 
         // Batch LS results: 3.058e-10
-        final double leakAccelerationNorm1 = 1.836e-10;
+        final double leakAccelerationNorm1 = 8.1e-13;
 
         // Batch LS results
         // final double[] CastleAzElBias  = { 0.062701342, -0.003613508 };
         // final double   CastleRangeBias = 11274.4677;
-        final double[] castleAzElBias  = { 0.062636, -0.003672};
-        final double   castleRangeBias = 11289.3471;
+        final double[] castleAzElBias  = { 0.086136, -0.032682};
+        final double   castleRangeBias = 11473.6163;
 
         // Batch LS results
         // final double[] FucAzElBias  = { -0.053526137, 0.075483886 };
         // final double   FucRangeBias = 13467.8256;
-        final double[] fucAzElBias  = { -0.053298, 0.075589 };
-        final double   fucRangeBias = 13482.0805;
+        final double[] fucAzElBias  = { -0.067443, 0.064581 };
+        final double   fucRangeBias = 13468.9624;
 
         // Batch LS results
         // final double[] KumAzElBias  = { -0.023574208, -0.054520756 };
         // final double   KumRangeBias = 13512.57594;
-        final double[] kumAzElBias  = { -0.022805, -0.055057 };
-        final double   kumRangeBias = 13502.6845;
+        final double[] kumAzElBias  = { -0.000102, -0.066097 };
+        final double   kumRangeBias = 13527.0004;
 
         // Batch LS results
         // final double[] PreAzElBias = { 0.030201539, 0.009747877 };
         // final double PreRangeBias = 13594.11889;
-        final double[] preAzElBias = { 0.030353, 0.009658 };
-        final double   preRangeBias = 13609.2762;
+        final double[] preAzElBias = { 0.029973, 0.011140 };
+        final double   preRangeBias = 13370.1890;
 
         // Batch LS results
         // final double[] UraAzElBias = { 0.167814449, -0.12305252 };
         // final double UraRangeBias = 13450.26738;
-        final double[] uraAzElBias = { 0.167519, -0.122842 };
-        final double   uraRangeBias = 13441.6666;
+        final double[] uraAzElBias = { 0.148459, -0.138353 };
+        final double   uraRangeBias = 13314.9300;
 
         //statistics for the range residual (min, max, mean, std)
-        final double[] refStatRange = { -12.9805, 18.0538, -1.1332, 5.3125 };
+        final double[] refStatRange = { -0.5948, 35.4751, 0.3061, 2.7790 };
 
         //statistics for the azimuth residual (min, max, mean, std)
-        final double[] refStatAzi = { -0.041442, 0.023473, -0.004426, 0.009911 };
+        final double[] refStatAzi = { -0.024691, 0.020452, -0.001111, 0.006750 };
 
         //statistics for the elevation residual (min, max, mean, std)
-        final double[] refStatEle = { -0.025399, 0.043346, 0.001011, 0.010636 };
+        final double[] refStatEle = { -0.030255, 0.026288, 0.002044, 0.007260 };
 
         // Expected covariance
-        final double dragVariance = 0.016350;
-        final double leakXVariance = 2.047E-13;
-        final double leakYVariance = 5.462E-13;
-        final double leakZVariance = 1.71778E-11;
+        final double dragVariance = 0.999722;
+        final double leakXVariance = 0.9999e-12;
+        final double leakYVariance = 1e-12;
+        final double leakZVariance = 1e-12;
 
         // Prediction position/velocity accuracies
         // FIXME: debug - Comparison with batch LS is bad
-        final double predictionDistanceAccuracy = 234.57;
-        final double predictionVelocityAccuracy = 0.086;
+        final double predictionDistanceAccuracy = 2127.851;
+        final double predictionVelocityAccuracy = 1.073;
 
         testW3B(dragCoef, leakAccelerationNorm0, leakAccelerationNorm1,
                 castleAzElBias, castleRangeBias, fucAzElBias, fucRangeBias, kumAzElBias, kumRangeBias,
@@ -448,49 +498,39 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
         final OrbitType orbitType = OrbitType.CARTESIAN;
 
         // Initial orbital Cartesian covariance matrix
-        // These covariances are derived from the deltas between initial and reference orbits
-        // So in a way they are "perfect"...
-        // Cartesian covariance matrix initialization
+        final double positionP = FastMath.pow(1e4, 2);
+        final double velocityP = FastMath.pow(10.0, 2);
         final RealMatrix cartesianOrbitalP = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            FastMath.pow(2.4e4, 2), FastMath.pow(1.e5, 2), FastMath.pow(4.e4, 2),
-            FastMath.pow(3.5, 2), FastMath.pow(2., 2), FastMath.pow(0.6, 2)
+                positionP, positionP, positionP, velocityP, velocityP, velocityP
         });
 
         // Orbital Cartesian process noise matrix (Q)
+        final double positionQ = FastMath.pow(100.0, 2);
+        final double velocityQ = FastMath.pow(1.0, 2);
         final RealMatrix cartesianOrbitalQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            1.e-4, 1.e-4, 1.e-4, 1.e-10, 1.e-10, 1.e-10
+                positionQ, positionQ, positionQ, velocityQ, velocityQ, velocityQ
         });
 
         // Propagation covariance and process noise matrices
         final RealMatrix propagationP = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            FastMath.pow(2., 2), // Cd
-            FastMath.pow(5.7e-6, 2), FastMath.pow(1.1e-11, 2),   // leak-X
-            FastMath.pow(7.68e-7, 2), FastMath.pow(1.26e-10, 2), // leak-Y
-            FastMath.pow(5.56e-6, 2), FastMath.pow(2.79e-10, 2)  // leak-Z
+                FastMath.pow(1.0, 2), // Cd
+                FastMath.pow(1e-6, 2), FastMath.pow(1e-10, 2),   // leak-X
+                FastMath.pow(1e-6, 2), FastMath.pow(1e-10, 2), // leak-Y
+                FastMath.pow(1e-6, 2), FastMath.pow(1e-10, 2)  // leak-Z
         });
-        final RealMatrix propagationQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            FastMath.pow(1e-3, 2), // Cd
-            0., 0., 0., 0., 0., 0.  // Leaks
-        });
+        final RealMatrix propagationQ = MatrixUtils.createRealMatrix(7, 7);
 
         // Measurement covariance and process noise matrices
-        // az/el bias sigma = 0.06deg
-        // range bias sigma = 100m
-        final double angularVariance = FastMath.pow(FastMath.toRadians(0.06), 2);
-        final double rangeVariance   = FastMath.pow(500., 2);
+        final double angularVariance = FastMath.pow(1e-2, 2);
+        final double rangeVariance   = FastMath.pow(10.0, 2);
         final RealMatrix measurementP = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            angularVariance, angularVariance, rangeVariance,
-            angularVariance, angularVariance, rangeVariance,
-            angularVariance, angularVariance, rangeVariance,
-            angularVariance, angularVariance, rangeVariance,
-            angularVariance, angularVariance, rangeVariance,
+                angularVariance, angularVariance, rangeVariance,
+                angularVariance, angularVariance, rangeVariance,
+                angularVariance, angularVariance, rangeVariance,
+                angularVariance, angularVariance, rangeVariance,
+                angularVariance, angularVariance, rangeVariance,
         });
-        // Process noise sigma: 1e-6 for all
-        final double measQ = FastMath.pow(1e-6, 2);
-        final RealMatrix measurementQ = MatrixUtils.
-                        createRealIdentityMatrix(measurementP.getRowDimension()).
-                        scalarMultiply(measQ);
-
+        final RealMatrix measurementQ = MatrixUtils.createRealMatrix(15, 15);
 
         // Kalman orbit determination run.
         ResultKalman kalmanW3B = runKalman(input, orbitType, print,
@@ -529,7 +569,7 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
         // Test on measurements parameters
         // -------------------------------
 
-        final List<DelegatingDriver> list = new ArrayList<DelegatingDriver>(kalmanW3B.getMeasurementsParameters().getDrivers());
+        final List<DelegatingDriver> list = new ArrayList<>(kalmanW3B.getMeasurementsParameters().getDrivers());
         sortParametersChanges(list);
 
         // Station CastleRock
@@ -641,8 +681,6 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
         // Check distances
         final double dP = Vector3D.distance(refPos, estimatedPos);
         final double dV = Vector3D.distance(refVel, estimatedVel);
-        Assertions.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), predictionDistanceAccuracy);
-        Assertions.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), predictionVelocityAccuracy);
 
         // Print orbit deltas
         if (print) {
@@ -654,6 +692,10 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
             System.out.format(Locale.US, "\t%-10s %20.6f\n",
                               "ΔV [m/s]", dV);
         }
+
+        Assertions.assertEquals(0.0, dP, predictionDistanceAccuracy);
+        Assertions.assertEquals(0.0, dV, predictionVelocityAccuracy);
+
     }
 
 }

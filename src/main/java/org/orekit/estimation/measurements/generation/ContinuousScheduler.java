@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,10 +16,12 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DatesSelector;
 
+import java.util.function.Predicate;
 
 /** {@link Scheduler} generating measurements sequences continuously.
  * <p>
@@ -41,13 +43,36 @@ public class ContinuousScheduler<T extends ObservedMeasurement<T>> extends Abstr
      * reusable across several {@link EventBasedScheduler instances}. A separate selector
      * should be used for each scheduler.
      * </p>
+     * <p>
+     * This constructor calls {@link #ContinuousScheduler(MeasurementBuilder, DatesSelector, Predicate)}
+     * whith the predicate set to accept all generated measurements.
+     * </p>
      * @param builder builder for individual measurements
      * @param selector selector for dates (beware that selectors are generally not
      * reusable across several {@link EventBasedScheduler instances}, each selector should
      * be dedicated to one scheduler
      */
     public ContinuousScheduler(final MeasurementBuilder<T> builder, final DatesSelector selector) {
-        super(builder, selector);
+        super(builder, selector, e -> true);
+    }
+
+    /** Simple constructor.
+     * <p>
+     * BEWARE! Dates selectors often store internally the last selected dates, so they are not
+     * reusable across several {@link EventBasedScheduler instances}. A separate selector
+     * should be used for each scheduler.
+     * </p>
+     * @param builder builder for individual measurements
+     * @param selector selector for dates (beware that selectors are generally not
+     * reusable across several {@link EventBasedScheduler instances}, each selector should
+     * be dedicated to one scheduler
+     * @param filter predicate for a posteriori filtering of generated measurements
+     *               (measurements are accepted if the predicates evaluates to {@code true})
+     * @since 13.0
+     */
+    public ContinuousScheduler(final MeasurementBuilder<T> builder, final DatesSelector selector,
+                               final Predicate<EstimatedMeasurementBase<T>> filter) {
+        super(builder, selector, filter);
     }
 
     /** {@inheritDoc} */

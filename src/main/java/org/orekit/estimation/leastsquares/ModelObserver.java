@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,6 +30,7 @@ import org.orekit.orbits.Orbit;
  * @author Luc Maisonobe
  * @since 8.0
  */
+@FunctionalInterface
 public interface ModelObserver {
 
     /** Notification callback for orbit changes.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,10 @@ package org.orekit.frames;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2Field;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -26,6 +30,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
@@ -188,23 +193,39 @@ public interface LOF {
      */
     default <T extends CalculusFieldElement<T>> FieldTransform<T> transformFromInertial(final FieldAbsoluteDate<T> date,
                                                                                         final FieldPVCoordinates<T> pv) {
+        final Field<T> field = date.getField();
         if (isQuasiInertial()) {
-            final Field<T> field = date.getField();
             return new FieldTransform<>(date, pv.getPosition().negate(), rotationFromInertial(field, date, pv));
+
+        } else if (pv.getAcceleration().equals(FieldVector3D.getZero(field))) {
+            // we consider that the acceleration is not known
+            // compute the translation part of the transform
+            final FieldTransform<T> translation = new FieldTransform<>(date, pv.negate());
+
+            // compute the rotation part of the transform
+            final FieldRotation<T> r        = rotationFromInertial(date.getField(), date, pv);
+            final FieldVector3D<T> p        = pv.getPosition();
+            final FieldVector3D<T> momentum = pv.getMomentum();
+            final FieldTransform<T> rotation = new FieldTransform<>(date, r,
+                    new FieldVector3D<>(p.getNormSq().reciprocal(), r.applyTo(momentum)));
+
+            return new FieldTransform<>(date, translation, rotation);
+
+        } else {
+            // use automatic differentiation
+            // create date with independent variable
+            final FieldUnivariateDerivative2Field<T> fud2Field = FieldUnivariateDerivative2Field.getUnivariateDerivative2Field(field);
+            final FieldAbsoluteDate<FieldUnivariateDerivative2<T>> fud2Date = date.toFUD2Field();
+            // create PV with independent variable
+            final FieldPVCoordinates<FieldUnivariateDerivative2<T>> fud2PV = pv.toUnivariateDerivative2PV();
+            // compute rotation
+            final FieldRotation<FieldUnivariateDerivative2<T>> fud2Rotation = rotationFromInertial(fud2Field, fud2Date,
+                fud2PV);
+            // turn into FieldTransform whilst adding the translation
+            final FieldAngularCoordinates<T> fieldAngularCoordinates = new FieldAngularCoordinates<>(fud2Rotation);
+            return new FieldTransform<>(date, new FieldTransform<>(date, pv.negate()),
+                new FieldTransform<>(date, fieldAngularCoordinates));
         }
-
-        // compute the translation part of the transform
-        final FieldTransform<T> translation = new FieldTransform<>(date, pv.negate());
-
-        // compute the rotation part of the transform
-        final FieldRotation<T> r        = rotationFromInertial(date.getField(), date, pv);
-        final FieldVector3D<T> p        = pv.getPosition();
-        final FieldVector3D<T> momentum = pv.getMomentum();
-        final FieldTransform<T> rotation = new FieldTransform<>(date, r,
-                                                                new FieldVector3D<>(p.getNormSq().reciprocal(),
-                                                                                    r.applyTo(momentum)));
-
-        return new FieldTransform<>(date, translation, rotation);
     }
 
     /**
@@ -288,15 +309,32 @@ public interface LOF {
     default Transform transformFromInertial(final AbsoluteDate date, final PVCoordinates pv) {
         if (isQuasiInertial()) {
             return new Transform(date, pv.getPosition().negate(), rotationFromInertial(date, pv));
+
+        } else if (pv.getAcceleration().equals(Vector3D.ZERO)) {
+            // compute the rotation part of the transform assuming there is no known acceleration
+            final Rotation  r        = rotationFromInertial(date, pv);
+            final Vector3D  p        = pv.getPosition();
+            final Vector3D  momentum = pv.getMomentum();
+            final AngularCoordinates angularCoordinates = new AngularCoordinates(r,
+                new Vector3D(1.0 / p.getNormSq(), r.applyTo(momentum)));
+
+            return new Transform(date, pv.negate(), angularCoordinates);
+
+        } else {
+            // use automatic differentiation
+            // create date with independent variable
+            final UnivariateDerivative2Field ud2Field = UnivariateDerivative2Field.getInstance();
+            final UnivariateDerivative2 dt = new UnivariateDerivative2(0, 1, 0);
+            final FieldAbsoluteDate<UnivariateDerivative2> ud2Date = new FieldAbsoluteDate<>(ud2Field, date).shiftedBy(dt);
+            // create PV with independent variable
+            final FieldPVCoordinates<UnivariateDerivative2> ud2PVCoordinates = pv.toUnivariateDerivative2PV();
+            // compute Field rotation
+            final FieldRotation<UnivariateDerivative2> ud2Rotation = rotationFromInertial(ud2Field, ud2Date,
+                ud2PVCoordinates);
+            // turn into Transform whilst adding translation
+            final AngularCoordinates angularCoordinates = new AngularCoordinates(ud2Rotation);
+            return new Transform(date, pv.negate(), angularCoordinates);
         }
-
-        // compute the rotation part of the transform
-        final Rotation  r        = rotationFromInertial(date, pv);
-        final Vector3D  p        = pv.getPosition();
-        final Vector3D  momentum = pv.getMomentum();
-        final AngularCoordinates angularCoordinates = new AngularCoordinates(r, new Vector3D(1.0 / p.getNormSq(), r.applyTo(momentum)));
-
-        return new Transform(date, pv.negate(), angularCoordinates);
     }
 
     /**

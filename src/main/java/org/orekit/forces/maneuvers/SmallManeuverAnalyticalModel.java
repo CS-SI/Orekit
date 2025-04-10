@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -129,7 +129,7 @@ public class SmallManeuverAnalyticalModel implements AdapterPropagator.Different
     public SmallManeuverAnalyticalModel(final SpacecraftState state0, final Frame frame,
                                         final Vector3D dV, final double isp) {
         // No orbit type specified, use equinoctial orbit type if possible, Keplerian if nearly hyperbolic orbits
-        this(state0, (state0.getE() < 0.9) ? OrbitType.EQUINOCTIAL : OrbitType.KEPLERIAN, frame, dV, isp);
+        this(state0, (state0.getOrbit().getE() < 0.9) ? OrbitType.EQUINOCTIAL : OrbitType.KEPLERIAN, frame, dV, isp);
     }
 
     /** Build a maneuver defined in user-specified frame.
@@ -165,8 +165,9 @@ public class SmallManeuverAnalyticalModel implements AdapterPropagator.Different
                         .transformVector(dV);
 
         // compute mean anomaly change: dM(t1) = dM(t0) + ksi * da * (t1 - t0)
-        final double mu = state0.getMu();
-        final double a  = state0.getA();
+        final Orbit orbit = state0.getOrbit();
+        final double mu = orbit.getMu();
+        final double a  = orbit.getA();
         ksi = -1.5 * FastMath.sqrt(mu / a) / (a * a);
 
     }
@@ -228,7 +229,7 @@ public class SmallManeuverAnalyticalModel implements AdapterPropagator.Different
         }
 
         return new SpacecraftState(state1.getOrbit().getType().convertType(updateOrbit(state1.getOrbit())),
-                                   state1.getAttitude(), updateMass(state1.getMass()));
+                                   state1.getAttitude()).withMass(updateMass(state1.getMass()));
 
     }
 

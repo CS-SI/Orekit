@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,7 +31,8 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSPhase;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSPhaseCreator;
 import org.orekit.frames.LOFType;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
+import org.orekit.gnss.RadioWave;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -45,8 +46,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class ShapiroOneWayGNSSPhaseModifierTest {
 
-    /** Frequency of the measurements. */
-    private static final Frequency FREQUENCY = Frequency.G01;
+    /** Radio wave of the measurements. */
+    private static final RadioWave RADIO_WAVE = PredefinedGnssSignal.G01;
 
     @Test
     public void testShapiro() {
@@ -82,8 +83,7 @@ public class ShapiroOneWayGNSSPhaseModifierTest {
         List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(p1,
                                                                new OneWayGNSSPhaseCreator(ephemeris,
-                                                                                          "remote",
-                                                                                          FREQUENCY,
+                                                                                          "remote", RADIO_WAVE,
                                                                                           ambiguity,
                                                                                           localClockOffset,
                                                                                           remoteClockOffset,
@@ -115,8 +115,10 @@ public class ShapiroOneWayGNSSPhaseModifierTest {
                 eval =
                 sr.estimateWithoutDerivatives(states);
 
-            stat.addValue(
-                eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]);
+            stat.addValue(eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]);
+            Assertions.assertEquals(1,
+                                    eval.getAppliedEffects().entrySet().stream().
+                                    filter(e -> e.getKey().getEffectName().equals("Shapiro")).count());
 
         }
         final double wavelength = ((OneWayGNSSPhase) measurements.get(0)).getWavelength();

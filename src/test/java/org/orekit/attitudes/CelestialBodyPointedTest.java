@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -101,7 +102,7 @@ class CelestialBodyPointedTest {
 
     @Test
     void testSunPointing() {
-        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        CelestialBody sun = CelestialBodyFactory.getSun();
 
         final Frame frame = FramesFactory.getGCRF();
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),

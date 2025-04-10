@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -90,7 +90,7 @@ class Mesh {
         this.aiming         = aiming;
         this.alongGap       = alongGap;
         this.acrossGap      = acrossGap;
-        this.nodes          = new HashMap<Long, Node>();
+        this.nodes          = new HashMap<>();
         this.minAlongIndex  = 0;
         this.maxAlongIndex  = 0;
         this.minAcrossIndex = 0;
@@ -286,7 +286,7 @@ class Mesh {
      * @return nodes that lie inside the interest zone
      */
     public List<Node> getInsideNodes() {
-        final List<Node> insideNodes = new ArrayList<Node>();
+        final List<Node> insideNodes = new ArrayList<>();
         for (final Map.Entry<Long, Node> entry : nodes.entrySet()) {
             if (entry.getValue().isInside()) {
                 insideNodes.add(entry.getValue());
@@ -363,7 +363,7 @@ class Mesh {
      */
     public List<Node> getTaxicabBoundary(final boolean simplified) {
 
-        final List<Node> boundary = new ArrayList<Node>();
+        final List<Node> boundary = new ArrayList<>();
         if (nodes.size() < 2) {
             boundary.add(getNode(0, 0));
         } else {

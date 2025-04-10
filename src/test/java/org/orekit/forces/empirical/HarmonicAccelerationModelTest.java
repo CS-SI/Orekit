@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -49,11 +49,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.*;
-import org.orekit.propagation.FieldBoundedPropagator;
-import org.orekit.propagation.FieldEphemerisGenerator;
-import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.PropagatorsParallelizer;
-import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.*;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -77,7 +73,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
     private Orbit initialOrbit;
 
     @Test
-    public void testEquivalentInertialManeuver() {
+    void testEquivalentInertialManeuver() {
         final double   delta     = FastMath.toRadians(-7.4978);
         final double   alpha     = FastMath.toRadians(351);
         final Vector3D direction = new Vector3D(alpha, delta);
@@ -100,7 +96,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testEquivalentTangentialManeuver() {
+    void testEquivalentTangentialManeuver() {
         final double mass     = 2500;
         final double isp      = Double.POSITIVE_INFINITY;
         final double duration = 4000;
@@ -119,7 +115,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testEquivalentTangentialOverriddenManeuver() {
+    void testEquivalentTangentialOverriddenManeuver() {
         final double mass     = 2500;
         final double isp      = Double.POSITIVE_INFINITY;
         final double duration = 4000;
@@ -152,7 +148,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
                                                                                    initialOrbit.getFrame()),
                                                            mass);
 
-        double[][] tolerance = NumericalPropagator.tolerances(10, initialOrbit, initialOrbit.getType());
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(initialOrbit, initialOrbit.getType());
 
         // propagator 0 uses a maneuver that is so efficient it does not consume any fuel
         // (hence mass remains constant)
@@ -190,7 +186,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testEquivalentInertialManeuverField() {
+    void testEquivalentInertialManeuverField() {
         final double   delta     = FastMath.toRadians(-7.4978);
         final double   alpha     = FastMath.toRadians(351);
         final Vector3D direction = new Vector3D(alpha, delta);
@@ -213,7 +209,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testEquivalentTangentialManeuverField() {
+    void testEquivalentTangentialManeuverField() {
         final double mass     = 2500;
         final double isp      = Double.POSITIVE_INFINITY;
         final double duration = 4000;
@@ -232,7 +228,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testEquivalentTangentialOverriddenManeuverField() {
+    void testEquivalentTangentialOverriddenManeuverField() {
         final double mass     = 2500;
         final double isp      = Double.POSITIVE_INFINITY;
         final double duration = 4000;
@@ -269,7 +265,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
                                                                                                                       initialOrbit.getFrame()),
                                                                                               mass));
 
-        double[][] tolerance = FieldNumericalPropagator.tolerances(field.getZero().add(10),
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(10).getTolerances(
                                                                    initialState.getOrbit(),
                                                                    initialState.getOrbit().getType());
 
@@ -312,17 +308,17 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testParameterDerivative1T() {
+    void testParameterDerivative1T() {
         doTestParameterDerivative(1, 4.0e-14, 2.0e-11);
     }
 
     @Test
-    public void testParameterDerivative2T() {
+    void testParameterDerivative2T() {
         doTestParameterDerivative(2, 3.0e-14, 7.0e-12);
     }
 
     @Test
-    public void testParameterDerivative3T() {
+    void testParameterDerivative3T() {
         doTestParameterDerivative(3, 2.0e-14, 2.0e-11);
     }
 
@@ -344,7 +340,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
 
         final HarmonicAccelerationModel accelerationModel = new HarmonicAccelerationModel("kT",
                                                                                           state.getDate().shiftedBy(-2.0),
-                                                                                          state.getKeplerianPeriod(), harmonicMultiplier);
+                                                                                          state.getOrbit().getKeplerianPeriod(), harmonicMultiplier);
         final ParametricAcceleration hpa = new ParametricAcceleration(Vector3D.PLUS_K, false, accelerationModel);
         hpa.init(state, state.getDate().shiftedBy(3600.0));
         hpa.getParametersDrivers().get(0).setValue(0.00001);
@@ -355,7 +351,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testCoefficientsDetermination() {
+    void testCoefficientsDetermination() {
 
         final double mass = 2500;
         final Orbit orbit = new CircularOrbit(7500000.0, 1.0e-4, 1.0e-3, 1.7, 0.3, 0.5, PositionAngleType.TRUE,
@@ -374,7 +370,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         double dP      = 10.0;
         double minStep = 0.001;
         double maxStep = 100;
-        double[][] tolerance = NumericalPropagator.tolerances(dP, orbit, orbit.getType());
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, orbit.getType());
 
         // generate PV measurements corresponding to a tangential maneuver
         AdaptiveStepsizeIntegrator integrator0 =

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,11 +42,13 @@ import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldAbsolutePVCoordinatesHermiteInterpolator;
 import org.orekit.utils.FieldArrayDictionary;
+import org.orekit.utils.FieldDataDictionary;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldAngularCoordinatesHermiteInterpolator;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -262,43 +264,6 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
      * <b>BEWARE:</b> output frame <b>must be inertial</b> if interpolated spacecraft states are defined by orbit. Throws an
      * error otherwise.
      *
-     * @param outputFrame output frame
-     * @param orbitInterpolator orbit interpolator
-     * @param absPVAInterpolator absolute position-velocity-acceleration
-     * @param massInterpolator mass interpolator
-     * @param attitudeInterpolator attitude interpolator
-     * @param additionalStateInterpolator additional state interpolator
-     *
-     * @deprecated using this constructor may throw an exception if any given interpolator
-     * does not use {@link #DEFAULT_INTERPOLATION_POINTS} and {@link
-     * #DEFAULT_EXTRAPOLATION_THRESHOLD_SEC}. Use {@link
-     * #FieldSpacecraftStateInterpolator(int, double, Frame, FieldTimeInterpolator,
-     * FieldTimeInterpolator, FieldTimeInterpolator, FieldTimeInterpolator,
-     * FieldTimeInterpolator)} instead.
-     */
-    @Deprecated
-    public FieldSpacecraftStateInterpolator(final Frame outputFrame,
-                                            final FieldTimeInterpolator<FieldOrbit<KK>, KK> orbitInterpolator,
-                                            final FieldTimeInterpolator<FieldAbsolutePVCoordinates<KK>, KK> absPVAInterpolator,
-                                            final FieldTimeInterpolator<TimeStampedField<KK>, KK> massInterpolator,
-                                            final FieldTimeInterpolator<FieldAttitude<KK>, KK> attitudeInterpolator,
-                                            final FieldTimeInterpolator<TimeStampedField<KK>, KK> additionalStateInterpolator) {
-        super(DEFAULT_INTERPOLATION_POINTS, DEFAULT_EXTRAPOLATION_THRESHOLD_SEC);
-        checkAtLeastOneInterpolator(orbitInterpolator, absPVAInterpolator);
-        this.outputFrame                 = outputFrame;
-        this.orbitInterpolator           = orbitInterpolator;
-        this.absPVAInterpolator          = absPVAInterpolator;
-        this.massInterpolator            = massInterpolator;
-        this.attitudeInterpolator        = attitudeInterpolator;
-        this.additionalStateInterpolator = additionalStateInterpolator;
-    }
-
-    /**
-     * Constructor.
-     * <p>
-     * <b>BEWARE:</b> output frame <b>must be inertial</b> if interpolated spacecraft states are defined by orbit. Throws an
-     * error otherwise.
-     *
      * @param interpolationPoints number of interpolation points
      * @param extrapolationThreshold extrapolation threshold beyond which the propagation will fail
      * @param outputFrame output frame
@@ -402,10 +367,9 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
 
         final List<TimeStampedField<KK>> masses = new ArrayList<>();
 
-        final List<FieldArrayDictionary<KK>.Entry> additionalEntries =
-                earliestState.getAdditionalStatesValues().getData();
-        final Map<String, List<Pair<FieldAbsoluteDate<KK>, KK[]>>> additionalSample =
-                createAdditionalStateSample(additionalEntries);
+        final List<FieldDataDictionary<KK>.Entry> additionalEntries = earliestState.getAdditionalDataValues().getData();
+        final Map<String, List<Pair<FieldAbsoluteDate<KK>, Object>>> additionalSample =
+                createAdditionalDataSample(additionalEntries);
 
         final List<FieldArrayDictionary<KK>.Entry> additionalDotEntries =
                 earliestState.getAdditionalStatesDerivatives().getData();
@@ -441,8 +405,8 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
             if (additionalStateInterpolator != null) {
 
                 // Add all additional state values if they are interpolated
-                for (final Map.Entry<String, List<Pair<FieldAbsoluteDate<KK>, KK[]>>> entry : additionalSample.entrySet()) {
-                    entry.getValue().add(new Pair<>(currentDate, state.getAdditionalState(entry.getKey())));
+                for (final Map.Entry<String, List<Pair<FieldAbsoluteDate<KK>, Object>>> entry : additionalSample.entrySet()) {
+                    entry.getValue().add(new Pair<>(currentDate, state.getAdditionalData(entry.getKey())));
                 }
 
                 // Add all additional state derivative values if they are interpolated
@@ -464,11 +428,11 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
         }
 
         // Interpolate additional states and derivatives
-        final FieldArrayDictionary<KK> interpolatedAdditional;
+        final FieldDataDictionary<KK> interpolatedAdditional;
         final FieldArrayDictionary<KK> interpolatedAdditionalDot;
         if (additionalStateInterpolator != null) {
-            interpolatedAdditional    = interpolateAdditionalState(interpolationDate, additionalSample);
-            interpolatedAdditionalDot = interpolateAdditionalState(interpolationDate, additionalDotSample);
+            interpolatedAdditional    = interpolateAdditionalState(interpolationDate, additionalSample).orElse(null);
+            interpolatedAdditionalDot = interpolateAdditionalState(interpolationDate, additionalDotSample).map(FieldDataDictionary::toFieldArrayDictionary).orElse(null);
         }
         else {
             interpolatedAdditional    = null;
@@ -577,6 +541,25 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
      *
      * @return empty samples for given additional entries
      */
+    private Map<String, List<Pair<FieldAbsoluteDate<KK>, Object>>> createAdditionalDataSample(
+            final List<FieldDataDictionary<KK>.Entry> additionalEntries) {
+        final Map<String, List<Pair<FieldAbsoluteDate<KK>, Object>>> additionalSamples =
+                new HashMap<>(additionalEntries.size());
+
+        for (final FieldDataDictionary<KK>.Entry entry : additionalEntries) {
+            additionalSamples.put(entry.getKey(), new ArrayList<>());
+        }
+
+        return additionalSamples;
+    }
+
+    /**
+     * Create empty samples for given additional entries.
+     *
+     * @param additionalEntries tabulated additional entries
+     *
+     * @return empty samples for given additional entries
+     */
     private Map<String, List<Pair<FieldAbsoluteDate<KK>, KK[]>>> createAdditionalStateSample(
             final List<FieldArrayDictionary<KK>.Entry> additionalEntries) {
         final Map<String, List<Pair<FieldAbsoluteDate<KK>, KK[]>>> additionalSamples =
@@ -594,49 +577,71 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
      *
      * @param interpolationDate interpolation date
      * @param additionalSamples additional state samples
-     *
+     * @param <O> type of the data
      * @return interpolated additional state values
      */
-    private FieldArrayDictionary<KK> interpolateAdditionalState(final FieldAbsoluteDate<KK> interpolationDate,
-                                                                final Map<String, List<Pair<FieldAbsoluteDate<KK>, KK[]>>> additionalSamples) {
+    private <O> Optional<FieldDataDictionary<KK>> interpolateAdditionalState(final FieldAbsoluteDate<KK> interpolationDate,
+                                                                final Map<String, List<Pair<FieldAbsoluteDate<KK>, O>>> additionalSamples) {
         final Field<KK> field = interpolationDate.getField();
-        final FieldArrayDictionary<KK> interpolatedAdditional;
+        final Optional<FieldDataDictionary<KK>> interpolatedAdditional;
 
         if (additionalSamples.isEmpty()) {
-            interpolatedAdditional = null;
+            interpolatedAdditional = Optional.empty();
         }
         else {
-            interpolatedAdditional = new FieldArrayDictionary<>(field, additionalSamples.size());
-            for (final Map.Entry<String, List<Pair<FieldAbsoluteDate<KK>, KK[]>>> entry : additionalSamples.entrySet()) {
+            interpolatedAdditional = Optional.of(new FieldDataDictionary<>(field, additionalSamples.size()));
+            for (final Map.Entry<String, List<Pair<FieldAbsoluteDate<KK>, O>>> entry : additionalSamples.entrySet()) {
 
                 // Get current entry
-                final List<Pair<FieldAbsoluteDate<KK>, KK[]>> currentAdditionalSamples = entry.getValue();
-
-                // Extract number of values for this specific entry
-                final int nbOfValues = currentAdditionalSamples.get(0).getValue().length;
-
-                // For each value of current additional state entry
-                final KK[] currentInterpolatedAdditional = MathArrays.buildArray(field, nbOfValues);
-                for (int i = 0; i < nbOfValues; i++) {
-
-                    // Create final index for lambda expression use
-                    final int currentIndex = i;
-
-                    // Create sample for specific value of current additional state values
-                    final List<TimeStampedField<KK>> currentValueSample = new ArrayList<>();
-
-                    currentAdditionalSamples.forEach(currentSamples -> currentValueSample.add(
-                            new TimeStampedField<>(currentSamples.getValue()[currentIndex], currentSamples.getFirst())));
-
-                    // Interpolate
-                    currentInterpolatedAdditional[i] =
-                            additionalStateInterpolator.interpolate(interpolationDate, currentValueSample).getValue();
+                final List<Pair<FieldAbsoluteDate<KK>, O>> currentAdditionalSamples = entry.getValue();
+                final O currentInterpolatedAdditional;
+                if (currentAdditionalSamples.get(0).getValue() instanceof CalculusFieldElement[]) {
+                    //noinspection unchecked
+                    currentInterpolatedAdditional = (O) interpolateAdditionalSamples(field, interpolationDate, currentAdditionalSamples);
+                } else {
+                    currentInterpolatedAdditional = currentAdditionalSamples.stream()
+                            .filter(pair -> pair.getKey().isAfter(interpolationDate))
+                            .min(Comparator.comparing(Pair::getKey))
+                            .get()
+                            .getValue();
                 }
-
-                interpolatedAdditional.put(entry.getKey(), currentInterpolatedAdditional);
+                interpolatedAdditional.get().put(entry.getKey(), currentInterpolatedAdditional);
             }
         }
         return interpolatedAdditional;
+    }
+
+    /**
+     * Interpolates additional samples.
+     * @param field field of the elements
+     * @param interpolationDate interpolation date
+     * @param currentAdditionalSamples additional state samples
+     * @param <O> type of the data
+     * @return interpolated additional samples
+     */
+    @SuppressWarnings("unchecked")
+    private <O> KK[] interpolateAdditionalSamples(final Field<KK> field, final FieldAbsoluteDate<KK> interpolationDate, final List<Pair<FieldAbsoluteDate<KK>, O>> currentAdditionalSamples) {
+
+        // Extract number of values for this specific entry
+        final int nbOfValues = ((KK[]) currentAdditionalSamples.get(0).getValue()).length;
+
+        // For each value of current additional state entry
+        final KK[] currentInterpolatedAdditional = MathArrays.buildArray(field, nbOfValues);
+        for (int i = 0; i < nbOfValues; i++) {
+
+            // Create final index for lambda expression use
+            final int currentIndex = i;
+
+            // Create sample for specific value of current additional state values
+            final List<TimeStampedField<KK>> currentValueSample = new ArrayList<>();
+
+            currentAdditionalSamples.forEach(currentSamples -> currentValueSample.add(
+                    new TimeStampedField<>(((KK[]) currentSamples.getValue())[currentIndex], currentSamples.getFirst())));
+
+            // Interpolate
+            currentInterpolatedAdditional[i] = additionalStateInterpolator.interpolate(interpolationDate, currentValueSample).getValue();
+        }
+        return currentInterpolatedAdditional;
     }
 
     /**

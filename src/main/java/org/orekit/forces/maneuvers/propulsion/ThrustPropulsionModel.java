@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,6 +32,16 @@ import org.orekit.utils.Constants;
  * @since 10.2
  */
 public interface ThrustPropulsionModel extends PropulsionModel {
+
+    /**
+     * Method computing the effective exhaust velocity from the specific impulse.
+     * @param isp specific impulse (s)
+     * @return effective exhaust velocity (m/s)
+     * @since 13.0
+     */
+    static double getExhaustVelocity(final double isp) {
+        return Constants.G0_STANDARD_GRAVITY * isp;
+    }
 
     /** Get the specific impulse (s).
      * @param s current spacecraft state

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -240,41 +240,4 @@ public class DoubleArrayDictionaryTest {
         Assertions.assertEquals(0, dictionary.size());
 
     }
-
-    @Test
-    public void testView() {
-        DoubleArrayDictionary dictionary = new DoubleArrayDictionary();
-        dictionary.put("a",       new double[] { 1.0, 2.0, 3.0 });
-        dictionary.put("b",       new double[] { 4.0 });
-        dictionary.put("another", new double[] { 17.0 });
-
-        DoubleArrayDictionary view = dictionary.unmodifiableView();
-        Assertions.assertEquals(3, view.size());
-        Assertions.assertEquals(3, view.getData().size());
-        Assertions.assertEquals(3, view.toMap().size());
-        Assertions.assertArrayEquals(new double[] { 1.0, 2.0, 3.0 }, view.get("a"),       1.0e-15);
-        Assertions.assertArrayEquals(new double[] {   4.0 },         view.get("b"),       1.0e-15);
-        Assertions.assertArrayEquals(new double[] {  17.0 }, view.getEntry("another").getValue(), 1.0e-15);
-
-        dictionary.put("z", new double[] { 25.0 });
-        Assertions.assertEquals(4, view.size());
-        Assertions.assertArrayEquals(new double[] { 25.0 },         view.get("z"), 1.0e-15);
-
-        checkUnsupported(view, v -> v.clear());
-        checkUnsupported(view, v -> v.put("t", new double[1]));
-        checkUnsupported(view, v -> v.putAll(new DoubleArrayDictionary()));
-        checkUnsupported(view, v -> v.putAll(new HashMap<>()));
-        checkUnsupported(view, v -> v.remove("a"));
-
-    }
-
-    private void checkUnsupported(DoubleArrayDictionary d, Consumer<DoubleArrayDictionary> c) {
-        try {
-            c.accept(d);
-            Assertions.fail("an exception should have been thrown");
-        } catch (UnsupportedOperationException uoe) {
-            // expected
-        }
-    }
-
 }

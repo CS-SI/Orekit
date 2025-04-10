@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -49,20 +49,18 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
     /** Constructor.
      *
      * @param model  Tropospheric delay model appropriate for the current range-rate measurement method.
-     * @deprecated as of 12.1, replaced by {@link #BaseRangeRateTroposphericDelayModifier(TroposphericModel)}
-     */
-    @Deprecated
-    protected BaseRangeRateTroposphericDelayModifier(final org.orekit.models.earth.troposphere.DiscreteTroposphericModel model) {
-        this(new org.orekit.models.earth.troposphere.TroposphericModelAdapter(model));
-    }
-
-    /** Constructor.
-     *
-     * @param model  Tropospheric delay model appropriate for the current range-rate measurement method.
      * @since 12.1
      */
     protected BaseRangeRateTroposphericDelayModifier(final TroposphericModel model) {
         tropoModel = model;
+    }
+
+    /** Get the name of the effect modifying the measurement.
+     * @return name of the effect modifying the measurement
+     * @since 13.0
+     */
+    public String getEffectName() {
+        return "troposphere";
     }
 
     /** Get the tropospheric delay model.
@@ -96,7 +94,6 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
             // tropospheric delay in meters
             final double d1 = tropoModel.pathDelay(trackingCoordinates1,
                                                    station.getOffsetGeodeticPoint(state.getDate()),
-                                                   station.getPressureTemperatureHumidity(state.getDate()),
                                                    tropoModel.getParameters(state.getDate()), state.getDate()).
                               getDelay();
 
@@ -113,7 +110,6 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
             // tropospheric delay dt after
             final double d2 = tropoModel.pathDelay(trackingCoordinates2,
                                                    station.getOffsetGeodeticPoint(state.getDate()),
-                                                   station.getPressureTemperatureHumidity(state.getDate()),
                                                    tropoModel.getParameters(state2.getDate()), state2.getDate()).
                               getDelay();
 
@@ -153,7 +149,6 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
             // tropospheric delay in meters
             final T d1 = tropoModel.pathDelay(trackingCoordinates1,
                                               station.getOffsetGeodeticPoint(state.getDate()),
-                                              station.getPressureTemperatureHumidity(state.getDate()),
                                               parameters, state.getDate()).
                          getDelay();
 
@@ -171,7 +166,6 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
             // tropospheric delay dt after
             final T d2 = tropoModel.pathDelay(trackingCoordinates2,
                                               station.getOffsetGeodeticPoint(state.getDate()),
-                                              station.getPressureTemperatureHumidity(state.getDate()),
                                               parameters, state2.getDate()).
                          getDelay();
 

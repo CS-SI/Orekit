@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,10 +20,30 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.section.CommentsContainer;
 
+import java.util.Arrays;
+
 /**
- * Container for Sigma/Eigenvectors Covariance data. The positional covariance one-sigma
-dispersions corresponding to the major, intermediate and minor eigenvalues, followed by the associated eigenvectors.
-The data is presented on a single line (12 values separated by spaces). (Condition: Mandatory if ALT_COV_TYPE = CSIG3EIGVEC3)
+ * Container for Sigma/Eigenvectors Covariance data.
+ * <p>
+ * Beware that the Orekit getters and setters all rely on SI units. The parsers
+ * and writers take care of converting these SI units into CCSDS mandatory units.
+ * The {@link org.orekit.utils.units.Unit Unit} class provides useful
+ * {@link org.orekit.utils.units.Unit#fromSI(double) fromSi} and
+ * {@link org.orekit.utils.units.Unit#toSI(double) toSI} methods in case the callers
+ * already use CCSDS units instead of the API SI units. The general-purpose
+ * {@link org.orekit.utils.units.Unit Unit} class (without an 's') and the
+ * CCSDS-specific {@link org.orekit.files.ccsds.definitions.Units Units} class
+ * (with an 's') also provide some predefined units. These predefined units and the
+ * {@link org.orekit.utils.units.Unit#fromSI(double) fromSi} and
+ * {@link org.orekit.utils.units.Unit#toSI(double) toSI} conversion methods are indeed
+ * what the parsers and writers use for the conversions.
+ * </p>
+ * <p>
+ * The positional covariance one-sigma dispersions corresponding to the major,
+ * intermediate and minor eigenvalues, followed by the associated eigenvectors.
+ * The data is presented on a single line (12 values separated by spaces).
+ * (Condition: Mandatory if {@code ALT_COV_TYPE = CSIG3EIGVEC3})
+ * </p>
  */
 public class SigmaEigenvectorsCovariance extends CommentsContainer {
 
@@ -31,7 +51,7 @@ public class SigmaEigenvectorsCovariance extends CommentsContainer {
     private double[] csig3eigvec3;
 
     /** Flag indicating whether the alternate covariance type set in the CDM Object metadata section is Sigma/Eigenvectors Covariance. */
-    private boolean altCovFlag;
+    private final boolean altCovFlag;
 
     /** Simple constructor.
      * <p> The Sigma/Eigenvectors Covariance data is only provided if {@link CdmMetadataKey#ALT_COV_TYPE} is {@link AltCovarianceType#CSIG3EIGVEC3}, otherwise
@@ -42,9 +62,7 @@ public class SigmaEigenvectorsCovariance extends CommentsContainer {
         this.altCovFlag = altCovFlag;
         csig3eigvec3 = new double[12];
 
-        for (int i = 0; i < csig3eigvec3.length; ++i) {
-            csig3eigvec3[i] = Double.NaN;
-        }
+        Arrays.fill(csig3eigvec3, Double.NaN);
     }
 
     /** {@inheritDoc} */

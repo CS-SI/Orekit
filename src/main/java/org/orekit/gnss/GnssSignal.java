@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,5 +32,15 @@ public interface GnssSignal extends RadioWave {
      * @see #getFrequency()
      */
     double getRatio();
+
+    /** Get the RINEX name for the frequency.
+     * @return RINEX name for the frequency
+     */
+    String getName();
+
+    /** Get the satellite system for which this frequency is defined.
+     * @return satellite system for which this frequency is defined
+     */
+    SatelliteSystem getSatelliteSystem();
 
 }

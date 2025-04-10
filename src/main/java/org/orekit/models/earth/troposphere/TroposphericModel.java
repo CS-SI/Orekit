@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,8 +19,6 @@ package org.orekit.models.earth.troposphere;
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
-import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTrackingCoordinates;
@@ -39,14 +37,12 @@ public interface TroposphericModel extends ParameterDriversProvider {
      *
      * @param trackingCoordinates tracking coordinates of the satellite
      * @param point station location
-     * @param weather weather parameters
-     * for constant default values)
      * @param parameters tropospheric model parameters
      * @param date current date
      * @return the path delay due to the troposphere
+     * @since 13.0
      */
     TroposphericDelay pathDelay(TrackingCoordinates trackingCoordinates, GeodeticPoint point,
-                                PressureTemperatureHumidity weather,
                                 double[] parameters, AbsoluteDate date);
 
     /** Calculates the tropospheric path delay for the signal path from a ground
@@ -55,14 +51,12 @@ public interface TroposphericModel extends ParameterDriversProvider {
      * @param <T> type of the elements
      * @param trackingCoordinates tracking coordinates of the satellite
      * @param point station location
-     * @param weather weather parameters
-     * for constant default values)
      * @param parameters tropospheric model parameters at current date
      * @param date current date
      * @return the path delay due to the troposphere
+     * @since 13.0
      */
     <T extends CalculusFieldElement<T>> FieldTroposphericDelay<T> pathDelay(FieldTrackingCoordinates<T> trackingCoordinates,
                                                                             FieldGeodeticPoint<T> point,
-                                                                            FieldPressureTemperatureHumidity<T> weather,
                                                                             T[] parameters, FieldAbsoluteDate<T> date);
 }

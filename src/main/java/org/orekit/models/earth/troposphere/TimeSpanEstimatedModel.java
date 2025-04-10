@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,14 +24,13 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
-import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TrackingCoordinates;
@@ -97,7 +96,7 @@ public class TimeSpanEstimatedModel implements TroposphericModel {
             // Add all the parameter drivers of each span
             for (ParameterDriver tropoDriver : span.getData().getParametersDrivers()) {
                 // Add the driver only if the name does not exist already
-                if (!findByName(listTroposphericParameterDrivers, tropoDriver.getName())) {
+                if (!ParameterDriversProvider.findByName(listTroposphericParameterDrivers, tropoDriver.getName())) {
                     listTroposphericParameterDrivers.add(tropoDriver);
                 }
             }
@@ -153,7 +152,7 @@ public class TimeSpanEstimatedModel implements TroposphericModel {
     }
 
     /** Extract the proper parameter drivers' values from the array in input of the
-     * {@link #pathDelay(TrackingCoordinates, GeodeticPoint, PressureTemperatureHumidity, double[], AbsoluteDate) pathDelay}  method.
+     * {@link #pathDelay(TrackingCoordinates, GeodeticPoint, double[], AbsoluteDate) pathDelay}  method.
      *  Parameters are filtered given an input date.
      * @param parameters the input parameters array
      * @param date the date
@@ -180,7 +179,7 @@ public class TimeSpanEstimatedModel implements TroposphericModel {
     }
 
     /** Extract the proper parameter drivers' values from the array in input of the
-     * {@link #pathDelay(TrackingCoordinates, GeodeticPoint, PressureTemperatureHumidity, double[], AbsoluteDate) pathDelay}  method.
+     * {@link #pathDelay(TrackingCoordinates, GeodeticPoint, double[], AbsoluteDate) pathDelay}  method.
      *  Parameters are filtered given an input date.
      * @param parameters the input parameters array
      * @param date the date
@@ -212,40 +211,23 @@ public class TimeSpanEstimatedModel implements TroposphericModel {
     @Override
     public TroposphericDelay pathDelay(final TrackingCoordinates trackingCoordinates,
                                        final GeodeticPoint point,
-                                       final PressureTemperatureHumidity weather,
                                        final double[] parameters, final AbsoluteDate date) {
         // Extract the proper parameters valid at date from the input array
         final double[] extractedParameters = extractParameters(parameters, date);
         // Compute and return the path delay
-        return getTroposphericModel(date).pathDelay(trackingCoordinates, point, weather,
-                                                    extractedParameters, date);
+        return getTroposphericModel(date).pathDelay(trackingCoordinates, point, extractedParameters, date);
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldTroposphericDelay<T> pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                                                    final  FieldGeodeticPoint<T> point,
-                                                                                   final FieldPressureTemperatureHumidity<T> weather,
                                                                                    final T[] parameters, final FieldAbsoluteDate<T> date) {
         // Extract the proper parameters valid at date from the input array
         final T[] extractedParameters = extractParameters(parameters, date);
         // Compute and return the path delay
-        return getTroposphericModel(date.toAbsoluteDate()).pathDelay(trackingCoordinates, point, weather,
+        return getTroposphericModel(date.toAbsoluteDate()).pathDelay(trackingCoordinates, point,
                                                                      extractedParameters, date);
-    }
-
-    /** Find if a parameter driver with a given name already exists in a list of parameter drivers.
-     * @param driversList the list of parameter drivers
-     * @param name the parameter driver's name to filter with
-     * @return true if the name was found, false otherwise
-     */
-    private boolean findByName(final List<ParameterDriver> driversList, final String name) {
-        for (final ParameterDriver driver : driversList) {
-            if (driver.getName().equals(name)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /** Change the parameter drivers names of a {@link EstimatedModel} model, if needed.

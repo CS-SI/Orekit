@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
-import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.AttitudeRotationModel;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.maneuvers.propulsion.PropulsionModel;
@@ -52,9 +52,9 @@ import org.orekit.utils.ParameterDriver;
  *  - An attitude override, this is the attitude used during the maneuver, it can be different from the one
  *    used for propagation;
  *  - A maneuver triggers object from the trigger sub-package. It defines the triggers used to start and stop the maneuvers (dates or events for example).
- *  - A propulsion model from sub-package propulsion. It defines the thrust or ΔV, isp, flow rate etc..
- * Both the propulsion model and the maneuver triggers can contain parameter drivers (for estimation).
- * The convention here is that the propulsion model drivers are given before the maneuver triggers when calling the
+ *  - A propulsion model from sub-package propulsion. It defines the thrust or ΔV, isp, flow rate etc.
+ * Both the propulsion model and the maneuver triggers can contain parameter drivers (for estimation), as well as the attitude override if set.
+ * The convention here is the following: drivers from propulsion model first, then maneuver triggers and if any the attitude override when calling the
  * method {@link #getParametersDrivers()}
  * @author Maxime Journot
  * @since 10.2
@@ -62,7 +62,7 @@ import org.orekit.utils.ParameterDriver;
 public class Maneuver implements ForceModel {
 
     /** The attitude to override during the maneuver, if set. */
-    private final AttitudeProvider attitudeOverride;
+    private final AttitudeRotationModel attitudeOverride;
 
     /** Propulsion model to use for the thrust. */
     private final PropulsionModel propulsionModel;
@@ -75,7 +75,7 @@ public class Maneuver implements ForceModel {
      * @param maneuverTriggers maneuver triggers
      * @param propulsionModel propulsion model
      */
-    public Maneuver(final AttitudeProvider attitudeOverride,
+    public Maneuver(final AttitudeRotationModel attitudeOverride,
                     final ManeuverTriggers maneuverTriggers,
                     final PropulsionModel propulsionModel) {
         this.maneuverTriggers = maneuverTriggers;
@@ -96,7 +96,7 @@ public class Maneuver implements ForceModel {
         // and maneuver triggers define a name but they are different
         String name = propulsionModel.getName();
 
-        if (name.length() < 1) {
+        if (name.isEmpty()) {
             name = maneuverTriggers.getName();
         }
         return name;
@@ -104,8 +104,9 @@ public class Maneuver implements ForceModel {
 
     /** Get the attitude override used for the maneuver.
      * @return the attitude override
+     * @since 13.0
      */
-    public AttitudeProvider getAttitudeOverride() {
+    public AttitudeRotationModel getAttitudeOverride() {
         return attitudeOverride;
     }
 
@@ -196,6 +197,7 @@ public class Maneuver implements ForceModel {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
 
@@ -209,7 +211,7 @@ public class Maneuver implements ForceModel {
             if (attitudeOverride == null) {
                 maneuverAttitude = s.getAttitude();
             } else {
-                final Rotation rotation = attitudeOverride.getAttitudeRotation(s.getOrbit(), s.getDate(), s.getFrame());
+                final Rotation rotation = attitudeOverride.getAttitudeRotation(s, getAttitudeModelParameters(parameters));
                 // use dummy rates to build full attitude as they should not be used
                 maneuverAttitude = new Attitude(s.getDate(), s.getFrame(), rotation, Vector3D.ZERO, Vector3D.ZERO);
             }
@@ -223,6 +225,7 @@ public class Maneuver implements ForceModel {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s, final T[] parameters) {
 
@@ -236,7 +239,7 @@ public class Maneuver implements ForceModel {
             if (attitudeOverride == null) {
                 maneuverAttitude = s.getAttitude();
             } else {
-                final FieldRotation<T> rotation = attitudeOverride.getAttitudeRotation(s.getOrbit(), s.getDate(), s.getFrame());
+                final FieldRotation<T> rotation = attitudeOverride.getAttitudeRotation(s, getAttitudeModelParameters(parameters));
                 // use dummy rates to build full attitude as they should not be used
                 final FieldVector3D<T> zeroVector3D = FieldVector3D.getZero(s.getDate().getField());
                 maneuverAttitude = new FieldAttitude<>(s.getDate(), s.getFrame(), rotation, zeroVector3D, zeroVector3D);
@@ -247,7 +250,7 @@ public class Maneuver implements ForceModel {
             return propulsionModel.getAcceleration(s, maneuverAttitude, getPropulsionModelParameters(parameters));
         } else {
             // Constant (and null) acceleration when not firing
-            return FieldVector3D.getZero(s.getMu().getField());
+            return FieldVector3D.getZero(s.getMass().getField());
         }
     }
 
@@ -267,24 +270,23 @@ public class Maneuver implements ForceModel {
                              propulsionModel.getFieldEventDetectors(field));
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
-
-        // Extract parameter drivers from propulsion model and maneuver triggers
-        final List<ParameterDriver> propulsionModelDrivers  = propulsionModel.getParametersDrivers();
-        final List<ParameterDriver> maneuverTriggersDrivers = maneuverTriggers.getParametersDrivers();
-        final int propulsionModelDriversLength  = propulsionModelDrivers.size();
-        final int maneuverTriggersDriversLength = maneuverTriggersDrivers.size();
-
         // Prepare final drivers' array
-        final List<ParameterDriver> drivers = new ArrayList<>(propulsionModelDriversLength + maneuverTriggersDriversLength);
+        final List<ParameterDriver> drivers = new ArrayList<>();
 
         // Convention: Propulsion drivers are given before maneuver triggers drivers
         // Add propulsion drivers first
-        drivers.addAll(0, propulsionModelDrivers);
+        drivers.addAll(0, propulsionModel.getParametersDrivers());
 
         // Then maneuver triggers' drivers
-        drivers.addAll(propulsionModelDriversLength, maneuverTriggersDrivers);
+        drivers.addAll(drivers.size(), maneuverTriggers.getParametersDrivers());
+
+        // Then attitude override' drivers if defined
+        if (attitudeOverride != null) {
+            drivers.addAll(attitudeOverride.getParametersDrivers());
+        }
 
         // Return full drivers' array
         return drivers;
@@ -330,5 +332,26 @@ public class Maneuver implements ForceModel {
         final int nbPropulsionModelDrivers = propulsionModel.getParametersDrivers().size();
         return Arrays.copyOfRange(parameters, nbPropulsionModelDrivers,
                                   nbPropulsionModelDrivers + maneuverTriggers.getParametersDrivers().size());
+    }
+
+    /** Extract attitude model' parameters from the parameters' array called in by the ForceModel interface.
+     *  Convention: Attitude model parameters are given last
+     * @param parameters parameters' array called in by ForceModel interface
+     * @return maneuver triggers' parameters
+     */
+    protected double[] getAttitudeModelParameters(final double[] parameters) {
+        final int nbAttitudeModelDrivers = (attitudeOverride == null) ? 0 : attitudeOverride.getParametersDrivers().size();
+        return Arrays.copyOfRange(parameters, parameters.length - nbAttitudeModelDrivers, parameters.length);
+    }
+
+    /** Extract attitude model' parameters from the parameters' array called in by the ForceModel interface.
+     *  Convention: Attitude parameters are given last
+     * @param parameters parameters' array called in by ForceModel interface
+     * @param <T> extends CalculusFieldElement&lt;T&gt;
+     * @return maneuver triggers' parameters
+     */
+    protected <T extends CalculusFieldElement<T>> T[] getAttitudeModelParameters(final T[] parameters) {
+        final int nbAttitudeModelDrivers = (attitudeOverride == null) ? 0 : attitudeOverride.getParametersDrivers().size();
+        return Arrays.copyOfRange(parameters, parameters.length - nbAttitudeModelDrivers, parameters.length);
     }
 }

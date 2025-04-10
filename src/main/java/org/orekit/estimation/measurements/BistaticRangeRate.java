@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -121,8 +121,8 @@ public class BistaticRangeRate extends GroundReceiverMeasurement<BistaticRangeRa
                         Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
 
         // Uplink time of flight from emitter station to transit state
-        final double tauU = signalTimeOfFlight(emitterApprox, transitPV.getPosition(), transitDate,
-                                               common.getState().getFrame());
+        final double tauU = signalTimeOfFlightAdjustableEmitter(emitterApprox, transitPV.getPosition(), transitDate,
+                                                                common.getState().getFrame());
 
         // Secondary station PV in inertial frame at rebound date on secondary station
         final TimeStampedPVCoordinates emitterPV = emitterApprox.shiftedBy(-tauU);
@@ -190,8 +190,8 @@ public class BistaticRangeRate extends GroundReceiverMeasurement<BistaticRangeRa
                         zero, zero, zero));
 
         // Uplink time of flight from emiiter to transit state
-        final Gradient tauU = signalTimeOfFlight(emitterApprox, transitPV.getPosition(), transitPV.getDate(),
-                                                 state.getFrame());
+        final Gradient tauU = signalTimeOfFlightAdjustableEmitter(emitterApprox, transitPV.getPosition(), transitPV.getDate(),
+                                                                  state.getFrame());
 
         // Emitter coordinates at transmit time
         final TimeStampedFieldPVCoordinates<Gradient> emitterPV = emitterApprox.shiftedBy(tauU.negate());

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -447,7 +447,7 @@ public class OmmParser extends OdmParser<Omm, OmmParser> {
         if (covarianceBlock == null) {
             // save the current metadata for later retrieval of reference frame
             final OdmCommonMetadata savedMetadata = metadata;
-            covarianceBlock = new CartesianCovariance(() -> savedMetadata.getReferenceFrame());
+            covarianceBlock = new CartesianCovariance(savedMetadata::getReferenceFrame);
             if (moveCommentsIfEmpty(tleBlock, covarianceBlock)) {
                 // get rid of the empty logical block
                 tleBlock = null;

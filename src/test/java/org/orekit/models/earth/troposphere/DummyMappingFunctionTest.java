@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,15 +18,16 @@ package org.orekit.models.earth.troposphere;
 
 import org.junit.jupiter.api.Test;
 
-public class DummyMappingFunctionTest extends AbstractMappingFunctionTest {
+public class DummyMappingFunctionTest extends AbstractMappingFunctionTest<DummyMappingFunction> {
 
-    protected TroposphereMappingFunction buildMappingFunction() {
+    protected DummyMappingFunction buildMappingFunction() {
         return new DummyMappingFunction();
     }
 
     @Test
     public void testMappingFactors() {
-        doTestMappingFactors(1.0, 1.0);
+        doTestMappingFactors(defaultDate, defaultPoint, defaultTrackingCoordinates,
+                             1.0, 1.0);
     }
 
     @Test
@@ -34,4 +35,10 @@ public class DummyMappingFunctionTest extends AbstractMappingFunctionTest {
         // this function does *not* decrease with elevation
         // so we disable this test
     }
+
+    @Test
+    public void testDerivatives() {
+        doTestDerivatives(1.0e-100, 1.0e-100, 1.0e-100, 1.0e-100, 1.0e-100);
+    }
+
 }

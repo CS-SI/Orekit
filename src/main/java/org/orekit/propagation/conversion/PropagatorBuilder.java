@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.conversion;
 
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -34,12 +35,6 @@ import java.util.List;
  * @since 6.0
  */
 public interface PropagatorBuilder extends Cloneable {
-
-    /** Create a new instance identical to this one.
-     * @return new instance identical to this one
-     * WARNING: this method will be removed in 13.0. It doesn't have the deprecated annotation because the method is abstract and shall be implemented.
-     */
-    PropagatorBuilder copy();
 
     /** Build a propagator.
      * @param normalizedParameters normalized values for the selected parameters
@@ -71,6 +66,14 @@ public interface PropagatorBuilder extends Cloneable {
      * @return current value of selected normalized parameters
      */
     double[] getSelectedNormalizedParameters();
+
+    /**
+     * Get the attitude provider.
+     *
+     * @return the attitude provider
+     * @since 13.0
+     */
+    AttitudeProvider getAttitudeProvider();
 
     /** Get the orbit type expected for the 6 first parameters in
      * {@link #buildPropagator(double[])}.
@@ -105,6 +108,12 @@ public interface PropagatorBuilder extends Cloneable {
      * @since 12.0
      */
     double getMu();
+
+    /** Get the initial mass.
+     * @return the mass (kg)
+     * @since 13.0
+     */
+    double getMass();
 
     /** Get the drivers for the configurable orbital parameters.
      * Orbital drivers should have only 1 value estimated (1 span)

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -219,7 +219,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         // set the initial state
         final Orbit orbit = propagateOrbit(initialTLE.getDate());
         final Attitude attitude = attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
-        super.resetInitialState(new SpacecraftState(orbit, attitude, mass));
+        super.resetInitialState(new SpacecraftState(orbit, attitude).withMass(mass));
     }
 
     /** Selects the extrapolator to use with the selected TLE.
@@ -605,7 +605,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** {@inheritDoc} */
-    protected Orbit propagateOrbit(final AbsoluteDate date) {
+    public Orbit propagateOrbit(final AbsoluteDate date) {
         final TLE closestTle = tlesAndMasses.get(date).getKey();
         if (!tle.equals(closestTle)) {
             initializeTle(closestTle);
@@ -634,7 +634,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         // Create the harvester
         final TLEHarvester harvester = new TLEHarvester(this, stmName, initialStm, initialJacobianColumns);
         // Update the list of additional state provider
-        addAdditionalStateProvider(harvester);
+        addAdditionalDataProvider(harvester);
         // Return the configured harvester
         return harvester;
     }

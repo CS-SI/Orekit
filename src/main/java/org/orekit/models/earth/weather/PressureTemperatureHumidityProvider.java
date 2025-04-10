@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,7 +33,7 @@ public interface PressureTemperatureHumidityProvider {
      * @param date date at which parameters are requested
      * @return weather parameters
      */
-    PressureTemperatureHumidity getWeatherParamerers(GeodeticPoint location, AbsoluteDate date);
+    PressureTemperatureHumidity getWeatherParameters(GeodeticPoint location, AbsoluteDate date);
 
     /** Provide weather parameters.
      * @param <T> type of the field elements
@@ -41,7 +41,7 @@ public interface PressureTemperatureHumidityProvider {
      * @param date date at which parameters are requested
      * @return weather parameters
      */
-    <T extends CalculusFieldElement<T>> FieldPressureTemperatureHumidity<T> getWeatherParamerers(FieldGeodeticPoint<T> location,
+    <T extends CalculusFieldElement<T>> FieldPressureTemperatureHumidity<T> getWeatherParameters(FieldGeodeticPoint<T> location,
                                                                                                  FieldAbsoluteDate<T> date);
 
 }

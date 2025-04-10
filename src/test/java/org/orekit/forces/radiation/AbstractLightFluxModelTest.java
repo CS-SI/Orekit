@@ -16,7 +16,6 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.ExtendedPositionProvider;
 
 import java.util.Collections;
@@ -44,7 +43,7 @@ class AbstractLightFluxModelTest {
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
         final Frame mockedFrame = Mockito.mock(Frame.class);
         final SpacecraftState mockedState = mockState(position, date, mockedFrame);
-        final ExtendedPVCoordinatesProvider mockedProvider = Mockito.mock(ExtendedPVCoordinatesProvider.class);
+        final ExtendedPositionProvider mockedProvider = Mockito.mock(ExtendedPositionProvider.class);
         final Vector3D sunPosition = Vector3D.PLUS_K;
         Mockito.when(mockedProvider.getPosition(date, mockedFrame)).thenReturn(sunPosition);
         final TestLightFluxModel testLightFluxModel = new TestLightFluxModel(mockedProvider);
@@ -71,7 +70,7 @@ class AbstractLightFluxModelTest {
         final FieldAbsoluteDate<Complex> date = FieldAbsoluteDate.getArbitraryEpoch(field);
         final Frame mockedFrame = Mockito.mock(Frame.class);
         final FieldSpacecraftState<Complex> mockedFieldState = mockState(position, date, mockedFrame);
-        final ExtendedPVCoordinatesProvider mockedProvider = Mockito.mock(ExtendedPVCoordinatesProvider.class);
+        final ExtendedPositionProvider mockedProvider = Mockito.mock(ExtendedPositionProvider.class);
         final FieldVector3D<Complex> sunPosition = FieldVector3D.getMinusJ(field);
         Mockito.when(mockedProvider.getPosition(date, mockedFrame)).thenReturn(sunPosition);
         final TestLightFluxModel testLightFluxModel = new TestLightFluxModel(mockedProvider);
@@ -91,7 +90,7 @@ class AbstractLightFluxModelTest {
         final FieldAbsoluteDate<Complex> date = FieldAbsoluteDate.getArbitraryEpoch(field);
         final Frame mockedFrame = Mockito.mock(Frame.class);
         final FieldSpacecraftState<Complex> mockedState = mockState(position, date, mockedFrame);
-        final ExtendedPVCoordinatesProvider mockedProvider = Mockito.mock(ExtendedPVCoordinatesProvider.class);
+        final ExtendedPositionProvider mockedProvider = Mockito.mock(ExtendedPositionProvider.class);
         final FieldVector3D<Complex> sunPosition = FieldVector3D.getMinusJ(field);
         Mockito.when(mockedProvider.getPosition(date, mockedFrame)).thenReturn(sunPosition);
         final TestLightFluxModel testLightFluxModel = new TestLightFluxModel(mockedProvider);
@@ -115,7 +114,7 @@ class AbstractLightFluxModelTest {
     @Test
     void testConstructor() {
         // GIVEN
-        final ExtendedPVCoordinatesProvider mockedProvider = Mockito.mock(ExtendedPVCoordinatesProvider.class);
+        final ExtendedPositionProvider mockedProvider = Mockito.mock(ExtendedPositionProvider.class);
         final TestLightFluxModel testLightFluxModel = new TestLightFluxModel(mockedProvider);
         // WHEN
         final ExtendedPositionProvider actualProvider = testLightFluxModel.getOccultedBody();
@@ -125,7 +124,7 @@ class AbstractLightFluxModelTest {
 
     private static class TestLightFluxModel extends AbstractLightFluxModel {
 
-        public TestLightFluxModel(final ExtendedPVCoordinatesProvider occultedBody) {
+        public TestLightFluxModel(final ExtendedPositionProvider occultedBody) {
             super(occultedBody);
         }
 

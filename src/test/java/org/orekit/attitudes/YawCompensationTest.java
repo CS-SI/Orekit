@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,9 +18,10 @@ package org.orekit.attitudes;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.complex.Complex;
-import org.hipparchus.complex.ComplexField;
-import org.hipparchus.geometry.euclidean.threed.*;
+import org.hipparchus.geometry.euclidean.threed.Line;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
@@ -34,7 +35,11 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
-import org.orekit.orbits.*;
+import org.orekit.orbits.CircularOrbit;
+import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -111,7 +116,7 @@ class YawCompensationTest {
         GroundPointing law =
                 new YawCompensation(circOrbit.getFrame(), new NadirPointing(circOrbit.getFrame(), earthShape));
 
-        List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
+        List<TimeStampedPVCoordinates> sample = new ArrayList<>();
         for (double dt = -0.1; dt < 0.1; dt += 0.01) {
             Orbit o = circOrbit.shiftedBy(dt);
             sample.add(law.getTargetPV(o, o.getDate(), o.getFrame()));
@@ -127,8 +132,8 @@ class YawCompensationTest {
                 law.getTargetPV(circOrbit, circOrbit.getDate(), circOrbit.getFrame());
 
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(reference.getPosition(),     target.getPosition()),
-                            1.0e-15 * reference.getPosition().getNorm());
+                                Vector3D.distance(reference.getPosition(), target.getPosition()),
+                                1.0e-15 * reference.getPosition().getNorm());
         Assertions.assertEquals(0.0,
                             Vector3D.distance(reference.getVelocity(),     target.getVelocity()),
                             3.0e-11 * reference.getVelocity().getNorm());
@@ -330,10 +335,10 @@ class YawCompensationTest {
 
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
-                              FastMath.toRadians(10.), FastMath.toRadians(20.),
-                              FastMath.toRadians(30.), PositionAngleType.MEAN,
-                              FramesFactory.getEME2000(),
-                              date.shiftedBy(-300.0), 3.986004415e14);
+                               FastMath.toRadians(10.), FastMath.toRadians(20.),
+                               FastMath.toRadians(30.), PositionAngleType.MEAN,
+                               FramesFactory.getEME2000(),
+                               date.shiftedBy(-300.0), 3.986004415e14);
 
         Propagator propagator = new KeplerianPropagator(orbit, law);
 
@@ -392,7 +397,7 @@ class YawCompensationTest {
             Utils.setDataRoot("regular-data");
 
             // Computation date
-            date = new AbsoluteDate(new DateComponents(2008, 04, 07),
+            date = new AbsoluteDate(new DateComponents(2008, 4, 7),
                                     TimeComponents.H00,
                                     TimeScalesFactory.getUTC());
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,7 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldKinematicTransform;
 import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
@@ -72,7 +73,8 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @param <T> type of the field elements
  */
 
-public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends FieldOrbit<T> implements PositionAngleBased {
+public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends FieldOrbit<T>
+        implements PositionAngleBased<FieldCircularOrbit<T>> {
 
     /** Semi-major axis (m). */
     private final T a;
@@ -139,8 +141,8 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
                               final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
         this(a, ex, ey, i, raan, alpha,
-             null, null, null, null, null, null,
-             type, cachedPositionAngleType, frame, date, mu);
+             a.getField().getZero(), a.getField().getZero(), a.getField().getZero(), a.getField().getZero(), a.getField().getZero(),
+             computeKeplerianAlphaDot(type, a, ex, ey, mu, alpha, type), type, cachedPositionAngleType, frame, date, mu);
     }
 
     /** Creates a new instance without derivatives and with cached position angle same as value inputted.
@@ -243,14 +245,9 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
         this.raanDot = raanDot;
         this.cachedPositionAngleType = cachedPositionAngleType;
 
-        if (hasDerivatives()) {
-            final FieldUnivariateDerivative1<T> alphaUD = initializeCachedAlpha(alpha, alphaDot, type);
-            this.cachedAlpha = alphaUD.getValue();
-            this.cachedAlphaDot = alphaUD.getFirstDerivative();
-        } else {
-            this.cachedAlpha = initializeCachedAlpha(alpha, type);
-            this.cachedAlphaDot = null;
-        }
+        final FieldUnivariateDerivative1<T> alphaUD = initializeCachedAlpha(alpha, alphaDot, type);
+        this.cachedAlpha = alphaUD.getValue();
+        this.cachedAlphaDot = alphaUD.getFirstDerivative();
 
         partialPV   = null;
 
@@ -359,12 +356,12 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
             // acceleration is either almost zero or NaN,
             // we assume acceleration was not known
             // we don't set up derivatives
-            aDot      = null;
-            exDot     = null;
-            eyDot     = null;
-            iDot      = null;
-            raanDot   = null;
-            cachedAlphaDot = null;
+            aDot      = getZero();
+            exDot     = getZero();
+            eyDot     = getZero();
+            iDot      = getZero();
+            raanDot   = getZero();
+            cachedAlphaDot = computeKeplerianAlphaDot(cachedPositionAngleType, a, ex, ey, mu, cachedAlpha, cachedPositionAngleType);
         }
 
     }
@@ -412,7 +409,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
         cachedPositionAngleType = PositionAngleType.TRUE;
         cachedAlpha = op.getLv().subtract(raan);
 
-        if (op.hasDerivatives()) {
+        if (op.hasNonKeplerianAcceleration()) {
             aDot      = op.getADot();
             final T      hxDot = op.getHxDot();
             final T      hyDot = op.getHyDot();
@@ -426,12 +423,12 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
                         subtract(equiExDot.add(equiEy.multiply(raanDot)).multiply(sinRaan));
             cachedAlphaDot = op.getLvDot().subtract(raanDot);
         } else {
-            aDot      = null;
-            exDot     = null;
-            eyDot     = null;
-            iDot      = null;
-            raanDot   = null;
-            cachedAlphaDot = null;
+            aDot      = getZero();
+            exDot     = getZero();
+            eyDot     = getZero();
+            iDot      = getZero();
+            raanDot   = getZero();
+            cachedAlphaDot = computeKeplerianAlphaDot(cachedPositionAngleType, a, ex, ey, op.getMu(), cachedAlpha, cachedPositionAngleType);
         }
 
         partialPV = null;
@@ -455,21 +452,12 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
         cachedPositionAngleType = op.getCachedPositionAngleType();
         cachedAlpha = getZero().newInstance(op.getAlpha(cachedPositionAngleType));
 
-        if (op.hasDerivatives()) {
-            aDot      = getZero().newInstance(op.getADot());
-            iDot      = getZero().newInstance(op.getIDot());
-            raanDot   = getZero().newInstance(op.getRightAscensionOfAscendingNodeDot());
-            exDot     = getZero().newInstance(op.getCircularExDot());
-            eyDot     = getZero().newInstance(op.getCircularEyDot());
-            cachedAlphaDot = getZero().newInstance(op.getAlphaDot(cachedPositionAngleType));
-        } else {
-            aDot      = null;
-            exDot     = null;
-            eyDot     = null;
-            iDot      = null;
-            raanDot   = null;
-            cachedAlphaDot = null;
-        }
+        aDot      = getZero().newInstance(op.getADot());
+        iDot      = getZero().newInstance(op.getIDot());
+        raanDot   = getZero().newInstance(op.getRightAscensionOfAscendingNodeDot());
+        exDot     = getZero().newInstance(op.getCircularExDot());
+        eyDot     = getZero().newInstance(op.getCircularEyDot());
+        cachedAlphaDot = getZero().newInstance(op.getAlphaDot(cachedPositionAngleType));
 
         partialPV = null;
 
@@ -513,11 +501,9 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
     /** {@inheritDoc} */
     @Override
     public T getEquinoctialExDot() {
-
-        if (!hasDerivatives()) {
-            return null;
+        if (!hasNonKeplerianRates()) {
+            return getZero();
         }
-
         final FieldSinCos<T> sc = FastMath.sinCos(raan);
         return exDot.subtract(ey.multiply(raanDot)).multiply(sc.cos()).
                subtract(eyDot.add(ex.multiply(raanDot)).multiply(sc.sin()));
@@ -534,11 +520,9 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
     /** {@inheritDoc} */
     @Override
     public T getEquinoctialEyDot() {
-
-        if (!hasDerivatives()) {
-            return null;
+        if (!hasNonKeplerianRates()) {
+            return getZero();
         }
-
         final FieldSinCos<T> sc = FastMath.sinCos(raan);
         return eyDot.add(ex.multiply(raanDot)).multiply(sc.cos()).
                add(exDot.subtract(ey.multiply(raanDot)).multiply(sc.sin()));
@@ -587,13 +571,12 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
     @Override
     public T getHxDot() {
 
-        if (!hasDerivatives()) {
-            return null;
-        }
-
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
             return getZero().add(Double.NaN);
+        }
+        if (!hasNonKeplerianRates()) {
+            return getZero();
         }
 
         final FieldSinCos<T> sc = FastMath.sinCos(raan);
@@ -617,13 +600,12 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
     @Override
     public T getHyDot() {
 
-        if (!hasDerivatives()) {
-            return null;
-        }
-
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
             return getZero().add(Double.NaN);
+        }
+        if (!hasNonKeplerianRates()) {
+            return getZero();
         }
 
         final FieldSinCos<T> sc = FastMath.sinCos(raan);
@@ -657,9 +639,6 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
      */
     public T getAlphaVDot() {
 
-        if (!hasDerivatives()) {
-            return null;
-        }
         switch (cachedPositionAngleType) {
             case ECCENTRIC:
                 final FieldUnivariateDerivative1<T> alphaEUD = new FieldUnivariateDerivative1<>(cachedAlpha, cachedAlphaDot);
@@ -709,9 +688,6 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
      */
     public T getAlphaEDot() {
 
-        if (!hasDerivatives()) {
-            return null;
-        }
         switch (cachedPositionAngleType) {
             case TRUE:
                 final FieldUnivariateDerivative1<T> alphaVUD = new FieldUnivariateDerivative1<>(cachedAlpha, cachedAlphaDot);
@@ -762,9 +738,6 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
      */
     public T getAlphaMDot() {
 
-        if (!hasDerivatives()) {
-            return null;
-        }
         switch (cachedPositionAngleType) {
             case TRUE:
                 final FieldUnivariateDerivative1<T> alphaVUD = new FieldUnivariateDerivative1<>(cachedAlpha, cachedAlphaDot);
@@ -810,54 +783,6 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
                                                                                    getAlphaVDot());
     }
 
-    /** Computes the true latitude argument from the eccentric latitude argument.
-     * @param alphaE = E + ω eccentric latitude argument (rad)
-     * @param ex e cos(ω), first component of circular eccentricity vector
-     * @param ey e sin(ω), second component of circular eccentricity vector
-     * @param <T> Type of the field elements
-     * @return the true latitude argument.
-     */
-    @Deprecated
-    public static <T extends CalculusFieldElement<T>> T eccentricToTrue(final T alphaE, final T ex, final T ey) {
-        return FieldCircularLatitudeArgumentUtility.eccentricToTrue(ex, ey, alphaE);
-    }
-
-    /** Computes the eccentric latitude argument from the true latitude argument.
-     * @param alphaV = v + ω true latitude argument (rad)
-     * @param ex e cos(ω), first component of circular eccentricity vector
-     * @param ey e sin(ω), second component of circular eccentricity vector
-     * @param <T> Type of the field elements
-     * @return the eccentric latitude argument.
-     */
-    @Deprecated
-    public static <T extends CalculusFieldElement<T>> T trueToEccentric(final T alphaV, final T ex, final T ey) {
-        return FieldCircularLatitudeArgumentUtility.trueToEccentric(ex, ey, alphaV);
-    }
-
-    /** Computes the eccentric latitude argument from the mean latitude argument.
-     * @param alphaM = M + ω  mean latitude argument (rad)
-     * @param ex e cos(ω), first component of circular eccentricity vector
-     * @param ey e sin(ω), second component of circular eccentricity vector
-     * @param <T> Type of the field elements
-     * @return the eccentric latitude argument.
-     */
-    @Deprecated
-    public static <T extends CalculusFieldElement<T>> T meanToEccentric(final T alphaM, final T ex, final T ey) {
-        return FieldCircularLatitudeArgumentUtility.meanToEccentric(ex, ey, alphaM);
-    }
-
-    /** Computes the mean latitude argument from the eccentric latitude argument.
-     * @param alphaE = E + ω  eccentric latitude argument (rad)
-     * @param ex e cos(ω), first component of circular eccentricity vector
-     * @param ey e sin(ω), second component of circular eccentricity vector
-     * @param <T> Type of the field elements
-     * @return the mean latitude argument.
-     */
-    @Deprecated
-    public static <T extends CalculusFieldElement<T>> T eccentricToMean(final T alphaE, final T ex, final T ey) {
-        return FieldCircularLatitudeArgumentUtility.eccentricToMean(ex, ey, alphaE);
-    }
-
     /** {@inheritDoc} */
     @Override
     public T getE() {
@@ -867,10 +792,6 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
     /** {@inheritDoc} */
     @Override
     public T getEDot() {
-
-        if (!hasDerivatives()) {
-            return null;
-        }
 
         return ex.multiply(exDot).add(ey.multiply(eyDot)).divide(getE());
 
@@ -911,7 +832,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
     /** {@inheritDoc} */
     @Override
     public T getLvDot() {
-        return hasDerivatives() ? getAlphaVDot().add(raanDot) : null;
+        return getAlphaVDot().add(raanDot);
     }
 
     /** {@inheritDoc} */
@@ -923,7 +844,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
     /** {@inheritDoc} */
     @Override
     public T getLEDot() {
-        return hasDerivatives() ? getAlphaEDot().add(raanDot) : null;
+        return getAlphaEDot().add(raanDot);
     }
 
     /** {@inheritDoc} */
@@ -935,13 +856,14 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
     /** {@inheritDoc} */
     @Override
     public T getLMDot() {
-        return hasDerivatives() ? getAlphaMDot().add(raanDot) : null;
+        return getAlphaMDot().add(raanDot);
     }
 
     /** {@inheritDoc} */
     @Override
-    public boolean hasDerivatives() {
-        return aDot != null;
+    public boolean hasNonKeplerianAcceleration() {
+        return aDot.getReal() != 0. || exDot.getReal() != 0 || iDot.getReal() != 0. || eyDot.getReal() != 0. || raanDot.getReal() != 0. ||
+                FastMath.abs(cachedAlphaDot.subtract(computeKeplerianAlphaDot(cachedPositionAngleType, a, ex, ey, getMu(), cachedAlpha, cachedPositionAngleType)).getReal()) > TOLERANCE_POSITION_ANGLE_RATE;
     }
 
     /** Compute position and velocity but not acceleration.
@@ -1055,20 +977,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
 
     }
 
-    /** Initialize cached alpha.
-     * @param alpha input alpha
-     * @param positionAngleType position angle type passed as input
-     * @return alpha to cache
-     * @since 12.1
-     */
-    private T initializeCachedAlpha(final T alpha, final PositionAngleType positionAngleType) {
-        return FieldCircularLatitudeArgumentUtility.convertAlpha(positionAngleType, alpha, ex, ey, cachedPositionAngleType);
-    }
-
     /** Compute non-Keplerian part of the acceleration from first time derivatives.
-     * <p>
-     * This method should be called only when {@link #hasDerivatives()} returns true.
-     * </p>
      * @return non-Keplerian part of the acceleration
      */
     private FieldVector3D<T> nonKeplerianAcceleration() {
@@ -1157,12 +1066,37 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
         final T r2 = partialPV.getPosition().getNormSq();
         final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r2.multiply(r2.sqrt()).reciprocal().multiply(getMu().negate()),
                                                                            partialPV.getPosition());
-        final FieldVector3D<T> acceleration = hasDerivatives() ?
+        final FieldVector3D<T> acceleration = hasNonKeplerianRates() ?
                                               keplerianAcceleration.add(nonKeplerianAcceleration()) :
                                               keplerianAcceleration;
 
         return new TimeStampedFieldPVCoordinates<>(getDate(), partialPV.getPosition(), partialPV.getVelocity(), acceleration);
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldCircularOrbit<T> inFrame(final Frame inertialFrame) {
+        final FieldPVCoordinates<T> fieldPVCoordinates;
+        if (hasNonKeplerianAcceleration()) {
+            fieldPVCoordinates = getPVCoordinates(inertialFrame);
+        } else {
+            final FieldKinematicTransform<T> transform = getFrame().getKinematicTransformTo(inertialFrame, getDate());
+            fieldPVCoordinates = transform.transformOnlyPV(getPVCoordinates());
+        }
+        final FieldCircularOrbit<T> fieldOrbit = new FieldCircularOrbit<>(fieldPVCoordinates, inertialFrame, getDate(), getMu());
+        if (fieldOrbit.getCachedPositionAngleType() == getCachedPositionAngleType()) {
+            return fieldOrbit;
+        } else {
+            return fieldOrbit.withCachedPositionAngleType(getCachedPositionAngleType());
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldCircularOrbit<T> withCachedPositionAngleType(final PositionAngleType positionAngleType) {
+        return new FieldCircularOrbit<>(a, ex, ey, i, raan, getAlpha(positionAngleType), aDot, exDot, eyDot, iDot, raanDot,
+                getAlphaDot(positionAngleType), positionAngleType, getFrame(), getDate(), getMu());
     }
 
     /** {@inheritDoc} */
@@ -1181,7 +1115,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
                                                                                 PositionAngleType.MEAN, cachedPositionAngleType, getFrame(),
                                                                                 getDate().shiftedBy(dt), getMu());
 
-        if (hasDerivatives()) {
+        if (hasNonKeplerianRates()) {
 
             // extract non-Keplerian acceleration from first time derivatives
             final FieldVector3D<T> nonKeplerianAcceleration = nonKeplerianAcceleration();
@@ -1508,13 +1442,13 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
 
     /** {@inheritDoc} */
     @Override
-    public boolean hasRates() {
-        return hasDerivatives();
+    public boolean hasNonKeplerianRates() {
+        return hasNonKeplerianAcceleration();
     }
 
     /** {@inheritDoc} */
     @Override
-    public FieldCircularOrbit<T> removeRates() {
+    public FieldCircularOrbit<T> withKeplerianRates() {
         return new FieldCircularOrbit<>(getA(), getCircularEx(), getCircularEy(),
                 getI(), getRightAscensionOfAscendingNode(), cachedAlpha,
                 cachedPositionAngleType, getFrame(), getDate(), getMu());
@@ -1524,19 +1458,12 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
     @Override
     public CircularOrbit toOrbit() {
         final double cachedPositionAngle = cachedAlpha.getReal();
-        if (hasDerivatives()) {
-            return new CircularOrbit(a.getReal(), ex.getReal(), ey.getReal(),
-                                     i.getReal(), raan.getReal(), cachedPositionAngle,
-                                     aDot.getReal(), exDot.getReal(), eyDot.getReal(),
-                                     iDot.getReal(), raanDot.getReal(), cachedAlphaDot.getReal(),
-                                     cachedPositionAngleType, getFrame(),
-                                     getDate().toAbsoluteDate(), getMu().getReal());
-        } else {
-            return new CircularOrbit(a.getReal(), ex.getReal(), ey.getReal(),
-                                     i.getReal(), raan.getReal(), cachedPositionAngle,
-                                     cachedPositionAngleType, getFrame(),
-                                     getDate().toAbsoluteDate(), getMu().getReal());
-        }
+        return new CircularOrbit(a.getReal(), ex.getReal(), ey.getReal(),
+                                 i.getReal(), raan.getReal(), cachedPositionAngle,
+                                 aDot.getReal(), exDot.getReal(), eyDot.getReal(),
+                                 iDot.getReal(), raanDot.getReal(), cachedAlphaDot.getReal(),
+                                 cachedPositionAngleType, getFrame(),
+                                 getDate().toAbsoluteDate(), getMu().getReal());
     }
 
 

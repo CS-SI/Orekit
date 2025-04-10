@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -130,7 +130,7 @@ public enum OceanLoadDeformationCoefficients {
                 // setup the reader
                 lineNumber = 0;
                 int maxDegree = 0;
-                final Map<Integer, Double> map = new HashMap<Integer, Double>();
+                final Map<Integer, Double> map = new HashMap<>();
                 for (line = reader.readLine(); line != null; line = reader.readLine()) {
                     lineNumber++;
                     final Matcher regularMatcher = regularLinePattern.matcher(line);

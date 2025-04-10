@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,6 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.displacement.StationDisplacement;
-import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
@@ -68,11 +67,7 @@ public class KeplerianContext implements StationDataProvider {
         }
 
         // Initialize builder
-        final KeplerianPropagatorBuilder propagatorBuilder =
-                        new KeplerianPropagatorBuilder(startOrbit, angleType, dP);
-
-        // Return
-        return propagatorBuilder;
+       return new KeplerianPropagatorBuilder(startOrbit, angleType, dP);
 
     }
 
@@ -81,9 +76,7 @@ public class KeplerianContext implements StationDataProvider {
         final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(latitudeInDegrees),
                                                    FastMath.toRadians(longitudeInDegrees),
                                                    altitude);
-        return new GroundStation(new TopocentricFrame(earth, gp, name),
-                                 TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
-                                 ut1.getEOPHistory(), displacements);
+        return new GroundStation(new TopocentricFrame(earth, gp, name), ut1.getEOPHistory(), displacements);
     }
 
     @Override

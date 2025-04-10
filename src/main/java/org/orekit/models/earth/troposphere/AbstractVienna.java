@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,8 +25,6 @@ import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.SinCos;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
-import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -42,7 +40,7 @@ import org.orekit.utils.TrackingCoordinates;
 public abstract class AbstractVienna implements TroposphericModel, TroposphereMappingFunction {
 
     /** C coefficient from Chen and Herring gradient mapping function.
-     * @see Modeling tropospheric delays for space geodetic techniques, Daniel Landskron, 2017, section 2.2
+     * @see "Modeling tropospheric delays for space geodetic techniques, Daniel Landskron, 2017, section 2.2"
      */
     private static final double C = 0.0032;
 
@@ -78,15 +76,13 @@ public abstract class AbstractVienna implements TroposphericModel, TroposphereMa
     @Override
     public TroposphericDelay pathDelay(final TrackingCoordinates trackingCoordinates,
                                        final GeodeticPoint point,
-                                       final PressureTemperatureHumidity weather,
                                        final double[] parameters, final AbsoluteDate date) {
         // zenith delay
         final TroposphericDelay delays =
-                        zenithDelayProvider.pathDelay(trackingCoordinates, point, weather, parameters, date);
+                        zenithDelayProvider.pathDelay(trackingCoordinates, point, parameters, date);
 
         // mapping function
-        final double[] mappingFunction =
-                        mappingFactors(trackingCoordinates, point, weather, date);
+        final double[] mappingFunction = mappingFactors(trackingCoordinates, point, date);
 
         // horizontal gradient
         final AzimuthalGradientCoefficients agc = gProvider.getGradientCoefficients(point, date);
@@ -120,15 +116,13 @@ public abstract class AbstractVienna implements TroposphericModel, TroposphereMa
     @Override
     public <T extends CalculusFieldElement<T>> FieldTroposphericDelay<T> pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                                                    final FieldGeodeticPoint<T> point,
-                                                                                   final FieldPressureTemperatureHumidity<T> weather,
                                                                                    final T[] parameters, final FieldAbsoluteDate<T> date) {
         // zenith delay
         final FieldTroposphericDelay<T> delays =
-                        zenithDelayProvider.pathDelay(trackingCoordinates, point, weather, parameters, date);
+                        zenithDelayProvider.pathDelay(trackingCoordinates, point, parameters, date);
 
         // mapping function
-        final T[] mappingFunction =
-                        mappingFactors(trackingCoordinates, point, weather, date);
+        final T[] mappingFunction = mappingFactors(trackingCoordinates, point, date);
 
         // horizontal gradient
         final FieldAzimuthalGradientCoefficients<T> agc = gProvider.getGradientCoefficients(point, date);
@@ -175,8 +169,18 @@ public abstract class AbstractVienna implements TroposphericModel, TroposphereMa
      * @param date date
      * @return day of year
      */
-    protected int getDayOfYear(final AbsoluteDate date) {
-        return date.getComponents(utc).getDate().getDayOfYear();
+    protected double getDayOfYear(final AbsoluteDate date) {
+        return date.getDayOfYear(utc);
+    }
+
+    /** Get day of year.
+     * @param <T> type of the field elements
+     * @param date date
+     * @return day of year
+     * @since 13.0
+     */
+    protected <T extends CalculusFieldElement<T>> T getDayOfYear(final FieldAbsoluteDate<T> date) {
+        return date.getDayOfYear(utc);
     }
 
 }

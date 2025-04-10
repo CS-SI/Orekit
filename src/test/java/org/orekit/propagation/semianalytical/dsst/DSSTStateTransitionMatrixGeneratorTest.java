@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,22 +35,14 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.EquinoctialOrbit;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngleType;
+import org.orekit.orbits.*;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.CombinedDerivatives;
-import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
+import org.orekit.propagation.semianalytical.dsst.forces.*;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -101,10 +93,10 @@ class DSSTStateTransitionMatrixGeneratorTest {
                                                                propagator2.getAttitudeProvider(),
                                                                propagator2.getPropagationType());
         propagator2.addAdditionalDerivativesProvider(dummyStmGenerator);
-        propagator2.setInitialState(propagator2.getInitialState().addAdditionalState(dummyStmGenerator.getName(), new double[36]),
+        propagator2.setInitialState(propagator2.getInitialState().addAdditionalData(dummyStmGenerator.getName(), new double[36]),
                                     propagator2.getPropagationType());
         propagator2.addAdditionalDerivativesProvider(new DSSTIntegrableJacobianColumnGenerator(dummyStmGenerator, "dummy-2"));
-        propagator2.setInitialState(propagator2.getInitialState().addAdditionalState("dummy-2", new double[6]),
+        propagator2.setInitialState(propagator2.getInitialState().addAdditionalData("dummy-2", new double[6]),
                                     propagator2.getPropagationType());
         propagator2.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
             public String getName() { return "dummy-3"; }
@@ -113,7 +105,7 @@ class DSSTStateTransitionMatrixGeneratorTest {
                 return new CombinedDerivatives(new double[1], null);
             }
         });
-        propagator2.setInitialState(propagator2.getInitialState().addAdditionalState("dummy-3", new double[1]),
+        propagator2.setInitialState(propagator2.getInitialState().addAdditionalData("dummy-3", new double[1]),
                                     propagator2.getPropagationType());
         propagator2.
         getAllForceModels().
@@ -181,7 +173,7 @@ class DSSTStateTransitionMatrixGeneratorTest {
         double[][] dYdY0Ref = new double[6][6];
         DSSTPropagator propagator2 = setUpPropagator(type, dP, provider);
         propagator2.setMu(provider.getMu());
-        double[] steps = NumericalPropagator.tolerances(1000000 * dP, initialState.getOrbit(), orbitType)[0];
+        double[] steps = ToleranceProvider.getDefaultToleranceProvider(1000000 * dP).getTolerances(initialState.getOrbit(), orbitType)[0];
         for (int i = 0; i < 6; ++i) {
             propagator2.setInitialState(shiftState(initialState, orbitType, -4 * steps[i], i), type);
             SpacecraftState sM4h = propagator2.propagate(target);
@@ -242,7 +234,7 @@ class DSSTStateTransitionMatrixGeneratorTest {
         array[0][column] += delta;
 
         return arrayToState(array, orbitType, state.getFrame(), state.getDate(),
-                            state.getMu(), state.getAttitude());
+                            state.getOrbit().getMu(), state.getAttitude());
 
     }
 
@@ -287,7 +279,7 @@ class DSSTStateTransitionMatrixGeneratorTest {
         final EquinoctialOrbit orbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(initialOrbit);
 
         // compute state Jacobian using DSSTStateTransitionMatrixGenerator
-        double[][] tol = NumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, OrbitType.EQUINOCTIAL);
         DSSTPropagator propagator =
             new DSSTPropagator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]), type);
         propagator.addForceModel(srp);

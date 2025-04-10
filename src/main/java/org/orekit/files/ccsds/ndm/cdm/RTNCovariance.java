@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,19 +21,40 @@ import org.hipparchus.linear.RealMatrix;
 import org.orekit.files.ccsds.section.CommentsContainer;
 
 /**
- * Container for RTN covariance matrix data. This class as a RealMatrix as
- * attribute which can be acces with getRTNCovariaxMatrix method. Beware that
- * there are thus 2 ways to modify the RTN covariance : setC... ( setCrr,
- * setCtr ...) which should be prioritized and getRTNCovariaxMatrix.setEntry(row, col, value).
- * <p> The RTN Covariance Matrix is provided in the 9×9 Lower Triangular Form. All parameters of the 6×6 position/velocity submatrix
- * are mandatory. The remaining elements will return NaN if not provided. </p>
+ * Container for RTN covariance matrix data.
+ * <p>
+ * Beware that the Orekit getters and setters all rely on SI units. The parsers
+ * and writers take care of converting these SI units into CCSDS mandatory units.
+ * The {@link org.orekit.utils.units.Unit Unit} class provides useful
+ * {@link org.orekit.utils.units.Unit#fromSI(double) fromSi} and
+ * {@link org.orekit.utils.units.Unit#toSI(double) toSI} methods in case the callers
+ * already use CCSDS units instead of the API SI units. The general-purpose
+ * {@link org.orekit.utils.units.Unit Unit} class (without an 's') and the
+ * CCSDS-specific {@link org.orekit.files.ccsds.definitions.Units Units} class
+ * (with an 's') also provide some predefined units. These predefined units and the
+ * {@link org.orekit.utils.units.Unit#fromSI(double) fromSi} and
+ * {@link org.orekit.utils.units.Unit#toSI(double) toSI} conversion methods are indeed
+ * what the parsers and writers use for the conversions.
+ * </p>
+ * <p>
+ * This class has a RealMatrix as attribute which can be access with
+ * {@code getRTNCovariaxMatrix} method. Beware that there are thus two
+ * ways to modify the RTN covariance : {@code setC…} ({@code setCrr},
+ * {@code setCtr}…) which should be prioritized and
+ * {@code getRTNCovariaxMatrix.setEntry(row, col, value)}.
+ * </p>
+ * <p>
+ * The RTN Covariance Matrix is provided in the 9×9 Lower Triangular Form. All parameters
+ * of the 6×6 position/velocity submatrix are mandatory. The remaining elements will return
+ * {code NaN} if not provided.
+ * </p>
  * @author Melina Vanel
  * @since 11.2
  */
 public class RTNCovariance extends CommentsContainer {
 
     /** RTN covariance matrix. */
-    private RealMatrix covarianceMatrix;
+    private final RealMatrix covarianceMatrix;
 
     /** Simple constructor. To update matrix value there are 2 ways to modify the RTN
      * covariance : setC... ( setCrr, setCtr ...) which should be prioritized and

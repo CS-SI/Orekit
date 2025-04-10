@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -96,7 +96,7 @@ class AcmMetadataWriter extends AbstractWriter {
         // definitions
         if (metadata.getAcmDataElements() != null) {
             generator.writeEntry(AcmMetadataKey.ACM_DATA_ELEMENTS.name(),
-                                 metadata.getAcmDataElements().stream().map(e -> e.name()).collect(Collectors.toList()), false);
+                                 metadata.getAcmDataElements().stream().map(Enum::name).collect(Collectors.toList()), false);
         }
 
         // other times

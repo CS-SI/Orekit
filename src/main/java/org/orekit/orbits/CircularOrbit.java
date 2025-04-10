@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,19 +16,17 @@
  */
 package org.orekit.orbits;
 
-import java.io.Serializable;
-
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.SinCos;
-import org.orekit.annotation.DefaultDataContext;
-import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
+import org.orekit.frames.KinematicTransform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -72,10 +70,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 
-public class CircularOrbit extends Orbit implements PositionAngleBased {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20231217L;
+public class CircularOrbit extends Orbit implements PositionAngleBased<CircularOrbit> {
 
     /** Semi-major axis (m). */
     private final double a;
@@ -144,9 +139,9 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
                          final PositionAngleType type, final PositionAngleType cachedPositionAngleType,
                          final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
-        this(a, ex, ey, i, raan, alpha,
-             Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN,
-             type, cachedPositionAngleType, frame, date, mu);
+        this(a, ex, ey, i, raan, alpha, 0., 0., 0., 0., 0.,
+            computeKeplerianAlphaDot(type, a, ex, ey, mu, alpha, type),
+            type, cachedPositionAngleType, frame, date, mu);
     }
 
     /** Creates a new instance without derivatives and with cached position angle same as value inputted.
@@ -219,14 +214,9 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
         this.raanDot = raanDot;
         this.cachedPositionAngleType = cachedPositionAngleType;
 
-        if (hasDerivatives()) {
-            final UnivariateDerivative1 alphaUD = initializeCachedAlpha(alpha, alphaDot, type);
-            this.cachedAlpha = alphaUD.getValue();
-            this.cachedAlphaDot = alphaUD.getFirstDerivative();
-        } else {
-            this.cachedAlpha = initializeCachedAlpha(alpha, type);
-            this.cachedAlphaDot = Double.NaN;
-        }
+        final UnivariateDerivative1 alphaUD = initializeCachedAlpha(alpha, alphaDot, type);
+        this.cachedAlpha = alphaUD.getValue();
+        this.cachedAlphaDot = alphaUD.getFirstDerivative();
 
         serializePV = false;
         partialPV   = null;
@@ -410,12 +400,12 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
             // acceleration is either almost zero or NaN,
             // we assume acceleration was not known
             // we don't set up derivatives
-            aDot      = Double.NaN;
-            exDot     = Double.NaN;
-            eyDot     = Double.NaN;
-            iDot      = Double.NaN;
-            raanDot   = Double.NaN;
-            cachedAlphaDot = Double.NaN;
+            aDot      = 0.;
+            exDot     = 0.;
+            eyDot     = 0.;
+            iDot      = 0.;
+            raanDot   = 0.;
+            cachedAlphaDot = computeKeplerianAlphaDot(cachedPositionAngleType, a, ex, ey, mu, cachedAlpha, cachedPositionAngleType);
         }
 
         serializePV = true;
@@ -467,7 +457,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
         cachedPositionAngleType = PositionAngleType.TRUE;
         cachedAlpha = op.getLv() - raan;
 
-        if (op.hasDerivatives()) {
+        if (op.hasNonKeplerianAcceleration()) {
             aDot    = op.getADot();
             final double hxDot = op.getHxDot();
             final double hyDot = op.getHyDot();
@@ -481,17 +471,24 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
                       (equiExDot + equiEy * raanDot) * sinRaan;
             cachedAlphaDot = op.getLvDot() - raanDot;
         } else {
-            aDot      = Double.NaN;
-            exDot     = Double.NaN;
-            eyDot     = Double.NaN;
-            iDot      = Double.NaN;
-            raanDot   = Double.NaN;
-            cachedAlphaDot = Double.NaN;
+            aDot      = 0.;
+            exDot     = 0.;
+            eyDot     = 0.;
+            iDot      = 0.;
+            raanDot   = 0.;
+            cachedAlphaDot = computeKeplerianAlphaDot(cachedPositionAngleType, a, ex, ey, getMu(), cachedAlpha, cachedPositionAngleType);
         }
 
         serializePV = false;
         partialPV   = null;
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasNonKeplerianAcceleration() {
+        return aDot != 0. || exDot != 0. || eyDot != 0. || iDot != 0. || raanDot != 0. ||
+                FastMath.abs(cachedAlphaDot - computeKeplerianAlphaDot(cachedPositionAngleType, a, ex, ey, getMu(), cachedAlpha, cachedPositionAngleType)) > TOLERANCE_POSITION_ANGLE_RATE;
     }
 
     /** {@inheritDoc} */
@@ -522,6 +519,9 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     /** {@inheritDoc} */
     @Override
     public double getEquinoctialExDot() {
+        if (!hasNonKeplerianAcceleration()) {
+            return 0.;
+        }
         final SinCos sc = FastMath.sinCos(raan);
         return (exDot - ey * raanDot) * sc.cos() - (eyDot + ex * raanDot) * sc.sin();
     }
@@ -536,6 +536,9 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     /** {@inheritDoc} */
     @Override
     public double getEquinoctialEyDot() {
+        if (!hasNonKeplerianAcceleration()) {
+            return 0.;
+        }
         final SinCos sc = FastMath.sinCos(raan);
         return (eyDot + ex * raanDot) * sc.cos() + (exDot - ey * raanDot) * sc.sin();
     }
@@ -576,7 +579,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
             return Double.NaN;
         }
-        return  FastMath.cos(raan) * FastMath.tan(i / 2);
+        return FastMath.cos(raan) * FastMath.tan(i / 2);
     }
 
     /** {@inheritDoc} */
@@ -585,6 +588,9 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
             return Double.NaN;
+        }
+        if (!hasNonKeplerianAcceleration()) {
+            return 0.;
         }
         final SinCos sc  = FastMath.sinCos(raan);
         final double tan = FastMath.tan(0.5 * i);
@@ -598,7 +604,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
             return Double.NaN;
         }
-        return  FastMath.sin(raan) * FastMath.tan(i / 2);
+        return FastMath.sin(raan) * FastMath.tan(i / 2);
     }
 
     /** {@inheritDoc} */
@@ -607,6 +613,9 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
             return Double.NaN;
+        }
+        if (!hasNonKeplerianAcceleration()) {
+            return 0.;
         }
         final SinCos sc  = FastMath.sinCos(raan);
         final double tan = FastMath.tan(0.5 * i);
@@ -793,50 +802,6 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
                                                                                    getAlphaVDot());
     }
 
-    /** Computes the true latitude argument from the eccentric latitude argument.
-     * @param alphaE = E + ω eccentric latitude argument (rad)
-     * @param ex e cos(ω), first component of circular eccentricity vector
-     * @param ey e sin(ω), second component of circular eccentricity vector
-     * @return the true latitude argument.
-     */
-    @Deprecated
-    public static double eccentricToTrue(final double alphaE, final double ex, final double ey) {
-        return CircularLatitudeArgumentUtility.eccentricToTrue(ex, ey, alphaE);
-    }
-
-    /** Computes the eccentric latitude argument from the true latitude argument.
-     * @param alphaV = V + ω true latitude argument (rad)
-     * @param ex e cos(ω), first component of circular eccentricity vector
-     * @param ey e sin(ω), second component of circular eccentricity vector
-     * @return the eccentric latitude argument.
-     */
-    @Deprecated
-    public static double trueToEccentric(final double alphaV, final double ex, final double ey) {
-        return CircularLatitudeArgumentUtility.trueToEccentric(ex, ey, alphaV);
-    }
-
-    /** Computes the eccentric latitude argument from the mean latitude argument.
-     * @param alphaM = M + ω  mean latitude argument (rad)
-     * @param ex e cos(ω), first component of circular eccentricity vector
-     * @param ey e sin(ω), second component of circular eccentricity vector
-     * @return the eccentric latitude argument.
-     */
-    @Deprecated
-    public static double meanToEccentric(final double alphaM, final double ex, final double ey) {
-        return CircularLatitudeArgumentUtility.meanToEccentric(ex, ey, alphaM);
-    }
-
-    /** Computes the mean latitude argument from the eccentric latitude argument.
-     * @param alphaE = E + ω  mean latitude argument (rad)
-     * @param ex e cos(ω), first component of circular eccentricity vector
-     * @param ey e sin(ω), second component of circular eccentricity vector
-     * @return the mean latitude argument.
-     */
-    @Deprecated
-    public static double eccentricToMean(final double alphaE, final double ex, final double ey) {
-        return CircularLatitudeArgumentUtility.eccentricToMean(ex, ey, alphaE);
-    }
-
     /** {@inheritDoc} */
     @Override
     public double getE() {
@@ -846,6 +811,9 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     /** {@inheritDoc} */
     @Override
     public double getEDot() {
+        if (!hasNonKeplerianAcceleration()) {
+            return 0.;
+        }
         return (ex * exDot + ey * eyDot) / getE();
     }
 
@@ -1025,20 +993,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
 
     }
 
-    /** Initialize cached alpha.
-     * @param alpha input alpha
-     * @param positionAngleType position angle type passed as input
-     * @return alpha to cache
-     * @since 12.1
-     */
-    private double initializeCachedAlpha(final double alpha, final PositionAngleType positionAngleType) {
-        return CircularLatitudeArgumentUtility.convertAlpha(positionAngleType, alpha, ex, ey, cachedPositionAngleType);
-    }
-
     /** Compute non-Keplerian part of the acceleration from first time derivatives.
-     * <p>
-     * This method should be called only when {@link #hasDerivatives()} returns true.
-     * </p>
      * @return non-Keplerian part of the acceleration
      */
     private Vector3D nonKeplerianAcceleration() {
@@ -1114,7 +1069,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
         // acceleration
         final double r2 = partialPV.getPosition().getNormSq();
         final Vector3D keplerianAcceleration = new Vector3D(-getMu() / (r2 * FastMath.sqrt(r2)), partialPV.getPosition());
-        final Vector3D acceleration = hasDerivatives() ?
+        final Vector3D acceleration = hasNonKeplerianRates() ?
                                       keplerianAcceleration.add(nonKeplerianAcceleration()) :
                                       keplerianAcceleration;
 
@@ -1124,15 +1079,48 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
 
     /** {@inheritDoc} */
     @Override
+    public CircularOrbit inFrame(final Frame inertialFrame) {
+        final PVCoordinates pvCoordinates;
+        if (hasNonKeplerianAcceleration()) {
+            pvCoordinates = getPVCoordinates(inertialFrame);
+        } else {
+            final KinematicTransform transform = getFrame().getKinematicTransformTo(inertialFrame, getDate());
+            pvCoordinates = transform.transformOnlyPV(getPVCoordinates());
+        }
+        final CircularOrbit circularOrbit = new CircularOrbit(pvCoordinates, inertialFrame, getDate(), getMu());
+        if (circularOrbit.getCachedPositionAngleType() == getCachedPositionAngleType()) {
+            return circularOrbit;
+        } else {
+            return circularOrbit.withCachedPositionAngleType(getCachedPositionAngleType());
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public CircularOrbit withCachedPositionAngleType(final PositionAngleType positionAngleType) {
+        return new CircularOrbit(a, ex, ey, i, raan, getAlpha(positionAngleType), aDot, exDot, eyDot, iDot, raanDot,
+                getAlphaDot(positionAngleType), positionAngleType, getFrame(), getDate(), getMu());
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public CircularOrbit shiftedBy(final double dt) {
+        return shiftedBy(new TimeOffset(dt));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public CircularOrbit shiftedBy(final TimeOffset dt) {
+
+        final double dtS = dt.toDouble();
 
         // use Keplerian-only motion
         final CircularOrbit keplerianShifted = new CircularOrbit(a, ex, ey, i, raan,
-                                                                 getAlphaM() + getKeplerianMeanMotion() * dt,
+                                                                 getAlphaM() + getKeplerianMeanMotion() * dtS,
                                                                  PositionAngleType.MEAN, cachedPositionAngleType,
                                                                  getFrame(), getDate().shiftedBy(dt), getMu());
 
-        if (hasDerivatives()) {
+        if (hasNonKeplerianRates()) {
 
             // extract non-Keplerian acceleration from first time derivatives
             final Vector3D nonKeplerianAcceleration = nonKeplerianAcceleration();
@@ -1140,11 +1128,11 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
             // add quadratic effect of non-Keplerian acceleration to Keplerian-only shift
             keplerianShifted.computePVWithoutA();
             final Vector3D fixedP   = new Vector3D(1, keplerianShifted.partialPV.getPosition(),
-                                                   0.5 * dt * dt, nonKeplerianAcceleration);
+                                                   0.5 * dtS * dtS, nonKeplerianAcceleration);
             final double   fixedR2 = fixedP.getNormSq();
             final double   fixedR  = FastMath.sqrt(fixedR2);
             final Vector3D fixedV  = new Vector3D(1, keplerianShifted.partialPV.getVelocity(),
-                                                  dt, nonKeplerianAcceleration);
+                                                  dtS, nonKeplerianAcceleration);
             final Vector3D fixedA  = new Vector3D(-getMu() / (fixedR2 * fixedR), keplerianShifted.partialPV.getPosition(),
                                                   1, nonKeplerianAcceleration);
 
@@ -1429,144 +1417,16 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
 
     /** {@inheritDoc} */
     @Override
-    public boolean hasRates() {
-        return hasDerivatives();
+    public boolean hasNonKeplerianRates() {
+        return hasNonKeplerianAcceleration();
     }
 
     /** {@inheritDoc} */
     @Override
-    public CircularOrbit removeRates() {
+    public CircularOrbit withKeplerianRates() {
         final PositionAngleType positionAngleType = getCachedPositionAngleType();
         return new CircularOrbit(a, ex, ey, i, raan, cachedAlpha, positionAngleType, positionAngleType,
                 getFrame(), getDate(), getMu());
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * @return data transfer object that will be serialized
-     */
-    @DefaultDataContext
-    private Object writeReplace() {
-        return new DTO(this);
-    }
-
-    /** Internal class used only for serialization. */
-    @DefaultDataContext
-    private static class DTO implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20231217L;
-
-        /** Double values. */
-        private final double[] d;
-
-        /** Frame in which are defined the orbital parameters. */
-        private final Frame frame;
-
-        /** Type of cached position angle. */
-        private final PositionAngleType positionAngleType;
-
-        /** Simple constructor.
-         * @param orbit instance to serialize
-         */
-        private DTO(final CircularOrbit orbit) {
-
-            final AbsoluteDate date = orbit.getDate();
-            positionAngleType = orbit.getCachedPositionAngleType();
-
-            // decompose date
-            final AbsoluteDate j2000Epoch =
-                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
-            final double epoch  = FastMath.floor(date.durationFrom(j2000Epoch));
-            final double offset = date.durationFrom(j2000Epoch.shiftedBy(epoch));
-
-            if (orbit.serializePV) {
-                final TimeStampedPVCoordinates pv = orbit.getPVCoordinates();
-                if (orbit.hasDerivatives()) {
-                    this.d = new double[] {
-                        // date + mu + orbit + derivatives + Cartesian : 24 parameters
-                        epoch, offset, orbit.getMu(),
-                        orbit.a, orbit.ex, orbit.ey,
-                        orbit.i, orbit.raan, orbit.cachedAlpha,
-                        orbit.aDot, orbit.exDot, orbit.eyDot,
-                        orbit.iDot, orbit.raanDot, orbit.cachedAlphaDot,
-                        pv.getPosition().getX(),     pv.getPosition().getY(),     pv.getPosition().getZ(),
-                        pv.getVelocity().getX(),     pv.getVelocity().getY(),     pv.getVelocity().getZ(),
-                        pv.getAcceleration().getX(), pv.getAcceleration().getY(), pv.getAcceleration().getZ(),
-                    };
-                } else {
-                    this.d = new double[] {
-                        // date + mu + orbit + Cartesian : 18 parameters
-                        epoch, offset, orbit.getMu(),
-                        orbit.a, orbit.ex, orbit.ey,
-                        orbit.i, orbit.raan, orbit.cachedAlpha,
-                        pv.getPosition().getX(),     pv.getPosition().getY(),     pv.getPosition().getZ(),
-                        pv.getVelocity().getX(),     pv.getVelocity().getY(),     pv.getVelocity().getZ(),
-                        pv.getAcceleration().getX(), pv.getAcceleration().getY(), pv.getAcceleration().getZ(),
-                    };
-                }
-            } else {
-                if (orbit.hasDerivatives()) {
-                    // date + mu + orbit + derivatives: 15 parameters
-                    this.d = new double[] {
-                        epoch, offset, orbit.getMu(),
-                        orbit.a, orbit.ex, orbit.ey,
-                        orbit.i, orbit.raan, orbit.cachedAlpha,
-                        orbit.aDot, orbit.exDot, orbit.eyDot,
-                        orbit.iDot, orbit.raanDot, orbit.cachedAlphaDot
-                    };
-                } else {
-                    // date + mu + orbit: 9 parameters
-                    this.d = new double[] {
-                        epoch, offset, orbit.getMu(),
-                        orbit.a, orbit.ex, orbit.ey,
-                        orbit.i, orbit.raan, orbit.cachedAlpha
-                    };
-                }
-            }
-
-            this.frame = orbit.getFrame();
-
-        }
-
-        /** Replace the deserialized data transfer object with a {@link CircularOrbit}.
-         * @return replacement {@link CircularOrbit}
-         */
-        private Object readResolve() {
-            final AbsoluteDate j2000Epoch =
-                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
-            switch (d.length) {
-                case 24 : // date + mu + orbit + derivatives + Cartesian
-                    return new CircularOrbit(d[ 3], d[ 4], d[ 5], d[ 6], d[ 7], d[ 8],
-                                             d[ 9], d[10], d[11], d[12], d[13], d[14],
-                                             new TimeStampedPVCoordinates(j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
-                                                                          new Vector3D(d[15], d[16], d[17]),
-                                                                          new Vector3D(d[18], d[19], d[20]),
-                                                                          new Vector3D(d[21], d[22], d[23])),
-                                             positionAngleType, frame,
-                                             d[2]);
-                case 18 : // date + mu + orbit + Cartesian
-                    return new CircularOrbit(d[3], d[4], d[5], d[6], d[7], d[8],
-                                             Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN,
-                                             new TimeStampedPVCoordinates(j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
-                                                                          new Vector3D(d[ 9], d[10], d[11]),
-                                                                          new Vector3D(d[12], d[13], d[14]),
-                                                                          new Vector3D(d[15], d[16], d[17])),
-                                             positionAngleType, frame,
-                                             d[2]);
-                case 15 : // date + mu + orbit + derivatives
-                    return new CircularOrbit(d[ 3], d[ 4], d[ 5], d[ 6], d[ 7], d[ 8],
-                                             d[ 9], d[10], d[11], d[12], d[13], d[14],
-                                             positionAngleType, positionAngleType,
-                                             frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
-                                             d[2]);
-                default : // date + mu + orbit
-                    return new CircularOrbit(d[3], d[4], d[5], d[6], d[7], d[8], positionAngleType, positionAngleType,
-                                             frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
-                                             d[2]);
-
-            }
-        }
-
     }
 
 }

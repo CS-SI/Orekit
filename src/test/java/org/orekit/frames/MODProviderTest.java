@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,12 +35,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
 
 public class MODProviderTest {
 
@@ -48,7 +42,6 @@ public class MODProviderTest {
     public void testEuler1976() {
 
         TransformProvider eulerBasedProvider = new TransformProvider() {
-            private static final long serialVersionUID = 1L;
             private final PolynomialNutation zetaA =
                     new PolynomialNutation(0.0,
                             2306.2181 * Constants.ARC_SECONDS_TO_RADIANS,
@@ -100,7 +93,6 @@ public class MODProviderTest {
         // this alternate representation of the transform
         // is from equation 33 in IERS conventions 2003
         TransformProvider eulerBasedProvider = new TransformProvider() {
-            private static final long serialVersionUID = 1L;
             private final PolynomialNutation zetaA =
                     new PolynomialNutation(   2.5976176 * Constants.ARC_SECONDS_TO_RADIANS,
                                            2306.0809506 * Constants.ARC_SECONDS_TO_RADIANS,
@@ -413,32 +405,6 @@ public class MODProviderTest {
             // MOD2006 and MOD2000 are similar to about 0.15 milli-arcseconds between 2000 and 2010
             Assertions.assertEquals(0.0, delta, 7.2e-10);
         }
-    }
-
-    @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
-        MODProvider provider = new MODProvider(IERSConventions.IERS_2010,
-                DataContext.getDefault().getTimeScales());
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(provider);
-
-        Assertions.assertTrue(bos.size() > 150);
-        Assertions.assertTrue(bos.size() < 250);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        MODProvider deserialized  = (MODProvider) ois.readObject();
-        for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 3600) {
-            AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
-            Transform expectedIdentity = new Transform(date,
-                                                       provider.getTransform(date).getInverse(),
-                                                       deserialized.getTransform(date));
-            Assertions.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
-            Assertions.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
-        }
-
     }
 
     @BeforeEach

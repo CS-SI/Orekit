@@ -16,8 +16,13 @@
  */
 package org.orekit.utils;
 
+import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.regex.Pattern;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Hank Grabowski
@@ -32,7 +37,7 @@ public class OrekitConfigurationTest {
     public void testGetSetCacheSlotsNumber() {
         int defaultSlots = OrekitConfiguration.getCacheSlotsNumber();
 
-        Assertions.assertNotEquals(defaultSlots, 0);
+        Assertions.assertNotEquals(0, defaultSlots);
 
         int setSlots = 105;
 
@@ -40,7 +45,15 @@ public class OrekitConfigurationTest {
 
         int getSlots = OrekitConfiguration.getCacheSlotsNumber();
 
-        Assertions.assertEquals(getSlots, setSlots);
+        Assertions.assertEquals(setSlots, getSlots);
 
     }
+
+    @Test
+    public void testVersions() {
+        final Pattern pattern = Pattern.compile("unknown|[0-9.]*(?:-SNAPSHOT)?");
+        assertTrue(pattern.matcher(MathUtils.getHipparchusVersion()).matches());
+        assertTrue(pattern.matcher(OrekitConfiguration.getOrekitVersion()).matches());
+    }
+
 }

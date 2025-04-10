@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -62,6 +62,7 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -186,12 +187,12 @@ public class BrouwerLyddanePropagatorTest {
         Assertions.assertEquals(0.0,
                                 Vector3D.distance(initialOrbit.getPosition(),
                                                   finalOrbit.getPosition()),
-                                2.4e-8);
+                                4.7e-7);
         Assertions.assertEquals(0.0,
                                 Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                                   finalOrbit.getPVCoordinates().getVelocity()),
-                                1.9e-11);
-        Assertions.assertEquals(0.0, finalOrbit.getA() - initialOrbit.getA(), 9.4e-10);
+                                2.8e-10);
+        Assertions.assertEquals(0.0, finalOrbit.getOrbit().getA() - initialOrbit.getA(), 1.3e-8);
 
     }
 
@@ -214,12 +215,12 @@ public class BrouwerLyddanePropagatorTest {
         Assertions.assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPosition(),
                                               finalOrbit.getPosition()),
-                            1.3e-7);
+                            4.0e-7);
         Assertions.assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                               finalOrbit.getPVCoordinates().getVelocity()),
-                            9.0e-11);
-        Assertions.assertEquals(0.0, finalOrbit.getA() - initialOrbit.getA(), 1.9e-9);
+                            2.9e-10);
+        Assertions.assertEquals(0.0, finalOrbit.getOrbit().getA() - initialOrbit.getA(), 3.8e-9);
     }
 
 
@@ -262,8 +263,8 @@ public class BrouwerLyddanePropagatorTest {
         double delta_t = 100.0; // extrapolation duration in seconds
         AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
 
-        SpacecraftState finalOrbitAna = extrapolatorAna.propagate(extrapDate);
-        SpacecraftState finalOrbitKep = extrapolatorKep.propagate(extrapDate);
+        Orbit finalOrbitAna = extrapolatorAna.propagate(extrapDate).getOrbit();
+        Orbit finalOrbitKep = extrapolatorKep.propagate(extrapDate).getOrbit();
 
         Assertions.assertEquals(0.0, finalOrbitAna.getDate().durationFrom(extrapDate), 0.0);
         // comparison of each orbital parameters
@@ -319,7 +320,7 @@ public class BrouwerLyddanePropagatorTest {
         final double positionTolerance = 10.0;
         final OrbitType propagationType = OrbitType.KEPLERIAN;
         final double[][] tolerances =
-                NumericalPropagator.tolerances(positionTolerance, initialOrbit, propagationType);
+                ToleranceProvider.getDefaultToleranceProvider(positionTolerance).getTolerances(initialOrbit, propagationType);
         final AdaptiveStepsizeIntegrator integrator =
                 new DormandPrince853Integrator(minStep, maxstep, tolerances[0], tolerances[1]);
 
@@ -389,7 +390,7 @@ public class BrouwerLyddanePropagatorTest {
         final double positionTolerance = 10.0;
         final OrbitType propagationType = OrbitType.KEPLERIAN;
         final double[][] tolerances =
-                NumericalPropagator.tolerances(positionTolerance, initialOrbit, propagationType);
+                ToleranceProvider.getDefaultToleranceProvider(positionTolerance).getTolerances(initialOrbit, propagationType);
         final AdaptiveStepsizeIntegrator integrator =
                 new DormandPrince853Integrator(minStep, maxstep, tolerances[0], tolerances[1]);
 
@@ -491,7 +492,7 @@ public class BrouwerLyddanePropagatorTest {
         final double positionTolerance = 10.0;
         final OrbitType propagationType = OrbitType.KEPLERIAN;
         final double[][] tolerances =
-                NumericalPropagator.tolerances(positionTolerance, InitOrbit, propagationType);
+                ToleranceProvider.getDefaultToleranceProvider(positionTolerance).getTolerances(InitOrbit, propagationType);
         final AdaptiveStepsizeIntegrator integrator =
                 new DormandPrince853Integrator(minStep, maxstep, tolerances[0], tolerances[1]);
 
@@ -699,7 +700,7 @@ public class BrouwerLyddanePropagatorTest {
                                 Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                                   finalOrbit.getPVCoordinates().getVelocity()),
                                 2.7e-12);
-        Assertions.assertEquals(0.0, finalOrbit.getA() - initialOrbit.getA(), 7.5e-9);
+        Assertions.assertEquals(0.0, finalOrbit.getOrbit().getA() - initialOrbit.getA(), 7.5e-9);
     }
 
     @Test
@@ -758,7 +759,7 @@ public class BrouwerLyddanePropagatorTest {
 
         // set up a reference numerical propagator starting for the specified start orbit
         // using the same force models (i.e. the first few zonal terms)
-        double[][] tol = NumericalPropagator.tolerances(0.1, initialOsculating, OrbitType.KEPLERIAN);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.1).getTolerances(initialOsculating, OrbitType.KEPLERIAN);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
         integrator.setInitialStepSize(60);
         NumericalPropagator num = new NumericalPropagator(integrator);

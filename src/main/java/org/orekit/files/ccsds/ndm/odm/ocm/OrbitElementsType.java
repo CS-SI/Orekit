@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -260,7 +260,7 @@ public enum OrbitElementsType {
             return new KeplerianOrbit(elements[0], elements[1], elements[2],
                                       elements[4], elements[3], // BEWARE! the inversion here is intentional
                                       elements[5], PositionAngleType.TRUE,
-                                      FramesFactory.getGCRF(), date, mu).
+                                      Frame.getRoot(), date, mu).
                    getPVCoordinates();
         }
 
@@ -335,7 +335,7 @@ public enum OrbitElementsType {
     OrbitElementsType(final String description, final String... unitsSpecifications) {
         this.description = description;
         this.units       = Stream.of(unitsSpecifications).
-                           map(s -> Unit.parse(s)).
+                           map(Unit::parse).
                            collect(Collectors.toList());
     }
 

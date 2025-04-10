@@ -18,7 +18,6 @@ package org.orekit.propagation.analytical;
 
 import java.util.Collection;
 import java.util.NavigableMap;
-import java.util.TreeMap;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -113,26 +112,8 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
         return map;
     }
 
-    /** Get an unmodifiable view of the propagators map.
-     * <p>
-     * The key of the map entries are the {@link BoundedPropagator#getMinDate() min dates}
-     * of each propagator.
-     * </p>
-     * @return unmodifiable view of the propagators map
-     * @since 12.0
-     * @deprecated as of 12.1, replaced by {@link #getPropagatorsMap()}
-     */
-    @Deprecated
-    public NavigableMap<AbsoluteDate, BoundedPropagator> getPropagators() {
-        final NavigableMap<AbsoluteDate, BoundedPropagator> nm = new TreeMap<>();
-        for (TimeSpanMap.Span<BoundedPropagator> span = map.getFirstNonNullSpan(); span != null; span = span.next()) {
-            nm.put(span.getData().getMinDate(), span.getData());
-        }
-        return nm;
-    }
-
     @Override
-    protected SpacecraftState basicPropagate(final AbsoluteDate date) {
+    public SpacecraftState basicPropagate(final AbsoluteDate date) {
         // #589 override this method for a performance benefit,
         // getPropagator(date).propagate(date) is only called once
 
@@ -147,11 +128,11 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
         if (state.isOrbitDefined()) {
             return new SpacecraftState(
                     state.getOrbit(), attitude, state.getMass(),
-                    state.getAdditionalStatesValues(), state.getAdditionalStatesDerivatives());
+                    state.getAdditionalDataValues(), state.getAdditionalStatesDerivatives());
         } else {
             return new SpacecraftState(
                     state.getAbsPVA(), attitude, state.getMass(),
-                    state.getAdditionalStatesValues(), state.getAdditionalStatesDerivatives());
+                    state.getAdditionalDataValues(), state.getAdditionalStatesDerivatives());
         }
     }
 
@@ -167,7 +148,7 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
     }
 
     @Override
-    protected Orbit propagateOrbit(final AbsoluteDate date) {
+    public Orbit propagateOrbit(final AbsoluteDate date) {
         return getPropagator(date).propagate(date).getOrbit();
     }
 

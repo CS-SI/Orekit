@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,8 @@ package org.orekit.estimation.sequential;
 
 import java.util.List;
 
+import org.hipparchus.filtering.kalman.KalmanFilter;
+import org.hipparchus.linear.MatrixDecomposer;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.orekit.propagation.conversion.PropagatorBuilder;
@@ -38,12 +40,26 @@ public abstract class AbstractKalmanEstimator {
     /** List of propagator builder. */
     private final List<? extends PropagatorBuilder> builders;
 
+    /** Reference date. */
+    private final AbsoluteDate referenceDate;
+
+    /** Observer to retrieve current estimation info. */
+    private KalmanObserver observer;
+
+    /** Matrix decomposer for filter. */
+    private final MatrixDecomposer decomposer;
+
     /**
      * Constructor.
+     * @param decomposer matrix decomposer for filter
      * @param builders list of propagator builders
      */
-    protected AbstractKalmanEstimator(final List<? extends PropagatorBuilder> builders) {
+    protected AbstractKalmanEstimator(final MatrixDecomposer decomposer,
+                                      final List<? extends PropagatorBuilder> builders) {
         this.builders = builders;
+        this.referenceDate = builders.get(0).getInitialOrbitDate();
+        this.decomposer = decomposer;
+        this.observer = null;
     }
 
     /** Get the orbital parameters supported by this estimator.
@@ -111,6 +127,21 @@ public abstract class AbstractKalmanEstimator {
         return getKalmanEstimation().getCurrentDate();
     }
 
+    /** Set the observer.
+     * @param observer the observer
+     */
+    public void setObserver(final KalmanObserver observer) {
+        this.observer = observer;
+        observer.init(getKalmanEstimation());
+    }
+
+    /** Get the observer.
+     * @return the observer
+     */
+    public KalmanObserver getObserver() {
+        return observer;
+    }
+
     /** Get the "physical" estimated state (i.e. not normalized)
      * <p>
      * For the Semi-analytical Kalman Filters
@@ -137,9 +168,37 @@ public abstract class AbstractKalmanEstimator {
         return getKalmanEstimation().getEstimatedMeasurementsParameters();
     }
 
+    protected List<? extends PropagatorBuilder> getBuilders() {
+        return builders;
+    }
+
     /** Get the provider for kalman filter estimations.
      * @return the provider for Kalman filter estimations
      */
     protected abstract KalmanEstimation getKalmanEstimation();
+
+    /** Get the matrix decomposer.
+     * @return the decomposer
+     */
+    protected MatrixDecomposer getMatrixDecomposer() {
+        return decomposer;
+    }
+
+    /** Get the reference date.
+     * @return the date
+     */
+    protected AbsoluteDate getReferenceDate() {
+        return referenceDate;
+    }
+
+    /** Get the Hipparchus filter.
+     * @return the filter
+     */
+    protected abstract KalmanFilter<MeasurementDecorator> getKalmanFilter();
+
+    /** Get the parameter scaling factors.
+     * @return the parameters scale
+     */
+    protected abstract double[] getScale();
 
 }

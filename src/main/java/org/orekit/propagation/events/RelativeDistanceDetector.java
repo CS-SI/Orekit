@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -102,28 +102,6 @@ public class RelativeDistanceDetector extends AbstractDetector<RelativeDistanceD
     }
 
     /**
-     * Constructor.
-     * <p>
-     * This constructor is to be used if the user wants to change the default behavior of the detector.
-     * </p>
-     *
-     * @param maxCheck            Maximum checking interval.
-     * @param threshold           Convergence threshold (s).
-     * @param maxIter             Maximum number of iterations in the event time search.
-     * @param handler             Event handler to call at event occurrences.
-     * @param secondaryPVProvider PVCoordinates provider of the other object defining relative distance.
-     * @param distanceThreshold Relative distance threshold for event detection
-     * @see EventHandler
-     * @deprecated as of 12.2
-     */
-    @Deprecated
-    protected RelativeDistanceDetector(final AdaptableInterval maxCheck, final double threshold, final int maxIter,
-                                       final EventHandler handler, final PVCoordinatesProvider secondaryPVProvider,
-                                       final double distanceThreshold) {
-        this(new EventDetectionSettings(maxCheck, threshold, maxIter), handler, secondaryPVProvider, distanceThreshold);
-    }
-
-    /**
      * The {@code g} is positive when the relative distance is larger or equal than the threshold,
      * non-positive otherwise.
      *
@@ -138,10 +116,9 @@ public class RelativeDistanceDetector extends AbstractDetector<RelativeDistanceD
 
     /** {@inheritDoc} */
     @Override
-    protected RelativeDistanceDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                              final int newMaxIter, final EventHandler newHandler) {
-        return new RelativeDistanceDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, secondaryPVProvider,
-                distanceThreshold);
+    protected RelativeDistanceDetector create(final EventDetectionSettings detectionSettings,
+                                              final EventHandler newHandler) {
+        return new RelativeDistanceDetector(detectionSettings, newHandler, secondaryPVProvider, distanceThreshold);
     }
 
     /**

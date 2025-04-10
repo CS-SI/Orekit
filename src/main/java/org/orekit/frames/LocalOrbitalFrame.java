@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,9 +36,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  */
 public class LocalOrbitalFrame extends Frame {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -4469440345574964950L;
-
     /** Build a new instance.
      *
      * <p> It is highly recommended that {@code provider} use an analytic formulation and
@@ -60,9 +57,6 @@ public class LocalOrbitalFrame extends Frame {
 
     /** Local provider for transforms. */
     private static class LocalProvider implements TransformProvider {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20170421L;
 
         /** Local orbital frame. */
         private final LOF lof;

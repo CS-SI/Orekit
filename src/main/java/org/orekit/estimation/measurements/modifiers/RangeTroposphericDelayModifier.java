@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,16 +40,6 @@ import org.orekit.propagation.SpacecraftState;
  * @since 8.0
  */
 public class RangeTroposphericDelayModifier extends BaseRangeTroposphericDelayModifier implements EstimationModifier<Range> {
-
-    /** Constructor.
-     *
-     * @param model  Tropospheric delay model appropriate for the current range measurement method.
-     * @deprecated as of 12.1, replaced by {@link #RangeTroposphericDelayModifier(TroposphericModel)}
-     */
-    @Deprecated
-    public RangeTroposphericDelayModifier(final org.orekit.models.earth.troposphere.DiscreteTroposphericModel model) {
-        this(new org.orekit.models.earth.troposphere.TroposphericModelAdapter(model));
-    }
 
     /** Constructor.
      *

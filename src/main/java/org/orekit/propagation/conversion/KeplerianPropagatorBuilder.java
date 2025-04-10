@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ import org.orekit.propagation.analytical.KeplerianPropagator;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class KeplerianPropagatorBuilder extends AbstractAnalyticalPropagatorBuilder {
+public class KeplerianPropagatorBuilder extends AbstractAnalyticalPropagatorBuilder<KeplerianPropagator> {
 
     /** Build a new instance.
      * <p>
@@ -78,17 +78,7 @@ public class KeplerianPropagatorBuilder extends AbstractAnalyticalPropagatorBuil
     }
 
     /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public KeplerianPropagatorBuilder copy() {
-        final KeplerianPropagatorBuilder builder = new KeplerianPropagatorBuilder(createInitialOrbit(), getPositionAngleType(),
-                                              getPositionScale(), getAttitudeProvider());
-        builder.setMass(getMass());
-        return builder;
-    }
-
-    /** {@inheritDoc} */
-    public Propagator buildPropagator(final double[] normalizedParameters) {
+    public KeplerianPropagator buildPropagator(final double[] normalizedParameters) {
         setParameters(normalizedParameters);
         final KeplerianPropagator propagator = new KeplerianPropagator(createInitialOrbit(), getAttitudeProvider(), getMu(), getMass());
         getImpulseManeuvers().forEach(propagator::addEventDetector);

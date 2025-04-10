@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,10 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.FieldElement;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.linear.BlockFieldMatrix;
-import org.hipparchus.linear.FieldMatrix;
-import org.hipparchus.linear.MatrixUtils;
-import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.linear.*;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
@@ -242,20 +239,20 @@ class FieldStateCovarianceTest {
                 stateCovariance.changeCovarianceFrame(initialOrbit, LOFType.NTW).getMatrix();
 
         // Then
-        final FieldMatrix<Binary64> expectedCovarianceMatrixInNTW = new BlockFieldMatrix<>(new Binary64[][] {
-                { new Binary64(9.918792e-01), new Binary64(6.679546e-03), new Binary64(-2.868345e-03),
-                  new Binary64(2.621921e-05), new Binary64(-1.036158e-03), new Binary64(-2.868345e-05) },
-                { new Binary64(6.679546e-03), new Binary64(1.013743e+00), new Binary64(-1.019560e-02),
-                  new Binary64(1.194061e-03), new Binary64(2.299986e-04), new Binary64(-1.019560e-04) },
-                { new Binary64(-2.868345e-03), new Binary64(-1.019560e-02), new Binary64(9.943782e-01),
-                  new Binary64(-4.002079e-05), new Binary64(-9.876648e-05), new Binary64(4.378217e-05) },
-                { new Binary64(2.621921e-05), new Binary64(1.194061e-03), new Binary64(-4.002079e-05),
-                  new Binary64(1.589968e-06), new Binary64(9.028133e-07), new Binary64(-4.002079e-07) },
-                { new Binary64(-1.036158e-03), new Binary64(2.299986e-04), new Binary64(-9.876648e-05),
-                  new Binary64(9.028133e-07), new Binary64(3.452177e-06), new Binary64(-9.876648e-07) },
-                { new Binary64(-2.868345e-05), new Binary64(-1.019560e-04), new Binary64(4.378217e-05),
-                  new Binary64(-4.002079e-07), new Binary64(-9.876648e-07), new Binary64(4.378217e-07) },
-                });
+        final RealMatrix expectedCovarianceMatrixInNTWdouble = new BlockRealMatrix(new double[][] {
+                { 9.918792e-01,  6.679546e-03, -2.868345e-03, 2.6215894e-05, -1.035665e-03, -2.868345e-05 },
+                { 6.679546e-03,  1.013743e+00, -1.019560e-02,  1.193556e-03,  2.300019e-04, -1.019560e-04 },
+                {-2.868345e-03, -1.019560e-02,  9.943782e-01, -4.0015724e-05, -9.8767909e-05,  4.378217e-05 },
+                { 2.6215894e-05,  1.193556e-03, -4.0015724e-05,  1.58878e-06,  9.0271200e-07, -4.0015724e-07 },
+                {-1.035665e-03,  2.300019e-04, -9.8767909e-05,  9.0271200e-07,  3.4511471e-06, -9.8767909e-07 },
+                {-2.868345e-05, -1.019560e-04,  4.378217e-05, -4.0015724e-07, -9.8767909e-07,  4.378217e-07 },
+        });
+        final FieldMatrix<Binary64> expectedCovarianceMatrixInNTW = MatrixUtils.createFieldMatrix(field, 6, 6);
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 6; j++) {
+                expectedCovarianceMatrixInNTW.setEntry(i, j, new Binary64(expectedCovarianceMatrixInNTWdouble.getEntry(i, j)));
+            }
+        }
 
         compareCovariance(expectedCovarianceMatrixInNTW, convertedCovarianceMatrixInNTW, DEFAULT_VALLADO_THRESHOLD);
 
@@ -308,10 +305,10 @@ class FieldStateCovarianceTest {
         // Then
         final FieldMatrix<Binary64> expectedCovarianceMatrixInITRF = new BlockFieldMatrix<>(new Binary64[][] {
                 { new Binary64(9.9340005761276870e-01), new Binary64(7.5124999798868530e-03),
-                  new Binary64(5.8312675007359050e-03), new Binary64(3.454839626105493e-05),
-                  new Binary64(2.6851237046859065e-06), new Binary64(5.8312677693153940e-05) },
+                  new Binary64(5.8312675007359050e-03), new Binary64(3.4548396261054936e-05),
+                  new Binary64(2.68512370468592e-06), new Binary64(5.8312677693153940e-05) },
                 { new Binary64(7.5124999798868025e-03), new Binary64(1.0065990293034541e+00),
-                  new Binary64(1.2884310200351924e-02), new Binary64(1.4852736004690686e-04),
+                  new Binary64(1.2884310200351924e-02), new Binary64(1.4852736004690684e-04),
                   new Binary64(1.6544247282904867e-04), new Binary64(1.2884310644320954e-04) },
                 { new Binary64(5.8312675007359040e-03), new Binary64(1.2884310200351924e-02),
                   new Binary64(1.0000009130837746e+00), new Binary64(5.9252211072590390e-05),
@@ -319,7 +316,7 @@ class FieldStateCovarianceTest {
                 { new Binary64(3.4548396261054936e-05), new Binary64(1.4852736004690686e-04),
                   new Binary64(5.9252211072590403e-05), new Binary64(3.5631474857130520e-07),
                   new Binary64(7.6083489184819870e-07), new Binary64(5.9252213790760030e-07) },
-                { new Binary64(2.6851237046859150e-06), new Binary64(1.6544247282904864e-04),
+                { new Binary64(2.685123704685915e-06), new Binary64(1.6544247282904864e-04),
                   new Binary64(1.2841787487219447e-04), new Binary64(7.6083489184819880e-07),
                   new Binary64(1.6542289254142709e-06), new Binary64(1.2841787929229964e-06) },
                 { new Binary64(5.8312677693153934e-05), new Binary64(1.2884310644320950e-04),
@@ -603,20 +600,20 @@ class FieldStateCovarianceTest {
                 stateCovariance.changeCovarianceFrame(initialOrbit, LOFType.QSW).getMatrix();
 
         // Then
-        final FieldMatrix<Binary64> expectedCovarianceMatrixInRTN = new BlockFieldMatrix<>(new Binary64[][] {
-                { new Binary64(9.918921e-001), new Binary64(6.700644e-003), new Binary64(-2.878187e-003),
-                  new Binary64(1.892086e-005), new Binary64(6.700644e-005), new Binary64(-2.878187e-005) },
-                { new Binary64(6.700644e-003), new Binary64(1.013730e+000), new Binary64(-1.019283e-002),
-                  new Binary64(6.700644e-005), new Binary64(2.372970e-004), new Binary64(-1.019283e-004) },
-                { new Binary64(-2.878187e-003), new Binary64(-1.019283e-002), new Binary64(9.943782e-001),
-                  new Binary64(-2.878187e-005), new Binary64(-1.019283e-004), new Binary64(4.378217e-005) },
-                { new Binary64(1.892086e-005), new Binary64(6.700644e-005), new Binary64(-2.878187e-005),
-                  new Binary64(1.892086e-007), new Binary64(6.700644e-007), new Binary64(-2.878187e-007) },
-                { new Binary64(6.700644e-005), new Binary64(2.372970e-004), new Binary64(-1.019283e-004),
-                  new Binary64(6.700644e-007), new Binary64(2.372970e-006), new Binary64(-1.019283e-006) },
-                { new Binary64(-2.878187e-005), new Binary64(-1.019283e-004), new Binary64(4.378217e-005),
-                  new Binary64(-2.878187e-007), new Binary64(-1.019283e-006), new Binary64(4.378217e-007) }
+        final RealMatrix expectedCovarianceMatrixInRTNDouble = new BlockRealMatrix(new double[][] {
+                { 9.918921e-001, 6.700644e-003, -2.878187e-003, 1.8924189e-005, 6.651362e-005, -2.878187e-005 },
+                { 6.700644e-003, 1.013730e+000, -1.019283e-002, 6.7510094e-005, 2.3729368e-004, -1.01928257e-004 },
+                { -2.878187e-003, -1.019283e-002, 9.943782e-001, -2.8786942e-005, -1.01926827e-004, 4.378217e-005 },
+                { 1.8924189e-005, 6.7510094e-005, -2.8786942e-005, 1.89275434e-007, 6.7017283e-007, -2.8786942e-007 },
+                { 6.651362e-005, 2.3729368e-004, -1.01926827e-004, 6.7017283e-007, 2.372903e-006, -1.0192682e-006 },
+                { -2.878187e-005, -1.01928257e-004, 4.378217e-005, -2.87869424e-007, -1.0192682e-006, 4.378217e-007 }
         });
+        final FieldMatrix<Binary64> expectedCovarianceMatrixInRTN = MatrixUtils.createFieldMatrix(field, 6, 6);
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 6; j++) {
+                expectedCovarianceMatrixInRTN.setEntry(i, j, new Binary64(expectedCovarianceMatrixInRTNDouble.getEntry(i, j)));
+            }
+        }
 
         compareCovariance(expectedCovarianceMatrixInRTN, convertedCovarianceMatrixInRTN, DEFAULT_VALLADO_THRESHOLD);
 

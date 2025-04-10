@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,10 +26,7 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.data.DataContext;
-import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
-import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.FieldTrackingCoordinates;
@@ -49,8 +46,7 @@ import org.orekit.utils.TrackingCoordinates;
  * @author Bryan Cazabonne
  *
  */
-@SuppressWarnings("deprecation")
-public class NiellMappingFunctionModel implements MappingFunction, TroposphereMappingFunction {
+public class NiellMappingFunctionModel implements TroposphereMappingFunction {
 
     /** Values for the ah average function. */
     private static final double[] VALUES_FOR_AH_AVERAGE = {
@@ -165,23 +161,8 @@ public class NiellMappingFunctionModel implements MappingFunction, TroposphereMa
 
     /** {@inheritDoc} */
     @Override
-    @Deprecated
-    public double[] mappingFactors(final double elevation, final GeodeticPoint point,
-                                   final AbsoluteDate date) {
-        return mappingFactors(new TrackingCoordinates(0.0, elevation, 0.0),
-                              point,
-                              TroposphericModelUtils.STANDARD_ATMOSPHERE,
-                              date);
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public double[] mappingFactors(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
-                                   final PressureTemperatureHumidity weather,
                                    final AbsoluteDate date) {
-        // Day of year computation
-        final DateTimeComponents dtc = date.getComponents(utc);
-        final int dofyear = dtc.getDate().getDayOfYear();
 
         // Temporal factor
         double t0 = 28;
@@ -189,7 +170,7 @@ public class NiellMappingFunctionModel implements MappingFunction, TroposphereMa
             // southern hemisphere: t0 = 28 + an integer half of year
             t0 += 183;
         }
-        final double coef    = 2 * FastMath.PI * ((dofyear - t0) / 365.25);
+        final double coef    = 2 * FastMath.PI * ((date.getDayOfYear(utc) - t0) / 365.25);
         final double cosCoef = FastMath.cos(coef);
 
         // Compute ah, bh and ch Eq. 5
@@ -223,28 +204,11 @@ public class NiellMappingFunctionModel implements MappingFunction, TroposphereMa
 
     /** {@inheritDoc} */
     @Override
-    @Deprecated
-    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
-                                                                  final FieldAbsoluteDate<T> date) {
-        return mappingFactors(new FieldTrackingCoordinates<>(date.getField().getZero(), elevation, date.getField().getZero()),
-                              point,
-                              new FieldPressureTemperatureHumidity<>(date.getField(),
-                                                                     TroposphericModelUtils.STANDARD_ATMOSPHERE),
-                              date);
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public <T extends CalculusFieldElement<T>> T[] mappingFactors(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                                   final FieldGeodeticPoint<T> point,
-                                                                  final FieldPressureTemperatureHumidity<T> weather,
                                                                   final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
         final T zero = field.getZero();
-
-        // Day of year computation
-        final DateTimeComponents dtc = date.getComponents(utc);
-        final int dofyear = dtc.getDate().getDayOfYear();
 
         // Temporal factor
         double t0 = 28;
@@ -252,7 +216,7 @@ public class NiellMappingFunctionModel implements MappingFunction, TroposphereMa
             // southern hemisphere: t0 = 28 + an integer half of year
             t0 += 183;
         }
-        final T coef    = zero.getPi().multiply(2.0).multiply((dofyear - t0) / 365.25);
+        final T coef    = zero.getPi().multiply(2.0).multiply((date.getDayOfYear(utc).subtract(t0)).divide(365.25));
         final T cosCoef = FastMath.cos(coef);
 
         // Compute ah, bh and ch Eq. 5

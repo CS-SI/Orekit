@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -74,22 +74,18 @@ public class ApsideDetector extends AbstractDetector<ApsideDetector> {
      * <p>
      * This constructor is public because otherwise all accessible ones would require an orbit.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings detection settings
      * @param handler event handler to call at event occurrences
-     * @since 6.1
+     * @since 13.0
      */
-    public ApsideDetector(final AdaptableInterval maxCheck, final double threshold,
-                          final int maxIter, final EventHandler handler) {
-        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
+    public ApsideDetector(final EventDetectionSettings detectionSettings, final EventHandler handler) {
+        super(detectionSettings, handler);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ApsideDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                    final int newMaxIter, final EventHandler newHandler) {
-        return new ApsideDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
+    protected ApsideDetector create(final EventDetectionSettings detectionSettings, final EventHandler newHandler) {
+        return new ApsideDetector(detectionSettings, newHandler);
     }
 
     /** Compute the value of the switching function.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.gnss.metric.parser;
 
 import org.orekit.gnss.metric.messages.ParsedMessage;
+import org.orekit.time.TimeScales;
 
 /**
  * Interface for encoded message types.
@@ -26,11 +27,14 @@ import org.orekit.gnss.metric.messages.ParsedMessage;
  */
 public interface MessageType {
 
-    /** Parse an encoded message.
+    /**
+     * Parse an encoded message.
+     *
      * @param encodedMessage encoded message to parse
-     * @param messageNumber message number
+     * @param messageNumber  message number
+     * @param timeScales known time scales
      * @return parsed message
      */
-    ParsedMessage parse(EncodedMessage encodedMessage, int messageNumber);
+    ParsedMessage parse(EncodedMessage encodedMessage, int messageNumber, TimeScales timeScales);
 
 }

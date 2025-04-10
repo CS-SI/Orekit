@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.AdaptableInterval;
+import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
 
@@ -86,18 +86,8 @@ public class EventHandlerTest {
         }
 
         @Override
-        public double getThreshold() {
-            return 0;
-        }
-
-        @Override
-        public AdaptableInterval getMaxCheckInterval() {
-            return AdaptableInterval.of(0);
-        }
-
-        @Override
-        public int getMaxIterationCount() {
-            return 0;
+        public EventDetectionSettings getDetectionSettings() {
+            return new EventDetectionSettings(0, 0, 0);
         }
 
         @Override

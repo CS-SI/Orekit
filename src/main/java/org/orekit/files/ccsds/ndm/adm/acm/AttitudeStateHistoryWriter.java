@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,6 @@ import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
-import org.orekit.utils.AccurateFormatter;
 import org.orekit.utils.units.Unit;
 
 /** Writer for attitude state history data.
@@ -89,11 +88,11 @@ class AttitudeStateHistoryWriter extends AbstractWriter {
             line.append(generator.dateToString(timeConverter, state.getDate()));
             for (int i = 0; i < attUnits.size(); ++i) {
                 line.append(' ');
-                line.append(AccurateFormatter.format(attUnits.get(i).fromSI(elements[i])));
+                line.append(generator.doubleToString(attUnits.get(i).fromSI(elements[i])));
             }
             for (int i = 0; i < rateUnits.size(); ++i) {
                 line.append(' ');
-                line.append(AccurateFormatter.format(rateUnits.get(i).fromSI(elements[attUnits.size() + i])));
+                line.append(generator.doubleToString(rateUnits.get(i).fromSI(elements[attUnits.size() + i])));
             }
             if (generator.getFormat() == FileFormat.XML) {
                 generator.writeEntry(Acm.ATT_LINE, line.toString(), null, true);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -85,28 +85,24 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
      * @param secondary provider for the secondary satellite
      */
     public InterSatDirectViewDetector(final OneAxisEllipsoid body, final PVCoordinatesProvider secondary) {
-        this(body, 0.0, secondary, AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+        this(body, 0.0, secondary, EventDetectionSettings.getDefaultEventDetectionSettings(),
              new ContinueOnEvent());
     }
 
-    /** Private constructor.
+    /** Protected constructor.
      * @param body central body
      * @param skimmingAltitude skimming altitude at which events are triggered
      * @param secondary provider for the secondary satellite
-     * @param maxCheck  maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter   maximum number of iterations in the event time search
+     * @param detectionSettings detection settings
      * @param handler   event handler to call at event occurrences
-     * @since 12.0
+     * @since 13.0
      */
     protected InterSatDirectViewDetector(final OneAxisEllipsoid body,
                                          final double skimmingAltitude,
                                          final PVCoordinatesProvider secondary,
-                                         final AdaptableInterval maxCheck,
-                                         final double threshold,
-                                         final int maxIter,
+                                         final EventDetectionSettings detectionSettings,
                                          final EventHandler handler) {
-        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
+        super(detectionSettings, handler);
         this.body             = body;
         this.skimmingAltitude = skimmingAltitude;
         this.secondary        = secondary;
@@ -136,12 +132,10 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
 
     /** {@inheritDoc} */
     @Override
-    protected InterSatDirectViewDetector create(final AdaptableInterval newMaxCheck,
-                                                final double newThreshold,
-                                                final int newMaxIter,
+    protected InterSatDirectViewDetector create(final EventDetectionSettings detectionSettings,
                                                 final EventHandler newHandler) {
         return new InterSatDirectViewDetector(body, skimmingAltitude, secondary,
-                                              newMaxCheck, newThreshold, newMaxIter, newHandler);
+                                              detectionSettings, newHandler);
     }
 
     /**
@@ -158,8 +152,7 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
      */
     public InterSatDirectViewDetector withSkimmingAltitude(final double newSkimmingAltitude) {
         return new InterSatDirectViewDetector(body, newSkimmingAltitude, secondary,
-                                              getMaxCheckInterval(), getThreshold(),
-                                              getMaxIterationCount(), getHandler());
+                                              getDetectionSettings(), getHandler());
     }
 
     /** {@inheritDoc}

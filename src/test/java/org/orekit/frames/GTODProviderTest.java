@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,12 +41,6 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
 
 public class GTODProviderTest {
 
@@ -68,8 +62,8 @@ public class GTODProviderTest {
                              { 53104, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
                              { 53105, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN }
                          }));
-        AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 04, 06),
-                                           new TimeComponents(07, 51, 28.386009),
+        AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 4, 6),
+                                           new TimeComponents(7, 51, 28.386009),
                                            TimeScalesFactory.getUTC());
 
         // PEF iau76
@@ -128,7 +122,7 @@ public class GTODProviderTest {
                              { 53159, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN },
                              { 53160, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN }
                          }));
-        AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 06, 01),
+        AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 6, 1),
                                            TimeComponents.H00,
                                            TimeScalesFactory.getUTC());
 
@@ -181,7 +175,7 @@ public class GTODProviderTest {
                              { 53160, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN }
                          }));
         FieldAbsoluteDate<Binary64> t0 = new FieldAbsoluteDate<>(Binary64Field.getInstance(),
-                                                                  new DateComponents(2004, 06, 01),
+                                                                  new DateComponents(2004, 6, 1),
                                                                   TimeComponents.H00,
                                                                   TimeScalesFactory.getUTC());
 
@@ -212,33 +206,6 @@ public class GTODProviderTest {
         // if we forget to apply nutation corrections, results are much worse, which is expected
         t = FramesFactory.getTOD(false).getTransformTo(FramesFactory.getGTOD(false), t0);
         checkPV(fix.transformPVCoordinates(pvPEF), t.transformPVCoordinates(pvTOD), 1458.27, 3.847e-4);
-
-    }
-
-    @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
-        GTODProvider provider = new GTODProvider(IERSConventions.IERS_2010,
-                                                 FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true),
-                                                 DataContext.getDefault().getTimeScales());
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(provider);
-
-        Assertions.assertTrue(bos.size() > 340000);
-        Assertions.assertTrue(bos.size() < 350000);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        GTODProvider deserialized  = (GTODProvider) ois.readObject();
-        for (int i = 0; i < FastMath.min(100, provider.getEOPHistory().getEntries().size()); ++i) {
-            AbsoluteDate date = provider.getEOPHistory().getEntries().get(i).getDate();
-            Transform expectedIdentity = new Transform(date,
-                                                       provider.getTransform(date).getInverse(),
-                                                       deserialized.getTransform(date));
-            Assertions.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
-            Assertions.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
-        }
 
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,26 +22,78 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.ode.FieldODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.orekit.TestUtils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
+import org.orekit.propagation.events.EventDetectionSettings;
+import org.orekit.propagation.events.FieldDateDetector;
+import org.orekit.propagation.events.FieldEventDetectionSettings;
+import org.orekit.propagation.events.handlers.FieldEventHandler;
+import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 
 class FieldAbstractIntegratedPropagatorTest {
+
+    @Test
+    void testIntegrateWithResetDerivativesAndEvents() {
+        // GIVEN
+        final Orbit initialOrbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldOrbit<Binary64> fieldOrbit = new FieldCartesianOrbit<>(Binary64Field.getInstance(), initialOrbit);
+        final FieldNumericalPropagator<Binary64> propagator = new FieldNumericalPropagator<>(field,
+                new ClassicalRungeKuttaFieldIntegrator<>(field,
+                fieldOrbit.getDate().getField().getZero().newInstance(100.)));
+        propagator.setInitialState(new FieldSpacecraftState<>(fieldOrbit));
+        final TestDetector detector = new TestDetector(fieldOrbit.getDate().shiftedBy(10.));
+        propagator.addEventDetector(detector);
+        // WHEN
+        propagator.propagate(fieldOrbit.getDate().shiftedBy(100));
+        // THEN
+        Assertions.assertTrue(detector.resetted);
+    }
+
+    private static class TestDetector extends FieldDateDetector<Binary64> {
+        boolean resetted = false;
+
+        public TestDetector(FieldAbsoluteDate<Binary64> fieldAbsoluteDate) {
+            super(fieldAbsoluteDate);
+        }
+
+        @Override
+        public void reset(FieldSpacecraftState<Binary64> state, FieldAbsoluteDate<Binary64> target) {
+            super.reset(state, target);
+            resetted = true;
+        }
+
+        @Override
+        public FieldEventHandler<Binary64> getHandler() {
+            return new FieldResetDerivativesOnEvent<>();
+        }
+
+        @Override
+        public FieldEventDetectionSettings<Binary64> getDetectionSettings() {
+            return new FieldEventDetectionSettings<>(Binary64Field.getInstance(),
+                    EventDetectionSettings.getDefaultEventDetectionSettings());
+        }
+    }
 
     @Test
     void testGetResetAtEndTrue() {

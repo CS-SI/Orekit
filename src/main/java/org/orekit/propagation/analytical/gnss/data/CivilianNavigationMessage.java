@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,18 +16,28 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.hipparchus.CalculusFieldElement;
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.TimeScales;
+
 /**
  * Container for data contained in a GPS/QZNSS civilian navigation message.
+ * @param <O> type of the orbital elements
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class CivilianNavigationMessage extends AbstractNavigationMessage implements GNSSClockElements {
+public abstract class CivilianNavigationMessage<O extends CivilianNavigationMessage<O>> extends AbstractNavigationMessage<O> implements GNSSClockElements {
 
     /** Identifier for message type. */
     public static final String CNAV = "CNAV";
 
     /** Identifier for message type. */
     public static final String CNV2 = "CNV2";
+
+    /** Identifier for message type.
+     * @since 13.0
+     */
+    public static final String L1NV = "L1NV";
 
     /** Indicator for CNV 2 messages. */
     private final boolean cnv2;
@@ -37,9 +47,6 @@ public class CivilianNavigationMessage extends AbstractNavigationMessage impleme
 
     /** Change rate in Δn₀. */
     private double deltaN0Dot;
-
-    /** Group Delay Differential (s). */
-    private double tgd;
 
     /** The user SV accuracy (m). */
     private double svAccuracy;
@@ -79,17 +86,45 @@ public class CivilianNavigationMessage extends AbstractNavigationMessage impleme
 
     /**
      * Constructor.
-     * @param cnv2 indicator for CNV2 messages
-     * @param mu Earth's universal gravitational parameter
+     * @param cnv2            indicator for CNV2 messages
+     * @param mu              Earth's universal gravitational parameter
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
-     * @param weekNumber number of weeks in the GNSS cycle
+     * @param weeksInCycle    number of weeks in the GNSS cycle
+     * @param timeScales      known time scales
+     * @param system          satellite system to consider for interpreting week number
+     *                        (may be different from real system, for example in Rinex nav, weeks
+     *                        are always according to GPS)
      */
     protected CivilianNavigationMessage(final boolean cnv2,
-                                        final double mu,
-                                        final double angularVelocity,
-                                        final int weekNumber) {
-        super(mu, angularVelocity, weekNumber);
+                                        final double mu, final double angularVelocity, final int weeksInCycle,
+                                        final TimeScales timeScales, final SatelliteSystem system) {
+        super(mu, angularVelocity, weeksInCycle, timeScales, system);
         this.cnv2 = cnv2;
+    }
+
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param <A> type of the orbital elements (non-field version)
+     * @param original regular field instance
+     */
+    protected <T extends CalculusFieldElement<T>,
+               A extends CivilianNavigationMessage<A>> CivilianNavigationMessage(final FieldCivilianNavigationMessage<T, A> original) {
+        super(original);
+        this.cnv2 = original.isCnv2();
+        setADot(original.getADot().getReal());
+        setDeltaN0Dot(original.getDeltaN0Dot().getReal());
+        setSvAccuracy(original.getSvAccuracy().getReal());
+        setSvHealth(original.getSvHealth());
+        setIscL1CA(original.getIscL1CA().getReal());
+        setIscL1CD(original.getIscL1CD().getReal());
+        setIscL1CP(original.getIscL1CP().getReal());
+        setIscL2C(original.getIscL2C().getReal());
+        setIscL5I5(original.getIscL5I5().getReal());
+        setIscL5Q5(original.getIscL5Q5().getReal());
+        setUraiEd(original.getUraiEd());
+        setUraiNed0(original.getUraiNed0());
+        setUraiNed1(original.getUraiNed1());
+        setUraiNed2(original.getUraiNed2());
     }
 
     /** Check it message is a CNV2 message.
@@ -99,10 +134,8 @@ public class CivilianNavigationMessage extends AbstractNavigationMessage impleme
         return cnv2;
     }
 
-    /**
-     * Getter for the change rate in semi-major axis.
-     * @return the change rate in semi-major axis
-     */
+    /** {@inheritDoc} */
+    @Override
     public double getADot() {
         return aDot;
     }
@@ -115,10 +148,8 @@ public class CivilianNavigationMessage extends AbstractNavigationMessage impleme
         this.aDot = value;
     }
 
-    /**
-     * Getter for change rate in Δn₀.
-     * @return change rate in Δn₀
-     */
+    /** {@inheritDoc} */
+    @Override
     public double getDeltaN0Dot() {
         return deltaN0Dot;
     }
@@ -129,22 +160,6 @@ public class CivilianNavigationMessage extends AbstractNavigationMessage impleme
      */
     public void setDeltaN0Dot(final double deltaN0Dot) {
         this.deltaN0Dot = deltaN0Dot;
-    }
-
-    /**
-     * Getter for the Group Delay Differential (s).
-     * @return the Group Delay Differential in seconds
-     */
-    public double getTGD() {
-        return tgd;
-    }
-
-    /**
-     * Setter for the Group Delay Differential (s).
-     * @param time the group delay differential to set
-     */
-    public void setTGD(final double time) {
-        this.tgd = time;
     }
 
     /**

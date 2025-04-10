@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Collections;
@@ -34,8 +33,13 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
+import org.orekit.propagation.analytical.tle.generation.TleGenerationUtil;
+import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
+import org.orekit.propagation.conversion.osc2mean.TLETheory;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
@@ -65,7 +69,7 @@ import org.orekit.utils.ParameterDriversProvider;
  * @since 11.0
  * @param <T> type of the field elements
  */
-public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeStamped<T>, Serializable, ParameterDriversProvider {
+public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeStamped<T>, ParameterDriversProvider {
 
     /** Identifier for default type of ephemeris (SGP4/SDP4). */
     public static final int DEFAULT = 0;
@@ -109,9 +113,6 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
     private static final DecimalFormatSymbols SYMBOLS =
         new DecimalFormatSymbols(Locale.US);
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -1596648022319057689L;
-
     /** The satellite number. */
     private final int satelliteNumber;
 
@@ -134,7 +135,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
     private final int elementNumber;
 
     /** the TLE current date. */
-    private final transient FieldAbsoluteDate<T> epoch;
+    private final FieldAbsoluteDate<T> epoch;
 
     /** Mean motion (rad/s). */
     private final T meanMotion;
@@ -173,7 +174,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
     private final TimeScale utc;
 
     /** Driver for ballistic coefficient parameter. */
-    private final transient ParameterDriver bStarParameterDriver;
+    private final ParameterDriver bStarParameterDriver;
 
     /** Simple constructor from unparsed two lines. This constructor uses the {@link
      * DataContext#getDefault() default data context}.
@@ -703,6 +704,14 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
         return bStarParameterDriver.getValue(getDate().toAbsoluteDate());
     }
 
+    /**
+     * Compute the semi-major axis from the mean motion of the TLE and the gravitational parameter from TLEConstants.
+     * @return the semi-major axis computed.
+     */
+    public T computeSemiMajorAxis() {
+        return FastMath.cbrt(meanMotion.square().reciprocal().multiply(TLEConstants.MU));
+    }
+
     /** Get a string representation of this TLE set.
      * <p>The representation is simply the two lines separated by the
      * platform line separator.</p>
@@ -720,15 +729,72 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
      * Convert Spacecraft State into TLE.
      *
      * @param state Spacecraft State to convert into TLE
-     * @param templateTLE first guess used to get identification and estimate new TLE
+     * @param templateTLE only used to get identifiers like satellite number, launch year, etc. In other words, the keplerian elements contained in the generated TLE are based on the provided state and not the template TLE.
      * @param generationAlgorithm TLE generation algorithm
      * @param <T> type of the element
      * @return a generated TLE
      * @since 12.0
+     * @deprecated As of release 13.0, use {@link #stateToTLE(FieldSpacecraftState, FieldTLE, OsculatingToMeanConverter)} instead.
      */
+    @Deprecated
     public static <T extends CalculusFieldElement<T>> FieldTLE<T> stateToTLE(final FieldSpacecraftState<T> state, final FieldTLE<T> templateTLE,
                                                                              final TleGenerationAlgorithm generationAlgorithm) {
         return generationAlgorithm.generate(state, templateTLE);
+    }
+
+    /**
+     * Convert Spacecraft State into TLE.
+     * <p>
+     * Uses the {@link DataContext#getDefault() default data context}.
+     * </p>
+     * <p>
+     * The B* is not calculated. Its value is simply copied from the template to the generated TLE.
+     * </p>
+     * @param <T>         type of the elements
+     * @param state       Spacecraft State to convert into TLE
+     * @param templateTLE only used to get identifiers like satellite number, launch year, etc.
+     *                    In other words, the keplerian elements contained in the generated TLE
+     *                    are based on the provided state and not the template TLE.
+     * @param converter   osculating to mean orbit converter
+     * @return a generated TLE
+     * @since 13.0
+     */
+    @DefaultDataContext
+    public static <T extends CalculusFieldElement<T>> FieldTLE<T> stateToTLE(final FieldSpacecraftState<T> state, final FieldTLE<T> templateTLE,
+                                                                             final OsculatingToMeanConverter converter) {
+        return stateToTLE(state, templateTLE, converter, DataContext.getDefault());
+    }
+
+    /**
+     * Convert Spacecraft State into TLE.
+     * <p>
+     * The B* is not calculated. Its value is simply copied from the template to the generated TLE.
+     * </p>
+     * @param <T>         type of the elements
+     * @param state       Spacecraft State to convert into TLE
+     * @param templateTLE only used to get identifiers like satellite number, launch year, etc.
+     *                    In other words, the keplerian elements contained in the generated TLE
+     *                    are based on the provided state and not the template TLE.
+     * @param converter   osculating to mean orbit converter
+     * @param dataContext data context
+     * @return a generated TLE
+     * @since 13.0
+     */
+    public static <T extends CalculusFieldElement<T>> FieldTLE<T> stateToTLE(final FieldSpacecraftState<T> state, final FieldTLE<T> templateTLE,
+                                                                             final OsculatingToMeanConverter converter,
+                                                                             final DataContext dataContext) {
+        converter.setMeanTheory(new TLETheory(templateTLE.toTLE(), dataContext));
+        final T bStar = state.getMass().getField().getZero().newInstance(templateTLE.getBStar());
+        final FieldKeplerianOrbit<T> mean = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
+        final FieldTLE<T> tle =  TleGenerationUtil.newTLE(mean, templateTLE, bStar, dataContext.getTimeScales().getUTC());
+        // reset estimated parameters from template to generated tle
+        for (final ParameterDriver templateDrivers : templateTLE.getParametersDrivers()) {
+            if (templateDrivers.isSelected()) {
+                // set to selected for the new TLE
+                tle.getParameterDriver(templateDrivers.getName()).setSelected(true);
+            }
+        }
+        return tle;
     }
 
     /** Check the lines format validity.

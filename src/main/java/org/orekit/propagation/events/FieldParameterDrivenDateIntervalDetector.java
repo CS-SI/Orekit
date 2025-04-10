@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -97,9 +97,7 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
      */
     public FieldParameterDrivenDateIntervalDetector(final Field<T> field, final String prefix,
                                                     final AbsoluteDate refStart, final AbsoluteDate refStop) {
-        this(FieldAdaptableInterval.of(DEFAULT_MAXCHECK),
-             field.getZero().newInstance(DEFAULT_THRESHOLD),
-             DEFAULT_MAX_ITER,
+        this(new FieldEventDetectionSettings<>(field, EventDetectionSettings.getDefaultEventDetectionSettings()),
              new FieldStopOnEvent<>(),
              new DateDriver(refStart, prefix + START_SUFFIX, true),
              new DateDriver(refStop, prefix + STOP_SUFFIX, false),
@@ -113,20 +111,19 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param start reference interval start driver
      * @param stop reference interval stop driver
      * @param median median date driver
      * @param duration duration driver
+     * @since 13.0
      */
-    protected FieldParameterDrivenDateIntervalDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold, final int maxIter,
+    protected FieldParameterDrivenDateIntervalDetector(final FieldEventDetectionSettings<T> detectionSettings,
                                                        final FieldEventHandler<T> handler,
                                                        final DateDriver start, final DateDriver stop,
                                                        final DateDriver median, final ParameterDriver duration) {
-        super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
+        super(detectionSettings, handler);
         this.start    = start;
         this.stop     = stop;
         this.median   = median;
@@ -152,7 +149,7 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
                                                  stream().
                                                  filter(observer -> observer instanceof FieldParameterDrivenDateIntervalDetector.BindingObserver).
                                                  collect(Collectors.toList());
-        original.forEach(observer -> driver.removeObserver(observer));
+        original.forEach(driver::removeObserver);
 
         driver.addObserver(bindingObserver);
 
@@ -160,9 +157,9 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
 
     /** {@inheritDoc} */
     @Override
-    protected FieldParameterDrivenDateIntervalDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold, final int newMaxIter,
+    protected FieldParameterDrivenDateIntervalDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                                                  final FieldEventHandler<T> newHandler) {
-        return new FieldParameterDrivenDateIntervalDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler,
+        return new FieldParameterDrivenDateIntervalDetector<>(detectionSettings, newHandler,
                                                               start, stop, median, duration);
     }
 

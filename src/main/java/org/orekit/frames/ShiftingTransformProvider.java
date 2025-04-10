@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 
 package org.orekit.frames;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,9 +39,6 @@ import org.orekit.utils.GenericTimeStampedCache;
  * @author Luc Maisonobe
  */
 public class ShiftingTransformProvider implements TransformProvider {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20150601L;
 
     /** First level cache. */
     private final InterpolatingTransformProvider interpolatingProvider;
@@ -92,10 +88,10 @@ public class ShiftingTransformProvider implements TransformProvider {
     private ShiftingTransformProvider(final InterpolatingTransformProvider interpolatingProvider,
                                      final int maxSlots, final double maxSpan, final double newSlotInterval) {
         this.interpolatingProvider = interpolatingProvider;
-        this.cache = new GenericTimeStampedCache<Transform>(2, maxSlots, maxSpan, newSlotInterval,
-                                                            new TransformGenerator(2,
-                                                                                   interpolatingProvider,
-                                                                                   interpolatingProvider.getStep()));
+        this.cache = new GenericTimeStampedCache<>(2, maxSlots, maxSpan, newSlotInterval,
+                new TransformGenerator(2,
+                        interpolatingProvider,
+                        interpolatingProvider.getStep()));
         this.fieldCaches = new HashMap<>();
     }
 
@@ -146,14 +142,14 @@ public class ShiftingTransformProvider implements TransformProvider {
             (GenericTimeStampedCache<FieldTransform<T>>) fieldCaches.get(date.getField());
         if (fieldCache == null) {
             fieldCache =
-                new GenericTimeStampedCache<FieldTransform<T>>(cache.getMaxNeighborsSize(),
-                                                               cache.getMaxSlots(),
-                                                               cache.getMaxSpan(),
-                                                               cache.getNewSlotQuantumGap(),
-                                                               new FieldTransformGenerator<>(date.getField(),
-                                                                                             cache.getMaxNeighborsSize(),
-                                                                                             interpolatingProvider,
-                                                                                             interpolatingProvider.getStep()));
+                    new GenericTimeStampedCache<>(cache.getMaxNeighborsSize(),
+                            cache.getMaxSlots(),
+                            cache.getMaxSpan(),
+                            cache.getNewSlotQuantumGap(),
+                            new FieldTransformGenerator<>(date.getField(),
+                                    cache.getMaxNeighborsSize(),
+                                    interpolatingProvider,
+                                    interpolatingProvider.getStep()));
             fieldCaches.put(date.getField(), fieldCache);
         }
 
@@ -173,14 +169,14 @@ public class ShiftingTransformProvider implements TransformProvider {
             (GenericTimeStampedCache<FieldTransform<T>>) fieldCaches.get(date.getField());
         if (fieldCache == null) {
             fieldCache =
-                new GenericTimeStampedCache<FieldTransform<T>>(cache.getMaxNeighborsSize(),
-                                                               cache.getMaxSlots(),
-                                                               cache.getMaxSpan(),
-                                                               cache.getNewSlotQuantumGap(),
-                                                               new FieldTransformGenerator<>(date.getField(),
-                                                                                             cache.getMaxNeighborsSize(),
-                                                                                             interpolatingProvider,
-                                                                                             interpolatingProvider.getStep()));
+                    new GenericTimeStampedCache<>(cache.getMaxNeighborsSize(),
+                            cache.getMaxSlots(),
+                            cache.getMaxSpan(),
+                            cache.getNewSlotQuantumGap(),
+                            new FieldTransformGenerator<>(date.getField(),
+                                    cache.getMaxNeighborsSize(),
+                                    interpolatingProvider,
+                                    interpolatingProvider.getStep()));
             fieldCaches.put(date.getField(), fieldCache);
         }
 
@@ -190,65 +186,6 @@ public class ShiftingTransformProvider implements TransformProvider {
             t0 : t1
         ).get();
         return closest.staticShiftedBy(date.durationFrom(closest.getDate()));
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * <p>
-     * This intermediate class serializes only the data needed for generation,
-     * but does <em>not</em> serializes the cache itself (in fact the cache is
-     * not serializable).
-     * </p>
-     * @return data transfer object that will be serialized
-     */
-    private Object writeReplace() {
-        return new DTO(interpolatingProvider,
-                       cache.getMaxSlots(), cache.getMaxSpan(), cache.getNewSlotQuantumGap());
-    }
-
-    /** Internal class used only for serialization. */
-    private static class DTO implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20150601L;
-
-        /** Provider for raw (non-interpolated) transforms. */
-        private final InterpolatingTransformProvider interpolatingProvider;
-
-        /** Maximum number of independent cached time slots. */
-        private final int maxSlots;
-
-        /** Maximum duration span in seconds of one slot. */
-        private final double maxSpan;
-
-        /** Time interval above which a new slot is created. */
-        private final double newSlotInterval;
-
-        /** Simple constructor.
-         * @param interpolatingProvider first level cache provider
-         * @param maxSlots maximum number of independent cached time slots
-         * in the {@link GenericTimeStampedCache time-stamped cache}
-         * @param maxSpan maximum duration span in seconds of one slot
-         * in the {@link GenericTimeStampedCache time-stamped cache}
-         * @param newSlotInterval time interval above which a new slot is created
-         * in the {@link GenericTimeStampedCache time-stamped cache}
-         */
-        private DTO(final InterpolatingTransformProvider interpolatingProvider,
-                    final int maxSlots, final double maxSpan, final double newSlotInterval) {
-            this.interpolatingProvider = interpolatingProvider;
-            this.maxSlots              = maxSlots;
-            this.maxSpan               = maxSpan;
-            this.newSlotInterval       = newSlotInterval;
-        }
-
-        /** Replace the deserialized data transfer object with a {@link ShiftingTransformProvider}.
-         * @return replacement {@link ShiftingTransformProvider}
-         */
-        private Object readResolve() {
-            // build a new provider, with an empty cache
-            return new ShiftingTransformProvider(interpolatingProvider,
-                                                 maxSlots, maxSpan, newSlotInterval);
-        }
-
     }
 
 }

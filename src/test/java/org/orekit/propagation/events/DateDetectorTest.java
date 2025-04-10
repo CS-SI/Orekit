@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
@@ -62,6 +63,13 @@ public class DateDetectorTest {
     private NumericalPropagator propagator;
 
     @Test
+    public void testIssue1676() {
+        final double expectedMinGap = 0.001;
+        Assertions.assertEquals(expectedMinGap, new DateDetector(expectedMinGap, iniDate).getMinGap(), 1.0e-10);
+
+    }
+
+    @Test
     public void testSimpleTimer() {
         DateDetector dateDetector = new DateDetector(iniDate.shiftedBy(2.0*dt)).
                                     withMaxCheck(maxCheck).
@@ -74,7 +82,7 @@ public class DateDetectorTest {
                 return new CombinedDerivatives(new double[1], null);
             }
         });
-        propagator.setInitialState(propagator.getInitialState().addAdditionalState("dummy", new double[1]));
+        propagator.setInitialState(propagator.getInitialState().addAdditionalData("dummy", new double[1]));
         propagator.getMultiplexer().add(interpolator -> {
             SpacecraftState prev = interpolator.getPreviousState();
             SpacecraftState curr = interpolator.getCurrentState();
@@ -92,6 +100,19 @@ public class DateDetectorTest {
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(100.*dt));
 
         Assertions.assertEquals(2.0*dt, finalState.getDate().durationFrom(iniDate), threshold);
+    }
+
+    @Test
+    void testDefaultDetectionSettings() {
+        // GIVEN
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        // WHEN
+        final DateDetector detector = new DateDetector();
+        // THEN
+        Assertions.assertEquals(DateDetector.DEFAULT_MAX_ITER, detector.getDetectionSettings().getMaxIterationCount());
+        Assertions.assertEquals(DateDetector.DEFAULT_THRESHOLD, detector.getDetectionSettings().getThreshold());
+        Assertions.assertEquals(DateDetector.DEFAULT_MAX_CHECK,
+                detector.getMaxCheckInterval().currentInterval(mockedState, true));
     }
 
     @Test

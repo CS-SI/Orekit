@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2024 CS GROUP
+<!--- Copyright 2002-2025 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -61,7 +61,7 @@ IAU-1980 are both the XML format and the columns format.
 | space weather                                                                            | CSSI format                              | SpaceWeather-All-v1.2.txt                               | [ftp://ftp.agi.com/pub/DynamicEarthData/SpaceWeather-All-v1.2.txt](ftp://ftp.agi.com/pub/DynamicEarthData/SpaceWeather-All-v1.2.txt)  |
 | JB2008 SOLFSMY                                                                           | Space Environment format                 | SOLFSMY.TXT                                             | [https://sol.spacenvironment.net/JB2008/indices/SOLFSMY.TXT](https://sol.spacenvironment.net/JB2008/indices/SOLFSMY.TXT)              |
 | JB2008 DTC                                                                               | Space Environment format                 | DTCFILE.TXT                                             | [https://sol.spacenvironment.net/JB2008/indices/DTCFILE.TXT](https://sol.spacenvironment.net/JB2008/indices/DTCFILE.TXT)              |
-| EOP files to ITRF versions mapping                                                       | Orekit itrf-versions.conf                | itrf-versions.conf                                      | [Orekit Physical Data Archive](https://gitlab.orekit.org/orekit/orekit-data/-/archive/master/orekit-data-master.zip)                  |
+| EOP files to ITRF versions mapping                                                       | Orekit itrf-versions.conf                | itrf-versions.conf                                      | [Orekit Physical Data Archive](https://gitlab.orekit.org/orekit/orekit-data/-/archive/main/orekit-data-main.zip)                      |
 | CCSDS Attitude Data Message                                                              | CCSDS ADM V1 and V2 (KVN and XML)        | none (must be loaded explicitly)                        | various, can be produced by Orekit itself                                                                                             |
 | CCSDS Orbit Data Message                                                                 | CCSDS ODM V2 and V3 (KVN and XML)        | none (must be loaded explicitly)                        | various, can be produced by Orekit itself                                                                                             |
 | CCSDS Tracking Data Message                                                              | CCSDS TDM V1 and V2 (KVN and XML)        | none (must be loaded explicitly)                        | various, can be produced by Orekit itself                                                                                             |

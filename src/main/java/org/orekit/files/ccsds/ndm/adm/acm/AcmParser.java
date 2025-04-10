@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -272,7 +272,7 @@ public class AcmParser extends AdmParser<Acm, AcmParser> implements AttitudeEphe
      */
     boolean managePhysicalPropertiesSection(final boolean starting) {
         if (starting) {
-            physicBlock = new AttitudePhysicalProperties(metadata.getEpochT0());
+            physicBlock = new AttitudePhysicalProperties();
             anticipateNext(this::processPhysicalPropertyToken);
         } else {
             anticipateNext(structureProcessor);

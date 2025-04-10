@@ -68,7 +68,7 @@ public class FieldFunctionalDetectorTest {
         // verify
         MatcherAssert.assertThat(detector.getMaxIterationCount(), CoreMatchers.is(1));
         MatcherAssert.assertThat(detector.getThreshold().getReal(), CoreMatchers.is(2.0));
-        MatcherAssert.assertThat(detector.getMaxCheckInterval().currentInterval(null), CoreMatchers.is(3.0));
+        MatcherAssert.assertThat(detector.getMaxCheckInterval().currentInterval(null, true), CoreMatchers.is(3.0));
         MatcherAssert.assertThat(detector.getHandler(), CoreMatchers.is(handler));
         FieldSpacecraftState<T> state = new FieldSpacecraftState<>(
                 new FieldCartesianOrbit<>(

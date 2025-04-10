@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.events;
 
+import org.orekit.propagation.events.intervals.AdaptableInterval;
+
 /**
  * Class containing parameters for event detection.
  *
@@ -26,7 +28,7 @@ package org.orekit.propagation.events;
 public class EventDetectionSettings {
 
     /** Default maximum checking interval (s). */
-    public static final double DEFAULT_MAXCHECK = 600;
+    public static final double DEFAULT_MAX_CHECK = 600;
 
     /** Default convergence threshold (s). */
     public static final double DEFAULT_THRESHOLD = 1.e-6;
@@ -93,10 +95,40 @@ public class EventDetectionSettings {
     }
 
     /**
+     * Builds a new instance with a new max. check interval.
+     * @param newMaxCheckInterval new max. check.
+     * @return new object
+     * @since 13.0
+     */
+    public EventDetectionSettings withMaxCheckInterval(final AdaptableInterval newMaxCheckInterval) {
+        return new EventDetectionSettings(newMaxCheckInterval, threshold, maxIterationCount);
+    }
+
+    /**
+     * Builds a new instance with a new threshold value.
+     * @param newThreshold detection threshold in seconds
+     * @return new object
+     * @since 13.0
+     */
+    public EventDetectionSettings withThreshold(final double newThreshold) {
+        return new EventDetectionSettings(maxCheckInterval, newThreshold, maxIterationCount);
+    }
+
+    /**
+     * Builds a new instance with a new max. iteration count.
+     * @param newMaxIterationCount new max iteration count.
+     * @return new object
+     * @since 13.0
+     */
+    public EventDetectionSettings withMaxIter(final int newMaxIterationCount) {
+        return new EventDetectionSettings(maxCheckInterval, threshold, newMaxIterationCount);
+    }
+
+    /**
      * Returns default settings for event detections.
      * @return default settings
      */
     public static EventDetectionSettings getDefaultEventDetectionSettings() {
-        return new EventDetectionSettings(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER);
+        return new EventDetectionSettings(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER);
     }
 }

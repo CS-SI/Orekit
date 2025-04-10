@@ -31,8 +31,6 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
-import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTrackingCoordinates;
@@ -45,8 +43,7 @@ import org.orekit.utils.TrackingCoordinates;
  * the {@link DataProvidersManager}.
  * @author Thomas Neidhart
  */
-@SuppressWarnings("deprecation")
-public class FixedTroposphericDelay implements DiscreteTroposphericModel, TroposphericModel {
+public class FixedTroposphericDelay implements TroposphericModel {
 
     /** Singleton object for the default model. */
     private static FixedTroposphericDelay defaultModel;
@@ -61,7 +58,7 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel, Tropos
     private final double[][] fArr;
 
     /** Interpolation function for the tropospheric delays. */
-    private PiecewiseBicubicSplineInterpolatingFunction delayFunction;
+    private final PiecewiseBicubicSplineInterpolatingFunction delayFunction;
 
     /** Creates a new {@link FixedTroposphericDelay} instance.
      * @param xArr abscissa grid for the interpolation function
@@ -132,15 +129,6 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel, Tropos
         return defaultModel;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public double pathDelay(final double elevation, final GeodeticPoint point,
-                            final double[] parameters, final AbsoluteDate date) {
-        return pathDelay(new TrackingCoordinates(0.0, elevation, 0.0), point,
-                         TroposphericModelUtils.STANDARD_ATMOSPHERE, parameters, date).getDelay();
-    }
-
     /** {@inheritDoc}
      * <p>
      * All delays are affected to {@link TroposphericDelay#getZh() hydrostatic zenith}
@@ -150,7 +138,6 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel, Tropos
      */
     @Override
     public TroposphericDelay pathDelay(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
-                                       final PressureTemperatureHumidity weather,
                                        final double[] parameters, final AbsoluteDate date) {
         // limit the height to 5000 m
         final double h = FastMath.min(FastMath.max(0, point.getAltitude()), 5000);
@@ -163,17 +150,6 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel, Tropos
                                      delayFunction.value(h, e), 0.0);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
-                                                           final T[] parameters, final FieldAbsoluteDate<T> date) {
-        return pathDelay(new FieldTrackingCoordinates<>(date.getField().getZero(), elevation, date.getField().getZero()),
-                         point,
-                         new FieldPressureTemperatureHumidity<>(date.getField(), TroposphericModelUtils.STANDARD_ATMOSPHERE),
-                         parameters, date).getDelay();
-    }
-
     /** {@inheritDoc}
      * <p>
      * All delays are affected to {@link FieldTroposphericDelay#getZh() hydrostatic zenith}
@@ -184,7 +160,6 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel, Tropos
     @Override
     public <T extends CalculusFieldElement<T>> FieldTroposphericDelay<T> pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                                                    final FieldGeodeticPoint<T> point,
-                                                                                   final FieldPressureTemperatureHumidity<T> weather,
                                                                                    final T[] parameters, final FieldAbsoluteDate<T> date) {
         final T zero = date.getField().getZero();
         final T pi   = zero.getPi();

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,6 +32,7 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldArrayDictionary;
+import org.orekit.utils.FieldDataDictionary;
 import org.orekit.utils.FieldTimeSpanMap;
 import org.orekit.utils.ParameterDriver;
 
@@ -133,7 +134,7 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
      * @return fixed orbit
      */
     private FieldSpacecraftState<T> fixState(final FieldOrbit<T> orbit, final FieldAttitude<T> attitude, final T mass, final T mu,
-                                             final FieldArrayDictionary<T> additionalStates,
+                                             final FieldDataDictionary<T> additionalStates,
                                              final FieldArrayDictionary<T> additionalStatesderivatives) {
         final OrbitType type = orbit.getType();
         final T[] stateVector = MathArrays.buildArray(mass.getField(), 6);
@@ -141,10 +142,10 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
         type.mapOrbitToArray(orbit, positionAngleType, stateVector, null);
         final FieldOrbit<T> fixedOrbit = type.mapArrayToOrbit(stateVector, null, positionAngleType,
                                                               orbit.getDate(), mu, orbit.getFrame());
-        FieldSpacecraftState<T> fixedState = new FieldSpacecraftState<>(fixedOrbit, attitude, mass);
+        FieldSpacecraftState<T> fixedState = new FieldSpacecraftState<>(fixedOrbit, attitude).withMass(mass);
         if (additionalStates != null) {
-            for (final FieldArrayDictionary<T>.Entry entry : additionalStates.getData()) {
-                fixedState = fixedState.addAdditionalState(entry.getKey(), entry.getValue());
+            for (final FieldDataDictionary<T>.Entry entry : additionalStates.getData()) {
+                fixedState = fixedState.addAdditionalData(entry.getKey(), entry.getValue());
             }
         }
         if (additionalStatesderivatives != null) {
@@ -156,16 +157,17 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
     }
 
     /** {@inheritDoc} */
+    @Override
     public void resetInitialState(final FieldSpacecraftState<T> state) {
 
         // ensure the orbit use the specified mu and has no non-Keplerian derivatives
         final FieldSpacecraftState<T> formerInitial = getInitialState();
-        final T mu = formerInitial == null ? state.getMu() : formerInitial.getMu();
+        final T mu = formerInitial == null ? state.getOrbit().getMu() : formerInitial.getOrbit().getMu();
         final FieldSpacecraftState<T> fixedState = fixState(state.getOrbit(),
                                                             state.getAttitude(),
                                                             state.getMass(),
                                                             mu,
-                                                            state.getAdditionalStatesValues(),
+                                                            state.getAdditionalDataValues(),
                                                             state.getAdditionalStatesDerivatives());
 
         states = new FieldTimeSpanMap<>(fixedState, state.getDate().getField());
@@ -174,6 +176,7 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward) {
         if (forward) {
             states.addValidAfter(state, state.getDate());
@@ -184,7 +187,9 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
     }
 
     /** {@inheritDoc} */
-    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
+    @Override
+    public FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date,
+                                        final T[] parameters) {
         // propagate orbit
         FieldOrbit<T> orbit = states.get(date).getOrbit();
         do {
@@ -196,6 +201,7 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
     }
 
     /** {@inheritDoc}*/
+    @Override
     protected T getMass(final FieldAbsoluteDate<T> date) {
         return states.get(date).getMass();
     }

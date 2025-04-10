@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -66,6 +66,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -138,20 +139,20 @@ public class FieldBrouwerLyddanePropagatorTest {
         // ---------------------------------
         FieldBrouwerLyddanePropagator<T> extrapolator =
                 new FieldBrouwerLyddanePropagator<T>(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
-        FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(initDate);
+        FieldOrbit<T> finalOrbit = extrapolator.propagate(initDate).getOrbit();
 
         // positions  velocity and semi major axis match perfectly
         Assertions.assertEquals(0.0,
                                 FieldVector3D.distance(initialOrbit.getPosition(),
                                                        finalOrbit.getPosition()).getReal(),
-                                1.9e-8);
+                                4.8e-7);
         Assertions.assertEquals(0.0,
                                 FieldVector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                                        finalOrbit.getPVCoordinates().getVelocity()).getReal(),
-                                1.2e-11);
+                                2.9e-10);
         Assertions.assertEquals(0.0, 
                                 finalOrbit.getA().getReal() - initialOrbit.getA().getReal(),
-                                9.4e-10);
+                                6.6e-9);
 
     }
 
@@ -174,17 +175,17 @@ public class FieldBrouwerLyddanePropagatorTest {
         FieldBrouwerLyddanePropagator<T> extrapolator =
                 new FieldBrouwerLyddanePropagator<T>(initialOrbit, DEFAULT_LAW, GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
 
-        FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(initDate);
+        FieldOrbit<T> finalOrbit = extrapolator.propagate(initDate).getOrbit();
 
         // positions  velocity and semi major axis match perfectly
         Assertions.assertEquals(0.0,
                                 FieldVector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
                                                        finalOrbit.getPVCoordinates().getPosition()).getReal(),
-                                6.7e-7);
+                                1.2e-6);
         Assertions.assertEquals(0.0,
                                 FieldVector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                                        finalOrbit.getPVCoordinates().getVelocity()).getReal(),
-                                4.2e-10);
+                                7.0e-10);
         Assertions.assertEquals(0.0,
                                 finalOrbit.getA().getReal() - initialOrbit.getA().getReal(),
                                 9.4e-9);
@@ -237,8 +238,8 @@ public class FieldBrouwerLyddanePropagatorTest {
         double delta_t = 100.0; // extrapolation duration in seconds
         FieldAbsoluteDate<T> extrapDate = date.shiftedBy(delta_t);
 
-        FieldSpacecraftState<T> finalOrbitAna = extrapolatorAna.propagate(extrapDate);
-        FieldSpacecraftState<T> finalOrbitKep = extrapolatorKep.propagate(extrapDate);
+        FieldOrbit<T> finalOrbitAna = extrapolatorAna.propagate(extrapDate).getOrbit();
+        FieldOrbit<T> finalOrbitKep = extrapolatorKep.propagate(extrapDate).getOrbit();
 
         Assertions.assertEquals(finalOrbitAna.getDate().durationFrom(extrapDate).getReal(), 0.0,
                      Utils.epsilonTest);
@@ -304,7 +305,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double positionTolerance = 10.0;
         final OrbitType propagationType = OrbitType.KEPLERIAN;
         final double[][] tolerances =
-                NumericalPropagator.tolerances(positionTolerance, initialOrbit.toOrbit(), propagationType);
+                ToleranceProvider.getDefaultToleranceProvider(positionTolerance).getTolerances(initialOrbit.toOrbit(), propagationType);
         final AdaptiveStepsizeIntegrator integrator =
                 new DormandPrince853Integrator(minStep, maxstep, tolerances[0], tolerances[1]);
 
@@ -381,7 +382,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double positionTolerance = 10.0;
         final OrbitType propagationType = OrbitType.KEPLERIAN;
         final double[][] tolerances =
-                NumericalPropagator.tolerances(positionTolerance, initialOrbit.toOrbit(), propagationType);
+                ToleranceProvider.getDefaultToleranceProvider(positionTolerance).getTolerances(initialOrbit.toOrbit(), propagationType);
         final AdaptiveStepsizeIntegrator integrator =
                 new DormandPrince853Integrator(minStep, maxstep, tolerances[0], tolerances[1]);
 
@@ -490,7 +491,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double positionTolerance = 10.0;
         final OrbitType propagationType = OrbitType.KEPLERIAN;
         final double[][] tolerances =
-                NumericalPropagator.tolerances(positionTolerance, InitOrbit, propagationType);
+                ToleranceProvider.getDefaultToleranceProvider(positionTolerance).getTolerances(InitOrbit, propagationType);
         final AdaptiveStepsizeIntegrator integrator =
                 new DormandPrince853Integrator(minStep, maxstep, tolerances[0], tolerances[1]);
 
@@ -745,7 +746,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
         // Extrapolation at the initial date
         // ---------------------------------
-        final FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(initDate);
+        final FieldOrbit<T> finalOrbit = extrapolator.propagate(initDate).getOrbit();
 
         // Asserts
         // -------
@@ -918,7 +919,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
         // set up a reference numerical propagator starting for the specified start orbit
         // using the same force models (i.e. the first few zonal terms)
-        double[][] tol = FieldNumericalPropagator.tolerances(zero.newInstance(0.1), initialOsculating, OrbitType.KEPLERIAN);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.1).getTolerances(initialOsculating, OrbitType.KEPLERIAN);
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, tol[0], tol[1]);
         integrator.setInitialStepSize(60);
         FieldNumericalPropagator<T> num = new FieldNumericalPropagator<>(field, integrator);
@@ -946,7 +947,6 @@ public class FieldBrouwerLyddanePropagatorTest {
 
         Assertions.assertEquals(3188.347, oscMax.getResult()  - oscMin.getResult(),  1.0e-3);
         Assertions.assertEquals(  25.794, meanMax.getResult() - meanMin.getResult(), 1.0e-3);
-
     }
 
     @Test

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -145,7 +145,7 @@ public class StreamMonitor extends AbstractEncodedMessage implements Runnable {
      * @param ignoreUnknownMessageTypes if true, unknown messages types are silently ignored
      * @param reconnectDelay delay before we reconnect after connection close
      * @param reconnectDelayFactor factor by which reconnection delay is multiplied after each attempt
-     * @param maxRetries max number of reconnect a attempts without reading any data
+     * @param maxRetries max number of reconnect attempts without reading any data
      */
     public StreamMonitor(final NtripClient client,
                          final String mountPoint, final Type type,
@@ -163,7 +163,7 @@ public class StreamMonitor extends AbstractEncodedMessage implements Runnable {
         this.stop                      = new AtomicBoolean(false);
         this.observers                 = new HashMap<>();
         this.lastMessages              = new HashMap<>();
-        this.exception                 = new AtomicReference<OrekitException>(null);
+        this.exception                 = new AtomicReference<>(null);
     }
 
     /** Add an observer for encoded messages.
@@ -210,7 +210,7 @@ public class StreamMonitor extends AbstractEncodedMessage implements Runnable {
 
         try {
 
-            final MessagesParser parser = type.getParser(extractUsedMessages());
+            final MessagesParser parser = type.getParser(extractUsedMessages(), client.getTimeScales());
             int nbAttempts = 0;
             double delay = reconnectDelay;
             while (nbAttempts < maxRetries) {

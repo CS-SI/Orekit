@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2024 CS GROUP
+<!--- Copyright 2002-2025 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -116,16 +116,16 @@ if the developer wants to share work or needs community feedback.
 When a release is desired, a dedicated branch should be created, with a name
 following the pattern release-x.y. These branches are created from the
 develop branch. When the release is ready, the branch is merged both into the
-master branch and into the develop branch. Once a release branch has been set
+main branch and into the develop branch. Once a release branch has been set
 up, it will remain. This allows users relying on this specific version to be
 able to retrieve the fixes published afterward (i.e. x.y.1, x.y.2...).
 
-After a release has been published and pushed to master, it may be necessary
+After a release has been published and pushed to main, it may be necessary
 to publish an urgent bugfix if a serious problem in the released version is
-found. Short-lived bugfix branches that are created directly from master are
-devoted to this. These bugfix branches are merged back into master and develop.
+found. Short-lived bugfix branches that are created directly from main are
+devoted to this. These bugfix branches are merged back into main and develop.
 
-The master branch always refer to the latest stable release performed. No
+The main branch always refer to the latest stable release performed. No
 direct work is done on this branch. It is updated only by merging either
 release branches or bugfix branches branches to it.
 

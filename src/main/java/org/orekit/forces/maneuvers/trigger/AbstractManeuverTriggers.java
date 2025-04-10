@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,7 +33,7 @@ import org.orekit.utils.TimeSpanMap;
  * @author Luc Maisonobe
  * @since 11.1
  */
-public abstract class AbstractManeuverTriggers implements ManeuverTriggers {
+public abstract class AbstractManeuverTriggers implements ResettableManeuverTriggers {
 
     /** Firing time spans. */
     private TimeSpanMap<Boolean> firings;
@@ -45,7 +45,7 @@ public abstract class AbstractManeuverTriggers implements ManeuverTriggers {
     private final List<ManeuverTriggersResetter> resetters;
 
     /** Cached field-based resetters. */
-    private final transient Map<Field<? extends CalculusFieldElement<?>>, List<FieldManeuverTriggersResetter<?>>> fieldResetters;
+    private final Map<Field<? extends CalculusFieldElement<?>>, List<FieldManeuverTriggersResetter<?>>> fieldResetters;
 
     /** Simple constructor.
      */
@@ -138,11 +138,7 @@ public abstract class AbstractManeuverTriggers implements ManeuverTriggers {
     public <T extends CalculusFieldElement<T>> void addResetter(final Field<T> field, final FieldManeuverTriggersResetter<T> resetter) {
 
         // check if we already have resetters for this field
-        List<FieldManeuverTriggersResetter<?>> list = fieldResetters.get(field);
-        if (list == null) {
-            list = new ArrayList<>();
-            fieldResetters.put(field, list);
-        }
+        final List<FieldManeuverTriggersResetter<?>> list = fieldResetters.computeIfAbsent(field, k -> new ArrayList<>());
 
         // add the resetter to the list
         list.add(resetter);

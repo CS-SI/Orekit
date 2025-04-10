@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,5 +27,14 @@ public interface TimeShiftable<T extends TimeShiftable<T>> {
      * @return a new instance, shifted with respect to instance (which is not changed)
      */
     T shiftedBy(double dt);
+
+    /** Get a time-shifted instance.
+     * @param dt time shift
+     * @return a new instance, shifted with respect to instance (which is not changed)
+     * @since 13.0
+     */
+    default T shiftedBy(TimeOffset dt) {
+        return shiftedBy(dt.toDouble());
+    }
 
 }

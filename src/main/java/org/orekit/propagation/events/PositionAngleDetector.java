@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -67,7 +67,7 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
-     * ({@link #DEFAULT_MAXCHECK}) and convergence threshold ({@link
+     * ({@link #DEFAULT_MAX_CHECK}) and convergence threshold ({@link
      * #DEFAULT_THRESHOLD}).</p>
      * @param orbitType orbit type defining the angle type
      * @param positionAngleType type of position angle
@@ -77,7 +77,7 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
     public PositionAngleDetector(final OrbitType orbitType, final PositionAngleType positionAngleType,
                                  final double angle)
         throws OrekitIllegalArgumentException {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, orbitType, positionAngleType, angle);
+        this(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, orbitType, positionAngleType, angle);
     }
 
     /** Build a detector.
@@ -93,7 +93,7 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
                                  final OrbitType orbitType, final PositionAngleType positionAngleType,
                                  final double angle)
         throws OrekitIllegalArgumentException {
-        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnEvent(),
+        this(new EventDetectionSettings(maxCheck, threshold, DEFAULT_MAX_ITER), new StopOnEvent(),
              orbitType, positionAngleType, angle);
     }
 
@@ -103,22 +103,20 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param orbitType orbit type defining the angle type
      * @param positionAngleType type of position angle
      * @param angle fixed angle to be crossed
      * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
+     * @since 13.0
      */
-    protected PositionAngleDetector(final AdaptableInterval maxCheck, final double threshold,
-                                    final int maxIter, final EventHandler handler,
+    protected PositionAngleDetector(final EventDetectionSettings detectionSettings, final EventHandler handler,
                                     final OrbitType orbitType, final PositionAngleType positionAngleType,
                                     final double angle)
         throws OrekitIllegalArgumentException {
 
-        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
+        super(detectionSettings, handler);
 
         this.orbitType        = orbitType;
         this.positionAngleType = positionAngleType;
@@ -148,11 +146,9 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
 
     /** {@inheritDoc} */
     @Override
-    protected PositionAngleDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                           final int newMaxIter,
+    protected PositionAngleDetector create(final EventDetectionSettings detectionSettings,
                                            final EventHandler newHandler) {
-        return new PositionAngleDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                         orbitType, positionAngleType, angle);
+        return new PositionAngleDetector(detectionSettings, newHandler, orbitType, positionAngleType, angle);
     }
 
     /** Get the orbit type defining the angle type.

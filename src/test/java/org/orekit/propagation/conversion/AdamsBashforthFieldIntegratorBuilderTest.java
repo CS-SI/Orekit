@@ -1,37 +1,51 @@
 package org.orekit.propagation.conversion;
 
-import org.hipparchus.complex.Complex;
+import org.hipparchus.ode.AbstractFieldIntegrator;
+import org.hipparchus.ode.nonstiff.AdamsBashforthFieldIntegrator;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Constants;
+import org.orekit.utils.AbsolutePVCoordinates;
+import org.orekit.utils.FieldAbsolutePVCoordinates;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 class AdamsBashforthFieldIntegratorBuilderTest {
 
     @Test
-    void testGetTolerances() {
+    void testBuildIntegrator() {
         // GIVEN
         final double minStep = 1;
-        final double maxStep = 10;
-        final double dP = 1;
-        final double dV = Double.NaN;
-        final Orbit orbit = new KeplerianOrbit(7e6, 0.1, 1, 2, 3, 4, PositionAngleType.ECCENTRIC, FramesFactory.getGCRF(),
-                AbsoluteDate.ARBITRARY_EPOCH, Constants.EGM96_EARTH_MU);
+        final ToleranceProvider mockedProvider = Mockito.mock(ToleranceProvider.class);
+        final FieldAbsolutePVCoordinates<Binary64> fieldAbsolutePVCoordinates = new FieldAbsolutePVCoordinates<>(
+                Binary64Field.getInstance(), new AbsolutePVCoordinates(FramesFactory.getGCRF(),
+                new TimeStampedPVCoordinates(AbsoluteDate.ARBITRARY_EPOCH, new PVCoordinates())));
+        Mockito.when(mockedProvider.getTolerances(fieldAbsolutePVCoordinates)).thenReturn(new double[6][6]);
         final int nSteps = 2;
         // WHEN
-        final AdamsBashforthFieldIntegratorBuilder<Complex> builder = new AdamsBashforthFieldIntegratorBuilder<>(nSteps, minStep,
-                maxStep, dP, dV);
-        final double[][] actualTolerances = builder.getTolerances(orbit, orbit.getType());
+        final AdamsBashforthFieldIntegratorBuilder<Binary64> builder = new AdamsBashforthFieldIntegratorBuilder<>(nSteps, minStep,
+                minStep, mockedProvider);
+        final AbstractFieldIntegrator<Binary64> integrator = builder.buildIntegrator(fieldAbsolutePVCoordinates);
+        Assertions.assertInstanceOf(AdamsBashforthFieldIntegrator.class, integrator);
+    }
+
+    @Test
+    void testToODEIntegratorBuilder() {
+        // GIVEN
+        final ToleranceProvider mockedProvider = Mockito.mock(ToleranceProvider.class);
+        final int nSteps = 2;
+        final AdamsBashforthFieldIntegratorBuilder<Binary64> fieldIntegratorBuilder = new AdamsBashforthFieldIntegratorBuilder<>(nSteps, 1,
+                2., mockedProvider);
+        // WHEN
+        final AdamsBashforthIntegratorBuilder integratorBuilder = fieldIntegratorBuilder.toODEIntegratorBuilder();
         // THEN
-        final AdamsBashforthFieldIntegratorBuilder<Complex> builder2 = new AdamsBashforthFieldIntegratorBuilder<>(nSteps, minStep,
-                maxStep, dP);
-        final double[][] expectedTolerances = builder2.getTolerances(orbit, orbit.getType());
-        Assertions.assertArrayEquals(expectedTolerances[0], actualTolerances[0]);
-        Assertions.assertArrayEquals(expectedTolerances[1], actualTolerances[1]);
+        Assertions.assertEquals(integratorBuilder.getMinStep(), fieldIntegratorBuilder.getMinStep());
+        Assertions.assertEquals(integratorBuilder.getMaxStep(), fieldIntegratorBuilder.getMaxStep());
     }
 
 }

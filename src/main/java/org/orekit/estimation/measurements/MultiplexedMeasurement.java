@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -55,7 +55,7 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
     private final List<EstimatedMeasurement<?>> estimatedMeasurements;
 
     /** Multiplexed parameters drivers. */
-    private ParameterDriversList parametersDrivers;
+    private final ParameterDriversList parametersDrivers;
 
     /** Total dimension. */
     private final int dimension;
@@ -64,7 +64,10 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
     private final int nbSat;
 
     /** States mapping. */
-    private final int[][] mapping;
+    private final int[][] multiplexedToUnderlying;
+
+    /** States mapping. */
+    private final int[][] underlyingToMultiplexed;
 
     /** Simple constructor.
      * @param measurements measurements to multiplex
@@ -72,9 +75,9 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
      */
     public MultiplexedMeasurement(final List<ObservedMeasurement<?>> measurements) {
         super(measurements.get(0).getDate(),
-              multiplex(measurements, m -> m.getObservedValue()),
-              multiplex(measurements, m -> m.getTheoreticalStandardDeviation()),
-              multiplex(measurements, m -> m.getBaseWeight()),
+              multiplex(measurements, ComparableMeasurement::getObservedValue),
+              multiplex(measurements, ObservedMeasurement::getTheoreticalStandardDeviation),
+              multiplex(measurements, ObservedMeasurement::getBaseWeight),
               multiplex(measurements));
 
         this.observedMeasurements                    = measurements;
@@ -99,15 +102,17 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
         // set up states mappings for observed satellites
         final List<ObservableSatellite> deduplicated = getSatellites();
         this.nbSat   = deduplicated.size();
-        this.mapping = new int[measurements.size()][];
-        for (int i = 0; i < mapping.length; ++i) {
+        this.multiplexedToUnderlying = new int[measurements.size()][];
+        this.underlyingToMultiplexed = new int[measurements.size()][deduplicated.size()];
+        for (int i = 0; i < multiplexedToUnderlying.length; ++i) {
             final List<ObservableSatellite> satellites = measurements.get(i).getSatellites();
-            mapping[i] = new int[satellites.size()];
-            for (int j = 0; j < mapping[i].length; ++j) {
+            multiplexedToUnderlying[i] = new int[satellites.size()];
+            for (int j = 0; j < multiplexedToUnderlying[i].length; ++j) {
                 final int index = satellites.get(j).getPropagatorIndex();
                 for (int k = 0; k < nbSat; ++k) {
                     if (deduplicated.get(k).getPropagatorIndex() == index) {
-                        mapping[i][j] = k;
+                        multiplexedToUnderlying[i][j] = k;
+                        underlyingToMultiplexed[i][k] = j;
                         break;
                     }
                 }
@@ -138,6 +143,26 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
         return estimatedMeasurements;
     }
 
+    /** Get the spacecraft state index in the underlying measurement.
+     * @param measurementIndex index of the underlying measurement
+     * @param multiplexedStateIndex index of the spacecraft state in the multiplexed array
+     * @return spacecraft state index in the underlying measurement
+     * @since 13.0
+     */
+    public int getUnderlyingStateIndex(final int measurementIndex, final int multiplexedStateIndex) {
+        return multiplexedToUnderlying[measurementIndex][multiplexedStateIndex];
+    }
+
+    /** Get the spacecraft state index in the multiplexed measurement.
+     * @param measurementIndex index of the underlying measurement
+     * @param underlyingStateIndex index of the spacecraft state in the underlying array
+     * @return spacecraft state index in the multiplexed measurement
+     * @since 13.0
+     */
+    public int getMultiplexedStateIndex(final int measurementIndex, final int underlyingStateIndex) {
+        return underlyingToMultiplexed[measurementIndex][underlyingStateIndex];
+    }
+
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurementBase<MultiplexedMeasurement> theoreticalEvaluationWithoutDerivatives(final int iteration,
@@ -145,7 +170,6 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
                                                                                                        final SpacecraftState[] states) {
 
         final SpacecraftState[]              evaluationStates = new SpacecraftState[nbSat];
-        final List<TimeStampedPVCoordinates> participants     = new ArrayList<>();
         final double[]                       value            = new double[dimension];
 
         // loop over all multiplexed measurements
@@ -154,9 +178,9 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
         for (int i = 0; i < observedMeasurements.size(); ++i) {
 
             // filter states involved in the current measurement
-            final SpacecraftState[] filteredStates = new SpacecraftState[mapping[i].length];
-            for (int j = 0; j < mapping[i].length; ++j) {
-                filteredStates[j] = states[mapping[i][j]];
+            final SpacecraftState[] filteredStates = new SpacecraftState[multiplexedToUnderlying[i].length];
+            for (int j = 0; j < multiplexedToUnderlying[i].length; ++j) {
+                filteredStates[j] = states[getUnderlyingStateIndex(i, j)];
             }
 
             // perform evaluation
@@ -170,8 +194,8 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
 
             // extract states
             final SpacecraftState[] statesI = eI.getStates();
-            for (int j = 0; j < mapping[i].length; ++j) {
-                evaluationStates[mapping[i][j]] = statesI[j];
+            for (int j = 0; j < multiplexedToUnderlying[i].length; ++j) {
+                evaluationStates[multiplexedToUnderlying[i][j]] = statesI[j];
             }
 
         }
@@ -180,7 +204,7 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
         final EstimatedMeasurementBase<MultiplexedMeasurement> multiplexed =
                         new EstimatedMeasurementBase<>(this, iteration, evaluation,
                                                        evaluationStates,
-                                                       participants.toArray(new TimeStampedPVCoordinates[0]));
+                                                       new TimeStampedPVCoordinates[0]);
 
         // copy multiplexed value
         multiplexed.setEstimatedValue(value);
@@ -195,7 +219,6 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
                                                                                  final SpacecraftState[] states) {
 
         final SpacecraftState[]              evaluationStates = new SpacecraftState[nbSat];
-        final List<TimeStampedPVCoordinates> participants     = new ArrayList<>();
         final double[]                       value            = new double[dimension];
 
         // loop over all multiplexed measurements
@@ -204,9 +227,9 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
         for (int i = 0; i < observedMeasurements.size(); ++i) {
 
             // filter states involved in the current measurement
-            final SpacecraftState[] filteredStates = new SpacecraftState[mapping[i].length];
-            for (int j = 0; j < mapping[i].length; ++j) {
-                filteredStates[j] = states[mapping[i][j]];
+            final SpacecraftState[] filteredStates = new SpacecraftState[multiplexedToUnderlying[i].length];
+            for (int j = 0; j < multiplexedToUnderlying[i].length; ++j) {
+                filteredStates[j] = states[multiplexedToUnderlying[i][j]];
             }
 
             // perform evaluation
@@ -220,8 +243,8 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
 
             // extract states
             final SpacecraftState[] statesI = eI.getStates();
-            for (int j = 0; j < mapping[i].length; ++j) {
-                evaluationStates[mapping[i][j]] = statesI[j];
+            for (int j = 0; j < multiplexedToUnderlying[i].length; ++j) {
+                evaluationStates[multiplexedToUnderlying[i][j]] = statesI[j];
             }
 
         }
@@ -230,7 +253,7 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
         final EstimatedMeasurement<MultiplexedMeasurement> multiplexed =
                         new EstimatedMeasurement<>(this, iteration, evaluation,
                                                    evaluationStates,
-                                                   participants.toArray(new TimeStampedPVCoordinates[0]));
+                                                   new TimeStampedPVCoordinates[0]);
 
         // copy multiplexed value
         multiplexed.setEstimatedValue(value);
@@ -252,9 +275,9 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
             final int                     dimI = eI.getObservedMeasurement().getDimension();
 
             // state derivatives
-            for (int j = 0; j < mapping[i].length; ++j) {
+            for (int j = 0; j < multiplexedToUnderlying[i].length; ++j) {
                 System.arraycopy(eI.getStateDerivatives(j), 0,
-                                 stateDerivatives[mapping[i][j]], index,
+                                 stateDerivatives[multiplexedToUnderlying[i][j]], index,
                                  dimI);
             }
 
@@ -263,7 +286,7 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
                 final ParameterDriversList.DelegatingDriver delegating = parametersDrivers.findByName(driver.getName());
 
                 if (parametersDerivatives.get(delegating) == null) {
-                    final TimeSpanMap<double[]> derivativeSpanMap = new TimeSpanMap<double[]>(new double[dimension]);
+                    final TimeSpanMap<double[]> derivativeSpanMap = new TimeSpanMap<>(new double[dimension]);
                     parametersDerivatives.put(delegating, derivativeSpanMap);
                 }
 
@@ -301,7 +324,6 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
         // set parameters derivatives
         parametersDerivatives.
             entrySet().
-            stream().
             forEach(e -> multiplexed.setParameterDerivatives(e.getKey(), e.getValue()));
 
         return multiplexed;

@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -51,7 +51,7 @@ class CartesianCovarianceUtilsTest {
     }
 
     @ParameterizedTest
-    @EnumSource(LOFType.class)
+    @EnumSource(value = LOFType.class, names = {"QSW_INERTIAL", "TNW_INERTIAL", "LVLH_INERTIAL", "NTW_INERTIAL"})
     void testConvertToLofType(final LOFType lofType) {
         // GIVEN
         final Vector3D position = new Vector3D(1.0, 2.0, 3.0);
@@ -61,10 +61,11 @@ class CartesianCovarianceUtilsTest {
         final RealMatrix actualMatrix = CartesianCovarianceUtils.convertToLofType(position, velocity, matrix, lofType);
         // THEN
         final StateCovariance covariance = new StateCovariance(matrix, AbsoluteDate.ARBITRARY_EPOCH,
-                FramesFactory.getGCRF(), OrbitType.CARTESIAN, PositionAngleType.MEAN);
+                FramesFactory.getGCRF(), OrbitType.CARTESIAN, null);
         final CartesianOrbit orbit = new CartesianOrbit(new PVCoordinates(position, velocity), covariance.getFrame(),
                 covariance.getDate(), 1.);
-        Assertions.assertEquals(covariance.changeCovarianceFrame(orbit, lofType).getMatrix(), actualMatrix);
+        final RealMatrix expectedMatrix = covariance.changeCovarianceFrame(orbit, lofType).getMatrix();
+        Assertions.assertEquals(0, expectedMatrix.subtract(actualMatrix).getNorm1(), 1e-15);
     }
 
     @ParameterizedTest

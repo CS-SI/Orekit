@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,14 +16,8 @@
  */
 package org.orekit.control.indirect.shooting;
 
-import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.Attitude;
-import org.orekit.control.indirect.adjoint.CartesianAdjointDerivativesProvider;
-import org.orekit.control.indirect.adjoint.FieldCartesianAdjointDerivativesProvider;
 import org.orekit.control.indirect.shooting.boundary.CartesianBoundaryConditionChecker;
 import org.orekit.control.indirect.shooting.boundary.FixedTimeBoundaryOrbits;
 import org.orekit.control.indirect.shooting.boundary.FixedTimeCartesianBoundaryStates;
@@ -31,17 +25,13 @@ import org.orekit.control.indirect.shooting.propagation.ShootingPropagationSetti
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * Abstract class for indirect single shooting methods with Cartesian coordinates for fixed time fixed boundary.
- * Inheritors must implement the iteration update, assuming derivatives are needed.
  * Terminal mass is assumed to be free, thus corresponding adjoint must vanish at terminal time.
  * On the other hand, other terminal adjoint variables are free because the Cartesian state is fixed.
  *
@@ -50,13 +40,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @see org.orekit.control.indirect.adjoint.CartesianAdjointDerivativesProvider
  * @see org.orekit.control.indirect.adjoint.FieldCartesianAdjointDerivativesProvider
  */
-public abstract class AbstractFixedBoundaryCartesianSingleShooting extends AbstractIndirectShooting {
+public abstract class AbstractFixedBoundaryCartesianSingleShooting extends AbstractFixedInitialCartesianSingleShooting {
 
     /** Default value for defects scaling. */
     private static final double DEFAULT_SCALE = 1.;
-
-    /** Template for initial state. Contains the initial Cartesian coordinates. */
-    private final SpacecraftState initialSpacecraftStateTemplate;
 
     /** Terminal Cartesian coordinates. */
     private final TimeStampedPVCoordinates terminalCartesianState;
@@ -82,10 +69,11 @@ public abstract class AbstractFixedBoundaryCartesianSingleShooting extends Abstr
     protected AbstractFixedBoundaryCartesianSingleShooting(final ShootingPropagationSettings propagationSettings,
                                                            final FixedTimeCartesianBoundaryStates boundaryConditions,
                                                            final CartesianBoundaryConditionChecker conditionChecker) {
-        super(propagationSettings);
+        super(propagationSettings, buildInitialStateTemplate(boundaryConditions.getInitialCartesianState(),
+                propagationSettings));
         this.conditionChecker = conditionChecker;
-        this.initialSpacecraftStateTemplate = buildInitialStateTemplate(boundaryConditions.getInitialCartesianState());
-        this.terminalCartesianState = boundaryConditions.getTerminalCartesianState().getPVCoordinates(propagationSettings.getPropagationFrame());
+        this.terminalCartesianState = boundaryConditions.getTerminalCartesianState()
+                .getPVCoordinates(propagationSettings.getPropagationFrame());
         this.scalePositionDefects = DEFAULT_SCALE;
         this.scaleVelocityDefects = DEFAULT_SCALE;
     }
@@ -99,9 +87,9 @@ public abstract class AbstractFixedBoundaryCartesianSingleShooting extends Abstr
     protected AbstractFixedBoundaryCartesianSingleShooting(final ShootingPropagationSettings propagationSettings,
                                                            final FixedTimeBoundaryOrbits boundaryConditions,
                                                            final CartesianBoundaryConditionChecker conditionChecker) {
-        super(propagationSettings);
+        super(propagationSettings, buildInitialStateTemplate(boundaryConditions.getInitialOrbit(),
+                propagationSettings));
         this.conditionChecker = conditionChecker;
-        this.initialSpacecraftStateTemplate = buildInitialStateTemplate(boundaryConditions.getInitialOrbit());
         this.terminalCartesianState = boundaryConditions.getTerminalOrbit().getPVCoordinates(propagationSettings.getPropagationFrame());
         this.scalePositionDefects = DEFAULT_SCALE;
         this.scaleVelocityDefects = DEFAULT_SCALE;
@@ -166,113 +154,44 @@ public abstract class AbstractFixedBoundaryCartesianSingleShooting extends Abstr
     /**
      * Create template initial state (without adjoint varialbles) for propagation from orbits.
      * @param initialOrbit initial orbit
+     * @param propagationSettings propagation settings
      * @return template propagation state
      */
-    private SpacecraftState buildInitialStateTemplate(final Orbit initialOrbit) {
-        final Frame frame = getPropagationSettings().getPropagationFrame();
+    private static SpacecraftState buildInitialStateTemplate(final Orbit initialOrbit,
+                                                             final ShootingPropagationSettings propagationSettings) {
+        final Frame frame = propagationSettings.getPropagationFrame();
         final CartesianOrbit cartesianOrbit = new CartesianOrbit(initialOrbit.getPVCoordinates(frame), frame,
             initialOrbit.getDate(), initialOrbit.getMu());
-        final Attitude attitude = getPropagationSettings().getAttitudeProvider()
+        final Attitude attitude = propagationSettings.getAttitudeProvider()
                 .getAttitude(cartesianOrbit, cartesianOrbit.getDate(), cartesianOrbit.getFrame());
-        return new SpacecraftState(cartesianOrbit, attitude);
+        return new SpacecraftState(cartesianOrbit).withAttitude(attitude);
     }
 
     /**
      * Create template initial state (without adjoint varialbles) for propagation.
      * @param initialCartesianState initial Cartesian state
+     * @param propagationSettings propagation settings
      * @return template propagation state
      */
-    private SpacecraftState buildInitialStateTemplate(final AbsolutePVCoordinates initialCartesianState) {
-        final Frame frame = getPropagationSettings().getPropagationFrame();
+    private static SpacecraftState buildInitialStateTemplate(final AbsolutePVCoordinates initialCartesianState,
+                                                             final ShootingPropagationSettings propagationSettings) {
+        final Frame frame = propagationSettings.getPropagationFrame();
         final AbsolutePVCoordinates absolutePVCoordinates = new AbsolutePVCoordinates(frame,
                 initialCartesianState.getPVCoordinates(frame));
-        final Attitude attitude = getPropagationSettings().getAttitudeProvider()
+        final Attitude attitude = propagationSettings.getAttitudeProvider()
                 .getAttitude(absolutePVCoordinates, absolutePVCoordinates.getDate(), absolutePVCoordinates.getFrame());
         return new SpacecraftState(absolutePVCoordinates, attitude);
     }
 
     /** {@inheritDoc} */
     @Override
-    public ShootingBoundaryOutput solve(final double initialMass, final double[] initialGuess) {
-        // check initial guess
-        final SpacecraftState initialState = createStateWithMassAndAdjoint(initialMass, initialGuess);
-        final ShootingBoundaryOutput initialGuessSolution = computeCandidateSolution(initialState, 0);
-        if (initialGuessSolution.isConverged()) {
-            return initialGuessSolution;
-        } else {
-            return iterate(initialMass, initialGuess);
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected NumericalPropagator buildPropagator(final SpacecraftState initialState) {
-        final NumericalPropagator propagator = super.buildPropagator(initialState);
-        final CartesianAdjointDerivativesProvider derivativesProvider = (CartesianAdjointDerivativesProvider)
-            getPropagationSettings().getAdjointDynamicsProvider().buildAdditionalDerivativesProvider();
-        derivativesProvider.getCost().getEventDetectors().forEach(propagator::addEventDetector);
-        return propagator;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected FieldNumericalPropagator<Gradient> buildFieldPropagator(final FieldSpacecraftState<Gradient> initialState) {
-        final FieldNumericalPropagator<Gradient> fieldPropagator = super.buildFieldPropagator(initialState);
-        final Field<Gradient> field = fieldPropagator.getField();
-        final FieldCartesianAdjointDerivativesProvider<Gradient> derivativesProvider = (FieldCartesianAdjointDerivativesProvider<Gradient>)
-            getPropagationSettings().getAdjointDynamicsProvider().buildFieldAdditionalDerivativesProvider(field);
-        derivativesProvider.getCost().getFieldEventDetectors(field).forEach(fieldPropagator::addEventDetector);
-        return fieldPropagator;
-    }
-
-    /**
-     * Form solution container with input initial state.
-     * @param initialState initial state
-     * @param iterationCount iteration count
-     * @return candidate solution
-     */
-    private ShootingBoundaryOutput computeCandidateSolution(final SpacecraftState initialState,
-                                                            final int iterationCount) {
+    public ShootingBoundaryOutput computeCandidateSolution(final SpacecraftState initialState,
+                                                           final int iterationCount) {
         final NumericalPropagator propagator = buildPropagator(initialState);
         final SpacecraftState actualTerminalState = propagator.propagate(getTerminalCartesianState().getDate());
         final boolean converged = checkConvergence(actualTerminalState);
-        return new ShootingBoundaryOutput(converged, iterationCount, initialState, getPropagationSettings(), actualTerminalState);
-    }
-
-    /**
-     * Iterate on initial guess to solve boundary problem.
-     * @param initialMass initial mass
-     * @param initialGuess initial guess for initial adjoint variables
-     * @return solution (or null pointer if not converged)
-     */
-    private ShootingBoundaryOutput iterate(final double initialMass, final double[] initialGuess) {
-        double[] initialAdjoint = initialGuess.clone();
-        int iterationCount = 0;
-        int maximumIterationCount = getConditionChecker().getMaximumIterationCount();
-        SpacecraftState initialState = createStateWithMassAndAdjoint(initialMass, initialGuess);
-        while (iterationCount < maximumIterationCount) {
-            final FieldSpacecraftState<Gradient> fieldInitialState = createFieldStateWithMassAndAdjoint(initialMass,
-                initialAdjoint);
-            final Field<Gradient> field = fieldInitialState.getDate().getField();
-            final FieldAbsoluteDate<Gradient> fieldTerminalDate = new FieldAbsoluteDate<>(field, getTerminalCartesianState().getDate());
-            final FieldNumericalPropagator<Gradient> fieldPropagator = buildFieldPropagator(fieldInitialState);
-            final FieldSpacecraftState<Gradient> fieldTerminalState = fieldPropagator.propagate(fieldTerminalDate);
-            initialState = fieldInitialState.toSpacecraftState();
-            if (checkConvergence(fieldTerminalState.toSpacecraftState())) {
-                // make sure non-Field version also satisfies convergence criterion
-                final ShootingBoundaryOutput solution = computeCandidateSolution(initialState, iterationCount);
-                if (solution.isConverged()) {
-                    return solution;
-                }
-            }
-            initialAdjoint = updateAdjoint(initialAdjoint, fieldTerminalState);
-            if (Double.isNaN(initialAdjoint[0])) {
-                return computeCandidateSolution(initialState, iterationCount);
-            }
-            iterationCount++;
-            maximumIterationCount = getConditionChecker().getMaximumIterationCount();
-        }
-        return computeCandidateSolution(initialState, maximumIterationCount);
+        return new ShootingBoundaryOutput(converged, iterationCount, initialState, getPropagationSettings(),
+                actualTerminalState);
     }
 
     /**
@@ -296,57 +215,4 @@ public abstract class AbstractFixedBoundaryCartesianSingleShooting extends Abstr
         }
     }
 
-    /**
-     * Create initial state with input mass and adjoint vector.
-     * @param initialMass initial mass
-     * @param initialAdjoint initial adjoint variables
-     * @return state
-     */
-    protected SpacecraftState createStateWithMassAndAdjoint(final double initialMass, final double[] initialAdjoint) {
-        final String adjointName = getPropagationSettings().getAdjointDynamicsProvider().getAdjointName();
-        return createStateWithMass(initialMass).addAdditionalState(adjointName, initialAdjoint);
-    }
-
-    /**
-     * Create initial state with input mass.
-     * @param initialMass initial mass
-     * @return state
-     */
-    private SpacecraftState createStateWithMass(final double initialMass) {
-        if (initialSpacecraftStateTemplate.isOrbitDefined()) {
-            return new SpacecraftState(initialSpacecraftStateTemplate.getOrbit(),
-                initialSpacecraftStateTemplate.getAttitude(), initialMass);
-        } else {
-            return new SpacecraftState(initialSpacecraftStateTemplate.getAbsPVA(),
-                initialSpacecraftStateTemplate.getAttitude(), initialMass);
-        }
-    }
-
-    /**
-     * Create initial state with input mass and adjoint vector.
-     * @param initialMass initial mass
-     * @param initialAdjoint initial adjoint variables
-     * @return state
-     */
-    protected FieldSpacecraftState<Gradient> createFieldStateWithMassAndAdjoint(final double initialMass,
-                                                                                final double[] initialAdjoint) {
-        final int parametersNumber = initialAdjoint.length;
-        final GradientField field = GradientField.getField(parametersNumber);
-        final FieldSpacecraftState<Gradient> stateWithoutAdjoint = new FieldSpacecraftState<>(field, createStateWithMass(initialMass));
-        final Gradient[] fieldInitialAdjoint = MathArrays.buildArray(field, initialAdjoint.length);
-        for (int i = 0; i < parametersNumber; i++) {
-            fieldInitialAdjoint[i] = Gradient.variable(parametersNumber, i, initialAdjoint[i]);
-        }
-        final String adjointName = getPropagationSettings().getAdjointDynamicsProvider().getAdjointName();
-        return stateWithoutAdjoint.addAdditionalState(adjointName, fieldInitialAdjoint);
-    }
-
-    /**
-     * Update initial adjoint vector.
-     * @param originalInitialAdjoint original initial adjoint (before update)
-     * @param fieldTerminalState final state of gradient propagation
-     * @return updated initial adjoint vector
-     */
-    protected abstract double[] updateAdjoint(double[] originalInitialAdjoint,
-                                              FieldSpacecraftState<Gradient> fieldTerminalState);
 }

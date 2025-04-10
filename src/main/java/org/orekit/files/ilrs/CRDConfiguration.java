@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -34,10 +35,10 @@ import java.util.regex.Pattern;
 public class CRDConfiguration {
 
     /** Dict of configuration record. **/
-    private Map<String, BaseConfiguration> mapConfigurationRecords;
+    private final Map<String, BaseConfiguration> mapConfigurationRecords;
 
     /** List of system configuration. **/
-    private List<SystemConfiguration> systemConfigurationRecords;
+    private final List<SystemConfiguration> systemConfigurationRecords;
 
     /**
      * Constructor.
@@ -421,16 +422,16 @@ public class CRDConfiguration {
         /** {@inheritDoc} */
         @Override
         public String toCrdString() {
-            return String.format("C0 0 %s", toString());
+            return String.format(Locale.US, "C0 0 %s", toString());
         }
 
         @Override
         public String toString() {
             // CRD suggested format, excluding the record type
             final StringBuilder sb = new StringBuilder();
-            sb.append(String.format("%10.3f %s", wavelength * 1e9, getConfigurationId()));
+            sb.append(String.format(Locale.US, "%10.3f %s", wavelength * 1e9, getConfigurationId()));
             for (final String comp : components) {
-                sb.append(String.format(" %s", comp));
+                sb.append(String.format(Locale.US, " %s", comp));
             }
             return sb.toString().replace(',', '.');
         }
@@ -602,14 +603,14 @@ public class CRDConfiguration {
         /** {@inheritDoc} */
         @Override
         public String toCrdString() {
-            return String.format("C1 0 %s", toString());
+            return String.format(Locale.US, "C1 0 %s", toString());
         }
 
         @Override
         public String toString() {
             // CRD suggested format, excluding the record type
             // primaryWavelength: m --> nm
-            final String str = String.format(
+            final String str = String.format(Locale.US,
                     "%s %s %.2f %.2f %.2f %.1f %.2f %d", getConfigurationId(),
                     laserType, primaryWavelength * 1e9, nominalFireRate,
                     pulseEnergy, pulseWidth, beamDivergence,
@@ -938,7 +939,7 @@ public class CRDConfiguration {
         /** {@inheritDoc} */
         @Override
         public String toCrdString() {
-            return String.format("C2 0 %s", toString());
+            return String.format(Locale.US, "C2 0 %s", toString());
         }
 
         @Override
@@ -946,7 +947,7 @@ public class CRDConfiguration {
             // CRD suggested format, excluding the record type
             // applicableWavelength, spectralFilter: m --> nm
             // darkCount, amplifierBandwidth: Hz --> kHz
-            final String str = String.format(
+            final String str = String.format(Locale.US,
                     "%s %s %.3f %.2f %.1f %.1f %s %.1f %.2f %.1f %.1f %s %.1f %.1f %s",
                     getConfigurationId(), detectorType,
                     applicableWavelength * 1e9, quantumEfficiency,
@@ -1087,14 +1088,14 @@ public class CRDConfiguration {
         /** {@inheritDoc} */
         @Override
         public String toCrdString() {
-            return String.format("C3 0 %s", toString());
+            return String.format(Locale.US, "C3 0 %s", toString());
         }
 
         @Override
         public String toString() {
             // CRD suggested format, excluding the record type
             // epochDelayCorrection: s --> us
-            final String str = String.format("%s %s %s %s %s %.1f",
+            final String str = String.format(Locale.US, "%s %s %s %s %s %.1f",
                     getConfigurationId(), timeSource, frequencySource, timer,
                     timerSerialNumber, epochDelayCorrection * 1e6);
             return CRD.handleNaN(str).replace(',', '.');
@@ -1286,7 +1287,7 @@ public class CRDConfiguration {
         /** {@inheritDoc} */
         @Override
         public String toCrdString() {
-            return String.format("C4 0 %s", toString());
+            return String.format(Locale.US, "C4 0 %s", toString());
         }
 
         @Override
@@ -1426,13 +1427,13 @@ public class CRDConfiguration {
         /** {@inheritDoc} */
         @Override
         public String toCrdString() {
-            return String.format("C5 0 %s", toString());
+            return String.format(Locale.US, "C5 0 %s", toString());
         }
 
         @Override
         public String toString() {
             // CRD suggested format, excluding the record type
-            return String.format("%s %s %s %s %s", getConfigurationId(),
+            return String.format(Locale.US, "%s %s %s %s %s", getConfigurationId(),
                     formatArray(trackingSoftwares),
                     formatArray(trackingSoftwareVersions),
                     formatArray(processingSoftwares),

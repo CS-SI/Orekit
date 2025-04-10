@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import org.hipparchus.linear.LUDecomposition;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
+import org.hipparchus.util.FastMath;
 import org.orekit.control.indirect.shooting.boundary.CartesianBoundaryConditionChecker;
 import org.orekit.control.indirect.shooting.boundary.FixedTimeBoundaryOrbits;
 import org.orekit.control.indirect.shooting.boundary.FixedTimeCartesianBoundaryStates;
@@ -33,12 +34,21 @@ import org.orekit.utils.FieldPVCoordinates;
 
 /**
  * Class for indirect single shooting methods with Cartesian coordinates for fixed time fixed boundary.
- * Update is the classical Newton-Raphson one.
+ * Update is the classical Newton-Raphson one. It is computed using an LU matrix decomposition.
  *
  * @author Romain Serra
  * @since 12.2
  */
 public class NewtonFixedBoundaryCartesianSingleShooting extends AbstractFixedBoundaryCartesianSingleShooting {
+
+    /** Default value for singularity threshold. */
+    private static final double DEFAULT_SINGULARITY_THRESHOLD = 1e-11;
+
+    /** Threshold for singularity exception in linear system inversion. */
+    private double singularityThreshold = DEFAULT_SINGULARITY_THRESHOLD;
+
+    /** Multiplying (positive) factor for the Newton correction step. */
+    private double stepFactor = 1.;
 
     /**
      * Constructor with boundary conditions as orbits.
@@ -64,12 +74,44 @@ public class NewtonFixedBoundaryCartesianSingleShooting extends AbstractFixedBou
         super(propagationSettings, boundaryConditions, convergenceChecker);
     }
 
+    @Override
+    public int getMaximumIterationCount() {
+        return getConditionChecker().getMaximumIterationCount();
+    }
+
+    /**
+     * Setter for singularity threshold in LU decomposition.
+     * @param singularityThreshold new threshold value
+     * @since 13.0
+     */
+    public void setSingularityThreshold(final double singularityThreshold) {
+        this.singularityThreshold = singularityThreshold;
+    }
+
+    /**
+     * Getter for singularity threshold in LU decomposition.
+     * @return threshold
+     * @since 13.0
+     */
+    public double getSingularityThreshold() {
+        return singularityThreshold;
+    }
+
+    /**
+     * Setter for the step factor.
+     * @param stepFactor new value for the step factor
+     * @since 13.0
+     */
+    public void setStepFactor(final double stepFactor) {
+        this.stepFactor = FastMath.abs(stepFactor);
+    }
+
     /** {@inheritDoc} */
     @Override
-    protected double[] updateAdjoint(final double[] originalInitialAdjoint,
-                                     final FieldSpacecraftState<Gradient> fieldTerminalState) {
+    protected double[] updateShootingVariables(final double[] originalShootingVariables,
+                                               final FieldSpacecraftState<Gradient> fieldTerminalState) {
         // form defects and their Jacobian matrix
-        final double[] defects = new double[originalInitialAdjoint.length];
+        final double[] defects = new double[originalShootingVariables.length];
         final double[][] defectsJacobianData = new double[defects.length][defects.length];
         final double reciprocalScalePosition = 1. / getScalePositionDefects();
         final double reciprocalScaleVelocity = 1. / getScaleVelocityDefects();
@@ -92,7 +134,7 @@ public class NewtonFixedBoundaryCartesianSingleShooting extends AbstractFixedBou
         defectsJacobianData[4] = fieldScaledTerminalVelocity.getY().getGradient();
         defects[5] = terminalScaledVelocity.getZ() - targetScaledVelocity.getZ();
         defectsJacobianData[5] = fieldScaledTerminalVelocity.getZ().getGradient();
-        if (originalInitialAdjoint.length != 6) {
+        if (originalShootingVariables.length != 6) {
             final String adjointName = getPropagationSettings().getAdjointDynamicsProvider().getAdjointName();
             final Gradient terminalMassAdjoint = fieldTerminalState.getAdditionalState(adjointName)[6];
             defects[6] = terminalMassAdjoint.getValue();
@@ -100,7 +142,7 @@ public class NewtonFixedBoundaryCartesianSingleShooting extends AbstractFixedBou
         }
         // apply Newton's formula
         final double[] correction = computeCorrection(defects, defectsJacobianData);
-        final double[] correctedAdjoint = originalInitialAdjoint.clone();
+        final double[] correctedAdjoint = originalShootingVariables.clone();
         for (int i = 0; i < correction.length; i++) {
             correctedAdjoint[i] += correction[i];
         }
@@ -115,8 +157,13 @@ public class NewtonFixedBoundaryCartesianSingleShooting extends AbstractFixedBou
      */
     private double[] computeCorrection(final double[] defects, final double[][] defectsJacobianData) {
         final RealMatrix defectsJacobian = MatrixUtils.createRealMatrix(defectsJacobianData);
-        final DecompositionSolver solver = new LUDecomposition(defectsJacobian).getSolver();
+        final DecompositionSolver solver = new LUDecomposition(defectsJacobian, singularityThreshold).getSolver();
         final RealVector negatedDefects = MatrixUtils.createRealVector(defects).mapMultiply(-1);
-        return solver.solve(negatedDefects).toArray();
+        final RealVector solved = solver.solve(negatedDefects);
+        final double[] corrections = new double[solved.getDimension()];
+        for (int i = 0; i < corrections.length; i++) {
+            corrections[i] = solved.getEntry(i) * getScales()[i] * stepFactor;
+        }
+        return corrections;
     }
 }

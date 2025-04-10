@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 package org.orekit.bodies;
-
-import java.io.Serializable;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.exception.MathRuntimeException;
@@ -36,10 +34,7 @@ import org.orekit.frames.Frame;
  * @since 7.0
  * @author Luc Maisonobe
  */
-public class Ellipsoid implements Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20140924L;
+public class Ellipsoid {
 
     /** Frame at the ellipsoid center, aligned with principal axes. */
     private final Frame frame;

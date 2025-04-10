@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,8 +42,7 @@ class RelativeDistanceDetectorTest {
                 Mockito.mock(PVCoordinatesProvider.class), distanceThreshold);
         final EventHandler expectedHandler = new StopOnIncreasing();
         // WHEN
-        final RelativeDistanceDetector detector = distanceDetector.create(distanceDetector.getMaxCheckInterval(),
-                distanceDetector.getThreshold(), distanceDetector.getMaxIterationCount(), expectedHandler);
+        final RelativeDistanceDetector detector = distanceDetector.create(distanceDetector.getDetectionSettings(), expectedHandler);
         // THEN
         Assertions.assertEquals(expectedHandler, detector.getHandler());
     }

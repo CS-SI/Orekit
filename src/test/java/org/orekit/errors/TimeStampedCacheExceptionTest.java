@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,7 +38,7 @@ public class TimeStampedCacheExceptionTest {
         Assertions.assertEquals(3, e.getParts().length);
         Assertions.assertEquals(0, ((AbsoluteDate) e.getParts()[0]).durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH), 1.0e-10);
         Assertions.assertEquals(e.getMessage(Locale.getDefault()), e.getLocalizedMessage());
-        Assertions.assertEquals("impossible de générer des données avant le 1858-11-16T23:59:27.816Z, données requises pour 1858-11-16T23:59:27.816Z qui est 1,0E-16 s avant",
+        Assertions.assertEquals("impossible de générer des données avant le 1858-11-16T23:59:27.816Z, données requises pour 1858-11-16T23:59:27.8159999999999999Z qui est 1,0E-16 s avant",
                             e.getMessage(Locale.FRENCH));
     }
 
@@ -48,7 +48,7 @@ public class TimeStampedCacheExceptionTest {
                         new TimeStampedCacheException(new ArrayIndexOutOfBoundsException(),
                                                       OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
                                                       AbsoluteDate.MODIFIED_JULIAN_EPOCH);
-        Assertions.assertTrue(e.getCause() instanceof ArrayIndexOutOfBoundsException);
+        Assertions.assertInstanceOf(ArrayIndexOutOfBoundsException.class, e.getCause());
         Assertions.assertEquals(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE, e.getSpecifier());
         Assertions.assertEquals(1, e.getParts().length);
         Assertions.assertEquals(0, ((AbsoluteDate) e.getParts()[0]).durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH), 1.0e-10);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1042;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1042Data;
@@ -36,7 +37,7 @@ import java.util.ArrayList;
 
 public class Rtcm1042Test {
 
-    private double eps = 1.0e-15;
+    private final double eps = 1.0e-15;
 
     @BeforeEach
     public void setUp() {
@@ -83,7 +84,8 @@ public class Rtcm1042Test {
         ArrayList<Integer> messages = new ArrayList<>();
         messages.add(1042);
 
-        final Rtcm1042                rtcm1042      = (Rtcm1042) new RtcmMessagesParser(messages).parse(message, false);
+        final Rtcm1042                rtcm1042      = (Rtcm1042) new RtcmMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+                                                      parse(message, false);
         final Rtcm1042Data            ephemerisData = rtcm1042.getEphemerisData();
         final BeidouLegacyNavigationMessage beidouMessage = ephemerisData.getBeidouNavigationMessage();
 
@@ -107,7 +109,8 @@ public class Rtcm1042Test {
         Assertions.assertEquals(5.721448687836528E-4,   beidouMessage.getAf0(),                eps);
         Assertions.assertEquals(20,                     beidouMessage.getAODC());
         Assertions.assertEquals(0.0,                    beidouMessage.getCrs(),                eps);
-        Assertions.assertEquals(1.4587496546628753E-4,  beidouMessage.getMeanMotion(),         eps);
+        Assertions.assertEquals(1.458633710547623E-4,   beidouMessage.getMeanMotion0(),        eps);
+        Assertions.assertEquals(1.4587496546628753E-4,  beidouMessage.getMeanMotion0() + beidouMessage.getDeltaN0(),        eps);
         Assertions.assertEquals(0.1671775426328288,     beidouMessage.getM0(),                 eps);
         Assertions.assertEquals(0.0,                    beidouMessage.getCuc(),                eps);
         Assertions.assertEquals(0.03899807028938085,    beidouMessage.getE(),                  eps);
@@ -172,7 +175,8 @@ public class Rtcm1042Test {
        ArrayList<Integer> messages = new ArrayList<>();
        messages.add(9999999);
 
-       final Rtcm1042 rtcm1042 = (Rtcm1042) new RtcmMessagesParser(messages).parse(message, false);
+       final Rtcm1042 rtcm1042 = (Rtcm1042) new RtcmMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+                                 parse(message, false);
 
        Assertions.assertNull(rtcm1042);
     }

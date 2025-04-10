@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -113,7 +113,7 @@ class NadirPointingTest {
         Assertions.assertEquals(pv.getDate(), actualPV.getDate().toAbsoluteDate());
         final PVCoordinates relativePV = new PVCoordinates(pv, actualPV.toPVCoordinates());
         final Vector3D positionDifference = relativePV.getPosition();
-        Assertions.assertEquals(0., positionDifference.getNorm(), 1e-9);
+        Assertions.assertEquals(0., positionDifference.getNorm(), 2e-9);
         final Vector3D velocityDifference = relativePV.getVelocity();
         Assertions.assertEquals(0., velocityDifference.getNorm(), 1e-6);
     }
@@ -332,7 +332,7 @@ class NadirPointingTest {
                                    FastMath.toRadians(90.), PositionAngleType.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
 
-        List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
+        List<TimeStampedPVCoordinates> sample = new ArrayList<>();
         for (double dt = -0.1; dt < 0.1; dt += 0.05) {
             Orbit o = circ.shiftedBy(dt);
             sample.add(nadirAttitudeLaw.getTargetPV(o, o.getDate(), o.getFrame()));
@@ -431,7 +431,7 @@ class NadirPointingTest {
             Utils.setDataRoot("regular-data");
 
             // Computation date
-            date = new AbsoluteDate(new DateComponents(2008, 04, 07),
+            date = new AbsoluteDate(new DateComponents(2008, 4, 7),
                                     TimeComponents.H00,
                                     TimeScalesFactory.getUTC());
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,6 +29,7 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.models.earth.weather.HeightDependentPressureTemperatureHumidityConverter;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
+import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTrackingCoordinates;
@@ -40,8 +41,7 @@ import org.orekit.utils.TrackingCoordinates;
  * Estimates the path delay imposed to
  * electro-magnetic signals by the troposphere according to the formula:
  * \[
- * \delta = \frac{0.002277}{\cos z (1 - 0.00266\cos 2\varphi - 0.00028 h})}
- * \left[P+(\frac{1255}{T}+0.005)e - B(h) \tan^2 z\right]
+ * \delta = \frac{0.002277}{\cos z} \left[P+(\frac{1255}{T}+0.005)e - B(h) \tan^2 z\right]
  * \]
  * with the following input data provided to the model:
  * <ul>
@@ -93,6 +93,9 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
     /** Lowest acceptable elevation angle [rad]. */
     private double lowElevationThreshold;
 
+    /** Provider for pressure, temperature and humidity. */
+    private final PressureTemperatureHumidityProvider pthProvider;
+
     /**
      * Create a new Saastamoinen model for the troposphere using the given environmental
      * conditions and table from the reference book.
@@ -100,7 +103,18 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
      * @see HeightDependentPressureTemperatureHumidityConverter
      */
     public CanonicalSaastamoinenModel() {
+        this(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+    }
+
+    /**
+     * Create a new Saastamoinen model for the troposphere using the given environmental
+     * conditions and table from the reference book.
+     * @param pthProvider provider for pressure, temperature and humidity
+     * @since 13.0
+     */
+    public CanonicalSaastamoinenModel(final PressureTemperatureHumidityProvider pthProvider) {
         this.lowElevationThreshold = DEFAULT_LOW_ELEVATION_THRESHOLD;
+        this.pthProvider           = pthProvider;
     }
 
     /** {@inheritDoc}
@@ -118,7 +132,6 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
      */
     @Override
     public TroposphericDelay pathDelay(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
-                                       final PressureTemperatureHumidity weather,
                                        final double[] parameters, final AbsoluteDate date) {
 
         // there are no data in the model for negative altitudes and altitude bigger than 6000 m
@@ -132,6 +145,9 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
         // calculate the zenith angle from the elevation
         final double z = FastMath.abs(0.5 * FastMath.PI - FastMath.max(trackingCoordinates.getElevation(),
                                                                        lowElevationThreshold));
+
+        // compute weather parameters
+        final PressureTemperatureHumidity weather = pthProvider.getWeatherParameters(point, date);
 
         // calculate the path delay
         final double invCos = 1.0 / FastMath.cos(z);
@@ -160,7 +176,6 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
     @Override
     public <T extends CalculusFieldElement<T>> FieldTroposphericDelay<T> pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                                                    final FieldGeodeticPoint<T> point,
-                                                                                   final FieldPressureTemperatureHumidity<T> weather,
                                                                                    final T[] parameters, final FieldAbsoluteDate<T> date) {
 
         final Field<T> field = date.getField();
@@ -177,6 +192,9 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
         // calculate the zenith angle from the elevation
         final T z = FastMath.abs(zero.getPi().multiply(0.5).
                                  subtract(FastMath.max(trackingCoordinates.getElevation(), lowElevationThreshold)));
+
+        // compute weather parameters
+        final FieldPressureTemperatureHumidity<T> weather = pthProvider.getWeatherParameters(point, date);
 
         // calculate the path delay in m
         final T invCos = FastMath.cos(z).reciprocal();
@@ -198,8 +216,8 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
 
     /** Get the low elevation threshold value for path delay computation.
      * @return low elevation threshold, in rad.
-     * @see #pathDelay(TrackingCoordinates, GeodeticPoint, PressureTemperatureHumidity, double[], AbsoluteDate)
-     * @see #pathDelay(FieldTrackingCoordinates, FieldGeodeticPoint, FieldPressureTemperatureHumidity, CalculusFieldElement[], FieldAbsoluteDate)
+     * @see #pathDelay(TrackingCoordinates, GeodeticPoint, double[], AbsoluteDate)
+     * @see #pathDelay(FieldTrackingCoordinates, FieldGeodeticPoint, CalculusFieldElement[], FieldAbsoluteDate)
      */
     public double getLowElevationThreshold() {
         return lowElevationThreshold;
@@ -207,8 +225,8 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
 
     /** Set the low elevation threshold value for path delay computation.
      * @param lowElevationThreshold The new value for the threshold [rad]
-     * @see #pathDelay(TrackingCoordinates, GeodeticPoint, PressureTemperatureHumidity, double[], AbsoluteDate)
-     * @see #pathDelay(FieldTrackingCoordinates, FieldGeodeticPoint, FieldPressureTemperatureHumidity, CalculusFieldElement[], FieldAbsoluteDate)
+     * @see #pathDelay(TrackingCoordinates, GeodeticPoint, double[], AbsoluteDate)
+     * @see #pathDelay(FieldTrackingCoordinates, FieldGeodeticPoint, CalculusFieldElement[], FieldAbsoluteDate)
      */
     public void setLowElevationThreshold(final double lowElevationThreshold) {
         this.lowElevationThreshold = lowElevationThreshold;

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,8 +18,11 @@ package org.orekit.models.earth.weather;
 
 import java.io.IOException;
 
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.data.DataSource;
-import org.orekit.time.TimeScale;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScales;
 
 /** The Global Pressure and Temperature 2w (GPT2w) model.
  * <p>
@@ -30,16 +33,20 @@ import org.orekit.time.TimeScale;
  */
 public class GlobalPressureTemperature2w extends AbstractGlobalPressureTemperature {
 
+    /** Reference epoch. */
+    private final AbsoluteDate referenceEpoch;
+
     /**
      * Constructor with supported names and source of GPT2w auxiliary data given by user.
      *
      * @param source grid data source (files with extra columns like GPT3 can be used here)
-     * @param utc UTC time scale.
+     * @param timeScales known time scales
      * @exception IOException if grid data cannot be read
+     * @since 13.0
      */
-    public GlobalPressureTemperature2w(final DataSource source, final TimeScale utc)
+    public GlobalPressureTemperature2w(final DataSource source, final TimeScales timeScales)
         throws IOException {
-        super(source, utc,
+        super(source,
               SeasonalModelType.PRESSURE,
               SeasonalModelType.TEMPERATURE,
               SeasonalModelType.QV,
@@ -48,6 +55,19 @@ public class GlobalPressureTemperature2w extends AbstractGlobalPressureTemperatu
               SeasonalModelType.AW,
               SeasonalModelType.LAMBDA,
               SeasonalModelType.TM);
+        referenceEpoch = timeScales.getJ2000Epoch();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected double deltaRef(final AbsoluteDate date) {
+        return date.durationFrom(referenceEpoch);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected <T extends CalculusFieldElement<T>> T deltaRef(final FieldAbsoluteDate<T> date) {
+        return date.durationFrom(referenceEpoch);
     }
 
 }

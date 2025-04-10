@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,6 @@ import org.orekit.data.DataProvidersManager;
 import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.EOPEntry;
-import org.orekit.frames.EopHistoryLoader;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.orbits.FieldCartesianOrbit;
@@ -43,14 +42,13 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriversList;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class Utils {
 
@@ -69,7 +67,6 @@ public class Utils {
     public static final double ae =  6378136.460;
     public static final double mu =  3.986004415e+14;
 
-    @SuppressWarnings("deprecation")
     public static void clearFactories() {
         DataContext.setDefault(new LazyLoadedDataContext());
         clearFactoryMaps(CelestialBodyFactory.class);
@@ -88,7 +85,6 @@ public class Utils {
                 clearFactoryMaps(c);
             }
         }
-        clearAtomicReference(org.orekit.models.earth.weather.GlobalPressureTemperature2Model.class);
         FramesFactory.clearEOPHistoryLoaders();
         FramesFactory.setEOPContinuityThreshold(5 * Constants.JULIAN_DAY);
         TimeScalesFactory.clearUTCTAIOffsetsLoaders();
@@ -109,7 +105,7 @@ public class Utils {
                 String componentPath;
                 componentPath = Utils.class.getClassLoader().getResource(component).toURI().getPath();
                 if (buffer.length() > 0) {
-                    buffer.append(System.getProperty("path.separator"));
+                    buffer.append(File.pathSeparator);
                 }
                 buffer.append(componentPath);
             }
@@ -148,26 +144,12 @@ public class Utils {
         }
     }
 
-    private static void clearAtomicReference(Class<?> factoryClass) {
-        try {
-            for (Field field : factoryClass.getDeclaredFields()) {
-                if (Modifier.isStatic(field.getModifiers()) &&
-                    AtomicReference.class.isAssignableFrom(field.getType())) {
-                    field.setAccessible(true);
-                    ((AtomicReference<?>) field.get(null)).set(null);
-                }
-            }
-        } catch (IllegalAccessException iae) {
-            Assertions.fail(iae.getMessage());
-        }
-    }
-
     public static List<EOPEntry> buildEOPList(IERSConventions conventions, ITRFVersion version,
                                               double[][] data) {
         IERSConventions.NutationCorrectionConverter converter =
                 conventions.getNutationCorrectionConverter();
         final TimeScale utc = DataContext.getDefault().getTimeScales().getUTC();
-        final List<EOPEntry> list = new ArrayList<EOPEntry>();
+        final List<EOPEntry> list = new ArrayList<>();
         for (double[] row : data) {
             final AbsoluteDate date =
                     new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, (int) row[0]),
@@ -211,12 +193,7 @@ public class Utils {
 
         clearFactories();
 
-        FramesFactory.addEOPHistoryLoader(conventions, new EopHistoryLoader() {
-            public void fillHistory(IERSConventions.NutationCorrectionConverter converter,
-                                    SortedSet<EOPEntry> history) {
-                history.addAll(eop);
-            }
-        });
+        FramesFactory.addEOPHistoryLoader(conventions, (converter, history) -> history.addAll(eop));
 
     }
 

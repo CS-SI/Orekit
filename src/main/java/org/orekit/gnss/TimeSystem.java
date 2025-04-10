@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -55,8 +55,8 @@ public enum TimeSystem {
     /** Beidou. */
     BEIDOU("BDT", "BD", "C", TimeScales::getBDT),
 
-    /** IRNSS. */
-    IRNSS("IRN", "IR", "I", TimeScales::getIRNSS),
+    /** NavIC. */
+    NAVIC("IRN", "IR", "I", TimeScales::getNavIC),
 
     /** SBAS.
      * @since 12.0

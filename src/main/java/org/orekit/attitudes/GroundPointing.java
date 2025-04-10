@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -166,16 +166,9 @@ public abstract class GroundPointing implements AttitudeProvider {
         final PVCoordinates los    = delta.normalize();
         final PVCoordinates normal = PVCoordinates.crossProduct(delta, velocity).normalize();
 
-        AngularCoordinates ac = new AngularCoordinates(los, normal, PLUS_K, PLUS_J, 1.0e-9);
-
-        if (frame != inertialFrame) {
-            // prepend transform from specified frame to inertial frame
-            ac = ac.addOffset(frame.getTransformTo(inertialFrame, date).getAngular());
-        }
-
-        // build the attitude
-        return new Attitude(date, frame, ac);
-
+        final AngularCoordinates ac = new AngularCoordinates(los, normal, PLUS_K, PLUS_J, 1.0e-9);
+        final Attitude attitude = new Attitude(date, inertialFrame, ac);
+        return attitude.withReferenceFrame(frame);
     }
 
     /** {@inheritDoc} */
@@ -213,21 +206,13 @@ public abstract class GroundPointing implements AttitudeProvider {
         final FieldVector3D<T> zero  = FieldVector3D.getZero(r.getField());
         final FieldVector3D<T> plusK = FieldVector3D.getPlusK(r.getField());
         final FieldVector3D<T> plusJ = FieldVector3D.getPlusJ(r.getField());
-        FieldAngularCoordinates<T> ac =
+        final FieldAngularCoordinates<T> ac =
                         new FieldAngularCoordinates<>(los, normal,
                                                       new FieldPVCoordinates<>(plusK, zero, zero),
                                                       new FieldPVCoordinates<>(plusJ, zero, zero),
                                                       1.0e-6);
-
-        if (frame != inertialFrame) {
-            // prepend transform from specified frame to inertial frame
-            ac = ac.addOffset(new FieldAngularCoordinates<>(r.getField(),
-                                                            frame.getTransformTo(inertialFrame, date.toAbsoluteDate()).getAngular()));
-        }
-
-        // build the attitude
-        return new FieldAttitude<>(date, frame, ac);
-
+        final FieldAttitude<T> attitude = new FieldAttitude<>(date, inertialFrame, ac);
+        return attitude.withReferenceFrame(frame);
     }
 
     /** {@inheritDoc} */

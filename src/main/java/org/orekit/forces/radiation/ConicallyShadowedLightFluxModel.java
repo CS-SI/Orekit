@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,10 +24,10 @@ import org.hipparchus.util.FastMath;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.AdaptableInterval;
+import org.orekit.propagation.events.intervals.AdaptableInterval;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventDetectionSettings;
-import org.orekit.propagation.events.FieldAdaptableInterval;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.FieldEventDetectionSettings;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -370,10 +370,10 @@ public class ConicallyShadowedLightFluxModel extends AbstractSolarLightFluxModel
                 final T distanceSun = occultedBodyPosition.getNorm();
                 final T squaredDistance = position.getNormSq();
                 final T reciprocalDistanceSun = distanceSun.reciprocal();
-                final T sinf1 = reciprocalDistanceSun.multiply(occultedBodyRadius + getOccultingBodyRadius());
-                final T l1 = (s0.multiply(sinf1).add(getOccultingBodyRadius())).divide(FastMath.sqrt(sinf1.square().negate().add(1)));
+                final T sinf2 = reciprocalDistanceSun.multiply(occultedBodyRadius - getOccultingBodyRadius());
+                final T l2 = (s0.multiply(sinf2).subtract(getOccultingBodyRadius())).divide(FastMath.sqrt(sinf2.square().negate().add(1)));
                 final T l = FastMath.sqrt(squaredDistance.subtract(s0.square()));
-                return l1.divide(l).subtract(1);
+                return FastMath.abs(l2).divide(l).subtract(1);
             }
         };
     }
@@ -395,10 +395,10 @@ public class ConicallyShadowedLightFluxModel extends AbstractSolarLightFluxModel
                 final T distanceSun = occultedBodyPosition.getNorm();
                 final T squaredDistance = position.getNormSq();
                 final T reciprocalDistanceSun = distanceSun.reciprocal();
-                final T sinf2 = reciprocalDistanceSun.multiply(occultedBodyRadius - getOccultingBodyRadius());
-                final T l2 = (s0.multiply(sinf2).subtract(getOccultingBodyRadius())).divide(FastMath.sqrt(sinf2.square().negate().add(1)));
+                final T sinf1 = reciprocalDistanceSun.multiply(occultedBodyRadius + getOccultingBodyRadius());
+                final T l1 = (s0.multiply(sinf1).add(getOccultingBodyRadius())).divide(FastMath.sqrt(sinf1.square().negate().add(1)));
                 final T l = FastMath.sqrt(squaredDistance.subtract(s0.square()));
-                return FastMath.abs(l2).divide(l).subtract(1);
+                return l1.divide(l).subtract(1);
             }
         };
     }

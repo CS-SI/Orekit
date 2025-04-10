@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,6 +47,11 @@ public class Unit implements Serializable {
 
     /** Dimensionless unit. */
     public static final Unit ONE = new Unit("1", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO);
+
+    /** Cycle unit.
+     * @since 13.0
+     */
+    public static final Unit CYCLE = new Unit("cyc", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO);
 
     /** Percentage unit. */
     public static final Unit PERCENT = new Unit("%", 1.0e-2, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO);
@@ -415,7 +420,7 @@ public class Unit implements Serializable {
      * @return value in SI units
      */
     public double toSI(final Double value) {
-        return value == null ? Double.NaN : value.doubleValue() * scale;
+        return value == null ? Double.NaN : value * scale;
     }
 
     /** Convert a value to SI units.
@@ -441,7 +446,7 @@ public class Unit implements Serializable {
      * @return value in instance units
      */
     public double fromSI(final Double value) {
-        return value == null ? Double.NaN : value.doubleValue() / scale;
+        return value == null ? Double.NaN : value / scale;
     }
 
     /** Convert a value from SI units.

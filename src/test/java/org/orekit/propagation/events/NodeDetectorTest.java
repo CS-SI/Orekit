@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,6 +30,7 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -52,7 +53,7 @@ public class NodeDetectorTest {
         KeplerianOrbit initialOrbit = new KeplerianOrbit(a, e, i, w, raan, v, PositionAngleType.TRUE, inertialFrame, initialDate, Constants.WGS84_EARTH_MU);
         SpacecraftState initialState = new SpacecraftState(initialOrbit, 1000);
 
-        double[][] tol = NumericalPropagator.tolerances(10, initialOrbit, initialOrbit.getType());
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(initialOrbit, initialOrbit.getType());
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setInitialState(initialState);
@@ -108,7 +109,7 @@ public class NodeDetectorTest {
                 new KeplerianOrbit(a, e1, i, pa, raan, m, PositionAngleType.MEAN, frame, date, mu);
         EventDetector detector1 = new NodeDetector(orbit1, orbit1.getFrame());
         double t1 = orbit1.getKeplerianPeriod();
-        Assertions.assertEquals(t1 / 28.82, detector1.getMaxCheckInterval().currentInterval(null), t1 / 10000);
+        Assertions.assertEquals(t1 / 28.82, detector1.getMaxCheckInterval().currentInterval(null, true), t1 / 10000);
 
         // nearly circular, inclined orbit
         final KeplerianOrbit orbit2 =
@@ -116,7 +117,7 @@ public class NodeDetectorTest {
         EventDetector detector2 = new NodeDetector(orbit2, orbit2.getFrame());
         double t2 = orbit2.getKeplerianPeriod();
         Assertions.assertEquals(t1, t2, t1 / 10000);
-        Assertions.assertEquals(t2 / 3, detector2.getMaxCheckInterval().currentInterval(null), t2 / 10000);
+        Assertions.assertEquals(t2 / 3, detector2.getMaxCheckInterval().currentInterval(null, true), t2 / 10000);
 
     }
 
@@ -124,11 +125,11 @@ public class NodeDetectorTest {
     public void testIssue728() {
 
         NodeDetector detector1 = new NodeDetector(FramesFactory.getEME2000());
-        Assertions.assertEquals(1800.0, detector1.getMaxCheckInterval().currentInterval(null), 1.0e-3);
+        Assertions.assertEquals(1800.0, detector1.getMaxCheckInterval().currentInterval(null, true), 1.0e-3);
         Assertions.assertEquals(1.0e-3, detector1.getThreshold(), 1.0e-12);
 
         NodeDetector detector2 = detector1.withMaxCheck(3000.0).withThreshold(1.0e-6);
-        Assertions.assertEquals(3000.0, detector2.getMaxCheckInterval().currentInterval(null), 1.0e-3);
+        Assertions.assertEquals(3000.0, detector2.getMaxCheckInterval().currentInterval(null, true), 1.0e-3);
         Assertions.assertEquals(1.0e-6, detector2.getThreshold(), 1.0e-12);
 
     }

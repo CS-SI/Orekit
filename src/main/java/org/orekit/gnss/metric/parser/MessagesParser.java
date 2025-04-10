@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import java.util.List;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.metric.messages.ParsedMessage;
+import org.orekit.time.TimeScales;
 
 /** Parser for IGS encoded messages.
  * @author Luc Maisonobe
@@ -31,12 +32,19 @@ public abstract class MessagesParser {
     /** Set of needed messages. */
     private final List<Integer> messages;
 
+    /** Known time scales. */
+    private final TimeScales timeScales;
+
     /**
      * Constructor.
      * @param messages list of needed messages
+     * @param timeScales known time scales
+     * @since 13.0
      */
-    public MessagesParser(final List<Integer> messages) {
-        this.messages = messages;
+    protected MessagesParser(final List<Integer> messages,
+                             final TimeScales timeScales) {
+        this.messages   = messages;
+        this.timeScales = timeScales;
     }
 
     /** Parse one message.
@@ -57,11 +65,11 @@ public abstract class MessagesParser {
 
             // if set to 0, notification will be triggered regardless of message type
             if (messages.contains(0)) {
-                return messageType.parse(message, messageNumberInt);
+                return messageType.parse(message, messageNumberInt, timeScales);
             }
 
             // parse one message
-            return messages.contains(messageNumberInt) ? messageType.parse(message, messageNumberInt) : null;
+            return messages.contains(messageNumberInt) ? messageType.parse(message, messageNumberInt, timeScales) : null;
 
         } catch (OrekitException oe) {
             if (ignoreUnknownMessageTypes &&

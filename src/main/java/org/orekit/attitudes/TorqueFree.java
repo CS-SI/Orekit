@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -638,15 +638,19 @@ public class TorqueFree implements AttitudeProvider {
             final FieldDenseOutputModel<T> model = new FieldDenseOutputModel<>();
             integ.addStepHandler(model);
 
-            integ.integrate(new FieldExpandableODE<T>(new FieldOrdinaryDifferentialEquation<T>() {
+            integ.integrate(new FieldExpandableODE<>(new FieldOrdinaryDifferentialEquation<T>() {
 
-                /** {@inheritDoc} */
+                /**
+                 * {@inheritDoc}
+                 */
                 @Override
                 public int getDimension() {
                     return 1;
                 }
 
-                /** {@inheritDoc} */
+                /**
+                 * {@inheritDoc}
+                 */
                 @Override
                 public T[] computeDerivatives(final T t, final T[] y) {
                     final T sn = jacobi.valuesN(t.subtract(dtRef).multiply(tScale)).sn();
@@ -655,7 +659,7 @@ public class TorqueFree implements AttitudeProvider {
                     return yDot;
                 }
 
-            }), new FieldODEState<T>(zero, MathArrays.buildArray(dtRef.getField(), 1)), period);
+            }), new FieldODEState<>(zero, MathArrays.buildArray(dtRef.getField(), 1)), period);
 
             return model;
 

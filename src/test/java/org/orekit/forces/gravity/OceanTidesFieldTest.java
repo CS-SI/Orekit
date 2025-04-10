@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,7 +42,7 @@ import java.util.Map;
 public class OceanTidesFieldTest {
 
     @Test
-    public void testDeltaCnmSnm() {
+    void testDeltaCnmSnm() {
 
         // this is an arbitrarily truncated model, limited to 4x4 and with only a few waves
         List<OceanTidesWave> waves = getWaves(4, 4, 55565, 56554, 85455, 135655, 273555);

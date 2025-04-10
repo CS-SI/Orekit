@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.orekit.gnss.metric.messages.ssr;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.SatelliteSystem;
@@ -57,7 +58,8 @@ public class SsrIgm02Test {
         ArrayList<Integer> messages = new ArrayList<>();
         messages.add(42);
 
-        final SsrIgm02 igm02 = (SsrIgm02) new IgsSsrMessagesParser(messages).parse(message, false);
+        final SsrIgm02 igm02 = (SsrIgm02) new IgsSsrMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+                               parse(message, false);
 
         // Verify size
         Assertions.assertEquals(1,                            igm02.getData().size());
@@ -106,7 +108,8 @@ public class SsrIgm02Test {
         ArrayList<Integer> messages = new ArrayList<>();
         messages.add(62);
 
-        final SsrIgm02 igm02 = (SsrIgm02) new IgsSsrMessagesParser(messages).parse(message, false);
+        final SsrIgm02 igm02 = (SsrIgm02) new IgsSsrMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+                               parse(message, false);
 
         // Verify size
         Assertions.assertEquals(1,                            igm02.getData().size());
@@ -155,7 +158,8 @@ public class SsrIgm02Test {
        ArrayList<Integer> messages = new ArrayList<>();
        messages.add(9999999);
 
-       final SsrIgm02 igm02 = (SsrIgm02) new IgsSsrMessagesParser(messages).parse(message, false);
+       final SsrIgm02 igm02 = (SsrIgm02) new IgsSsrMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+                              parse(message, false);
 
        Assertions.assertNull(igm02);
     }
@@ -165,7 +169,8 @@ public class SsrIgm02Test {
         try {
             final byte[] array = new byte[0];
             final EncodedMessage emptyMessage = new ByteArrayEncodedMessage(array);
-            new IgsSsrMessagesParser(new ArrayList<Integer>()).parse(emptyMessage, false);
+            new IgsSsrMessagesParser(new ArrayList<>(), DataContext.getDefault().getTimeScales()).
+                parse(emptyMessage, false);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.END_OF_ENCODED_MESSAGE, oe.getSpecifier());

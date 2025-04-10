@@ -31,7 +31,8 @@ import org.orekit.time.FieldAbsoluteDate;
  * @author Evan Ward
  * @author Luc Maisonobe
  */
-public class FieldNegateDetector<T extends CalculusFieldElement<T>>  extends FieldAbstractDetector<FieldNegateDetector<T>, T> {
+public class FieldNegateDetector<T extends CalculusFieldElement<T>>  extends FieldAbstractDetector<FieldNegateDetector<T>, T>
+        implements FieldDetectorModifier<T> {
 
     /** the delegate event detector. */
     private final FieldEventDetector<T> original;
@@ -47,28 +48,21 @@ public class FieldNegateDetector<T extends CalculusFieldElement<T>>  extends Fie
      * @param original detector.
      */
     public FieldNegateDetector(final FieldEventDetector<T> original) {
-        this(original.getMaxCheckInterval(),
-             original.getThreshold(),
-             original.getMaxIterationCount(),
-             new FieldContinueOnEvent<>(),
-             original);
+        this(original.getDetectionSettings(), new FieldContinueOnEvent<>(), original);
     }
 
     /**
-     * Private constructor.
+     * Protected constructor.
      *
-     * @param newMaxCheck  max check interval.
-     * @param newThreshold convergence threshold in seconds.
-     * @param newMaxIter   max iterations.
+     * @param detectionSettings event detection settings.
      * @param newHandler   event handler.
      * @param original     event detector.
+     * @since 13.0
      */
-    protected FieldNegateDetector(final FieldAdaptableInterval<T> newMaxCheck,
-                                  final T newThreshold,
-                                  final int newMaxIter,
+    protected FieldNegateDetector(final FieldEventDetectionSettings<T> detectionSettings,
                                   final FieldEventHandler<T> newHandler,
                                   final FieldEventDetector<T> original) {
-        super(new FieldEventDetectionSettings<>(newMaxCheck, newThreshold, newMaxIter), newHandler);
+        super(detectionSettings, newHandler);
         this.original = original;
     }
 
@@ -81,10 +75,14 @@ public class FieldNegateDetector<T extends CalculusFieldElement<T>>  extends Fie
     }
 
     @Override
-    public void init(final FieldSpacecraftState<T> s0,
-                     final FieldAbsoluteDate<T> t) {
+    public FieldEventDetector<T> getDetector() {
+        return getOriginal();
+    }
+
+    @Override
+    public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
         super.init(s0, t);
-        original.init(s0, t);
+        getDetector().init(s0, t);
     }
 
     @Override
@@ -93,12 +91,9 @@ public class FieldNegateDetector<T extends CalculusFieldElement<T>>  extends Fie
     }
 
     @Override
-    protected FieldNegateDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck,
-                                            final T newThreshold,
-                                            final int newMaxIter,
+    protected FieldNegateDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                             final FieldEventHandler<T> newHandler) {
-        return new FieldNegateDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                         original);
+        return new FieldNegateDetector<>(detectionSettings, newHandler, original);
     }
 
 }

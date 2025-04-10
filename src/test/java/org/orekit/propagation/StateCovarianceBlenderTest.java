@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -299,12 +299,12 @@ class StateCovarianceBlenderTest {
         // When & Then
         doTestBlending(DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP, blendingFunction,
                        propagator,
-                       0.092022772752,
-                       0.175328981233,
-                       0.085754375965,
-                       0.19331997037,
-                       0.169348422249,
-                       0.347302066034,
+                       0.092022772744,
+                       0.175328981237,
+                       0.085754375985,
+                       0.193319970362,
+                       0.169348422233,
+                       0.347302066023,
                        tolerance,
                        showResults);
 
@@ -370,11 +370,11 @@ class StateCovarianceBlenderTest {
 
         // Results obtained when using modified orbit date to use truncated JPL test resource file
         Assertions.assertEquals( 0.1190324127, relativeRMSSigmaError[0].getMean(), tolerance);
-        Assertions.assertEquals( 7.2800701738, relativeRMSSigmaError[1].getMean(), tolerance);
+        Assertions.assertEquals( 19.9401863789, relativeRMSSigmaError[1].getMean(), tolerance);
         Assertions.assertEquals( 0.1221432731, relativeRMSSigmaError[0].getPercentile(50), tolerance);
-        Assertions.assertEquals( 7.4882858178, relativeRMSSigmaError[1].getPercentile(50), tolerance);
+        Assertions.assertEquals( 14.0023883813, relativeRMSSigmaError[1].getPercentile(50), tolerance);
         Assertions.assertEquals( 0.2282143786, relativeRMSSigmaError[0].getMax(), tolerance);
-        Assertions.assertEquals(16.0468503672, relativeRMSSigmaError[1].getMax(), tolerance);
+        Assertions.assertEquals(99.776271400, relativeRMSSigmaError[1].getMax(), tolerance);
 
         // Assert getters as well
         Assertions.assertNull(covarianceInterpolator.getOutFrame());

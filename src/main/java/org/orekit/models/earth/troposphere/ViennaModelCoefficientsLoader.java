@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
@@ -51,7 +52,7 @@ import org.orekit.time.DateTimeComponents;
  * <p>
  * The files have to be extracted to UTF-8 text files before being read by this loader.
  * <p>
- * After extraction, it is assumed they are named VMFG_YYYYMMDD.Hhh for {@link ViennaOneModel} and VMF3_YYYYMMDD.Hhh {@link ViennaThreeModel}.
+ * After extraction, it is assumed they are named VMFG_YYYYMMDD.Hhh for {@link ViennaOne} and VMF3_YYYYMMDD.Hhh {@link ViennaThree}.
  * Where YYYY is the 4-digits year, MM the month, DD the day and hh the 2-digits hour.
  *
  * <p>
@@ -101,13 +102,13 @@ public class ViennaModelCoefficientsLoader extends AbstractSelfFeedingLoader
     private double[] zenithDelay;
 
     /** Geodetic site latitude, radians.*/
-    private double latitude;
+    private final double latitude;
 
     /** Geodetic site longitude, radians.*/
-    private double longitude;
+    private final double longitude;
 
     /** Vienna tropospheric model type.*/
-    private ViennaModelType type;
+    private final ViennaModelType type;
 
     /** Constructor with supported names given by user. This constructor uses the
      * {@link DataContext#getDefault() default data context}.
@@ -244,10 +245,12 @@ public class ViennaModelCoefficientsLoader extends AbstractSelfFeedingLoader
         // For VMF1 it starts with "VMFG" whereas with VMF3 it starts with "VMF3"
         switch (type) {
             case VIENNA_ONE:
-                setSupportedNames(String.format("VMFG_%04d%2s%2s.H%2s", year, monthString, dayString, hourString));
+                setSupportedNames(String.format(Locale.US, "VMFG_%04d%2s%2s.H%2s",
+                                                year, monthString, dayString, hourString));
                 break;
             case VIENNA_THREE:
-                setSupportedNames(String.format("VMF3_%04d%2s%2s.H%2s", year, monthString, dayString, hourString));
+                setSupportedNames(String.format(Locale.US, "VMF3_%04d%2s%2s.H%2s",
+                                                year, monthString, dayString, hourString));
                 break;
             default:
                 break;
@@ -290,7 +293,7 @@ public class ViennaModelCoefficientsLoader extends AbstractSelfFeedingLoader
                 line = line.trim();
 
                 // Fill latitudes and longitudes lists
-                if (line.length() > 0 && line.startsWith("! Range/resolution:")) {
+                if (line.startsWith("! Range/resolution:")) {
                     final String[] range_line = SEPARATOR.split(line);
 
                     // Latitudes list
@@ -311,7 +314,7 @@ public class ViennaModelCoefficientsLoader extends AbstractSelfFeedingLoader
                 }
 
                 // Fill ah, aw, zhd and zwd lists
-                if (line.length() > 0 && !line.startsWith("!")) {
+                if (!line.startsWith("!")) {
                     final String[] values_line = SEPARATOR.split(line);
                     ah.add(Double.parseDouble(values_line[2]));
                     aw.add(Double.parseDouble(values_line[3]));

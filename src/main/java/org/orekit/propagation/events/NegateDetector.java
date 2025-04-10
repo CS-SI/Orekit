@@ -27,7 +27,7 @@ import org.orekit.time.AbsoluteDate;
  *
  * @author Evan Ward
  */
-public class NegateDetector extends AbstractDetector<NegateDetector> {
+public class NegateDetector extends AbstractDetector<NegateDetector> implements DetectorModifier {
 
     /** the delegate event detector. */
     private final EventDetector original;
@@ -43,28 +43,21 @@ public class NegateDetector extends AbstractDetector<NegateDetector> {
      * @param original detector.
      */
     public NegateDetector(final EventDetector original) {
-        this(original.getMaxCheckInterval(),
-                original.getThreshold(),
-                original.getMaxIterationCount(),
-                new ContinueOnEvent(),
-                original);
+        this(original.getDetectionSettings(), new ContinueOnEvent(), original);
     }
 
     /**
      * Private constructor.
      *
-     * @param newMaxCheck  max check interval.
-     * @param newThreshold convergence threshold in seconds.
-     * @param newMaxIter   max iterations.
+     * @param eventDetectionSettings event detection settings.
      * @param newHandler   event handler.
      * @param original     event detector.
+     * @since 13.0
      */
-    protected NegateDetector(final AdaptableInterval newMaxCheck,
-                             final double newThreshold,
-                             final int newMaxIter,
+    protected NegateDetector(final EventDetectionSettings eventDetectionSettings,
                              final EventHandler newHandler,
                              final EventDetector original) {
-        super(new EventDetectionSettings(newMaxCheck, newThreshold, newMaxIter), newHandler);
+        super(eventDetectionSettings, newHandler);
         this.original = original;
     }
 
@@ -78,10 +71,14 @@ public class NegateDetector extends AbstractDetector<NegateDetector> {
     }
 
     @Override
-    public void init(final SpacecraftState s0,
-                     final AbsoluteDate t) {
+    public EventDetector getDetector() {
+        return getOriginal();
+    }
+
+    @Override
+    public void init(final SpacecraftState s0, final AbsoluteDate t) {
         super.init(s0, t);
-        this.original.init(s0, t);
+        getDetector().init(s0, t);
     }
 
     @Override
@@ -91,12 +88,9 @@ public class NegateDetector extends AbstractDetector<NegateDetector> {
 
     @Override
     protected NegateDetector create(
-            final AdaptableInterval newMaxCheck,
-            final double newThreshold,
-            final int newMaxIter,
+            final EventDetectionSettings detectionSettings,
             final EventHandler newHandler) {
-        return new NegateDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                this.original);
+        return new NegateDetector(detectionSettings, newHandler, this.original);
     }
 
 }
