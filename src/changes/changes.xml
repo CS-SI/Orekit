@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.1" date="TBD" description="TBD">
+        <action dev="serrof" type="add" issue="1702">
+            Add TimeInterval interface and some applications.
+        </action>
     </release>
     <release version="13.0" date="2025-04-14" description="Orekit 13.0 is a major new release.
            It includes both new features, accuracy and performances improvements, and bug fixes.
