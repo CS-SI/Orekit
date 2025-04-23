@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.1" date="TBD" description="TBD">
+        <action dev="luc" type="add" issue="1704">
+            Vastly improved NeQuick models performances.
+        </action>
     </release>
     <release version="13.0" date="2025-04-14" description="Orekit 13.0 is a major new release.
            It includes both new features, accuracy and performances improvements, and bug fixes.

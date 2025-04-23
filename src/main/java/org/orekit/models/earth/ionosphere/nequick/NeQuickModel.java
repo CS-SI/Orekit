@@ -188,6 +188,24 @@ public abstract class NeQuickModel implements IonosphericModel {
     protected abstract <T extends CalculusFieldElement<T>> T computeMODIP(T latitude, T longitude);
 
     /**
+     * Compute Fourier time series.
+     * @param dateTime current date time components
+     * @param az effective ionisation level
+     * @return Fourier time series
+     * @since 13.1
+     */
+    public FourierTimeSeries computeFourierTimeSeries(final DateTimeComponents dateTime, final double az) {
+
+         // Load the correct CCIR file
+        loadsIfNeeded(dateTime.getDate());
+
+        return new FourierTimeSeries(dateTime, az,
+                                     flattenF2[dateTime.getDate().getMonth() - 1],
+                                     flattenFm3[dateTime.getDate().getMonth() - 1]);
+
+    }
+
+    /**
      * Computes the electron density at a given height.
      * @param dateTime date
      * @param az effective ionization level
@@ -196,20 +214,32 @@ public abstract class NeQuickModel implements IonosphericModel {
      * @param h height along the integration path in m
      * @return electron density [m⁻³]
      * @since 13.0
+     * @deprecated as of 13.1, replaced by {@link #electronDensity(FourierTimeSeries, double, double, double)}
      */
+    @Deprecated
     public double electronDensity(final DateTimeComponents dateTime, final double az,
                                   final double latitude, final double longitude, final double h) {
+        return electronDensity(computeFourierTimeSeries(dateTime, az), latitude, longitude, h);
+    }
 
-        // Load the correct CCIR file
-        loadsIfNeeded(dateTime.getDate());
+    /**
+     * Computes the electron density at a given height.
+     * @param fourierTimeSeries Fourier time series for foF2 and M(3000)F2 layer (flatten array)
+     * @param latitude latitude along the integration path
+     * @param longitude longitude along the integration path
+     * @param h height along the integration path in m
+     * @return electron density [m⁻³]
+     * @since 13.1
+     */
+    public double electronDensity(final FourierTimeSeries fourierTimeSeries,
+                                  final double latitude, final double longitude, final double h) {
 
         final double modip = computeMODIP(latitude, longitude);
-        final NeQuickParameters parameters = new NeQuickParameters(dateTime,
-                                                                   flattenF2[dateTime.getDate().getMonth() - 1],
-                                                                   flattenFm3[dateTime.getDate().getMonth() - 1],
-                                                                   latitude, longitude, az, modip);
+        final NeQuickParameters parameters = new NeQuickParameters(fourierTimeSeries, latitude, longitude, modip);
+
         // Convert height in kilometers
         final double hInKm = Unit.KILOMETRE.fromSI(h);
+
         // Electron density
         final double n;
         if (hInKm <= parameters.getHmF2()) {
@@ -217,7 +247,29 @@ public abstract class NeQuickModel implements IonosphericModel {
         } else {
             n = topElectronDensity(hInKm, parameters);
         }
+
         return n;
+
+    }
+
+    /**
+     * Compute Fourier time series.
+     * @param <T> type of the elements
+     * @param dateTime current date time components
+     * @param az effective ionisation level
+     * @return Fourier time series
+     * @since 13.1
+     */
+    public <T extends CalculusFieldElement<T>> FieldFourierTimeSeries<T> computeFourierTimeSeries(final DateTimeComponents dateTime,
+                                                                                                  final T az) {
+
+         // Load the correct CCIR file
+        loadsIfNeeded(dateTime.getDate());
+
+        return new FieldFourierTimeSeries<>(dateTime, az,
+                                            flattenF2[dateTime.getDate().getMonth() - 1],
+                                            flattenFm3[dateTime.getDate().getMonth() - 1]);
+
     }
 
     /**
@@ -230,23 +282,34 @@ public abstract class NeQuickModel implements IonosphericModel {
      * @param h height along the integration path in m
      * @return electron density [m⁻³]
      * @since 13.0
+     * @deprecated as of 13.1, replaced by {@link #electronDensity(FieldFourierTimeSeries,
+     * CalculusFieldElement, CalculusFieldElement, CalculusFieldElement)}
      */
+    @Deprecated
     public <T extends CalculusFieldElement<T>> T electronDensity(final DateTimeComponents dateTime, final T az,
                                                                  final T latitude, final T longitude, final T h) {
+        return electronDensity(computeFourierTimeSeries(dateTime, az), latitude, longitude, h);
+    }
 
-
-        // Load the correct CCIR file
-        loadsIfNeeded(dateTime.getDate());
+    /**
+     * Computes the electron density at a given height.
+     * @param <T> type of the elements
+     * @param fourierTimeSeries Fourier time series for foF2 and M(3000)F2 layer (flatten array)
+     * @param latitude latitude along the integration path
+     * @param longitude longitude along the integration path
+     * @param h height along the integration path in m
+     * @return electron density [m⁻³]
+     * @since 13.1
+     */
+    public <T extends CalculusFieldElement<T>> T electronDensity(final FieldFourierTimeSeries<T> fourierTimeSeries,
+                                                                 final T latitude, final T longitude, final T h) {
 
         final T modip = computeMODIP(latitude, longitude);
-        final FieldNeQuickParameters<T> parameters =
-            new FieldNeQuickParameters<>(dateTime,
-                                         flattenF2[dateTime.getDate().getMonth() - 1],
-                                         flattenFm3[dateTime.getDate().getMonth() - 1],
-                                         latitude, longitude, az, modip);
+        final FieldNeQuickParameters<T> parameters = new FieldNeQuickParameters<>(fourierTimeSeries, latitude, longitude, modip);
 
         // Convert height in kilometers
         final T hInKm = Unit.KILOMETRE.fromSI(h);
+
         // Electron density
         final T n;
         if (hInKm.getReal() <= parameters.getHmF2().getReal()) {
@@ -254,7 +317,9 @@ public abstract class NeQuickModel implements IonosphericModel {
         } else {
             n = topElectronDensity(hInKm, parameters);
         }
+
         return n;
+
     }
 
     /**

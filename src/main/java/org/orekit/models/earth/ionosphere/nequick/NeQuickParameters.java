@@ -92,14 +92,29 @@ public class NeQuickParameters {
      * @param longitude longitude of a point along the integration path, in radians
      * @param az effective ionisation level
      * @param modip modip
+     * @deprecated as of 13.1, replaced by {@link #NeQuickParameters(FourierTimeSeries, double, double, double)}
      */
-    public NeQuickParameters(final DateTimeComponents dateTime, final double[] flattenF2, final double[] flattenFm3,
+    @Deprecated
+    public NeQuickParameters(final DateTimeComponents dateTime,
+                             final double[] flattenF2, final double[] flattenFm3,
                              final double latitude, final double longitude, final double az, final double modip) {
+        this(new FourierTimeSeries(dateTime, az, flattenF2, flattenFm3),
+             latitude, longitude, modip);
+    }
 
-        this.dateTime = dateTime;
+    /**
+     * Build a new instance.
+     * @param fourierTimeSeries Fourier time series for foF2 and M(3000)F2 layers
+     * @param latitude latitude of a point along the integration path, in radians
+     * @param longitude longitude of a point along the integration path, in radians
+     * @param modip modip
+     * @since 13.1
+     */
+    public NeQuickParameters(final FourierTimeSeries fourierTimeSeries,
+                             final double latitude, final double longitude, final double modip) {
 
-        // Effective sunspot number (Eq. 19)
-        azr = FastMath.sqrt(167273.0 + (az - 63.7) * 1123.6) - 408.99;
+        this.dateTime = fourierTimeSeries.getDateTime();
+        this.azr      = fourierTimeSeries.getAzr();
 
         // Date and Time components
         final DateComponents date = dateTime.getDate();
@@ -112,21 +127,15 @@ public class NeQuickParameters {
         // E layer maximum density height in km (Eq. 78)
         this.hmE = 120.0;
         // E layer critical frequency in MHz
-        final double foE = computefoE(date.getMonth(), az, xeff, latitude);
+        final double foE = computefoE(date.getMonth(), fourierTimeSeries.getAz(), xeff, latitude);
         // E layer maximum density in 10^11 m⁻³ (Eq. 36)
         final double nmE = 0.124 * foE * foE;
 
-        // Time argument (Eq. 49)
-        final double t = FastMath.toRadians(15 * hours) - FastMath.PI;
-        // Compute Fourier time series for foF2 and M(3000)F2
-        final double[] scT = sinCos(t, 6);
-        final double[] cf2 = computeCF2(flattenF2, scT);
-        final double[] cm3 = computeCm3(flattenFm3, scT);
         // F2 layer critical frequency in MHz
-        final double[] scL = sinCos(longitude, 8);
-        this.foF2 = computefoF2(modip, cf2, latitude, scL);
+        final double[] scL = FourierTimeSeries.sinCos(longitude, 8);
+        this.foF2 = computefoF2(modip, fourierTimeSeries.getCf2Reference(), latitude, scL);
         // Maximum Usable Frequency factor
-        final double mF2  = computeMF2(modip, cm3, latitude, scL);
+        final double mF2  = computeMF2(modip, fourierTimeSeries.getCm3Reference(), latitude, scL);
         // F2 layer maximum density in 10^11 m⁻³
         this.nmF2 = 0.124 * foF2 * foF2;
         // F2 layer maximum density height in km
@@ -355,94 +364,6 @@ public class NeQuickParameters {
         final double temp  = FastMath.sqrt((0.0196 * mF2Sq + 1) / (1.2967 * mF2Sq - 1.0));
         return ((1490.0 * mF2 * temp) / (mF2 + deltaM)) - 176.0;
 
-    }
-
-    /** Compute sines and cosines.
-     * @param a argument
-     * @param n number of terms
-     * @return sin(a), cos(a), sin(2a), cos(2a) … sin(n a), cos(n a) array
-     * @since 12.1.3
-     */
-    private double[] sinCos(final double a, final int n) {
-
-        final SinCos sc0 = FastMath.sinCos(a);
-        SinCos sci = sc0;
-        final double[] sc = new double[2 * n];
-        int isc = 0;
-        sc[isc++] = sci.sin();
-        sc[isc++] = sci.cos();
-        for (int i = 1; i < n; i++) {
-            sci = SinCos.sum(sc0, sci);
-            sc[isc++] = sci.sin();
-            sc[isc++] = sci.cos();
-        }
-
-        return sc;
-
-    }
-
-    /**
-     * Computes cf2 coefficients.
-     * @param flattenF2 F2 coefficients used by the F2 layer (flatten array)
-     * @param scT sines/cosines array of time argument
-     * @return the cf2 coefficients array
-     */
-    private double[] computeCF2(final double[] flattenF2, final double[] scT) {
-
-        // interpolation coefficients for effective spot number
-        final double azr01 = azr * 0.01;
-        final double omazr01 = 1 - azr01;
-
-        // Eq. 44 and Eq. 50 merged into one loop
-        final double[] cf2 = new double[76];
-        int index = 0;
-        for (int i = 0; i < cf2.length; i++) {
-            cf2[i] = omazr01 * flattenF2[index     ] + azr01 * flattenF2[index +  1] +
-                    (omazr01 * flattenF2[index +  2] + azr01 * flattenF2[index +  3]) * scT[ 0] +
-                    (omazr01 * flattenF2[index +  4] + azr01 * flattenF2[index +  5]) * scT[ 1] +
-                    (omazr01 * flattenF2[index +  6] + azr01 * flattenF2[index +  7]) * scT[ 2] +
-                    (omazr01 * flattenF2[index +  8] + azr01 * flattenF2[index +  9]) * scT[ 3] +
-                    (omazr01 * flattenF2[index + 10] + azr01 * flattenF2[index + 11]) * scT[ 4] +
-                    (omazr01 * flattenF2[index + 12] + azr01 * flattenF2[index + 13]) * scT[ 5] +
-                    (omazr01 * flattenF2[index + 14] + azr01 * flattenF2[index + 15]) * scT[ 6] +
-                    (omazr01 * flattenF2[index + 16] + azr01 * flattenF2[index + 17]) * scT[ 7] +
-                    (omazr01 * flattenF2[index + 18] + azr01 * flattenF2[index + 19]) * scT[ 8] +
-                    (omazr01 * flattenF2[index + 20] + azr01 * flattenF2[index + 21]) * scT[ 9] +
-                    (omazr01 * flattenF2[index + 22] + azr01 * flattenF2[index + 23]) * scT[10] +
-                    (omazr01 * flattenF2[index + 24] + azr01 * flattenF2[index + 25]) * scT[11];
-            index += 26;
-        }
-        return cf2;
-    }
-
-    /**
-     * Computes Cm3 coefficients.
-     * @param flattenFm3 Fm3 coefficients used by the M(3000)F2 layer (flatten array)
-     * @param scT sines/cosines array of time argument
-     * @return the Cm3 coefficients array
-     */
-    private double[] computeCm3(final double[] flattenFm3, final double[] scT) {
-
-        // interpolation coefficients for effective spot number
-        final double azr01 = azr * 0.01;
-        final double omazr01 = 1 - azr01;
-
-        // Eq. 44 and Eq. 51 merged into one loop
-        final double[] cm3 = new double[49];
-        int index = 0;
-        for (int i = 0; i < cm3.length; i++) {
-            cm3[i] = omazr01 * flattenFm3[index     ] + azr01 * flattenFm3[index +  1] +
-                    (omazr01 * flattenFm3[index +  2] + azr01 * flattenFm3[index +  3]) * scT[ 0] +
-                    (omazr01 * flattenFm3[index +  4] + azr01 * flattenFm3[index +  5]) * scT[ 1] +
-                    (omazr01 * flattenFm3[index +  6] + azr01 * flattenFm3[index +  7]) * scT[ 2] +
-                    (omazr01 * flattenFm3[index +  8] + azr01 * flattenFm3[index +  9]) * scT[ 3] +
-                    (omazr01 * flattenFm3[index + 10] + azr01 * flattenFm3[index + 11]) * scT[ 4] +
-                    (omazr01 * flattenFm3[index + 12] + azr01 * flattenFm3[index + 13]) * scT[ 5] +
-                    (omazr01 * flattenFm3[index + 14] + azr01 * flattenFm3[index + 15]) * scT[ 6] +
-                    (omazr01 * flattenFm3[index + 16] + azr01 * flattenFm3[index + 17]) * scT[ 7];
-            index += 18;
-        }
-        return cm3;
     }
 
     /**
