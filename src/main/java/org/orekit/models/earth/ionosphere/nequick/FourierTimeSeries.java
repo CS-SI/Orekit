@@ -67,8 +67,8 @@ public class FourierTimeSeries {
 
         // Compute Fourier time series for foF2 and M(3000)F2
         final double[] scT = sinCos(t, 6);
-        this.cf2 = computeCF2(flattenF2, scT, azr);
-        this.cm3 = computeCm3(flattenFm3, scT, azr);
+        this.cf2 = computeCF2(flattenF2, scT);
+        this.cm3 = computeCm3(flattenFm3, scT);
 
     }
 
@@ -120,67 +120,65 @@ public class FourierTimeSeries {
     /** Computes cf2 coefficients.
      * @param flattenF2 F2 coefficients used by the F2 layer (flatten array)
      * @param scT       sines/cosines array of time argument
-     * @param azr       effective sunspot number
      * @return the cf2 coefficients array
      */
-    private double[] computeCF2(final double[] flattenF2, final double[] scT, final double azr) {
+    private double[] computeCF2(final double[] flattenF2, final double[] scT) {
 
         // interpolation coefficients for effective spot number
         final double azr01   = azr * 0.01;
         final double omazr01 = 1 - azr01;
 
         // Eq. 44 and Eq. 50 merged into one loop
-        final double[] cf2   = new double[76];
+        final double[] array   = new double[76];
         int            index = 0;
-        for (int i = 0; i < cf2.length; i++) {
-            cf2[i] =
+        for (int i = 0; i < array.length; i++) {
+            array[i] =
                     omazr01 * flattenF2[index] + azr01 * flattenF2[index + 1] +
-                    (omazr01 * flattenF2[index + 2] + azr01 * flattenF2[index + 3]) * scT[0] +
-                    (omazr01 * flattenF2[index + 4] + azr01 * flattenF2[index + 5]) * scT[1] +
-                    (omazr01 * flattenF2[index + 6] + azr01 * flattenF2[index + 7]) * scT[2] +
-                    (omazr01 * flattenF2[index + 8] + azr01 * flattenF2[index + 9]) * scT[3] +
-                    (omazr01 * flattenF2[index + 10] + azr01 * flattenF2[index + 11]) * scT[4] +
-                    (omazr01 * flattenF2[index + 12] + azr01 * flattenF2[index + 13]) * scT[5] +
-                    (omazr01 * flattenF2[index + 14] + azr01 * flattenF2[index + 15]) * scT[6] +
-                    (omazr01 * flattenF2[index + 16] + azr01 * flattenF2[index + 17]) * scT[7] +
-                    (omazr01 * flattenF2[index + 18] + azr01 * flattenF2[index + 19]) * scT[8] +
-                    (omazr01 * flattenF2[index + 20] + azr01 * flattenF2[index + 21]) * scT[9] +
-                    (omazr01 * flattenF2[index + 22] + azr01 * flattenF2[index + 23]) * scT[10] +
-                    (omazr01 * flattenF2[index + 24] + azr01 * flattenF2[index + 25]) * scT[11];
+                   (omazr01 * flattenF2[index + 2] + azr01 * flattenF2[index + 3]) * scT[0] +
+                   (omazr01 * flattenF2[index + 4] + azr01 * flattenF2[index + 5]) * scT[1] +
+                   (omazr01 * flattenF2[index + 6] + azr01 * flattenF2[index + 7]) * scT[2] +
+                   (omazr01 * flattenF2[index + 8] + azr01 * flattenF2[index + 9]) * scT[3] +
+                   (omazr01 * flattenF2[index + 10] + azr01 * flattenF2[index + 11]) * scT[4] +
+                   (omazr01 * flattenF2[index + 12] + azr01 * flattenF2[index + 13]) * scT[5] +
+                   (omazr01 * flattenF2[index + 14] + azr01 * flattenF2[index + 15]) * scT[6] +
+                   (omazr01 * flattenF2[index + 16] + azr01 * flattenF2[index + 17]) * scT[7] +
+                   (omazr01 * flattenF2[index + 18] + azr01 * flattenF2[index + 19]) * scT[8] +
+                   (omazr01 * flattenF2[index + 20] + azr01 * flattenF2[index + 21]) * scT[9] +
+                   (omazr01 * flattenF2[index + 22] + azr01 * flattenF2[index + 23]) * scT[10] +
+                   (omazr01 * flattenF2[index + 24] + azr01 * flattenF2[index + 25]) * scT[11];
             index += 26;
         }
-        return cf2;
+        return array;
     }
 
     /** Computes Cm3 coefficients.
      * @param flattenFm3 Fm3 coefficients used by the M(3000)F2 layer (flatten array)
      * @param scT        sines/cosines array of time argument
-     * @param azr        effective sunspot number
      * @return the Cm3 coefficients array
      */
-    private double[] computeCm3(final double[] flattenFm3, final double[] scT, final double azr) {
+    private double[] computeCm3(final double[] flattenFm3, final double[] scT) {
 
         // interpolation coefficients for effective spot number
         final double azr01   = azr * 0.01;
         final double omazr01 = 1 - azr01;
 
         // Eq. 44 and Eq. 51 merged into one loop
-        final double[] cm3   = new double[49];
+        final double[] array   = new double[49];
         int            index = 0;
-        for (int i = 0; i < cm3.length; i++) {
-            cm3[i] =
+        for (int i = 0; i < array.length; i++) {
+            array[i] =
                     omazr01 * flattenFm3[index] + azr01 * flattenFm3[index + 1] +
-                    (omazr01 * flattenFm3[index + 2] + azr01 * flattenFm3[index + 3]) * scT[0] +
-                    (omazr01 * flattenFm3[index + 4] + azr01 * flattenFm3[index + 5]) * scT[1] +
-                    (omazr01 * flattenFm3[index + 6] + azr01 * flattenFm3[index + 7]) * scT[2] +
-                    (omazr01 * flattenFm3[index + 8] + azr01 * flattenFm3[index + 9]) * scT[3] +
-                    (omazr01 * flattenFm3[index + 10] + azr01 * flattenFm3[index + 11]) * scT[4] +
-                    (omazr01 * flattenFm3[index + 12] + azr01 * flattenFm3[index + 13]) * scT[5] +
-                    (omazr01 * flattenFm3[index + 14] + azr01 * flattenFm3[index + 15]) * scT[6] +
-                    (omazr01 * flattenFm3[index + 16] + azr01 * flattenFm3[index + 17]) * scT[7];
+                   (omazr01 * flattenFm3[index + 2] + azr01 * flattenFm3[index + 3]) * scT[0] +
+                   (omazr01 * flattenFm3[index + 4] + azr01 * flattenFm3[index + 5]) * scT[1] +
+                   (omazr01 * flattenFm3[index + 6] + azr01 * flattenFm3[index + 7]) * scT[2] +
+                   (omazr01 * flattenFm3[index + 8] + azr01 * flattenFm3[index + 9]) * scT[3] +
+                   (omazr01 * flattenFm3[index + 10] + azr01 * flattenFm3[index + 11]) * scT[4] +
+                   (omazr01 * flattenFm3[index + 12] + azr01 * flattenFm3[index + 13]) * scT[5] +
+                   (omazr01 * flattenFm3[index + 14] + azr01 * flattenFm3[index + 15]) * scT[6] +
+                   (omazr01 * flattenFm3[index + 16] + azr01 * flattenFm3[index + 17]) * scT[7];
             index += 18;
         }
-        return cm3;
+        return array;
     }
 
     /** Compute sines and cosines.
