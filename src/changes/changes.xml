@@ -20,6 +20,12 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="13.0.1" date="2025-04-23" description="Orekit 13.0.1 is a patch release.
+        It fixes a huge performance bottleneck in NeQuick ionospheric models.">
+        <action dev="luc" type="add" issue="1704">
+            Vastly improved NeQuick models performances.
+        </action>
+    </release>
     <release version="13.0" date="2025-04-14" description="Orekit 13.0 is a major new release.
            It includes both new features, accuracy and performances improvements, and bug fixes.
            The main new features introduced in 13.0 are: revamp of tropospheric models, revamp

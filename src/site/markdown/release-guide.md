@@ -141,12 +141,12 @@ Commit the `changes.xml` file.
 
 Several files must be updated to take into account the new version:
 
-|            file name                |           usage            |                                     required update                                                    |
-|-------------------------------------|----------------------------|--------------------------------------------------------------------------------------------------------|
-| `src/site/markdown/index.md`        | site home page             | Update the text about the latest available version, including important changes from **changes.xml**   |
-| `org/orekit/overview.html`          | API documentation          | Update the text about the latest available version, including important changes from **changes.xml**   |
-| `src/site/markdown/downloads.md.vm` | downloads links            | Declare the new versions, don't forget the date                                                        |
-| `src/site/markdown/faq.md`          | FAQ                        | Add line to the table of dependencies.                                                                 |
+|               file name                  |       usage       |                                     required update                                                    |
+|------------------------------------------|-------------------|--------------------------------------------------------------------------------------------------------|
+| `src/site/markdown/index.md`             | site home page    | Update the text about the latest available version, including important changes from **changes.xml**   |
+| `src/main/java/org/orekit/overview.html` | API documentation | Update the text about the latest available version, including important changes from **changes.xml**   |
+| `src/site/markdown/downloads.md.vm`      | downloads links   | Declare the new versions, don't forget the date                                                        |
+| `src/site/markdown/faq.md`               | FAQ               | Add line to the table of dependencies.                                                                 |
 
 
 Once the files have been updated, commit the changes:

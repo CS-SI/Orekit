@@ -34,6 +34,7 @@ import org.orekit.time.TimeComponents;
  * @see <a href="https://www.itu.int/rec/R-REC-P.531/en">ITU-R P.531</a>
  *
  * @since 10.1
+ * @param <T> type of the field elements
  */
 class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
 
@@ -98,14 +99,25 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
     FieldNeQuickParameters(final DateTimeComponents dateTime, final double[] flattenF2,
                            final double[] flattenFm3, final T latitude, final T longitude, final T az,
                            final T modip) {
+        this(new FieldFourierTimeSeries<>(dateTime, az, flattenF2, flattenFm3),
+             latitude, longitude, modip);
+    }
+
+    /**
+     * Build a new instance.
+     * @param fourierTimeSeries Fourier time series for foF2 and M(3000)F2 layer
+     * @param latitude latitude of a point along the integration path, in radians
+     * @param longitude longitude of a point along the integration path, in radians
+     * @param modip modip
+     */
+    FieldNeQuickParameters(final FieldFourierTimeSeries<T> fourierTimeSeries,
+                           final T latitude, final T longitude, final T modip) {
 
         // Zero
         final T zero = latitude.getField().getZero();
 
-        this.dateTime = dateTime;
-
-        // Effective sunspot number (Eq. 19)
-        azr = FastMath.sqrt(az.subtract(63.7).multiply(1123.6).add(167273.0)).subtract(408.99);
+        this.dateTime = fourierTimeSeries.getDateTime();
+        this.azr      = fourierTimeSeries.getAzr();
 
         // Date and Time components
         final DateComponents date = dateTime.getDate();
@@ -118,21 +130,15 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
         // E layer maximum density height in km (Eq. 78)
         this.hmE = zero.newInstance(120.0);
         // E layer critical frequency in MHz
-        final T foE = computefoE(date.getMonth(), az, xeff, latitude);
+        final T foE = computefoE(date.getMonth(), fourierTimeSeries.getAz(), xeff, latitude);
         // E layer maximum density in 10^11 m-3 (Eq. 36)
         final T nmE = foE.multiply(foE).multiply(0.124);
 
-        // Time argument (Eq. 49)
-        final double t = FastMath.toRadians(15 * hours) - FastMath.PI;
-        // Compute Fourier time series for foF2 and M(3000)F2
-        final T[] scT = sinCos(zero.newInstance(t), 6);
-        final T[] cf2 = computeCF2(flattenF2, scT);
-        final T[] cm3 = computeCm3(flattenFm3, scT);
         // F2 layer critical frequency in MHz
-        final T[] scL = sinCos(longitude, 8);
-        this.foF2 = computefoF2(modip, cf2, latitude, scL);
+        final T[] scL = FieldFourierTimeSeries.sinCos(longitude, 8);
+        this.foF2 = computefoF2(modip, fourierTimeSeries.getCf2Reference(), latitude, scL);
         // Maximum Usable Frequency factor
-        final T mF2  = computeMF2(modip, cm3, latitude, scL);
+        final T mF2  = computeMF2(modip, fourierTimeSeries.getCm3Reference(), latitude, scL);
         // F2 layer maximum density in 10^11 m-3
         this.nmF2 = foF2.multiply(foF2).multiply(0.124);
         // F2 layer maximum density height in km
@@ -366,96 +372,6 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
         final T temp  = FastMath.sqrt(mF2Sq.multiply(0.0196).add(1.0).divide(mF2Sq.multiply(1.2967).subtract(1.0)));
         return mF2.multiply(1490.0).multiply(temp).divide(mF2.add(deltaM)).subtract(176.0);
 
-    }
-
-    /** Compute sines and cosines.
-     * @param a argument
-     * @param n number of terms
-     * @return sin(a), cos(a), sin(2a), cos(2a) … sin(n a), cos(n a) array
-     * @since 12.1.3
-     */
-    private T[] sinCos(final T a, final int n) {
-
-        final FieldSinCos<T> sc0 = FastMath.sinCos(a);
-        FieldSinCos<T> sci = sc0;
-        final T[] sc = MathArrays.buildArray(a.getField(), 2 * n);
-        int isc = 0;
-        sc[isc++] = sci.sin();
-        sc[isc++] = sci.cos();
-        for (int i = 1; i < n; i++) {
-            sci = FieldSinCos.sum(sc0, sci);
-            sc[isc++] = sci.sin();
-            sc[isc++] = sci.cos();
-        }
-
-        return sc;
-
-    }
-
-    /**
-     * Computes cf2 coefficients.
-     * @param flattenF2 F2 coefficients used by the F2 layer (flatten array)
-     * @param scT sines/cosines array of time argument
-     * @return the cf2 coefficients array
-     */
-    private T[] computeCF2(final double[] flattenF2, final T[] scT) {
-
-        // interpolation coefficients for effective spot number
-        final T azr01 = azr.multiply(0.01);
-        final T omazr01 = azr01.negate().add(1);
-
-        // Eq. 44 and Eq. 50 merged into one loop
-        final T[] cf2 = MathArrays.buildArray(azr.getField(), 76);
-        int index = 0;
-        for (int i = 0; i < cf2.length; i++) {
-            // CHECKSTYLE: stop Indentation check
-            cf2[i] = omazr01.multiply(flattenF2[index     ]).add(azr01.multiply(flattenF2[index +  1])).
-                 add(omazr01.multiply(flattenF2[index +  2]).add(azr01.multiply(flattenF2[index +  3])).multiply(scT[ 0])).
-                 add(omazr01.multiply(flattenF2[index +  4]).add(azr01.multiply(flattenF2[index +  5])).multiply(scT[ 1])).
-                 add(omazr01.multiply(flattenF2[index +  6]).add(azr01.multiply(flattenF2[index +  7])).multiply(scT[ 2])).
-                 add(omazr01.multiply(flattenF2[index +  8]).add(azr01.multiply(flattenF2[index +  9])).multiply(scT[ 3])).
-                 add(omazr01.multiply(flattenF2[index + 10]).add(azr01.multiply(flattenF2[index + 11])).multiply(scT[ 4])).
-                 add(omazr01.multiply(flattenF2[index + 12]).add(azr01.multiply(flattenF2[index + 13])).multiply(scT[ 5])).
-                 add(omazr01.multiply(flattenF2[index + 14]).add(azr01.multiply(flattenF2[index + 15])).multiply(scT[ 6])).
-                 add(omazr01.multiply(flattenF2[index + 16]).add(azr01.multiply(flattenF2[index + 17])).multiply(scT[ 7])).
-                 add(omazr01.multiply(flattenF2[index + 18]).add(azr01.multiply(flattenF2[index + 19])).multiply(scT[ 8])).
-                 add(omazr01.multiply(flattenF2[index + 20]).add(azr01.multiply(flattenF2[index + 21])).multiply(scT[ 9])).
-                 add(omazr01.multiply(flattenF2[index + 22]).add(azr01.multiply(flattenF2[index + 23])).multiply(scT[10])).
-                 add(omazr01.multiply(flattenF2[index + 24]).add(azr01.multiply(flattenF2[index + 25])).multiply(scT[11]));
-            index += 26;
-            // CHECKSTYLE: resume Indentation check
-        }
-        return cf2;
-    }
-
-    /**
-     * Computes Cm3 coefficients.
-     * @param flattenFm3 Fm3 coefficients used by the F2 layer (flatten array)
-     * @param scT sines/cosines array of time argument
-     * @return the Cm3 coefficients array
-     */
-    private T[] computeCm3(final double[] flattenFm3, final T[] scT) {
-
-        // interpolation coefficients for effective spot number
-        final T azr01 = azr.multiply(0.01);
-        final T omazr01 = azr01.negate().add(1);
-
-        // Eq. 44 and Eq. 51 merged into one loop
-        final T[] cm3 = MathArrays.buildArray(azr.getField(), 49);
-        int index = 0;
-        for (int i = 0; i < cm3.length; i++) {
-            cm3[i] = omazr01.multiply(flattenFm3[index     ]).add(azr01.multiply(flattenFm3[index +  1])).
-                 add(omazr01.multiply(flattenFm3[index +  2]).add(azr01.multiply(flattenFm3[index +  3])).multiply(scT[ 0])).
-                 add(omazr01.multiply(flattenFm3[index +  4]).add(azr01.multiply(flattenFm3[index +  5])).multiply(scT[ 1])).
-                 add(omazr01.multiply(flattenFm3[index +  6]).add(azr01.multiply(flattenFm3[index +  7])).multiply(scT[ 2])).
-                 add(omazr01.multiply(flattenFm3[index +  8]).add(azr01.multiply(flattenFm3[index +  9])).multiply(scT[ 3])).
-                 add(omazr01.multiply(flattenFm3[index + 10]).add(azr01.multiply(flattenFm3[index + 11])).multiply(scT[ 4])).
-                 add(omazr01.multiply(flattenFm3[index + 12]).add(azr01.multiply(flattenFm3[index + 13])).multiply(scT[ 5])).
-                 add(omazr01.multiply(flattenFm3[index + 14]).add(azr01.multiply(flattenFm3[index + 15])).multiply(scT[ 6])).
-                 add(omazr01.multiply(flattenFm3[index + 16]).add(azr01.multiply(flattenFm3[index + 17])).multiply(scT[ 7]));
-            index += 18;
-        }
-        return cm3;
     }
 
     /**
