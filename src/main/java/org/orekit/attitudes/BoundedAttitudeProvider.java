@@ -16,7 +16,15 @@
  */
 package org.orekit.attitudes;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeInterval;
+import org.orekit.utils.FieldPVCoordinatesProvider;
+import org.orekit.utils.PVCoordinatesProvider;
 
 /** This interface is intended for attitude ephemerides valid only during a time range.
 *
@@ -39,4 +47,44 @@ public interface BoundedAttitudeProvider extends AttitudeProvider {
      */
     AbsoluteDate getMaxDate();
 
+    /**
+     * Creates a bounded provider given a time interval and a standard attitude provider, with the same outputs.
+     * @param attitudeProvider provider to be bounded
+     * @param interval time interval
+     * @return an instance of the interface
+     * @since 13.1
+     */
+    static BoundedAttitudeProvider of(final AttitudeProvider attitudeProvider, final TimeInterval interval) {
+        return new BoundedAttitudeProvider() {
+            @Override
+            public AbsoluteDate getMinDate() {
+                return interval.getStartDate();
+            }
+
+            @Override
+            public AbsoluteDate getMaxDate() {
+                return interval.getEndDate();
+            }
+
+            @Override
+            public Attitude getAttitude(final PVCoordinatesProvider pvProv, final AbsoluteDate date, final Frame frame) {
+                return attitudeProvider.getAttitude(pvProv, date, frame);
+            }
+
+            @Override
+            public Rotation getAttitudeRotation(final PVCoordinatesProvider pvProv, final AbsoluteDate date, final Frame frame) {
+                return attitudeProvider.getAttitudeRotation(pvProv, date, frame);
+            }
+
+            @Override
+            public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv, final FieldAbsoluteDate<T> date, final Frame frame) {
+                return attitudeProvider.getAttitude(pvProv, date, frame);
+            }
+
+            @Override
+            public <T extends CalculusFieldElement<T>> FieldRotation<T> getAttitudeRotation(final FieldPVCoordinatesProvider<T> pvProv, final FieldAbsoluteDate<T> date, final Frame frame) {
+                return attitudeProvider.getAttitudeRotation(pvProv, date, frame);
+            }
+        };
+    }
 }
