@@ -206,8 +206,8 @@ public class NeQuickGalileo extends NeQuickModel {
         for (int i = 0; i < seg.getNbPoints(); i++) {
             final GeodeticPoint gp = seg.getPoint(i);
             final double modip = GalileoHolder.INSTANCE.computeMODIP(gp.getLatitude(), gp.getLongitude());
-            final double az = effectiveIonizationLevel(modip);
-            density += electronDensity(dateTime, az, gp.getLatitude(), gp.getLongitude(), gp.getAltitude());
+            density += electronDensity(computeFourierTimeSeries(dateTime, effectiveIonizationLevel(modip)),
+                                       gp.getLatitude(), gp.getLongitude(), gp.getAltitude());
         }
 
         return 0.5 * seg.getInterval() * density;
@@ -228,8 +228,7 @@ public class NeQuickGalileo extends NeQuickModel {
         for (int i = 0; i < seg.getNbPoints(); i++) {
             final FieldGeodeticPoint<T> gp = seg.getPoint(i);
             final T modip = GalileoHolder.INSTANCE.computeMODIP(gp.getLatitude(), gp.getLongitude());
-            final T az = effectiveIonizationLevel(modip);
-            density = density.add(electronDensity(dateTime, az,
+            density = density.add(electronDensity(computeFourierTimeSeries(dateTime, effectiveIonizationLevel(modip)),
                                                   gp.getLatitude(), gp.getLongitude(), gp.getAltitude()));
         }
 

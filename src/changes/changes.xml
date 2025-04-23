@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.1" date="TBD" description="TBD">
+        <action dev="luc" type="add" issue="1704">
+            Vastly improved NeQuick models performances.
+        </action>
         <action dev="serrof" type="add" issue="1702">
             Add TimeInterval interface and some applications.
         </action>
