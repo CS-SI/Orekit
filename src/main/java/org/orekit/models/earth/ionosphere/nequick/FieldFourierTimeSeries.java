@@ -70,8 +70,8 @@ public class FieldFourierTimeSeries<T extends CalculusFieldElement<T>> {
 
         // Compute Fourier time series for foF2 and M(3000)F2
         final T[] scT = sinCos(az.newInstance(t), 6);
-        this.cf2 = computeCF2(flattenF2, scT, azr);
-        this.cm3 = computeCm3(flattenFm3, scT, azr);
+        this.cf2 = computeCF2(flattenF2, scT);
+        this.cm3 = computeCm3(flattenFm3, scT);
 
     }
 
@@ -123,67 +123,65 @@ public class FieldFourierTimeSeries<T extends CalculusFieldElement<T>> {
     /** Computes cf2 coefficients.
      * @param flattenF2 F2 coefficients used by the F2 layer (flatten array)
      * @param scT       sines/cosines array of time argument
-     * @param azr       effective sunspot number
      * @return the cf2 coefficients array
      */
-    private T[] computeCF2(final double[] flattenF2, final T[] scT, final T azr) {
+    private T[] computeCF2(final double[] flattenF2, final T[] scT) {
 
         // interpolation coefficients for effective spot number
         final T azr01 = azr.multiply(0.01);
         final T omazr01 = azr01.negate().add(1);
 
         // Eq. 44 and Eq. 50 merged into one loop
-        final T[] cf2 = MathArrays.buildArray(azr.getField(), 76);
+        final T[] array = MathArrays.buildArray(azr.getField(), 76);
         int index = 0;
-        for (int i = 0; i < cf2.length; i++) {
+        for (int i = 0; i < array.length; i++) {
             // CHECKSTYLE: stop Indentation check
-            cf2[i] = omazr01.multiply(flattenF2[index     ]).add(azr01.multiply(flattenF2[index +  1])).
-                 add(omazr01.multiply(flattenF2[index +  2]).add(azr01.multiply(flattenF2[index +  3])).multiply(scT[ 0])).
-                 add(omazr01.multiply(flattenF2[index +  4]).add(azr01.multiply(flattenF2[index +  5])).multiply(scT[ 1])).
-                 add(omazr01.multiply(flattenF2[index +  6]).add(azr01.multiply(flattenF2[index +  7])).multiply(scT[ 2])).
-                 add(omazr01.multiply(flattenF2[index +  8]).add(azr01.multiply(flattenF2[index +  9])).multiply(scT[ 3])).
-                 add(omazr01.multiply(flattenF2[index + 10]).add(azr01.multiply(flattenF2[index + 11])).multiply(scT[ 4])).
-                 add(omazr01.multiply(flattenF2[index + 12]).add(azr01.multiply(flattenF2[index + 13])).multiply(scT[ 5])).
-                 add(omazr01.multiply(flattenF2[index + 14]).add(azr01.multiply(flattenF2[index + 15])).multiply(scT[ 6])).
-                 add(omazr01.multiply(flattenF2[index + 16]).add(azr01.multiply(flattenF2[index + 17])).multiply(scT[ 7])).
-                 add(omazr01.multiply(flattenF2[index + 18]).add(azr01.multiply(flattenF2[index + 19])).multiply(scT[ 8])).
-                 add(omazr01.multiply(flattenF2[index + 20]).add(azr01.multiply(flattenF2[index + 21])).multiply(scT[ 9])).
-                 add(omazr01.multiply(flattenF2[index + 22]).add(azr01.multiply(flattenF2[index + 23])).multiply(scT[10])).
-                 add(omazr01.multiply(flattenF2[index + 24]).add(azr01.multiply(flattenF2[index + 25])).multiply(scT[11]));
+            array[i] = omazr01.multiply(flattenF2[index     ]).add(azr01.multiply(flattenF2[index +  1])).
+                   add(omazr01.multiply(flattenF2[index +  2]).add(azr01.multiply(flattenF2[index +  3])).multiply(scT[ 0])).
+                   add(omazr01.multiply(flattenF2[index +  4]).add(azr01.multiply(flattenF2[index +  5])).multiply(scT[ 1])).
+                   add(omazr01.multiply(flattenF2[index +  6]).add(azr01.multiply(flattenF2[index +  7])).multiply(scT[ 2])).
+                   add(omazr01.multiply(flattenF2[index +  8]).add(azr01.multiply(flattenF2[index +  9])).multiply(scT[ 3])).
+                   add(omazr01.multiply(flattenF2[index + 10]).add(azr01.multiply(flattenF2[index + 11])).multiply(scT[ 4])).
+                   add(omazr01.multiply(flattenF2[index + 12]).add(azr01.multiply(flattenF2[index + 13])).multiply(scT[ 5])).
+                   add(omazr01.multiply(flattenF2[index + 14]).add(azr01.multiply(flattenF2[index + 15])).multiply(scT[ 6])).
+                   add(omazr01.multiply(flattenF2[index + 16]).add(azr01.multiply(flattenF2[index + 17])).multiply(scT[ 7])).
+                   add(omazr01.multiply(flattenF2[index + 18]).add(azr01.multiply(flattenF2[index + 19])).multiply(scT[ 8])).
+                   add(omazr01.multiply(flattenF2[index + 20]).add(azr01.multiply(flattenF2[index + 21])).multiply(scT[ 9])).
+                   add(omazr01.multiply(flattenF2[index + 22]).add(azr01.multiply(flattenF2[index + 23])).multiply(scT[10])).
+                   add(omazr01.multiply(flattenF2[index + 24]).add(azr01.multiply(flattenF2[index + 25])).multiply(scT[11]));
             index += 26;
             // CHECKSTYLE: resume Indentation check
         }
-        return cf2;
+        return array;
     }
 
     /** Computes Cm3 coefficients.
      * @param flattenFm3 Fm3 coefficients used by the M(3000)F2 layer (flatten array)
      * @param scT        sines/cosines array of time argument
-     * @param azr        effective sunspot number
      * @return the Cm3 coefficients array
      */
-    private T[] computeCm3(final double[] flattenFm3, final T[] scT, final T azr) {
+    private T[] computeCm3(final double[] flattenFm3, final T[] scT) {
 
         // interpolation coefficients for effective spot number
         final T azr01 = azr.multiply(0.01);
         final T omazr01 = azr01.negate().add(1);
 
         // Eq. 44 and Eq. 51 merged into one loop
-        final T[] cm3 = MathArrays.buildArray(azr.getField(), 49);
+        final T[] array = MathArrays.buildArray(azr.getField(), 49);
         int index = 0;
-        for (int i = 0; i < cm3.length; i++) {
-            cm3[i] = omazr01.multiply(flattenFm3[index     ]).add(azr01.multiply(flattenFm3[index +  1])).
-                 add(omazr01.multiply(flattenFm3[index +  2]).add(azr01.multiply(flattenFm3[index +  3])).multiply(scT[ 0])).
-                 add(omazr01.multiply(flattenFm3[index +  4]).add(azr01.multiply(flattenFm3[index +  5])).multiply(scT[ 1])).
-                 add(omazr01.multiply(flattenFm3[index +  6]).add(azr01.multiply(flattenFm3[index +  7])).multiply(scT[ 2])).
-                 add(omazr01.multiply(flattenFm3[index +  8]).add(azr01.multiply(flattenFm3[index +  9])).multiply(scT[ 3])).
-                 add(omazr01.multiply(flattenFm3[index + 10]).add(azr01.multiply(flattenFm3[index + 11])).multiply(scT[ 4])).
-                 add(omazr01.multiply(flattenFm3[index + 12]).add(azr01.multiply(flattenFm3[index + 13])).multiply(scT[ 5])).
-                 add(omazr01.multiply(flattenFm3[index + 14]).add(azr01.multiply(flattenFm3[index + 15])).multiply(scT[ 6])).
-                 add(omazr01.multiply(flattenFm3[index + 16]).add(azr01.multiply(flattenFm3[index + 17])).multiply(scT[ 7]));
+        for (int i = 0; i < array.length; i++) {
+            array[i] = omazr01.multiply(flattenFm3[index     ]).add(azr01.multiply(flattenFm3[index +  1])).
+                   add(omazr01.multiply(flattenFm3[index +  2]).add(azr01.multiply(flattenFm3[index +  3])).multiply(scT[ 0])).
+                   add(omazr01.multiply(flattenFm3[index +  4]).add(azr01.multiply(flattenFm3[index +  5])).multiply(scT[ 1])).
+                   add(omazr01.multiply(flattenFm3[index +  6]).add(azr01.multiply(flattenFm3[index +  7])).multiply(scT[ 2])).
+                   add(omazr01.multiply(flattenFm3[index +  8]).add(azr01.multiply(flattenFm3[index +  9])).multiply(scT[ 3])).
+                   add(omazr01.multiply(flattenFm3[index + 10]).add(azr01.multiply(flattenFm3[index + 11])).multiply(scT[ 4])).
+                   add(omazr01.multiply(flattenFm3[index + 12]).add(azr01.multiply(flattenFm3[index + 13])).multiply(scT[ 5])).
+                   add(omazr01.multiply(flattenFm3[index + 14]).add(azr01.multiply(flattenFm3[index + 15])).multiply(scT[ 6])).
+                   add(omazr01.multiply(flattenFm3[index + 16]).add(azr01.multiply(flattenFm3[index + 17])).multiply(scT[ 7]));
             index += 18;
         }
-        return cm3;
+        return array;
     }
 
     /** Compute sines and cosines.
