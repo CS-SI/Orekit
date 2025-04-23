@@ -95,10 +95,7 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
      * @param longitude longitude of a point along the integration path, in radians
      * @param az effective ionisation level
      * @param modip modip
-     * @deprecated as of 13.1, replaced by {@link #FieldNeQuickParameters(FieldFourierTimeSeries,
-     * CalculusFieldElement, CalculusFieldElement, CalculusFieldElement)}
      */
-    @Deprecated
     FieldNeQuickParameters(final DateTimeComponents dateTime, final double[] flattenF2,
                            final double[] flattenFm3, final T latitude, final T longitude, final T az,
                            final T modip) {

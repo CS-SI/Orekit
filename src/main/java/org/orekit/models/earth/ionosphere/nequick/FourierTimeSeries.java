@@ -24,7 +24,7 @@ import org.orekit.time.DateTimeComponents;
  * Fourier time series for the NeQuick model.
  * @see NeQuickModel#computeFourierTimeSeries(DateTimeComponents, double)
  * @author Luc Maisonobe
- * @since 13.1
+ * @since 13.0.1
  */
 public class FourierTimeSeries {
 

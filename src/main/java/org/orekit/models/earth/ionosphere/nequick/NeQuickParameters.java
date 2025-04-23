@@ -92,9 +92,7 @@ public class NeQuickParameters {
      * @param longitude longitude of a point along the integration path, in radians
      * @param az effective ionisation level
      * @param modip modip
-     * @deprecated as of 13.1, replaced by {@link #NeQuickParameters(FourierTimeSeries, double, double, double)}
      */
-    @Deprecated
     public NeQuickParameters(final DateTimeComponents dateTime,
                              final double[] flattenF2, final double[] flattenFm3,
                              final double latitude, final double longitude, final double az, final double modip) {
@@ -108,7 +106,7 @@ public class NeQuickParameters {
      * @param latitude latitude of a point along the integration path, in radians
      * @param longitude longitude of a point along the integration path, in radians
      * @param modip modip
-     * @since 13.1
+     * @since 13.0.1
      */
     public NeQuickParameters(final FourierTimeSeries fourierTimeSeries,
                              final double latitude, final double longitude, final double modip) {

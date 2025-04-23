@@ -192,7 +192,7 @@ public abstract class NeQuickModel implements IonosphericModel {
      * @param dateTime current date time components
      * @param az effective ionisation level
      * @return Fourier time series
-     * @since 13.1
+     * @since 13.0.1
      */
     public FourierTimeSeries computeFourierTimeSeries(final DateTimeComponents dateTime, final double az) {
 
@@ -214,9 +214,7 @@ public abstract class NeQuickModel implements IonosphericModel {
      * @param h height along the integration path in m
      * @return electron density [m⁻³]
      * @since 13.0
-     * @deprecated as of 13.1, replaced by {@link #electronDensity(FourierTimeSeries, double, double, double)}
      */
-    @Deprecated
     public double electronDensity(final DateTimeComponents dateTime, final double az,
                                   final double latitude, final double longitude, final double h) {
         return electronDensity(computeFourierTimeSeries(dateTime, az), latitude, longitude, h);
@@ -229,7 +227,7 @@ public abstract class NeQuickModel implements IonosphericModel {
      * @param longitude longitude along the integration path
      * @param h height along the integration path in m
      * @return electron density [m⁻³]
-     * @since 13.1
+     * @since 13.0.1
      */
     public double electronDensity(final FourierTimeSeries fourierTimeSeries,
                                   final double latitude, final double longitude, final double h) {
@@ -258,7 +256,7 @@ public abstract class NeQuickModel implements IonosphericModel {
      * @param dateTime current date time components
      * @param az effective ionisation level
      * @return Fourier time series
-     * @since 13.1
+     * @since 13.0.1
      */
     public <T extends CalculusFieldElement<T>> FieldFourierTimeSeries<T> computeFourierTimeSeries(final DateTimeComponents dateTime,
                                                                                                   final T az) {
@@ -282,10 +280,8 @@ public abstract class NeQuickModel implements IonosphericModel {
      * @param h height along the integration path in m
      * @return electron density [m⁻³]
      * @since 13.0
-     * @deprecated as of 13.1, replaced by {@link #electronDensity(FieldFourierTimeSeries,
      * CalculusFieldElement, CalculusFieldElement, CalculusFieldElement)}
      */
-    @Deprecated
     public <T extends CalculusFieldElement<T>> T electronDensity(final DateTimeComponents dateTime, final T az,
                                                                  final T latitude, final T longitude, final T h) {
         return electronDensity(computeFourierTimeSeries(dateTime, az), latitude, longitude, h);
@@ -299,7 +295,7 @@ public abstract class NeQuickModel implements IonosphericModel {
      * @param longitude longitude along the integration path
      * @param h height along the integration path in m
      * @return electron density [m⁻³]
-     * @since 13.1
+     * @since 13.0.1
      */
     public <T extends CalculusFieldElement<T>> T electronDensity(final FieldFourierTimeSeries<T> fourierTimeSeries,
                                                                  final T latitude, final T longitude, final T h) {
