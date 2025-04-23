@@ -58,6 +58,14 @@ public class TimeIntervalDetector extends AbstractDetector<TimeIntervalDetector>
         this.timeInterval = timeInterval;
     }
 
+    /**
+     * Getter for the time interval.
+     * @return interval
+     */
+    public TimeInterval getTimeInterval() {
+        return timeInterval;
+    }
+
     @Override
     protected TimeIntervalDetector create(final EventDetectionSettings detectionSettings, final EventHandler newHandler) {
         return new TimeIntervalDetector(detectionSettings, newHandler, timeInterval);

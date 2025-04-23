@@ -33,6 +33,19 @@ import static org.mockito.Mockito.when;
 class FieldTimeIntervalDetectorTest {
 
     @Test
+    void testGetter() {
+        // GIVEN
+        final AbsoluteDate startDate = AbsoluteDate.ARBITRARY_EPOCH;
+        final TimeInterval interval = TimeInterval.of(startDate, startDate.shiftedBy(1.));
+        final FieldTimeIntervalDetector<Binary64> detector = new FieldTimeIntervalDetector<>(Binary64Field.getInstance(),
+                interval);
+        // WHEN
+        final TimeInterval actualInterval = detector.getTimeInterval();
+        // THEN
+        assertEquals(interval, actualInterval);
+    }
+
+    @Test
     void testGValue() {
         // GIVEN
         final AbsoluteDate startDate = AbsoluteDate.ARBITRARY_EPOCH;

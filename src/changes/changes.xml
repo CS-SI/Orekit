@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.1" date="TBD" description="TBD">
+        <action dev="serrof" type="add" issue="1705">
+            Add TimeIntervalsManeuverTrigger.
+        </action>
         <action dev="serrof" type="add" issue="1702">
             Add TimeInterval interface and some applications.
         </action>
