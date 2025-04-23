@@ -167,6 +167,7 @@ public class NeQuickItu extends NeQuickModel {
     private double stecIntegration(final DateTimeComponents dateTime, final double eps, final Ray ray, final double s1,
                                    final double s2) {
 
+        final FourierTimeSeries fourierTimeSeries = computeFourierTimeSeries(dateTime, f107);
         double gInt1 = Double.NaN;
         double gInt2 = Double.NaN;
 
@@ -177,7 +178,7 @@ public class NeQuickItu extends NeQuickModel {
             double sum = 0;
             for (int i = 0; i < segment.getNbPoints(); ++i) {
                 final GeodeticPoint gp = segment.getPoint(i);
-                final double ed = electronDensity(dateTime, f107,
+                final double ed = electronDensity(fourierTimeSeries,
                                                   gp.getLatitude(), gp.getLongitude(), gp.getAltitude());
                 sum += ed;
             }
@@ -210,9 +211,9 @@ public class NeQuickItu extends NeQuickModel {
                                                                   final double eps,
                                                                   final FieldRay<T> ray, final T s1, final T s2) {
 
+        final FieldFourierTimeSeries<T> fourierTimeSeries = computeFourierTimeSeries(dateTime, s1.newInstance(f107));
         T gInt1 = s1.newInstance(Double.NaN);
         T gInt2 = s1.newInstance(Double.NaN);
-        final T f107T = s1.newInstance(f107);
 
         for (int n = N_START; n <= N_STOP; n = 2 * n) {
 
@@ -221,8 +222,7 @@ public class NeQuickItu extends NeQuickModel {
             T sum = s1.getField().getZero();
             for (int i = 0; i < segment.getNbPoints(); ++i) {
                 final FieldGeodeticPoint<T> gp = segment.getPoint(i);
-                final T ed =  electronDensity(dateTime, f107T,
-                                              gp.getLatitude(), gp.getLongitude(), gp.getAltitude());
+                final T ed =  electronDensity(fourierTimeSeries, gp.getLatitude(), gp.getLongitude(), gp.getAltitude());
                 sum = sum.add(ed);
             }
 
