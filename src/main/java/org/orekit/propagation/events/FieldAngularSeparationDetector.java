@@ -16,13 +16,14 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
 import org.orekit.bodies.CelestialBodies;
-import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.propagation.events.handlers.StopOnDecreasing;
-import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.handlers.FieldEventHandler;
+import org.orekit.propagation.events.handlers.FieldStopOnEvent;
+import org.orekit.utils.ExtendedPositionProvider;
 
 /** Detects when spacecraft comes close to a moving beacon, as seen from a moving observer.
  * <p>The main use case for this detector is when the observer is in fact a ground
@@ -32,24 +33,24 @@ import org.orekit.utils.PVCoordinatesProvider;
  * another spacecraft, for interferences computation.</p>
  * <p>The default handler behavior is to {@link Action#STOP stop}
  * propagation when spacecraft enters the proximity zone. This can be changed by calling
- * {@link #withHandler(EventHandler)} after construction.</p>
+ * {@code #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
- * @since 8.0
+ * @author Romain Serra
+ * @see AngularSeparationDetector
+ * @since 13.1
  */
-public class AngularSeparationDetector extends AbstractDetector<AngularSeparationDetector> {
-
-    /** Default detection settings. */
-    public static final EventDetectionSettings DEFAULT_SETTINGS = new EventDetectionSettings(60., 1e-3, EventDetectionSettings.DEFAULT_MAX_ITER);
+public class FieldAngularSeparationDetector<T extends CalculusFieldElement<T>>
+        extends FieldAbstractDetector<FieldAngularSeparationDetector<T>, T> {
 
     /** Beacon at the center of the proximity zone. */
-    private final PVCoordinatesProvider beacon;
+    private final ExtendedPositionProvider beacon;
 
     /** Observer for the spacecraft, that may also see the beacon at the same time if they are too close. */
-    private final PVCoordinatesProvider observer;
+    private final ExtendedPositionProvider observer;
 
     /** Proximity angle (rad). */
-    private final double proximityAngle;
+    private final T proximityAngle;
 
     /** Build a new angular separation detector.
      * @param beacon beacon at the center of the proximity zone
@@ -57,10 +58,11 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
      * the beacon at the same time if they are too close to each other
      * @param proximityAngle proximity angle as seen from observer, at which events are triggered (rad)
      */
-    public AngularSeparationDetector(final PVCoordinatesProvider beacon,
-                                     final PVCoordinatesProvider observer,
-                                     final double proximityAngle) {
-        this(DEFAULT_SETTINGS, new StopOnDecreasing(), beacon, observer, proximityAngle);
+    public FieldAngularSeparationDetector(final ExtendedPositionProvider beacon,
+                                          final ExtendedPositionProvider observer,
+                                          final T proximityAngle) {
+        this(new FieldEventDetectionSettings<>(proximityAngle.getField(), AngularSeparationDetector.DEFAULT_SETTINGS),
+                new FieldStopOnEvent<>(), beacon, observer, proximityAngle);
     }
 
     /** Protected constructor with full parameters.
@@ -77,11 +79,11 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
      * @param proximityAngle proximity angle as seen from observer, at which events are triggered (rad)
      * @since 13.0
      */
-    protected AngularSeparationDetector(final EventDetectionSettings detectionSettings,
-                                        final EventHandler handler,
-                                        final PVCoordinatesProvider beacon,
-                                        final PVCoordinatesProvider observer,
-                                        final double proximityAngle) {
+    protected FieldAngularSeparationDetector(final FieldEventDetectionSettings<T> detectionSettings,
+                                             final FieldEventHandler<T> handler,
+                                             final ExtendedPositionProvider beacon,
+                                             final ExtendedPositionProvider observer,
+                                             final T proximityAngle) {
         super(detectionSettings, handler);
         this.beacon         = beacon;
         this.observer       = observer;
@@ -90,29 +92,29 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
 
     /** {@inheritDoc} */
     @Override
-    protected AngularSeparationDetector create(final EventDetectionSettings detectionSettings, final EventHandler newHandler) {
-        return new AngularSeparationDetector(detectionSettings, newHandler,
-                                             beacon, observer, proximityAngle);
+    protected FieldAngularSeparationDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
+                                                       final FieldEventHandler<T> newHandler) {
+        return new FieldAngularSeparationDetector<>(detectionSettings, newHandler, beacon, observer, proximityAngle);
     }
 
     /** Get the beacon at the center of the proximity zone.
      * @return beacon at the center of the proximity zone
      */
-    public PVCoordinatesProvider getBeacon() {
+    public ExtendedPositionProvider getBeacon() {
         return beacon;
     }
 
     /** Get the observer for the spacecraft.
      * @return observer for the spacecraft
      */
-    public PVCoordinatesProvider getObserver() {
+    public ExtendedPositionProvider getObserver() {
         return observer;
     }
 
     /** Get the proximity angle (rad).
      * @return the proximity angle
      */
-    public double getProximityAngle() {
+    public T getProximityAngle() {
         return proximityAngle;
     }
 
@@ -133,12 +135,12 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
      */
-    public double g(final SpacecraftState s) {
-        final Vector3D sPosition = s.getPosition();
-        final Vector3D bP = beacon.getPosition(s.getDate(), s.getFrame());
-        final Vector3D oP = observer.getPosition(s.getDate(), s.getFrame());
-        final double separation = Vector3D.angle(sPosition.subtract(oP), bP.subtract(oP));
-        return separation - proximityAngle;
+    public T g(final FieldSpacecraftState<T> s) {
+        final FieldVector3D<T> sPos = s.getPosition();
+        final FieldVector3D<T> bP = beacon.getPosition(s.getDate(), s.getFrame());
+        final FieldVector3D<T> oP = observer.getPosition(s.getDate(), s.getFrame());
+        final T separation = FieldVector3D.angle(sPos.subtract(oP), bP.subtract(oP));
+        return separation.subtract(proximityAngle);
     }
 
 }
