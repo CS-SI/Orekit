@@ -39,7 +39,7 @@ import org.orekit.utils.TrackingCoordinates;
  * @author Hank Grabowski
  * @since 6.1
  */
-public class ElevationDetector extends AbstractDetector<ElevationDetector> {
+public class ElevationDetector extends AbstractTopocentricDetector<ElevationDetector> {
 
     /** Elevation mask used for calculations, if defined. */
     private final ElevationMask elevationMask;
@@ -49,9 +49,6 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
 
     /** Atmospheric Model used for calculations, if defined. */
     private final AtmosphericRefractionModel refractionModel;
-
-    /** Topocentric frame in which elevation should be evaluated. */
-    private final TopocentricFrame topo;
 
     /**
      * Creates an instance of Elevation detector based on passed in topocentric frame
@@ -119,18 +116,17 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
                                 final double minElevation, final ElevationMask mask,
                                 final AtmosphericRefractionModel refractionModel,
                                 final TopocentricFrame topo) {
-        super(detectionSettings, handler);
+        super(detectionSettings, handler, topo);
         this.minElevation    = minElevation;
         this.elevationMask   = mask;
         this.refractionModel = refractionModel;
-        this.topo            = topo;
     }
 
     /** {@inheritDoc} */
     @Override
     protected ElevationDetector create(final EventDetectionSettings detectionSettings, final EventHandler newHandler) {
         return new ElevationDetector(detectionSettings, newHandler,
-                                     minElevation, elevationMask, refractionModel, topo);
+                                     minElevation, elevationMask, refractionModel, getTopocentricFrame());
     }
 
     /**
@@ -162,14 +158,6 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
         return this.refractionModel;
     }
 
-    /**
-     * Returns the currently configured topocentric frame definitions.
-     * @return topocentric frame definition
-     */
-    public TopocentricFrame getTopocentricFrame() {
-        return this.topo;
-    }
-
     /** Compute the value of the switching function.
      * This function measures the difference between the current elevation
      * (and azimuth if necessary) and the reference mask or minimum value.
@@ -179,7 +167,7 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
     @Override
     public double g(final SpacecraftState s) {
 
-        final TrackingCoordinates tc = topo.getTrackingCoordinates(s.getPosition(), s.getFrame(), s.getDate());
+        final TrackingCoordinates tc = getTopocentricFrame().getTrackingCoordinates(s.getPosition(), s.getFrame(), s.getDate());
 
         final double calculatedElevation;
         if (refractionModel != null) {
@@ -208,7 +196,7 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
      */
     public ElevationDetector withConstantElevation(final double newMinElevation) {
         return new ElevationDetector(getDetectionSettings(), getHandler(),
-                                     newMinElevation, null, refractionModel, topo);
+                                     newMinElevation, null, refractionModel, getTopocentricFrame());
     }
 
     /**
@@ -220,7 +208,7 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
      */
     public ElevationDetector withElevationMask(final ElevationMask newElevationMask) {
         return new ElevationDetector(getDetectionSettings(), getHandler(),
-                                     Double.NaN, newElevationMask, refractionModel, topo);
+                                     Double.NaN, newElevationMask, refractionModel, getTopocentricFrame());
     }
 
     /**
@@ -237,7 +225,7 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
      */
     public ElevationDetector withRefraction(final AtmosphericRefractionModel newRefractionModel) {
         return new ElevationDetector(getDetectionSettings(), getHandler(),
-                                     minElevation, elevationMask, newRefractionModel, topo);
+                                     minElevation, elevationMask, newRefractionModel, getTopocentricFrame());
     }
 
 }

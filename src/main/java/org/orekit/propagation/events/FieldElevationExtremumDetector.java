@@ -46,10 +46,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @since 12.0
  */
 public class FieldElevationExtremumDetector<T extends CalculusFieldElement<T>>
-    extends FieldAbstractDetector<FieldElevationExtremumDetector<T>, T> {
-
-    /** Topocentric frame in which elevation should be evaluated. */
-    private final TopocentricFrame topo;
+    extends FieldAbstractTopocentricDetector<FieldElevationExtremumDetector<T>, T> {
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
@@ -88,23 +85,14 @@ public class FieldElevationExtremumDetector<T extends CalculusFieldElement<T>>
     protected FieldElevationExtremumDetector(final FieldEventDetectionSettings<T> detectionSettings,
                                              final FieldEventHandler<T> handler,
                                              final TopocentricFrame topo) {
-        super(detectionSettings, handler);
-        this.topo = topo;
+        super(detectionSettings, handler, topo);
     }
 
     /** {@inheritDoc} */
     @Override
     protected FieldElevationExtremumDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                                        final FieldEventHandler<T> newHandler) {
-        return new FieldElevationExtremumDetector<>(detectionSettings, newHandler, topo);
-    }
-
-    /**
-     * Returns the topocentric frame centered on ground point.
-     * @return topocentric frame centered on ground point
-     */
-    public TopocentricFrame getTopocentricFrame() {
-        return this.topo;
+        return new FieldElevationExtremumDetector<>(detectionSettings, newHandler, getTopocentricFrame());
     }
 
     /** Get the elevation value.
@@ -112,7 +100,7 @@ public class FieldElevationExtremumDetector<T extends CalculusFieldElement<T>>
      * @return spacecraft elevation
      */
     public T getElevation(final FieldSpacecraftState<T> s) {
-        return topo.getElevation(s.getPosition(), s.getFrame(), s.getDate());
+        return getTopocentricFrame().getElevation(s.getPosition(), s.getFrame(), s.getDate());
     }
 
     /** Compute the value of the detection function.
@@ -125,7 +113,8 @@ public class FieldElevationExtremumDetector<T extends CalculusFieldElement<T>>
     public T g(final FieldSpacecraftState<T> s) {
 
         // get position, velocity acceleration of spacecraft in topocentric frame
-        final FieldKinematicTransform<T> inertToTopo = s.getFrame().getKinematicTransformTo(topo, s.getDate());
+        final FieldKinematicTransform<T> inertToTopo = s.getFrame().getKinematicTransformTo(getTopocentricFrame(),
+                s.getDate());
         final TimeStampedFieldPVCoordinates<T> pvTopo = inertToTopo.transformOnlyPV(s.getPVCoordinates());
 
         // convert the coordinates to UnivariateDerivative1 based vector

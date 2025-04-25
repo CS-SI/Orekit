@@ -42,7 +42,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author Luc Maisonobe
  * @since 9.3
  */
-public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetector> {
+public class GroundAtNightDetector extends AbstractTopocentricDetector<GroundAtNightDetector> {
 
     /** Sun elevation at civil dawn/dusk (6° below horizon). */
     public static final double CIVIL_DAWN_DUSK_ELEVATION = FastMath.toRadians(-6.0);
@@ -52,9 +52,6 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
 
     /** Sun elevation at astronomical dawn/dusk (18° below horizon). */
     public static final double ASTRONOMICAL_DAWN_DUSK_ELEVATION = FastMath.toRadians(-18.0);
-
-    /** Ground location to check. */
-    private final TopocentricFrame groundLocation;
 
     /** Provider for Sun position. */
     private final PVCoordinatesProvider sun;
@@ -102,8 +99,7 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
                                     final AtmosphericRefractionModel refractionModel,
                                     final EventDetectionSettings detectionSettings,
                                     final EventHandler handler) {
-        super(detectionSettings, handler);
-        this.groundLocation    = groundLocation;
+        super(detectionSettings, handler, groundLocation);
         this.sun               = sun;
         this.dawnDuskElevation = dawnDuskElevation;
         this.refractionModel   = refractionModel;
@@ -113,7 +109,7 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
     @Override
     protected GroundAtNightDetector create(final EventDetectionSettings detectionSettings,
                                            final EventHandler newHandler) {
-        return new GroundAtNightDetector(groundLocation, sun, dawnDuskElevation, refractionModel,
+        return new GroundAtNightDetector(getTopocentricFrame(), sun, dawnDuskElevation, refractionModel,
                                          detectionSettings, newHandler);
     }
 
@@ -132,7 +128,7 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
         final AbsoluteDate  date     = state.getDate();
         final Frame         frame    = state.getFrame();
         final Vector3D      position = sun.getPosition(date, frame);
-        final double trueElevation   = groundLocation.getElevation(position, frame, date);
+        final double trueElevation   = getTopocentricFrame().getElevation(position, frame, date);
 
         final double calculatedElevation;
         if (refractionModel != null) {
