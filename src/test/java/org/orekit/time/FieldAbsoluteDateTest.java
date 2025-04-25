@@ -1842,6 +1842,19 @@ class FieldAbsoluteDateTest {
     }
 
     @Test
+    void testToFUD1Field() {
+        // GIVEN
+        final Field<Binary64> field = Binary64Field.getInstance();
+        final FieldAbsoluteDate<Binary64> date = FieldAbsoluteDate.getArbitraryEpoch(field);
+        // WHEN
+        final FieldAbsoluteDate<FieldUnivariateDerivative1<Binary64>> ud1Date = date.toFUD1Field();
+        // THEN
+        Assertions.assertEquals(date.toAbsoluteDate(), ud1Date.toAbsoluteDate());
+        final FieldUnivariateDerivative1<Binary64> shift = ud1Date.durationFrom(date.toAbsoluteDate());
+        Assertions.assertEquals(field.getOne(), shift.getFirstDerivative());
+    }
+
+    @Test
     void testToFUD2Field() {
         // GIVEN
         final Field<Binary64> field = Binary64Field.getInstance();

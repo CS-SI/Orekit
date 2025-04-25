@@ -30,6 +30,9 @@
         <action dev="serrof" type="add" issue="1702">
             Add TimeInterval interface and some applications.
         </action>
+        <action dev="serrof" type="add" issue="1683">
+            Add (Field)ExtremumAngularSeparationDetector.
+        </action>
     </release>
     <release version="13.0.1" date="2025-04-23" description="Orekit 13.0.1 is a patch release.
         It fixes a huge performance bottleneck in NeQuick ionospheric models.">
