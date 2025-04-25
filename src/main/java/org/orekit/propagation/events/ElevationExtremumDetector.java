@@ -41,10 +41,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremumDetector> {
-
-    /** Topocentric frame in which elevation should be evaluated. */
-    private final TopocentricFrame topo;
+public class ElevationExtremumDetector extends AbstractTopocentricDetector<ElevationExtremumDetector> {
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
@@ -79,23 +76,14 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      */
     protected ElevationExtremumDetector(final EventDetectionSettings detectionSettings, final EventHandler handler,
                                         final TopocentricFrame topo) {
-        super(detectionSettings, handler);
-        this.topo = topo;
+        super(detectionSettings, handler, topo);
     }
 
     /** {@inheritDoc} */
     @Override
     protected ElevationExtremumDetector create(final EventDetectionSettings detectionSettings,
                                               final EventHandler newHandler) {
-        return new ElevationExtremumDetector(detectionSettings, newHandler, topo);
-    }
-
-    /**
-     * Returns the topocentric frame centered on ground point.
-     * @return topocentric frame centered on ground point
-     */
-    public TopocentricFrame getTopocentricFrame() {
-        return this.topo;
+        return new ElevationExtremumDetector(detectionSettings, newHandler, getTopocentricFrame());
     }
 
     /** Get the elevation value.
@@ -103,7 +91,7 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      * @return spacecraft elevation
      */
     public double getElevation(final SpacecraftState s) {
-        return topo.getElevation(s.getPosition(), s.getFrame(), s.getDate());
+        return getTopocentricFrame().getElevation(s.getPosition(), s.getFrame(), s.getDate());
     }
 
     /** Compute the value of the detection function.
@@ -116,7 +104,7 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
     public double g(final SpacecraftState s) {
 
         // get position, velocity of spacecraft in topocentric frame
-        final KinematicTransform inertToTopo = s.getFrame().getKinematicTransformTo(topo, s.getDate());
+        final KinematicTransform inertToTopo = s.getFrame().getKinematicTransformTo(getTopocentricFrame(), s.getDate());
         final TimeStampedPVCoordinates pvTopo = inertToTopo.transformOnlyPV(s.getPVCoordinates());
 
         // convert the coordinates to UnivariateDerivative1 based vector
