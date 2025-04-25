@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.1" date="TBD" description="TBD">
+        <action dev="serrof" type="add" issue="1706">
+            Add FieldGroundAtNightDetector.
+        </action>
         <action dev="serrof" type="add" issue="1705">
             Add TimeIntervalsManeuverTrigger.
         </action>
