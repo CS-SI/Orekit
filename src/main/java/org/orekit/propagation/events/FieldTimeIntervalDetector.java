@@ -68,14 +68,25 @@ public class FieldTimeIntervalDetector<T extends CalculusFieldElement<T>>
      * Get the default detection settings.
      * @param field field
      * @param timeInterval time interval
-     * @return default detection setttings
+     * @return default detection settings
      * @param <W> field type
      */
     private static <W extends CalculusFieldElement<W>> FieldEventDetectionSettings<W> getDefaultDetectionSettings(final Field<W> field,
                                                                                                                   final TimeInterval timeInterval) {
-        final FieldAdaptableInterval<W> adaptableInterval = DateDetectionAdaptableIntervalFactory.getDatesDetectionFieldInterval();
-        return new FieldEventDetectionSettings<>(adaptableInterval, field.getZero().newInstance(DateDetector.DEFAULT_THRESHOLD),
-                DEFAULT_MAX_ITER);
+        final FieldAbsoluteDate<W> fieldStartDate = new FieldAbsoluteDate<>(field, timeInterval.getStartDate());
+        final FieldAbsoluteDate<W> fieldEndDate = new FieldAbsoluteDate<>(field, timeInterval.getEndDate());
+        final FieldAdaptableInterval<W> adaptableInterval = DateDetectionAdaptableIntervalFactory
+                .getDatesDetectionFieldInterval(fieldStartDate, fieldEndDate);
+        final W fieldThreshold = field.getZero().newInstance(DateDetector.DEFAULT_THRESHOLD);
+        return new FieldEventDetectionSettings<>(adaptableInterval, fieldThreshold, DEFAULT_MAX_ITER);
+    }
+
+    /**
+     * Getter for the time interval.
+     * @return interval
+     */
+    public TimeInterval getTimeInterval() {
+        return timeInterval;
     }
 
     @Override
