@@ -22,7 +22,6 @@ import org.orekit.bodies.CelestialBodies;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** Detects when two moving objects come close to each other, as seen from spacecraft.
@@ -134,11 +133,11 @@ public class AngularSeparationFromSatelliteDetector extends AbstractDetector<Ang
      * @return value of the switching function
      */
     public double g(final SpacecraftState s) {
-        final PVCoordinates sPV = s.getPVCoordinates();
+        final Vector3D sPosition = s.getPosition();
         final Vector3D primaryPos   = primaryObject  .getPosition(s.getDate(), s.getFrame());
         final Vector3D secondaryPos = secondaryObject.getPosition(s.getDate(), s.getFrame());
-        final double separation = Vector3D.angle(primaryPos.subtract(sPV.getPosition()),
-                                                 secondaryPos.subtract(sPV.getPosition()));
+        final double separation = Vector3D.angle(primaryPos.subtract(sPosition),
+                                                 secondaryPos.subtract(sPosition));
         return separation - proximityAngle;
     }
 
