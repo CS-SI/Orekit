@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.events;
 
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
@@ -23,14 +24,18 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.frames.FieldKinematicTransform;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.FieldPropagator;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.propagation.events.FieldEventsLogger.FieldLoggedEvent;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
@@ -41,11 +46,37 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
-public class FieldElevationExtremumDetectorTest {
+class FieldElevationExtremumDetectorTest {
+
 
     @Test
-    public void testLEO() {
+    void testG() {
+        // GIVEN
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                Constants.WGS84_EARTH_FLATTENING,
+                FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(51.0), FastMath.toRadians(66.6), 300.0);
+        final FieldElevationExtremumDetector<Binary64> detector =
+                new FieldElevationExtremumDetector<>(new Binary64(0.001), new Binary64(1.e-6), new TopocentricFrame(earth, gp, "test")).
+                        withHandler(new FieldContinueOnEvent<>());
+        final SpacecraftState state = new SpacecraftState(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH));
+        final FieldSpacecraftState<Binary64> fieldState = new FieldSpacecraftState<>(Binary64Field.getInstance(), state);
+        // WHEN
+        final Binary64 actualG = detector.g(fieldState);
+        // THEN
+        final FieldKinematicTransform<Binary64> inertToTopo = fieldState.getFrame().getKinematicTransformTo(detector.getTopocentricFrame(),
+                fieldState.getDate());
+        final TimeStampedFieldPVCoordinates<Binary64> pvTopo = inertToTopo.transformOnlyPV(fieldState.getPVCoordinates());
+        final FieldVector3D<FieldUnivariateDerivative1<Binary64>> pvDS = pvTopo.toUnivariateDerivative1Vector();
+        final FieldUnivariateDerivative1<Binary64> elevation = pvDS.getZ().divide(pvDS.getNorm()).asin();
+        final Binary64 expectedG = elevation.getFirstDerivative();
+        Assertions.assertEquals(expectedG.getReal(), actualG.getReal(), 1e-12);
+    }
+
+    @Test
+    void testLEO() {
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
@@ -109,7 +140,7 @@ public class FieldElevationExtremumDetectorTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

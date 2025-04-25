@@ -109,15 +109,15 @@ public class ElevationExtremumDetector extends AbstractTopocentricDetector<Eleva
 
         // convert the coordinates to UnivariateDerivative1 based vector
         // instead of having vector position, then vector velocity then vector acceleration
-        // we get one vector and each coordinate is a DerivativeStructure containing
+        // we get one vector and each coordinate is a Taylor expansion containing
         // value, first time derivative (we don't need second time derivative here)
-        final FieldVector3D<UnivariateDerivative1> pvDS = pvTopo.toUnivariateDerivative1Vector();
+        final FieldVector3D<UnivariateDerivative1> positionUD1 = pvTopo.toUnivariateDerivative1Vector();
 
         // compute elevation and its first time derivative
-        final UnivariateDerivative1 elevation = pvDS.getZ().divide(pvDS.getNorm()).asin();
+        final UnivariateDerivative1 elevation = positionUD1.getDelta();
 
         // return elevation first time derivative
-        return elevation.getDerivative(1);
+        return elevation.getFirstDerivative();
 
     }
 

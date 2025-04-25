@@ -21,12 +21,11 @@ import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.FieldEventSlopeFilter;
-import org.orekit.frames.FieldKinematicTransform;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Detector for elevation extremum with respect to a ground point.
  * <p>This detector identifies when a spacecraft reaches its
@@ -113,21 +112,16 @@ public class FieldElevationExtremumDetector<T extends CalculusFieldElement<T>>
     public T g(final FieldSpacecraftState<T> s) {
 
         // get position, velocity acceleration of spacecraft in topocentric frame
-        final FieldKinematicTransform<T> inertToTopo = s.getFrame().getKinematicTransformTo(getTopocentricFrame(),
-                s.getDate());
-        final TimeStampedFieldPVCoordinates<T> pvTopo = inertToTopo.transformOnlyPV(s.getPVCoordinates());
-
-        // convert the coordinates to UnivariateDerivative1 based vector
-        // instead of having vector position, then vector velocity then vector acceleration
-        // we get one vector and each coordinate is a DerivativeStructure containing
-        // value, first time derivative (we don't need second time derivative here)
-        final FieldVector3D<FieldUnivariateDerivative1<T>> pvDS = pvTopo.toUnivariateDerivative1Vector();
+        final FieldStaticTransform<FieldUnivariateDerivative1<T>> inertToTopo = s.getFrame().getStaticTransformTo(getTopocentricFrame(),
+                s.getDate().toFUD1Field());
+        final FieldVector3D<FieldUnivariateDerivative1<T>> positionInert = s.getPVCoordinates().toUnivariateDerivative1Vector();
+        final FieldVector3D<FieldUnivariateDerivative1<T>> posTopo = inertToTopo.transformPosition(positionInert);
 
         // compute elevation and its first time derivative
-        final FieldUnivariateDerivative1<T> elevation = pvDS.getZ().divide(pvDS.getNorm()).asin();
+        final FieldUnivariateDerivative1<T> elevation = posTopo.getDelta();
 
         // return elevation first time derivative
-        return elevation.getDerivative(1);
+        return elevation.getFirstDerivative();
 
     }
 
