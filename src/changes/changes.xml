@@ -20,6 +20,11 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="13.0.2" date="TBD" description="TBD">
+        <action dev="luc" type="add" issue="1708">
+            Fixed interpolation error in Rinex clock splicing.
+        </action>
+    </release>
     <release version="13.0.1" date="2025-04-23" description="Orekit 13.0.1 is a patch release.
         It fixes a huge performance bottleneck in NeQuick ionospheric models.">
         <action dev="luc" type="add" issue="1704">
