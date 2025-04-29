@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0.2" date="TBD" description="TBD">
+        <action dev="luc" type="add" issue="1710">
+            Improved robustness of NeQuick models equations for line-of-sight close to zenith.
+        </action>
         <action dev="luc" type="add" issue="1708">
             Fixed interpolation error in Rinex clock splicing.
         </action>
