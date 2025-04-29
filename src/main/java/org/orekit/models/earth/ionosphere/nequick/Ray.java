@@ -103,7 +103,6 @@ public class Ray {
         final double sinZ     = u * inv;
         final double cosZ     = v * inv;
 
-
         // Ray-perigee computation in meters (Eq. 156)
         this.rp = r1 * sinZ;
 
