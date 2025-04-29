@@ -332,6 +332,11 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
     private TECMapPair getPairAtDate(final AbsoluteDate date) {
         final TECMapPair pair = tecMap.get(date);
         if (pair == null) {
+            final TimeSpanMap.Transition<TECMapPair> lastTransition = tecMap.getLastTransition();
+            if (lastTransition != null && lastTransition.getDate().equals(date)) {
+                // we consider the transition date is in the validity range of the last span
+                return lastTransition.getBefore();
+            }
             throw new OrekitException(OrekitMessages.NO_TEC_DATA_IN_FILES_FOR_DATE,
                                       names, date);
         }

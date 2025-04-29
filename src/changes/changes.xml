@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0.2" date="TBD" description="TBD">
+        <action dev="luc" type="add" issue="1712">
+            Allow using the last date from GlobalIonosphereMapModel ionex files.
+        </action>
         <action dev="luc" type="add" issue="1711">
             Improved robustness of NeQuick models equations for line-of-sight in the meridian plane.
         </action>

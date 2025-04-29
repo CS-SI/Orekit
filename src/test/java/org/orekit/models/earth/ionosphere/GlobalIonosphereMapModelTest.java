@@ -24,6 +24,7 @@ import java.nio.file.Paths;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -40,6 +41,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
@@ -417,6 +419,44 @@ public class GlobalIonosphereMapModelTest {
             Assertions.assertEquals(OrekitMessages.NO_TEC_DATA_IN_FILES_FOR_DATE, oe.getSpecifier());
         }
 
+    }
+
+    @Test
+    public void testLastDate() {
+        GlobalIonosphereMapModel model = new GlobalIonosphereMapModel("gpsg0150.19i");
+        final double latitude  = FastMath.toRadians(60.0);
+        final double longitude = FastMath.toRadians(-130.0);
+        final GeodeticPoint point = new GeodeticPoint(latitude, longitude, 0.0);
+        final Orbit orbit = new KeplerianOrbit(24464560.0, 0.0, 1.122138, 1.10686, 1.00681,
+                                               0.048363, PositionAngleType.MEAN,
+                                               FramesFactory.getEME2000(),
+                                               new AbsoluteDate(2019, 1, 16, TimeScalesFactory.getUTC()),
+                                               Constants.WGS84_EARTH_MU);
+        final double delay = model.pathDelay(new SpacecraftState(orbit), new TopocentricFrame(earth, point, null),
+                                             PredefinedGnssSignal.G01.getFrequency(),
+                                             model.getParameters(orbit.getDate()));
+        Assertions.assertEquals(3.156, delay, 1.0e-3);
+    }
+
+    @Test
+    public void testLastDateField() {
+        GlobalIonosphereMapModel model = new GlobalIonosphereMapModel("gpsg0150.19i");
+        final Field<Binary64> field = Binary64Field.getInstance();
+        final double latitude  = FastMath.toRadians(60.0);
+        final double longitude = FastMath.toRadians(-130.0);
+        final GeodeticPoint point = new GeodeticPoint(latitude, longitude, 0.0);
+        final FieldOrbit<Binary64> orbit =
+                new FieldKeplerianOrbit<>(field,
+                                          new KeplerianOrbit(24464560.0, 0.0, 1.122138, 1.10686, 1.00681,
+                                                              0.048363, PositionAngleType.MEAN,
+                                                              FramesFactory.getEME2000(),
+                                                              new AbsoluteDate(2019, 1, 16, TimeScalesFactory.getUTC()),
+                                                              Constants.WGS84_EARTH_MU));
+        final Binary64 delay = model.pathDelay(new FieldSpacecraftState<>(orbit),
+                                               new TopocentricFrame(earth, point, null),
+                                               PredefinedGnssSignal.G01.getFrequency(),
+                                               model.getParameters(field, orbit.getDate()));
+        Assertions.assertEquals(3.156, delay.getReal(), 1.0e-3);
     }
 
     @Test
