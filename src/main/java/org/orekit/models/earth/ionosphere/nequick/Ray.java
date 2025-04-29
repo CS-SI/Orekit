@@ -132,10 +132,14 @@ public class Ray {
             final double cosLatP = FastMath.sqrt(1.0 - sinLatP * sinLatP);
             this.latP = FastMath.atan2(sinLatP, cosLatP);
 
-            // Ray-perigee longitude (Eq. 165 to 167)
-            final double sinLonP = -sinAz * scZ.cos() / cosLatP;
-            final double cosLonP = (scZ.sin() - scLatRec.sin() * sinLatP) / (scLatRec.cos() * cosLatP);
-            this.lonP = FastMath.atan2(sinLonP, cosLonP) + lon1;
+            // Ray-perigee longitude (Eq. 165 to 167, plus protection against ray-perigee along polar axis)
+            if (cosLatP < THRESHOLD) {
+                this.lonP = 0.0;
+            } else {
+                final double sinLonP = -sinAz * cosZ / cosLatP;
+                final double cosLonP = (sinZ - scLatRec.sin() * sinLatP) / (scLatRec.cos() * cosLatP);
+                this.lonP = FastMath.atan2(sinLonP, cosLonP) + lon1;
+            }
 
         }
 

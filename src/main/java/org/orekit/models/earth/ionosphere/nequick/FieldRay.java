@@ -134,11 +134,15 @@ class FieldRay<T extends CalculusFieldElement<T>> {
             final T cosLatP = FastMath.sqrt(sinLatP.multiply(sinLatP).negate().add(1.0));
             this.latP       = FastMath.atan2(sinLatP, cosLatP);
 
-            // Ray-perigee longitude (Eq. 165 to 167)
-            final T sinLonP = sinAz.negate().multiply(scZ.cos()).divide(cosLatP);
-            final T cosLonP = scZ.sin().subtract(scLatRec.sin().multiply(sinLatP)).
-                              divide(scLatRec.cos().multiply(cosLatP));
-            this.lonP       = FastMath.atan2(sinLonP, cosLonP).add(lon1);
+            // Ray-perigee longitude (Eq. 165 to 167, plus protection against ray-perigee along polar axis)
+            if (cosLatP.getReal() < THRESHOLD) {
+                this.lonP = cosLatP.getField().getZero();
+            } else {
+                final T sinLonP = sinAz.negate().multiply(cosZ).divide(cosLatP);
+                final T cosLonP = sinZ.subtract(scLatRec.sin().multiply(sinLatP)).
+                        divide(scLatRec.cos().multiply(cosLatP));
+                this.lonP = FastMath.atan2(sinLonP, cosLonP).add(lon1);
+            }
 
         }
 
