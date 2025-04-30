@@ -42,6 +42,9 @@
         <action dev="serrof" type="update" issue="1715">
             Add reset state saved in (Field)EventsLogger.
         </action>
+        <action dev="bryan" type="add" issue="1709">
+            Restored JB2006 model.
+        </action>
         <action dev="serrof" type="add" issue="1706">
             Add FieldGroundAtNightDetector.
         </action>
