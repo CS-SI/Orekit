@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0.2" date="TBD" description="TBD">
+        <action dev="luc" type="add" issue="1713">
+            Decompose path from file name when building a DataSource from a String.
+        </action>
         <action dev="luc" type="add" issue="1712">
             Allow using the last date from GlobalIonosphereMapModel ionex files.
         </action>
