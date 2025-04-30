@@ -20,6 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -237,6 +238,31 @@ public class NeQuickItuTest {
         final double stec = model.stec(date, recP, satP);
         Assertions.assertEquals(expected, stec, 1.0e-3);
 
+    }
+
+    @Test
+    public void testMeridian() {
+        final NeQuickItu model = new NeQuickItu(128.0, TimeScalesFactory.getUTC());
+        final GeodeticPoint recP = new GeodeticPoint(FastMath.toRadians(1.0e-3), FastMath.toRadians(0), 0);
+        final GeodeticPoint satP = new GeodeticPoint(FastMath.toRadians(0.761e-3), FastMath.toRadians(0), 2.0e6);
+        final AbsoluteDate date = new AbsoluteDate(2007, 4, 1, TimeScalesFactory.getUTC());
+        Assertions.assertEquals(38.031,  model.stec(date, recP, satP), 1.0e-3);
+    }
+
+    @Test
+    public void testMeridianField() {
+        final Field<Binary64> field = Binary64Field.getInstance();
+        final Binary64 zero = field.getZero();
+        final NeQuickItu model = new NeQuickItu(128.0, TimeScalesFactory.getUTC());
+        final FieldGeodeticPoint<Binary64> recP = new FieldGeodeticPoint<>(FastMath.toRadians(zero.newInstance(1.0e-3)),
+                                                                           FastMath.toRadians(zero.newInstance(0)),
+                                                                           zero.newInstance(0));
+        final FieldGeodeticPoint<Binary64> satP = new FieldGeodeticPoint<>(FastMath.toRadians(zero.newInstance(0.761e-3)),
+                                                                           FastMath.toRadians(zero.newInstance(0)),
+                                                                           zero.newInstance(2.0e6));
+        final FieldAbsoluteDate<Binary64> date = new FieldAbsoluteDate<>(field,
+                                                                         new AbsoluteDate(2007, 4, 1, TimeScalesFactory.getUTC()));
+        Assertions.assertEquals(38.031,  model.stec(date, recP, satP).getReal(), 1.0e-3);
     }
 
     @Test

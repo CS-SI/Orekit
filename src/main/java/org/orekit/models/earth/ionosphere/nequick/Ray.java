@@ -87,33 +87,36 @@ public class Ray {
         final SinCos scLatRec = FastMath.sinCos(lat1);
         final SinCos scLon21  = FastMath.sinCos(lon2 - lon1);
 
-        // Zenith angle computation (Eq. 153 to 155)
-        // with added protection against numerical noise near zenith observation
-        final double cosD = FastMath.min(1.0,
-                                         scLatRec.sin() * scLatSat.sin() +
-                                         scLatRec.cos() * scLatSat.cos() * scLon21.cos());
-        final double sinD = FastMath.sqrt(1.0 - cosD * cosD);
-        final double z    = FastMath.atan2(sinD, cosD - (r1 / r2));
-        final SinCos scZ  = FastMath.sinCos(z);
+        // Zenith angle computation, using:
+        //   - Eq. 153 with added protection against numerical noise near zenith observation
+        //   - replacing Eq. 154 by a different one more stable near zenith
+        //   - replacing Eq. 155 by different ones avoiding trigonometric functions
+        final double cosD     = FastMath.min(1.0,
+                                             scLatRec.sin() * scLatSat.sin() +
+                                             scLatRec.cos() * scLatSat.cos() * scLon21.cos());
+        final double sinDSinM = scLatSat.cos() * scLon21.sin();
+        final double sinDCosM = scLatSat.sin() * scLatRec.cos() - scLatSat.cos() * scLatRec.sin() * scLon21.cos();
+        final double sinD     = FastMath.sqrt(sinDSinM * sinDSinM + sinDCosM * sinDCosM);
+        final double u        = r2 * sinD;
+        final double v        = r2 * cosD - r1;
+        final double inv      = 1.0 / FastMath.sqrt(u * u + v * v);
+        final double sinZ     = u * inv;
+        final double cosZ     = v * inv;
 
         // Ray-perigee computation in meters (Eq. 156)
-        this.rp = r1 * scZ.sin();
+        this.rp = r1 * sinZ;
 
         // Ray-perigee latitude and longitude
         if (FastMath.abs(FastMath.abs(lat1) - 0.5 * FastMath.PI) < THRESHOLD) {
             // receiver is almost at North or South pole
 
             // Ray-perigee latitude (Eq. 157)
-            this.latP = FastMath.copySign(z, lat1);
+            this.latP = FastMath.copySign(FastMath.atan2(u, v), lat1);
 
             // Ray-perigee longitude (Eq. 164)
-            if (z < 0) {
-                this.lonP = lon2;
-            } else {
-                this.lonP = lon2 + FastMath.PI;
-            }
+            this.lonP = lon2 + FastMath.PI;
 
-        } else if (FastMath.abs(scZ.sin()) < THRESHOLD) {
+        } else if (FastMath.abs(sinZ) < THRESHOLD) {
             // satellite is almost on receiver zenith
 
             this.latP = recP.getLatitude();
@@ -124,21 +127,25 @@ public class Ray {
             // Ray-perigee latitude (Eq. 158 to 163)
             final double sinAz   = scLon21.sin() * scLatSat.cos() / sinD;
             final double cosAz   = (scLatSat.sin() - cosD * scLatRec.sin()) / (sinD * scLatRec.cos());
-            final double sinLatP = scLatRec.sin() * scZ.sin() - scLatRec.cos() * scZ.cos() * cosAz;
+            final double sinLatP = scLatRec.sin() * sinZ - scLatRec.cos() * cosZ * cosAz;
             final double cosLatP = FastMath.sqrt(1.0 - sinLatP * sinLatP);
             this.latP = FastMath.atan2(sinLatP, cosLatP);
 
-            // Ray-perigee longitude (Eq. 165 to 167)
-            final double sinLonP = -sinAz * scZ.cos() / cosLatP;
-            final double cosLonP = (scZ.sin() - scLatRec.sin() * sinLatP) / (scLatRec.cos() * cosLatP);
-            this.lonP = FastMath.atan2(sinLonP, cosLonP) + lon1;
+            // Ray-perigee longitude (Eq. 165 to 167, plus protection against ray-perigee along polar axis)
+            if (cosLatP < THRESHOLD) {
+                this.lonP = 0.0;
+            } else {
+                final double sinLonP = -sinAz * cosZ / cosLatP;
+                final double cosLonP = (sinZ - scLatRec.sin() * sinLatP) / (scLatRec.cos() * cosLatP);
+                this.lonP = FastMath.atan2(sinLonP, cosLonP) + lon1;
+            }
 
         }
 
         // Sine and cosine of ray-perigee latitude
         this.scLatP = FastMath.sinCos(latP);
 
-        if (FastMath.abs(FastMath.abs(latP) - 0.5 * FastMath.PI) < THRESHOLD || FastMath.abs(scZ.sin()) < THRESHOLD) {
+        if (FastMath.abs(FastMath.abs(latP) - 0.5 * FastMath.PI) < THRESHOLD || FastMath.abs(sinZ) < THRESHOLD) {
             // Eq. 172 and 173
             this.sinAzP = 0.0;
             this.cosAzP = -FastMath.copySign(1, latP);
