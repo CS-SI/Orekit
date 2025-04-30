@@ -39,6 +39,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.ClockOffset;
 import org.orekit.time.DateComponents;
+import org.orekit.time.DateTimeComponents;
 import org.orekit.time.SampledClockModel;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
@@ -704,7 +705,7 @@ public class RinexClock {
      * will be retrieved from the earliest file only. Receivers and satellites
      * will be merged from all files. Some receivers or satellites may be missing
      * in some files… Once sorted (which is done internally), if the gap between
-     * segments from two file is larger than {@code maxGap}, then an error
+     * segments from two files is larger than {@code maxGap}, then an error
      * will be triggered.
      * </p>
      * <p>
@@ -714,12 +715,12 @@ public class RinexClock {
      * </p>
      * <p>
      * Depending on producer, successive clock files either have a gap between the last
-     * entry of one file and the first entry of the next file (for example files with
+     * entry of one file and the first entry of the next file (for example, files with
      * a 5 minutes epoch interval may end at 23:55 and the next file start at 00:00),
      * or both files have one point exactly at the splicing date (i.e. 24:00 one day
-     * and 00:00 next day). In the later case, the last point of the early file is dropped
+     * and 00:00 next day). In the later case, the last point of the early file is dropped,
      * and the first point of the late file takes precedence, hence only one point remains
-     * in the spliced file ; this design choice is made to enforce continuity and
+     * in the spliced file; this design choice is made to enforce continuity and
      * regular interpolation.
      * </p>
      * @param clocks clock files to merge
@@ -800,17 +801,33 @@ public class RinexClock {
 
         // add the clock lines
         for (final String clockId : clockIds) {
-            AbsoluteDate previous = null;
+            ClockDataLine pending = null;
             for (final RinexClock rc : sorted) {
-                if (previous != null) {
-                    if (rc.getEarliestEpoch().durationFrom(previous) > maxGap) {
-                        throw new OrekitException(OrekitMessages.TOO_LONG_TIME_GAP_BETWEEN_DATA_POINTS,
-                                                  rc.getEarliestEpoch().durationFrom(previous));
+                for (final ClockDataLine cd : rc.getClockData().get(clockId)) {
+                    if (pending != null) {
+                        final double dt = cd.dateTimeComponents.offsetFrom(pending.dateTimeComponents);
+                        if (dt > maxGap) {
+                            throw new OrekitException(OrekitMessages.TOO_LONG_TIME_GAP_BETWEEN_DATA_POINTS, dt);
+                        }
+
+                        if (dt > 1.0e-6) {
+                            // the pending date is *not* duplicated by this one, we can consider it
+                            spliced.addClockData(clockId, pending);
+                        }
+
                     }
+
+                    // keep the current data line to be checked against the next one
+                    pending = cd;
+
                 }
-                previous = rc.getLatestEpoch();
-                rc.getClockData().get(clockId).forEach(cd -> spliced.addClockData(clockId, cd));
             }
+
+            if (pending != null) {
+                // no further data lines, we need to add the remaining pending line
+                spliced.addClockData(clockId, pending);
+            }
+
         }
 
         return spliced;
@@ -844,11 +861,8 @@ public class RinexClock {
         /** Receiver/Satellite name. */
         private final String name;
 
-        /** Epoch date components. */
-        private final DateComponents dateComponents;
-
-        /** Epoch time components. */
-        private final TimeComponents timeComponents;
+        /** Epoch date and time components. */
+        private final DateTimeComponents dateTimeComponents;
 
         /** Number of data values to follow.
          * This number might not represent the non zero values in the line.
@@ -886,24 +900,22 @@ public class RinexClock {
          * @param clockAcceleration the clock acceleration in seconds^-1
          * @param clockAccelerationSigma the clock acceleration in seconds^-1
          */
-        public ClockDataLine (final ClockDataType type, final String name,
-                              final DateComponents dateComponents,
-                              final TimeComponents timeComponents,
-                              final int numberOfValues,
-                              final double clockBias, final double clockBiasSigma,
-                              final double clockRate, final double clockRateSigma,
-                              final double clockAcceleration, final double clockAccelerationSigma) {
+        public ClockDataLine(final ClockDataType type, final String name,
+                             final DateComponents dateComponents, final TimeComponents timeComponents,
+                             final int numberOfValues,
+                             final double clockBias, final double clockBiasSigma,
+                             final double clockRate, final double clockRateSigma,
+                             final double clockAcceleration, final double clockAccelerationSigma) {
 
-            this.dataType                = type;
-            this.name                    = name;
-            this.dateComponents          = dateComponents;
-            this.timeComponents          = timeComponents;
-            this.numberOfValues          = numberOfValues;
-            this.clockBias               = clockBias;
-            this.clockBiasSigma          = clockBiasSigma;
-            this.clockRate               = clockRate;
-            this.clockRateSigma          = clockRateSigma;
-            this.clockAcceleration       = clockAcceleration;
+            this.dataType               = type;
+            this.name                   = name;
+            this.dateTimeComponents     = new DateTimeComponents(dateComponents, timeComponents);
+            this.numberOfValues         = numberOfValues;
+            this.clockBias              = clockBias;
+            this.clockBiasSigma         = clockBiasSigma;
+            this.clockRate              = clockRate;
+            this.clockRateSigma         = clockRateSigma;
+            this.clockAcceleration      = clockAcceleration;
             this.clockAccelerationSigma = clockAccelerationSigma;
         }
 
@@ -935,7 +947,7 @@ public class RinexClock {
          * @return the data line epoch
          */
         public AbsoluteDate getEpoch() {
-            return new AbsoluteDate(dateComponents, timeComponents, timeScale);
+            return new AbsoluteDate(dateTimeComponents, timeScale);
         }
 
         /** Get data line epoch.
@@ -945,7 +957,7 @@ public class RinexClock {
          * @return the data line epoch set in the specified time scale
          */
         public AbsoluteDate getEpoch(final TimeScale epochTimeScale) {
-            return new AbsoluteDate(dateComponents, timeComponents, epochTimeScale);
+            return new AbsoluteDate(dateTimeComponents, epochTimeScale);
         }
 
         /** Getter for the clock bias.

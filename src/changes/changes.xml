@@ -34,6 +34,27 @@
             Add (Field)ExtremumAngularSeparationDetector.
         </action>
     </release>
+    <release version="13.0.2" date="2025-04-30" description="Orekit 13.0.2 is a patch release.
+        It fixes several issues related to GNSS, data loading and indirect shooting.">
+        <action dev="luc" type="fix" issue="1713">
+            Decompose path from file name when building a DataSource from a String.
+        </action>
+        <action dev="luc" type="fix" issue="1712">
+            Allow using the last date from GlobalIonosphereMapModel ionex files.
+        </action>
+        <action dev="luc" type="fix" issue="1711">
+            Improved robustness of NeQuick models equations for line-of-sight in the meridian plane.
+        </action>
+        <action dev="luc" type="fix" issue="1710">
+            Improved robustness of NeQuick models equations for line-of-sight close to zenith.
+        </action>
+        <action dev="luc" type="fix" issue="1708">
+            Fixed interpolation error in Rinex clock splicing.
+        </action>
+        <action dev="serrof" type="fix" issue="1707">
+            Wrong treatment of adjoint singularity in indirect shooting.
+        </action>
+    </release>
     <release version="13.0.1" date="2025-04-23" description="Orekit 13.0.1 is a patch release.
         It fixes a huge performance bottleneck in NeQuick ionospheric models.">
         <action dev="luc" type="add" issue="1704">

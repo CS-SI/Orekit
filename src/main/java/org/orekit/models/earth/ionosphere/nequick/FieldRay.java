@@ -89,30 +89,35 @@ class FieldRay<T extends CalculusFieldElement<T>> {
         final FieldSinCos<T> scLatRec = FastMath.sinCos(lat1);
         final FieldSinCos<T> scLon21 = FastMath.sinCos(lon2.subtract(lon1));
 
-        // Zenith angle computation (Eq. 153 to 155)
-        final T cosD = scLatRec.sin().multiply(scLatSat.sin()).
-                       add(scLatRec.cos().multiply(scLatSat.cos()).multiply(scLon21.cos()));
-        final T sinD = FastMath.sqrt(cosD.multiply(cosD).negate().add(1.0));
-        final T z    = FastMath.atan2(sinD, cosD.subtract(r1.divide(r2)));
-        final FieldSinCos<T> scZ = FastMath.sinCos(z);
+        // Zenith angle computation, using:
+        //   - Eq. 153 with added protection against numerical noise near zenith observation
+        //   - replacing Eq. 154 by a different one more stable near zenith
+        //   - replacing Eq. 155 by different ones avoiding trigonometric functions
+        final T cosD     = FastMath.min(r1.getField().getOne(),
+                                        scLatRec.sin().multiply(scLatSat.sin()).
+                                        add(scLatRec.cos().multiply(scLatSat.cos()).multiply(scLon21.cos())));
+        final T sinDSinM = scLatSat.cos().multiply(scLon21.sin());
+        final T sinDCosM = scLatSat.sin().multiply(scLatRec.cos()).subtract(scLatSat.cos().multiply(scLatRec.sin()).multiply(scLon21.cos()));
+        final T sinD     = FastMath.sqrt(sinDSinM.multiply(sinDSinM).add(sinDCosM.multiply(sinDCosM)));
+        final T u        = r2.multiply(sinD);
+        final T v        = r2.multiply(cosD).subtract(r1);
+        final T inv      = FastMath.sqrt(u.multiply(u).add(v.multiply(v))).reciprocal();
+        final T sinZ     = u.multiply(inv);
+        final T cosZ     = v.multiply(inv);
 
         // Ray-perigee computation in meters (Eq. 156)
-        this.rp = r1.multiply(scZ.sin());
+        this.rp = r1.multiply(sinZ);
 
         // Ray-perigee latitude and longitude
         if (FastMath.abs(FastMath.abs(lat1).subtract(pi.multiply(0.5)).getReal()) < THRESHOLD) {
 
             // Ray-perigee latitude (Eq. 157)
-            this.latP = FastMath.copySign(z, lat1);
+            this.latP = FastMath.copySign(FastMath.atan2(u, v), lat1);
 
             // Ray-perigee longitude (Eq. 164)
-            if (z.getReal() < 0) {
-                this.lonP = lon2;
-            } else {
-                this.lonP = lon2.add(pi);
-            }
+            this.lonP = lon2.add(pi);
 
-        } else if (FastMath.abs(scZ.sin().getReal()) < THRESHOLD) {
+        } else if (FastMath.abs(sinZ.getReal()) < THRESHOLD) {
             // satellite is almost on receiver zenith
 
             this.latP = recP.getLatitude();
@@ -124,16 +129,20 @@ class FieldRay<T extends CalculusFieldElement<T>> {
             final T sinAz   = FastMath.sin(lon2.subtract(lon1)).multiply(scLatSat.cos()).divide(sinD);
             final T cosAz   = scLatSat.sin().subtract(cosD.multiply(scLatRec.sin())).
                               divide(sinD.multiply(scLatRec.cos()));
-            final T sinLatP = scLatRec.sin().multiply(scZ.sin()).
-                              subtract(scLatRec.cos().multiply(scZ.cos()).multiply(cosAz));
+            final T sinLatP = scLatRec.sin().multiply(sinZ).
+                              subtract(scLatRec.cos().multiply(cosZ).multiply(cosAz));
             final T cosLatP = FastMath.sqrt(sinLatP.multiply(sinLatP).negate().add(1.0));
             this.latP       = FastMath.atan2(sinLatP, cosLatP);
 
-            // Ray-perigee longitude (Eq. 165 to 167)
-            final T sinLonP = sinAz.negate().multiply(scZ.cos()).divide(cosLatP);
-            final T cosLonP = scZ.sin().subtract(scLatRec.sin().multiply(sinLatP)).
-                              divide(scLatRec.cos().multiply(cosLatP));
-            this.lonP       = FastMath.atan2(sinLonP, cosLonP).add(lon1);
+            // Ray-perigee longitude (Eq. 165 to 167, plus protection against ray-perigee along polar axis)
+            if (cosLatP.getReal() < THRESHOLD) {
+                this.lonP = cosLatP.getField().getZero();
+            } else {
+                final T sinLonP = sinAz.negate().multiply(cosZ).divide(cosLatP);
+                final T cosLonP = sinZ.subtract(scLatRec.sin().multiply(sinLatP)).
+                        divide(scLatRec.cos().multiply(cosLatP));
+                this.lonP = FastMath.atan2(sinLonP, cosLonP).add(lon1);
+            }
 
         }
 
@@ -141,7 +150,7 @@ class FieldRay<T extends CalculusFieldElement<T>> {
         this.scLatP = FastMath.sinCos(latP);
 
         if (FastMath.abs(FastMath.abs(latP).subtract(pi.multiply(0.5)).getReal()) < THRESHOLD || FastMath.abs(
-            scZ.sin().getReal()) < THRESHOLD) {
+            sinZ.getReal()) < THRESHOLD) {
             // Eq. 172 and 173
             this.sinAzP = pi.getField().getZero();
             this.cosAzP = FastMath.copySign(pi.getField().getOne(), latP).negate();
