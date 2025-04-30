@@ -307,7 +307,7 @@
 
   * Earth models
   
-    * atmospheric models (DTM2000, Jacchia-Bowman 2008, NRL MSISE 2000, Harris-Priester and simple exponential models), and Marshall Solar Activity Future Estimation, optionally with lift component
+    * atmospheric models (DTM2000, Jacchia-Bowman 2006, Jacchia-Bowman 2008, NRL MSISE 2000, Harris-Priester and simple exponential models), and Marshall Solar Activity Future Estimation, optionally with lift component
     * support for CSSI space weather data
     * support for SOLFSMY and DTC data for JB2008 atmospheric model
     * tropospheric delay for radio propagation (canonical Saastamoinen, modified Saastamoinen, Askne-Nordius, modified Hopfield, ITU-R P.834, Vienna 1, Vienna 3, estimated, fixed)
