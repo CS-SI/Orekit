@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.1" date="TBD" description="TBD">
+        <action dev="serrof" type="update" issue="1715">
+            Add reset state saved in (Field)EventsLogger.
+        </action>
         <action dev="serrof" type="add" issue="1706">
             Add FieldGroundAtNightDetector.
         </action>

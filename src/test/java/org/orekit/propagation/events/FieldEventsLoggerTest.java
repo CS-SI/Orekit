@@ -22,19 +22,23 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.handlers.FieldCountAndContinue;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.time.FieldAbsoluteDate;
@@ -43,40 +47,104 @@ import org.orekit.utils.FieldPVCoordinates;
 
 import java.util.List;
 
-public class FieldEventsLoggerTest {
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+class FieldEventsLoggerTest {
 
     private double               mu;
-//    private FieldAbsoluteDate<T>         iniDate;
-//    private FieldSpacecraftState<T>      initialState;
     private int                  count;
-//    private FieldEventDetector<T>        umbraDetector;
-//    private FieldEventDetector<T>        penumbraDetector;
 
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
             Utils.setDataRoot("regular-data");
             mu  = 3.9860047e14;
     }
 
     @Test
-    public void testLogUmbra() {
+    void testMonitorDetectorClass() {
+        // GIVEN
+        final FieldAbsoluteDate<Binary64> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance());
+        final FieldDateDetector<Binary64> dateDetector = new FieldDateDetector<>(fieldDate);
+        final FieldEventsLogger<Binary64> eventsLogger = new FieldEventsLogger<>();
+        // WHEN
+        final FieldEventDetector<Binary64> detector = eventsLogger.monitorDetector(dateDetector);
+        // THEN
+        Assertions.assertInstanceOf(FieldDetectorModifier.class, detector);
+        final FieldDetectorModifier<Binary64> modifier = (FieldDetectorModifier<Binary64>) detector;
+        Assertions.assertEquals(dateDetector, modifier.getDetector());
+    }
+
+    @Test
+    void testMonitorDetectorHandlerEventOccurred() {
+        // GIVEN
+        final FieldAbsoluteDate<Binary64> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance());
+        final FieldCountAndContinue<Binary64> counterHandler = new FieldCountAndContinue<>(0);
+        final FieldDateDetector<Binary64> dateDetector = new FieldDateDetector<>(fieldDate).withHandler(counterHandler);
+        final FieldEventsLogger<Binary64> eventsLogger = new FieldEventsLogger<>();
+        final FieldEventDetector<Binary64> detector = eventsLogger.monitorDetector(dateDetector);
+        final FieldEventHandler<Binary64> handler = detector.getHandler();
+        @SuppressWarnings("unchecked")
+        final FieldSpacecraftState<Binary64> mockedState = mock();
+        when(mockedState.getDate()).thenReturn(fieldDate);
+        // WHEN
+        final Action action = handler.eventOccurred(mockedState, dateDetector, true);
+        // THEN
+        Assertions.assertEquals(Action.CONTINUE, action);
+        final List<FieldEventsLogger.FieldLoggedEvent<Binary64>> loggedEvents = eventsLogger.getLoggedEvents();
+        Assertions.assertEquals(loggedEvents.size(), counterHandler.getCount());
+        final FieldEventsLogger.FieldLoggedEvent<Binary64> event = loggedEvents.get(0);
+        Assertions.assertEquals(mockedState, event.getState());
+        Assertions.assertEquals(mockedState, event.getResetState());
+    }
+
+    @Test
+    void testMonitorDetectorHandlerResetState() {
+        // GIVEN
+        final FieldAbsoluteDate<Binary64> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance());
+        final FieldCountAndContinue<Binary64> counterHandler = new FieldCountAndContinue<>(0);
+        final FieldDateDetector<Binary64> dateDetector = new FieldDateDetector<>(fieldDate).withHandler(counterHandler);
+        final FieldEventsLogger<Binary64> eventsLogger = new FieldEventsLogger<>();
+        final FieldEventDetector<Binary64> detector = eventsLogger.monitorDetector(dateDetector);
+        final FieldEventHandler<Binary64> handler = detector.getHandler();
+        final FieldOrbit<Binary64> fieldOrbit = new FieldCartesianOrbit<>(Binary64Field.getInstance(),
+                TestUtils.getDefaultOrbit(fieldDate.toAbsoluteDate()));
+        final FieldSpacecraftState<Binary64> fieldState = new FieldSpacecraftState<>(fieldOrbit);
+        // WHEN
+        final Action action = handler.eventOccurred(fieldState, dateDetector, true);
+        // THEN
+        final FieldSpacecraftState<Binary64> state = handler.resetState(dateDetector, fieldState);
+        // THEN
+        if (action == Action.RESET_STATE) {
+            Assertions.assertNotEquals(fieldState, state);
+        } else {
+            Assertions.assertEquals(fieldState, state);
+        }
+    }
+
+    @Test
+    void testLogUmbra() {
         doTestLogUmbra(Binary64Field.getInstance());
     }
+
     @Test
-    public void testLogPenumbra() {
+    void testLogPenumbra() {
         doTestLogPenumbra(Binary64Field.getInstance());
     }
+
     @Test
-    public void testLogAll() {
+    void testLogAll() {
         doTestLogAll(Binary64Field.getInstance());
     }
+
     @Test
-    public void testImmutableList() {
+    void testImmutableList() {
         doTestImmutableList(Binary64Field.getInstance());
     }
+
     @Test
-    public void testClearLog() {
+    void testClearLog() {
         doTestClearLog(Binary64Field.getInstance());
     }
 
@@ -248,7 +316,7 @@ public class FieldEventsLoggerTest {
             FieldPVCoordinates<T> pv1 = e1.getState().getPVCoordinates();
             FieldPVCoordinates<T> pv2 = e2.getState().getPVCoordinates();
 
-            Assertions.assertTrue(e1.getEventDetector() == e2.getEventDetector());
+            Assertions.assertSame(e1.getEventDetector(), e2.getEventDetector());
             Assertions.assertEquals(0, pv1.getPosition().subtract(pv2.getPosition()).getNorm().getReal(), 1.0e-10);
             Assertions.assertEquals(0, pv1.getVelocity().subtract(pv2.getVelocity()).getNorm().getReal(), 1.0e-10);
             Assertions.assertEquals(e1.isIncreasing(), e2.isIncreasing());
@@ -346,19 +414,17 @@ public class FieldEventsLoggerTest {
             detector = detector.withPenumbra();
         }
 
-        detector = detector.withHandler(new FieldEventHandler<T>() {
-            public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T> detector, boolean increasing) {
-                ++count;
-                return Action.CONTINUE;
-            }
-        } );
+        detector = detector.withHandler((s, detector1, increasing) -> {
+            ++count;
+            return Action.CONTINUE;
+        });
 
         return detector;
 
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         count = 0;
     }
 

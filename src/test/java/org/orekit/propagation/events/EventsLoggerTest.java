@@ -17,12 +17,15 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -32,6 +35,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.CountAndContinue;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -40,7 +44,10 @@ import org.orekit.utils.PVCoordinates;
 
 import java.util.List;
 
-public class EventsLoggerTest {
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+class EventsLoggerTest {
 
     private double               mu;
     private AbsoluteDate         iniDate;
@@ -51,7 +58,83 @@ public class EventsLoggerTest {
     private AbstractDetector<EclipseDetector>         penumbraDetector;
 
     @Test
-    public void testLogUmbra() {
+    void testMonitorDetectorClass() {
+        // GIVEN
+        final DateDetector dateDetector = new DateDetector();
+        final EventsLogger eventsLogger = new EventsLogger();
+        // WHEN
+        final EventDetector detector = eventsLogger.monitorDetector(dateDetector);
+        // THEN
+        Assertions.assertInstanceOf(DetectorModifier.class, detector);
+        final DetectorModifier modifier = (DetectorModifier) detector;
+        Assertions.assertEquals(dateDetector, modifier.getDetector());
+    }
+
+    @Test
+    void testMonitorDetectorHandlerEventOccurred() {
+        // GIVEN
+        final CountAndContinue counterHandler = new CountAndContinue();
+        final DateDetector dateDetector = new DateDetector().withHandler(counterHandler);
+        final EventsLogger eventsLogger = new EventsLogger();
+        final EventDetector detector = eventsLogger.monitorDetector(dateDetector);
+        final EventHandler handler = detector.getHandler();
+        final SpacecraftState mockedState = mock();
+        when(mockedState.getDate()).thenReturn(AbsoluteDate.ARBITRARY_EPOCH);
+        // WHEN
+        final Action action = handler.eventOccurred(mockedState, dateDetector, true);
+        // THEN
+        Assertions.assertEquals(Action.CONTINUE, action);
+        final List<EventsLogger.LoggedEvent> loggedEvents = eventsLogger.getLoggedEvents();
+        Assertions.assertEquals(loggedEvents.size(), counterHandler.getCount());
+        final EventsLogger.LoggedEvent event = loggedEvents.get(0);
+        Assertions.assertEquals(mockedState, event.getState());
+        Assertions.assertEquals(mockedState, event.getResetState());
+    }
+
+    @ParameterizedTest
+    @EnumSource(Action.class)
+    void testMonitorDetectorHandlerResetState(final Action action) {
+        // GIVEN
+        final DateDetector dateDetector = new DateDetector().withHandler(new Handler(action));
+        final EventsLogger eventsLogger = new EventsLogger();
+        final EventDetector detector = eventsLogger.monitorDetector(dateDetector);
+        final EventHandler handler = detector.getHandler();
+        final SpacecraftState mockedState = mock();
+        when(mockedState.getDate()).thenReturn(AbsoluteDate.ARBITRARY_EPOCH);
+        // WHEN
+        final SpacecraftState state = handler.resetState(dateDetector, mockedState);
+        // THEN
+        if (action == Action.RESET_STATE) {
+            Assertions.assertNotEquals(mockedState, state);
+        } else {
+            Assertions.assertEquals(mockedState, state);
+        }
+    }
+
+    private static class Handler implements EventHandler {
+
+        private final Action action;
+
+        Handler(final Action action) {
+            this.action = action;
+        }
+
+        @Override
+        public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
+            return action;
+        }
+
+        @Override
+        public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
+            if (action == Action.RESET_STATE) {
+                return oldState.withMass(oldState.getMass());
+            }
+            return oldState;
+        }
+    }
+
+    @Test
+    void testLogUmbra() {
         EventsLogger logger = new EventsLogger();
         EventDetector monitored = logger.monitorDetector(umbraDetector.withMaxIter(200));
         Assertions.assertEquals(100, umbraDetector.getMaxIterationCount());
@@ -65,7 +148,7 @@ public class EventsLoggerTest {
     }
 
     @Test
-    public void testLogPenumbra() {
+    void testLogPenumbra() {
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(umbraDetector);
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
@@ -76,7 +159,7 @@ public class EventsLoggerTest {
     }
 
     @Test
-    public void testLogAll() {
+    void testLogAll() {
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(logger.monitorDetector(umbraDetector));
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
@@ -87,7 +170,7 @@ public class EventsLoggerTest {
     }
 
     @Test
-    public void testImmutableList() {
+    void testImmutableList() {
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(logger.monitorDetector(umbraDetector));
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
@@ -115,7 +198,7 @@ public class EventsLoggerTest {
     }
 
     @Test
-    public void testClearLog() {
+    void testClearLog() {
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(logger.monitorDetector(umbraDetector));
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
