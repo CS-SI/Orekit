@@ -23,6 +23,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
@@ -103,15 +104,6 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
 
     /** Avogadro's number in mks units (molecules/kmol). */
     private static final double AVOGAD = 6.02257e26;
-
-    /**  Approximate value for 2 π. */
-    private static final double JB_2006_TWO_PI = 6.2831853;
-
-    /** Approximate value for π. */
-    private static final double JB_2006_PI = 3.1415927;
-
-    /** Approximate value for π / 2. */
-    private static final double PIOV2 = 1.5707963;
 
     /** The FRAC are the assumed sea-level volume fractions in order: N2, O2, Ar, and He. */
     private static final double[] FRAC = {0, 0.78110, 0.20955, 9.3400e-3, 1.2890e-5};
@@ -292,7 +284,7 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
         // Equation (16)
         final double h = satLon - sunRA;
         final double tau = h - 0.64577182 + 0.10471976 * FastMath.sin(h + 0.75049158);
-        double solTimeHour = FastMath.toDegrees(h + JB_2006_PI) / 15.0;
+        double solTimeHour = FastMath.toDegrees(h + FastMath.PI) / 15.0;
         if (solTimeHour >= 24) {
             solTimeHour = solTimeHour - 24.;
         }
@@ -329,7 +321,7 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
         tc[0] = tsubx;
         tc[1] = gsubx;
         //   A AND GSUBX/A OF Equation (13)
-        tc[2] = (tInf - tsubx) / PIOV2;
+        tc[2] = (tInf - tsubx) / MathUtils.SEMI_PI;
         tc[3] = gsubx / tc[2];
 
         // Equation (5)
@@ -455,7 +447,7 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
         final int signum = (satLat >= 0) ? 1 : -1;
         final double sinLat = FastMath.sin(satLat);
         final double hm90  = scaledSatAlt - 90.;
-        final double dlrsl = 0.02 * hm90 * FastMath.exp(-0.045 * hm90) * signum * FastMath.sin(JB_2006_TWO_PI * capPhi + 1.72) * sinLat * sinLat;
+        final double dlrsl = 0.02 * hm90 * FastMath.exp(-0.045 * hm90) * signum * FastMath.sin(MathUtils.TWO_PI * capPhi + 1.72) * sinLat * sinLat;
 
         // Equation (23) - Computes the semiannual variation
         double dlrsa = 0;
@@ -547,7 +539,7 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
         // Equation (16)
         final T h = satLon.subtract(sunRA);
         final T tau = h.subtract(0.64577182).add(h.add(0.75049158).sin().multiply(0.10471976));
-        T solarTime = FastMath.toDegrees(h.add(JB_2006_PI)).divide(15.0);
+        T solarTime = FastMath.toDegrees(h.add(FastMath.PI)).divide(15.0);
         while (solarTime.getReal() >= 24) {
             solarTime = solarTime.subtract(24);
         }
@@ -586,7 +578,7 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
         tc[0] = tsubx;
         tc[1] = gsubx;
         //   A AND GSUBX/A OF Equation (13)
-        tc[2] = tinf.subtract(tsubx).divide(PIOV2);
+        tc[2] = tinf.subtract(tsubx).divide(MathUtils.SEMI_PI);
         tc[3] = gsubx.divide(tc[2]);
 
         // Equation (5)
@@ -715,7 +707,7 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
         final T sinLat = satLat.sin();
         final T hm90  = scaledSatAlt.subtract(90.);
         final T dlrsl = hm90.multiply(0.02).multiply(hm90.multiply(-0.045).exp()).
-                        multiply(capPhi.multiply(JB_2006_TWO_PI).add(1.72).sin()).
+                        multiply(capPhi.multiply(MathUtils.TWO_PI).add(1.72).sin()).
                         multiply(signum).multiply(sinLat).multiply(sinLat);
 
         // Equation (23) - Computes the semiannual variation
@@ -1342,7 +1334,7 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
         final double fzz = FZM[1] + FZM[2] * f10Bar + FZM[3] * f10Bar * htz + FZM[4] * f10Bar * htz * htz + FZM[5] * f10Bar * f10Bar * htz + FZM[6] * f10Bar * f10Bar * htz * htz;
 
         // SEMIANNUAL PHASE FUNCTION
-        final double tau = JB_2006_TWO_PI * (day - 1.0) / 365;
+        final double tau = MathUtils.TWO_PI * (day - 1.0) / 365;
         final double sin1P = FastMath.sin(tau);
         final double cos1P = FastMath.cos(tau);
         final double sin2P = FastMath.sin(2.0 * tau);
@@ -1394,7 +1386,7 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
         final T fzz = htz.multiply(FZM[3] * f10Bar).add(htz.square().multiply(FZM[4] * f10Bar)).add(htz.multiply(FZM[5] * f10Bar * f10Bar)).add(htz.square().multiply( FZM[6] * f10Bar * f10Bar)).add(FZM[1] + FZM[2] * f10Bar);
 
         // SEMIANNUAL PHASE FUNCTION
-        final T tau   = doy.subtract(1).divide(365).multiply(JB_2006_TWO_PI);
+        final T tau   = doy.subtract(1).divide(365).multiply(MathUtils.TWO_PI);
         final FieldSinCos<T> sc1P = FastMath.sinCos(tau);
         final FieldSinCos<T> sc2P = FastMath.sinCos(tau.multiply(2.0));
         final FieldSinCos<T> sc3P = FastMath.sinCos(tau.multiply(3.0));
