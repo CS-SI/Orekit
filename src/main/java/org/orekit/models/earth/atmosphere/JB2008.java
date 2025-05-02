@@ -16,6 +16,7 @@
  */
 package org.orekit.models.earth.atmosphere;
 
+import java.util.stream.IntStream;
 import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -77,55 +78,6 @@ import org.orekit.utils.ExtendedPositionProvider;
  */
 public class JB2008 extends AbstractSunInfluencedAtmosphere {
 
-    /** Minimum altitude (m) for JB2008 use. */
-    private static final double ALT_MIN = 90000.;
-
-    /** Earth radius (km). */
-    private static final double EARTH_RADIUS = 6356.766;
-
-    /** Natural logarithm of 10.0. */
-    private static final double LOG10  = FastMath.log(10.);
-
-    /** Avogadro's number in mks units (molecules/kmol). */
-    private static final double AVOGAD = 6.02257e26;
-
-    /** Universal gas-constant in mks units (joules/K/kmol). */
-    private static final double RSTAR  = 8.31432;
-
-    /** The alpha are the thermal diffusion coefficients in Equation (6). */
-    private static final double[] ALPHA = {
-        0, 0, 0, 0, -0.38
-    };
-
-    /** Molecular weights in order: N2, O2, O, Ar, He and H. */
-    private static final double[] AMW = {
-        28.0134, 31.9988, 15.9994, 39.9480, 4.0026, 1.00797
-    };
-
-    /** The FRAC are the assumed sea-level volume fractions in order: N2, O2, Ar, and He. */
-    private static final double[] FRAC = {
-        0.78110, 0.20955, 9.3400e-3, 1.2890e-5
-    };
-
-    /** Value used to establish height step sizes in the regime 90km to 105km. */
-    private static final double R1 = 0.010;
-
-    /** Value used to establish height step sizes in the regime 105km to 500km. */
-    private static final double R2 = 0.025;
-
-    /** Value used to establish height step sizes in the regime above 500km. */
-    private static final double R3 = 0.075;
-
-    /** Weights for the Newton-Cotes five-points quadrature formula. */
-    private static final double[] WT = {
-        0.311111111111111, 1.422222222222222, 0.533333333333333, 1.422222222222222, 0.311111111111111
-    };
-
-    /** Coefficients for high altitude density correction. */
-    private static final double[] CHT = {
-        0.22, -0.20e-02, 0.115e-02, -0.211e-05
-    };
-
     /** FZ global model values (1997-2006 fit).  */
     private static final double[] FZM = {
         0.2689e+00, -0.1176e-01, 0.2782e-01, -0.2782e-01, 0.3470e-03
@@ -137,36 +89,8 @@ public class JB2008 extends AbstractSunInfluencedAtmosphere {
         -0.1790e-01, 0.5650e-03, -0.6407e-03, -0.3418e-02, -0.1252e-02
     };
 
-    /** Mbar polynomial coeffcients. */
-    private static final double[] CMB = {
-        28.15204, -8.5586e-2, +1.2840e-4, -1.0056e-5, -1.0210e-5, +1.5044e-6, +9.9826e-8
-    };
-
-    /** DTC relative data. */
-    private static final double[] BDTC = {
-        -0.457512297e+01, -0.512114909e+01, -0.693003609e+02,
-        0.203716701e+03,  0.703316291e+03, -0.194349234e+04,
-        0.110651308e+04, -0.174378996e+03,  0.188594601e+04,
-        -0.709371517e+04,  0.922454523e+04, -0.384508073e+04,
-        -0.645841789e+01,  0.409703319e+02, -0.482006560e+03,
-        0.181870931e+04, -0.237389204e+04,  0.996703815e+03,
-        0.361416936e+02
-    };
-
-    /** DTC relative data. */
-    private static final double[] CDTC = {
-        -0.155986211e+02, -0.512114909e+01, -0.693003609e+02,
-        0.203716701e+03,  0.703316291e+03, -0.194349234e+04,
-        0.110651308e+04, -0.220835117e+03,  0.143256989e+04,
-        -0.318481844e+04,  0.328981513e+04, -0.135332119e+04,
-        0.199956489e+02, -0.127093998e+02,  0.212825156e+02,
-        -0.275555432e+01,  0.110234982e+02,  0.148881951e+03,
-        -0.751640284e+03,  0.637876542e+03,  0.127093998e+02,
-        -0.212825156e+02,  0.275555432e+01
-    };
-
     /** External data container. */
-    private JB2008InputParameters inputParams;
+    private final JB2008InputParameters inputParams;
 
     /** Earth body shape. */
     private final BodyShape earth;
@@ -245,13 +169,14 @@ public class JB2008 extends AbstractSunInfluencedAtmosphere {
                              final double s10B, final double xm10, final double xm10B,
                              final double y10, final double y10B, final double dstdtc) {
 
-        if (satAlt < ALT_MIN) {
-            throw new OrekitException(OrekitMessages.ALTITUDE_BELOW_ALLOWED_THRESHOLD, satAlt, ALT_MIN);
+        if (satAlt < JacchiaBowmanEquationsFactory.ALT_MIN) {
+            throw new OrekitException(OrekitMessages.ALTITUDE_BELOW_ALLOWED_THRESHOLD, satAlt, JacchiaBowmanEquationsFactory.ALT_MIN);
         }
 
         final double altKm = satAlt / 1000.0;
 
         // Equation (14)
+        // Temperature equation obtained using numerous satellites for the years from 1997 through 2007 when all new solar indices were available
         final double fn  = FastMath.min(1.0, FastMath.pow(f10B / 240., 0.25));
         final double fsb = f10B * fn + s10B * (1. - fn);
         final double tsubc = 392.4 + 3.227 * fsb + 0.298 * (f10 - f10B) + 2.259 * (s10 - s10B) +
@@ -264,56 +189,38 @@ public class JB2008 extends AbstractSunInfluencedAtmosphere {
         // Equation (16)
         final double h   = satLon - sunRA;
         final double tau = h - 0.64577182 + 0.10471976 * FastMath.sin(h + 0.75049158);
-        double solarTime = FastMath.toDegrees(h + FastMath.PI) / 15.0;
-        while (solarTime >= 24) {
-            solarTime -= 24.;
-        }
-        while (solarTime < 0) {
-            solarTime += 24.;
-        }
+        final double solarTime = JacchiaBowmanEquationsFactory.solarTimeHour(h);
 
         // Equation (17)
-        final double cosEta  = FastMath.pow(FastMath.cos(eta), 2.5);
-        final double sinTeta = FastMath.pow(FastMath.sin(theta), 2.5);
-        final double cosTau  = FastMath.abs(FastMath.cos(0.5 * tau));
-        final double df = sinTeta + (cosEta - sinTeta) * cosTau * cosTau * cosTau;
-        final double tsubl = tsubc * (1. + 0.31 * df);
+        final double tsubl = JacchiaBowmanEquationsFactory.tSubL(eta, theta, tau, tsubc);
 
         // Compute correction to dTc for local solar time and lat correction
-        final double dtclst = dTc(f10, solarTime, satLat, altKm);
+        final double dtclst = JacchiaBowmanEquationsFactory.dTc(f10, solarTime, satLat, altKm);
 
         // Compute the local exospheric temperature.
         // Add geomagnetic storm effect from input dTc value
-        final double[] temp = new double[2];
-        temp[0] = tsubl + dstdtc;
-        final double tinf = temp[0] + dtclst;
+        final double tinf = tsubl + dstdtc + dtclst;
 
         // Equation (9)
-        final double tsubx = 444.3807 + 0.02385 * tinf - 392.8292 * FastMath.exp(-0.0021357 * tinf);
+        final double tsubx = JacchiaBowmanEquationsFactory.tSubX(tinf);
 
         // Equation (11)
-        final double gsubx = 0.054285714 * (tsubx - 183.);
+        final double gsubx = JacchiaBowmanEquationsFactory.gSubX(tsubx);
 
-        // The TC array will be an argument in the call to localTemp,
-        // which evaluates Eq. (10) or (13)
-        final double[] tc = new double[4];
-        tc[0] = tsubx;
-        tc[1] = gsubx;
-        // A of Equation (13)
-        tc[2] = (tinf - tsubx) * 2. / FastMath.PI;
-        tc[3] = gsubx / tc[2];
+        // The TC array will be an argument in the call to "localTemp"
+        final double[] tc = JacchiaBowmanEquationsFactory.tSubCArray(tsubx, gsubx, tinf);
 
         // Equation (5)
         final double z1 = 90.;
         final double z2 = FastMath.min(altKm, 105.0);
         double al = FastMath.log(z2 / z1);
-        int n = 1 + (int) FastMath.floor(al / R1);
+        int n = 1 + (int) FastMath.floor(al / JacchiaBowmanEquationsFactory.R1);
         double zr = FastMath.exp(al / n);
-        final double mb1 = mBar(z1);
-        final double tloc1 = localTemp(z1, tc);
+        final double mb1 = JacchiaBowmanEquationsFactory.mBar(z1);
+        final double tloc1 = JacchiaBowmanEquationsFactory.localTemp(z1, tc);
         double zend  = z1;
         double sub2  = 0.;
-        double ain   = mb1 * gravity(z1) / tloc1;
+        double ain   = mb1 * JacchiaBowmanEquationsFactory.gravity(z1) / tloc1;
         double mb2   = 0;
         double tloc2 = 0;
         double z     = 0;
@@ -323,42 +230,41 @@ public class JB2008 extends AbstractSunInfluencedAtmosphere {
             z = zend;
             zend = zr * z;
             final double dz = 0.25 * (zend - z);
-            double sum1 = WT[0] * ain;
+            double sum1 = JacchiaBowmanEquationsFactory.WT[0] * ain;
             for (int j = 1; j < 5; ++j) {
                 z += dz;
-                mb2   = mBar(z);
-                tloc2 = localTemp(z, tc);
-                gravl = gravity(z);
+                mb2   = JacchiaBowmanEquationsFactory.mBar(z);
+                tloc2 = JacchiaBowmanEquationsFactory.localTemp(z, tc);
+                gravl = JacchiaBowmanEquationsFactory.gravity(z);
                 ain   = mb2 * gravl / tloc2;
-                sum1 += WT[j] * ain;
+                sum1 += JacchiaBowmanEquationsFactory.WT[j] * ain;
             }
             sub2 += dz * sum1;
         }
 
-        double rho = 3.46e-6 * mb2 * tloc1 / FastMath.exp(sub2 / RSTAR) / (mb1 * tloc2);
+        double rho = 3.46e-6 * mb2 * tloc1 / FastMath.exp(sub2 / JacchiaBowmanEquationsFactory.RSTAR) / (mb1 * tloc2);
 
         // Equation (2)
-        final double anm = AVOGAD * rho;
+        final double anm = JacchiaBowmanEquationsFactory.AVOGAD * rho;
         final double an  = anm / mb2;
 
         // Equation (3)
         double fact2  = anm / 28.960;
         final double[] aln = new double[6];
-        aln[0] = FastMath.log(FRAC[0] * fact2);
-        aln[3] = FastMath.log(FRAC[2] * fact2);
-        aln[4] = FastMath.log(FRAC[3] * fact2);
+        aln[0] = FastMath.log(JacchiaBowmanEquationsFactory.FRAC[0] * fact2);
+        aln[3] = FastMath.log(JacchiaBowmanEquationsFactory.FRAC[2] * fact2);
+        aln[4] = FastMath.log(JacchiaBowmanEquationsFactory.FRAC[3] * fact2);
         // Equation (4)
-        aln[1] = FastMath.log(fact2 * (1. + FRAC[1]) - an);
+        aln[1] = FastMath.log(fact2 * (1. + JacchiaBowmanEquationsFactory.FRAC[1]) - an);
         aln[2] = FastMath.log(2. * (an - fact2));
 
         if (altKm <= 105.0) {
-            temp[1] = tloc2;
             // Put in negligible hydrogen for use in DO-LOOP 13
             aln[5] = aln[4] - 25.0;
         } else {
             // Equation (6)
             al   = FastMath.log(FastMath.min(altKm, 500.0) / z);
-            n    = 1 + (int) FastMath.floor(al / R2);
+            n    = 1 + (int) FastMath.floor(al / JacchiaBowmanEquationsFactory.R2);
             zr   = FastMath.exp(al / n);
             sub2 = 0.;
             ain  = gravl / tloc2;
@@ -368,19 +274,19 @@ public class JB2008 extends AbstractSunInfluencedAtmosphere {
                 z = zend;
                 zend = zr * z;
                 final double dz = 0.25 * (zend - z);
-                double sum1 = WT[0] * ain;
+                double sum1 = JacchiaBowmanEquationsFactory.WT[0] * ain;
                 for (int j = 1; j < 5; ++j) {
                     z += dz;
-                    tloc3 = localTemp(z, tc);
-                    gravl = gravity(z);
+                    tloc3 = JacchiaBowmanEquationsFactory.localTemp(z, tc);
+                    gravl = JacchiaBowmanEquationsFactory.gravity(z);
                     ain   = gravl / tloc3;
-                    sum1 += WT[j] * ain;
+                    sum1 += JacchiaBowmanEquationsFactory.WT[j] * ain;
                 }
                 sub2 += dz * sum1;
             }
 
             al = FastMath.log(FastMath.max(altKm, 500.0) / z);
-            final double r = (altKm > 500.0) ? R3 : R2;
+            final double r = (altKm > 500.0) ? JacchiaBowmanEquationsFactory.R3 : JacchiaBowmanEquationsFactory.R2;
             n = 1 + (int) FastMath.floor(al / r);
             zr = FastMath.exp(al / n);
             double sum3 = 0.;
@@ -389,83 +295,63 @@ public class JB2008 extends AbstractSunInfluencedAtmosphere {
                 z = zend;
                 zend = zr * z;
                 final double dz = 0.25 * (zend - z);
-                double sum1 = WT[0] * ain;
+                double sum1 = JacchiaBowmanEquationsFactory.WT[0] * ain;
                 for (int j = 1; j < 5; ++j) {
                     z += dz;
-                    tloc4 = localTemp(z, tc);
-                    gravl = gravity(z);
+                    tloc4 = JacchiaBowmanEquationsFactory.localTemp(z, tc);
+                    gravl = JacchiaBowmanEquationsFactory.gravity(z);
                     ain   = gravl / tloc4;
-                    sum1 += WT[j] * ain;
+                    sum1 += JacchiaBowmanEquationsFactory.WT[j] * ain;
                 }
                 sum3 += dz * sum1;
             }
             final double altr;
             final double hSign;
             if (altKm <= 500.) {
-                temp[1] = tloc3;
                 altr = FastMath.log(tloc3 / tloc2);
-                fact2 = sub2 / RSTAR;
+                fact2 = sub2 / JacchiaBowmanEquationsFactory.RSTAR;
                 hSign = 1.0;
             } else {
-                temp[1] = tloc4;
                 altr = FastMath.log(tloc4 / tloc2);
-                fact2 = (sub2 + sum3) / RSTAR;
+                fact2 = (sub2 + sum3) / JacchiaBowmanEquationsFactory.RSTAR;
                 hSign = -1.0;
             }
             for (int i = 0; i < 5; ++i) {
-                aln[i] = aln[i] - (1.0 + ALPHA[i]) * altr - fact2 * AMW[i];
+                aln[i] = aln[i] - (1.0 + JacchiaBowmanEquationsFactory.ALPHA[i]) * altr - fact2 * JacchiaBowmanEquationsFactory.AMW[i];
             }
 
             // Equation (7)
             final double al10t5 = FastMath.log10(tinf);
             final double alnh5 = (5.5 * al10t5 - 39.40) * al10t5 + 73.13;
-            aln[5] = LOG10 * (alnh5 + 6.) + hSign * (FastMath.log(tloc4 / tloc3) + sum3 * AMW[5] / RSTAR);
+            aln[5] = JacchiaBowmanEquationsFactory.LOG10 * (alnh5 + 6.) + hSign * (FastMath.log(tloc4 / tloc3) + sum3 * JacchiaBowmanEquationsFactory.AMW[5] / JacchiaBowmanEquationsFactory.RSTAR);
         }
 
         // Equation (24) - J70 Seasonal-Latitudinal Variation
-        final double capPhi = ((dateMJD - 36204.0) / 365.2422) % 1;
-        final int signum = (satLat >= 0.) ? 1 : -1;
-        final double sinLat = FastMath.sin(satLat);
-        final double hm90  = altKm - 90.;
-        final double dlrsl = 0.02 * hm90 * FastMath.exp(-0.045 * hm90) *
-                             signum * FastMath.sin(MathUtils.TWO_PI * capPhi + 1.72) * sinLat * sinLat;
+        final double dlrsl = JacchiaBowmanEquationsFactory.dlrsl(altKm, dateMJD, satLat);
 
         // Equation (23) - Computes the semiannual variation
         double dlrsa = 0;
         if (z < 2000.0) {
             // Use new semiannual model dLog(rho)
-            dlrsa = semian08(dayOfYear(dateMJD), altKm, f10B, s10B, xm10B);
+            dlrsa = semian08(JacchiaBowmanEquationsFactory.dayOfYear(dateMJD), altKm, f10B, s10B, xm10B);
         }
 
         // Sum the delta-log-rhos and apply to the number densities.
         // In CIRA72 the following equation contains an actual sum,
         // namely DLR = LOG10 * (DLRGM + DLRSA + DLRSL)
         // However, for Jacchia 70, there is no DLRGM or DLRSA.
-        final double dlr = LOG10 * (dlrsl + dlrsa);
+        final double dlr = JacchiaBowmanEquationsFactory.LOG10 * (dlrsl + dlrsa);
         for (int i = 0; i < 6; ++i) {
             aln[i] += dlr;
         }
 
         // Compute mass-density and mean-molecular-weight and
         // convert number density logs from natural to common.
-        double sumnm = 0.0;
-        for (int i = 0; i < 6; ++i) {
-            sumnm += FastMath.exp(aln[i]) * AMW[i];
-        }
-        rho = sumnm / AVOGAD;
+        final double sumnm = IntStream.range(0, 6).mapToDouble(i -> FastMath.exp(aln[i]) * JacchiaBowmanEquationsFactory.AMW[i]).sum();
+        rho = sumnm / JacchiaBowmanEquationsFactory.AVOGAD;
 
         // Compute the high altitude exospheric density correction factor
-        double fex = 1.0;
-        if (altKm >= 1000.0 && altKm < 1500.0) {
-            final double zeta = (altKm - 1000.) * 0.002;
-            final double f15c = CHT[0] + CHT[1] * f10B + (CHT[2] + CHT[3] * f10B) * 1500.0;
-            final double f15cZeta = (CHT[2] + CHT[3] * f10B) * 500.0;
-            final double fex2 = 3.0 * f15c - f15cZeta - 3.0;
-            final double fex3 = f15cZeta - 2.0 * f15c + 2.0;
-            fex += zeta * zeta * (fex2 + fex3 * zeta);
-        } else if (altKm >= 1500.0) {
-            fex = CHT[0] + CHT[1] * f10B + CHT[2] * altKm + CHT[3] * f10B * altKm;
-        }
+        final double fex = JacchiaBowmanEquationsFactory.densityCorrectionFactor(altKm, f10B);
 
         // Apply the exospheric density correction factor.
         rho *= fex;
@@ -506,16 +392,16 @@ public class JB2008 extends AbstractSunInfluencedAtmosphere {
                                                         final double s10B, final double xm10, final double xm10B,
                                                         final double y10, final double y10B, final double dstdtc) {
 
-        if (satAlt.getReal() < ALT_MIN) {
+        if (satAlt.getReal() < JacchiaBowmanEquationsFactory.ALT_MIN) {
             throw new OrekitException(OrekitMessages.ALTITUDE_BELOW_ALLOWED_THRESHOLD,
-                                      satAlt.getReal(), ALT_MIN);
+                                      satAlt.getReal(), JacchiaBowmanEquationsFactory.ALT_MIN);
         }
 
         final Field<T> field  = satAlt.getField();
         final T pi    = field.getOne().getPi();
         final T altKm = satAlt.divide(1000.0);
 
-        // Equation (14)
+        // Equation (14) (Temperature equation)
         final double fn  = FastMath.min(1.0, FastMath.pow(f10B / 240., 0.25));
         final double fsb = f10B * fn + s10B * (1. - fn);
         final double tsubc = 392.4 + 3.227 * fsb + 0.298 * (f10 - f10B) + 2.259 * (s10 - s10B) +
@@ -528,58 +414,38 @@ public class JB2008 extends AbstractSunInfluencedAtmosphere {
         // Equation (16)
         final T h   = satLon.subtract(sunRA);
         final T tau = h.subtract(0.64577182).add(h.add(0.75049158).sin().multiply(0.10471976));
-        T solarTime = FastMath.toDegrees(h.add(pi)).divide(15.0);
-        while (solarTime.getReal() >= 24) {
-            solarTime = solarTime.subtract(24);
-        }
-        while (solarTime.getReal() < 0) {
-            solarTime = solarTime.add(24);
-        }
+        final T solarTime = JacchiaBowmanEquationsFactory.solarTimeHour(h);
 
         // Equation (17)
-        final T cos     = eta.cos();
-        final T cosEta  = cos.square().multiply(cos.sqrt());
-        final T sin     = theta.sin();
-        final T sinTeta = sin.square().multiply(sin.sqrt());
-        final T cosTau  = tau.multiply(0.5).cos().abs();
-        final T df      = sinTeta.add(cosEta.subtract(sinTeta).multiply(cosTau).multiply(cosTau).multiply(cosTau));
-        final T tsubl   = df.multiply(0.31).add(1).multiply(tsubc);
+        final T tsubl = JacchiaBowmanEquationsFactory.tSubL(eta, theta, tau, tsubc);
 
         // Compute correction to dTc for local solar time and lat correction
-        final T dtclst = dTc(f10, solarTime, satLat, altKm);
+        final T dtclst = JacchiaBowmanEquationsFactory.dTc(f10, solarTime, satLat, altKm);
 
         // Compute the local exospheric temperature.
         // Add geomagnetic storm effect from input dTc value
-        final T[] temp = MathArrays.buildArray(field, 2);
-        temp[0] = tsubl.add(dstdtc);
-        final T tinf = temp[0].add(dtclst);
+        final T tinf = tsubl.add(dstdtc).add(dtclst);
 
         // Equation (9)
-        final T tsubx = tinf.multiply(0.02385).add(444.3807).subtract(tinf.multiply(-0.0021357).exp().multiply(392.8292));
+        final T tsubx = JacchiaBowmanEquationsFactory.tSubX(tinf);
 
         // Equation (11)
-        final T gsubx = tsubx.subtract(183.).multiply(0.054285714);
+        final T gsubx = JacchiaBowmanEquationsFactory.gSubX(tsubx);
 
-        // The TC array will be an argument in the call to localTemp,
-        // which evaluates Eq. (10) or (13)
-        final T[] tc = MathArrays.buildArray(field, 4);
-        tc[0] = tsubx;
-        tc[1] = gsubx;
-        // A of Equation (13)
-        tc[2] = tinf.subtract(tsubx).multiply(pi.reciprocal().multiply(2.0));
-        tc[3] = gsubx.divide(tc[2]);
+        // The TC array will be an argument in the call to "localTemp"
+        final T[] tc = JacchiaBowmanEquationsFactory.tSubCArray(tsubx, gsubx, tinf, field);
 
         // Equation (5)
         final T z1 = field.getZero().newInstance(90.);
-        final T z2 = min(105.0, altKm);
+        final T z2 = FastMath.min(altKm, 105.0);
         T al = z2.divide(z1).log();
-        int n = 1 + (int) FastMath.floor(al.getReal() / R1);
+        int n = 1 + (int) FastMath.floor(al.getReal() / JacchiaBowmanEquationsFactory.R1);
         T zr = al.divide(n).exp();
-        final T mb1 = mBar(z1);
-        final T tloc1 = localTemp(z1, tc);
+        final T mb1 = JacchiaBowmanEquationsFactory.mBar(z1);
+        final T tloc1 = JacchiaBowmanEquationsFactory.localTemp(z1, tc);
         T zend  = z1;
         T sub2  = field.getZero();
-        T ain   = mb1.multiply(gravity(z1)).divide(tloc1);
+        T ain   = mb1.multiply(JacchiaBowmanEquationsFactory.gravity(z1)).divide(tloc1);
         T mb2   = field.getZero();
         T tloc2 = field.getZero();
         T z     = field.getZero();
@@ -588,42 +454,40 @@ public class JB2008 extends AbstractSunInfluencedAtmosphere {
             z = zend;
             zend = zr.multiply(z);
             final T dz = zend.subtract(z).multiply(0.25);
-            T sum1 = ain.multiply(WT[0]);
+            T sum1 = ain.multiply(JacchiaBowmanEquationsFactory.WT[0]);
             for (int j = 1; j < 5; ++j) {
                 z = z.add(dz);
-                mb2   = mBar(z);
-                tloc2 = localTemp(z, tc);
-                gravl = gravity(z);
+                mb2   = JacchiaBowmanEquationsFactory.mBar(z);
+                tloc2 = JacchiaBowmanEquationsFactory.localTemp(z, tc);
+                gravl = JacchiaBowmanEquationsFactory.gravity(z);
                 ain   = mb2.multiply(gravl).divide(tloc2);
-                sum1  = sum1.add(ain.multiply(WT[j]));
+                sum1  = sum1.add(ain.multiply(JacchiaBowmanEquationsFactory.WT[j]));
             }
             sub2 = sub2.add(dz.multiply(sum1));
         }
-
-        T rho = mb2.multiply(3.46e-6).multiply(tloc1).divide(sub2.divide(RSTAR).exp().multiply(mb1.multiply(tloc2)));
+        T rho = mb2.multiply(3.46e-6).multiply(tloc1).divide(sub2.divide(JacchiaBowmanEquationsFactory.RSTAR).exp().multiply(mb1.multiply(tloc2)));
 
         // Equation (2)
-        final T anm = rho.multiply(AVOGAD);
+        final T anm = rho.multiply(JacchiaBowmanEquationsFactory.AVOGAD);
         final T an  = anm.divide(mb2);
 
         // Equation (3)
         T fact2  = anm.divide(28.960);
         final T[] aln = MathArrays.buildArray(field, 6);
-        aln[0] = fact2.multiply(FRAC[0]).log();
-        aln[3] = fact2.multiply(FRAC[2]).log();
-        aln[4] = fact2.multiply(FRAC[3]).log();
+        aln[0] = fact2.multiply(JacchiaBowmanEquationsFactory.FRAC[0]).log();
+        aln[3] = fact2.multiply(JacchiaBowmanEquationsFactory.FRAC[2]).log();
+        aln[4] = fact2.multiply(JacchiaBowmanEquationsFactory.FRAC[3]).log();
         // Equation (4)
-        aln[1] = fact2.multiply(1. + FRAC[1]).subtract(an).log();
+        aln[1] = fact2.multiply(1. + JacchiaBowmanEquationsFactory.FRAC[1]).subtract(an).log();
         aln[2] = an.subtract(fact2).multiply(2).log();
 
         if (altKm.getReal() <= 105.0) {
-            temp[1] = tloc2;
             // Put in negligible hydrogen for use in DO-LOOP 13
             aln[5] = aln[4].subtract(25.0);
         } else {
             // Equation (6)
-            al   = min(500.0, altKm).divide(z).log();
-            n    = 1 + (int) FastMath.floor(al.getReal() / R2);
+            al   = FastMath.min(altKm, 500.0).divide(z).log();
+            n    = 1 + (int) FastMath.floor(al.getReal() / JacchiaBowmanEquationsFactory.R2);
             zr   = al.divide(n).exp();
             sub2 = field.getZero();
             ain  = gravl.divide(tloc2);
@@ -633,19 +497,19 @@ public class JB2008 extends AbstractSunInfluencedAtmosphere {
                 z = zend;
                 zend = zr.multiply(z);
                 final T dz = zend.subtract(z).multiply(0.25);
-                T sum1 = ain.multiply(WT[0]);
+                T sum1 = ain.multiply(JacchiaBowmanEquationsFactory.WT[0]);
                 for (int j = 1; j < 5; ++j) {
                     z = z.add(dz);
-                    tloc3 = localTemp(z, tc);
-                    gravl = gravity(z);
+                    tloc3 = JacchiaBowmanEquationsFactory.localTemp(z, tc);
+                    gravl = JacchiaBowmanEquationsFactory.gravity(z);
                     ain   = gravl.divide(tloc3);
-                    sum1  = sum1.add(ain.multiply(WT[j]));
+                    sum1  = sum1.add(ain.multiply(JacchiaBowmanEquationsFactory.WT[j]));
                 }
                 sub2 = sub2.add(dz.multiply(sum1));
             }
 
-            al = max(500.0, altKm).divide(z).log();
-            final double r = (altKm.getReal() > 500.0) ? R3 : R2;
+            al = FastMath.max(altKm, 500.0).divide(z).log();
+            final double r = (altKm.getReal() > 500.0) ? JacchiaBowmanEquationsFactory.R3 : JacchiaBowmanEquationsFactory.R2;
             n = 1 + (int) FastMath.floor(al.getReal() / r);
             zr = al.divide(n).exp();
             T sum3 = field.getZero();
@@ -654,62 +518,53 @@ public class JB2008 extends AbstractSunInfluencedAtmosphere {
                 z = zend;
                 zend = zr.multiply(z);
                 final T dz = zend.subtract(z).multiply(0.25);
-                T sum1 = ain.multiply(WT[0]);
+                T sum1 = ain.multiply(JacchiaBowmanEquationsFactory.WT[0]);
                 for (int j = 1; j < 5; ++j) {
                     z = z.add(dz);
-                    tloc4 = localTemp(z, tc);
-                    gravl = gravity(z);
+                    tloc4 = JacchiaBowmanEquationsFactory.localTemp(z, tc);
+                    gravl = JacchiaBowmanEquationsFactory.gravity(z);
                     ain   = gravl.divide(tloc4);
-                    sum1  = sum1.add(ain.multiply(WT[j]));
+                    sum1  = sum1.add(ain.multiply(JacchiaBowmanEquationsFactory.WT[j]));
                 }
                 sum3 = sum3.add(dz.multiply(sum1));
             }
             final T altr;
             final double hSign;
             if (altKm.getReal() <= 500.) {
-                temp[1] = tloc3;
                 altr = tloc3.divide(tloc2).log();
-                fact2 = sub2.divide(RSTAR);
+                fact2 = sub2.divide(JacchiaBowmanEquationsFactory.RSTAR);
                 hSign = 1.0;
             } else {
-                temp[1] = tloc4;
                 altr = tloc4.divide(tloc2).log();
-                fact2 = sub2.add(sum3).divide(RSTAR);
+                fact2 = sub2.add(sum3).divide(JacchiaBowmanEquationsFactory.RSTAR);
                 hSign = -1.0;
             }
             for (int i = 0; i < 5; ++i) {
-                aln[i] = aln[i].subtract(altr.multiply(1.0 + ALPHA[i])).subtract(fact2.multiply(AMW[i]));
+                aln[i] = aln[i].subtract(altr.multiply(1.0 + JacchiaBowmanEquationsFactory.ALPHA[i])).subtract(fact2.multiply(JacchiaBowmanEquationsFactory.AMW[i]));
             }
 
             // Equation (7)
             final T al10t5 = tinf.log10();
             final T alnh5 = al10t5.multiply(5.5).subtract(39.40).multiply(al10t5).add(73.13);
-            aln[5] = alnh5.add(6.).multiply(LOG10).
-                     add(tloc4.divide(tloc3).log().add(sum3.multiply(AMW[5] / RSTAR)).multiply(hSign));
+            aln[5] = alnh5.add(6.).multiply(JacchiaBowmanEquationsFactory.LOG10).
+                     add(tloc4.divide(tloc3).log().add(sum3.multiply(JacchiaBowmanEquationsFactory.AMW[5] / JacchiaBowmanEquationsFactory.RSTAR)).multiply(hSign));
         }
 
         // Equation (24) - J70 Seasonal-Latitudinal Variation
-        T capPhi = dateMJD.subtract(36204.0).divide(365.2422);
-        capPhi = capPhi.subtract(FastMath.floor(capPhi.getReal()));
-        final int signum = (satLat.getReal() >= 0.) ? 1 : -1;
-        final T sinLat = satLat.sin();
-        final T hm90  = altKm.subtract(90.);
-        final T dlrsl = hm90.multiply(0.02).multiply(hm90.multiply(-0.045).exp()).
-                        multiply(capPhi.multiply(MathUtils.TWO_PI).add(1.72).sin()).
-                        multiply(signum).multiply(sinLat).multiply(sinLat);
+        final T dlrsl = JacchiaBowmanEquationsFactory.dlrsl(altKm, dateMJD, satLat);
 
         // Equation (23) - Computes the semiannual variation
         T dlrsa = field.getZero();
         if (z.getReal() < 2000.0) {
             // Use new semiannual model dLog(rho)
-            dlrsa = semian08(dayOfYear(dateMJD), altKm, f10B, s10B, xm10B);
+            dlrsa = semian08(JacchiaBowmanEquationsFactory.dayOfYear(dateMJD), altKm, f10B, s10B, xm10B);
         }
 
         // Sum the delta-log-rhos and apply to the number densities.
         // In CIRA72 the following equation contains an actual sum,
         // namely DLR = LOG10 * (DLRGM + DLRSA + DLRSL)
         // However, for Jacchia 70, there is no DLRGM or DLRSA.
-        final T dlr = dlrsl.add(dlrsa).multiply(LOG10);
+        final T dlr = dlrsl.add(dlrsa).multiply(JacchiaBowmanEquationsFactory.LOG10);
         for (int i = 0; i < 6; ++i) {
             aln[i] = aln[i].add(dlr);
         }
@@ -718,333 +573,17 @@ public class JB2008 extends AbstractSunInfluencedAtmosphere {
         // convert number density logs from natural to common.
         T sumnm = field.getZero();
         for (int i = 0; i < 6; ++i) {
-            sumnm = sumnm.add(aln[i].exp().multiply(AMW[i]));
+            sumnm = sumnm.add(aln[i].exp().multiply(JacchiaBowmanEquationsFactory.AMW[i]));
         }
-        rho = sumnm.divide(AVOGAD);
+        rho = sumnm.divide(JacchiaBowmanEquationsFactory.AVOGAD);
 
         // Compute the high altitude exospheric density correction factor
-        T fex = field.getOne();
-        if (altKm.getReal() >= 1000.0 && altKm.getReal() < 1500.0) {
-            final T zeta = altKm.subtract(1000.).multiply(0.002);
-            final double f15c     = CHT[0] + CHT[1] * f10B + (CHT[2] + CHT[3] * f10B) * 1500.0;
-            final double f15cZeta = (CHT[2] + CHT[3] * f10B) * 500.0;
-            final double fex2     = 3.0 * f15c - f15cZeta - 3.0;
-            final double fex3     = f15cZeta - 2.0 * f15c + 2.0;
-            fex = fex.add(zeta.multiply(zeta).multiply(zeta.multiply(fex3).add(fex2)));
-        } else if (altKm.getReal() >= 1500.0) {
-            fex = altKm.multiply(CHT[3] * f10B).add(altKm.multiply(CHT[2])).add(CHT[0] + CHT[1] * f10B);
-        }
+        final T fex = JacchiaBowmanEquationsFactory.densityCorrectionFactor(altKm, f10B, field);
 
         // Apply the exospheric density correction factor.
         rho = rho.multiply(fex);
 
         return rho;
-    }
-
-    /** Compute daily temperature correction for Jacchia-Bowman model.
-     * @param f10 solar flux index
-     * @param solarTime local solar time (hours in [0, 24[)
-     * @param satLat sat lat (radians)
-     * @param satAlt height (km)
-     * @return dTc correction
-     */
-    private static double dTc(final double f10, final double solarTime,
-                              final double satLat, final double satAlt) {
-        double dTc = 0.;
-        final double st = solarTime / 24.0;
-        final double cs = FastMath.cos(satLat);
-        final double fs = (f10 - 100.0) / 100.0;
-
-        // Calculates dTc according to height
-        if (satAlt >= 120 && satAlt <= 200) {
-            final double dtc200 = poly2CDTC(fs, st, cs);
-            final double dtc200dz = poly1CDTC(fs, st, cs);
-            final double cc = 3.0 * dtc200 - dtc200dz;
-            final double dd = dtc200 - cc;
-            final double zp = (satAlt - 120.0) / 80.0;
-            dTc = zp * zp * (cc + dd * zp);
-        } else if (satAlt > 200.0 && satAlt <= 240.0) {
-            final double h = (satAlt - 200.0) / 50.0;
-            dTc = poly1CDTC(fs, st, cs) * h + poly2CDTC(fs, st, cs);
-        } else if (satAlt > 240.0 && satAlt <= 300.0) {
-            final double h = 0.8;
-            final double bb = poly1CDTC(fs, st, cs);
-            final double aa = bb * h + poly2CDTC(fs, st, cs);
-            final double p2BDT = poly2BDTC(st);
-            final double dtc300 = poly1BDTC(fs, st, cs, 3 * p2BDT);
-            final double dtc300dz = cs * p2BDT;
-            final double cc = 3.0 * dtc300 - dtc300dz - 3.0 * aa - 2.0 * bb;
-            final double dd = dtc300 - aa - bb - cc;
-            final double zp = (satAlt - 240.0) / 60.0;
-            dTc = aa + zp * (bb + zp * (cc + zp * dd));
-        } else if (satAlt > 300.0 && satAlt <= 600.0) {
-            final double h = satAlt / 100.0;
-            dTc = poly1BDTC(fs, st, cs, h * poly2BDTC(st));
-        } else if (satAlt > 600.0 && satAlt <= 800.0) {
-            final double poly2 = poly2BDTC(st);
-            final double aa = poly1BDTC(fs, st, cs, 6 * poly2);
-            final double bb = cs * poly2;
-            final double cc = -(3.0 * aa + 4.0 * bb) / 4.0;
-            final double dd = (aa + bb) / 4.0;
-            final double zp = (satAlt - 600.0) / 100.0;
-            dTc = aa + zp * (bb + zp * (cc + zp * dd));
-        }
-
-        return dTc;
-    }
-
-    /** Compute daily temperature correction for Jacchia-Bowman model.
-     * @param f10 solar flux index
-     * @param solarTime local solar time (hours in [0, 24[)
-     * @param satLat sat lat (radians)
-     * @param satAlt height (km)
-     * @param <T> type of the filed elements
-     * @return dTc correction
-     */
-    private static <T extends CalculusFieldElement<T>> T dTc(final double f10, final T solarTime,
-                                                         final T satLat, final T satAlt) {
-        T dTc = solarTime.getField().getZero();
-        final T      st = solarTime.divide(24.0);
-        final T      cs = satLat.cos();
-        final double fs = (f10 - 100.0) / 100.0;
-
-        // Calculates dTc according to height
-        if (satAlt.getReal() >= 120 && satAlt.getReal() <= 200) {
-            final T dtc200   = poly2CDTC(fs, st, cs);
-            final T dtc200dz = poly1CDTC(fs, st, cs);
-            final T cc       = dtc200.multiply(3).subtract(dtc200dz);
-            final T dd       = dtc200.subtract(cc);
-            final T zp       = satAlt.subtract(120.0).divide(80.0);
-            dTc = zp.multiply(zp).multiply(cc.add(dd.multiply(zp)));
-        } else if (satAlt.getReal() > 200.0 && satAlt.getReal() <= 240.0) {
-            final T h = satAlt.subtract(200.0).divide(50.0);
-            dTc = poly1CDTC(fs, st, cs).multiply(h).add(poly2CDTC(fs, st, cs));
-        } else if (satAlt.getReal() > 240.0 && satAlt.getReal() <= 300.0) {
-            final T h = solarTime.getField().getZero().newInstance(0.8);
-            final T bb = poly1CDTC(fs, st, cs);
-            final T aa = bb.multiply(h).add(poly2CDTC(fs, st, cs));
-            final T p2BDT = poly2BDTC(st);
-            final T dtc300 = poly1BDTC(fs, st, cs, p2BDT.multiply(3));
-            final T dtc300dz = cs.multiply(p2BDT);
-            final T cc = dtc300.multiply(3).subtract(dtc300dz).subtract(aa.multiply(3)).subtract(bb.multiply(2));
-            final T dd = dtc300.subtract(aa).subtract(bb).subtract(cc);
-            final T zp = satAlt.subtract(240.0).divide(60.0);
-            dTc = aa.add(zp.multiply(bb.add(zp.multiply(cc.add(zp.multiply(dd))))));
-        } else if (satAlt.getReal() > 300.0 && satAlt.getReal() <= 600.0) {
-            final T h = satAlt.divide(100.0);
-            dTc = poly1BDTC(fs, st, cs, h.multiply(poly2BDTC(st)));
-        } else if (satAlt.getReal() > 600.0 && satAlt.getReal() <= 800.0) {
-            final T poly2 = poly2BDTC(st);
-            final T aa = poly1BDTC(fs, st, cs, poly2.multiply(6));
-            final T bb = cs.multiply(poly2);
-            final T cc = aa.multiply(3).add(bb.multiply(4)).divide(-4.0);
-            final T dd = aa.add(bb).divide(4.0);
-            final T zp = satAlt.subtract(600.0).divide(100.0);
-            dTc = aa.add(zp.multiply(bb.add(zp.multiply(cc.add(zp.multiply(dd))))));
-        }
-
-        return dTc;
-    }
-
-    /** Calculates first polynomial with CDTC array.
-     * @param fs scaled flux f10
-     * @param st local solar time in [0, 1[
-     * @param cs cosine of satLat
-     * @return the value of the polynomial
-     */
-    private static double poly1CDTC(final double fs, final double st, final double cs) {
-        return CDTC[0] +
-                fs * (CDTC[1] + st * (CDTC[2] + st * (CDTC[3] + st * (CDTC[4] + st * (CDTC[5] + st * CDTC[6]))))) +
-                cs * st * (CDTC[7] + st * (CDTC[8] + st * (CDTC[9] + st * (CDTC[10] + st * CDTC[11])))) +
-                cs * (CDTC[12] + fs * (CDTC[13] + st * (CDTC[14] + st * CDTC[15])));
-    }
-
-    /** Calculates first polynomial with CDTC array.
-     * @param fs scaled flux f10
-     * @param st local solar time in [0, 1[
-     * @param cs cosine of satLat
-     * @param <T> type of the field elements
-     * @return the value of the polynomial
-     */
-    private static <T extends CalculusFieldElement<T>>  T poly1CDTC(final double fs, final T st, final T cs) {
-        return    st.multiply(CDTC[6]).
-              add(CDTC[5]).multiply(st).
-              add(CDTC[4]).multiply(st).
-              add(CDTC[3]).multiply(st).
-              add(CDTC[2]).multiply(st).
-              add(CDTC[1]).multiply(fs).
-              add(st.multiply(CDTC[11]).
-                  add(CDTC[10]).multiply(st).
-                  add(CDTC[ 9]).multiply(st).
-                  add(CDTC[ 8]).multiply(st).
-                  add(CDTC[7]).multiply(st).multiply(cs)).
-              add(st.multiply(CDTC[15]).
-                  add(CDTC[14]).multiply(st).
-                  add(CDTC[13]).multiply(fs).
-                  add(CDTC[12]).multiply(cs)).
-              add(CDTC[0]);
-    }
-
-    /** Calculates second polynomial with CDTC array.
-     * @param fs scaled flux f10
-     * @param st local solar time in [0, 1[
-     * @param cs cosine of satLat
-     * @return the value of the polynomial
-     */
-    private static double poly2CDTC(final double fs, final double st, final double cs) {
-        return CDTC[16] + st * cs * (CDTC[17] + st * (CDTC[18] + st * CDTC[19])) +
-                          fs * cs * (CDTC[20] + st * (CDTC[21] + st * CDTC[22]));
-    }
-
-    /** Calculates second polynomial with CDTC array.
-     * @param fs scaled flux f10
-     * @param st local solar time in [0, 1[
-     * @param cs cosine of satLat
-     * @param <T> type of the field elements
-     * @return the value of the polynomial
-     */
-    private static <T extends CalculusFieldElement<T>>  T poly2CDTC(final double fs, final T st, final T cs) {
-        return         st.multiply(CDTC[19]).
-                   add(CDTC[18]).multiply(st).
-                   add(CDTC[17]).multiply(cs).multiply(st).
-               add(    st.multiply(CDTC[22]).
-                   add(CDTC[21]).multiply(st).
-                   add(CDTC[20]).multiply(cs).multiply(fs)).
-               add(CDTC[16]);
-    }
-
-    /** Calculates first polynomial with BDTC array.
-     * @param fs scaled flux f10
-     * @param st local solar time in [0, 1[
-     * @param cs cosine of satLat
-     * @param hp scaled height * poly2BDTC
-     * @return the value of the polynomial
-     */
-    private static double poly1BDTC(final double fs, final double st, final double cs, final double hp) {
-        return BDTC[0] +
-                fs * (BDTC[1] + st * (BDTC[2] + st * (BDTC[3] + st * (BDTC[4] + st * (BDTC[5] + st * BDTC[6]))))) +
-                cs * (st * (BDTC[7] + st * (BDTC[8] + st * (BDTC[9] + st * (BDTC[10] + st * BDTC[11])))) + hp + BDTC[18]);
-    }
-
-    /** Calculates first polynomial with BDTC array.
-     * @param fs scaled flux f10
-     * @param st local solar time in [0, 1[
-     * @param cs cosine of satLat
-     * @param hp scaled height * poly2BDTC
-     * @param <T> type of the field elements
-     * @return the value of the polynomial
-     */
-    private static <T extends CalculusFieldElement<T>>  T poly1BDTC(final double fs, final T st, final T cs, final T hp) {
-        return     st.multiply(BDTC[6]).
-               add(BDTC[5]).multiply(st).
-               add(BDTC[4]).multiply(st).
-               add(BDTC[3]).multiply(st).
-               add(BDTC[2]).multiply(st).
-               add(BDTC[1]).multiply(fs).
-               add(    st.multiply(BDTC[11]).
-                   add(BDTC[10]).multiply(st).
-                   add(BDTC[ 9]).multiply(st).
-                   add(BDTC[ 8]).multiply(st).
-                   add(BDTC[ 7]).multiply(st).
-                   add(hp).add(BDTC[18]).multiply(cs)).
-               add(BDTC[0]);
-    }
-
-    /** Calculates second polynomial with BDTC array.
-     * @param st local solar time in [0, 1[
-     * @return the value of the polynomial
-     */
-    private static double poly2BDTC(final double st) {
-        return BDTC[12] + st * (BDTC[13] + st * (BDTC[14] + st * (BDTC[15] + st * (BDTC[16] + st * BDTC[17]))));
-    }
-
-    /** Calculates second polynomial with BDTC array.
-     * @param st local solar time in [0, 1[
-     * @param <T> type of the field elements
-     * @return the value of the polynomial
-     */
-    private static <T extends CalculusFieldElement<T>>  T poly2BDTC(final T st) {
-        return     st.multiply(BDTC[17]).
-               add(BDTC[16]).multiply(st).
-               add(BDTC[15]).multiply(st).
-               add(BDTC[14]).multiply(st).
-               add(BDTC[13]).multiply(st).
-               add(BDTC[12]);
-    }
-
-    /** Evaluates mean molecualr mass - Equation (1).
-     * @param z altitude (km)
-     * @return mean molecular mass
-     */
-    private static double mBar(final double z) {
-        final double dz = z - 100.;
-        double amb = CMB[6];
-        for (int i = 5; i >= 0; --i) {
-            amb = dz * amb + CMB[i];
-        }
-        return amb;
-    }
-
-    /** Evaluates mean molecualr mass - Equation (1).
-     * @param z altitude (km)
-     * @return mean molecular mass
-     * @param <T> type of the field elements
-     */
-    private static <T extends CalculusFieldElement<T>>  T mBar(final T z) {
-        final T dz = z.subtract(100.);
-        T amb = z.getField().getZero().newInstance(CMB[6]);
-        for (int i = 5; i >= 0; --i) {
-            amb = dz.multiply(amb).add(CMB[i]);
-        }
-        return amb;
-    }
-
-    /** Evaluates the local temperature, Eq. (10) or (13) depending on altitude.
-     * @param z altitude
-     * @param tc tc array
-     * @return temperature profile
-     */
-    private static double localTemp(final double z, final double[] tc) {
-        final double dz = z - 125.;
-        if (dz <= 0.) {
-            return ((-9.8204695e-6 * dz - 7.3039742e-4) * dz * dz + 1.0) * dz * tc[1] + tc[0];
-        } else {
-            return tc[0] + tc[2] * FastMath.atan(tc[3] * dz * (1 + 4.5e-6 * FastMath.pow(dz, 2.5)));
-        }
-    }
-
-    /** Evaluates the local temperature, Eq. (10) or (13) depending on altitude.
-     * @param z altitude
-     * @param tc tc array
-     * @return temperature profile
-     * @param <T> type of the field elements
-     */
-    private static <T extends CalculusFieldElement<T>>  T localTemp(final T z, final T[] tc) {
-        final T dz = z.subtract(125.);
-        if (dz.getReal() <= 0.) {
-            return dz.multiply(-9.8204695e-6).subtract(7.3039742e-4).multiply(dz).multiply(dz).add(1.0).multiply(dz).multiply(tc[1]).add(tc[0]);
-        } else {
-            return dz.multiply(dz).multiply(dz.sqrt()).multiply(4.5e-6).add(1).multiply(dz).multiply(tc[3]).atan().multiply(tc[2]).add(tc[0]);
-        }
-    }
-
-    /** Evaluates the gravity at the altitude - Equation (8).
-     * @param z altitude (km)
-     * @return the gravity (m/s2)
-     */
-    private static double gravity(final double z) {
-        final double tmp = 1.0 + z / EARTH_RADIUS;
-        return Constants.G0_STANDARD_GRAVITY / (tmp * tmp);
-    }
-
-    /** Evaluates the gravity at the altitude - Equation (8).
-     * @param z altitude (km)
-     * @return the gravity (m/s2)
-     * @param <T> type of the field elements
-     */
-    private static <T extends CalculusFieldElement<T>>  T gravity(final T z) {
-        final T tmp = z.divide(EARTH_RADIUS).add(1);
-        return tmp.multiply(tmp).reciprocal().multiply(Constants.G0_STANDARD_GRAVITY);
     }
 
     /** Compute semi-annual variation (delta log(rho)).
@@ -1120,73 +659,6 @@ public class JB2008 extends AbstractSunInfluencedAtmosphere {
 
         return fzz.getReal() > 1.0e-6 ? gtz.multiply(fzz) : gtz.multiply(1.0e-6);
 
-    }
-
-    /** Compute day of year.
-     * @param dateMJD Modified Julian date
-     * @return the number days in year
-     */
-    private static double dayOfYear(final double dateMJD) {
-        final double d1950 = dateMJD - 33281;
-
-        int iyday = (int) d1950;
-        final double frac = d1950 - iyday;
-        iyday = iyday + 364;
-
-        int itemp = iyday / 1461;
-
-        iyday = iyday - itemp * 1461;
-        itemp = iyday / 365;
-        if (itemp >= 3) {
-            itemp = 3;
-        }
-        iyday = iyday - 365 * itemp + 1;
-        return iyday + frac;
-    }
-
-    /** Compute day of year.
-     * @param dateMJD Modified Julian date
-     * @param <T> type of the field elements
-     * @return the number days in year
-     */
-    private static <T extends CalculusFieldElement<T>> T dayOfYear(final T dateMJD) {
-        final T d1950 = dateMJD.subtract(33281);
-
-        int iyday = (int) d1950.getReal();
-        final T frac = d1950.subtract(iyday);
-        iyday = iyday + 364;
-
-        int itemp = iyday / 1461;
-
-        iyday = iyday - itemp * 1461;
-        itemp = iyday / 365;
-        if (itemp >= 3) {
-            itemp = 3;
-        }
-        iyday = iyday - 365 * itemp + 1;
-        return frac.add(iyday);
-    }
-
-    // OUTPUT:
-
-    /** Compute min of two values, one double and one field element.
-     * @param d double value
-     * @param f field element
-     * @param <T> type of the field elements
-     * @return min value
-     */
-    private <T extends CalculusFieldElement<T>> T min(final double d, final T f) {
-        return (f.getReal() > d) ? f.getField().getZero().newInstance(d) : f;
-    }
-
-    /** Compute max of two values, one double and one field element.
-     * @param d double value
-     * @param f field element
-     * @param <T> type of the field elements
-     * @return max value
-     */
-    private <T extends CalculusFieldElement<T>> T max(final double d, final T f) {
-        return (f.getReal() <= d) ? f.getField().getZero().newInstance(d) : f;
     }
 
     /** Get the local density.
