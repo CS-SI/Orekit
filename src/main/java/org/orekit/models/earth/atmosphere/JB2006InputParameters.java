@@ -17,7 +17,6 @@
 package org.orekit.models.earth.atmosphere;
 
 import java.io.Serializable;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 
 /**
