@@ -94,19 +94,19 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
     private static final double EARTH_RADIUS = 6356.766;
 
     /** The alpha are the thermal diffusion coefficients in equation (6). */
-    private static final double[] ALPHA = {0, 0, 0, 0, 0, -0.38};
+    private static final double[] ALPHA = {0, 0, 0, 0, -0.38};
 
     /** Natural logarithm of 10.0. */
     private static final double AL10 = 2.3025851;
 
     /** Molecular weights in order: N2, O2, O, Ar, He and H. */
-    private static final double[] AMW = {0, 28.0134, 31.9988, 15.9994, 39.9480, 4.0026, 1.00797};
+    private static final double[] AMW = {28.0134, 31.9988, 15.9994, 39.9480, 4.0026, 1.00797};
 
     /** Avogadro's number in mks units (molecules/kmol). */
     private static final double AVOGAD = 6.02257e26;
 
     /** The FRAC are the assumed sea-level volume fractions in order: N2, O2, Ar, and He. */
-    private static final double[] FRAC = {0, 0.78110, 0.20955, 9.3400e-3, 1.2890e-5};
+    private static final double[] FRAC = {0.78110, 0.20955, 9.3400e-3, 1.2890e-5};
 
     /** Universal gas-constant in mks units (joules/K/kmol). */
     private static final double RSTAR = 8314.32;
@@ -121,17 +121,16 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
     private static final double R3 = 0.075;
 
     /** Weights for the Newton-Cotes five-points quadrature formula. */
-    private static final double[] WT = {0, 0.311111111111111, 1.422222222222222, 0.533333333333333, 1.422222222222222, 0.311111111111111};
+    private static final double[] WT = {0.311111111111111, 1.422222222222222, 0.533333333333333, 1.422222222222222, 0.311111111111111};
 
     /** Coefficients for high altitude density correction. */
-    private static final double[] CHT = {0, 0.22, -0.20e-02, 0.115e-02, -0.211e-05};
+    private static final double[] CHT = {0.22, -0.20e-02, 0.115e-02, -0.211e-05};
 
     /** FZ global model values (1978-2004 fit). */
-    private static final double[] FZM = {0, 0.111613e+00, -0.159000e-02, 0.126190e-01, -0.100064e-01, -0.237509e-04, 0.260759e-04};
+    private static final double[] FZM = { 0.111613e+00, -0.159000e-02, 0.126190e-01, -0.100064e-01, -0.237509e-04, 0.260759e-04};
 
     /** GT global model values (1978-2004 fit). */
-    private static final double[] GTM = {0,
-                                         -0.833646e+00,
+    private static final double[] GTM = {-0.833646e+00,
                                          -0.265450e+00,
                                          0.467603e+00,
                                          -0.299906e+00,
@@ -156,11 +155,10 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
                                          0.343423e-05};
 
     /** XAMBAR relative data. */
-    private static final double[] CXAMB = {0, 28.15204, -8.5586e-2, +1.2840e-4, -1.0056e-5, -1.0210e-5, +1.5044e-6, +9.9826e-8};
+    private static final double[] CXAMB = {28.15204, -8.5586e-2, +1.2840e-4, -1.0056e-5, -1.0210e-5, +1.5044e-6, +9.9826e-8};
 
     /** DTSUB relative data. */
-    private static final double[] BDT_SUB = {0,
-                                             -0.457512297e+01,
+    private static final double[] BDT_SUB = {-0.457512297e+01,
                                              -0.512114909e+01,
                                              -0.693003609e+02,
                                              0.203716701e+03,
@@ -181,8 +179,7 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
                                              0.361416936e+02};
 
     /** DTSUB relative data.  */
-    private static final double[] CDT_SUB = {0,
-                                             -0.155986211e+02,
+    private static final double[] CDT_SUB = {-0.155986211e+02,
                                              -0.512114909e+01,
                                              -0.693003609e+02,
                                              0.203716701e+03,
@@ -340,12 +337,12 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
         double z           = 0;
         double gravl       = 0;
 
-        for (int i = 1; i <= n; ++i) {
+        for (int i = 0; i < n; ++i) {
             z = zend;
             zend = zr * z;
             final double dz = 0.25 * (zend - z);
-            double sum1 = WT[1] * ain;
-            for (int j = 2; j <= 5; ++j) {
+            double sum1 = WT[0] * ain;
+            for (int j = 1; j < 5; ++j) {
                 z += dz;
                 mb2   = mBar(z);
                 tloc2 = localTemp(z, tc);
@@ -364,17 +361,17 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
 
         // Equation (3)
         double fact2 = anm / 28.960;
-        final double[] aln = new double[7];
-        aln[1] = FastMath.log(FRAC[1] * fact2);
+        final double[] aln = new double[6];
+        aln[0] = FastMath.log(FRAC[0] * fact2);
+        aln[3] = FastMath.log(FRAC[2] * fact2);
         aln[4] = FastMath.log(FRAC[3] * fact2);
-        aln[5] = FastMath.log(FRAC[4] * fact2);
         // Equation (4)
-        aln[2] = FastMath.log(fact2 * (1. + FRAC[2]) - an);
-        aln[3] = FastMath.log(2. * (an - fact2));
+        aln[1] = FastMath.log(fact2 * (1. + FRAC[1]) - an);
+        aln[2] = FastMath.log(2. * (an - fact2));
 
         if (scaledSatAlt <= 105.0) {
             // Put in negligible hydrogen for use in DO-LOOP 13
-            aln[6] = aln[5] - 25.0;
+            aln[5] = aln[4] - 25.0;
         }
         else {
             // Equation (6)
@@ -385,12 +382,12 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
             ain = gravl / tloc2;
 
             double tloc3 = 0;
-            for (int i = 1; i <= n; ++i) {
+            for (int i = 0; i < n; ++i) {
                 z = zend;
                 zend = zr * z;
                 final double dz = 0.25 * (zend - z);
-                double SUM1 = WT[1] * ain;
-                for (int j = 2; j <= 5; ++j) {
+                double SUM1 = WT[0] * ain;
+                for (int j = 1; j < 5; ++j) {
                     z += dz;
                     tloc3 = localTemp(z, tc);
                     gravl = gravity(z);
@@ -406,12 +403,12 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
             zr = FastMath.exp(al / n);
             double sum3 = 0.;
             double tloc4 = 0;
-            for (int i = 1; i <= n; ++i) {
+            for (int i = 0; i < n; ++i) {
                 z = zend;
                 zend = zr * z;
                 final double dz = 0.25 * (zend - z);
-                double sum1 = WT[1] * ain;
-                for (int j = 2; j <= 5; ++j) {
+                double sum1 = WT[0] * ain;
+                for (int j = 1; j < 5; ++j) {
                     z += dz;
                     tloc4 = localTemp(z, tc);
                     gravl = gravity(z);
@@ -432,14 +429,14 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
                 fact2 = fact1 * (sub2 + sum3);
                 hSign = -1.0;
             }
-            for (int i = 1; i <= 5; ++i) {
+            for (int i = 0; i < 5; ++i) {
                 aln[i] = aln[i] - (1.0 + ALPHA[i]) * altr - fact2 * AMW[i];
             }
 
             // Equation (7) - Note that in CIRA72, AL10T5 = DLOG10(T500)
             final double al10t5 = FastMath.log10(tInf);
             final double alnh5 = (5.5 * al10t5 - 39.40) * al10t5 + 73.13;
-            aln[6] = AL10 * (alnh5 + 6.) + hSign * (FastMath.log(tloc4 / tloc3) + fact1 * sum3 * AMW[6]);
+            aln[5] = AL10 * (alnh5 + 6.) + hSign * (FastMath.log(tloc4 / tloc3) + fact1 * sum3 * AMW[5]);
         }
 
         // Equation (24)  - J70 Seasonal-Latitudinal Variation
@@ -461,14 +458,14 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
         // namely DLR = AL10 * (DLRGM + DLRSA + DLRSL)
         // However, for Jacchia 70, there is no DLRGM or DLRSA.
         final double dlr = AL10 * (dlrsl + dlrsa);
-        for (int i = 1; i <= 6; ++i) {
+        for (int i = 0; i < 6; ++i) {
             aln[i] += dlr;
         }
 
         // Compute mass-density and mean-molecular-weight and
         // convert number density logs from natural to common.
         double sumnm = 0.0;
-        for (int i = 1; i <= 6; ++i) {
+        for (int i = 0; i < 6; ++i) {
             sumnm += FastMath.exp(aln[i]) * AMW[i];
         }
 
@@ -478,14 +475,14 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
         double fex = 1.0;
         if (scaledSatAlt >= 1000.0 && scaledSatAlt < 1500.0) {
             final double zeta = (scaledSatAlt - 1000.) * 0.002;
-            final double f15c = CHT[1] + CHT[2] * f10B + CHT[3] * 1500.0 + CHT[4] * f10B * 1500.0;
-            final double f15cZeta = (CHT[3] + CHT[4] * f10B) * 500.0;
+            final double f15c = CHT[0] + CHT[1] * f10B + CHT[2] * 1500.0 + CHT[3] * f10B * 1500.0;
+            final double f15cZeta = (CHT[2] + CHT[3] * f10B) * 500.0;
             final double fex2 = 3.0 * f15c - f15cZeta - 3.0;
             final double fex3 = f15cZeta - 2.0 * f15c + 2.0;
             fex += zeta * zeta * (fex2 + fex3 * zeta);
         }
         if (scaledSatAlt >= 1500.0) {
-            fex = CHT[1] + CHT[2] * f10B + CHT[3] * scaledSatAlt + CHT[4] * f10B * scaledSatAlt;
+            fex = CHT[0] + CHT[1] * f10B + CHT[2] * scaledSatAlt + CHT[3] * f10B * scaledSatAlt;
         }
 
         // Apply the exospheric density correction factor.
@@ -597,12 +594,12 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
         T z           = field.getZero();
         T gravl       = field.getZero();
 
-        for (int i = 1; i <= n; ++i) {
+        for (int i = 0; i < n; ++i) {
             z = zend;
             zend = zr.multiply(z);
             final T dz = zend.subtract(z).multiply(0.25);
-            T sum1 = ain.multiply(WT[1]);
-            for (int j = 2; j <= 5; ++j) {
+            T sum1 = ain.multiply(WT[0]);
+            for (int j = 1; j < 5; ++j) {
                 z = z.add(dz);
                 mb2   = mBar(z);
                 tloc2 = localTemp(z, tc);
@@ -621,18 +618,18 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
 
         // Equation (3)
         T fact2  = anm.divide(28.960);
-        final T[] aln = MathArrays.buildArray(field, 7);
-        aln[1] = fact2.multiply(FRAC[1]).log();
+        final T[] aln = MathArrays.buildArray(field, 6);
+        aln[0] = fact2.multiply(FRAC[0]).log();
+        aln[3] = fact2.multiply(FRAC[2]).log();
         aln[4] = fact2.multiply(FRAC[3]).log();
-        aln[5] = fact2.multiply(FRAC[4]).log();
 
         // Equation (4)
-        aln[2] = fact2.multiply(1. + FRAC[2]).subtract(an).log();
-        aln[3] = an.subtract(fact2).multiply(2).log();
+        aln[1] = fact2.multiply(1. + FRAC[1]).subtract(an).log();
+        aln[2] = an.subtract(fact2).multiply(2).log();
 
         if (scaledSatAlt.getReal() <= 105.0) {
             // Put in negligible hydrogen for use in DO-LOOP 13
-            aln[6] = aln[5].subtract(25.0);
+            aln[5] = aln[4].subtract(25.0);
         }
         else {
             // Equation (6)
@@ -643,12 +640,12 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
             ain  = gravl.divide(tloc2);
 
             T tloc3 = field.getZero();
-            for (int i = 1; i <= n; ++i) {
+            for (int i = 0; i < n; ++i) {
                 z = zend;
                 zend = zr.multiply(z);
                 final T dz = zend.subtract(z).multiply(0.25);
-                T sum1 = ain.multiply(WT[1]);
-                for (int j = 2; j <= 5; ++j) {
+                T sum1 = ain.multiply(WT[0]);
+                for (int j = 1; j < 5; ++j) {
                     z     = z.add(dz);
                     tloc3 = localTemp(z, tc);
                     gravl = gravity(z);
@@ -664,12 +661,12 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
             zr = al.divide(n).exp();
             T sum3 = field.getZero();
             T tloc4 = field.getZero();
-            for (int i = 1; i <= n; ++i) {
+            for (int i = 0; i < n; ++i) {
                 z = zend;
                 zend = zr.multiply(z);
                 final T dz = zend.subtract(z).multiply(0.25);
-                T sum1 = ain.multiply(WT[1]);
-                for (int j = 2; j <= 5; ++j) {
+                T sum1 = ain.multiply(WT[0]);
+                for (int j = 1; j < 5; ++j) {
                     z = z.add(dz);
                     tloc4 = localTemp(z, tc);
                     gravl = gravity(z);
@@ -690,14 +687,14 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
                 fact2 = sub2.add(sum3).multiply(fact1);
                 hSign = -1.0;
             }
-            for (int i = 1; i <= 5; ++i) {
+            for (int i = 0; i < 5; ++i) {
                 aln[i] = aln[i].subtract(altr.multiply(1.0 + ALPHA[i])).subtract(fact2.multiply(AMW[i]));
             }
 
             // Equation (7) - Note that in CIRA72, AL10T5 = DLOG10(T500)
             final T al10t5 = tinf.log10();
             final T alnh5 = al10t5.multiply(5.5).subtract(39.40).multiply(al10t5).add(73.13);
-            aln[6] = alnh5.add(6.).multiply(AL10).add(tloc4.divide(tloc3).log().add(sum3.multiply(fact1).multiply(AMW[6])).multiply(hSign));
+            aln[5] = alnh5.add(6.).multiply(AL10).add(tloc4.divide(tloc3).log().add(sum3.multiply(fact1).multiply(AMW[5])).multiply(hSign));
         }
 
         // Equation (24)  - J70 Seasonal-Latitudinal Variation
@@ -722,14 +719,14 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
         // namely DLR = AL10 * (DLRGM + DLRSA + DLRSL)
         // However, for Jacchia 70, there is no DLRGM or DLRSA.
         final T dlr = dlrsl.add(dlrsa).multiply(AL10);
-        for (int i = 1; i <= 6; ++i) {
+        for (int i = 0; i < 6; ++i) {
             aln[i] = aln[i].add(dlr);
         }
 
         // Compute mass-density and mean-molecular-weight and
         // convert number density logs from natural to common.
         T sumnm = field.getZero();
-        for (int i = 1; i <= 6; ++i) {
+        for (int i = 0; i < 6; ++i) {
             sumnm = sumnm.add(aln[i].exp().multiply(AMW[i]));
         }
         rho = sumnm.divide(AVOGAD);
@@ -738,14 +735,14 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
         T fex = field.getOne();
         if (scaledSatAlt.getReal() >= 1000.0 && scaledSatAlt.getReal() < 1500.0) {
             final T zeta = scaledSatAlt.subtract(1000.).multiply(0.002);
-            final double f15c = CHT[1] + CHT[2] * f10B + CHT[3] * 1500.0 + CHT[4] * f10B * 1500.0;
-            final double f15cZeta = (CHT[3] + CHT[4] * f10B) * 500.0;
+            final double f15c = CHT[0] + CHT[1] * f10B + CHT[2] * 1500.0 + CHT[3] * f10B * 1500.0;
+            final double f15cZeta = (CHT[2] + CHT[3] * f10B) * 500.0;
             final double fex2 = 3.0 * f15c - f15cZeta - 3.0;
             final double fex3 = f15cZeta - 2.0 * f15c + 2.0;
             fex = fex.add(zeta.multiply(zeta).multiply(zeta.multiply(fex3).add(fex2)));
         }
         if (scaledSatAlt.getReal() >= 1500.0) {
-            fex = scaledSatAlt.multiply(CHT[4] * f10B).add(scaledSatAlt.multiply(CHT[3])).add(CHT[1] + CHT[2] * f10B);
+            fex = scaledSatAlt.multiply(CHT[3] * f10B).add(scaledSatAlt.multiply(CHT[2])).add(CHT[0] + CHT[1] * f10B);
         }
 
         // Apply the exospheric density correction factor.
@@ -851,29 +848,29 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
 
         // Calculates dTc
         if (satAlt >= 120 && satAlt <= 200) {
-            final double dtc2000 = CDT_SUB[17] +
-                                   CDT_SUB[18] * tx * ycs +
-                                   CDT_SUB[19] * tx2 * ycs +
-                                   CDT_SUB[20] * tx3 * ycs +
-                                   CDT_SUB[21] * f * ycs +
-                                   CDT_SUB[22] * tx * f * ycs +
-                                   CDT_SUB[23] * tx2 * f * ycs;
-            sum = CDT_SUB[1] +
-                  BDT_SUB[2] * f +
-                  CDT_SUB[3] * tx * f +
-                  CDT_SUB[4] * tx2 * f +
-                  CDT_SUB[5] * tx3 * f +
-                  CDT_SUB[6] * tx4 * f +
-                  CDT_SUB[7] * tx5 * f +
-                  CDT_SUB[8] * tx * ycs +
-                  CDT_SUB[9] * tx2 * ycs +
-                  CDT_SUB[10] * tx3 * ycs +
-                  CDT_SUB[11] * tx4 * ycs +
-                  CDT_SUB[12] * tx5 * ycs +
-                  CDT_SUB[13] * ycs +
-                  CDT_SUB[14] * f * ycs +
-                  CDT_SUB[15] * tx * f * ycs +
-                  CDT_SUB[16] * tx2 * f * ycs;
+            final double dtc2000 = CDT_SUB[16] +
+                                   CDT_SUB[17] * tx * ycs +
+                                   CDT_SUB[18] * tx2 * ycs +
+                                   CDT_SUB[19] * tx3 * ycs +
+                                   CDT_SUB[20] * f * ycs +
+                                   CDT_SUB[21] * tx * f * ycs +
+                                   CDT_SUB[22] * tx2 * f * ycs;
+            sum = CDT_SUB[0] +
+                  BDT_SUB[1] * f +
+                  CDT_SUB[2] * tx * f +
+                  CDT_SUB[3] * tx2 * f +
+                  CDT_SUB[4] * tx3 * f +
+                  CDT_SUB[5] * tx4 * f +
+                  CDT_SUB[6] * tx5 * f +
+                  CDT_SUB[7] * tx * ycs +
+                  CDT_SUB[8] * tx2 * ycs +
+                  CDT_SUB[9] * tx3 * ycs +
+                  CDT_SUB[10] * tx4 * ycs +
+                  CDT_SUB[11] * tx5 * ycs +
+                  CDT_SUB[12] * ycs +
+                  CDT_SUB[13] * f * ycs +
+                  CDT_SUB[14] * tx * f * ycs +
+                  CDT_SUB[15] * tx2 * f * ycs;
             final double dtc200Dz = sum;
             final double cc = 3.0 * dtc2000 - dtc200Dz;
             final double dd = dtc2000 - cc;
@@ -882,95 +879,95 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
         }
         if (satAlt > 200.0 && satAlt <= 240.0) {
             h = (satAlt - 200.0) / 50.0;
-            sum = CDT_SUB[1] * h +
-                  BDT_SUB[2] * f * h +
-                  CDT_SUB[3] * tx * f * h +
-                  CDT_SUB[4] * tx2 * f * h +
-                  CDT_SUB[5] * tx3 * f * h +
-                  CDT_SUB[6] * tx4 * f * h +
-                  CDT_SUB[7] * tx5 * f * h +
-                  CDT_SUB[8] * tx * ycs * h +
-                  CDT_SUB[9] * tx2 * ycs * h +
-                  CDT_SUB[10] * tx3 * ycs * h +
-                  CDT_SUB[11] * tx4 * ycs * h +
-                  CDT_SUB[12] * tx5 * ycs * h +
-                  CDT_SUB[13] * ycs * h +
-                  CDT_SUB[14] * f * ycs * h +
-                  CDT_SUB[15] * tx * f * ycs * h +
-                  CDT_SUB[16] * tx2 * f * ycs * h +
-                  CDT_SUB[17] +
-                  CDT_SUB[18] * tx * ycs +
-                  CDT_SUB[19] * tx2 * ycs +
-                  CDT_SUB[20] * tx3 * ycs +
-                  CDT_SUB[21] * f * ycs +
-                  CDT_SUB[22] * tx * f * ycs +
-                  CDT_SUB[23] * tx2 * f * ycs;
+            sum = CDT_SUB[0] * h +
+                  BDT_SUB[1] * f * h +
+                  CDT_SUB[2] * tx * f * h +
+                  CDT_SUB[3] * tx2 * f * h +
+                  CDT_SUB[4] * tx3 * f * h +
+                  CDT_SUB[5] * tx4 * f * h +
+                  CDT_SUB[6] * tx5 * f * h +
+                  CDT_SUB[7] * tx * ycs * h +
+                  CDT_SUB[8] * tx2 * ycs * h +
+                  CDT_SUB[9] * tx3 * ycs * h +
+                  CDT_SUB[10] * tx4 * ycs * h +
+                  CDT_SUB[11] * tx5 * ycs * h +
+                  CDT_SUB[12] * ycs * h +
+                  CDT_SUB[13] * f * ycs * h +
+                  CDT_SUB[14] * tx * f * ycs * h +
+                  CDT_SUB[15] * tx2 * f * ycs * h +
+                  CDT_SUB[16] +
+                  CDT_SUB[17] * tx * ycs +
+                  CDT_SUB[18] * tx2 * ycs +
+                  CDT_SUB[19] * tx3 * ycs +
+                  CDT_SUB[20] * f * ycs +
+                  CDT_SUB[21] * tx * f * ycs +
+                  CDT_SUB[22] * tx2 * f * ycs;
             dTc = sum;
         }
         if (satAlt > 240.0 && satAlt <= 300.0) {
             h = 40.0 / 50.0;
-            sum = CDT_SUB[1] * h +
-                  BDT_SUB[2] * f * h +
-                  CDT_SUB[3] * tx * f * h +
-                  CDT_SUB[4] * tx2 * f * h +
-                  CDT_SUB[5] * tx3 * f * h +
-                  CDT_SUB[6] * tx4 * f * h +
-                  CDT_SUB[7] * tx5 * f * h +
-                  CDT_SUB[8] * tx * ycs * h +
-                  CDT_SUB[9] * tx2 * ycs * h +
-                  CDT_SUB[10] * tx3 * ycs * h +
-                  CDT_SUB[11] * tx4 * ycs * h +
-                  CDT_SUB[12] * tx5 * ycs * h +
-                  CDT_SUB[13] * ycs * h +
-                  CDT_SUB[14] * f * ycs * h +
-                  CDT_SUB[15] * tx * f * ycs * h +
-                  CDT_SUB[16] * tx2 * f * ycs * h +
-                  CDT_SUB[17] +
-                  CDT_SUB[18] * tx * ycs +
-                  CDT_SUB[19] * tx2 * ycs +
-                  CDT_SUB[20] * tx3 * ycs +
-                  CDT_SUB[21] * f * ycs +
-                  CDT_SUB[22] * tx * f * ycs +
-                  CDT_SUB[23] * tx2 * f * ycs;
+            sum = CDT_SUB[0] * h +
+                  BDT_SUB[1] * f * h +
+                  CDT_SUB[2] * tx * f * h +
+                  CDT_SUB[3] * tx2 * f * h +
+                  CDT_SUB[4] * tx3 * f * h +
+                  CDT_SUB[5] * tx4 * f * h +
+                  CDT_SUB[6] * tx5 * f * h +
+                  CDT_SUB[7] * tx * ycs * h +
+                  CDT_SUB[8] * tx2 * ycs * h +
+                  CDT_SUB[9] * tx3 * ycs * h +
+                  CDT_SUB[10] * tx4 * ycs * h +
+                  CDT_SUB[11] * tx5 * ycs * h +
+                  CDT_SUB[12] * ycs * h +
+                  CDT_SUB[13] * f * ycs * h +
+                  CDT_SUB[14] * tx * f * ycs * h +
+                  CDT_SUB[15] * tx2 * f * ycs * h +
+                  CDT_SUB[16] +
+                  CDT_SUB[17] * tx * ycs +
+                  CDT_SUB[18] * tx2 * ycs +
+                  CDT_SUB[19] * tx3 * ycs +
+                  CDT_SUB[20] * f * ycs +
+                  CDT_SUB[21] * tx * f * ycs +
+                  CDT_SUB[22] * tx2 * f * ycs;
             final double aa = sum;
-            final double bb = CDT_SUB[1] +
-                              BDT_SUB[2] * f +
-                              CDT_SUB[3] * tx * f +
-                              CDT_SUB[4] * tx2 * f +
-                              CDT_SUB[5] * tx3 * f +
-                              CDT_SUB[6] * tx4 * f +
-                              CDT_SUB[7] * tx5 * f +
-                              CDT_SUB[8] * tx * ycs +
-                              CDT_SUB[9] * tx2 * ycs +
-                              CDT_SUB[10] * tx3 * ycs +
-                              CDT_SUB[11] * tx4 * ycs +
-                              CDT_SUB[12] * tx5 * ycs +
-                              CDT_SUB[13] * ycs +
-                              CDT_SUB[14] * f * ycs +
-                              CDT_SUB[15] * tx * f * ycs +
-                              CDT_SUB[16] * tx2 * f * ycs;
+            final double bb = CDT_SUB[0] +
+                              BDT_SUB[1] * f +
+                              CDT_SUB[2] * tx * f +
+                              CDT_SUB[3] * tx2 * f +
+                              CDT_SUB[4] * tx3 * f +
+                              CDT_SUB[5] * tx4 * f +
+                              CDT_SUB[6] * tx5 * f +
+                              CDT_SUB[7] * tx * ycs +
+                              CDT_SUB[8] * tx2 * ycs +
+                              CDT_SUB[9] * tx3 * ycs +
+                              CDT_SUB[10] * tx4 * ycs +
+                              CDT_SUB[11] * tx5 * ycs +
+                              CDT_SUB[12] * ycs +
+                              CDT_SUB[13] * f * ycs +
+                              CDT_SUB[14] * tx * f * ycs +
+                              CDT_SUB[15] * tx2 * f * ycs;
             h = 300.0 / 100.0;
-            sum = BDT_SUB[1] +
-                  BDT_SUB[2] * f +
-                  BDT_SUB[3] * tx * f +
-                  BDT_SUB[4] * tx2 * f +
-                  BDT_SUB[5] * tx3 * f +
-                  BDT_SUB[6] * tx4 * f +
-                  BDT_SUB[7] * tx5 * f +
-                  BDT_SUB[8] * tx * ycs +
-                  BDT_SUB[9] * tx2 * ycs +
-                  BDT_SUB[10] * tx3 * ycs +
-                  BDT_SUB[11] * tx4 * ycs +
-                  BDT_SUB[12] * tx5 * ycs +
-                  BDT_SUB[13] * h * ycs +
-                  BDT_SUB[14] * tx * h * ycs +
-                  BDT_SUB[15] * tx2 * h * ycs +
-                  BDT_SUB[16] * tx3 * h * ycs +
-                  BDT_SUB[17] * tx4 * h * ycs +
-                  BDT_SUB[18] * tx5 * h * ycs +
-                  BDT_SUB[19] * ycs;
+            sum = BDT_SUB[0] +
+                  BDT_SUB[1] * f +
+                  BDT_SUB[2] * tx * f +
+                  BDT_SUB[3] * tx2 * f +
+                  BDT_SUB[4] * tx3 * f +
+                  BDT_SUB[5] * tx4 * f +
+                  BDT_SUB[6] * tx5 * f +
+                  BDT_SUB[7] * tx * ycs +
+                  BDT_SUB[8] * tx2 * ycs +
+                  BDT_SUB[9] * tx3 * ycs +
+                  BDT_SUB[10] * tx4 * ycs +
+                  BDT_SUB[11] * tx5 * ycs +
+                  BDT_SUB[12] * h * ycs +
+                  BDT_SUB[13] * tx * h * ycs +
+                  BDT_SUB[14] * tx2 * h * ycs +
+                  BDT_SUB[15] * tx3 * h * ycs +
+                  BDT_SUB[16] * tx4 * h * ycs +
+                  BDT_SUB[17] * tx5 * h * ycs +
+                  BDT_SUB[18] * ycs;
             final double dtc300 = sum;
-            sum = BDT_SUB[13] * ycs + BDT_SUB[14] * tx * ycs + BDT_SUB[15] * tx2 * ycs + BDT_SUB[16] * tx3 * ycs + BDT_SUB[17] * tx4 * ycs + BDT_SUB[18] * tx5 * ycs;
+            sum = BDT_SUB[12] * ycs + BDT_SUB[13] * tx * ycs + BDT_SUB[14] * tx2 * ycs + BDT_SUB[15] * tx3 * ycs + BDT_SUB[16] * tx4 * ycs + BDT_SUB[17] * tx5 * ycs;
             final double dtc300Dz = sum;
             final double cc = 3.0 * dtc300 - dtc300Dz - 3.0 * aa - 2.0 * bb;
             final double dd = dtc300 - aa - bb - cc;
@@ -979,50 +976,50 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
         }
         if (satAlt > 300.0 && satAlt <= 600.0) {
             h = satAlt / 100.0;
-            sum = BDT_SUB[1] +
-                  BDT_SUB[2] * f +
-                  BDT_SUB[3] * tx * f +
-                  BDT_SUB[4] * tx2 * f +
-                  BDT_SUB[5] * tx3 * f +
-                  BDT_SUB[6] * tx4 * f +
-                  BDT_SUB[7] * tx5 * f +
-                  BDT_SUB[8] * tx * ycs +
-                  BDT_SUB[9] * tx2 * ycs +
-                  BDT_SUB[10] * tx3 * ycs +
-                  BDT_SUB[11] * tx4 * ycs +
-                  BDT_SUB[12] * tx5 * ycs +
-                  BDT_SUB[13] * h * ycs +
-                  BDT_SUB[14] * tx * h * ycs +
-                  BDT_SUB[15] * tx2 * h * ycs +
-                  BDT_SUB[16] * tx3 * h * ycs +
-                  BDT_SUB[17] * tx4 * h * ycs +
-                  BDT_SUB[18] * tx5 * h * ycs +
-                  BDT_SUB[19] * ycs;
+            sum = BDT_SUB[0] +
+                  BDT_SUB[1] * f +
+                  BDT_SUB[2] * tx * f +
+                  BDT_SUB[3] * tx2 * f +
+                  BDT_SUB[4] * tx3 * f +
+                  BDT_SUB[5] * tx4 * f +
+                  BDT_SUB[6] * tx5 * f +
+                  BDT_SUB[7] * tx * ycs +
+                  BDT_SUB[8] * tx2 * ycs +
+                  BDT_SUB[9] * tx3 * ycs +
+                  BDT_SUB[10] * tx4 * ycs +
+                  BDT_SUB[11] * tx5 * ycs +
+                  BDT_SUB[12] * h * ycs +
+                  BDT_SUB[13] * tx * h * ycs +
+                  BDT_SUB[14] * tx2 * h * ycs +
+                  BDT_SUB[15] * tx3 * h * ycs +
+                  BDT_SUB[16] * tx4 * h * ycs +
+                  BDT_SUB[17] * tx5 * h * ycs +
+                  BDT_SUB[18] * ycs;
             dTc = sum;
         }
         if (satAlt > 600.0 && satAlt <= 800.0) {
             final double zp = (satAlt - 600.0) / 100.0;
             final double hp = 600.0 / 100.0;
-            final double aa = BDT_SUB[1] +
-                              BDT_SUB[2] * f +
-                              BDT_SUB[3] * tx * f +
-                              BDT_SUB[4] * tx2 * f +
-                              BDT_SUB[5] * tx3 * f +
-                              BDT_SUB[6] * tx4 * f +
-                              BDT_SUB[7] * tx5 * f +
-                              BDT_SUB[8] * tx * ycs +
-                              BDT_SUB[9] * tx2 * ycs +
-                              BDT_SUB[10] * tx3 * ycs +
-                              BDT_SUB[11] * tx4 * ycs +
-                              BDT_SUB[12] * tx5 * ycs +
-                              BDT_SUB[13] * hp * ycs +
-                              BDT_SUB[14] * tx * hp * ycs +
-                              BDT_SUB[15] * tx2 * hp * ycs +
-                              BDT_SUB[16] * tx3 * hp * ycs +
-                              BDT_SUB[17] * tx4 * hp * ycs +
-                              BDT_SUB[18] * tx5 * hp * ycs +
-                              BDT_SUB[19] * ycs;
-            final double bb = BDT_SUB[13] * ycs + BDT_SUB[14] * tx * ycs + BDT_SUB[15] * tx2 * ycs + BDT_SUB[16] * tx3 * ycs + BDT_SUB[17] * tx4 * ycs + BDT_SUB[18] * tx5 * ycs;
+            final double aa = BDT_SUB[0] +
+                              BDT_SUB[1] * f +
+                              BDT_SUB[2] * tx * f +
+                              BDT_SUB[3] * tx2 * f +
+                              BDT_SUB[4] * tx3 * f +
+                              BDT_SUB[5] * tx4 * f +
+                              BDT_SUB[6] * tx5 * f +
+                              BDT_SUB[7] * tx * ycs +
+                              BDT_SUB[8] * tx2 * ycs +
+                              BDT_SUB[9] * tx3 * ycs +
+                              BDT_SUB[10] * tx4 * ycs +
+                              BDT_SUB[11] * tx5 * ycs +
+                              BDT_SUB[12] * hp * ycs +
+                              BDT_SUB[13] * tx * hp * ycs +
+                              BDT_SUB[14] * tx2 * hp * ycs +
+                              BDT_SUB[15] * tx3 * hp * ycs +
+                              BDT_SUB[16] * tx4 * hp * ycs +
+                              BDT_SUB[17] * tx5 * hp * ycs +
+                              BDT_SUB[18] * ycs;
+            final double bb = BDT_SUB[12] * ycs + BDT_SUB[13] * tx * ycs + BDT_SUB[14] * tx2 * ycs + BDT_SUB[15] * tx3 * ycs + BDT_SUB[16] * tx4 * ycs + BDT_SUB[17] * tx5 * ycs;
             final double cc = -(3.0 * aa + 4.0 * bb) / 4.0;
             final double dd = (aa + bb) / 4.0;
             dTc = aa + bb * zp + cc * zp * zp + dd * zp * zp * zp;
@@ -1057,28 +1054,28 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
 
         // Calculates dTc
         if (satAlt.getReal() >= 120 && satAlt.getReal() <= 200) {
-            final T dtc200 = tx.multiply(ycs).multiply(CDT_SUB[18]).
-                             add(tx2.multiply(ycs.multiply(CDT_SUB[19])).
-                             add(tx3.multiply(ycs).multiply(CDT_SUB[20])).
-                             add(ycs.multiply(f).multiply(CDT_SUB[21])).
-                             add(tx.multiply(f).multiply(ycs).multiply(CDT_SUB[22])).
-                             add(tx2.multiply(f).multiply(ycs).multiply(CDT_SUB[23])).
-                             add(CDT_SUB[17]));
-            sum = tx.multiply(f).multiply(CDT_SUB[3]).
-                  add(tx2.multiply(f).multiply(CDT_SUB[4])).
-                  add(tx3.multiply(f).multiply(CDT_SUB[5])).
-                  add(tx4.multiply(f).multiply(CDT_SUB[6])).
-                  add(tx5.multiply(f).multiply(CDT_SUB[7])).
-                  add(tx.multiply(ycs).multiply(CDT_SUB[8])).
-                  add(tx2.multiply(ycs).multiply(CDT_SUB[9])).
-                  add(tx3.multiply(ycs).multiply(CDT_SUB[10])).
-                  add(tx4.multiply(ycs).multiply(CDT_SUB[11])).
-                  add(tx5.multiply(ycs).multiply(CDT_SUB[12])).
-                  add(ycs.multiply(CDT_SUB[13])).
-                  add(ycs.multiply(f).multiply(CDT_SUB[14])).
-                  add(tx.multiply(f).multiply(ycs).multiply(CDT_SUB[15])).
-                  add(tx2.multiply(f).multiply(ycs).multiply(CDT_SUB[16])).
-                  add(CDT_SUB[1] + BDT_SUB[2] * f);
+            final T dtc200 = tx.multiply(ycs).multiply(CDT_SUB[17]).
+                             add(tx2.multiply(ycs.multiply(CDT_SUB[18])).
+                             add(tx3.multiply(ycs).multiply(CDT_SUB[19])).
+                             add(ycs.multiply(f).multiply(CDT_SUB[20])).
+                             add(tx.multiply(f).multiply(ycs).multiply(CDT_SUB[21])).
+                             add(tx2.multiply(f).multiply(ycs).multiply(CDT_SUB[22])).
+                             add(CDT_SUB[16]));
+            sum = tx.multiply(f).multiply(CDT_SUB[2]).
+                  add(tx2.multiply(f).multiply(CDT_SUB[3])).
+                  add(tx3.multiply(f).multiply(CDT_SUB[4])).
+                  add(tx4.multiply(f).multiply(CDT_SUB[5])).
+                  add(tx5.multiply(f).multiply(CDT_SUB[6])).
+                  add(tx.multiply(ycs).multiply(CDT_SUB[7])).
+                  add(tx2.multiply(ycs).multiply(CDT_SUB[8])).
+                  add(tx3.multiply(ycs).multiply(CDT_SUB[9])).
+                  add(tx4.multiply(ycs).multiply(CDT_SUB[10])).
+                  add(tx5.multiply(ycs).multiply(CDT_SUB[11])).
+                  add(ycs.multiply(CDT_SUB[12])).
+                  add(ycs.multiply(f).multiply(CDT_SUB[13])).
+                  add(tx.multiply(f).multiply(ycs).multiply(CDT_SUB[14])).
+                  add(tx2.multiply(f).multiply(ycs).multiply(CDT_SUB[15])).
+                  add(CDT_SUB[0] + BDT_SUB[1] * f);
             final T dtc2000z = sum;
             final T cc = dtc200.multiply(3.0).subtract(dtc2000z);
             final T dd = dtc200.subtract(cc);
@@ -1087,98 +1084,98 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
         }
         if (satAlt.getReal() > 200.0 && satAlt.getReal() <= 240.0) {
             h = satAlt.subtract(200.0).divide(50.0);
-            sum = h.multiply(CDT_SUB[1]).
-                  add(h.multiply(BDT_SUB[2] * f)).
-                  add(h.multiply(tx).multiply(CDT_SUB[3] * f)).
-                  add(h.multiply(tx2).multiply(CDT_SUB[4] * f)).
-                  add(h.multiply(tx3).multiply(CDT_SUB[5] * f)).
-                  add(h.multiply(tx4).multiply(CDT_SUB[6] * f)).
-                  add(h.multiply(tx5).multiply(CDT_SUB[7] * f)).
-                  add(h.multiply(tx).multiply(ycs).multiply( CDT_SUB[8])).
-                  add(h.multiply(tx2).multiply(ycs).multiply(CDT_SUB[9])).
-                  add(h.multiply(tx3).multiply(ycs).multiply(CDT_SUB[10])).
-                  add(h.multiply(tx4).multiply(ycs).multiply(CDT_SUB[11])).
-                  add(h.multiply(tx5).multiply(ycs).multiply(CDT_SUB[12])).
-                  add(h.multiply(ycs).multiply(CDT_SUB[13])).
-                  add(h.multiply(ycs).multiply(CDT_SUB[14] * f)).
-                  add(h.multiply(tx).multiply(ycs).multiply(CDT_SUB[15] * f)).
-                  add(h.multiply(tx2).multiply(ycs).multiply(CDT_SUB[16] * f)).
-                  add(CDT_SUB[17]).
-                  add(ycs.multiply(tx).multiply(CDT_SUB[18])).
-                  add(ycs.multiply(tx2).multiply(CDT_SUB[19])).
-                  add(ycs.multiply(tx3).multiply(CDT_SUB[20])).
-                  add(ycs.multiply(CDT_SUB[21] * f)).
-                  add(ycs.multiply(tx).multiply(CDT_SUB[22] * f)).
-                  add(ycs.multiply(tx2).multiply(CDT_SUB[23] * f));
+            sum = h.multiply(CDT_SUB[0]).
+                  add(h.multiply(BDT_SUB[1] * f)).
+                  add(h.multiply(tx).multiply(CDT_SUB[2] * f)).
+                  add(h.multiply(tx2).multiply(CDT_SUB[3] * f)).
+                  add(h.multiply(tx3).multiply(CDT_SUB[4] * f)).
+                  add(h.multiply(tx4).multiply(CDT_SUB[5] * f)).
+                  add(h.multiply(tx5).multiply(CDT_SUB[6] * f)).
+                  add(h.multiply(tx).multiply(ycs).multiply(CDT_SUB[7])).
+                  add(h.multiply(tx2).multiply(ycs).multiply(CDT_SUB[8])).
+                  add(h.multiply(tx3).multiply(ycs).multiply(CDT_SUB[9])).
+                  add(h.multiply(tx4).multiply(ycs).multiply(CDT_SUB[10])).
+                  add(h.multiply(tx5).multiply(ycs).multiply(CDT_SUB[11])).
+                  add(h.multiply(ycs).multiply(CDT_SUB[12])).
+                  add(h.multiply(ycs).multiply(CDT_SUB[13] * f)).
+                  add(h.multiply(tx).multiply(ycs).multiply(CDT_SUB[14] * f)).
+                  add(h.multiply(tx2).multiply(ycs).multiply(CDT_SUB[15] * f)).
+                  add(CDT_SUB[16]).
+                  add(ycs.multiply(tx).multiply(CDT_SUB[17])).
+                  add(ycs.multiply(tx2).multiply(CDT_SUB[18])).
+                  add(ycs.multiply(tx3).multiply(CDT_SUB[19])).
+                  add(ycs.multiply(CDT_SUB[20] * f)).
+                  add(ycs.multiply(tx).multiply(CDT_SUB[21] * f)).
+                  add(ycs.multiply(tx2).multiply(CDT_SUB[22] * f));
             dTc = sum;
         }
         if (satAlt.getReal() > 240.0 && satAlt.getReal() <= 300.0) {
             h = zero.add(40.0 / 50.0);
-            sum = h.multiply(CDT_SUB[1]).
-                  add(h.multiply(BDT_SUB[2] * f)).
-                  add(h.multiply(tx).multiply(CDT_SUB[3] * f)).
-                  add(h.multiply(tx2).multiply(CDT_SUB[4] * f)).
-                  add(h.multiply(tx3).multiply(CDT_SUB[5] * f)).
-                  add(h.multiply(tx4).multiply(CDT_SUB[6] * f)).
-                  add(h.multiply(tx5).multiply(CDT_SUB[7] * f)).
-                  add(h.multiply(tx).multiply(ycs).multiply( CDT_SUB[8])).
-                  add(h.multiply(tx2).multiply(ycs).multiply(CDT_SUB[9])).
-                  add(h.multiply(tx3).multiply(ycs).multiply(CDT_SUB[10])).
-                  add(h.multiply(tx4).multiply(ycs).multiply(CDT_SUB[11])).
-                  add(h.multiply(tx5).multiply(ycs).multiply(CDT_SUB[12])).
-                  add(h.multiply(ycs).multiply(CDT_SUB[13])).
-                  add(h.multiply(ycs).multiply(CDT_SUB[14] * f)).
-                  add(h.multiply(tx).multiply(ycs).multiply(CDT_SUB[15] * f)).
-                  add(h.multiply(tx2).multiply(ycs).multiply(CDT_SUB[16] * f)).
-                  add(CDT_SUB[17]).
-                  add(ycs.multiply(tx).multiply(CDT_SUB[18])).
-                  add(ycs.multiply(tx2).multiply(CDT_SUB[19])).
-                  add(ycs.multiply(tx3).multiply(CDT_SUB[20])).
-                  add(ycs.multiply(CDT_SUB[21] * f)).
-                  add(ycs.multiply(tx).multiply(CDT_SUB[22] * f)).
-                  add(ycs.multiply(tx2).multiply(CDT_SUB[23] * f));
+            sum = h.multiply(CDT_SUB[0]).
+                  add(h.multiply(BDT_SUB[1] * f)).
+                  add(h.multiply(tx).multiply(CDT_SUB[2] * f)).
+                  add(h.multiply(tx2).multiply(CDT_SUB[3] * f)).
+                  add(h.multiply(tx3).multiply(CDT_SUB[4] * f)).
+                  add(h.multiply(tx4).multiply(CDT_SUB[5] * f)).
+                  add(h.multiply(tx5).multiply(CDT_SUB[6] * f)).
+                  add(h.multiply(tx).multiply(ycs).multiply( CDT_SUB[7])).
+                  add(h.multiply(tx2).multiply(ycs).multiply(CDT_SUB[8])).
+                  add(h.multiply(tx3).multiply(ycs).multiply(CDT_SUB[9])).
+                  add(h.multiply(tx4).multiply(ycs).multiply(CDT_SUB[10])).
+                  add(h.multiply(tx5).multiply(ycs).multiply(CDT_SUB[11])).
+                  add(h.multiply(ycs).multiply(CDT_SUB[12])).
+                  add(h.multiply(ycs).multiply(CDT_SUB[13] * f)).
+                  add(h.multiply(tx).multiply(ycs).multiply(CDT_SUB[14] * f)).
+                  add(h.multiply(tx2).multiply(ycs).multiply(CDT_SUB[15] * f)).
+                  add(CDT_SUB[16]).
+                  add(ycs.multiply(tx).multiply(CDT_SUB[17])).
+                  add(ycs.multiply(tx2).multiply(CDT_SUB[18])).
+                  add(ycs.multiply(tx3).multiply(CDT_SUB[19])).
+                  add(ycs.multiply(CDT_SUB[20] * f)).
+                  add(ycs.multiply(tx).multiply(CDT_SUB[21] * f)).
+                  add(ycs.multiply(tx2).multiply(CDT_SUB[22] * f));
             final T aa = sum;
-            final T bb = tx.multiply(f * CDT_SUB[3]).
-                         add(tx2.multiply(f * CDT_SUB[4])).
-                         add(tx3.multiply(f * CDT_SUB[5])).
-                         add(tx4.multiply(f * CDT_SUB[6])).
-                         add(tx5.multiply(f * CDT_SUB[7])).
-                         add(tx.multiply(ycs).multiply(CDT_SUB[8])).
-                         add(tx2.multiply(ycs).multiply(CDT_SUB[9])).
-                         add(tx3.multiply(ycs).multiply(CDT_SUB[10])).
-                         add(tx4.multiply(ycs).multiply(CDT_SUB[11])).
-                         add(tx5.multiply(ycs).multiply(CDT_SUB[12])).
-                         add(ycs.multiply(CDT_SUB[13])).
-                         add(ycs.multiply(CDT_SUB[14] * f)).
-                         add(ycs.multiply(tx).multiply(CDT_SUB[15] *  f)).
-                         add(ycs.multiply(tx2).multiply(CDT_SUB[16] *  f)).
-                         add(CDT_SUB[1] + BDT_SUB[2] * f);
+            final T bb = tx.multiply(f * CDT_SUB[2]).
+                         add(tx2.multiply(f * CDT_SUB[3])).
+                         add(tx3.multiply(f * CDT_SUB[4])).
+                         add(tx4.multiply(f * CDT_SUB[5])).
+                         add(tx5.multiply(f * CDT_SUB[6])).
+                         add(tx.multiply(ycs).multiply(CDT_SUB[7])).
+                         add(tx2.multiply(ycs).multiply(CDT_SUB[8])).
+                         add(tx3.multiply(ycs).multiply(CDT_SUB[9])).
+                         add(tx4.multiply(ycs).multiply(CDT_SUB[10])).
+                         add(tx5.multiply(ycs).multiply(CDT_SUB[11])).
+                         add(ycs.multiply(CDT_SUB[12])).
+                         add(ycs.multiply(CDT_SUB[13] * f)).
+                         add(ycs.multiply(tx).multiply(CDT_SUB[14] *  f)).
+                         add(ycs.multiply(tx2).multiply(CDT_SUB[15] *  f)).
+                         add(CDT_SUB[0] + BDT_SUB[1] * f);
             h = zero.add(300.0 / 100.0);
-            sum = tx.multiply(f).multiply(BDT_SUB[3]).
-                  add(tx2.multiply(f).multiply(BDT_SUB[4])).
-                  add(tx3.multiply(f).multiply(BDT_SUB[5])).
-                  add(tx4.multiply(f).multiply(BDT_SUB[6])).
-                  add(tx5.multiply(f).multiply(BDT_SUB[7])).
-                  add(tx.multiply(ycs).multiply(BDT_SUB[8])).
-                  add(tx2.multiply(ycs).multiply(BDT_SUB[9])).
-                  add(tx3.multiply(ycs).multiply(BDT_SUB[10])).
-                  add(tx4.multiply(ycs).multiply(BDT_SUB[11])).
-                  add(tx5.multiply(ycs).multiply(BDT_SUB[12])).
-                  add(ycs.multiply(h).multiply(BDT_SUB[13])).
-                  add(ycs.multiply(tx).multiply(h).multiply(BDT_SUB[14])).
-                  add(ycs.multiply(tx2).multiply(h).multiply(BDT_SUB[15])).
-                  add(ycs.multiply(tx3).multiply(h).multiply(BDT_SUB[16])).
-                  add(ycs.multiply(tx4).multiply(h).multiply(BDT_SUB[17])).
-                  add(ycs.multiply(tx5).multiply(h).multiply(BDT_SUB[18])).
-                  add(ycs.multiply(BDT_SUB[19])).
-                  add(BDT_SUB[1] + BDT_SUB[2] * f);
+            sum = tx.multiply(f).multiply(BDT_SUB[2]).
+                  add(tx2.multiply(f).multiply(BDT_SUB[3])).
+                  add(tx3.multiply(f).multiply(BDT_SUB[4])).
+                  add(tx4.multiply(f).multiply(BDT_SUB[5])).
+                  add(tx5.multiply(f).multiply(BDT_SUB[6])).
+                  add(tx.multiply(ycs).multiply(BDT_SUB[7])).
+                  add(tx2.multiply(ycs).multiply(BDT_SUB[8])).
+                  add(tx3.multiply(ycs).multiply(BDT_SUB[9])).
+                  add(tx4.multiply(ycs).multiply(BDT_SUB[10])).
+                  add(tx5.multiply(ycs).multiply(BDT_SUB[11])).
+                  add(ycs.multiply(h).multiply(BDT_SUB[12])).
+                  add(ycs.multiply(tx).multiply(h).multiply(BDT_SUB[13])).
+                  add(ycs.multiply(tx2).multiply(h).multiply(BDT_SUB[14])).
+                  add(ycs.multiply(tx3).multiply(h).multiply(BDT_SUB[15])).
+                  add(ycs.multiply(tx4).multiply(h).multiply(BDT_SUB[16])).
+                  add(ycs.multiply(tx5).multiply(h).multiply(BDT_SUB[17])).
+                  add(ycs.multiply(BDT_SUB[18])).
+                  add(BDT_SUB[0] + BDT_SUB[1] * f);
             final T dtc300 = sum;
-            sum = ycs.multiply(BDT_SUB[13]).
-                  add(ycs.multiply(tx).multiply(BDT_SUB[14])).
-                  add(ycs.multiply(tx2).multiply(BDT_SUB[15])).
-                  add(ycs.multiply(tx3).multiply(BDT_SUB[16])).
-                  add(ycs.multiply(tx4).multiply(BDT_SUB[17])).
-                  add(ycs.multiply(tx5).multiply(BDT_SUB[18]));
+            sum = ycs.multiply(BDT_SUB[12]).
+                  add(ycs.multiply(tx).multiply(BDT_SUB[13])).
+                  add(ycs.multiply(tx2).multiply(BDT_SUB[14])).
+                  add(ycs.multiply(tx3).multiply(BDT_SUB[15])).
+                  add(ycs.multiply(tx4).multiply(BDT_SUB[16])).
+                  add(ycs.multiply(tx5).multiply(BDT_SUB[17]));
             final T dtc3000z = sum;
             final T cc = dtc300.multiply(3.0).subtract(dtc3000z).subtract(aa.multiply(3.0)).subtract(bb.multiply(2.0));
             final T dd = dtc300.subtract(aa).subtract(bb).subtract(cc);
@@ -1187,53 +1184,53 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
         }
         if (satAlt.getReal() > 300.0 && satAlt.getReal() <= 600.0) {
             h = satAlt.divide(100.0);
-            sum = tx.multiply(f).multiply(BDT_SUB[3]).
-                  add(tx2.multiply(f).multiply(BDT_SUB[4])).
-                  add(tx3.multiply(f).multiply(BDT_SUB[5])).
-                  add(tx4.multiply(f).multiply(BDT_SUB[6])).
-                  add(tx5.multiply(f).multiply(BDT_SUB[7])).
-                  add(tx.multiply(ycs).multiply(BDT_SUB[8])).
-                  add(tx2.multiply(ycs).multiply(BDT_SUB[9])).
-                  add(tx3.multiply(ycs).multiply(BDT_SUB[10])).
-                  add(tx4.multiply(ycs).multiply(BDT_SUB[11])).
-                  add(tx5.multiply(ycs).multiply(BDT_SUB[12])).
-                  add(ycs.multiply(h).multiply(BDT_SUB[13])).
-                  add(ycs.multiply(tx).multiply(h).multiply(BDT_SUB[14])).
-                  add(ycs.multiply(tx2).multiply(h).multiply(BDT_SUB[15])).
-                  add(ycs.multiply(tx3).multiply(h).multiply(BDT_SUB[16])).
-                  add(ycs.multiply(tx4).multiply(h).multiply(BDT_SUB[17])).
-                  add(ycs.multiply(tx5).multiply(h).multiply(BDT_SUB[18])).
-                  add(ycs.multiply(BDT_SUB[19])).
-                  add(BDT_SUB[1] + BDT_SUB[2] * f);
+            sum = tx.multiply(f).multiply(BDT_SUB[2]).
+                  add(tx2.multiply(f).multiply(BDT_SUB[3])).
+                  add(tx3.multiply(f).multiply(BDT_SUB[4])).
+                  add(tx4.multiply(f).multiply(BDT_SUB[5])).
+                  add(tx5.multiply(f).multiply(BDT_SUB[6])).
+                  add(tx.multiply(ycs).multiply(BDT_SUB[7])).
+                  add(tx2.multiply(ycs).multiply(BDT_SUB[8])).
+                  add(tx3.multiply(ycs).multiply(BDT_SUB[9])).
+                  add(tx4.multiply(ycs).multiply(BDT_SUB[10])).
+                  add(tx5.multiply(ycs).multiply(BDT_SUB[11])).
+                  add(ycs.multiply(h).multiply(BDT_SUB[12])).
+                  add(ycs.multiply(tx).multiply(h).multiply(BDT_SUB[13])).
+                  add(ycs.multiply(tx2).multiply(h).multiply(BDT_SUB[14])).
+                  add(ycs.multiply(tx3).multiply(h).multiply(BDT_SUB[15])).
+                  add(ycs.multiply(tx4).multiply(h).multiply(BDT_SUB[16])).
+                  add(ycs.multiply(tx5).multiply(h).multiply(BDT_SUB[17])).
+                  add(ycs.multiply(BDT_SUB[18])).
+                  add(BDT_SUB[0] + BDT_SUB[1] * f);
             dTc = sum;
         }
         if (satAlt.getReal() > 600.0 && satAlt.getReal() <= 800.0) {
             final T zp = satAlt.subtract(600.0).divide(100.0);
             final double hp = 600.0 / 100.0;
-            final T aa = tx.multiply(f).multiply(BDT_SUB[3]).
-                         add(tx2.multiply(f).multiply(BDT_SUB[4])).
-                         add(tx3.multiply(f).multiply(BDT_SUB[5])).
-                         add(tx4.multiply(f).multiply(BDT_SUB[6])).
-                         add(tx5.multiply(f).multiply(BDT_SUB[7])).
-                         add(tx.multiply(ycs).multiply(BDT_SUB[8])).
-                         add(tx2.multiply(ycs).multiply(BDT_SUB[9])).
-                         add(tx3.multiply(ycs).multiply(BDT_SUB[10])).
-                         add(tx4.multiply(ycs).multiply(BDT_SUB[11])).
-                         add(tx5.multiply(ycs).multiply(BDT_SUB[12])).
-                         add(ycs.multiply(hp).multiply(BDT_SUB[13])).
-                         add(ycs.multiply(tx).multiply(hp).multiply(BDT_SUB[14])).
-                         add(ycs.multiply(tx2).multiply(hp).multiply(BDT_SUB[15])).
-                         add(ycs.multiply(tx3).multiply(hp).multiply(BDT_SUB[16])).
-                         add(ycs.multiply(tx4).multiply(hp).multiply(BDT_SUB[17])).
-                         add(ycs.multiply(tx5).multiply(hp).multiply(BDT_SUB[18])).
-                         add(ycs.multiply(BDT_SUB[19])).
-                         add(BDT_SUB[1] + BDT_SUB[2] * f);
-            final T bb = ycs.multiply(BDT_SUB[13]).
-                         add(tx.multiply(ycs).multiply(BDT_SUB[14])).
-                         add(tx2.multiply(ycs).multiply(BDT_SUB[15])).
-                         add(tx3.multiply(ycs).multiply(BDT_SUB[16])).
-                         add(tx4.multiply(ycs).multiply(BDT_SUB[17])).
-                         add(tx5.multiply(ycs).multiply(BDT_SUB[18]));
+            final T aa = tx.multiply(f).multiply(BDT_SUB[2]).
+                         add(tx2.multiply(f).multiply(BDT_SUB[3])).
+                         add(tx3.multiply(f).multiply(BDT_SUB[4])).
+                         add(tx4.multiply(f).multiply(BDT_SUB[5])).
+                         add(tx5.multiply(f).multiply(BDT_SUB[6])).
+                         add(tx.multiply(ycs).multiply(BDT_SUB[7])).
+                         add(tx2.multiply(ycs).multiply(BDT_SUB[8])).
+                         add(tx3.multiply(ycs).multiply(BDT_SUB[9])).
+                         add(tx4.multiply(ycs).multiply(BDT_SUB[10])).
+                         add(tx5.multiply(ycs).multiply(BDT_SUB[11])).
+                         add(ycs.multiply(hp).multiply(BDT_SUB[12])).
+                         add(ycs.multiply(tx).multiply(hp).multiply(BDT_SUB[13])).
+                         add(ycs.multiply(tx2).multiply(hp).multiply(BDT_SUB[14])).
+                         add(ycs.multiply(tx3).multiply(hp).multiply(BDT_SUB[15])).
+                         add(ycs.multiply(tx4).multiply(hp).multiply(BDT_SUB[16])).
+                         add(ycs.multiply(tx5).multiply(hp).multiply(BDT_SUB[17])).
+                         add(ycs.multiply(BDT_SUB[18])).
+                         add(BDT_SUB[0] + BDT_SUB[1] * f);
+            final T bb = ycs.multiply(BDT_SUB[12]).
+                         add(tx.multiply(ycs).multiply(BDT_SUB[13])).
+                         add(tx2.multiply(ycs).multiply(BDT_SUB[14])).
+                         add(tx3.multiply(ycs).multiply(BDT_SUB[15])).
+                         add(tx4.multiply(ycs).multiply(BDT_SUB[16])).
+                         add(tx5.multiply(ycs).multiply(BDT_SUB[17]));
             final T cc = aa.multiply(3.0).add(bb.multiply(4.0)).negate().divide(4.0);
             final T dd = aa.add(bb).divide(4.0);
             dTc = aa.add(bb.multiply(zp)).add(cc.multiply(zp).multiply(zp)).add(dd.multiply(zp).multiply(zp).multiply(zp));
@@ -1248,8 +1245,8 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
      */
     private static double mBar(final double z) {
         final double dz = z - 100.;
-        double amb = CXAMB[7];
-        for (int i = 6; i >= 1; --i) {
+        double amb = CXAMB[6];
+        for (int i = 5; i >= 0; --i) {
             amb = dz * amb + CXAMB[i];
         }
         return amb;
@@ -1262,8 +1259,8 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
      */
     private static <T extends CalculusFieldElement<T>>  T mBar(final T z) {
         final T dz = z.subtract(100.);
-        T amb = z.getField().getZero().newInstance(CXAMB[7]);
-        for (int i = 6; i >= 1; --i) {
+        T amb = z.getField().getZero().newInstance(CXAMB[6]);
+        for (int i = 5; i >= 0; --i) {
             amb = dz.multiply(amb).add(CXAMB[i]);
         }
         return amb;
@@ -1331,7 +1328,7 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
         final double htz = height / 1000.0;
 
         // SEMIANNUAL AMPLITUDE
-        final double fzz = FZM[1] + FZM[2] * f10Bar + FZM[3] * f10Bar * htz + FZM[4] * f10Bar * htz * htz + FZM[5] * f10Bar * f10Bar * htz + FZM[6] * f10Bar * f10Bar * htz * htz;
+        final double fzz = FZM[0] + FZM[1] * f10Bar + FZM[2] * f10Bar * htz + FZM[3] * f10Bar * htz * htz + FZM[4] * f10Bar * f10Bar * htz + FZM[5] * f10Bar * f10Bar * htz * htz;
 
         // SEMIANNUAL PHASE FUNCTION
         final double tau = MathUtils.TWO_PI * (day - 1.0) / 365;
@@ -1343,29 +1340,29 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
         final double cos3P = FastMath.cos(3.0 * tau);
         final double sin4P = FastMath.sin(4.0 * tau);
         final double cos4P = FastMath.cos(4.0 * tau);
-        final double gtz = GTM[1] +
-                           GTM[2] * sin1P +
-                           GTM[3] * cos1P +
-                           GTM[4] * sin2P +
-                           GTM[5] * cos2P +
-                           GTM[6] * sin3P +
-                           GTM[7] * cos3P +
-                           GTM[8] * sin4P +
-                           GTM[9] * cos4P +
-                           GTM[10] * f10Bar +
-                           GTM[11] * f10Bar * sin1P +
-                           GTM[12] * f10Bar * cos1P +
-                           GTM[13] * f10Bar * sin2P +
-                           GTM[14] * f10Bar * cos2P +
-                           GTM[15] * f10Bar * sin3P +
-                           GTM[16] * f10Bar * cos3P +
-                           GTM[17] * f10Bar * sin4P +
-                           GTM[18] * f10Bar * cos4P +
-                           GTM[19] * f10Bar2 +
-                           GTM[20] * f10Bar2 * sin1P +
-                           GTM[21] * f10Bar2 * cos1P +
-                           GTM[22] * f10Bar2 * sin2P +
-                           GTM[23] * f10Bar2 * cos2P;
+        final double gtz = GTM[0] +
+                           GTM[1] * sin1P +
+                           GTM[2] * cos1P +
+                           GTM[3] * sin2P +
+                           GTM[4] * cos2P +
+                           GTM[5] * sin3P +
+                           GTM[6] * cos3P +
+                           GTM[7] * sin4P +
+                           GTM[8] * cos4P +
+                           GTM[9] * f10Bar +
+                           GTM[10] * f10Bar * sin1P +
+                           GTM[11] * f10Bar * cos1P +
+                           GTM[12] * f10Bar * sin2P +
+                           GTM[13] * f10Bar * cos2P +
+                           GTM[14] * f10Bar * sin3P +
+                           GTM[15] * f10Bar * cos3P +
+                           GTM[16] * f10Bar * sin4P +
+                           GTM[17] * f10Bar * cos4P +
+                           GTM[18] * f10Bar2 +
+                           GTM[19] * f10Bar2 * sin1P +
+                           GTM[20] * f10Bar2 * cos1P +
+                           GTM[21] * f10Bar2 * sin2P +
+                           GTM[22] * f10Bar2 * cos2P;
 
         return FastMath.max(1.0e-6, fzz) * gtz;
     }
@@ -1383,7 +1380,7 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
         final T htz = height.divide(1000.0);
 
         // SEMIANNUAL AMPLITUDE
-        final T fzz = htz.multiply(FZM[3] * f10Bar).add(htz.square().multiply(FZM[4] * f10Bar)).add(htz.multiply(FZM[5] * f10Bar * f10Bar)).add(htz.square().multiply( FZM[6] * f10Bar * f10Bar)).add(FZM[1] + FZM[2] * f10Bar);
+        final T fzz = htz.multiply(FZM[2] * f10Bar).add(htz.square().multiply(FZM[3] * f10Bar)).add(htz.multiply(FZM[4] * f10Bar * f10Bar)).add(htz.square().multiply(FZM[5] * f10Bar * f10Bar)).add(FZM[0] + FZM[1] * f10Bar);
 
         // SEMIANNUAL PHASE FUNCTION
         final T tau   = doy.subtract(1).divide(365).multiply(MathUtils.TWO_PI);
@@ -1391,28 +1388,28 @@ public class JB2006 extends AbstractSunInfluencedAtmosphere {
         final FieldSinCos<T> sc2P = FastMath.sinCos(tau.multiply(2.0));
         final FieldSinCos<T> sc3P = FastMath.sinCos(tau.multiply(3.0));
         final FieldSinCos<T> sc4P = FastMath.sinCos(tau.multiply(4.0));
-        final T gtz = sc1P.sin().multiply(GTM[2]).add(
-                      sc1P.cos().multiply(GTM[3])).add(
-                      sc2P.sin().multiply(GTM[4])).add(
-                      sc2P.cos().multiply(GTM[5])).add(
-                      sc3P.sin().multiply(GTM[6])).add(
-                      sc3P.cos().multiply(GTM[7])).add(
-                      sc4P.sin().multiply(GTM[8])).add(
-                      sc4P.cos().multiply(GTM[9])).add(
-                      GTM[10] * f10Bar).add(
-                      sc1P.sin().multiply(f10Bar).multiply(GTM[11])).add(
-                      sc1P.cos().multiply(f10Bar).multiply(GTM[12])).add(
-                      sc2P.sin().multiply(f10Bar).multiply(GTM[13])).add(
-                      sc2P.cos().multiply(f10Bar).multiply(GTM[14])).add(
-                      sc3P.sin().multiply(f10Bar).multiply(GTM[15])).add(
-                      sc3P.cos().multiply(f10Bar).multiply(GTM[16])).add(
-                      sc4P.sin().multiply(f10Bar).multiply(GTM[17])).add(
-                      sc4P.cos().multiply(f10Bar).multiply(GTM[18])).add(
-                      GTM[19] * f10Bar2).add(
-                      sc1P.sin().multiply(f10Bar2).multiply(GTM[20])).add(
-                      sc1P.cos().multiply(f10Bar2).multiply(GTM[21])).add(
-                      sc2P.sin().multiply(f10Bar2).multiply(GTM[22])).add(
-                      sc2P.cos().multiply(f10Bar2).multiply(GTM[23])).add(GTM[1]);
+        final T gtz = sc1P.sin().multiply(GTM[1]).add(
+                      sc1P.cos().multiply(GTM[2])).add(
+                      sc2P.sin().multiply(GTM[3])).add(
+                      sc2P.cos().multiply(GTM[4])).add(
+                      sc3P.sin().multiply(GTM[5])).add(
+                      sc3P.cos().multiply(GTM[6])).add(
+                      sc4P.sin().multiply(GTM[7])).add(
+                      sc4P.cos().multiply(GTM[8])).add(
+                      GTM[9] * f10Bar).add(
+                      sc1P.sin().multiply(f10Bar).multiply(GTM[10])).add(
+                      sc1P.cos().multiply(f10Bar).multiply(GTM[11])).add(
+                      sc2P.sin().multiply(f10Bar).multiply(GTM[12])).add(
+                      sc2P.cos().multiply(f10Bar).multiply(GTM[13])).add(
+                      sc3P.sin().multiply(f10Bar).multiply(GTM[14])).add(
+                      sc3P.cos().multiply(f10Bar).multiply(GTM[15])).add(
+                      sc4P.sin().multiply(f10Bar).multiply(GTM[16])).add(
+                      sc4P.cos().multiply(f10Bar).multiply(GTM[17])).add(
+                      GTM[18] * f10Bar2).add(
+                      sc1P.sin().multiply(f10Bar2).multiply(GTM[19])).add(
+                      sc1P.cos().multiply(f10Bar2).multiply(GTM[20])).add(
+                      sc2P.sin().multiply(f10Bar2).multiply(GTM[21])).add(
+                      sc2P.cos().multiply(f10Bar2).multiply(GTM[22])).add(GTM[0]);
 
         return fzz.getReal() > 1.0e-6 ? gtz.multiply(fzz) : gtz.multiply(1.0e-6);
     }
