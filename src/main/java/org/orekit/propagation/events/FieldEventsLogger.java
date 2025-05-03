@@ -24,6 +24,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
+import org.orekit.time.FieldAbsoluteDate;
 
 /** This class logs events detectors events during propagation.
  *
@@ -116,16 +117,22 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
         /** Increasing/decreasing status. */
         private final boolean increasing;
 
-        /** Simple constructor.
+        /** Reset state if any, otherwise event state. */
+        private final FieldSpacecraftState<T> resetState;
+
+        /** Constructor.
          * @param detectorN detector for event that was triggered
          * @param stateN state at event trigger date
+         * @param resetStateN reset state if any, otherwise same as event state
          * @param increasingN indicator if the event switching function was increasing
          * or decreasing at event occurrence date
+         * @since 13.1
          */
         private FieldLoggedEvent(final FieldEventDetector<T> detectorN, final FieldSpacecraftState<T> stateN,
-                                 final boolean increasingN) {
-            detector   = detectorN;
+                                 final FieldSpacecraftState<T> resetStateN, final boolean increasingN) {
+            detector = detectorN;
             state      = stateN;
+            resetState = resetStateN;
             increasing = increasingN;
         }
 
@@ -144,6 +151,15 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
             return state;
         }
 
+        /**
+         * Get the reset state.
+         * @return reset state
+         * @since 13.1
+         */
+        public FieldSpacecraftState<T> getResetState() {
+            return resetState;
+        }
+
         /** Get the Increasing/decreasing status of the event.
          * @return increasing/decreasing status of the event
          * @see FieldEventHandler#eventOccurred(FieldSpacecraftState, FieldEventDetector, boolean)
@@ -158,26 +174,28 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
     private class FieldLoggingWrapper implements FieldDetectorModifier<T> {
 
         /** Wrapped detector. */
-        private final FieldEventDetector<T> detector;
+        private final FieldEventDetector<T> wrappedDetector;
 
         /** Simple constructor.
          * @param detector events detector to wrap
          */
         FieldLoggingWrapper(final FieldEventDetector<T> detector) {
-            this.detector = detector;
+            this.wrappedDetector = detector;
         }
 
         @Override
         public FieldEventDetector<T> getDetector() {
-            return detector;
+            return wrappedDetector;
         }
 
         /** Log an event.
          * @param state state at event trigger date
+         * @param resetState reset state if any, otherwise same as event state
          * @param increasing indicator if the event switching function was increasing
          */
-        public void logEvent(final FieldSpacecraftState<T> state, final boolean increasing) {
-            log.add(new FieldLoggedEvent<>(getDetector(), state, increasing));
+        void logEvent(final FieldSpacecraftState<T> state, final FieldSpacecraftState<T> resetState,
+                      final boolean increasing) {
+            log.add(new FieldLoggedEvent<>(getDetector(), state, resetState, increasing));
         }
 
         /** {@inheritDoc} */
@@ -188,19 +206,42 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
 
             return new FieldEventHandler<T>() {
 
+                private FieldSpacecraftState<T> lastTriggeringState = null;
+                private FieldSpacecraftState<T> lastResetState = null;
+
+                @Override
+                public void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target,
+                                 final FieldEventDetector<T> detector) {
+                    FieldEventHandler.super.init(initialState, target, detector);
+                    lastResetState = null;
+                    lastTriggeringState = null;
+                }
+
                 /** {@inheritDoc} */
+                @Override
                 public Action eventOccurred(final FieldSpacecraftState<T> s,
                                             final FieldEventDetector<T> d,
                                             final boolean increasing) {
-                    logEvent(s, increasing);
-                    return handler.eventOccurred(s, getDetector(), increasing);
+                    final Action action = handler.eventOccurred(s, getDetector(), increasing);
+                    if (action == Action.RESET_STATE) {
+                        lastResetState = resetState(getDetector(), s);
+                    } else {
+                        lastResetState = s;
+                    }
+                    lastTriggeringState = s;
+                    logEvent(s, lastResetState, increasing);
+                    return action;
                 }
 
                 /** {@inheritDoc} */
                 @Override
                 public FieldSpacecraftState<T> resetState(final FieldEventDetector<T> d,
                                                           final FieldSpacecraftState<T> oldState) {
-                    return handler.resetState(getDetector(), oldState);
+                    if (lastTriggeringState != oldState) {
+                        lastTriggeringState = oldState;
+                        lastResetState = handler.resetState(getDetector(), oldState);
+                    }
+                    return lastResetState;
                 }
 
             };
