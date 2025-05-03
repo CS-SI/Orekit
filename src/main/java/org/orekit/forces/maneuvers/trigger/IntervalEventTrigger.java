@@ -27,7 +27,6 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -188,34 +187,18 @@ public abstract class IntervalEventTrigger<T extends EventDetector> extends Abst
         D convertIntervalDetector(Field<S> field, T detector);
 
     /** Local handler for both start and stop triggers. */
-    private class Handler implements EventHandler {
-
-        /** Propagation direction. */
-        private boolean forward;
-
-        /** {@inheritDoc} */
-        @Override
-        public void init(final SpacecraftState initialState, final AbsoluteDate target, final EventDetector detector) {
-            forward = target.isAfterOrEqualTo(initialState);
-            initializeResetters(initialState, target);
-        }
+    private class Handler extends TriggerHandler {
 
         /** {@inheritDoc} */
         @Override
         public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
-            if (forward) {
+            if (isForward()) {
                 getFirings().addValidAfter(increasing, s.getDate(), false);
             } else {
                 getFirings().addValidBefore(!increasing, s.getDate(), false);
             }
             notifyResetters(s, increasing);
-            return Action.RESET_STATE;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
-            return applyResetters(oldState);
+            return determineAction(detector, s);
         }
 
     }
@@ -223,38 +206,19 @@ public abstract class IntervalEventTrigger<T extends EventDetector> extends Abst
     /** Local handler for both start and stop triggers.
      * @param <S> type of the field elements
      */
-    private class FieldHandler<S extends CalculusFieldElement<S>> implements FieldEventHandler<S> {
-
-        /** Propagation direction. */
-        private boolean forward;
-
-        /** {@inheritDoc} */
-        @Override
-        public void init(final FieldSpacecraftState<S> initialState,
-                         final FieldAbsoluteDate<S> target,
-                         final FieldEventDetector<S> detector) {
-            forward = target.isAfterOrEqualTo(initialState);
-            initializeResetters(initialState, target);
-        }
+    private class FieldHandler<S extends CalculusFieldElement<S>> extends FieldTriggerHandler<S> {
 
         /** {@inheritDoc} */
         @Override
         public Action eventOccurred(final FieldSpacecraftState<S> s, final FieldEventDetector<S> detector, final boolean increasing) {
-            if (forward) {
+            if (isForward()) {
                 getFirings().addValidAfter(increasing, s.getDate().toAbsoluteDate(), false);
             } else {
                 getFirings().addValidBefore(!increasing, s.getDate().toAbsoluteDate(), false);
             }
             notifyResetters(s, increasing);
-            return Action.RESET_STATE;
+            return determineAction(detector, s);
         }
-
-        /** {@inheritDoc} */
-        @Override
-        public FieldSpacecraftState<S> resetState(final FieldEventDetector<S> detector, final FieldSpacecraftState<S> oldState) {
-            return applyResetters(oldState);
-        }
-
     }
 
 }

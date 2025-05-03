@@ -23,8 +23,13 @@ import java.util.Map;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
@@ -228,4 +233,120 @@ public abstract class AbstractManeuverTriggers implements ResettableManeuverTrig
         return reset;
     }
 
+    /** Local abstract handler for triggers, with a cache for the reset.
+     * @since 13.1
+     */
+    protected abstract class TriggerHandler implements EventHandler {
+
+        /** Propagation direction. */
+        private boolean forward;
+
+        /** Last evaluated state for cache. */
+        private SpacecraftState lastState;
+
+        /** Last reset state for cache. */
+        private SpacecraftState lastResetState;
+
+        /** {@inheritDoc} */
+        @Override
+        public void init(final SpacecraftState initialState, final AbsoluteDate target, final EventDetector detector) {
+            forward = target.isAfterOrEqualTo(initialState);
+            lastState = null;
+            lastResetState = null;
+            initializeResetters(initialState, target);
+        }
+
+        /**
+         * Determines the action (reset state or derivatives only).
+         * @param detector event detector
+         * @param oldState state before reset if any
+         * @return action
+         */
+        protected Action determineAction(final EventDetector detector, final SpacecraftState oldState) {
+            final SpacecraftState resetState = resetState(detector, oldState);
+            if (resetState == oldState) {
+                return Action.RESET_DERIVATIVES;
+            } else {
+                return Action.RESET_STATE;
+            }
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
+            if (lastState != oldState) {
+                lastResetState = applyResetters(oldState);
+                lastState = oldState;
+            }
+            return lastResetState;
+        }
+
+        /**
+         * Getter for flag.
+         * @return flag on backward propagation
+         */
+        protected boolean isForward() {
+            return forward;
+        }
+    }
+
+    /** Local abstract handler for triggers, with a cache for the reset.
+     * @param <S> type of the field elements
+     * @since 13.1
+     */
+    protected abstract class FieldTriggerHandler<S extends CalculusFieldElement<S>> implements FieldEventHandler<S> {
+
+        /** Propagation direction. */
+        private boolean forward;
+
+        /** Last evaluated state for cache. */
+        private FieldSpacecraftState<S> lastState;
+
+        /** Last reset state for cache. */
+        private FieldSpacecraftState<S> lastResetState;
+
+        /** {@inheritDoc} */
+        @Override
+        public void init(final FieldSpacecraftState<S> initialState,
+                         final FieldAbsoluteDate<S> target,
+                         final FieldEventDetector<S> detector) {
+            forward = target.isAfterOrEqualTo(initialState);
+            lastState = null;
+            lastResetState = null;
+            initializeResetters(initialState, target);
+        }
+
+        /**
+         * Determines the action (reset state or derivatives only).
+         * @param detector event detector
+         * @param oldState state before reset if any
+         * @return action
+         */
+        protected Action determineAction(final FieldEventDetector<S> detector, final FieldSpacecraftState<S> oldState) {
+            final FieldSpacecraftState<S> resetState = resetState(detector, oldState);
+            if (resetState == oldState) {
+                return Action.RESET_DERIVATIVES;
+            } else {
+                return Action.RESET_STATE;
+            }
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public FieldSpacecraftState<S> resetState(final FieldEventDetector<S> detector, final FieldSpacecraftState<S> oldState) {
+            if (lastState != oldState) {
+                lastResetState = applyResetters(oldState);
+                lastState = oldState;
+            }
+            return lastResetState;
+        }
+
+        /**
+         * Getter for flag.
+         * @return flag on backward propagation
+         */
+        protected boolean isForward() {
+            return forward;
+        }
+    }
 }
