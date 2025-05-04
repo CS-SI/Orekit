@@ -21,10 +21,14 @@ import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathArrays;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.TestUtils;
+import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.LofOffset;
+import org.orekit.frames.LOFType;
 import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
@@ -32,6 +36,8 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -46,7 +52,7 @@ class DerivativeStateUtilsTest {
         final GradientField field = GradientField.getField(6);
         final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         // WHEN
-        final FieldOrbit<Gradient> fieldOrbit = DerivativeStateUtils.buildOrbitGradient(field, orbit, positionAngleType);
+        final FieldOrbit<Gradient> fieldOrbit = DerivativeStateUtils.buildOrbitGradient(field, orbit);
         // THEN
         final double[] expected = new double[6];
         orbitType.mapOrbitToArray(orbit, positionAngleType, expected, null);
@@ -73,7 +79,7 @@ class DerivativeStateUtilsTest {
                 assertEquals(1., fieldOrbit.getEquinoctialEy().getGradient()[2]);
                 assertEquals(1., fieldOrbit.getHx().getGradient()[3]);
                 assertEquals(1., fieldOrbit.getHy().getGradient()[4]);
-                assertEquals(1., fieldEquinoctialOrbit.getL(positionAngleType).getGradient()[5]);
+                assertEquals(1., fieldEquinoctialOrbit.getL(fieldEquinoctialOrbit.getCachedPositionAngleType()).getGradient()[5]);
                 break;
 
             case CIRCULAR:
@@ -83,7 +89,7 @@ class DerivativeStateUtilsTest {
                 assertEquals(1., fieldCircularOrbit.getCircularEy().getGradient()[2]);
                 assertEquals(1., fieldCircularOrbit.getI().getGradient()[3]);
                 assertEquals(1., fieldCircularOrbit.getRightAscensionOfAscendingNode().getGradient()[4]);
-                assertEquals(1., fieldCircularOrbit.getAlpha(positionAngleType).getGradient()[5]);
+                assertEquals(1., fieldCircularOrbit.getAlpha(fieldCircularOrbit.getCachedPositionAngleType()).getGradient()[5]);
                 break;
 
 
@@ -94,7 +100,7 @@ class DerivativeStateUtilsTest {
                 assertEquals(1., fieldKeplerianOrbit.getI().getGradient()[2]);
                 assertEquals(1., fieldKeplerianOrbit.getPerigeeArgument().getGradient()[3]);
                 assertEquals(1., fieldKeplerianOrbit.getRightAscensionOfAscendingNode().getGradient()[4]);
-                assertEquals(1., fieldKeplerianOrbit.getAnomaly(positionAngleType).getGradient()[5]);
+                assertEquals(1., fieldKeplerianOrbit.getAnomaly(fieldKeplerianOrbit.getCachedPositionAngleType()).getGradient()[5]);
                 break;
         }
     }
@@ -106,7 +112,7 @@ class DerivativeStateUtilsTest {
         final Orbit orbit = OrbitType.CARTESIAN.convertType(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH));
         final GradientField field = GradientField.getField(freeParameters);
         // WHEN
-        final FieldOrbit<Gradient> fieldOrbit = DerivativeStateUtils.buildOrbitGradient(field, orbit, null);
+        final FieldOrbit<Gradient> fieldOrbit = DerivativeStateUtils.buildOrbitGradient(field, orbit);
         // THEN
         assertEquals(orbit.getFrame(), fieldOrbit.getFrame());
         assertEquals(orbit.getDate(), fieldOrbit.getDate().toAbsoluteDate());
@@ -143,10 +149,49 @@ class DerivativeStateUtilsTest {
         assertEquals(pvCoordinates.getFrame(), fieldPV.getFrame());
         assertEquals(pvCoordinates.getDate(), fieldPV.getDate().toAbsoluteDate());
         assertArrayEquals(new double[freeParameters], fieldPV.getDate().durationFrom(pvCoordinates.getDate()).getGradient());
-        final FieldOrbit<Gradient> fieldOrbit = DerivativeStateUtils.buildOrbitGradient(field, orbit, null);
+        final FieldOrbit<Gradient> fieldOrbit = DerivativeStateUtils.buildOrbitGradient(field, orbit);
         assertArrayEquals(fieldPV.getPosition().toArray(), fieldOrbit.getPosition().toArray());
         assertArrayEquals(fieldPV.getPVCoordinates().getVelocity().toArray(),
                 fieldOrbit.getPVCoordinates().getVelocity().toArray());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {3, 7})
+    void testBuildStateGradientNullAttitudeProvider(final int freeParameters) {
+        // GIVEN
+        final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
+        final GradientField field = GradientField.getField(freeParameters);
+        final SpacecraftState state = new SpacecraftState(orbit);
+        // WHEN
+        final FieldSpacecraftState<Gradient> fieldState = DerivativeStateUtils.buildSpacecraftStateGradient(field, state, null);
+        // THEN
+        assertEquals(state.getMass(), fieldState.getMass().getReal());
+        if (freeParameters == 7) {
+            assertArrayEquals(new double[]{0., 0., 0., 0., 0., 0., 1.}, fieldState.getMass().getGradient());
+        }
+        assertEquals(state.getDate(), fieldState.getDate().toAbsoluteDate());
+        assertEquals(state.getPosition(), fieldState.getPosition().toVector3D());
+        assertEquals(state.getAttitude().getRotationAcceleration(), fieldState.getAttitude().getRotationAcceleration().toVector3D());
+        assertEquals(state.getAttitude().getSpin(), fieldState.getAttitude().getSpin().toVector3D());
+    }
+
+    @Test
+    void testBuildStateGradientNonNullAttitudeProvider() {
+        // GIVEN
+        final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
+        final GradientField field = GradientField.getField(6);
+        final SpacecraftState state = new SpacecraftState(orbit);
+        final LofOffset lofOffset = new LofOffset(orbit.getFrame(), LOFType.TNW);
+        // WHEN
+        final FieldSpacecraftState<Gradient> fieldState = DerivativeStateUtils.buildSpacecraftStateGradient(field, state, lofOffset);
+        // THEN
+        assertEquals(state.getMass(), fieldState.getMass().getReal());
+        assertEquals(state.getDate(), fieldState.getDate().toAbsoluteDate());
+        assertEquals(state.getPosition(), fieldState.getPosition().toVector3D());
+        final Attitude attitude = lofOffset.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
+        assertArrayEquals(attitude.getSpin().toArray(), fieldState.getAttitude().getSpin().toVector3D().toArray(), 1e-12);
+        assertArrayEquals(attitude.getRotationAcceleration().toArray(),
+                fieldState.getAttitude().getRotationAcceleration().toVector3D().toArray(), 1e-12);
     }
 }
 

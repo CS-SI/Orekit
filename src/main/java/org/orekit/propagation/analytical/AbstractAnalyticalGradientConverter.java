@@ -38,7 +38,7 @@ public abstract class AbstractAnalyticalGradientConverter
                                                   final int freeStateParameters) {
         super(freeStateParameters);
         initStates(buildBasicGradientSpacecraftState(propagator.getInitialState(), freeStateParameters,
-                                                     propagator.getAttitudeProvider()));
+                                                     freeStateParameters > 3 ? propagator.getAttitudeProvider() : null));
 
     }
 

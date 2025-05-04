@@ -19,10 +19,15 @@ package org.orekit.utils;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.FieldAttitude;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngleBased;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 
 /**
@@ -40,33 +45,79 @@ public class DerivativeStateUtils {
     }
 
     /**
-     * Method creating a Gradient version of the input orbit, using the state vector as the variables of a first-
+     * Method creating a Gradient version of the input state, using the state vector as the independent variables of a first-
+     * order Taylor algebra. Additional variables and derivatives are ignored.
+     * @param field gradient field
+     * @param state full state
+     * @param attitudeProvider provider to recompute attitude, can be null
+     * @return fielded state
+     * @see FieldSpacecraftState
+     * @see SpacecraftState
+     */
+    public static FieldSpacecraftState<Gradient> buildSpacecraftStateGradient(final GradientField field,
+                                                                              final SpacecraftState state,
+                                                                              final AttitudeProvider attitudeProvider) {
+        final int freeParameters = field.getZero().getFreeParameters();
+        final double mass = state.getMass();
+        final Gradient fieldMass = (freeParameters >= 7) ? Gradient.variable(freeParameters, 6, mass) : Gradient.constant(freeParameters, mass);
+        if (state.isOrbitDefined()) {
+            final FieldOrbit<Gradient> fieldOrbit = buildOrbitGradient(field, state.getOrbit());
+            final FieldAttitude<Gradient> fieldAttitude = (attitudeProvider == null) ?
+                    new FieldAttitude<>(field, state.getAttitude()) : attitudeProvider.getAttitude(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame());
+            return new FieldSpacecraftState<>(fieldOrbit, fieldAttitude).withMass(fieldMass);
+        } else {
+            final FieldAbsolutePVCoordinates<Gradient> fieldPV = buildAbsolutePVGradient(field, state.getAbsPVA());
+            final FieldAttitude<Gradient> fieldAttitude = (attitudeProvider == null) ?
+                    new FieldAttitude<>(field, state.getAttitude()) : attitudeProvider.getAttitude(fieldPV, fieldPV.getDate(), fieldPV.getFrame());
+            return new FieldSpacecraftState<>(fieldPV, fieldAttitude).withMass(fieldMass);
+        }
+    }
+
+    /**
+     * Method creating a Gradient version of the input orbit, using the state vector as the independent variables of a first-
      * order Taylor algebra.
      * @param field gradient field
      * @param orbit orbit
-     * @param positionAngleType angle type to use (can be null with Cartesian)
      * @return fielded orbit
      * @see org.orekit.orbits.FieldOrbit
      * @see org.orekit.orbits.Orbit
      */
     public static FieldOrbit<Gradient> buildOrbitGradient(final GradientField field,
-                                                          final Orbit orbit,
-                                                          final PositionAngleType positionAngleType) {
+                                                          final Orbit orbit) {
         final int freeParameters = field.getZero().getFreeParameters();
-        final double[] constants = new double[6];
+        final double[] stateValues = new double[6];
+        final double[] stateDerivatives = stateValues.clone();
         final OrbitType type = orbit.getType();
-        type.mapOrbitToArray(orbit, positionAngleType, constants, null);
-        final Gradient[] stateVariables = new Gradient[constants.length];
+        final PositionAngleType positionAngleType = extractPositionAngleType(orbit);
+        type.mapOrbitToArray(orbit, positionAngleType, stateValues, null);
+        final Gradient[] stateVariables = new Gradient[stateValues.length];
         for (int i = 0; i < stateVariables.length; i++) {
-            stateVariables[i] = (i < freeParameters) ? Gradient.variable(freeParameters, i, constants[i]) : Gradient.constant(freeParameters, constants[i]);
+            stateVariables[i] = (i < freeParameters) ? Gradient.variable(freeParameters, i, stateValues[i]) : Gradient.constant(freeParameters, stateValues[i]);
         }
         final FieldAbsoluteDate<Gradient> date = new FieldAbsoluteDate<>(field, orbit.getDate());
         final Gradient mu = Gradient.constant(freeParameters, orbit.getMu());
-        return type.mapArrayToOrbit(stateVariables, null, positionAngleType, date, mu, orbit.getFrame());
+        final Gradient[] fieldStateDerivatives = new Gradient[stateVariables.length];
+        for (int i = 0; i < stateVariables.length; i++) {
+            fieldStateDerivatives[i] = Gradient.constant(freeParameters, stateDerivatives[i]);
+        }
+        return type.mapArrayToOrbit(stateVariables, fieldStateDerivatives, positionAngleType, date, mu, orbit.getFrame());
     }
 
     /**
-     * Method creating a Gradient version of the input coordinates, using the state vector as the variables of a first-
+     * Extract position angle type.
+     * @param orbit orbit
+     * @return angle type
+     */
+    private static PositionAngleType extractPositionAngleType(final Orbit orbit) {
+        if (orbit instanceof PositionAngleBased<?>) {
+            final PositionAngleBased<?> positionAngleBased = (PositionAngleBased<?>) orbit;
+            return positionAngleBased.getCachedPositionAngleType();
+        }
+        return null;
+    }
+
+    /**
+     * Method creating a Gradient version of the input coordinates, using the state vector as the independent variables of a first-
      * order Taylor algebra.
      * @param field gradient field
      * @param coordinates absolute coordinates
@@ -86,8 +137,9 @@ public class DerivativeStateUtils {
                 stateVariables[2]);
         final FieldVector3D<Gradient> velocity = new FieldVector3D<>(stateVariables[3], stateVariables[4],
                 stateVariables[5]);
+        final FieldVector3D<Gradient> acceleration = new FieldVector3D<>(field, coordinates.getAcceleration());
         final FieldAbsoluteDate<Gradient> date = new FieldAbsoluteDate<>(field, coordinates.getDate());
-        return new FieldAbsolutePVCoordinates<>(coordinates.getFrame(), date, position, velocity);
+        return new FieldAbsolutePVCoordinates<>(coordinates.getFrame(), date, position, velocity, acceleration);
     }
 
     /**
