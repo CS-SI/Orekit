@@ -22,6 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.linear.RealVector;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
@@ -29,6 +30,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
@@ -44,21 +46,36 @@ import org.orekit.forces.maneuvers.ConstantThrustManeuver;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
 import org.orekit.forces.maneuvers.propulsion.ProfileThrustPropulsionModel;
+import org.orekit.forces.maneuvers.propulsion.PropulsionModel;
 import org.orekit.forces.maneuvers.propulsion.SphericalConstantThrustPropulsionModel;
 import org.orekit.forces.maneuvers.propulsion.ThrustVectorProvider;
 import org.orekit.forces.maneuvers.trigger.DateBasedManeuverTriggers;
+import org.orekit.forces.maneuvers.trigger.IntervalEventTrigger;
 import org.orekit.forces.maneuvers.trigger.ManeuverTriggers;
+import org.orekit.forces.radiation.CylindricallyShadowedLightFluxModel;
+import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
+import org.orekit.forces.radiation.LightFluxModel;
+import org.orekit.forces.radiation.RadiationPressureModel;
+import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.conversion.DormandPrince54IntegratorBuilder;
+import org.orekit.propagation.events.ApsideDetector;
+import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldApsideDetector;
+import org.orekit.propagation.events.FieldEventDetectionSettings;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.ParameterDrivenDateIntervalDetector;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
@@ -372,7 +389,7 @@ class ExtendedStateTransitionMatrixGeneratorTest {
     private static NumericalPropagator buildPropagator(final OrbitType orbitType, final AttitudeProvider attitudeProvider) {
         final Orbit orbit = new EquinoctialOrbit(7e6, 0.001, 0.001, 1., 2., 3., PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), AbsoluteDate.ARBITRARY_EPOCH, Constants.EGM96_EARTH_MU);
-        final ODEIntegrator integrator = new ClassicalRungeKuttaIntegrator(10.);
+        final ODEIntegrator integrator = new DormandPrince54IntegratorBuilder(1e-3, 50., 1e-4).buildIntegrator(orbit, orbitType);
         final NumericalPropagator propagator = new NumericalPropagator(integrator, attitudeProvider);
         propagator.setOrbitType(orbitType);
         propagator.setResetAtEnd(false);
@@ -401,6 +418,146 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         assertEquals(relativePV.getVelocity().getX() / dM, stateTransitionMatrix.getEntry(3, 6), 1e-5);
         assertEquals(relativePV.getVelocity().getY() / dM, stateTransitionMatrix.getEntry(4, 6), 1e-5);
         assertEquals(relativePV.getVelocity().getZ() / dM, stateTransitionMatrix.getEntry(5, 6), 1e-5);
+    }
+
+    @Test
+    void testRadiationPressure() {
+        // GIVEN
+        final NumericalPropagator propagator = buildPropagator(OrbitType.CARTESIAN);
+        final String stmName = "stm";
+        final MatricesHarvester harvester = propagator.setupMatricesComputation(stmName, MatrixUtils.createRealIdentityMatrix(7), null);
+        final CylindricallyShadowedLightFluxModel shadowModel = new CylindricallyShadowedLightFluxModel(new AnalyticalSolarPositionProvider(),
+                Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
+        final double crossSection = 100.;
+        final double coefficientValue = 1.6;
+        final IsotropicRadiationSingleCoefficient singleCoefficient = new IsotropicRadiationSingleCoefficient(crossSection, coefficientValue);
+        singleCoefficient.getRadiationParametersDrivers()
+                .stream().filter(driver -> driver.getName().equals(RadiationSensitive.REFLECTION_COEFFICIENT)).findFirst()
+                .ifPresent(driver -> driver.setSelected(true));
+        final RadiationPressureModel model = new RadiationPressureModel(shadowModel, singleCoefficient);
+        propagator.addForceModel(model);
+        final double timeOfFlight = 1e4;
+        final AbsoluteDate epoch = propagator.getInitialState().getDate();
+        final AbsoluteDate targetDate = epoch.shiftedBy(timeOfFlight);
+                // WHEN
+        final SpacecraftState state = propagator.propagate(targetDate);
+        final RealMatrix jacobianMatrix = harvester.getParametersJacobian(state);
+        // THEN
+        compareRadiationCoefficientGradientWithFiniteDifferences(shadowModel, crossSection, coefficientValue,
+                targetDate, jacobianMatrix);
+    }
+
+    private static void compareRadiationCoefficientGradientWithFiniteDifferences(
+                                                                 final LightFluxModel fluxModel,
+                                                                 final double crossSection, final double singleCoefficient,
+                                                                 final AbsoluteDate targetDate,
+                                                                 final RealMatrix jacobianMatrix) {
+        final double dP = 0.01;
+        final NumericalPropagator propagator1 = buildPropagator(OrbitType.CARTESIAN);
+                propagator1.addForceModel(new RadiationPressureModel(fluxModel, new IsotropicRadiationSingleCoefficient(crossSection,
+                singleCoefficient - dP /2)));
+        final SpacecraftState propagated1 = propagator1.propagate(targetDate);
+        final NumericalPropagator propagator2 = buildPropagator(propagator1.getOrbitType(), propagator1.getAttitudeProvider());
+                propagator2.addForceModel(new RadiationPressureModel(fluxModel, new IsotropicRadiationSingleCoefficient(crossSection,
+                singleCoefficient + dP /2)));
+        final SpacecraftState propagated2 = propagator2.propagate(targetDate);
+        final PVCoordinates relativePV = new PVCoordinates(propagated1.getPVCoordinates(),
+                propagated2.getPVCoordinates());
+        assertEquals(relativePV.getPosition().getX() / dP, jacobianMatrix.getEntry(0, 0), 5e-3);
+        assertEquals(relativePV.getPosition().getY() / dP, jacobianMatrix.getEntry(1, 0), 5e-3);
+        assertEquals(relativePV.getPosition().getZ() / dP, jacobianMatrix.getEntry(2, 0), 5e-3);
+        assertEquals(relativePV.getVelocity().getX() / dP, jacobianMatrix.getEntry(3, 0), 1e-5);
+        assertEquals(relativePV.getVelocity().getY() / dP, jacobianMatrix.getEntry(4, 0), 1e-5);
+        assertEquals(relativePV.getVelocity().getZ() / dP, jacobianMatrix.getEntry(5, 0), 1e-5);
+    }
+
+    @ParameterizedTest
+    @ValueSource(doubles = {-2e4, 2e4})
+    void testManeuverApside(final double timeOfFlight) {
+        // GIVEN
+        final NumericalPropagator propagator = buildPropagator(OrbitType.CARTESIAN);
+        final String stmName = "stm";
+        final MatricesHarvester harvester = propagator.setupMatricesComputation(stmName, MatrixUtils.createRealIdentityMatrix(7), null);
+        final double thrustMagnitude = 5e-3;
+        final Vector3D thrustDirection = Vector3D.PLUS_I;
+        final double isp = 10;
+        final PropulsionModel propulsionModel = new BasicConstantThrustPropulsionModel(thrustMagnitude, isp,
+                thrustDirection, "");
+        final EventDetectionSettings detectionSettings = EventDetectionSettings.getDefaultEventDetectionSettings();
+        final ManeuverTriggers triggers = new ApsideTriggers(detectionSettings);
+        final Maneuver maneuver = new Maneuver(null, triggers, propulsionModel);
+        propagator.addForceModel(maneuver);
+        final AbsoluteDate epoch = propagator.getInitialState().getDate();
+        final AbsoluteDate targetDate = epoch.shiftedBy(timeOfFlight);
+        final SpacecraftState initialState = propagator.getInitialState();
+        // WHEN
+        final SpacecraftState state = propagator.propagate(targetDate);
+        final RealMatrix stateTransitionMatrix = harvester.getStateTransitionMatrix(state);
+        // THEN
+        final double dR = 1.;
+        final double dV = 1e-3;
+        checkStmColumnWithFiniteDifferences(0, dR, propagator, initialState, maneuver, targetDate, stateTransitionMatrix.getColumnVector(0));
+        checkStmColumnWithFiniteDifferences(1, dR, propagator, initialState, maneuver, targetDate, stateTransitionMatrix.getColumnVector(1));
+        checkStmColumnWithFiniteDifferences(2, dR, propagator, initialState, maneuver, targetDate, stateTransitionMatrix.getColumnVector(2));
+        checkStmColumnWithFiniteDifferences(3, dV, propagator, initialState, maneuver, targetDate, stateTransitionMatrix.getColumnVector(3));
+        checkStmColumnWithFiniteDifferences(4, dV, propagator, initialState, maneuver, targetDate, stateTransitionMatrix.getColumnVector(4));
+        checkStmColumnWithFiniteDifferences(5, dV, propagator, initialState, maneuver, targetDate, stateTransitionMatrix.getColumnVector(5));
+    }
+
+    private void checkStmColumnWithFiniteDifferences(final int index, final double dX, final NumericalPropagator propagator,
+                                                     final SpacecraftState initialState, final Maneuver maneuver,
+                                                     final AbsoluteDate targetDate, final RealVector stateTransitionMatrixColumn) {
+        final double[] cartesianVector = new double[6];
+        cartesianVector[index] = -dX/2.;
+        final NumericalPropagator propagator1 = buildPropagator(propagator.getOrbitType(), propagator.getAttitudeProvider());
+        propagator1.resetInitialState(modifyState(initialState, cartesianVector));
+        propagator1.addForceModel(maneuver);
+        final SpacecraftState propagated1 = propagator1.propagate(targetDate);
+        final NumericalPropagator propagator2 = buildPropagator(propagator.getOrbitType(), propagator.getAttitudeProvider());
+        cartesianVector[index] *= -1;
+        propagator2.resetInitialState(modifyState(initialState, cartesianVector));
+        propagator2.addForceModel(maneuver);
+        final SpacecraftState propagated2 = propagator2.propagate(targetDate);
+        final PVCoordinates relativePV = new PVCoordinates(propagated1.getPVCoordinates(), propagated2.getPVCoordinates());
+        final double toleranceP = 1e0;
+        final double toleranceV = 1e-3;
+        assertEquals(relativePV.getPosition().getX() / dX, stateTransitionMatrixColumn.getEntry(0), toleranceP);
+        assertEquals(relativePV.getPosition().getY() / dX, stateTransitionMatrixColumn.getEntry(1), toleranceP);
+        assertEquals(relativePV.getPosition().getZ() / dX, stateTransitionMatrixColumn.getEntry(2), toleranceP);
+        assertEquals(relativePV.getVelocity().getX() / dX, stateTransitionMatrixColumn.getEntry(3), toleranceV);
+        assertEquals(relativePV.getVelocity().getY() / dX, stateTransitionMatrixColumn.getEntry(4), toleranceV);
+        assertEquals(relativePV.getVelocity().getZ() / dX, stateTransitionMatrixColumn.getEntry(5), toleranceV);
+    }
+
+    private static SpacecraftState modifyState(final SpacecraftState baseState, final double[] cartesianShift) {
+        final PVCoordinates pvCoordinates = baseState.getPVCoordinates();
+        final PVCoordinates newPV = new PVCoordinates(pvCoordinates.getPosition().add(new Vector3D(Arrays.copyOfRange(cartesianShift, 0, 3))),
+                pvCoordinates.getVelocity().add(new Vector3D(Arrays.copyOfRange(cartesianShift, 3, 6))));
+        final CartesianOrbit orbit = new CartesianOrbit(newPV, baseState.getFrame(), baseState.getDate(),
+                baseState.getOrbit().getMu());
+        return new SpacecraftState(orbit, baseState.getAttitude()).withMass(baseState.getMass());
+    }
+
+    private static class ApsideTriggers extends IntervalEventTrigger<ApsideDetector> {
+
+        protected ApsideTriggers(EventDetectionSettings detectionSettings) {
+            super(new ApsideDetector(detectionSettings, new ContinueOnEvent()));
+        }
+
+        @Override
+        public List<ParameterDriver> getParametersDrivers() {
+            return Collections.emptyList();
+        }
+
+        private FieldApsideDetector buildFieldApsideDetector(Field field, EventDetector detector) {
+            return new FieldApsideDetector<>(new FieldEventDetectionSettings<>(field, detector.getDetectionSettings()),
+                    new FieldStopOnEvent());
+        }
+
+        @Override
+        protected <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>> D convertIntervalDetector(Field<S> field, ApsideDetector detector) {
+            return (D) buildFieldApsideDetector(field, detector);
+        }
     }
 }
 
