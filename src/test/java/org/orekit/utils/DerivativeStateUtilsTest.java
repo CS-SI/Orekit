@@ -20,6 +20,8 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -201,6 +203,75 @@ class DerivativeStateUtilsTest {
         assertArrayEquals(attitude.getSpin().toArray(), fieldState.getAttitude().getSpin().toVector3D().toArray(), 1e-12);
         assertArrayEquals(attitude.getRotationAcceleration().toArray(),
                 fieldState.getAttitude().getRotationAcceleration().toVector3D().toArray(), 1e-12);
+    }
+
+    @Test
+    void testBuildSpacecraftStateTransitionGradientAbsolutePV() {
+        // GIVEN
+        final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
+        final AbsolutePVCoordinates pvCoordinates = new AbsolutePVCoordinates(orbit.getFrame(), orbit.getDate(),
+                orbit.getPVCoordinates());
+        final SpacecraftState state = new SpacecraftState(pvCoordinates);
+        final double[][] data = new double[7][];
+        for (int i = 0; i < 7; i++) {
+            data[i] = new double[7];
+            for (int j = 0; j < 7; j++) {
+                data[i][j] = j + i;
+            }
+        }
+        final RealMatrix partials = MatrixUtils.createRealMatrix(data);
+        // WHEN
+        final FieldSpacecraftState<Gradient> fieldState = DerivativeStateUtils.buildSpacecraftStateTransitionGradient(state, partials, null);
+        // THEN
+        assertEquals(state.getDate(), fieldState.getDate().toAbsoluteDate());
+        assertEquals(state.getMass(), fieldState.getMass().getReal());
+        assertEquals(state.getPosition(), fieldState.getPosition().toVector3D());
+        assertArrayEquals(data[0], fieldState.getPosition().getX().getGradient());
+        assertArrayEquals(data[1], fieldState.getPosition().getY().getGradient());
+        assertArrayEquals(data[2], fieldState.getPosition().getZ().getGradient());
+        assertArrayEquals(data[3], fieldState.getPVCoordinates().getVelocity().getX().getGradient());
+        assertArrayEquals(data[4], fieldState.getPVCoordinates().getVelocity().getY().getGradient());
+        assertArrayEquals(data[5], fieldState.getPVCoordinates().getVelocity().getZ().getGradient());
+        assertArrayEquals(data[6], fieldState.getMass().getGradient());
+    }
+
+    @Test
+    void testBuildSpacecraftStateTransitionGradientIdentityAbsolutePV() {
+        // GIVEN
+        final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
+        final AbsolutePVCoordinates pvCoordinates = new AbsolutePVCoordinates(orbit.getFrame(), orbit.getDate(),
+                orbit.getPVCoordinates());
+        final SpacecraftState state = new SpacecraftState(pvCoordinates);
+        final RealMatrix identity = MatrixUtils.createRealIdentityMatrix(3);
+        // WHEN
+        final FieldSpacecraftState<Gradient> fieldState = DerivativeStateUtils.buildSpacecraftStateTransitionGradient(state, identity, null);
+        // THEN
+        final GradientField field = GradientField.getField(identity.getColumnDimension());
+        final FieldSpacecraftState<Gradient> expectedFieldState = DerivativeStateUtils.buildSpacecraftStateGradient(field, state, null);
+        assertEquals(expectedFieldState.getMass(), fieldState.getMass());
+        assertEquals(expectedFieldState.getDate(), fieldState.getDate());
+        assertEquals(expectedFieldState.getPosition(), fieldState.getPosition());
+        assertEquals(expectedFieldState.getPVCoordinates().getVelocity(), fieldState.getPVCoordinates().getVelocity());
+        assertEquals(expectedFieldState.getPVCoordinates().getAcceleration(), fieldState.getPVCoordinates().getAcceleration());
+    }
+
+    @Test
+    void testBuildSpacecraftStateTransitionGradientIdentityOrbit() {
+        // GIVEN
+        final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
+        final SpacecraftState state = new SpacecraftState(orbit);
+        final RealMatrix identity = MatrixUtils.createRealIdentityMatrix(3);
+        final LofOffset lofOffset = new LofOffset(orbit.getFrame(), LOFType.QSW);
+        // WHEN
+        final FieldSpacecraftState<Gradient> fieldState = DerivativeStateUtils.buildSpacecraftStateTransitionGradient(state, identity, lofOffset);
+        // THEN
+        final GradientField field = GradientField.getField(identity.getColumnDimension());
+        final FieldSpacecraftState<Gradient> expectedFieldState = DerivativeStateUtils.buildSpacecraftStateGradient(field, state, lofOffset);
+        assertEquals(expectedFieldState.getMass(), fieldState.getMass());
+        assertEquals(expectedFieldState.getDate(), fieldState.getDate());
+        assertEquals(expectedFieldState.getPosition(), fieldState.getPosition());
+        assertEquals(expectedFieldState.getPVCoordinates().getVelocity(), fieldState.getPVCoordinates().getVelocity());
+        assertEquals(expectedFieldState.getPVCoordinates().getAcceleration(), fieldState.getPVCoordinates().getAcceleration());
     }
 }
 
