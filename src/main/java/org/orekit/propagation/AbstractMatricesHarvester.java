@@ -133,8 +133,7 @@ public abstract class AbstractMatricesHarvester implements MatricesHarvester {
         final int stateDimension = matrix.length;
         final double[] array = new double[stateDimension * stateDimension];
         int index = 0;
-        for (int i = 0; i < stateDimension; ++i) {
-            final double[] row = matrix[i];
+        for (final double[] row : matrix) {
             for (int j = 0; j < stateDimension; ++j) {
                 array[index++] = row[j];
             }
