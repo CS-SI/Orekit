@@ -89,7 +89,7 @@ public class DerivativeStateUtils {
         final double[] stateDerivatives = stateValues.clone();
         final OrbitType type = orbit.getType();
         final PositionAngleType positionAngleType = extractPositionAngleType(orbit);
-        type.mapOrbitToArray(orbit, positionAngleType, stateValues, null);
+        type.mapOrbitToArray(orbit, positionAngleType, stateValues, stateDerivatives);
         final Gradient[] stateVariables = new Gradient[stateValues.length];
         for (int i = 0; i < stateVariables.length; i++) {
             stateVariables[i] = (i < freeParameters) ? Gradient.variable(freeParameters, i, stateValues[i]) : Gradient.constant(freeParameters, stateValues[i]);

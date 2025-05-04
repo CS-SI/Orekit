@@ -29,6 +29,7 @@ import org.orekit.TestUtils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.frames.LOFType;
+import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
@@ -80,6 +81,14 @@ class DerivativeStateUtilsTest {
                 assertEquals(1., fieldOrbit.getHx().getGradient()[3]);
                 assertEquals(1., fieldOrbit.getHy().getGradient()[4]);
                 assertEquals(1., fieldEquinoctialOrbit.getL(fieldEquinoctialOrbit.getCachedPositionAngleType()).getGradient()[5]);
+                assertEquals(orbit.getADot(), fieldEquinoctialOrbit.getADot().getReal());
+                assertEquals(orbit.getEquinoctialExDot(), fieldEquinoctialOrbit.getEquinoctialExDot().getReal());
+                assertEquals(orbit.getEquinoctialEyDot(), fieldEquinoctialOrbit.getEquinoctialEyDot().getReal());
+                assertEquals(orbit.getHxDot(), fieldEquinoctialOrbit.getHxDot().getReal());
+                assertEquals(orbit.getHyDot(), fieldEquinoctialOrbit.getHyDot().getReal());
+                final EquinoctialOrbit equinoctialOrbit = (EquinoctialOrbit) orbit;
+                assertEquals(equinoctialOrbit.getLDot(equinoctialOrbit.getCachedPositionAngleType()),
+                        fieldEquinoctialOrbit.getLDot(fieldEquinoctialOrbit.getCachedPositionAngleType()).getReal());
                 break;
 
             case CIRCULAR:
