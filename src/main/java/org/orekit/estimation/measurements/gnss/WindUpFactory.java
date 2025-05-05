@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -51,15 +51,18 @@ public class WindUpFactory {
     public WindUp getWindUp(final SatelliteSystem system, final int prnNumber,
                             final Dipole emitterDipole, final String receiverName) {
         // select satellite system
-        final Map<Integer, Map<String, WindUp>> systemModifiers =
-                modifiers.computeIfAbsent(system, s -> new HashMap<>());
+        final Map<Integer, Map<String, WindUp>> systemModifiers;
+        synchronized (modifiers) {
+            systemModifiers = modifiers.computeIfAbsent(system, s -> new HashMap<>());
 
-        // select satellite
-        final Map<String, WindUp> satelliteModifiers =
+            // select satellite
+            final Map<String, WindUp> satelliteModifiers =
                 systemModifiers.computeIfAbsent(prnNumber, n -> new HashMap<>());
 
-        // select receiver
-        return satelliteModifiers.computeIfAbsent(receiverName, r -> new WindUp(emitterDipole));
+            // select receiver
+            return satelliteModifiers.computeIfAbsent(receiverName, r -> new WindUp(emitterDipole));
+
+        }
 
     }
 

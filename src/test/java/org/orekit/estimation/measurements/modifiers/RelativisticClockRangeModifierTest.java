@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,7 +30,6 @@ import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
@@ -53,8 +52,7 @@ public class RelativisticClockRangeModifierTest {
                                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         final GeodeticPoint point    = new GeodeticPoint(FastMath.toRadians(42.0), FastMath.toRadians(1.0), 100.0);
         final TopocentricFrame topo  = new TopocentricFrame(earth, point, "");
-        final GroundStation station  = new GroundStation(topo,
-                                                         TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+        final GroundStation station  = new GroundStation(topo);
 
         // Satellite (GPS orbit from TLE)
         final TLE tle = new TLE("1 28474U 04045A   20252.59334296 -.00000043  00000-0  00000-0 0  9998",
@@ -84,7 +82,7 @@ public class RelativisticClockRangeModifierTest {
 
         // Range measurement
         final Range range = new Range(station, false, state.getDate(), 26584264.45, 1.0, 1.0, new ObservableSatellite(0));
-        final EstimatedMeasurement<Range> estimated = new EstimatedMeasurement<Range>(range, 0, 0,
+        final EstimatedMeasurement<Range> estimated = new EstimatedMeasurement<>(range, 0, 0,
                         new SpacecraftState[] {state},
                         new TimeStampedPVCoordinates[] {state.getPVCoordinates(), stationPV});
         estimated.setEstimatedValue(range.getObservedValue()[0]);
@@ -97,6 +95,9 @@ public class RelativisticClockRangeModifierTest {
 
         // Verify
         Assertions.assertEquals(-6.87, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-2);
+        Assertions.assertEquals(1,
+                                estimated.getAppliedEffects().entrySet().stream().
+                                filter(e -> e.getKey().getEffectName().equals("clock relativity")).count());
 
     }
 

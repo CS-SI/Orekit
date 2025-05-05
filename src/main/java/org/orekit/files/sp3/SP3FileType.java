@@ -45,8 +45,8 @@ public enum SP3FileType {
     /** SBAS only file. */
     SBAS("S"),
 
-    /** IRNSS only file. */
-    IRNSS("I"),
+    /** NavIC only file. */
+    NAVIC("I"),
 
     /** COMPASS only file. */
     COMPASS("C"),

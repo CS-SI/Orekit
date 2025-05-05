@@ -1,4 +1,4 @@
-/* Copyright 2023-2024 Alberto Ferrero
+/* Copyright 2023-2025 Alberto Ferrero
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 
 
 /** Detector for geographic longitude crossing.
@@ -59,21 +60,17 @@ public class FieldLongitudeRangeCrossingDetector <T extends CalculusFieldElement
     /**
      * Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
-     * ({@link #DEFAULT_MAXCHECK}) and convergence threshold ({@link
+     * ({@link #DEFAULT_MAX_CHECK}) and convergence threshold ({@link
      * #DEFAULT_THRESHOLD}).</p>
      * @param field        the type of numbers to use.
      * @param body          body on which the longitude is defined
      * @param fromLongitude longitude to be crossed, lower range boundary
      * @param toLongitude   longitude to be crossed, upper range boundary
      */
-    public FieldLongitudeRangeCrossingDetector(final Field<T> field, final OneAxisEllipsoid body, final double fromLongitude, final double toLongitude) {
-        this(FieldAdaptableInterval.of(DEFAULT_MAXCHECK),
-            field.getZero().add(DEFAULT_THRESHOLD),
-            DEFAULT_MAX_ITER,
-            new FieldStopOnIncreasing<>(),
-            body,
-            fromLongitude,
-            toLongitude);
+    public FieldLongitudeRangeCrossingDetector(final Field<T> field, final OneAxisEllipsoid body,
+                                               final double fromLongitude, final double toLongitude) {
+        this(new FieldEventDetectionSettings<>(field, EventDetectionSettings.getDefaultEventDetectionSettings()),
+            new FieldStopOnIncreasing<>(), body, fromLongitude, toLongitude);
     }
 
     /**
@@ -87,9 +84,7 @@ public class FieldLongitudeRangeCrossingDetector <T extends CalculusFieldElement
      */
     public FieldLongitudeRangeCrossingDetector(final T maxCheck, final T threshold,
                                                final OneAxisEllipsoid body, final double fromLongitude, final double toLongitude) {
-        this(FieldAdaptableInterval.of(maxCheck.getReal()),
-            threshold,
-            DEFAULT_MAX_ITER,
+        this(new FieldEventDetectionSettings<>(FieldAdaptableInterval.of(maxCheck.getReal()), threshold, DEFAULT_MAX_ITER),
             new FieldStopOnIncreasing<>(),
             body,
             fromLongitude,
@@ -97,29 +92,26 @@ public class FieldLongitudeRangeCrossingDetector <T extends CalculusFieldElement
     }
 
     /**
-     * Private constructor with full parameters.
+     * Protected constructor with full parameters.
      * <p>
      * This constructor is private as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
      *
-     * @param maxCheck      maximum checking interval (s)
-     * @param threshold     convergence threshold (s)
-     * @param maxIter       maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler       event handler to call at event occurrences
      * @param body          body on which the longitude is defined
      * @param fromLongitude longitude to be crossed, lower range boundary
-     * @param toLongitude   longitude to be crossed, upper range boundary
+     * @param toLongitude   longitude to be crossed, upper range
+     * @since 13.0
      */
-    protected FieldLongitudeRangeCrossingDetector(final FieldAdaptableInterval<T> maxCheck,
-                                                  final T threshold,
-                                                  final int maxIter,
+    protected FieldLongitudeRangeCrossingDetector(final FieldEventDetectionSettings<T> detectionSettings,
                                                   final FieldEventHandler<T> handler,
                                                   final OneAxisEllipsoid body,
                                                   final double fromLongitude,
                                                   final double toLongitude) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(detectionSettings, handler);
         this.body = body;
         this.fromLongitude = ensureLongitudePositiveContinuity(fromLongitude);
         this.toLongitude = ensureLongitudePositiveContinuity(toLongitude);
@@ -130,11 +122,9 @@ public class FieldLongitudeRangeCrossingDetector <T extends CalculusFieldElement
      * {@inheritDoc}
      */
     @Override
-    protected FieldLongitudeRangeCrossingDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck,
-                                                            final T newThreshold,
-                                                            final int newMaxIter,
+    protected FieldLongitudeRangeCrossingDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                                             final FieldEventHandler<T> newHandler) {
-        return new FieldLongitudeRangeCrossingDetector<T>(newMaxCheck, newThreshold, newMaxIter, newHandler,
+        return new FieldLongitudeRangeCrossingDetector<>(detectionSettings, newHandler,
             body, fromLongitude, toLongitude);
     }
 

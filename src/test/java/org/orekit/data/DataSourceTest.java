@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -51,8 +51,10 @@ public class DataSourceTest {
     @Test
     public void testFileName() throws IOException, URISyntaxException {
         URL url = DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data/UTC-TAI.history");
-        DataSource ds = new DataSource(Paths.get(url.toURI()).toString());
-        Assertions.assertTrue(ds.getName().endsWith("UTC-TAI.history"));
+        String nameWithPath = Paths.get(url.toURI()).toString();
+        Assertions.assertTrue(nameWithPath.endsWith("regular-data/UTC-TAI.history"));
+        DataSource ds = new DataSource(nameWithPath);
+        Assertions.assertEquals("UTC-TAI.history", ds.getName());
         Assertions.assertTrue(ds.getOpener().rawDataIsBinary());
         try (InputStream       is  = ds.getOpener().openStreamOnce();
              InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -114,7 +114,7 @@ public class FieldNodeDetectorTest {
                 new FieldKeplerianOrbit<>(a, e1, i, pa, raan, m, PositionAngleType.MEAN, frame, date, zero.add(mu));
         FieldEventDetector<T> detector1 = new FieldNodeDetector<>(orbit1, orbit1.getFrame());
         T t1 = orbit1.getKeplerianPeriod();
-        Assertions.assertEquals(t1.getReal() / 28.82, detector1.getMaxCheckInterval().currentInterval(null), t1.getReal() / 10000);
+        Assertions.assertEquals(t1.getReal() / 28.82, detector1.getMaxCheckInterval().currentInterval(null, true), t1.getReal() / 10000);
 
         // nearly circular, inclined orbit
         final FieldKeplerianOrbit<T> orbit2 =
@@ -122,7 +122,7 @@ public class FieldNodeDetectorTest {
         FieldEventDetector<T> detector2 = new FieldNodeDetector<>(orbit2, orbit2.getFrame());
         T t2 = orbit2.getKeplerianPeriod();
         Assertions.assertEquals(t1.getReal(), t2.getReal(), t1.getReal() / 10000);
-        Assertions.assertEquals(t2.getReal() / 3, detector2.getMaxCheckInterval().currentInterval(null), t2.getReal() / 10000);
+        Assertions.assertEquals(t2.getReal() / 3, detector2.getMaxCheckInterval().currentInterval(null, true), t2.getReal() / 10000);
 
     }
 

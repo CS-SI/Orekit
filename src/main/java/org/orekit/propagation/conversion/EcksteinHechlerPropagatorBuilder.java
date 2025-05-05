@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,14 +16,8 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.util.List;
-
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
-import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
-import org.orekit.estimation.leastsquares.BatchLSModel;
-import org.orekit.estimation.leastsquares.ModelObserver;
-import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -32,13 +26,12 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
-import org.orekit.utils.ParameterDriversList;
 
 /** Builder for Eckstein-Hechler propagator.
  * @author Pascal Parraud
  * @since 6.0
  */
-public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder {
+public class EcksteinHechlerPropagatorBuilder extends AbstractAnalyticalPropagatorBuilder<EcksteinHechlerPropagator> {
 
     /** Provider for un-normalized coefficients. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
@@ -98,7 +91,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
                                             final double positionScale,
                                             final AttitudeProvider attitudeProvider) {
         super(overrideMu(templateOrbit, provider, positionAngleType), positionAngleType,
-              positionScale, true, attitudeProvider);
+              positionScale, true, attitudeProvider, Propagator.DEFAULT_MASS);
         this.provider = provider;
     }
 
@@ -191,7 +184,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
                                     final UnnormalizedSphericalHarmonicsProvider provider,
                                     final PositionAngleType positionAngleType) {
         final double[] parameters    = new double[6];
-        final double[] parametersDot = templateOrbit.hasDerivatives() ? new double[6] : null;
+        final double[] parametersDot = parameters.clone();
         templateOrbit.getType().mapOrbitToArray(templateOrbit, positionAngleType, parameters, parametersDot);
         return templateOrbit.getType().mapArrayToOrbit(parameters, parametersDot, positionAngleType,
                                                        templateOrbit.getDate(),
@@ -200,26 +193,12 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
     }
 
     /** {@inheritDoc} */
-    public Propagator buildPropagator(final double[] normalizedParameters) {
+    public EcksteinHechlerPropagator buildPropagator(final double[] normalizedParameters) {
         setParameters(normalizedParameters);
-        return new EcksteinHechlerPropagator(createInitialOrbit(), getAttitudeProvider(),
-                provider);
+        final EcksteinHechlerPropagator propagator = new EcksteinHechlerPropagator(createInitialOrbit(), getAttitudeProvider(),
+            getMass(), provider);
+        getImpulseManeuvers().forEach(propagator::addEventDetector);
+        return propagator;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public AbstractBatchLSModel buildLeastSquaresModel(final PropagatorBuilder[] builders,
-                                                       final List<ObservedMeasurement<?>> measurements,
-                                                       final ParameterDriversList estimatedMeasurementsParameters,
-                                                       final ModelObserver observer) {
-        return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public EcksteinHechlerPropagatorBuilder copy() {
-        return new EcksteinHechlerPropagatorBuilder(createInitialOrbit(), provider, getPositionAngleType(),
-                                                    getPositionScale(), getAttitudeProvider());
-    }
 }

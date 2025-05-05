@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,12 @@ package org.orekit.attitudes;
 
 import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
+import org.orekit.frames.StaticTransform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
@@ -46,21 +51,61 @@ public class FixedRate implements AttitudeProvider {
     }
 
     /** {@inheritDoc} */
-    public Attitude getAttitude(final PVCoordinatesProvider pvProv,
-                                final AbsoluteDate date, final Frame frame) {
-        final double timeShift = date.durationFrom(referenceAttitude.getDate());
-        final Attitude shifted = referenceAttitude.shiftedBy(timeShift);
-        return shifted.withReferenceFrame(frame);
+    @Override
+    public Rotation getAttitudeRotation(final PVCoordinatesProvider pvProv, final AbsoluteDate date,
+                                        final Frame frame) {
+        final Rotation rotation = getShiftedAttitude(date).getRotation();
+        final StaticTransform transform = referenceAttitude.getReferenceFrame().getStaticTransformTo(frame, date);
+        return rotation.compose(transform.getRotation(), RotationConvention.FRAME_TRANSFORM);
     }
 
     /** {@inheritDoc} */
+    @Override
+    public Attitude getAttitude(final PVCoordinatesProvider pvProv,
+                                final AbsoluteDate date, final Frame frame) {
+        final Attitude shifted = getShiftedAttitude(date);
+        return shifted.withReferenceFrame(frame);
+    }
+
+    /**
+     * Get shifted reference attitude.
+     * @param date date of shift
+     * @return shifted attitude
+     */
+    private Attitude getShiftedAttitude(final AbsoluteDate date) {
+        final double timeShift = date.durationFrom(referenceAttitude.getDate());
+        return referenceAttitude.shiftedBy(timeShift);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldRotation<T> getAttitudeRotation(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                                    final FieldAbsoluteDate<T> date,
+                                                                                    final Frame frame) {
+        final FieldRotation<T> rotation = getShiftedAttitude(date).getRotation();
+        final FieldStaticTransform<T> transform = referenceAttitude.getReferenceFrame().getStaticTransformTo(frame, date);
+        return rotation.compose(transform.getRotation(), RotationConvention.FRAME_TRANSFORM);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                        final FieldAbsoluteDate<T> date,
-                                                                        final Frame frame) {
+                                                                            final FieldAbsoluteDate<T> date,
+                                                                            final Frame frame) {
+        final FieldAttitude<T> shifted = getShiftedAttitude(date);
+        return shifted.withReferenceFrame(frame);
+    }
+
+    /**
+     * Get shifted reference attitude.
+     * @param date date of shift
+     * @param <T> field type
+     * @return shifted attitude
+     */
+    private <T extends CalculusFieldElement<T>> FieldAttitude<T> getShiftedAttitude(final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
         final T timeShift = date.durationFrom(referenceAttitude.getDate());
-        final FieldAttitude<T> shifted = new FieldAttitude<>(field, referenceAttitude).shiftedBy(timeShift);
-        return shifted.withReferenceFrame(frame);
+        return new FieldAttitude<>(field, referenceAttitude).shiftedBy(timeShift);
     }
 
     /** Get the reference attitude.

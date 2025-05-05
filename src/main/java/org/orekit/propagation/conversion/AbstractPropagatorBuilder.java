@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,6 +28,8 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.AbstractPropagator;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -44,7 +46,7 @@ import java.util.List;
  * @author Pascal Parraud
  * @since 7.1
  */
-public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
+public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> implements PropagatorBuilder {
 
     /** Central attraction scaling factor.
      * <p>
@@ -62,6 +64,9 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
 
     /** Central attraction coefficient (m³/s²). */
     private double mu;
+
+    /** Initial mass. */
+    private double mass;
 
     /** Drivers for orbital parameters. */
     private final ParameterDriversList orbitalDrivers;
@@ -117,9 +122,8 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     protected AbstractPropagatorBuilder(final Orbit templateOrbit, final PositionAngleType positionAngleType,
                                         final double positionScale, final boolean addDriverForCentralAttraction) {
         this(templateOrbit, positionAngleType, positionScale, addDriverForCentralAttraction,
-             new FrameAlignedProvider(templateOrbit.getFrame()));
+             new FrameAlignedProvider(templateOrbit.getFrame()), Propagator.DEFAULT_MASS);
     }
-
     /** Build a new instance.
      * <p>
      * The template orbit is used as a model to {@link
@@ -152,6 +156,43 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
                                         final double positionScale,
                                         final boolean addDriverForCentralAttraction,
                                         final AttitudeProvider attitudeProvider) {
+        this(templateOrbit, positionAngleType, positionScale, addDriverForCentralAttraction, attitudeProvider,
+                Propagator.DEFAULT_MASS);
+    }
+
+    /** Build a new instance.
+     * <p>
+     * The template orbit is used as a model to {@link
+     * #createInitialOrbit() create initial orbit}. It defines the
+     * inertial frame, the central attraction coefficient, the orbit type, and is also
+     * used together with the {@code positionScale} to convert from the {@link
+     * ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
+     * callers of this builder to the real orbital parameters.
+     * </p>
+     * <p>
+     * By default, all the {@link #getOrbitalParametersDrivers() orbital parameters drivers}
+     * are selected, which means that if the builder is used for orbit determination or
+     * propagator conversion, all orbital parameters will be estimated. If only a subset
+     * of the orbital parameters must be estimated, caller must retrieve the orbital
+     * parameters by calling {@link #getOrbitalParametersDrivers()} and then call
+     * {@link ParameterDriver#setSelected(boolean) setSelected(false)}.
+     * </p>
+     * @param templateOrbit reference orbit from which real orbits will be built
+     * @param positionAngleType position angle type to use
+     * @param positionScale scaling factor used for orbital parameters normalization
+     * (typically set to the expected standard deviation of the position)
+     * @param addDriverForCentralAttraction if true, a {@link ParameterDriver} should
+     * be set up for central attraction coefficient
+     * @param attitudeProvider for the propagator.
+     * @param initialMass mass
+     * @since 12.2
+     * @see #AbstractPropagatorBuilder(Orbit, PositionAngleType, double, boolean)
+     */
+    protected AbstractPropagatorBuilder(final Orbit templateOrbit,
+                                        final PositionAngleType positionAngleType,
+                                        final double positionScale,
+                                        final boolean addDriverForCentralAttraction,
+                                        final AttitudeProvider attitudeProvider, final double initialMass) {
 
         this.initialOrbitDate    = templateOrbit.getDate();
         this.frame               = templateOrbit.getFrame();
@@ -162,6 +203,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         this.positionScale       = positionScale;
         this.orbitalDrivers      = orbitType.getDrivers(positionScale, templateOrbit, positionAngleType);
         this.attitudeProvider = attitudeProvider;
+        this.mass         = initialMass;
         for (final DelegatingDriver driver : orbitalDrivers.getDrivers()) {
             driver.setSelected(true);
         }
@@ -172,7 +214,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
             final ParameterDriver muDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
                                                                  mu, MU_SCALE, 0, Double.POSITIVE_INFINITY);
             muDriver.addObserver(new ParameterObserver() {
-                /** {@inheridDoc} */
+                /** {@inheritDoc} */
                 @Override
                 public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
                     // getValue(), can be called without argument as mu driver should have only one span
@@ -188,6 +230,22 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
             propagationDrivers.add(muDriver);
         }
 
+    }
+
+    /** Get the mass.
+     * @return the mass (kg)
+     * @since 9.2
+     */
+    public double getMass()
+    {
+        return mass;
+    }
+
+    /** Set the initial mass.
+     * @param mass the mass (kg)
+     */
+    public void setMass(final double mass) {
+        this.mass = mass;
     }
 
     /** {@inheritDoc} */
@@ -221,9 +279,9 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     }
 
     @Override
-    public AbstractPropagatorBuilder clone() {
+    public AbstractPropagatorBuilder<T> clone() {
         try {
-            return (AbstractPropagatorBuilder) super.clone();
+            return (AbstractPropagatorBuilder<T>) super.clone();
         } catch (CloneNotSupportedException cnse) {
             throw new OrekitException(OrekitMessages.PROPAGATOR_BUILDER_NOT_CLONEABLE);
         }
@@ -314,6 +372,16 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
 
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public abstract T buildPropagator(double[] normalizedParameters);
+
+    /** {@inheritDoc} */
+    @Override
+    public T buildPropagator() {
+        return buildPropagator(getSelectedNormalizedParameters());
+    }
+
     /** Build an initial orbit using the current selected parameters.
      * <p>
      * This method is a stripped down version of {@link #buildPropagator(double[])}
@@ -390,7 +458,8 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
 
         // Map the new orbit in an array of double
         final double[] orbitArray = new double[6];
-        orbitType.mapOrbitToArray(newOrbit, getPositionAngleType(), orbitArray, null);
+        final Orbit orbitInCorrectFrame = (newOrbit.getFrame() == frame) ? newOrbit : newOrbit.inFrame(frame);
+        orbitType.mapOrbitToArray(orbitInCorrectFrame, getPositionAngleType(), orbitArray, null);
 
         // Update all the orbital drivers, selected or unselected
         // Reset values and reference values

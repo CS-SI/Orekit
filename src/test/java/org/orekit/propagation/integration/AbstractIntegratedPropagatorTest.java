@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.orekit.TestUtils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -32,6 +33,9 @@ import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -39,12 +43,45 @@ import org.orekit.utils.Constants;
 class AbstractIntegratedPropagatorTest {
 
     @Test
-    public void testGetResetAtEndTrue() {
+    void testIntegrateWithResetDerivativesAndEvents() {
+        // GIVEN
+        final Orbit initialOrbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
+        final NumericalPropagator propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(100));
+        propagator.setInitialState(new SpacecraftState(initialOrbit));
+        final TestDetector detector = new TestDetector(initialOrbit.getDate().shiftedBy(10.));
+        propagator.addEventDetector(detector);
+        // WHEN
+        propagator.propagate(initialOrbit.getDate().shiftedBy(100));
+        // THEN
+        Assertions.assertTrue(detector.resetted);
+    }
+
+    private static class TestDetector extends DateDetector {
+        boolean resetted = false;
+
+        TestDetector(final AbsoluteDate date) {
+            super(date);
+        }
+
+        @Override
+        public void reset(SpacecraftState state, AbsoluteDate target) {
+            super.reset(state, target);
+            resetted = true;
+        }
+
+        @Override
+        public EventHandler getHandler() {
+            return new ResetDerivativesOnEvent();
+        }
+    }
+
+    @Test
+    void testGetResetAtEndTrue() {
         testGetResetAtEnd(true);
     }
 
     @Test
-    public void testGetResetAtEndFalse() {
+    void testGetResetAtEndFalse() {
         testGetResetAtEnd(false);
     }
 
@@ -64,7 +101,7 @@ class AbstractIntegratedPropagatorTest {
      * Bug discovery and test are a courtesy of Christophe Le Bris.
      */
     @Test
-    public void testIssue1254() {
+    void testIssue1254() {
         // GIVEN
         // GEO orbit
         final Orbit startOrbit = new EquinoctialOrbit(42165765.0, 0.0, 0.0, 0.0, 0.0, 0.0, PositionAngleType.TRUE,
@@ -88,6 +125,44 @@ class AbstractIntegratedPropagatorTest {
         // THEN
         Assertions.assertEquals(0., ephemeris.getMinDate().durationFrom(minDate), 0.);
         Assertions.assertEquals(0., ephemeris.getMaxDate().durationFrom(maxDate), 0.);
+    }
+    
+    /** Test issue 1461.
+     * <p>Test for the new generic method AbstractIntegratedPropagator.reset(SpacecraftState, PropagationType)
+     */
+    @Test
+    void testIssue1461() {
+        // GIVEN
+        // GEO orbit
+        final Orbit startOrbit = new EquinoctialOrbit(42165765.0, 0.0, 0.0, 0.0, 0.0, 0.0, PositionAngleType.TRUE,
+                                                      FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
+                                                      Constants.IERS2010_EARTH_MU);
+
+        // Init numerical propagator
+        final SpacecraftState state = new SpacecraftState(startOrbit);
+        final NumericalPropagator propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(300.));
+        propagator.setInitialState(state);
+
+        // WHEN
+        propagator.resetInitialState(state, PropagationType.OSCULATING);
+        final SpacecraftState oscState = propagator.getInitialState();
+        
+        propagator.resetInitialState(state, PropagationType.MEAN);
+        final SpacecraftState meanState = propagator.getInitialState();
+
+        // THEN
+        
+        // Check that all three states are identical
+        final double dpOsc = oscState.getPosition().distance(state.getPosition());
+        final double dvOsc = oscState.getPVCoordinates().getVelocity().distance(state.getPVCoordinates().getVelocity());
+        
+        final double dpMean = meanState.getPosition().distance(state.getPosition());
+        final double dvMean = meanState.getPVCoordinates().getVelocity().distance(state.getPVCoordinates().getVelocity());
+        
+        Assertions.assertEquals(0., dpOsc, 0.);
+        Assertions.assertEquals(0., dvOsc, 0.);
+        Assertions.assertEquals(0., dpMean, 0.);
+        Assertions.assertEquals(0., dvMean, 0.);
     }
 
     private static class TestAbstractIntegratedPropagator extends AbstractIntegratedPropagator {

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -42,7 +43,7 @@ import org.orekit.utils.PVCoordinates;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EventShifterTest {
+class EventShifterTest {
 
     private double           mu;
     private AbsoluteDate     iniDate;
@@ -53,7 +54,45 @@ public class EventShifterTest {
     private double earthRadius = 6400000.;
 
     @Test
-    public void testNegNeg() {
+    void testWithDetectionSettings() {
+        // GIVEN
+        final EventDetector detector = new DateDetector();
+        final EventShifter template = new EventShifter(detector, true, 1., 2.);
+        final EventDetectionSettings detectionSettings = Mockito.mock();
+        // WHEN
+        final EventShifter shifter = template.withDetectionSettings(detectionSettings);
+        // THEN
+        Assertions.assertEquals(detector, shifter.getDetector());
+        Assertions.assertEquals(detectionSettings, shifter.getDetectionSettings());
+        Assertions.assertEquals(template.getIncreasingTimeShift(), shifter.getIncreasingTimeShift());
+        Assertions.assertEquals(template.getDecreasingTimeShift(), shifter.getDecreasingTimeShift());
+    }
+
+    @Test
+    void testInit() {
+        // GIVEN
+        final TestDetector detector = new TestDetector();
+        final EventShifter shifter = new EventShifter(detector, true, 1., 1.);
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        Mockito.when(mockedState.getDate()).thenReturn(iniDate);
+        // WHEN
+        shifter.init(mockedState, AbsoluteDate.ARBITRARY_EPOCH);
+        // THEN
+        Assertions.assertTrue(detector.initialized);
+    }
+
+    private static class TestDetector extends DateDetector {
+        boolean initialized = false;
+
+        @Override
+        public void init(SpacecraftState s0, AbsoluteDate t) {
+            super.init(s0, t);
+            initialized = true;
+        }
+    }
+
+    @Test
+    void testNegNeg() {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 1.0e-9));
         EclipseDetector raw = createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3);
         final EventHandler h = raw.getHandler();
@@ -74,7 +113,8 @@ public class EventShifterTest {
             }
 
         });
-        EventShifter shifter = new EventShifter(raw, true, -15, -20).withMaxIter(200);
+        final EventDetectionSettings settings = EventDetectionSettings.getDefaultEventDetectionSettings().withMaxIter(200);
+        EventShifter shifter = new EventShifter(raw, true, -15, -20).withDetectionSettings(settings);
         Assertions.assertEquals(-15, shifter.getIncreasingTimeShift(), 1.0e-15);
         Assertions.assertEquals(-20, shifter.getDecreasingTimeShift(), 1.0e-15);
         Assertions.assertEquals(200, shifter.getMaxIterationCount());
@@ -91,7 +131,7 @@ public class EventShifterTest {
     }
 
     @Test
-    public void testNegPos() {
+    void testNegPos() {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 1.0e-9));
         propagator.addEventDetector(new EventShifter(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
                                                      true, -15,  20));
@@ -106,7 +146,7 @@ public class EventShifterTest {
     }
 
     @Test
-    public void testPosNeg() {
+    void testPosNeg() {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 1.0e-9));
         propagator.addEventDetector(new EventShifter(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
                                                      true,  15, -20));
@@ -121,7 +161,7 @@ public class EventShifterTest {
     }
 
     @Test
-    public void testPosPos() {
+    void testPosPos() {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 1.0e-9));
         propagator.addEventDetector(new EventShifter(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
                                                      true,  15,  20));
@@ -136,7 +176,7 @@ public class EventShifterTest {
     }
 
     @Test
-    public void testIncreasingError() {
+    void testIncreasingError() {
         final EclipseDetector raw0000 = createRawDetector("raw increasing",    "raw decreasing", 2.0e-9);
         final EclipseDetector raw0010 = createRawDetector("-10s increasing",   "-10s decreasing", 2.0e-3);
         final EclipseDetector raw0100 = createRawDetector("-100s increasing",  "-100s decreasing", 3.0e-2);

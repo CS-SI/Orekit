@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@
 package org.orekit.propagation.conversion;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -41,29 +42,6 @@ public class EcksteinHechlerPropagatorBuilderTest {
     }
 
     @Test
-    @SuppressWarnings("deprecation")
-    void testCopyMethod() {
-
-        // Given
-        final Orbit orbit = new CartesianOrbit(new PVCoordinates(
-                new Vector3D(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS + 400000, 0, 0),
-                new Vector3D(10, 7668.6, 3)), FramesFactory.getGCRF(),
-                                               new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
-
-        final UnnormalizedSphericalHarmonicsProvider harmonicsProvider = GravityFieldFactory.getUnnormalizedProvider(6, 0);
-
-        final EcksteinHechlerPropagatorBuilder builder = new EcksteinHechlerPropagatorBuilder(orbit, harmonicsProvider,
-                PositionAngleType.MEAN, 10.0);
-
-        // When
-        final EcksteinHechlerPropagatorBuilder copyBuilder = builder.copy();
-
-        // Then
-        assertPropagatorBuilderIsACopy(builder, copyBuilder);
-
-    }
-
-    @Test
     void testClone() {
 
         // Given
@@ -78,10 +56,11 @@ public class EcksteinHechlerPropagatorBuilderTest {
                 PositionAngleType.MEAN, 10.0);
 
         // When
-        final AbstractPropagatorBuilder copyBuilder = builder.clone();
+        final EcksteinHechlerPropagatorBuilder copyBuilder = (EcksteinHechlerPropagatorBuilder) builder.clone();
 
         // Then
         assertPropagatorBuilderIsACopy(builder, copyBuilder);
+        Assertions.assertEquals(builder.getImpulseManeuvers().size(), copyBuilder.getImpulseManeuvers().size());
 
     }
 }

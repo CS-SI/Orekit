@@ -56,8 +56,8 @@ class PreloadedTimeScales extends AbstractTimeScales {
     private final TDBScale tdb;
     /** TCB time scale. */
     private final TCBScale tcb;
-    /** IRNSS time scale. */
-    private final IRNSSScale irnss;
+    /** NavIC time scale. */
+    private final NavicScale navic;
     /** BDT time scale. */
     private final BDTScale bdt;
     /** Provider of EOP data. */
@@ -85,7 +85,7 @@ class PreloadedTimeScales extends AbstractTimeScales {
         gps = new GPSScale();
         qzss = new QZSSScale();
         gst = new GalileoScale();
-        irnss = new IRNSSScale();
+        navic = new NavicScale();
         bdt = new BDTScale();
         tcg = new TCGScale(tt, tai);
         utc = new UTCScale(tai, leapSeconds);
@@ -110,10 +110,12 @@ class PreloadedTimeScales extends AbstractTimeScales {
     @Override
     protected EOPHistory getEopHistory(final IERSConventions conventions,
                                        final boolean simpleEOP) {
+        final Collection<? extends EOPEntry> data;
+        synchronized (this) {
+            data = eopMap.computeIfAbsent(conventions, c -> eopSupplier.apply(c, this));
+        }
         return new EOPHistory(conventions, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
-                              eopMap.computeIfAbsent(conventions, c -> eopSupplier.apply(c, this)),
-                              simpleEOP,
-                              this);
+                              data, simpleEOP, this);
     }
 
     @Override
@@ -157,8 +159,8 @@ class PreloadedTimeScales extends AbstractTimeScales {
     }
 
     @Override
-    public IRNSSScale getIRNSS() {
-        return irnss;
+    public NavicScale getNavIC() {
+        return navic;
     }
 
     @Override

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,7 +32,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.estimation.measurements.gnss.PhaseMeasurementCreator;
 import org.orekit.frames.LOFType;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.gnss.antenna.PhaseCenterVariationFunction;
 import org.orekit.gnss.antenna.TwoDVariation;
@@ -69,7 +69,7 @@ public class PhaseCentersPhaseModifierTest {
         final List<ObservedMeasurement<?>> spacecraftCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p1,
                                                                new PhaseMeasurementCreator(context,
-                                                                                           Frequency.G01,
+                                                                                           PredefinedGnssSignal.G01,
                                                                                            ambiguity, satClockOffset),
                                                                1.0, 3.0, 300.0);
 
@@ -80,7 +80,7 @@ public class PhaseCentersPhaseModifierTest {
         final List<ObservedMeasurement<?>> antennaCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p2,
                                                                new PhaseMeasurementCreator(context,
-                                                                                           Frequency.G01,
+                                                                                           PredefinedGnssSignal.G01,
                                                                                            ambiguity, satClockOffset,
                                                                                            Vector3D.ZERO, null,
                                                                                            new Vector3D(xOffset, 0, 0), null),
@@ -115,7 +115,7 @@ public class PhaseCentersPhaseModifierTest {
         final List<ObservedMeasurement<?>> spacecraftCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p1,
                                                                new PhaseMeasurementCreator(context,
-                                                                                           Frequency.G01,
+                                                                                           PredefinedGnssSignal.G01,
                                                                                            ambiguity, satClockOffset,
                                                                                            Vector3D.ZERO, null,
                                                                                            Vector3D.ZERO, null),
@@ -139,7 +139,7 @@ public class PhaseCentersPhaseModifierTest {
         final List<ObservedMeasurement<?>> antennaCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p2,
                                                                new PhaseMeasurementCreator(context,
-                                                                                           Frequency.G01,
+                                                                                           PredefinedGnssSignal.G01,
                                                                                            ambiguity, satClockOffset,
                                                                                            stationMeanPosition,   stationPCV,
                                                                                            satelliteMeanPosition, satellitePCV),
@@ -159,6 +159,9 @@ public class PhaseCentersPhaseModifierTest {
             Phase ar = (Phase) antennaCenteredMeasurements.get(i);
             Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 1.0e-8);
             Assertions.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 1.1e-5);
+            Assertions.assertEquals(1,
+                                    estimated.getAppliedEffects().entrySet().stream().
+                                    filter(e -> e.getKey().getEffectName().equals("mean phase center")).count());
         }
 
     }

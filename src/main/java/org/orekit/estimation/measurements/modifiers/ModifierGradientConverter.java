@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,7 +38,7 @@ public class ModifierGradientConverter extends AbstractGradientConverter {
         super(freeStateParameters);
 
         // initialize the list with the state having 0 force model parameters
-        initStates(buildBasicGradientSpacecraftState(state, freeStateParameters, provider));
+        initStates(buildBasicGradientSpacecraftState(state, freeStateParameters, freeStateParameters > 3 ? provider : null));
 
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,7 +38,7 @@ public enum CarrierPhase {
     L1_L2(2);
 
     /** code map. */
-    private static final Map<Integer, CarrierPhase> CODES_MAP = new HashMap<Integer, CarrierPhase>();
+    private static final Map<Integer, CarrierPhase> CODES_MAP = new HashMap<>();
     static {
         for (final CarrierPhase type : values()) {
             CODES_MAP.put(type.getCode(), type);

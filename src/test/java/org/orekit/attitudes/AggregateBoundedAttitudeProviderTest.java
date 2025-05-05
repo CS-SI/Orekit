@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,12 +20,14 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.Utils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -33,16 +35,22 @@ import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.adm.aem.Aem;
 import org.orekit.files.ccsds.ndm.adm.aem.AemSatelliteEphemeris;
 import org.orekit.frames.Frame;
+import org.orekit.propagation.events.*;
+import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
+import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ParameterDriver;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class AggregateBoundedAttitudeProviderTest {
 
@@ -52,7 +60,7 @@ public class AggregateBoundedAttitudeProviderTest {
     }
 
     @Test
-    public void testEmptyList() {
+    void testEmptyList() {
         try {
             new AggregateBoundedAttitudeProvider(Collections.emptyList());
         } catch (OrekitException oe) {
@@ -61,7 +69,8 @@ public class AggregateBoundedAttitudeProviderTest {
     }
 
     @Test
-    public void testAEM() {
+    @DefaultDataContext
+    void testAEM() {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -87,10 +96,12 @@ public class AggregateBoundedAttitudeProviderTest {
     }
 
     @Test
-    public void testFieldAEM() {
+    @DefaultDataContext
+    void testFieldAEM() {
         doTestFieldAEM(Binary64Field.getInstance());
     }
 
+    @DefaultDataContext
     private <T extends CalculusFieldElement<T>> void doTestFieldAEM(final Field<T> field) {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
@@ -122,7 +133,8 @@ public class AggregateBoundedAttitudeProviderTest {
     }
 
     @Test
-    public void testOutsideBounds() throws Exception {
+    @DefaultDataContext
+    void testOutsideBounds() {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -148,11 +160,13 @@ public class AggregateBoundedAttitudeProviderTest {
     }
 
     @Test
-    public void testFieldOutsideBounds() throws Exception {
+    @DefaultDataContext
+    void testFieldOutsideBounds() {
         doTestFieldOutsideBounds(Binary64Field.getInstance());
     }
 
-    private <T extends CalculusFieldElement<T>> void doTestFieldOutsideBounds(final Field<T> field) throws Exception {
+    @DefaultDataContext
+    private <T extends CalculusFieldElement<T>> void doTestFieldOutsideBounds(final Field<T> field) {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -176,7 +190,75 @@ public class AggregateBoundedAttitudeProviderTest {
         }
 
     }
-    
+
+    @Test
+    void testGetEventDetectorsList() {
+        // GIVEN
+        final TestBoundedAttitudeProvider boundedAttitudeProvider = new TestBoundedAttitudeProvider();
+        final List<BoundedAttitudeProvider> boundedAttitudeProviderList = new ArrayList<>();
+        boundedAttitudeProviderList.add(boundedAttitudeProvider);
+        final AggregateBoundedAttitudeProvider aggregateBoundedAttitudeProvider = new AggregateBoundedAttitudeProvider(
+                boundedAttitudeProviderList);
+        // WHEN & THEN
+        final int expectedSize = 0;
+        Assertions.assertEquals(expectedSize, aggregateBoundedAttitudeProvider.getEventDetectors(new ArrayList<>()).count());
+        Assertions.assertEquals(expectedSize, aggregateBoundedAttitudeProvider.getFieldEventDetectors(Binary64Field.getInstance(),
+                new ArrayList<>()).count());
+    }
+
+    @Test
+    void testGetParametersDrivers() {
+        // GIVEN
+        final TestBoundedAttitudeProvider boundedAttitudeProvider = new TestBoundedAttitudeProvider();
+        final List<BoundedAttitudeProvider> boundedAttitudeProviderList = new ArrayList<>();
+        boundedAttitudeProviderList.add(boundedAttitudeProvider);
+        final AggregateBoundedAttitudeProvider aggregateBoundedAttitudeProvider = new AggregateBoundedAttitudeProvider(
+                boundedAttitudeProviderList);
+        // WHEN
+        final List<ParameterDriver> parameterDrivers = aggregateBoundedAttitudeProvider.getParametersDrivers();
+        // THEN
+        Assertions.assertEquals(boundedAttitudeProvider.getParametersDrivers().size(), parameterDrivers.size());
+    }
+
+    @Test
+    void testGetEventDetectors() {
+        // GIVEN
+        final TestBoundedAttitudeProvider boundedAttitudeProvider = new TestBoundedAttitudeProvider();
+        final List<BoundedAttitudeProvider> boundedAttitudeProviderList = new ArrayList<>();
+        boundedAttitudeProviderList.add(boundedAttitudeProvider);
+        final AggregateBoundedAttitudeProvider aggregateBoundedAttitudeProvider = new AggregateBoundedAttitudeProvider(
+                boundedAttitudeProviderList);
+        // WHEN
+        final Stream<EventDetector> eventDetectorStream = aggregateBoundedAttitudeProvider.getEventDetectors();
+        // THEN
+        final List<EventDetector> eventDetectorList = eventDetectorStream.collect(Collectors.toList());
+        Assertions.assertEquals(1, eventDetectorList.size());
+        Assertions.assertInstanceOf(DateDetector.class, eventDetectorList.get(0));
+        Assertions.assertInstanceOf(ResetDerivativesOnEvent.class, eventDetectorList.get(0).getHandler());
+        final DateDetector dateDetector = (DateDetector) eventDetectorList.get(0);
+        Assertions.assertEquals(boundedAttitudeProvider.getMinDate(), dateDetector.getDates().get(0).getDate());
+    }
+
+    @Test
+    void testGetFieldEventDetectors() {
+        // GIVEN
+        final TestBoundedAttitudeProvider boundedAttitudeProvider = new TestBoundedAttitudeProvider();
+        final List<BoundedAttitudeProvider> boundedAttitudeProviderList = new ArrayList<>();
+        boundedAttitudeProviderList.add(boundedAttitudeProvider);
+        final AggregateBoundedAttitudeProvider aggregateBoundedAttitudeProvider = new AggregateBoundedAttitudeProvider(
+                boundedAttitudeProviderList);
+        // WHEN
+        final Stream<FieldEventDetector<Binary64>> fieldEventDetectorStream = aggregateBoundedAttitudeProvider
+                .getFieldEventDetectors(Binary64Field.getInstance());
+        // THEN
+        final List<FieldEventDetector<Binary64>> fieldEventDetectorList = fieldEventDetectorStream.collect(Collectors.toList());
+        final Stream<EventDetector> eventDetectorStream = aggregateBoundedAttitudeProvider.getEventDetectors();
+        final List<EventDetector> eventDetectorList = eventDetectorStream.collect(Collectors.toList());
+        Assertions.assertEquals(eventDetectorList.size(), fieldEventDetectorList.size());
+        Assertions.assertInstanceOf(FieldDateDetector.class, fieldEventDetectorList.get(0));
+        Assertions.assertInstanceOf(FieldResetDerivativesOnEvent.class, fieldEventDetectorList.get(0).getHandler());
+    }
+
     @Test
     void testGetAttitudeRotation() {
         // GIVEN
@@ -224,6 +306,7 @@ public class AggregateBoundedAttitudeProviderTest {
         public AbsoluteDate getMaxDate() {
             return getMinDate().shiftedBy(100000.);
         }
+
     }
 
 }

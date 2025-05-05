@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,7 @@ import org.hipparchus.fitting.WeightedObservedPoint;
 import org.hipparchus.util.FastMath;
 import org.orekit.files.rinex.observation.ObservationData;
 import org.orekit.files.rinex.observation.ObservationDataSet;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.GnssSignal;
 import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
@@ -97,24 +97,24 @@ public class PhaseMinusCodeCycleSlipDetector extends AbstractCycleSlipDetector {
             // Loop on range measurement
             for (final ObservationData pseudoRange : pseudoRanges) {
                 // Change unit of phase measurement
-                final double wavelength = phase.getObservationType().getFrequency(system).getWavelength();
+                final double wavelength = phase.getObservationType().getSignal(system).getWavelength();
                 final ObservationData phaseInMeters = new ObservationData(phase.getObservationType(),
                                                                           wavelength * phase.getValue(),
                                                                           phase.getLossOfLockIndicator(),
                                                                           phase.getSignalStrength());
 
                 // Check if measurement frequencies are the same
-                if (phase.getObservationType().getFrequency(system) == pseudoRange.getObservationType().getFrequency(system)) {
+                if (phase.getObservationType().getSignal(system) == pseudoRange.getObservationType().getSignal(system)) {
                     // Phase minus Code combination
                     final PhaseMinusCodeCombination phaseMinusCode = MeasurementCombinationFactory.getPhaseMinusCodeCombination(system);
                     final CombinedObservationData cod = phaseMinusCode.combine(phaseInMeters, pseudoRange);
                     final String nameSat = setName(prn, observation.getSatellite().getSystem());
 
                     // Check for cycle-slip detection
-                    final boolean slip = cycleSlipDetection(nameSat, date, cod.getValue(), phase.getObservationType().getFrequency(system));
+                    final boolean slip = cycleSlipDetection(nameSat, date, cod.getValue(), phase.getObservationType().getSignal(system));
                     if (!slip) {
                         // Update cycle slip data
-                        cycleSlipDataSet(nameSat, date, cod.getValue(), phase.getObservationType().getFrequency(system));
+                        cycleSlipDataSet(nameSat, date, cod.getValue(), phase.getObservationType().getSignal(system));
                     }
                 }
             }
@@ -127,15 +127,15 @@ public class PhaseMinusCodeCycleSlipDetector extends AbstractCycleSlipDetector {
      * @param nameSat name of the satellite, on the predefined format (e.g. GPS - 07 for satellite 7 of GPS constellation)
      * @param currentDate the date at which we check if a cycle-slip occurs
      * @param phaseMinusCode phase measurement minus code measurement
-     * @param frequency frequency used
+     * @param signal signal used
      * @return true if a cycle slip has been detected.
      */
     private boolean cycleSlipDetection(final String nameSat, final AbsoluteDate currentDate,
-                                       final double phaseMinusCode, final Frequency frequency) {
+                                       final double phaseMinusCode, final GnssSignal signal) {
 
         // Access the cycle slip results to know if a cycle-slip already occurred
-        final List<CycleSlipDetectorResults>         data  = getResults();
-        final List<Map<Frequency, DataForDetection>> stuff = getStuffReference();
+        final List<CycleSlipDetectorResults>          data  = getResults();
+        final List<Map<GnssSignal, DataForDetection>> stuff = getStuffReference();
 
         // If a cycle-slip already occurred
         if (data != null) {
@@ -144,15 +144,15 @@ public class PhaseMinusCodeCycleSlipDetector extends AbstractCycleSlipDetector {
             for (CycleSlipDetectorResults resultPmC : data) {
 
                 // Found the right cycle data
-                if (resultPmC.getSatelliteName().compareTo(nameSat) == 0 && resultPmC.getCycleSlipMap().containsKey(frequency)) {
-                    final Map<Frequency, DataForDetection> values = stuff.get(data.indexOf(resultPmC));
-                    final DataForDetection v = values.get(frequency);
+                if (resultPmC.getSatelliteName().compareTo(nameSat) == 0 && resultPmC.getCycleSlipMap().containsKey(signal)) {
+                    final Map<GnssSignal, DataForDetection> values = stuff.get(data.indexOf(resultPmC));
+                    final DataForDetection v = values.get(signal);
 
                     // Check the time gap condition
                     if (FastMath.abs(currentDate.durationFrom(v.getFiguresReference()[v.getWrite()].getDate())) > getMaxTimeBeetween2Measurement()) {
-                        resultPmC.addCycleSlipDate(frequency, currentDate);
+                        resultPmC.addCycleSlipDate(signal, currentDate);
                         v.resetFigures( new SlipComputationData[getMinMeasurementNumber()], phaseMinusCode, currentDate);
-                        resultPmC.setDate(frequency, currentDate);
+                        resultPmC.setDate(signal, currentDate);
                         return true;
                     }
 
@@ -168,9 +168,9 @@ public class PhaseMinusCodeCycleSlipDetector extends AbstractCycleSlipDetector {
                         final PolynomialCurveFitter fitting = PolynomialCurveFitter.create(order);
                         // Check if there is a cycle_slip
                         if (FastMath.abs(fitting.fit(xy)[0] - phaseMinusCode) > threshold) {
-                            resultPmC.addCycleSlipDate(frequency, currentDate);
+                            resultPmC.addCycleSlipDate(signal, currentDate);
                             v.resetFigures( new SlipComputationData[getMinMeasurementNumber()], phaseMinusCode, currentDate);
-                            resultPmC.setDate(frequency, currentDate);
+                            resultPmC.setDate(signal, currentDate);
                             return true;
                         }
 

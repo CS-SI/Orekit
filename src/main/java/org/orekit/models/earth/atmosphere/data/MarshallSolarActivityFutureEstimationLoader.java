@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -307,12 +307,9 @@ public class MarshallSolarActivityFutureEstimationLoader
         @Override
         public int hashCode() {
             int  result;
-            long temp;
             result = getFileDate().hashCode();
-            temp   = Double.doubleToLongBits(getF107());
-            result = 31 * result + (int) (temp ^ (temp >>> 32));
-            temp   = Double.doubleToLongBits(getAp());
-            result = 31 * result + (int) (temp ^ (temp >>> 32));
+            result = 31 * result + Double.hashCode(getF107());
+            result = 31 * result + Double.hashCode(getAp());
             return result;
         }
 

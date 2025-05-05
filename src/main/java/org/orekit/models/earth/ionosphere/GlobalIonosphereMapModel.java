@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
@@ -121,11 +120,8 @@ import org.orekit.utils.TimeSpanMap;
  */
 public class GlobalIonosphereMapModel implements IonosphericModel {
 
-    /** Pattern for delimiting regular expressions. */
-    private static final Pattern SEPARATOR = Pattern.compile("\\s+");
-
     /** Map of interpolable TEC. */
-    private TimeSpanMap<TECMapPair> tecMap;
+    private final TimeSpanMap<TECMapPair> tecMap;
 
     /** UTC time scale. */
     private final TimeScale utc;
@@ -336,6 +332,11 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
     private TECMapPair getPairAtDate(final AbsoluteDate date) {
         final TECMapPair pair = tecMap.get(date);
         if (pair == null) {
+            final TimeSpanMap.Transition<TECMapPair> lastTransition = tecMap.getLastTransition();
+            if (lastTransition != null && lastTransition.getDate().equals(date)) {
+                // we consider the transition date is in the validity range of the last span
+                return lastTransition.getBefore();
+            }
             throw new OrekitException(OrekitMessages.NO_TEC_DATA_IN_FILES_FOR_DATE,
                                       names, date);
         }
@@ -512,9 +513,9 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
                                 longitudes = parseCoordinate(line);
                                 break;
                             case "END OF HEADER" :
-                                // Check that latitude and longitude bondaries were found
+                                // Check that latitude and longitude boundaries were found
                                 if (latitudes == null || longitudes == null) {
-                                    throw new OrekitException(OrekitMessages.NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER, name);
+                                    throw new OrekitException(OrekitMessages.NO_LATITUDE_LONGITUDE_BOUNDARIES_IN_IONEX_HEADER, name);
                                 }
                                 // Check that first and last epochs were found
                                 if (firstEpoch == null || lastEpoch == null) {
@@ -545,10 +546,8 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
                                     if (!line.endsWith("LAT/LON1/LON2/DLON/H") &&
                                         !line.endsWith(END) &&
                                         !line.endsWith(EPOCH)) {
-                                        line = line.trim();
-                                        final String[] readLine = SEPARATOR.split(line);
-                                        for (final String s : readLine) {
-                                            values.add(Double.parseDouble(s));
+                                        for (int fieldStart = 0; fieldStart < line.length(); fieldStart += 5) {
+                                            values.add((double) Integer.parseInt(line.substring(fieldStart, fieldStart + 5).trim()));
                                         }
                                     }
                                 }
@@ -558,10 +557,8 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
                         if (inTEC) {
                             // Here, we are parsing the last line of TEC data for a given latitude
                             // The size of this line is lower than 60.
-                            line = line.trim();
-                            final String[] readLine = SEPARATOR.split(line);
-                            for (final String s : readLine) {
-                                values.add(Double.parseDouble(s));
+                            for (int fieldStart = 0; fieldStart < line.length(); fieldStart += 5) {
+                                values.add((double) Integer.parseInt(line.substring(fieldStart, fieldStart + 5).trim()));
                             }
                         }
                     }

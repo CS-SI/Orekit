@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,12 +20,12 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.FieldAbsoluteDate;
 
 /**
@@ -33,43 +33,26 @@ import org.orekit.time.FieldAbsoluteDate;
  *
  * @author Evan Ward
  */
-public class FieldNegateDetectorTest {
+class FieldNegateDetectorTest {
 
-    /**
-     * check {@link FieldNegateDetector#init(FieldSpacecraftState, FieldAbsoluteDate)}.
-     */
     @Test
-    public void testInit() {
-        doTestInit(Binary64Field.getInstance());
-    }
-
-    private <T extends CalculusFieldElement<T>> void doTestInit(final Field<T> field) {
-        //setup
-        @SuppressWarnings("unchecked")
-        FieldEventDetector<T> a = Mockito.mock(FieldEventDetector.class);
-        Mockito.when(a.getMaxCheckInterval()).thenReturn(FieldAdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
-        Mockito.when(a.getThreshold()).thenReturn(field.getZero().newInstance(AbstractDetector.DEFAULT_THRESHOLD));
-        @SuppressWarnings("unchecked")
-        FieldEventHandler<T> c = Mockito.mock(FieldEventHandler.class);
-        FieldNegateDetector<T> detector = new FieldNegateDetector<>(a).withHandler(c);
-        FieldAbsoluteDate<T> t = FieldAbsoluteDate.getGPSEpoch(field);
-        @SuppressWarnings("unchecked")
-        FieldSpacecraftState<T> s = Mockito.mock(FieldSpacecraftState.class);
-        Mockito.when(s.getDate()).thenReturn(t.shiftedBy(60.0));
-
-        //action
-        detector.init(s, t);
-
-        //verify
-        Mockito.verify(a).init(s, t);
-        Mockito.verify(c).init(s, t, detector);
+    void testGetDetector() {
+        // GIVEN
+        final FieldDateDetector<Binary64> expectedDetector = new FieldDateDetector<>(FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance()));
+        
+        // WHEN
+        final FieldNegateDetector<Binary64> negateDetector = new FieldNegateDetector<>(expectedDetector);
+        
+        // THEN
+        Assertions.assertEquals(expectedDetector, negateDetector.getDetector());
+        Assertions.assertEquals(expectedDetector, negateDetector.getOriginal());
     }
 
     /**
      * check g function is negated.
      */
     @Test
-    public void testG() {
+    void testG() {
         doTestG(Binary64Field.getInstance());
     }
 
@@ -77,8 +60,8 @@ public class FieldNegateDetectorTest {
         //setup
         @SuppressWarnings("unchecked")
         FieldEventDetector<T> a = Mockito.mock(FieldEventDetector.class);
-        Mockito.when(a.getMaxCheckInterval()).thenReturn(FieldAdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
-        Mockito.when(a.getThreshold()).thenReturn(field.getZero().newInstance(AbstractDetector.DEFAULT_THRESHOLD));
+        Mockito.when(a.getDetectionSettings()).thenReturn(new FieldEventDetectionSettings<>(field,
+                EventDetectionSettings.getDefaultEventDetectionSettings()));
         FieldNegateDetector<T> detector = new FieldNegateDetector<>(a);
         @SuppressWarnings("unchecked")
         FieldSpacecraftState<T> s = Mockito.mock(FieldSpacecraftState.class);
@@ -93,7 +76,7 @@ public class FieldNegateDetectorTest {
 
     /** Check a with___ method. */
     @Test
-    public void testCreate() {
+    void testCreate() {
         doTestCreate(Binary64Field.getInstance());
     }
 
@@ -101,15 +84,15 @@ public class FieldNegateDetectorTest {
         //setup
         @SuppressWarnings("unchecked")
         FieldEventDetector<T> a = Mockito.mock(FieldEventDetector.class);
-        Mockito.when(a.getMaxCheckInterval()).thenReturn(FieldAdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
-        Mockito.when(a.getThreshold()).thenReturn(field.getZero().newInstance(AbstractDetector.DEFAULT_THRESHOLD));
+        Mockito.when(a.getDetectionSettings()).thenReturn(new FieldEventDetectionSettings<>(field,
+                EventDetectionSettings.getDefaultEventDetectionSettings()));
         FieldNegateDetector<T> detector = new FieldNegateDetector<>(a);
 
         // action
         FieldNegateDetector<T> actual = detector.withMaxCheck(100);
 
         //verify
-        MatcherAssert.assertThat(actual.getMaxCheckInterval().currentInterval(null), CoreMatchers.is(100.0));
+        MatcherAssert.assertThat(actual.getMaxCheckInterval().currentInterval(null, true), CoreMatchers.is(100.0));
         Assertions.assertTrue(actual.getOriginal() == a);
     }
 }

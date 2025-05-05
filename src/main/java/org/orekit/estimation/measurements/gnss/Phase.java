@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,38 +53,11 @@ public class Phase extends GroundReceiverMeasurement<Phase> {
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "Phase";
 
-    /** Name for ambiguity driver.
-     * @deprecated as of 12.1 not used anymore
-     */
-    @Deprecated
-    public static final String AMBIGUITY_NAME = "ambiguity";
-
     /** Driver for ambiguity. */
     private final AmbiguityDriver ambiguityDriver;
 
     /** Wavelength of the phase observed value [m]. */
     private final double wavelength;
-
-    /** Simple constructor.
-     * @param station ground station from which measurement is performed
-     * @param date date of the measurement
-     * @param phase observed value (cycles)
-     * @param wavelength phase observed value wavelength (m)
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
-     * @param satellite satellite related to this measurement
-     * @since 9.3
-     * @deprecated as of 12.1, replaced by {@link #Phase(GroundStation,
-     * AbsoluteDate, double, double, double, double, ObservableSatellite,
-     * AmbiguityCache)}
-     */
-    @Deprecated
-    public Phase(final GroundStation station, final AbsoluteDate date,
-                 final double phase, final double wavelength, final double sigma,
-                 final double baseWeight, final ObservableSatellite satellite) {
-        this(station, date, phase, wavelength, sigma, baseWeight, satellite,
-             AmbiguityCache.DEFAULT_CACHE);
-    }
 
     /** Simple constructor.
      * @param station ground station from which measurement is performed

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Mark Rutten
+/* Copyright 2002-2025 Mark Rutten
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,7 +42,6 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.ReferenceEllipsoid;
-import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -75,8 +74,7 @@ public class AberrationModifierTest {
                 51.8);
         TopocentricFrame stationFrame = new TopocentricFrame(ReferenceEllipsoid.getWgs84(fixedFrame),
                 stationLocation, "station");
-        groundStation = new GroundStation(stationFrame,
-                                          TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+        groundStation = new GroundStation(stationFrame);
 
         // Select parameters and set reference date
         List<ParameterDriver> parameterDrivers = new ArrayList<>();
@@ -304,6 +302,11 @@ public class AberrationModifierTest {
         // Apply aberration to result should get us back to unmodified values
         double[] unmodRaDec = AberrationModifier.naturalToProper(estModRaDec, groundStation, epoch, FramesFactory.getGCRF());
         Assertions.assertArrayEquals(estimatedRaDec, unmodRaDec, 1e-12);
+
+        Assertions.assertEquals(1,
+                                modEstimated.getAppliedEffects().entrySet().stream().
+                                filter(e -> e.getKey().getEffectName().equals("aberration")).count());
+
     }
 
     @Test
@@ -384,8 +387,8 @@ public class AberrationModifierTest {
                                                                                                                groundStation,
                                                                                                                epoch, itrf));
         // Assert that the expected kind of error is thrown
-        Assertions.assertEquals(exceptionNToP.getSpecifier(), OrekitMessages.NON_PSEUDO_INERTIAL_FRAME);
-        Assertions.assertEquals(exceptionPToN.getSpecifier(), OrekitMessages.NON_PSEUDO_INERTIAL_FRAME);
+        Assertions.assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, exceptionNToP.getSpecifier());
+        Assertions.assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, exceptionPToN.getSpecifier());
     }
 
     private static AngularRaDec defaultRaDec(Frame frame, AbsoluteDate date) {

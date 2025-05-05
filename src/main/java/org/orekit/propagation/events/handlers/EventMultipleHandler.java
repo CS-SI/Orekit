@@ -1,4 +1,4 @@
-/* Copyright 2020 Airbus Defence and Space
+/* Copyright 2020-2025 Airbus Defence and Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -141,6 +141,13 @@ public class EventMultipleHandler implements EventHandler {
             newState = handler.resetState(detector, newState);
         }
         return newState;
+    }
+
+    @Override
+    public void finish(final SpacecraftState finalState, final EventDetector detector) {
+        for (final EventHandler handler : handlers) {
+            handler.finish(finalState, detector);
+        }
     }
 
     /** Add one handler to the managed handlers list.

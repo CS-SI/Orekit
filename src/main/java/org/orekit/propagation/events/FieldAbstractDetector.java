@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.time.FieldAbsoluteDate;
 
 /** Common parts shared by several orbital events finders.
@@ -33,22 +34,16 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
     implements FieldEventDetector<T> {
 
     /** Default maximum checking interval (s). */
-    public static final double DEFAULT_MAXCHECK = 600;
+    public static final double DEFAULT_MAX_CHECK = FieldEventDetectionSettings.DEFAULT_MAX_CHECK;
 
     /** Default convergence threshold (s). */
-    public static final double DEFAULT_THRESHOLD = 1.e-6;
+    public static final double DEFAULT_THRESHOLD = FieldEventDetectionSettings.DEFAULT_THRESHOLD;
 
-    /** Default cmaximum number of iterations in the event time search. */
-    public static final int DEFAULT_MAX_ITER = 100;
+    /** Default maximum number of iterations in the event time search. */
+    public static final int DEFAULT_MAX_ITER = FieldEventDetectionSettings.DEFAULT_MAX_ITER;
 
-    /** Max check interval. */
-    private final FieldAdaptableInterval<T> maxCheck;
-
-    /** Convergence threshold. */
-    private final T threshold;
-
-    /** Maximum number of iterations in the event time search. */
-    private final int maxIter;
+    /** Detection settings. */
+    private final FieldEventDetectionSettings<T> eventDetectionSettings;
 
     /** Default handler for event overrides. */
     private final FieldEventHandler<T> handler;
@@ -57,19 +52,29 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
     private boolean forward;
 
     /** Build a new instance.
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
+     * @since 12.2
      */
-    protected FieldAbstractDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold, final int maxIter,
+    protected FieldAbstractDetector(final FieldEventDetectionSettings<T> detectionSettings,
                                     final FieldEventHandler<T> handler) {
-        checkStrictlyPositive(threshold.getReal());
-        this.maxCheck  = maxCheck;
-        this.threshold = threshold;
-        this.maxIter   = maxIter;
+        checkStrictlyPositive(detectionSettings.getThreshold().getReal());
+        this.eventDetectionSettings = detectionSettings;
         this.handler   = handler;
         this.forward   = true;
+    }
+
+    /**
+     * Check if propagation is forward or not.
+     * @param <W> field type
+     * @param state initial state
+     * @param targetDate target propagation date
+     * @return forward flag
+     * @since 13.0
+     */
+    public static <W extends CalculusFieldElement<W>> boolean checkIfForward(final FieldSpacecraftState<W> state,
+                                                                             final FieldAbsoluteDate<W> targetDate) {
+        return targetDate.durationFrom(state.getDate()).getReal() >= 0.0;
     }
 
     /** Check value is strictly positive.
@@ -84,32 +89,20 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
     }
 
     /** {@inheritDoc} */
-    public void init(final FieldSpacecraftState<T> s0,
-                     final FieldAbsoluteDate<T> t) {
-        forward = t.durationFrom(s0.getDate()).getReal() >= 0.0;
-        getHandler().init(s0, t, this);
+    @Override
+    public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
+        FieldEventDetector.super.init(s0, t);
+        forward = checkIfForward(s0, t);
     }
 
     /** {@inheritDoc} */
-    public abstract T g(FieldSpacecraftState<T> s);
-
-    /** {@inheritDoc} */
-    public FieldAdaptableInterval<T> getMaxCheckInterval() {
-        return maxCheck;
-    }
-
-    /** {@inheritDoc} */
-    public int getMaxIterationCount() {
-        return maxIter;
-    }
-
-    /** {@inheritDoc} */
-    public T getThreshold() {
-        return threshold;
+    @Override
+    public FieldEventDetectionSettings<T> getDetectionSettings() {
+        return eventDetectionSettings;
     }
 
     /**
-     * Setup the maximum checking interval.
+     * Set up the maximum checking interval.
      * <p>
      * This will override a maximum checking interval if it has been configured previously.
      * </p>
@@ -122,7 +115,7 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
     }
 
     /**
-     * Setup the maximum checking interval.
+     * Set up the maximum checking interval.
      * <p>
      * This will override a maximum checking interval if it has been configured previously.
      * </p>
@@ -131,11 +124,11 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
      * @since 12.0
      */
     public D withMaxCheck(final FieldAdaptableInterval<T> newMaxCheck) {
-        return create(newMaxCheck, getThreshold(), getMaxIterationCount(), getHandler());
+        return withDetectionSettings(new FieldEventDetectionSettings<>(newMaxCheck, getThreshold(), getMaxIterationCount()));
     }
 
     /**
-     * Setup the maximum number of iterations in the event time search.
+     * Set up the maximum number of iterations in the event time search.
      * <p>
      * This will override a number of iterations if it has been configured previously.
      * </p>
@@ -144,11 +137,11 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
      * @since 6.1
      */
     public D withMaxIter(final int newMaxIter) {
-        return create(getMaxCheckInterval(), getThreshold(), newMaxIter,  getHandler());
+        return withDetectionSettings(new FieldEventDetectionSettings<>(getMaxCheckInterval(), getThreshold(), newMaxIter));
     }
 
     /**
-     * Setup the convergence threshold.
+     * Set up the convergence threshold.
      * <p>
      * This will override a convergence threshold if it has been configured previously.
      * </p>
@@ -157,11 +150,24 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
      * @since 6.1
      */
     public D withThreshold(final T newThreshold) {
-        return create(getMaxCheckInterval(), newThreshold, getMaxIterationCount(),  getHandler());
+        return withDetectionSettings(new FieldEventDetectionSettings<>(getMaxCheckInterval(), newThreshold, getMaxIterationCount()));
     }
 
     /**
-     * Setup the event handler to call at event occurrences.
+     * Set up the event detection settings.
+     * <p>
+     * This will override settings previously configured.
+     * </p>
+     * @param newSettings new event detection settings
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @since 12.2
+     */
+    public D withDetectionSettings(final FieldEventDetectionSettings<T> newSettings) {
+        return create(newSettings, getHandler());
+    }
+
+    /**
+     * Set up the event handler to call at event occurrences.
      * <p>
      * This will override a handler if it has been configured previously.
      * </p>
@@ -170,7 +176,7 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
      * @since 6.1
      */
     public D withHandler(final FieldEventHandler<T> newHandler) {
-        return create(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), newHandler);
+        return create(getDetectionSettings(), newHandler);
     }
 
     /** {@inheritDoc} */
@@ -179,14 +185,12 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
     }
 
     /** Build a new instance.
-     * @param newMaxCheck maximum checking interval
-     * @param newThreshold convergence threshold (s)
-     * @param newMaxIter maximum number of iterations in the event time search
+     * @param detectionSettings detection settings
      * @param newHandler event handler to call at event occurrences
      * @return a new instance of the appropriate sub-type
+     * @since 12.2
      */
-    protected abstract D create(FieldAdaptableInterval<T> newMaxCheck, T newThreshold,
-                                int newMaxIter, FieldEventHandler<T> newHandler);
+    protected abstract D create(FieldEventDetectionSettings<T> detectionSettings, FieldEventHandler<T> newHandler);
 
     /** Check if the current propagation is forward or backward.
      * @return true if the current propagation is forward

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,8 +18,8 @@ package org.orekit.models.earth.troposphere;
 
 /** Enumerate for Vienna tropospheric model 1 and 3.
  * This enumerate is used for the coefficients loader.
- * @see ViennaOneModel
- * @see ViennaThreeModel
+ * @see ViennaOne
+ * @see ViennaThree
  * @author Bryan Cazabonne
  */
 public enum ViennaModelType {
@@ -28,6 +28,6 @@ public enum ViennaModelType {
     VIENNA_ONE,
 
     /** Vienna three tropospheric model. */
-    VIENNA_THREE;
+    VIENNA_THREE
 
 }

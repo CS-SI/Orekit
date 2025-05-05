@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,7 +33,7 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 
 import java.util.List;
 
@@ -44,7 +44,7 @@ class CylindricallyShadowedLightFluxModelTest {
         // GIVEN
         final double occultingBodyRadius = 0.5;
         final Vector3D sunPosition = Vector3D.PLUS_I.scalarMultiply(10.);
-        final ExtendedPVCoordinatesProvider sun = mockProvider(sunPosition);
+        final ExtendedPositionProvider sun = mockProvider(sunPosition);
         final CylindricallyShadowedLightFluxModel model = new CylindricallyShadowedLightFluxModel(Double.NaN, sun, occultingBodyRadius);
         final CylindricalShadowEclipseDetector detector = new CylindricalShadowEclipseDetector(sun,
                 model.getOccultingBodyRadius(), Mockito.mock(EventHandler.class));
@@ -64,8 +64,8 @@ class CylindricallyShadowedLightFluxModelTest {
         }
     }
 
-    private ExtendedPVCoordinatesProvider mockProvider(final Vector3D sunPosition) {
-        final ExtendedPVCoordinatesProvider mockedProvider = Mockito.mock(ExtendedPVCoordinatesProvider.class);
+    private ExtendedPositionProvider mockProvider(final Vector3D sunPosition) {
+        final ExtendedPositionProvider mockedProvider = Mockito.mock(ExtendedPositionProvider.class);
         Mockito.when(mockedProvider.getPosition(Mockito.any(AbsoluteDate.class), Mockito.any(Frame.class)))
                 .thenReturn(sunPosition);
         return mockedProvider;
@@ -85,7 +85,7 @@ class CylindricallyShadowedLightFluxModelTest {
         final ComplexField field = ComplexField.getInstance();
         final double occultingBodyRadius = 0.5;
         final FieldVector3D<Complex> sunPosition = FieldVector3D.getPlusI(field).scalarMultiply(10.);
-        final ExtendedPVCoordinatesProvider sun = mockFieldProvider(sunPosition);
+        final ExtendedPositionProvider sun = mockFieldProvider(sunPosition);
         final CylindricallyShadowedLightFluxModel model = new CylindricallyShadowedLightFluxModel(Double.NaN, sun, occultingBodyRadius);
         final FieldCylindricalShadowEclipseDetector<Complex> detector = new FieldCylindricalShadowEclipseDetector<>(sun,
                 new Complex(model.getOccultingBodyRadius()), new FieldStopOnEvent<>());
@@ -105,26 +105,9 @@ class CylindricallyShadowedLightFluxModelTest {
         }
     }
 
-    @Test
-    void testGetUnoccultedFluxVector() {
-        // GIVEN
-        final ComplexField field = ComplexField.getInstance();
-        final double occultingBodyRadius = 0.5;
-        final FieldVector3D<Complex> sunPosition = FieldVector3D.getPlusI(field).scalarMultiply(10.);
-        final ExtendedPVCoordinatesProvider sun = mockFieldProvider(sunPosition);
-        final CylindricallyShadowedLightFluxModel model = new CylindricallyShadowedLightFluxModel(Double.NaN, sun, occultingBodyRadius);
-        final Vector3D position = new Vector3D(1., 1.);
-        final FieldVector3D<Complex> fieldPosition = new FieldVector3D<>(field, position);
-        // WHEN
-        final FieldVector3D<Complex> fieldFlux = model.getUnoccultedFluxVector(fieldPosition);
-        // THEN
-        final Vector3D expectedFlux = model.getUnoccultedFluxVector(position);
-        Assertions.assertEquals(expectedFlux, fieldFlux.toVector3D());
-    }
-
     @SuppressWarnings("unchecked")
-    private ExtendedPVCoordinatesProvider mockFieldProvider(final FieldVector3D<Complex> sunPosition) {
-        final ExtendedPVCoordinatesProvider mockedProvider = Mockito.mock(ExtendedPVCoordinatesProvider.class);
+    private ExtendedPositionProvider mockFieldProvider(final FieldVector3D<Complex> sunPosition) {
+        final ExtendedPositionProvider mockedProvider = Mockito.mock(ExtendedPositionProvider.class);
         Mockito.when(mockedProvider.getPosition(Mockito.any(FieldAbsoluteDate.class), Mockito.any(Frame.class)))
                 .thenReturn(sunPosition);
         return mockedProvider;
@@ -145,6 +128,7 @@ class CylindricallyShadowedLightFluxModelTest {
         final CylindricallyShadowedLightFluxModel model = Mockito.mock(CylindricallyShadowedLightFluxModel.class);
         Mockito.when(model.getOccultingBodyRadius()).thenReturn(1.);
         Mockito.when(model.getEclipseConditionsDetector()).thenCallRealMethod();
+        Mockito.when(model.getEventDetectionSettings()).thenReturn(EventDetectionSettings.getDefaultEventDetectionSettings());
         // WHEN
         final List<EventDetector> detectors = model.getEclipseConditionsDetector();
         // THEN
@@ -161,6 +145,7 @@ class CylindricallyShadowedLightFluxModelTest {
         final ComplexField field = ComplexField.getInstance();
         final CylindricallyShadowedLightFluxModel model = Mockito.mock(CylindricallyShadowedLightFluxModel.class);
         Mockito.when(model.getOccultingBodyRadius()).thenReturn(1.);
+        Mockito.when(model.getEventDetectionSettings()).thenReturn(EventDetectionSettings.getDefaultEventDetectionSettings());
         Mockito.when(model.getFieldEclipseConditionsDetector(field)).thenCallRealMethod();
         Mockito.when(model.getEclipseConditionsDetector()).thenCallRealMethod();
         // WHEN

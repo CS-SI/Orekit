@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,14 +15,6 @@
  * limitations under the License.
  */
 package org.orekit.propagation.numerical;
-
-import static org.hamcrest.CoreMatchers.is;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Stream;
 
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
@@ -64,11 +56,7 @@ import org.orekit.forces.maneuvers.trigger.DateBasedManeuverTriggers;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.*;
-import org.orekit.propagation.AdditionalStateProvider;
-import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.MatricesHarvester;
-import org.orekit.propagation.PropagatorsParallelizer;
-import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.*;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
@@ -82,6 +70,14 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
+
+import static org.hamcrest.CoreMatchers.is;
 
 /** Unit tests for {@link StateTransitionMatrixGenerator}. */
 class StateTransitionMatrixGeneratorTest {
@@ -135,9 +131,9 @@ class StateTransitionMatrixGeneratorTest {
                                                            Collections.emptyList(),
                                                            propagator2.getAttitudeProvider());
         propagator2.addAdditionalDerivativesProvider(dummyStmGenerator);
-        propagator2.setInitialState(propagator2.getInitialState().addAdditionalState(dummyStmGenerator.getName(), new double[36]));
+        propagator2.setInitialState(propagator2.getInitialState().addAdditionalData(dummyStmGenerator.getName(), new double[36]));
         propagator2.addAdditionalDerivativesProvider(new IntegrableJacobianColumnGenerator(dummyStmGenerator, "dummy-2"));
-        propagator2.setInitialState(propagator2.getInitialState().addAdditionalState("dummy-2", new double[6]));
+        propagator2.setInitialState(propagator2.getInitialState().addAdditionalData("dummy-2", new double[6]));
         propagator2.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
             public String getName() { return "dummy-3"; }
             public int getDimension() { return 1; }
@@ -145,13 +141,13 @@ class StateTransitionMatrixGeneratorTest {
                 return new CombinedDerivatives(new double[1], null);
             }
         });
-        propagator2.setInitialState(propagator2.getInitialState().addAdditionalState("dummy-3", new double[1]));
-        propagator2.addAdditionalStateProvider(new TriggerDate(dummyStmGenerator.getName(), "dummy-4", true,
-                                                               (Maneuver) propagator2.getAllForceModels().get(1),
-                                                               1.0e-6));
-        propagator2.addAdditionalStateProvider(new AdditionalStateProvider() {
+        propagator2.setInitialState(propagator2.getInitialState().addAdditionalData("dummy-3", new double[1]));
+        propagator2.addAdditionalDataProvider(new TriggerDate(dummyStmGenerator.getName(), "dummy-4", true,
+                                                              (Maneuver) propagator2.getAllForceModels().get(1),
+                                                              1.0e-6));
+        propagator2.addAdditionalDataProvider(new AdditionalDataProvider<double[]>() {
             public String getName() { return "dummy-5"; }
-            public double[] getAdditionalState(SpacecraftState s) { return new double[1]; }
+            public double[] getAdditionalData(SpacecraftState s) { return new double[1]; }
         });
         final MatricesHarvester   harvester2   = propagator2.setupMatricesComputation("stm", null, null);
         final SpacecraftState     intermediate = propagator2.propagate(firing.shiftedBy(0.5 * duration));
@@ -168,13 +164,13 @@ class StateTransitionMatrixGeneratorTest {
         final RealMatrix          jacobian2    = harvester2.getParametersJacobian(state2);
 
         // after completing the two-stage propagation, we get the same matrices
-        Assertions.assertEquals(0.0, stm2.subtract(stm1).getNorm1(), 1.3e-13 * stm1.getNorm1());
+        Assertions.assertEquals(0.0, stm2.subtract(stm1).getNorm1(), 5e-13 * stm1.getNorm1());
         Assertions.assertEquals(0.0, jacobian2.subtract(jacobian1).getNorm1(), 7.0e-11 * jacobian1.getNorm1());
 
     }
 
     /**
-     * check {@link StateTransitionMatrixGenerator#generate(SpacecraftState)} correctly sets the satellite velocity.
+     * check {@link StateTransitionMatrixGenerator#combinedDerivatives(SpacecraftState)} correctly sets the satellite velocity.
      */
     @Test
     void testComputeDerivativesStateVelocity() {
@@ -307,7 +303,7 @@ class StateTransitionMatrixGeneratorTest {
         final StateTransitionMatrixGenerator transitionMatrixGenerator = new StateTransitionMatrixGenerator(name,
                 forceModels, attitudeProvider);
         SpacecraftState state = new SpacecraftState(orbit);
-        state = state.addAdditionalState(name, new double[36]);
+        state = state.addAdditionalData(name, new double[36]);
         // WHEN
         final CombinedDerivatives combinedDerivatives = transitionMatrixGenerator.combinedDerivatives(state);
         // THEN
@@ -473,11 +469,11 @@ class StateTransitionMatrixGeneratorTest {
         OrbitType type = OrbitType.CARTESIAN;
         double minStep = 0.0001;
         double maxStep = 60;
-        double[][] tolerances = NumericalPropagator.tolerances(0.001, orbit, type);
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(orbit, type);
         AdaptiveStepsizeIntegrator integrator0 = new DormandPrince853Integrator(minStep, maxStep, tolerances[0], tolerances[1]);
         integrator0.setInitialStepSize(1.0);
         NumericalPropagator p0 = new NumericalPropagator(integrator0);
-        p0.setInitialState(new SpacecraftState(orbit).addAdditionalState("tmp", new double[1]));
+        p0.setInitialState(new SpacecraftState(orbit).addAdditionalData("tmp", new double[1]));
         p0.setupMatricesComputation("stm0", null, null);
         AdaptiveStepsizeIntegrator integrator1 = new DormandPrince853Integrator(minStep, maxStep, tolerances[0], tolerances[1]);
         integrator1.setInitialStepSize(1.0);
@@ -578,7 +574,7 @@ class StateTransitionMatrixGeneratorTest {
         array[0][column] += delta;
 
         return arrayToState(array, orbitType, angleType, state.getFrame(), state.getDate(),
-                            state.getMu(), state.getAttitude());
+                            state.getOrbit().getMu(), state.getAttitude());
 
     }
 
@@ -602,7 +598,7 @@ class StateTransitionMatrixGeneratorTest {
         final double minStep = 0.001;
         final double maxStep = 1000;
 
-        double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, orbitType);
         NumericalPropagator propagator =
             new NumericalPropagator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]));
         propagator.setOrbitType(orbitType);
@@ -620,7 +616,7 @@ class StateTransitionMatrixGeneratorTest {
         double[][] dYdY0Ref = new double[6][6];
         AbstractIntegratedPropagator propagator2 = setUpPropagator(initialOrbit, dP, orbitType, angleType, models);
         final SpacecraftState initialState = new SpacecraftState(initialOrbit);
-        double[] steps = NumericalPropagator.tolerances(1000000 * dP, initialOrbit, orbitType)[0];
+        double[] steps = ToleranceProvider.getDefaultToleranceProvider(1000000 * dP).getTolerances(initialOrbit, orbitType)[0];
         for (int i = 0; i < 6; ++i) {
             propagator2.resetInitialState(shiftState(initialState, orbitType, angleType, -4 * steps[i], i));
             SpacecraftState sM4h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
@@ -657,7 +653,7 @@ class StateTransitionMatrixGeneratorTest {
         final double f        = 420;
         PropulsionModel propulsionModel = new BasicConstantThrustPropulsionModel(f, isp, Vector3D.PLUS_I, "ABM");
 
-        double[][] tol = NumericalPropagator.tolerances(0.01, initialState.getOrbit(), orbitType);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(initialState.getOrbit(), orbitType);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
         integrator.setInitialStepSize(60);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
@@ -671,9 +667,9 @@ class StateTransitionMatrixGeneratorTest {
         }
         final Maneuver maneuver = new Maneuver(null, triggers, propulsionModel);
         propagator.addForceModel(maneuver);
-        propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+        propagator.addAdditionalDataProvider(new AdditionalDataProvider<double[]>() {
             public String getName() { return triggers.getName().concat("-acc"); }
-            public double[] getAdditionalState(SpacecraftState state) {
+            public double[] getAdditionalData(SpacecraftState state) {
                 double[] parameters = Arrays.copyOfRange(maneuver.getParameters(initialState.getDate()), 0, propulsionModel.getParametersDrivers().size());
                 return new double[] {
                     propulsionModel.getAcceleration(state, state.getAttitude(), parameters).getNorm()
@@ -710,15 +706,7 @@ class StateTransitionMatrixGeneratorTest {
     /** Mock {@link ForceModel}. */
     private static class MockForceModel implements ForceModel {
 
-        /**
-         * argument for {@link #accelerationDerivatives(AbsoluteDate, Frame,
-         * FieldVector3D, FieldVector3D, FieldRotation, DerivativeStructure)}.
-         */
         public FieldVector3D<DerivativeStructure> accelerationDerivativesPosition;
-        /**
-         * argument for {@link #accelerationDerivatives(AbsoluteDate, Frame,
-         * FieldVector3D, FieldVector3D, FieldRotation, DerivativeStructure)}.
-         */
         public FieldVector3D<DerivativeStructure> accelerationDerivativesVelocity;
 
         /** {@inheritDoc} */

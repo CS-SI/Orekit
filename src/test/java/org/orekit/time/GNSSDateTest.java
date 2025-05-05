@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,53 +24,47 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.SatelliteSystem;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
 public class GNSSDateTest {
 
     @Test
     public void testFromWeekAndSecondsGPS() {
         final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
+        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
         doTestFromWeekAndSeconds(SatelliteSystem.GPS, date, time, 1387, 318677.0);
     }
 
     @Test
     public void testFromWeekAndSecondsGalileo() {
         final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
+        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
         doTestFromWeekAndSeconds(SatelliteSystem.GALILEO, date, time, 363, 318677.0);
     }
 
     @Test
     public void testFromWeekAndSecondsQZSS() {
         final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
+        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
         doTestFromWeekAndSeconds(SatelliteSystem.QZSS, date, time, 1387, 318677.0);
     }
 
     @Test
     public void testFromWeekAndSecondsBeidou() {
         final DateComponents date = new DateComponents(2010, 2, 26);
-        final TimeComponents time = new TimeComponents(23, 15, 12);
+        final TimeComponents time = new TimeComponents(23, 15, new TimeOffset(12, 0));
         doTestFromWeekAndSeconds(SatelliteSystem.BEIDOU, date, time, 216, 515713.0);
     }
 
     @Test
-    public void testFromWeekAndSecondsIRNSS() {
+    public void testFromWeekAndSecondsNavIC() {
         final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
-        doTestFromWeekAndSeconds(SatelliteSystem.IRNSS, date, time, 363, 318677.0);
+        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
+        doTestFromWeekAndSeconds(SatelliteSystem.NAVIC, date, time, 363, 318677.0);
     }
 
     @Test
     public void testFromWeekAndSecondsSBAS() {
         final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
+        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
         doTestFromWeekAndSeconds(SatelliteSystem.SBAS, date, time, 1387, 318677.0);
     }
 
@@ -88,42 +82,42 @@ public class GNSSDateTest {
     @Test
     public void testFromAbsoluteDateGPS() {
         final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
+        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
         doTestFromAbsoluteDate(SatelliteSystem.GPS, date, time, 1387, 318677000.0);
     }
 
     @Test
     public void testFromAbsoluteDateGalileo() {
         final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
+        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
         doTestFromAbsoluteDate(SatelliteSystem.GALILEO, date, time, 363, 318677000.0);
     }
 
     @Test
     public void testFromAbsoluteDateQZSS() {
         final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
+        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
         doTestFromAbsoluteDate(SatelliteSystem.QZSS, date, time, 1387, 318677000.0);
     }
 
     @Test
     public void testFromAbsoluteDateBeidou() {
         final DateComponents date = new DateComponents(2010, 2, 26);
-        final TimeComponents time = new TimeComponents(23, 15, 12.0);
+        final TimeComponents time = new TimeComponents(23, 15, new TimeOffset(12, 0));
         doTestFromAbsoluteDate(SatelliteSystem.BEIDOU, date, time, 216, 515713000.0);
     }
 
     @Test
-    public void testFromAbsoluteDateIRNSS() {
+    public void testFromAbsoluteDateNavIC() {
         final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
-        doTestFromAbsoluteDate(SatelliteSystem.IRNSS, date, time, 363, 318677000.0);
+        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
+        doTestFromAbsoluteDate(SatelliteSystem.NAVIC, date, time, 363, 318677000.0);
     }
 
     @Test
     public void testFromAbsoluteDateSBAS() {
         final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
+        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
         doTestFromAbsoluteDate(SatelliteSystem.SBAS, date, time, 1387, 318677000.0);
     }
 
@@ -156,8 +150,8 @@ public class GNSSDateTest {
     }
 
     @Test
-    public void testZeroIRNSS() {
-        doTestZero(SatelliteSystem.IRNSS);
+    public void testZeroNavIC() {
+        doTestZero(SatelliteSystem.NAVIC);
     }
 
     @Test
@@ -181,8 +175,8 @@ public class GNSSDateTest {
             case BEIDOU:
                 epoch = AbsoluteDate.BEIDOU_EPOCH;
                 break;
-            case IRNSS:
-                epoch = AbsoluteDate.IRNSS_EPOCH;
+            case NAVIC:
+                epoch = AbsoluteDate.NAVIC_EPOCH;
                 break;
             default:
                 break;
@@ -233,12 +227,12 @@ public class GNSSDateTest {
     }
 
     @Test
-    public void testZeroZeroIRNSS() {
-        GNSSDate.setRolloverReference(new DateComponents(DateComponents.IRNSS_EPOCH, 7 * 512));
-        GNSSDate date1 = new GNSSDate(0, 0.0, SatelliteSystem.IRNSS);
-        Assertions.assertEquals(0.0, date1.getDate().durationFrom(AbsoluteDate.IRNSS_EPOCH), 1.0e-15);
+    public void testZeroZeroNavIC() {
+        GNSSDate.setRolloverReference(new DateComponents(DateComponents.NAVIC_EPOCH, 7 * 512));
+        GNSSDate date1 = new GNSSDate(0, 0.0, SatelliteSystem.NAVIC);
+        Assertions.assertEquals(0.0, date1.getDate().durationFrom(AbsoluteDate.NAVIC_EPOCH), 1.0e-15);
         GNSSDate.setRolloverReference(new DateComponents(GNSSDate.getRolloverReference(), 1));
-        GNSSDate date2 = new GNSSDate(0, 0.0, SatelliteSystem.IRNSS);
+        GNSSDate date2 = new GNSSDate(0, 0.0, SatelliteSystem.NAVIC);
         Assertions.assertEquals(1024, date2.getWeekNumber());
     }
 
@@ -250,48 +244,6 @@ public class GNSSDateTest {
         GNSSDate.setRolloverReference(new DateComponents(GNSSDate.getRolloverReference(), 1));
         GNSSDate date2 = new GNSSDate(0, 0.0, SatelliteSystem.SBAS);
         Assertions.assertEquals(1024, date2.getWeekNumber());
-    }
-
-    @Test
-    public void testSerializationGPS() throws ClassNotFoundException, IOException {
-        final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
-        doTestSerialization(SatelliteSystem.GPS, date, time, 1387, 318677.0);
-    }
-
-    @Test
-    public void testSerializationGalileo() throws ClassNotFoundException, IOException {
-        final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
-        doTestSerialization(SatelliteSystem.GALILEO, date, time, 363, 318677.0);
-    }
-
-    @Test
-    public void testSerializationQZSS() throws ClassNotFoundException, IOException {
-        final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
-        doTestSerialization(SatelliteSystem.QZSS, date, time, 1387, 318677.0);
-    }
-
-    @Test
-    public void testSerializationBeidou() throws ClassNotFoundException, IOException {
-        final DateComponents date = new DateComponents(2010, 2, 26);
-        final TimeComponents time = new TimeComponents(23, 15, 12.0);
-        doTestSerialization(SatelliteSystem.BEIDOU, date, time, 216, 515713.0);
-    }
-
-    @Test
-    public void testSerializationIRNSS() throws ClassNotFoundException, IOException {
-        final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
-        doTestSerialization(SatelliteSystem.IRNSS, date, time, 363, 318677.0);
-    }
-
-    @Test
-    public void testSerializationSBAS() throws ClassNotFoundException, IOException {
-        final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
-        doTestSerialization(SatelliteSystem.SBAS, date, time, 1387, 318677.0);
     }
 
     @Test
@@ -310,30 +262,6 @@ public class GNSSDateTest {
         GNSSDate date = new GNSSDate(305, 1.5e-3, SatelliteSystem.GPS);
         Assertions.assertEquals("2048-09-13", GNSSDate.getRolloverReference().toString());
         Assertions.assertEquals(305 + 3 * 1024, date.getWeekNumber());
-    }
-
-    private void doTestSerialization(final SatelliteSystem system,
-                                     final DateComponents date, final TimeComponents time,
-                                     final int refWeek, final double refSeconds)
-        throws IOException, ClassNotFoundException {
-        GNSSDate GNSSDate = new GNSSDate(refWeek, refSeconds, system);
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(GNSSDate);
-
-        Assertions.assertTrue(bos.size() > 230);
-        Assertions.assertTrue(bos.size() < 240);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        GNSSDate deserialized  = (GNSSDate) ois.readObject();
-        AbsoluteDate ref  = new AbsoluteDate(date, time, utc);
-        Assertions.assertEquals(refWeek, deserialized.getWeekNumber());
-        Assertions.assertEquals(1000 * refSeconds, deserialized.getMilliInWeek(), 1.0e-15);
-        Assertions.assertEquals(refSeconds, deserialized.getSecondsInWeek(), 1.0e-15);
-        Assertions.assertEquals(0, deserialized.getDate().durationFrom(ref), 1.0e-15);
-
     }
 
     @Test

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -171,9 +171,7 @@ public class Position extends AbstractMeasurement<Position> {
                                                            pv
                                                        });
 
-        estimated.setEstimatedValue(new double[] {
-            pv.getPosition().getX(), pv.getPosition().getY(), pv.getPosition().getZ()
-        });
+        estimated.setEstimatedValue(pv.getPosition().getX(), pv.getPosition().getY(), pv.getPosition().getZ());
 
         return estimated;
 
@@ -184,19 +182,7 @@ public class Position extends AbstractMeasurement<Position> {
     protected EstimatedMeasurement<Position> theoreticalEvaluation(final int iteration, final int evaluation,
                                                                    final SpacecraftState[] states) {
 
-        // PV value
-        final TimeStampedPVCoordinates pv = states[0].getPVCoordinates();
-
-        // prepare the evaluation
-        final EstimatedMeasurement<Position> estimated =
-                        new EstimatedMeasurement<>(this, iteration, evaluation, states,
-                                                   new TimeStampedPVCoordinates[] {
-                                                       pv
-                                                   });
-
-        estimated.setEstimatedValue(new double[] {
-            pv.getPosition().getX(), pv.getPosition().getY(), pv.getPosition().getZ()
-        });
+        final EstimatedMeasurement<Position> estimated = new EstimatedMeasurement<>(theoreticalEvaluationWithoutDerivatives(iteration, evaluation, states));
 
         // partial derivatives with respect to state
         estimated.setStateDerivatives(0, IDENTITY);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,21 +19,27 @@ package org.orekit.propagation.integration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.ode.FieldDenseOutputModel;
 import org.hipparchus.ode.FieldODEStateAndDerivative;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.AttitudeProviderModifier;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.propagation.FieldAdditionalStateProvider;
+import org.orekit.propagation.FieldAdditionalDataProvider;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.analytical.FieldAbstractAnalyticalPropagator;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.FieldArrayDictionary;
+import org.orekit.utils.FieldDataDictionary;
 import org.orekit.utils.ParameterDriver;
 
 /** This class stores sequentially generated orbital parameters for
@@ -82,7 +88,7 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
      * mean and short periodic elements. It is ignored by the Numerical propagator.
      * </p>
      */
-    private PropagationType type;
+    private final PropagationType type;
 
     /** Start date of the integration (can be min or max). */
     private final FieldAbsoluteDate<T> startDate;
@@ -94,10 +100,10 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
     private final FieldAbsoluteDate<T> maxDate;
 
     /** Underlying raw mathematical model. */
-    private FieldDenseOutputModel<T> model;
+    private final FieldDenseOutputModel<T> model;
 
     /** Unmanaged additional states that must be simply copied. */
-    private final FieldArrayDictionary<T> unmanaged;
+    private final FieldDataDictionary<T> unmanaged;
 
     /** Names of additional equations.
      * @since 11.2
@@ -114,23 +120,24 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
      * @param minDate first date of the range
      * @param maxDate last date of the range
      * @param mapper mapper between raw double components and spacecraft state
+     * @param attitudeProvider attitude provider
      * @param type type of orbit to output (mean or osculating)
      * @param model underlying raw mathematical model
      * @param unmanaged unmanaged additional states that must be simply copied
      * @param providers generators for pre-integrated states
      * @param equations names of additional equations
      * @param dimensions dimensions of additional equations
-     * @since 11.2
+     * @since 13.0
      */
     public FieldIntegratedEphemeris(final FieldAbsoluteDate<T> startDate,
                                     final FieldAbsoluteDate<T> minDate, final FieldAbsoluteDate<T> maxDate,
-                                    final FieldStateMapper<T> mapper, final PropagationType type,
-                                    final FieldDenseOutputModel<T> model,
-                                    final FieldArrayDictionary<T> unmanaged,
-                                    final List<FieldAdditionalStateProvider<T>> providers,
+                                    final FieldStateMapper<T> mapper, final AttitudeProvider attitudeProvider,
+                                    final PropagationType type, final FieldDenseOutputModel<T> model,
+                                    final FieldDataDictionary<T> unmanaged,
+                                    final List<FieldAdditionalDataProvider<?, T>> providers,
                                     final String[] equations, final int[] dimensions) {
 
-        super(startDate.getField(), mapper.getAttitudeProvider());
+        super(startDate.getField(), attitudeProvider);
 
         this.startDate = startDate;
         this.minDate   = minDate;
@@ -141,8 +148,8 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
         this.unmanaged = unmanaged;
 
         // set up the pre-integrated providers
-        for (final FieldAdditionalStateProvider<T> provider : providers) {
-            addAdditionalStateProvider(provider);
+        for (final FieldAdditionalDataProvider<?, T> provider : providers) {
+            addAdditionalDataProvider(provider);
         }
 
         this.equations  = equations.clone();
@@ -151,6 +158,23 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
         // set up initial state
         super.resetInitialState(getInitialState());
 
+        // remove event detectors in attitude provider
+        setAttitudeProvider(new AttitudeProviderModifier() {
+            @Override
+            public AttitudeProvider getUnderlyingAttitudeProvider() {
+                return attitudeProvider;
+            }
+
+            @Override
+            public Stream<EventDetector> getEventDetectors() {
+                return Stream.of();
+            }
+
+            @Override
+            public <W extends CalculusFieldElement<W>> Stream<FieldEventDetector<W>> getFieldEventDetectors(final Field<W> field) {
+                return Stream.of();
+            }
+        });
     }
 
     /** Interpolate the model at some date.
@@ -179,20 +203,21 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
 
     /** {@inheritDoc} */
     @Override
-    protected FieldSpacecraftState<T> basicPropagate(final FieldAbsoluteDate<T> date) {
+    public FieldSpacecraftState<T> basicPropagate(final FieldAbsoluteDate<T> date) {
         final FieldODEStateAndDerivative<T> os = getInterpolatedState(date);
         FieldSpacecraftState<T> state = mapper.mapArrayToState(mapper.mapDoubleToDate(os.getTime(), date),
                                                                os.getPrimaryState(), os.getPrimaryDerivative(),
                                                                type);
-        for (FieldArrayDictionary<T>.Entry initial : unmanaged.getData()) {
-            state = state.addAdditionalState(initial.getKey(), initial.getValue());
+        for (FieldDataDictionary<T>.Entry initial : unmanaged.getData()) {
+            state = state.addAdditionalData(initial.getKey(), initial.getValue());
         }
         return state;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
+    public FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date,
+                                        final T[] parameters) {
         return basicPropagate(date).getOrbit();
     }
 
@@ -238,14 +263,14 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
     /** {@inheritDoc} */
     @Override
     public FieldSpacecraftState<T> getInitialState() {
-        return updateAdditionalStates(basicPropagate(getMinDate()));
+        return updateAdditionalData(basicPropagate(getMinDate()));
     }
 
     /** {@inheritDoc} */
     @Override
-    protected FieldSpacecraftState<T> updateAdditionalStates(final FieldSpacecraftState<T> original) {
+    public FieldSpacecraftState<T> updateAdditionalData(final FieldSpacecraftState<T> original) {
 
-        FieldSpacecraftState<T> updated = super.updateAdditionalStates(original);
+        FieldSpacecraftState<T> updated = super.updateAdditionalData(original);
 
         if (equations.length > 0) {
             final FieldODEStateAndDerivative<T> osd                = getInterpolatedState(updated.getDate());
@@ -256,7 +281,7 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
                 final T[] state      = Arrays.copyOfRange(combinedState,      index, index + dimensions[i]);
                 final T[] derivative = Arrays.copyOfRange(combinedDerivative, index, index + dimensions[i]);
                 updated = updated.
-                          addAdditionalState(equations[i], state).
+                        addAdditionalData(equations[i], state).
                           addAdditionalStateDerivative(equations[i], derivative);
                 index += dimensions[i];
             }

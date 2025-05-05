@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,18 +16,14 @@
  */
 package org.orekit.estimation.measurements.generation;
 
-import java.util.Map;
-
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
-import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.gnss.AmbiguityCache;
 import org.orekit.estimation.measurements.gnss.InterSatellitesPhase;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriver;
 
+import java.util.Map;
 
 /** Builder for {@link InterSatellitesPhase} measurements.
  * @author Bryan Cazabonne
@@ -42,34 +38,6 @@ public class InterSatellitesPhaseBuilder extends AbstractMeasurementBuilder<Inte
 
     /** Wavelength of the phase observed value [m]. */
     private final double wavelength;
-
-    /** Satellite which receives the signal and performs the measurement.
-     * @since 12.0
-     */
-    private final ObservableSatellite local;
-
-    /** Satellite which simply emits the signal.
-     * @since 12.0
-     */
-    private final ObservableSatellite remote;
-
-    /** Simple constructor.
-     * @param noiseSource noise source, may be null for generating perfect measurements
-     * @param local satellite which receives the signal and performs the measurement
-     * @param remote satellite which simply emits the signal
-     * @param wavelength phase observed value wavelength (m)
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
-     * @deprecated as of 12.1, replaced by {@link #InterSatellitesPhaseBuilder(CorrelatedRandomVectorGenerator,
-     * ObservableSatellite, ObservableSatellite, double, double, double, AmbiguityCache)}
-     */
-    @Deprecated
-    public InterSatellitesPhaseBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                       final ObservableSatellite local, final ObservableSatellite remote,
-                                       final double wavelength, final double sigma, final double baseWeight) {
-        this(noiseSource, local, remote, wavelength, sigma, baseWeight,
-             AmbiguityCache.DEFAULT_CACHE);
-    }
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
@@ -88,56 +56,16 @@ public class InterSatellitesPhaseBuilder extends AbstractMeasurementBuilder<Inte
         super(noiseSource, sigma, baseWeight, local, remote);
         this.cache      = cache;
         this.wavelength = wavelength;
-        this.local      = local;
-        this.remote     = remote;
     }
 
     /** {@inheritDoc} */
     @Override
-    public InterSatellitesPhase build(final AbsoluteDate date, final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-
-        final double sigma                     = getTheoreticalStandardDeviation()[0];
-        final double baseWeight                = getBaseWeight()[0];
-        final SpacecraftState[] relevant       = new SpacecraftState[] {
-            interpolators.get(local).getInterpolatedState(date),
-            interpolators.get(remote).getInterpolatedState(date)
-        };
-
-        // create a dummy measurement
-        final InterSatellitesPhase dummy = new InterSatellitesPhase(local, remote, relevant[0].getDate(),
-                                                                    Double.NaN, wavelength, sigma, baseWeight,
-                                                                    cache);
-        for (final EstimationModifier<InterSatellitesPhase> modifier : getModifiers()) {
-            dummy.addModifier(modifier);
-        }
-
-        // set a reference date for parameters missing one
-        for (final ParameterDriver driver : dummy.getParametersDrivers()) {
-            if (driver.getReferenceDate() == null) {
-                final AbsoluteDate start = getStart();
-                final AbsoluteDate end   = getEnd();
-                driver.setReferenceDate(start.durationFrom(end) <= 0 ? start : end);
-            }
-        }
-
-        // estimate the perfect value of the measurement
-        double phase = dummy.estimateWithoutDerivatives(relevant).getEstimatedValue()[0];
-
-        // add the noise
-        final double[] noise = getNoise();
-        if (noise != null) {
-            phase += noise[0];
-        }
-
-        // generate measurement
-        final InterSatellitesPhase measurement = new InterSatellitesPhase(local, remote, relevant[0].getDate(),
-                                                                          phase, wavelength, sigma, baseWeight,
-                                                                          cache);
-        for (final EstimationModifier<InterSatellitesPhase> modifier : getModifiers()) {
-            measurement.addModifier(modifier);
-        }
-        return measurement;
-
+    protected InterSatellitesPhase buildObserved(final AbsoluteDate date,
+                                                 final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
+        return new InterSatellitesPhase(getSatellites()[0], getSatellites()[1],
+                                        date, Double.NaN, wavelength,
+                                        getTheoreticalStandardDeviation()[0],
+                                        getBaseWeight()[0], cache);
     }
 
 }

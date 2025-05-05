@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,14 +32,16 @@ import org.orekit.utils.Constants;
 
 class ApsideDetectionAdaptableIntervalFactoryTest {
 
+    private static final EventDetectionSettings DEFAULT_SETTINGS = EventDetectionSettings.getDefaultEventDetectionSettings();
+
     @Test
     void testGetForwardApsideDetectionAdaptableInterval() {
         // GIVEN
         final Orbit initialOrbit = createOrbit(1.);
         final AdaptableInterval forwardAdaptableInterval = ApsideDetectionAdaptableIntervalFactory
-                .getForwardApsideDetectionAdaptableInterval();
+                .getApsideDetectionAdaptableInterval();
         // WHEN
-        final double value = forwardAdaptableInterval.currentInterval(new SpacecraftState(initialOrbit));
+        final double value = forwardAdaptableInterval.currentInterval(new SpacecraftState(initialOrbit), true);
         // THEN
         Assertions.assertTrue(value <= initialOrbit.getKeplerianPeriod() / 2);
     }
@@ -49,9 +51,9 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
         // GIVEN
         final Orbit initialOrbit = createOrbit(1.);
         final AdaptableInterval backwardAdaptableInterval = ApsideDetectionAdaptableIntervalFactory
-                .getBackwardApsideDetectionAdaptableInterval();
+                .getApsideDetectionAdaptableInterval();
         // WHEN
-        final double value = backwardAdaptableInterval.currentInterval(new SpacecraftState(initialOrbit));
+        final double value = backwardAdaptableInterval.currentInterval(new SpacecraftState(initialOrbit), true);
         // THEN
         Assertions.assertTrue(value <= initialOrbit.getKeplerianPeriod() / 2);
     }
@@ -62,11 +64,11 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
         final Orbit initialOrbit = createOrbit(1.);
         final EventSlopeFilter<ApsideDetector> periapsisDetector = createPeriapsisDetector(initialOrbit);
         final AdaptableInterval forwardAdaptableInterval = ApsideDetectionAdaptableIntervalFactory
-                .getForwardPeriapsisDetectionAdaptableInterval();
+                .getPeriapsisDetectionAdaptableInterval();
         final AdaptableIntervalWithCounter forwardAdaptableIntervalWithCounter = new AdaptableIntervalWithCounter(
                 forwardAdaptableInterval);
         final Propagator propagator = createPropagatorWithDetector(initialOrbit,
-                periapsisDetector.withMaxCheck(forwardAdaptableIntervalWithCounter));
+                periapsisDetector.withDetectionSettings(DEFAULT_SETTINGS.withMaxCheckInterval(forwardAdaptableIntervalWithCounter)));
         // WHEN
         final AbsoluteDate targetDate = initialOrbit.getDate().shiftedBy(initialOrbit.getKeplerianPeriod() * 2);
         final SpacecraftState terminalState = propagator.propagate(targetDate);
@@ -83,11 +85,11 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
         final Orbit initialOrbit = createOrbit(6.);
         final EventSlopeFilter<ApsideDetector> periapsisDetector = createPeriapsisDetector(initialOrbit);
         final AdaptableInterval backwardAdaptableInterval = ApsideDetectionAdaptableIntervalFactory
-                .getBackwardPeriapsisDetectionAdaptableInterval();
+                .getPeriapsisDetectionAdaptableInterval();
         final AdaptableIntervalWithCounter backwardAdaptableIntervalWithCounter = new AdaptableIntervalWithCounter(
                 backwardAdaptableInterval);
         final Propagator propagator = createPropagatorWithDetector(initialOrbit,
-                periapsisDetector.withMaxCheck(backwardAdaptableIntervalWithCounter));
+                periapsisDetector.withDetectionSettings(DEFAULT_SETTINGS.withMaxCheckInterval(backwardAdaptableIntervalWithCounter)));
         // WHEN
         final AbsoluteDate targetDate = initialOrbit.getDate().shiftedBy(-initialOrbit.getKeplerianPeriod() * 2);
         final SpacecraftState terminalState = propagator.propagate(targetDate);
@@ -104,11 +106,11 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
         final Orbit initialOrbit = createOrbit(4.);
         final EventSlopeFilter<ApsideDetector> apoapsisDetector = createApoapsisDetector(initialOrbit);
         final AdaptableInterval forwardAdaptableInterval = ApsideDetectionAdaptableIntervalFactory
-                .getForwardApoapsisDetectionAdaptableInterval();
+                .getApoapsisDetectionAdaptableInterval();
         final AdaptableIntervalWithCounter forwardAdaptableIntervalWithCounter = new AdaptableIntervalWithCounter(
                 forwardAdaptableInterval);
         final Propagator propagator = createPropagatorWithDetector(initialOrbit,
-                apoapsisDetector.withMaxCheck(forwardAdaptableIntervalWithCounter));
+                apoapsisDetector.withDetectionSettings(DEFAULT_SETTINGS.withMaxCheckInterval(forwardAdaptableIntervalWithCounter)));
         // WHEN
         final AbsoluteDate targetDate = initialOrbit.getDate().shiftedBy(initialOrbit.getKeplerianPeriod() * 2);
         final SpacecraftState terminalState = propagator.propagate(targetDate);
@@ -125,11 +127,11 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
         final Orbit initialOrbit = createOrbit(3.);
         final EventSlopeFilter<ApsideDetector> apoapsisDetector = createApoapsisDetector(initialOrbit);
         final AdaptableInterval backwardAdaptableInterval = ApsideDetectionAdaptableIntervalFactory
-                .getBackwardApoapsisDetectionAdaptableInterval();
+                .getApoapsisDetectionAdaptableInterval();
         final AdaptableIntervalWithCounter backwardAdaptableIntervalWithCounter = new AdaptableIntervalWithCounter(
                 backwardAdaptableInterval);
         final Propagator propagator = createPropagatorWithDetector(initialOrbit,
-                apoapsisDetector.withMaxCheck(backwardAdaptableIntervalWithCounter));
+                apoapsisDetector.withDetectionSettings(DEFAULT_SETTINGS.withMaxCheckInterval(backwardAdaptableIntervalWithCounter)));
         // WHEN
         final AbsoluteDate targetDate = initialOrbit.getDate().shiftedBy(-initialOrbit.getKeplerianPeriod() * 2);
         final SpacecraftState terminalState = propagator.propagate(targetDate);
@@ -149,17 +151,17 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
     }
 
     private EventSlopeFilter<ApsideDetector> createPeriapsisDetector(final Orbit initialOrbit) {
-        return new EventSlopeFilter<>(new ApsideDetector(initialOrbit), FilterType.TRIGGER_ONLY_DECREASING_EVENTS)
-                .withHandler(new StopOnEvent());
+        return new EventSlopeFilter<>(new ApsideDetector(initialOrbit).withHandler(new StopOnEvent()),
+                FilterType.TRIGGER_ONLY_DECREASING_EVENTS);
     }
 
     private EventSlopeFilter<ApsideDetector> createApoapsisDetector(final Orbit initialOrbit) {
-        return new EventSlopeFilter<>(new ApsideDetector(initialOrbit), FilterType.TRIGGER_ONLY_INCREASING_EVENTS)
-                .withHandler(new StopOnEvent());
+        return new EventSlopeFilter<>(new ApsideDetector(initialOrbit).withHandler(new StopOnEvent()),
+                FilterType.TRIGGER_ONLY_INCREASING_EVENTS);
     }
 
     private AdaptableInterval getConstantAdaptableInterval() {
-        return state -> state.getOrbit().getKeplerianPeriod() / 3.;
+        return (state, isForward) -> state.getOrbit().getKeplerianPeriod() / 3.;
     }
 
     private Orbit createOrbit(final double meanAnomaly) {
@@ -172,7 +174,7 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
         final AdaptableIntervalWithCounter adaptableIntervalWithCounter = new AdaptableIntervalWithCounter(
                 getConstantAdaptableInterval());
         final Propagator otherPropagator = createPropagatorWithDetector(initialOrbit,
-                apsideDetector.withMaxCheck(adaptableIntervalWithCounter));
+                apsideDetector.withDetectionSettings(DEFAULT_SETTINGS.withMaxCheckInterval(adaptableIntervalWithCounter)));
         otherPropagator.propagate(targetDate);
         return adaptableIntervalWithCounter.count;
     }
@@ -187,9 +189,9 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
         }
 
         @Override
-        public double currentInterval(SpacecraftState state) {
+        public double currentInterval(SpacecraftState state, boolean isForward) {
             count++;
-            return interval.currentInterval(state);
+            return interval.currentInterval(state, isForward);
         }
     }
 

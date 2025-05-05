@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,13 +29,10 @@ package org.orekit.time;
  */
 public class QZSSScale extends ConstantOffsetTimeScale {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20240321L;
-
     /** Package private constructor for the factory.
      */
     QZSSScale() {
-        super("QZSS", -19);
+        super("QZSS", new TimeOffset(-19L, 0L));
     }
 
 }

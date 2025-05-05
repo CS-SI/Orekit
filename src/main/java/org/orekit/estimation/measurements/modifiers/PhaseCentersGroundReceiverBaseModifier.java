@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,6 +47,14 @@ public class PhaseCentersGroundReceiverBaseModifier<T extends GroundReceiverMeas
                                                   final FrequencyPattern satellitePattern) {
         this.uplink   = new PhaseCentersOffsetComputer(stationPattern, satellitePattern);
         this.downlink = new PhaseCentersOffsetComputer(satellitePattern, stationPattern);
+    }
+
+    /** Get the name of the effect modifying the measurement.
+     * @return name of the effect modifying the measurement
+     * @since 13.0
+     */
+    public String getEffectName() {
+        return "mean phase center";
     }
 
     /** Compute distance modification for one way measurement.

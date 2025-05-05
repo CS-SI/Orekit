@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -56,13 +56,13 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
     private CartesianDerivativesFilter filter;
 
     /** CPF file header. */
-    private CPFHeader header;
+    private final CPFHeader header;
 
     /** Map containing satellite information. */
-    private Map<String, CPFEphemeris> ephemeris;
+    private final Map<String, CPFEphemeris> ephemeris;
 
     /** List of comments contained in the file. */
-    private List<String> comments;
+    private final List<String> comments;
 
     /**
      * Constructor.
@@ -114,7 +114,11 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
      * @since 11.0.1
      */
     public void addSatelliteCoordinates(final String id, final List<CPFCoordinate> coord) {
-        ephemeris.computeIfAbsent(id, i -> new CPFEphemeris(i)).coordinates.addAll(coord);
+        final CPFEphemeris e;
+        synchronized (this) {
+            e = ephemeris.computeIfAbsent(id, CPFEphemeris::new);
+        }
+        e.coordinates.addAll(coord);
     }
 
     /**
@@ -124,7 +128,11 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
      * @since 11.0.1
      */
     public void addSatelliteCoordinate(final String id, final CPFCoordinate coord) {
-        ephemeris.computeIfAbsent(id, i -> new CPFEphemeris(i)).coordinates.add(coord);
+        final CPFEphemeris e;
+        synchronized (this) {
+            e = ephemeris.computeIfAbsent(id, CPFEphemeris::new);
+        }
+        e.coordinates.add(coord);
     }
 
     /**
@@ -277,9 +285,6 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
 
     /** A single record of position and possibility velocity in an SP3 file. */
     public static class CPFCoordinate extends TimeStampedPVCoordinates {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20201016L;
 
         /** Leap second flag. */
         private final int leap;

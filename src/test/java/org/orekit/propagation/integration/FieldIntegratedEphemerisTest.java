@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,9 +23,11 @@ import java.util.List;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
@@ -33,6 +35,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.TestUtils;
 import org.orekit.Utils;
+import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.AttitudeProviderModifier;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -40,11 +46,9 @@ import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.FieldAdditionalStateProvider;
-import org.orekit.propagation.FieldBoundedPropagator;
-import org.orekit.propagation.FieldEphemerisGenerator;
-import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.*;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -130,6 +134,34 @@ public class FieldIntegratedEphemerisTest {
 
     }
 
+    @Test
+    void testGetAttitudeProvider() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final AttitudeProvider attitudeProvider = new FrameAlignedProvider(FramesFactory.getGCRF());
+        final FieldNumericalPropagator<Binary64> fieldPropagator = createPropagator(field);
+        fieldPropagator.setAttitudeProvider(attitudeProvider);
+        final FieldOrbit<Binary64> fieldOrbit = createOrbit(field);
+        fieldPropagator.setInitialState(new FieldSpacecraftState<>(fieldOrbit));
+        final FieldEphemerisGenerator<Binary64> generator = fieldPropagator.getEphemerisGenerator();
+        fieldPropagator.propagate(fieldPropagator.getInitialState().getDate().shiftedBy(10));
+        // WHEN
+        final FieldBoundedPropagator<Binary64> boundedPropagator = generator.getGeneratedEphemeris();
+        // THEN
+        final AttitudeProvider ephemerisAttitudeProvider = boundedPropagator.getAttitudeProvider();
+        Assertions.assertInstanceOf(AttitudeProviderModifier.class, ephemerisAttitudeProvider);
+        final AttitudeProviderModifier providerModifier = (AttitudeProviderModifier) ephemerisAttitudeProvider;
+        Assertions.assertEquals(attitudeProvider, providerModifier.getUnderlyingAttitudeProvider());
+        Assertions.assertEquals(0, ephemerisAttitudeProvider.getEventDetectors().count());
+        Assertions.assertEquals(0, ephemerisAttitudeProvider.getFieldEventDetectors(Binary64Field.getInstance()).count());
+        final Orbit orbit = fieldOrbit.toOrbit();
+        final Attitude expectedAttitude = attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
+        final Attitude actualAttitude = ephemerisAttitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
+        Assertions.assertEquals(expectedAttitude.getSpin(), actualAttitude.getSpin());
+        Assertions.assertEquals(expectedAttitude.getRotationAcceleration(), actualAttitude.getRotationAcceleration());
+        Assertions.assertEquals(0., Rotation.distance(expectedAttitude.getRotation(), actualAttitude.getRotation()));
+    }
+
     private <T extends CalculusFieldElement<T>>  void doTestGetFrame(Field<T> field) {
         FieldOrbit<T> initialOrbit = createOrbit(field);
         FieldNumericalPropagator<T> numericalPropagator = createPropagator(field);
@@ -157,7 +189,7 @@ public class FieldIntegratedEphemerisTest {
         numericalPropagator.propagate(finalDate);
         Assertions.assertTrue(numericalPropagator.getCalls() < 3200);
         FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
-        ephemeris.addAdditionalStateProvider(new FieldAdditionalStateProvider<T>() {
+        ephemeris.addAdditionalDataProvider(new FieldAdditionalDataProvider<T[], T>() {
 
             @Override
             public String getName() {
@@ -165,7 +197,7 @@ public class FieldIntegratedEphemerisTest {
             }
 
             @Override
-            public T[] getAdditionalState(FieldSpacecraftState<T> state) {
+            public T[] getAdditionalData(FieldSpacecraftState<T> state) {
                 T[] array = MathArrays.buildArray(state.getDate().getField(), 1);
                 array[0] = state.getDate().durationFrom(initialOrbit.getDate());
                 return array;
@@ -232,7 +264,7 @@ public class FieldIntegratedEphemerisTest {
 
         final FieldOrbit<T> initialOrbit = createOrbit(field);
         FieldAbsoluteDate<T> finalDate = initialOrbit.getDate().shiftedBy(10.0);
-        double[][] tolerances = FieldNumericalPropagator.tolerances(field.getZero().newInstance(1.0e-3),
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(1e-3).getTolerances(
                                                                     initialOrbit, OrbitType.CARTESIAN);
         DormandPrince853FieldIntegrator<T> integrator =
                         new DormandPrince853FieldIntegrator<>(field, 1.0e-6, 10.0, tolerances[0], tolerances[1]);
@@ -244,8 +276,8 @@ public class FieldIntegratedEphemerisTest {
         propagator.addAdditionalDerivativesProvider(provider2);
         final FieldEphemerisGenerator<T> generator = propagator.getEphemerisGenerator();
         propagator.setInitialState(new FieldSpacecraftState<>(initialOrbit).
-                                   addAdditionalState(provider1.getName(), MathArrays.buildArray(field, provider1.getDimension())).
-                                   addAdditionalState(provider2.getName(), MathArrays.buildArray(field, provider2.getDimension())));
+                addAdditionalData(provider1.getName(), MathArrays.buildArray(field, provider1.getDimension())).
+                addAdditionalData(provider2.getName(), MathArrays.buildArray(field, provider2.getDimension())));
         propagator.propagate(finalDate);
         FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
 
@@ -265,9 +297,9 @@ public class FieldIntegratedEphemerisTest {
         numericalPropagator.setInitialState(new FieldSpacecraftState<>(initialOrbit));
         numericalPropagator.setOrbitType(OrbitType.CARTESIAN);
 
-        // Setup additional state provider which use the initial state in its init method
-        final FieldAdditionalStateProvider<T> additionalStateProvider = TestUtils.getFieldAdditionalProviderWithInit();
-        numericalPropagator.addAdditionalStateProvider(additionalStateProvider);
+        // Setup additional data provider which use the initial state in its init method
+        final FieldAdditionalDataProvider<T[], T> additionalDataProvider = TestUtils.getFieldAdditionalProviderWithInit();
+        numericalPropagator.addAdditionalDataProvider(additionalDataProvider);
 
         // Setup integrated ephemeris
         final FieldEphemerisGenerator<T> generator = numericalPropagator.getEphemerisGenerator();
@@ -283,7 +315,7 @@ public class FieldIntegratedEphemerisTest {
     private <T extends CalculusFieldElement<T>> void checkState(final double dt, final FieldSpacecraftState<T> state,
                                                                 final DerivativesProvider<T> provider) {
 
-        Assertions.assertTrue(state.hasAdditionalState(provider.getName()));
+        Assertions.assertTrue(state.hasAdditionalData(provider.getName()));
         Assertions.assertEquals(provider.getDimension(), state.getAdditionalState(provider.getName()).length);
         for (int i = 0; i < provider.getDimension(); ++i) {
             Assertions.assertEquals(i * dt,

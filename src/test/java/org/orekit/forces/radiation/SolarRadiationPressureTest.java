@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -68,6 +68,7 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -80,15 +81,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.Constants;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
-import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.IERSConventions;
-import org.orekit.utils.OccultationEngine;
-import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.*;
 
 
 public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
@@ -165,7 +158,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                              TimeScalesFactory.getUTC());
         Orbit orbit = new KeplerianOrbit(1.0e11, 0.1, 0.2, 0.3, 0.4, 0.5, PositionAngleType.TRUE,
                                          FramesFactory.getICRF(), date, Constants.JPL_SSD_SUN_GM);
-        ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        ExtendedPositionProvider sun = CelestialBodyFactory.getSun();
         SolarRadiationPressure srp =
             new SolarRadiationPressure(sun, new OneAxisEllipsoid(1.0e-10, 0.0, FramesFactory.getICRF()),
                                        new IsotropicRadiationClassicalConvention(50.0, 0.5, 0.5));
@@ -246,7 +239,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                          0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
-        double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, integrationType);
 
         NumericalPropagator propagator =
                 new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
@@ -422,7 +415,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                          0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
-        double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, integrationType);
 
         NumericalPropagator propagator =
                 new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
@@ -456,7 +449,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                          0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
-        double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, integrationType);
 
         NumericalPropagator propagator =
                 new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
@@ -536,7 +529,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                          0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
-        double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, integrationType);
 
         NumericalPropagator propagator =
                 new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
@@ -570,7 +563,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                            0.1, PositionAngleType.TRUE, FramesFactory.getEME2000(), date, mu);
         final double period = orbit.getKeplerianPeriod();
         Assertions.assertEquals(86164, period, 1);
-        ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        ExtendedPositionProvider sun = CelestialBodyFactory.getSun();
 
         // creation of the force model
         OneAxisEllipsoid earth =
@@ -611,8 +604,8 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
         @Override
         public void handleStep(SpacecraftState currentState) {
-            final double dex = currentState.getEquinoctialEx() - 0.01071166;
-            final double dey = currentState.getEquinoctialEy() - 0.00654848;
+            final double dex = currentState.getOrbit().getEquinoctialEx() - 0.01071166;
+            final double dey = currentState.getOrbit().getEquinoctialEy() - 0.00654848;
             final double alpha = FastMath.toDegrees(FastMath.atan2(dey, dex));
             Assertions.assertTrue(alpha > 100.0);
             Assertions.assertTrue(alpha < 112.0);
@@ -659,7 +652,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
         // Field integrator and classical integrator
         final OrbitType type = OrbitType.KEPLERIAN;
-        double[][] tolerance = NumericalPropagator.tolerances(10.0, FKO.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(FKO.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
                         new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
@@ -677,7 +670,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         NP.setOrbitType(type);
         NP.setInitialState(iSR);
 
-        ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        ExtendedPositionProvider sun = CelestialBodyFactory.getSun();
 
         // Set up the force model to test
         OneAxisEllipsoid earth =
@@ -727,7 +720,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         SpacecraftState iSR = initialState.toSpacecraftState();
 
         final OrbitType type = OrbitType.KEPLERIAN;
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(FKO.toOrbit(), type);
 
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
@@ -743,7 +736,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
         NP.setInitialState(iSR);
-        ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        ExtendedPositionProvider sun = CelestialBodyFactory.getSun();
 
         // creation of the force model
         OneAxisEllipsoid earth =
@@ -804,7 +797,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     private NumericalPropagator createLeoPropagator(final CelestialBody sun, final CelestialBody moon, final OneAxisEllipsoid earth,
                                                     final NormalizedSphericalHarmonicsProvider gravityField,
                                                     final RadiationSensitive spacecraft, SpacecraftState initialState) {
-        final double[][] tol = NumericalPropagator.tolerances(1.0e-6, initialState.getOrbit(), OrbitType.CIRCULAR);
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-6).getTolerances(initialState.getOrbit(), OrbitType.CIRCULAR);
         final NumericalPropagator propagator =
                         new NumericalPropagator(new DormandPrince853Integrator(1.0e-9, 60.0, tol[0], tol[1]));
         propagator.setOrbitType(OrbitType.CIRCULAR);
@@ -910,8 +903,8 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                  double expectedDistance) {
 
         Utils.setDataRoot("2007");
-        final ExtendedPVCoordinatesProvider sun  = CelestialBodyFactory.getSun();
-        final ExtendedPVCoordinatesProvider moon = CelestialBodyFactory.getMoon();
+        final ExtendedPositionProvider sun  = CelestialBodyFactory.getSun();
+        final ExtendedPositionProvider moon = CelestialBodyFactory.getMoon();
         final SpacecraftState initialState = new SpacecraftState(orbit);
 
         // Create SRP perturbation with Moon and Earth
@@ -932,7 +925,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
         // creation of the propagator
         final OrbitType type = OrbitType.CARTESIAN;
-        double[][] tol = NumericalPropagator.tolerances(1.0e-6, orbit, type);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-6).getTolerances(orbit, type);
 
         final NumericalPropagator propagatorWithFlattening =
                         new NumericalPropagator(new DormandPrince853Integrator(1.0e-9, 300, tol[0], tol[1]));
@@ -967,8 +960,8 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
      */
     private static class MoonEclipseStepHandler implements OrekitFixedStepHandler {
 
-        final ExtendedPVCoordinatesProvider moon;
-        final ExtendedPVCoordinatesProvider sun;
+        final ExtendedPositionProvider moon;
+        final ExtendedPositionProvider sun;
         final SolarRadiationPressure srp;
         int earthUmbraSteps;
         int earthPenumbraSteps;
@@ -977,7 +970,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
         /** Simple constructor.
          */
-        MoonEclipseStepHandler(final ExtendedPVCoordinatesProvider moon, final ExtendedPVCoordinatesProvider sun,
+        MoonEclipseStepHandler(final ExtendedPositionProvider moon, final ExtendedPositionProvider sun,
                                final SolarRadiationPressure srp) {
             this.moon = moon;
             this.sun  = sun;
@@ -1080,7 +1073,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final FieldOrbit<Binary64>        orbit = new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(date, p, v, a),
                                                                              FramesFactory.getGCRF(),
                                                                              field.getZero().newInstance(Constants.EIGEN5C_EARTH_MU));
-        doTestFieldMoonEarth(orbit, field.getZero().newInstance(720.0), field.getZero().newInstance(1.0), 0, 525, 0, 0, 2.193e-3);
+        doTestFieldMoonEarth(orbit, field.getZero().newInstance(720.0), field.getZero().newInstance(1.0), 0, 525, 0, 0, 2.192e-3);
     }
 
     @Test
@@ -1103,8 +1096,8 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
         Utils.setDataRoot("2007");
         final Field<T> field = orbit.getDate().getField();
-        final ExtendedPVCoordinatesProvider sun  = CelestialBodyFactory.getSun();
-        final ExtendedPVCoordinatesProvider moon = CelestialBodyFactory.getMoon();
+        final ExtendedPositionProvider sun  = CelestialBodyFactory.getSun();
+        final ExtendedPositionProvider moon = CelestialBodyFactory.getMoon();
         final FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
 
         // Create SRP perturbation with Moon and Earth
@@ -1125,7 +1118,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
         // creation of the propagator
         final OrbitType type = OrbitType.CARTESIAN;
-        double[][] tol = FieldNumericalPropagator.tolerances(field.getZero().newInstance(1.0e-6), orbit, type);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-6).getTolerances(orbit, type);
         final FieldNumericalPropagator<T> propagatorWithFlattening =
                         new FieldNumericalPropagator<>(field,
                                         new DormandPrince853FieldIntegrator<>(field, 1.0e-9, 300, tol[0], tol[1]));
@@ -1161,8 +1154,8 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
      */
     private static class FieldMoonEclipseStepHandler<T extends CalculusFieldElement<T>> implements FieldOrekitFixedStepHandler<T> {
 
-        final ExtendedPVCoordinatesProvider moon;
-        final ExtendedPVCoordinatesProvider sun;
+        final ExtendedPositionProvider moon;
+        final ExtendedPositionProvider sun;
         final SolarRadiationPressure srp;
         int earthUmbraSteps;
         int earthPenumbraSteps;
@@ -1171,7 +1164,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
         /** Simple constructor.
          */
-        FieldMoonEclipseStepHandler(final ExtendedPVCoordinatesProvider moon, final ExtendedPVCoordinatesProvider sun,
+        FieldMoonEclipseStepHandler(final ExtendedPositionProvider moon, final ExtendedPositionProvider sun,
                                     final SolarRadiationPressure srp) {
             this.moon = moon;
             this.sun  = sun;

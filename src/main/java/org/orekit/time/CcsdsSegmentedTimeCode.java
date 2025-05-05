@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,11 +30,8 @@ class CcsdsSegmentedTimeCode extends AbstractCcsdsTimeCode {
     /** Date part. */
     private final DateComponents date;
 
-    /** Time part (down to second only). */
+    /** Time part. */
     private final TimeComponents time;
-
-    /** Sub-second part. */
-    private final double subSecond;
 
     /** Create an instance CCSDS Day Segmented Time Code (CDS).
      * <p>
@@ -96,16 +93,17 @@ class CcsdsSegmentedTimeCode extends AbstractCcsdsTimeCode {
         final int milli   = (int) (milliInDay % 1000L);
         final int seconds = (int) ((milliInDay - milli) / 1000L);
 
-        double subMilli = 0;
-        double divisor  = 1;
+        long subMilli = 0;
         while (i < timeField.length) {
             subMilli = subMilli * 256 + toUnsigned(timeField[i++]);
-            divisor *= 1000;
         }
+        final TimeOffset timeOffset =
+            new TimeOffset(seconds, TimeOffset.SECOND,
+                           milli, TimeOffset.MILLISECOND,
+                           subMilli, subMillisecondLength == 2 ? TimeOffset.MICROSECOND : TimeOffset.PICOSECOND);
 
-        this.date      = new DateComponents(epoch, day);
-        this.time      = new TimeComponents(seconds);
-        this.subSecond = milli * 1.0e-3 + subMilli / divisor;
+        this.date = new DateComponents(epoch, day);
+        this.time = new TimeComponents(timeOffset);
 
     }
 
@@ -150,18 +148,19 @@ class CcsdsSegmentedTimeCode extends AbstractCcsdsTimeCode {
         }
 
         // time part from bytes 5 to last (between 7 and 13 depending on precision)
-        this.time = new TimeComponents(toUnsigned(timeField[4]),
-                                       toUnsigned(timeField[5]),
-                                       toUnsigned(timeField[6]));
+        final int hour        = toUnsigned(timeField[4]);
+        final int minute      = toUnsigned(timeField[5]);
+        final int second      = toUnsigned(timeField[6]);
+        final int secondInDay = 3600 * hour + 60 * minute + second;
 
-        double sub = 0;
-        double divisor   = 1;
+        long sub                  = 0;
+        long attoSecondMultiplier = 1000000000000000000L;
         for (int i = 7; i < length; ++i) {
-            sub = sub * 100 + toUnsigned(timeField[i]);
-            divisor *= 100;
+            sub                   = sub * 100L + toUnsigned(timeField[i]);
+            attoSecondMultiplier /= 100L;
         }
 
-        this.subSecond = sub / divisor;
+        this.time = new TimeComponents(new TimeOffset(secondInDay, sub * attoSecondMultiplier));
 
     }
 
@@ -177,13 +176,6 @@ class CcsdsSegmentedTimeCode extends AbstractCcsdsTimeCode {
      */
     public TimeComponents getTime() {
         return time;
-    }
-
-    /** Get the sub-second part.
-     * @return sub-second part
-     */
-    public double getSubSecond() {
-        return subSecond;
     }
 
 }

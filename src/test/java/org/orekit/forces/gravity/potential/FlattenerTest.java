@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,7 @@ import org.orekit.errors.OrekitMessages;
 public class FlattenerTest {
 
     @Test
-    public void testFullTriangle() {
+    void testFullTriangle() {
         final Flattener full = new Flattener(5, 5);
         Assertions.assertEquals(5, full.getDegree());
         Assertions.assertEquals(5, full.getOrder());
@@ -54,7 +54,7 @@ public class FlattenerTest {
     }
 
     @Test
-    public void testTruncatedTriangle() {
+    void testTruncatedTriangle() {
         final Flattener truncated = new Flattener(5, 3);
         Assertions.assertEquals(5, truncated.getDegree());
         Assertions.assertEquals(3, truncated.getOrder());
@@ -80,7 +80,7 @@ public class FlattenerTest {
     }
 
     @Test
-    public void testFlatten() {
+    void testFlatten() {
         final Flattener flattener = new Flattener(5, 3);
         double[][] triangular = {
             { 12 },
@@ -97,7 +97,7 @@ public class FlattenerTest {
     }
 
     @Test
-    public void testSize() {
+    void testSize() {
         for (int degree = 0; degree <= 60; ++degree) {
             for (int order = 0; order <= degree; ++order) {
                 Assertions.assertEquals(loop(degree, order, degree, 0) + 1,
@@ -107,7 +107,7 @@ public class FlattenerTest {
     }
 
     @Test
-    public void testIndices() {
+    void testIndices() {
         for (int degree = 0; degree <= 60; ++degree) {
             for (int order = 0; order <= degree; ++order) {
                 final Flattener flattener = new Flattener(degree, order);
@@ -122,7 +122,7 @@ public class FlattenerTest {
     }
 
     @Test
-    public void testLimits() {
+    void testLimits() {
         for (int degree = 0; degree <= 20; ++degree) {
             for (int order = 0; order <= degree; ++order) {
                 final Flattener flattener = new Flattener(degree, order);

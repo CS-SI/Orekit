@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -105,7 +105,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
         this.frame         = builder.getFrame();
         this.optimizer     = new LevenbergMarquardtOptimizer();
         this.maxIterations = maxIterations;
-        this.sample        = new ArrayList<SpacecraftState>();
+        this.sample        = new ArrayList<>();
 
         final SimpleVectorValueChecker svvc = new SimpleVectorValueChecker(-1.0, threshold);
         this.checker = LeastSquaresFactory.evaluationChecker(svvc);
@@ -253,7 +253,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
                                                final double timeSpan,
                                                final int nbPoints) {
 
-        final List<SpacecraftState> states = new ArrayList<SpacecraftState>();
+        final List<SpacecraftState> states = new ArrayList<>();
 
         final double stepSize = timeSpan / (nbPoints - 1);
         final AbsoluteDate iniDate = source.getInitialState().getDate();
@@ -389,30 +389,30 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
         }
 
         int k = 0;
-        for (int i = 0; i < states.size(); i++) {
+        for (SpacecraftState state : states) {
 
-            final PVCoordinates pv = states.get(i).getPVCoordinates(frame);
+            final PVCoordinates pv = state.getPVCoordinates(frame);
 
             // position
-            target[k]   = pv.getPosition().getX();
+            target[k] = pv.getPosition().getX();
             weight[k++] = 1;
-            target[k]   = pv.getPosition().getY();
+            target[k] = pv.getPosition().getY();
             weight[k++] = 1;
-            target[k]   = pv.getPosition().getZ();
+            target[k] = pv.getPosition().getZ();
             weight[k++] = 1;
 
             // velocity
             if (!onlyPosition) {
                 // velocity weight relative to position
                 final double r2 = pv.getPosition().getNormSq();
-                final double v  = pv.getVelocity().getNorm();
-                final double vWeight = v * r2 / states.get(i).getMu();
+                final double v = pv.getVelocity().getNorm();
+                final double vWeight = v * r2 / state.getOrbit().getMu();
 
-                target[k]   = pv.getVelocity().getX();
+                target[k] = pv.getVelocity().getX();
                 weight[k++] = vWeight;
-                target[k]   = pv.getVelocity().getY();
+                target[k] = pv.getVelocity().getY();
                 weight[k++] = vWeight;
-                target[k]   = pv.getVelocity().getZ();
+                target[k] = pv.getVelocity().getZ();
                 weight[k++] = vWeight;
             }
 

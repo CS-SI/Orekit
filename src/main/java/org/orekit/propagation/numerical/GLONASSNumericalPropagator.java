@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -217,7 +217,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
         return new SpacecraftState(new CartesianOrbit(pvInInertial, eci, pvInInertial.getDate(), GNSSConstants.GLONASS_MU),
                                                       stateInInertial.getAttitude(),
                                                       stateInInertial.getMass(),
-                                                      stateInInertial.getAdditionalStatesValues(),
+                                                      stateInInertial.getAdditionalDataValues(),
                                                       stateInInertial.getAdditionalStatesDerivatives());
     }
 
@@ -239,7 +239,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
                                                GNSSConstants.GLONASS_MU);
 
         // Reset the initial state to apply the transformation
-        resetInitialState(new SpacecraftState(orbit, mass));
+        resetInitialState(new SpacecraftState(orbit).withMass(mass));
     }
 
     /**
@@ -609,7 +609,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
             final Orbit orbit       = getOrbitType().mapArrayToOrbit(y, yDot, getPositionAngleType(), date, getMu(), getFrame());
             final Attitude attitude = getAttitudeProvider().getAttitude(orbit, date, getFrame());
 
-            return new SpacecraftState(orbit, attitude, mass);
+            return new SpacecraftState(orbit, attitude).withMass(mass);
         }
 
         @Override

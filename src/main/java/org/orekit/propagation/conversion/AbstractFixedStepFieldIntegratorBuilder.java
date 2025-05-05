@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.ode.AbstractFieldIntegrator;
 
 /**
  * Abstract class for integrator builder using fixed step size.
@@ -28,11 +29,11 @@ import org.hipparchus.exception.MathIllegalArgumentException;
  *
  * @author Vincent Cucchietti
  */
-public abstract class AbstractFixedStepFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
-        extends AbstractFieldIntegratorBuilder<T> {
+public abstract class AbstractFixedStepFieldIntegratorBuilder<T extends CalculusFieldElement<T>, W  extends AbstractFieldIntegrator<T>>
+        extends FieldAbstractIntegratorBuilder<T, W> {
 
     /** Step size (s). */
-    private double step;
+    private final double step;
 
     /** Step size (s). */
     private T fieldStep;
@@ -42,7 +43,7 @@ public abstract class AbstractFixedStepFieldIntegratorBuilder<T extends Calculus
      *
      * @param step step size (s)
      */
-    AbstractFixedStepFieldIntegratorBuilder(final double step) {
+    protected AbstractFixedStepFieldIntegratorBuilder(final double step) {
         // Check that given step size is strictly positive
         checkStep(step);
 
@@ -57,10 +58,8 @@ public abstract class AbstractFixedStepFieldIntegratorBuilder<T extends Calculus
      *
      * @param step step size (s)
      */
-    AbstractFixedStepFieldIntegratorBuilder(final T step) {
-        // Check that given step size is strictly positive
-        checkStep(step.getReal());
-
+    protected AbstractFixedStepFieldIntegratorBuilder(final T step) {
+        this(step.getReal());
         this.fieldStep = step;
     }
 
@@ -84,5 +83,14 @@ public abstract class AbstractFixedStepFieldIntegratorBuilder<T extends Calculus
      */
     protected T getFieldStep(final Field<T> field) {
         return fieldStep != null ? fieldStep : field.getZero().newInstance(step);
+    }
+
+    /**
+     * Getter for the step size (s).
+     * @return step size
+     * @since 13.0
+     */
+    protected double getStep() {
+        return step;
     }
 }

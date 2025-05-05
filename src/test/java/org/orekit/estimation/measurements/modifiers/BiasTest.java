@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -59,7 +59,7 @@ public class BiasTest {
                                                                1.0, 3.0, 300.0);
 
         // create range biases: one bias for each station
-        final RandomGenerator random = new Well19937a(0x0c4b69da5d64b35al);
+        final RandomGenerator random = new Well19937a(0x0c4b69da5d64b35aL);
         final Bias<?>[] stationsRangeBiases = new Bias<?>[context.stations.size()];
         final double[] realStationsBiases  = new double[context.stations.size()];
         for (int i = 0; i < context.stations.size(); ++i) {
@@ -80,6 +80,7 @@ public class BiasTest {
                                                          Double.POSITIVE_INFINITY
                                                      });
             realStationsBiases[i]  = 2 * random.nextDouble() - 1;
+            Assertions.assertEquals(base.getName() + " range bias", stationsRangeBiases[i].getEffectName());
         }
 
         // create orbit estimator
@@ -119,8 +120,8 @@ public class BiasTest {
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
                                      0.0,  7.2e-7,
                                      0.0,  2.1e-6,
-                                     0.0,  3.7e-7,
-                                     0.0,  1.7e-10);
+                                     0.0,  6e-7,
+                                     0.0,  2.5e-10);
         for (int i = 0; i < stationsRangeBiases.length; ++i) {
             Assertions.assertEquals(realStationsBiases[i],
                                 stationsRangeBiases[i].getParametersDrivers().get(0).getValue(),

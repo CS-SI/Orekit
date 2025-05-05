@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,14 +19,13 @@ package org.orekit.propagation.integration;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
@@ -36,6 +35,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.DerivativeStateUtils;
 import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
@@ -101,9 +101,7 @@ public abstract class AbstractGradientConverter {
      * @param freeParameters total number of free parameters in the gradient
      * @return extended date
      */
-    protected FieldAbsoluteDate<Gradient> extend(
-            final FieldAbsoluteDate<Gradient> original,
-            final int freeParameters) {
+    protected FieldAbsoluteDate<Gradient> extend(final FieldAbsoluteDate<Gradient> original, final int freeParameters) {
         final AbsoluteDate date = original.toAbsoluteDate();
         final Gradient gradient = original.durationFrom(date);
         return new FieldAbsoluteDate<>(date, extend(gradient, freeParameters));
@@ -145,63 +143,16 @@ public abstract class AbstractGradientConverter {
                                                                                       final AttitudeProvider provider) {
 
         // Derivative field
-        final Field<Gradient> field =  GradientField.getField(freeStateParameters);
-
-        // position always has derivatives
-        final Vector3D pos = state.getPosition();
-        final FieldVector3D<Gradient> posG = new FieldVector3D<>(
-                Gradient.variable(freeStateParameters, 0, pos.getX()),
-                Gradient.variable(freeStateParameters, 1, pos.getY()),
-                Gradient.variable(freeStateParameters, 2, pos.getZ()));
-
-        // velocity may have derivatives or not
-        final Vector3D vel = state.getPVCoordinates().getVelocity();
-        final FieldVector3D<Gradient> velG;
-        if (freeStateParameters > 3) {
-            velG = new FieldVector3D<>(
-                    Gradient.variable(freeStateParameters, 3, vel.getX()),
-                    Gradient.variable(freeStateParameters, 4, vel.getY()),
-                    Gradient.variable(freeStateParameters, 5, vel.getZ()));
-        } else {
-            velG = new FieldVector3D<>(field, vel);
-        }
-
-        // acceleration never has derivatives
-        final Vector3D acc = state.getPVCoordinates().getAcceleration();
-        final FieldVector3D<Gradient> accG = new FieldVector3D<>(field, acc);
-
-        // mass never has derivatives
-        final Gradient gMass = Gradient.constant(freeStateParameters, state.getMass());
-
-        final TimeStampedFieldPVCoordinates<Gradient> timeStampedFieldPVCoordinates = new TimeStampedFieldPVCoordinates<>(
-                state.getDate(), posG, velG, accG);
-
-        final FieldCartesianOrbit<Gradient> gOrbit;
-        final FieldAbsolutePVCoordinates<Gradient> gAbsolutePV;
-        if (state.isOrbitDefined()) {
-            final Gradient gMu = Gradient.constant(freeStateParameters, state.getMu());
-            gOrbit = new FieldCartesianOrbit<>(timeStampedFieldPVCoordinates, state.getFrame(), gMu);
-            gAbsolutePV = null;
-        } else {
-            gOrbit = null;
-            gAbsolutePV = new FieldAbsolutePVCoordinates<>(state.getFrame(), timeStampedFieldPVCoordinates);
-        }
-
-        final FieldAttitude<Gradient> gAttitude;
-        if (freeStateParameters > 3) {
-            // compute attitude partial derivatives with respect to position/velocity
-            gAttitude = provider.getAttitude((state.isOrbitDefined()) ? gOrbit : gAbsolutePV,
-                    timeStampedFieldPVCoordinates.getDate(), state.getFrame());
-        } else {
-            // force model does not depend on attitude, don't bother recomputing it
-            gAttitude = new FieldAttitude<>(field, state.getAttitude());
-        }
+        final GradientField field =  GradientField.getField(freeStateParameters);
 
         if (state.isOrbitDefined()) {
-            return new FieldSpacecraftState<>(gOrbit, gAttitude, gMass);
+            final CartesianOrbit cartesianOrbit = (CartesianOrbit) OrbitType.CARTESIAN.convertType(state.getOrbit());
+            final SpacecraftState cartesianState = new SpacecraftState(cartesianOrbit, state.getAttitude()).withMass(state.getMass());
+            return DerivativeStateUtils.buildSpacecraftStateGradient(field, cartesianState, provider);
         } else {
-            return new FieldSpacecraftState<>(gAbsolutePV, gAttitude, gMass);
+            return DerivativeStateUtils.buildSpacecraftStateGradient(field, state, provider);
         }
+
     }
 
     /**
@@ -255,28 +206,30 @@ public abstract class AbstractGradientConverter {
                 final FieldOrbit<Gradient> orbit = s0.getOrbit();
                 if (orbit.getType().equals(OrbitType.EQUINOCTIAL)) {
                     // for DSST, which always uses EquinoctialOrbit, not CartesianOrbit
-                    spacecraftState = new FieldSpacecraftState<>(
-                            new FieldEquinoctialOrbit<>(
-                                    extend(orbit.getA(), freeParameters),
-                                    extend(orbit.getEquinoctialEx(), freeParameters),
-                                    extend(orbit.getEquinoctialEy(), freeParameters),
-                                    extend(orbit.getHx(), freeParameters),
-                                    extend(orbit.getHy(), freeParameters),
-                                    extend(orbit.getLM(), freeParameters),
-                                    PositionAngleType.MEAN,
-                                    s0.getFrame(),
-                                    extend(s0.getDate(), freeParameters),
-                                    extend(s0.getMu(), freeParameters)
-                            ),
-                            gAttitude,
-                            gMass);
+                    spacecraftState =
+                        new FieldSpacecraftState<>(new FieldEquinoctialOrbit<>(extend(orbit.getA(), freeParameters),
+                                                                               extend(orbit.getEquinoctialEx(), freeParameters),
+                                                                               extend(orbit.getEquinoctialEy(), freeParameters),
+                                                                               extend(orbit.getHx(), freeParameters),
+                                                                               extend(orbit.getHy(), freeParameters),
+                                                                               extend(orbit.getLM(), freeParameters),
+                                                                               PositionAngleType.MEAN,
+                                                                               s0.getFrame(),
+                                                                               extend(s0.getDate(), freeParameters),
+                                                                               extend(orbit.getMu(), freeParameters)),
+                            gAttitude).withMass(gMass);
                 } else {
-                    spacecraftState = new FieldSpacecraftState<>(new FieldCartesianOrbit<>(timeStampedFieldPVCoordinates,
-                            s0.getFrame(), extend(s0.getMu(), freeParameters)), gAttitude, gMass);
+                    spacecraftState =
+                        new FieldSpacecraftState<>(new FieldCartesianOrbit<>(timeStampedFieldPVCoordinates,
+                                                                             s0.getFrame(),
+                                                                             extend(orbit.getMu(), freeParameters)),
+                                                   gAttitude).withMass(gMass);
                 }
             } else {
-                spacecraftState = new FieldSpacecraftState<>(new FieldAbsolutePVCoordinates<>(s0.getFrame(),
-                        timeStampedFieldPVCoordinates), gAttitude, gMass);
+                spacecraftState =
+                    new FieldSpacecraftState<>(new FieldAbsolutePVCoordinates<>(s0.getFrame(),
+                                                                                timeStampedFieldPVCoordinates),
+                                               gAttitude).withMass(gMass);
             }
 
             gStates.set(nbParams, spacecraftState);
@@ -310,7 +263,6 @@ public abstract class AbstractGradientConverter {
         for (ParameterDriver driver : drivers) {
             // Loop on the spans
             for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
                 parameters[i++] = driver.isSelected() ?
                                   Gradient.variable(freeParameters, index++, span.getData()) :
                                   Gradient.constant(freeParameters, span.getData());

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,19 +41,16 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremumDetector> {
-
-    /** Topocentric frame in which elevation should be evaluated. */
-    private final TopocentricFrame topo;
+public class ElevationExtremumDetector extends AbstractTopocentricDetector<ElevationExtremumDetector> {
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
-     * ({@link #DEFAULT_MAXCHECK}) and convergence threshold ({@link
+     * ({@link #DEFAULT_MAX_CHECK}) and convergence threshold ({@link
      * #DEFAULT_THRESHOLD}).</p>
      * @param topo topocentric frame centered on ground point
      */
     public ElevationExtremumDetector(final TopocentricFrame topo) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, topo);
+        this(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, topo);
     }
 
     /** Build a detector.
@@ -63,8 +60,7 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      */
     public ElevationExtremumDetector(final double maxCheck, final double threshold,
                                      final TopocentricFrame topo) {
-        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
-             topo);
+        this(new EventDetectionSettings(maxCheck, threshold, DEFAULT_MAX_ITER), new StopOnIncreasing(), topo);
     }
 
     /** Protected constructor with full parameters.
@@ -73,33 +69,21 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param topo topocentric frame centered on ground point
+     * @since 13.0
      */
-    protected ElevationExtremumDetector(final AdaptableInterval maxCheck, final double threshold,
-                                        final int maxIter, final EventHandler handler,
+    protected ElevationExtremumDetector(final EventDetectionSettings detectionSettings, final EventHandler handler,
                                         final TopocentricFrame topo) {
-        super(maxCheck, threshold, maxIter, handler);
-        this.topo = topo;
+        super(detectionSettings, handler, topo);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ElevationExtremumDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                              final int newMaxIter,
+    protected ElevationExtremumDetector create(final EventDetectionSettings detectionSettings,
                                               final EventHandler newHandler) {
-        return new ElevationExtremumDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, topo);
-    }
-
-    /**
-     * Returns the topocentric frame centered on ground point.
-     * @return topocentric frame centered on ground point
-     */
-    public TopocentricFrame getTopocentricFrame() {
-        return this.topo;
+        return new ElevationExtremumDetector(detectionSettings, newHandler, getTopocentricFrame());
     }
 
     /** Get the elevation value.
@@ -107,7 +91,7 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      * @return spacecraft elevation
      */
     public double getElevation(final SpacecraftState s) {
-        return topo.getElevation(s.getPosition(), s.getFrame(), s.getDate());
+        return getTopocentricFrame().getElevation(s.getPosition(), s.getFrame(), s.getDate());
     }
 
     /** Compute the value of the detection function.
@@ -120,20 +104,20 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
     public double g(final SpacecraftState s) {
 
         // get position, velocity of spacecraft in topocentric frame
-        final KinematicTransform inertToTopo = s.getFrame().getKinematicTransformTo(topo, s.getDate());
+        final KinematicTransform inertToTopo = s.getFrame().getKinematicTransformTo(getTopocentricFrame(), s.getDate());
         final TimeStampedPVCoordinates pvTopo = inertToTopo.transformOnlyPV(s.getPVCoordinates());
 
         // convert the coordinates to UnivariateDerivative1 based vector
         // instead of having vector position, then vector velocity then vector acceleration
-        // we get one vector and each coordinate is a DerivativeStructure containing
+        // we get one vector and each coordinate is a Taylor expansion containing
         // value, first time derivative (we don't need second time derivative here)
-        final FieldVector3D<UnivariateDerivative1> pvDS = pvTopo.toUnivariateDerivative1Vector();
+        final FieldVector3D<UnivariateDerivative1> positionUD1 = pvTopo.toUnivariateDerivative1Vector();
 
         // compute elevation and its first time derivative
-        final UnivariateDerivative1 elevation = pvDS.getZ().divide(pvDS.getNorm()).asin();
+        final UnivariateDerivative1 elevation = positionUD1.getDelta();
 
         // return elevation first time derivative
-        return elevation.getDerivative(1);
+        return elevation.getFirstDerivative();
 
     }
 

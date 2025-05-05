@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -381,6 +381,33 @@ class TopocentricFrameTest {
         Assertions.assertEquals(satPoint.getLongitude().negate().add(FastMath.PI).getReal(),
                                 tc.getAzimuth().getReal(), 1.e-5);
 
+    }
+
+    @Test
+    void testGetPVCoordinates() {
+        // GIVEN
+        final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.), FastMath.toRadians(5.), 0.);
+        final TopocentricFrame topoFrame = new TopocentricFrame(earthSpheric, point, "lon 5 lat 45");
+        final Frame frame = FramesFactory.getGCRF();
+        // WHEN
+        final PVCoordinates pv = topoFrame.getPVCoordinates(date, frame);
+        // THEN
+        final Vector3D position = topoFrame.getPosition(date, frame);
+        Assertions.assertEquals(position, pv.getPosition());
+    }
+
+    @Test
+    void testFieldGetPVCoordinates() {
+        // GIVEN
+        final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.), FastMath.toRadians(5.), 0.);
+        final TopocentricFrame topoFrame = new TopocentricFrame(earthSpheric, point, "lon 5 lat 45");
+        final Frame frame = FramesFactory.getGCRF();
+        final FieldAbsoluteDate<Binary64> fieldDate = new FieldAbsoluteDate<>(Binary64Field.getInstance(), date);
+        // WHEN
+        final FieldPVCoordinates<Binary64> pv = topoFrame.getPVCoordinates(fieldDate, frame);
+        // THEN
+        final FieldVector3D<Binary64> position = topoFrame.getPosition(fieldDate, frame);
+        Assertions.assertEquals(position, pv.getPosition());
     }
 
     @Test

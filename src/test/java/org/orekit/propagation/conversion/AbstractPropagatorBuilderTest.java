@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,10 +24,10 @@ import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriversList;
@@ -49,16 +49,10 @@ public class AbstractPropagatorBuilderTest {
         // Use a Cartesian orbit so the parameters are changed sufficiently when shifting the orbit of a minute
         final Orbit initialOrbit = new CartesianOrbit(context.initialOrbit);
 
-        final AbstractPropagatorBuilder propagatorBuilder = new AbstractPropagatorBuilder(initialOrbit, PositionAngleType.TRUE, 10., true) {
+        final AbstractPropagatorBuilder<KeplerianPropagator> propagatorBuilder = new AbstractPropagatorBuilder(initialOrbit, PositionAngleType.TRUE, 10., true) {
 
             @Override
-            @Deprecated
-            public PropagatorBuilder copy() {
-                return null;
-            }
-
-            @Override
-            public Propagator buildPropagator(double[] normalizedParameters) {
+            public KeplerianPropagator buildPropagator(double[] normalizedParameters) {
                 // Dummy function "buildPropagator", copied from KeplerianPropagatorBuilder
                 setParameters(normalizedParameters);
                 return new KeplerianPropagator(createInitialOrbit());
@@ -76,13 +70,14 @@ public class AbstractPropagatorBuilderTest {
 
         // Shift the orbit of a minute
         // Reset the builder and check the orbits value
-        final Orbit newOrbit = initialOrbit.shiftedBy(60.);
+        final Orbit newOrbit = initialOrbit.shiftedBy(60.).inFrame(FramesFactory.getTOD(true));
         propagatorBuilder.resetOrbit(newOrbit);
 
         // Check that the new orbit was properly set in the builder and
         Assertions.assertEquals(0., propagatorBuilder.getInitialOrbitDate().durationFrom(newOrbit.getDate()), 0.);
         final double[] stateVector = new double[6];
-        propagatorBuilder.getOrbitType().mapOrbitToArray(newOrbit, PositionAngleType.TRUE, stateVector, null);
+        propagatorBuilder.getOrbitType().mapOrbitToArray(newOrbit.inFrame(context.initialOrbit.getFrame()),
+                PositionAngleType.TRUE, stateVector, null);
         int i = 0;
         for (DelegatingDriver driver : propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
             final double expectedValue = stateVector[i++];

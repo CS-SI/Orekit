@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,14 +40,14 @@ public class ConstantPressureTemperatureHumidityProvider implements PressureTemp
 
     /** {@inheritDoc} */
     @Override
-    public PressureTemperatureHumidity getWeatherParamerers(final GeodeticPoint location,
+    public PressureTemperatureHumidity getWeatherParameters(final GeodeticPoint location,
                                                             final AbsoluteDate date) {
         return pth;
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> FieldPressureTemperatureHumidity<T> getWeatherParamerers(final FieldGeodeticPoint<T> location,
+    public <T extends CalculusFieldElement<T>> FieldPressureTemperatureHumidity<T> getWeatherParameters(final FieldGeodeticPoint<T> location,
                                                                                                         final FieldAbsoluteDate<T> date) {
         return new FieldPressureTemperatureHumidity<>(date.getField(), pth);
     }

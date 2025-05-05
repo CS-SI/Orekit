@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,22 +23,44 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.section.CommentsContainer;
 
 /**
- * Container for XYZ covariance matrix data. This class as a RealMatrix as
- * attribute which can be acces with getXYZCovariaxMatrix method. Beware that
- * there are thus 2 ways to modify the XYZ covariance : setC... ( setCxx,
- * setCyx ...) which should be prioritized and getXYZCovariaxMatrix.setEntry(row, col, value).
- * <p> The XYZ Covariance Matrix is only provided if {@link CdmMetadataKey#ALT_COV_TYPE} is {@link AltCovarianceType#XYZ}, otherwise
- * its terms will return NaN. </p>
- * <p> When available, the matrix is given in the 9×9 Lower Triangular Form. All parameters of the 6×6 position/velocity submatrix
- * are mandatory. The remaining elements will return NaN if not provided.</p>
+ * Container for XYZ covariance matrix data.
+ * <p>
+ * Beware that the Orekit getters and setters all rely on SI units. The parsers
+ * and writers take care of converting these SI units into CCSDS mandatory units.
+ * The {@link org.orekit.utils.units.Unit Unit} class provides useful
+ * {@link org.orekit.utils.units.Unit#fromSI(double) fromSi} and
+ * {@link org.orekit.utils.units.Unit#toSI(double) toSI} methods in case the callers
+ * already use CCSDS units instead of the API SI units. The general-purpose
+ * {@link org.orekit.utils.units.Unit Unit} class (without an 's') and the
+ * CCSDS-specific {@link org.orekit.files.ccsds.definitions.Units Units} class
+ * (with an 's') also provide some predefined units. These predefined units and the
+ * {@link org.orekit.utils.units.Unit#fromSI(double) fromSi} and
+ * {@link org.orekit.utils.units.Unit#toSI(double) toSI} conversion methods are indeed
+ * what the parsers and writers use for the conversions.
+ * </p>
+ * <p>
+ * This class as a RealMatrix as attribute which can be access with
+ * {@code getXYZCovariaxMatrix} method. Beware that there are thus two ways to modify
+ * the XYZ covariance : {@code setC…} ({@code setCxx}, {@code setCyx}…) which should be
+ * prioritized and {@code getXYZCovariaxMatrix.setEntry(row, col, value)}.
+ * </p>
+ * <p>
+ * The XYZ Covariance Matrix is only provided if {@link CdmMetadataKey#ALT_COV_TYPE} is
+ * {@link AltCovarianceType#XYZ}, otherwise its terms will return {@code NaN}.
+ * </p>
+ * <p>
+ * When available, the matrix is given in the 9×9 Lower Triangular Form. All parameters
+ * of the 6×6 position/velocity submatrix are mandatory. The remaining elements will
+ * return {@code NaN} if not provided.
+ * </p>
  */
 public class XYZCovariance extends CommentsContainer {
 
     /** XYZ covariance matrix. */
-    private RealMatrix covarianceMatrix;
+    private final RealMatrix covarianceMatrix;
 
     /** Flag indicating whether the alternate covariance type set in the CDM Object metadata section is XYZ. */
-    private boolean covXYZset;
+    private final boolean covXYZset;
 
     /** Simple constructor. To update matrix value there are 2 ways to modify the XYZ
      * covariance : setC... ( setCxx, setCyx ...) which should be prioritized and

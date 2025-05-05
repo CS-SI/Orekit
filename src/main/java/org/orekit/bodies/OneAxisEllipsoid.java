@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,11 @@
  */
 package org.orekit.bodies;
 
-import java.io.Serializable;
 import java.util.function.DoubleFunction;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -55,14 +54,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20130518L;
-
     /** Threshold for polar and equatorial points detection. */
     private static final double ANGULAR_THRESHOLD = 1.0e-4;
-
-    /** Body frame related to body shape. */
-    private final Frame bodyFrame;
 
     /** Equatorial radius power 2. */
     private final double ae2;
@@ -125,7 +118,6 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         this.g2   = g * g;
         this.ap2  = ae2 * g2;
         setAngularThreshold(1.0e-12);
-        this.bodyFrame = bodyFrame;
     }
 
     /** Set the angular convergence threshold.
@@ -169,9 +161,13 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         return e;
     }
 
-    /** {@inheritDoc} */
+    /** Get body frame related to body shape.
+     * <p>Be mindful that the OneAxisEllipsoid.getBodyFrame() and
+     * the OneAxisEllipsoid.getFrame() methods return the same object.</p>
+     * @return body frame related to body shape
+     */
     public Frame getBodyFrame() {
-        return bodyFrame;
+        return getFrame();
     }
 
     /** Get the intersection point of a line with the surface of the body.
@@ -193,7 +189,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
 
         // transform line and close to body frame
         final StaticTransform frameToBodyFrame =
-                frame.getStaticTransformTo(bodyFrame, date);
+                frame.getStaticTransformTo(getFrame(), date);
         final Line lineInBodyFrame = frameToBodyFrame.transformLine(line);
 
         // compute some miscellaneous variables
@@ -272,7 +268,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
                                                                                           final FieldAbsoluteDate<T> date) {
 
         // transform line and close to body frame
-        final FieldStaticTransform<T> frameToBodyFrame = frame.getStaticTransformTo(bodyFrame, date);
+        final FieldStaticTransform<T> frameToBodyFrame = frame.getStaticTransformTo(getFrame(), date);
         final FieldLine<T>            lineInBodyFrame  = frameToBodyFrame.transformLine(line);
 
         // compute some miscellaneous variables
@@ -368,7 +364,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     public Vector3D projectToGround(final Vector3D point, final AbsoluteDate date, final Frame frame) {
 
         // transform point to body frame
-        final StaticTransform toBody = frame.getStaticTransformTo(bodyFrame, date);
+        final StaticTransform toBody = frame.getStaticTransformTo(getFrame(), date);
         final Vector3D   p         = toBody.transformPosition(point);
         final double     z         = p.getZ();
         final double     r         = FastMath.hypot(p.getX(), p.getY());
@@ -377,7 +373,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         final Ellipse meridian = new Ellipse(Vector3D.ZERO,
                                              r == 0 ? Vector3D.PLUS_I : new Vector3D(p.getX() / r, p.getY() / r, 0),
                                              Vector3D.PLUS_K,
-                                             getA(), getC(), bodyFrame);
+                                             getA(), getC(), getFrame());
 
         // find the closest point in the meridian plane
         final Vector3D groundPoint = meridian.toSpace(meridian.projectToEllipse(new Vector2D(r, z)));
@@ -391,7 +387,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     public TimeStampedPVCoordinates projectToGround(final TimeStampedPVCoordinates pv, final Frame frame) {
 
         // transform point to body frame
-        final Transform                toBody        = frame.getTransformTo(bodyFrame, pv.getDate());
+        final Transform                toBody        = frame.getTransformTo(getFrame(), pv.getDate());
         final TimeStampedPVCoordinates pvInBodyFrame = toBody.transformPVCoordinates(pv);
         final Vector3D                 p             = pvInBodyFrame.getPosition();
         final double                   r             = FastMath.hypot(p.getX(), p.getY());
@@ -399,7 +395,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         // set up the 2D ellipse corresponding to first principal curvature along meridian
         final Vector3D meridian = r == 0 ? Vector3D.PLUS_I : new Vector3D(p.getX() / r, p.getY() / r, 0);
         final Ellipse firstPrincipalCurvature =
-                new Ellipse(Vector3D.ZERO, meridian, Vector3D.PLUS_K, getA(), getC(), bodyFrame);
+                new Ellipse(Vector3D.ZERO, meridian, Vector3D.PLUS_K, getA(), getC(), getFrame());
 
         // project coordinates in the meridian plane
         final TimeStampedPVCoordinates gpFirst = firstPrincipalCurvature.projectToEllipse(pvInBodyFrame);
@@ -457,7 +453,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     public GeodeticPoint transform(final Vector3D point, final Frame frame, final AbsoluteDate date) {
 
         // transform point to body frame
-        final Vector3D pointInBodyFrame = frame.getStaticTransformTo(bodyFrame, date)
+        final Vector3D pointInBodyFrame = frame.getStaticTransformTo(getFrame(), date)
                 .transformPosition(point);
         final double   r2               = pointInBodyFrame.getX() * pointInBodyFrame.getX() +
                                           pointInBodyFrame.getY() * pointInBodyFrame.getY();
@@ -599,9 +595,9 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
                                                                            final FieldAbsoluteDate<T> date) {
 
         // transform point to body frame
-        final FieldVector3D<T> pointInBodyFrame = (frame == bodyFrame) ?
+        final FieldVector3D<T> pointInBodyFrame = (frame == getFrame()) ?
                                                   point :
-                                                  frame.getStaticTransformTo(bodyFrame, date).transformPosition(point);
+                                                  frame.getStaticTransformTo(getFrame(), date).transformPosition(point);
         final T   r2                            = pointInBodyFrame.getX().multiply(pointInBodyFrame.getX()).
                                                   add(pointInBodyFrame.getY().multiply(pointInBodyFrame.getY()));
         final T   r                             = r2.sqrt();
@@ -720,37 +716,35 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
      * @return point at the same location but as a surface-relative point,
      * using time as the single derivation parameter
      */
-    public FieldGeodeticPoint<DerivativeStructure> transform(final PVCoordinates point,
-                                                             final Frame frame, final AbsoluteDate date) {
+    public FieldGeodeticPoint<UnivariateDerivative2> transform(final PVCoordinates point,
+                                                               final Frame frame, final AbsoluteDate date) {
 
         // transform point to body frame
-        final Transform toBody = frame.getTransformTo(bodyFrame, date);
+        final Transform toBody = frame.getTransformTo(getFrame(), date);
         final PVCoordinates pointInBodyFrame = toBody.transformPVCoordinates(point);
-        final FieldVector3D<DerivativeStructure> p = pointInBodyFrame.toDerivativeStructureVector(2);
-        final DerivativeStructure   pr2 = p.getX().square().add(p.getY().square());
-        final DerivativeStructure   pr  = pr2.sqrt();
-        final DerivativeStructure   pz  = p.getZ();
+        final FieldVector3D<UnivariateDerivative2> p = pointInBodyFrame.toUnivariateDerivative2Vector();
+        final UnivariateDerivative2   pr2 = p.getX().square().add(p.getY().square());
+        final UnivariateDerivative2   pr  = pr2.sqrt();
+        final UnivariateDerivative2   pz  = p.getZ();
 
         // project point on the ellipsoid surface
         final TimeStampedPVCoordinates groundPoint = projectToGround(new TimeStampedPVCoordinates(date, pointInBodyFrame),
-                                                                     bodyFrame);
-        final FieldVector3D<DerivativeStructure> gp = groundPoint.toDerivativeStructureVector(2);
-        final DerivativeStructure   gpr2 = gp.getX().square().add(gp.getY().square());
-        final DerivativeStructure   gpr  = gpr2.sqrt();
-        final DerivativeStructure   gpz  = gp.getZ();
+                                                                     getFrame());
+        final FieldVector3D<UnivariateDerivative2> gp = groundPoint.toUnivariateDerivative2Vector();
+        final UnivariateDerivative2   gpr2 = gp.getX().square().add(gp.getY().square());
+        final UnivariateDerivative2   gpr  = gpr2.sqrt();
+        final UnivariateDerivative2   gpz  = gp.getZ();
 
         // relative position of test point with respect to its ellipse sub-point
-        final DerivativeStructure dr  = pr.subtract(gpr);
-        final DerivativeStructure dz  = pz.subtract(gpz);
+        final UnivariateDerivative2 dr  = pr.subtract(gpr);
+        final UnivariateDerivative2 dz  = pz.subtract(gpz);
         final double insideIfNegative = g2 * (pr2.getReal() - ae2) + pz.getReal() * pz.getReal();
 
-        return new FieldGeodeticPoint<>(DerivativeStructure.atan2(gpz, gpr.multiply(g2)),
-                                                                  DerivativeStructure.atan2(p.getY(), p.getX()),
-                                                                  DerivativeStructure.hypot(dr, dz).copySign(insideIfNegative));
+        return new FieldGeodeticPoint<>(FastMath.atan2(gpz, gpr.multiply(g2)), FastMath.atan2(p.getY(), p.getX()),
+            FastMath.hypot(dr, dz).copySign(insideIfNegative));
     }
 
     /** Compute the azimuth angle from local north between the two points.
-     *
      * The angle is calculated clockwise from local north at the origin point
      * and follows the rhumb line to the destination point.
      *
@@ -853,7 +847,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         // function computing intermediate point above ellipsoid (lambda varying between 0 and 1)
         final DoubleFunction<GeodeticPoint> intermediate =
                         lambda -> transform(new Vector3D(1 - lambda, endpoint1, lambda, endpoint2),
-                                            bodyFrame, null);
+                                            getFrame(), null);
 
         // first endpoint
         final GeodeticPoint gp1 = intermediate.apply(0.0);
@@ -899,7 +893,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         // function computing intermediate point above ellipsoid (lambda varying between 0 and 1)
         final DoubleFunction<FieldGeodeticPoint<T>> intermediate =
                         lambda -> transform(new FieldVector3D<>(1 - lambda, endpoint1, lambda, endpoint2),
-                                            bodyFrame, null);
+                                            getFrame(), null);
 
         // first endpoint
         final FieldGeodeticPoint<T> gp1 = intermediate.apply(0.0);
@@ -926,61 +920,6 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
                                                0.0, 1.0);
                 return intermediate.apply(lambdaMin);
             }
-        }
-
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * <p>
-     * This intermediate class serializes the files supported names, the
-     * ephemeris type and the body name.
-     * </p>
-     * @return data transfer object that will be serialized
-     */
-    private Object writeReplace() {
-        return new DataTransferObject(getA(), f, bodyFrame, angularThreshold);
-    }
-
-    /** Internal class used only for serialization. */
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20130518L;
-
-        /** Equatorial radius. */
-        private final double ae;
-
-        /** Flattening. */
-        private final double f;
-
-        /** Body frame related to body shape. */
-        private final Frame bodyFrame;
-
-        /** Convergence limit. */
-        private final double angularThreshold;
-
-        /** Simple constructor.
-         * @param ae equatorial radius
-         * @param f the flattening (f = (a-b)/a)
-         * @param bodyFrame body frame related to body shape
-         * @param angularThreshold convergence limit
-         */
-        DataTransferObject(final double ae, final double f,
-                                  final Frame bodyFrame, final double angularThreshold) {
-            this.ae               = ae;
-            this.f                = f;
-            this.bodyFrame        = bodyFrame;
-            this.angularThreshold = angularThreshold;
-        }
-
-        /** Replace the deserialized data transfer object with a
-         * {@link JPLCelestialBody}.
-         * @return replacement {@link JPLCelestialBody}
-         */
-        private Object readResolve() {
-            final OneAxisEllipsoid ellipsoid = new OneAxisEllipsoid(ae, f, bodyFrame);
-            ellipsoid.setAngularThreshold(angularThreshold);
-            return ellipsoid;
         }
 
     }

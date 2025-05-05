@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,9 +15,6 @@
  * limitations under the License.
  */
 package org.orekit.propagation.numerical;
-
-import java.util.IdentityHashMap;
-import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -37,6 +34,9 @@ import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeSpanMap.Span;
+
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 /** Computes derivatives of the acceleration, including ThirdBodyAttraction.
  *
@@ -225,7 +225,7 @@ public class EpochDerivativesEquations
         setInitialJacobians(s1, dY1dY0, dY1dP, p);
 
         // set value in propagator
-        return s1.addAdditionalState(name, p);
+        return s1.addAdditionalData(name, p);
 
     }
 

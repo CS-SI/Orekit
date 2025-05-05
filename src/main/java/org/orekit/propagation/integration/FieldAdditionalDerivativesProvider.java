@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.propagation.integration;
 
 import org.hipparchus.CalculusFieldElement;
+import org.orekit.propagation.FieldAdditionalDataProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -41,7 +42,7 @@ import org.orekit.time.FieldAbsoluteDate;
 * </p>
 * <p>
 * This interface is the numerical (read not already integrated) counterpart of
-* the {@link org.orekit.propagation.FieldAdditionalStateProvider} interface.
+* the {@link FieldAdditionalDataProvider} interface.
 * It allows to append various additional state parameters to any {@link
 * org.orekit.propagation.numerical.FieldNumericalPropagator numerical propagator} or {@link
 * org.orekit.propagation.semianalytical.dsst.FieldDSSTPropagator DSST propagator}.
@@ -74,7 +75,7 @@ public interface FieldAdditionalDerivativesProvider<T extends CalculusFieldEleme
 
     /** Check if this provider should yield so another provider has an opportunity to add missing parts.
      * <p>
-     * Decision to yield is often based on an additional state being {@link FieldSpacecraftState#hasAdditionalState(String)
+     * Decision to yield is often based on an additional state being {@link FieldSpacecraftState#hasAdditionalData(String)
      * already available} in the provided {@code state} (but it could theoretically also depend on
      * an additional state derivative being {@link FieldSpacecraftState#hasAdditionalStateDerivative(String)
      * already available}, or any other criterion). If for example a provider needs the state transition

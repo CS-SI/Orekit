@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.Utils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -46,7 +47,8 @@ import java.util.List;
 class AttitudeInterpolatorTest {
 
     @Test
-    public void testInterpolation() {
+    @DefaultDataContext
+    void testInterpolation() {
 
         // Given
         Utils.setDataRoot("regular-data");
@@ -163,6 +165,7 @@ class AttitudeInterpolatorTest {
 
     @Test
     @DisplayName("test error thrown when sample is too small")
+    @DefaultDataContext
     void testErrorThrownWhenSampleIsTooSmall() {
         // Given
         final AbsoluteDate interpolationDate = new AbsoluteDate();

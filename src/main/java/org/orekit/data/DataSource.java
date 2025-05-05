@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 package org.orekit.data;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -91,7 +90,7 @@ public class DataSource {
      * @since 11.0
      */
     public DataSource(final String fileName) {
-        this(fileName, () -> Files.newInputStream(Paths.get(fileName)));
+        this(Paths.get(fileName).toFile());
     }
 
     /** Build an instance from a file on the local file system.
@@ -99,7 +98,7 @@ public class DataSource {
      * @since 11.0
      */
     public DataSource(final File file) {
-        this(file.getName(), () -> new FileInputStream(file));
+        this(file.getName(), () -> Files.newInputStream(file.toPath()));
     }
 
     /** Build an instance from URI only.

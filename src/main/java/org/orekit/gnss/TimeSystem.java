@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -55,20 +55,20 @@ public enum TimeSystem {
     /** Beidou. */
     BEIDOU("BDT", "BD", "C", TimeScales::getBDT),
 
-    /** IRNSS. */
-    IRNSS("IRN", "IR", "I", TimeScales::getIRNSS),
+    /** NavIC. */
+    NAVIC("IRN", "IR", "I", TimeScales::getNavIC),
 
     /** SBAS.
      * @since 12.0
      */
     SBAS(null, "SB", "S", TimeScales::getUTC),
 
-    /** GMT (should only by used in RUN BY / DATE entries).
+    /** GMT (should only be used in RUN BY / DATE entries).
      * @since 12.0
      */
     GMT("GMT", null, null, TimeScales::getUTC),
 
-    /** Unknown (should only by used in RUN BY / DATE entries). */
+    /** Unknown (should only be used in RUN BY / DATE entries). */
     UNKNOWN("LCL", null, null, TimeScales::getGPS);
 
     /** Parsing key map. */
@@ -136,6 +136,22 @@ public enum TimeSystem {
      */
     public String getKey() {
         return key;
+    }
+
+    /** Get the two letters code.
+     * @return two letters code (may be null for non-GNSS time systems)
+     * @since 12.2
+     */
+    public String getTwoLettersCode() {
+        return twoLettersCode;
+    }
+
+    /** Get the one letter code.
+     * @return one letter code (may be null for non-GNSS time systems)
+     * @since 12.2
+     */
+    public String getOneLetterCode() {
+        return oneLetterCode;
     }
 
     /** Parse a string to get the time system.

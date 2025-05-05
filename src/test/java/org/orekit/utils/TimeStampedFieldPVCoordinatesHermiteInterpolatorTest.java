@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,7 +39,7 @@ class TimeStampedFieldPVCoordinatesHermiteInterpolatorTest {
 
     @Test
     public void testInterpolatePolynomialPVA() {
-        Random       random = new Random(0xfe3945fcb8bf47cel);
+        Random       random = new Random(0xfe3945fcb8bf47ceL);
         AbsoluteDate t0     = AbsoluteDate.J2000_EPOCH;
         for (int i = 0; i < 20; ++i) {
 
@@ -80,15 +80,15 @@ class TimeStampedFieldPVCoordinatesHermiteInterpolatorTest {
                 FieldVector3D<DerivativeStructure>                 p            = interpolated.getPosition();
                 FieldVector3D<DerivativeStructure>                 v            = interpolated.getVelocity();
                 FieldVector3D<DerivativeStructure>                 a            = interpolated.getAcceleration();
-                Assertions.assertEquals(px.value(dt), p.getX().getReal(), 4.0e-16 * p.getNorm().getReal());
-                Assertions.assertEquals(py.value(dt), p.getY().getReal(), 4.0e-16 * p.getNorm().getReal());
-                Assertions.assertEquals(pz.value(dt), p.getZ().getReal(), 4.0e-16 * p.getNorm().getReal());
-                Assertions.assertEquals(pxDot.value(dt), v.getX().getReal(), 9.0e-16 * v.getNorm().getReal());
-                Assertions.assertEquals(pyDot.value(dt), v.getY().getReal(), 9.0e-16 * v.getNorm().getReal());
-                Assertions.assertEquals(pzDot.value(dt), v.getZ().getReal(), 9.0e-16 * v.getNorm().getReal());
-                Assertions.assertEquals(pxDotDot.value(dt), a.getX().getReal(), 6.0e-15 * a.getNorm().getReal());
-                Assertions.assertEquals(pyDotDot.value(dt), a.getY().getReal(), 6.0e-15 * a.getNorm().getReal());
-                Assertions.assertEquals(pzDotDot.value(dt), a.getZ().getReal(), 6.0e-15 * a.getNorm().getReal());
+                Assertions.assertEquals(px.value(dt),       p.getX().getReal(), 5.0e-16 * p.getNorm().getReal());
+                Assertions.assertEquals(py.value(dt),       p.getY().getReal(), 5.0e-16 * p.getNorm().getReal());
+                Assertions.assertEquals(pz.value(dt),       p.getZ().getReal(), 5.0e-16 * p.getNorm().getReal());
+                Assertions.assertEquals(pxDot.value(dt),    v.getX().getReal(), 2.0e-15 * v.getNorm().getReal());
+                Assertions.assertEquals(pyDot.value(dt),    v.getY().getReal(), 2.0e-15 * v.getNorm().getReal());
+                Assertions.assertEquals(pzDot.value(dt),    v.getZ().getReal(), 2.0e-15 * v.getNorm().getReal());
+                Assertions.assertEquals(pxDotDot.value(dt), a.getX().getReal(), 8.0e-15 * a.getNorm().getReal());
+                Assertions.assertEquals(pyDotDot.value(dt), a.getY().getReal(), 8.0e-15 * a.getNorm().getReal());
+                Assertions.assertEquals(pzDotDot.value(dt), a.getZ().getReal(), 8.0e-15 * a.getNorm().getReal());
             }
 
         }
@@ -97,7 +97,7 @@ class TimeStampedFieldPVCoordinatesHermiteInterpolatorTest {
 
     @Test
     public void testInterpolatePolynomialPV() {
-        Random       random = new Random(0xae7771c9933407bdl);
+        Random       random = new Random(0xae7771c9933407bdL);
         AbsoluteDate t0     = AbsoluteDate.J2000_EPOCH;
         for (int i = 0; i < 20; ++i) {
 
@@ -135,12 +135,12 @@ class TimeStampedFieldPVCoordinatesHermiteInterpolatorTest {
                 FieldVector3D<DerivativeStructure> p = interpolated.getPosition();
                 FieldVector3D<DerivativeStructure> v = interpolated.getVelocity();
                 FieldVector3D<DerivativeStructure> a = interpolated.getAcceleration();
-                Assertions.assertEquals(px.value(dt), p.getX().getReal(), 4.0e-16 * p.getNorm().getReal());
-                Assertions.assertEquals(py.value(dt), p.getY().getReal(), 4.0e-16 * p.getNorm().getReal());
-                Assertions.assertEquals(pz.value(dt), p.getZ().getReal(), 4.0e-16 * p.getNorm().getReal());
-                Assertions.assertEquals(pxDot.value(dt), v.getX().getReal(), 9.0e-16 * v.getNorm().getReal());
-                Assertions.assertEquals(pyDot.value(dt), v.getY().getReal(), 9.0e-16 * v.getNorm().getReal());
-                Assertions.assertEquals(pzDot.value(dt), v.getZ().getReal(), 9.0e-16 * v.getNorm().getReal());
+                Assertions.assertEquals(px.value(dt),       p.getX().getReal(), 4.0e-16 * p.getNorm().getReal());
+                Assertions.assertEquals(py.value(dt),       p.getY().getReal(), 4.0e-16 * p.getNorm().getReal());
+                Assertions.assertEquals(pz.value(dt),       p.getZ().getReal(), 4.0e-16 * p.getNorm().getReal());
+                Assertions.assertEquals(pxDot.value(dt),    v.getX().getReal(), 2.0e-15 * v.getNorm().getReal());
+                Assertions.assertEquals(pyDot.value(dt),    v.getY().getReal(), 2.0e-15 * v.getNorm().getReal());
+                Assertions.assertEquals(pzDot.value(dt),    v.getZ().getReal(), 2.0e-15 * v.getNorm().getReal());
                 Assertions.assertEquals(pxDotDot.value(dt), a.getX().getReal(), 1.0e-14 * a.getNorm().getReal());
                 Assertions.assertEquals(pyDotDot.value(dt), a.getY().getReal(), 1.0e-14 * a.getNorm().getReal());
                 Assertions.assertEquals(pzDotDot.value(dt), a.getZ().getReal(), 1.0e-14 * a.getNorm().getReal());
@@ -152,7 +152,7 @@ class TimeStampedFieldPVCoordinatesHermiteInterpolatorTest {
 
     @Test
     public void testInterpolatePolynomialPositionOnly() {
-        Random       random = new Random(0x88740a12e4299003l);
+        Random       random = new Random(0x88740a12e4299003L);
         AbsoluteDate t0     = AbsoluteDate.J2000_EPOCH;
         for (int i = 0; i < 20; ++i) {
 
@@ -190,12 +190,12 @@ class TimeStampedFieldPVCoordinatesHermiteInterpolatorTest {
                 FieldVector3D<DerivativeStructure>                 p            = interpolated.getPosition();
                 FieldVector3D<DerivativeStructure>                 v            = interpolated.getVelocity();
                 FieldVector3D<DerivativeStructure>                 a            = interpolated.getAcceleration();
-                Assertions.assertEquals(px.value(dt), p.getX().getReal(), 5.0e-16 * p.getNorm().getReal());
-                Assertions.assertEquals(py.value(dt), p.getY().getReal(), 5.0e-16 * p.getNorm().getReal());
-                Assertions.assertEquals(pz.value(dt), p.getZ().getReal(), 5.0e-16 * p.getNorm().getReal());
-                Assertions.assertEquals(pxDot.value(dt), v.getX().getReal(), 7.0e-15 * v.getNorm().getReal());
-                Assertions.assertEquals(pyDot.value(dt), v.getY().getReal(), 7.0e-15 * v.getNorm().getReal());
-                Assertions.assertEquals(pzDot.value(dt), v.getZ().getReal(), 7.0e-15 * v.getNorm().getReal());
+                Assertions.assertEquals(px.value(dt),       p.getX().getReal(), 6.0e-16 * p.getNorm().getReal());
+                Assertions.assertEquals(py.value(dt),       p.getY().getReal(), 6.0e-16 * p.getNorm().getReal());
+                Assertions.assertEquals(pz.value(dt),       p.getZ().getReal(), 6.0e-16 * p.getNorm().getReal());
+                Assertions.assertEquals(pxDot.value(dt),    v.getX().getReal(), 1.0e-14 * v.getNorm().getReal());
+                Assertions.assertEquals(pyDot.value(dt),    v.getY().getReal(), 1.0e-14 * v.getNorm().getReal());
+                Assertions.assertEquals(pzDot.value(dt),    v.getZ().getReal(), 1.0e-14 * v.getNorm().getReal());
                 Assertions.assertEquals(pxDotDot.value(dt), a.getX().getReal(), 2.0e-13 * a.getNorm().getReal());
                 Assertions.assertEquals(pyDotDot.value(dt), a.getY().getReal(), 2.0e-13 * a.getNorm().getReal());
                 Assertions.assertEquals(pzDotDot.value(dt), a.getZ().getReal(), 2.0e-13 * a.getNorm().getReal());

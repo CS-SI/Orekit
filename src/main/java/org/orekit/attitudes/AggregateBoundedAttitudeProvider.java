@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,19 +18,28 @@ package org.orekit.attitudes;
 
 import java.util.Collection;
 import java.util.Map.Entry;
+import java.util.ArrayList;
 import java.util.NavigableMap;
+import java.util.List;
 import java.util.TreeMap;
+import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
+import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldDateDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ParameterDriver;
 
 /**
  * A {@link BoundedAttitudeProvider} that covers a larger time span from several constituent
@@ -91,7 +100,8 @@ public class AggregateBoundedAttitudeProvider implements BoundedAttitudeProvider
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                        final FieldAbsoluteDate<T> date, final Frame frame) {
+                                                                            final FieldAbsoluteDate<T> date,
+                                                                            final Frame frame) {
 
         // Get the attitude provider for the given date
         final BoundedAttitudeProvider provider = getAttitudeProvider(date.toAbsoluteDate());
@@ -141,4 +151,27 @@ public class AggregateBoundedAttitudeProvider implements BoundedAttitudeProvider
         }
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public Stream<EventDetector> getEventDetectors() {
+        final List<AbsoluteDate> dates = new ArrayList<>(providers.navigableKeySet());
+        final DateDetector detector = getDateDetector(dates.toArray(new AbsoluteDate[0]));
+        return Stream.concat(Stream.of(detector), getEventDetectors(getParametersDrivers()));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
+        final List<AbsoluteDate> dates = new ArrayList<>(providers.navigableKeySet());
+        final FieldDateDetector<T> detector = getFieldDateDetector(field, dates.toArray(new AbsoluteDate[0]));
+        return Stream.concat(Stream.of(detector), getFieldEventDetectors(field, getParametersDrivers()));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<ParameterDriver> getParametersDrivers() {
+        final List<ParameterDriver> drivers = new ArrayList<>();
+        providers.values().forEach(provider -> drivers.addAll(provider.getParametersDrivers()));
+        return drivers;
+    }
 }

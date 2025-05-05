@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,8 +28,10 @@ import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
+import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
@@ -41,16 +43,13 @@ import org.orekit.utils.ParameterDriversList;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
-
-    /** First order integrator builder for propagation. */
-    private final ODEIntegratorBuilder builder;
+public class NumericalPropagatorBuilder extends AbstractIntegratedPropagatorBuilder<NumericalPropagator> {
 
     /** Force models used during the extrapolation of the orbit. */
     private final List<ForceModel> forceModels;
 
-    /** Current mass for initial state (kg). */
-    private double mass;
+    /** Impulse maneuvers. */
+    private final List<ImpulseManeuver> impulseManeuvers;
 
     /** Build a new instance.
      * <p>
@@ -102,37 +101,26 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
                                       final PositionAngleType positionAngleType,
                                       final double positionScale,
                                       final AttitudeProvider attitudeProvider) {
-        super(referenceOrbit, positionAngleType, positionScale, true, attitudeProvider);
-        this.builder     = builder;
+        super(referenceOrbit, builder, positionAngleType, positionScale, PropagationType.OSCULATING, attitudeProvider, Propagator.DEFAULT_MASS);
         this.forceModels = new ArrayList<>();
-        this.mass        = Propagator.DEFAULT_MASS;
+        this.impulseManeuvers = new ArrayList<>();
     }
 
-    /** Create a copy of a NumericalPropagatorBuilder object.
-     * @return Copied version of the NumericalPropagatorBuilder
+    /**
+     * Add impulse maneuver.
+     * @param impulseManeuver impulse maneuver
+     * @since 12.2
      */
-    @Deprecated
-    public NumericalPropagatorBuilder copy() {
-        final NumericalPropagatorBuilder copyBuilder =
-                        new NumericalPropagatorBuilder(createInitialOrbit(),
-                                                       builder,
-                                                       getPositionAngleType(),
-                                                       getPositionScale(),
-                                                       getAttitudeProvider());
-        copyBuilder.setMass(mass);
-        for (ForceModel model : forceModels) {
-            copyBuilder.addForceModel(model);
-        }
-        return copyBuilder;
+    public void addImpulseManeuver(final ImpulseManeuver impulseManeuver) {
+        impulseManeuvers.add(impulseManeuver);
     }
 
-    /** Get the integrator builder.
-     * @return the integrator builder
-     * @since 9.2
+    /**
+     * Remove all impulse maneuvers.
+     * @since 12.2
      */
-    public ODEIntegratorBuilder getIntegratorBuilder()
-    {
-        return builder;
+    public void clearImpulseManeuvers() {
+        impulseManeuvers.clear();
     }
 
     /** Get the list of all force models.
@@ -174,22 +162,6 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
         addSupportedParameters(model.getParametersDrivers());
     }
 
-    /** Get the mass.
-     * @return the mass
-     * @since 9.2
-     */
-    public double getMass()
-    {
-        return mass;
-    }
-
-    /** Set the initial mass.
-     * @param mass the mass (kg)
-     */
-    public void setMass(final double mass) {
-        this.mass = mass;
-    }
-
     /** {@inheritDoc} */
     public NumericalPropagator buildPropagator(final double[] normalizedParameters) {
 
@@ -197,10 +169,10 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
         final Orbit           orbit    = createInitialOrbit();
         final Attitude        attitude =
                 getAttitudeProvider().getAttitude(orbit, orbit.getDate(), getFrame());
-        final SpacecraftState state    = new SpacecraftState(orbit, attitude, mass);
+        final SpacecraftState state    = new SpacecraftState(orbit, attitude).withMass(getMass());
 
         final NumericalPropagator propagator = new NumericalPropagator(
-                builder.buildIntegrator(orbit, getOrbitType()),
+                getIntegratorBuilder().buildIntegrator(orbit, getOrbitType(), getPositionAngleType()),
                 getAttitudeProvider());
         propagator.setOrbitType(getOrbitType());
         propagator.setPositionAngleType(getPositionAngleType());
@@ -213,6 +185,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
         for (ForceModel model : forceModels) {
             propagator.addForceModel(model);
         }
+        impulseManeuvers.forEach(propagator::addEventDetector);
 
         propagator.resetInitialState(state);
 

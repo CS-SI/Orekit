@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -120,15 +120,14 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
      * @param minDate earliest date in the sample.
      * @param maxDate latest date in the sample.
      * @param threshold extrapolation threshold
-     * @param <T> type of element
      *
      * @return central date to use to find neighbors
      * @since 12.0.1
      */
-    public static <T extends TimeStamped> AbsoluteDate getCentralDate(final AbsoluteDate date,
-                                                                      final AbsoluteDate minDate,
-                                                                      final AbsoluteDate maxDate,
-                                                                      final double threshold) {
+    public static AbsoluteDate getCentralDate(final AbsoluteDate date,
+                                              final AbsoluteDate minDate,
+                                              final AbsoluteDate maxDate,
+                                              final double threshold) {
         final AbsoluteDate central;
 
         if (date.compareTo(minDate) < 0 && FastMath.abs(date.durationFrom(minDate)) <= threshold) {
@@ -265,40 +264,11 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
             this.interpolationDate = interpolationDate;
         }
 
-        /**
-         * Get the central date to use to find neighbors while taking into account extrapolation threshold.
-         *
-         * @param date interpolation date
-         *
-         * @return central date to use to find neighbors
-         *
-         * @deprecated This method appears to be unused and may be removed in Orekit 13.0.
-         * Please Comment on forum.orekit.org if you have a use case for this method.
-         */
-        @Deprecated
-        protected AbsoluteDate getCentralDate(final AbsoluteDate date) {
-            return AbstractTimeInterpolator.getCentralDate(date,
-                    neighborList.get(0).getDate(),
-                    neighborList.get(neighborList.size() - 1).getDate(),
-                    extrapolationThreshold);
-        }
-
         /** Get interpolation date.
          * @return interpolation date
          */
         public AbsoluteDate getInterpolationDate() {
             return interpolationDate;
-        }
-
-        /** Get cached samples.
-         * @return cached samples
-         *
-         * @deprecated This method appears to be unused and may be removed in Orekit 13.0.
-         * Please Comment on forum.orekit.org if you have a use case for this method.
-         */
-        @Deprecated
-        public ImmutableTimeStampedCache<T> getCachedSamples() {
-            return new ImmutableTimeStampedCache<>(interpolationPoints, neighborList);
         }
 
         /** Get neighbor list.

@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2024 CS GROUP
+<!--- Copyright 2002-2025 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -25,7 +25,7 @@
   * Time
 
     * high accuracy absolute dates
-    * time scales (TAI, UTC, UT1, GPS, TT, TCG, TDB, TCB, GMST, GST, GLONASS, QZSS, BDT, IRNSS ...)
+    * time scales (TAI, UTC, UT1, GPS, TT, TCG, TDB, TCB, GMST, GST, GLONASS, QZSS, BDT, NavIC ...)
     * transparent handling of leap seconds
     * support for CCSDS time code standards
 
@@ -67,9 +67,9 @@
   * Covariance
 
     * covariance propagation using the state transition matrix
-	* covariance extrapolation using a Keplerian model
+    * covariance extrapolation using a Keplerian model
     * covariance frame transformation (inertial, Earth fixed, and local orbital frames)
-    * covariance type transformation (cartesian, keplerian, circular, and equinoctial)
+    * covariance type transformation (Cartesian, Keplerian, circular, and equinoctial)
     * covariance interpolation based on the blending model
 
   * Maneuvers
@@ -89,7 +89,7 @@
         * Brouwer-Lyddane with Warren Phipps' correction for the critical inclination of 63.4°
           and the perturbative acceleration due to atmospheric drag
         * SDP4/SGP4 with 2006 corrections
-        * GNSS: GPS, QZSS, Galileo, GLONASS, Beidou, IRNSS and SBAS
+        * GNSS: GPS, QZSS, Galileo, GLONASS, Beidou, NavIC and SBAS
         * Intelsat's 11 elements
     * numerical propagators
         * central attraction
@@ -98,7 +98,7 @@
           EGM, SHA (GRGM1200B and GRGM1200L) and GRGS gravity field files formats, even compressed)
         * atmospheric drag
         * third body attraction (with data for Sun, Moon and all solar systems planets)
-        * radiation pressure with eclipses (multiple oblate spheroids occulting bodies, multiple coefficients for bow and wing models)
+        * radiation pressure with eclipses (multiple oblate spheroids occulting bodies, multiple coefficients for box and wing models)
         * solid tides, with or without solid pole tide
         * ocean tides, with or without ocean pole tide
         * Earth's albedo and infrared
@@ -107,8 +107,6 @@
         * multiple maneuvers
         * state of the art ODE integrators (adaptive stepsize with error control,
           continuous output, switching functions, G-stop, step normalization ...)
-        * serialization mechanism to store complete results on persistent storage for
-          later use
         * propagation in non-inertial frames (e.g. for Lagrange point halo orbits)
     * semi-analytical propagation model (DSST)
         * central attraction
@@ -175,7 +173,7 @@
         * ground at night
         * impulse maneuvers occurrence
         * geomagnetic intensity
-		* extremum approach for TCA (Time of Closest Approach) computing
+	* extremum approach for TCA (Time of Closest Approach) computing
         * beta angle
         * relative distance with another object
     * possibility of slightly shifting events in time (for example to switch from
@@ -196,6 +194,7 @@
         * central body related attitude (nadir pointing, center pointing, target pointing, yaw compensation, yaw-steering),
         * orbit referenced attitudes (LOF aligned, offset on all axes),
         * space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)
+        * attitude aligned with one target and constrained by another target
         * tabulated attitudes, either respective to inertial frame or respective to Local Orbital Frames
         * specific law for GNSS satellites: GPS (block IIA, block IIF, block IIF), GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO)
         * torque-free for general (non-symmetrical) body
@@ -219,6 +218,7 @@
         * implementation of the Extended Semi-analytical Kalman Filter
         * implementation of the Unscented Kalman Filter
         * implementation of the Unscented Semi-analytical Kalman Filter
+        * RTS (Rauch-Tung-Striebel) smoothing step over results
     * parameters estimation
         * orbital parameters estimation (or only a subset if desired)
         * force model parameters estimation (drag coefficients, radiation pressure coefficients,
@@ -226,7 +226,7 @@
         * measurements parameters estimation (biases, satellite clock offset, station clock offset,
           station position, pole motion and rate, prime meridian correction and rate, total zenith
           delay in tropospheric correction)
-    * orbit determination can be performed with numerical, DSST, SDP4/SGP4, Eckstein-Hechler, Brouwer-Lyddane, or Keplerian propagators
+    * orbit determination can be performed with numerical, DSST, SDP4/SGP4, Eckstein-Hechler, Brouwer-Lyddane, Keplerian or GNSS propagators
     * ephemeris-based orbit determination to estimate measurement parameters like station biases or clock offsets
     * multi-satellites orbit determination
     * initial orbit determination methods (Gibbs, Gooding, Lambert, Gauss, and Laplace)
@@ -307,24 +307,31 @@
 
   * Earth models
   
-    * atmospheric models (DTM2000, Jacchia-Bowman 2008, NRL MSISE 2000, Harris-Priester and simple exponential models), and Marshall solar Activity Future Estimation, optionally with lift component
+    * atmospheric models (DTM2000, Jacchia-Bowman 2008, NRL MSISE 2000, Harris-Priester and simple exponential models), and Marshall Solar Activity Future Estimation, optionally with lift component
     * support for CSSI space weather data
     * support for SOLFSMY and DTC data for JB2008 atmospheric model
-    * tropospheric delay (modified Saastamoinen, estimated, fixed)
-    * tropospheric mapping functions (Vienna 1, Vienna 3, Global, Niell)
-    * tropospheric refraction correction angle (Recommendation ITU-R P.834-7 and Saemundssen's formula quoted by Meeus)
-    * tropospheric model for laser ranging (Marini-Murray, Mendes-Pavlis)
+    * tropospheric delay for radio propagation (canonical Saastamoinen, modified Saastamoinen, Askne-Nordius, modified Hopfield, ITU-R P.834, Vienna 1, Vienna 3, estimated, fixed)
+    * tropospheric delay for laser ranging (Marini-Murray, Mendes-Pavlis)
+    * tropospheric refraction correction angle (ITU-R P.834-7 and Saemundssen's formula quoted by Meeus)
+    * tropospheric mapping functions (Chao, revised Chao, Global Mapping Function, ITU-R P.834, Vienna 1, Vienna 3, Niell, Mendes-Pavlis)
     * Klobuchar ionospheric model (including parsing α and β coefficients from University of Bern Astronomical Institute files)
     * Global Ionospheric Map (GIM) model
-    * NeQuick ionospheric model
+    * NeQuick ionospheric models (both Galileo-specific and original ITU-R P.531 versions)
     * VTEC estimated ionospheric model with Single Layer Model (SLM) ionospheric mapping function
-    * Global Pressure and Temperature models (GPT, GPT2, GPT2w, GPT3)
+    * Pressure, Temperature and Humidity models (GPT, GPT2, GPT2w, GPT3, ITU-R P.834)
+    * Water Vapor pressure evolution (CIPM-2007, NBS-SRC, Wang 1988)
     * geomagnetic field (WMM, IGRF)
     * geoid model from any gravity field
-    * displacement of ground points due to tides
+    * displacement of ground points (tides, ocean loading, Post-Seismic Deformation, tectonics plates)
     * tessellation of zones of interest as tiles
     * sampling of zones of interest as grids of points
-	* construction of trajectories using loxodromes (commonly, a rhumb line)
+    * construction of trajectories using loxodromes (commonly, a rhumb line)
+
+  * Indirect optimal control
+
+    * adjoint equations as defined by Pontryagin's Maximum Principle with Cartesian coordinates for a range of forces (gravitational, inertial) including J2
+    * so-called energy cost functions (proportional to the integral of the control vector's squared norm), with Hamiltonian evaluation
+    * single shooting based on Newton algorithm for the case of fixed time, fixed Cartesian bounds
 
   * Collisions
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -144,7 +144,7 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
         // Sets initial state
         final Orbit orbit = propagateOrbit(getStartDate());
         final Attitude attitude = provider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
-        super.resetInitialState(new SpacecraftState(orbit, attitude, mass));
+        super.resetInitialState(new SpacecraftState(orbit, attitude).withMass(mass));
     }
 
     /**
@@ -358,7 +358,7 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
         UnivariateDerivative2 term = E;
         UnivariateDerivative2 d    = E.getField().getZero();
         // the inequality test below IS intentional and should NOT be replaced by a check with a small tolerance
-        for (UnivariateDerivative2 x0 = d.add(Double.NaN); !Double.valueOf(x.getValue()).equals(Double.valueOf(x0.getValue()));) {
+        for (UnivariateDerivative2 x0 = d.add(Double.NaN); !Double.valueOf(x.getValue()).equals(x0.getValue());) {
             d = d.add(2);
             term = term.multiply(mE2.divide(d.multiply(d.add(1))));
             x0 = x;
@@ -679,7 +679,7 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** {@inheritDoc} */
-    protected Orbit propagateOrbit(final AbsoluteDate date) {
+    public Orbit propagateOrbit(final AbsoluteDate date) {
         // Gets the PVCoordinates in ECEF frame
         final PVCoordinates pvaInECEF = propagateInEcef(date);
         // Transforms the PVCoordinates to ECI frame

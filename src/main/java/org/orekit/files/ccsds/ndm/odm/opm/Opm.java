@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -147,7 +147,7 @@ public class Opm extends NdmConstituent<OdmHeader, Segment<OdmCommonMetadata, Op
      * @return the spacecraft state of the OPM
      */
     public SpacecraftState generateSpacecraftState() {
-        return new SpacecraftState(generateCartesianOrbit(), getData().getMass());
+        return new SpacecraftState(generateCartesianOrbit()).withMass(getData().getMass());
     }
 
 }

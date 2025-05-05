@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,25 +20,23 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.models.earth.weather.HeightDependentPressureTemperatureHumidityConverter;
+import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.models.earth.weather.water.CIPM2007;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.TrackingCoordinates;
 
+public class ModifiedHopfieldModelTest extends AbstractPathDelayTest<ModifiedHopfieldModel> {
 
-public class ModifiedHopfieldModelTest {
-
-    private static double epsilon = 1e-6;
+    private static final double epsilon = 1e-6;
 
     private double[][] expectedValues;
 
@@ -46,133 +44,67 @@ public class ModifiedHopfieldModelTest {
 
     private double[] heights;
 
-    @Test
-    public void testFixedElevation() {
-        Utils.setDataRoot("atmosphere");
-        ModifiedHopfieldModel model = new ModifiedHopfieldModel();
-        HeightDependentPressureTemperatureHumidityConverter converter =
-                        new HeightDependentPressureTemperatureHumidityConverter(new CIPM2007());
-        double lastDelay = Double.MAX_VALUE;
-        // delay shall decline with increasing height of the station
-        for (double height = 0; height < 5000; height += 100) {
-            final double delay = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(5), 0.0),
-                                                 new GeodeticPoint(0.0, 0.0, height),
-                                                 converter.convert(TroposphericModelUtils.STANDARD_ATMOSPHERE, height),
-                                                 null, AbsoluteDate.J2000_EPOCH).getDelay();
-            Assertions.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
-            lastDelay = delay;
-        }
+    @Override
+    protected ModifiedHopfieldModel buildTroposphericModel(final PressureTemperatureHumidityProvider provider) {
+        return new ModifiedHopfieldModel(provider);
     }
 
     @Test
-    public void testFieldFixedElevation() {
-        doTestFieldFixedElevation(Binary64Field.getInstance());
-    }
-
-    private <T extends CalculusFieldElement<T>> void doTestFieldFixedElevation(final Field<T> field) {
-        final T zero = field.getZero();
-        Utils.setDataRoot("atmosphere");
-        ModifiedHopfieldModel model = new ModifiedHopfieldModel();
-        HeightDependentPressureTemperatureHumidityConverter converter =
-                        new HeightDependentPressureTemperatureHumidityConverter(new CIPM2007());
-        T lastDelay = zero.newInstance(Double.MAX_VALUE);
-        // delay shall decline with increasing height of the station
-        for (double height = 0; height < 5000; height += 100) {
-            final T delay = model.pathDelay(new FieldTrackingCoordinates<>(zero,
-                                                                           zero.newInstance(FastMath.toRadians(5)),
-                                                                           zero),
-                                            new FieldGeodeticPoint<>(zero, zero, zero.newInstance(height)),
-                                            converter.convert(new FieldPressureTemperatureHumidity<>(field,
-                                                                                                     TroposphericModelUtils.STANDARD_ATMOSPHERE),
-                                                              zero.newInstance(height)),
-                                            null, FieldAbsoluteDate.getJ2000Epoch(field)).getDelay();
-            Assertions.assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
-            lastDelay = delay;
-        }
-    }
-
-    @Test
+    @Override
     public void testFixedHeight() {
-        Utils.setDataRoot("atmosphere");
-        ModifiedHopfieldModel model = new ModifiedHopfieldModel();
-        double lastDelay = Double.MAX_VALUE;
-        // delay shall decline with increasing elevation angle
-        for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double delay = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elev), 0.0),
-                                                 new GeodeticPoint(0.0, 0.0, 350.0),
-                                                 TroposphericModelUtils.STANDARD_ATMOSPHERE,
-                                                 null, AbsoluteDate.J2000_EPOCH).getDelay();
-            Assertions.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
-            lastDelay = delay;
-        }
+        doTestFixedHeight(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
     }
 
     @Test
+    @Override
     public void testFieldFixedHeight() {
-        doTestFieldFixedHeight(Binary64Field.getInstance());
-    }
-
-    private <T extends CalculusFieldElement<T>> void doTestFieldFixedHeight(final Field<T> field) {
-        final T zero = field.getZero();
-        Utils.setDataRoot("atmosphere");
-        ModifiedHopfieldModel model = new ModifiedHopfieldModel();
-        T lastDelay = zero.newInstance(Double.MAX_VALUE);
-        // delay shall decline with increasing elevation angle
-        for (double elev = 10d; elev < 90d; elev += 8d) {
-            final T delay = model.pathDelay(new FieldTrackingCoordinates<>(zero,
-                                                                           zero.newInstance(FastMath.toRadians(elev)),
-                                                                           zero),
-                                            new FieldGeodeticPoint<>(zero, zero, zero.newInstance(350.0)),
-                                            new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
-                                            null, FieldAbsoluteDate.getJ2000Epoch(field)).getDelay();
-            Assertions.assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
-            lastDelay = delay;
-        }
+        doTestFieldFixedHeight(Binary64Field.getInstance(),
+                               TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
     }
 
     @Test
-    public void testFieldVsNative() {
-        doTestFieldVsNative(Binary64Field.getInstance());
+    @Override
+    public void testFixedElevation() {
+        doTestFixedElevation(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
     }
 
-    private <T extends CalculusFieldElement<T>> void doTestFieldVsNative(final Field<T> field) {
-        final T zero = field.getZero();
-        Utils.setDataRoot("atmosphere");
-        ModifiedHopfieldModel model = new ModifiedHopfieldModel();
-        HeightDependentPressureTemperatureHumidityConverter converter =
-                        new HeightDependentPressureTemperatureHumidityConverter(new CIPM2007());
-        for (int h = 0; h < 5000.0; h += 100) {
-            for (int e = 0; e < 90; e += 1.0) {
-                final double delayN = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(e), 0.0),
-                                                      new GeodeticPoint(0, 0, h),
-                                                      converter.convert(TroposphericModelUtils.STANDARD_ATMOSPHERE, h),
-                                                      null, AbsoluteDate.J2000_EPOCH).getDelay();
-                final T delayT = model.pathDelay(new FieldTrackingCoordinates<>(zero,
-                                                                                zero.newInstance(FastMath.toRadians(e)),
-                                                                                zero),
-                                                 new FieldGeodeticPoint<>(zero, zero, zero.newInstance(h)),
-                                                 converter.convert(new FieldPressureTemperatureHumidity<>(field,
-                                                                                                          TroposphericModelUtils.STANDARD_ATMOSPHERE),
-                                                                   zero.newInstance(h)),
-                                                 null, FieldAbsoluteDate.getJ2000Epoch(field)).getDelay();
-                Assertions.assertEquals(delayN, delayT.getReal(), epsilon);
-            }
-        }
+    @Test
+    @Override
+    public void testFieldFixedElevation() {
+        doTestFieldFixedElevation(Binary64Field.getInstance(),
+                                  TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+    }
+
+    @Test
+    @Override
+    public void testDelay() {
+        doTestDelay(defaultDate, defaultPoint,
+                    new TrackingCoordinates(FastMath.toRadians(192), FastMath.toRadians(5), 1.4e6),
+                    TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
+                    2.31371, 0.00942, 23.62185, 0.10438, 23.72623);
+    }
+
+    @Test
+    @Override
+    public void testFieldDelay() {
+        doTestDelay(Binary64Field.getInstance(),
+                    defaultDate, defaultPoint,
+                    new TrackingCoordinates(FastMath.toRadians(192), FastMath.toRadians(5), 1.4e6),
+                    TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
+                    2.31371, 0.00942, 23.62185, 0.10438, 23.72623);
     }
 
     @Test
     public void testNegativeHeight() {
         Utils.setDataRoot("atmosphere");
-        ModifiedHopfieldModel model = new ModifiedHopfieldModel();
+        ModifiedHopfieldModel model = new ModifiedHopfieldModel(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
         final double height = -500.0;
         for (double elevation = 0; elevation < FastMath.PI; elevation += 0.1) {
             Assertions.assertEquals(model.pathDelay(new TrackingCoordinates(0.0, elevation, 0.0),
                                                     new GeodeticPoint(0.0, 0.0, 0.0),
-                                                    TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                     null, AbsoluteDate.J2000_EPOCH).getDelay(),
                                     model.pathDelay(new TrackingCoordinates(0.0, elevation, 0.0),
                                                     new GeodeticPoint(0.0, 0.0, height),
-                                                    TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                     null, AbsoluteDate.J2000_EPOCH).getDelay(),
                                     1.e-10);
         }
@@ -186,20 +118,18 @@ public class ModifiedHopfieldModelTest {
     private <T extends CalculusFieldElement<T>> void doTestFieldNegativeHeight(final Field<T> field) {
         final T zero = field.getZero();
         Utils.setDataRoot("atmosphere");
-        ModifiedHopfieldModel model = new ModifiedHopfieldModel();
+        ModifiedHopfieldModel model = buildTroposphericModel(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
         final T height = zero.subtract(500.0);
         for (double elevation = 0; elevation < FastMath.PI; elevation += 0.1) {
             Assertions.assertEquals(model.pathDelay(new FieldTrackingCoordinates<>(zero,
                                                                                    zero.newInstance(elevation),
                                                                                    zero),
                                                     new FieldGeodeticPoint<>(zero, zero, zero),
-                                                    new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                     null, FieldAbsoluteDate.getJ2000Epoch(field)).getDelay().getReal(),
                                     model.pathDelay(new FieldTrackingCoordinates<>(zero,
                                                                                    zero.newInstance(elevation),
                                                                                    zero),
                                                     new FieldGeodeticPoint<>(zero, zero, height),
-                                                    new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                     null, FieldAbsoluteDate.getJ2000Epoch(field)).getDelay().getReal(),
                                     1.e-10);
         }
@@ -213,9 +143,11 @@ public class ModifiedHopfieldModelTest {
         // by making a screenshot of figure 5.4 and using it as the background of a gnuplot plot,
         // twicking the scales and offset to ensure the elevation scales at 0° and 90° line up
         // as well as the delay scale at 0m and 40m
-        ModifiedHopfieldModel model = new ModifiedHopfieldModel();
-        HeightDependentPressureTemperatureHumidityConverter converter =
+        final HeightDependentPressureTemperatureHumidityConverter converter =
                         new HeightDependentPressureTemperatureHumidityConverter(new CIPM2007());
+        final PressureTemperatureHumidityProvider provider =
+            converter.getProvider(TroposphericModelUtils.STANDARD_ATMOSPHERE);
+        ModifiedHopfieldModel model = buildTroposphericModel(provider);
 
         for (int h = 0; h < heights.length; h++) {
             for (int e = 0; e < elevations.length; e++) {
@@ -226,7 +158,6 @@ public class ModifiedHopfieldModelTest {
                 final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
                 double actualValue = model.pathDelay(new TrackingCoordinates(0.0, elevation, 0.0),
                                                      location,
-                                                     converter.convert(TroposphericModelUtils.STANDARD_ATMOSPHERE, height),
                                                      null, date).getDelay();
                 Assertions.assertEquals(expectedValue, actualValue, epsilon, "For height=" + height + " elevation = " +
                         FastMath.toDegrees(elevation) + " precision not met");
@@ -247,9 +178,10 @@ public class ModifiedHopfieldModelTest {
         // by making a screenshot of figure 5.4 and using it as the background of a gnuplot plot,
         // twicking the scales and offset to ensure the elevation scales at 0° and 90° line up
         // as well as the delay scale at 0m and 40m
-        ModifiedHopfieldModel model = new ModifiedHopfieldModel();
-        HeightDependentPressureTemperatureHumidityConverter converter =
+        final HeightDependentPressureTemperatureHumidityConverter converter =
                         new HeightDependentPressureTemperatureHumidityConverter(new CIPM2007());
+        final PressureTemperatureHumidityProvider provider = converter.getProvider(TroposphericModelUtils.STANDARD_ATMOSPHERE);
+        ModifiedHopfieldModel model = new ModifiedHopfieldModel(provider);
 
         for (int h = 0; h < heights.length; h++) {
             for (int e = 0; e < elevations.length; e++) {
@@ -260,9 +192,6 @@ public class ModifiedHopfieldModelTest {
                 FieldAbsoluteDate<T> date = FieldAbsoluteDate.getJ2000Epoch(field);
                 T actualValue = model.pathDelay(new FieldTrackingCoordinates<>(zero, elevation, zero),
                                                 location,
-                                                converter.convert(new FieldPressureTemperatureHumidity<>(field,
-                                                                                                         TroposphericModelUtils.STANDARD_ATMOSPHERE),
-                                                                  height),
                                                 null, date).getDelay();
                 Assertions.assertEquals(expectedValue, actualValue.getReal(), epsilon, "For height=" + height + " elevation = " +
                         FastMath.toDegrees(elevation.getReal()) + " precision not met");
@@ -271,7 +200,8 @@ public class ModifiedHopfieldModelTest {
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp() {
+        super.setUp();
         heights = new double[] {
             0.0, 250.0, 500.0, 750.0, 1000.0, 1250.0, 1500.0, 1750.0, 2000.0, 2250.0, 2500.0, 2750.0, 3000.0, 3250.0,
             3500.0, 3750.0, 4000.0, 4250.0, 4500.0, 4750.0, 5000.0

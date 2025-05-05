@@ -1,4 +1,4 @@
-' Copyright 2002-2024 CS GROUP
+' Copyright 2002-2025 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -28,19 +28,54 @@
   skinparam linetype              ortho
 
   package org.orekit.gnss #ECEBD8 {
-    class SatInSystem
-    
-    enum Frequency {
+
+    class SatInSystem {
+      -int prn
+    }
+
+    enum SatelliteSystem {
+      +USER_DEFINED_A
+      +USER_DEFINED_B
+      +...
+      +BEIDOU
+      +GALILEO
+      +GPS
+      +IRNSS
+      +QZSS
+      +MIXED
+      +GLONASS
+      +SBAS
+      +...
+      +USER_DEFINED_Z
+    }
+
+    interface GnssSignal {
+      +F0
+      +double getRatio()
+      +String getName()
+      +SatelliteSystem getSatelliteSystem()
+    }
+
+    interface RadioWave {
+      +double getFrequency()
+      +double getWavelength()
+      +boolean closeTo(other)
+      +boolean closeTo(other, tolerance)
+    }
+
+    enum PredefinedGnssSignal {
       +G01
       +...
       +J06
       +...
       +S05
-      +String getName()
-      +SatelliteSystem getSatelliteSystem()
-      +double getRatio()
-      +double getMHzFrequency()
     }
+
+    SatInSystem     *-right-> SatelliteSystem
+    SatelliteSystem <--       GnssSignal
+    GnssSignal       ..|>     RadioWave
+    GnssSignal     <|--       PredefinedGnssSignal
+
   }
 
   package org.orekit.files.rinex #ECEBD8 {
@@ -52,9 +87,19 @@
 
     package observation #DDEBD8 {
 
-      class RinexObservationParser
+      class RinexObservationParser {
+       +RinexObservation parse(dataSource)
+      }
+      class RinexObservationWriter {
+        +write(RinexObservation)
+      }
 
-      enum ObservationType {
+      interface ObservationType {
+        +getMeasurementType()
+        +getFrequency(SatelliteSystem)
+      }
+
+      enum PredefinedObservationType {
         +C1
         +C5
         +C6
@@ -62,8 +107,6 @@
         +L1C
         ...
         +S8X
-        +getMeasurementType()
-        +getFrequency(SatelliteSystem)
       }
       
       enum MeasurementType {
@@ -87,15 +130,19 @@
         +List<ObservationData> getObservationData()
       }
 
-      ObservationDataSet         *-left-> "1" SatInSystem
-      RinexObservationHeader     *-->     "1" SatInSystem
-      RinexObservationHeader "*" <--*         ObservationDataSet
-      RinexObservation           *-->     "*" ObservationDataSet
-      ObservationDataSet         *-->     "*" ObservationData
-      ObservationType        "1" <-left-*     ObservationData
-      ObservationType            *-->     "1" MeasurementType
-      ObservationType            *-->     "*" Frequency
-      RinexObservation           --|>         RinexFile
+      ObservationDataSet         *-left->  "1" SatInSystem
+      RinexObservationHeader     *-->      "*" SatInSystem
+      RinexObservationHeader     *-->      "*" ObservationType
+      RinexObservation           *-->      "*" ObservationDataSet
+      RinexObservation           *-->      "1" RinexObservationHeader
+      ObservationDataSet         *-->      "*" ObservationData
+      ObservationData            *-right-> "1" ObservationType
+      ObservationType            *-->      "1" MeasurementType
+      ObservationType            *-->      "*" PredefinedGnssSignal
+      ObservationType           <|..           PredefinedObservationType
+      RinexObservationParser     -->           RinexObservation
+      RinexObservationWriter     -->           RinexObservation
+      RinexFile                 <|-left-       RinexObservation
 
     }
 

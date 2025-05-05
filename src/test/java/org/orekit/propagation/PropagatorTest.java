@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -96,22 +96,22 @@ class PropagatorTest {
         }
 
         @Override
-        public void addAdditionalStateProvider(AdditionalStateProvider additionalStateProvider) {
+        public void addAdditionalDataProvider(AdditionalDataProvider<?> additionalDataProvider) {
             // not used in test
         }
 
         @Override
-        public List<AdditionalStateProvider> getAdditionalStateProviders() {
+        public List<AdditionalDataProvider<?>> getAdditionalDataProviders() {
             return null;
         }
 
         @Override
-        public boolean isAdditionalStateManaged(String name) {
+        public boolean isAdditionalDataManaged(String name) {
             return false;
         }
 
         @Override
-        public String[] getManagedAdditionalStates() {
+        public String[] getManagedAdditionalData() {
             return new String[0];
         }
 
@@ -121,7 +121,7 @@ class PropagatorTest {
         }
 
         @Override
-        public Collection<EventDetector> getEventsDetectors() {
+        public Collection<EventDetector> getEventDetectors() {
             return null;
         }
 

@@ -1,4 +1,4 @@
-' Copyright 2002-2024 CS GROUP
+' Copyright 2002-2025 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -35,8 +35,6 @@
 
       interface "TimeShiftable<T>" as TimeShiftable_T_
 
-      interface "TimeInterpolable<T>" as TimeInterpolable_T_
-
     }
 
     package propagation #DDEBD8 {
@@ -45,17 +43,18 @@
         +Orbit getOrbit()
         +Attitude getAttitude()
         +double getMass()
-        +SpacecraftState addAdditionalState(final String name, final double ... value)
-        +boolean hasAdditionalState(final String name)
+        +SpacecraftState addAdditionalData(final String name, final Object value)
+        +boolean hasAdditionalData(final String name)
         +double[] getAdditionalState(final String name)
-        +DoubleArrayDictionary getAdditionalStates()
+        +Object getAdditionalData(final String name)
+        +DataDictionary getAdditionalDataValues()
         +SpacecraftState addAdditionalStateDerivative(final String name, final double ... value)
-        +boolean hasAdditionalStateDerivative(final String name)
-        +double[] getAdditionalStateDerivative(final String name)
+        +boolean hasAdditionalStateDerivative(String name)
+        +double[] getAdditionalStateDerivative(String name)
         +DoubleArrayDictionary getAdditionalStatesDerivatives()
       }
       note bottom
-        always immutable addAdditionalState and
+        always immutable addAdditionalData and
         addAdditionalStateDerivative create new instances
       end note
 
@@ -65,14 +64,20 @@
       }
 
       interface Propagator {
+        +AttitudeProvider getDefaultLaw(Frames frames)
         +StepHandlerMultiplexer getMultiplexer()
         +void clearStepHandlers()
         +void setStepHandler(double h, OrekitFixedStepHandler handler)
         +void setStepHandler(OrekitStepHandler handler)
+        +EphemerisGenerator getEphemerisGenerator()
         +SpacecraftState getInitialState()
         +void resetInitialState(SpacecraftState state)
+        +void addAdditionalDataProvider(AdditionalDataProvider<?> additionalDataProvider)
+        +List<AdditionalDataProvider<?>> getAdditionalDataProviders()
+        +boolean isAdditionalDataManaged(String name)
+        +String[] getManagedAdditionalData()
         +void addEventDetector(EventDetector detector)
-        +Collection<EventDetector> getEventsDetectors()
+        +Collection<EventDetector> getEventDetectors()
         +void clearEventsDetectors()
         +AttitudeProvider getAttitudeProvider()
         +void setAttitudeProvider(AttitudeProvider attitudeProvider)
@@ -87,7 +92,6 @@
 
      TimeStamped         ..|> SpacecraftState
      TimeShiftable_T_    ..|> SpacecraftState
-     TimeInterpolable_T_ ..|> SpacecraftState
 
    }
 

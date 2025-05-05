@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -157,6 +157,28 @@ public class TransformProviderUtilTest {
     }
 
     @Test
+    void testStaticIdentity() {
+        // GIVEN
+
+        // WHEN
+        final StaticTransform staticTransform = TransformProviderUtils.IDENTITY_PROVIDER.getStaticTransform(Mockito.mock(AbsoluteDate.class));
+        // THEN
+        Assertions.assertEquals(Rotation.IDENTITY, staticTransform.getRotation());
+        Assertions.assertEquals(Vector3D.ZERO, staticTransform.getTranslation());
+    }
+
+    @Test
+    void testFieldStaticIdentity() {
+        // GIVEN
+        final FieldAbsoluteDate<Complex> fieldDate = new FieldAbsoluteDate<>(ComplexField.getInstance(), AbsoluteDate.BEIDOU_EPOCH);
+        // WHEN
+        final FieldStaticTransform<Complex> staticTransform = TransformProviderUtils.IDENTITY_PROVIDER.getStaticTransform(fieldDate);
+        // THEN
+        Assertions.assertEquals(0., Rotation.distance(Rotation.IDENTITY, staticTransform.getRotation().toRotation()));
+        Assertions.assertEquals(Vector3D.ZERO, staticTransform.getTranslation().toVector3D());
+    }
+
+    @Test
     public void testIdentity() {
         RandomGenerator random = new Well19937a(0x87c3a5c51fb0235el);
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
@@ -230,7 +252,6 @@ public class TransformProviderUtilTest {
     private TransformProvider constantProvider(RandomGenerator random) {
         final Transform combined = randomTransform(random);
         return new TransformProvider() {
-            private static final long serialVersionUID = 20180330L;
             public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(FieldAbsoluteDate<T> date)
                 {
                 return new FieldTransform<>(date.getField(), combined);

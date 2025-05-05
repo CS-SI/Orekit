@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,6 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.models.earth.weather.ConstantPressureTemperatureHumidityProvider;
-import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -52,7 +51,7 @@ import org.orekit.utils.TrackingCoordinates;
  * the {@link NiellMappingFunctionModel Niell Mapping Function}
  * </p> <p>
  * The tropospheric zenith delay δ<sub>h</sub> is computed empirically with a
- * {@link DiscreteTroposphericModel tropospheric model}
+ * {@link TroposphericModel tropospheric model}
  * while the tropospheric total zenith delay δ<sub>t</sub> is estimated as a {@link ParameterDriver},
  * hence the wet part is the difference between the two.
  * @since 12.1
@@ -134,17 +133,16 @@ public class EstimatedModel implements TroposphericModel {
     @Override
     public TroposphericDelay pathDelay(final TrackingCoordinates trackingCoordinates,
                                        final GeodeticPoint point,
-                                       final PressureTemperatureHumidity weather,
                                        final double[] parameters, final AbsoluteDate date) {
 
         // zenith hydrostatic delay
-        final double zd = hydrostatic.pathDelay(trackingCoordinates, point, weather, parameters, date).getZh();
+        final double zd = hydrostatic.pathDelay(trackingCoordinates, point, parameters, date).getZh();
 
         // zenith wet delay
         final double wd = parameters[0] - zd;
 
         // mapping functions
-        final double[] mf = model.mappingFactors(trackingCoordinates, point, weather, date);
+        final double[] mf = model.mappingFactors(trackingCoordinates, point, date);
 
         // composite delay
         return new TroposphericDelay(zd, wd, mf[0] * zd, mf[1] * wd);
@@ -155,17 +153,16 @@ public class EstimatedModel implements TroposphericModel {
     @Override
     public <T extends CalculusFieldElement<T>> FieldTroposphericDelay<T> pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                                                    final FieldGeodeticPoint<T> point,
-                                                                                   final FieldPressureTemperatureHumidity<T> weather,
                                                                                    final T[] parameters, final FieldAbsoluteDate<T> date) {
 
         // zenith hydrostatic delay
-        final T zd = hydrostatic.pathDelay(trackingCoordinates, point, weather, parameters, date).getZh();
+        final T zd = hydrostatic.pathDelay(trackingCoordinates, point, parameters, date).getZh();
 
         // zenith wet delay
         final T wd = parameters[0].subtract(zd);
 
         // mapping functions
-        final T[] mf = model.mappingFactors(trackingCoordinates, point, weather, date);
+        final T[] mf = model.mappingFactors(trackingCoordinates, point, date);
 
         // composite delay
         return new FieldTroposphericDelay<>(zd, wd, mf[0].multiply(zd), mf[1].multiply(wd));

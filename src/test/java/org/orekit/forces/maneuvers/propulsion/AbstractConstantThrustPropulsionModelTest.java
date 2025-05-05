@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,7 +43,7 @@ public class AbstractConstantThrustPropulsionModelTest {
 
     /** Test non-abstract methods of constant thrust model. */
     @Test
-    public void testNonAbstractMethods() {
+    void testNonAbstractMethods() {
 
         final double thrust = 1.;
         final double isp = 300.;
@@ -142,7 +142,7 @@ public class AbstractConstantThrustPropulsionModelTest {
 
     /** Test the 1-dimensional constant thrust model. */
     @Test
-    public void testConstantThrust1D() {
+    void testConstantThrust1D() {
 
         final double thrust = 1.;
         final double isp = 300.;
@@ -204,7 +204,7 @@ public class AbstractConstantThrustPropulsionModelTest {
 
   /** Test the 3-dimensional "scaled" constant thrust model. */
   @Test
-  public void testConstantThrust3DScaled() {
+  void testConstantThrust3DScaled() {
 
       final double thrust = 1.;
       final double isp = 300.;

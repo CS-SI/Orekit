@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.ParsedMessage;
 import org.orekit.gnss.metric.messages.common.AccuracyProvider;
 import org.orekit.gnss.metric.messages.common.ClockCorrection;
@@ -62,6 +63,7 @@ import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
+import org.orekit.time.TimeScales;
 
 /** Enum containing the supported RTCM messages types.
 *
@@ -80,11 +82,13 @@ public enum RtcmMessageType implements MessageType {
         /** {@inheritDoc} */
         @Override
         public ParsedMessage parse(final EncodedMessage encodedMessage,
-                                   final int messageNumber) {
+                                   final int messageNumber,
+                                   final TimeScales timeScales) {
 
             // Initialize data container and navigation message
             final Rtcm1019Data         rtcm1019Data  = new Rtcm1019Data();
-            final GPSLegacyNavigationMessage gpsNavMessage = new GPSLegacyNavigationMessage();
+            final GPSLegacyNavigationMessage gpsNavMessage =
+                new GPSLegacyNavigationMessage(timeScales, SatelliteSystem.GPS);
 
             // Set the satellite ID
             final int gpsId = RtcmDataField.DF009.intValue(encodedMessage);
@@ -112,7 +116,7 @@ public enum RtcmMessageType implements MessageType {
             gpsNavMessage.setAf0(RtcmDataField.DF084.doubleValue(encodedMessage));
             gpsNavMessage.setIODC(RtcmDataField.DF085.intValue(encodedMessage));
             gpsNavMessage.setCrs(RtcmDataField.DF086.doubleValue(encodedMessage));
-            gpsNavMessage.setDeltaN(RtcmDataField.DF087.doubleValue(encodedMessage));
+            gpsNavMessage.setDeltaN0(RtcmDataField.DF087.doubleValue(encodedMessage));
             gpsNavMessage.setM0(RtcmDataField.DF088.doubleValue(encodedMessage));
             gpsNavMessage.setCuc(RtcmDataField.DF089.doubleValue(encodedMessage));
             gpsNavMessage.setE(RtcmDataField.DF090.doubleValue(encodedMessage));
@@ -149,7 +153,8 @@ public enum RtcmMessageType implements MessageType {
         /** {@inheritDoc} */
         @Override
         public ParsedMessage parse(final EncodedMessage encodedMessage,
-                                   final int messageNumber) {
+                                   final int messageNumber,
+                                   final TimeScales timeScales) {
 
             // Initialize data container and navigation message
             final Rtcm1020Data             rtcm1020Data      = new Rtcm1020Data();
@@ -218,11 +223,13 @@ public enum RtcmMessageType implements MessageType {
         /** {@inheritDoc} */
         @Override
         public ParsedMessage parse(final EncodedMessage encodedMessage,
-                                   final int messageNumber) {
+                                   final int messageNumber,
+                                   final TimeScales timeScales) {
 
             // Initialize data container and navigation message
             final Rtcm1042Data            rtcm1042Data  = new Rtcm1042Data();
-            final BeidouLegacyNavigationMessage beidouNavMessage = new BeidouLegacyNavigationMessage();
+            final BeidouLegacyNavigationMessage beidouNavMessage =
+                new BeidouLegacyNavigationMessage(timeScales, SatelliteSystem.BEIDOU);
 
             // Set the satellite ID
             final int beidouId = RtcmDataField.DF488.intValue(encodedMessage);
@@ -247,7 +254,7 @@ public enum RtcmMessageType implements MessageType {
             beidouNavMessage.setAf0(RtcmDataField.DF496.doubleValue(encodedMessage));
             beidouNavMessage.setAODC(RtcmDataField.DF497.intValue(encodedMessage));
             beidouNavMessage.setCrs(RtcmDataField.DF498.doubleValue(encodedMessage));
-            beidouNavMessage.setDeltaN(RtcmDataField.DF499.doubleValue(encodedMessage));
+            beidouNavMessage.setDeltaN0(RtcmDataField.DF499.doubleValue(encodedMessage));
             beidouNavMessage.setM0(RtcmDataField.DF500.doubleValue(encodedMessage));
             beidouNavMessage.setCuc(RtcmDataField.DF501.doubleValue(encodedMessage));
             beidouNavMessage.setE(RtcmDataField.DF502.doubleValue(encodedMessage));
@@ -281,11 +288,12 @@ public enum RtcmMessageType implements MessageType {
         /** {@inheritDoc} */
         @Override
         public ParsedMessage parse(final EncodedMessage encodedMessage,
-                                   final int messageNumber) {
+                                   final int messageNumber, final TimeScales timeScales) {
 
             // Initialize data container and navigation message
             final Rtcm1044Data          rtcm1044Data   = new Rtcm1044Data();
-            final QZSSLegacyNavigationMessage qzssNavMessage = new QZSSLegacyNavigationMessage();
+            final QZSSLegacyNavigationMessage qzssNavMessage =
+                new QZSSLegacyNavigationMessage(timeScales, SatelliteSystem.QZSS);
 
             // Set the satellite ID
             final int qzssId = RtcmDataField.DF429.intValue(encodedMessage);
@@ -299,7 +307,7 @@ public enum RtcmMessageType implements MessageType {
             qzssNavMessage.setAf0(RtcmDataField.DF433.doubleValue(encodedMessage));
             qzssNavMessage.setIODE(RtcmDataField.DF434.intValue(encodedMessage));
             qzssNavMessage.setCrs(RtcmDataField.DF435.doubleValue(encodedMessage));
-            qzssNavMessage.setDeltaN(RtcmDataField.DF436.doubleValue(encodedMessage));
+            qzssNavMessage.setDeltaN0(RtcmDataField.DF436.doubleValue(encodedMessage));
             qzssNavMessage.setM0(RtcmDataField.DF437.doubleValue(encodedMessage));
             qzssNavMessage.setCuc(RtcmDataField.DF438.doubleValue(encodedMessage));
             qzssNavMessage.setE(RtcmDataField.DF439.doubleValue(encodedMessage));
@@ -350,11 +358,13 @@ public enum RtcmMessageType implements MessageType {
         /** {@inheritDoc} */
         @Override
         public ParsedMessage parse(final EncodedMessage encodedMessage,
-                                   final int messageNumber) {
+                                   final int messageNumber,
+                                   final TimeScales timeScales) {
 
             // Initialize data container and navigation message
             final Rtcm1045Data             rtcm1045Data      = new Rtcm1045Data();
-            final GalileoNavigationMessage galileoNavMessage = new GalileoNavigationMessage();
+            final GalileoNavigationMessage galileoNavMessage =
+                new GalileoNavigationMessage(timeScales, SatelliteSystem.GALILEO);
 
             // Set the satellite ID
             final int galileoId = RtcmDataField.DF252.intValue(encodedMessage);
@@ -380,7 +390,7 @@ public enum RtcmMessageType implements MessageType {
             galileoNavMessage.setAf1(RtcmDataField.DF295.doubleValue(encodedMessage));
             galileoNavMessage.setAf0(RtcmDataField.DF296.doubleValue(encodedMessage));
             galileoNavMessage.setCrs(RtcmDataField.DF297.doubleValue(encodedMessage));
-            galileoNavMessage.setDeltaN(RtcmDataField.DF298.doubleValue(encodedMessage));
+            galileoNavMessage.setDeltaN0(RtcmDataField.DF298.doubleValue(encodedMessage));
             galileoNavMessage.setM0(RtcmDataField.DF299.doubleValue(encodedMessage));
             galileoNavMessage.setCuc(RtcmDataField.DF300.doubleValue(encodedMessage));
             galileoNavMessage.setE(RtcmDataField.DF301.doubleValue(encodedMessage));
@@ -415,7 +425,8 @@ public enum RtcmMessageType implements MessageType {
 
         /** {@inheritDoc} */
         @Override
-        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber) {
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
+                                   final TimeScales timeScales) {
 
             // Header data
             final RtcmOrbitCorrectionHeader rtcm1057Header = new RtcmOrbitCorrectionHeader();
@@ -475,7 +486,8 @@ public enum RtcmMessageType implements MessageType {
 
         /** {@inheritDoc} */
         @Override
-        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber) {
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
+                                   final TimeScales timeScales) {
 
             // Header data
             final RtcmCorrectionHeader rtcm1058Header = new RtcmCorrectionHeader();
@@ -527,7 +539,8 @@ public enum RtcmMessageType implements MessageType {
 
         /** {@inheritDoc} */
         @Override
-        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber) {
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
+                                   final TimeScales timeScales) {
 
             // Header data
             final RtcmOrbitCorrectionHeader rtcm1060Header = new RtcmOrbitCorrectionHeader();
@@ -594,7 +607,8 @@ public enum RtcmMessageType implements MessageType {
 
         /** {@inheritDoc} */
         @Override
-        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber) {
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
+                                   final TimeScales timeScales) {
 
             // Header data
             final RtcmOrbitCorrectionHeader rtcm1063Header = new RtcmOrbitCorrectionHeader();
@@ -654,7 +668,8 @@ public enum RtcmMessageType implements MessageType {
 
         /** {@inheritDoc} */
         @Override
-        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber) {
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
+                                   final TimeScales timeScales) {
 
             // Header data
             final RtcmCorrectionHeader rtcm1064Header = new RtcmCorrectionHeader();
@@ -706,7 +721,8 @@ public enum RtcmMessageType implements MessageType {
 
         /** {@inheritDoc} */
         @Override
-        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber) {
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
+                                   final TimeScales timeScales) {
 
             // Header data
             final RtcmOrbitCorrectionHeader rtcm1066Header = new RtcmOrbitCorrectionHeader();
@@ -773,7 +789,8 @@ public enum RtcmMessageType implements MessageType {
 
         /** {@inheritDoc} */
         @Override
-        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber) {
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
+                                   final TimeScales timeScales) {
 
             // Header data
             final RtcmOrbitCorrectionHeader rtcm1240Header = new RtcmOrbitCorrectionHeader();
@@ -833,7 +850,8 @@ public enum RtcmMessageType implements MessageType {
 
         /** {@inheritDoc} */
         @Override
-        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber) {
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
+                                   final TimeScales timeScales) {
 
             // Header data
             final RtcmCorrectionHeader rtcm1241Header = new RtcmCorrectionHeader();
@@ -885,7 +903,8 @@ public enum RtcmMessageType implements MessageType {
 
         /** {@inheritDoc} */
         @Override
-        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber) {
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber,
+                                   final TimeScales timeScales) {
 
             // Header data
             final RtcmOrbitCorrectionHeader rtcm1243Header = new RtcmOrbitCorrectionHeader();

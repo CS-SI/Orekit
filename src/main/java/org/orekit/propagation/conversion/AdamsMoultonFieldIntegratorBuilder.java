@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,11 +18,9 @@ package org.orekit.propagation.conversion;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.ode.AbstractFieldIntegrator;
 import org.hipparchus.ode.nonstiff.AdamsMoultonFieldIntegrator;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.ToleranceProvider;
 
 /**
  * Builder for AdamsMoultonFieldIntegrator.
@@ -33,10 +31,10 @@ import org.orekit.propagation.numerical.NumericalPropagator;
  * @param <T> type of the field elements
  */
 public class AdamsMoultonFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
-        extends AbstractLimitedVariableStepFieldIntegratorBuilder<T> {
+        extends AbstractLimitedVariableStepFieldIntegratorBuilder<T, AdamsMoultonFieldIntegrator<T>> {
 
     /**
-     * Build a new instance.
+     * Build a new instance. Should only use this constructor with {@link Orbit}.
      *
      * @param nSteps number of steps
      * @param minStep minimum step size (s)
@@ -44,17 +42,37 @@ public class AdamsMoultonFieldIntegratorBuilder<T extends CalculusFieldElement<T
      * @param dP position error (m)
      *
      * @see AdamsMoultonFieldIntegrator
-     * @see NumericalPropagator#tolerances(double, Orbit, OrbitType)
      */
     public AdamsMoultonFieldIntegratorBuilder(final int nSteps, final double minStep,
                                               final double maxStep, final double dP) {
-        super(nSteps, minStep, maxStep, dP);
+        super(nSteps, minStep, maxStep, getDefaultToleranceProvider(dP));
+    }
+
+    /**
+     * Build a new instance.
+     *
+     * @param nSteps number of steps
+     * @param minStep minimum step size (s)
+     * @param maxStep maximum step size (s)
+     * @param toleranceProvider integration tolerance provider
+     *
+     * @since 13.0
+     * @see AdamsMoultonFieldIntegrator
+     */
+    public AdamsMoultonFieldIntegratorBuilder(final int nSteps, final double minStep,
+                                              final double maxStep, final ToleranceProvider toleranceProvider) {
+        super(nSteps, minStep, maxStep, toleranceProvider);
     }
 
     /** {@inheritDoc} */
     @Override
-    public AbstractFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitType orbitType) {
-        final double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
-        return new AdamsMoultonFieldIntegrator<>(field, nSteps, minStep, maxStep, tol[0], tol[1]);
+    protected AdamsMoultonFieldIntegrator<T> buildIntegrator(final Field<T> field, final double[][] tolerances) {
+        return new AdamsMoultonFieldIntegrator<>(field, getnSteps(), getMinStep(), getMaxStep(), tolerances[0], tolerances[1]);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AdamsMoultonIntegratorBuilder toODEIntegratorBuilder() {
+        return new AdamsMoultonIntegratorBuilder(getnSteps(), getMinStep(), getMaxStep(), getToleranceProvider());
     }
 }

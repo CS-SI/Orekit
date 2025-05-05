@@ -42,7 +42,6 @@ import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.AbstractMessageWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.AccurateFormatter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -354,28 +353,28 @@ public class OemWriter extends AbstractMessageWriter<OdmHeader, OemSegment, Oem>
 
             // Position data in km
             generator.writeRawData(' ');
-            generator.writeRawData(String.format(AccurateFormatter.format(Unit.KILOMETRE.fromSI(coordinates.getPosition().getX()))));
+            generator.writeRawData(String.format(generator.doubleToString(Unit.KILOMETRE.fromSI(coordinates.getPosition().getX()))));
             generator.writeRawData(' ');
-            generator.writeRawData(String.format(AccurateFormatter.format(Unit.KILOMETRE.fromSI(coordinates.getPosition().getY()))));
+            generator.writeRawData(String.format(generator.doubleToString(Unit.KILOMETRE.fromSI(coordinates.getPosition().getY()))));
             generator.writeRawData(' ');
-            generator.writeRawData(String.format(AccurateFormatter.format(Unit.KILOMETRE.fromSI(coordinates.getPosition().getZ()))));
+            generator.writeRawData(String.format(generator.doubleToString(Unit.KILOMETRE.fromSI(coordinates.getPosition().getZ()))));
 
             // Velocity data in km/s
             generator.writeRawData(' ');
-            generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S.fromSI(coordinates.getVelocity().getX()))));
+            generator.writeRawData(String.format(generator.doubleToString(Units.KM_PER_S.fromSI(coordinates.getVelocity().getX()))));
             generator.writeRawData(' ');
-            generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S.fromSI(coordinates.getVelocity().getY()))));
+            generator.writeRawData(String.format(generator.doubleToString(Units.KM_PER_S.fromSI(coordinates.getVelocity().getY()))));
             generator.writeRawData(' ');
-            generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S.fromSI(coordinates.getVelocity().getZ()))));
+            generator.writeRawData(String.format(generator.doubleToString(Units.KM_PER_S.fromSI(coordinates.getVelocity().getZ()))));
 
             // Acceleration data in km/s²
             if (useAcceleration) {
                 generator.writeRawData(' ');
-                generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S2.fromSI(coordinates.getAcceleration().getX()))));
+                generator.writeRawData(String.format(generator.doubleToString(Units.KM_PER_S2.fromSI(coordinates.getAcceleration().getX()))));
                 generator.writeRawData(' ');
-                generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S2.fromSI(coordinates.getAcceleration().getY()))));
+                generator.writeRawData(String.format(generator.doubleToString(Units.KM_PER_S2.fromSI(coordinates.getAcceleration().getY()))));
                 generator.writeRawData(' ');
-                generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S2.fromSI(coordinates.getAcceleration().getZ()))));
+                generator.writeRawData(String.format(generator.doubleToString(Units.KM_PER_S2.fromSI(coordinates.getAcceleration().getZ()))));
             }
 
             // end the line
@@ -471,7 +470,7 @@ public class OemWriter extends AbstractMessageWriter<OdmHeader, OemSegment, Oem>
                     if (j > 0) {
                         generator.writeRawData(' ');
                     }
-                    generator.writeRawData(AccurateFormatter.format(Units.KM2.fromSI(m.getEntry(i, j))));
+                    generator.writeRawData(generator.doubleToString(Units.KM2.fromSI(m.getEntry(i, j))));
                 }
 
                 // end the line

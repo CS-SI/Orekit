@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,8 @@
 package org.orekit.propagation.conversion;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.ode.MultistepFieldIntegrator;
+import org.orekit.propagation.ToleranceProvider;
 
 /**
  * Abstract class for integrator using a limited number of variable steps.
@@ -25,25 +27,33 @@ import org.hipparchus.CalculusFieldElement;
  *
  * @author Vincent Cucchietti
  */
-public abstract class AbstractLimitedVariableStepFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
-        extends AbstractVariableStepFieldIntegratorBuilder<T> {
+public abstract class AbstractLimitedVariableStepFieldIntegratorBuilder<T extends CalculusFieldElement<T>, W extends MultistepFieldIntegrator<T>>
+        extends AbstractVariableStepFieldIntegratorBuilder<T, W> {
 
-    // CHECKSTYLE: stop VisibilityModifier check
     /** Number of steps. */
-    protected final int nSteps;
-    // CHECKSTYLE: resume VisibilityModifier check
+    private final int nSteps;
 
     /**
      * Constructor.
      *
      * @param minStep minimum step size (s)
      * @param maxStep maximum step size (s)
-     * @param dP position error (m)
+     * @param toleranceProvider integration tolerance provider
      * @param nSteps number of steps
+     * @since 13.0
      */
-    AbstractLimitedVariableStepFieldIntegratorBuilder(final int nSteps, final double minStep,
-                                                      final double maxStep, final double dP) {
-        super(minStep, maxStep, dP);
+    protected AbstractLimitedVariableStepFieldIntegratorBuilder(final int nSteps, final double minStep,
+                                                      final double maxStep, final ToleranceProvider toleranceProvider) {
+        super(minStep, maxStep, toleranceProvider);
         this.nSteps = nSteps;
+    }
+
+    /**
+     * Getter for number of steps.
+     * @return nSteps
+     * @since 13.0
+     */
+    protected int getnSteps() {
+        return nSteps;
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -49,8 +49,8 @@ import org.orekit.estimation.measurements.Position;
 import org.orekit.files.ilrs.CPF;
 import org.orekit.files.ilrs.CPF.CPFCoordinate;
 import org.orekit.files.ilrs.CPF.CPFEphemeris;
-import org.orekit.files.rinex.HatanakaCompressFilter;
 import org.orekit.files.ilrs.CPFParser;
+import org.orekit.files.rinex.HatanakaCompressFilter;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.IsotropicDrag;
@@ -165,8 +165,8 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
         final StreamingStatistics statX      = observer.getXStatistics();
         final StreamingStatistics statY      = observer.getYStatistics();
         final StreamingStatistics statZ      = observer.getZStatistics();
-        Assertions.assertEquals(0.0, statX.getMean(), 1.37e-4);
-        Assertions.assertEquals(0.0, statY.getMean(), 4.93e-4);
+        Assertions.assertEquals(0.0, statX.getMean(), 1.365e-4);
+        Assertions.assertEquals(0.0, statY.getMean(), 4.931e-4);
         Assertions.assertEquals(0.0, statZ.getMean(), 3.80e-4);
         Assertions.assertEquals(0.0, statX.getMin(),  0.027); // Value is negative
         Assertions.assertEquals(0.0, statY.getMin(),  0.028); // Value is negative

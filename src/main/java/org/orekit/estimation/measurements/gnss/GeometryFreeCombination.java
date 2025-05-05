@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.estimation.measurements.gnss;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.GnssSignal;
 import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.SatelliteSystem;
 
@@ -56,15 +56,15 @@ public class GeometryFreeCombination extends AbstractDualFrequencyCombination {
 
     /** {@inheritDoc} */
     @Override
-    protected double getCombinedValue(final double obs1, final Frequency f1,
-                                      final double obs2, final Frequency f2) {
+    protected double getCombinedValue(final double obs1, final GnssSignal s1,
+                                      final double obs2, final GnssSignal s2) {
         // Combined observed value does not depend on frequency for the Geometry-Free combination
         return FastMath.abs(obs2 - obs1);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected double getCombinedFrequency(final Frequency f1, final Frequency f2) {
+    protected double getCombinedFrequency(final GnssSignal s1, final GnssSignal s2) {
         // There is not combined frequency for the Geometry-Free combination
         return Double.NaN;
     }

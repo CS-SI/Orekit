@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,6 +27,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
+import org.orekit.utils.DataDictionary;
 
 /** Orbit propagator that adapts an underlying propagator, adding {@link
  * DifferentialEffect differential effects}.
@@ -83,7 +84,7 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
     public AdapterPropagator(final Propagator reference) {
         super(reference.getAttitudeProvider());
         this.reference = reference;
-        this.effects = new ArrayList<DifferentialEffect>();
+        this.effects = new ArrayList<>();
         // Sets initial state
         super.resetInitialState(getInitialState());
     }
@@ -131,11 +132,11 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
 
     /** {@inheritDoc} */
     @Override
-    protected SpacecraftState basicPropagate(final AbsoluteDate date) {
+    public SpacecraftState basicPropagate(final AbsoluteDate date) {
 
         // compute reference state
         SpacecraftState state = reference.propagate(date);
-        final DoubleArrayDictionary additionalBefore    = state.getAdditionalStatesValues();
+        final DataDictionary additionalBefore    = state.getAdditionalDataValues();
         final DoubleArrayDictionary additionalDotBefore = state.getAdditionalStatesDerivatives();
 
         // add all the effects
@@ -144,13 +145,13 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
         }
 
         // forward additional states and derivatives from the reference propagator
-        for (final DoubleArrayDictionary.Entry entry : additionalBefore.getData()) {
-            if (!state.hasAdditionalState(entry.getKey())) {
-                state = state.addAdditionalState(entry.getKey(), entry.getValue());
+        for (final DataDictionary.Entry entry : additionalBefore.getData()) {
+            if (!state.hasAdditionalData(entry.getKey())) {
+                state = state.addAdditionalData(entry.getKey(), entry.getValue());
             }
         }
         for (final DoubleArrayDictionary.Entry entry : additionalDotBefore.getData()) {
-            if (!state.hasAdditionalState(entry.getKey())) {
+            if (!state.hasAdditionalData(entry.getKey())) {
                 state = state.addAdditionalStateDerivative(entry.getKey(), entry.getValue());
             }
         }
@@ -160,7 +161,7 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** {@inheritDoc} */
-    protected Orbit propagateOrbit(final AbsoluteDate date) {
+    public Orbit propagateOrbit(final AbsoluteDate date) {
         return basicPropagate(date).getOrbit();
     }
 

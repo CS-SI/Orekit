@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -196,8 +196,8 @@ public class ParseToken {
     public <T extends Enum<T>> List<T> getContentAsEnumList(final Class<T> cls) {
         final String[] elements = SPLIT_AT_COMMAS.split(getRawContent());
         final List<T> list = new ArrayList<>(elements.length);
-        for (int i = 0; i < elements.length; ++i) {
-            list.add(toEnum(cls, elements[i]));
+        for (String element : elements) {
+            list.add(toEnum(cls, element));
         }
         return list;
     }
@@ -721,7 +721,7 @@ public class ParseToken {
             final String unbracketed = bracketed.substring(1, bracketed.length() - 1).trim();
             try {
                 consumer.accept(Stream.of(SPLIT_AT_COMMAS.split(unbracketed)).
-                                map(s -> Unit.parse(s)).
+                                map(Unit::parse).
                                 collect(Collectors.toList()));
             } catch (OrekitException oe) {
                 // one unit is unknown

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -385,24 +385,6 @@ public class RinexObservationHeader extends RinexBaseHeader {
         return eccentricities;
     }
 
-    /** Set the realtime-derived receiver clock offset.
-     * @param clkOffset realtime-derived receiver clock offset
-     * @deprecated as of 12.1, replaced by {@link #setClockOffsetApplied(boolean)}
-     */
-    @Deprecated
-    public void setClkOffset(final int clkOffset) {
-        setClockOffsetApplied(clkOffset > 0);
-    }
-
-    /** Get the realtime-derived receiver clock offset.
-     * @return realtime-derived receiver clock offset
-     * @deprecated as of 12.1, replaced by #@link {@link #getClockOffsetApplied()}
-     */
-    @Deprecated
-    public int getClkOffset() {
-        return getClockOffsetApplied() ? 1 : 0;
-    }
-
     /** Set the application flag for realtime-derived receiver clock offset.
      * @param clockOffsetApplied application flag for realtime-derived receiver clock offset
      * @since 12.1
@@ -706,8 +688,10 @@ public class RinexObservationHeader extends RinexBaseHeader {
      * @param scaleFactorCorrection scale factor correction
      */
     public void addScaleFactorCorrection(final SatelliteSystem satelliteSystem, final ScaleFactorCorrection scaleFactorCorrection) {
-        final List<ScaleFactorCorrection> sfc = scaleFactorCorrections.computeIfAbsent(satelliteSystem,
-                                                                                       k -> new ArrayList<>());
+        final List<ScaleFactorCorrection> sfc;
+        synchronized (scaleFactorCorrections) {
+            sfc = scaleFactorCorrections.computeIfAbsent(satelliteSystem, k -> new ArrayList<>());
+        }
         sfc.add(scaleFactorCorrection);
     }
 
@@ -759,7 +743,10 @@ public class RinexObservationHeader extends RinexBaseHeader {
      * @since 12.0
      */
     public void setNbObsPerSatellite(final SatInSystem sat, final ObservationType type, final int nbObs) {
-        final Map<ObservationType, Integer> satNbObs = nbObsPerSat.computeIfAbsent(sat, k -> new HashMap<>());
+        final Map<ObservationType, Integer> satNbObs;
+        synchronized (nbObsPerSat) {
+            satNbObs = nbObsPerSat.computeIfAbsent(sat, k -> new HashMap<>());
+        }
         satNbObs.put(type, nbObs);
     }
 
@@ -788,64 +775,64 @@ public class RinexObservationHeader extends RinexBaseHeader {
         return Collections.unmodifiableMap(mapTypeObs);
     }
 
-    /** Set the code phase bias correction for GLONASS {@link ObservationType#C1C} signal.
-     * @param c1cCodePhaseBias code phase bias correction for GLONASS {@link ObservationType#C1C} signal
+    /** Set the code phase bias correction for GLONASS {@link org.orekit.gnss.PredefinedObservationType#C1C} signal.
+     * @param c1cCodePhaseBias code phase bias correction for GLONASS {@link org.orekit.gnss.PredefinedObservationType#C1C} signal
      * @since 12.0
      */
     public void setC1cCodePhaseBias(final double c1cCodePhaseBias) {
         this.c1cCodePhaseBias = c1cCodePhaseBias;
     }
 
-    /** Get the code phase bias correction for GLONASS {@link ObservationType#C1C} signal.
-     * @return code phase bias correction for GLONASS {@link ObservationType#C1C} signal
+    /** Get the code phase bias correction for GLONASS {@link org.orekit.gnss.PredefinedObservationType#C1C} signal.
+     * @return code phase bias correction for GLONASS {@link org.orekit.gnss.PredefinedObservationType#C1C} signal
      * @since 12.0
      */
     public double getC1cCodePhaseBias() {
         return c1cCodePhaseBias;
     }
 
-    /** Set the code phase bias correction for GLONASS {@link ObservationType#C1P} signal.
-     * @param c1pCodePhaseBias code phase bias correction for GLONASS {@link ObservationType#C1P} signal
+    /** Set the code phase bias correction for GLONASS {@link org.orekit.gnss.PredefinedObservationType#C1P} signal.
+     * @param c1pCodePhaseBias code phase bias correction for GLONASS {@link org.orekit.gnss.PredefinedObservationType#C1P} signal
      * @since 12.0
      */
     public void setC1pCodePhaseBias(final double c1pCodePhaseBias) {
         this.c1pCodePhaseBias = c1pCodePhaseBias;
     }
 
-    /** Get the code phase bias correction for GLONASS {@link ObservationType#C1P} signal.
-     * @return code phase bias correction for GLONASS {@link ObservationType#C1P} signal
+    /** Get the code phase bias correction for GLONASS {@link org.orekit.gnss.PredefinedObservationType#C1P} signal.
+     * @return code phase bias correction for GLONASS {@link org.orekit.gnss.PredefinedObservationType#C1P} signal
      * @since 12.0
      */
     public double getC1pCodePhaseBias() {
         return c1pCodePhaseBias;
     }
 
-    /** Set the code phase bias correction for GLONASS {@link ObservationType#C2C} signal.
-     * @param c2cCodePhaseBias code phase bias correction for GLONASS {@link ObservationType#C2C} signal
+    /** Set the code phase bias correction for GLONASS {@link org.orekit.gnss.PredefinedObservationType#C2C} signal.
+     * @param c2cCodePhaseBias code phase bias correction for GLONASS {@link org.orekit.gnss.PredefinedObservationType#C2C} signal
      * @since 12.0
      */
     public void setC2cCodePhaseBias(final double c2cCodePhaseBias) {
         this.c2cCodePhaseBias = c2cCodePhaseBias;
     }
 
-    /** Get the code phase bias correction for GLONASS {@link ObservationType#C2C} signal.
-     * @return code phase bias correction for GLONASS {@link ObservationType#C2C} signal
+    /** Get the code phase bias correction for GLONASS {@link org.orekit.gnss.PredefinedObservationType#C2C} signal.
+     * @return code phase bias correction for GLONASS {@link org.orekit.gnss.PredefinedObservationType#C2C} signal
      * @since 12.0
      */
     public double getC2cCodePhaseBias() {
         return c2cCodePhaseBias;
     }
 
-    /** Set the code phase bias correction for GLONASS {@link ObservationType#C2P} signal.
-     * @param c2pCodePhaseBias code phase bias correction for GLONASS {@link ObservationType#C2P} signal
+    /** Set the code phase bias correction for GLONASS {@link org.orekit.gnss.PredefinedObservationType#C2P} signal.
+     * @param c2pCodePhaseBias code phase bias correction for GLONASS {@link org.orekit.gnss.PredefinedObservationType#C2P} signal
      * @since 12.0
      */
     public void setC2pCodePhaseBias(final double c2pCodePhaseBias) {
         this.c2pCodePhaseBias = c2pCodePhaseBias;
     }
 
-    /** Get the code phase bias correction for GLONASS {@link ObservationType#C2P} signal.
-     * @return code phase bias correction for GLONASS {@link ObservationType#C2P} signal
+    /** Get the code phase bias correction for GLONASS {@link org.orekit.gnss.PredefinedObservationType#C2P} signal.
+     * @return code phase bias correction for GLONASS {@link org.orekit.gnss.PredefinedObservationType#C2P} signal
      * @since 12.0
      */
     public double getC2pCodePhaseBias() {

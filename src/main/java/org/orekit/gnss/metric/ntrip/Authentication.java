@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,7 +38,7 @@ public enum Authentication {
     DIGEST("D");
 
     /** Keywords map. */
-    private static final Map<String, Authentication> KEYWORDS_MAP = new HashMap<String, Authentication>();
+    private static final Map<String, Authentication> KEYWORDS_MAP = new HashMap<>();
     static {
         for (final Authentication type : values()) {
             KEYWORDS_MAP.put(type.getKeyword(), type);

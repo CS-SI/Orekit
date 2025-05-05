@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,6 +27,7 @@ import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeInterpolator;
@@ -874,6 +875,9 @@ public class FieldTransform<T extends CalculusFieldElement<T>>
     /** Specialized class for identity transform. */
     private static class FieldIdentityTransform<T extends CalculusFieldElement<T>> extends FieldTransform<T> {
 
+        /** Field. */
+        private final Field<T> field;
+
         /** Simple constructor.
          * @param field field for the components
          */
@@ -882,6 +886,17 @@ public class FieldTransform<T extends CalculusFieldElement<T>>
                   FieldAbsoluteDate.getArbitraryEpoch(field).toAbsoluteDate(),
                   FieldPVCoordinates.getZero(field),
                   FieldAngularCoordinates.getIdentity(field));
+            this.field = field;
+        }
+
+        @Override
+        public FieldStaticTransform<T> staticShiftedBy(final T dt) {
+            return toStaticTransform();
+        }
+
+        @Override
+        public FieldTransform<T> shiftedBy(final T dt) {
+            return this;
         }
 
         /** {@inheritDoc} */
@@ -890,10 +905,20 @@ public class FieldTransform<T extends CalculusFieldElement<T>>
             return this;
         }
 
+        @Override
+        public FieldStaticTransform<T> getStaticInverse() {
+            return toStaticTransform();
+        }
+
         /** {@inheritDoc} */
         @Override
         public FieldTransform<T> getInverse() {
             return this;
+        }
+
+        @Override
+        public FieldStaticTransform<T> toStaticTransform() {
+            return FieldStaticTransform.getIdentity(field);
         }
 
         /** {@inheritDoc} */
@@ -902,10 +927,20 @@ public class FieldTransform<T extends CalculusFieldElement<T>>
             return position;
         }
 
+        @Override
+        public FieldVector3D<T> transformPosition(final Vector3D position) {
+            return transformVector(position);
+        }
+
         /** {@inheritDoc} */
         @Override
         public FieldVector3D<T> transformVector(final FieldVector3D<T> vector) {
             return vector;
+        }
+
+        @Override
+        public FieldVector3D<T> transformVector(final Vector3D vector) {
+            return new FieldVector3D<>(field, vector);
         }
 
         /** {@inheritDoc} */
@@ -918,6 +953,31 @@ public class FieldTransform<T extends CalculusFieldElement<T>>
         @Override
         public FieldPVCoordinates<T> transformPVCoordinates(final FieldPVCoordinates<T> pv) {
             return pv;
+        }
+
+        @Override
+        public FieldPVCoordinates<T> transformPVCoordinates(final PVCoordinates pv) {
+            return new FieldPVCoordinates<>(field, pv);
+        }
+
+        @Override
+        public TimeStampedFieldPVCoordinates<T> transformPVCoordinates(final TimeStampedPVCoordinates pv) {
+            return new TimeStampedFieldPVCoordinates<>(field, pv);
+        }
+
+        @Override
+        public TimeStampedFieldPVCoordinates<T> transformPVCoordinates(final TimeStampedFieldPVCoordinates<T> pv) {
+            return pv;
+        }
+
+        @Override
+        public FieldPVCoordinates<T> transformOnlyPV(final FieldPVCoordinates<T> pv) {
+            return new FieldPVCoordinates<>(pv.getPosition(), pv.getVelocity());
+        }
+
+        @Override
+        public TimeStampedFieldPVCoordinates<T> transformOnlyPV(final TimeStampedFieldPVCoordinates<T> pv) {
+            return new TimeStampedFieldPVCoordinates<>(pv.getDate(), pv.getPosition(), pv.getVelocity(), FieldVector3D.getZero(field));
         }
 
         /** {@inheritDoc} */

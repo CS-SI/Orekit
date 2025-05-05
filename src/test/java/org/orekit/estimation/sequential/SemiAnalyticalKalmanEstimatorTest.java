@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -200,7 +200,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
 
-        Assertions.assertEquals(0.0, observer.getMeanResidual(), 4.99e-8);
+        Assertions.assertEquals(0.0, observer.getMeanResidual(), 6e-8);
         Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
         Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
         Assertions.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
@@ -412,7 +412,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
     public static class Observer implements KalmanObserver {
 
         /** Residuals statistics. */
-        private StreamingStatistics stats;
+        private final StreamingStatistics stats;
 
         /** Constructor. */
         public Observer() {

@@ -17,6 +17,8 @@
 package org.orekit.bodies;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
@@ -37,7 +39,7 @@ public class FieldGeodeticPointTest {
      * normalization.
      */
     @Test
-    public void testGeodeticPointAngleNormalization() {
+    void testGeodeticPointAngleNormalization() {
         // action
         FieldGeodeticPoint<Binary64> point =
                 new FieldGeodeticPoint<>(new Binary64(FastMath.toRadians(135)),
@@ -62,7 +64,7 @@ public class FieldGeodeticPointTest {
      * several different angles.
      */
     @Test
-    public void testGeodeticPoint() {
+    void testGeodeticPoint() {
         // setup
         // the input and expected results
         final double pi = FastMath.PI;
@@ -102,7 +104,7 @@ public class FieldGeodeticPointTest {
      * check {@link FieldGeodeticPoint#equals(Object)}.
      */
     @Test
-    public void testEquals() {
+    void testEquals() {
         // setup
         FieldGeodeticPoint<Binary64> point =
                 new FieldGeodeticPoint<>(new Binary64(1),
@@ -130,7 +132,7 @@ public class FieldGeodeticPointTest {
      * check {@link FieldGeodeticPoint#toString()}.
      */
     @Test
-    public void testToString() {
+    void testToString() {
         // setup
         FieldGeodeticPoint<Binary64> point =
                 new FieldGeodeticPoint<>(new Binary64(FastMath.toRadians(30)),
@@ -142,6 +144,20 @@ public class FieldGeodeticPointTest {
 
         // verify
         Assertions.assertEquals("{lat: 30 deg, lon: 60 deg, alt: 90}", actual);
+    }
+
+    @Test
+    void testToGeodeticPoint() {
+        // GIVEN
+        final GeodeticPoint geodeticPoint = new GeodeticPoint(1., 2., 3.);
+        final ComplexField field = ComplexField.getInstance();
+        final FieldGeodeticPoint<Complex> fieldGeodeticPoint = new FieldGeodeticPoint<>(field, geodeticPoint);
+        // WHEN
+        final GeodeticPoint actualPoint = fieldGeodeticPoint.toGeodeticPoint();
+        // THEN
+        Assertions.assertEquals(geodeticPoint.getAltitude(), actualPoint.getAltitude());
+        Assertions.assertEquals(geodeticPoint.getLatitude(), actualPoint.getLatitude());
+        Assertions.assertEquals(geodeticPoint.getLongitude(), actualPoint.getLongitude());
     }
 
 }

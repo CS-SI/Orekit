@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2020-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,6 @@ import org.orekit.bodies.CelestialBodies;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** Detects when two moving objects come close to each other, as seen from spacecraft.
@@ -58,7 +57,7 @@ public class AngularSeparationFromSatelliteDetector extends AbstractDetector<Ang
     public AngularSeparationFromSatelliteDetector(final PVCoordinatesProvider primaryObject,
                                                   final PVCoordinatesProvider secondaryObject,
                                                   final double proximityAngle) {
-        this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnDecreasing(),
+        this(EventDetectionSettings.getDefaultEventDetectionSettings(), new StopOnDecreasing(),
              primaryObject, secondaryObject, proximityAngle);
     }
 
@@ -68,22 +67,20 @@ public class AngularSeparationFromSatelliteDetector extends AbstractDetector<Ang
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings detection Settings
      * @param handler event handler to call at event occurrences
      * @param primaryObject primaryObject at the center of the proximity zone
      * @param secondaryObject secondaryObject, that may come close to
      *        the primaryObject as seen from the spacecraft
      * @param proximityAngle proximity angle as seen from secondaryObject, at which events are triggered (rad)
+     * @since 13.0
      */
-    protected AngularSeparationFromSatelliteDetector(final AdaptableInterval maxCheck, final double threshold,
-                                                     final int maxIter,
+    protected AngularSeparationFromSatelliteDetector(final EventDetectionSettings detectionSettings,
                                                      final EventHandler handler,
                                                      final PVCoordinatesProvider primaryObject,
                                                      final PVCoordinatesProvider secondaryObject,
                                                      final double proximityAngle) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(detectionSettings, handler);
         this.primaryObject         = primaryObject;
         this.secondaryObject       = secondaryObject;
         this.proximityAngle = proximityAngle;
@@ -91,9 +88,9 @@ public class AngularSeparationFromSatelliteDetector extends AbstractDetector<Ang
 
     /** {@inheritDoc} */
     @Override
-    protected AngularSeparationFromSatelliteDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                                            final int newMaxIter, final EventHandler newHandler) {
-        return new AngularSeparationFromSatelliteDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
+    protected AngularSeparationFromSatelliteDetector create(final EventDetectionSettings detectionSettings,
+                                                            final EventHandler newHandler) {
+        return new AngularSeparationFromSatelliteDetector(detectionSettings, newHandler,
                                              primaryObject, secondaryObject, proximityAngle);
     }
 
@@ -136,11 +133,11 @@ public class AngularSeparationFromSatelliteDetector extends AbstractDetector<Ang
      * @return value of the switching function
      */
     public double g(final SpacecraftState s) {
-        final PVCoordinates sPV = s.getPVCoordinates();
+        final Vector3D sPosition = s.getPosition();
         final Vector3D primaryPos   = primaryObject  .getPosition(s.getDate(), s.getFrame());
         final Vector3D secondaryPos = secondaryObject.getPosition(s.getDate(), s.getFrame());
-        final double separation = Vector3D.angle(primaryPos.subtract(sPV.getPosition()),
-                                                 secondaryPos.subtract(sPV.getPosition()));
+        final double separation = Vector3D.angle(primaryPos.subtract(sPosition),
+                                                 secondaryPos.subtract(sPosition));
         return separation - proximityAngle;
     }
 

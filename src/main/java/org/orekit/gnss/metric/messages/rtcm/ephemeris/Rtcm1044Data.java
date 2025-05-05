@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -82,10 +82,8 @@ public class Rtcm1044Data extends RtcmEphemerisData {
 
         // Week number and time of ephemeris
         final int    week = qzssNavigationMessage.getWeek();
-        final double toe  = qzssNavigationMessage.getTime();
 
         // Set the ephemeris reference data
-        qzssNavigationMessage.setDate(new GNSSDate(week, toe, system, timeScales).getDate());
         qzssNavigationMessage.setEpochToc(new GNSSDate(week, qzssToc, system, timeScales).getDate());
 
         // Return the navigation message

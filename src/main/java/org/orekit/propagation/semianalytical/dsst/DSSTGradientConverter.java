@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -47,14 +48,15 @@ class DSSTGradientConverter extends AbstractGradientConverter {
         super(FREE_STATE_PARAMETERS);
 
         // equinoctial parameters always has derivatives
-        final Gradient sma  = Gradient.variable(FREE_STATE_PARAMETERS, 0, state.getA());
-        final Gradient ex   = Gradient.variable(FREE_STATE_PARAMETERS, 1, state.getEquinoctialEx());
-        final Gradient ey   = Gradient.variable(FREE_STATE_PARAMETERS, 2, state.getEquinoctialEy());
-        final Gradient hx   = Gradient.variable(FREE_STATE_PARAMETERS, 3, state.getHx());
-        final Gradient hy   = Gradient.variable(FREE_STATE_PARAMETERS, 4, state.getHy());
-        final Gradient l    = Gradient.variable(FREE_STATE_PARAMETERS, 5, state.getLM());
+        final Orbit orbit = state.getOrbit();
+        final Gradient sma  = Gradient.variable(FREE_STATE_PARAMETERS, 0, orbit.getA());
+        final Gradient ex   = Gradient.variable(FREE_STATE_PARAMETERS, 1, orbit.getEquinoctialEx());
+        final Gradient ey   = Gradient.variable(FREE_STATE_PARAMETERS, 2, orbit.getEquinoctialEy());
+        final Gradient hx   = Gradient.variable(FREE_STATE_PARAMETERS, 3, orbit.getHx());
+        final Gradient hy   = Gradient.variable(FREE_STATE_PARAMETERS, 4, orbit.getHy());
+        final Gradient l    = Gradient.variable(FREE_STATE_PARAMETERS, 5, orbit.getLM());
 
-        final Gradient gMu = Gradient.constant(FREE_STATE_PARAMETERS, state.getMu());
+        final Gradient gMu = Gradient.constant(FREE_STATE_PARAMETERS, orbit.getMu());
 
         // date
         final AbsoluteDate date = state.getDate();
@@ -75,7 +77,7 @@ class DSSTGradientConverter extends AbstractGradientConverter {
         gAttitude = provider.getAttitude(gOrbit, gOrbit.getDate(), gOrbit.getFrame());
 
         // initialize the list with the state having 0 force model parameters
-        initStates(new FieldSpacecraftState<>(gOrbit, gAttitude, gM));
+        initStates(new FieldSpacecraftState<>(gOrbit, gAttitude).withMass(gM));
 
     }
 

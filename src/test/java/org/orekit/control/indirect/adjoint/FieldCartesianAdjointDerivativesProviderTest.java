@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.orekit.control.indirect.adjoint;
 
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.util.Binary64;
@@ -23,10 +24,11 @@ import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
-import org.orekit.control.indirect.adjoint.cost.CartesianCost;
-import org.orekit.control.indirect.adjoint.cost.TestCost;
-import org.orekit.control.indirect.adjoint.cost.UnboundedCartesianEnergyNeglectingMass;
+import org.orekit.control.indirect.adjoint.cost.FieldUnboundedCartesianEnergyNeglectingMass;
+import org.orekit.control.indirect.adjoint.cost.TestFieldCost;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.*;
@@ -41,15 +43,16 @@ import org.orekit.utils.PVCoordinates;
 class FieldCartesianAdjointDerivativesProviderTest {
 
     @Test
+    @SuppressWarnings("unchecked")
     void testInitException() {
         // GIVEN
         final String name = "name";
         final double mu = Constants.EGM96_EARTH_MU;
-        final FieldCartesianAdjointDerivativesProvider<Binary64> derivativesProvider = new FieldCartesianAdjointDerivativesProvider<>(name,
-                new UnboundedCartesianEnergyNeglectingMass(), new CartesianAdjointKeplerianTerm(mu));
-        final FieldSpacecraftState mockedState = Mockito.mock(FieldSpacecraftState.class);
+        final FieldCartesianAdjointDerivativesProvider<Binary64> derivativesProvider = new FieldCartesianAdjointDerivativesProvider<>(
+                new FieldUnboundedCartesianEnergyNeglectingMass<>(name, Binary64Field.getInstance()), new CartesianAdjointKeplerianTerm(mu));
+        final FieldSpacecraftState<Binary64> mockedState = Mockito.mock(FieldSpacecraftState.class);
         Mockito.when(mockedState.isOrbitDefined()).thenReturn(true);
-        final FieldOrbit mockedOrbit = Mockito.mock(FieldOrbit.class);
+        final FieldOrbit<Binary64> mockedOrbit = Mockito.mock(FieldOrbit.class);
         Mockito.when(mockedOrbit.getType()).thenReturn(OrbitType.EQUINOCTIAL);
         Mockito.when(mockedState.getOrbit()).thenReturn(mockedOrbit);
         // WHEN
@@ -62,8 +65,8 @@ class FieldCartesianAdjointDerivativesProviderTest {
         final String name = "name";
         final double mu = Constants.EGM96_EARTH_MU;
         final Binary64Field field = Binary64Field.getInstance();
-        final FieldCartesianAdjointDerivativesProvider<Binary64> derivativesProvider = new FieldCartesianAdjointDerivativesProvider<>(name,
-                new UnboundedCartesianEnergyNeglectingMass(), new CartesianAdjointKeplerianTerm(mu));
+        final FieldCartesianAdjointDerivativesProvider<Binary64> derivativesProvider = new FieldCartesianAdjointDerivativesProvider<>(
+                new FieldUnboundedCartesianEnergyNeglectingMass<>(name, field), new CartesianAdjointKeplerianTerm(mu));
         final ClassicalRungeKuttaFieldIntegrator<Binary64> integrator = new ClassicalRungeKuttaFieldIntegrator<>(field,
                 Binary64.ONE.multiply(100.));
         final FieldNumericalPropagator<Binary64> propagator = new FieldNumericalPropagator<>(field, integrator);
@@ -71,12 +74,12 @@ class FieldCartesianAdjointDerivativesProviderTest {
                 FramesFactory.getGCRF(), AbsoluteDate.ARBITRARY_EPOCH, mu);
         final FieldSpacecraftState<Binary64> initialState = new FieldSpacecraftState<>(field, new SpacecraftState(orbit));
         propagator.setOrbitType(OrbitType.CARTESIAN);
-        propagator.setInitialState(initialState.addAdditionalState(name, MathArrays.buildArray(field, 6)));
+        propagator.setInitialState(initialState.addAdditionalData(name, MathArrays.buildArray(field, 6)));
         propagator.addAdditionalDerivativesProvider(derivativesProvider);
         // WHEN
         final FieldSpacecraftState<Binary64> terminalState = propagator.propagate(initialState.getDate().shiftedBy(1000.));
         // THEN
-        Assertions.assertTrue(propagator.isAdditionalStateManaged(name));
+        Assertions.assertTrue(propagator.isAdditionalDataManaged(name));
         final Binary64[] adjoint = terminalState.getAdditionalState(name);
         Assertions.assertEquals(0., adjoint[0].getReal());
         Assertions.assertEquals(0., adjoint[1].getReal());
@@ -86,13 +89,30 @@ class FieldCartesianAdjointDerivativesProviderTest {
         Assertions.assertEquals(0., adjoint[5].getReal());
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testEvaluateHamiltonian(final boolean withMassAdjoint) {
+        // GIVEN
+        final TestFieldCost cost = new TestFieldCost();
+        final double mu = 1e-3;
+        final FieldCartesianAdjointDerivativesProvider<Binary64> derivativesProvider = new FieldCartesianAdjointDerivativesProvider<>(cost,
+                new CartesianAdjointKeplerianTerm(mu));
+        final FieldSpacecraftState<Binary64> state = getState(derivativesProvider.getName(), withMassAdjoint);
+        // WHEN
+        final Binary64 hamiltonian = derivativesProvider.evaluateHamiltonian(state);
+        // THEN
+        final FieldVector3D<Binary64> velocity = state.getPVCoordinates().getVelocity();
+        final FieldVector3D<Binary64> vector = new FieldVector3D<>(Binary64.ONE, Binary64.ONE, Binary64.ONE);
+        Assertions.assertEquals(velocity.dotProduct(vector).add(mu), hamiltonian);
+    }
+
     @Test
     void testCombinedDerivatives() {
         // GIVEN
-        final CartesianCost cost = new TestCost();
-        final FieldCartesianAdjointDerivativesProvider<Binary64> derivativesProvider = new FieldCartesianAdjointDerivativesProvider<>("",
+        final TestFieldCost cost = new TestFieldCost();
+        final FieldCartesianAdjointDerivativesProvider<Binary64> derivativesProvider = new FieldCartesianAdjointDerivativesProvider<>(
                 cost);
-        final FieldSpacecraftState<Binary64> state = getState(derivativesProvider.getName());
+        final FieldSpacecraftState<Binary64> state = getState(derivativesProvider.getName(), false);
         // WHEN
         final FieldCombinedDerivatives<Binary64> combinedDerivatives = derivativesProvider.combinedDerivatives(state);
         // THEN
@@ -100,17 +120,22 @@ class FieldCartesianAdjointDerivativesProviderTest {
         for (int i = 0; i < 3; i++) {
             Assertions.assertEquals(0., increment[i].getReal());
         }
-        final double mass = state.getMass().getReal();
-        Assertions.assertEquals(1., increment[3].getReal() * mass);
-        Assertions.assertEquals(2., increment[4].getReal() * mass);
-        Assertions.assertEquals(3., increment[5].getReal() * mass);
-        Assertions.assertEquals(-10., increment[6].getReal());
+        Assertions.assertEquals(1., increment[3].getReal());
+        Assertions.assertEquals(2., increment[4].getReal());
+        Assertions.assertEquals(3., increment[5].getReal());
+        Assertions.assertEquals(-10. * state.getMass().getReal() * new Vector3D(1., 2., 3).getNorm(),
+                increment[6].getReal(), 1e-10);
     }
 
-    private static FieldSpacecraftState<Binary64> getState(final String name) {
+    private static FieldSpacecraftState<Binary64> getState(final String name, final boolean withMassAdjoint) {
         final Orbit orbit = new CartesianOrbit(new PVCoordinates(Vector3D.MINUS_I, Vector3D.PLUS_K),
                 FramesFactory.getGCRF(), AbsoluteDate.ARBITRARY_EPOCH, 1.);
         final FieldSpacecraftState<Binary64> stateWithoutAdditional = new FieldSpacecraftState<>(new FieldCartesianOrbit<>(Binary64Field.getInstance(), orbit));
-        return stateWithoutAdditional.addAdditionalState(name, Binary64.ONE, Binary64.ONE, Binary64.ONE, Binary64.ONE, Binary64.ONE, Binary64.ONE);
+        final Binary64[] adjoint = MathArrays.buildArray(stateWithoutAdditional.getDate().getField(),
+                withMassAdjoint ? 7 : 6);
+        for (int i = 0; i < 6; i++) {
+            adjoint[i] = Binary64.ONE;
+        }
+        return stateWithoutAdditional.addAdditionalData(name, adjoint);
     }
 }

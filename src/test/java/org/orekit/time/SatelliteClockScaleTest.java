@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,8 +37,8 @@ public class SatelliteClockScaleTest {
         final double    drift  = 0.001;
         final TimeScale sclk   = new SatelliteClockScale("SCLK", epoch, utc, offset, drift);
         Assertions.assertEquals("SCLK", sclk.toString());
-        Assertions.assertEquals(-25.0, sclk.offsetFromTAI(epoch), 1.0e-12);
-        Assertions.assertEquals(-24.0, sclk.offsetFromTAI(epoch.shiftedBy(1000)), 1.0e-12);
+        Assertions.assertEquals(-25.0, sclk.offsetFromTAI(epoch).toDouble(), 1.0e-12);
+        Assertions.assertEquals(-24.0, sclk.offsetFromTAI(epoch.shiftedBy(1000)).toDouble(), 1.0e-12);
     }
 
     @Test
@@ -47,8 +47,8 @@ public class SatelliteClockScaleTest {
         final double    drift  = 0.002;
         final TimeScale sclk   = new SatelliteClockScale("SCLK", epoch, utc, offset, drift);
         Assertions.assertEquals("SCLK", sclk.toString());
-        Assertions.assertEquals(300.0, sclk.offsetFromTAI(epoch), 1.0e-12);
-        Assertions.assertEquals(302.0, sclk.offsetFromTAI(epoch.shiftedBy(1000)), 1.0e-12);
+        Assertions.assertEquals(300.0, sclk.offsetFromTAI(epoch).toDouble(), 1.0e-12);
+        Assertions.assertEquals(302.0, sclk.offsetFromTAI(epoch.shiftedBy(1000)).toDouble(), 1.0e-12);
     }
 
     @Test
@@ -115,7 +115,7 @@ public class SatelliteClockScaleTest {
         final SatelliteClockScale sclk   = new SatelliteClockScale("SCLK", epoch, utc, offset, drift);
         Assertions.assertEquals(0.0,    sclk.dateAtCount(offset).durationFrom(epoch), 1.0e-15);
         Assertions.assertEquals(offset, sclk.countAtDate(epoch),                      1.0e-15);
-        RandomGenerator random = new Well19937a(0xc7607abceb6835bdl);
+        RandomGenerator random = new Well19937a(0xc7607abceb6835bdL);
         AbsoluteDate previous = epoch;
         for (int i = 0; i < 100; ++i) {
             AbsoluteDate current = epoch.shiftedBy((random.nextDouble() * 10000) - 5000);

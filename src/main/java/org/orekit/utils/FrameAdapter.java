@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,22 +18,24 @@
 package org.orekit.utils;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
-/** Adapter from {@link Frame} to {@link ExtendedPVCoordinatesProvider}.
+/** Adapter from {@link Frame} to {@link ExtendedPositionProvider}.
  * <p>
  * The moving point is the origin of the adapted frame.
  * </p>
  * <p>
- * This class is roughly the inverse of {@link ExtendedPVCoordinatesProviderAdapter}
+ * This class is roughly the inverse of {@link ExtendedPositionProviderAdapter}
  * </p>
- * @see ExtendedPVCoordinatesProviderAdapter
+ * @see ExtendedPositionProviderAdapter
  * @since 12.0
  * @author Luc Maisonobe
  */
-public class FrameAdapter implements ExtendedPVCoordinatesProvider {
+public class FrameAdapter implements ExtendedPositionProvider {
 
     /** Frame whose origin coordinates are desired. */
     private final Frame originFrame;
@@ -47,11 +49,22 @@ public class FrameAdapter implements ExtendedPVCoordinatesProvider {
 
     /** {@inheritDoc} */
     @Override
+    public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
+        return originFrame.getStaticTransformTo(frame, date).transformPosition(Vector3D.ZERO);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> date,
+                                                                            final Frame frame) {
+        return originFrame.getStaticTransformTo(frame, date).transformPosition(Vector3D.ZERO);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
         return new TimeStampedPVCoordinates(date,
-                                            originFrame.
-                                            getTransformTo(frame, date).
-                                            transformPVCoordinates(PVCoordinates.ZERO));
+                originFrame.getTransformTo(frame, date).transformPVCoordinates(PVCoordinates.ZERO));
     }
 
     /** {@inheritDoc} */
@@ -59,9 +72,6 @@ public class FrameAdapter implements ExtendedPVCoordinatesProvider {
     public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date,
                                                                                                  final Frame frame) {
         return new TimeStampedFieldPVCoordinates<>(date,
-                                                   originFrame.
-                                                   getTransformTo(frame, date).
-                                                   transformPVCoordinates(PVCoordinates.ZERO));
+                originFrame.getTransformTo(frame, date).transformPVCoordinates(PVCoordinates.ZERO));
     }
-
 }

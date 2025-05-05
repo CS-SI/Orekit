@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,11 +33,12 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.CartesianToleranceProvider;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.CombinedDerivatives;
-import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
@@ -59,7 +60,7 @@ public class DSSTPropagatorBuilderTest {
 
     private double minStep;
     private double maxStep;
-    private double dP;
+    private ToleranceProvider toleranceProvider;
     private double[][] tolerance;
 
     private AbsoluteDate initDate;
@@ -71,14 +72,14 @@ public class DSSTPropagatorBuilderTest {
     @Test
     public void testIntegrators01() {
 
-        ODEIntegratorBuilder abBuilder = new AdamsBashforthIntegratorBuilder(2, minStep, maxStep, dP);
+        ODEIntegratorBuilder abBuilder = new AdamsBashforthIntegratorBuilder(2, minStep, maxStep, toleranceProvider);
         doTestBuildPropagator(abBuilder);
     }
 
     @Test
     public void testIntegrators02() {
 
-        ODEIntegratorBuilder amBuilder = new AdamsMoultonIntegratorBuilder(2, minStep, maxStep, dP);
+        ODEIntegratorBuilder amBuilder = new AdamsMoultonIntegratorBuilder(2, minStep, maxStep, toleranceProvider);
         doTestBuildPropagator(amBuilder);
     }
 
@@ -103,7 +104,7 @@ public class DSSTPropagatorBuilderTest {
     @Test
     public void testIntegrators05() {
 
-        ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
+        ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, toleranceProvider);
         doTestBuildPropagator(dp54Builder);
     }
 
@@ -128,14 +129,14 @@ public class DSSTPropagatorBuilderTest {
     @Test
     public void testIntegrators08() {
 
-        ODEIntegratorBuilder gbsBuilder = new GraggBulirschStoerIntegratorBuilder(minStep, maxStep, dP);
+        ODEIntegratorBuilder gbsBuilder = new GraggBulirschStoerIntegratorBuilder(minStep, maxStep, toleranceProvider);
         doTestBuildPropagator(gbsBuilder);
     }
 
     @Test
     public void testIntegrators09() {
 
-        ODEIntegratorBuilder hh54Builder = new HighamHall54IntegratorBuilder(minStep, maxStep, dP);
+        ODEIntegratorBuilder hh54Builder = new HighamHall54IntegratorBuilder(minStep, maxStep, toleranceProvider);
         doTestBuildPropagator(hh54Builder);
     }
 
@@ -155,30 +156,6 @@ public class DSSTPropagatorBuilderTest {
 
         ODEIntegratorBuilder teBuilder = new ThreeEighthesIntegratorBuilder(stepSize);
         doTestBuildPropagator(teBuilder);
-    }
-
-    @Test
-    @SuppressWarnings("deprecation")
-    void testCopyMethod() {
-
-        // Given
-        final ODEIntegratorBuilder integratorBuilder = new ClassicalRungeKuttaIntegratorBuilder(3600.0);
-        final Orbit orbit = new CartesianOrbit(new PVCoordinates(
-                new Vector3D(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS + 400000, 0, 0),
-                new Vector3D(0, 7668.6, 0)), FramesFactory.getGCRF(),
-                                               new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
-
-        final DSSTPropagatorBuilder builder =
-                new DSSTPropagatorBuilder(orbit, integratorBuilder, 1.0, PropagationType.OSCULATING, PropagationType.OSCULATING);
-
-        builder.addForceModel(new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0)));
-
-        // When
-        final DSSTPropagatorBuilder copyBuilder = builder.copy();
-
-        // Then
-        assertDSSTPropagatorBuilderIsACopy(builder, copyBuilder);
-
     }
 
     @Test
@@ -254,7 +231,7 @@ public class DSSTPropagatorBuilderTest {
     @Test
     public void testIssue598() {
         // Integrator builder
-        final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
+        final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, toleranceProvider);
         // Propagator builder
         final DSSTPropagatorBuilder builder = new DSSTPropagatorBuilder(orbit,
                                                                   dp54Builder,
@@ -276,7 +253,7 @@ public class DSSTPropagatorBuilderTest {
     @Test
     public void testAdditionalEquations() {
         // Integrator builder
-        final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
+        final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, toleranceProvider);
         // Propagator builder
         final DSSTPropagatorBuilder builder = new DSSTPropagatorBuilder(orbit,
                                                                   dp54Builder,
@@ -331,7 +308,7 @@ public class DSSTPropagatorBuilderTest {
     @Test
     public void testDeselectOrbitals() {
         // Integrator builder
-        final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
+        final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, toleranceProvider);
         // Propagator builder
         final DSSTPropagatorBuilder builder = new DSSTPropagatorBuilder(orbit,
                                                                   dp54Builder,
@@ -354,7 +331,8 @@ public class DSSTPropagatorBuilderTest {
 
         minStep = 1.0;
         maxStep = 600.0;
-        dP      = 10.0;
+        toleranceProvider = ToleranceProvider.of(CartesianToleranceProvider.of(10., 0.0001, 
+                CartesianToleranceProvider.DEFAULT_ABSOLUTE_MASS_TOLERANCE));
 
         final Frame earthFrame = FramesFactory.getEME2000();
         initDate = new AbsoluteDate(2003, 07, 01, 0, 0, 00.000, TimeScalesFactory.getUTC());
@@ -380,7 +358,7 @@ public class DSSTPropagatorBuilderTest {
         moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), mu);
         sun = new DSSTThirdBody(CelestialBodyFactory.getSun(), mu);
 
-        tolerance  = NumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
+        tolerance  = toleranceProvider.getTolerances(orbit, OrbitType.EQUINOCTIAL);
         propagator = new DSSTPropagator(new DormandPrince853Integrator(minStep, maxStep, tolerance[0], tolerance[1]));
         propagator.setInitialState(new SpacecraftState(orbit, 1000.), PropagationType.MEAN);
         propagator.addForceModel(moon);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,13 +26,10 @@ import java.util.TimeZone;
 
 import java.util.concurrent.TimeUnit;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathUtils;
-import org.hipparchus.util.MathUtils.SumAndResidual;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.utils.Constants;
-
 
 /** This class represents a specific instant in time.
 
@@ -76,7 +73,7 @@ import org.orekit.utils.Constants;
  *   The related methods are {@link #AbsoluteDate(AbsoluteDate, double)},
  *   {@link #parseCCSDSUnsegmentedTimeCode(byte, byte, byte[], AbsoluteDate)},
  *   {@link #parseCCSDSDaySegmentedTimeCode(byte, byte[], DateComponents)},
- *   {@link #durationFrom(AbsoluteDate)}, {@link #compareTo(AbsoluteDate)}, {@link #equals(Object)}
+ *   {@link #durationFrom(AbsoluteDate)}, {@link #compareTo(TimeOffset)}, {@link #equals(Object)}
  *   and {@link #hashCode()}.</p>
  *   </li>
  * </ul>
@@ -104,7 +101,8 @@ import org.orekit.utils.Constants;
  * @see ChronologicalComparator
  */
 public class AbsoluteDate
-    implements TimeStamped, TimeShiftable<AbsoluteDate>, Comparable<AbsoluteDate>, Serializable {
+    extends TimeOffset
+    implements TimeStamped, TimeShiftable<AbsoluteDate>, Comparable<TimeOffset>, Serializable {
 
     /** Reference epoch for julian dates: -4712-01-01T12:00:00 Terrestrial Time.
      * <p>Both <code>java.util.Date</code> and {@link DateComponents} classes
@@ -118,8 +116,7 @@ public class AbsoluteDate
      * @see TimeScales#getJulianEpoch()
      */
     @DefaultDataContext
-    public static final AbsoluteDate JULIAN_EPOCH =
-            DataContext.getDefault().getTimeScales().getJulianEpoch();
+    public static final AbsoluteDate JULIAN_EPOCH = DataContext.getDefault().getTimeScales().getJulianEpoch();
 
     /** Reference epoch for modified julian dates: 1858-11-17T00:00:00 Terrestrial Time.
      *
@@ -128,8 +125,7 @@ public class AbsoluteDate
      * @see TimeScales#getModifiedJulianEpoch()
      */
     @DefaultDataContext
-    public static final AbsoluteDate MODIFIED_JULIAN_EPOCH =
-            DataContext.getDefault().getTimeScales().getModifiedJulianEpoch();
+    public static final AbsoluteDate MODIFIED_JULIAN_EPOCH = DataContext.getDefault().getTimeScales().getModifiedJulianEpoch();
 
     /** Reference epoch for 1950 dates: 1950-01-01T00:00:00 Terrestrial Time.
      *
@@ -138,8 +134,7 @@ public class AbsoluteDate
      * @see TimeScales#getFiftiesEpoch()
      */
     @DefaultDataContext
-    public static final AbsoluteDate FIFTIES_EPOCH =
-            DataContext.getDefault().getTimeScales().getFiftiesEpoch();
+    public static final AbsoluteDate FIFTIES_EPOCH = DataContext.getDefault().getTimeScales().getFiftiesEpoch();
 
     /** Reference epoch for CCSDS Time Code Format (CCSDS 301.0-B-4):
      * 1958-01-01T00:00:00 International Atomic Time (<em>not</em> UTC).
@@ -149,8 +144,7 @@ public class AbsoluteDate
      * @see TimeScales#getCcsdsEpoch()
      */
     @DefaultDataContext
-    public static final AbsoluteDate CCSDS_EPOCH =
-            DataContext.getDefault().getTimeScales().getCcsdsEpoch();
+    public static final AbsoluteDate CCSDS_EPOCH = DataContext.getDefault().getTimeScales().getCcsdsEpoch();
 
     /** Reference epoch for Galileo System Time: 1999-08-22T00:00:00 GST.
      *
@@ -159,8 +153,7 @@ public class AbsoluteDate
      * @see TimeScales#getGalileoEpoch()
      */
     @DefaultDataContext
-    public static final AbsoluteDate GALILEO_EPOCH =
-            DataContext.getDefault().getTimeScales().getGalileoEpoch();
+    public static final AbsoluteDate GALILEO_EPOCH = DataContext.getDefault().getTimeScales().getGalileoEpoch();
 
     /** Reference epoch for GPS weeks: 1980-01-06T00:00:00 GPS time.
      *
@@ -169,8 +162,7 @@ public class AbsoluteDate
      * @see TimeScales#getGpsEpoch()
      */
     @DefaultDataContext
-    public static final AbsoluteDate GPS_EPOCH =
-            DataContext.getDefault().getTimeScales().getGpsEpoch();
+    public static final AbsoluteDate GPS_EPOCH = DataContext.getDefault().getTimeScales().getGpsEpoch();
 
     /** Reference epoch for QZSS weeks: 1980-01-06T00:00:00 QZSS time.
      *
@@ -179,18 +171,16 @@ public class AbsoluteDate
      * @see TimeScales#getQzssEpoch()
      */
     @DefaultDataContext
-    public static final AbsoluteDate QZSS_EPOCH =
-            DataContext.getDefault().getTimeScales().getQzssEpoch();
+    public static final AbsoluteDate QZSS_EPOCH = DataContext.getDefault().getTimeScales().getQzssEpoch();
 
-    /** Reference epoch for IRNSS weeks: 1999-08-22T00:00:00 IRNSS time.
+    /** Reference epoch for NavIC weeks: 1999-08-22T00:00:00 NavIC time.
      *
      * <p>This constant uses the {@link DataContext#getDefault() default data context}.
      *
-     * @see TimeScales#getIrnssEpoch()
+     * @see TimeScales#getNavicEpoch()
      */
     @DefaultDataContext
-    public static final AbsoluteDate IRNSS_EPOCH =
-            DataContext.getDefault().getTimeScales().getIrnssEpoch();
+    public static final AbsoluteDate NAVIC_EPOCH = DataContext.getDefault().getTimeScales().getNavicEpoch();
 
     /** Reference epoch for BeiDou weeks: 2006-01-01T00:00:00 UTC.
      *
@@ -199,8 +189,7 @@ public class AbsoluteDate
      * @see TimeScales#getBeidouEpoch()
      */
     @DefaultDataContext
-    public static final AbsoluteDate BEIDOU_EPOCH =
-            DataContext.getDefault().getTimeScales().getBeidouEpoch();
+    public static final AbsoluteDate BEIDOU_EPOCH = DataContext.getDefault().getTimeScales().getBeidouEpoch();
 
     /** Reference epoch for GLONASS four-year interval number: 1996-01-01T00:00:00 GLONASS time.
      * <p>By convention, TGLONASS = UTC + 3 hours.</p>
@@ -210,8 +199,7 @@ public class AbsoluteDate
      * @see TimeScales#getGlonassEpoch()
      */
     @DefaultDataContext
-    public static final AbsoluteDate GLONASS_EPOCH =
-            DataContext.getDefault().getTimeScales().getGlonassEpoch();
+    public static final AbsoluteDate GLONASS_EPOCH = DataContext.getDefault().getTimeScales().getGlonassEpoch();
 
     /** J2000.0 Reference epoch: 2000-01-01T12:00:00 Terrestrial Time (<em>not</em> UTC).
      *
@@ -222,8 +210,7 @@ public class AbsoluteDate
      * @see TimeScales#getJ2000Epoch()
      */
     @DefaultDataContext
-    public static final AbsoluteDate J2000_EPOCH = // TODO
-            DataContext.getDefault().getTimeScales().getJ2000Epoch();
+    public static final AbsoluteDate J2000_EPOCH = DataContext.getDefault().getTimeScales().getJ2000Epoch();
 
     /** Java Reference epoch: 1970-01-01T00:00:00 Universal Time Coordinate.
      * <p>
@@ -236,14 +223,13 @@ public class AbsoluteDate
      * @see TimeScales#getJavaEpoch()
      */
     @DefaultDataContext
-    public static final AbsoluteDate JAVA_EPOCH =
-            DataContext.getDefault().getTimeScales().getJavaEpoch();
+    public static final AbsoluteDate JAVA_EPOCH = DataContext.getDefault().getTimeScales().getJavaEpoch();
 
     /**
      * An arbitrary finite date. Uses when a non-null date is needed but its value doesn't
      * matter.
      */
-    public static final AbsoluteDate ARBITRARY_EPOCH = new AbsoluteDate(0, 0);
+    public static final AbsoluteDate ARBITRARY_EPOCH = new AbsoluteDate(TimeOffset.ZERO);
 
     /** Dummy date at infinity in the past direction.
      * @see TimeScales#getPastInfinity()
@@ -256,14 +242,7 @@ public class AbsoluteDate
     public static final AbsoluteDate FUTURE_INFINITY = ARBITRARY_EPOCH.shiftedBy(Double.POSITIVE_INFINITY);
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 617061803741806846L;
-
-    /** Reference epoch in seconds from 2000-01-01T12:00:00 TAI.
-     * <p>Beware, it is not {@link #J2000_EPOCH} since it is in TAI and not in TT.</p> */
-    private final long epoch;
-
-    /** Offset from the reference epoch in seconds. */
-    private final double offset;
+    private static final long serialVersionUID = 20240711L;
 
     /** Create an instance with a default value ({@link #J2000_EPOCH}).
      *
@@ -273,8 +252,7 @@ public class AbsoluteDate
      */
     @DefaultDataContext
     public AbsoluteDate() {
-        epoch  = J2000_EPOCH.epoch;
-        offset = J2000_EPOCH.offset;
+        super(J2000_EPOCH.getSeconds(), J2000_EPOCH.getAttoSeconds());
     }
 
     /** Build an instance from a location (parsed from a string) in a {@link TimeScale time scale}.
@@ -310,29 +288,12 @@ public class AbsoluteDate
      */
     public AbsoluteDate(final DateComponents date, final TimeComponents time,
                         final TimeScale timeScale) {
-
-        final double seconds  = time.getSecond();
-        final double tsOffset = timeScale.offsetToTAI(date, time);
-
-        // Use 2Sum for high precision.
-        final SumAndResidual sumAndResidual = MathUtils.twoSum(seconds, tsOffset);
-        final long dl = (long) FastMath.floor(sumAndResidual.getSum());
-        final double regularOffset = (sumAndResidual.getSum() - dl) + sumAndResidual.getResidual();
-
-        if (regularOffset >= 0) {
-            // regular case, the offset is between 0.0 and 1.0
-            offset = regularOffset;
-            epoch  = 60L * ((date.getJ2000Day() * 24L + time.getHour()) * 60L +
-                            time.getMinute() - time.getMinutesFromUTC() - 720L) + dl;
-        } else {
-            // very rare case, the offset is just before a whole second
-            // we will loose some bits of accuracy when adding 1 second
-            // but this will ensure the offset remains in the [0.0; 1.0] interval
-            offset = 1.0 + regularOffset;
-            epoch  = 60L * ((date.getJ2000Day() * 24L + time.getHour()) * 60L +
-                            time.getMinute() - time.getMinutesFromUTC() - 720L) + dl - 1;
-        }
-
+        // epoch is at 12:00 (close to J2000.0, but in TAI scale), hence the subtraction of 720 minutes
+        super(new TimeOffset(60L * ((date.getJ2000Day() * 24L + time.getHour()) * 60L +
+                              time.getMinute() - time.getMinutesFromUTC() - 720L),
+                             0L),
+              time.getSplitSecond(),
+              timeScale.offsetToTAI(date, time));
     }
 
     /** Build an instance from a location in a {@link TimeScale time scale}.
@@ -348,6 +309,24 @@ public class AbsoluteDate
      */
     public AbsoluteDate(final int year, final int month, final int day,
                         final int hour, final int minute, final double second,
+                        final TimeScale timeScale) throws IllegalArgumentException {
+        this(year, month, day, hour, minute, new TimeOffset(second), timeScale);
+    }
+
+    /** Build an instance from a location in a {@link TimeScale time scale}.
+     * @param year year number (may be 0 or negative for BC years)
+     * @param month month number from 1 to 12
+     * @param day day number from 1 to 31
+     * @param hour hour number from 0 to 23
+     * @param minute minute number from 0 to 59
+     * @param second second number from 0.0 to 60.0 (excluded)
+     * @param timeScale time scale
+     * @exception IllegalArgumentException if inconsistent arguments
+     * are given (parameters out of range)
+     * @since 13.0
+     */
+    public AbsoluteDate(final int year, final int month, final int day,
+                        final int hour, final int minute, final TimeOffset second,
                         final TimeScale timeScale) throws IllegalArgumentException {
         this(new DateComponents(year, month, day), new TimeComponents(hour, minute, second), timeScale);
     }
@@ -365,6 +344,24 @@ public class AbsoluteDate
      */
     public AbsoluteDate(final int year, final Month month, final int day,
                         final int hour, final int minute, final double second,
+                        final TimeScale timeScale) throws IllegalArgumentException {
+        this(year, month, day, hour, minute, new TimeOffset(second), timeScale);
+    }
+
+    /** Build an instance from a location in a {@link TimeScale time scale}.
+     * @param year year number (may be 0 or negative for BC years)
+     * @param month month enumerate
+     * @param day day number from 1 to 31
+     * @param hour hour number from 0 to 23
+     * @param minute minute number from 0 to 59
+     * @param second second number from 0.0 to 60.0 (excluded)
+     * @param timeScale time scale
+     * @exception IllegalArgumentException if inconsistent arguments
+     * are given (parameters out of range)
+     * @since 13.0
+     */
+    public AbsoluteDate(final int year, final Month month, final int day,
+                        final int hour, final int minute, final TimeOffset second,
                         final TimeScale timeScale) throws IllegalArgumentException {
         this(new DateComponents(year, month, day), new TimeComponents(hour, minute, second), timeScale);
     }
@@ -414,30 +411,40 @@ public class AbsoluteDate
      * @param timeScale time scale
      */
     public AbsoluteDate(final Date location, final TimeScale timeScale) {
-        this(new DateComponents(DateComponents.JAVA_EPOCH,
-                                (int) (location.getTime() / 86400000L)),
-                                 millisToTimeComponents((int) (location.getTime() % 86400000L)),
+        this(new DateComponents(DateComponents.JAVA_EPOCH, (int) (location.getTime() / 86400000L)),
+             new TimeComponents(new TimeOffset(location.getTime() % 86400000L, TimeOffset.MILLISECOND)),
              timeScale);
     }
 
     /** Build an instance from an {@link Instant instant} in a {@link TimeScale time scale}.
      *
-     * @deprecated Use {@link AbsoluteDate#AbsoluteDate(Instant, UTCScale)} or {@link AbsoluteDate#AbsoluteDate(Instant)} instead
-     * @param instant instant in the time scale
-     * @param timeScale time scale
+     * <p>This constructor is provided for those users who wish to provide their own time
+     * scale to control how an {@link Instant} is converted to an {@link AbsoluteDate}.
+     *
+     * <p>Note that {@link Instant} is documented to use the "Java Time Scale", which is a
+     * non-standard time scale that is not well defined, and Orekit does not support it.
+     * Notably it uses seconds that are not SI seconds. {@link Instant}'s time scale may
+     * vary based on many factors, but is documented to be within 1 s of UTC after
+     * 1972-11-04T12:00.
+     *
+     * @param instant in the {@code timeScale}.
+     * @param timeScale of the {@code Instant}.
      * @since 12.0
+     * @see #AbsoluteDate(Instant, UTCScale)
+     * @see #AbsoluteDate(Instant)
      */
-    @Deprecated
     public AbsoluteDate(final Instant instant, final TimeScale timeScale) {
-        this(new DateComponents(DateComponents.JAVA_EPOCH,
-                                (int) (instant.getEpochSecond() / 86400L)),
-             instantToTimeComponents(instant),
-             timeScale);
+        this(new DateComponents(DateComponents.JAVA_EPOCH, (int) (instant.getEpochSecond() / 86400L)),
+                new TimeComponents(TimeOffset.SECOND.multiply(instant.getEpochSecond() % 86400L).
+                        add(new TimeOffset(instant.getNano(), TimeUnit.NANOSECONDS))),
+                timeScale);
     }
 
     /** Build an instance from an {@link Instant instant} in utc time scale.
      * @param instant instant in the time scale
      * @since 12.1
+     * @see #AbsoluteDate(Instant, UTCScale)
+     * @see #AbsoluteDate(Instant, TimeScale)
      */
     @DefaultDataContext
     public AbsoluteDate(final Instant instant) {
@@ -445,18 +452,21 @@ public class AbsoluteDate
     }
 
     /** Build an instance from an {@link Instant instant} in the {@link UTCScale time scale}.
+     *
+     * <p>See the caveats of using {@link Instant} as described in the other {@link
+     * #AbsoluteDate(Instant, TimeScale) constructor}.
+     *
      * @param instant instant in the time scale
      * @param utcScale utc time scale
      * @since 12.1
+     * @see #AbsoluteDate(Instant, TimeScale)
+     * @see #AbsoluteDate(Instant)
      */
     public AbsoluteDate(final Instant instant, final UTCScale utcScale) {
-        this(new DateComponents(DateComponents.JAVA_EPOCH,
-                (int) (instant.getEpochSecond() / 86400l)),
-            instantToTimeComponents(instant),
-            utcScale);
+        this(instant, (TimeScale) utcScale);
     }
 
-    /** Build an instance from an elapsed duration since to another instant.
+    /** Build an instance from an elapsed duration since another instant.
      * <p>It is important to note that the elapsed duration is <em>not</em>
      * the difference between two readings on a time scale. As an example,
      * the duration between the two instants leading to the readings
@@ -472,29 +482,30 @@ public class AbsoluteDate
      * @see #durationFrom(AbsoluteDate)
      */
     public AbsoluteDate(final AbsoluteDate since, final double elapsedDuration) {
-        // Use 2Sum for high precision.
-        final SumAndResidual sumAndResidual = MathUtils.twoSum(since.offset, elapsedDuration);
-        if (Double.isInfinite(sumAndResidual.getSum())) {
-            offset = sumAndResidual.getSum();
-            epoch  = (sumAndResidual.getSum() < 0) ? Long.MIN_VALUE : Long.MAX_VALUE;
-        } else {
-            final long dl = (long) FastMath.floor(sumAndResidual.getSum());
-            final double regularOffset = (sumAndResidual.getSum() - dl) + sumAndResidual.getResidual();
-            if (regularOffset >= 0) {
-                // regular case, the offset is between 0.0 and 1.0
-                offset = regularOffset;
-                epoch  = since.epoch + dl;
-            } else {
-                // very rare case, the offset is just before a whole second
-                // we will loose some bits of accuracy when adding 1 second
-                // but this will ensure the offset remains in the [0.0; 1.0] interval
-                offset = 1.0 + regularOffset;
-                epoch  = since.epoch + dl - 1;
-            }
-        }
+        this(since, new TimeOffset(elapsedDuration));
     }
 
-    /** Build an instance from an elapsed duration since to another instant.
+    /** Build an instance from an elapsed duration since another instant.
+     * <p>It is important to note that the elapsed duration is <em>not</em>
+     * the difference between two readings on a time scale. As an example,
+     * the duration between the two instants leading to the readings
+     * 2005-12-31T23:59:59 and 2006-01-01T00:00:00 in the {@link UTCScale UTC}
+     * time scale is <em>not</em> 1 second, but a stop watch would have measured
+     * an elapsed duration of 2 seconds between these two instances because a leap
+     * second was introduced at the end of 2005 in this time scale.</p>
+     * <p>This constructor is the reverse of the {@link #durationFrom(AbsoluteDate)}
+     * method.</p>
+     * @param since start instant of the measured duration
+     * @param elapsedDuration physically elapsed duration from the <code>since</code>
+     * instant, as measured in a regular time scale
+     * @see #durationFrom(AbsoluteDate)
+     * @since 13.0
+     */
+    public AbsoluteDate(final AbsoluteDate since, final TimeOffset elapsedDuration) {
+        super(since, elapsedDuration);
+    }
+
+    /** Build an instance from an elapsed duration since another instant.
      * <p>It is important to note that the elapsed duration is <em>not</em>
      * the difference between two readings on a time scale. As an example,
      * the duration between the two instants leading to the readings
@@ -512,21 +523,7 @@ public class AbsoluteDate
      * @since 12.1
      */
     public AbsoluteDate(final AbsoluteDate since, final long elapsedDuration, final TimeUnit timeUnit) {
-        final long elapsedDurationNanoseconds = TimeUnit.NANOSECONDS.convert(elapsedDuration, timeUnit);
-        final long deltaEpoch = elapsedDurationNanoseconds / TimeUnit.SECONDS.toNanos(1);
-        final double deltaOffset = (elapsedDurationNanoseconds - (deltaEpoch * TimeUnit.SECONDS.toNanos(1))) / (double) TimeUnit.SECONDS.toNanos(1);
-        final double newOffset = since.offset + deltaOffset;
-        if (newOffset >= 1.0) {
-            // newOffset is in [1.0, 2.0]
-            epoch = since.epoch + deltaEpoch + 1L;
-            offset = newOffset - 1.0;
-        } else if (newOffset < 0) {
-            epoch = since.epoch + deltaEpoch - 1L;
-            offset = 1.0 + newOffset;
-        } else {
-            epoch = since.epoch + deltaEpoch;
-            offset = newOffset;
-        }
+        this(since, new TimeOffset(elapsedDuration, timeUnit));
     }
 
     /** Build an instance from an apparent clock offset with respect to another
@@ -546,67 +543,40 @@ public class AbsoluteDate
      * @param timeScale time scale with respect to which the offset is defined
      * @see #offsetFrom(AbsoluteDate, TimeScale)
      */
-    public AbsoluteDate(final AbsoluteDate reference, final double apparentOffset,
-                        final TimeScale timeScale) {
+    public AbsoluteDate(final AbsoluteDate reference, final double apparentOffset, final TimeScale timeScale) {
+        this(reference, new TimeOffset(apparentOffset), timeScale);
+    }
+
+    /** Build an instance from an apparent clock offset with respect to another
+     * instant <em>in the perspective of a specific {@link TimeScale time scale}</em>.
+     * <p>It is important to note that the apparent clock offset <em>is</em> the
+     * difference between two readings on a time scale and <em>not</em> an elapsed
+     * duration. As an example, the apparent clock offset between the two instants
+     * leading to the readings 2005-12-31T23:59:59 and 2006-01-01T00:00:00 in the
+     * {@link UTCScale UTC} time scale is 1 second, but the elapsed duration is 2
+     * seconds because a leap second has been introduced at the end of 2005 in this
+     * time scale.</p>
+     * <p>This constructor is the reverse of the {@link #offsetFrom(AbsoluteDate,
+     * TimeScale)} method.</p>
+     * @param reference reference instant
+     * @param apparentOffset apparent clock offset from the reference instant
+     * (difference between two readings in the specified time scale)
+     * @param timeScale time scale with respect to which the offset is defined
+     * @see #offsetFrom(AbsoluteDate, TimeScale)
+     * @since 13.0
+     */
+    public AbsoluteDate(final AbsoluteDate reference, final TimeOffset apparentOffset, final TimeScale timeScale) {
         this(new DateTimeComponents(reference.getComponents(timeScale), apparentOffset),
              timeScale);
     }
 
-    /** Build a date from its internal components.
-     * <p>
-     * This method is reserved for internal used (for example by {@link FieldAbsoluteDate}).
-     * </p>
-     * @param epoch reference epoch in seconds from 2000-01-01T12:00:00 TAI.
+    /** Build a date from an offset since a reference epoch.
+     * @param offset offset since reference epoch 2000-01-01T12:00:00 TAI.
      * (beware, it is not {@link #J2000_EPOCH} since it is in TAI and not in TT)
-     * @param offset offset from the reference epoch in seconds (must be
-     * between 0.0 included and 1.0 excluded)
-     * @since 9.0
+     * @since 13.0
      */
-    AbsoluteDate(final long epoch, final double offset) {
-        this.epoch  = epoch;
-        this.offset = offset;
-    }
-
-    /** Extract time components from a number of milliseconds within the day.
-     * @param millisInDay number of milliseconds within the day
-     * @return time components
-     */
-    private static TimeComponents millisToTimeComponents(final int millisInDay) {
-        return new TimeComponents(millisInDay / 1000, 0.001 * (millisInDay % 1000));
-    }
-
-    /** Extract time components from an instant within the day.
-     * @param instant instant to extract the number of seconds within the day
-     * @return time components
-     */
-    private static TimeComponents instantToTimeComponents(final Instant instant) {
-        final int secInDay = (int) (instant.getEpochSecond() % 86400L);
-        return new TimeComponents(secInDay, 1.0e-9 * instant.getNano());
-    }
-
-    /** Get the reference epoch in seconds from 2000-01-01T12:00:00 TAI.
-     * <p>
-     * This method is reserved for internal used (for example by {@link FieldAbsoluteDate}).
-     * </p>
-     * <p>
-     * Beware, it is not {@link #J2000_EPOCH} since it is in TAI and not in TT.
-     * </p>
-     * @return reference epoch in seconds from 2000-01-01T12:00:00 TAI
-     * @since 9.0
-     */
-    long getEpoch() {
-        return epoch;
-    }
-
-    /** Get the offset from the reference epoch in seconds.
-     * <p>
-     * This method is reserved for internal used (for example by {@link FieldAbsoluteDate}).
-     * </p>
-     * @return offset from the reference epoch in seconds
-     * @since 9.0
-     */
-    double getOffset() {
-        return offset;
+    public AbsoluteDate(final TimeOffset offset) {
+        super(offset);
     }
 
     /** Build an instance from a CCSDS Unsegmented Time Code (CUC).
@@ -643,8 +613,8 @@ public class AbsoluteDate
                                                              final byte[] timeField,
                                                              final AbsoluteDate agencyDefinedEpoch) {
         return parseCCSDSUnsegmentedTimeCode(preambleField1, preambleField2, timeField,
-                agencyDefinedEpoch,
-                DataContext.getDefault().getTimeScales().getCcsdsEpoch());
+                                             agencyDefinedEpoch,
+                                             DataContext.getDefault().getTimeScales().getCcsdsEpoch());
     }
 
     /**
@@ -670,24 +640,22 @@ public class AbsoluteDate
      *                           signaled in {@code preambleField1})
      * @param timeField          byte array containing the time code
      * @param agencyDefinedEpoch reference epoch, ignored if the preamble field specifies
-     *                           the {@link #CCSDS_EPOCH CCSDS reference epoch} is used
-     *                           (and hence may be null in this case)
+     *                           the {@link DateComponents#CCSDS_EPOCH CCSDS reference epoch} is used
+     *                           (and hence may be null in this case, but then {@code ccsdsEpoch} must be non-null)
      * @param ccsdsEpoch         reference epoch, ignored if the preamble field specifies
-     *                           the agency epoch is used.
+     *                           the agency epoch is used (and hence may be null in this case,
+     *                           but then {@code agencyDefinedEpoch} must be non-null).
      * @return an instance corresponding to the specified date
      * @since 10.1
      */
-    public static AbsoluteDate parseCCSDSUnsegmentedTimeCode(
-            final byte preambleField1,
-            final byte preambleField2,
-            final byte[] timeField,
-            final AbsoluteDate agencyDefinedEpoch,
-            final AbsoluteDate ccsdsEpoch) {
+    public static AbsoluteDate parseCCSDSUnsegmentedTimeCode(final byte preambleField1,
+                                                             final byte preambleField2,
+                                                             final byte[] timeField,
+                                                             final AbsoluteDate agencyDefinedEpoch,
+                                                             final AbsoluteDate ccsdsEpoch) {
         final CcsdsUnsegmentedTimeCode<AbsoluteDate> timeCode =
-            new CcsdsUnsegmentedTimeCode<>(preambleField1, preambleField2, timeField,
-                                           agencyDefinedEpoch, ccsdsEpoch);
-        return new AbsoluteDate(timeCode.getEpoch(), timeCode.getSeconds()).
-               shiftedBy(timeCode.getSubSecond());
+            new CcsdsUnsegmentedTimeCode<>(preambleField1, preambleField2, timeField, agencyDefinedEpoch, ccsdsEpoch);
+        return timeCode.getEpoch().shiftedBy(timeCode.getTime());
 
     }
 
@@ -712,7 +680,7 @@ public class AbsoluteDate
     public static AbsoluteDate parseCCSDSDaySegmentedTimeCode(final byte preambleField, final byte[] timeField,
                                                               final DateComponents agencyDefinedEpoch) {
         return parseCCSDSDaySegmentedTimeCode(preambleField, timeField,
-                agencyDefinedEpoch, DataContext.getDefault().getTimeScales().getUTC());
+                                              agencyDefinedEpoch, DataContext.getDefault().getTimeScales().getUTC());
     }
 
     /** Build an instance from a CCSDS Day Segmented Time Code (CDS).
@@ -737,8 +705,7 @@ public class AbsoluteDate
 
         final CcsdsSegmentedTimeCode timeCode = new CcsdsSegmentedTimeCode(preambleField, timeField,
                                                                            agencyDefinedEpoch);
-        return new AbsoluteDate(timeCode.getDate(), timeCode.getTime(), utc).
-               shiftedBy(timeCode.getSubSecond());
+        return new AbsoluteDate(timeCode.getDate(), timeCode.getTime(), utc);
     }
 
     /** Build an instance from a CCSDS Calendar Segmented Time Code (CCS).
@@ -758,7 +725,7 @@ public class AbsoluteDate
     @DefaultDataContext
     public static AbsoluteDate parseCCSDSCalendarSegmentedTimeCode(final byte preambleField, final byte[] timeField) {
         return parseCCSDSCalendarSegmentedTimeCode(preambleField, timeField,
-                DataContext.getDefault().getTimeScales().getUTC());
+                                                   DataContext.getDefault().getTimeScales().getUTC());
     }
 
     /** Build an instance from a CCSDS Calendar Segmented Time Code (CCS).
@@ -777,8 +744,7 @@ public class AbsoluteDate
                                                                    final byte[] timeField,
                                                                    final TimeScale utc) {
         final CcsdsSegmentedTimeCode timeCode = new CcsdsSegmentedTimeCode(preambleField, timeField);
-        return new AbsoluteDate(timeCode.getDate(), timeCode.getTime(), utc).
-               shiftedBy(timeCode.getSubSecond());
+        return new AbsoluteDate(timeCode.getDate(), timeCode.getTime(), utc);
     }
 
     /** Build an instance corresponding to a Julian Day date.
@@ -798,11 +764,14 @@ public class AbsoluteDate
      * <p>
      * This function should be preferred to {@link #createMJDDate(int, double, TimeScale)} when the target time scale
      * has a non-constant offset with respect to TAI.
+     * </p>
      * <p>
      * The idea is to introduce a pivot time scale that is close to the target time scale but has a constant bias with TAI.
+     * </p>
      * <p>
      * For example, to get a date from an MJD in TDB time scale, it's advised to use the TT time scale
      * as a pivot scale. TT is very close to TDB and has constant offset to TAI.
+     * </p>
      * @param jd Julian day
      * @param secondsSinceNoon seconds in the Julian day
      * (BEWARE, Julian days start at noon, so 0.0 is noon)
@@ -817,10 +786,12 @@ public class AbsoluteDate
         final AbsoluteDate dateInPivotTimeScale = createJDDate(jd, secondsSinceNoon, pivotTimeScale);
 
         // Compare offsets to TAI of the two time scales
-        final double offsetFromTAI = timeScale.offsetFromTAI(dateInPivotTimeScale) -  pivotTimeScale.offsetFromTAI(dateInPivotTimeScale);
+        final TimeOffset offsetFromTAI = timeScale.
+                                        offsetFromTAI(dateInPivotTimeScale).
+                                        subtract(pivotTimeScale.offsetFromTAI(dateInPivotTimeScale));
 
         // Return date in desired timescale
-        return dateInPivotTimeScale.shiftedBy(-offsetFromTAI);
+        return new AbsoluteDate(dateInPivotTimeScale, offsetFromTAI.negate());
     }
 
     /** Build an instance corresponding to a Modified Julian Day date.
@@ -833,21 +804,35 @@ public class AbsoluteDate
     public static AbsoluteDate createMJDDate(final int mjd, final double secondsInDay,
                                              final TimeScale timeScale)
         throws OrekitIllegalArgumentException {
+        return createMJDDate(mjd, new TimeOffset(secondsInDay), timeScale);
+    }
+
+    /** Build an instance corresponding to a Modified Julian Day date.
+     * @param mjd modified Julian day
+     * @param secondsInDay seconds in the day
+     * @param timeScale time scale in which the seconds in day are defined
+     * @return a new instant
+     * @exception OrekitIllegalArgumentException if seconds number is out of range
+     * @since 13.0
+     */
+    public static AbsoluteDate createMJDDate(final int mjd, final TimeOffset secondsInDay,
+                                             final TimeScale timeScale)
+        throws OrekitIllegalArgumentException {
         final DateComponents dc = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd);
         final TimeComponents tc;
-        if (secondsInDay >= Constants.JULIAN_DAY) {
+        if (secondsInDay.compareTo(TimeOffset.DAY) >= 0) {
             // check we are really allowed to use this number of seconds
-            final int    secondsA = 86399; // 23:59:59, i.e. 59s in the last minute of the day
-            final double secondsB = secondsInDay - secondsA;
-            final TimeComponents safeTC = new TimeComponents(secondsA, 0.0);
+            final TimeOffset secondsA = new TimeOffset(86399); // 23:59:59, i.e. 59s in the last minute of the day
+            final TimeOffset secondsB = secondsInDay.subtract(secondsA);
+            final TimeComponents safeTC = new TimeComponents(secondsA);
             final AbsoluteDate safeDate = new AbsoluteDate(dc, safeTC, timeScale);
-            if (timeScale.minuteDuration(safeDate) > 59 + secondsB) {
+            if (timeScale.minuteDuration(safeDate) > 59 + secondsB.toDouble()) {
                 // we are within the last minute of the day, the number of seconds is OK
                 return safeDate.shiftedBy(secondsB);
             } else {
                 // let TimeComponents trigger an OrekitIllegalArgumentException
                 // for the wrong number of seconds
-                tc = new TimeComponents(secondsA, secondsB);
+                tc = new TimeComponents(secondsA.add(secondsB));
             }
         } else {
             tc = new TimeComponents(secondsInDay);
@@ -856,6 +841,16 @@ public class AbsoluteDate
         // create the date
         return new AbsoluteDate(dc, tc, timeScale);
 
+    }
+
+    /** Create an instance as the median data between two existing instances.
+     * @param date1 first instance
+     * @param date2 second instance
+     * @return median date between first and second instance
+     * @since 13.0
+     */
+    public static AbsoluteDate createMedian(final AbsoluteDate date1, final AbsoluteDate date2) {
+        return new AbsoluteDate(date2.add(date1).divide(2));
     }
 
     /** Build an instance corresponding to a Julian Epoch (JE).
@@ -870,7 +865,7 @@ public class AbsoluteDate
      * This method reverts the formula above and computes an {@code AbsoluteDate} from the Julian Epoch.
      * </p>
      *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.</p>
      *
      * @param julianEpoch Julian epoch, like 2000.0 for defining the classical reference J2000.0
      * @return a new instant
@@ -895,7 +890,7 @@ public class AbsoluteDate
      * This method reverts the formula above and computes an {@code AbsoluteDate} from the Besselian Epoch.
      * </p>
      *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.</p>
      *
      * @param besselianEpoch Besselian epoch, like 1950 for defining the classical reference B1950.0
      * @return a new instant
@@ -904,22 +899,18 @@ public class AbsoluteDate
      */
     @DefaultDataContext
     public static AbsoluteDate createBesselianEpoch(final double besselianEpoch) {
-        return DataContext.getDefault().getTimeScales()
-                .createBesselianEpoch(besselianEpoch);
+        return DataContext.getDefault().getTimeScales().createBesselianEpoch(besselianEpoch);
     }
 
-    /** Get a time-shifted date.
-     * <p>
-     * Calling this method is equivalent to call <code>new AbsoluteDate(this, dt)</code>.
-     * </p>
-     * @param dt time shift in seconds
-     * @return a new date, shifted with respect to instance (which is immutable)
-     * @see org.orekit.utils.PVCoordinates#shiftedBy(double)
-     * @see org.orekit.attitudes.Attitude#shiftedBy(double)
-     * @see org.orekit.orbits.Orbit#shiftedBy(double)
-     * @see org.orekit.propagation.SpacecraftState#shiftedBy(double)
-     */
+    /** {@inheritDoc} */
+    @Override
     public AbsoluteDate shiftedBy(final double dt) {
+        return new AbsoluteDate(this, dt);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AbsoluteDate shiftedBy(final TimeOffset dt) {
         return new AbsoluteDate(this, dt);
     }
 
@@ -952,11 +943,37 @@ public class AbsoluteDate
      * @param instant instant to subtract from the instance
      * @return offset in seconds between the two instants (positive
      * if the instance is posterior to the argument)
+     * @see #accurateDurationFrom(AbsoluteDate)
      * @see #offsetFrom(AbsoluteDate, TimeScale)
      * @see #AbsoluteDate(AbsoluteDate, double)
      */
     public double durationFrom(final AbsoluteDate instant) {
-        return (epoch - instant.epoch) + (offset - instant.offset);
+        return accurateDurationFrom(instant).toDouble();
+    }
+
+    /** Compute the physically elapsed duration between two instants.
+     * <p>The returned duration is the number of seconds physically
+     * elapsed between the two instants, measured in a regular time
+     * scale with respect to surface of the Earth (i.e either the {@link
+     * TAIScale TAI scale}, the {@link TTScale TT scale} or the {@link
+     * GPSScale GPS scale}). It is the only method that gives a
+     * duration with a physical meaning.</p>
+     * <p>This method gives the same result (with less computation)
+     * as calling {@link #offsetFrom(AbsoluteDate, TimeScale)}
+     * with a second argument set to one of the regular scales cited
+     * above.</p>
+     * <p>This method is the reverse of the {@link #AbsoluteDate(AbsoluteDate,
+     * double)} constructor.</p>
+     * @param instant instant to subtract from the instance
+     * @return offset in seconds between the two instants (positive
+     * if the instance is posterior to the argument)
+     * @see #durationFrom(AbsoluteDate)
+     * @see #offsetFrom(AbsoluteDate, TimeScale)
+     * @see #AbsoluteDate(AbsoluteDate, double)
+     * @since 13.0
+     */
+    public TimeOffset accurateDurationFrom(final AbsoluteDate instant) {
+        return this.subtract(instant);
     }
 
     /** Compute the physically elapsed duration between two instants.
@@ -976,15 +993,10 @@ public class AbsoluteDate
      * @since 12.1
      */
     public long durationFrom(final AbsoluteDate instant, final TimeUnit timeUnit) {
-        final long deltaEpoch = timeUnit.convert(epoch - instant.epoch, TimeUnit.SECONDS);
-
-        final long multiplier = timeUnit.convert(1, TimeUnit.SECONDS);
-        final long deltaOffset = FastMath.round((offset - instant.offset) * multiplier);
-
-        return deltaEpoch + deltaOffset;
+        return accurateDurationFrom(instant).getRoundedTime(timeUnit);
     }
 
-    /** Compute the apparent clock offset between two instant <em>in the
+    /** Compute the apparent <em>clock</em> offset between two instant <em>in the
      * perspective of a specific {@link TimeScale time scale}</em>.
      * <p>The offset is the number of seconds counted in the given
      * time scale between the locations of the two instants, with
@@ -992,8 +1004,9 @@ public class AbsoluteDate
      * days are exactly 86400 seconds long). This method will give
      * a result that may not have a physical meaning if the time scale
      * is irregular. For example since a leap second was introduced at
-     * the end of 2005, the apparent offset between 2005-12-31T23:59:59
-     * and 2006-01-01T00:00:00 is 1 second, but the physical duration
+     * the end of 2005, the apparent clock offset between 2005-12-31T23:59:59
+     * and 2006-01-01T00:00:00 is 1 second and is the value this method
+     * will return. On the other hand, the physical duration
      * of the corresponding time interval as returned by the {@link
      * #durationFrom(AbsoluteDate)} method is 2 seconds.</p>
      * <p>This method is the reverse of the {@link #AbsoluteDate(AbsoluteDate,
@@ -1004,13 +1017,43 @@ public class AbsoluteDate
      * @return apparent clock offset in seconds between the two instants
      * (positive if the instance is posterior to the argument)
      * @see #durationFrom(AbsoluteDate)
-     * @see #AbsoluteDate(AbsoluteDate, double, TimeScale)
+     * @see #accurateOffsetFrom(AbsoluteDate, TimeScale)
+     * @see #AbsoluteDate(AbsoluteDate, TimeOffset, TimeScale)
      */
     public double offsetFrom(final AbsoluteDate instant, final TimeScale timeScale) {
-        final long   elapsedDurationA = epoch - instant.epoch;
-        final double elapsedDurationB = (offset         + timeScale.offsetFromTAI(this)) -
-                                        (instant.offset + timeScale.offsetFromTAI(instant));
-        return  elapsedDurationA + elapsedDurationB;
+        return accurateOffsetFrom(instant, timeScale).toDouble();
+    }
+
+    /** Compute the apparent <em>clock</em> offset between two instant <em>in the
+     * perspective of a specific {@link TimeScale time scale}</em>.
+     * <p>The offset is the number of seconds counted in the given
+     * time scale between the locations of the two instants, with
+     * all time scale irregularities removed (i.e. considering all
+     * days are exactly 86400 seconds long). This method will give
+     * a result that may not have a physical meaning if the time scale
+     * is irregular. For example since a leap second was introduced at
+     * the end of 2005, the apparent clock offset between 2005-12-31T23:59:59
+     * and 2006-01-01T00:00:00 is 1 second and is the value this method
+     * will return. On the other hand, the physical duration
+     * of the corresponding time interval as returned by the {@link
+     * #durationFrom(AbsoluteDate)} method is 2 seconds.</p>
+     * <p>This method is the reverse of the {@link #AbsoluteDate(AbsoluteDate,
+     * double, TimeScale)} constructor.</p>
+     * @param instant instant to subtract from the instance
+     * @param timeScale time scale with respect to which the offset should
+     * be computed
+     * @return apparent clock offset in seconds between the two instants
+     * (positive if the instance is posterior to the argument)
+     * @see #durationFrom(AbsoluteDate)
+     * @see #offsetFrom(AbsoluteDate, TimeScale)
+     * @see #AbsoluteDate(AbsoluteDate, TimeOffset, TimeScale)
+     * @since 13.0
+     */
+    public TimeOffset accurateOffsetFrom(final AbsoluteDate instant, final TimeScale timeScale) {
+        return new TimeOffset(this,
+                              timeScale.offsetFromTAI(this),
+                              instant.negate(),
+                              timeScale.offsetFromTAI(instant).negate());
     }
 
     /** Compute the offset between two time scales at the current instant.
@@ -1024,7 +1067,7 @@ public class AbsoluteDate
      * current instant
      */
     public double timeScalesOffset(final TimeScale scale1, final TimeScale scale2) {
-        return scale1.offsetFromTAI(this) - scale2.offsetFromTAI(this);
+        return scale1.offsetFromTAI(this).subtract(scale2.offsetFromTAI(this)).toDouble();
     }
 
     /** Convert the instance to a Java {@link java.util.Date Date}.
@@ -1036,8 +1079,8 @@ public class AbsoluteDate
      * of the instant in the time scale
      */
     public Date toDate(final TimeScale timeScale) {
-        final double time = epoch + (offset + timeScale.offsetFromTAI(this));
-        return new Date(FastMath.round((time + 10957.5 * 86400.0) * 1000));
+        final TimeOffset time = add(timeScale.offsetFromTAI(this));
+        return new Date(FastMath.round((time.toDouble() + 10957.5 * Constants.JULIAN_DAY) * 1000));
     }
 
     /**
@@ -1076,29 +1119,28 @@ public class AbsoluteDate
      */
     public DateTimeComponents getComponents(final TimeScale timeScale) {
 
-        if (Double.isInfinite(offset)) {
-            // special handling for past and future infinity
-            if (offset < 0) {
+        if (!isFinite()) {
+            // special handling for NaN, past and future infinity
+            if (isNaN()) {
+                return new DateTimeComponents(DateComponents.J2000_EPOCH, TimeComponents.NaN);
+            } else if (isNegativeInfinity()) {
                 return new DateTimeComponents(DateComponents.MIN_EPOCH, TimeComponents.H00);
             } else {
+                // the fact we truncate at 59.999 seconds is for compatibility reasons
+                // with pre-13.0 Orekit versions. Indeed, this date is fake and more than
+                // 5 millions years in the future, so milliseconds are not really relevant
+                // truncating makes cleaner text output
                 return new DateTimeComponents(DateComponents.MAX_EPOCH,
-                                              new TimeComponents(23, 59, 59.999));
+                                              new TimeComponents(23, 59,
+                                                                 new TimeOffset(59, TimeOffset.SECOND,
+                                                                                999, TimeOffset.MILLISECOND)));
             }
         }
 
-        // Compute offset from 2000-01-01T00:00:00 in specified time scale.
-        // Use 2Sum for high precision.
-        final double taiOffset = timeScale.offsetFromTAI(this);
-        final SumAndResidual sumAndResidual = MathUtils.twoSum(offset, taiOffset);
+        final TimeOffset sum = add(timeScale.offsetFromTAI(this));
 
         // split date and time
-        final long   carry = (long) FastMath.floor(sumAndResidual.getSum());
-        double offset2000B = (sumAndResidual.getSum() - carry) + sumAndResidual.getResidual();
-        long   offset2000A = epoch + carry + 43200L;
-        if (offset2000B < 0) {
-            offset2000A -= 1;
-            offset2000B += 1;
-        }
+        final long offset2000A = sum.getSeconds() + 43200L;
         long time = offset2000A % 86400L;
         if (time < 0L) {
             time += 86400L;
@@ -1109,10 +1151,10 @@ public class AbsoluteDate
         final DateComponents dateComponents = new DateComponents(DateComponents.J2000_EPOCH, date);
 
         // extract time element, accounting for leap seconds
-        final double leap = timeScale.insideLeap(this) ? timeScale.getLeap(this) : 0;
+        final TimeOffset leap = timeScale.insideLeap(this) ? timeScale.getLeap(this) : TimeOffset.ZERO;
         final int minuteDuration = timeScale.minuteDuration(this);
-        final TimeComponents timeComponents =
-                TimeComponents.fromSeconds((int) time, offset2000B, leap, minuteDuration);
+        final TimeComponents timeComponents = new TimeComponents(new TimeOffset(time, sum.getAttoSeconds()),
+                                                                 leap, minuteDuration);
 
         // build the components
         return new DateTimeComponents(dateComponents, timeComponents);
@@ -1152,7 +1194,7 @@ public class AbsoluteDate
         // shift the date according to UTC offset, but WITHOUT touching the seconds,
         // as they may exceed 60.0 during a leap seconds introduction,
         // and we want to preserve these special cases
-        final double seconds = utcComponents.getTime().getSecond();
+        final TimeOffset seconds = utcComponents.getTime().getSplitSecond();
 
         int minute = utcComponents.getTime().getMinute() + minutesFromUTC;
         final int hourShift;
@@ -1210,48 +1252,9 @@ public class AbsoluteDate
         return getComponents(timeZone.getOffset(milliseconds) / 60000, utc);
     }
 
-    /** Compare the instance with another date.
-     * @param date other date to compare the instance to
-     * @return a negative integer, zero, or a positive integer as this date
-     * is before, simultaneous, or after the specified date.
-     */
-    public int compareTo(final AbsoluteDate date) {
-        final double duration = durationFrom(date);
-        if (!Double.isNaN(duration)) {
-            return Double.compare(duration, 0.0);
-        }
-        // both dates are infinity or one is NaN or both are NaN
-        return Double.compare(offset, date.offset);
-    }
-
     /** {@inheritDoc} */
     public AbsoluteDate getDate() {
         return this;
-    }
-
-    /** Check if the instance represents the same time as another instance.
-     * @param date other date
-     * @return true if the instance and the other date refer to the same instant
-     */
-    public boolean equals(final Object date) {
-
-        if (date == this) {
-            // first fast check
-            return true;
-        }
-
-        if (date instanceof AbsoluteDate) {
-
-            // Improve robustness against positive/negative infinity dates
-            if ( this.offset == Double.NEGATIVE_INFINITY && ((AbsoluteDate) date).offset == Double.NEGATIVE_INFINITY ||
-                    this.offset == Double.POSITIVE_INFINITY && ((AbsoluteDate) date).offset == Double.POSITIVE_INFINITY ) {
-                return true;
-            } else {
-                return durationFrom((AbsoluteDate) date) == 0;
-            }
-        }
-
-        return false;
     }
 
     /** Check if the instance represents the same time as another.
@@ -1353,16 +1356,8 @@ public class AbsoluteDate
         return this.isEqualTo(boundary) || this.isEqualTo(otherBoundary) || this.isBetween(boundary, otherBoundary);
     }
 
-    /** Get a hashcode for this date.
-     * @return hashcode
-     */
-    public int hashCode() {
-        final long l = Double.doubleToLongBits(durationFrom(ARBITRARY_EPOCH));
-        return (int) (l ^ (l >>> 32));
-    }
-
     /**
-     * Get a String representation of the instant location with up to 16 digits of
+     * Get a String representation of the instant location with up to 18 digits of
      * precision for the seconds value.
      *
      * <p> Since this method is used in exception messages and error handling every
@@ -1394,14 +1389,7 @@ public class AbsoluteDate
                 // catch OrekitException, OrekitIllegalStateException, etc.
                 // Likely failed to convert to ymdhms.
                 // Give user some indication of what time it is.
-                try {
-                    return "(" + this.epoch + " + " + this.offset + ") seconds past epoch";
-                } catch (RuntimeException e3) {
-                    // give up and throw an exception
-                    e2.addSuppressed(e3);
-                    e1.addSuppressed(e2);
-                    throw e1;
-                }
+                return "(" + this.getSeconds() + "s + " + this.getAttoSeconds() + "as) seconds past epoch";
             }
         }
         // CHECKSTYLE: resume IllegalCatch check
@@ -1534,6 +1522,78 @@ public class AbsoluteDate
                                            final int fractionDigits) {
         return this.getComponents(timeScale)
                 .toStringWithoutUtcOffset(timeScale.minuteDuration(this), fractionDigits);
+    }
+
+    /**
+     * Return the given date as a Modified Julian Date <b>expressed in UTC</b>.
+     *
+     * @return double representation of the given date as Modified Julian Date.
+     *
+     * @since 12.2
+     */
+    @DefaultDataContext
+    public double getMJD() {
+        return this.getJD() - DateComponents.JD_TO_MJD;
+    }
+
+    /**
+     * Return the given date as a Modified Julian Date expressed in given timescale.
+     *
+     * @param ts time scale
+     *
+     * @return double representation of the given date as Modified Julian Date.
+     *
+     * @since 12.2
+     */
+    public double getMJD(final TimeScale ts) {
+        return this.getJD(ts) - DateComponents.JD_TO_MJD;
+    }
+
+    /**
+     * Return the given date as a Julian Date <b>expressed in UTC</b>.
+     *
+     * @return double representation of the given date as Julian Date.
+     *
+     * @since 12.2
+     */
+    @DefaultDataContext
+    public double getJD() {
+        return getJD(TimeScalesFactory.getUTC());
+    }
+
+    /**
+     * Return the given date as a Julian Date expressed in given timescale.
+     *
+     * @param ts time scale
+     *
+     * @return double representation of the given date as Julian Date.
+     *
+     * @since 12.2
+     */
+    public double getJD(final TimeScale ts) {
+        return this.getComponents(ts).offsetFrom(DateTimeComponents.JULIAN_EPOCH) / Constants.JULIAN_DAY;
+    }
+
+    /** Get day of year, preserving continuity as much as possible.
+     * <p>
+     * This is a continuous extension of the integer value returned by
+     * {@link #getComponents(TimeZone) getComponents(utc)}{@link DateTimeComponents#getDate() .getDate()}{@link DateComponents#getDayOfYear() .getDayOfYear()}.
+     * In order to have it remain as close as possible to its integer counterpart,
+     * day 1.0 is considered to occur on January 1st at noon.
+     * </p>
+     * <p>
+     * Continuity is preserved from day to day within a year, but of course
+     * there is a discontinuity at year change, where it switches from 365.49999…
+     * (or 366.49999… on leap years) to 0.5
+     * </p>
+     * @param utc time scale to compute date components
+     * @return day of year, with day 1.0 occurring on January first at noon
+     * @since 13.0
+     */
+    public double getDayOfYear(final TimeScale utc) {
+        final int          year        = getComponents(utc).getDate().getYear();
+        final AbsoluteDate newYearsEve = new AbsoluteDate(year - 1, 12, 31, 12, 0, 0.0, utc);
+        return durationFrom(newYearsEve) / Constants.JULIAN_DAY;
     }
 
 }

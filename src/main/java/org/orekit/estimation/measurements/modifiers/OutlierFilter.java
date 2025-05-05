@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -46,6 +46,12 @@ public class OutlierFilter<T extends ObservedMeasurement<T>> implements Estimati
     public OutlierFilter(final int warmup, final double maxSigma) {
         this.warmup   = warmup;
         this.maxSigma = maxSigma;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getEffectName() {
+        return "outlier";
     }
 
     /** Get the value of warmup iterations.

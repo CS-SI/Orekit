@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,7 +37,7 @@ import org.orekit.errors.OrekitMessages;
 
 /** Base parser for Global Pressure and Temperature 2, 2w and 3 models.
  * <p>
- * The format for all models is always the same, with and example shown below
+ * The format for all models is always the same, with an example shown below
  * for the pressure and the temperature. The "GPT2w" model (w stands for wet)
  * also provides humidity parameters and the "GPT3" model also provides horizontal
  * gradient, so the number of columns vary depending on the model.
@@ -94,7 +94,7 @@ class GptNParser implements DataLoader {
     private static final String B2 = "B2";
 
     /** Expected seasonal models types. */
-    private final SeasonalModelType expected[];
+    private final SeasonalModelType[] expected;
 
     /** Index for latitude field. */
     private int latitudeIndex;
@@ -112,7 +112,7 @@ class GptNParser implements DataLoader {
     private int maxIndex;
 
     /** Indices for expected seasonal models types field. */
-    private int expectedIndices[];
+    private final int[] expectedIndices;
 
     /** Grid entries. */
     private Grid grid;
@@ -138,17 +138,17 @@ class GptNParser implements DataLoader {
         final List<GridEntry>    entries   = new ArrayList<>();
 
         // Open stream and parse data
-        int     lineNumber     = 0;
-        String  line           = null;
         try (InputStreamReader isr = new InputStreamReader(input, StandardCharsets.UTF_8);
-             BufferedReader    br = new BufferedReader(isr)) {
+             BufferedReader    br  = new BufferedReader(isr)) {
+            int     lineNumber = 0;
+            String  line;
             for (line = br.readLine(); line != null; line = br.readLine()) {
                 ++lineNumber;
                 line = line.trim();
                 if (lineNumber == 1) {
                     // read header and store columns numbers
                     parseHeader(line, lineNumber, name);
-                } else {
+                } else if (!line.isEmpty()) {
                     // read grid data
                     final GridEntry entry = parseEntry(line, lineNumber, name);
                     latSample.add(entry.getLatKey());
@@ -214,7 +214,7 @@ class GptNParser implements DataLoader {
                     lookingFor = null;
                     break;
                 default : {
-                    final SeasonalModelType type = SeasonalModelType.parseType(fields[i], lineNumber, name);
+                    final SeasonalModelType type = SeasonalModelType.parseType(fields[i]);
                     for (int j = 0; j < expected.length; ++j) {
                         if (type == expected[j]) {
                             expectedIndices[j] = i;

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,13 +30,14 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.FieldODEIntegrator;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.attitudes.BodyCenterPointing;
 import org.orekit.attitudes.FieldAttitude;
@@ -65,17 +66,85 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.Constants;
-import org.orekit.utils.FieldAbsolutePVCoordinates;
-import org.orekit.utils.FieldArrayDictionary;
-import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.TimeStampedAngularCoordinates;
-import org.orekit.utils.TimeStampedFieldAngularCoordinates;
+import org.orekit.utils.*;
 
 
 class FieldSpacecraftStateTest {
+
+    @Test
+    public void testToFieldSpacecraftStateWithStringAdditionalData() {
+        final Binary64Field field = Binary64Field.getInstance();
+        final SpacecraftState state = new SpacecraftState(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH)).addAdditionalData("test-string", "hello");
+        final FieldSpacecraftState<Binary64> fieldState = new FieldSpacecraftState<>(field, state);
+        Assertions.assertTrue(fieldState.hasAdditionalData("test-string"));
+        Assertions.assertEquals("hello", fieldState.getAdditionalData("test-string"));
+    }
+
+    @Test
+    void testWithAttitudeAndOrbit() {
+        // GIVEN
+        final SpacecraftState state = new SpacecraftState(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH));
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldSpacecraftState<Binary64> fieldState = new FieldSpacecraftState<>(field, state);
+        final FieldAttitude<Binary64> attitude = new FieldAttitude<>(fieldState.getDate(), state.getFrame(),
+                new FieldAngularCoordinates<>(FieldRotation.getIdentity(field), FieldVector3D.getMinusI(field)));
+        // WHEN
+        final FieldSpacecraftState<Binary64> fieldStateWithAttitude = fieldState.withAttitude(attitude);
+        // THEN
+        Assertions.assertEquals(attitude, fieldStateWithAttitude.getAttitude());
+        Assertions.assertEquals(fieldState.getMass(), fieldStateWithAttitude.getMass());
+        Assertions.assertEquals(fieldState.getOrbit(), fieldStateWithAttitude.getOrbit());
+    }
+
+    @Test
+    void testWithMassAndOrbit() {
+        // GIVEN
+        final SpacecraftState state = new SpacecraftState(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH));
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldSpacecraftState<Binary64> fieldState = new FieldSpacecraftState<>(field, state);
+        final Binary64 expectedMass = new Binary64(123);
+        // WHEN
+        final FieldSpacecraftState<Binary64> fieldStateWithMass = fieldState.withMass(expectedMass);
+        // THEN
+        Assertions.assertEquals(expectedMass, fieldStateWithMass.getMass());
+        Assertions.assertEquals(fieldState.getAttitude(), fieldStateWithMass.getAttitude());
+        Assertions.assertEquals(fieldState.getOrbit(), fieldStateWithMass.getOrbit());
+    }
+
+    @Test
+    void testWithAttitudeAndAbsolutePV() {
+        // GIVEN
+        final AbsolutePVCoordinates absolutePVCoordinates = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
+                AbsoluteDate.ARBITRARY_EPOCH, new PVCoordinates());
+        final SpacecraftState state = new SpacecraftState(absolutePVCoordinates);
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldSpacecraftState<Binary64> fieldState = new FieldSpacecraftState<>(field, state);
+        final FieldAttitude<Binary64> attitude = new FieldAttitude<>(fieldState.getDate(), state.getFrame(),
+                new FieldAngularCoordinates<>(FieldRotation.getIdentity(field), FieldVector3D.getMinusI(field)));
+        // WHEN
+        final FieldSpacecraftState<Binary64> fieldStateWithAttitude = fieldState.withAttitude(attitude);
+        // THEN
+        Assertions.assertEquals(attitude, fieldStateWithAttitude.getAttitude());
+        Assertions.assertEquals(fieldState.getMass(), fieldStateWithAttitude.getMass());
+        Assertions.assertEquals(fieldState.getAbsPVA(), fieldStateWithAttitude.getAbsPVA());
+    }
+
+    @Test
+    void testWithMassAndAbsolutePV() {
+        // GIVEN
+        final AbsolutePVCoordinates absolutePVCoordinates = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
+                AbsoluteDate.ARBITRARY_EPOCH, new PVCoordinates());
+        final SpacecraftState state = new SpacecraftState(absolutePVCoordinates);
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldSpacecraftState<Binary64> fieldState = new FieldSpacecraftState<>(field, state);
+        final Binary64 expectedMass = new Binary64(123);
+        // WHEN
+        final FieldSpacecraftState<Binary64> fieldStateWithMass = fieldState.withMass(expectedMass);
+        // THEN
+        Assertions.assertEquals(expectedMass, fieldStateWithMass.getMass());
+        Assertions.assertEquals(fieldState.getAttitude(), fieldStateWithMass.getAttitude());
+        Assertions.assertEquals(fieldState.getAbsPVA(), fieldStateWithMass.getAbsPVA());
+    }
 
     @Test
     void testFieldVSReal() {
@@ -89,9 +158,7 @@ class FieldSpacecraftStateTest {
 
     @Test
     void testDatesConsistency() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            doTestDatesConsistency(Binary64Field.getInstance());
-        });
+        Assertions.assertThrows(IllegalArgumentException.class, () -> doTestDatesConsistency(Binary64Field.getInstance()));
     }
 
     @Test
@@ -101,9 +168,12 @@ class FieldSpacecraftStateTest {
 
     @Test
     void testFramesConsistency() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            doTestFramesConsistency(Binary64Field.getInstance());
-        });
+        Assertions.assertThrows(IllegalArgumentException.class, () -> doTestFramesConsistency(Binary64Field.getInstance()));
+    }
+
+    @Test
+    void testGetAdditionalStateBadType() {
+        doTestGetAdditionalStateBadType(Binary64Field.getInstance());
     }
 
     @Test
@@ -133,9 +203,8 @@ class FieldSpacecraftStateTest {
 
     @Test
     void testFramesConsistencyAbsPV() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            doTestFramesConsistencyAbsPV(Binary64Field.getInstance());
-        });
+        Assertions.assertThrows(IllegalArgumentException.class,
+                                () -> doTestFramesConsistencyAbsPV(Binary64Field.getInstance()));
     }
 
     @Test
@@ -255,10 +324,10 @@ class FieldSpacecraftStateTest {
             FieldSpacecraftState<T> control_f = ScS_f.shiftedBy(zero.add(dt));
 
 
-            Assertions.assertEquals(control_r.getA(), control_f.getA().getReal(), 1e-10);
-            Assertions.assertEquals(control_r.getE(), control_f.getE().getReal(), 1e-10);
-            Assertions.assertEquals(control_r.getEquinoctialEx(), control_f.getEquinoctialEx().getReal(), 1e-10);
-            Assertions.assertEquals(control_r.getEquinoctialEy(), control_f.getEquinoctialEy().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getOrbit().getA(), control_f.getOrbit().getA().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getOrbit().getE(), control_f.getOrbit().getE().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getOrbit().getEquinoctialEx(), control_f.getOrbit().getEquinoctialEx().getReal(), 1e-10);
+            Assertions.assertEquals(control_r.getOrbit().getEquinoctialEy(), control_f.getOrbit().getEquinoctialEy().getReal(), 1e-10);
             Assertions.assertEquals(control_r.getPosition().getX(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getX(), 1e-10);
             Assertions.assertEquals(control_r.getPosition().getY(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getY(), 1e-10);
             Assertions.assertEquals(control_r.getPosition().getZ(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getZ(), 1e-10);
@@ -435,11 +504,8 @@ class FieldSpacecraftStateTest {
         FieldAttitude<T> shiftedAttitude = attitudeLaw
                 .getAttitude(orbit1Shift, orbit1Shift.getDate(), orbit.getFrame());
 
-        //verify dates are very close, but not equal
-        Assertions.assertNotEquals(shiftedAttitude.getDate(), orbit10Shifts.getDate());
-        Assertions.assertEquals(
-                shiftedAttitude.getDate().durationFrom(orbit10Shifts.getDate()).getReal(),
-                0, Precision.EPSILON);
+        // since Orekit 13, dates are equal
+        Assertions.assertEquals(shiftedAttitude.getDate(), orbit10Shifts.getDate());
 
         //action + verify no exception is thrown
         new FieldSpacecraftState<>(orbit10Shifts, shiftedAttitude);
@@ -546,60 +612,56 @@ class FieldSpacecraftStateTest {
         add[1] = zero.add(2.);
         final FieldSpacecraftState<T> extended =
                 state.
-                 addAdditionalState("test-1", add).
-                  addAdditionalState("test-2", zero.add(42.0));
-        Assertions.assertEquals(0, state.getAdditionalStatesValues().size());
-        Assertions.assertFalse(state.hasAdditionalState("test-1"));
+                        addAdditionalData("test-1", add).
+                        addAdditionalData("test-2", zero.add(42.0)).
+                        addAdditionalData("test-string", "hello");
+        Assertions.assertEquals(0, state.getAdditionalDataValues().size());
+        Assertions.assertFalse(state.hasAdditionalData("test-1"));
         try {
-            state.getAdditionalState("test-1");
+            state.getAdditionalData("test-1");
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_DATA);
             Assertions.assertEquals(oe.getParts()[0], "test-1");
         }
         try {
             state.ensureCompatibleAdditionalStates(extended);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_DATA);
             Assertions.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
         }
         try {
             extended.ensureCompatibleAdditionalStates(state);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_DATA);
             Assertions.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
         }
         try {
             T[] kk = MathArrays.buildArray(field, 7);
-            extended.ensureCompatibleAdditionalStates(extended.addAdditionalState("test-2", kk));
+            extended.ensureCompatibleAdditionalStates(extended.addAdditionalData("test-2", kk));
             Assertions.fail("an exception should have been thrown");
         } catch (MathIllegalStateException mise) {
             Assertions.assertEquals(LocalizedCoreFormats.DIMENSIONS_MISMATCH, mise.getSpecifier());
             Assertions.assertEquals(7, ((Integer) mise.getParts()[0]).intValue());
         }
-        Assertions.assertEquals(2, extended.getAdditionalStatesValues().size());
-        Assertions.assertTrue(extended.hasAdditionalState("test-1"));
-        Assertions.assertTrue(extended.hasAdditionalState("test-2"));
+        extended.ensureCompatibleAdditionalStates(extended.addAdditionalData("test-string", "hello"));
+        Assertions.assertEquals(3, extended.getAdditionalDataValues().size());
+        Assertions.assertTrue(extended.hasAdditionalData("test-1"));
+        Assertions.assertTrue(extended.hasAdditionalData("test-2"));
         Assertions.assertEquals( 1.0, extended.getAdditionalState("test-1")[0].getReal(), 1.0e-15);
         Assertions.assertEquals( 2.0, extended.getAdditionalState("test-1")[1].getReal(), 1.0e-15);
         Assertions.assertEquals(42.0, extended.getAdditionalState("test-2")[0].getReal(), 1.0e-15);
+        Assertions.assertEquals("hello", extended.getAdditionalData("test-string"));
 
         // test various constructors
         T[] dd = MathArrays.buildArray(field, 1);
         dd[0] = zero.add(-6.0);
-        FieldArrayDictionary<T> dictionary = new FieldArrayDictionary<>(field);
+        FieldDataDictionary<T> dictionary = new FieldDataDictionary<>(field);
         dictionary.put("test-3", dd);
-        FieldSpacecraftState<T> sO = new FieldSpacecraftState<>(state.getOrbit(), dictionary);
-        Assertions.assertEquals(-6.0, sO.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
-        FieldSpacecraftState<T> sOA = new FieldSpacecraftState<>(state.getOrbit(), state.getAttitude(), dictionary);
-        Assertions.assertEquals(-6.0, sOA.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
-        FieldSpacecraftState<T> sOM = new FieldSpacecraftState<>(state.getOrbit(), state.getMass(), dictionary);
-        Assertions.assertEquals(-6.0, sOM.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
-        FieldSpacecraftState<T> sOAM = new FieldSpacecraftState<>(state.getOrbit(), state.getAttitude(), state.getMass(), dictionary);
-        Assertions.assertEquals(-6.0, sOAM.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
-        FieldSpacecraftState<T> sFromDouble = new FieldSpacecraftState<>(field, sOAM.toSpacecraftState());
+        FieldSpacecraftState<T> sO = state.withAdditionalData(dictionary);
+        FieldSpacecraftState<T> sFromDouble = new FieldSpacecraftState<>(field, sO.toSpacecraftState());
         Assertions.assertEquals(-6.0, sFromDouble.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
 
     }
@@ -644,21 +706,21 @@ class FieldSpacecraftStateTest {
             state.getAdditionalStateDerivative("test-1");
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_DATA);
             Assertions.assertEquals(oe.getParts()[0], "test-1");
         }
         try {
             state.ensureCompatibleAdditionalStates(extended);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_DATA);
             Assertions.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
         }
         try {
             extended.ensureCompatibleAdditionalStates(state);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_DATA);
             Assertions.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
         }
         try {
@@ -682,7 +744,7 @@ class FieldSpacecraftStateTest {
         FieldArrayDictionary<T> dict = new FieldArrayDictionary<>(field);
         dict.put("test-3", dd);
         FieldSpacecraftState<T> s = new FieldSpacecraftState<>(state.getOrbit(), state.getAttitude(), state.getMass(), null, dict);
-        Assertions.assertFalse(s.hasAdditionalState("test-3"));
+        Assertions.assertFalse(s.hasAdditionalData("test-3"));
         Assertions.assertEquals(-6.0, s.getAdditionalStateDerivative("test-3")[0].getReal(), 1.0e-15);
 
         // test conversion
@@ -708,7 +770,7 @@ class FieldSpacecraftStateTest {
         FieldAbsolutePVCoordinates<T> absPV_f = new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(), t_f, pva_f);
 
         FieldSpacecraftState<T> ScS_f = new FieldSpacecraftState<>(absPV_f);
-        FieldSpacecraftState<T> withM = new FieldSpacecraftState<>(absPV_f, zero.newInstance(1234.5));
+        FieldSpacecraftState<T> withM = new FieldSpacecraftState<>(absPV_f).withMass(zero.newInstance(1234.5));
         Assertions.assertEquals(1234.5, withM.getMass().getReal(), 1.0e-10);
         SpacecraftState ScS_r = ScS_f.toSpacecraftState();
 
@@ -716,16 +778,6 @@ class FieldSpacecraftStateTest {
             SpacecraftState control_r = ScS_r.shiftedBy(dt);
             FieldSpacecraftState<T> control_f = ScS_f.shiftedBy(zero.add(dt));
 
-
-            Assertions.assertEquals(control_r.getMu(), control_f.getMu().getReal(), 1e-10);
-            Assertions.assertEquals(control_r.getI(), control_f.getI().getReal(), 1e-10);
-            Assertions.assertEquals(control_r.getHx(), control_f.getHx().getReal(), 1e-10);
-            Assertions.assertEquals(control_r.getHy(), control_f.getHy().getReal(), 1e-10);
-            Assertions.assertEquals(control_r.getLv(), control_f.getLv().getReal(), 1e-10);
-            Assertions.assertEquals(control_r.getLE(), control_f.getLE().getReal(), 1e-10);
-            Assertions.assertEquals(control_r.getLM(), control_f.getLM().getReal(), 1e-10);
-            Assertions.assertEquals(control_r.getKeplerianMeanMotion(), control_f.getKeplerianMeanMotion().getReal(), 1e-10);
-            Assertions.assertEquals(control_r.getKeplerianPeriod(), control_f.getKeplerianPeriod().getReal(), 1e-10);
             Assertions.assertEquals(control_r.getPosition().getX(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getX(), 1e-10);
             Assertions.assertEquals(control_r.getPosition().getY(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getY(), 1e-10);
             Assertions.assertEquals(control_r.getPosition().getZ(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getZ(), 1e-10);
@@ -783,14 +835,11 @@ class FieldSpacecraftStateTest {
 
         BodyCenterPointing attitudeLaw = new BodyCenterPointing(absPV_f.getFrame(), earth);
 
-        FieldAttitude<T> shiftedAttitude = attitudeLaw
-                .getAttitude(AbsolutePVCoordinates1Shift, AbsolutePVCoordinates1Shift.getDate(), absPV_f.getFrame());
-
-        //verify dates are very close, but not equal
-        Assertions.assertNotEquals(shiftedAttitude.getDate(), AbsolutePVCoordinates10Shifts.getDate());
-        Assertions.assertEquals(
-                shiftedAttitude.getDate().durationFrom(AbsolutePVCoordinates10Shifts.getDate()).getReal(),
-                0, Precision.EPSILON);
+        FieldAttitude<T> shiftedAttitude = attitudeLaw.getAttitude(AbsolutePVCoordinates1Shift,
+                                                                   AbsolutePVCoordinates1Shift.getDate(),
+                                                                   absPV_f.getFrame());
+        // since Orekit 13, dates are equal
+        Assertions.assertEquals(shiftedAttitude.getDate(), AbsolutePVCoordinates10Shifts.getDate());
 
         //action + verify no exception is thrown
         FieldSpacecraftState<T> s1 = new FieldSpacecraftState<>(AbsolutePVCoordinates10Shifts, shiftedAttitude);
@@ -806,8 +855,14 @@ class FieldSpacecraftStateTest {
         }
     }
 
+    private <T extends CalculusFieldElement<T>> void doTestGetAdditionalStateBadType(final Field<T> field) {
+        final SpacecraftState state = new SpacecraftState(rOrbit);
+        final FieldSpacecraftState<T> fieldState = new FieldSpacecraftState<>(field, state).addAdditionalData("string", "hello there");
+        OrekitException exception = Assertions.assertThrows(OrekitException.class, () -> fieldState.getAdditionalState("string"));
+        Assertions.assertEquals(OrekitMessages.ADDITIONAL_STATE_BAD_TYPE, exception.getSpecifier());
+        Assertions.assertEquals("string", exception.getParts()[0]);
+    }
 
-    // 
     private <T extends CalculusFieldElement<T>> void doTestFramesConsistencyAbsPV(final Field<T> field) {
 
         T zero = field.getZero();
@@ -868,42 +923,42 @@ class FieldSpacecraftStateTest {
         add[1] = zero.add(2.);
         final FieldSpacecraftState<T> extended =
                 state.
-                 addAdditionalState("test-1", add).
-                  addAdditionalState("test-2", zero.add(42.0));
-        Assertions.assertEquals(0, state.getAdditionalStatesValues().size());
-        Assertions.assertFalse(state.hasAdditionalState("test-1"));
+                        addAdditionalData("test-1", add).
+                        addAdditionalData("test-2", zero.add(42.0));
+        Assertions.assertEquals(0, state.getAdditionalDataValues().size());
+        Assertions.assertFalse(state.hasAdditionalData("test-1"));
         try {
-            state.getAdditionalState("test-1");
+            state.getAdditionalData("test-1");
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_DATA);
             Assertions.assertEquals(oe.getParts()[0], "test-1");
         }
         try {
             state.ensureCompatibleAdditionalStates(extended);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_DATA);
             Assertions.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
         }
         try {
             extended.ensureCompatibleAdditionalStates(state);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_DATA);
             Assertions.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
         }
         try {
             T[] kk = MathArrays.buildArray(field, 7);
-            extended.ensureCompatibleAdditionalStates(extended.addAdditionalState("test-2", kk));
+            extended.ensureCompatibleAdditionalStates(extended.addAdditionalData("test-2", kk));
             Assertions.fail("an exception should have been thrown");
         } catch (MathIllegalStateException mise) {
             Assertions.assertEquals(LocalizedCoreFormats.DIMENSIONS_MISMATCH, mise.getSpecifier());
             Assertions.assertEquals(7, ((Integer) mise.getParts()[0]).intValue());
         }
-        Assertions.assertEquals(2, extended.getAdditionalStatesValues().size());
-        Assertions.assertTrue(extended.hasAdditionalState("test-1"));
-        Assertions.assertTrue(extended.hasAdditionalState("test-2"));
+        Assertions.assertEquals(2, extended.getAdditionalDataValues().size());
+        Assertions.assertTrue(extended.hasAdditionalData("test-1"));
+        Assertions.assertTrue(extended.hasAdditionalData("test-2"));
         Assertions.assertEquals( 1.0, extended.getAdditionalState("test-1")[0].getReal(), 1.0e-15);
         Assertions.assertEquals( 2.0, extended.getAdditionalState("test-1")[1].getReal(), 1.0e-15);
         Assertions.assertEquals(42.0, extended.getAdditionalState("test-2")[0].getReal(), 1.0e-15);
@@ -911,17 +966,11 @@ class FieldSpacecraftStateTest {
         // test various constructors
         T[] dd = MathArrays.buildArray(field, 1);
         dd[0] = zero.add(-6.0);
-        FieldArrayDictionary<T> map = new FieldArrayDictionary<>(field);
+        FieldDataDictionary<T> map = new FieldDataDictionary<>(field);
         map.put("test-3", dd);
-        FieldSpacecraftState<T> sO = new FieldSpacecraftState<>(state.getAbsPVA(), map);
+        FieldSpacecraftState<T> sO = new FieldSpacecraftState<>(state.getAbsPVA()).withAdditionalData(map);
         Assertions.assertEquals(-6.0, sO.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
-        FieldSpacecraftState<T> sOA = new FieldSpacecraftState<>(state.getAbsPVA(), state.getAttitude(), map);
-        Assertions.assertEquals(-6.0, sOA.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
-        FieldSpacecraftState<T> sOM = new FieldSpacecraftState<>(state.getAbsPVA(), state.getMass(), map);
-        Assertions.assertEquals(-6.0, sOM.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
-        FieldSpacecraftState<T> sOAM = new FieldSpacecraftState<>(state.getAbsPVA(), state.getAttitude(), state.getMass(), map);
-        Assertions.assertEquals(-6.0, sOAM.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
-        FieldSpacecraftState<T> sFromDouble = new FieldSpacecraftState<>(field, sOAM.toSpacecraftState());
+        FieldSpacecraftState<T> sFromDouble = new FieldSpacecraftState<>(field, sO.toSpacecraftState());
         Assertions.assertEquals(-6.0, sFromDouble.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
 
     }
@@ -966,21 +1015,21 @@ class FieldSpacecraftStateTest {
             state.getAdditionalStateDerivative("test-1");
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_DATA);
             Assertions.assertEquals(oe.getParts()[0], "test-1");
         }
         try {
             state.ensureCompatibleAdditionalStates(extended);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_DATA);
             Assertions.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
         }
         try {
             extended.ensureCompatibleAdditionalStates(state);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_DATA);
             Assertions.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
         }
         try {
@@ -1004,7 +1053,7 @@ class FieldSpacecraftStateTest {
         FieldArrayDictionary<T> dictionary = new FieldArrayDictionary<T>(field);
         dictionary.put("test-3", dd);
         FieldSpacecraftState<T> s = new FieldSpacecraftState<>(state.getAbsPVA(), state.getAttitude(), state.getMass(), null, dictionary);
-        Assertions.assertFalse(s.hasAdditionalState("test-3"));
+        Assertions.assertFalse(s.hasAdditionalData("test-3"));
         Assertions.assertEquals(-6.0, s.getAdditionalStateDerivative("test-3")[0].getReal(), 1.0e-15);
 
     }
@@ -1025,7 +1074,7 @@ class FieldSpacecraftStateTest {
         // Create initial state with one additional state and add it to the propagator
         final String name = "A";
         FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit).
-                                       addAdditionalState(name, zero.add(-1));
+                addAdditionalData(name, zero.add(-1));
 
         propagator.resetInitialState(initialState);
 
@@ -1041,7 +1090,7 @@ class FieldSpacecraftStateTest {
 
             @Override
             public FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector, FieldSpacecraftState<T> oldState) {
-                return oldState.addAdditionalState(name, zero.add(+1));
+                return oldState.addAdditionalData(name, zero.add(+1));
             }
 
         });
@@ -1076,7 +1125,7 @@ class FieldSpacecraftStateTest {
         // Create initial state with one additional state and add it to the propagator
         final String name = "A";
         FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit).
-                                       addAdditionalState(name, zero.add(-1));
+                addAdditionalData(name, zero.add(-1));
 
         propagator.resetInitialState(initialState);
 
@@ -1092,7 +1141,7 @@ class FieldSpacecraftStateTest {
 
             @Override
             public FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector, FieldSpacecraftState<T> oldState) {
-                return oldState.addAdditionalState(name, zero.add(+1));
+                return oldState.addAdditionalData(name, zero.add(+1));
             }
 
         });
@@ -1127,9 +1176,9 @@ class FieldSpacecraftStateTest {
         final String valueOnly          = "value-only";
         final String derivativeOnly     = "derivative-only";
         final FieldSpacecraftState<T> s0 = propagator.getInitialState().
-                                           addAdditionalState(valueAndDerivative,           convert(field, new double[] { 1.0,  2.0 })).
+                addAdditionalData(valueAndDerivative,           convert(field, new double[] { 1.0,  2.0 })).
                                            addAdditionalStateDerivative(valueAndDerivative, convert(field, new double[] { 3.0,  2.0 })).
-                                           addAdditionalState(valueOnly,                    convert(field, new double[] { 5.0,  4.0 })).
+                addAdditionalData(valueOnly,                    convert(field, new double[] { 5.0,  4.0 })).
                                            addAdditionalStateDerivative(derivativeOnly,     convert(field, new double[] { 1.0, -1.0 }));
         Assertions.assertEquals( 1.0, s0.getAdditionalState(valueAndDerivative)[0].getReal(),           1.0e-15);
         Assertions.assertEquals( 2.0, s0.getAdditionalState(valueAndDerivative)[1].getReal(),           1.0e-15);
@@ -1168,9 +1217,9 @@ class FieldSpacecraftStateTest {
         final String valueOnly          = "value-only";
         final String derivativeOnly     = "derivative-only";
         final FieldSpacecraftState<T> s0 = propagator.getInitialState().
-                                           addAdditionalState(valueAndDerivative,           convert(field, new double[] { 1.0,  2.0 })).
+                addAdditionalData(valueAndDerivative,           convert(field, new double[] { 1.0,  2.0 })).
                                            addAdditionalStateDerivative(valueAndDerivative, convert(field, new double[] { 3.0,  2.0 })).
-                                           addAdditionalState(valueOnly,                    convert(field, new double[] { 5.0,  4.0 })).
+                addAdditionalData(valueOnly,                    convert(field, new double[] { 5.0,  4.0 })).
                                            addAdditionalStateDerivative(derivativeOnly,     convert(field, new double[] { 1.0, -1.0 }));
         Assertions.assertEquals( 1.0, s0.getAdditionalState(valueAndDerivative)[0].getReal(),           1.0e-15);
         Assertions.assertEquals( 2.0, s0.getAdditionalState(valueAndDerivative)[1].getReal(),           1.0e-15);
@@ -1206,7 +1255,7 @@ class FieldSpacecraftStateTest {
             double OMEGA = FastMath.toRadians(261);
             double lv    =    0;
 
-            rDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
+            rDate = new AbsoluteDate(new DateComponents(2004, 1, 1),
                                      TimeComponents.H00,
                                      TimeScalesFactory.getUTC());
             rOrbit = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,

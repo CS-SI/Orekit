@@ -43,7 +43,7 @@
         <ul>
           <li>high accuracy absolute dates</li>
           <li>time scales (TAI, UTC, UT1, GPS, TT, TCG, TDB, TCB, GMST, GST, GLONASS, QZSS, BDT,
-            IRNSS...)</li>
+            NavIC...)</li>
           <li>transparent handling of leap seconds</li>
           <li>support for CCSDS time code standards</li>
         </ul>
@@ -90,7 +90,7 @@
           <li>covariance propagation</li>
           <li>covariance extrapolation using a Keplerian model</li>
           <li>covariance frame transformation (inertial, Earth fixed, and local orbital frames)</li>
-          <li>covariance type transformation (cartesian, keplerian, circular, and equinoctial)</li>
+          <li>covariance type transformation (Cartesian, Keplerian, circular, and equinoctial)</li>
           <li>covariance interpolation based on the blending model</li>
         </ul>
       </li>
@@ -114,7 +114,7 @@
               <li>Brouwer-Lyddane with Warren Phipps' correction for the critical inclination of
                 63.4° and the perturbative acceleration due to atmospheric drag</li>
               <li>SDP4/SGP4 with 2006 corrections</li>
-              <li>GNSS: GPS, QZSS, Galileo, GLONASS, Beidou, IRNSS and SBAS</li>
+              <li>GNSS: GPS, QZSS, Galileo, GLONASS, Beidou, NavIC and SBAS</li>
               <li>Intelsat's 11 elements</li>
             </ul>
           </li>
@@ -127,7 +127,7 @@
               <li>atmospheric drag</li>
               <li>third body attraction (with data for Sun, Moon and all solar systems planets)</li>
               <li>radiation pressure with eclipses (multiple oblate spheroids occulting bodies,
-                multiple coefficients for bow and wing models)</li>
+                multiple coefficients for box and wing models)</li>
               <li>solid tides, with or without solid pole tide</li>
               <li>ocean tides, with or without ocean pole tide</li>
               <li>general relativity (including Lense-Thirring and De Sitter corrections)</li>
@@ -136,8 +136,6 @@
               <li>empirical accelerations to account for the unmodeled forces</li>
               <li>state of the art ODE integrators (adaptive stepsize with error control, continuous
                 output, switching functions, G-stop, step normalization...)</li>
-              <li>serialization mechanism to store complete results on persistent storage for later
-                use</li>
               <li>propagation in non-inertial frames (e.g. for Lagrange point halo orbits)</li>
             </ul>
           </li>
@@ -216,7 +214,7 @@
               <li>ground at night</li>
               <li>impulse maneuvers occurrence</li>
               <li>geomagnetic intensity</li>
-  	          <li>extremum approach for TCA (Time of Closest Approach) computing</li>
+  	      <li>extremum approach for TCA (Time of Closest Approach) computing</li>
               <li>beta angle</li>
               <li>relative distance with another object</li>
             </ul>
@@ -242,6 +240,7 @@
                 yaw compensation, yaw-steering)</li>
               <li>orbit referenced attitudes (LOF aligned, offset on all axes)</li>
               <li>space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)</li>
+              <li>attitude aligned with one target and constrained by another target</li>
               <li>tabulated attitudes, either respective to inertial frame or respective to Local
                 Orbital Frames</li>
               <li>specific law for GNSS satellites: GPS (block IIA, block IIF, block IIF),
@@ -278,6 +277,7 @@
               <li>implementation of the Extended Semi-analytical Kalman Filter (ESKF)</li>
   	          <li>implementation of the Unscented Kalman Filter</li>
   	          <li>implementation of the Unscented Semi-analytical Kalman Filter</li>
+              <li>RTS (Rauch-Tung-Striebel) smoothing step over results</li>
             </ul>
           </li>
           <li>parameters estimation
@@ -291,7 +291,7 @@
             </ul>
           </li>
           <li>orbit determination can be performed with numerical, DSST, SDP4/SGP4,
-            Eckstein-Hechler, Brouwer-Lyddane, or Keplerian propagators</li>
+            Eckstein-Hechler, Brouwer-Lyddane, Keplerian or GNSS propagators</li>
           <li>ephemeris-based orbit determination to estimate measurement parameters like station
             biases or clock offsets</li>
           <li>multi-satellites orbit determination</li>
@@ -393,28 +393,37 @@
       <li>Earth models
         <ul>
           <li>atmospheric models (DTM2000, Jacchia-Bowman 2008, NRL MSISE 2000, Harris-Priester and
-            simple exponential models), and Marshall solar Activity Future Estimation, optionally
+            simple exponential models), and Marshall Solar Activity Future Estimation, optionally
             with lift component</li>
           <li>support for CSSI space weather data</li>
           <li>support for SOLFSMY and DTC data for JB2008 atmospheric model</li>
-          <li>tropospheric delay (modified Saastamoinen, estimated, fixed)</li>
-          <li>tropospheric mapping functions (Vienna 1, Vienna 3, Global, Niell)</li>
-          <li>tropospheric refraction correction angle (Recommendation ITU-R P.834-7 and
-            Saemundssen's formula quoted by Meeus)</li>
-          <li>tropospheric model for laser ranging (Marini-Murray, Mendes-Pavlis)</li>
+          <li>tropospheric delay for radio propagation (canonical Saastamoinen, modified Saastamoinen,
+            Askne-Nordius, modified Hopfield, ITU-R P.834, Vienna 1, Vienna 3, estimated, fixed)</li>
+          <li>tropospheric delay for laser ranging (Marini-Murray, Mendes-Pavlis)</li>
+          <li>tropospheric refraction correction angle (ITU-R P.834 and Saemundssen's formula quoted by Meeus)</li>
+          <li>tropospheric mapping functions (Chao, revised Chao, Global Mapping Function, ITU-R P.834,
+            Vienna 1, Vienna 3, Niell, Mendes-Pavlis)</li>
           <li>Klobuchar ionospheric model (including parsing α and β coefficients from University of
             Bern Astronomical Institute files)</li>
           <li>Global Ionospheric Map (GIM) model</li>
-          <li>NeQuick ionospheric model</li>
+          <li>NeQuick ionospheric models (both Galileo-specific and original ITU-R P.531 versions)</li>
           <li>VTEC estimated ionospheric model with Single Layer Model (SLM) ionospheric mapping
             function</li>
-          <li>Global Pressure and Temperature models (GPT, GPT2, GPT2w, GPT3)</li>
+          <li>Pressure, Temperature and Humidity models (GPT, GPT2, GPT2w, GPT3, ITU-R P.834)</li>
+          <li>Water Vapor pressure evolution (CIPM-2007, NBS-SRC, Wang 1988)</li>
           <li>geomagnetic field (WMM, IGRF)</li>
           <li>geoid model from any gravity field</li>
-          <li>displacement of ground points due to tides</li>
+          <li>displacement of ground points (tides, ocean loading, Post-Seismic Deformation, tectonics plates)</li>
           <li>tessellation of zones of interest as tiles</li>
           <li>sampling of zones of interest as grids of points</li>
           <li>construction of trajectories using loxodromes (commonly, a rhumb line)</li>
+        </ul>
+      </li>
+      <li>Indirect optimal control
+        <ul>
+          <li>adjoint equations as defined by Pontryagin's Maximum Principle with Cartesian coordinates for a range of forces: (gravitational, inertial) including J2</li>
+          <li>so-called energy cost functions (proportional to the integral of the control vector's squared norm), with Hamitonian evaluation</li>
+          <li>single shooting based on Newton algorithm for the case of fixed time, fixed Cartesian bounds</li>
         </ul>
       </li>
       <li>Collisions

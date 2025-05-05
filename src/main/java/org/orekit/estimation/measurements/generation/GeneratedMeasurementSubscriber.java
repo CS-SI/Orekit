@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,11 @@
  */
 package org.orekit.estimation.measurements.generation;
 
-import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.time.AbsoluteDate;
 
 
-/** Interface for subscribing to generated {@link ObservedMeasurement measurements} events.
+/** Interface for subscribing to generated {@link EstimatedMeasurementBase measurements} events.
  * @author Luc Maisonobe
  * @since 12.0
  */
@@ -40,6 +40,6 @@ public interface GeneratedMeasurementSubscriber {
     /** Handle a generated measurement.
      * @param measurement measurements that has just been generated
      */
-    void handleGeneratedMeasurement(ObservedMeasurement<?> measurement);
+    void handleGeneratedMeasurement(EstimatedMeasurementBase<?> measurement);
 
 }

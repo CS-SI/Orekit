@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,6 +27,18 @@ import org.orekit.time.AbsoluteDate;
 class RecallLastOccurrenceTest {
 
     private static final Action ACTION = Action.CONTINUE;
+
+    @Test
+    void testFinish() {
+        // GIVEN
+        final EventHandler mockedHandler = Mockito.mock(EventHandler.class);
+        final RecallLastOccurrence wrappingHandler = new RecallLastOccurrence(mockedHandler);
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        // WHEN
+        wrappingHandler.finish(mockedState, null);
+        // THEN
+        Mockito.verify(mockedHandler, Mockito.times(1)).finish(mockedState, null);
+    }
 
     @Test
     void testEventOccurred() {
@@ -91,6 +103,8 @@ class RecallLastOccurrenceTest {
 
         boolean isInitialized = false;
 
+        boolean isFinished = false;
+
         @Override
         public void init(SpacecraftState initialState, AbsoluteDate target, EventDetector detector) {
             isInitialized = true;
@@ -101,6 +115,10 @@ class RecallLastOccurrenceTest {
             return ACTION;
         }
 
+        @Override
+        public void finish(SpacecraftState finalState, EventDetector detector) {
+            isFinished = true;
+        }
     }
 
 }

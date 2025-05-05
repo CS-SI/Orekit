@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.orekit.files.rinex.observation;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.hipparchus.util.FastMath;
@@ -46,9 +47,24 @@ public class RinexObservation extends RinexFile<RinexObservationHeader> {
 
     /** Get an unmodifiable view of the observations.
      * @return unmodifiable view of the observations
+     * @see #bundleByDates()
      */
     public List<ObservationDataSet> getObservationDataSets() {
         return Collections.unmodifiableList(observations);
+    }
+
+    /** Get an iterable view of observations bundled by common date.
+     * <p>
+     * The observations are the same as the ones provided by {@link #getObservationDataSets()},
+     * but instead of one single list covering the whole Rinex file, several lists
+     * are made available, all observations withing each list sharing a common date
+     * </p>
+     * @return an iterable view of observations bundled by common date
+     * @see #getObservationDataSets()
+     * @since 13.0
+     */
+    public Iterable<List<ObservationDataSet>> bundleByDates() {
+        return BundlingIterator::new;
     }
 
     /** Add an observations data set.
@@ -113,6 +129,54 @@ public class RinexObservation extends RinexFile<RinexObservationHeader> {
         return someNonZero ?
                new SampledClockModel(sample, nbInterpolationPoints) :
                null;
+
+    }
+
+    /** Iterator providing {@link ObservationDataSet} bundled by dates.
+     * @since 13.0
+     */
+    private class BundlingIterator implements Iterator<List<ObservationDataSet>> {
+
+        /** Ratio for dates comparisons tolerance. */
+        private static final double RATIO = 0.01;
+
+        /** Tolerance for dates comparisons. */
+        private final double tolerance;
+
+        /** Index of next bundle. */
+        private int next;
+
+        /** Build an iterator starting at first observations data set.
+         */
+        BundlingIterator() {
+            this.tolerance = RATIO * getHeader().getInterval();
+            this.next = 0;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public boolean hasNext() {
+            return next < observations.size();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public List<ObservationDataSet> next() {
+
+            // common date for all observation data sets in this bundle
+            final AbsoluteDate bundleDate = observations.get(next).getDate();
+
+            final int start = next;
+            while (next < observations.size() &&
+                   FastMath.abs(observations.get(next).getDate().durationFrom(bundleDate)) <= tolerance) {
+                // we can include next observation in the current bundle
+                ++next;
+            }
+
+            // return the bundle of observations that share the same date
+            return observations.subList(start, next);
+
+        }
 
     }
 

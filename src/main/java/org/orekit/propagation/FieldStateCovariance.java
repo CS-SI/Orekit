@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -213,7 +213,7 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
                                                         final PositionAngleType outAngleType) {
 
         // Handle case where the covariance is already expressed in the output type
-        if (outOrbitType == orbitType && (outAngleType == angleType || outOrbitType == OrbitType.CARTESIAN)) {
+        if (outOrbitType == orbitType && (outOrbitType == OrbitType.CARTESIAN || outAngleType == angleType)) {
             if (lof == null) {
                 return new FieldStateCovariance<>(orbitalCovariance, epoch, frame, orbitType, angleType);
             }
@@ -260,6 +260,11 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
         // Verify current covariance frame
         if (lof != null) {
 
+            // Check specific case where output covariance will be the same
+            if (lofOut == lof) {
+                return new FieldStateCovariance<>(orbitalCovariance, epoch, lof);
+            }
+
             // Change the covariance local orbital frame
             return changeFrameAndCreate(orbit, epoch, lof, lofOut, orbitalCovariance);
 
@@ -295,6 +300,11 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
             return changeFrameAndCreate(orbit, epoch, lof, frameOut, orbitalCovariance);
 
         } else {
+
+            // Check specific case where output covariance will be the same
+            if (frame == frameOut) {
+                return new FieldStateCovariance<>(orbitalCovariance, epoch, frame, orbitType, angleType);
+            }
 
             // Change covariance frame
             return changeFrameAndCreate(orbit, epoch, frame, frameOut, orbitalCovariance, orbitType, angleType);
@@ -433,6 +443,12 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
                                                         final OrbitType outOrbitType,
                                                         final PositionAngleType outAngleType,
                                                         final FieldMatrix<T> inputCov) {
+
+        // Check if type change is really necessary, if not then return input covariance
+        if (StateCovariance.inputAndOutputOrbitTypesAreCartesian(inOrbitType, outOrbitType) ||
+            StateCovariance.inputAndOutputAreIdentical(inOrbitType, inAngleType, outOrbitType, outAngleType)) {
+            return new FieldStateCovariance<>(inputCov, date, covFrame, inOrbitType, inAngleType);
+        }
 
         // Notations:
         // I: Input orbit type

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.MeasurementCreator;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.RadioWave;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -40,22 +40,22 @@ public class InterSatellitesPhaseMeasurementCreator extends MeasurementCreator {
     private final AmbiguityCache                        cache;
 
     public InterSatellitesPhaseMeasurementCreator(final BoundedPropagator ephemeris,
-                                                  final Frequency frequency,
+                                                  final RadioWave radioWave,
                                                   final int ambiguity,
                                                   final double localClockOffset,
                                                   final double remoteClockOffset) {
-        this(ephemeris, frequency, ambiguity, localClockOffset, remoteClockOffset, Vector3D.ZERO, Vector3D.ZERO);
+        this(ephemeris, radioWave, ambiguity, localClockOffset, remoteClockOffset, Vector3D.ZERO, Vector3D.ZERO);
     }
 
     public InterSatellitesPhaseMeasurementCreator(final BoundedPropagator ephemeris,
-                                                  final Frequency frequency,
+                                                  final RadioWave radioWave,
                                                   final int ambiguity,
                                                   final double localClockOffset,
                                                   final double remoteClockOffset,
                                                   final Vector3D antennaPhaseCenter1,
                                                   final Vector3D antennaPhaseCenter2) {
         this.ephemeris           = ephemeris;
-        this.wavelength          = frequency.getWavelength();
+        this.wavelength          = radioWave.getWavelength();
         this.ambiguity           = ambiguity;
         this.antennaPhaseCenter1 = antennaPhaseCenter1;
         this.antennaPhaseCenter2 = antennaPhaseCenter2;

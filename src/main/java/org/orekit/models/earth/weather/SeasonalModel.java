@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,9 @@
  */
 package org.orekit.models.earth.weather;
 
-import org.hipparchus.util.FastMath;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.SinCos;
+import org.hipparchus.util.FieldSinCos;
 
 /** Seasonal model used in Global Pressure Temperature models.
  * @see "Landskron, D. & Böhm, J. J Geod (2018)
@@ -59,17 +60,28 @@ class SeasonalModel {
     }
 
     /** Evaluate a model for some day.
-     * @param dayOfYear day to evaluate
+     * @param sc1 sine and cosine of yearly harmonic term
+     * @param sc2 sine and cosine of bi-yearly harmonic term
      * @return model value at specified day
+     * @since 13.0
      */
-    public double evaluate(final int dayOfYear) {
-
-        final double coef = (dayOfYear / 365.25) * 2 * FastMath.PI;
-        final SinCos sc1  = FastMath.sinCos(coef);
-        final SinCos sc2  = FastMath.sinCos(2.0 * coef);
-
+    public double evaluate(final SinCos sc1, final SinCos sc2) {
         return a0 + a1 * sc1.cos() + b1 * sc1.sin() + a2 * sc2.cos() + b2 * sc2.sin();
+    }
 
+    /** Evaluate a model for some day.
+     * @param <T> type of the field elements
+     * @param sc1 sine and cosine of yearly harmonic term
+     * @param sc2 sine and cosine of bi-yearly harmonic term
+     * @return model value at specified day
+     * @since 13.0
+     */
+    public <T extends CalculusFieldElement<T>> T evaluate(final FieldSinCos<T> sc1, final FieldSinCos<T> sc2) {
+        return sc1.cos().multiply(a1).
+            add(sc1.sin().multiply(b1)).
+            add(sc2.cos().multiply(a2)).
+            add(sc2.sin().multiply(b2)).
+            add(a0);
     }
 
 }

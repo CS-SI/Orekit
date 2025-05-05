@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -49,8 +49,8 @@ public class FieldApsideDetector<T extends CalculusFieldElement<T>> extends Fiel
      * @since 12.1
      */
     public FieldApsideDetector(final T keplerianPeriod) {
-        super(FieldAdaptableInterval.of(keplerianPeriod.divide(3).getReal()), keplerianPeriod.multiply(1e-13),
-            DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>());
+        super(new FieldEventDetectionSettings<>(keplerianPeriod.divide(3).getReal(), keplerianPeriod.multiply(1e-13),
+            DEFAULT_MAX_ITER), new FieldStopOnIncreasing<>());
     }
 
     /** Build a new instance.
@@ -70,30 +70,28 @@ public class FieldApsideDetector<T extends CalculusFieldElement<T>> extends Fiel
      * @param orbit initial orbit
      */
     public FieldApsideDetector(final T threshold, final FieldOrbit<T> orbit) {
-        super(FieldAdaptableInterval.of(orbit.getKeplerianPeriod().divide(3).getReal()), threshold,
-              DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>());
+        super(new FieldEventDetectionSettings<>(orbit.getKeplerianPeriod().divide(3).getReal(), threshold,
+              DEFAULT_MAX_ITER), new FieldStopOnIncreasing<>());
     }
 
-    /** Protected constructor with full parameters.
+    /** Constructor with full parameters.
      * <p>
      * This constructor is public because otherwise all accessible ones would require an orbit.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
+     * @since 13.0
      */
-    public FieldApsideDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold,
-                               final int maxIter, final FieldEventHandler<T> handler) {
-        super(maxCheck, threshold, maxIter, handler);
+    public FieldApsideDetector(final FieldEventDetectionSettings<T> detectionSettings,
+                               final FieldEventHandler<T> handler) {
+        super(detectionSettings, handler);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected FieldApsideDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
-                                            final int newMaxIter,
+    protected FieldApsideDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                             final FieldEventHandler<T> newHandler) {
-        return new FieldApsideDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler);
+        return new FieldApsideDetector<>(detectionSettings, newHandler);
     }
 
     /** Compute the value of the switching function.

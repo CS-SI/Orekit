@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,10 @@
  */
 package org.orekit.control.indirect.adjoint.cost;
 
-import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.propagation.events.EventDetector;
+
+import java.util.stream.Stream;
 
 /**
  * Class for unbounded energy cost with Cartesian coordinates neglecting the mass consumption.
@@ -26,49 +27,42 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
  * Here, the control vector is chosen as the acceleration given by thrusting, expressed in the propagation frame.
  * This leads to the optimal thrust force being equal to the adjoint velocity vector times the mass.
  * @author Romain Serra
- * @see AbstractUnboundedCartesianEnergy
  * @since 12.2
  */
-public class UnboundedCartesianEnergyNeglectingMass extends AbstractUnboundedCartesianEnergy {
+public class UnboundedCartesianEnergyNeglectingMass extends AbstractCartesianCost {
 
     /**
      * Constructor.
+     * @param name name
      */
-    public UnboundedCartesianEnergyNeglectingMass() {
-        super(0.);
+    public UnboundedCartesianEnergyNeglectingMass(final String name) {
+        super(name, 0.);
     }
 
     /** {@inheritDoc} */
     @Override
-    public int getAdjointDimension() {
-        return 6;
+    public Vector3D getThrustAccelerationVector(final double[] adjointVariables, final double mass) {
+        return new Vector3D(adjointVariables[3], adjointVariables[4], adjointVariables[5]);
     }
 
     /** {@inheritDoc} */
     @Override
-    public double getMassFlowRateFactor() {
-        return 0;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Vector3D getThrustVector(final double[] adjointVariables, final double mass) {
-        return new Vector3D(adjointVariables[3], adjointVariables[4], adjointVariables[5]).scalarMultiply(mass);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(final T[] adjointVariables, final T mass) {
-        return new FieldVector3D<>(adjointVariables[3], adjointVariables[4], adjointVariables[5]).scalarMultiply(mass);
-    }
-
-    @Override
-    public void updateAdjointDerivatives(final double[] adjointVariables, final double mass, final double[] adjointDerivatives) {
+    public void updateAdjointDerivatives(final double[] adjointVariables, final double mass,
+                                         final double[] adjointDerivatives) {
         // nothing to do
     }
 
+    /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> void updateAdjointDerivatives(final T[] adjointVariables, final T mass, final T[] adjointDerivatives) {
-        // nothing to do
+    public double getHamiltonianContribution(final double[] adjointVariables, final double mass) {
+        final Vector3D thrustAcceleration = getThrustAccelerationVector(adjointVariables, mass);
+        return -thrustAcceleration.getNormSq() / 2.;
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public Stream<EventDetector> getEventDetectors() {
+        return Stream.empty();
+    }
+
 }

@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -76,7 +76,7 @@ public class RelativeDistanceDetector extends AbstractDetector<RelativeDistanceD
      */
     public RelativeDistanceDetector(final PVCoordinatesProvider secondaryPVProvider,
                                     final double distanceThreshold) {
-        this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnEvent(), secondaryPVProvider,
+        this(EventDetectionSettings.getDefaultEventDetectionSettings(), new StopOnEvent(), secondaryPVProvider,
                 distanceThreshold);
     }
 
@@ -86,18 +86,17 @@ public class RelativeDistanceDetector extends AbstractDetector<RelativeDistanceD
      * This constructor is to be used if the user wants to change the default behavior of the detector.
      * </p>
      *
-     * @param maxCheck            Maximum checking interval.
-     * @param threshold           Convergence threshold (s).
-     * @param maxIter             Maximum number of iterations in the event time search.
+     * @param detectionSettings   Detection settings
      * @param handler             Event handler to call at event occurrences.
      * @param secondaryPVProvider PVCoordinates provider of the other object defining relative distance.
      * @param distanceThreshold Relative distance threshold for event detection
      * @see EventHandler
+     * @since 12.2
      */
-    protected RelativeDistanceDetector(final AdaptableInterval maxCheck, final double threshold, final int maxIter,
+    protected RelativeDistanceDetector(final EventDetectionSettings detectionSettings,
                                        final EventHandler handler, final PVCoordinatesProvider secondaryPVProvider,
                                        final double distanceThreshold) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(detectionSettings, handler);
         this.secondaryPVProvider = secondaryPVProvider;
         this.distanceThreshold = distanceThreshold;
     }
@@ -117,10 +116,9 @@ public class RelativeDistanceDetector extends AbstractDetector<RelativeDistanceD
 
     /** {@inheritDoc} */
     @Override
-    protected RelativeDistanceDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                              final int newMaxIter, final EventHandler newHandler) {
-        return new RelativeDistanceDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, secondaryPVProvider,
-                distanceThreshold);
+    protected RelativeDistanceDetector create(final EventDetectionSettings detectionSettings,
+                                              final EventHandler newHandler) {
+        return new RelativeDistanceDetector(detectionSettings, newHandler, secondaryPVProvider, distanceThreshold);
     }
 
     /**

@@ -78,4 +78,19 @@ public interface FieldEventHandler<T extends CalculusFieldElement<T>> {
     default FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector, FieldSpacecraftState<T> oldState) {
         return oldState;
     }
+
+
+    /**
+     * This method finalize event handler at the end of a propagation.
+     * <p>
+     * The default implementation does nothing
+     * </p>
+     * @param finalState state at propagation end
+     * @param detector event detector related to the event handler
+     * @since 12.2
+     */
+    default void finish(final FieldSpacecraftState<T> finalState, final FieldEventDetector<T> detector) {
+        // nothing by default
+    }
+
 }

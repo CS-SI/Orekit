@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,17 +16,11 @@
  */
 package org.orekit.frames;
 
-import java.io.Serializable;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
-import org.orekit.annotation.DefaultDataContext;
-import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalarFunction;
@@ -40,9 +34,6 @@ import org.orekit.utils.IERSConventions;
  * @author Pascal Parraud
  */
 class TODProvider implements EOPBasedTransformProvider {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20131209L;
 
     /** Conventions. */
     private final IERSConventions conventions;
@@ -165,54 +156,6 @@ class TODProvider implements EOPBasedTransformProvider {
 
         // set up the transform from parent MOD
         return new FieldTransform<>(date, nutation);
-
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * <p>
-     * This intermediate class serializes only the frame key.
-     * </p>
-     * @return data transfer object that will be serialized
-     */
-    @DefaultDataContext
-    private Object writeReplace() {
-        return new DataTransferObject(conventions, eopHistory);
-    }
-
-    /** Internal class used only for serialization. */
-    @DefaultDataContext
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20131209L;
-
-        /** Conventions. */
-        private final IERSConventions conventions;
-
-        /** EOP history. */
-        private final EOPHistory eopHistory;
-
-        /** Simple constructor.
-         * @param conventions IERS conventions to apply
-         * @param eopHistory EOP history
-         */
-        DataTransferObject(final IERSConventions conventions, final EOPHistory eopHistory) {
-            this.conventions = conventions;
-            this.eopHistory  = eopHistory;
-        }
-
-        /** Replace the deserialized data transfer object with a {@link TODProvider}.
-         * @return replacement {@link TODProvider}
-         */
-        private Object readResolve() {
-            try {
-                // retrieve a managed frame
-                return new TODProvider(conventions, eopHistory,
-                        DataContext.getDefault().getTimeScales());
-            } catch (OrekitException oe) {
-                throw new OrekitInternalError(oe);
-            }
-        }
 
     }
 

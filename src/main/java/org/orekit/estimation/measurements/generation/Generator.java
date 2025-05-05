@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.Propagator;
@@ -78,7 +79,17 @@ public class Generator {
      * @return satellite satellite propagated by the propagator
      */
     public ObservableSatellite addPropagator(final Propagator propagator) {
-        final ObservableSatellite os = new ObservableSatellite(propagators.size());
+        return addPropagator(propagator, null);
+    }
+
+    /** Add a propagator.
+     * @param propagator to add
+     * @param name satellite name (if null, a default name built from index will be used)
+     * @return satellite satellite propagated by the propagator
+     * @since 13.0
+     */
+    public ObservableSatellite addPropagator(final Propagator propagator, final String name) {
+        final ObservableSatellite os = new ObservableSatellite(propagators.size(), name);
         observableSatellites.add(os);
         propagators.add(propagator);
         return os;
@@ -101,11 +112,8 @@ public class Generator {
         if (satellites.length == 1) {
             // this scheduler manages only one satellite
             // we can let the individual propagator handle it
-            List<Scheduler<? extends ObservedMeasurement<?>>> list = singleSatSchedulers.get(satellites[0]);
-            if (list == null) {
-                list = new ArrayList<>();
-                singleSatSchedulers.put(satellites[0], list);
-            }
+            final List<Scheduler<? extends ObservedMeasurement<?>>> list =
+                singleSatSchedulers.computeIfAbsent(satellites[0], k -> new ArrayList<>());
             list.add(scheduler);
         } else {
             // this scheduler manages several satellites at once
@@ -236,7 +244,7 @@ public class Generator {
         /** Storage for sorted measurements within one step.
          * @since 12.0
          */
-        private final SortedSet<ObservedMeasurement<?>> generated;
+        private final SortedSet<EstimatedMeasurementBase<?>> generated;
 
         /** Forward generation indicator.
          * @since 12.0
@@ -255,7 +263,7 @@ public class Generator {
                                     final List<ObservableSatellite> observableSatellites, final boolean forward) {
 
             // measurements comparator, consistent with generation direction
-            final Comparator<ObservedMeasurement<?>> comparator = forward ? Comparator.naturalOrder() : Comparator.reverseOrder();
+            final Comparator<EstimatedMeasurementBase<?>> comparator = forward ? Comparator.naturalOrder() : Comparator.reverseOrder();
 
             this.schedulers           = schedulers;
             this.subscribers          = subscribers;
@@ -303,8 +311,8 @@ public class Generator {
                 }
 
                 // now that we have all measurements properly sorted, we can feed them to subscribers
-                for (final Iterator<ObservedMeasurement<?>> iterator = generated.iterator(); iterator.hasNext();) {
-                    final ObservedMeasurement<?> measurement = iterator.next();
+                for (final Iterator<EstimatedMeasurementBase<?>> iterator = generated.iterator(); iterator.hasNext();) {
+                    final EstimatedMeasurementBase<?> measurement = iterator.next();
                     if (forward == lastDate.isAfterOrEqualTo(measurement)) {
                         // this measurement belongs to the current step
                         for (final GeneratedMeasurementSubscriber subscriber : subscribers) {
@@ -325,7 +333,7 @@ public class Generator {
         /** {@inheritDoc} */
         public void finish(final List<SpacecraftState> finalStates) {
             synchronized (generated) {
-                for (final ObservedMeasurement<?> measurement : generated) {
+                for (final EstimatedMeasurementBase<?> measurement : generated) {
                     for (final GeneratedMeasurementSubscriber subscriber : subscribers) {
                         subscriber.handleGeneratedMeasurement(measurement);
                     }
@@ -338,7 +346,7 @@ public class Generator {
          * @param measurements measurements to add
          * @since 12.0
          */
-        private void addMeasurements(final SortedSet<? extends ObservedMeasurement<?>> measurements) {
+        private void addMeasurements(final SortedSet<? extends EstimatedMeasurementBase<?>> measurements) {
             synchronized (generated) {
                 generated.addAll(measurements);
             }

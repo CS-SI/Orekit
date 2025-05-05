@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,7 +27,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.time.AbsoluteDate;
 
 /** Utility class for differentiating various kinds of functions.
@@ -99,36 +99,31 @@ public class Differentiation {
                                               final AttitudeProvider provider,
                                               final OrbitType orbitType, final PositionAngleType positionAngleType,
                                               final double dP, final int nbPoints) {
-        return new StateJacobian() {
+        return state -> {
+            final double[] tolerances =
+                    ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(state.getOrbit(), orbitType)[0];
+            final double[][] jacobian = new double[dimension][6];
+            for (int j = 0; j < 6; ++j) {
 
-            @Override
-            public double[][] value(final SpacecraftState state) {
-                final double[] tolerances =
-                        NumericalPropagator.tolerances(dP, state.getOrbit(), orbitType)[0];
-                final double[][] jacobian = new double[dimension][6];
-                for (int j = 0; j < 6; ++j) {
+                // compute partial derivatives with respect to state component j
+                final UnivariateVectorFunction componentJ =
+                        new StateComponentFunction(j, function, provider, state,
+                                                   orbitType, positionAngleType);
+                final FiniteDifferencesDifferentiator differentiator =
+                        new FiniteDifferencesDifferentiator(nbPoints, tolerances[j]);
+                final UnivariateDifferentiableVectorFunction differentiatedJ =
+                        differentiator.differentiate(componentJ);
 
-                    // compute partial derivatives with respect to state component j
-                    final UnivariateVectorFunction componentJ =
-                            new StateComponentFunction(j, function, provider, state,
-                                                       orbitType, positionAngleType);
-                    final FiniteDifferencesDifferentiator differentiator =
-                            new FiniteDifferencesDifferentiator(nbPoints, tolerances[j]);
-                    final UnivariateDifferentiableVectorFunction differentiatedJ =
-                            differentiator.differentiate(componentJ);
+                final DerivativeStructure[] c = differentiatedJ.value(FACTORY.variable(0, 0.0));
 
-                    final DerivativeStructure[] c = differentiatedJ.value(FACTORY.variable(0, 0.0));
-
-                    // populate the j-th column of the Jacobian
-                    for (int i = 0; i < dimension; ++i) {
-                        jacobian[i][j] = c[i].getPartialDerivative(1);
-                    }
-
+                // populate the j-th column of the Jacobian
+                for (int i = 0; i < dimension; ++i) {
+                    jacobian[i][j] = c[i].getPartialDerivative(1);
                 }
 
-                return jacobian;
-
             }
+
+            return jacobian;
 
         };
     }
@@ -184,12 +179,11 @@ public class Differentiation {
             final Orbit orbit = orbitType.mapArrayToOrbit(array, arrayDot,
                     positionAngleType,
                                                           baseState.getDate(),
-                                                          baseState.getMu(),
+                                                          baseState.getOrbit().getMu(),
                                                           baseState.getFrame());
             final SpacecraftState state =
                     new SpacecraftState(orbit,
-                                        provider.getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
-                                        baseState.getMass());
+                                        provider.getAttitude(orbit, orbit.getDate(), orbit.getFrame())).withMass(baseState.getMass());
             return f.value(state);
         }
 

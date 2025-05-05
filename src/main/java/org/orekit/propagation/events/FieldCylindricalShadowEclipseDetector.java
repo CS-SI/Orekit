@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,7 +32,8 @@ import org.orekit.utils.ExtendedPositionProvider;
  * @author Romain Serra
  * @see FieldEclipseDetector
  * @see CylindricalShadowEclipseDetector
- * @since 12.1
+ * @since 12.
+ *
  */
 public class FieldCylindricalShadowEclipseDetector<T extends CalculusFieldElement<T>>
     extends FieldAbstractDetector<FieldCylindricalShadowEclipseDetector<T>, T> {
@@ -48,16 +49,15 @@ public class FieldCylindricalShadowEclipseDetector<T extends CalculusFieldElemen
      * Constructor.
      * @param sun light source provider (infinitely distant)
      * @param occultingBodyRadius occulting body radius
-     * @param maxCheck maximum check for event detection
-     * @param threshold threshold for event detection
-     * @param maxIter maximum iteration for event detection
+     * @param eventDetectionSettings detection settings
      * @param handler event handler
+     * @since 12.2
      */
     public FieldCylindricalShadowEclipseDetector(final ExtendedPositionProvider sun,
                                                  final T occultingBodyRadius,
-                                                 final FieldAdaptableInterval<T> maxCheck, final T threshold,
-                                                 final int maxIter, final FieldEventHandler<T> handler) {
-        super(maxCheck, threshold, maxIter, handler);
+                                                 final FieldEventDetectionSettings<T> eventDetectionSettings,
+                                                 final FieldEventHandler<T> handler) {
+        super(eventDetectionSettings, handler);
         this.sun = sun;
         this.occultingBodyRadius = FastMath.abs(occultingBodyRadius);
     }
@@ -70,8 +70,8 @@ public class FieldCylindricalShadowEclipseDetector<T extends CalculusFieldElemen
      */
     public FieldCylindricalShadowEclipseDetector(final ExtendedPositionProvider sun,
                                                  final T occultingBodyRadius, final FieldEventHandler<T> handler) {
-        this(sun, occultingBodyRadius, FieldAdaptableInterval.of(DEFAULT_MAXCHECK), occultingBodyRadius.getField().getZero().newInstance(DEFAULT_THRESHOLD),
-            DEFAULT_MAX_ITER, handler);
+        this(sun, occultingBodyRadius, new FieldEventDetectionSettings<>(occultingBodyRadius.getField(),
+            EventDetectionSettings.getDefaultEventDetectionSettings()), handler);
     }
 
     /**
@@ -98,8 +98,8 @@ public class FieldCylindricalShadowEclipseDetector<T extends CalculusFieldElemen
 
     /** {@inheritDoc} */
     @Override
-    protected FieldCylindricalShadowEclipseDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
-                                                              final int newMaxIter, final FieldEventHandler<T> newHandler) {
-        return new FieldCylindricalShadowEclipseDetector<>(sun, occultingBodyRadius, newMaxCheck, newThreshold, newMaxIter, newHandler);
+    protected FieldCylindricalShadowEclipseDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
+                                                              final FieldEventHandler<T> newHandler) {
+        return new FieldCylindricalShadowEclipseDetector<>(sun, occultingBodyRadius, detectionSettings, newHandler);
     }
 }

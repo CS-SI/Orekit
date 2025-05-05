@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -54,20 +54,16 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
     /** Constructor.
      *
      * @param model tropospheric model appropriate for the current TDOA measurement method.
-     * @deprecated as of 12.1, replaced by {@link #TDOATroposphericDelayModifier(TroposphericModel)}
-     */
-    @Deprecated
-    public TDOATroposphericDelayModifier(final org.orekit.models.earth.troposphere.DiscreteTroposphericModel model) {
-        this(new org.orekit.models.earth.troposphere.TroposphericModelAdapter(model));
-    }
-
-    /** Constructor.
-     *
-     * @param model tropospheric model appropriate for the current TDOA measurement method.
      * @since 12.1
      */
     public TDOATroposphericDelayModifier(final TroposphericModel model) {
         tropoModel = model;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getEffectName() {
+        return "troposphere";
     }
 
     /** Compute the measurement error due to Troposphere on a single downlink.
@@ -87,7 +83,6 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
             // Delay in meters
             final double delay = tropoModel.pathDelay(trackingCoordinates,
                                                       station.getOffsetGeodeticPoint(state.getDate()),
-                                                      station.getPressureTemperatureHumidity(state.getDate()),
                                                       tropoModel.getParameters(state.getDate()), state.getDate()).
                                  getDelay();
             // return delay in seconds
@@ -121,7 +116,6 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
             // delay in meters
             final T delay = tropoModel.pathDelay(trackingCoordinates,
                                                  station.getOffsetGeodeticPoint(state.getDate()),
-                                                 station.getPressureTemperatureHumidity(state.getDate()),
                                                  parameters, state.getDate()).
                             getDelay();
             // return delay in seconds

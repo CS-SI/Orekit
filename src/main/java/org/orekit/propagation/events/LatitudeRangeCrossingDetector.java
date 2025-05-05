@@ -1,4 +1,4 @@
-/* Copyright 2023-2024 Alberto Ferrero
+/* Copyright 2023-2025 Alberto Ferrero
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -48,14 +48,14 @@ public class LatitudeRangeCrossingDetector extends AbstractDetector<LatitudeRang
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
-     * ({@link #DEFAULT_MAXCHECK}) and convergence threshold ({@link
+     * ({@link #DEFAULT_MAX_CHECK}) and convergence threshold ({@link
      * #DEFAULT_THRESHOLD}).</p>
      * @param body body on which the latitude is defined
      * @param fromLatitude latitude to be crossed, lower range boundary
      * @param toLatitude latitude to be crossed, upper range boundary
      */
     public LatitudeRangeCrossingDetector(final OneAxisEllipsoid body, final double fromLatitude, final double toLatitude) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, body, fromLatitude, toLatitude);
+        this(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, body, fromLatitude, toLatitude);
     }
 
     /** Build a detector.
@@ -67,7 +67,7 @@ public class LatitudeRangeCrossingDetector extends AbstractDetector<LatitudeRang
      */
     public LatitudeRangeCrossingDetector(final double maxCheck, final double threshold,
                                          final OneAxisEllipsoid body, final double fromLatitude, final double toLatitude) {
-        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnDecreasing(),
+        this(new EventDetectionSettings(maxCheck, threshold, DEFAULT_MAX_ITER), new StopOnDecreasing(),
              body, fromLatitude, toLatitude);
     }
 
@@ -77,18 +77,17 @@ public class LatitudeRangeCrossingDetector extends AbstractDetector<LatitudeRang
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param body body on which the latitude is defined
      * @param fromLatitude latitude to be crossed, lower range boundary
      * @param toLatitude latitude to be crossed, upper range boundary
+     * @since 13.0
      */
-    protected LatitudeRangeCrossingDetector(final AdaptableInterval maxCheck, final double threshold, final int maxIter,
+    protected LatitudeRangeCrossingDetector(final EventDetectionSettings detectionSettings,
                                             final EventHandler handler,
                                             final OneAxisEllipsoid body, final double fromLatitude, final double toLatitude) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(detectionSettings, handler);
         this.body     = body;
         this.fromLatitude = fromLatitude;
         this.toLatitude = toLatitude;
@@ -97,12 +96,9 @@ public class LatitudeRangeCrossingDetector extends AbstractDetector<LatitudeRang
 
     /** {@inheritDoc} */
     @Override
-    protected LatitudeRangeCrossingDetector create(final AdaptableInterval newMaxCheck,
-                                                   final double newThreshold,
-                                                   final int newMaxIter,
+    protected LatitudeRangeCrossingDetector create(final EventDetectionSettings detectionSettings,
                                                    final EventHandler newHandler) {
-        return new LatitudeRangeCrossingDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
-            body, fromLatitude, toLatitude);
+        return new LatitudeRangeCrossingDetector(detectionSettings, newHandler, body, fromLatitude, toLatitude);
     }
 
     /** Get the body on which the geographic zone is defined.

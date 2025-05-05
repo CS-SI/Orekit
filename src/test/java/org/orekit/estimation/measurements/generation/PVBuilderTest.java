@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,8 +29,8 @@ import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.orbits.OrbitType;
@@ -73,12 +73,12 @@ public class PVBuilderTest {
 
     @Test
     public void testForward() {
-        doTest(0x292b6e87436fe4c7l, 0.0, 1.2, 3.7 * SIGMA_P, 3.3 * SIGMA_V);
+        doTest(0x292b6e87436fe4c7L, 0.0, 1.2, 3.7 * SIGMA_P, 3.3 * SIGMA_V);
     }
 
     @Test
     public void testBackward() {
-        doTest(0x2f3285aa70b83c47l, 0.0, -1.0, 3.1 * SIGMA_P, 3.3 * SIGMA_V);
+        doTest(0x2f3285aa70b83c47L, 0.0, -1.0, 3.1 * SIGMA_P, 3.3 * SIGMA_V);
     }
 
     private Propagator buildPropagator() {
@@ -104,7 +104,7 @@ public class PVBuilderTest {
         AbsoluteDate t0     = context.initialOrbit.getDate().shiftedBy(startPeriod * period);
         AbsoluteDate t1     = context.initialOrbit.getDate().shiftedBy(endPeriod   * period);
         generator.generate(t0, t1);
-        SortedSet<ObservedMeasurement<?>> measurements = gatherer.getGeneratedMeasurements();
+        SortedSet<EstimatedMeasurementBase<?>> measurements = gatherer.getGeneratedMeasurements();
         Propagator propagator = buildPropagator();
         double maxErrorP = 0;
         double maxErrorV = 0;
@@ -112,7 +112,7 @@ public class PVBuilderTest {
         AbsoluteDate tInf = t0.isBefore(t1) ? t0 : t1;
         AbsoluteDate tSup = t0.isBefore(t1) ? t1 : t0;
         int count = 0;
-        for (ObservedMeasurement<?> measurement : measurements) {
+        for (EstimatedMeasurementBase<?> measurement : measurements) {
             AbsoluteDate date = measurement.getDate();
             double[] m = measurement.getObservedValue();
             Assertions.assertTrue(date.compareTo(tInf) >= 0);
@@ -135,7 +135,10 @@ public class PVBuilderTest {
             previous = date;
             ++count;
             SpacecraftState state = propagator.propagate(date);
-            double[] e = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state }).getEstimatedValue();
+            double[] e = measurement.
+                getObservedMeasurement().
+                estimateWithoutDerivatives(new SpacecraftState[] { state }).
+                getEstimatedValue();
             for (int i = 0; i < 3; ++i) {
                 maxErrorP = FastMath.max(maxErrorP, FastMath.abs(e[i] - m[i]));
             }

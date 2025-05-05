@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -191,8 +191,7 @@ public class J2DifferentialEffect
             return state1;
         }
 
-        return new SpacecraftState(updateOrbit(state1.getOrbit()),
-                                   state1.getAttitude(), state1.getMass());
+        return new SpacecraftState(updateOrbit(state1.getOrbit()), state1.getAttitude()).withMass(state1.getMass());
 
     }
 

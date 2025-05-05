@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,23 +16,16 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import org.hipparchus.util.Precision;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.hipparchus.util.Precision;
 
 /** Cache for {@link AmbiguityDriver}.
  * @author Luc Maisonobe
  * @since 12.1
  */
 public class AmbiguityCache {
-
-    /** Default cache.
-     * @deprecated this default cache is only a temporary hack for compatibility purposes
-     * it will be removed in Orekit 13.0
-     */
-    @Deprecated
-    public static final AmbiguityCache DEFAULT_CACHE = new AmbiguityCache();
 
     /** Cache map. */
     private final Map<Key, AmbiguityDriver> cache;
@@ -55,8 +48,10 @@ public class AmbiguityCache {
      * @return parameter driver for the emitter/receiver/wavelength triplet
      */
     public AmbiguityDriver getAmbiguity(final String emitter, final String receiver, final double wavelength) {
-        return cache.computeIfAbsent(new Key(emitter, receiver, wavelength),
-                                     k -> new AmbiguityDriver(emitter, receiver, wavelength));
+        final Key key = new Key(emitter, receiver, wavelength);
+        synchronized (cache) {
+            return cache.computeIfAbsent(key, k -> new AmbiguityDriver(emitter, receiver, wavelength));
+        }
     }
 
     /** Key for the map. */

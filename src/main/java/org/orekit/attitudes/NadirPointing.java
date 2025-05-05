@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -178,9 +178,7 @@ public class NadirPointing extends GroundPointing {
         } else {  // use automatic differentiation
             // build time dependent transform
             final FieldUnivariateDerivative2Field<T> ud2Field = FieldUnivariateDerivative2Field.getUnivariateDerivative2Field(field);
-            final T shift = date.durationFrom(date.toAbsoluteDate());
-            final FieldUnivariateDerivative2<T> dt = new FieldUnivariateDerivative2<>(shift, field.getOne(), field.getZero());
-            final FieldAbsoluteDate<FieldUnivariateDerivative2<T>> ud2Date = new FieldAbsoluteDate<>(ud2Field, date.toAbsoluteDate()).shiftedBy(dt);
+            final FieldAbsoluteDate<FieldUnivariateDerivative2<T>> ud2Date = date.toFUD2Field();
             final FieldStaticTransform<FieldUnivariateDerivative2<T>> refToBody = frame.getStaticTransformTo(shape.getBodyFrame(), ud2Date);
 
             final FieldVector3D<FieldUnivariateDerivative2<T>> positionInRefFrame = pvCoordinatesInRef.toUnivariateDerivative2Vector();
@@ -258,7 +256,7 @@ public class NadirPointing extends GroundPointing {
         final FieldPVCoordinates<T> pVWithoutDerivatives = new FieldPVCoordinates<>(position, FieldVector3D.getZero(date.getField()));
         final FieldStaticTransform<T> refToBody = frame.getStaticTransformTo(shape.getBodyFrame(), date);
 
-        return nadirRef(new TimeStampedFieldPVCoordinates<T>(date, pVWithoutDerivatives), refToBody).getPosition();
+        return nadirRef(new TimeStampedFieldPVCoordinates<>(date, pVWithoutDerivatives), refToBody).getPosition();
 
     }
 

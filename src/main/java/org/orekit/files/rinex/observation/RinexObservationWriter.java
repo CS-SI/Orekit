@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,10 +22,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.AppliedDCBS;
@@ -34,6 +36,7 @@ import org.orekit.files.rinex.section.RinexComment;
 import org.orekit.files.rinex.section.RinexLabels;
 import org.orekit.gnss.ObservationTimeScale;
 import org.orekit.gnss.ObservationType;
+import org.orekit.gnss.PredefinedObservationType;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
@@ -41,7 +44,7 @@ import org.orekit.time.ClockModel;
 import org.orekit.time.ClockTimeScale;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScales;
 
 /** Writer for Rinex observation file.
  * <p>
@@ -145,18 +148,54 @@ public class RinexObservationWriter implements AutoCloseable {
     /** Column number. */
     private int column;
 
+    /** Set of time scales.
+     * @since 13.0
+     */
+    private final TimeScales timeScales;
+
+    /** Mapper from satellite system to time scales.
+     * @since 13.0
+     */
+    private final BiFunction<SatelliteSystem, TimeScales, ? extends TimeScale> timeScaleBuilder;
+
     /** Simple constructor.
+     * <p>
+     * This constructor uses the {@link DataContext#getDefault() default data context}
+     * and recognizes only {@link PredefinedObservationType} and {@link SatelliteSystem}
+     * with non-null {@link SatelliteSystem#getObservationTimeScale() time scales}
+     * (i.e. neither user-defined, nor {@link SatelliteSystem#SBAS}, nor {@link SatelliteSystem#MIXED}).
+     * </p>
      * @param output destination of generated output
      * @param outputName output name for error messages
      */
+    @DefaultDataContext
     public RinexObservationWriter(final Appendable output, final String outputName) {
-        this.output        = output;
-        this.outputName    = outputName;
-        this.savedHeader   = null;
-        this.savedComments = Collections.emptyList();
-        this.pending       = new ArrayList<>();
-        this.lineNumber    = 0;
-        this.column        = 0;
+        this(output, outputName,
+             (system, ts) -> system.getObservationTimeScale() == null ?
+                             null :
+                             system.getObservationTimeScale().getTimeScale(ts),
+             DataContext.getDefault().getTimeScales());
+    }
+
+    /** Simple constructor.
+     * @param output destination of generated output
+     * @param outputName output name for error messages
+     * @param timeScaleBuilder mapper from satellite system to time scales (useful for user-defined satellite systems)
+     * @param timeScales the set of time scales to use when parsing dates
+     * @since 13.0
+     */
+    public RinexObservationWriter(final Appendable output, final String outputName,
+                                  final BiFunction<SatelliteSystem, TimeScales, ? extends TimeScale> timeScaleBuilder,
+                                  final TimeScales timeScales) {
+        this.output           = output;
+        this.outputName       = outputName;
+        this.savedHeader      = null;
+        this.savedComments    = Collections.emptyList();
+        this.pending          = new ArrayList<>();
+        this.lineNumber       = 0;
+        this.column           = 0;
+        this.timeScaleBuilder = timeScaleBuilder;
+        this.timeScales       = timeScales;
     }
 
     /** {@inheritDoc} */
@@ -221,14 +260,19 @@ public class RinexObservationWriter implements AutoCloseable {
         savedHeader = header;
         lineNumber  = 1;
 
-        final ObservationTimeScale observationTimeScale = header.getSatelliteSystem().getObservationTimeScale() != null ?
-                                                          header.getSatelliteSystem().getObservationTimeScale() :
-                                                          ObservationTimeScale.GPS;
-        timeScale = observationTimeScale.getTimeScale(TimeScalesFactory.getTimeScales());
+        final String timeScaleName;
+        if (timeScaleBuilder.apply(header.getSatelliteSystem(), timeScales) != null) {
+            timeScale     = timeScaleBuilder.apply(header.getSatelliteSystem(), timeScales);
+            timeScaleName = "   ";
+        } else {
+            timeScale     = ObservationTimeScale.GPS.getTimeScale(timeScales);
+            timeScaleName = timeScale.getName();
+        }
         if (!header.getClockOffsetApplied() && receiverClockModel != null) {
             // getClockOffsetApplied returned false, which means the measurements
             // should *NOT* be put in system time scale, and the receiver has a clock model
             // we have to set up a time scale corresponding to this receiver clock
+            // (but we keep the name set earlier despite it is not really relevant anymore)
             timeScale = new ClockTimeScale(timeScale.getName(), timeScale, receiverClockModel);
         }
 
@@ -282,7 +326,7 @@ public class RinexObservationWriter implements AutoCloseable {
 
         // OBSERVER / AGENCY
         outputField(header.getObserverName(), 20, true);
-        outputField(header.getAgencyName(),   40, true);
+        outputField(header.getAgencyName(),   60, true);
         finishHeaderLine(RinexLabels.OBSERVER_AGENCY);
 
         // REC # / TYPE / VERS
@@ -341,7 +385,7 @@ public class RinexObservationWriter implements AutoCloseable {
                         outputField(SIX_DIGITS_INTEGER, (int) FastMath.round(sfc.getCorrection()), 6);
                         outputField(SIX_DIGITS_INTEGER, sfc.getTypesObsScaled().size(), 12);
                         for (int i = 0; i < sfc.getTypesObsScaled().size(); ++i) {
-                            outputField(sfc.getTypesObsScaled().get(i).name(), 18 + 6 * i, false);
+                            outputField(sfc.getTypesObsScaled().get(i).getName(), 18 + 6 * i, false);
                         }
                         finishHeaderLine(RinexLabels.OBS_SCALE_FACTOR);
                     }
@@ -379,7 +423,7 @@ public class RinexObservationWriter implements AutoCloseable {
                     outputField("", 6, true);
                     next = column + (header.getFormatVersion() < 3.0 ? 6 : 4);
                 }
-                outputField(observationType.name(), next, false);
+                outputField(observationType.getName(), next, false);
             }
             finishHeaderLine(header.getFormatVersion() < 3.0 ?
                              RinexLabels.NB_TYPES_OF_OBSERV :
@@ -396,26 +440,26 @@ public class RinexObservationWriter implements AutoCloseable {
         }
 
         // TIME OF FIRST OBS
-        final DateTimeComponents dtcFirst = header.getTFirstObs().getComponents(timeScale);
+        final DateTimeComponents dtcFirst = header.getTFirstObs().getComponents(timeScale).roundIfNeeded(60, 7);
         outputField(SIX_DIGITS_INTEGER,          dtcFirst.getDate().getYear(), 6);
         outputField(SIX_DIGITS_INTEGER,          dtcFirst.getDate().getMonth(), 12);
         outputField(SIX_DIGITS_INTEGER,          dtcFirst.getDate().getDay(), 18);
         outputField(SIX_DIGITS_INTEGER,          dtcFirst.getTime().getHour(), 24);
         outputField(SIX_DIGITS_INTEGER,          dtcFirst.getTime().getMinute(), 30);
         outputField(THIRTEEN_SEVEN_DIGITS_FLOAT, dtcFirst.getTime().getSecond(), 43);
-        outputField(observationTimeScale.name(), 51, false);
+        outputField(timeScaleName, 51, false);
         finishHeaderLine(RinexLabels.TIME_OF_FIRST_OBS);
 
         // TIME OF LAST OBS
         if (!header.getTLastObs().equals(AbsoluteDate.FUTURE_INFINITY)) {
-            final DateTimeComponents dtcLast = header.getTLastObs().getComponents(timeScale);
+            final DateTimeComponents dtcLast = header.getTLastObs().getComponents(timeScale).roundIfNeeded(60, 7);
             outputField(SIX_DIGITS_INTEGER,          dtcLast.getDate().getYear(), 6);
             outputField(SIX_DIGITS_INTEGER,          dtcLast.getDate().getMonth(), 12);
             outputField(SIX_DIGITS_INTEGER,          dtcLast.getDate().getDay(), 18);
             outputField(SIX_DIGITS_INTEGER,          dtcLast.getTime().getHour(), 24);
             outputField(SIX_DIGITS_INTEGER,          dtcLast.getTime().getMinute(), 30);
             outputField(THIRTEEN_SEVEN_DIGITS_FLOAT, dtcLast.getTime().getSecond(), 43);
-            outputField(observationTimeScale.name(), 51, false);
+            outputField(timeScaleName, 51, false);
             finishHeaderLine(RinexLabels.TIME_OF_LAST_OBS);
         }
 
@@ -461,7 +505,7 @@ public class RinexObservationWriter implements AutoCloseable {
                                     next = column + 4;
                                 }
                                 outputField("", next - 3, true);
-                                outputField(observationType.name(), next, true);
+                                outputField(observationType.getName(), next, true);
                             }
                         }
                         finishHeaderLine(RinexLabels.SYS_SCALE_FACTOR);
@@ -473,7 +517,7 @@ public class RinexObservationWriter implements AutoCloseable {
         // SYS / PHASE SHIFT
         for (final PhaseShiftCorrection psc : header.getPhaseShiftCorrections()) {
             outputField(psc.getSatelliteSystem().getKey(), 1);
-            outputField(psc.getTypeObs().name(), 5, false);
+            outputField(psc.getTypeObs().getName(), 5, false);
             outputField(EIGHT_FIVE_DIGITS_FLOAT, psc.getCorrection(), 14);
             if (!psc.getSatsCorrected().isEmpty()) {
                 outputField(TWO_DIGITS_INTEGER, psc.getSatsCorrected().size(), 18);
@@ -485,8 +529,7 @@ public class RinexObservationWriter implements AutoCloseable {
                         outputField("", 18, true);
                         next = column + 4;
                     }
-                    outputField(sis.getSystem().getKey(), next - 2);
-                    outputField(PADDED_TWO_DIGITS_INTEGER, sis.getTwoDigitsRinexPRN(), next);
+                    outputField(sis.toString(), next, false);
                 }
             }
             finishHeaderLine(RinexLabels.SYS_PHASE_SHIFT);
@@ -519,28 +562,28 @@ public class RinexObservationWriter implements AutoCloseable {
             if (Double.isNaN(header.getC1cCodePhaseBias())) {
                 outputField("", 13, true);
             } else {
-                outputField(ObservationType.C1C.name(), 4, false);
+                outputField(PredefinedObservationType.C1C.getName(), 4, false);
                 outputField("", 5, true);
                 outputField(EIGHT_THREE_DIGITS_FLOAT, header.getC1cCodePhaseBias(), 13);
             }
             if (Double.isNaN(header.getC1pCodePhaseBias())) {
                 outputField("", 26, true);
             } else {
-                outputField(ObservationType.C1P.name(), 17, false);
+                outputField(PredefinedObservationType.C1P.getName(), 17, false);
                 outputField("", 18, true);
                 outputField(EIGHT_THREE_DIGITS_FLOAT, header.getC1pCodePhaseBias(), 26);
             }
             if (Double.isNaN(header.getC2cCodePhaseBias())) {
                 outputField("", 39, true);
             } else {
-                outputField(ObservationType.C2C.name(), 30, false);
+                outputField(PredefinedObservationType.C2C.getName(), 30, false);
                 outputField("", 31, true);
                 outputField(EIGHT_THREE_DIGITS_FLOAT, header.getC2cCodePhaseBias(), 39);
             }
             if (Double.isNaN(header.getC2pCodePhaseBias())) {
                 outputField("", 52, true);
             } else {
-                outputField(ObservationType.C2P.name(), 43, false);
+                outputField(PredefinedObservationType.C2P.getName(), 43, false);
                 outputField("", 44, true);
                 outputField(EIGHT_THREE_DIGITS_FLOAT, header.getC2pCodePhaseBias(), 52);
             }
@@ -567,8 +610,7 @@ public class RinexObservationWriter implements AutoCloseable {
         // PRN / # OF OBS
         for (final Map.Entry<SatInSystem, Map<ObservationType, Integer>> entry1 : header.getNbObsPerSat().entrySet()) {
             final SatInSystem sis = entry1.getKey();
-            outputField(sis.getSystem().getKey(), 4);
-            outputField(PADDED_TWO_DIGITS_INTEGER, sis.getTwoDigitsRinexPRN(), 6);
+            outputField(sis.toString(), 6, false);
             for (final Map.Entry<ObservationType, Integer> entry2 : entry1.getValue().entrySet()) {
                 int next = column + 6;
                 if (next > LABEL_INDEX) {
@@ -643,7 +685,7 @@ public class RinexObservationWriter implements AutoCloseable {
         final ObservationDataSet first = pending.get(0);
 
         // EPOCH/SAT
-        final DateTimeComponents dtc = first.getDate().getComponents(timeScale);
+        final DateTimeComponents dtc = first.getDate().getComponents(timeScale).roundIfNeeded(60, 7);
         outputField("",  1, true);
         outputField(PADDED_TWO_DIGITS_INTEGER,   dtc.getDate().getYear() % 100,    3);
         outputField("",  4, true);
@@ -680,8 +722,7 @@ public class RinexObservationWriter implements AutoCloseable {
                 outputField("", 32, true);
                 next = column + 3;
             }
-            outputField(ods.getSatellite().getSystem().getKey(), next - 2);
-            outputField(PADDED_TWO_DIGITS_INTEGER, ods.getSatellite().getTwoDigitsRinexPRN(), next);
+            outputField(ods.getSatellite().toString(), next, false);
         }
         if (!offsetWritten && clockOffset != 0.0) {
             outputField("", 68, true);
@@ -725,7 +766,7 @@ public class RinexObservationWriter implements AutoCloseable {
         final ObservationDataSet first = pending.get(0);
 
         // EPOCH/SAT
-        final DateTimeComponents dtc = first.getDate().getComponents(timeScale);
+        final DateTimeComponents dtc = first.getDate().getComponents(timeScale).roundIfNeeded(60, 7);
         outputField(">",  2, true);
         outputField(FOUR_DIGITS_INTEGER,         dtc.getDate().getYear(),    6);
         outputField("",   7, true);
@@ -756,8 +797,7 @@ public class RinexObservationWriter implements AutoCloseable {
 
         // observations per se
         for (final ObservationDataSet ods : pending) {
-            outputField(ods.getSatellite().getSystem().getKey(), 1);
-            outputField(PADDED_TWO_DIGITS_INTEGER, ods.getSatellite().getTwoDigitsRinexPRN(), 3);
+            outputField(ods.getSatellite().toString(), 3, false);
             for (final ObservationData od : ods.getObservationData()) {
                 final int next = column + 16;
                 final double scaling = getScaling(od.getObservationType(), ods.getSatellite().getSystem());
@@ -883,6 +923,9 @@ public class RinexObservationWriter implements AutoCloseable {
      */
     private void outputField(final String field, final int next, final boolean leftJustified) throws IOException {
         final int padding = next - (field == null ? 0 : field.length()) - column;
+        if (padding < 0) {
+            throw new OrekitException(OrekitMessages.FIELD_TOO_LONG, field, next - column);
+        }
         if (leftJustified && field != null) {
             output.append(field);
         }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -57,7 +57,19 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> extends Esti
                                 final TimeStampedPVCoordinates[] participants) {
         super(observedMeasurement, iteration, count, states, participants);
         this.stateDerivatives      = new double[states.length][][];
-        this.parametersDerivatives = new IdentityHashMap<ParameterDriver, TimeSpanMap<double[]>>();
+        this.parametersDerivatives = new IdentityHashMap<>();
+    }
+
+    /** Constructor from measurement base.
+     * @param estimatedMeasurementBase estimated measurement base
+     * @since 12.1.3
+     */
+    public EstimatedMeasurement(final EstimatedMeasurementBase<T> estimatedMeasurementBase) {
+        this(estimatedMeasurementBase.getObservedMeasurement(), estimatedMeasurementBase.getIteration(),
+            estimatedMeasurementBase.getCount(), estimatedMeasurementBase.getStates(),
+            estimatedMeasurementBase.getParticipants());
+        this.setEstimatedValue(estimatedMeasurementBase.getEstimatedValue());
+        this.setStatus(estimatedMeasurementBase.getStatus());
     }
 
     /** Get state size.
@@ -105,7 +117,7 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> extends Esti
      * @since 9.0
      */
     public Stream<ParameterDriver> getDerivativesDrivers() {
-        return parametersDerivatives.entrySet().stream().map(entry -> entry.getKey());
+        return parametersDerivatives.entrySet().stream().map(Map.Entry::getKey);
     }
 
     /** Get the partial derivatives of the {@link #getEstimatedValue()
@@ -175,7 +187,7 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> extends Esti
      */
     public void setParameterDerivatives(final ParameterDriver driver, final AbsoluteDate date, final double... parameterDerivatives) {
         if (!parametersDerivatives.containsKey(driver) || parametersDerivatives.get(driver) == null) {
-            final TimeSpanMap<double[]> derivativeSpanMap = new TimeSpanMap<double[]>(parameterDerivatives);
+            final TimeSpanMap<double[]> derivativeSpanMap = new TimeSpanMap<>(parameterDerivatives);
             final TimeSpanMap<String> driverNameSpan = driver.getNamesSpanMap();
             for (Span<String> span = driverNameSpan.getSpan(driverNameSpan.getFirstSpan().getEnd()); span != null; span = span.next()) {
                 derivativeSpanMap.addValidAfter(parameterDerivatives, span.getStart(), false);

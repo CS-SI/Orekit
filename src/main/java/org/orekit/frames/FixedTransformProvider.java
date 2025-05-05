@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,12 +17,11 @@
 
 package org.orekit.frames;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -31,9 +30,6 @@ import org.orekit.time.FieldAbsoluteDate;
  * @author Luc Maisonobe
  */
 public class FixedTransformProvider implements TransformProvider {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20170106L;
 
     /** Fixed transform. */
     private final Transform transform;
@@ -55,51 +51,13 @@ public class FixedTransformProvider implements TransformProvider {
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
     public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
-
-        @SuppressWarnings("unchecked")
-        final FieldTransform<T> ft =
-                (FieldTransform<T>) cached.computeIfAbsent(date.getField(),
-                                                           f -> new FieldTransform<>((Field<T>) f, transform));
-
-        return ft;
-
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * <p>
-     * This intermediate class serializes nothing.
-     * </p>
-     * @return data transfer object that will be serialized
-     */
-    private Object writeReplace() {
-        return new DataTransferObject(transform);
-    }
-
-    /** Internal class used only for serialization. */
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20170106L;
-
-        /** Fixed transform. */
-        private final Transform transform;
-
-        /** Simple constructor.
-         * @param transform fixed transform
-         */
-        private DataTransferObject(final Transform transform) {
-            this.transform = transform;
+        synchronized (cached) {
+            return (FieldTransform<T>) cached.computeIfAbsent(date.getField(),
+                                                            f -> new FieldTransform<>((Field<T>) f, transform));
         }
-
-        /** Replace the deserialized data transfer object with a {@link FixedTransformProvider}.
-         * @return replacement {@link FixedTransformProvider}
-         */
-        private Object readResolve() {
-            return new FixedTransformProvider(transform);
-        }
-
     }
 
 }

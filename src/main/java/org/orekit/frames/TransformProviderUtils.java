@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,9 +34,6 @@ public class TransformProviderUtils {
      */
     public static final TransformProvider IDENTITY_PROVIDER = new TransformProvider() {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20180330L;
-
         /** {@inheritDoc}
          * <p>
          * Always returns {@link Transform#IDENTITY}
@@ -45,6 +42,12 @@ public class TransformProviderUtils {
         @Override
         public Transform getTransform(final AbsoluteDate date) {
             return Transform.IDENTITY;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public StaticTransform getStaticTransform(final AbsoluteDate date) {
+            return StaticTransform.getIdentity();
         }
 
         /** {@inheritDoc}
@@ -57,6 +60,11 @@ public class TransformProviderUtils {
             return FieldTransform.getIdentity(date.getField());
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
+            return FieldStaticTransform.getIdentity(date.getField());
+        }
     };
 
     /** Private constructor.
@@ -74,9 +82,6 @@ public class TransformProviderUtils {
      */
     public static TransformProvider getReversedProvider(final TransformProvider provider) {
         return new TransformProvider() {
-
-            /** serializable UID. */
-            private static final long serialVersionUID = 20180330L;
 
             /** {@inheritDoc} */
             @Override
@@ -124,10 +129,6 @@ public class TransformProviderUtils {
     public static TransformProvider getCombinedProvider(final TransformProvider first,
                                                         final TransformProvider second) {
         return new TransformProvider() {
-
-            /** serializable UID. */
-            private static final long serialVersionUID = 20180330L;
-
             /** {@inheritDoc} */
             @Override
             public Transform getTransform(final AbsoluteDate date) {

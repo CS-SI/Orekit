@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,6 +28,7 @@ import org.mockito.Mockito;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.time.FieldAbsoluteDate;
 
 /**
@@ -129,10 +130,10 @@ public class FieldOrDetectorTest {
     public void testInit() {
         // setup
         FieldEventDetector<Binary64> a = Mockito.mock(FieldEventDetector.class);
-        Mockito.when(a.getMaxCheckInterval()).thenReturn(FieldAdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
+        Mockito.when(a.getMaxCheckInterval()).thenReturn(FieldAdaptableInterval.of(AbstractDetector.DEFAULT_MAX_CHECK));
         Mockito.when(a.getThreshold()).thenReturn(new Binary64(AbstractDetector.DEFAULT_THRESHOLD));
         FieldEventDetector<Binary64> b = Mockito.mock(FieldEventDetector.class);
-        Mockito.when(b.getMaxCheckInterval()).thenReturn(FieldAdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
+        Mockito.when(b.getMaxCheckInterval()).thenReturn(FieldAdaptableInterval.of(AbstractDetector.DEFAULT_MAX_CHECK));
         Mockito.when(b.getThreshold()).thenReturn(new Binary64(AbstractDetector.DEFAULT_THRESHOLD));
         FieldEventHandler<Binary64> c = Mockito.mock(FieldEventHandler.class);
         FieldBooleanDetector<Binary64> or = FieldBooleanDetector.orCombine(a, b).withHandler(c);
@@ -169,28 +170,13 @@ public class FieldOrDetectorTest {
         public Binary64 g = new Binary64(0);
 
         @Override
-        public void init(FieldSpacecraftState<Binary64> s0, FieldAbsoluteDate<Binary64> t) {
-
-        }
-
-        @Override
         public Binary64 g(FieldSpacecraftState<Binary64> s) {
             return this.g;
         }
 
         @Override
-        public Binary64 getThreshold() {
-            return new Binary64(AbstractDetector.DEFAULT_THRESHOLD);
-        }
-
-        @Override
-        public FieldAdaptableInterval<Binary64> getMaxCheckInterval() {
-            return FieldAdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK);
-        }
-
-        @Override
-        public int getMaxIterationCount() {
-            return 0;
+        public FieldEventDetectionSettings<Binary64> getDetectionSettings() {
+            return new FieldEventDetectionSettings<>(Binary64Field.getInstance(), EventDetectionSettings.getDefaultEventDetectionSettings());
         }
 
         @Override

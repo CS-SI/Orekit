@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,14 +32,18 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
+import org.orekit.orbits.FieldKeplerianAnomalyUtility;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.FieldKeplerianAnomalyUtility;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.analytical.tle.FieldTLE;
+import org.orekit.propagation.conversion.osc2mean.BrouwerLyddaneTheory;
+import org.orekit.propagation.conversion.osc2mean.FixedPointConverter;
+import org.orekit.propagation.conversion.osc2mean.MeanTheory;
+import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTimeSpanMap;
@@ -80,18 +84,16 @@ import org.orekit.utils.ParameterDriver;
  * @see "Phipps Jr, Warren E. Parallelization of the Navy Space Surveillance Center
  *       (NAVSPASUR) Satellite Model. NAVAL POSTGRADUATE SCHOOL MONTEREY CA, 1992."
  *
+ * @see "Solomon, Daniel, THE NAVSPASUR Satellite Motion Model,
+ *       Naval Research Laboratory, August 8, 1991."
+ *
  * @author Melina Vanel
  * @author Bryan Cazabonne
+ * @author Pascal Parraud
  * @since 11.1
  * @param <T> type of the field elements
  */
 public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
-
-    /** Default convergence threshold for mean parameters conversion. */
-    private static final double EPSILON_DEFAULT = 1.0e-13;
-
-    /** Default value for maxIterations. */
-    private static final int MAX_ITERATIONS_DEFAULT = 200;
 
     /** Parameters scaling factor.
      * <p>
@@ -99,10 +101,13 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * in the multiplications/divisions sequences.
      * </p>
      */
-    private static final double SCALE = FastMath.scalb(1.0, -20);
+    private static final double SCALE = FastMath.scalb(1.0, -32);
 
     /** Beta constant used by T2 function. */
     private static final double BETA = FastMath.scalb(100, -11);
+
+    /** Max value for the eccentricity. */
+    private static final double MAX_ECC = 0.999999;
 
     /** Initial Brouwer-Lyddane model. */
     private FieldBLModel<T> initialModel;
@@ -129,16 +134,16 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      *
      * @param initialOrbit initial orbit
      * @param provider for un-normalized zonal coefficients
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see #FieldBrouwerLyddanePropagator(FieldOrbit, UnnormalizedSphericalHarmonicsProvider, PropagationType, double)
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
                                          final UnnormalizedSphericalHarmonicsProvider provider,
-                                         final double M2) {
+                                         final double m2Value) {
         this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              initialOrbit.getMu().newInstance(DEFAULT_MASS), provider,
-             provider.onDate(initialOrbit.getDate().toAbsoluteDate()), M2);
+             provider.onDate(initialOrbit.getDate().toAbsoluteDate()), m2Value);
     }
 
     /**
@@ -149,7 +154,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
      * @param harmonics {@code provider.onDate(initialOrbit.getDate())}
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement,
      * UnnormalizedSphericalHarmonicsProvider, UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics, PropagationType, double)
@@ -159,13 +164,13 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                          final T mass,
                                          final UnnormalizedSphericalHarmonicsProvider provider,
                                          final UnnormalizedSphericalHarmonics harmonics,
-                                         final double M2) {
+                                         final double m2Value) {
         this(initialOrbit, attitude,  mass, provider.getAe(), initialOrbit.getMu().newInstance(provider.getMu()),
              harmonics.getUnnormalizedCnm(2, 0),
              harmonics.getUnnormalizedCnm(3, 0),
              harmonics.getUnnormalizedCnm(4, 0),
              harmonics.getUnnormalizedCnm(5, 0),
-             M2);
+             m2Value);
     }
 
     /** Build a propagator from orbit and potential.
@@ -189,18 +194,22 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see org.orekit.utils.Constants
      * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, double, CalculusFieldElement, double, double, double, double, double)
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
-                                         final double referenceRadius, final T mu,
-                                         final double c20, final double c30, final double c40,
-                                         final double c50, final double M2) {
+                                         final double referenceRadius,
+                                         final T mu,
+                                         final double c20,
+                                         final double c30,
+                                         final double c40,
+                                         final double c50,
+                                         final double m2Value) {
         this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              initialOrbit.getMu().newInstance(DEFAULT_MASS),
-             referenceRadius, mu, c20, c30, c40, c50, M2);
+             referenceRadius, mu, c20, c30, c40, c50, m2Value);
     }
 
     /** Build a propagator from orbit, mass and potential provider.
@@ -211,15 +220,16 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param initialOrbit initial orbit
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement, UnnormalizedSphericalHarmonicsProvider, double)
      */
-    public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit, final T mass,
+    public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
+                                         final T mass,
                                          final UnnormalizedSphericalHarmonicsProvider provider,
-                                         final double M2) {
+                                         final double m2Value) {
         this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
-             mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()), M2);
+             mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()), m2Value);
     }
 
     /** Build a propagator from orbit, mass and potential.
@@ -244,16 +254,16 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement, double, CalculusFieldElement, double, double, double, double, double)
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit, final T mass,
                                          final double referenceRadius, final T mu,
                                          final double c20, final double c30, final double c40,
-                                         final double c50, final double M2) {
+                                         final double c50, final double m2Value) {
         this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
-             mass, referenceRadius, mu, c20, c30, c40, c50, M2);
+             mass, referenceRadius, mu, c20, c30, c40, c50, m2Value);
     }
 
     /** Build a propagator from orbit, attitude provider and potential provider.
@@ -262,15 +272,15 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param initialOrbit initial orbit
      * @param attitudeProv attitude provider
      * @param provider for un-normalized zonal coefficients
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
                                          final AttitudeProvider attitudeProv,
                                          final UnnormalizedSphericalHarmonicsProvider provider,
-                                         final double M2) {
+                                         final double m2Value) {
         this(initialOrbit, attitudeProv, initialOrbit.getMu().newInstance(DEFAULT_MASS), provider,
-             provider.onDate(initialOrbit.getDate().toAbsoluteDate()), M2);
+             provider.onDate(initialOrbit.getDate().toAbsoluteDate()), m2Value);
     }
 
     /** Build a propagator from orbit, attitude provider and potential.
@@ -295,16 +305,16 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
                                          final AttitudeProvider attitudeProv,
                                          final double referenceRadius, final T mu,
                                          final double c20, final double c30, final double c40,
-                                         final double c50, final double M2) {
+                                         final double c50, final double m2Value) {
         this(initialOrbit, attitudeProv, initialOrbit.getMu().newInstance(DEFAULT_MASS),
-             referenceRadius, mu, c20, c30, c40, c50, M2);
+             referenceRadius, mu, c20, c30, c40, c50, m2Value);
     }
 
     /** Build a propagator from orbit, attitude provider, mass and potential provider.
@@ -313,7 +323,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param attitudeProv attitude provider
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement, UnnormalizedSphericalHarmonicsProvider, PropagationType, double)
      */
@@ -321,8 +331,8 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                          final AttitudeProvider attitudeProv,
                                          final T mass,
                                          final UnnormalizedSphericalHarmonicsProvider provider,
-                                         final double M2) {
-        this(initialOrbit, attitudeProv, mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()), M2);
+                                         final double m2Value) {
+        this(initialOrbit, attitudeProv, mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()), m2Value);
     }
 
     /** Build a propagator from orbit, attitude provider, mass and potential.
@@ -347,7 +357,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see #FieldBrouwerLyddanePropagator(FieldOrbit, AttitudeProvider, CalculusFieldElement, double, CalculusFieldElement, double, double, double, double, PropagationType, double)
      */
@@ -356,8 +366,8 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                          final T mass,
                                          final double referenceRadius, final T mu,
                                          final double c20, final double c30, final double c40,
-                                         final double c50, final double M2) {
-        this(initialOrbit, attitudeProv, mass, referenceRadius, mu, c20, c30, c40, c50, PropagationType.OSCULATING, M2);
+                                         final double c50, final double m2Value) {
+        this(initialOrbit, attitudeProv, mass, referenceRadius, mu, c20, c30, c40, c50, PropagationType.OSCULATING, m2Value);
     }
 
 
@@ -370,16 +380,16 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param initialOrbit initial orbit
      * @param provider for un-normalized zonal coefficients
      * @param initialType initial orbit type (mean Brouwer-Lyddane orbit or osculating orbit)
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
                                          final UnnormalizedSphericalHarmonicsProvider provider,
                                          final PropagationType initialType,
-                                         final double M2) {
+                                         final double m2Value) {
         this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              initialOrbit.getMu().newInstance(DEFAULT_MASS), provider,
-             provider.onDate(initialOrbit.getDate().toAbsoluteDate()), initialType, M2);
+             provider.onDate(initialOrbit.getDate().toAbsoluteDate()), initialType, m2Value);
     }
 
     /** Build a propagator from orbit, attitude provider, mass and potential provider.
@@ -390,7 +400,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
      * @param initialType initial orbit type (mean Brouwer-Lyddane orbit or osculating orbit)
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
@@ -398,8 +408,9 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                          final T mass,
                                          final UnnormalizedSphericalHarmonicsProvider provider,
                                          final PropagationType initialType,
-                                         final double M2) {
-        this(initialOrbit, attitudeProv, mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()), initialType, M2);
+                                         final double m2Value) {
+        this(initialOrbit, attitudeProv, mass, provider,
+             provider.onDate(initialOrbit.getDate().toAbsoluteDate()), initialType, m2Value);
     }
 
     /**
@@ -412,7 +423,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param provider for un-normalized zonal coefficients
      * @param harmonics {@code provider.onDate(initialOrbit.getDate())}
      * @param initialType initial orbit type (mean Brouwer-Lyddane orbit or osculating orbit)
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
@@ -421,13 +432,13 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                          final UnnormalizedSphericalHarmonicsProvider provider,
                                          final UnnormalizedSphericalHarmonics harmonics,
                                          final PropagationType initialType,
-                                         final double M2) {
+                                         final double m2Value) {
         this(initialOrbit, attitude, mass, provider.getAe(), initialOrbit.getMu().newInstance(provider.getMu()),
              harmonics.getUnnormalizedCnm(2, 0),
              harmonics.getUnnormalizedCnm(3, 0),
              harmonics.getUnnormalizedCnm(4, 0),
              harmonics.getUnnormalizedCnm(5, 0),
-             initialType, M2);
+             initialType, m2Value);
     }
 
     /** Build a propagator from orbit, attitude provider, mass and potential.
@@ -454,7 +465,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param initialType initial orbit type (mean Brouwer-Lyddane orbit or osculating orbit)
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      */
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
@@ -464,9 +475,12 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                          final double c20, final double c30, final double c40,
                                          final double c50,
                                          final PropagationType initialType,
-                                         final double M2) {
+                                         final double m2Value) {
         this(initialOrbit, attitudeProv, mass, referenceRadius, mu,
-             c20, c30, c40, c50, initialType, M2, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+             c20, c30, c40, c50, initialType, m2Value,
+             new FixedPointConverter(BrouwerLyddanePropagator.EPSILON_DEFAULT,
+                                     BrouwerLyddanePropagator.MAX_ITERATIONS_DEFAULT,
+                                     FixedPointConverter.DEFAULT_DAMPING));
     }
 
     /** Build a propagator from orbit, attitude provider, mass and potential.
@@ -493,7 +507,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param initialType initial orbit type (mean Brouwer-Lyddane orbit or osculating orbit)
-     * @param M2 value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @param epsilon convergence threshold for mean parameters conversion
      * @param maxIterations maximum iterations for mean parameters conversion
@@ -502,11 +516,62 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
                                          final AttitudeProvider attitudeProv,
                                          final T mass,
-                                         final double referenceRadius, final T mu,
-                                         final double c20, final double c30, final double c40,
+                                         final double referenceRadius,
+                                         final T mu,
+                                         final double c20,
+                                         final double c30,
+                                         final double c40,
                                          final double c50,
                                          final PropagationType initialType,
-                                         final double M2, final double epsilon, final int maxIterations) {
+                                         final double m2Value,
+                                         final double epsilon,
+                                         final int maxIterations) {
+        this(initialOrbit, attitudeProv, mass, referenceRadius, mu, c20, c30, c40, c50,
+             initialType, m2Value, new FixedPointConverter(epsilon, maxIterations,
+                                                           FixedPointConverter.DEFAULT_DAMPING));
+    }
+
+    /** Build a propagator from orbit, attitude provider, mass and potential.
+     * <p>The C<sub>n,0</sub> coefficients are the denormalized zonal coefficients, they
+     * are related to both the normalized coefficients
+     * <span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *  and the J<sub>n</sub> one as follows:</p>
+     *
+     * <p> C<sub>n,0</sub> = [(2-δ<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>½</sup>
+     * <span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *
+     * <p> C<sub>n,0</sub> = -J<sub>n</sub>
+     *
+     * <p>Using this constructor, it is possible to define the initial orbit as
+     * a mean Brouwer-Lyddane orbit or an osculating one.</p>
+     *
+     * @param initialOrbit initial orbit
+     * @param attitudeProv attitude provider
+     * @param mass spacecraft mass
+     * @param referenceRadius reference radius of the Earth for the potential model (m)
+     * @param mu central attraction coefficient (m³/s²)
+     * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
+     * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
+     * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
+     * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
+     * @param initialType initial orbit type (mean Brouwer-Lyddane orbit or osculating orbit)
+     * @param m2Value value of empirical drag coefficient in rad/s².
+     *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
+     * @param converter osculating to mean orbit converter
+     * @since 13.0
+     */
+    public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
+                                         final AttitudeProvider attitudeProv,
+                                         final T mass,
+                                         final double referenceRadius,
+                                         final T mu,
+                                         final double c20,
+                                         final double c30,
+                                         final double c40,
+                                         final double c50,
+                                         final PropagationType initialType,
+                                         final double m2Value,
+                                         final OsculatingToMeanConverter converter) {
 
         super(mass.getField(), attitudeProv);
 
@@ -516,17 +581,16 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
         this.ck0 = new double[] {0.0, 0.0, c20, c30, c40, c50};
 
         // initialize M2 driver
-        this.M2Driver = new ParameterDriver(BrouwerLyddanePropagator.M2_NAME, M2, SCALE,
+        this.M2Driver = new ParameterDriver(BrouwerLyddanePropagator.M2_NAME, m2Value, SCALE,
                                             Double.NEGATIVE_INFINITY,
                                             Double.POSITIVE_INFINITY);
 
         // compute mean parameters if needed
         resetInitialState(new FieldSpacecraftState<>(initialOrbit,
-                                                 attitudeProv.getAttitude(initialOrbit,
-                                                                          initialOrbit.getDate(),
-                                                                          initialOrbit.getFrame()),
-                                                 mass),
-                                                 initialType, epsilon, maxIterations);
+                                                     attitudeProv.getAttitude(initialOrbit,
+                                                                              initialOrbit.getDate(),
+                                                                              initialOrbit.getFrame())).withMass(mass),
+                          initialType, converter);
 
     }
 
@@ -548,7 +612,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param osculating osculating orbit to convert
      * @param provider for un-normalized zonal coefficients
      * @param harmonics {@code provider.onDate(osculating.getDate())}
-     * @param M2Value value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@code BrouwerLyddanePropagator.M2} drag is not considered
      * @return mean orbit in a Brouwer-Lyddane sense
      * @since 11.2
@@ -556,8 +620,10 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
     public static <T extends CalculusFieldElement<T>> FieldKeplerianOrbit<T> computeMeanOrbit(final FieldOrbit<T> osculating,
                                                                                               final UnnormalizedSphericalHarmonicsProvider provider,
                                                                                               final UnnormalizedSphericalHarmonics harmonics,
-                                                                                              final double M2Value) {
-        return computeMeanOrbit(osculating, provider, harmonics, M2Value, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+                                                                                              final double m2Value) {
+        return computeMeanOrbit(osculating, provider, harmonics, m2Value,
+                                BrouwerLyddanePropagator.EPSILON_DEFAULT,
+                                BrouwerLyddanePropagator.MAX_ITERATIONS_DEFAULT);
     }
 
     /** Conversion from osculating to mean orbit.
@@ -578,7 +644,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param osculating osculating orbit to convert
      * @param provider for un-normalized zonal coefficients
      * @param harmonics {@code provider.onDate(osculating.getDate())}
-     * @param M2Value value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@code BrouwerLyddanePropagator.M2} drag is not considered
      * @param epsilon convergence threshold for mean parameters conversion
      * @param maxIterations maximum iterations for mean parameters conversion
@@ -588,15 +654,16 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
     public static <T extends CalculusFieldElement<T>> FieldKeplerianOrbit<T> computeMeanOrbit(final FieldOrbit<T> osculating,
                                                                                               final UnnormalizedSphericalHarmonicsProvider provider,
                                                                                               final UnnormalizedSphericalHarmonics harmonics,
-                                                                                              final double M2Value,
-                                                                                              final double epsilon, final int maxIterations) {
+                                                                                              final double m2Value,
+                                                                                              final double epsilon,
+                                                                                              final int maxIterations) {
         return computeMeanOrbit(osculating,
                                 provider.getAe(), provider.getMu(),
                                 harmonics.getUnnormalizedCnm(2, 0),
                                 harmonics.getUnnormalizedCnm(3, 0),
                                 harmonics.getUnnormalizedCnm(4, 0),
                                 harmonics.getUnnormalizedCnm(5, 0),
-                                M2Value, epsilon, maxIterations);
+                                m2Value, epsilon, maxIterations);
     }
 
     /** Conversion from osculating to mean orbit.
@@ -621,7 +688,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
-     * @param M2Value value of empirical drag coefficient in rad/s².
+     * @param m2Value value of empirical drag coefficient in rad/s².
      *        If equal to {@code BrouwerLyddanePropagator.M2} drag is not considered
      * @param epsilon convergence threshold for mean parameters conversion
      * @param maxIterations maximum iterations for mean parameters conversion
@@ -629,19 +696,62 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @since 11.2
      */
     public static <T extends CalculusFieldElement<T>> FieldKeplerianOrbit<T> computeMeanOrbit(final FieldOrbit<T> osculating,
-                                                                                             final double referenceRadius, final double mu,
-                                                                                             final double c20, final double c30, final double c40,
-                                                                                             final double c50, final double M2Value,
-                                                                                             final double epsilon, final int maxIterations) {
-        final FieldBrouwerLyddanePropagator<T> propagator =
-                        new FieldBrouwerLyddanePropagator<>(osculating,
-                                                            FrameAlignedProvider.of(osculating.getFrame()),
-                                                            osculating.getMu().newInstance(DEFAULT_MASS),
-                                                            referenceRadius, osculating.getMu().newInstance(mu),
-                                                            c20, c30, c40, c50,
-                                                            PropagationType.OSCULATING, M2Value,
-                                                            epsilon, maxIterations);
-        return propagator.initialModel.mean;
+                                                                                              final double referenceRadius,
+                                                                                              final double mu,
+                                                                                              final double c20,
+                                                                                              final double c30,
+                                                                                              final double c40,
+                                                                                              final double c50,
+                                                                                              final double m2Value,
+                                                                                              final double epsilon,
+                                                                                              final int maxIterations) {
+        // Build a fixed-point converter
+        final OsculatingToMeanConverter converter = new FixedPointConverter(epsilon, maxIterations,
+                                                                            FixedPointConverter.DEFAULT_DAMPING);
+        return computeMeanOrbit(osculating, referenceRadius, mu, c20, c30, c40, c50, m2Value, converter);
+    }
+
+    /** Conversion from osculating to mean orbit.
+     * <p>
+     * Compute mean orbit <b>in a Brouwer-Lyddane sense</b>, corresponding to the
+     * osculating SpacecraftState in input.
+     * </p>
+     * <p>
+     * Since the osculating orbit is obtained with the computation of
+     * short-periodic variation, the resulting output will depend on
+     * both the gravity field parameterized in input and the
+     * atmospheric drag represented by the {@code m2} parameter.
+     * </p>
+     * <p>
+     * The computation is done through the given osculating to mean orbit converter.
+     * </p>
+     * @param <T> type of the filed elements
+     * @param osculating osculating orbit to convert
+     * @param referenceRadius reference radius of the Earth for the potential model (m)
+     * @param mu central attraction coefficient (m³/s²)
+     * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
+     * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
+     * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
+     * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
+     * @param m2Value value of empirical drag coefficient in rad/s².
+     *        If equal to {@code BrouwerLyddanePropagator.M2} drag is not considered
+     * @param converter osculating to mean orbit converter
+     * @return mean orbit in a Brouwer-Lyddane sense
+     * @since 13.0
+     */
+    public static <T extends CalculusFieldElement<T>> FieldKeplerianOrbit<T> computeMeanOrbit(final FieldOrbit<T> osculating,
+                                                                                              final double referenceRadius,
+                                                                                              final double mu,
+                                                                                              final double c20,
+                                                                                              final double c30,
+                                                                                              final double c40,
+                                                                                              final double c50,
+                                                                                              final double m2Value,
+                                                                                              final OsculatingToMeanConverter converter) {
+        // Set BL as the mean theory for converting
+        final MeanTheory theory = new BrouwerLyddaneTheory(referenceRadius, mu, c20, c30, c40, c50, m2Value);
+        converter.setMeanTheory(theory);
+        return (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(converter.convertToMean(osculating));
     }
 
     /** {@inheritDoc}
@@ -658,8 +768,12 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param state new initial state to consider
      * @param stateType mean Brouwer-Lyddane orbit or osculating orbit
      */
-    public void resetInitialState(final FieldSpacecraftState<T> state, final PropagationType stateType) {
-        resetInitialState(state, stateType, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+    public void resetInitialState(final FieldSpacecraftState<T> state,
+                                  final PropagationType stateType) {
+        final OsculatingToMeanConverter converter = new FixedPointConverter(BrouwerLyddanePropagator.EPSILON_DEFAULT,
+                                                                            BrouwerLyddanePropagator.MAX_ITERATIONS_DEFAULT,
+                                                                            FixedPointConverter.DEFAULT_DAMPING);
+        resetInitialState(state, stateType, converter);
     }
 
     /** Reset the propagator initial state.
@@ -669,34 +783,80 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param maxIterations maximum iterations for mean parameters conversion
      * @since 11.2
      */
-    public void resetInitialState(final FieldSpacecraftState<T> state, final PropagationType stateType,
-                                  final double epsilon, final int maxIterations) {
+    public void resetInitialState(final FieldSpacecraftState<T> state,
+                                  final PropagationType stateType,
+                                  final double epsilon,
+                                  final int maxIterations) {
+        final OsculatingToMeanConverter converter = new FixedPointConverter(epsilon, maxIterations,
+                                                                            FixedPointConverter.DEFAULT_DAMPING);
+        resetInitialState(state, stateType, converter);
+    }
+
+    /** Reset the propagator initial state.
+     * @param state     new initial state to consider
+     * @param stateType mean Brouwer-Lyddane orbit or osculating orbit
+     * @param converter osculating to mean orbit converter
+     * @since 13.0
+     */
+    public void resetInitialState(final FieldSpacecraftState<T> state,
+                                  final PropagationType stateType,
+                                  final OsculatingToMeanConverter converter) {
         super.resetInitialState(state);
-        final FieldKeplerianOrbit<T> keplerian = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(state.getOrbit());
-        this.initialModel = (stateType == PropagationType.MEAN) ?
-                             new FieldBLModel<>(keplerian, state.getMass(), referenceRadius, mu, ck0) :
-                             computeMeanParameters(keplerian, state.getMass(), epsilon, maxIterations);
-        this.models = new FieldTimeSpanMap<>(initialModel, state.getA().getField());
+        FieldKeplerianOrbit<T> keplerian = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(state.getOrbit());
+        if (stateType == PropagationType.OSCULATING) {
+            final MeanTheory theory = new BrouwerLyddaneTheory(referenceRadius, mu.getReal(),
+                                                               ck0[2], ck0[3], ck0[4], ck0[5],
+                                                               getM2());
+            converter.setMeanTheory(theory);
+            keplerian = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(converter.convertToMean(keplerian));
+        }
+        this.initialModel = new FieldBLModel<>(keplerian, state.getMass(), referenceRadius, mu, ck0);
+        this.models = new FieldTimeSpanMap<>(initialModel, state.getMass().getField());
     }
 
     /** {@inheritDoc} */
     @Override
-    protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward) {
-        resetIntermediateState(state, forward, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+    protected void resetIntermediateState(final FieldSpacecraftState<T> state,
+                                          final boolean forward) {
+        final OsculatingToMeanConverter converter = new FixedPointConverter(BrouwerLyddanePropagator.EPSILON_DEFAULT,
+                                                                            BrouwerLyddanePropagator.MAX_ITERATIONS_DEFAULT,
+                                                                            FixedPointConverter.DEFAULT_DAMPING);
+        resetIntermediateState(state, forward, converter);
     }
 
     /** Reset an intermediate state.
      * @param state new intermediate state to consider
      * @param forward if true, the intermediate state is valid for
-     * propagations after itself
+     *                propagations after itself
      * @param epsilon convergence threshold for mean parameters conversion
      * @param maxIterations maximum iterations for mean parameters conversion
      * @since 11.2
      */
-    protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward,
-                                          final double epsilon, final int maxIterations) {
-        final FieldBLModel<T> newModel = computeMeanParameters((FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(state.getOrbit()),
-                                                               state.getMass(), epsilon, maxIterations);
+    protected void resetIntermediateState(final FieldSpacecraftState<T> state,
+                                          final boolean forward,
+                                          final double epsilon,
+                                          final int maxIterations) {
+        final OsculatingToMeanConverter converter = new FixedPointConverter(epsilon, maxIterations,
+                                                                            FixedPointConverter.DEFAULT_DAMPING);
+        resetIntermediateState(state, forward, converter);
+    }
+
+    /** Reset an intermediate state.
+     * @param state     new intermediate state to consider
+     * @param forward   if true, the intermediate state is valid for
+     *                  propagations after itself
+     * @param converter osculating to mean orbit converter
+     * @since 13.0
+     */
+    protected void resetIntermediateState(final FieldSpacecraftState<T> state,
+                                          final boolean forward,
+                                          final OsculatingToMeanConverter converter) {
+        final MeanTheory theory = new BrouwerLyddaneTheory(referenceRadius, mu.getReal(),
+                                                           ck0[2], ck0[3], ck0[4], ck0[5],
+                                                           getM2());
+        converter.setMeanTheory(theory);
+        final FieldKeplerianOrbit<T> mean = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
+        final FieldBLModel<T> newModel = new FieldBLModel<>(mean, state.getMass(), referenceRadius, mu, ck0);
         if (forward) {
             models.addValidAfter(newModel, state.getDate());
         } else {
@@ -704,74 +864,6 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
         }
         stateChanged(state);
     }
-
-    /** Compute mean parameters according to the Brouwer-Lyddane analytical model computation
-     * in order to do the propagation.
-     * @param osculating osculating orbit
-     * @param mass constant mass
-     * @param epsilon convergence threshold for mean parameters conversion
-     * @param maxIterations maximum iterations for mean parameters conversion
-     * @return Brouwer-Lyddane mean model
-     */
-    private FieldBLModel<T> computeMeanParameters(final FieldKeplerianOrbit<T> osculating, final T mass,
-                                                  final double epsilon, final int maxIterations) {
-
-        // sanity check
-        if (osculating.getA().getReal() < referenceRadius) {
-            throw new OrekitException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE,
-                                           osculating.getA());
-        }
-
-        final Field<T> field = mass.getField();
-        final T one = field.getOne();
-        final T zero = field.getZero();
-        // rough initialization of the mean parameters
-        FieldBLModel<T> current = new FieldBLModel<>(osculating, mass, referenceRadius, mu, ck0);
-
-        // threshold for each parameter
-        final T thresholdA      = current.mean.getA().abs().add(1.0).multiply(epsilon);
-        final T thresholdE      = current.mean.getE().add(1.0).multiply(epsilon);
-        final T thresholdAngles = one.getPi().multiply(epsilon);
-
-        int i = 0;
-        while (i++ < maxIterations) {
-
-            // recompute the osculating parameters from the current mean parameters
-            final FieldKeplerianOrbit<T> parameters = current.propagateParameters(current.mean.getDate(), getParameters(mass.getField(), current.mean.getDate()));
-
-            // adapted parameters residuals
-            final T deltaA     = osculating.getA()  .subtract(parameters.getA());
-            final T deltaE     = osculating.getE()  .subtract(parameters.getE());
-            final T deltaI     = osculating.getI()  .subtract(parameters.getI());
-            final T deltaOmega = MathUtils.normalizeAngle(osculating.getPerigeeArgument().subtract(parameters.getPerigeeArgument()), zero);
-            final T deltaRAAN  = MathUtils.normalizeAngle(osculating.getRightAscensionOfAscendingNode().subtract(parameters.getRightAscensionOfAscendingNode()), zero);
-            final T deltaAnom  = MathUtils.normalizeAngle(osculating.getMeanAnomaly().subtract(parameters.getMeanAnomaly()), zero);
-
-
-            // update mean parameters
-            current = new FieldBLModel<>(new FieldKeplerianOrbit<>(current.mean.getA()            .add(deltaA),
-                                                     FastMath.max(current.mean.getE().add(deltaE), zero),
-                                                     current.mean.getI()                            .add(deltaI),
-                                                     current.mean.getPerigeeArgument()              .add(deltaOmega),
-                                                     current.mean.getRightAscensionOfAscendingNode().add(deltaRAAN),
-                                                     current.mean.getMeanAnomaly()                  .add(deltaAnom),
-                                                     PositionAngleType.MEAN, PositionAngleType.MEAN,
-                                                     current.mean.getFrame(),
-                                                     current.mean.getDate(), mu),
-                                  mass, referenceRadius, mu, ck0);
-            // check convergence
-            if (FastMath.abs(deltaA.getReal())     < thresholdA.getReal() &&
-                FastMath.abs(deltaE.getReal())     < thresholdE.getReal() &&
-                FastMath.abs(deltaI.getReal())     < thresholdAngles.getReal() &&
-                FastMath.abs(deltaOmega.getReal()) < thresholdAngles.getReal() &&
-                FastMath.abs(deltaRAAN.getReal())  < thresholdAngles.getReal() &&
-                FastMath.abs(deltaAnom.getReal())  < thresholdAngles.getReal()) {
-                return current;
-            }
-        }
-        throw new OrekitException(OrekitMessages.UNABLE_TO_COMPUTE_BROUWER_LYDDANE_MEAN_PARAMETERS, i);
-    }
-
 
     /** {@inheritDoc} */
     public FieldKeplerianOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
@@ -800,98 +892,64 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
     /** Local class for Brouwer-Lyddane model. */
     private static class FieldBLModel<T extends CalculusFieldElement<T>> {
 
-        /** Mean orbit. */
-        private final FieldKeplerianOrbit<T> mean;
-
         /** Constant mass. */
         private final T mass;
 
         /** Central attraction coefficient. */
         private final T mu;
 
+        /** Brouwer-Lyddane mean orbit. */
+        private final FieldKeplerianOrbit<T> mean;
+
+        // Preprocessed values
+
+        /** Mean mean motion: n0 = √(μ/a")/a". */
+        private final T n0;
+
+        /** η = √(1 - e"²). */
+        private final T n;
+        /** η². */
+        private final T n2;
+        /** η³. */
+        private final T n3;
+        /** η + 1 / (1 + η). */
+        private final T t8;
+
+        /** Secular correction for mean anomaly l: &delta;<sub>s</sub>l. */
+        private final T dsl;
+        /** Secular correction for perigee argument g: &delta;<sub>s</sub>g. */
+        private final T dsg;
+        /** Secular correction for raan h: &delta;<sub>s</sub>h. */
+        private final T dsh;
+
+        /** Secular rate of change of semi-major axis due to drag. */
+        private final T aRate;
+        /** Secular rate of change of eccentricity due to drag. */
+        private final T eRate;
+
         // CHECKSTYLE: stop JavadocVariable check
 
-        // preprocessed values
+        // Storage for speed-up
+        private final T yp2;
+        private final T ci;
+        private final T si;
+        private final T oneMci2;
+        private final T ci2X3M1;
 
-        // Constant for secular terms l'', g'', h''
-        // l standing for mean anomaly, g for perigee argument and h for raan
-        private final T xnotDot;
-        private final T n;
-        private final T lt;
-        private final T gt;
-        private final T ht;
-
-
-        // Long periodT
-        private final T dei3sg;
-        private final T de2sg;
-        private final T deisg;
-        private final T de;
-
-
-        private final T dlgs2g;
-        private final T dlgc3g;
-        private final T dlgcg;
-
-
-        private final T dh2sgcg;
-        private final T dhsgcg;
-        private final T dhcg;
-
-
-        // Short perioTs
-        private final T aC;
-        private final T aCbis;
-        private final T ac2g2f;
-
-
-        private final T eC;
-        private final T ecf;
-        private final T e2cf;
-        private final T e3cf;
-        private final T ec2f2g;
-        private final T ecfc2f2g;
-        private final T e2cfc2f2g;
-        private final T e3cfc2f2g;
-        private final T ec2gf;
-        private final T ec2g3f;
-
-
-        private final T ide;
-        private final T isfs2f2g;
-        private final T icfc2f2g;
-        private final T ic2f2g;
-
-
-        private final T glf;
-        private final T gll;
-        private final T glsf;
-        private final T glosf;
-        private final T gls2f2g;
-        private final T gls2gf;
-        private final T glos2gf;
-        private final T gls2g3f;
-        private final T glos2g3f;
-
-
-        private final T hf;
-        private final T hl;
-        private final T hsf;
-        private final T hcfs2g2f;
-        private final T hs2g2f;
-        private final T hsfc2g2f;
-
-
-        private final T edls2g;
-        private final T edlcg;
-        private final T edlc3g;
-        private final T edlsf;
-        private final T edls2gf;
-        private final T edls2g3f;
-
-        // Drag terms
-        private final T aRate;
-        private final T eRate;
+        // Long periodic corrections factors
+        private final T vle1;
+        private final T vle2;
+        private final T vle3;
+        private final T vli1;
+        private final T vli2;
+        private final T vli3;
+        private final T vll2;
+        private final T vlh1I;
+        private final T vlh2I;
+        private final T vlh3I;
+        private final T vls1;
+        private final T vls2;
+        private final T vls3;
 
         // CHECKSTYLE: resume JavadocVariable check
 
@@ -903,217 +961,206 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
          * @param ck0 un-normalized zonal coefficients
          */
         FieldBLModel(final FieldKeplerianOrbit<T> mean, final T mass,
-                final double referenceRadius, final T mu, final double[] ck0) {
+                     final double referenceRadius, final T mu, final double[] ck0) {
 
-            this.mean = mean;
             this.mass = mass;
             this.mu   = mu;
-            final T one  = mass.getField().getOne();
 
-            final T app = mean.getA();
-            xnotDot = mu.divide(app).sqrt().divide(app);
+            // mean orbit
+            this.mean = mean;
 
-            // preliminary processing
-            final T q = app.divide(referenceRadius).reciprocal();
-            T ql = q.square();
-            final T y2 = ql.multiply(-0.5 * ck0[2]);
+            final T one = mass.getField().getOne();
 
-            n = ((mean.getE().square().negate()).add(1.0)).sqrt();
-            final T n2 = n.square();
-            final T n3 = n2.multiply(n);
-            final T n4 = n2.square();
-            final T n6 = n4.multiply(n2);
-            final T n8 = n4.square();
-            final T n10 = n8.multiply(n2);
-
-            final T yp2 = y2.divide(n4);
-            ql = ql.multiply(q);
-            final T yp3 = ql.multiply(ck0[3]).divide(n6);
-            ql = ql.multiply(q);
-            final T yp4 = ql.multiply(0.375 * ck0[4]).divide(n8);
-            ql = ql.multiply(q);
-            final T yp5 = ql.multiply(ck0[5]).divide(n10);
-
-
-            final FieldSinCos<T> sc = FastMath.sinCos(mean.getI());
-            final T sinI1 = sc.sin();
-            final T sinI2 = sinI1.square();
-            final T cosI1 = sc.cos();
-            final T cosI2 = cosI1.square();
-            final T cosI3 = cosI2.multiply(cosI1);
-            final T cosI4 = cosI2.square();
-            final T cosI6 = cosI4.multiply(cosI2);
-            final T C5c2 = T2(cosI1).reciprocal();
-            final T C3c2 = cosI2.multiply(3.0).subtract(1.0);
-
+            // mean eccentricity e"
             final T epp = mean.getE();
-            final T epp2 = epp.square();
-            final T epp3 = epp2.multiply(epp);
-            final T epp4 = epp2.square();
-
             if (epp.getReal() >= 1) {
                 // Only for elliptical (e < 1) orbits
                 throw new OrekitException(OrekitMessages.TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL,
-                                          mean.getE().getReal());
+                                          epp.getReal());
             }
+            final T epp2 = epp.square();
 
-            // secular multiplicative
-            lt = one.add(yp2.multiply(n).multiply(C3c2).multiply(1.5)).
-                     add(yp2.multiply(0.09375).multiply(yp2).multiply(n).multiply(n2.multiply(25.0).add(n.multiply(16.0)).add(-15.0).
-                             add(cosI2.multiply(n2.multiply(-90.0).add(n.multiply(-96.0)).add(30.0))).
-                             add(cosI4.multiply(n2.multiply(25.0).add(n.multiply(144.0)).add(105.0))))).
-                     add(yp4.multiply(0.9375).multiply(n).multiply(epp2).multiply(cosI4.multiply(35.0).add(cosI2.multiply(-30.0)).add(3.0)));
+            // η
+            n2 = one.subtract(epp2);
+            n  = n2.sqrt();
+            n3 = n2.multiply(n);
+            t8 = n.add(one.add(n).reciprocal());
 
-            gt = yp2.multiply(-1.5).multiply(C5c2).
-                     add(yp2.multiply(0.09375).multiply(yp2).multiply(n2.multiply(25.0).add(n.multiply(24.0)).add(-35.0).
-                            add(cosI2.multiply(n2.multiply(-126.0).add(n.multiply(-192.0)).add(90.0))).
-                            add(cosI4.multiply(n2.multiply(45.0).add(n.multiply(360.0)).add(385.0))))).
-                     add(yp4.multiply(0.3125).multiply(n2.multiply(-9.0).add(21.0).
-                            add(cosI2.multiply(n2.multiply(126.0).add(-270.0))).
-                            add(cosI4.multiply(n2.multiply(-189.0).add(385.0)))));
+            // mean semi-major axis a"
+            final T app = mean.getA();
 
-            ht = yp2.multiply(-3.0).multiply(cosI1).
-                     add(yp2.multiply(0.375).multiply(yp2).multiply(cosI1.multiply(n2.multiply(9.0).add(n.multiply(12.0)).add(-5.0)).
-                                                                    add(cosI3.multiply(n2.multiply(-5.0).add(n.multiply(-36.0)).add(-35.0))))).
-                     add(yp4.multiply(1.25).multiply(cosI1).multiply(n2.multiply(-3.0).add(5.0)).multiply(cosI2.multiply(-7.0).add(3.0)));
+            // mean mean motion
+            n0 = mu.divide(app).sqrt().divide(app);
 
-            final T cA = one.subtract(cosI2.multiply(11.0)).subtract(cosI4.multiply(40.0).divide(C5c2));
-            final T cB = one.subtract(cosI2.multiply(3.0)).subtract(cosI4.multiply(8.0).divide(C5c2));
-            final T cC = one.subtract(cosI2.multiply(9.0)).subtract(cosI4.multiply(24.0).divide(C5c2));
-            final T cD = one.subtract(cosI2.multiply(5.0)).subtract(cosI4.multiply(16.0).divide(C5c2));
+            // ae/a"
+            final T q = app.divide(referenceRadius).reciprocal();
 
-            final T qyp2_4 = yp2.multiply(3.0).multiply(yp2).multiply(cA).
-                             subtract(yp4.multiply(10.0).multiply(cB));
-            final T qyp52 = cosI1.multiply(epp3).multiply(cD.multiply(0.5).divide(sinI1).
-                                                          add(sinI1.multiply(cosI4.divide(C5c2).divide(C5c2).multiply(80.0).
-                                                                             add(cosI2.divide(C5c2).multiply(32.0).
-                                                                             add(5.0)))));
-            final T qyp22 = epp2.add(2.0).subtract(epp2.multiply(3.0).add(2.0).multiply(11.0).multiply(cosI2)).
-                            subtract(epp2.multiply(5.0).add(2.0).multiply(40.0).multiply(cosI4.divide(C5c2))).
-                            subtract(epp2.multiply(400.0).multiply(cosI6).divide(C5c2).divide(C5c2));
-            final T qyp42 = one.divide(5.0).multiply(qyp22.
-                                                     add(one.newInstance(4.0).multiply(epp2.
-                                                                                    add(2.0).
-                                                                                    subtract(cosI2.multiply(epp2.multiply(3.0).add(2.0))))));
-            final T qyp52bis = cosI1.multiply(sinI1).multiply(epp).multiply(epp2.multiply(3.0).add(4.0)).
-                                                                   multiply(cosI4.divide(C5c2).divide(C5c2).multiply(40.0).
-                                                                            add(cosI2.divide(C5c2).multiply(16.0)).
-                                                                            add(3.0));
-           // long periodic multiplicative
-            dei3sg =  yp5.divide(yp2).multiply(35.0 / 96.0).multiply(epp2).multiply(n2).multiply(cD).multiply(sinI1);
-            de2sg = qyp2_4.divide(yp2).multiply(epp).multiply(n2).multiply(-1.0 / 12.0);
-            deisg = sinI1.multiply(yp5.multiply(-35.0 / 128.0).divide(yp2).multiply(epp2).multiply(n2).multiply(cD).
-                            add(n2.multiply(0.25).divide(yp2).multiply(yp3.add(yp5.multiply(5.0 / 16.0).multiply(epp2.multiply(3.0).add(4.0)).multiply(cC)))));
-            de = epp2.multiply(n2).multiply(qyp2_4).divide(24.0).divide(yp2);
+            // γ2'
+            T ql = q.square();
+            T nl = n2.square();
+            yp2 = ql.multiply(-0.5 * ck0[2]).divide(nl);
+            final T yp22 = yp2.square();
 
-            final T qyp52quotient = epp.multiply(epp4.multiply(81.0).add(-32.0)).divide(n.multiply(epp2.multiply(9.0).add(4.0)).add(epp2.multiply(3.0)).add(4.0));
-            dlgs2g = yp2.multiply(48.0).reciprocal().multiply(yp2.multiply(-3.0).multiply(yp2).multiply(qyp22).
-                            add(yp4.multiply(10.0).multiply(qyp42))).
-                            add(n3.divide(yp2).multiply(qyp2_4).divide(24.0));
-            dlgc3g =  yp5.multiply(35.0 / 384.0).divide(yp2).multiply(n3).multiply(epp).multiply(cD).multiply(sinI1).
-                            add(yp5.multiply(35.0 / 1152.0).divide(yp2).multiply(qyp52.multiply(2.0).multiply(cosI1).subtract(epp.multiply(cD).multiply(sinI1).multiply(epp2.multiply(2.0).add(3.0)))));
-            dlgcg = yp3.negate().multiply(cosI2).multiply(epp).divide(yp2.multiply(sinI1).multiply(4.0)).
-                    add(yp5.divide(yp2).multiply(0.078125).multiply(cC).multiply(cosI2.divide(sinI1).multiply(epp.negate()).multiply(epp2.multiply(3.0).add(4.0)).
-                                                                    add(sinI1.multiply(epp2).multiply(epp2.multiply(9.0).add(26.0)))).
-                    subtract(yp5.divide(yp2).multiply(0.46875).multiply(qyp52bis).multiply(cosI1)).
-                    add(yp3.divide(yp2).multiply(0.25).multiply(sinI1).multiply(epp).divide(n3.add(1.0)).multiply(epp2.multiply(epp2.subtract(3.0)).add(3.0))).
-                    add(yp5.divide(yp2).multiply(0.078125).multiply(n2).multiply(cC).multiply(qyp52quotient).multiply(sinI1)));
-            final T qyp24 = yp2.multiply(yp2).multiply(3.0).multiply(cosI4.divide(sinI2).multiply(200.0).add(cosI2.divide(sinI1).multiply(80.0)).add(11.0)).
-                            subtract(yp4.multiply(10.0).multiply(cosI4.divide(sinI2).multiply(40.0).add(cosI2.divide(sinI1).multiply(16.0)).add(3.0)));
-            dh2sgcg = yp5.divide(yp2).multiply(qyp52).multiply(35.0 / 144.0);
-            dhsgcg = qyp24.multiply(cosI1).multiply(epp2.negate()).divide(yp2.multiply(12.0));
-            dhcg = yp5.divide(yp2).multiply(qyp52).multiply(-35.0 / 576.0).
-                   add(cosI1.multiply(epp).divide(yp2.multiply(sinI1).multiply(4.0)).multiply(yp3.add(yp5.multiply(0.3125).multiply(cC).multiply(epp2.multiply(3.0).add(4.0))))).
-                   add(yp5.multiply(qyp52bis).multiply(1.875).divide(yp2.multiply(4.0)));
+            // γ3'
+            ql = ql.multiply(q);
+            nl = nl.multiply(n2);
+            final T yp3 = ql.multiply(ck0[3]).divide(nl);
 
-            // short periodic multiplicative
-            aC = yp2.negate().multiply(C3c2).multiply(app).divide(n3);
-            aCbis = y2.multiply(app).multiply(C3c2);
-            ac2g2f = y2.multiply(app).multiply(sinI2).multiply(3.0);
+            // γ4'
+            ql = ql.multiply(q);
+            nl = nl.multiply(n2);
+            final T yp4 = ql.multiply(0.375 * ck0[4]).divide(nl);
 
-            T qe = y2.multiply(C3c2).multiply(0.5).multiply(n2).divide(n6);
-            eC = qe.multiply(epp).divide(n3.add(1.0)).multiply(epp2.multiply(epp2.subtract(3.0)).add(3.0));
-            ecf = qe.multiply(3.0);
-            e2cf = qe.multiply(3.0).multiply(epp);
-            e3cf = qe.multiply(epp2);
-            qe = y2.multiply(0.5).multiply(n2).multiply(3.0).multiply(cosI2.negate().add(1.0)).divide(n6);
-            ec2f2g = qe.multiply(epp);
-            ecfc2f2g = qe.multiply(3.0);
-            e2cfc2f2g = qe.multiply(3.0).multiply(epp);
-            e3cfc2f2g = qe.multiply(epp2);
-            qe = yp2.multiply(-0.5).multiply(n2).multiply(cosI2.negate().add(1.0));
-            ec2gf = qe.multiply(3.0);
-            ec2g3f = qe;
+            // γ5'
+            ql = ql.multiply(q);
+            nl = nl.multiply(n2);
+            final T yp5 = ql.multiply(ck0[5]).divide(nl);
 
-            T qi = yp2.multiply(epp).multiply(cosI1).multiply(sinI1);
-            ide = cosI1.multiply(epp.negate()).divide(sinI1.multiply(n2));
-            isfs2f2g = qi;
-            icfc2f2g = qi.multiply(2.0);
-            qi = yp2.multiply(cosI1).multiply(sinI1);
-            ic2f2g = qi.multiply(1.5);
+            // mean inclination I" sin & cos
+            final FieldSinCos<T> sc = FastMath.sinCos(mean.getI());
+            si = sc.sin();
+            ci = sc.cos();
+            final T ci2 = ci.square();
+            oneMci2 = one.subtract(ci2);
+            ci2X3M1 = ci2.multiply(3.).subtract(one);
+            final T ci2X5M1 = ci2.multiply(5.).subtract(one);
 
-            T qgl1 = yp2.multiply(0.25);
-            T qgl2 =  yp2.multiply(epp).multiply(n2).multiply(0.25).divide(n.add(1.0));
-            glf = qgl1.multiply(C5c2).multiply(-6.0);
-            gll = qgl1.multiply(C5c2).multiply(6.0);
-            glsf = qgl1.multiply(C5c2).multiply(-6.0).multiply(epp).
-                   add(qgl2.multiply(C3c2).multiply(2.0));
-            glosf = qgl2.multiply(C3c2).multiply(2.0);
-            qgl1 = qgl1.multiply(cosI2.multiply(-5.0).add(3.0));
-            qgl2 = qgl2.multiply(3.0).multiply(cosI2.negate().add(1.0));
-            gls2f2g = qgl1.multiply(3.0);
-            gls2gf = qgl1.multiply(3.0).multiply(epp).
-                     add(qgl2);
-            glos2gf = qgl2.negate();
-            gls2g3f = qgl1.multiply(epp).
-                      add(qgl2.multiply(1.0 / 3.0));
-            glos2g3f = qgl2;
+            // secular corrections
+            // true anomaly
+            final T dsl1  = yp2.multiply(n).multiply(1.5);
+            final T dsl2a = n.multiply(n.multiply(25.).add(16.)).subtract(15.);
+            final T dsl2b = n.multiply(n.multiply(90.).add(96.)).negate().add(30.);
+            final T dsl2c = n.multiply(n.multiply(25.).add(144.)).add(105.);
+            final T dsl21 = dsl2a.add(ci2.multiply(dsl2b.add(ci2.multiply(dsl2c))));
+            final T dsl2  = ci2X3M1.add(yp2.multiply(0.0625).multiply(dsl21));
+            final T dsl3  = yp4.multiply(n).multiply(epp2).multiply(0.9375).
+                                multiply(ci2.multiply(35.0).subtract(30.0).multiply(ci2).add(3.));
+            dsl = dsl1.multiply(dsl2).add(dsl3);
 
-            final T qh = yp2.multiply(cosI1).multiply(3.0);
-            hf = qh.negate();
-            hl = qh;
-            hsf = qh.multiply(epp).negate();
-            hcfs2g2f = yp2.multiply(cosI1).multiply(epp).multiply(2.0);
-            hs2g2f = yp2.multiply(cosI1).multiply(1.5);
-            hsfc2g2f = yp2.multiply(cosI1).multiply(epp).negate();
+            // perigee argument
+            final T dsg1  = yp2.multiply(1.5).multiply(ci2X5M1);
+            final T dsg2a = n.multiply(25.).add(24.).multiply(n).add(-35.);
+            final T dsg2b = n.multiply(126.).add(192.).multiply(n).negate().add(90.);
+            final T dsg2c = n.multiply(45.).add(360.).multiply(n).add(385.);
+            final T dsg21 = dsg2a.add(ci2.multiply(dsg2b.add(ci2.multiply(dsg2c))));
+            final T dsg2  = yp22.multiply(0.09375).multiply(dsg21);
+            final T dsg3a = n2.multiply(-9.).add(21.);
+            final T dsg3b = n2.multiply(126.).add(-270.);
+            final T dsg3c = n2.multiply(-189.).add(385.);
+            final T dsg31 = dsg3a.add(ci2.multiply(dsg3b.add(ci2.multiply(dsg3c))));
+            final T dsg3  = yp4.multiply(0.3125).multiply(dsg31);
+            dsg = dsg1.add(dsg2).add(dsg3);
 
-            final T qedl = yp2.multiply(n3).multiply(-0.25);
-            edls2g = qyp2_4.multiply(1.0 / 24.0).multiply(epp).multiply(n3).divide(yp2);
-            edlcg = yp3.divide(yp2).multiply(-0.25).multiply(n3).multiply(sinI1).
-                    subtract(yp5.divide(yp2).multiply(0.078125).multiply(n3).multiply(sinI1).multiply(cC).multiply(epp2.multiply(9.0).add(4.0)));
-            edlc3g = yp5.divide(yp2).multiply(n3).multiply(epp2).multiply(cD).multiply(sinI1).multiply(35.0 / 384.0);
-            edlsf = qedl.multiply(C3c2).multiply(2.0);
-            edls2gf = qedl.multiply(3.0).multiply(cosI2.negate().add(1.0));
-            edls2g3f = qedl.multiply(1.0 / 3.0);
+            // right ascension of ascending node
+            final T dsh1  = yp2.multiply(-3.);
+            final T dsh2a = n.multiply(9.).add(12.).multiply(n).add(-5.);
+            final T dsh2b = n.multiply(5.).add(36.).multiply(n).add(35.);
+            final T dsh21 = dsh2a.subtract(ci2.multiply(dsh2b));
+            final T dsh2  = yp22.multiply(0.375).multiply(dsh21);
+            final T dsh31 = n2.multiply(3.).subtract(5.);
+            final T dsh32 = ci2.multiply(7.).subtract(3.);
+            final T dsh3  = yp4.multiply(1.25).multiply(dsh31).multiply(dsh32);
+            dsh = ci.multiply(dsh1.add(dsh2).add(dsh3));
 
-            // secular rates of the mean semi-major axis and eccentricity
+            // secular rates of change due to drag
             // Eq. 2.41 and Eq. 2.45 of Phipps' 1992 thesis
-            aRate = app.multiply(-4.0).divide(xnotDot.multiply(3.0));
-            eRate = epp.multiply(n).multiply(n).multiply(-4.0).divide(xnotDot.multiply(3.0));
+            final T coef = n0.multiply(one.add(dsl)).multiply(3.).reciprocal().multiply(-4);
+            aRate = coef.multiply(app);
+            eRate = coef.multiply(epp).multiply(n2);
 
+            // singular term 1/(1 - 5 * cos²(I")) replaced by T2 function
+            final T t2 = T2(ci);
+
+            // factors for long periodic corrections
+            final T fs12 = yp3.divide(yp2);
+            final T fs13 = yp4.multiply(10).divide(yp2.multiply(3));
+            final T fs14 = yp5.divide(yp2);
+
+            final T ci2Xt2 = ci2.multiply(t2);
+            final T cA = one.subtract(ci2.multiply(ci2Xt2.multiply(40.) .add(11.)));
+            final T cB = one.subtract(ci2.multiply(ci2Xt2.multiply(8.)  .add(3.)));
+            final T cC = one.subtract(ci2.multiply(ci2Xt2.multiply(24.) .add(9.)));
+            final T cD = one.subtract(ci2.multiply(ci2Xt2.multiply(16.) .add(5.)));
+            final T cE = one.subtract(ci2.multiply(ci2Xt2.multiply(200.).add(33.)));
+            final T cF = one.subtract(ci2.multiply(ci2Xt2.multiply(40.) .add(9.)));
+
+            final T p5p   = one.add(ci2Xt2.multiply(ci2Xt2.multiply(20.).add(8.)));
+            final T p5p2  = one.add(p5p.multiply(2.));
+            final T p5p4  = one.add(p5p.multiply(4.));
+            final T p5p10 = one.add(p5p.multiply(10.));
+
+            final T e2X3P4  = epp2.multiply(3.).add(4.);
+            final T ciO1Pci = ci.divide(one.add(ci));
+            final T oneMci  = one.subtract(ci);
+
+            final T q1 = (yp2.multiply(cA).subtract(fs13.multiply(cB))).
+                            multiply(0.125);
+            final T q2 = (yp2.multiply(p5p10).subtract(fs13.multiply(p5p2))).
+                            multiply(epp2).multiply(ci).multiply(0.125);
+            final T q5 = (fs12.add(e2X3P4.multiply(fs14).multiply(cC).multiply(0.3125))).
+                            multiply(0.25);
+            final T p2 = p5p2.multiply(epp).multiply(ci).multiply(si).multiply(e2X3P4).multiply(fs14).
+                            multiply(0.46875);
+            final T p3 = epp.multiply(si).multiply(fs14).multiply(cC).
+                            multiply(0.15625);
+            final double kf = 35. / 1152.;
+            final T p4 = epp.multiply(fs14).multiply(cD).
+                            multiply(kf);
+            final T p5 = epp.multiply(epp2).multiply(ci).multiply(si).multiply(fs14).multiply(p5p4).
+                            multiply(2. * kf);
+
+            vle1 = epp.multiply(n2).multiply(q1);
+            vle2 = n2.multiply(si).multiply(q5);
+            vle3 = epp.multiply(n2).multiply(si).multiply(p4).multiply(-3.0);
+
+            vli1 = epp.multiply(q1).divide(si).negate();
+            vli2 = epp.multiply(ci).multiply(q5).negate();
+            vli3 = epp2.multiply(ci).multiply(p4).multiply(-3.0);
+
+            vll2 = vle2.add(epp.multiply(n2).multiply(p3).multiply(3.0));
+
+            vlh1I = si.multiply(q2).negate();
+            vlh2I = epp.multiply(ci).multiply(q5).add(si.multiply(p2));
+            vlh3I = (epp2.multiply(ci).multiply(p4).add(si.multiply(p5))).negate();
+
+            vls1 = q1.multiply(n3.subtract(one)).
+                   subtract(q2).
+                   add(epp2.multiply(ci2).multiply(ci2Xt2).multiply(ci2Xt2).
+                       multiply(yp2.subtract(fs13.multiply(0.2))).multiply(25.0)).
+                   subtract(epp2.multiply(yp2.multiply(cE).subtract(fs13.multiply(cF))).multiply(0.0625));
+
+            vls2 = epp.multiply(si).multiply(t8.add(ciO1Pci)).multiply(q5).
+                   add((epp2.subtract(n3).multiply(3.).add(11.)).multiply(p3)).
+                   add(oneMci.multiply(p2));
+
+            vls3 = si.multiply(p4).multiply(n3.subtract(one).multiply(3.).
+                                            subtract(epp2.multiply(ciO1Pci.add(2.)))).
+                   subtract(oneMci.multiply(p5));
         }
 
         /**
-         * Gets eccentric anomaly from mean anomaly.
-         * @param mk the mean anomaly (rad)
-         * @return the eccentric anomaly (rad)
+         * Get true anomaly from mean anomaly.
+         * @param lM  the mean anomaly (rad)
+         * @param ecc the eccentricity
+         * @return the true anomaly (rad)
          */
-        private FieldUnivariateDerivative1<T> getEccentricAnomaly(final FieldUnivariateDerivative1<T> mk) {
+        private FieldUnivariateDerivative1<T> getTrueAnomaly(final FieldUnivariateDerivative1<T> lM,
+                                                             final FieldUnivariateDerivative1<T> ecc) {
 
             final T zero = mean.getE().getField().getZero();
 
             // reduce M to [-PI PI] interval
-            final FieldUnivariateDerivative1<T> reducedM = new FieldUnivariateDerivative1<>(MathUtils.normalizeAngle(mk.getValue(), zero ),
-                                                                             mk.getFirstDerivative());
+            final FieldUnivariateDerivative1<T> reducedM = new FieldUnivariateDerivative1<>(MathUtils.normalizeAngle(lM.getValue(), zero),
+                                                                                            lM.getFirstDerivative());
 
-            final FieldUnivariateDerivative1<T> meanE = new FieldUnivariateDerivative1<>(mean.getE(), zero);
-            FieldUnivariateDerivative1<T> ek = FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(meanE, mk);
+            // compute the true anomaly
+            FieldUnivariateDerivative1<T> lV = FieldKeplerianAnomalyUtility.ellipticMeanToTrue(ecc, lM);
 
             // expand the result back to original range
-            ek = ek.add(mk.getValue().subtract(reducedM.getValue()));
+            lV = lV.add(lM.getValue().subtract(reducedM.getValue()));
 
-            // Returns the eccentric anomaly
-            return ek;
+            // Returns the true anomaly
+            return lV;
         }
 
         /**
@@ -1121,34 +1168,38 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
          * critical inclination (i = 63.4°).
          * <p>
          * This method, based on Warren Phipps's 1992 thesis (Eq. 2.47 and 2.48),
-         * approximate the factor (1.0 - 5.0 * cos²(inc))^-1 (causing the singularity)
+         * approximate the factor (1.0 - 5.0 * cos²(i))<sup>-1</sup> (causing the singularity)
          * by a function, named T2 in the thesis.
          * </p>
-         * @param cosInc cosine of the mean inclination
-         * @return an approximation of (1.0 - 5.0 * cos²(inc))^-1 term
+         * @param cosI cosine of the mean inclination
+         * @return an approximation of (1.0 - 5.0 * cos²(i))<sup>-1</sup> term
          */
-        private T T2(final T cosInc) {
+        private T T2(final T cosI) {
 
-            // X = (1.0 - 5.0 * cos²(inc))
-            final T x  = cosInc.square().multiply(-5.0).add(1.0);
+            // X = (1.0 - 5.0 * cos²(i))
+            final T x  = cosI.square().multiply(-5.0).add(1.0);
             final T x2 = x.square();
+            final T xb = x2.multiply(BETA);
 
             // Eq. 2.48
             T sum = x.getField().getZero();
             for (int i = 0; i <= 12; i++) {
                 final double sign = i % 2 == 0 ? +1.0 : -1.0;
-                sum = sum.add(FastMath.pow(x2, i).multiply(FastMath.pow(BETA, i)).multiply(sign).divide(CombinatoricsUtils.factorialDouble(i + 1)));
+                sum = sum.add(FastMath.pow(x2, i).
+                              multiply(FastMath.pow(BETA, i)).
+                              multiply(sign).
+                              divide(CombinatoricsUtils.factorialDouble(i + 1)));
             }
 
             // Right term of equation 2.47
-            T product = x.getField().getOne();
+            final T one = x.getField().getOne();
+            T product = one;
             for (int i = 0; i <= 10; i++) {
-                product = product.multiply(FastMath.exp(x2.multiply(BETA).multiply(FastMath.scalb(-1.0, i))).add(1.0));
+                product = product.multiply(one.add(FastMath.exp(xb.multiply(FastMath.scalb(-1.0, i)))));
             }
 
             // Return (Eq. 2.47)
             return x.multiply(BETA).multiply(sum).multiply(product);
-
         }
 
         /** Extrapolate an orbit up to a specific target date.
@@ -1167,152 +1218,224 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
             final T m2 = parameters[0];
 
             // Keplerian evolution
-            final FieldUnivariateDerivative1<T> dt = new FieldUnivariateDerivative1<>(date.durationFrom(mean.getDate()), one);
-            final FieldUnivariateDerivative1<T> xnot = dt.multiply(xnotDot);
+            final FieldUnivariateDerivative1<T> dt  = new FieldUnivariateDerivative1<>(date.durationFrom(mean.getDate()), one);
+            final FieldUnivariateDerivative1<T> not = dt.multiply(n0);
 
-            //____________________________________
-            // secular effects
-
-            // mean mean anomaly
             final FieldUnivariateDerivative1<T> dtM2  = dt.multiply(m2);
             final FieldUnivariateDerivative1<T> dt2M2 = dt.multiply(dtM2);
-            final FieldUnivariateDerivative1<T> lpp = new FieldUnivariateDerivative1<>(MathUtils.normalizeAngle(mean.getMeanAnomaly().add(lt.multiply(xnot.getValue())).add(dt2M2.getValue()), zero),
-                                                                                        lt.multiply(xnotDot).add(dtM2.multiply(2.0).getValue()));
+
+            // Secular corrections
+            // -------------------
+
+            // semi-major axis (with drag Eq. 2.41 of Phipps' 1992 thesis)
+            final FieldUnivariateDerivative1<T> app = dtM2.multiply(aRate).add(mean.getA());
+
+            // eccentricity  (with drag Eq. 2.45 of Phipps' 1992 thesis) reduced to [0, 1[
+            final FieldUnivariateDerivative1<T> tmp = dtM2.multiply(eRate).add(mean.getE());
+            final FieldUnivariateDerivative1<T> epp = FastMath.max(FastMath.min(tmp, MAX_ECC), 0.);
+
             // mean argument of perigee
-            final FieldUnivariateDerivative1<T> gpp = new FieldUnivariateDerivative1<>(MathUtils.normalizeAngle(mean.getPerigeeArgument().add(gt.multiply(xnot.getValue())), zero),
-                                                                                        gt.multiply(xnotDot));
+            final T gp0 = MathUtils.normalizeAngle(mean.getPerigeeArgument().add(dsg.multiply(not.getValue())), zero);
+            final T gp1 = dsg.multiply(n0);
+            final FieldUnivariateDerivative1<T> gpp = new FieldUnivariateDerivative1<>(gp0, gp1);
+
             // mean longitude of ascending node
-            final FieldUnivariateDerivative1<T> hpp = new FieldUnivariateDerivative1<>(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode().add(ht.multiply(xnot.getValue())), zero),
-                                                                                        ht.multiply(xnotDot));
+            final T hp0 = MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode().add(dsh.multiply(not.getValue())), zero);
+            final T hp1 = dsh.multiply(n0);
+            final FieldUnivariateDerivative1<T> hpp = new FieldUnivariateDerivative1<>(hp0, hp1);
 
-            // ________________________________________________
-            // secular rates of the mean semi-major axis and eccentricity
+            // mean anomaly (with drag Eq. 2.38 of Phipps' 1992 thesis)
+            final T lp0 = MathUtils.normalizeAngle(mean.getMeanAnomaly().add(dsl.add(one).multiply(not.getValue())).add(dt2M2.getValue()), zero);
+            final T lp1 = dsl.add(one).multiply(n0).add(dtM2.multiply(2.0).getValue());
+            final FieldUnivariateDerivative1<T> lpp = new FieldUnivariateDerivative1<>(lp0, lp1);
 
-            // semi-major axis
-            final FieldUnivariateDerivative1<T> appDrag = dt.multiply(aRate.multiply(m2));
+            // Long period corrections
+            //------------------------
+            final FieldSinCos<FieldUnivariateDerivative1<T>> scgpp = gpp.sinCos();
+            final FieldUnivariateDerivative1<T> cgpp = scgpp.cos();
+            final FieldUnivariateDerivative1<T> sgpp = scgpp.sin();
+            final FieldSinCos<FieldUnivariateDerivative1<T>> sc2gpp = gpp.multiply(2).sinCos();
+            final FieldUnivariateDerivative1<T> c2gpp  = sc2gpp.cos();
+            final FieldUnivariateDerivative1<T> s2gpp  = sc2gpp.sin();
+            final FieldSinCos<FieldUnivariateDerivative1<T>> sc3gpp = gpp.multiply(3).sinCos();
+            final FieldUnivariateDerivative1<T> c3gpp  = sc3gpp.cos();
+            final FieldUnivariateDerivative1<T> s3gpp  = sc3gpp.sin();
 
-            // eccentricity
-            final FieldUnivariateDerivative1<T> eppDrag = dt.multiply(eRate.multiply(m2));
+            // δ1e
+            final FieldUnivariateDerivative1<T> d1e = c2gpp.multiply(vle1).
+                                                      add(sgpp.multiply(vle2)).
+                                                      add(s3gpp.multiply(vle3));
 
-            //____________________________________
-            // Long periodical terms
-            final FieldSinCos<FieldUnivariateDerivative1<T>> sinCosGpp = gpp.sinCos();
-            final FieldUnivariateDerivative1<T> cg1 = sinCosGpp.cos();
-            final FieldUnivariateDerivative1<T> sg1 = sinCosGpp.sin();
-            final FieldUnivariateDerivative1<T> c2g = cg1.multiply(cg1).subtract(sg1.multiply(sg1));
-            final FieldUnivariateDerivative1<T> s2g = cg1.multiply(sg1).add(sg1.multiply(cg1));
-            final FieldUnivariateDerivative1<T> c3g = c2g.multiply(cg1).subtract(s2g.multiply(sg1));
-            final FieldUnivariateDerivative1<T> sg2 = sg1.square();
-            final FieldUnivariateDerivative1<T> sg3 = sg1.multiply(sg2);
+            // δ1I
+            FieldUnivariateDerivative1<T> d1I = sgpp.multiply(vli2).
+                                                add(s3gpp.multiply(vli3));
+            // Pseudo singular term, not to add if I" is zero
+            if (Double.isFinite(vli1.getReal())) {
+                d1I = d1I.add(c2gpp.multiply(vli1));
+            }
 
+            // e"δ1l
+            final FieldUnivariateDerivative1<T> eppd1l = s2gpp.multiply(vle1).
+                                                         subtract(cgpp.multiply(vll2)).
+                                                         subtract(c3gpp.multiply(vle3)).
+                                                         multiply(n);
 
-            // de eccentricity
-            final FieldUnivariateDerivative1<T> d1e = sg3.multiply(dei3sg).
-                                               add(sg1.multiply(deisg)).
-                                               add(sg2.multiply(de2sg)).
-                                               add(de);
+            // sinI"δ1h
+            final FieldUnivariateDerivative1<T> sIppd1h = s2gpp.multiply(vlh1I).
+                                                          add(cgpp.multiply(vlh2I)).
+                                                          add(c3gpp.multiply(vlh3I));
 
-            // l' + g'
-            final FieldUnivariateDerivative1<T> lpPGp = s2g.multiply(dlgs2g).
-                                               add(c3g.multiply(dlgc3g)).
-                                               add(cg1.multiply(dlgcg)).
-                                               add(lpp).
-                                               add(gpp);
+            // δ1z = δ1l + δ1g + δ1h
+            final FieldUnivariateDerivative1<T> d1z = s2gpp.multiply(vls1).
+                                                      add(cgpp.multiply(vls2)).
+                                                      add(c3gpp.multiply(vls3));
 
-            // h'
-            final FieldUnivariateDerivative1<T> hp = sg2.multiply(cg1).multiply(dh2sgcg).
-                                               add(sg1.multiply(cg1).multiply(dhsgcg)).
-                                               add(cg1.multiply(dhcg)).
-                                               add(hpp);
+            // Short period corrections
+            // ------------------------
 
-            // Short periodical terms
-            // eccentric anomaly
-            final FieldUnivariateDerivative1<T> Ep = getEccentricAnomaly(lpp);
-            final FieldSinCos<FieldUnivariateDerivative1<T>> sinCosEp = Ep.sinCos();
-            final FieldUnivariateDerivative1<T> cf1 = (sinCosEp.cos().subtract(mean.getE())).divide(sinCosEp.cos().multiply(mean.getE().negate()).add(1.0));
-            final FieldUnivariateDerivative1<T> sf1 = (sinCosEp.sin().multiply(n)).divide(sinCosEp.cos().multiply(mean.getE().negate()).add(1.0));
-            final FieldUnivariateDerivative1<T> f = FastMath.atan2(sf1, cf1);
+            // true anomaly
+            final FieldUnivariateDerivative1<T> fpp = getTrueAnomaly(lpp, epp);
+            final FieldSinCos<FieldUnivariateDerivative1<T>> scfpp = fpp.sinCos();
+            final FieldUnivariateDerivative1<T> cfpp = scfpp.cos();
+            final FieldUnivariateDerivative1<T> sfpp = scfpp.sin();
 
-            final FieldUnivariateDerivative1<T> cf2 = cf1.square();
-            final FieldUnivariateDerivative1<T> c2f = cf2.subtract(sf1.multiply(sf1));
-            final FieldUnivariateDerivative1<T> s2f = cf1.multiply(sf1).add(sf1.multiply(cf1));
-            final FieldUnivariateDerivative1<T> c3f = c2f.multiply(cf1).subtract(s2f.multiply(sf1));
-            final FieldUnivariateDerivative1<T> s3f = c2f.multiply(sf1).add(s2f.multiply(cf1));
-            final FieldUnivariateDerivative1<T> cf3 = cf1.multiply(cf2);
+            // e"sin(f')
+            final FieldUnivariateDerivative1<T> eppsfpp = epp.multiply(sfpp);
+            // e"cos(f')
+            final FieldUnivariateDerivative1<T> eppcfpp = epp.multiply(cfpp);
+            // 1 + e"cos(f')
+            final FieldUnivariateDerivative1<T> eppcfppP1 = eppcfpp.add(1);
+            // 2 + e"cos(f')
+            final FieldUnivariateDerivative1<T> eppcfppP2 = eppcfpp.add(2);
+            // 3 + e"cos(f')
+            final FieldUnivariateDerivative1<T> eppcfppP3 = eppcfpp.add(3);
+            // (1 + e"cos(f'))³
+            final FieldUnivariateDerivative1<T> eppcfppP1_3 = eppcfppP1.square().multiply(eppcfppP1);
 
-            final FieldUnivariateDerivative1<T> c2g1f = cf1.multiply(c2g).subtract(sf1.multiply(s2g));
-            final FieldUnivariateDerivative1<T> c2g2f = c2f.multiply(c2g).subtract(s2f.multiply(s2g));
-            final FieldUnivariateDerivative1<T> c2g3f = c3f.multiply(c2g).subtract(s3f.multiply(s2g));
-            final FieldUnivariateDerivative1<T> s2g1f = cf1.multiply(s2g).add(c2g.multiply(sf1));
-            final FieldUnivariateDerivative1<T> s2g2f = c2f.multiply(s2g).add(c2g.multiply(s2f));
-            final FieldUnivariateDerivative1<T> s2g3f = c3f.multiply(s2g).add(c2g.multiply(s3f));
+            // 2g"
+            final FieldUnivariateDerivative1<T> g2 = gpp.multiply(2);
 
-            final FieldUnivariateDerivative1<T> eE = (sinCosEp.cos().multiply(mean.getE().negate()).add(1.0)).reciprocal();
-            final FieldUnivariateDerivative1<T> eE3 = eE.square().multiply(eE);
-            final FieldUnivariateDerivative1<T> sigma = eE.multiply(n.square()).multiply(eE).add(eE);
+            // 2g" + f"
+            final FieldUnivariateDerivative1<T> g2f = g2.add(fpp);
+            final FieldSinCos<FieldUnivariateDerivative1<T>> sc2gf = g2f.sinCos();
+            final FieldUnivariateDerivative1<T> c2gf = sc2gf.cos();
+            final FieldUnivariateDerivative1<T> s2gf = sc2gf.sin();
+            final FieldUnivariateDerivative1<T> eppc2gf = epp.multiply(c2gf);
+            final FieldUnivariateDerivative1<T> epps2gf = epp.multiply(s2gf);
+
+            // 2g" + 2f"
+            final FieldUnivariateDerivative1<T> g2f2 = g2.add(fpp.multiply(2));
+            final FieldSinCos<FieldUnivariateDerivative1<T>> sc2g2f = g2f2.sinCos();
+            final FieldUnivariateDerivative1<T> c2g2f = sc2g2f.cos();
+            final FieldUnivariateDerivative1<T> s2g2f = sc2g2f.sin();
+
+            // 2g" + 3f"
+            final FieldUnivariateDerivative1<T> g2f3 = g2.add(fpp.multiply(3));
+            final FieldSinCos<FieldUnivariateDerivative1<T>> sc2g3f = g2f3.sinCos();
+            final FieldUnivariateDerivative1<T> c2g3f = sc2g3f.cos();
+            final FieldUnivariateDerivative1<T> s2g3f = sc2g3f.sin();
+
+            // e"cos(2g" + 3f")
+            final FieldUnivariateDerivative1<T> eppc2g3f = epp.multiply(c2g3f);
+            // e"sin(2g" + 3f")
+            final FieldUnivariateDerivative1<T> epps2g3f = epp.multiply(s2g3f);
+
+            // f" + e"sin(f") - l"
+            final FieldUnivariateDerivative1<T> w17 = fpp.add(eppsfpp).subtract(lpp);
+
+            // ((e"cos(f") + 3)e"cos(f") + 3)cos(f")
+            final FieldUnivariateDerivative1<T> w20 = cfpp.multiply(eppcfppP3.multiply(eppcfpp).add(3.));
+
+            // 3sin(2g" + 2f") + 3e"sin(2g" + f") + e"sin(2g" + f")
+            final FieldUnivariateDerivative1<T> w21 = s2g2f.add(epps2gf).multiply(3).add(epps2g3f);
+
+            // (1 + e"cos(f"))(2 + e"cos(f"))/η²
+            final FieldUnivariateDerivative1<T> w22 = eppcfppP1.multiply(eppcfppP2).divide(n2);
+
+            // sinCos(I"/2)
+            final FieldSinCos<T> sci = FastMath.sinCos(mean.getI().divide(2.));
+            final T siO2 = sci.sin();
+            final T ciO2 = sci.cos();
+
+            // δ2a
+            final FieldUnivariateDerivative1<T> d2a = app.multiply(yp2).divide(n2).
+                                                      multiply(eppcfppP1_3.subtract(n3).multiply(ci2X3M1).
+                                                               add(c2g2f.multiply(eppcfppP1_3).multiply(oneMci2).multiply(3.)));
+
+            // δ2e
+            final FieldUnivariateDerivative1<T> d2e = (w20.add(epp.multiply(t8))).multiply(ci2X3M1).
+                                                       add((w20.add(epp.multiply(c2g2f))).multiply(oneMci2.multiply(3))).
+                                                       subtract((eppc2gf.multiply(3).add(eppc2g3f)).multiply(oneMci2.multiply(n2))).
+                                                      multiply(yp2.multiply(0.5));
+
+            // δ2I
+            final FieldUnivariateDerivative1<T> d2I = ((c2g2f.add(eppc2gf)).multiply(3).add(eppc2g3f)).
+                                                       multiply(yp2.divide(2.).multiply(ci).multiply(si));
+
+            // e"δ2l
+            final FieldUnivariateDerivative1<T> eppd2l = (w22.add(1).multiply(sfpp).multiply(oneMci2).multiply(2.).
+                                                         add((w22.subtract(1).negate().multiply(s2gf)).
+                                                              add(w22.add(1. / 3.).multiply(s2g3f)).
+                                                             multiply(oneMci2.multiply(3.)))).
+                                                        multiply(yp2.divide(4.).multiply(n3)).negate();
+
+            // sinI"δ2h
+            final FieldUnivariateDerivative1<T> sIppd2h = (w21.subtract(w17.multiply(6))).
+                                                           multiply(yp2).multiply(ci).multiply(si).divide(2.);
+
+            // δ2z = δ2l + δ2g + δ2h
+            final T ttt = one.add(ci.multiply(ci.multiply(-5).add(2.)));
+            final FieldUnivariateDerivative1<T> d2z = (epp.multiply(eppd2l).multiply(t8.subtract(one)).divide(n3).
+                                                       add(w17.multiply(ttt).multiply(6).subtract(w21.multiply(ttt.add(2.))).
+                                                           multiply(yp2.divide(4.)))).
+                                                       negate();
+
+            // Assembling elements
+            // -------------------
+
+            // e" + δe
+            final FieldUnivariateDerivative1<T> de = epp.add(d1e).add(d2e);
+
+            // e"δl
+            final FieldUnivariateDerivative1<T> dl = eppd1l.add(eppd2l);
+
+            // sin(I"/2)δh = sin(I")δh / cos(I"/2) (singular for I" = π, very unlikely)
+            final FieldUnivariateDerivative1<T> dh = sIppd1h.add(sIppd2h).divide(ciO2.multiply(2.));
+
+            // δI
+            final FieldUnivariateDerivative1<T> di = d1I.add(d2I).multiply(ciO2).divide(2.).add(siO2);
+
+            // z = l" + g" + h" + δ1z + δ2z
+            final FieldUnivariateDerivative1<T> z = lpp.add(gpp).add(hpp).add(d1z).add(d2z);
+
+            // Osculating elements
+            // -------------------
 
             // Semi-major axis
-            final FieldUnivariateDerivative1<T> a = eE3.multiply(aCbis).add(appDrag.add(mean.getA())).
-                                            add(aC).
-                                            add(eE3.multiply(c2g2f).multiply(ac2g2f));
+            final FieldUnivariateDerivative1<T> a = app.add(d2a);
 
             // Eccentricity
-            final FieldUnivariateDerivative1<T> e = d1e.add(eppDrag.add(mean.getE())).
-                                            add(eC).
-                                            add(cf1.multiply(ecf)).
-                                            add(cf2.multiply(e2cf)).
-                                            add(cf3.multiply(e3cf)).
-                                            add(c2g2f.multiply(ec2f2g)).
-                                            add(c2g2f.multiply(cf1).multiply(ecfc2f2g)).
-                                            add(c2g2f.multiply(cf2).multiply(e2cfc2f2g)).
-                                            add(c2g2f.multiply(cf3).multiply(e3cfc2f2g)).
-                                            add(c2g1f.multiply(ec2gf)).
-                                            add(c2g3f.multiply(ec2g3f));
-
-            // Inclination
-            final FieldUnivariateDerivative1<T> i = d1e.multiply(ide).
-                                            add(mean.getI()).
-                                            add(sf1.multiply(s2g2f.multiply(isfs2f2g))).
-                                            add(cf1.multiply(c2g2f.multiply(icfc2f2g))).
-                                            add(c2g2f.multiply(ic2f2g));
-
-            // Argument of perigee + mean anomaly
-            final FieldUnivariateDerivative1<T> gPL = lpPGp.add(f.multiply(glf)).
-                                             add(lpp.multiply(gll)).
-                                             add(sf1.multiply(glsf)).
-                                             add(sigma.multiply(sf1).multiply(glosf)).
-                                             add(s2g2f.multiply(gls2f2g)).
-                                             add(s2g1f.multiply(gls2gf)).
-                                             add(sigma.multiply(s2g1f).multiply(glos2gf)).
-                                             add(s2g3f.multiply(gls2g3f)).
-                                             add(sigma.multiply(s2g3f).multiply(glos2g3f));
-
-            // Longitude of ascending node
-            final FieldUnivariateDerivative1<T> h = hp.add(f.multiply(hf)).
-                                            add(lpp.multiply(hl)).
-                                            add(sf1.multiply(hsf)).
-                                            add(cf1.multiply(s2g2f).multiply(hcfs2g2f)).
-                                            add(s2g2f.multiply(hs2g2f)).
-                                            add(c2g2f.multiply(sf1).multiply(hsfc2g2f));
-
-            final FieldUnivariateDerivative1<T> edl = s2g.multiply(edls2g).
-                                            add(cg1.multiply(edlcg)).
-                                            add(c3g.multiply(edlc3g)).
-                                            add(sf1.multiply(edlsf)).
-                                            add(s2g1f.multiply(edls2gf)).
-                                            add(s2g3f.multiply(edls2g3f)).
-                                            add(sf1.multiply(sigma).multiply(edlsf)).
-                                            add(s2g1f.multiply(sigma).multiply(edls2gf.negate())).
-                                            add(s2g3f.multiply(sigma).multiply(edls2g3f.multiply(3.0)));
-
-            final FieldUnivariateDerivative1<T> A = e.multiply(lpp.cos()).subtract(edl.multiply(lpp.sin()));
-            final FieldUnivariateDerivative1<T> B = e.multiply(lpp.sin()).add(edl.multiply(lpp.cos()));
+            final FieldUnivariateDerivative1<T> e = FastMath.sqrt(de.square().add(dl.square()));
 
             // Mean anomaly
-            final FieldUnivariateDerivative1<T> l = FastMath.atan2(B, A);
+            final FieldSinCos<FieldUnivariateDerivative1<T>> sclpp = lpp.sinCos();
+            final FieldUnivariateDerivative1<T> clpp = sclpp.cos();
+            final FieldUnivariateDerivative1<T> slpp = sclpp.sin();
+            final FieldUnivariateDerivative1<T> l = FastMath.atan2(de.multiply(slpp).add(dl.multiply(clpp)),
+                                                                   de.multiply(clpp).subtract(dl.multiply(slpp)));
+
+            // Inclination
+            final FieldUnivariateDerivative1<T> i = FastMath.acos(di.square().add(dh.square()).multiply(2).negate().add(1.));
+
+            // Longitude of ascending node
+            final FieldSinCos<FieldUnivariateDerivative1<T>> schpp = hpp.sinCos();
+            final FieldUnivariateDerivative1<T> chpp = schpp.cos();
+            final FieldUnivariateDerivative1<T> shpp = schpp.sin();
+            final FieldUnivariateDerivative1<T> h = FastMath.atan2(di.multiply(shpp).add(dh.multiply(chpp)),
+                                                                   di.multiply(chpp).subtract(dh.multiply(shpp)));
 
             // Argument of perigee
-            final FieldUnivariateDerivative1<T> g = gPL.subtract(l);
+            final FieldUnivariateDerivative1<T> g = z.subtract(l).subtract(h);
 
             // Return a Keplerian orbit
             return new FieldKeplerianOrbit<>(a.getValue(), e.getValue(), i.getValue(),
@@ -1320,7 +1443,6 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                              a.getFirstDerivative(), e.getFirstDerivative(), i.getFirstDerivative(),
                                              g.getFirstDerivative(), h.getFirstDerivative(), l.getFirstDerivative(),
                                              PositionAngleType.MEAN, mean.getFrame(), date, this.mu);
-
         }
     }
 

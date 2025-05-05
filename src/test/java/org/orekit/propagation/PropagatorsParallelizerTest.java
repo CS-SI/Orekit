@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,22 +16,12 @@
  */
 package org.orekit.propagation;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.*;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.BodyCenterPointing;
@@ -66,6 +56,12 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
 
 public class PropagatorsParallelizerTest {
 
@@ -91,7 +87,7 @@ public class PropagatorsParallelizerTest {
 
 
         // Propagator
-        final double[][] tol = DSSTPropagator.tolerances(0.01, orbit);
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, OrbitType.EQUINOCTIAL);
         final DSSTPropagator propagator = new DSSTPropagator(new DormandPrince853Integrator(0.01, 600.0, tol[0], tol[1]), PropagationType.OSCULATING);
 
         // Force models
@@ -393,9 +389,9 @@ public class PropagatorsParallelizerTest {
         final double base0 = 2.0e-3;
         final double base1 = 2.5e-3;
         p0.addAdditionalDerivativesProvider(new Exponential(name, base0));
-        p0.setInitialState(p0.getInitialState().addAdditionalState(name, 1.0));
+        p0.setInitialState(p0.getInitialState().addAdditionalData(name, 1.0));
         p1.addAdditionalDerivativesProvider(new Exponential(name, base1));
-        p1.setInitialState(p1.getInitialState().addAdditionalState(name, 1.0));
+        p1.setInitialState(p1.getInitialState().addAdditionalData(name, 1.0));
         List<SpacecraftState> results = new PropagatorsParallelizer(Arrays.asList(p0, p1), interpolators -> {}).
                         propagate(startDate, endDate);
         double expected0 = FastMath.exp(base0 * endDate.durationFrom(startDate));
@@ -415,7 +411,7 @@ public class PropagatorsParallelizerTest {
             return name;
         }
         public boolean yields(final SpacecraftState state) {
-            return !state.hasAdditionalState(name);
+            return !state.hasAdditionalData(name);
         }
         public CombinedDerivatives combinedDerivatives(SpacecraftState state) {
             return new CombinedDerivatives(new double[] { base * state.getAdditionalState(name)[0] },
@@ -444,7 +440,7 @@ public class PropagatorsParallelizerTest {
         OrbitType type = OrbitType.CARTESIAN;
         double minStep = 0.001;
         double maxStep = 300;
-        double[][] tolerances = NumericalPropagator.tolerances(10.0, orbit, type);
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(orbit, type);
         ODEIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tolerances[0], tolerances[1]);
         NumericalPropagator numericalPropagator = new NumericalPropagator(integrator);
         ForceModel gravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -683,7 +683,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), positionAngleType, stateVector, null);
             final FieldOrbit<T> fixedOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(stateVector, null,
                     positionAngleType, state.getDate(), context.getMu(), state.getFrame());
-            this.state = new FieldSpacecraftState<>(fixedOrbit, state.getAttitude(), state.getMass());
+            this.state = new FieldSpacecraftState<>(fixedOrbit, state.getAttitude()).withMass(state.getMass());
         }
 
         /** {@inheritDoc} */
@@ -737,8 +737,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             }
 
             // create shifted SpacecraftState with attitude at specified time
-            final FieldSpacecraftState<T> shiftedState = new FieldSpacecraftState<>(recomposedOrbit, recomposedAttitude,
-                    state.getMass());
+            final FieldSpacecraftState<T> shiftedState = new FieldSpacecraftState<>(recomposedOrbit, recomposedAttitude).withMass(state.getMass());
 
             final FieldVector3D<T> acc = contribution.acceleration(shiftedState, parameters);
 
@@ -968,7 +967,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), positionAngleType, stateVector, null);
             final Orbit fixedOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(stateVector, null, positionAngleType,
                     state.getDate(), context.getMu(), state.getFrame());
-            this.state = new SpacecraftState(fixedOrbit, state.getAttitude(), state.getMass());
+            this.state = new SpacecraftState(fixedOrbit, state.getAttitude()).withMass(state.getMass());
         }
 
         /** {@inheritDoc} */
@@ -1017,8 +1016,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             }
 
             // create shifted SpacecraftState with attitude at specified time
-            final SpacecraftState shiftedState = new SpacecraftState(recomposedOrbit, recomposedAttitude,
-                    state.getMass());
+            final SpacecraftState shiftedState = new SpacecraftState(recomposedOrbit, recomposedAttitude).withMass(state.getMass());
 
             // here parameters is a list of all span values of each parameter driver
             final Vector3D acc = contribution.acceleration(shiftedState, parameters);

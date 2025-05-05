@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,7 +30,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeStamped;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
@@ -51,7 +51,7 @@ abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvider {
     private final AbsoluteDate validityEnd;
 
     /** Provider for Sun position. */
-    private final ExtendedPVCoordinatesProvider sun;
+    private final ExtendedPositionProvider sun;
 
     /** Inertial frame where velocity are computed. */
     private final Frame inertialFrame;
@@ -60,7 +60,7 @@ abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvider {
     private final SortedSet<TimeStamped> turns;
 
     /** Turns already encountered. */
-    private final transient Map<Field<? extends CalculusFieldElement<?>>, SortedSet<TimeStamped>> fieldTurns;
+    private final Map<Field<? extends CalculusFieldElement<?>>, SortedSet<TimeStamped>> fieldTurns;
 
     /** Simple constructor.
      * @param validityStart start of validity for this provider
@@ -70,7 +70,7 @@ abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvider {
      */
     protected AbstractGNSSAttitudeProvider(final AbsoluteDate validityStart,
                                            final AbsoluteDate validityEnd,
-                                           final ExtendedPVCoordinatesProvider sun,
+                                           final ExtendedPositionProvider sun,
                                            final Frame inertialFrame) {
         this.validityStart = validityStart;
         this.validityEnd   = validityEnd;
@@ -158,12 +158,9 @@ abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvider {
      */
     private <T extends CalculusFieldElement<T>> FieldTurnSpan<T> getTurnSpan(final FieldAbsoluteDate<T> date) {
 
-        SortedSet<TimeStamped> sortedSet = fieldTurns.get(date.getField());
-        if (sortedSet == null) {
-            // this is the first time we manage such a field, prepare a sorted set for it
-            sortedSet = new TreeSet<>(new ChronologicalComparator());
-            fieldTurns.put(date.getField(), sortedSet);
-        }
+        final SortedSet<TimeStamped> sortedSet = fieldTurns.computeIfAbsent(date.getField(),
+                k -> new TreeSet<>(new ChronologicalComparator()));
+        // this is the first time we manage such a field, prepare a sorted set for it
 
         // as the reference date of the turn span is the end + margin date,
         // the span to consider can only be the first span that is after date
@@ -186,7 +183,7 @@ abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvider {
      * @return provider for Sun position
      * @since 12.0
      */
-    protected ExtendedPVCoordinatesProvider getSun() {
+    protected ExtendedPositionProvider getSun() {
         return sun;
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2020 Clément Jonglez
+/* Copyright 2020-2025 Clément Jonglez
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.

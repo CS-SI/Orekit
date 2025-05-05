@@ -64,6 +64,15 @@
   <!-- the following are in fact false positives from SpotBugs -->
   <!-- their occurrence depends on the java compiler used      -->
   <Match>
+    <Class name="~.*\.NeQuickItu$"/>
+    <Method name="stec" />
+    <Or>
+      <Local name="h1000" />
+      <Local name="h2000" />
+    </Or>
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
     <Class name="~.*\.EcksteinHechlerPropagator$"/>
     <Method name="computeMeanParameters" />
     <Or>
@@ -195,6 +204,10 @@
   </Match>
   <Match>
     <Class name="~.*\.Units$"/>
+    <Bug pattern="CNT_ROUGH_CONSTANT_VALUE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.IonosphereKlobucharMessage$"/>
     <Bug pattern="CNT_ROUGH_CONSTANT_VALUE" />
   </Match>
   

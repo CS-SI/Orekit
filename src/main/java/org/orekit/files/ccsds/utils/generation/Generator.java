@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import java.util.List;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Formatter;
 import org.orekit.utils.units.Unit;
 
 /** Generation interface for CCSDS messages.
@@ -39,6 +40,12 @@ public interface Generator extends AutoCloseable {
      * @return generated file format
      */
     FileFormat getFormat();
+
+    /**
+     *  Used to format dates and doubles to string.
+     * @return formatter
+     */
+    Formatter getFormatter();
 
     /** Start CCSDS message.
      * @param messageTypeKey key for message type
@@ -103,13 +110,30 @@ public interface Generator extends AutoCloseable {
      */
     void writeEntry(String key, char value, boolean mandatory) throws IOException;
 
+    /**
+     * Write a single key/value entry.
+     *
+     * <p>Note that the {@code mandatory} flag has no effect and a value is always written
+     * because the whole domain of {@code value} is treated as valid. Use {@link
+     * #writeEntry(String, Integer, boolean)} for integer values that may not be present.
+     *
+     * @param key   the keyword to write
+     * @param value the value to write
+     * @param mandatory if true, null values triggers exception, otherwise they are silently ignored.
+     * @throws IOException if an I/O error occurs.
+     * @see #writeEntry(String, Integer, boolean)
+     */
+    void writeEntry(String key, int value, boolean mandatory) throws IOException;
+
     /** Write a single key/value entry.
      * @param key   the keyword to write
      * @param value the value to write
      * @param mandatory if true, null values triggers exception, otherwise they are silently ignored
      * @throws IOException if an I/O error occurs.
      */
-    void writeEntry(String key, int value, boolean mandatory) throws IOException;
+    default void writeEntry(String key, Integer value, boolean mandatory) throws IOException {
+        writeEntry(key, value == null ? null : value.toString(), null, mandatory);
+    }
 
     /** Write a single key/value entry.
      * @param key   the keyword to write

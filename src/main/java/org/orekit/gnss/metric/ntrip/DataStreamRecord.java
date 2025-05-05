@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -94,7 +94,7 @@ public class DataStreamRecord extends Record {
         this.carrierPhase   = CarrierPhase.getCarrierPhase(getField(5));
         this.systems        = Stream.
                               of(getField(6).split("\\+")).
-                              map(k -> NavigationSystem.getNavigationSystem(k)).
+                              map(NavigationSystem::getNavigationSystem).
                               collect(Collectors.toList());
         this.latitude       = FastMath.toRadians(Double.parseDouble(getField(9)));
         this.longitude      = FastMath.toRadians(Double.parseDouble(getField(10)));

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.utils.AccurateFormatter;
+import org.orekit.utils.Formatter;
 import org.orekit.utils.units.Unit;
 
 /** Generator for eXtended Markup Language CCSDS messages.
@@ -98,6 +99,30 @@ public class XmlGenerator extends AbstractGenerator {
      * @param outputName output name for error messages
      * @param maxRelativeOffset maximum offset in seconds to use relative dates
      * (if a date is too far from reference, it will be displayed as calendar elements)
+     * @param formatter used to convert doubles and dates to string
+     * @param writeUnits if true, units must be written
+     * @param schemaLocation schema location to use, may be null
+     * @see #DEFAULT_INDENT
+     * @see #NDM_XML_V3_SCHEMA_LOCATION
+     * @throws IOException if an I/O error occurs.
+     */
+    public XmlGenerator(final Appendable output, final int indentation,
+                        final String outputName, final double maxRelativeOffset,
+                        final boolean writeUnits, final String schemaLocation,
+                        final Formatter formatter) throws IOException {
+        super(output, outputName, maxRelativeOffset, writeUnits, formatter);
+        this.schemaLocation = schemaLocation;
+        this.indentation    = indentation;
+        this.level          = 0;
+        writeRawData(String.format(Formatter.STANDARDIZED_LOCALE, PROLOG));
+    }
+
+    /** Simple constructor.
+     * @param output destination of generated output
+     * @param indentation number of space for each indentation level
+     * @param outputName output name for error messages
+     * @param maxRelativeOffset maximum offset in seconds to use relative dates
+     * (if a date is too far from reference, it will be displayed as calendar elements)
      * @param writeUnits if true, units must be written
      * @param schemaLocation schema location to use, may be null
      * @see #DEFAULT_INDENT
@@ -107,12 +132,9 @@ public class XmlGenerator extends AbstractGenerator {
     public XmlGenerator(final Appendable output, final int indentation,
                         final String outputName, final double maxRelativeOffset,
                         final boolean writeUnits, final String schemaLocation) throws IOException {
-        super(output, outputName, maxRelativeOffset, writeUnits);
-        this.schemaLocation = schemaLocation;
-        this.indentation    = indentation;
-        this.level          = 0;
-        writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, PROLOG));
+        this(output, indentation, outputName, maxRelativeOffset, writeUnits, schemaLocation, new AccurateFormatter());
     }
+
 
     /** {@inheritDoc} */
     @Override
@@ -125,10 +147,10 @@ public class XmlGenerator extends AbstractGenerator {
     public void startMessage(final String root, final String messageTypeKey, final double version) throws IOException {
         indent();
         if (schemaLocation == null || level > 0) {
-            writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, ROOT_START_WITHOUT_SCHEMA,
+            writeRawData(String.format(Formatter.STANDARDIZED_LOCALE, ROOT_START_WITHOUT_SCHEMA,
                                        root, messageTypeKey, version));
         } else {
-            writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, ROOT_START_WITH_SCHEMA,
+            writeRawData(String.format(Formatter.STANDARDIZED_LOCALE, ROOT_START_WITH_SCHEMA,
                                        root, XMLNS_XSI, schemaLocation, messageTypeKey, version));
         }
         ++level;
@@ -139,7 +161,7 @@ public class XmlGenerator extends AbstractGenerator {
     public void endMessage(final String root) throws IOException {
         --level;
         indent();
-        writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, END_TAG,
+        writeRawData(String.format(Formatter.STANDARDIZED_LOCALE, END_TAG,
                                    root));
     }
 
@@ -162,7 +184,7 @@ public class XmlGenerator extends AbstractGenerator {
                                          final String attributeName, final String attributeValue)
         throws IOException {
         indent();
-        writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, LEAF_1_ATTRIBUTE,
+        writeRawData(String.format(Formatter.STANDARDIZED_LOCALE, LEAF_1_ATTRIBUTE,
                                    name, attributeName, attributeValue, value, name));
     }
 
@@ -180,7 +202,7 @@ public class XmlGenerator extends AbstractGenerator {
                                           final String attribute2Name, final String attribute2Value)
         throws IOException {
         indent();
-        writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, LEAF_2_ATTRIBUTES,
+        writeRawData(String.format(Formatter.STANDARDIZED_LOCALE, LEAF_2_ATTRIBUTES,
                                    name,
                                    attribute1Name, attribute1Value, attribute2Name, attribute2Value,
                                    value, name));
@@ -194,10 +216,10 @@ public class XmlGenerator extends AbstractGenerator {
         } else {
             indent();
             if (writeUnits(unit)) {
-                writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, LEAF_1_ATTRIBUTE,
+                writeRawData(String.format(Formatter.STANDARDIZED_LOCALE, LEAF_1_ATTRIBUTE,
                                            key, UNITS, siToCcsdsName(unit.getName()), value, key));
             } else {
-                writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, LEAF_0_ATTRIBUTES,
+                writeRawData(String.format(Formatter.STANDARDIZED_LOCALE, LEAF_0_ATTRIBUTES,
                                            key, value, key));
             }
         }
@@ -209,10 +231,10 @@ public class XmlGenerator extends AbstractGenerator {
         indent();
         if (schemaLocation != null && level == 0) {
             // top level tag for ndm messages (it is called before enterMessage)
-            writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, START_TAG_WITH_SCHEMA,
+            writeRawData(String.format(Formatter.STANDARDIZED_LOCALE, START_TAG_WITH_SCHEMA,
                                        name, XMLNS_XSI, schemaLocation));
         } else {
-            writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, START_TAG_WITHOUT_SCHEMA, name));
+            writeRawData(String.format(Formatter.STANDARDIZED_LOCALE, START_TAG_WITHOUT_SCHEMA, name));
         }
         ++level;
         super.enterSection(name);
@@ -224,7 +246,7 @@ public class XmlGenerator extends AbstractGenerator {
         final String name = super.exitSection();
         --level;
         indent();
-        writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, END_TAG, name));
+        writeRawData(String.format(Formatter.STANDARDIZED_LOCALE, END_TAG, name));
         return name;
     }
 

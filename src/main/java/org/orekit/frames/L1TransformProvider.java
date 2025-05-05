@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -56,9 +56,6 @@ public class L1TransformProvider implements TransformProvider {
 
     /** Maximal number of evaluations for solver. */
     private static final int MAX_EVALUATIONS = 1000;
-
-    /** Serializable UID.*/
-    private static final long serialVersionUID = 20170824L;
 
     /** Frame for results. Always defined as primaryBody's inertially oriented frame.*/
     private final Frame frame;

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -103,8 +103,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
                                     final OneAxisEllipsoid body,
                                     final SphericalPolygonsSet zone,
                                     final double samplingStep) {
-        this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-             new StopOnIncreasing(),
+        this(EventDetectionSettings.getDefaultEventDetectionSettings(), new StopOnIncreasing(),
              fov, body, zone, samplingStep, sample(body, zone, samplingStep));
     }
 
@@ -114,25 +113,23 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param body body on which the geographic zone is defined
      * @param zone geographic zone to consider
      * @param fov sensor field of view
      * @param sampledZone sampling of the geographic zone
      * @param samplingStep linear step used for sampling the geographic zone (in meters)
+     * @since 13.0
      */
-    protected FootprintOverlapDetector(final AdaptableInterval maxCheck, final double threshold,
-                                       final int maxIter, final EventHandler handler,
+    protected FootprintOverlapDetector(final EventDetectionSettings detectionSettings, final EventHandler handler,
                                        final FieldOfView fov,
                                        final OneAxisEllipsoid body,
                                        final SphericalPolygonsSet zone,
                                        final double samplingStep,
                                        final List<SamplingPoint> sampledZone) {
 
-        super(maxCheck, threshold, maxIter, handler);
+        super(detectionSettings, handler);
         this.fov          = fov;
         this.body         = body;
         this.samplingStep = samplingStep;
@@ -157,7 +154,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
                                               final SphericalPolygonsSet zone,
                                               final double samplingStep) {
 
-        final List<SamplingPoint> sampledZone = new ArrayList<SamplingPoint>();
+        final List<SamplingPoint> sampledZone = new ArrayList<>();
 
         // sample the zone boundary
         final List<Vertex> boundary = zone.getBoundaryLoops();
@@ -192,10 +189,9 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
 
     /** {@inheritDoc} */
     @Override
-    protected FootprintOverlapDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                              final int newMaxIter,
+    protected FootprintOverlapDetector create(final EventDetectionSettings detectionSettings,
                                               final EventHandler newHandler) {
-        return new FootprintOverlapDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
+        return new FootprintOverlapDetector(detectionSettings, newHandler,
                                             fov, body, zone, samplingStep, sampledZone);
     }
 

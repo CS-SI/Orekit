@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -107,7 +107,7 @@ class FieldSpacecraftStateInterpolatorTest {
             Binary64 OMEGA = new Binary64(FastMath.toRadians(261));
             Binary64 lv    = new Binary64(0);
 
-            FieldAbsoluteDate<Binary64> date = new FieldAbsoluteDate<>(field, new DateComponents(2004, 01, 01),
+            FieldAbsoluteDate<Binary64> date = new FieldAbsoluteDate<>(field, new DateComponents(2004, 1, 1),
                                                                        TimeComponents.H00,
                                                                        TimeScalesFactory.getUTC());
             final Frame frame = FramesFactory.getEME2000();
@@ -201,7 +201,6 @@ class FieldSpacecraftStateInterpolatorTest {
 
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     public void testErrorThrownWhenOneInterpolatorIsNotConsistentWithSampleSizeDeprecated() {
         // GIVEN
@@ -226,7 +225,9 @@ class FieldSpacecraftStateInterpolatorTest {
         Mockito.when(massInterpolator.getNbInterpolationPoints()).thenReturn(2);
 
         final FieldSpacecraftStateInterpolator<Binary64> stateInterpolator =
-                new FieldSpacecraftStateInterpolator<>(outputFrame, orbitInterpolator, absPVInterpolator, massInterpolator,
+                new FieldSpacecraftStateInterpolator<>(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                                                       AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+                                                       outputFrame, orbitInterpolator, absPVInterpolator, massInterpolator,
                                                        null, null);
 
         // WHEN & THEN
@@ -289,9 +290,9 @@ class FieldSpacecraftStateInterpolatorTest {
 
         // Conversion from double to Field
         FieldAbsoluteDate<Binary64> initDate = new FieldAbsoluteDate<>(field, new AbsoluteDate(
-                new DateComponents(2004, 01, 01), TimeComponents.H00, TimeScalesFactory.getUTC()));
+                new DateComponents(2004, 1, 1), TimeComponents.H00, TimeScalesFactory.getUTC()));
         FieldAbsoluteDate<Binary64> finalDate = new FieldAbsoluteDate<>(field, new AbsoluteDate(
-                new DateComponents(2004, 01, 02), TimeComponents.H00, TimeScalesFactory.getUTC()));
+                new DateComponents(2004, 1, 2), TimeComponents.H00, TimeScalesFactory.getUTC()));
         Frame inertialFrame = FramesFactory.getEME2000();
 
         // Initial PV coordinates
@@ -374,7 +375,7 @@ class FieldSpacecraftStateInterpolatorTest {
         final Binary64   dP         = new Binary64(1);
         final double     minStep    = 0.001;
         final double     maxStep    = 100;
-        final double[][] tolerances = FieldNumericalPropagator.tolerances(dP, orbit, OrbitType.CARTESIAN);
+        final double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(dP.getReal()).getTolerances(orbit, OrbitType.CARTESIAN);
 
         return new DormandPrince853FieldIntegrator<>(field, minStep, maxStep, tolerances[0], tolerances[1]);
     }
@@ -433,7 +434,7 @@ class FieldSpacecraftStateInterpolatorTest {
             Binary64                       dt    = new Binary64(i * 900.0 / (n - 1));
             FieldSpacecraftState<Binary64> state = analyticalPropagator.propagate(centerDate.shiftedBy(dt));
             state = state.
-                    addAdditionalState("quadratic", dt.multiply(dt)).
+                    addAdditionalData("quadratic", dt.multiply(dt)).
                     addAdditionalStateDerivative("quadratic-dot", dt.multiply(dt));
             sample.add(state);
         }
@@ -588,7 +589,6 @@ class FieldSpacecraftStateInterpolatorTest {
         Assertions.assertEquals(AdditionalStateNbInterpolationPoints, returnedNbInterpolationPoints);
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     void testGetNbInterpolationsWithMultipleSubInterpolatorsDeprecated() {
         // GIVEN
@@ -631,7 +631,9 @@ class FieldSpacecraftStateInterpolatorTest {
         Mockito.when(additionalStateInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(additionalStateInterpolator));
 
         final FieldSpacecraftStateInterpolator<Binary64> stateInterpolator =
-                new FieldSpacecraftStateInterpolator<>(frame, orbitInterpolator, absPVAInterpolator, massInterpolator,
+                new FieldSpacecraftStateInterpolator<>(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                                                       AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+                                                       frame, orbitInterpolator, absPVAInterpolator, massInterpolator,
                                                        attitudeInterpolator, additionalStateInterpolator);
 
         // WHEN
@@ -699,7 +701,6 @@ class FieldSpacecraftStateInterpolatorTest {
                                         + "absolute position-velocity-acceleration interpolator", thrown.getMessage());
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     @DisplayName("test error thrown when using no interpolator for state")
     void testErrorThrownWhenGivingNoInterpolatorForStateDeprecated() {
@@ -709,7 +710,9 @@ class FieldSpacecraftStateInterpolatorTest {
 
         // When & Then
         Exception thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class,
-                                                   () -> new FieldSpacecraftStateInterpolator<>(inertialFrameMock,
+                                                   () -> new FieldSpacecraftStateInterpolator<>(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                                                                                                AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+                                                                                                inertialFrameMock,
                                                                                                 null, null, null, null,
                                                                                                 null));
 
@@ -746,7 +749,6 @@ class FieldSpacecraftStateInterpolatorTest {
 
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     @DisplayName("test error thrown when giving empty sample")
     void testErrorThrownWhenGivingEmptySampleDeprecated() {
@@ -765,7 +767,10 @@ class FieldSpacecraftStateInterpolatorTest {
                 Mockito.mock(FieldTimeInterpolator.class);
 
         final FieldTimeInterpolator<FieldSpacecraftState<Binary64>, Binary64> interpolator =
-                new FieldSpacecraftStateInterpolator<>(inertialFrame, orbitInterpolatorMock, null, null, null, null);
+                new FieldSpacecraftStateInterpolator<>(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                                                       AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+                                                       inertialFrame, orbitInterpolatorMock,
+                                        null, null, null, null);
 
         // When & Then
         OrekitIllegalArgumentException thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class, () ->
@@ -818,7 +823,6 @@ class FieldSpacecraftStateInterpolatorTest {
 
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     void testFieldSpacecraftStateInterpolatorCreationDeprecated() {
         // Given
@@ -847,7 +851,9 @@ class FieldSpacecraftStateInterpolatorTest {
 
         // When
         final FieldSpacecraftStateInterpolator<Binary64> interpolator =
-                new FieldSpacecraftStateInterpolator<>(inertialFrameMock, orbitInterpolatorMock, absPVInterpolatorMock,
+                new FieldSpacecraftStateInterpolator<>(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                                                       AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+                                                       inertialFrameMock, orbitInterpolatorMock, absPVInterpolatorMock,
                                                        massInterpolatorMock, attitudeInterpolatorMock,
                                                        additionalInterpolatorMock);
 

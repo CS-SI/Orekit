@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 
 /**
@@ -31,7 +32,7 @@ import org.orekit.errors.OrekitMessages;
 public class FieldEquinoctialLongitudeArgumentUtility {
 
     /** Tolerance for stopping criterion in iterative conversion from mean to eccentric angle. */
-    private static final double TOLERANCE_CONVERGENCE = 1.0e-12;
+    private static final double TOLERANCE_CONVERGENCE = 1.0e-11;
 
     /** Maximum number of iterations in iterative conversion from mean to eccentric angle. */
     private static final int MAXIMUM_ITERATION = 50;
@@ -185,4 +186,49 @@ public class FieldEquinoctialLongitudeArgumentUtility {
         return eccentricToTrue(ex, ey, alphaE);
     }
 
+    /**
+     * Convert argument of longitude.
+     * @param oldType old position angle type
+     * @param l old value for argument of longitude
+     * @param ex ex
+     * @param ey ey
+     * @param newType new position angle type
+     * @param <T> field type
+     * @return converted argument of longitude
+     * @since 12.2
+     */
+    public static <T extends CalculusFieldElement<T>> T convertL(final PositionAngleType oldType, final T l,
+                                                                 final T ex, final T ey, final PositionAngleType newType) {
+        if (oldType == newType) {
+            return l;
+
+        } else {
+            switch (newType) {
+
+                case ECCENTRIC:
+                    if (oldType == PositionAngleType.MEAN) {
+                        return FieldEquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, l);
+                    } else {
+                        return FieldEquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, l);
+                    }
+
+                case MEAN:
+                    if (oldType == PositionAngleType.TRUE) {
+                        return FieldEquinoctialLongitudeArgumentUtility.trueToMean(ex, ey, l);
+                    } else {
+                        return FieldEquinoctialLongitudeArgumentUtility.eccentricToMean(ex, ey, l);
+                    }
+
+                case TRUE:
+                    if (oldType == PositionAngleType.MEAN) {
+                        return FieldEquinoctialLongitudeArgumentUtility.meanToTrue(ex, ey, l);
+                    } else {
+                        return FieldEquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, l);
+                    }
+
+                default:
+                    throw new OrekitInternalError(null);
+            }
+        }
+    }
 }

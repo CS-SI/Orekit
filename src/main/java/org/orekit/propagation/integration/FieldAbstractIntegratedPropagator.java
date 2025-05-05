@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -55,6 +55,7 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldAbstractPropagator;
+import org.orekit.propagation.FieldAdditionalDataProvider;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -64,7 +65,7 @@ import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.FieldArrayDictionary;
+import org.orekit.utils.FieldDataDictionary;
 
 
 /** Common handling of {@link org.orekit.propagation.FieldPropagator FieldPropagator}
@@ -276,10 +277,10 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
     /** {@inheritDoc} */
     @Override
-    public boolean isAdditionalStateManaged(final String name) {
+    public boolean isAdditionalDataManaged(final String name) {
 
-        // first look at already integrated states
-        if (super.isAdditionalStateManaged(name)) {
+        // first look at already integrated data
+        if (super.isAdditionalDataManaged(name)) {
             return true;
         }
 
@@ -295,8 +296,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
     /** {@inheritDoc} */
     @Override
-    public String[] getManagedAdditionalStates() {
-        final String[] alreadyIntegrated = super.getManagedAdditionalStates();
+    public String[] getManagedAdditionalData() {
+        final String[] alreadyIntegrated = super.getManagedAdditionalData();
         final String[] managed = new String[alreadyIntegrated.length + additionalDerivativesProviders.size()];
         System.arraycopy(alreadyIntegrated, 0, managed, 0, alreadyIntegrated.length);
         for (int i = 0; i < additionalDerivativesProviders.size(); ++i) {
@@ -307,12 +308,12 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
     /** Add a provider for user-specified state derivatives to be integrated along with the orbit propagation.
      * @param provider provider for additional derivatives
-     * @see #addAdditionalStateProvider(org.orekit.propagation.FieldAdditionalStateProvider)
+     * @see #addAdditionalDataProvider(FieldAdditionalDataProvider)
      * @since 11.1
      */
     public void addAdditionalDerivativesProvider(final FieldAdditionalDerivativesProvider<T> provider) {
         // check if the name is already used
-        if (isAdditionalStateManaged(provider.getName())) {
+        if (this.isAdditionalDataManaged(provider.getName())) {
             // these derivatives are already registered, complain
             throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,
                                       provider.getName());
@@ -339,7 +340,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
     }
 
     /** {@inheritDoc} */
-    public Collection<FieldEventDetector<T>> getEventsDetectors() {
+    public Collection<FieldEventDetector<T>> getEventDetectors() {
         return Collections.unmodifiableCollection(detectors);
     }
 
@@ -362,6 +363,14 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
      */
     protected void setUpEventDetector(final FieldODEIntegrator<T> integ, final FieldEventDetector<T> detector) {
         integ.addEventDetector(new FieldAdaptedEventDetector(detector));
+    }
+
+    /**
+     * Clear the ephemeris generators.
+     * @since 13.0
+     */
+    public void clearEphemerisGenerators() {
+        ephemerisGenerators.clear();
     }
 
     /** {@inheritDoc} */
@@ -421,7 +430,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         try (IntegratorResetter<T> resetter = new IntegratorResetter<>(integrator)) {
 
             // Initialize additional states
-            initializeAdditionalStates(tEnd);
+            initializeAdditionalData(tEnd);
 
             if (!tStart.equals(getInitialState().getDate())) {
                 // if propagation start date is not initial date,
@@ -444,10 +453,28 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             }
 
             // propagate from start date to end date with event detection
-            return integrateDynamics(tEnd);
+            final FieldSpacecraftState<T> state = integrateDynamics(tEnd);
 
+            // Finalize event detectors
+            getEventDetectors().forEach(detector -> detector.finish(state));
+
+            return state;
         }
 
+    }
+
+    /** Reset initial state with a given propagation type.
+     *
+     * <p> By default this method returns the same as method resetInitialState(FieldSpacecraftState)
+     * <p> Its purpose is mostly to be derived in FieldDSSTPropagator
+     *
+     * @param state new initial state to consider
+     * @param stateType type of the new state (mean or osculating)
+     * @since 12.1.3
+     */
+    public void resetInitialState(final FieldSpacecraftState<T> state, final PropagationType stateType) {
+        // Default behavior, do not take propagation type into account
+        resetInitialState(state);
     }
 
     /** Propagation with or without event detection.
@@ -469,9 +496,10 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
                                        stateMapper.getAttitudeProvider(), getInitialState().getFrame());
 
             // set propagation orbit type
-            if (Double.isNaN(getMu().getReal())) {
-                setMu(getInitialState().getMu());
+            if (Double.isNaN(getMu().getReal()) && getInitialState().isOrbitDefined()) {
+                setMu(getInitialState().getOrbit().getMu());
             }
+
             if (getInitialState().getMass().getReal() <= 0.0) {
                 throw new OrekitException(OrekitMessages.NOT_POSITIVE_SPACECRAFT_MASS,
                                                getInitialState().getMass());
@@ -500,7 +528,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             finalState = updateAdditionalStatesAndDerivatives(finalState, mathFinalState);
 
             if (resetAtEnd) {
-                resetInitialState(finalState);
+                resetInitialState(finalState, propagationType);
                 setStartDate(finalState.getDate());
             }
 
@@ -531,11 +559,11 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
                 final String name      = provider.getName();
                 final int    offset    = secondaryOffsets.get(name);
                 final int    dimension = provider.getDimension();
-                updatedState = updatedState.addAdditionalState(name, Arrays.copyOfRange(secondary, offset, offset + dimension));
+                updatedState = updatedState.addAdditionalData(name, Arrays.copyOfRange(secondary, offset, offset + dimension));
                 updatedState = updatedState.addAdditionalStateDerivative(name, Arrays.copyOfRange(secondaryDerivative, offset, offset + dimension));
             }
         }
-        return updateAdditionalStates(updatedState);
+        return updateAdditionalData(updatedState);
     }
 
     /** Get the initial state for integration.
@@ -552,7 +580,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
     private FieldODEState<T> createInitialState(final FieldSpacecraftState<T> initialState) {
 
         // retrieve initial state
-        final T[] primary  = MathArrays.buildArray(initialState.getA().getField(), getBasicDimension());
+        final T[] primary  = MathArrays.buildArray(initialState.getMass().getField(), getBasicDimension());
         stateMapper.mapStateToArray(initialState, primary, null);
 
         if (secondaryOffsets.isEmpty()) {
@@ -565,7 +593,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             secondaryOffsets.put(SECONDARY_DIMENSION, offset);
         }
 
-        return new FieldODEState<>(initialState.getA().getField().getZero(), primary, secondary(initialState));
+        return new FieldODEState<>(initialState.getMass().getField().getZero(), primary, secondary(initialState));
 
     }
 
@@ -687,11 +715,11 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
                 final String name      = equations.getName();
                 final int    offset    = secondaryOffsets.get(name);
                 final int    dimension = equations.getDimension();
-                s = s.addAdditionalState(name, Arrays.copyOfRange(secondary, offset, offset + dimension));
+                s = s.addAdditionalData(name, Arrays.copyOfRange(secondary, offset, offset + dimension));
                 s = s.addAdditionalStateDerivative(name, Arrays.copyOfRange(secondaryDerivative, offset, offset + dimension));
             }
         }
-        s = updateAdditionalStates(s);
+        s = updateAdditionalData(s);
 
         return s;
 
@@ -766,7 +794,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         public void init(final T t0, final T[] y0, final T finalTime) {
             // update space dynamics view
             FieldSpacecraftState<T> initialState = stateMapper.mapArrayToState(t0, y0, null, PropagationType.MEAN);
-            initialState = updateAdditionalStates(initialState);
+            initialState = updateAdditionalData(initialState);
             initialState = updateStatesFromAdditionalDerivativesIfKnown(initialState);
             final FieldAbsoluteDate<T> target = stateMapper.mapDoubleToDate(finalTime);
             main.init(initialState, target);
@@ -788,7 +816,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
                 for (final FieldAdditionalDerivativesProvider<T> provider: additionalDerivativesProviders) {
                     final String name = provider.getName();
                     final T[] value = storedInitialState.getAdditionalState(name);
-                    updatedState = updatedState.addAdditionalState(name, value);
+                    updatedState = updatedState.addAdditionalData(name, value);
                 }
             }
             return updatedState;
@@ -804,7 +832,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             stateMapper.setAttitudeProvider(attitudeProviderForDerivatives);
             FieldSpacecraftState<T> currentState = stateMapper.mapArrayToState(t, y, null, PropagationType.MEAN);
             stateMapper.setAttitudeProvider(getAttitudeProvider());
-            currentState = updateAdditionalStates(currentState);
+            currentState = updateAdditionalData(currentState);
 
             // compute main state differentials
             return main.computeDerivatives(currentState);
@@ -913,10 +941,10 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
                 final String name      = provider.getName();
                 final int    offset    = secondaryOffsets.get(name);
                 final int    dimension = provider.getDimension();
-                initialState = initialState.addAdditionalState(name, Arrays.copyOfRange(secondary, offset, offset + dimension));
+                initialState = initialState.addAdditionalData(name, Arrays.copyOfRange(secondary, offset, offset + dimension));
             }
 
-            return updateAdditionalStates(initialState);
+            return updateAdditionalData(initialState);
 
         }
 
@@ -955,7 +983,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         /** {@inheritDoc} */
         @Override
         public FieldAdaptableInterval<T> getMaxCheckInterval() {
-            return s -> detector.getMaxCheckInterval().currentInterval(convert(s));
+            return (state, isForward) -> detector.getMaxCheckInterval().currentInterval(convert(state), isForward);
         }
 
         /** {@inheritDoc} */
@@ -975,6 +1003,14 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         @Override
         public void init(final FieldODEStateAndDerivative<T> s0, final T t) {
             detector.init(convert(s0), stateMapper.mapDoubleToDate(t));
+            this.lastT = getField().getZero().add(Double.NaN);
+            this.lastG = getField().getZero().add(Double.NaN);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void reset(final FieldODEStateAndDerivative<T> intermediateState, final T finalTime) {
+            detector.reset(convert(intermediateState), stateMapper.mapDoubleToDate(finalTime));
             this.lastT = getField().getZero().add(Double.NaN);
             this.lastG = getField().getZero().add(Double.NaN);
         }
@@ -1019,7 +1055,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
                         final String name      = provider.getName();
                         final int    offset    = secondaryOffsets.get(name);
                         final int    dimension = provider.getDimension();
-                        System.arraycopy(newState.getAdditionalState(name), 0, secondary[0], offset, dimension);
+                        System.arraycopy(newState.getAdditionalData(name), 0, secondary[0], offset, dimension);
                     }
 
                     return new FieldODEState<>(newState.getDate().durationFrom(getStartDate()),
@@ -1067,7 +1103,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
     }
 
     /** Adapt an {@link org.orekit.propagation.sampling.FieldOrekitStepInterpolator<T>}
-     * to Hipparchus {@link FieldODEStepInterpolator<T>} interface.
+     * to Hipparchus {@link FieldODEStateInterpolator<T>} interface.
      * @author Luc Maisonobe
      */
     private class FieldAdaptedStepInterpolator implements FieldOrekitStepInterpolator<T> {
@@ -1211,10 +1247,10 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
                 maxDate = finalDate;
             }
 
-            // get the initial additional states that are not managed
-            final FieldArrayDictionary<T> unmanaged = new FieldArrayDictionary<>(startDate.getField());
-            for (final FieldArrayDictionary<T>.Entry initial : getInitialState().getAdditionalStatesValues().getData()) {
-                if (!isAdditionalStateManaged(initial.getKey())) {
+            // get the initial additional data that are not managed
+            final FieldDataDictionary<T> unmanaged = new FieldDataDictionary<>(startDate.getField());
+            for (final FieldDataDictionary<T>.Entry initial : getInitialState().getAdditionalDataValues().getData()) {
+                if (!FieldAbstractIntegratedPropagator.this.isAdditionalDataManaged(initial.getKey())) {
                     // this additional state was in the initial state, but is unknown to the propagator
                     // we simply copy its initial value as is
                     unmanaged.put(initial.getKey(), initial.getValue());
@@ -1231,8 +1267,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
             // create the ephemeris
             ephemeris = new FieldIntegratedEphemeris<>(startDate, minDate, maxDate,
-                                                       stateMapper, propagationType, model,
-                                                       unmanaged, getAdditionalStateProviders(),
+                                                       stateMapper, getAttitudeProvider(), propagationType, model,
+                                                       unmanaged, getAdditionalDataProviders(),
                                                        names, dimensions);
 
         }
@@ -1245,7 +1281,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
      * If propagator-specific event handlers and step handlers are added to
      * the integrator in the try block, they will be removed automatically
      * when leaving the block, so the integrator only keep its own handlers
-     * between calls to {@link AbstractIntegratedPropagator#propagate(FieldAbsoluteDate, FieldAbsoluteDate).
+     * between calls to {@link FieldAbstractIntegratedPropagator#propagate(FieldAbsoluteDate, FieldAbsoluteDate).
      * </p>
      * @param <T> the type of the field elements
      * @since 11.0

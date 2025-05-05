@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,6 @@ import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.time.AbsoluteDate;
 
 /** Wrapper shifting events occurrences times.
  * <p>This class wraps an {@link EventDetector event detector} to slightly
@@ -36,7 +35,7 @@ import org.orekit.time.AbsoluteDate;
  * @see EventDetector
  * @author Luc Maisonobe
  */
-public class EventShifter extends AbstractDetector<EventShifter> {
+public class EventShifter implements DetectorModifier {
 
     /** Event detector for the raw unshifted event. */
     private final EventDetector detector;
@@ -49,6 +48,12 @@ public class EventShifter extends AbstractDetector<EventShifter> {
 
     /** Offset to apply to find decreasing events. */
     private final double decreasingOffset;
+
+    /** Event detection settings. */
+    private final EventDetectionSettings detectionSettings;
+
+    /** Specialized event handler. */
+    private final LocalHandler handler;
 
     /** Build a new instance.
      * <p>The {@link #getMaxCheckInterval() max check interval}, the
@@ -68,9 +73,7 @@ public class EventShifter extends AbstractDetector<EventShifter> {
      */
     public EventShifter(final EventDetector detector, final boolean useShiftedStates,
                         final double increasingTimeShift, final double decreasingTimeShift) {
-        this(detector.getMaxCheckInterval(), detector.getThreshold(),
-             detector.getMaxIterationCount(), new LocalHandler(),
-             detector, useShiftedStates, increasingTimeShift, decreasingTimeShift);
+        this(detector.getDetectionSettings(), detector, useShiftedStates, increasingTimeShift, decreasingTimeShift);
     }
 
     /** Protected constructor with full parameters.
@@ -79,10 +82,7 @@ public class EventShifter extends AbstractDetector<EventShifter> {
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
-     * @param handler event handler to call at event occurrences
+     * @param detectionSettings event detection settings
      * @param detector event detector for the raw unshifted event
      * @param useShiftedStates if true, the state provided to {@link
      * EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean) eventOccurred} method of
@@ -90,13 +90,13 @@ public class EventShifter extends AbstractDetector<EventShifter> {
      * be <i>unshifted</i> to correspond to the underlying raw event.
      * @param increasingTimeShift increasing events time shift.
      * @param decreasingTimeShift decreasing events time shift.
-     * @since 6.1
+     * @since 13.0
      */
-    protected EventShifter(final AdaptableInterval maxCheck, final double threshold,
-                           final int maxIter, final EventHandler handler,
-                           final EventDetector detector, final boolean useShiftedStates,
-                           final double increasingTimeShift, final double decreasingTimeShift) {
-        super(maxCheck, threshold, maxIter, handler);
+    public EventShifter(final EventDetectionSettings detectionSettings,
+                        final EventDetector detector, final boolean useShiftedStates,
+                        final double increasingTimeShift, final double decreasingTimeShift) {
+        this.detectionSettings = detectionSettings;
+        this.handler = new LocalHandler();
         this.detector         = detector;
         this.useShiftedStates = useShiftedStates;
         this.increasingOffset = -increasingTimeShift;
@@ -105,10 +105,14 @@ public class EventShifter extends AbstractDetector<EventShifter> {
 
     /** {@inheritDoc} */
     @Override
-    protected EventShifter create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                  final int newMaxIter, final EventHandler newHandler) {
-        return new EventShifter(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                detector, useShiftedStates, -increasingOffset, -decreasingOffset);
+    public EventHandler getHandler() {
+        return handler;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public EventDetectionSettings getDetectionSettings() {
+        return detectionSettings;
     }
 
     /**
@@ -135,18 +139,21 @@ public class EventShifter extends AbstractDetector<EventShifter> {
     }
 
     /** {@inheritDoc} */
-    public void init(final SpacecraftState s0,
-                     final AbsoluteDate t) {
-        super.init(s0, t);
-        detector.init(s0, t);
-    }
-
-    /** {@inheritDoc} */
+    @Override
     public double g(final SpacecraftState s) {
         final double incShiftedG = detector.g(s.shiftedBy(increasingOffset));
         final double decShiftedG = detector.g(s.shiftedBy(decreasingOffset));
         return (increasingOffset >= decreasingOffset) ?
                FastMath.max(incShiftedG, decShiftedG) : FastMath.min(incShiftedG, decShiftedG);
+    }
+
+    /**
+     * Builds a new instance from the input detection settings.
+     * @param settings event detection settings to be used
+     * @return a new detector
+     */
+    public EventShifter withDetectionSettings(final EventDetectionSettings settings) {
+        return new EventShifter(settings, detector, useShiftedStates, getIncreasingTimeShift(), getDecreasingTimeShift());
     }
 
     /** Local class for handling events. */

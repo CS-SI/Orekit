@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,6 +37,7 @@ import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.odm.ocm.ObjectType;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 
@@ -55,7 +56,7 @@ public class CdmParserTest {
 
     @Test
     public void testParseCDM1() {
-        /** Test for CdmExample1.txt, with only required data. */
+        /* Test for CdmExample1.txt, with only required data. */
         // File
         final String ex = "/ccsds/cdm/CDMExample1.txt";
 
@@ -80,7 +81,7 @@ public class CdmParserTest {
 
         // OBJECT1
         // Check Relative Metadata Block
-        Assertions.assertEquals(new AbsoluteDate(2010, 3, 13, 22, 37, 52.618,
+        Assertions.assertEquals(new AbsoluteDate(2010, 3, 13, 22, 37, new TimeOffset(52, TimeOffset.SECOND, 618, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()), file.getRelativeMetadata().getTca());
         Assertions.assertEquals(715.0, file.getRelativeMetadata().getMissDistance(), DISTANCE_PRECISION);
 
@@ -310,7 +311,7 @@ public class CdmParserTest {
 
     @Test
     public void testParseCDM2() {
-        /** Test for CdmExample2.txt, with only required data. */
+        /* Test for CdmExample2.txt, with only required data. */
         // File
         final String ex = "/ccsds/cdm/CDMExample2.txt";
 
@@ -334,7 +335,7 @@ public class CdmParserTest {
 
         // OBJECT1
         // Check Relative Metadata Block
-        Assertions.assertEquals(new AbsoluteDate(2010, 3, 13, 22, 37, 52.618,
+        Assertions.assertEquals(new AbsoluteDate(2010, 3, 13, 22, 37, new TimeOffset(52, TimeOffset.SECOND, 618, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()), file.getRelativeMetadata().getTca());
         Assertions.assertEquals(715.0, file.getRelativeMetadata().getMissDistance(), DISTANCE_PRECISION);
         Assertions.assertEquals(14762.0, file.getRelativeMetadata().getRelativeSpeed(), DERIVATION_PRECISION);
@@ -345,18 +346,18 @@ public class CdmParserTest {
         Assertions.assertEquals(-14692.0, file.getRelativeMetadata().getRelativeVelocity().getY(),
                                 DERIVATION_PRECISION);
         Assertions.assertEquals(-1437.2, file.getRelativeMetadata().getRelativeVelocity().getZ(), DERIVATION_PRECISION);
-        Assertions.assertEquals(new AbsoluteDate(2010, 3, 12, 18, 29, 32.212,
+        Assertions.assertEquals(new AbsoluteDate(2010, 3, 12, 18, 29, new TimeOffset(32, TimeOffset.SECOND, 212, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()), file.getRelativeMetadata().getStartScreenPeriod());
-        Assertions.assertEquals(new AbsoluteDate(2010, 3, 15, 18, 29, 32.212,
+        Assertions.assertEquals(new AbsoluteDate(2010, 3, 15, 18, 29, new TimeOffset(32, TimeOffset.SECOND, 212, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()), file.getRelativeMetadata().getStopScreenPeriod());
         Assertions.assertEquals(ScreenVolumeFrame.RTN, file.getRelativeMetadata().getScreenVolumeFrame());
         Assertions.assertEquals(ScreenVolumeShape.ELLIPSOID, file.getRelativeMetadata().getScreenVolumeShape());
         Assertions.assertEquals(200, file.getRelativeMetadata().getScreenVolumeX(), 0);
         Assertions.assertEquals(1000, file.getRelativeMetadata().getScreenVolumeY(), 0);
         Assertions.assertEquals(1000, file.getRelativeMetadata().getScreenVolumeZ(), 0);
-        Assertions.assertEquals(new AbsoluteDate(2010, 3, 13, 22, 37, 52.222,
+        Assertions.assertEquals(new AbsoluteDate(2010, 3, 13, 22, 37, new TimeOffset(52, TimeOffset.SECOND, 222, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()), file.getRelativeMetadata().getScreenEntryTime());
-        Assertions.assertEquals(new AbsoluteDate(2010, 3, 13, 22, 37, 52.824,
+        Assertions.assertEquals(new AbsoluteDate(2010, 3, 13, 22, 37, new TimeOffset(52, TimeOffset.SECOND, 824, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()), file.getRelativeMetadata().getScreenExitTime());
         Assertions.assertEquals(4.835E-05, file.getRelativeMetadata().getCollisionProbability(), 1e-30);
         Assertions.assertEquals("FOSTER-1992", file.getRelativeMetadata().getCollisionProbaMethod().getName());
@@ -385,10 +386,12 @@ public class CdmParserTest {
 
         // Check data block
         // OD parameters block
-        Assertions.assertEquals(new AbsoluteDate(2010, 3, 12, 02, 14, 12.746,
+        Assertions.assertEquals(new AbsoluteDate(2010, 3, 12, 2, 14,
+                                                 new TimeOffset(12, TimeOffset.SECOND, 746, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()),
                                 file.getDataObject1().getODParametersBlock().getTimeLastObsStart());
-        Assertions.assertEquals(new AbsoluteDate(2010, 3, 12, 02, 14, 12.746,
+        Assertions.assertEquals(new AbsoluteDate(2010, 3, 12, 2, 14,
+                                                 new TimeOffset(12, TimeOffset.SECOND, 746, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()),
                                 file.getDataObject1().getODParametersBlock().getTimeLastObsEnd());
         Assertions.assertEquals(7.88*3600.0*24.0, file.getDataObject1().getODParametersBlock().getRecommendedOdSpan(),
@@ -555,7 +558,7 @@ public class CdmParserTest {
 
     @Test
     public void testParseCDM3() {
-        /** Test for CdmExample3.txt, with only required data. */
+        /* Test for CdmExample3.txt, with only required data. */
         // File
         final String ex = "/ccsds/cdm/CDMExample3.txt";
 
@@ -581,7 +584,7 @@ public class CdmParserTest {
 
         // OBJECT1
         // Check Relative Metadata Block
-        Assertions.assertEquals(new AbsoluteDate(2012, 9, 13, 22, 37, 52.618,
+        Assertions.assertEquals(new AbsoluteDate(2012, 9, 13, 22, 37, new TimeOffset(52, TimeOffset.SECOND, 618, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()), file.getRelativeMetadata().getTca());
         Assertions.assertEquals(104.92, file.getRelativeMetadata().getMissDistance(), DISTANCE_PRECISION);
         Assertions.assertEquals(12093.52, file.getRelativeMetadata().getRelativeSpeed(), DERIVATION_PRECISION);
@@ -592,18 +595,18 @@ public class CdmParserTest {
         Assertions.assertEquals(-12000.0, file.getRelativeMetadata().getRelativeVelocity().getY(),
                                 DERIVATION_PRECISION);
         Assertions.assertEquals(-1500.9, file.getRelativeMetadata().getRelativeVelocity().getZ(), DERIVATION_PRECISION);
-        Assertions.assertEquals(new AbsoluteDate(2012, 9, 12, 18, 29, 32.212,
+        Assertions.assertEquals(new AbsoluteDate(2012, 9, 12, 18, 29, new TimeOffset(32, TimeOffset.SECOND, 212, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()), file.getRelativeMetadata().getStartScreenPeriod());
-        Assertions.assertEquals(new AbsoluteDate(2012, 9, 15, 18, 29, 32.212,
+        Assertions.assertEquals(new AbsoluteDate(2012, 9, 15, 18, 29, new TimeOffset(32, TimeOffset.SECOND, 212, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()), file.getRelativeMetadata().getStopScreenPeriod());
         Assertions.assertEquals(ScreenVolumeFrame.RTN, file.getRelativeMetadata().getScreenVolumeFrame());
         Assertions.assertEquals(ScreenVolumeShape.ELLIPSOID, file.getRelativeMetadata().getScreenVolumeShape());
         Assertions.assertEquals(500, file.getRelativeMetadata().getScreenVolumeX(), 0);
         Assertions.assertEquals(500, file.getRelativeMetadata().getScreenVolumeY(), 0);
         Assertions.assertEquals(500, file.getRelativeMetadata().getScreenVolumeZ(), 0);
-        Assertions.assertEquals(new AbsoluteDate(2012, 9, 13, 20, 25, 43.222,
+        Assertions.assertEquals(new AbsoluteDate(2012, 9, 13, 20, 25, new TimeOffset(43, TimeOffset.SECOND, 222, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()), file.getRelativeMetadata().getScreenEntryTime());
-        Assertions.assertEquals(new AbsoluteDate(2012, 9, 13, 23, 44, 29.324,
+        Assertions.assertEquals(new AbsoluteDate(2012, 9, 13, 23, 44, new TimeOffset(29, TimeOffset.SECOND, 324, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()), file.getRelativeMetadata().getScreenExitTime());
         Assertions.assertEquals(2.355e-03, file.getRelativeMetadata().getCollisionProbability(), 1e-30);
         Assertions.assertEquals("ALFANO-2005", file.getRelativeMetadata().getCollisionProbaMethod().getName());
@@ -617,7 +620,7 @@ public class CdmParserTest {
         Assertions.assertEquals("GALAXY 15", file.getMetadataObject1().getObjectName());
         Assertions.assertEquals("2005-041A", file.getMetadataObject1().getInternationalDes());
         Assertions.assertEquals(ObjectType.PAYLOAD, file.getMetadataObject1().getObjectType());
-        Assertions.assertEquals(null, file.getMetadataObject1().getOperatorContactPosition());
+        Assertions.assertNull(file.getMetadataObject1().getOperatorContactPosition());
         Assertions.assertEquals("INTELSAT", file.getMetadataObject1().getOperatorOrganization());
         Assertions.assertEquals("GALAXY-15A-2012JAN-WMANEUVER23A", file.getMetadataObject1().getEphemName());
         Assertions.assertEquals(CovarianceMethod.CALCULATED, file.getMetadataObject1().getCovarianceMethod());
@@ -628,10 +631,10 @@ public class CdmParserTest {
 
         // Check data block
         // OD parameters block
-        Assertions.assertEquals(new AbsoluteDate(2012, 9, 6, 20, 25, 43.222,
+        Assertions.assertEquals(new AbsoluteDate(2012, 9, 6, 20, 25, new TimeOffset(43, TimeOffset.SECOND, 222, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()),
                                 file.getDataObject1().getODParametersBlock().getTimeLastObsStart());
-        Assertions.assertEquals(new AbsoluteDate(2012, 9, 6, 20, 25, 43.222,
+        Assertions.assertEquals(new AbsoluteDate(2012, 9, 6, 20, 25, new TimeOffset(43, TimeOffset.SECOND, 222, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()),
                                 file.getDataObject1().getODParametersBlock().getTimeLastObsEnd());
         // State vector block
@@ -768,7 +771,7 @@ public class CdmParserTest {
 
     @Test
     public void testParseCDM4() {
-        /** Test for CdmExample2.txt, with only required data. */
+        /* Test for CdmExample2.txt, with only required data. */
         // File
         final String ex = "/ccsds/cdm/CDMExample4.txt";
 
@@ -792,22 +795,22 @@ public class CdmParserTest {
 
         // OBJECT1
         // Check Relative Metadata Block
-        Assertions.assertEquals(new AbsoluteDate(2010, 3, 13, 22, 37, 52.618,
+        Assertions.assertEquals(new AbsoluteDate(2010, 3, 13, 22, 37, new TimeOffset(52, TimeOffset.SECOND, 618, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()), file.getRelativeMetadata().getTca());
         Assertions.assertEquals(715.0, file.getRelativeMetadata().getMissDistance(), DISTANCE_PRECISION);
 
-        Assertions.assertEquals(new AbsoluteDate(2010, 3, 12, 18, 29, 32.212,
+        Assertions.assertEquals(new AbsoluteDate(2010, 3, 12, 18, 29, new TimeOffset(32, TimeOffset.SECOND, 212, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()), file.getRelativeMetadata().getStartScreenPeriod());
-        Assertions.assertEquals(new AbsoluteDate(2010, 3, 15, 18, 29, 32.212,
+        Assertions.assertEquals(new AbsoluteDate(2010, 3, 15, 18, 29, new TimeOffset(32, TimeOffset.SECOND, 212, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()), file.getRelativeMetadata().getStopScreenPeriod());
         Assertions.assertEquals(ScreenVolumeFrame.RTN, file.getRelativeMetadata().getScreenVolumeFrame());
         Assertions.assertEquals(ScreenVolumeShape.ELLIPSOID, file.getRelativeMetadata().getScreenVolumeShape());
         Assertions.assertEquals(200, file.getRelativeMetadata().getScreenVolumeX(), 0);
         Assertions.assertEquals(1000, file.getRelativeMetadata().getScreenVolumeY(), 0);
         Assertions.assertEquals(1000, file.getRelativeMetadata().getScreenVolumeZ(), 0);
-        Assertions.assertEquals(new AbsoluteDate(2010, 3, 13, 22, 37, 52.222,
+        Assertions.assertEquals(new AbsoluteDate(2010, 3, 13, 22, 37, new TimeOffset(52, TimeOffset.SECOND, 222, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()), file.getRelativeMetadata().getScreenEntryTime());
-        Assertions.assertEquals(new AbsoluteDate(2010, 3, 13, 22, 37, 52.824,
+        Assertions.assertEquals(new AbsoluteDate(2010, 3, 13, 22, 37, new TimeOffset(52, TimeOffset.SECOND, 824, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()), file.getRelativeMetadata().getScreenExitTime());
         Assertions.assertEquals(4.835E-05, file.getRelativeMetadata().getCollisionProbability(), 1e-30);
         Assertions.assertEquals("FOSTER-1992", file.getRelativeMetadata().getCollisionProbaMethod().getName());
@@ -973,7 +976,7 @@ public class CdmParserTest {
 
     @Test
     public void testParseXML_CDM1() {
-        /** Test for CdmExample1.xml, with only required data. */
+        /* Test for CdmExample1.xml, with only required data. */
         // File
         final String ex = "/ccsds/cdm/CDMExample1.xml";
 
@@ -998,7 +1001,8 @@ public class CdmParserTest {
 
         // OBJECT1
         // Check Relative Metadata Block
-        Assertions.assertEquals(new AbsoluteDate(2010, 3, 13, 22, 37, 52.618,
+        Assertions.assertEquals(new AbsoluteDate(2010, 3, 13, 22, 37, new TimeOffset(52, TimeOffset.SECOND,
+                                                                                     618, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()), file.getRelativeMetadata().getTca());
         Assertions.assertEquals(715.0, file.getRelativeMetadata().getMissDistance(), DISTANCE_PRECISION);
         Assertions.assertEquals(14762.0, file.getRelativeMetadata().getRelativeSpeed(), DERIVATION_PRECISION);
@@ -1010,18 +1014,22 @@ public class CdmParserTest {
                                 DERIVATION_PRECISION);
         Assertions.assertEquals(-1437.2, file.getRelativeMetadata().getRelativeVelocity().getZ(),
                                 DERIVATION_PRECISION);
-        Assertions.assertEquals(new AbsoluteDate(2010, 3, 12, 18, 29, 32.212,
+        Assertions.assertEquals(new AbsoluteDate(2010, 3, 12, 18, 29, new TimeOffset(32, TimeOffset.SECOND,
+                                                                                     212, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()), file.getRelativeMetadata().getStartScreenPeriod());
-        Assertions.assertEquals(new AbsoluteDate(2010, 3, 15, 18, 29, 32.212,
+        Assertions.assertEquals(new AbsoluteDate(2010, 3, 15, 18, 29, new TimeOffset(32, TimeOffset.SECOND,
+                                                                                     212, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()), file.getRelativeMetadata().getStopScreenPeriod());
         Assertions.assertEquals(ScreenVolumeFrame.RTN, file.getRelativeMetadata().getScreenVolumeFrame());
         Assertions.assertEquals(ScreenVolumeShape.ELLIPSOID, file.getRelativeMetadata().getScreenVolumeShape());
         Assertions.assertEquals(200, file.getRelativeMetadata().getScreenVolumeX(), 0);
         Assertions.assertEquals(1000, file.getRelativeMetadata().getScreenVolumeY(), 0);
         Assertions.assertEquals(1000, file.getRelativeMetadata().getScreenVolumeZ(), 0);
-        Assertions.assertEquals(new AbsoluteDate(2010, 3, 13, 20, 25, 43.222,
+        Assertions.assertEquals(new AbsoluteDate(2010, 3, 13, 20, 25, new TimeOffset(43, TimeOffset.SECOND,
+                                                                                     222, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()), file.getRelativeMetadata().getScreenEntryTime());
-        Assertions.assertEquals(new AbsoluteDate(2010, 3, 13, 23, 44, 29.324,
+        Assertions.assertEquals(new AbsoluteDate(2010, 3, 13, 23, 44, new TimeOffset(29, TimeOffset.SECOND,
+                                                                                     324, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()), file.getRelativeMetadata().getScreenExitTime());
         Assertions.assertEquals(4.835E-05, file.getRelativeMetadata().getCollisionProbability(), 1e-30);
         Assertions.assertEquals("FOSTER-1992", file.getRelativeMetadata().getCollisionProbaMethod().getName());
@@ -1194,39 +1202,39 @@ public class CdmParserTest {
                                 COVARIANCE_PRECISION);
 
         // Check relative metadata comments for Object1
-        ArrayList<String> relativeMetadataComment = new ArrayList<String>();
+        ArrayList<String> relativeMetadataComment = new ArrayList<>();
         relativeMetadataComment.add("Relative Metadata/Data");
         Assertions.assertEquals(relativeMetadataComment, file.getRelativeMetadata().getComment());
 
         // Check metadata comments for Object1
-        ArrayList<String> MetadataComment = new ArrayList<String>();
+        ArrayList<String> MetadataComment = new ArrayList<>();
         MetadataComment.add("Object1 Metadata");
         Assertions.assertEquals(MetadataComment, file.getMetadataObject1().getComments());
 
         // Check data general comments and OD parameters comments for Object1
-        ArrayList<String> generalComment = new ArrayList<String>();
+        ArrayList<String> generalComment = new ArrayList<>();
         generalComment.add("Object1 Data");
         Assertions.assertEquals(generalComment, file.getDataObject1().getComments());
 
         // Check additional parameters comments Object1
-        ArrayList<String> addParametersComment = new ArrayList<String>();
+        ArrayList<String> addParametersComment = new ArrayList<>();
         addParametersComment.add("Object 1 Additional Parameters");
         Assertions.assertEquals(addParametersComment,
                                 file.getDataObject1().getAdditionalParametersBlock().getComments());
 
         // Check state vector comments Object1
-        ArrayList<String> stateVectorComment = new ArrayList<String>();
+        ArrayList<String> stateVectorComment = new ArrayList<>();
         stateVectorComment.add("Object1 State Vector");
         Assertions.assertEquals(stateVectorComment, file.getDataObject1().getStateVectorBlock().getComments());
 
         // Check RTN covariance comments Object1
-        ArrayList<String> RTNComment = new ArrayList<String>();
+        ArrayList<String> RTNComment = new ArrayList<>();
         RTNComment.add("Object1 Covariance in the RTN Coordinate Frame");
         Assertions.assertEquals(RTNComment, file.getDataObject1().getRTNCovarianceBlock().getComments());
 
 
         // Check general comments Object2
-        ArrayList<String> generalCommentObj2AddParam = new ArrayList<String>();
+        ArrayList<String> generalCommentObj2AddParam = new ArrayList<>();
         generalCommentObj2AddParam.add("Object2 Additional Parameters");
         generalCommentObj2AddParam.add("Apogee Altitude=768 km, Perigee Altitude=414 km, Inclination=98.8 deg");
         Assertions.assertEquals(generalCommentObj2AddParam.toString(),
@@ -1251,7 +1259,7 @@ public class CdmParserTest {
     }
 
     @Test
-    public void testMissingTCA() throws URISyntaxException {
+    public void testMissingTCA() {
         final String name = "/ccsds/cdm/CDM-missing-TCA.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1266,7 +1274,7 @@ public class CdmParserTest {
     }
 
     @Test
-    public void testMissingObj2StateVectorX() throws URISyntaxException {
+    public void testMissingObj2StateVectorX() {
         final String name = "/ccsds/cdm/CDM-missing-object2-state-vector.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1281,7 +1289,7 @@ public class CdmParserTest {
     }
 
     @Test
-    public void testMissingObj1CovarianceCNDOT_NDOT() throws URISyntaxException {
+    public void testMissingObj1CovarianceCNDOT_NDOT() {
         final String name = "/ccsds/cdm/CDM-missing-object1-covariance-block.xml";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1397,11 +1405,15 @@ public class CdmParserTest {
         Assertions.assertEquals(1000, file.getRelativeMetadata().getScreenVolumeZ(), 0.0);
 
         // Check SCREEN_ENTRY_TIME is correctly read
-        Assertions.assertEquals(new AbsoluteDate(2010, 3, 13, 20, 25, 43.222, TimeScalesFactory.getUTC()), 
+        Assertions.assertEquals(new AbsoluteDate(2010, 3, 13, 20, 25, new TimeOffset(43, TimeOffset.SECOND,
+                                                                                     222, TimeOffset.MILLISECOND),
+                                                 TimeScalesFactory.getUTC()),
                                 file.getRelativeMetadata().getScreenEntryTime(), "SCREEN_ENTRY_TIME");
 
         // Check SCREEN_EXIT_TIME is correctly read
-        Assertions.assertEquals(new AbsoluteDate(2010, 3, 13, 23, 44, 29.324, TimeScalesFactory.getUTC()), 
+        Assertions.assertEquals(new AbsoluteDate(2010, 3, 13, 23, 44, new TimeOffset(29, TimeOffset.SECOND,
+                                                                                     324, TimeOffset.MILLISECOND),
+                                                 TimeScalesFactory.getUTC()),
                                 file.getRelativeMetadata().getScreenExitTime(), "SCREEN_EXIT_TIME");
 
         // SCREEN_PC_THRESHOLD
@@ -1625,10 +1637,12 @@ public class CdmParserTest {
 
         // OBJECT 2 - Eigenvector covariance block
         Assertions.assertEquals(AltCovarianceType.CSIG3EIGVEC3, file.getMetadataObject2().getAltCovType(), "ALT_COV_TYPE");
-        Assertions.assertEquals("Object2 Covariance in the Sigma / eigenvector format",  file.getDataObject2().getSig3EigVec3CovarianceBlock().getComments().get(0));
+        Assertions.assertEquals("Object2 Covariance in the Sigma / eigenvector format",
+                                file.getDataObject2().getSig3EigVec3CovarianceBlock().getComments().get(0));
         Assertions.assertEquals(12,  file.getDataObject2().getSig3EigVec3CovarianceBlock().getCsig3eigvec3().length);
         for (int i=0; i<12; i++) {
-            Assertions.assertEquals(i+1, file.getDataObject2().getSig3EigVec3CovarianceBlock().getCsig3eigvec3()[i], COVARIANCE_DIAG_PRECISION);
+            Assertions.assertEquals(i+1, file.getDataObject2().getSig3EigVec3CovarianceBlock().getCsig3eigvec3()[i],
+                                    COVARIANCE_DIAG_PRECISION);
         }
 
 
@@ -1675,7 +1689,7 @@ public class CdmParserTest {
 
         // OBJECT1
         // Check Relative Metadata Block
-        Assertions.assertEquals(new AbsoluteDate(2010, 3, 13, 22, 37, 52.618,
+        Assertions.assertEquals(new AbsoluteDate(2010, 3, 13, 22, 37, new TimeOffset(52, TimeOffset.SECOND, 618, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()),
                                 file.getRelativeMetadata().getTca());
         Assertions.assertEquals(715.0,  file.getRelativeMetadata().getMissDistance(),DISTANCE_PRECISION);
@@ -1810,15 +1824,15 @@ public class CdmParserTest {
 
         // Improve coverage
         // ----------------
-        
-        Assertions.assertEquals(true, parser.inData()); // Always true by construction
+
+        Assertions.assertTrue(parser.inData()); // Always true by construction
         
         // AdditionalCovarianceMetadata conditions coverage
         file.getDataObject1().getAdditionalCovMetadataBlock().validate(1.0);
         file.getDataObject1().getAdditionalCovMetadataBlock().setDcpSensitivityVectorPosition(null);
         file.getDataObject1().getAdditionalCovMetadataBlock().setDcpSensitivityVectorVelocity(null);
-        Assertions.assertEquals(null, file.getDataObject1().getAdditionalCovMetadataBlock().getDcpSensitivityVectorPosition());
-        Assertions.assertEquals(null, file.getDataObject1().getAdditionalCovMetadataBlock().getDcpSensitivityVectorVelocity());
+        Assertions.assertNull(file.getDataObject1().getAdditionalCovMetadataBlock().getDcpSensitivityVectorPosition());
+        Assertions.assertNull(file.getDataObject1().getAdditionalCovMetadataBlock().getDcpSensitivityVectorVelocity());
     }
 
     @Test
@@ -1896,7 +1910,7 @@ public class CdmParserTest {
         // Generated CDM file
         final Cdm file = parser.parseMessage(source);
 
-        Assertions.assertEquals(null, file.getRelativeMetadata().getStartScreenPeriod());
+        Assertions.assertNull(file.getRelativeMetadata().getStartScreenPeriod());
     }
 
     @Test
@@ -1929,6 +1943,6 @@ public class CdmParserTest {
         Cdm file = parser.parseMessage(source);
 
         // dummy assertion: the aim of the test is to show that empty unit can be parsed
-        Assertions.assertEquals(null, file.getDataObject1().getODParametersBlock());
+        Assertions.assertNull(file.getDataObject1().getODParametersBlock());
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,8 +39,8 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
-import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
+import org.orekit.propagation.conversion.osc2mean.FixedPointConverter;
+import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
@@ -182,12 +182,7 @@ public class FieldTLETest {
         final DSFactory factory = new DSFactory(1, 1);
         FieldTLE<DerivativeStructure> tleA = new FieldTLE<>(factory.getDerivativeField(), line1, line2);
         FieldTLE<Binary64> tleB = new FieldTLE<>(Binary64Field.getInstance(), line1, line2);
-        try {
-            tleA.equals(tleB);
-            Assertions.fail("an exception should have been thrown");
-        } catch (Exception e) {
-            // nothing to do
-        }
+        Assertions.assertNotEquals(tleA, tleB);
     }
 
     public <T extends CalculusFieldElement<T>> void doTestTLEFormat(Field<T> field) {
@@ -210,6 +205,7 @@ public class FieldTLETest {
         Assertions.assertEquals(133.9522, FastMath.toDegrees(tle.getPerigeeArgument().getReal()), 1e-10);
         Assertions.assertEquals(226.1918, FastMath.toDegrees(tle.getMeanAnomaly().getReal()), 1e-10);
         Assertions.assertEquals(14.26113993, tle.getMeanMotion().getReal() * Constants.JULIAN_DAY / (2 * FastMath.PI), 0);
+        Assertions.assertEquals(7182888.814633288, tle.computeSemiMajorAxis().getReal(), 1e-10);
         Assertions.assertEquals(tle.getRevolutionNumberAtEpoch(), 6, 0);
         Assertions.assertEquals(tle.getElementNumber(), 2 , 0);
 
@@ -560,7 +556,6 @@ public class FieldTLETest {
                             Assertions.assertEquals(0, normDifPos, 2e-3);
                             Assertions.assertEquals(0, normDifVel, 7e-4);
 
-
                         }
                     }
                 }
@@ -678,11 +673,11 @@ public class FieldTLETest {
         // State at TLE epoch
         final FieldSpacecraftState<T> state = propagator.propagate(tleISS.getDate());
 
-        // TLE generation algorithm
-        final TleGenerationAlgorithm algorithm = new FixedPointTleGenerationAlgorithm();
+        // Osculating to mean orbit converter
+        final OsculatingToMeanConverter converter = new FixedPointConverter();
 
         // Convert to TLE
-        final FieldTLE<T> rebuilt = FieldTLE.stateToTLE(state, tleISS, algorithm);
+        final FieldTLE<T> rebuilt = FieldTLE.stateToTLE(state, tleISS, converter);
 
         // Verify
         final double eps = 1.0e-7;

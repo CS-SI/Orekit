@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -87,7 +87,7 @@ public class SBASPropagator extends AbstractAnalyticalPropagator {
         // Sets initial state
         final Orbit orbit = propagateOrbit(getStartDate());
         final Attitude attitude = provider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
-        super.resetInitialState(new SpacecraftState(orbit, attitude, mass));
+        super.resetInitialState(new SpacecraftState(orbit, attitude).withMass(mass));
     }
 
     /**
@@ -121,7 +121,7 @@ public class SBASPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** {@inheritDoc} */
-    protected Orbit propagateOrbit(final AbsoluteDate date) {
+    public Orbit propagateOrbit(final AbsoluteDate date) {
         // Gets the PVCoordinates in ECEF frame
         final PVCoordinates pvaInECEF = propagateInEcef(date);
         // Transforms the PVCoordinates to ECI frame

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinates;
@@ -73,7 +74,7 @@ public class YawSteering extends GroundPointingAttitudeModifier implements Attit
             new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO, Vector3D.ZERO);
 
     /** Sun motion model. */
-    private final PVCoordinatesProvider sun;
+    private final ExtendedPositionProvider sun;
 
     /** Normal to the plane where the Sun must remain. */
     private final PVCoordinates phasingNormal;
@@ -88,7 +89,7 @@ public class YawSteering extends GroundPointingAttitudeModifier implements Attit
      */
     public YawSteering(final Frame inertialFrame,
                        final GroundPointing groundPointingLaw,
-                       final PVCoordinatesProvider sun,
+                       final ExtendedPositionProvider sun,
                        final Vector3D phasingAxis) {
         super(inertialFrame, groundPointingLaw.getBodyFrame(), groundPointingLaw);
         this.sun = sun;
@@ -126,7 +127,8 @@ public class YawSteering extends GroundPointingAttitudeModifier implements Attit
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                        final FieldAbsoluteDate<T> date, final Frame frame) {
+                                                                            final FieldAbsoluteDate<T> date,
+                                                                            final Frame frame) {
 
         final Field<T>              field = date.getField();
         final FieldVector3D<T>      zero  = FieldVector3D.getZero(field);
@@ -140,8 +142,7 @@ public class YawSteering extends GroundPointingAttitudeModifier implements Attit
         //  . phasing axis shall be aligned to sun direction
         final FieldPVCoordinates<T> sunDirection =
                         new FieldPVCoordinates<>(pvProv.getPVCoordinates(date, frame),
-                                                 new FieldPVCoordinates<>(field,
-                                                                          sun.getPVCoordinates(date.toAbsoluteDate(), frame)));
+                                                 sun.getPVCoordinates(date, frame));
         final FieldPVCoordinates<T> sunNormal =
                 plusZ.crossProduct(base.getOrientation().applyTo(sunDirection));
         final TimeStampedFieldAngularCoordinates<T> compensation =

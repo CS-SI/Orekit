@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,9 @@
  */
 package org.orekit.estimation.leastsquares;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Evaluation;
@@ -32,8 +35,8 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.frames.LOFType;
 import org.orekit.gnss.antenna.FrequencyPattern;
@@ -42,9 +45,6 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.BrouwerLyddanePropagatorBuilder;
 import org.orekit.utils.ParameterDriversList;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class BrouwerLyddaneBatchLSEstimatorTest {
 
@@ -164,11 +164,11 @@ public class BrouwerLyddaneBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        BrouwerLyddaneEstimationTestUtils.checkFit(context, estimator, 1, 2,
-                                                   0.0, 3.2e-2,
-                                                   0.0, 5.8e-2,
-                                                   0.0, 5e-3,
-                                                   0.0, 2.8e-6);
+        BrouwerLyddaneEstimationTestUtils.checkFit(context, estimator, 2, 5,
+                                                   0.0, 6.7e-2,
+                                                   0.0, 0.12,
+                                                   0.0, 9.9e-3,
+                                                   0.0, 1.5e-5);
 
     }
 
@@ -210,11 +210,11 @@ public class BrouwerLyddaneBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        BrouwerLyddaneEstimationTestUtils.checkFit(context, estimator, 3, 4,
-                                                   0.0, 2.94e-2,
-                                                   0.0, 5.3e-2,
-                                                   0.0, 4.6e-3,
-                                                   0.0, 6.3e-6);
+        BrouwerLyddaneEstimationTestUtils.checkFit(context, estimator, 4, 5,
+                                                   0.0, 0.138,
+                                                   0.0, 0.248,
+                                                   0.0, 0.022,
+                                                   0.0, 3.0e-5);
 
     }
 
@@ -255,11 +255,11 @@ public class BrouwerLyddaneBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        BrouwerLyddaneEstimationTestUtils.checkFit(context, estimator, 3,8,
-                                                   0.0, 4.9e-5,
-                                                   0.0, 1.2e-4,
-                                                   0.0, 3.2e-2,
-                                                   0.0, 4.4e-5);
+        BrouwerLyddaneEstimationTestUtils.checkFit(context, estimator, 2, 3,
+                                                   0.0, 5.1e-5,
+                                                   0.0, 8.0e-5,
+                                                   0.0, 1.6e-2,
+                                                   0.0, 1.9e-5);
     }
 
     @Test

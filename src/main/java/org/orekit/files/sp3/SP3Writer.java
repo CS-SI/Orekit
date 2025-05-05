@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -106,7 +106,7 @@ public class SP3Writer {
         for (AbsoluteDate date = earliest(iterators); !date.equals(AbsoluteDate.FUTURE_INFINITY); date = earliest(iterators)) {
 
             // epoch
-            final DateTimeComponents dtc = date.getComponents(timeScale);
+            final DateTimeComponents dtc = date.getComponents(timeScale).roundIfNeeded(60, 8);
             output.append(String.format(Locale.US, "*  %4d %2d %2d %2d %2d %11.8f%n",
                                         dtc.getDate().getYear(),
                                         dtc.getDate().getMonth(),
@@ -286,7 +286,7 @@ public class SP3Writer {
     private void writeHeader(final SP3Header header)
         throws IOException {
         final TimeScale timeScale = header.getTimeSystem().getTimeScale(timeScales);
-        final DateTimeComponents dtc = header.getEpoch().getComponents(timeScale);
+        final DateTimeComponents dtc = header.getEpoch().getComponents(timeScale).roundIfNeeded(60, 8);
         final StringBuilder dataUsedBuilder = new StringBuilder();
         for (final DataUsed du : header.getDataUsed()) {
             if (dataUsedBuilder.length() > 0) {

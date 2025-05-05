@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,10 +18,10 @@ package org.orekit.propagation.conversion;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.ode.AbstractFieldIntegrator;
 import org.hipparchus.ode.nonstiff.MidpointFieldIntegrator;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngleType;
 
 /**
  * Builder for MidpointFieldIntegrator.
@@ -32,7 +32,8 @@ import org.orekit.orbits.OrbitType;
  * @param <T> type of the field elements
  */
 public class MidpointFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
-        extends AbstractFixedStepFieldIntegratorBuilder<T> {
+        extends AbstractFixedStepFieldIntegratorBuilder<T, MidpointFieldIntegrator<T>>
+        implements FieldExplicitRungeKuttaIntegratorBuilder<T> {
 
     /**
      * Constructor.
@@ -61,7 +62,14 @@ public class MidpointFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
 
     /** {@inheritDoc} */
     @Override
-    public AbstractFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitType orbitType) {
+    public MidpointFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit,
+                                                      final OrbitType orbitType, final PositionAngleType angleType) {
         return new MidpointFieldIntegrator<>(field, getFieldStep(field));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public MidpointIntegratorBuilder toODEIntegratorBuilder() {
+        return new MidpointIntegratorBuilder(getStep());
     }
 }

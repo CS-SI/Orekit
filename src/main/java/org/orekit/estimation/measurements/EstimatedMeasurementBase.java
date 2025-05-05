@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.IdentityHashMap;
+import java.util.Map;
 
 /** Class holding an estimated theoretical value associated to an {@link ObservedMeasurement observed measurement}.
  * @param <T> the type of the measurement
@@ -66,7 +67,7 @@ public class EstimatedMeasurementBase<T extends ObservedMeasurement<T>> implemen
      * @param count evaluations counter
      * @param states states of the spacecrafts
      * @param participants coordinates of the participants in signal travel order
-     * in inertial frame
+     * in inertial frame of first state
      */
     public EstimatedMeasurementBase(final T observedMeasurement,
                                     final int iteration, final int count,
@@ -124,7 +125,7 @@ public class EstimatedMeasurementBase<T extends ObservedMeasurement<T>> implemen
      * spacecraft for two-way range measurement).
      * </p>
      * @return coordinates of the measurements participants in signal travel order
-     * in inertial frame
+     * in inertial frame of first state
      */
     public TimeStampedPVCoordinates[] getParticipants() {
         return participants.clone();
@@ -143,6 +144,12 @@ public class EstimatedMeasurementBase<T extends ObservedMeasurement<T>> implemen
         return observedMeasurement.getObservedValue();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void setObservedValue(final double[] observed) {
+        observedMeasurement.setObservedValue(observed);
+    }
+
     /** Get the original estimated value prior to any modification.
      * @return original estimated value prior to any modification
      * @since 12.1
@@ -158,7 +165,7 @@ public class EstimatedMeasurementBase<T extends ObservedMeasurement<T>> implemen
      * @return applied modifier effects
      * @since 12.1
      */
-    public IdentityHashMap<EstimationModifier<T>, double[]> getAppliedEffects() {
+    public Map<EstimationModifier<T>, double[]> getAppliedEffects() {
         return appliedEffects;
     }
 

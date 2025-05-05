@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -89,7 +89,7 @@ public class ExtremumApproachDetector extends AbstractDetector<ExtremumApproachD
      *                            approach.
      */
     public ExtremumApproachDetector(final PVCoordinatesProvider secondaryPVProvider) {
-        this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnIncreasing(), secondaryPVProvider);
+        this(EventDetectionSettings.getDefaultEventDetectionSettings(), new StopOnIncreasing(), secondaryPVProvider);
     }
 
     /**
@@ -98,17 +98,16 @@ public class ExtremumApproachDetector extends AbstractDetector<ExtremumApproachD
      * This constructor is to be used if the user wants to change the default behavior of the detector.
      * </p>
      *
-     * @param maxCheck            Maximum checking interval.
-     * @param threshold           Convergence threshold (s).
-     * @param maxIter             Maximum number of iterations in the event time search.
+     * @param detectionSettings   Detection settings.
      * @param handler             Event handler to call at event occurrences.
      * @param secondaryPVProvider PVCoordinates provider of the other object with which we want to find out the extremum
      *                            approach.
      * @see EventHandler
+     * @since 13.0
      */
-    protected ExtremumApproachDetector(final AdaptableInterval maxCheck, final double threshold, final int maxIter,
+    protected ExtremumApproachDetector(final EventDetectionSettings detectionSettings,
                                        final EventHandler handler, final PVCoordinatesProvider secondaryPVProvider) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(detectionSettings, handler);
         this.secondaryPVProvider = secondaryPVProvider;
     }
 
@@ -130,11 +129,7 @@ public class ExtremumApproachDetector extends AbstractDetector<ExtremumApproachD
      * @param s Spacecraft state.
      *
      * @return Relative position between primary (=s) and secondaryPVProvider.
-     *
-     * @deprecated The output type of this method shall be modified in the future to improve code efficiency (though it will
-     * still give access to the relative position and velocity)
      */
-    @Deprecated
     public PVCoordinates computeDeltaPV(final SpacecraftState s) {
         final Vector3D primaryPos = s.getPosition();
         final Vector3D primaryVel = s.getPVCoordinates().getVelocity();
@@ -151,9 +146,9 @@ public class ExtremumApproachDetector extends AbstractDetector<ExtremumApproachD
 
     /** {@inheritDoc} */
     @Override
-    protected ExtremumApproachDetector create(final AdaptableInterval newMaxCheck, final double newThreshold, final int newMaxIter,
+    protected ExtremumApproachDetector create(final EventDetectionSettings detectionSettings,
                                               final EventHandler newHandler) {
-        return new ExtremumApproachDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, secondaryPVProvider);
+        return new ExtremumApproachDetector(detectionSettings, newHandler, secondaryPVProvider);
     }
 
     /**

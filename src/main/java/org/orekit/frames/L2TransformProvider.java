@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -57,9 +57,6 @@ class L2TransformProvider implements TransformProvider {
     /** Maximal number of evaluations for solver. */
     private static final int MAX_EVALUATIONS = 1000;
 
-    /** Serializable UID.*/
-    private static final long serialVersionUID = 20170725L;
-
     /** Frame for results. Always defined as primaryBody's inertially oriented frame.*/
     private final Frame frame;
 
@@ -111,9 +108,9 @@ class L2TransformProvider implements TransformProvider {
         final FieldRotation<T>      rotation    = new FieldRotation<>(pv21.getPosition(), pv21.getVelocity(),
                                                                       FieldVector3D.getPlusI(field),
                                                                       FieldVector3D.getPlusJ(field));
-        return new FieldTransform<T>(date,
-                                     new FieldTransform<>(date, translation),
-                                     new FieldTransform<>(date, rotation));
+        return new FieldTransform<>(date,
+                new FieldTransform<>(date, translation),
+                new FieldTransform<>(date, rotation));
     }
 
     /** {@inheritDoc} */

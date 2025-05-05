@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.frames.Frame;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.AtmosphericRefractionModel;
+import org.orekit.models.earth.ITURP834AtmosphericRefraction;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -41,7 +42,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author Luc Maisonobe
  * @since 9.3
  */
-public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetector> {
+public class GroundAtNightDetector extends AbstractTopocentricDetector<GroundAtNightDetector> {
 
     /** Sun elevation at civil dawn/dusk (6° below horizon). */
     public static final double CIVIL_DAWN_DUSK_ELEVATION = FastMath.toRadians(-6.0);
@@ -51,9 +52,6 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
 
     /** Sun elevation at astronomical dawn/dusk (18° below horizon). */
     public static final double ASTRONOMICAL_DAWN_DUSK_ELEVATION = FastMath.toRadians(-18.0);
-
-    /** Ground location to check. */
-    private final TopocentricFrame groundLocation;
 
     /** Provider for Sun position. */
     private final PVCoordinatesProvider sun;
@@ -70,7 +68,7 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
      * standard refraction model} does apply only for elevations above -2°. It is therefore
      * not suitable for used with {@link #CIVIL_DAWN_DUSK_ELEVATION} (-6°), {@link
      * #NAUTICAL_DAWN_DUSK_ELEVATION} (-12°) or {@link #ASTRONOMICAL_DAWN_DUSK_ELEVATION} (-18°).
-     * The {@link org.orekit.models.earth.EarthITU453AtmosphereRefraction ITU 453 refraction model}
+     * The {@link ITURP834AtmosphericRefraction ITU-R P.834 refraction model}
      * which can compute refraction at large negative elevations should be preferred.
      * </p>
      * @param groundLocation ground location to check
@@ -83,8 +81,7 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
                                  final double dawnDuskElevation,
                                  final AtmosphericRefractionModel refractionModel) {
         this(groundLocation, sun, dawnDuskElevation, refractionModel,
-             AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-             new ContinueOnEvent());
+                EventDetectionSettings.getDefaultEventDetectionSettings(), new ContinueOnEvent());
     }
 
     /** Private constructor.
@@ -93,20 +90,16 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
      * @param dawnDuskElevation Sun elevation below which we consider night is dark enough (rad)
      * (typically {@link #ASTRONOMICAL_DAWN_DUSK_ELEVATION})
      * @param refractionModel reference to refraction model (null if refraction should be ignored),
-     * @param maxCheck  maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter   maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler   event handler to call at event occurrences
+     * @since 13.0
      */
     protected GroundAtNightDetector(final TopocentricFrame groundLocation, final PVCoordinatesProvider sun,
                                     final double dawnDuskElevation,
                                     final AtmosphericRefractionModel refractionModel,
-                                    final AdaptableInterval maxCheck,
-                                    final double threshold,
-                                    final int maxIter,
+                                    final EventDetectionSettings detectionSettings,
                                     final EventHandler handler) {
-        super(maxCheck, threshold, maxIter, handler);
-        this.groundLocation    = groundLocation;
+        super(detectionSettings, handler, groundLocation);
         this.sun               = sun;
         this.dawnDuskElevation = dawnDuskElevation;
         this.refractionModel   = refractionModel;
@@ -114,12 +107,10 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
 
     /** {@inheritDoc} */
     @Override
-    protected GroundAtNightDetector create(final AdaptableInterval newMaxCheck,
-                                           final double newThreshold,
-                                           final int newMaxIter,
+    protected GroundAtNightDetector create(final EventDetectionSettings detectionSettings,
                                            final EventHandler newHandler) {
-        return new GroundAtNightDetector(groundLocation, sun, dawnDuskElevation, refractionModel,
-                                         newMaxCheck, newThreshold, newMaxIter, newHandler);
+        return new GroundAtNightDetector(getTopocentricFrame(), sun, dawnDuskElevation, refractionModel,
+                                         detectionSettings, newHandler);
     }
 
     /** {@inheritDoc}
@@ -137,7 +128,7 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
         final AbsoluteDate  date     = state.getDate();
         final Frame         frame    = state.getFrame();
         final Vector3D      position = sun.getPosition(date, frame);
-        final double trueElevation   = groundLocation.getElevation(position, frame, date);
+        final double trueElevation   = getTopocentricFrame().getElevation(position, frame, date);
 
         final double calculatedElevation;
         if (refractionModel != null) {

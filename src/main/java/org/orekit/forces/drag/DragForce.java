@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,11 +31,8 @@ import org.orekit.utils.ParameterDriver;
 
 
 /** Atmospheric drag force model.
- *
  * The drag acceleration is computed as follows :
- *
  * γ = (1/2 * ρ * V² * S / Mass) * DragCoefVector
- *
  * With DragCoefVector = {C<sub>x</sub>, C<sub>y</sub>, C<sub>z</sub>} and S given by the user through the interface
  * {@link DragSensitive}
  *

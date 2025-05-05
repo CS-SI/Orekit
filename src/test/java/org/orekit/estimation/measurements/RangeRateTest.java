@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,6 @@ import org.orekit.estimation.measurements.modifiers.RangeRateTroposphericDelayMo
 import org.orekit.models.earth.troposphere.EstimatedModel;
 import org.orekit.models.earth.troposphere.GlobalMappingFunctionModel;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
-import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -39,7 +38,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
-import org.orekit.utils.StateFunction;
 
 public class RangeRateTest {
 
@@ -174,13 +172,11 @@ public class RangeRateTest {
             final double[][] jacobian = estimated.getStateDerivatives(0);
 
             final double[][] finiteDifferencesJacobian =
-                    Differentiation.differentiate(new StateFunction() {
-                public double[] value(final SpacecraftState state) {
-                    return measurement.
-                           estimateWithoutDerivatives(new SpacecraftState[] { state }).
-                           getEstimatedValue();
-                }
-            }, 1, propagator.getAttitudeProvider(),
+                    Differentiation.differentiate(state1 ->
+                                                      measurement.
+                                                          estimateWithoutDerivatives(new SpacecraftState[] { state1 }).
+                                                          getEstimatedValue(),
+                                                  1, propagator.getAttitudeProvider(),
                OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
 
             Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
@@ -240,13 +236,11 @@ public class RangeRateTest {
             final double[][] jacobian = estimated.getStateDerivatives(0);
 
             final double[][] finiteDifferencesJacobian =
-                    Differentiation.differentiate(new StateFunction() {
-                public double[] value(final SpacecraftState state) {
-                    return measurement.
-                           estimateWithoutDerivatives(new SpacecraftState[] { state }).
-                           getEstimatedValue();
-                }
-            }, 1, propagator.getAttitudeProvider(),
+                    Differentiation.differentiate(state1 ->
+                                                      measurement.
+                                                          estimateWithoutDerivatives(new SpacecraftState[] { state1 }).
+                                                          getEstimatedValue(),
+                                                  1, propagator.getAttitudeProvider(),
                OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
 
             Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
@@ -465,7 +459,7 @@ public class RangeRateTest {
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             final RangeRateTroposphericDelayModifier modifier =
-                new RangeRateTroposphericDelayModifier((TroposphericModel) ModifiedSaastamoinenModel.getStandardModel(), true);
+                new RangeRateTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel(), true);
             ((RangeRate) measurement).addModifier(modifier);
 
             //
@@ -477,12 +471,10 @@ public class RangeRateTest {
             final double[][] jacobian = measurement.estimate(0, 0, new SpacecraftState[] { state }).getStateDerivatives(0);
 
             final double[][] finiteDifferencesJacobian =
-                    Differentiation.differentiate(new StateFunction() {
-                public double[] value(final SpacecraftState state) {
-                    return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
-                }
-            }, 1, propagator.getAttitudeProvider(),
-               OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
+                    Differentiation.differentiate( state1 -> measurement.
+                            estimate(0, 0, new SpacecraftState[] { state1 }).
+                                                       getEstimatedValue(), 1, propagator.getAttitudeProvider(),
+                                                   OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
 
             Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
@@ -548,12 +540,10 @@ public class RangeRateTest {
             final double[][] jacobian = measurement.estimate(0, 0, new SpacecraftState[] { state }).getStateDerivatives(0);
 
             final double[][] finiteDifferencesJacobian =
-                    Differentiation.differentiate(new StateFunction() {
-                public double[] value(final SpacecraftState state) {
-                    return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
-                }
-            }, 1, propagator.getAttitudeProvider(),
-               OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
+                    Differentiation.differentiate(state1 -> measurement.
+                                                      estimate(0, 0, new SpacecraftState[] { state1 }).
+                                                      getEstimatedValue(), 1, propagator.getAttitudeProvider(),
+                        OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
 
             Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
@@ -613,7 +603,7 @@ public class RangeRateTest {
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             final RangeRateTroposphericDelayModifier modifier =
-                new RangeRateTroposphericDelayModifier((TroposphericModel) ModifiedSaastamoinenModel.getStandardModel(), true);
+                new RangeRateTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel(), true);
             ((RangeRate) measurement).addModifier(modifier);
 
             // parameter corresponding to station position offset

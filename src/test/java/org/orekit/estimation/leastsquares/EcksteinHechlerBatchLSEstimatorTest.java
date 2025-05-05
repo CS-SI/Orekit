@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,9 @@
  */
 package org.orekit.estimation.leastsquares;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Evaluation;
@@ -32,8 +35,8 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.frames.LOFType;
 import org.orekit.gnss.antenna.FrequencyPattern;
@@ -42,9 +45,6 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.EcksteinHechlerPropagatorBuilder;
 import org.orekit.utils.ParameterDriversList;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class EcksteinHechlerBatchLSEstimatorTest {
 
@@ -209,10 +209,10 @@ public class EcksteinHechlerBatchLSEstimatorTest {
         estimator.setMaxEvaluations(20);
 
         EcksteinHechlerEstimationTestUtils.checkFit(context, estimator, 1, 11,
-                                                   0.0, 4.3e-5,
-                                                   0.0, 1.2e-4,
-                                                   0.0, 3.0e-8,
-                                                   0.0, 2.5e-11);
+                                                    0.0, 4.3e-5,
+                                                    0.0, 1.2e-4,
+                                                    0.0, 3.0e-8,
+                                                    0.0, 2.5e-11);
 
     }
 

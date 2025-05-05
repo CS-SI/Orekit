@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -165,47 +165,47 @@ public interface Propagator extends PVCoordinatesProvider {
      */
     void resetInitialState(SpacecraftState state);
 
-    /** Add a set of user-specified state parameters to be computed along with the orbit propagation.
-     * @param additionalStateProvider provider for additional state
+    /** Add a set of user-specified data to be computed along with the orbit propagation.
+     * @param additionalDataProvider provider for additional data
      */
-    void addAdditionalStateProvider(AdditionalStateProvider additionalStateProvider);
+    void addAdditionalDataProvider(AdditionalDataProvider<?> additionalDataProvider);
 
-    /** Get an unmodifiable list of providers for additional state.
-     * @return providers for the additional states
+    /** Get an unmodifiable list of providers for additional data.
+     * @return providers for the additional data
      */
-    List<AdditionalStateProvider> getAdditionalStateProviders();
+    List<AdditionalDataProvider<?>> getAdditionalDataProviders();
 
-    /** Check if an additional state is managed.
+    /** Check if an additional data is managed.
      * <p>
-     * Managed states are states for which the propagators know how to compute
-     * its evolution. They correspond to additional states for which a
-     * {@link AdditionalStateProvider provider} has been registered by calling the
-     * {@link #addAdditionalStateProvider(AdditionalStateProvider) addAdditionalStateProvider} method.
+     * Managed data are the ones for which the propagators know how to compute
+     * its evolution. They correspond to additional data for which a
+     * {@link AdditionalDataProvider provider} has been registered by calling the
+     * {@link #addAdditionalDataProvider(AdditionalDataProvider) addAdditionalDataProvider} method.
      * </p>
      * <p>
-     * Additional states that are present in the {@link #getInitialState() initial state}
-     * but have no evolution method registered are <em>not</em> considered as managed states.
-     * These unmanaged additional states are not lost during propagation, though. Their
+     * Additional data that are present in the {@link #getInitialState() initial state}
+     * but have no evolution method registered are <em>not</em> considered as managed data.
+     * These unmanaged additional data are not lost during propagation, though. Their
      * value are piecewise constant between state resets that may change them if some
      * event handler {@link
      * org.orekit.propagation.events.handlers.EventHandler#resetState(EventDetector,
      * SpacecraftState) resetState} method is called at an event occurrence and happens
-     * to change the unmanaged additional state.
+     * to change the unmanaged additional data.
      * </p>
-     * @param name name of the additional state
-     * @return true if the additional state is managed
+     * @param name name of the additional data
+     * @return true if the additional data is managed
      */
-    boolean isAdditionalStateManaged(String name);
+    boolean isAdditionalDataManaged(String name);
 
-    /** Get all the names of all managed states.
-     * @return names of all managed states
+    /** Get all the names of all managed additional data.
+     * @return names of all managed additional data
      */
-    String[] getManagedAdditionalStates();
+    String[] getManagedAdditionalData();
 
     /** Add an event detector.
      * @param detector event detector to add
      * @see #clearEventsDetectors()
-     * @see #getEventsDetectors()
+     * @see #getEventDetectors()
      * @param <T> class type for the generic version
      */
     <T extends EventDetector> void addEventDetector(T detector);
@@ -215,11 +215,11 @@ public interface Propagator extends PVCoordinatesProvider {
      * @see #addEventDetector(EventDetector)
      * @see #clearEventsDetectors()
      */
-    Collection<EventDetector> getEventsDetectors();
+    Collection<EventDetector> getEventDetectors();
 
     /** Remove all events detectors.
      * @see #addEventDetector(EventDetector)
-     * @see #getEventsDetectors()
+     * @see #getEventDetectors()
      */
     void clearEventsDetectors();
 

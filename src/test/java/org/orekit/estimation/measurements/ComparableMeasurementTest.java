@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,6 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -47,8 +46,7 @@ public class ComparableMeasurementTest {
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, false));
         TopocentricFrame stationFrame = new TopocentricFrame(earth, new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(0.0), 0.0), "station");
-        GroundStation station = new GroundStation(stationFrame,
-                                                  TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
+        GroundStation station = new GroundStation(stationFrame);
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
 
         // Create a Range and Azel at same date,
@@ -78,20 +76,60 @@ public class ComparableMeasurementTest {
         Assertions.assertEquals(azel.compareTo(azel), 0);
 
         // Sorted by date by default
-        Assertions.assertEquals(pv.compareTo(azel), -1);
-        Assertions.assertEquals(range.compareTo(pv2), +1);
+        Assertions.assertEquals(-1, pv.compareTo(azel));
+        Assertions.assertEquals(+1, azel.compareTo(pv));
+        Assertions.assertEquals(+1, range.compareTo(pv2));
+        Assertions.assertEquals(-1, pv2.compareTo(range));
 
         // Same date but different measurement - "bigger" measurement after "smaller" one
-        Assertions.assertEquals(range.compareTo(azel), -1);
-        Assertions.assertEquals(azel.compareTo(range), +1);
+        Assertions.assertEquals(-1, range.compareTo(azel));
+        Assertions.assertEquals(+1, azel.compareTo(range));
 
         // Same date, same size, but different values, "bigger" measurement after "smaller" one
-        Assertions.assertEquals(pv.compareTo(pv3), -1);
-        Assertions.assertEquals(pv3.compareTo(pv), +1);
+        Assertions.assertEquals(-1, pv.compareTo(pv3));
+        Assertions.assertEquals(+1, pv3.compareTo(pv));
 
-        // Same date, same size, same values - Arbitrary order, always return -1
-        Assertions.assertEquals(pv.compareTo(pv2), -1);
-        Assertions.assertEquals(pv2.compareTo(pv), -1);
+        // Same date, same size, same values. Likely non-zero, but may be zero.
+        Assertions.assertEquals(pv.compareTo(pv2), -pv2.compareTo(pv));
+    }
+
+    /**
+     * Check {@link ComparableMeasurement#compareTo(ComparableMeasurement)} still works if
+     * hashcode is implemented poorly.
+     */
+    @Test
+    public void testComparePoorlyImplementedHashCode() {
+        ComparableMeasurement a = new BadHashCode(), b = new BadHashCode();
+
+        // Same date, same size, same values. Likely non-zero, but may be zero.
+        Assertions.assertEquals(a.compareTo(b), -b.compareTo(a));
+        Assertions.assertEquals(a.compareTo(a), 0);
+        Assertions.assertEquals(b.compareTo(b), 0);
+    }
+
+    /** Implementation of {@link ComparableMeasurement} with a bad hash code. */
+    private static class BadHashCode implements ComparableMeasurement {
+
+        @Override
+        public double[] getObservedValue() {
+            return new double[0];
+        }
+
+        @Override
+        public void setObservedValue(double[] newObserved) {
+        }
+
+        @Override
+        public AbsoluteDate getDate() {
+            return AbsoluteDate.ARBITRARY_EPOCH;
+        }
+
+        @Override
+        public int hashCode() {
+            // test comparison w/ poor hashcode implementation
+            return 1;
+        }
 
     }
+
 }

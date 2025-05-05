@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,6 @@ import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
-import org.orekit.utils.AccurateFormatter;
 import org.orekit.utils.units.Unit;
 
 /** Writer for covariance history data.
@@ -81,7 +80,7 @@ class AttitudeCovarianceHistoryWriter extends AbstractWriter {
             line.append(generator.dateToString(timeConverter, covariance.getDate()));
             for (int k = 0; k < units.size(); ++k) {
                 line.append(' ');
-                line.append(AccurateFormatter.format(units.get(k).fromSI(matrix.getEntry(k, k))));
+                line.append(generator.doubleToString(units.get(k).fromSI(matrix.getEntry(k, k))));
             }
             if (generator.getFormat() == FileFormat.XML) {
                 generator.writeEntry(Acm.COV_LINE, line.toString(), null, true);

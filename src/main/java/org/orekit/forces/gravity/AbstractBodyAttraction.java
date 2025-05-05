@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,15 +16,23 @@
  */
 package org.orekit.forces.gravity;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.bodies.CelestialBody;
 import org.orekit.forces.ForceModel;
+import org.orekit.frames.Frame;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 import java.util.Collections;
 import java.util.List;
 
-/** Abstract class for body attraction force model.
+/** Abstract class for non-central body attraction force model.
  *
  * @author Romain Serra
  */
@@ -41,33 +49,81 @@ public abstract class AbstractBodyAttraction implements ForceModel {
      */
     private static final double MU_SCALE = FastMath.scalb(1.0, 32);
 
-    /** The body to consider. */
-    private final CelestialBody body;
+    /** The position provider for the body to consider. */
+    private final ExtendedPositionProvider positionProvider;
 
     /** Drivers for body attraction coefficient. */
     private final ParameterDriver gmParameterDriver;
 
+    /** Name of body. */
+    private final String name;
+
     /** Simple constructor.
-     * @param body the third body to consider
+     * @param positionProvider provider for the body to consider
+     * @param name body name
+     * @param mu body gravitational constant
      */
-    protected AbstractBodyAttraction(final CelestialBody body) {
-        this.body = body;
-        this.gmParameterDriver = new ParameterDriver(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
-                body.getGM(), MU_SCALE, 0.0, Double.POSITIVE_INFINITY);
+    protected AbstractBodyAttraction(final ExtendedPositionProvider positionProvider, final String name,
+                                     final double mu) {
+        this.positionProvider = positionProvider;
+        this.name = name;
+        this.gmParameterDriver = new ParameterDriver(name + ATTRACTION_COEFFICIENT_SUFFIX, FastMath.abs(mu),
+            MU_SCALE, 0.0, Double.POSITIVE_INFINITY);
     }
 
     /** Getter for the body's name.
      * @return the body's name
      */
     public String getBodyName() {
-        return body.getName();
+        return name;
     }
 
-    /** Protected getter for the body.
-     * @return the third body considered
+    /**
+     * Get the body's position vector.
+     * @param date date
+     * @param frame frame
+     * @return position
+     * @since 12.2
      */
-    protected CelestialBody getBody() {
-        return body;
+    protected Vector3D getBodyPosition(final AbsoluteDate date, final Frame frame) {
+        return positionProvider.getPosition(date, frame);
+    }
+
+    /**
+     * Get the body's position vector.
+     * @param date date
+     * @param frame frame
+     * @param <T> field type
+     * @return position
+     * @since 12.2
+     */
+    protected <T extends CalculusFieldElement<T>> FieldVector3D<T> getBodyPosition(final FieldAbsoluteDate<T> date,
+                                                                                   final Frame frame) {
+        return positionProvider.getPosition(date, frame);
+    }
+
+    /**
+     * Get the body's position-velocity-acceleration vector.
+     * @param date date
+     * @param frame frame
+     * @return PV
+     * @since 12.2
+     */
+    protected TimeStampedPVCoordinates getBodyPVCoordinates(final AbsoluteDate date, final Frame frame) {
+        return positionProvider.getPVCoordinates(date, frame);
+    }
+
+    /**
+     * Get the body's position-velocity-acceleration vector.
+     * @param date date
+     * @param frame frame
+     * @param <T> field type
+     * @return PV
+     * @since 12.2
+     */
+    protected <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getBodyPVCoordinates(final FieldAbsoluteDate<T> date,
+                                                                                                        final Frame frame) {
+        return positionProvider.getPVCoordinates(date, frame);
     }
 
     /** {@inheritDoc} */

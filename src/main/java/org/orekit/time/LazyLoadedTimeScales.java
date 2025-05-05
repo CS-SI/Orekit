@@ -47,40 +47,40 @@ public class LazyLoadedTimeScales extends AbstractTimeScales {
     private final List<UTCTAIOffsetsLoader> loaders = new ArrayList<>();
 
     /** Universal Time Coordinate scale. */
-    private AtomicReference<UTCScale> utc = new AtomicReference<>();
+    private final AtomicReference<UTCScale> utc = new AtomicReference<>();
 
     /** International Atomic Time scale. */
-    private AtomicReference<TAIScale> tai = new AtomicReference<>();
+    private final AtomicReference<TAIScale> tai = new AtomicReference<>();
 
     /** Terrestrial Time scale. */
-    private AtomicReference<TTScale> tt = new AtomicReference<>();
+    private final AtomicReference<TTScale> tt = new AtomicReference<>();
 
     /** Galileo System Time scale. */
-    private AtomicReference<GalileoScale> gst = new AtomicReference<>();
+    private final AtomicReference<GalileoScale> gst = new AtomicReference<>();
 
     /** GLObal NAvigation Satellite System scale. */
-    private AtomicReference<GLONASSScale> glonass = new AtomicReference<>();
+    private final AtomicReference<GLONASSScale> glonass = new AtomicReference<>();
 
     /** Quasi-Zenith Satellite System scale. */
-    private AtomicReference<QZSSScale> qzss = new AtomicReference<>();
+    private final AtomicReference<QZSSScale> qzss = new AtomicReference<>();
 
     /** Global Positioning System scale. */
-    private AtomicReference<GPSScale> gps = new AtomicReference<>();
+    private final AtomicReference<GPSScale> gps = new AtomicReference<>();
 
     /** Geocentric Coordinate Time scale. */
-    private AtomicReference<TCGScale> tcg = new AtomicReference<>();
+    private final AtomicReference<TCGScale> tcg = new AtomicReference<>();
 
     /** Barycentric Dynamic Time scale. */
-    private AtomicReference<TDBScale> tdb = new AtomicReference<>();
+    private final AtomicReference<TDBScale> tdb = new AtomicReference<>();
 
     /** Barycentric Coordinate Time scale. */
-    private AtomicReference<TCBScale> tcb = new AtomicReference<>();
+    private final AtomicReference<TCBScale> tcb = new AtomicReference<>();
 
-    /** IRNSS System Time scale. */
-    private AtomicReference<IRNSSScale> irnss = new AtomicReference<>();
+    /** NavIC System Time scale. */
+    private final AtomicReference<NavicScale> navic = new AtomicReference<>();
 
     /** BDS System Time scale. */
-    private AtomicReference<BDTScale> bds = new AtomicReference<>();
+    private final AtomicReference<BDTScale> bds = new AtomicReference<>();
 
     /**
      * Create a new set of time scales with the given sources of auxiliary data. This
@@ -336,15 +336,15 @@ public class LazyLoadedTimeScales extends AbstractTimeScales {
     }
 
     @Override
-    public IRNSSScale getIRNSS() {
+    public NavicScale getNavIC() {
 
-        IRNSSScale refIrnss = irnss.get();
-        if (refIrnss == null) {
-            irnss.compareAndSet(null, new IRNSSScale());
-            refIrnss = irnss.get();
+        NavicScale refNavIC = navic.get();
+        if (refNavIC == null) {
+            navic.compareAndSet(null, new NavicScale());
+            refNavIC = navic.get();
         }
 
-        return refIrnss;
+        return refNavIC;
 
     }
 

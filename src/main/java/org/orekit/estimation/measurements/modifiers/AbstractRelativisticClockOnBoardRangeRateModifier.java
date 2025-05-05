@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -49,6 +49,12 @@ public abstract class AbstractRelativisticClockOnBoardRangeRateModifier<T extend
     public AbstractRelativisticClockOnBoardRangeRateModifier(final double gm) {
         super();
         this.gm = gm;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getEffectName() {
+        return "clock relativity";
     }
 
     /** Get gravitational constant for main body in signal path vicinity.

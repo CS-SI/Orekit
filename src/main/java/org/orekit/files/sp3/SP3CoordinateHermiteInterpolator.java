@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,6 +28,12 @@ import org.orekit.time.AbstractTimeInterpolator;
  * As this implementation of interpolation is polynomial, it should be used only with small number of interpolation points
  * (about 10-20 points) in order to avoid <a href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
  * and numerical problems (including NaN appearing).
+ * </p>
+ * <p>
+ * If some clock or clock rate are present in the SP3 files as default values (999999.999999), then they
+ * are replaced by {@code Double.NaN} during parsing, so the interpolation will exhibit NaNs, but the
+ * positions will be properly interpolated.
+ * </p>
  *
  * @author Luc Maisonobe
  * @see HermiteInterpolator
@@ -85,32 +91,28 @@ public class SP3CoordinateHermiteInterpolator extends AbstractTimeInterpolator<S
         // Add sample points
         if (useRates) {
             // populate sample with position, clock, velocity and clock rate data
-            sample.forEach(c -> {
-                interpolator.addSamplePoint(c.getDate().durationFrom(date),
-                                            new double[] {
-                                                c.getPosition().getX(),
-                                                c.getPosition().getY(),
-                                                c.getPosition().getZ(),
-                                                c.getClockCorrection(),
-                                            },
-                                            new double[] {
-                                                c.getVelocity().getX(),
-                                                c.getVelocity().getY(),
-                                                c.getVelocity().getZ(),
-                                                c.getClockRateChange(),
-                                            });
-            });
+            sample.forEach(c -> interpolator.addSamplePoint(c.getDate().durationFrom(date),
+                                        new double[] {
+                                            c.getPosition().getX(),
+                                            c.getPosition().getY(),
+                                            c.getPosition().getZ(),
+                                            c.getClockCorrection(),
+                                        },
+                                        new double[] {
+                                            c.getVelocity().getX(),
+                                            c.getVelocity().getY(),
+                                            c.getVelocity().getZ(),
+                                            c.getClockRateChange(),
+                                        }));
         } else {
             // populate sample with position and clock data, ignoring velocity and clock rate
-            sample.forEach(c -> {
-                interpolator.addSamplePoint(c.getDate().durationFrom(date),
-                                            new double[] {
-                                                c.getPosition().getX(),
-                                                c.getPosition().getY(),
-                                                c.getPosition().getZ(),
-                                                c.getClockCorrection(),
-                                            });
-            });
+            sample.forEach(c -> interpolator.addSamplePoint(c.getDate().durationFrom(date),
+                                        new double[] {
+                                            c.getPosition().getX(),
+                                            c.getPosition().getY(),
+                                            c.getPosition().getZ(),
+                                            c.getClockCorrection(),
+                                        }));
         }
 
         // Interpolate

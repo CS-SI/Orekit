@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -402,7 +402,7 @@ public enum IERSConventions {
 
                     // offset in Julian centuries from J2000 epoch (UT1 scale)
                     final double dtai = date.durationFrom(gmstReference);
-                    final double tut1 = dtai + ut1.offsetFromTAI(date);
+                    final double tut1 = dtai + ut1.offsetFromTAI(date).toDouble();
                     final double tt   = tut1 / Constants.JULIAN_CENTURY;
 
                     // Seconds in the day, adjusted by 12 hours because the
@@ -420,7 +420,7 @@ public enum IERSConventions {
 
                     // offset in Julian centuries from J2000 epoch (UT1 scale)
                     final T dtai = date.durationFrom(gmstReference);
-                    final T tut1 = dtai.add(ut1.offsetFromTAI(date.toAbsoluteDate()));
+                    final T tut1 = dtai.add(ut1.offsetFromTAI(date.toAbsoluteDate()).toDouble());
                     final T tt   = tut1.divide(Constants.JULIAN_CENTURY);
 
                     // Seconds in the day, adjusted by 12 hours because the
@@ -460,7 +460,7 @@ public enum IERSConventions {
 
                     // offset in Julian centuries from J2000 epoch (UT1 scale)
                     final double dtai = date.durationFrom(gmstReference);
-                    final double tut1 = dtai + ut1.offsetFromTAI(date);
+                    final double tut1 = dtai + ut1.offsetFromTAI(date).toDouble();
                     final double tt   = tut1 / Constants.JULIAN_CENTURY;
 
                     // compute Greenwich mean sidereal time rate, in radians per second
@@ -474,7 +474,7 @@ public enum IERSConventions {
 
                     // offset in Julian centuries from J2000 epoch (UT1 scale)
                     final T dtai = date.durationFrom(gmstReference);
-                    final T tut1 = dtai.add(ut1.offsetFromTAI(date.toAbsoluteDate()));
+                    final T tut1 = dtai.add(ut1.offsetFromTAI(date.toAbsoluteDate()).toDouble());
                     final T tt   = tut1.divide(Constants.JULIAN_CENTURY);
 
                     // compute Greenwich mean sidereal time, in radians
@@ -1263,12 +1263,12 @@ public enum IERSConventions {
                     }
                 };
             final SimpleTimeStampedTableParser<MeanPole> parser =
-                    new SimpleTimeStampedTableParser<MeanPole>(3, converter);
+                    new SimpleTimeStampedTableParser<>(3, converter);
             final List<MeanPole> annualPoleList = load(ANNUAL_POLE, in -> parser.parse(in, ANNUAL_POLE));
             final AbsoluteDate firstAnnualPoleDate = annualPoleList.get(0).getDate();
             final AbsoluteDate lastAnnualPoleDate  = annualPoleList.get(annualPoleList.size() - 1).getDate();
             final ImmutableTimeStampedCache<MeanPole> annualCache =
-                    new ImmutableTimeStampedCache<MeanPole>(2, annualPoleList);
+                    new ImmutableTimeStampedCache<>(2, annualPoleList);
 
             // polynomial extension from IERS 2003, section 7.1.4, equations 23a and 23b
             final double xp0    = 0.054   * Constants.ARC_SECONDS_TO_RADIANS;
@@ -3086,7 +3086,7 @@ public enum IERSConventions {
             }
         }
 
-    };
+    }
 
     /** Stellar angle model.
      * <p>
@@ -3150,7 +3150,7 @@ public enum IERSConventions {
             final double dt  = date.durationFrom(referenceDate);
             final long days  = ((long) dt) / secondsInDay;
             final double dtA = secondsInDay * days;
-            final double dtB = (dt - dtA) + ut1.offsetFromTAI(date);
+            final double dtB = (dt - dtA) + ut1.offsetFromTAI(date).toDouble();
 
             return ERA_0 + ERA_1A * dtB + ERA_1B * (dtA + dtB);
 
@@ -3165,7 +3165,7 @@ public enum IERSConventions {
             final T dt  = date.durationFrom(referenceDate);
             final long days  = ((long) dt.getReal()) / secondsInDay;
             final double dtA = secondsInDay * days;
-            final T dtB = dt.subtract(dtA).add(ut1.offsetFromTAI(date.toAbsoluteDate()));
+            final T dtB = dt.subtract(dtA).add(ut1.offsetFromTAI(date.toAbsoluteDate()).toDouble());
 
             return dtB.add(dtA).multiply(ERA_1B).add(dtB.multiply(ERA_1A)).add(ERA_0);
 
@@ -3177,16 +3177,16 @@ public enum IERSConventions {
     private static class MeanPole implements TimeStamped, Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20131028l;
+        private static final long serialVersionUID = 20131028L;
 
         /** Date. */
         private final AbsoluteDate date;
 
         /** X coordinate. */
-        private double x;
+        private final double x;
 
         /** Y coordinate. */
-        private double y;
+        private final double y;
 
         /** Simple constructor.
          * @param date date

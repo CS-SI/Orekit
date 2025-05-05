@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,9 +24,6 @@ import org.orekit.bodies.CelestialBody;
  * @since 10.2
  */
 public class CR3BPRotatingFrame extends Frame {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20190520L;
 
     /**
      * Simple constructor.

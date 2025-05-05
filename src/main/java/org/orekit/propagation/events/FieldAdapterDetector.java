@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,9 +17,6 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.CalculusFieldElement;
-import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.events.handlers.FieldEventHandler;
-import org.orekit.time.FieldAbsoluteDate;
 
 /** Base class for adapting an existing detector.
  * <p>
@@ -31,8 +28,10 @@ import org.orekit.time.FieldAbsoluteDate;
  * @author Luc Maisonobe
  * @since 12.0
  * @param <T> type of the field element
+ * @deprecated since 13.0. Use {@link FieldDetectorModifier} instead.
  */
-public class FieldAdapterDetector<T extends CalculusFieldElement<T>> implements FieldEventDetector<T> {
+@Deprecated
+public class FieldAdapterDetector<T extends CalculusFieldElement<T>> implements FieldDetectorModifier<T> {
 
     /** Wrapped detector. */
     private final FieldEventDetector<T> detector;
@@ -50,41 +49,4 @@ public class FieldAdapterDetector<T extends CalculusFieldElement<T>> implements 
     public FieldEventDetector<T> getDetector() {
         return detector;
     }
-
-    /** {@inheritDoc} */
-    @Override
-    public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
-        detector.init(s0, t);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public T g(final FieldSpacecraftState<T> s) {
-        return detector.g(s);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public T getThreshold() {
-        return detector.getThreshold();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public FieldAdaptableInterval<T> getMaxCheckInterval() {
-        return detector.getMaxCheckInterval();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public int getMaxIterationCount() {
-        return detector.getMaxIterationCount();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public FieldEventHandler<T> getHandler() {
-        return detector.getHandler();
-    }
-
 }

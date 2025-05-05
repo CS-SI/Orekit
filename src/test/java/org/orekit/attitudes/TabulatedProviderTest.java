@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -72,7 +73,8 @@ public class TabulatedProviderTest {
     OneAxisEllipsoid earthShape;
 
     @Test
-    public void testDifferentFrames() {
+    @DefaultDataContext
+    void testDifferentFrames() {
         double             samplingRate      = 10.0;
         int                n                 = 8;
         AttitudeProvider   referenceProvider = new NadirPointing(circOrbit.getFrame(), earthShape);
@@ -105,7 +107,7 @@ public class TabulatedProviderTest {
     }
 
     @Test
-    public void testWithoutRate() {
+    void testWithoutRate() {
         double             samplingRate      = 10.0;
         double             checkingRate      = 1.0;
         int                n                 = 8;
@@ -120,7 +122,7 @@ public class TabulatedProviderTest {
     }
 
     @Test
-    public void testWithRate() {
+    void testWithRate() {
         double             samplingRate      = 10.0;
         double             checkingRate      = 1.0;
         int                n                 = 8;
@@ -135,7 +137,7 @@ public class TabulatedProviderTest {
     }
 
     @Test
-    public void testWithAcceleration() {
+    void testWithAcceleration() {
         double             samplingRate      = 10.0;
         double             checkingRate      = 1.0;
         int                n                 = 8;
@@ -157,7 +159,7 @@ public class TabulatedProviderTest {
         referencePropagator.setAttitudeProvider(referenceProvider);
 
         // create sample
-        final List<TimeStampedAngularCoordinates> sample = new ArrayList<TimeStampedAngularCoordinates>();
+        final List<TimeStampedAngularCoordinates> sample = new ArrayList<>();
         referencePropagator.setStepHandler(samplingRate, currentState -> sample.add(currentState.getAttitude().getOrientation()));
         referencePropagator.propagate(circOrbit.getDate().shiftedBy(2 * circOrbit.getKeplerianPeriod()));
 
@@ -211,12 +213,13 @@ public class TabulatedProviderTest {
     }
 
     @BeforeEach
+    @DefaultDataContext
     public void setUp() {
         try {
             Utils.setDataRoot("regular-data");
 
             // Computation date
-            date = new AbsoluteDate(new DateComponents(2008, 04, 07),
+            date = new AbsoluteDate(new DateComponents(2008, 4, 7),
                                     TimeComponents.H00,
                                     TimeScalesFactory.getUTC());
 

@@ -120,39 +120,10 @@ public class EphemerisPropagatorBuilderTest {
         assertEquals(expectedPropagator.getMinDate(), builtPropagator.getMinDate());
         assertEquals(expectedPropagator.getMaxDate(), builtPropagator.getMaxDate());
 
-        Assertions.assertArrayEquals(expectedPropagator.getManagedAdditionalStates(),
-                                     builtPropagator.getManagedAdditionalStates());
+        Assertions.assertArrayEquals(expectedPropagator.getManagedAdditionalData(),
+                                     builtPropagator.getManagedAdditionalData());
         // Initial state has also been verified to be equal between both ephemeris (except for the Attitude which is expected
         // to have different memory address)
-    }
-
-    @Test
-    @SuppressWarnings("deprecation")
-    void testCopyMethod() {
-
-        // Given
-        final Orbit orbit = new CartesianOrbit(new PVCoordinates(
-                new Vector3D(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS + 400000, 0, 0),
-                new Vector3D(0, 7668.6, 0)), FramesFactory.getGCRF(),
-                                               new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
-        final List<SpacecraftState> states = new ArrayList<>();
-        double end = Constants.JULIAN_DAY;
-        for (double dt = 0; dt <= end; dt += 3600.0) {
-            AbsoluteDate shiftedEpoch = orbit.getDate().shiftedBy(dt);
-            states.add(new SpacecraftState(orbit.shiftedBy(dt), Utils.defaultLaw().getAttitude(orbit, shiftedEpoch, orbit.getFrame())));
-        }
-
-        final TimeInterpolator<SpacecraftState> stateInterpolator = new SpacecraftStateInterpolator(orbit.getFrame());
-        final AttitudeProvider                  attitudeProvider  =  Utils.defaultLaw();
-
-        final EphemerisPropagatorBuilder builder =
-                new EphemerisPropagatorBuilder(states, stateInterpolator, attitudeProvider);
-
-        // When
-        final EphemerisPropagatorBuilder copyBuilder = builder.copy();
-
-        // Then
-        assertPropagatorBuilderIsACopy(builder, copyBuilder);
     }
 
     @Test

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Exotrail
+/* Copyright 2002-2025 Exotrail
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,14 +23,15 @@ import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.orbits.FieldCartesianOrbit;
+import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.events.FieldAbstractDetector;
-import org.orekit.propagation.events.FieldAdaptableInterval;
+import org.orekit.propagation.events.FieldDetectorModifier;
+import org.orekit.propagation.events.FieldEventDetectionSettings;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
-import org.orekit.utils.FieldArrayDictionary;
+import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 
 /** Impulse maneuver model for propagators working with Fields.
@@ -38,16 +39,14 @@ import org.orekit.utils.FieldPVCoordinates;
  * that can be provided to any {@link org.orekit.propagation.FieldPropagator
  * Propagator} and mirrors the standard version
  * {@link org.orekit.forces.maneuvers.ImpulseManeuver}.</p>
- * <p>The maneuver is triggered when an underlying event generates a
- * {@link Action#STOP STOP} event, in which case this class will generate a {@link
- * Action#RESET_STATE RESET_STATE}
- * event (the stop event from the underlying object is therefore filtered out).
+ * <p>The maneuver is executed when an underlying is triggered, in which case this class will generate a {@link
+ * Action#RESET_STATE RESET_STATE} event. By default, the detection settings are those of the trigger.
  * In the simple cases, the underlying event detector may be a basic
  * {@link org.orekit.propagation.events.FieldDateDetector date event}, but it
  * can also be a more elaborate {@link
  * org.orekit.propagation.events.FieldApsideDetector apside event} for apogee
  * maneuvers for example.</p>
- * <p>The maneuver is defined by a single velocity increment.
+ * <p>The maneuver velocity increment is defined via {@link FieldImpulseProvider}.
  * If no AttitudeProvider is given, the current attitude of the spacecraft,
  * defined by the current spacecraft state, will be used as the
  * {@link AttitudeProvider} so the velocity increment should be given in
@@ -72,20 +71,13 @@ import org.orekit.utils.FieldPVCoordinates;
  * @see org.orekit.forces.maneuvers.ImpulseManeuver
  * @author Romain Serra
  * @since 12.0
- * @param <D> type of the detector
  * @param <T> type of the field elements
  */
-public class FieldImpulseManeuver<D extends FieldEventDetector<T>, T extends CalculusFieldElement<T>>
-        extends FieldAbstractDetector<FieldImpulseManeuver<D, T>, T> {
-
-    /** The attitude to override during the maneuver, if set. */
-    private final AttitudeProvider attitudeOverride;
+public class FieldImpulseManeuver<T extends CalculusFieldElement<T>> extends AbstractImpulseManeuver
+        implements FieldDetectorModifier<T> {
 
     /** Triggering event. */
-    private final D trigger;
-
-    /** Velocity increment in satellite frame. */
-    private final FieldVector3D<T> deltaVSat;
+    private final FieldEventDetector<T> trigger;
 
     /** Specific impulse. */
     private final T isp;
@@ -93,18 +85,24 @@ public class FieldImpulseManeuver<D extends FieldEventDetector<T>, T extends Cal
     /** Engine exhaust velocity. */
     private final T vExhaust;
 
+    /** Trigger's detection settings. */
+    private final FieldEventDetectionSettings<T> detectionSettings;
+
+    /** Specific event handler. */
+    private final Handler<T> handler;
+
+    /** Field impulse provider. */
+    private final FieldImpulseProvider<T> fieldImpulseProvider;
+
     /** Indicator for forward propagation. */
     private boolean forward;
-
-    /** Type of norm linking delta-V to mass consumption. */
-    private final Control3DVectorCostType control3DVectorCostType;
 
     /** Build a new instance.
      * @param trigger triggering event
      * @param deltaVSat velocity increment in satellite frame
      * @param isp engine specific impulse (s)
      */
-    public FieldImpulseManeuver(final D trigger, final FieldVector3D<T> deltaVSat, final T isp) {
+    public FieldImpulseManeuver(final FieldEventDetector<T> trigger, final FieldVector3D<T> deltaVSat, final T isp) {
         this(trigger, null, deltaVSat, isp);
     }
 
@@ -114,11 +112,9 @@ public class FieldImpulseManeuver<D extends FieldEventDetector<T>, T extends Cal
      * @param deltaVSat velocity increment in satellite frame
      * @param isp engine specific impulse (s)
      */
-    public FieldImpulseManeuver(final D trigger, final AttitudeProvider attitudeOverride,
+    public FieldImpulseManeuver(final FieldEventDetector<T> trigger, final AttitudeProvider attitudeOverride,
                                 final FieldVector3D<T> deltaVSat, final T isp) {
-        this(trigger.getMaxCheckInterval(), trigger.getThreshold(), trigger.getMaxIterationCount(),
-                new Handler<>(), trigger, attitudeOverride, deltaVSat, isp,
-                Control3DVectorCostType.TWO_NORM);
+        this(trigger, attitudeOverride, FieldImpulseProvider.of(deltaVSat), isp, Control3DVectorCostType.TWO_NORM);
     }
 
     /** Build a new instance.
@@ -127,86 +123,101 @@ public class FieldImpulseManeuver<D extends FieldEventDetector<T>, T extends Cal
      * @param deltaVSat velocity increment in satellite frame
      * @param isp engine specific impulse (s)
      * @param control3DVectorCostType increment's norm for mass consumption
+     * @deprecated since 13.0
      */
-    public FieldImpulseManeuver(final D trigger, final AttitudeProvider attitudeOverride,
+    @Deprecated
+    public FieldImpulseManeuver(final FieldEventDetector<T> trigger, final AttitudeProvider attitudeOverride,
                                 final FieldVector3D<T> deltaVSat, final T isp,
                                 final Control3DVectorCostType control3DVectorCostType) {
-        this(trigger.getMaxCheckInterval(), trigger.getThreshold(), trigger.getMaxIterationCount(),
-                new Handler<>(), trigger, attitudeOverride, deltaVSat, isp, control3DVectorCostType);
+        this(trigger, trigger.getDetectionSettings(), attitudeOverride,
+                FieldImpulseProvider.of(deltaVSat), isp, control3DVectorCostType);
     }
 
-    /** Private constructor with full parameters.
-     * <p>
-     * This constructor is private as users are expected to use the builder
-     * API with the various {@code withXxx()} methods to set up the instance
-     * in a readable manner without using a huge amount of parameters.
-     * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
-     * @param eventHandler event handler to call at event occurrences
+    /** Build a new instance.
      * @param trigger triggering event
      * @param attitudeOverride the attitude provider to use for the maneuver
-     * @param deltaVSat velocity increment in satellite frame
+     * @param fieldImpulseProvider impulse provider
      * @param isp engine specific impulse (s)
      * @param control3DVectorCostType increment's norm for mass consumption
      */
-    private FieldImpulseManeuver(final FieldAdaptableInterval<T> maxCheck, final T threshold, final int maxIter,
-                                 final FieldEventHandler<T> eventHandler, final D trigger,
-                                 final AttitudeProvider attitudeOverride, final FieldVector3D<T> deltaVSat,
-                                 final T isp, final Control3DVectorCostType control3DVectorCostType) {
-        super(maxCheck, threshold, maxIter, eventHandler);
-        this.trigger = trigger;
-        this.deltaVSat = deltaVSat;
-        this.isp = isp;
-        this.attitudeOverride = attitudeOverride;
-        this.control3DVectorCostType = control3DVectorCostType;
-        this.vExhaust = this.isp.multiply(Constants.G0_STANDARD_GRAVITY);
+    public FieldImpulseManeuver(final FieldEventDetector<T> trigger, final AttitudeProvider attitudeOverride,
+                                final FieldImpulseProvider<T> fieldImpulseProvider, final T isp,
+                                final Control3DVectorCostType control3DVectorCostType) {
+        this(trigger, trigger.getDetectionSettings(), attitudeOverride, fieldImpulseProvider, isp, control3DVectorCostType);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    protected FieldImpulseManeuver<D, T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
-                                                final int newMaxIter,
-                                                final FieldEventHandler<T> fieldEventHandler) {
-        return new FieldImpulseManeuver<>(newMaxCheck, newThreshold, newMaxIter, fieldEventHandler,
-                trigger, attitudeOverride, deltaVSat, isp, control3DVectorCostType);
+    /** Private constructor.
+     * @param trigger triggering event
+     * @param detectionSettings event detection settings
+     * @param attitudeOverride the attitude provider to use for the maneuver
+     * @param fieldImpulseProvider impulse provider
+     * @param isp engine specific impulse (s)
+     * @param control3DVectorCostType increment's norm for mass consumption
+     */
+    private FieldImpulseManeuver(final FieldEventDetector<T> trigger,
+                                 final FieldEventDetectionSettings<T> detectionSettings,
+                                 final AttitudeProvider attitudeOverride, final FieldImpulseProvider<T> fieldImpulseProvider,
+                                 final T isp, final Control3DVectorCostType control3DVectorCostType) {
+        super(attitudeOverride, control3DVectorCostType);
+        this.trigger = trigger;
+        this.detectionSettings = detectionSettings;
+        this.fieldImpulseProvider = fieldImpulseProvider;
+        this.isp = isp;
+        this.vExhaust = this.isp.multiply(Constants.G0_STANDARD_GRAVITY);
+        this.handler = new Handler<>();
+    }
+
+    /**
+     * Creates a copy with different event detection settings.
+     * @param eventDetectionSettings new detection settings
+     * @return a new detector with same properties except for the detection settings
+     */
+    public FieldImpulseManeuver<T> withDetectionSettings(final FieldEventDetectionSettings<T> eventDetectionSettings) {
+        return new FieldImpulseManeuver<>(trigger, eventDetectionSettings, getAttitudeOverride(), fieldImpulseProvider, isp,
+                getControl3DVectorCostType());
     }
 
     /** {@inheritDoc} */
     @Override
     public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
+        FieldDetectorModifier.super.init(s0, t);
         forward = t.durationFrom(s0.getDate()).getReal() >= 0;
-        // Initialize the triggering event
-        trigger.init(s0, t);
+        fieldImpulseProvider.init(s0, t);
     }
 
     /** {@inheritDoc} */
     @Override
-    public T g(final FieldSpacecraftState<T> fieldSpacecraftState) {
-        return trigger.g(fieldSpacecraftState);
+    public void finish(final FieldSpacecraftState<T> state) {
+        FieldDetectorModifier.super.finish(state);
+        fieldImpulseProvider.finish(state);
     }
 
-    /**
-     * Get the Attitude Provider to use during maneuver.
-     * @return the attitude provider
-     */
-    public AttitudeProvider getAttitudeOverride() {
-        return attitudeOverride;
+    /** {@inheritDoc} */
+    @Override
+    public FieldEventDetectionSettings<T> getDetectionSettings() {
+        return detectionSettings;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldEventDetector<T> getDetector() {
+        return trigger;
     }
 
     /** Get the triggering event.
      * @return triggering event
      */
     public FieldEventDetector<T> getTrigger() {
-        return trigger;
+        return getDetector();
     }
 
-    /** Get the velocity increment in satellite frame.
-     * @return velocity increment in satellite frame
+    /**
+     * Getter for the impulse provider.
+     * @return impulse provider
+     * @since 13.0
      */
-    public FieldVector3D<T> getDeltaVSat() {
-        return deltaVSat;
+    public FieldImpulseProvider<T> getFieldImpulseProvider() {
+        return fieldImpulseProvider;
     }
 
     /** Get the specific impulse.
@@ -216,12 +227,9 @@ public class FieldImpulseManeuver<D extends FieldEventDetector<T>, T extends Cal
         return isp;
     }
 
-    /** Get the control vector's cost type.
-     * @return control cost type
-     * @since 12.0
-     */
-    public Control3DVectorCostType getControl3DVectorCostType() {
-        return control3DVectorCostType;
+    @Override
+    public FieldEventHandler<T> getHandler() {
+        return handler;
     }
 
     /** Local handler. */
@@ -232,13 +240,9 @@ public class FieldImpulseManeuver<D extends FieldEventDetector<T>, T extends Cal
         public Action eventOccurred(final FieldSpacecraftState<T> s,
                                     final FieldEventDetector<T> detector,
                                     final boolean increasing) {
-            // filter underlying event
-            @SuppressWarnings("unchecked")
-            final FieldImpulseManeuver<?, T> im = (FieldImpulseManeuver<?, T>) detector;
-            final Action underlyingAction = im.trigger.getHandler().eventOccurred(s, im.trigger,
-                    increasing);
-
-            return (underlyingAction == Action.STOP) ? Action.RESET_STATE : Action.CONTINUE;
+            final FieldImpulseManeuver<T> im = (FieldImpulseManeuver<T>) detector;
+            im.trigger.getHandler().eventOccurred(s, im.trigger, increasing); // Action ignored but method still called
+            return Action.RESET_STATE;
         }
 
         /** {@inheritDoc} */
@@ -246,47 +250,46 @@ public class FieldImpulseManeuver<D extends FieldEventDetector<T>, T extends Cal
         public FieldSpacecraftState<T> resetState(final FieldEventDetector<T> detector,
                                                   final FieldSpacecraftState<T> oldState) {
 
-            @SuppressWarnings("unchecked")
-            final FieldImpulseManeuver<?, T> im = (FieldImpulseManeuver<?, T>) detector;
+            final FieldImpulseManeuver<T> im = (FieldImpulseManeuver<T>) detector;
             final FieldAbsoluteDate<T> date = oldState.getDate();
-            final FieldRotation<T> rotation;
+            final boolean isStateOrbitDefined = oldState.isOrbitDefined();
 
+            final FieldRotation<T> rotation;
             if (im.getAttitudeOverride() == null) {
                 rotation = oldState.getAttitude().getRotation();
             } else {
-                rotation = im.attitudeOverride.getAttitudeRotation(oldState.getOrbit(), date,
-                        oldState.getFrame());
+                rotation = im.getAttitudeOverride().getAttitudeRotation(isStateOrbitDefined ? oldState.getOrbit() : oldState.getAbsPVA(),
+                        date, oldState.getFrame());
             }
 
             // convert velocity increment in inertial frame
-            final FieldVector3D<T> deltaV = rotation.applyInverseTo(im.deltaVSat);
-            final T one = oldState.getMu().getField().getOne();
+            final FieldVector3D<T> deltaVSat = im.fieldImpulseProvider.getImpulse(oldState, im.forward);
+            final FieldVector3D<T> deltaV = rotation.applyInverseTo(deltaVSat);
+            final T one = oldState.getMass().getField().getOne();
             final T sign = (im.forward) ? one : one.negate();
 
             // apply increment to position/velocity
             final FieldPVCoordinates<T> oldPV = oldState.getPVCoordinates();
-            final FieldPVCoordinates<T> newPV =
-                    new FieldPVCoordinates<>(oldPV.getPosition(),
-                            new FieldVector3D<>(one, oldPV.getVelocity(), sign, deltaV));
-            final FieldCartesianOrbit<T> newOrbit =
-                    new FieldCartesianOrbit<>(newPV, oldState.getFrame(), date, oldState.getMu());
+            final FieldVector3D<T> newVelocity = oldPV.getVelocity().add(deltaV);
+            final FieldPVCoordinates<T> newPV = new FieldPVCoordinates<>(oldPV.getPosition(), newVelocity);
 
             // compute new mass
-            final T normDeltaV = im.control3DVectorCostType.evaluate(im.deltaVSat);
+            final T normDeltaV = im.getControl3DVectorCostType().evaluate(deltaVSat);
             final T newMass = oldState.getMass().multiply(FastMath.exp(normDeltaV.multiply(sign.negate()).divide(im.vExhaust)));
 
             // pack everything in a new state
-            FieldSpacecraftState<T> newState = new FieldSpacecraftState<>(oldState.getOrbit().getType().normalize(newOrbit, oldState.getOrbit()),
-                    oldState.getAttitude(), newMass);
-
-            for (final FieldArrayDictionary<T>.Entry entry : oldState.getAdditionalStatesValues().getData()) {
-                newState = newState.addAdditionalState(entry.getKey(), entry.getValue());
+            if (oldState.isOrbitDefined()) {
+                final FieldOrbit<T> newOrbit = new FieldCartesianOrbit<>(newPV, oldState.getFrame(), oldState.getDate(),
+                        oldState.getOrbit().getMu());
+                return new FieldSpacecraftState<>(oldState.getOrbit().getType().normalize(newOrbit, oldState.getOrbit()),
+                        oldState.getAttitude(), newMass, oldState.getAdditionalDataValues(),
+                        oldState.getAdditionalStatesDerivatives());
+            } else {
+                final FieldAbsolutePVCoordinates<T> newAbsPVA = new FieldAbsolutePVCoordinates<>(oldState.getFrame(),
+                        oldState.getDate(), newPV);
+                return new FieldSpacecraftState<>(newAbsPVA, oldState.getAttitude(), newMass,
+                        oldState.getAdditionalDataValues(), oldState.getAdditionalStatesDerivatives());
             }
-            for (final FieldArrayDictionary<T>.Entry entry : oldState.getAdditionalStatesDerivatives().getData()) {
-                newState = newState.addAdditionalStateDerivative(entry.getKey(), entry.getValue());
-            }
-
-            return newState;
         }
 
     }

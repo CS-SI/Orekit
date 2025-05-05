@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,50 +16,48 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.AdamsMoultonIntegrator;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.ToleranceProvider;
 
 /** Builder for AdamsMoultonIntegrator.
  * @author Pascal Parraud
  * @since 6.0
  */
-public class AdamsMoultonIntegratorBuilder implements ODEIntegratorBuilder {
+public class AdamsMoultonIntegratorBuilder extends AbstractVariableStepIntegratorBuilder<AdamsMoultonIntegrator> {
 
     /** Number of steps. */
     private final int nSteps;
 
-    /** Minimum step size (s). */
-    private final double minStep;
-
-    /** Maximum step size (s). */
-    private final double maxStep;
-
-    /** Minimum step size (s). */
-    private final double dP;
-
-    /** Build a new instance.
+    /** Build a new instance using default integration tolerances.
      * @param nSteps number of steps
      * @param minStep minimum step size (s)
      * @param maxStep maximum step size (s)
      * @param dP position error (m)
      * @see AdamsMoultonIntegrator
-     * @see NumericalPropagator#tolerances(double, Orbit, OrbitType)
      */
     public AdamsMoultonIntegratorBuilder(final int nSteps, final double minStep,
-                                           final double maxStep, final double dP) {
+                                         final double maxStep, final double dP) {
+        this(nSteps, minStep, maxStep, getDefaultToleranceProvider(dP));
+    }
+
+    /** Build a new instance using default integration tolerances.
+     * @param nSteps number of steps
+     * @param minStep minimum step size (s)
+     * @param maxStep maximum step size (s)
+     * @param toleranceProvider integration tolerance provider
+     * @see AdamsMoultonIntegrator
+     * @since 13.0
+     */
+    public AdamsMoultonIntegratorBuilder(final int nSteps, final double minStep,
+                                         final double maxStep, final ToleranceProvider toleranceProvider) {
+        super(minStep, maxStep, toleranceProvider);
         this.nSteps  = nSteps;
-        this.minStep = minStep;
-        this.maxStep = maxStep;
-        this.dP      = dP;
     }
 
     /** {@inheritDoc} */
-    public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType) {
-        final double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
-        return new AdamsMoultonIntegrator(nSteps, minStep, maxStep, tol[0], tol[1]);
+    @Override
+    protected AdamsMoultonIntegrator buildIntegrator(final double[][] tolerances) {
+        return new AdamsMoultonIntegrator(nSteps, getMinStep(), getMaxStep(), tolerances[0], tolerances[1]);
     }
 
 }

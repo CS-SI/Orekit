@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -64,8 +64,13 @@ public enum SatelliteSystem {
      */
     USER_DEFINED_H('H', null),
 
-    /** Indian Regional Navigation Satellite System system (NavIC). */
-    IRNSS('I', ObservationTimeScale.IRN),
+    /** Navigation with Indian Constellation (NavIC).
+     * <p>
+     * This system was known as Indian Regional Navigation Satellite System (IRNSS).
+     * </p>
+     * @since 13.0
+     */
+    NAVIC('I', ObservationTimeScale.IRN),
 
     /** Quasi-Zenith Satellite System system. */
     QZSS('J', ObservationTimeScale.QZS),

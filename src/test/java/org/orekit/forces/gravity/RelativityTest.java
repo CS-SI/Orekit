@@ -47,6 +47,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -129,7 +130,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
      * check the acceleration from relativity
      */
     @Test
-    public void testAcceleration() {
+    void testAcceleration() {
         double gm = Constants.EIGEN5C_EARTH_MU;
         Relativity relativity = new Relativity(gm);
         Assertions.assertFalse(relativity.dependsOnPositionOnly());
@@ -166,7 +167,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testJacobianVs80Implementation() {
+    void testJacobianVs80Implementation() {
         double gm = Constants.EIGEN5C_EARTH_MU;
         Relativity relativity = new Relativity(gm);
         final Vector3D p = new Vector3D(3777828.75000531, -5543949.549783845, 2563117.448578311);
@@ -184,7 +185,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testJacobianVs80ImplementationGradient() {
+    void testJacobianVs80ImplementationGradient() {
         double gm = Constants.EIGEN5C_EARTH_MU;
         Relativity relativity = new Relativity(gm);
         final Vector3D p = new Vector3D(3777828.75000531, -5543949.549783845, 2563117.448578311);
@@ -205,7 +206,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
      * Check a nearly circular orbit.
      */
     @Test
-    public void testAccelerationCircular() {
+    void testAccelerationCircular() {
         double gm = Constants.EIGEN5C_EARTH_MU;
         double re = Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
         Relativity relativity = new Relativity(gm);
@@ -282,7 +283,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
 
         SpacecraftState iSR = initialState.toSpacecraftState();
         OrbitType type = OrbitType.KEPLERIAN;
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(FKO.toOrbit(), type);
 
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
@@ -344,7 +345,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
 
         SpacecraftState iSR = initialState.toSpacecraftState();
         OrbitType type = OrbitType.KEPLERIAN;
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(FKO.toOrbit(), type);
 
 
         AdaptiveStepsizeFieldIntegrator<Gradient> integrator =
@@ -405,7 +406,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         SpacecraftState iSR = initialState.toSpacecraftState();
 
         OrbitType type = OrbitType.KEPLERIAN;
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(FKO.toOrbit(), type);
 
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
@@ -444,7 +445,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
      * propagation tolerances to 1e-5.
      */
     @Test
-    public void testSmallEffectOnOrbit() {
+    void testSmallEffectOnOrbit() {
         //setup
         final double gm = Constants.EIGEN5C_EARTH_MU;
         Orbit orbit =
@@ -454,7 +455,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
                         date,
                         gm
                 );
-        double[][] tol = NumericalPropagator.tolerances(0.00001, orbit, OrbitType.CARTESIAN);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.00001).getTolerances(orbit, OrbitType.CARTESIAN);
         AbstractIntegrator integrator = new DormandPrince853Integrator(1, 3600, tol[0], tol[1]);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setOrbitType(OrbitType.CARTESIAN);
@@ -481,7 +482,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
      * Relativity#getParameter(String)}
      */
     @Test
-    public void testGetSetGM() {
+    void testGetSetGM() {
         //setup
         Relativity relativity = new Relativity(Constants.EIGEN5C_EARTH_MU);
 

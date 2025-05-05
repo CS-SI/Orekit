@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Exotrail
+/* Copyright 2002-2025 Exotrail
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,12 +32,18 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.LUDecomposition;
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
@@ -59,27 +65,17 @@ import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.AbstractDetector;
-import org.orekit.propagation.events.DateDetector;
-import org.orekit.propagation.events.EclipseDetector;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldAbstractDetector;
-import org.orekit.propagation.events.FieldAdaptableInterval;
-import org.orekit.propagation.events.FieldDateDetector;
-import org.orekit.propagation.events.FieldEclipseDetector;
-import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.events.FieldLatitudeCrossingDetector;
-import org.orekit.propagation.events.LatitudeCrossingDetector;
-import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
-import org.orekit.propagation.events.handlers.FieldEventHandler;
-import org.orekit.propagation.events.handlers.FieldStopOnEvent;
-import org.orekit.propagation.events.handlers.StopOnEvent;
+import org.orekit.propagation.analytical.FieldKeplerianPropagator;
+import org.orekit.propagation.events.*;
+import org.orekit.propagation.events.handlers.*;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
 import org.orekit.propagation.integration.FieldCombinedDerivatives;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
@@ -140,46 +136,165 @@ class FieldImpulseManeuverTest {
         Utils.setDataRoot("regular-data");
     }
 
+    @Deprecated
     @Test
-    void testComplexConstructors() {
+    void testDeprecatedConstructors() {
         // Given
         final Complex zero = complexField.getZero();
-        final Complex isp = zero.add(200.);
-        final FieldVector3D<Complex> deltaV = new FieldVector3D<>(complexField, Vector3D.PLUS_I);
-        final FieldAbsoluteDate<Complex> fieldAbsoluteDate = new FieldAbsoluteDate<>(complexField,
-                AbsoluteDate.ARBITRARY_EPOCH);
-        final FieldDateDetector<Complex> dateDetector = new FieldDateDetector<>(complexField, fieldAbsoluteDate).withThreshold(zero.add(100.));
-
-        // When
-        final FieldImpulseManeuver<?, Complex> fieldImpulseManeuver1 = new FieldImpulseManeuver<>
-                (dateDetector.withHandler(new FieldStopOnEvent<>()), deltaV, isp);
-        final FieldImpulseManeuver<?, Complex> fieldImpulseManeuver2 = new FieldImpulseManeuver<>
-                (dateDetector.withHandler(new FieldStopOnEvent<>()), null, deltaV, isp);
-
-        // Then
-        Assertions.assertEquals(fieldImpulseManeuver1.getTrigger().getThreshold(), dateDetector.getThreshold());
-        Assertions.assertEquals(fieldImpulseManeuver2.getTrigger().getThreshold(), dateDetector.getThreshold());
-        Assertions.assertEquals(fieldImpulseManeuver1.getAttitudeOverride(), fieldImpulseManeuver2.getAttitudeOverride());
-        Assertions.assertEquals(fieldImpulseManeuver1.getIsp(), fieldImpulseManeuver2.getIsp());
-        Assertions.assertEquals(fieldImpulseManeuver1.getDeltaVSat(), fieldImpulseManeuver2.getDeltaVSat());
-    }
-
-    @Test
-    void testDeltaVNorm() {
-        // Given
-        final Complex isp = complexField.getOne().add(200.);
-        final FieldVector3D<Complex> deltaV = new FieldVector3D<>(complexField, Vector3D.PLUS_I);
+        final Complex complexIsp = zero.add(200.);
+        final FieldVector3D<Complex> deltaVSat = new FieldVector3D<>(complexField, Vector3D.PLUS_I);
         final FieldAbsoluteDate<Complex> fieldAbsoluteDate = new FieldAbsoluteDate<>(complexField,
                 AbsoluteDate.ARBITRARY_EPOCH);
         final FieldDateDetector<Complex> dateDetector = new FieldDateDetector<>(complexField, fieldAbsoluteDate);
 
         // When
-        final FieldImpulseManeuver<?, Complex> fieldImpulseManeuverNorm1 = new FieldImpulseManeuver<>
-                (dateDetector.withHandler(new FieldStopOnEvent<>()), null, deltaV, isp, Control3DVectorCostType.ONE_NORM);
-        final FieldImpulseManeuver<?, Complex> fieldImpulseManeuverNorm2 = new FieldImpulseManeuver<>
-                (dateDetector.withHandler(new FieldStopOnEvent<>()), null, deltaV, isp, Control3DVectorCostType.TWO_NORM);
-        final FieldImpulseManeuver<?, Complex> fieldImpulseManeuverNormInf = new FieldImpulseManeuver<>
-                (dateDetector.withHandler(new FieldStopOnEvent<>()), null, deltaV, isp, Control3DVectorCostType.INF_NORM);
+        final FieldImpulseManeuver<Complex> fieldImpulseManeuver = new FieldImpulseManeuver<>(dateDetector, null, deltaVSat, complexIsp,
+                Control3DVectorCostType.TWO_NORM);
+
+        // Then
+        Assertions.assertEquals(complexIsp, fieldImpulseManeuver.getIsp());
+    }
+
+    @Test
+    void testComplexConstructors() {
+        // Given
+        final Complex zero = complexField.getZero();
+        final Complex complexIsp = zero.add(200.);
+        final FieldVector3D<Complex> deltaVSat = new FieldVector3D<>(complexField, Vector3D.PLUS_I);
+        final FieldAbsoluteDate<Complex> fieldAbsoluteDate = new FieldAbsoluteDate<>(complexField,
+                AbsoluteDate.ARBITRARY_EPOCH);
+        final FieldEventDetectionSettings<Complex> detectionSettings = new FieldEventDetectionSettings<>(ComplexField.getInstance(),
+                EventDetectionSettings.getDefaultEventDetectionSettings());
+        final FieldDateDetector<Complex> dateDetector = new FieldDateDetector<>(complexField, fieldAbsoluteDate).withDetectionSettings(detectionSettings);
+
+        // When
+        final FieldImpulseManeuver<Complex> fieldImpulseManeuver1 = new FieldImpulseManeuver<>(dateDetector, deltaVSat, complexIsp);
+        final FieldImpulseManeuver<Complex> fieldImpulseManeuver2 = new FieldImpulseManeuver<>(dateDetector, null, deltaVSat, complexIsp);
+
+        // Then
+        Assertions.assertEquals(fieldImpulseManeuver1.getTrigger(), fieldImpulseManeuver2.getTrigger());
+        Assertions.assertEquals(fieldImpulseManeuver1.getControl3DVectorCostType(), fieldImpulseManeuver2.getControl3DVectorCostType());
+        Assertions.assertEquals(fieldImpulseManeuver1.getDetectionSettings(), dateDetector.getDetectionSettings());
+        Assertions.assertEquals(fieldImpulseManeuver1.getAttitudeOverride(), fieldImpulseManeuver2.getAttitudeOverride());
+        Assertions.assertEquals(fieldImpulseManeuver1.getIsp(), fieldImpulseManeuver2.getIsp());
+    }
+
+    @Test
+    void testEventOccurredEventSlopeFilter() {
+        // GIVEN
+        final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldOrbit<Binary64> fieldOrbit = new FieldCartesianOrbit<>(field, orbit);
+        final FieldApsideDetector<Binary64> detector = new FieldApsideDetector<>(fieldOrbit);
+        final FieldImpulseManeuver<Binary64> maneuver = new FieldImpulseManeuver<>(new FieldEventSlopeFilter<>(detector,
+                FilterType.TRIGGER_ONLY_INCREASING_EVENTS), FieldVector3D.getZero(field), Binary64.ONE);
+        final FieldKeplerianPropagator<Binary64> propagator = new FieldKeplerianPropagator<>(fieldOrbit);
+        // WHEN & THEN
+        propagator.addEventDetector(maneuver);
+        Assertions.assertDoesNotThrow(() -> propagator.propagate(fieldOrbit.getDate().shiftedBy(1e5)));
+    }
+
+    @Test
+    void testWithDetectionSettings() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldDateDetector<Binary64> fieldDateDetector = new FieldDateDetector<>(field);
+        final FieldImpulseManeuver<Binary64> fieldImpulseManeuver = new FieldImpulseManeuver<>(fieldDateDetector,
+                FieldVector3D.getZero(field), Binary64.ONE);
+        final FieldEventDetectionSettings<Binary64> expectedSettings = new FieldEventDetectionSettings<>(
+                FieldAdaptableInterval.of(1), new Binary64(2), 3);
+        // WHEN
+        final FieldImpulseManeuver<Binary64> maneuverWithSettings = fieldImpulseManeuver.withDetectionSettings(expectedSettings);
+        // THEN
+        Assertions.assertEquals(fieldImpulseManeuver.getAttitudeOverride(), maneuverWithSettings.getAttitudeOverride());
+        Assertions.assertEquals(fieldImpulseManeuver.getIsp(), maneuverWithSettings.getIsp());
+        Assertions.assertEquals(fieldImpulseManeuver.getFieldImpulseProvider(), maneuverWithSettings.getFieldImpulseProvider());
+        Assertions.assertEquals(expectedSettings.getThreshold(), maneuverWithSettings.getThreshold());
+        Assertions.assertEquals(expectedSettings.getMaxIterationCount(), maneuverWithSettings.getMaxIterationCount());
+        Assertions.assertEquals(expectedSettings.getMaxCheckInterval(), maneuverWithSettings.getMaxCheckInterval());
+    }
+
+    @ParameterizedTest
+    @EnumSource(Action.class)
+    void testEventOccurred(final Action action) {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldDateDetector<Binary64> fieldDateDetector = new FieldDateDetector<>(field);
+        final Orbit orbit = createOrbit();
+        final FieldCountingHandler<Binary64> handler = new FieldCountingHandler<Binary64>(0, action) {
+            @Override
+            protected boolean doesCount(FieldSpacecraftState<Binary64> state, FieldEventDetector<Binary64> detector, boolean increasing) {
+                return true;
+            }
+        };
+        final FieldImpulseManeuver<Binary64> fieldImpulseManeuver = new FieldImpulseManeuver<>(fieldDateDetector.withHandler(handler),
+                FieldVector3D.getZero(field), Binary64.ONE);
+        // WHEN
+        fieldImpulseManeuver.getHandler().eventOccurred(new FieldSpacecraftState<>(new FieldCartesianOrbit<>(field, orbit)),
+                fieldImpulseManeuver, true);
+        // THEN
+        Assertions.assertEquals(1, handler.getCount());
+    }
+
+    @Test
+    void testResetStateAttitudeOverride() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldDateDetector<Binary64> fieldDateDetector = new FieldDateDetector<>(field);
+        final AbsolutePVCoordinates pvCoordinates = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
+                AbsoluteDate.ARBITRARY_EPOCH, new Vector3D(1., 2, 3), new Vector3D(4, 5, 6));
+        final FieldSpacecraftState<Binary64> expectedState = new FieldSpacecraftState<>(field, new SpacecraftState(pvCoordinates));
+        final FieldImpulseManeuver<Binary64> fieldImpulseManeuver = new FieldImpulseManeuver<>(fieldDateDetector,
+                new FrameAlignedProvider(pvCoordinates.getFrame()), FieldVector3D.getZero(field), Binary64.ONE);
+        // WHEN
+        final FieldSpacecraftState<Binary64> actualState = fieldImpulseManeuver.getHandler().resetState(fieldImpulseManeuver, expectedState);
+        // THEN
+        compareStates(expectedState, actualState);
+    }
+
+    @Test
+    void testResetState() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldDateDetector<Binary64> fieldDateDetector = new FieldDateDetector<>(field);
+        final AbsolutePVCoordinates pvCoordinates = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
+                AbsoluteDate.ARBITRARY_EPOCH, new Vector3D(1., 2, 3), new Vector3D(4, 5, 6));
+        final FieldSpacecraftState<Binary64> expectedState = new FieldSpacecraftState<>(field, new SpacecraftState(pvCoordinates));
+        final FieldImpulseManeuver<Binary64> fieldImpulseManeuver = new FieldImpulseManeuver<>(fieldDateDetector,
+                FieldVector3D.getZero(field), Binary64.ONE);
+        // WHEN
+        final FieldSpacecraftState<Binary64> actualState = fieldImpulseManeuver.getHandler().resetState(fieldImpulseManeuver, expectedState);
+        // THEN
+        compareStates(expectedState, actualState);
+    }
+
+    private static <T extends CalculusFieldElement<T>> void compareStates(final FieldSpacecraftState<T> expectedState,
+                                                                          final FieldSpacecraftState<T> actualState) {
+        Assertions.assertEquals(expectedState.getDate(), actualState.getDate());
+        Assertions.assertEquals(expectedState.getMass(), actualState.getMass());
+        Assertions.assertEquals(expectedState.getAttitude(), actualState.getAttitude());
+        Assertions.assertEquals(expectedState.getPosition(), actualState.getPosition());
+        Assertions.assertEquals(expectedState.getPVCoordinates().getVelocity(),
+                actualState.getPVCoordinates().getVelocity());
+    }
+
+    @Test
+    void testDeltaVNorm() {
+        // Given
+        final Complex complexIsp = complexField.getOne().add(200.);
+        final FieldVector3D<Complex> deltaVSat = new FieldVector3D<>(complexField, Vector3D.PLUS_I);
+        final FieldImpulseProvider<Complex> fieldImpulseProvider = FieldImpulseProvider.of(deltaVSat);
+        final FieldAbsoluteDate<Complex> fieldAbsoluteDate = new FieldAbsoluteDate<>(complexField,
+                AbsoluteDate.ARBITRARY_EPOCH);
+        final FieldDateDetector<Complex> dateDetector = new FieldDateDetector<>(complexField, fieldAbsoluteDate);
+
+        // When
+        final FieldImpulseManeuver<Complex> fieldImpulseManeuverNorm1 = new FieldImpulseManeuver<>
+                (dateDetector.withHandler(new FieldStopOnEvent<>()), null, fieldImpulseProvider, complexIsp, Control3DVectorCostType.ONE_NORM);
+        final FieldImpulseManeuver<Complex> fieldImpulseManeuverNorm2 = new FieldImpulseManeuver<>
+                (dateDetector.withHandler(new FieldStopOnEvent<>()), null, fieldImpulseProvider, complexIsp, Control3DVectorCostType.TWO_NORM);
+        final FieldImpulseManeuver<Complex> fieldImpulseManeuverNormInf = new FieldImpulseManeuver<>
+                (dateDetector.withHandler(new FieldStopOnEvent<>()), null, fieldImpulseProvider, complexIsp, Control3DVectorCostType.INF_NORM);
 
         // Then
         Assertions.assertEquals(Control3DVectorCostType.ONE_NORM, fieldImpulseManeuverNorm1.getControl3DVectorCostType());
@@ -229,20 +344,13 @@ class FieldImpulseManeuverTest {
                 DetectorType.LATITUDE_CROSSING_DETECTOR, Control3DVectorCostType.TWO_NORM);
     }
 
-    private <T extends CalculusFieldElement<T>> FieldImpulseManeuver<FieldEventDetector<T>, T> convertManeuver(
+    private <T extends CalculusFieldElement<T>> FieldImpulseManeuver<T> convertManeuver(
             final Field<T> field, final ImpulseManeuver impulseManeuver, final FieldEventHandler<T> fieldHandler) {
         final T fieldIsp = field.getZero().add(impulseManeuver.getIsp());
-        final FieldVector3D<T> fieldDeltaVSat = new FieldVector3D<>(field, impulseManeuver.getDeltaVSat());
         final EventDetector detector = impulseManeuver.getTrigger();
-        final int maxIter = detector.getMaxIterationCount();
-        final FieldAdaptableInterval<T>
-            fieldMaxCheck = s -> detector.getMaxCheckInterval().currentInterval(s.toSpacecraftState());
-        final T fieldThreshold = field.getZero().add(detector.getThreshold());
         FieldAbstractDetector<?, T> fieldDetector;
         if (detector instanceof DateDetector) {
-            FieldDateDetector<T> dateDetector = new FieldDateDetector<>(field,
-                                                                        new FieldAbsoluteDate<>(field, ((DateDetector) detector).getDate()));
-            fieldDetector = dateDetector;
+            fieldDetector = new FieldDateDetector<>(field, new FieldAbsoluteDate<>(field, ((DateDetector) detector).getDate()));
         } else if (detector instanceof LatitudeCrossingDetector) {
             fieldDetector = new FieldLatitudeCrossingDetector<>(field,
                                                                 ((LatitudeCrossingDetector) detector).getBody(),
@@ -253,12 +361,10 @@ class FieldImpulseManeuverTest {
         } else {
             throw new OrekitInternalError(null);
         }
-        fieldDetector = fieldDetector.
-                        withMaxIter(maxIter).
-                        withMaxCheck(fieldMaxCheck).
-                        withThreshold(fieldThreshold);
-        return new FieldImpulseManeuver<>(fieldDetector.withHandler(fieldHandler),
-                impulseManeuver.getAttitudeOverride(), fieldDeltaVSat, fieldIsp, impulseManeuver.getControl3DVectorCostType());
+
+        return new FieldImpulseManeuver<>(fieldDetector.withDetectionSettings(new FieldEventDetectionSettings<>(field, detector.getDetectionSettings()))
+                .withHandler(fieldHandler),
+                impulseManeuver.getAttitudeOverride(), FieldImpulseProvider.of(impulseManeuver.getImpulseProvider()), fieldIsp, impulseManeuver.getControl3DVectorCostType());
     }
 
     private <T extends CalculusFieldElement<T>> void templateDetector(final Field<T> field,
@@ -273,7 +379,7 @@ class FieldImpulseManeuverTest {
         final AbsoluteDate endOfPropagationDate = propagator.getInitialState().getDate().shiftedBy(timeOfFlight);
         final ImpulseManeuver impulseManeuver = new ImpulseManeuver(
                 buildEventDetector(detectorType, propagator).withHandler(new StopOnEvent()),
-                attitudeOverride, deltaV, isp, control3DVectorCostType);
+                attitudeOverride, ImpulseProvider.of(deltaV), isp, control3DVectorCostType);
         propagator.addEventDetector(impulseManeuver);
         fieldPropagator.addEventDetector(convertManeuver(field, impulseManeuver, new FieldStopOnEvent<>()));
         // When
@@ -343,11 +449,11 @@ class FieldImpulseManeuverTest {
         final Orbit orbit = state.getOrbit();
         final FieldOrbit<T> fieldOrbit = fieldState.getOrbit();
         final double[] orbitAsArray = new double[6];
-        final PositionAngleType positionAngleType = PositionAngleType.TRUE;
-        final OrbitType orbitType = OrbitType.CARTESIAN;
-        orbitType.mapOrbitToArray(orbit, positionAngleType, orbitAsArray, orbitAsArray.clone());
+        final PositionAngleType positionAngle = PositionAngleType.TRUE;
+        final OrbitType type = OrbitType.CARTESIAN;
+        type.mapOrbitToArray(orbit, positionAngle, orbitAsArray, orbitAsArray.clone());
         final double[] fieldRealOrbitAsArray = orbitAsArray.clone();
-        orbitType.mapOrbitToArray(fieldOrbit.toOrbit(), positionAngleType, fieldRealOrbitAsArray, fieldRealOrbitAsArray.clone());
+        type.mapOrbitToArray(fieldOrbit.toOrbit(), positionAngle, fieldRealOrbitAsArray, fieldRealOrbitAsArray.clone());
         final double tolPos = 5e-2;
         final double tolVel = 3e-5;
         for (int i = 0; i < 3; i++) {
@@ -382,7 +488,7 @@ class FieldImpulseManeuverTest {
                 univariateDerivative1Field);
         FieldSpacecraftState<UnivariateDerivative1> initialState = fieldPropagator.getInitialState();
         final String name = "dummy";
-        initialState = initialState.addAdditionalState(name, zero);
+        initialState = initialState.addAdditionalData(name, zero);
         fieldPropagator.resetInitialState(initialState);
         // When
         final FieldAbsoluteDate<UnivariateDerivative1> targetDate = initialState.getDate().shiftedBy(zero.add(10000.));
@@ -403,7 +509,7 @@ class FieldImpulseManeuverTest {
         final String name = additionalDerivatives.getName();
         final Gradient[] dummyState = new Gradient[] { zero };
         fieldPropagator.addAdditionalDerivativesProvider(additionalDerivatives);
-        initialState = initialState.addAdditionalState(name, dummyState);
+        initialState = initialState.addAdditionalData(name, dummyState);
         fieldPropagator.resetInitialState(initialState);
         // When
         final FieldAbsoluteDate<Gradient> targetDate = initialState.getDate().shiftedBy(zero.add(10000.));

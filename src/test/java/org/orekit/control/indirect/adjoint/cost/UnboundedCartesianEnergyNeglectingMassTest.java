@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,47 +16,27 @@
  */
 package org.orekit.control.indirect.adjoint.cost;
 
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Binary64;
-import org.hipparchus.util.Binary64Field;
-import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class UnboundedCartesianEnergyNeglectingMassTest {
 
     @Test
-    void testGetMassFlowRateFactor() {
+    void testGetHamiltonianContribution() {
         // GIVEN
-        final UnboundedCartesianEnergyNeglectingMass energyNeglectingMass = new UnboundedCartesianEnergyNeglectingMass();
+        final UnboundedCartesianEnergy mockedEnergy = Mockito.mock(UnboundedCartesianEnergy.class);
+        final Vector3D vector = new Vector3D(1.0, 2.0, 3.0);
+        final double mass = 1.;
+        final double[] adjoint = new double[6];
+        Mockito.when(mockedEnergy.getThrustAccelerationVector(adjoint, mass)).thenReturn(vector);
+        Mockito.when(mockedEnergy.getHamiltonianContribution(adjoint, mass)).thenCallRealMethod();
         // WHEN
-        final double actualFlowRate = energyNeglectingMass.getMassFlowRateFactor();
+        final double contribution = mockedEnergy.getHamiltonianContribution(adjoint, mass);
         // THEN
-        Assertions.assertEquals(0., actualFlowRate);
+        Assertions.assertEquals(-vector.getNormSq() * 0.5, contribution);
     }
 
-    @Test
-    void testGetAdjointDimension() {
-        // GIVEN
-        final UnboundedCartesianEnergyNeglectingMass energyNeglectingMass = new UnboundedCartesianEnergyNeglectingMass();
-        // WHEN
-        final int actualDimension = energyNeglectingMass.getAdjointDimension();
-        // THEN
-        Assertions.assertEquals(6, actualDimension);
-    }
-
-    @Test
-    void testGetThrustVector() {
-        // GIVEN
-        final UnboundedCartesianEnergyNeglectingMass energyNeglectingMass = new UnboundedCartesianEnergyNeglectingMass();
-        final Binary64[] adjoint = MathArrays.buildArray(Binary64Field.getInstance(), 6);
-        adjoint[3] = Binary64.ONE;
-        // WHEN
-        final FieldVector3D<Binary64> fieldThrustVector = energyNeglectingMass.getThrustVector(adjoint, Binary64.ONE);
-        // THEN
-        final Vector3D thrustVector = energyNeglectingMass.getThrustVector(new double[] { 0., 0., 0., 1., 0., 0.}, 1.);
-        Assertions.assertEquals(thrustVector, fieldThrustVector.toVector3D());
-    }
 
 }

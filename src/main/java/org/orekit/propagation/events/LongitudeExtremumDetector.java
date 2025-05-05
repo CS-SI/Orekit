@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -37,12 +37,12 @@ public class LongitudeExtremumDetector extends AbstractDetector<LongitudeExtremu
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
-     * ({@link #DEFAULT_MAXCHECK}) and convergence threshold ({@link
+     * ({@link #DEFAULT_MAX_CHECK}) and convergence threshold ({@link
      * #DEFAULT_THRESHOLD}).</p>
      * @param body body on which the longitude is defined
      */
     public LongitudeExtremumDetector(final OneAxisEllipsoid body) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, body);
+        this(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, body);
     }
 
     /** Build a detector.
@@ -52,7 +52,7 @@ public class LongitudeExtremumDetector extends AbstractDetector<LongitudeExtremu
      */
     public LongitudeExtremumDetector(final double maxCheck, final double threshold,
                                     final OneAxisEllipsoid body) {
-        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
+        this(new EventDetectionSettings(maxCheck, threshold, DEFAULT_MAX_ITER), new StopOnIncreasing(),
              body);
     }
 
@@ -62,25 +62,22 @@ public class LongitudeExtremumDetector extends AbstractDetector<LongitudeExtremu
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param body body on which the longitude is defined
+     * @since 13.0
      */
-    protected LongitudeExtremumDetector(final AdaptableInterval maxCheck, final double threshold,
-                                        final int maxIter, final EventHandler handler,
+    protected LongitudeExtremumDetector(final EventDetectionSettings detectionSettings, final EventHandler handler,
                                         final OneAxisEllipsoid body) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(detectionSettings, handler);
         this.body = body;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected LongitudeExtremumDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                               final int newMaxIter,
+    protected LongitudeExtremumDetector create(final EventDetectionSettings detectionSettings,
                                                final EventHandler newHandler) {
-        return new LongitudeExtremumDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, body);
+        return new LongitudeExtremumDetector(detectionSettings, newHandler, body);
     }
 
     /** Get the body on which the geographic zone is defined.
@@ -100,11 +97,11 @@ public class LongitudeExtremumDetector extends AbstractDetector<LongitudeExtremu
     public double g(final SpacecraftState s) {
 
         // convert state to geodetic coordinates
-        final FieldGeodeticPoint<DerivativeStructure> gp =
+        final FieldGeodeticPoint<UnivariateDerivative2> gp =
                         body.transform(s.getPVCoordinates(), s.getFrame(), s.getDate());
 
         // longitude time derivative
-        return gp.getLongitude().getPartialDerivative(1);
+        return gp.getLongitude().getFirstDerivative();
 
     }
 

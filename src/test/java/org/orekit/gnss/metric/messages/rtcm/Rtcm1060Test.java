@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.metric.messages.rtcm.correction.Rtcm1060;
@@ -71,7 +72,8 @@ public class Rtcm1060Test {
 
     @Test
     public void testPerfectValue() {
-        final Rtcm1060 rtcm1060 = (Rtcm1060) new RtcmMessagesParser(messages).parse(message, false);
+        final Rtcm1060 rtcm1060 = (Rtcm1060) new RtcmMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+                                  parse(message, false);
 
         // Verify size
         Assertions.assertEquals(1,                            rtcm1060.getData().size());
@@ -107,7 +109,7 @@ public class Rtcm1060Test {
             final byte[] array = new byte[0];
             final EncodedMessage emptyMessage = new ByteArrayEncodedMessage(array);
 
-            new RtcmMessagesParser(messages).parse(emptyMessage, false);
+            new RtcmMessagesParser(messages, DataContext.getDefault().getTimeScales()).parse(emptyMessage, false);
 
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {

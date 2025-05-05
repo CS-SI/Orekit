@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -96,8 +96,8 @@ public class RangeRate extends GroundReceiverMeasurement<RangeRate> {
                             offsetToInertialApproxUplink.transformPVCoordinates(new TimeStampedPVCoordinates(approxUplinkDate,
                                                                                                              Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
 
-            final double tauU = signalTimeOfFlight(stationApproxUplink, transitPV.getPosition(),
-                                                   transitPV.getDate(), common.getState().getFrame());
+            final double tauU = signalTimeOfFlightAdjustableEmitter(stationApproxUplink, transitPV.getPosition(),
+                                                                    transitPV.getDate(), common.getState().getFrame());
 
             final TimeStampedPVCoordinates stationUplink =
                             stationApproxUplink.shiftedBy(transitPV.getDate().durationFrom(approxUplinkDate) - tauU);
@@ -163,8 +163,8 @@ public class RangeRate extends GroundReceiverMeasurement<RangeRate> {
                             offsetToInertialApproxUplink.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(approxUplinkDateDS,
                                                                                                                     zero, zero, zero));
 
-            final Gradient tauU = signalTimeOfFlight(stationApproxUplink, transitPV.getPosition(), transitPV.getDate(),
-                                                     state.getFrame());
+            final Gradient tauU = signalTimeOfFlightAdjustableEmitter(stationApproxUplink, transitPV.getPosition(), transitPV.getDate(),
+                                                                      state.getFrame());
 
             final TimeStampedFieldPVCoordinates<Gradient> stationUplink =
                             stationApproxUplink.shiftedBy(transitPV.getDate().durationFrom(approxUplinkDateDS).subtract(tauU));

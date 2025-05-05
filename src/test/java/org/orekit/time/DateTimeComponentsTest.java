@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -48,9 +48,9 @@ public class DateTimeComponentsTest {
                 Assertions.assertEquals(i  < j, dates[j].compareTo(dates[i])  > 0);
             }
         }
-        Assertions.assertFalse(dates[0].equals(this));
-        Assertions.assertFalse(dates[0].equals(dates[0].getDate()));
-        Assertions.assertFalse(dates[0].equals(dates[0].getTime()));
+        Assertions.assertNotEquals(dates[0], this);
+        Assertions.assertNotEquals(dates[0], dates[0].getDate());
+        Assertions.assertNotEquals(dates[0], dates[0].getTime());
     }
 
     @Test
@@ -95,9 +95,8 @@ public class DateTimeComponentsTest {
 
     @Test
     public void testBadDay() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            DateTimeComponents.parseDateTime("2000-02-30T03:04:05.000+00:00");
-        });
+        Assertions.assertThrows(IllegalArgumentException.class,
+                                () -> DateTimeComponents.parseDateTime("2000-02-30T03:04:05.000+00:00"));
     }
 
     @Test
@@ -129,8 +128,8 @@ public class DateTimeComponentsTest {
         check(2009, 1, 2, 1, 0, 0, 60, "2009-01-02T01:00:00+01:00");
         check(2009, 1, 1, 23, 0, 0, -60, "2009-01-01T23:00:00-01:00");
         // leap seconds
-        check(2009, 12, 31, 23, 59, sixtyOne, m, "2009-12-31T23:59:60.99999999999999+12:59");
-        check(2009, 12, 31, 23, 59, sixtyOne, -m, "2009-12-31T23:59:60.99999999999999-12:59");
+        check(2009, 12, 31, 23, 59, sixtyOne, m, "2009-12-31T23:59:60.999999999999992895+12:59");
+        check(2009, 12, 31, 23, 59, sixtyOne, -m, "2009-12-31T23:59:60.999999999999992895-12:59");
         check(9999, 2, 3, 4, 5, 60.5, 60, "9999-02-03T04:05:60.5+01:00");
         check(9999, 2, 3, 4, 5, 60.5, -60, "9999-02-03T04:05:60.5-01:00");
         // time zone offsets larger than 99:59?

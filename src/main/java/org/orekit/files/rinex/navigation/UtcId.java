@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,14 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 
 /** Enumerate for the UTC ids.
- *
+ * <p>
+ * In addition to the ids listed here, Rinex 4.01 table 23 allowed UTC(BIPM) as a
+ * possible UTC id for SBAS. This was added in June 2023 and Rinex 4.01 was officially
+ * published in July 2023. However, this was quickly removed, in July 2023, i.e. just
+ * after publication of Rinex 4.01, as directed by BIPM. It does not appear anymore in
+ * Rinex 4.02 which was officially published in October 2024. Due to its transient
+ * appearance in the standard, we decided to not include UTC(BIPM) in this enumerate.
+ * </p>
  * @author Luc Maisonobe
  * @since 12.0
  */
@@ -44,18 +51,21 @@ public enum UtcId {
     /** UTC(NICT). */
     NICT("UTC(NICT)"),
 
+    /** UTC(CRL).
+     * @since 13.0
+     */
+    CRL("UTC(CRL)"),
+
+    /** UTC(NIST).
+     * @since 13.0
+     */
+    NIST("UTC(NIST)"),
+
     /** UTCIRN / UTC(NPLI). */
     IRN("UTCIRN", "UTC(NPLI)"),
 
     /** UTC(OP). */
-    OP("UTC(OP)"),
-
-    /** UTC(NIST).
-     * <p>
-     * In Rinex 4.00, this entry is not present in table 23, but appears in table A30.
-     * </p>
-     */
-    NIST("UTC(NIST)");
+    OP("UTC(OP)");
 
     /** Parsing map. */
     private static final Map<String, UtcId> MAP = new HashMap<>();

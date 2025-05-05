@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -312,7 +312,7 @@ public class TdmMetadata extends Metadata {
      */
     public void setParticipants(final Map<Integer, String> participants) {
         refuseFurtherComments();
-        this.participants = new TreeMap<Integer, String>();
+        this.participants = new TreeMap<>();
         this.participants.putAll(participants);
     }
 
@@ -397,7 +397,7 @@ public class TdmMetadata extends Metadata {
      */
     public void setEphemerisNames(final Map<Integer, String> ephemerisNames) {
         refuseFurtherComments();
-        this.ephemerisNames = new TreeMap<Integer, String>();
+        this.ephemerisNames = new TreeMap<>();
         this.ephemerisNames.putAll(ephemerisNames);
     }
 
@@ -718,7 +718,7 @@ public class TdmMetadata extends Metadata {
      */
     public void setTransmitDelays(final Map<Integer, Double> transmitDelays) {
         refuseFurtherComments();
-        this.transmitDelays = new TreeMap<Integer, Double>();
+        this.transmitDelays = new TreeMap<>();
         this.transmitDelays.putAll(transmitDelays);
     }
 
@@ -743,7 +743,7 @@ public class TdmMetadata extends Metadata {
      */
     public void setReceiveDelays(final Map<Integer, Double> receiveDelays) {
         refuseFurtherComments();
-        this.receiveDelays = new TreeMap<Integer, Double>();
+        this.receiveDelays = new TreeMap<>();
         this.receiveDelays.putAll(receiveDelays);
     }
 

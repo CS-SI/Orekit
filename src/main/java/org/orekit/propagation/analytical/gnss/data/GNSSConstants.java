@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -63,14 +63,14 @@ public interface GNSSConstants {
     /** Value of the earth's rotation rate in rad/s for GPS user. */
     double GPS_AV = 7.2921151467e-5;
 
-    /** WGS 84 value of the Earth's universal gravitational parameter for IRNSS user in m³/s². */
-    double IRNSS_MU = 3.986005e+14;
+    /** WGS 84 value of the Earth's universal gravitational parameter for NavIC user in m³/s². */
+    double NAVIC_MU = 3.986005e+14;
 
-    /** Number of weeks in the IRNSS cycle. */
-    int IRNSS_WEEK_NB = 1024;
+    /** Number of weeks in the NavIC cycle. */
+    int NAVIC_WEEK_NB = 1024;
 
-    /** Value of the earth's rotation rate in rad/s for IRNSS user. */
-    double IRNSS_AV = 7.2921151467e-5;
+    /** Value of the earth's rotation rate in rad/s for NavIC user. */
+    double NAVIC_AV = 7.2921151467e-5;
 
     /** WGS 84 value of the Earth's universal gravitational parameter for QZSS user in m³/s². */
     double QZSS_MU = 3.986005e+14;

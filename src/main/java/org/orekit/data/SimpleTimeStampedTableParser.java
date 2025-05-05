@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -94,7 +94,7 @@ public class SimpleTimeStampedTableParser<T extends TimeStamped> {
         // setup the reader
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
 
-            final List<T> table = new ArrayList<T>();
+            final List<T> table = new ArrayList<>();
 
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
 

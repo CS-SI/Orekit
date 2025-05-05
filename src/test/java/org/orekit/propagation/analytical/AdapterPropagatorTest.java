@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,10 +41,7 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.AdditionalStateProvider;
-import org.orekit.propagation.BoundedPropagator;
-import org.orekit.propagation.EphemerisGenerator;
-import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.*;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -93,20 +90,20 @@ public class AdapterPropagatorTest {
         AdapterPropagator.DifferentialEffect effect =
                 new SmallManeuverAnalyticalModel(adapterPropagator.propagate(t0), dV.negate(), isp);
         adapterPropagator.addEffect(effect);
-        adapterPropagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+        adapterPropagator.addAdditionalDataProvider(new AdditionalDataProvider<double[]>() {
             public String getName() {
                 return "dummy 3";
             }
-            public double[] getAdditionalState(SpacecraftState state) {
+            public double[] getAdditionalData(SpacecraftState state) {
                 return new double[3];
             }
         });
 
-        // the adapted propagators do not manage the additional states from the reference,
+        // the adapted propagators do not manage the additional data from the reference,
         // they simply forward them
-        Assertions.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 1"));
-        Assertions.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 2"));
-        Assertions.assertTrue(adapterPropagator.isAdditionalStateManaged("dummy 3"));
+        Assertions.assertFalse(adapterPropagator.isAdditionalDataManaged("dummy 1"));
+        Assertions.assertFalse(adapterPropagator.isAdditionalDataManaged("dummy 2"));
+        Assertions.assertTrue(adapterPropagator.isAdditionalDataManaged("dummy 3"));
 
         for (AbsoluteDate t = t0.shiftedBy(0.5 * dt);
              t.compareTo(withoutManeuver.getMaxDate()) < 0;
@@ -155,20 +152,20 @@ public class AdapterPropagatorTest {
         AdapterPropagator.DifferentialEffect effect =
                 new SmallManeuverAnalyticalModel(adapterPropagator.propagate(t0), dV.negate(), isp);
         adapterPropagator.addEffect(effect);
-        adapterPropagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+        adapterPropagator.addAdditionalDataProvider(new AdditionalDataProvider<double[]>() {
             public String getName() {
                 return "dummy 3";
             }
-            public double[] getAdditionalState(SpacecraftState state) {
+            public double[] getAdditionalData(SpacecraftState state) {
                 return new double[3];
             }
         });
 
         // the adapted propagators do not manage the additional states from the reference,
         // they simply forward them
-        Assertions.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 1"));
-        Assertions.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 2"));
-        Assertions.assertTrue(adapterPropagator.isAdditionalStateManaged("dummy 3"));
+        Assertions.assertFalse(adapterPropagator.isAdditionalDataManaged("dummy 1"));
+        Assertions.assertFalse(adapterPropagator.isAdditionalDataManaged("dummy 2"));
+        Assertions.assertTrue(adapterPropagator.isAdditionalDataManaged("dummy 3"));
 
         for (AbsoluteDate t = t0.shiftedBy(0.5 * dt);
              t.compareTo(withoutManeuver.getMaxDate()) < 0;
@@ -227,20 +224,20 @@ public class AdapterPropagatorTest {
                                          GravityFieldFactory.getUnnormalizedProvider(gravityField));
         adapterPropagator.addEffect(directEffect);
         adapterPropagator.addEffect(derivedEffect);
-        adapterPropagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+        adapterPropagator.addAdditionalDataProvider(new AdditionalDataProvider<double[]>() {
             public String getName() {
                 return "dummy 3";
             }
-            public double[] getAdditionalState(SpacecraftState state) {
+            public double[] getAdditionalData(SpacecraftState state) {
                 return new double[3];
             }
         });
 
         // the adapted propagators do not manage the additional states from the reference,
         // they simply forward them
-        Assertions.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 1"));
-        Assertions.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 2"));
-        Assertions.assertTrue(adapterPropagator.isAdditionalStateManaged("dummy 3"));
+        Assertions.assertFalse(adapterPropagator.isAdditionalDataManaged("dummy 1"));
+        Assertions.assertFalse(adapterPropagator.isAdditionalDataManaged("dummy 2"));
+        Assertions.assertTrue(adapterPropagator.isAdditionalDataManaged("dummy 3"));
 
         double maxDelta = 0;
         double maxNominal = 0;
@@ -279,9 +276,9 @@ public class AdapterPropagatorTest {
         final Ephemeris ephemeris = new Ephemeris(states, 2);
         final AdapterPropagator adapterPropagator = new AdapterPropagator(ephemeris);
 
-        // Setup additional state provider which use the initial state in its init method
-        final AdditionalStateProvider additionalStateProvider = TestUtils.getAdditionalProviderWithInit();
-        adapterPropagator.addAdditionalStateProvider(additionalStateProvider);
+        // Setup additional data provider which use the initial state in its init method
+        final AdditionalDataProvider<double[]> additionalDataProvider = TestUtils.getAdditionalProviderWithInit();
+        adapterPropagator.addAdditionalDataProvider(additionalDataProvider);
 
         // WHEN & THEN
         Assertions.assertDoesNotThrow(() -> adapterPropagator.propagate(finalOrbit.getDate()), "No error should have been thrown");
@@ -300,22 +297,22 @@ public class AdapterPropagatorTest {
             new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
 
         // add some dummy additional states
-        initialState = initialState.addAdditionalState("dummy 1", 1.25, 2.5);
-        initialState = initialState.addAdditionalState("dummy 2", 5.0);
+        initialState = initialState.addAdditionalData("dummy 1", new double[]{1.25, 2.5});
+        initialState = initialState.addAdditionalData("dummy 2", 5.0);
 
         // set up numerical propagator
         final double dP = 1.0;
-        double[][] tolerances = NumericalPropagator.tolerances(dP, orbit, orbit.getType());
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, orbit.getType());
         AdaptiveStepsizeIntegrator integrator =
             new DormandPrince853Integrator(0.001, 1000, tolerances[0], tolerances[1]);
         integrator.setInitialStepSize(orbit.getKeplerianPeriod() / 100.0);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
-        propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+        propagator.addAdditionalDataProvider(new AdditionalDataProvider<Double>() {
             public String getName() {
                 return "dummy 2";
             }
-            public double[] getAdditionalState(SpacecraftState state) {
-                return new double[] { 5.0 };
+            public Double getAdditionalData(SpacecraftState state) {
+                return 5.0;
             }
         });
         propagator.setInitialState(initialState);
@@ -350,10 +347,10 @@ public class AdapterPropagatorTest {
 
         // both the initial propagator and generated ephemeris manage one of the two
         // additional states, but they also contain unmanaged copies of the other one
-        Assertions.assertFalse(propagator.isAdditionalStateManaged("dummy 1"));
-        Assertions.assertTrue(propagator.isAdditionalStateManaged("dummy 2"));
-        Assertions.assertFalse(ephemeris.isAdditionalStateManaged("dummy 1"));
-        Assertions.assertTrue(ephemeris.isAdditionalStateManaged("dummy 2"));
+        Assertions.assertFalse(propagator.isAdditionalDataManaged("dummy 1"));
+        Assertions.assertTrue(propagator.isAdditionalDataManaged("dummy 2"));
+        Assertions.assertFalse(ephemeris.isAdditionalDataManaged("dummy 1"));
+        Assertions.assertTrue(ephemeris.isAdditionalDataManaged("dummy 2"));
         Assertions.assertEquals(2, ephemeris.getInitialState().getAdditionalState("dummy 1").length);
         Assertions.assertEquals(1, ephemeris.getInitialState().getAdditionalState("dummy 2").length);
 

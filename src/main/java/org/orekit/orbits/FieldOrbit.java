@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -70,6 +70,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
     implements FieldPVCoordinatesProvider<T>, FieldTimeStamped<T>, FieldTimeShiftable<FieldOrbit<T>, T> {
 
+    /** Absolute tolerance when checking if the rate of the position angle is Keplerian or not. */
+    protected static final double TOLERANCE_POSITION_ANGLE_RATE = 1e-15;
+
     /** Frame in which are defined the orbital parameters. */
     private final Frame frame;
 
@@ -97,28 +100,28 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
     /** Computed position.
      * @since 12.0
      */
-    private transient FieldVector3D<T> position;
+    private FieldVector3D<T> position;
 
     /** Computed PVCoordinates. */
-    private transient TimeStampedFieldPVCoordinates<T> pvCoordinates;
+    private TimeStampedFieldPVCoordinates<T> pvCoordinates;
 
     /** Jacobian of the orbital parameters with mean angle with respect to the Cartesian coordinates. */
-    private transient T[][] jacobianMeanWrtCartesian;
+    private T[][] jacobianMeanWrtCartesian;
 
     /** Jacobian of the Cartesian coordinates with respect to the orbital parameters with mean angle. */
-    private transient T[][] jacobianWrtParametersMean;
+    private T[][] jacobianWrtParametersMean;
 
     /** Jacobian of the orbital parameters with eccentric angle with respect to the Cartesian coordinates. */
-    private transient T[][] jacobianEccentricWrtCartesian;
+    private T[][] jacobianEccentricWrtCartesian;
 
     /** Jacobian of the Cartesian coordinates with respect to the orbital parameters with eccentric angle. */
-    private transient T[][] jacobianWrtParametersEccentric;
+    private T[][] jacobianWrtParametersEccentric;
 
     /** Jacobian of the orbital parameters with true angle with respect to the Cartesian coordinates. */
-    private transient T[][] jacobianTrueWrtCartesian;
+    private T[][] jacobianTrueWrtCartesian;
 
     /** Jacobian of the Cartesian coordinates with respect to the orbital parameters with true angle. */
-    private transient T[][] jacobianWrtParametersTrue;
+    private T[][] jacobianWrtParametersTrue;
 
     /** Default constructor.
      * Build a new instance with arbitrary default elements.
@@ -391,8 +394,8 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      */
     public abstract T getIDot();
 
-    /** Check if orbit includes derivatives.
-     * @return true if orbit includes derivatives
+    /** Check if orbit includes non-Keplerian rates.
+     * @return true if orbit includes non-Keplerian derivatives
      * @see #getADot()
      * @see #getEquinoctialExDot()
      * @see #getEquinoctialEyDot()
@@ -403,9 +406,11 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      * @see #getLMDot()
      * @see #getEDot()
      * @see #getIDot()
-     * @since 9.0
+     * @since 13.0
      */
-    public abstract boolean hasDerivatives();
+    public boolean hasNonKeplerianAcceleration() {
+        return hasNonKeplerianAcceleration(getPVCoordinates(), getMu());
+    }
 
     /** Get the central attraction coefficient used for position and velocity conversions (m³/s²).
      * @return central attraction coefficient used for position and velocity conversions (m³/s²)
@@ -560,6 +565,16 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      * @return computed position/velocity coordinates
      */
     protected abstract TimeStampedFieldPVCoordinates<T> initPVCoordinates();
+
+    /**
+     * Create a new object representing the same physical orbital state, but attached to a different reference frame.
+     * If the new frame is not inertial, an exception will be thrown.
+     *
+     * @param inertialFrame reference frame of output orbit
+     * @return orbit with different frame
+     * @since 13.0
+     */
+    public abstract FieldOrbit<T> inFrame(Frame inertialFrame);
 
     /** Get a time-shifted orbit.
      * <p>

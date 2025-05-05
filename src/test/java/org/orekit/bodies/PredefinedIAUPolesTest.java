@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -55,7 +55,7 @@ import java.nio.charset.StandardCharsets;
 public class PredefinedIAUPolesTest {
 
     @Test
-    public void testGCRFAligned() throws UnsupportedEncodingException, IOException {
+    void testGCRFAligned() throws UnsupportedEncodingException, IOException {
         IAUPole iauPole = PredefinedIAUPoles.getIAUPole(EphemerisType.SOLAR_SYSTEM_BARYCENTER, timeScales);
         Vector3D pole = iauPole.getPole(AbsoluteDate.J2000_EPOCH);
         double w = iauPole.getPrimeMeridianAngle(AbsoluteDate.J2000_EPOCH.shiftedBy(3600.0));
@@ -64,7 +64,7 @@ public class PredefinedIAUPolesTest {
     }
 
     @Test
-    public void testSun() throws UnsupportedEncodingException, IOException {
+    void testSun() throws UnsupportedEncodingException, IOException {
         IAUPole iauPole = PredefinedIAUPoles.getIAUPole(EphemerisType.SUN, timeScales);
         Vector3D pole = iauPole.getPole(AbsoluteDate.J2000_EPOCH);
         final double alphaRef    = FastMath.toRadians(286.13);
@@ -79,7 +79,7 @@ public class PredefinedIAUPolesTest {
     }
 
     @Test
-    public void testNaif() throws UnsupportedEncodingException, IOException {
+    void testNaif() throws UnsupportedEncodingException, IOException {
         final TimeScale tdb = TimeScalesFactory.getTDB();
         final InputStream inEntry = getClass().getResourceAsStream("/naif/IAU-pole-NAIF.txt");
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inEntry, StandardCharsets.UTF_8))) {
@@ -132,7 +132,7 @@ public class PredefinedIAUPolesTest {
     }
 
     @Test
-    public void testVersus80Implementation() {
+    void testVersus80Implementation() {
         for (EphemerisType body : EphemerisType.values()) {
             IAUPole    newPole = PredefinedIAUPoles.getIAUPole(body, timeScales);
             OldIAUPole oldPole = IAUPoleFactory.getIAUPole(body);
@@ -146,7 +146,7 @@ public class PredefinedIAUPolesTest {
     }
 
     @Test
-    public void testFieldConsistency() {
+    void testFieldConsistency() {
         for (IAUPole iaupole : PredefinedIAUPoles.values(timeScales)) {
             for (double dt = 0; dt < Constants.JULIAN_YEAR; dt += 3600) {
                 final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
@@ -159,7 +159,7 @@ public class PredefinedIAUPolesTest {
     }
 
     @Test
-    public void testDerivatives() {
+    void testDerivatives() {
         final DSFactory factory = new DSFactory(1, 1);
         final AbsoluteDate ref = AbsoluteDate.J2000_EPOCH;
         final FieldAbsoluteDate<DerivativeStructure> refDS = new FieldAbsoluteDate<>(factory.getDerivativeField(), ref);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,8 +21,6 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
-import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTrackingCoordinates;
@@ -65,7 +63,6 @@ public class AbstractChaoMappingFunction implements TroposphereMappingFunction {
     /** {@inheritDoc} */
     @Override
     public double[] mappingFactors(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
-                                   final PressureTemperatureHumidity weather,
                                    final AbsoluteDate date) {
         final double sinE = FastMath.sin(trackingCoordinates.getElevation());
         final double tanE = FastMath.tan(trackingCoordinates.getElevation());
@@ -79,7 +76,6 @@ public class AbstractChaoMappingFunction implements TroposphereMappingFunction {
     @Override
     public <T extends CalculusFieldElement<T>> T[] mappingFactors(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                                   final FieldGeodeticPoint<T> point,
-                                                                  final FieldPressureTemperatureHumidity<T> weather,
                                                                   final FieldAbsoluteDate<T> date) {
         final T sinE = FastMath.sin(trackingCoordinates.getElevation());
         final T tanE = FastMath.tan(trackingCoordinates.getElevation());

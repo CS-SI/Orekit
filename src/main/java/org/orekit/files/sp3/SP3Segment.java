@@ -1,4 +1,4 @@
-/* Copyright Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,10 +16,6 @@
  */
 package org.orekit.files.sp3;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
@@ -34,6 +30,10 @@ import org.orekit.time.ClockOffset;
 import org.orekit.time.SampledClockModel;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.SortedListTrimmer;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /** One segment of an {@link SP3Ephemeris}.
  * @author Thomas Neidhart
@@ -75,6 +75,11 @@ public class SP3Segment implements EphemerisFile.EphemerisSegment<SP3Coordinate>
     }
 
     /** Extract the clock model.
+     * <p>
+     * If some clock or clock rate are present in the SP3 files as default values (999999.999999), then they
+     * filtered out here when building the clock model, so interpolation will work if at least there are
+     * some remaining regular values.
+     * </p>
      * @return extracted clock model
      * @since 12.1
      */
@@ -83,8 +88,10 @@ public class SP3Segment implements EphemerisFile.EphemerisSegment<SP3Coordinate>
         coordinates.forEach(c -> {
             final AbsoluteDate date   = c.getDate();
             final double       offset = c.getClockCorrection();
-            final double       rate   = filter.getMaxOrder() > 0 ? c.getClockRateChange() : Double.NaN;
-            sample.add(new ClockOffset(date, offset, rate, Double.NaN));
+            if (!Double.isNaN(offset)) {
+                final double rate = filter.getMaxOrder() > 0 ? c.getClockRateChange() : Double.NaN;
+                sample.add(new ClockOffset(date, offset, rate, Double.NaN));
+            }
         });
         return new SampledClockModel(sample, interpolationSamples);
     }
@@ -168,7 +175,7 @@ public class SP3Segment implements EphemerisFile.EphemerisSegment<SP3Coordinate>
 
         /** {@inheritDoc} */
         @Override
-        protected SpacecraftState updateAdditionalStates(final SpacecraftState original) {
+        public SpacecraftState updateAdditionalData(final SpacecraftState original) {
 
             final HermiteInterpolator interpolator = new HermiteInterpolator();
 
@@ -193,8 +200,8 @@ public class SP3Segment implements EphemerisFile.EphemerisSegment<SP3Coordinate>
             final double[][] derivatives = interpolator.derivatives(0.0, 1);
 
             // add the clock offset and its first derivative
-            return super.updateAdditionalStates(original).
-                addAdditionalState(SP3Utils.CLOCK_ADDITIONAL_STATE, derivatives[0]).
+            return super.updateAdditionalData(original).
+                addAdditionalData(SP3Utils.CLOCK_ADDITIONAL_STATE, derivatives[0]).
                 addAdditionalStateDerivative(SP3Utils.CLOCK_ADDITIONAL_STATE, derivatives[1]);
 
         }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -55,7 +55,7 @@ public class GLONASSScaleTest {
         Assertions.assertEquals(2.0, d2.durationFrom(d1), 1.0e-10);
 
         AbsoluteDate d3 = new AbsoluteDate(new DateComponents(2006, 1, 1),
-                                           new TimeComponents(02, 59, 59),
+                                           new TimeComponents(2, 59, 59),
                                            glonass);
         Assertions.assertEquals(new AbsoluteDate(new DateComponents(2005, 12, 31),
                                              new TimeComponents(23, 59, 59),
@@ -73,7 +73,7 @@ public class GLONASSScaleTest {
 
     @Test
     public void testDuringLeap() {
-        AbsoluteDate d = new AbsoluteDate(new DateComponents(1983, 06, 30),
+        AbsoluteDate d = new AbsoluteDate(new DateComponents(1983, 6, 30),
                                           new TimeComponents(23, 59, 59),
                                           TimeScalesFactory.getUTC());
         Assertions.assertEquals("1983-07-01T02:58:59.000", d.shiftedBy(-60).toString(glonass));
@@ -120,9 +120,9 @@ public class GLONASSScaleTest {
     public void testSymmetry() {
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_DAY);
-            double dt1 = glonass.offsetFromTAI(date);
+            double dt1 = glonass.offsetFromTAI(date).toDouble();
             DateTimeComponents components = date.getComponents(glonass);
-            double dt2 = glonass.offsetToTAI(components.getDate(), components.getTime());
+            double dt2 = glonass.offsetToTAI(components.getDate(), components.getTime()).toDouble();
             Assertions.assertEquals( 0.0, dt1 + dt2, 1.0e-10);
         }
     }

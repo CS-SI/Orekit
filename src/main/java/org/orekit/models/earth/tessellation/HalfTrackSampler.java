@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -44,7 +44,7 @@ class HalfTrackSampler implements OrekitFixedStepHandler {
      */
     HalfTrackSampler(final OneAxisEllipsoid ellipsoid) {
         this.ellipsoid = ellipsoid;
-        this.halfTrack = new ArrayList<Pair<GeodeticPoint, TimeStampedPVCoordinates>>();
+        this.halfTrack = new ArrayList<>();
     }
 
     /** Get half track sample.
@@ -66,7 +66,7 @@ class HalfTrackSampler implements OrekitFixedStepHandler {
         final GeodeticPoint gp =
                         ellipsoid.transform(groundPV.getPosition(), ellipsoid.getBodyFrame(), currentState.getDate());
 
-        halfTrack.add(new Pair<GeodeticPoint, TimeStampedPVCoordinates>(gp, groundPV));
+        halfTrack.add(new Pair<>(gp, groundPV));
 
     }
 

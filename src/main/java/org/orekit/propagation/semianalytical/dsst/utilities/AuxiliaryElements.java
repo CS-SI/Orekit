@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -104,15 +104,6 @@ public class AuxiliaryElements {
     /** Equinoctial frame w vector. */
     private final Vector3D w;
 
-    /** Direction cosine α. */
-    private final double alpha;
-
-    /** Direction cosine β. */
-    private final double beta;
-
-    /** Direction cosine γ. */
-    private final double gamma;
-
     /** Simple constructor.
      * @param orbit related mean orbit for auxiliary elements
      * @param retrogradeFactor retrograde factor I [Eq. 2.1.2-(2)]
@@ -167,11 +158,6 @@ public class AuxiliaryElements {
         f = new Vector3D(ooC, new Vector3D(1. - p2 + q2, pq2, -px2 * I));
         g = new Vector3D(ooC, new Vector3D(pq2 * I, (1. + p2 - q2) * I, qx2));
         w = new Vector3D(ooC, new Vector3D(px2, -qx2, (1. - p2 - q2) * I));
-
-        // Direction cosines for central body [Eq. 2.1.9-(1)]
-        alpha = f.getZ();
-        beta  = g.getZ();
-        gamma = w.getZ();
     }
 
     /** Get the orbit.
@@ -328,27 +314,6 @@ public class AuxiliaryElements {
      */
     public Vector3D getVectorW() {
         return w;
-    }
-
-    /** Get direction cosine α for central body.
-     * @return α
-     */
-    public double getAlpha() {
-        return alpha;
-    }
-
-    /** Get direction cosine β for central body.
-     * @return β
-     */
-    public double getBeta() {
-        return beta;
-    }
-
-    /** Get direction cosine γ for central body.
-     * @return γ
-     */
-    public double getGamma() {
-        return gamma;
     }
 
 }

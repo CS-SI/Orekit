@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,6 @@
  */
 package org.orekit.frames;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
@@ -151,7 +146,6 @@ public class FramesFactoryTest {
     @Test
     public void testUnwrapInterpolatingTransformProvider() {
         TransformProvider raw = new TransformProvider() {
-            private static final long serialVersionUID = 1L;
             public Transform getTransform(final AbsoluteDate date) {
                 double dt = date.durationFrom(AbsoluteDate.J2000_EPOCH);
                 double sin = FastMath.sin(dt * MathUtils.TWO_PI / Constants.JULIAN_DAY);
@@ -193,7 +187,6 @@ public class FramesFactoryTest {
     @Test
     public void testUnwrapShiftingTransformProvider() {
         TransformProvider raw = new TransformProvider() {
-            private static final long serialVersionUID = 1L;
             public Transform getTransform(final AbsoluteDate date) {
                 double dt = date.durationFrom(AbsoluteDate.J2000_EPOCH);
                 double sin = FastMath.sin(dt * MathUtils.TWO_PI / Constants.JULIAN_DAY);
@@ -295,35 +288,6 @@ public class FramesFactoryTest {
             Frame child  = FramesFactory.getFrame(pair[0]);
             Frame parent = FramesFactory.getFrame(pair[1]);
             Assertions.assertEquals(parent.getName(), child.getParent().getName(), "wrong parent for " + child.getName());
-        }
-    }
-
-    @Test
-    public void testSerialization()
-            throws IOException, ClassNotFoundException {
-        for (Predefined predefined : Predefined.values()) {
-
-            Frame original = FramesFactory.getFrame(predefined);
-            Assertions.assertEquals(predefined.getName(), original.getName());
-
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ObjectOutputStream    oos = new ObjectOutputStream(bos);
-            oos.writeObject(original);
-             if (predefined == Predefined.GCRF) {
-                Assertions.assertTrue(bos.size() >  50);
-                Assertions.assertTrue(bos.size() < 100);
-            } else if (predefined == Predefined.ICRF) {
-                Assertions.assertTrue(bos.size() > 430);
-                Assertions.assertTrue(bos.size() < 480);
-            } else {
-                Assertions.assertTrue(bos.size() > 100);
-                Assertions.assertTrue(bos.size() < 160);
-            }
-
-            ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-            ObjectInputStream     ois = new ObjectInputStream(bis);
-            Frame deserialized  = (Frame) ois.readObject();
-            Assertions.assertTrue(original == deserialized);
         }
     }
 

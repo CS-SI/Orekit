@@ -53,7 +53,7 @@ public class OrekitEphemerisFile
      * Standard default constructor.
      */
     public OrekitEphemerisFile() {
-        this.satellites = new ConcurrentHashMap<String, OrekitSatelliteEphemeris>();
+        this.satellites = new ConcurrentHashMap<>();
     }
 
     /** {@inheritDoc} */

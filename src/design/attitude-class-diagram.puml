@@ -1,4 +1,4 @@
-' Copyright 2002-2024 CS GROUP
+' Copyright 2002-2025 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -71,7 +71,23 @@
         #PVCoordinates getTargetPV
       }
 
-      Frame            <-up- "1" Attitude 
+      interface TargetProvider {
+        +getTargetDirection()
+      }
+
+      enum PredefinedTarget {
+        +SUN,
+        +EARTH,
+        +NADIR,
+        +NORTH,
+        +EAST,
+        +VELOCITY,
+        +MOMENTUM
+      }
+
+      class GroundPointTarget
+
+      Frame            <-up- "1" Attitude
       Attitude         <-up- AttitudeProvider : create
       TimeStamped      <|.. Attitude
       TimeShiftable_T_ <|.. Attitude
@@ -83,6 +99,8 @@
       AttitudeProvider <--* "1" LofOffsetPointing 
       AttitudeProvider <|.. GroundPointing
       LofOffsetPointing            --|> GroundPointing
+      PredefinedTarget ..|> TargetProvider
+      GroundPointTarget ..|> TargetProvider
 
       AttitudeProviderModifier     <|-- SpinStabilized
       AttitudeProviderModifier     <|-- GroundPointingWrapper
@@ -98,6 +116,8 @@
       AttitudeProvider             <|-- LofOffset
       AttitudeProvider             <|-- TabulatedProvider
       AttitudeProvider             <|-- TorqueFree
+      AlignedAndConstrained          --|> AttitudeProvider
+      TargetProvider             "2" <--* AlignedAndConstrained
 
     }
 

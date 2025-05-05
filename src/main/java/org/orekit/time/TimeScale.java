@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,6 @@
  */
 package org.orekit.time;
 
-import java.io.Serializable;
-
 import org.hipparchus.CalculusFieldElement;
 
 /** Interface for time scales.
@@ -28,7 +26,7 @@ import org.hipparchus.CalculusFieldElement;
  * @author Luc Maisonobe
  * @see AbsoluteDate
  */
-public interface TimeScale extends Serializable {
+public interface TimeScale {
 
     /** Get the offset to convert locations from {@link TAIScale} to instance.
      * @param date conversion date
@@ -36,7 +34,7 @@ public interface TimeScale extends Serializable {
      * time scale</em> to get a location in <em>instance time scale</em>
      * @see #offsetToTAI(DateComponents, TimeComponents)
      */
-    double offsetFromTAI(AbsoluteDate date);
+    TimeOffset offsetFromTAI(AbsoluteDate date);
 
     /** Get the offset to convert locations from {@link TAIScale} to instance.
      * @param date conversion date
@@ -55,11 +53,11 @@ public interface TimeScale extends Serializable {
      * to get a location in <em>{@link TAIScale} time scale</em>
      * @see #offsetFromTAI(AbsoluteDate)
      */
-    default double offsetToTAI(final DateComponents date, final TimeComponents time) {
+    default TimeOffset offsetToTAI(final DateComponents date, final TimeComponents time) {
         final AbsoluteDate reference = new AbsoluteDate(date, time, new TAIScale());
-        double offset = 0;
+        TimeOffset offset = TimeOffset.ZERO;
         for (int i = 0; i < 8; i++) {
-            offset = -offsetFromTAI(reference.shiftedBy(offset));
+            offset = offsetFromTAI(reference.shiftedBy(offset)).negate();
         }
         return offset;
     }
@@ -126,14 +124,14 @@ public interface TimeScale extends Serializable {
 
     /** Get the value of the previous leap.
      * <p>
-     * This method will return 0.0 for all time scales that do <em>not</em>
+     * This method will return 0 for all time scales that do <em>not</em>
      * implement leap seconds.
      * </p>
      * @param date date to check
      * @return value of the previous leap
      */
-    default double getLeap(final AbsoluteDate date) {
-        return 0;
+    default TimeOffset getLeap(final AbsoluteDate date) {
+        return TimeOffset.ZERO;
     }
 
     /** Get the value of the previous leap.

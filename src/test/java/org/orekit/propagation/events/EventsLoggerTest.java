@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -32,6 +34,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.CountAndContinue;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -41,59 +44,137 @@ import org.orekit.utils.PVCoordinates;
 
 import java.util.List;
 
-public class EventsLoggerTest {
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+class EventsLoggerTest {
 
     private double               mu;
     private AbsoluteDate         iniDate;
     private SpacecraftState      initialState;
     private NumericalPropagator  propagator;
-    private int                  count;
-    private EventDetector        umbraDetector;
-    private EventDetector        penumbraDetector;
+    private CountAndContinue countAndContinue;
+    private AbstractDetector<EclipseDetector>        umbraDetector;
+    private AbstractDetector<EclipseDetector>         penumbraDetector;
 
     @Test
-    public void testLogUmbra() {
+    void testMonitorDetectorClass() {
+        // GIVEN
+        final DateDetector dateDetector = new DateDetector();
+        final EventsLogger eventsLogger = new EventsLogger();
+        // WHEN
+        final EventDetector detector = eventsLogger.monitorDetector(dateDetector);
+        // THEN
+        Assertions.assertInstanceOf(DetectorModifier.class, detector);
+        final DetectorModifier modifier = (DetectorModifier) detector;
+        Assertions.assertEquals(dateDetector, modifier.getDetector());
+    }
+
+    @Test
+    void testMonitorDetectorHandlerEventOccurred() {
+        // GIVEN
+        final CountAndContinue counterHandler = new CountAndContinue();
+        final DateDetector dateDetector = new DateDetector().withHandler(counterHandler);
+        final EventsLogger eventsLogger = new EventsLogger();
+        final EventDetector detector = eventsLogger.monitorDetector(dateDetector);
+        final EventHandler handler = detector.getHandler();
+        final SpacecraftState mockedState = mock();
+        when(mockedState.getDate()).thenReturn(AbsoluteDate.ARBITRARY_EPOCH);
+        // WHEN
+        final Action action = handler.eventOccurred(mockedState, dateDetector, true);
+        // THEN
+        Assertions.assertEquals(Action.CONTINUE, action);
+        final List<EventsLogger.LoggedEvent> loggedEvents = eventsLogger.getLoggedEvents();
+        Assertions.assertEquals(loggedEvents.size(), counterHandler.getCount());
+        final EventsLogger.LoggedEvent event = loggedEvents.get(0);
+        Assertions.assertEquals(mockedState, event.getState());
+        Assertions.assertEquals(mockedState, event.getResetState());
+    }
+
+    @ParameterizedTest
+    @EnumSource(Action.class)
+    void testMonitorDetectorHandlerResetState(final Action action) {
+        // GIVEN
+        final DateDetector dateDetector = new DateDetector().withHandler(new Handler(action));
+        final EventsLogger eventsLogger = new EventsLogger();
+        final EventDetector detector = eventsLogger.monitorDetector(dateDetector);
+        final EventHandler handler = detector.getHandler();
+        final SpacecraftState mockedState = mock();
+        when(mockedState.getDate()).thenReturn(AbsoluteDate.ARBITRARY_EPOCH);
+        // WHEN
+        final SpacecraftState state = handler.resetState(dateDetector, mockedState);
+        // THEN
+        if (action == Action.RESET_STATE) {
+            Assertions.assertNotEquals(mockedState, state);
+        } else {
+            Assertions.assertEquals(mockedState, state);
+        }
+    }
+
+    private static class Handler implements EventHandler {
+
+        private final Action action;
+
+        Handler(final Action action) {
+            this.action = action;
+        }
+
+        @Override
+        public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
+            return action;
+        }
+
+        @Override
+        public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
+            if (action == Action.RESET_STATE) {
+                return oldState.withMass(oldState.getMass());
+            }
+            return oldState;
+        }
+    }
+
+    @Test
+    void testLogUmbra() {
         EventsLogger logger = new EventsLogger();
-        EventDetector monitored = ((AbstractDetector<?>) logger.monitorDetector(umbraDetector)).
-                withMaxIter(200);
+        EventDetector monitored = logger.monitorDetector(umbraDetector.withMaxIter(200));
         Assertions.assertEquals(100, umbraDetector.getMaxIterationCount());
         Assertions.assertEquals(200, monitored.getMaxIterationCount());
         propagator.addEventDetector(monitored);
         propagator.addEventDetector(penumbraDetector);
-        count = 0;
+        countAndContinue.reset();
         propagator.propagate(iniDate.shiftedBy(16215)).getDate();
-        Assertions.assertEquals(11, count);
+        Assertions.assertEquals(11, countAndContinue.getCount());
         checkCounts(logger, 3, 3, 0, 0);
     }
 
     @Test
-    public void testLogPenumbra() {
+    void testLogPenumbra() {
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(umbraDetector);
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
-        count = 0;
+        countAndContinue.reset();
         propagator.propagate(iniDate.shiftedBy(16215)).getDate();
-        Assertions.assertEquals(11, count);
+        Assertions.assertEquals(11, countAndContinue.getCount());
         checkCounts(logger, 0, 0, 2, 3);
     }
 
     @Test
-    public void testLogAll() {
+    void testLogAll() {
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(logger.monitorDetector(umbraDetector));
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
-        count = 0;
+        countAndContinue.reset();
         propagator.propagate(iniDate.shiftedBy(16215));
-        Assertions.assertEquals(11, count);
+        Assertions.assertEquals(11, countAndContinue.getCount());
         checkCounts(logger, 3, 3, 2, 3);
     }
 
     @Test
-    public void testImmutableList() {
+    void testImmutableList() {
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(logger.monitorDetector(umbraDetector));
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
-        count = 0;
+        countAndContinue.reset();
         propagator.propagate(iniDate.shiftedBy(16215));
         List<EventsLogger.LoggedEvent> firstList = logger.getLoggedEvents();
         Assertions.assertEquals(11, firstList.size());
@@ -117,11 +198,11 @@ public class EventsLoggerTest {
     }
 
     @Test
-    public void testClearLog() {
+    void testClearLog() {
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(logger.monitorDetector(umbraDetector));
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
-        count = 0;
+        countAndContinue.reset();
         propagator.propagate(iniDate.shiftedBy(16215));
         List<EventsLogger.LoggedEvent> firstList = logger.getLoggedEvents();
         Assertions.assertEquals(11, firstList.size());
@@ -140,14 +221,15 @@ public class EventsLoggerTest {
         int penumbraIncreasingCount = 0;
         int penumbraDecreasingCount = 0;
         for (EventsLogger.LoggedEvent event : logger.getLoggedEvents()) {
-            if (event.getEventDetector() == umbraDetector) {
+            final EclipseDetector eclipseDetector = (EclipseDetector) (event.getEventDetector());
+            if (eclipseDetector.getTotalEclipse()) {
                 if (event.isIncreasing()) {
                     ++umbraIncreasingCount;
                 } else {
                     ++umbraDecreasingCount;
                 }
             }
-            if (event.getEventDetector() == penumbraDetector) {
+            else {
                 if (event.isIncreasing()) {
                     ++penumbraIncreasingCount;
                 } else {
@@ -161,7 +243,7 @@ public class EventsLoggerTest {
         Assertions.assertEquals(expectedPenumbraDecreasingCount, penumbraDecreasingCount);
     }
 
-    private EventDetector buildDetector(final boolean totalEclipse) {
+    private EclipseDetector buildDetector(final boolean totalEclipse) {
 
         EclipseDetector detector =
                 new EclipseDetector(CelestialBodyFactory.getSun(), 696000000,
@@ -177,14 +259,7 @@ public class EventsLoggerTest {
             detector = detector.withPenumbra();
         }
 
-        detector = detector.withHandler(new EventHandler() {
-
-            public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
-                ++count;
-                return Action.CONTINUE;
-            }
-
-        });
+        detector = detector.withHandler(countAndContinue);
 
         return detector;
 
@@ -212,7 +287,7 @@ public class EventsLoggerTest {
             integrator.setInitialStepSize(60);
             propagator = new NumericalPropagator(integrator);
             propagator.setInitialState(initialState);
-            count = 0;
+            countAndContinue = new CountAndContinue();
             umbraDetector = buildDetector(true);
             penumbraDetector = buildDetector(false);
         } catch (OrekitException oe) {
@@ -225,7 +300,7 @@ public class EventsLoggerTest {
         iniDate = null;
         initialState = null;
         propagator = null;
-        count = 0;
+        countAndContinue = null;
         umbraDetector = null;
         penumbraDetector = null;
     }

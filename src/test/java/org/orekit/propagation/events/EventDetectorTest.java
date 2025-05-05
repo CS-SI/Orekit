@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,6 +31,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -43,13 +44,16 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnEvent;
+import org.orekit.propagation.events.intervals.AdaptableInterval;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -59,6 +63,53 @@ import org.orekit.utils.PVCoordinatesProvider;
 public class EventDetectorTest {
 
     private double mu;
+
+    @Test
+    void testFinish() {
+        // GIVEN
+        final FinishingHandler handler = new FinishingHandler();
+        final EventDetector detector =
+            new DummyDetector(new EventDetectionSettings(1.0, 1.0e-10, 100), handler);
+        // WHEN
+        detector.finish(Mockito.mock(SpacecraftState.class));
+        // THEN
+        Assertions.assertTrue(handler.isFinished);
+    }
+
+    private static class FinishingHandler extends ContinueOnEvent {
+        boolean isFinished = false;
+
+        @Override
+        public void finish(SpacecraftState finalState, EventDetector detector) {
+            isFinished = true;
+        }
+    }
+
+    private static class DummyDetector implements EventDetector {
+
+        private final EventDetectionSettings detectionSettings;
+        private final EventHandler handler;
+
+        public DummyDetector(final EventDetectionSettings detectionSettings, final EventHandler handler) {
+            this.detectionSettings = detectionSettings;
+            this.handler = handler;
+        }
+
+        @Override
+        public EventDetectionSettings getDetectionSettings() {
+            return detectionSettings;
+        }
+
+        @Override
+        public EventHandler getHandler() {
+            return handler;
+        }
+
+        public double g(final SpacecraftState s) {
+            return 0;
+        }
+
+    }
 
     @Test
     public void testEventHandlerInit() {
@@ -123,7 +174,7 @@ public class EventDetectorTest {
 
         private AbsoluteDate triggerDate;
         private boolean outOfOrderCallDetected;
-        private double stepSize;
+        private final double stepSize;
 
         public OutOfOrderChecker(final double stepSize) {
             triggerDate = null;
@@ -151,10 +202,6 @@ public class EventDetectorTest {
 
         public boolean outOfOrderCallDetected() {
             return outOfOrderCallDetected;
-        }
-
-        @Override
-        public void init(SpacecraftState initialState, AbsoluteDate target, double step) {
         }
 
     }
@@ -202,13 +249,13 @@ public class EventDetectorTest {
 
         public GCallsCounter(final AdaptableInterval maxCheck, final double threshold,
                              final int maxIter, final EventHandler handler) {
-            super(maxCheck, threshold, maxIter, handler);
+            super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
             count = 0;
         }
 
-        protected GCallsCounter create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                       final int newMaxIter, final EventHandler newHandler) {
-            return new GCallsCounter(newMaxCheck, newThreshold, newMaxIter, newHandler);
+        protected GCallsCounter create(final EventDetectionSettings detectionSettings, final EventHandler newHandler) {
+            return new GCallsCounter(detectionSettings.getMaxCheckInterval(), detectionSettings.getThreshold(),
+                    detectionSettings.getMaxIterationCount(), newHandler);
         }
 
         public int getCount() {
@@ -240,9 +287,8 @@ public class EventDetectorTest {
                 new KeplerianPropagator(new EquinoctialOrbit(new PVCoordinates(new Vector3D(4008912.4039522274, -3155453.3125615157, -5044297.6484738905),
                                                                                new Vector3D(-5012.5883854112530, 1920.6332221785074, -5172.2177085540500)),
                                                              eme2000, initialDate, Constants.WGS84_EARTH_MU));
-        k2.addEventDetector(new CloseApproachDetector(s -> 2015.243454166727, 0.0001, 100,
-                                                      new ContinueOnEvent(),
-                                                      k1));
+        k2.addEventDetector(new CloseApproachDetector(new EventDetectionSettings(AdaptableInterval.of(2015.243454166727), 0.0001, 100),
+                                                      new ContinueOnEvent(), k1));
         k2.addEventDetector(new DateDetector(interruptDate).
                             withMaxCheck(Constants.JULIAN_DAY).
                             withThreshold(1.0e-6));
@@ -254,27 +300,23 @@ public class EventDetectorTest {
 
         private final PVCoordinatesProvider provider;
 
-        public CloseApproachDetector(AdaptableInterval maxCheck, double threshold,
-                                     final int maxIter, final EventHandler handler,
+        public CloseApproachDetector(EventDetectionSettings detectionSettings, final EventHandler handler,
                                      PVCoordinatesProvider provider) {
-            super(maxCheck, threshold, maxIter, handler);
+            super(detectionSettings, handler);
             this.provider = provider;
         }
 
         public double g(final SpacecraftState s) {
-            PVCoordinates pv1     = provider.getPVCoordinates(s.getDate(), s.getFrame());
-            PVCoordinates pv2     = s.getPVCoordinates();
-            Vector3D deltaP       = pv1.getPosition().subtract(pv2.getPosition());
-            Vector3D deltaV       = pv1.getVelocity().subtract(pv2.getVelocity());
-            double radialVelocity = Vector3D.dotProduct(deltaP.normalize(), deltaV);
-            return radialVelocity;
+            PVCoordinates pv1 = provider.getPVCoordinates(s.getDate(), s.getFrame());
+            PVCoordinates pv2 = s.getPVCoordinates();
+            Vector3D deltaP   = pv1.getPosition().subtract(pv2.getPosition());
+            Vector3D deltaV   = pv1.getVelocity().subtract(pv2.getVelocity());
+            return Vector3D.dotProduct(deltaP.normalize(), deltaV);
         }
 
-        protected CloseApproachDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                               final int newMaxIter,
+        protected CloseApproachDetector create(final EventDetectionSettings detectionSettings,
                                                final EventHandler newHandler) {
-            return new CloseApproachDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                             provider);
+            return new CloseApproachDetector(detectionSettings, newHandler, provider);
         }
 
     }
@@ -320,18 +362,8 @@ public class EventDetectorTest {
         EventDetector dummyDetector = new EventDetector() {
 
             @Override
-            public double getThreshold() {
-                return 1.0e-10;
-            }
-
-            @Override
-            public int getMaxIterationCount() {
-                return 100;
-            }
-
-            @Override
-            public AdaptableInterval getMaxCheckInterval() {
-                return AdaptableInterval.of(60.);
+            public EventDetectionSettings getDetectionSettings() {
+                return new EventDetectionSettings(60, 1e-10, 100);
             }
 
             @Override
@@ -367,13 +399,13 @@ public class EventDetectorTest {
                                                  eme2000, initialDate, Constants.WGS84_EARTH_MU);
         Propagator propagator = new KeplerianPropagator(orbit);
         double base  = 3600.0;
-        double noise = FastMath.scalb(base, -60);
+        TimeOffset noise = new TimeOffset(4, TimeOffset.ATTOSECOND);
         // introduce some numerical noise by using two separate shifts
-        AbsoluteDate finalTime = initialDate.shiftedBy(base).shiftedBy(2 * noise);
-        AbsoluteDate eventTime = finalTime.shiftedBy(-noise);
-        propagator.addEventDetector(new DateDetector(eventTime).withMaxCheck(base).withThreshold(noise / 2));
+        AbsoluteDate finalTime = initialDate.shiftedBy(base).shiftedBy(new TimeOffset(2, noise));
+        AbsoluteDate eventTime = finalTime.shiftedBy(noise.negate());
+        propagator.addEventDetector(new DateDetector(eventTime).withMaxCheck(base).withThreshold(noise.toDouble() / 2));
         SpacecraftState finalState = propagator.propagate(finalTime);
-        Assertions.assertEquals(0.0, finalState.getDate().durationFrom(eventTime), noise);
+        Assertions.assertEquals(0.0, finalState.getDate().durationFrom(eventTime), noise.toDouble());
 
     }
 
@@ -403,7 +435,7 @@ public class EventDetectorTest {
 
     private Propagator buildNumerical(final Orbit orbit) {
         OrbitType           type       = OrbitType.CARTESIAN;
-        double[][]          tol        = NumericalPropagator.tolerances(0.0001, orbit, type);
+        double[][]          tol        = ToleranceProvider.getDefaultToleranceProvider(0.0001).getTolerances(orbit, type);
         ODEIntegrator       integrator = new DormandPrince853Integrator(0.0001, 10.0, tol[0], tol[1]);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setOrbitType(type);
@@ -427,9 +459,7 @@ public class EventDetectorTest {
         // to check they are called in consistent order
         final ScheduleChecker checker = new ScheduleChecker(initialDate.shiftedBy(start),
                                                             initialDate.shiftedBy(stop));
-        propagator.setStepHandler((interpolator) -> {
-            checker.callDate(interpolator.getCurrentState().getDate());
-        });
+        propagator.setStepHandler((interpolator) -> checker.callDate(interpolator.getCurrentState().getDate()));
 
         for (int i = 0; i < 10; ++i) {
             propagator.addEventDetector(new DateDetector(initialDate.shiftedBy(0.0625 * (i + 1))).
@@ -479,6 +509,34 @@ public class EventDetectorTest {
             ++calls;
         }
 
+    }
+
+    @Test
+    void testGetDetectionSettings() {
+        // GIVEN
+        final EventDetector detector = new TestDetector();
+        // WHEN
+        final EventDetectionSettings actualSettings = detector.getDetectionSettings();
+        // THEN
+        final EventDetectionSettings expectedSettings = EventDetectionSettings.getDefaultEventDetectionSettings();
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        Assertions.assertEquals(expectedSettings.getMaxCheckInterval().currentInterval(mockedState, true),
+                actualSettings.getMaxCheckInterval().currentInterval(mockedState, true));
+        Assertions.assertEquals(expectedSettings.getMaxIterationCount(), actualSettings.getMaxIterationCount());
+        Assertions.assertEquals(expectedSettings.getThreshold(), actualSettings.getThreshold());
+    }
+
+    private static class TestDetector implements EventDetector {
+
+        @Override
+        public double g(SpacecraftState s) {
+            return 0;
+        }
+
+        @Override
+        public EventHandler getHandler() {
+            return null;
+        }
     }
 
     @BeforeEach

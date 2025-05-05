@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 
 /**
@@ -30,40 +29,59 @@ import org.orekit.time.AbsoluteDate;
  *
  * @author Evan Ward
  */
-public class NegateDetectorTest {
+class NegateDetectorTest {
 
-    /**
-     * check {@link NegateDetector#init(SpacecraftState, AbsoluteDate)}.
-     */
     @Test
-    public void testInit() {
+    void testInitBackward() {
         //setup
-        EventDetector a = Mockito.mock(EventDetector.class);
-        Mockito.when(a.getMaxCheckInterval()).thenReturn(AdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
-        Mockito.when(a.getThreshold()).thenReturn(AbstractDetector.DEFAULT_THRESHOLD);
-        EventHandler c = Mockito.mock(EventHandler.class);
-        NegateDetector detector = new NegateDetector(a).withHandler(c);
-        AbsoluteDate t = AbsoluteDate.GPS_EPOCH;
-        SpacecraftState s = Mockito.mock(SpacecraftState.class);
-        Mockito.when(s.getDate()).thenReturn(t.shiftedBy(60.0));
+        final DateDetector dateDetector = new DateDetector();
+        final NegateDetector negateDetector = new NegateDetector(dateDetector);
+        final SpacecraftState state = Mockito.mock(SpacecraftState.class);
+        Mockito.when(state.getDate()).thenReturn(AbsoluteDate.ARBITRARY_EPOCH);
 
         //action
-        detector.init(s, t);
+        negateDetector.init(state, AbsoluteDate.PAST_INFINITY);
 
         //verify
-        Mockito.verify(a).init(s, t);
-        Mockito.verify(c).init(s, t, detector);
+        Assertions.assertEquals(dateDetector.isForward(), negateDetector.isForward());
+    }
+
+    @Test
+    void testInitForward() {
+        //setup
+        final DateDetector dateDetector = new DateDetector();
+        final NegateDetector negateDetector = new NegateDetector(dateDetector);
+        final SpacecraftState state = Mockito.mock(SpacecraftState.class);
+        Mockito.when(state.getDate()).thenReturn(AbsoluteDate.ARBITRARY_EPOCH);
+
+        //action
+        negateDetector.init(state, AbsoluteDate.FUTURE_INFINITY);
+
+        //verify
+        Assertions.assertEquals(dateDetector.isForward(), negateDetector.isForward());
+    }
+
+    @Test
+    void testGetDetector() {
+        //setup
+        EventDetector expectedDetector = new DateDetector();
+
+        //action
+        NegateDetector detector = new NegateDetector(expectedDetector);
+
+        //verify
+        Assertions.assertEquals(expectedDetector, detector.getDetector());
+        Assertions.assertEquals(expectedDetector, detector.getOriginal());
     }
 
     /**
      * check g function is negated.
      */
     @Test
-    public void testG() {
+    void testG() {
         //setup
         EventDetector a = Mockito.mock(EventDetector.class);
-        Mockito.when(a.getMaxCheckInterval()).thenReturn(AdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
-        Mockito.when(a.getThreshold()).thenReturn(AbstractDetector.DEFAULT_THRESHOLD);
+        Mockito.when(a.getDetectionSettings()).thenReturn(EventDetectionSettings.getDefaultEventDetectionSettings());
         NegateDetector detector = new NegateDetector(a);
         SpacecraftState s = Mockito.mock(SpacecraftState.class);
 
@@ -77,18 +95,17 @@ public class NegateDetectorTest {
 
     /** Check a with___ method. */
     @Test
-    public void testCreate() {
+    void testCreate() {
         //setup
         EventDetector a = Mockito.mock(EventDetector.class);
-        Mockito.when(a.getMaxCheckInterval()).thenReturn(AdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
-        Mockito.when(a.getThreshold()).thenReturn(AbstractDetector.DEFAULT_THRESHOLD);
+        Mockito.when(a.getDetectionSettings()).thenReturn(EventDetectionSettings.getDefaultEventDetectionSettings());
         NegateDetector detector = new NegateDetector(a);
 
         // action
         NegateDetector actual = detector.withMaxCheck(100);
 
         //verify
-        MatcherAssert.assertThat(actual.getMaxCheckInterval().currentInterval(null), CoreMatchers.is(100.0));
-        Assertions.assertTrue(actual.getOriginal() == a);
+        MatcherAssert.assertThat(actual.getMaxCheckInterval().currentInterval(null, true), CoreMatchers.is(100.0));
+        Assertions.assertSame(actual.getOriginal(), a);
     }
 }

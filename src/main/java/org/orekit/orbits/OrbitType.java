@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 package org.orekit.orbits;
-
-import java.util.Arrays;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -221,16 +219,12 @@ public enum OrbitType {
             stateVector[5] = circularOrbit.getAlpha(type);
 
             if (stateVectorDot != null) {
-                if (orbit.hasDerivatives()) {
-                    stateVectorDot[0] = circularOrbit.getADot();
-                    stateVectorDot[1] = circularOrbit.getCircularExDot();
-                    stateVectorDot[2] = circularOrbit.getCircularEyDot();
-                    stateVectorDot[3] = circularOrbit.getIDot();
-                    stateVectorDot[4] = circularOrbit.getRightAscensionOfAscendingNodeDot();
-                    stateVectorDot[5] = circularOrbit.getAlphaDot(type);
-                } else {
-                    Arrays.fill(stateVectorDot, 0, 6, Double.NaN);
-                }
+                stateVectorDot[0] = circularOrbit.getADot();
+                stateVectorDot[1] = circularOrbit.getCircularExDot();
+                stateVectorDot[2] = circularOrbit.getCircularEyDot();
+                stateVectorDot[3] = circularOrbit.getIDot();
+                stateVectorDot[4] = circularOrbit.getRightAscensionOfAscendingNodeDot();
+                stateVectorDot[5] = circularOrbit.getAlphaDot(type);
             }
 
         }
@@ -277,16 +271,12 @@ public enum OrbitType {
             stateVector[5] = circularOrbit.getAlpha(type);
 
             if (stateVectorDot != null) {
-                if (orbit.hasDerivatives()) {
-                    stateVectorDot[0] = circularOrbit.getADot();
-                    stateVectorDot[1] = circularOrbit.getCircularExDot();
-                    stateVectorDot[2] = circularOrbit.getCircularEyDot();
-                    stateVectorDot[3] = circularOrbit.getIDot();
-                    stateVectorDot[4] = circularOrbit.getRightAscensionOfAscendingNodeDot();
-                    stateVectorDot[5] = circularOrbit.getAlphaDot(type);
-                } else {
-                    Arrays.fill(stateVectorDot, 0, 6, orbit.getZero().add(Double.NaN));
-                }
+                stateVectorDot[0] = circularOrbit.getADot();
+                stateVectorDot[1] = circularOrbit.getCircularExDot();
+                stateVectorDot[2] = circularOrbit.getCircularEyDot();
+                stateVectorDot[3] = circularOrbit.getIDot();
+                stateVectorDot[4] = circularOrbit.getRightAscensionOfAscendingNodeDot();
+                stateVectorDot[5] = circularOrbit.getAlphaDot(type);
             }
 
         }
@@ -348,39 +338,24 @@ public enum OrbitType {
             final PositionAngleType cachedPositionAngleType = cO.getCachedPositionAngleType();
 
             // perform normalization
-            if (cO.hasDerivatives()) {
-                return new CircularOrbit(cO.getA(),
-                                         cO.getCircularEx(),
-                                         cO.getCircularEy(),
-                                         cO.getI(),
-                                         MathUtils.normalizeAngle(cO.getRightAscensionOfAscendingNode(),
-                                                 cR.getRightAscensionOfAscendingNode()),
-                                         MathUtils.normalizeAngle(cO.getAlpha(cachedPositionAngleType),
-                                                 cR.getAlpha(cachedPositionAngleType)),
-                                         cO.getADot(),
-                                         cO.getCircularExDot(),
-                                         cO.getCircularEyDot(),
-                                         cO.getIDot(),
-                                         cO.getRightAscensionOfAscendingNodeDot(),
-                                         cO.getAlphaDot(cachedPositionAngleType),
-                                         cachedPositionAngleType,
-                                         cO.getFrame(),
-                                         cO.getDate(),
-                                         cO.getMu());
-            } else {
-                return new CircularOrbit(cO.getA(),
-                                         cO.getCircularEx(),
-                                         cO.getCircularEy(),
-                                         cO.getI(),
-                                         MathUtils.normalizeAngle(cO.getRightAscensionOfAscendingNode(),
-                                                 cR.getRightAscensionOfAscendingNode()),
-                                         MathUtils.normalizeAngle(cO.getAlpha(cachedPositionAngleType),
-                                                 cR.getAlpha(cachedPositionAngleType)),
-                                         cachedPositionAngleType,
-                                         cO.getFrame(),
-                                         cO.getDate(),
-                                         cO.getMu());
-            }
+            return new CircularOrbit(cO.getA(),
+                                     cO.getCircularEx(),
+                                     cO.getCircularEy(),
+                                     cO.getI(),
+                                     MathUtils.normalizeAngle(cO.getRightAscensionOfAscendingNode(),
+                                             cR.getRightAscensionOfAscendingNode()),
+                                     MathUtils.normalizeAngle(cO.getAlpha(cachedPositionAngleType),
+                                             cR.getAlpha(cachedPositionAngleType)),
+                                     cO.getADot(),
+                                     cO.getCircularExDot(),
+                                     cO.getCircularEyDot(),
+                                     cO.getIDot(),
+                                     cO.getRightAscensionOfAscendingNodeDot(),
+                                     cO.getAlphaDot(cachedPositionAngleType),
+                                     cachedPositionAngleType,
+                                     cO.getFrame(),
+                                     cO.getDate(),
+                                     cO.getMu());
 
         }
 
@@ -394,7 +369,7 @@ public enum OrbitType {
             final PositionAngleType positionAngleType = cO.getCachedPositionAngleType();
 
             // perform normalization
-            if (cO.hasDerivatives()) {
+            if (cO.hasNonKeplerianAcceleration()) {
                 return new FieldCircularOrbit<>(cO.getA(),
                                                 cO.getCircularEx(),
                                                 cO.getCircularEy(),
@@ -463,16 +438,12 @@ public enum OrbitType {
             stateVector[5] = equinoctialOrbit.getL(type);
 
             if (stateVectorDot != null) {
-                if (orbit.hasDerivatives()) {
-                    stateVectorDot[0] = equinoctialOrbit.getADot();
-                    stateVectorDot[1] = equinoctialOrbit.getEquinoctialExDot();
-                    stateVectorDot[2] = equinoctialOrbit.getEquinoctialEyDot();
-                    stateVectorDot[3] = equinoctialOrbit.getHxDot();
-                    stateVectorDot[4] = equinoctialOrbit.getHyDot();
-                    stateVectorDot[5] = equinoctialOrbit.getLDot(type);
-                } else {
-                    Arrays.fill(stateVectorDot, 0, 6, Double.NaN);
-                }
+                stateVectorDot[0] = equinoctialOrbit.getADot();
+                stateVectorDot[1] = equinoctialOrbit.getEquinoctialExDot();
+                stateVectorDot[2] = equinoctialOrbit.getEquinoctialEyDot();
+                stateVectorDot[3] = equinoctialOrbit.getHxDot();
+                stateVectorDot[4] = equinoctialOrbit.getHyDot();
+                stateVectorDot[5] = equinoctialOrbit.getLDot(type);
             }
 
         }
@@ -520,16 +491,12 @@ public enum OrbitType {
             stateVector[5] = equinoctialOrbit.getL(type);
 
             if (stateVectorDot != null) {
-                if (orbit.hasDerivatives()) {
-                    stateVectorDot[0] = equinoctialOrbit.getADot();
-                    stateVectorDot[1] = equinoctialOrbit.getEquinoctialExDot();
-                    stateVectorDot[2] = equinoctialOrbit.getEquinoctialEyDot();
-                    stateVectorDot[3] = equinoctialOrbit.getHxDot();
-                    stateVectorDot[4] = equinoctialOrbit.getHyDot();
-                    stateVectorDot[5] = equinoctialOrbit.getLDot(type);
-                } else {
-                    Arrays.fill(stateVectorDot, 0, 6, orbit.getZero().add(Double.NaN));
-                }
+                stateVectorDot[0] = equinoctialOrbit.getADot();
+                stateVectorDot[1] = equinoctialOrbit.getEquinoctialExDot();
+                stateVectorDot[2] = equinoctialOrbit.getEquinoctialEyDot();
+                stateVectorDot[3] = equinoctialOrbit.getHxDot();
+                stateVectorDot[4] = equinoctialOrbit.getHyDot();
+                stateVectorDot[5] = equinoctialOrbit.getLDot(type);
             }
 
         }
@@ -592,37 +559,23 @@ public enum OrbitType {
             final PositionAngleType cachedPositionAngleType = eO.getCachedPositionAngleType();
 
             // perform normalization
-            if (eO.hasDerivatives()) {
-                return new EquinoctialOrbit(eO.getA(),
-                                            eO.getEquinoctialEx(),
-                                            eO.getEquinoctialEy(),
-                                            eO.getHx(),
-                                            eO.getHy(),
-                                            MathUtils.normalizeAngle(eO.getL(cachedPositionAngleType),
-                                            eR.getL(cachedPositionAngleType)),
-                                            eO.getADot(),
-                                            eO.getEquinoctialExDot(),
-                                            eO.getEquinoctialEyDot(),
-                                            eO.getHxDot(),
-                                            eO.getHyDot(),
-                                            eO.getLDot(cachedPositionAngleType),
-                                            cachedPositionAngleType,
-                                            eO.getFrame(),
-                                            eO.getDate(),
-                                            eO.getMu());
-            } else {
-                return new EquinoctialOrbit(eO.getA(),
-                                            eO.getEquinoctialEx(),
-                                            eO.getEquinoctialEy(),
-                                            eO.getHx(),
-                                            eO.getHy(),
-                                            MathUtils.normalizeAngle(eO.getL(cachedPositionAngleType),
-                                                    eR.getL(cachedPositionAngleType)),
-                                            cachedPositionAngleType,
-                                            eO.getFrame(),
-                                            eO.getDate(),
-                                            eO.getMu());
-            }
+            return new EquinoctialOrbit(eO.getA(),
+                                        eO.getEquinoctialEx(),
+                                        eO.getEquinoctialEy(),
+                                        eO.getHx(),
+                                        eO.getHy(),
+                                        MathUtils.normalizeAngle(eO.getL(cachedPositionAngleType),
+                                        eR.getL(cachedPositionAngleType)),
+                                        eO.getADot(),
+                                        eO.getEquinoctialExDot(),
+                                        eO.getEquinoctialEyDot(),
+                                        eO.getHxDot(),
+                                        eO.getHyDot(),
+                                        eO.getLDot(cachedPositionAngleType),
+                                        cachedPositionAngleType,
+                                        eO.getFrame(),
+                                        eO.getDate(),
+                                        eO.getMu());
 
         }
 
@@ -636,7 +589,7 @@ public enum OrbitType {
             final PositionAngleType positionAngleType = eO.getCachedPositionAngleType();
 
             // perform normalization
-            if (eO.hasDerivatives()) {
+            if (eO.hasNonKeplerianAcceleration()) {
                 return new FieldEquinoctialOrbit<>(eO.getA(),
                                                    eO.getEquinoctialEx(),
                                                    eO.getEquinoctialEy(),
@@ -703,16 +656,12 @@ public enum OrbitType {
             stateVector[5] = keplerianOrbit.getAnomaly(type);
 
             if (stateVectorDot != null) {
-                if (orbit.hasDerivatives()) {
-                    stateVectorDot[0] = keplerianOrbit.getADot();
-                    stateVectorDot[1] = keplerianOrbit.getEDot();
-                    stateVectorDot[2] = keplerianOrbit.getIDot();
-                    stateVectorDot[3] = keplerianOrbit.getPerigeeArgumentDot();
-                    stateVectorDot[4] = keplerianOrbit.getRightAscensionOfAscendingNodeDot();
-                    stateVectorDot[5] = keplerianOrbit.getAnomalyDot(type);
-                } else {
-                    Arrays.fill(stateVectorDot, 0, 6, Double.NaN);
-                }
+                stateVectorDot[0] = keplerianOrbit.getADot();
+                stateVectorDot[1] = keplerianOrbit.getEDot();
+                stateVectorDot[2] = keplerianOrbit.getIDot();
+                stateVectorDot[3] = keplerianOrbit.getPerigeeArgumentDot();
+                stateVectorDot[4] = keplerianOrbit.getRightAscensionOfAscendingNodeDot();
+                stateVectorDot[5] = keplerianOrbit.getAnomalyDot(type);
             }
 
         }
@@ -759,16 +708,12 @@ public enum OrbitType {
             stateVector[5] = keplerianOrbit.getAnomaly(type);
 
             if (stateVectorDot != null) {
-                if (orbit.hasDerivatives()) {
-                    stateVectorDot[0] = keplerianOrbit.getADot();
-                    stateVectorDot[1] = keplerianOrbit.getEDot();
-                    stateVectorDot[2] = keplerianOrbit.getIDot();
-                    stateVectorDot[3] = keplerianOrbit.getPerigeeArgumentDot();
-                    stateVectorDot[4] = keplerianOrbit.getRightAscensionOfAscendingNodeDot();
-                    stateVectorDot[5] = keplerianOrbit.getAnomalyDot(type);
-                } else {
-                    Arrays.fill(stateVectorDot, 0, 6, orbit.getZero().add(Double.NaN));
-                }
+                stateVectorDot[0] = keplerianOrbit.getADot();
+                stateVectorDot[1] = keplerianOrbit.getEDot();
+                stateVectorDot[2] = keplerianOrbit.getIDot();
+                stateVectorDot[3] = keplerianOrbit.getPerigeeArgumentDot();
+                stateVectorDot[4] = keplerianOrbit.getRightAscensionOfAscendingNodeDot();
+                stateVectorDot[5] = keplerianOrbit.getAnomalyDot(type);
             }
 
         }
@@ -831,38 +776,24 @@ public enum OrbitType {
             final PositionAngleType cachedPositionAngleType = kO.getCachedPositionAngleType();
 
             // perform normalization
-            if (kO.hasDerivatives()) {
-                return new KeplerianOrbit(kO.getA(),
-                                          kO.getE(),
-                                          kO.getI(),
-                                          MathUtils.normalizeAngle(kO.getPerigeeArgument(), kR.getPerigeeArgument()),
-                                          MathUtils.normalizeAngle(kO.getRightAscensionOfAscendingNode(),
-                                                  kR.getRightAscensionOfAscendingNode()),
-                                          MathUtils.normalizeAngle(kO.getAnomaly(cachedPositionAngleType),
-                                                  kR.getAnomaly(cachedPositionAngleType)),
-                                          kO.getADot(),
-                                          kO.getEDot(),
-                                          kO.getIDot(),
-                                          kO.getPerigeeArgumentDot(),
-                                          kO.getRightAscensionOfAscendingNodeDot(),
-                                          kO.getAnomalyDot(cachedPositionAngleType),
-                                          cachedPositionAngleType,
-                                          kO.getFrame(),
-                                          kO.getDate(),
-                                          kO.getMu());
-            } else {
-                return new KeplerianOrbit(kO.getA(),
-                                          kO.getE(),
-                                          kO.getI(),
-                                          MathUtils.normalizeAngle(kO.getPerigeeArgument(), kR.getPerigeeArgument()),
-                                          MathUtils.normalizeAngle(kO.getRightAscensionOfAscendingNode(), kR.getRightAscensionOfAscendingNode()),
-                                          MathUtils.normalizeAngle(kO.getAnomaly(cachedPositionAngleType),
-                                                  kR.getAnomaly(cachedPositionAngleType)),
-                                          cachedPositionAngleType,
-                                          kO.getFrame(),
-                                          kO.getDate(),
-                                          kO.getMu());
-            }
+            return new KeplerianOrbit(kO.getA(),
+                                      kO.getE(),
+                                      kO.getI(),
+                                      MathUtils.normalizeAngle(kO.getPerigeeArgument(), kR.getPerigeeArgument()),
+                                      MathUtils.normalizeAngle(kO.getRightAscensionOfAscendingNode(),
+                                              kR.getRightAscensionOfAscendingNode()),
+                                      MathUtils.normalizeAngle(kO.getAnomaly(cachedPositionAngleType),
+                                              kR.getAnomaly(cachedPositionAngleType)),
+                                      kO.getADot(),
+                                      kO.getEDot(),
+                                      kO.getIDot(),
+                                      kO.getPerigeeArgumentDot(),
+                                      kO.getRightAscensionOfAscendingNodeDot(),
+                                      kO.getAnomalyDot(cachedPositionAngleType),
+                                      cachedPositionAngleType,
+                                      kO.getFrame(),
+                                      kO.getDate(),
+                                      kO.getMu());
 
         }
 
@@ -876,7 +807,7 @@ public enum OrbitType {
             final PositionAngleType positionAngleType = kO.getCachedPositionAngleType();
 
             // perform normalization
-            if (kO.hasDerivatives()) {
+            if (kO.hasNonKeplerianAcceleration()) {
                 return new FieldKeplerianOrbit<>(kO.getA(),
                                                  kO.getE(),
                                                  kO.getI(),

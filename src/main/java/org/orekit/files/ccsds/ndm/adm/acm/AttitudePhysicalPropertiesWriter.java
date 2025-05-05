@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,6 @@ import org.hipparchus.linear.RealMatrix;
 import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
-import org.orekit.utils.AccurateFormatter;
 import org.orekit.utils.units.Unit;
 
 /** Writer for physical properties data.
@@ -63,11 +62,11 @@ class AttitudePhysicalPropertiesWriter extends AbstractWriter {
         }
         if (phys.getCenterOfPressure() != null) {
             final StringBuilder cp = new StringBuilder();
-            cp.append(AccurateFormatter.format(Unit.METRE.fromSI(phys.getCenterOfPressure().getX())));
+            cp.append(generator.doubleToString(Unit.METRE.fromSI(phys.getCenterOfPressure().getX())));
             cp.append(' ');
-            cp.append(AccurateFormatter.format(Unit.METRE.fromSI(phys.getCenterOfPressure().getY())));
+            cp.append(generator.doubleToString(Unit.METRE.fromSI(phys.getCenterOfPressure().getY())));
             cp.append(' ');
-            cp.append(AccurateFormatter.format(Unit.METRE.fromSI(phys.getCenterOfPressure().getZ())));
+            cp.append(generator.doubleToString(Unit.METRE.fromSI(phys.getCenterOfPressure().getZ())));
             generator.writeEntry(AttitudePhysicalPropertiesKey.CP.name(), cp.toString(), Unit.METRE, false);
         }
 

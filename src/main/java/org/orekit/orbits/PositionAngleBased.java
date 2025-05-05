@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,21 +28,30 @@ package org.orekit.orbits;
  * @author Romain Serra
  * @since 12.0
  */
-public interface PositionAngleBased {
+public interface PositionAngleBased<T> {
 
     /** Get the cached {@link PositionAngleType}.
      * @return cached type of position angle
      */
     PositionAngleType getCachedPositionAngleType();
 
-    /** Tells whether the instance holds rates (first-order time derivatives) for dependent variables.
-     * @return true if and only if holding rates
+    /** Tells whether the instance holds rates (first-order time derivatives) for dependent variables that are incompatible with Keplerian motion.
+     * @return true if and only if holding non-Keplerian rates
+     * @since 13.0
      */
-    boolean hasRates();
+    boolean hasNonKeplerianRates();
 
-    /** Create a new instance such that {@link #hasRates()} is false.
+    /** Creates a new instance such that {@link #hasNonKeplerianRates()} is false.
      * @return new object without rates
+     * @since 13.0
      */
-    PositionAngleBased removeRates();
+    T withKeplerianRates();
 
+    /**
+     * Creates a new instance with the provided type used for caching.
+     * @param positionAngleType position angle type to use for caching value
+     * @return new object
+     * @since 13.0
+     */
+    T withCachedPositionAngleType(PositionAngleType positionAngleType);
 }

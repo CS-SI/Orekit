@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,23 +16,29 @@
  */
 package org.orekit.propagation.integration;
 
-import java.util.Arrays;
-import java.util.List;
-
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.ode.DenseOutputModel;
 import org.hipparchus.ode.ODEStateAndDerivative;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.AttitudeProviderModifier;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.AdditionalStateProvider;
+import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.DoubleArrayDictionary;
+import org.orekit.utils.DataDictionary;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
 
 /** This class stores sequentially generated orbital parameters for
  * later retrieval.
@@ -79,7 +85,7 @@ public class IntegratedEphemeris
      * mean and short periodic elements. It is ignored by the Numerical propagator.
      * </p>
      */
-    private PropagationType type;
+    private final PropagationType type;
 
     /** Start date of the integration (can be min or max). */
     private final AbsoluteDate startDate;
@@ -91,10 +97,10 @@ public class IntegratedEphemeris
     private final AbsoluteDate maxDate;
 
     /** Underlying raw mathematical model. */
-    private DenseOutputModel model;
+    private final DenseOutputModel model;
 
     /** Unmanaged additional states that must be simply copied. */
-    private final DoubleArrayDictionary unmanaged;
+    private final DataDictionary unmanaged;
 
     /** Names of additional equations.
      * @since 11.2
@@ -111,23 +117,24 @@ public class IntegratedEphemeris
      * @param minDate first date of the range
      * @param maxDate last date of the range
      * @param mapper mapper between raw double components and spacecraft state
+     * @param attitudeProvider attitude provider
      * @param type type of orbit to output (mean or osculating)
      * @param model underlying raw mathematical model
      * @param unmanaged unmanaged additional states that must be simply copied
      * @param providers providers for pre-integrated states
      * @param equations names of additional equations
      * @param dimensions dimensions of additional equations
-     * @since 11.1.2
+     * @since 13.0
      */
     public IntegratedEphemeris(final AbsoluteDate startDate,
                                final AbsoluteDate minDate, final AbsoluteDate maxDate,
-                               final StateMapper mapper, final PropagationType type,
-                               final DenseOutputModel model,
-                               final DoubleArrayDictionary unmanaged,
-                               final List<AdditionalStateProvider> providers,
+                               final StateMapper mapper, final AttitudeProvider attitudeProvider,
+                               final PropagationType type, final DenseOutputModel model,
+                               final DataDictionary unmanaged,
+                               final List<AdditionalDataProvider<?>> providers,
                                final String[] equations, final int[] dimensions) {
 
-        super(mapper.getAttitudeProvider());
+        super(attitudeProvider);
 
         this.startDate = startDate;
         this.minDate   = minDate;
@@ -138,8 +145,8 @@ public class IntegratedEphemeris
         this.unmanaged = unmanaged;
 
         // set up the pre-integrated providers
-        for (final AdditionalStateProvider provider : providers) {
-            addAdditionalStateProvider(provider);
+        for (final AdditionalDataProvider<?> provider : providers) {
+            addAdditionalDataProvider(provider);
         }
 
         this.equations  = equations.clone();
@@ -148,6 +155,23 @@ public class IntegratedEphemeris
         // set up initial state
         super.resetInitialState(getInitialState());
 
+        // remove event detectors in attitude provider
+        setAttitudeProvider(new AttitudeProviderModifier() {
+            @Override
+            public AttitudeProvider getUnderlyingAttitudeProvider() {
+                return attitudeProvider;
+            }
+
+            @Override
+            public Stream<EventDetector> getEventDetectors() {
+                return Stream.of();
+            }
+
+            @Override
+            public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
+                return Stream.of();
+            }
+        });
     }
 
     /** Interpolate the model at some date.
@@ -175,19 +199,19 @@ public class IntegratedEphemeris
 
     /** {@inheritDoc} */
     @Override
-    protected SpacecraftState basicPropagate(final AbsoluteDate date) {
+    public SpacecraftState basicPropagate(final AbsoluteDate date) {
         final ODEStateAndDerivative os = getInterpolatedState(date);
         SpacecraftState state = mapper.mapArrayToState(mapper.mapDoubleToDate(os.getTime(), date),
                                                        os.getPrimaryState(), os.getPrimaryDerivative(),
                                                        type);
-        for (DoubleArrayDictionary.Entry initial : unmanaged.getData()) {
-            state = state.addAdditionalState(initial.getKey(), initial.getValue());
+        for (DataDictionary.Entry initial : unmanaged.getData()) {
+            state = state.addAdditionalData(initial.getKey(), initial.getValue());
         }
         return state;
     }
 
     /** {@inheritDoc} */
-    protected Orbit propagateOrbit(final AbsoluteDate date) {
+    public Orbit propagateOrbit(final AbsoluteDate date) {
         return basicPropagate(date).getOrbit();
     }
 
@@ -216,6 +240,7 @@ public class IntegratedEphemeris
     }
 
     /** {@inheritDoc} */
+    @Override
     public void resetInitialState(final SpacecraftState state) {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
@@ -237,15 +262,16 @@ public class IntegratedEphemeris
     }
 
     /** {@inheritDoc} */
+    @Override
     public SpacecraftState getInitialState() {
-        return updateAdditionalStates(basicPropagate(getMinDate()));
+        return updateAdditionalData(basicPropagate(getMinDate()));
     }
 
     /** {@inheritDoc} */
     @Override
-    protected SpacecraftState updateAdditionalStates(final SpacecraftState original) {
+    public SpacecraftState updateAdditionalData(final SpacecraftState original) {
 
-        SpacecraftState updated = super.updateAdditionalStates(original);
+        SpacecraftState updated = super.updateAdditionalData(original);
 
         if (equations.length > 0) {
             final ODEStateAndDerivative osd                = getInterpolatedState(updated.getDate());
@@ -256,7 +282,7 @@ public class IntegratedEphemeris
                 final double[] state      = Arrays.copyOfRange(combinedState,      index, index + dimensions[i]);
                 final double[] derivative = Arrays.copyOfRange(combinedDerivative, index, index + dimensions[i]);
                 updated = updated.
-                          addAdditionalState(equations[i], state).
+                          addAdditionalData(equations[i], state).
                           addAdditionalStateDerivative(equations[i], derivative);
                 index += dimensions[i];
             }

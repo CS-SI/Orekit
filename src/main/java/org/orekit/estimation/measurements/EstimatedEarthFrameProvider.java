@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.io.Serializable;
 import java.util.Map;
 
 import org.hipparchus.CalculusFieldElement;
@@ -28,7 +27,6 @@ import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
@@ -37,6 +35,7 @@ import org.orekit.frames.Transform;
 import org.orekit.frames.TransformProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
@@ -66,9 +65,6 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
 
     /** Earth Angular Velocity, in rad/s, from TIRF model. */
     public static final double EARTH_ANGULAR_VELOCITY = 7.292115146706979e-5;
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20170922L;
 
     /** Angular scaling factor.
      * <p>
@@ -448,28 +444,8 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
         return dt.multiply(drift).add(offset);
     }
 
-    /** Replace the instance with a data transfer object for serialization.
-     * <p>
-     * This intermediate class serializes the files supported names, the ephemeris type
-     * and the body name.
-     * </p>
-     * @return data transfer object that will be serialized
-     */
-    private Object writeReplace() {
-        return new DataTransferObject(baseUT1,
-                                      primeMeridianOffsetDriver.getValue(),
-                                      primeMeridianDriftDriver.getValue(),
-                                      polarOffsetXDriver.getValue(),
-                                      polarDriftXDriver.getValue(),
-                                      polarOffsetYDriver.getValue(),
-                                      polarDriftYDriver.getValue());
-    }
-
     /** Local time scale for estimated UT1. */
     private class EstimatedUT1Scale extends UT1Scale {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20170922L;
 
         /** Simple constructor.
          */
@@ -486,9 +462,9 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
 
         /** {@inheritDoc} */
         @Override
-        public double offsetFromTAI(final AbsoluteDate date) {
+        public TimeOffset offsetFromTAI(final AbsoluteDate date) {
             final double dut1 = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver) / EARTH_ANGULAR_VELOCITY;
-            return baseUT1.offsetFromTAI(date) + dut1;
+            return baseUT1.offsetFromTAI(date).add(new TimeOffset(dut1));
         }
 
         /** {@inheritDoc} */
@@ -498,75 +474,4 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
         }
 
     }
-
-    /** Internal class used only for serialization. */
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20171124L;
-
-        /** Underlying raw UT1. */
-        private final UT1Scale baseUT1;
-
-        /** Current prime meridian offset. */
-        private final double primeMeridianOffset;
-
-        /** Current prime meridian drift. */
-        private final double primeMeridianDrift;
-
-        /** Current pole offset along X. */
-        private final double polarOffsetX;
-
-        /** Current pole drift along X. */
-        private final double polarDriftX;
-
-        /** Current pole offset along Y. */
-        private final double polarOffsetY;
-
-        /** Current pole drift along Y. */
-        private final double polarDriftY;
-
-        /** Simple constructor.
-         * @param baseUT1 underlying raw UT1
-         * @param primeMeridianOffset current prime meridian offset
-         * @param primeMeridianDrift current prime meridian drift
-         * @param polarOffsetX current pole offset along X
-         * @param polarDriftX current pole drift along X
-         * @param polarOffsetY current pole offset along Y
-         * @param polarDriftY current pole drift along Y
-         */
-        DataTransferObject(final  UT1Scale baseUT1,
-                           final double primeMeridianOffset, final double primeMeridianDrift,
-                           final double polarOffsetX,        final double polarDriftX,
-                           final double polarOffsetY,        final double polarDriftY) {
-            this.baseUT1             = baseUT1;
-            this.primeMeridianOffset = primeMeridianOffset;
-            this.primeMeridianDrift  = primeMeridianDrift;
-            this.polarOffsetX        = polarOffsetX;
-            this.polarDriftX         = polarDriftX;
-            this.polarOffsetY        = polarOffsetY;
-            this.polarDriftY         = polarDriftY;
-        }
-
-        /** Replace the deserialized data transfer object with a {@link EstimatedEarthFrameProvider}.
-         * @return replacement {@link EstimatedEarthFrameProvider}
-         */
-        private Object readResolve() {
-            try {
-                final EstimatedEarthFrameProvider provider = new EstimatedEarthFrameProvider(baseUT1);
-                provider.getPrimeMeridianOffsetDriver().setValue(primeMeridianOffset);
-                provider.getPrimeMeridianDriftDriver().setValue(primeMeridianDrift);
-                provider.getPolarOffsetXDriver().setValue(polarOffsetX);
-                provider.getPolarDriftXDriver().setValue(polarDriftX);
-                provider.getPolarOffsetYDriver().setValue(polarOffsetY);
-                provider.getPolarDriftYDriver().setValue(polarDriftY);
-                return provider;
-            } catch (OrekitException oe) {
-                // this should never happen as values already come from previous drivers
-                throw new OrekitInternalError(oe);
-            }
-        }
-
-    }
-
 }

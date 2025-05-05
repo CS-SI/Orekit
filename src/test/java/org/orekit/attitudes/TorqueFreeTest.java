@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -52,7 +52,7 @@ import org.orekit.utils.PVCoordinates;
 public class TorqueFreeTest {
 
     @Test
-    public void testLocalBehavior() {
+    void testLocalBehavior() {
         AbsoluteDate initialDate = new AbsoluteDate(new DateComponents(2004, 3, 2),
                                                     new TimeComponents(13, 17, 7.865),
                                                     TimeScalesFactory.getUTC());
@@ -102,7 +102,7 @@ public class TorqueFreeTest {
 
     /** Torque-free motion preserves angular momentum in inertial frame. */
     @Test
-    public void testMomentum() {
+    void testMomentum() {
         AbsoluteDate initialDate = new AbsoluteDate(new DateComponents(2004, 3, 2),
                                                     new TimeComponents(13, 17, 7.865),
                                                     TimeScalesFactory.getUTC());
@@ -167,7 +167,7 @@ public class TorqueFreeTest {
 
     /** Torque-free motion preserves angular momentum in inertial frame. */
     @Test
-    public void testFieldMomentum() {
+    void testFieldMomentum() {
         AbsoluteDate initialDate = new AbsoluteDate(new DateComponents(2004, 3, 2),
                                                     new TimeComponents(13, 17, 7.865),
                                                     TimeScalesFactory.getUTC());
@@ -245,7 +245,7 @@ public class TorqueFreeTest {
     }
 
     @Test
-    public void testField() {
+    void testField() {
         AbsoluteDate initialDate = new AbsoluteDate(new DateComponents(2004, 3, 2),
                                                     new TimeComponents(13, 17, 7.865),
                                                     TimeScalesFactory.getUTC());

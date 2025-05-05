@@ -1,4 +1,4 @@
-/* Copyright 2022 Bryan Cazabonne
+/* Copyright 2022-2025 Bryan Cazabonne
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -67,11 +67,11 @@ public class EphemerisKalmanEstimatorTest {
     public void setUp() throws IllegalArgumentException, OrekitException {
         Utils.setDataRoot("regular-data");
 
-        initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
+        initDate = new AbsoluteDate(new DateComponents(2004, 1, 1),
                 TimeComponents.H00,
                 TimeScalesFactory.getUTC());
 
-        finalDate = new AbsoluteDate(new DateComponents(2004, 01, 02),
+        finalDate = new AbsoluteDate(new DateComponents(2004, 1, 2),
                  TimeComponents.H00,
                  TimeScalesFactory.getUTC());
 
@@ -97,7 +97,7 @@ public class EphemerisKalmanEstimatorTest {
 
         double dt = finalDate.durationFrom(initDate);
         double timeStep = dt / 20.0;
-        List<SpacecraftState> states = new ArrayList<SpacecraftState>();
+        List<SpacecraftState> states = new ArrayList<>();
 
         for(double t = 0 ; t <= dt; t+=timeStep) {
             states.add(propagator.propagate(initDate.shiftedBy(t)));
@@ -120,9 +120,9 @@ public class EphemerisKalmanEstimatorTest {
                                                                         1.0, 5.0, 10.0);
 
         // estimated bias
-        final Bias<Range> rangeBias = new Bias<Range>(new String[] {"rangeBias"}, new double[] {0.0},
-        	                                          new double[] {1.0},
-        	                                          new double[] {0.0}, new double[] {10000.0});
+        final Bias<Range> rangeBias = new Bias<>(new String[] {"rangeBias"}, new double[] {0.0},
+                                                 new double[] {1.0},
+                                                 new double[] {0.0}, new double[] {10000.0});
         rangeBias.getParametersDrivers().get(0).setSelected(true);
 
         // List of estimated measurement parameters
@@ -166,7 +166,7 @@ public class EphemerisKalmanEstimatorTest {
 
         double dt = finalDate.durationFrom(initDate);
         double timeStep = dt / 20.0;
-        List<SpacecraftState> states = new ArrayList<SpacecraftState>();
+        List<SpacecraftState> states = new ArrayList<>();
 
         for(double t = 0 ; t <= dt; t+=timeStep) {
             states.add(propagator.propagate(initDate.shiftedBy(t)));
@@ -225,7 +225,7 @@ public class EphemerisKalmanEstimatorTest {
 
         double dt = finalDate.durationFrom(initDate);
         double timeStep = dt / 20.0;
-        List<SpacecraftState> states = new ArrayList<SpacecraftState>();
+        List<SpacecraftState> states = new ArrayList<>();
 
         for(double t = 0 ; t <= dt; t+=timeStep) {
             states.add(propagator.propagate(initDate.shiftedBy(t)));
@@ -256,7 +256,7 @@ public class EphemerisKalmanEstimatorTest {
 
         // List of estimated measurement parameters
         final ParameterDriversList drivers = new ParameterDriversList();
-        azElBias.getParametersDrivers().forEach(driver -> drivers.add(driver));
+        azElBias.getParametersDrivers().forEach(drivers::add);
 
         // Propagator builder
         final EphemerisPropagatorBuilder builder = new EphemerisPropagatorBuilder(states, interpolator);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -808,7 +808,7 @@ public class ClockFileParserTest {
                                 new AbsoluteDate(2020, 9, 1, 0,  0,  0.0, clk1.getTimeScale()).durationFrom(clk1.getEarliestEpoch()),
                                 1.0e-15);
         Assertions.assertEquals(0,
-                                new AbsoluteDate(2020, 9, 1, 0,  4, 30.0, clk1.getTimeScale()).durationFrom(clk1.getLatestEpoch()),
+                                new AbsoluteDate(2020, 9, 1, 0,  5,  0.0, clk1.getTimeScale()).durationFrom(clk1.getLatestEpoch()),
                                 1.0e-15);
         Assertions.assertEquals(5, clk1.getNumberOfReceivers());
         Assertions.assertEquals(7, clk1.getNumberOfSatellites());
@@ -857,28 +857,34 @@ public class ClockFileParserTest {
         Assertions.assertEquals(5, spliced.getNumberOfSatellites());
         for (final String id : Arrays.asList("CHPI", "GLPS", "KITG", "OWMG",
                                              "G17", "G27", "R17", "R23", "J01")) {
-            SampledClockModel cm = spliced.extractClockModel(id, 2);
+            SampledClockModel cm = spliced.extractClockModel(id, 4);
             Assertions.assertEquals(spliced.getEarliestEpoch(), cm.getValidityStart());
             Assertions.assertEquals(spliced.getLatestEpoch(), cm.getValidityEnd());
             Assertions.assertEquals(30, cm.getCache().getAll().size());
         }
 
-        final AbsoluteDate middleDate = new AbsoluteDate(2020, 9, 1, 0,  4, 45.0, spliced.getTimeScale());
+        final AbsoluteDate between1And2 = new AbsoluteDate(2020, 9, 1, 0, 4, 45.0, spliced.getTimeScale());
+        Assertions.assertEquals(-1.83536264242e-4,
+                                spliced.extractClockModel("J01", 4).getOffset(between1And2).getOffset(),
+                                1.0e-12);
+
+        final AbsoluteDate between2And3 = new AbsoluteDate(2020, 9, 1, 0,  9, 45.0, spliced.getTimeScale());
         try {
-            clk1.extractClockModel("J01", 2).getOffset(middleDate);
+            clk2.extractClockModel("J01", 4).getOffset(between2And3);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER, oe.getSpecifier());
         }
         try {
-            clk2.extractClockModel("J01", 2).getOffset(middleDate);
+            clk3.extractClockModel("J01", 4).getOffset(between2And3);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE, oe.getSpecifier());
         }
-        Assertions.assertEquals(-1.83536264e-4,
-                                spliced.extractClockModel("J01", 2).getOffset(middleDate).getOffset(),
+        Assertions.assertEquals(-1.83535202897e-4,
+                                spliced.extractClockModel("J01", 2).getOffset(between2And3).getOffset(),
                                 1.0e-12);
+
 
     }
 
@@ -973,8 +979,8 @@ public class ClockFileParserTest {
                 TimeSystem.UTC.getTimeScale(DataContext.getDefault().getTimeScales()));
         Assertions.assertEquals(TimeScalesFactory.getBDT(),
                 TimeSystem.BEIDOU.getTimeScale(DataContext.getDefault().getTimeScales()));
-        Assertions.assertEquals(TimeScalesFactory.getIRNSS(),
-                TimeSystem.IRNSS.getTimeScale(DataContext.getDefault().getTimeScales()));
+        Assertions.assertEquals(TimeScalesFactory.getNavIC(),
+                TimeSystem.NAVIC.getTimeScale(DataContext.getDefault().getTimeScales()));
         Assertions.assertEquals(TimeScalesFactory.getUTC(),
                                 TimeSystem.GMT.getTimeScale(DataContext.getDefault().getTimeScales()));
         Assertions.assertEquals(TimeScalesFactory.getGPS(),

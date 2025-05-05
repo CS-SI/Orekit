@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,6 @@
 
 package org.orekit.frames;
 
-import java.io.Serializable;
-
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -29,7 +27,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * </p>
  * @author Luc Maisonobe
  */
-public interface TransformProvider extends Serializable {
+public interface TransformProvider {
 
     /** Get the {@link Transform} corresponding to specified date.
      * @param date current date

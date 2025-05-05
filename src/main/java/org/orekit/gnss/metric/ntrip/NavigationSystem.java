@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -46,14 +46,14 @@ public enum NavigationSystem {
     /** SBAS. */
     SBAS("SBAS"),
 
-    /** IRNSS. */
+    /** NavIC. */
     IRS("IRS", "IRNSS"),
 
     /** No navigation system for this stream. */
     EMPTY("");
 
     /** Keywords map. */
-    private static final Map<String, NavigationSystem> KEYWORDS_MAP = new HashMap<String, NavigationSystem>();
+    private static final Map<String, NavigationSystem> KEYWORDS_MAP = new HashMap<>();
     static {
         for (final NavigationSystem type : values()) {
             KEYWORDS_MAP.put(type.getKeyword(), type);

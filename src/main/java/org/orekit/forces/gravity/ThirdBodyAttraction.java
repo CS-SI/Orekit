@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.utils.ExtendedPositionProvider;
 
 /** Third body attraction force model.
  *
@@ -33,12 +34,22 @@ import org.orekit.propagation.SpacecraftState;
 public class ThirdBodyAttraction extends AbstractBodyAttraction {
 
     /** Simple constructor.
+     * @param positionProvider extended position provider for the body to consider
+     * @param name name of the body
+     * @param mu body gravitational constant
+     * @since 13.0
+     */
+    public ThirdBodyAttraction(final ExtendedPositionProvider positionProvider, final String name, final double mu) {
+        super(positionProvider, name, mu);
+    }
+
+    /** Constructor.
      * @param body the third body to consider
      * (ex: {@link CelestialBodies#getSun()} or
      * {@link CelestialBodies#getMoon()})
      */
     public ThirdBodyAttraction(final CelestialBody body) {
-        super(body);
+        this(body, body.getName(), body.getGM());
     }
 
     /** {@inheritDoc} */
@@ -48,7 +59,7 @@ public class ThirdBodyAttraction extends AbstractBodyAttraction {
         final double gm = parameters[0];
 
         // compute bodies separation vectors and squared norm
-        final Vector3D centralToBody = getBody().getPosition(s.getDate(), s.getFrame());
+        final Vector3D centralToBody = getBodyPosition(s.getDate(), s.getFrame());
         final double r2Central       = centralToBody.getNormSq();
         final Vector3D satToBody     = centralToBody.subtract(s.getPosition());
         final double r2Sat           = satToBody.getNormSq();
@@ -67,7 +78,7 @@ public class ThirdBodyAttraction extends AbstractBodyAttraction {
         final T gm = parameters[0];
 
         // compute bodies separation vectors and squared norm
-        final FieldVector3D<T> centralToBody = getBody().getPosition(s.getDate(), s.getFrame());
+        final FieldVector3D<T> centralToBody = getBodyPosition(s.getDate(), s.getFrame());
         final T                r2Central     = centralToBody.getNormSq();
         final FieldVector3D<T> satToBody     = centralToBody.subtract(s.getPosition());
         final T                r2Sat         = satToBody.getNormSq();

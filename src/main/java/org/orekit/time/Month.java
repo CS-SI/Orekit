@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -68,7 +68,7 @@ public enum Month {
     DECEMBER(12);
 
     /** Parsing map. */
-    private static final Map<String, Month> STRINGS_MAP = new HashMap<String, Month>();
+    private static final Map<String, Month> STRINGS_MAP = new HashMap<>();
     static {
         for (final Month month : values()) {
             STRINGS_MAP.put(month.getLowerCaseName(),         month);
@@ -77,7 +77,7 @@ public enum Month {
     }
 
     /** Numbers map. */
-    private static final Map<Integer, Month> NUMBERS_MAP = new HashMap<Integer, Month>();
+    private static final Map<Integer, Month> NUMBERS_MAP = new HashMap<>();
     static {
         for (final Month month : values()) {
             NUMBERS_MAP.put(month.getNumber(), month);

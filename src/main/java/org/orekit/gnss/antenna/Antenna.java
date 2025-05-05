@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.RadioWave;
 
 /**
  * GNSS antenna model.
@@ -41,8 +41,8 @@ public class Antenna {
     /** Sinex code. */
     private final String sinexCode;
 
-    /** Frequencies patterns. */
-    private final Map<Frequency, FrequencyPattern> patterns;
+    /** Radio waves patterns. */
+    private final Map<RadioWave, FrequencyPattern> patterns;
 
     /** Simple constructor.
      * @param type antenna type
@@ -50,7 +50,7 @@ public class Antenna {
      * @param patterns frequencies patterns
      */
     protected Antenna(final String type, final String sinexCode,
-                      final Map<Frequency, FrequencyPattern> patterns) {
+                      final Map<RadioWave, FrequencyPattern> patterns) {
         this.type      = type;
         this.sinexCode = sinexCode;
         this.patterns  = patterns;
@@ -70,44 +70,49 @@ public class Antenna {
         return sinexCode;
     }
 
-    /** Get supported frequencies.
-     * @return supported frequencies
-     * @since 10.0
+    /** Get supported radio waves.
+     * @return supported radio waves
+     * @since 13.0
      */
-    public List<Frequency> getFrequencies() {
+    public List<RadioWave> getRadioWaves() {
         return patterns.
                entrySet().
                stream().
-               map(e -> e.getKey()).
+               map(Map.Entry::getKey).
                collect(Collectors.toList());
     }
 
-    /** Get the phase center eccentricities.
-     * @param frequency frequency of the signal to consider
+    /**
+     * Get the phase center eccentricities.
+     *
+     * @param radioWave radio wave of the signal to consider
      * @return phase center eccentricities (m)
      */
-    public Vector3D getEccentricities(final Frequency frequency) {
-        return getPattern(frequency).getEccentricities();
+    public Vector3D getEccentricities(final RadioWave radioWave) {
+        return getPattern(radioWave).getEccentricities();
     }
 
-    /** Get the value of the phase center variation in a signal direction.
-     * @param frequency frequency of the signal to consider
+    /**
+     * Get the value of the phase center variation in a signal direction.
+     *
+     * @param radioWave radio wave of the signal to consider
      * @param direction signal direction in antenna reference frame
      * @return value of the phase center variation (m)
      */
-    public double getPhaseCenterVariation(final Frequency frequency, final Vector3D direction) {
-        return getPattern(frequency).getPhaseCenterVariation(direction);
+    public double getPhaseCenterVariation(final RadioWave radioWave, final Vector3D direction) {
+        return getPattern(radioWave).getPhaseCenterVariation(direction);
     }
 
-    /** Get a frequency pattern.
-     * @param frequency frequency of the signal to consider
+    /**
+     * Get a frequency pattern.
+     *
+     * @param radioWave radio wave of the signal to consider
      * @return pattern for this frequency
      */
-    public FrequencyPattern getPattern(final Frequency frequency) {
-        final FrequencyPattern pattern = patterns.get(frequency);
+    public FrequencyPattern getPattern(final RadioWave radioWave) {
+        final FrequencyPattern pattern = patterns.get(radioWave);
         if (pattern == null) {
-            throw new OrekitException(OrekitMessages.UNSUPPORTED_FREQUENCY_FOR_ANTENNA,
-                                      frequency, type);
+            throw new OrekitException(OrekitMessages.UNSUPPORTED_FREQUENCY_FOR_ANTENNA, radioWave, type);
         }
         return pattern;
     }

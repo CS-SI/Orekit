@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,6 +41,14 @@ public class AbstractShapiroBaseModifier {
      */
     public AbstractShapiroBaseModifier(final double gm) {
         this.s = 2 * gm / (Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT);
+    }
+
+    /** Get the name of the effect modifying the measurement.
+     * @return name of the effect modifying the measurement
+     * @since 13.0
+     */
+    public String getEffectName() {
+        return "Shapiro";
     }
 
     /** Modify measurement.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,31 +16,29 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.GillIntegrator;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngleType;
 
 /** Builder for GillIntegrator.
  * @author Pascal Parraud
  * @since 6.0
  */
-public class GillIntegratorBuilder implements ODEIntegratorBuilder {
-
-    /** Step size (s). */
-    private final double step;
+public class GillIntegratorBuilder extends AbstractFixedSingleStepIntegratorBuilder<GillIntegrator> {
 
     /** Build a new instance.
      * @param step step size (s)
      * @see GillIntegrator
      */
     public GillIntegratorBuilder(final double step) {
-        this.step = step;
+        super(step);
     }
 
     /** {@inheritDoc} */
-    public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType) {
-        return new GillIntegrator(step);
+    public GillIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType,
+                                          final PositionAngleType angleType) {
+        return new GillIntegrator(getStep());
     }
 
 }

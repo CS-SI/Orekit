@@ -17,6 +17,7 @@
 package org.orekit.propagation.events;
 
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,6 +30,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.time.FieldAbsoluteDate;
 
 /**
@@ -75,18 +77,15 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
      * @param detectors    the operands.
      * @param operator     reduction operator to apply to value of the g function of the
      *                     operands.
-     * @param newMaxCheck  max check interval.
-     * @param newThreshold convergence threshold in seconds.
-     * @param newMaxIter   max iterations.
+     * @param detectionSettings event detection settings.
      * @param newHandler   event handler.
+     * @since 13.0
      */
     protected FieldBooleanDetector(final List<FieldEventDetector<T>> detectors,
                                    final Operator operator,
-                                   final FieldAdaptableInterval<T> newMaxCheck,
-                                   final T newThreshold,
-                                   final int newMaxIter,
+                                   final FieldEventDetectionSettings<T> detectionSettings,
                                    final FieldEventHandler<T> newHandler) {
-        super(newMaxCheck, newThreshold, newMaxIter, newHandler);
+        super(detectionSettings, newHandler);
         this.detectors = detectors;
         this.operator = operator;
     }
@@ -140,15 +139,10 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
 
         return new FieldBooleanDetector<>(new ArrayList<>(detectors), // copy for immutability
                                           Operator.AND,
-                                          s -> {
-                                              double minInterval = Double.POSITIVE_INFINITY;
-                                              for (final FieldEventDetector<T> detector : detectors) {
-                                                  minInterval = FastMath.min(minInterval, detector.getMaxCheckInterval().currentInterval(s));
-                                              }
-                                              return minInterval;
-                                          },
+                                          new FieldEventDetectionSettings<>(FieldAdaptableInterval.of(Double.POSITIVE_INFINITY, detectors.stream()
+                                                  .map(FieldEventDetector::getMaxCheckInterval).toArray(FieldAdaptableInterval[]::new)),
                                           detectors.stream().map(FieldEventDetector::getThreshold).min(new FieldComparator<>()).get(),
-                                          detectors.stream().map(FieldEventDetector::getMaxIterationCount).min(Integer::compareTo).get(),
+                                          detectors.stream().map(FieldEventDetector::getMaxIterationCount).min(Integer::compareTo).get()),
                                           new FieldContinueOnEvent<>());
     }
 
@@ -201,15 +195,10 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
 
         return new FieldBooleanDetector<>(new ArrayList<>(detectors), // copy for immutability
                                           Operator.OR,
-                                          s -> {
-                                              double minInterval = Double.POSITIVE_INFINITY;
-                                              for (final FieldEventDetector<T> detector : detectors) {
-                                                  minInterval = FastMath.min(minInterval, detector.getMaxCheckInterval().currentInterval(s));
-                                              }
-                                              return minInterval;
-                                          },
+                                          new FieldEventDetectionSettings<>(FieldAdaptableInterval.of(Double.POSITIVE_INFINITY, detectors.stream()
+                                                  .map(FieldEventDetector::getMaxCheckInterval).toArray(FieldAdaptableInterval[]::new)),
                                           detectors.stream().map(FieldEventDetector::getThreshold).min(new FieldComparator<>()).get(),
-                                          detectors.stream().map(FieldEventDetector::getMaxIterationCount).min(Integer::compareTo).get(),
+                                          detectors.stream().map(FieldEventDetector::getMaxIterationCount).min(Integer::compareTo).get()),
                                           new FieldContinueOnEvent<>());
     }
 
@@ -253,12 +242,9 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
     }
 
     @Override
-    protected FieldBooleanDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck,
-                                             final T newThreshold,
-                                             final int newMaxIter,
+    protected FieldBooleanDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                              final FieldEventHandler<T> newHandler) {
-        return new FieldBooleanDetector<>(detectors, operator, newMaxCheck, newThreshold,
-                                          newMaxIter, newHandler);
+        return new FieldBooleanDetector<>(detectors, operator, detectionSettings, newHandler);
     }
 
     @Override
@@ -267,6 +253,22 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
         super.init(s0, t);
         for (final FieldEventDetector<T> detector : detectors) {
             detector.init(s0, t);
+        }
+    }
+
+    @Override
+    public void reset(final FieldSpacecraftState<T> state, final FieldAbsoluteDate<T> target) {
+        super.reset(state, target);
+        for (final FieldEventDetector<T> detector : detectors) {
+            detector.reset(state, target);
+        }
+    }
+
+    @Override
+    public void finish(final FieldSpacecraftState<T> state) {
+        super.finish(state);
+        for (final FieldEventDetector<T> detector : detectors) {
+            detector.finish(state);
         }
     }
 
@@ -311,12 +313,12 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
          */
         public abstract <T extends CalculusFieldElement<T>> T combine(T g1, T g2);
 
-    };
+    }
 
     /** Comparator for field elements.
      * @param <T> type of the field elements
      */
-    private static class FieldComparator<T extends CalculusFieldElement<T>> implements Comparator<T> {
+    private static class FieldComparator<T extends CalculusFieldElement<T>> implements Comparator<T>, Serializable {
         public int compare(final T t1, final T t2) {
             return Double.compare(t1.getReal(), t2.getReal());
         }

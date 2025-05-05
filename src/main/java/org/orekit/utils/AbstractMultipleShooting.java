@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -542,17 +542,17 @@ public abstract class AbstractMultipleShooting implements MultipleShooting {
      */
     private double[][] getStateTransitionMatrix(final SpacecraftState s) {
         // Additional states
-        final DoubleArrayDictionary dictionary = s.getAdditionalStatesValues();
+        final DataDictionary dictionary = s.getAdditionalDataValues();
         // Initialize state transition matrix
         final int        dim  = 6;
         final double[][] phiM = new double[dim][dim];
 
         // Loop on entry set
-        for (final DoubleArrayDictionary.Entry entry : dictionary.getData()) {
+        for (final DataDictionary.Entry entry : dictionary.getData()) {
             // Extract entry name
             final String name = entry.getKey();
-            if (additionalName.equals(name)) {
-                final double[] stm = entry.getValue();
+            if (additionalName.equals(name) && entry.getValue() instanceof double[]) {
+                final double[] stm = (double[]) entry.getValue();
                 for (int i = 0; i < 3; i++) {
                     for (int j = 0; j < 3; j++) {
 

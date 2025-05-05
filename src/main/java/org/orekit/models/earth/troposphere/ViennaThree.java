@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,8 +24,6 @@ import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.SinCos;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
-import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -72,19 +70,26 @@ public class ViennaThree extends AbstractVienna {
     @Override
     public double[] mappingFactors(final TrackingCoordinates trackingCoordinates,
                                    final GeodeticPoint point,
-                                   final PressureTemperatureHumidity weather,
                                    final AbsoluteDate date) {
 
         // a coefficients
         final ViennaACoefficients a = getAProvider().getA(point, date);
 
         // Day of year computation
-        final int dofyear = getDayOfYear(date);
+        final double dofyear = getDayOfYear(date);
 
         // Compute Legendre Polynomials Pnm(cos(0.5 * pi - phi))
         final int degree = 12;
         final int order  = 12;
-        final LegendrePolynomials p = new LegendrePolynomials(degree, order, FastMath.cos(0.5 * FastMath.PI - point.getLatitude()));
+        final LegendrePolynomials p = new LegendrePolynomials(degree, order, FastMath.sin(point.getLatitude()));
+
+        // Compute trigonometric functions of longitude
+        final SinCos[] sc = new SinCos[13];
+        sc[0] = FastMath.sinCos(0.0);
+        sc[1] = FastMath.sinCos(point.getLongitude());
+        for (int m = 2; m < sc.length; m++) {
+            sc[m] = SinCos.sum(sc[1], sc[m - 1]);
+        }
 
         // Compute coefficients bh, bw, ch and cw with spherical harmonics
         double a0Bh = 0.;
@@ -111,9 +116,8 @@ public class ViennaThree extends AbstractVienna {
         int j = 0;
         for (int n = 0; n <= 12; n++) {
             for (int m = 0; m <= n; m++) {
-                final SinCos sc = FastMath.sinCos(m * point.getLongitude());
-                final double pCosmLambda = p.getPnm(n, m) * sc.cos();
-                final double pSinmLambda = p.getPnm(n, m) * sc.sin();
+                final double pCosmLambda = p.getPnm(n, m) * sc[m].cos();
+                final double pSinmLambda = p.getPnm(n, m) * sc[m].sin();
 
                 a0Bh = a0Bh + (AnmBnm.getAnmBh(j, 0) * pCosmLambda + AnmBnm.getBnmBh(j, 0) * pSinmLambda);
                 a0Bw = a0Bw + (AnmBnm.getAnmBw(j, 0) * pCosmLambda + AnmBnm.getBnmBw(j, 0) * pSinmLambda);
@@ -164,7 +168,6 @@ public class ViennaThree extends AbstractVienna {
     @Override
     public <T extends CalculusFieldElement<T>> T[] mappingFactors(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                                   final FieldGeodeticPoint<T> point,
-                                                                  final FieldPressureTemperatureHumidity<T> weather,
                                                                   final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
         final T zero         = field.getZero();
@@ -173,12 +176,20 @@ public class ViennaThree extends AbstractVienna {
         final FieldViennaACoefficients<T> a = getAProvider().getA(point, date);
 
         // Day of year computation
-        final int dofyear = getDayOfYear(date.toAbsoluteDate());
+        final T dofyear = getDayOfYear(date);
 
         // Compute Legendre Polynomials Pnm(cos(0.5 * pi - phi))
         final int degree = 12;
         final int order  = 12;
-        final FieldLegendrePolynomials<T> p = new FieldLegendrePolynomials<>(degree, order, FastMath.cos(point.getLatitude().negate().add(zero.getPi().multiply(0.5))));
+        final FieldLegendrePolynomials<T> p = new FieldLegendrePolynomials<>(degree, order, FastMath.sin(point.getLatitude()));
+
+        // Compute trigonometric functions of longitude
+        final FieldSinCos<T>[] sc = new FieldSinCos[13];
+        sc[0] = FastMath.sinCos(point.getLongitude().getField().getZero());
+        sc[1] = FastMath.sinCos(point.getLongitude());
+        for (int m = 2; m < sc.length; m++) {
+            sc[m] = FieldSinCos.sum(sc[1], sc[m - 1]);
+        }
 
         // Compute coefficients bh, bw, ch and cw with spherical harmonics
         T a0Bh = zero;
@@ -205,9 +216,8 @@ public class ViennaThree extends AbstractVienna {
         int j = 0;
         for (int n = 0; n <= 12; n++) {
             for (int m = 0; m <= n; m++) {
-                final FieldSinCos<T> sc = FastMath.sinCos(point.getLongitude().multiply(m));
-                final T pCosmLambda = p.getPnm(n, m).multiply(sc.cos());
-                final T pSinmLambda = p.getPnm(n, m).multiply(sc.sin());
+                final T pCosmLambda = p.getPnm(n, m).multiply(sc[m].cos());
+                final T pSinmLambda = p.getPnm(n, m).multiply(sc[m].sin());
 
                 a0Bh = a0Bh.add(pCosmLambda.multiply(AnmBnm.getAnmBh(j, 0)).add(pSinmLambda.multiply(AnmBnm.getBnmBh(j, 0))));
                 a0Bw = a0Bw.add(pCosmLambda.multiply(AnmBnm.getAnmBw(j, 0)).add(pSinmLambda.multiply(AnmBnm.getBnmBw(j, 0))));
@@ -264,7 +274,7 @@ public class ViennaThree extends AbstractVienna {
      * @param B2 Semi-annual amplitude of the coefficient
      * @return the mapping function coefficient at a given day.
      */
-    private double computeSeasonalFit(final int doy, final double A0, final double A1,
+    private double computeSeasonalFit(final double doy, final double A0, final double A1,
                                       final double A2, final double B1, final double B2) {
 
         final double coef = (doy / 365.25) * 2 * FastMath.PI;
@@ -287,9 +297,9 @@ public class ViennaThree extends AbstractVienna {
      * @param B2 Semi-annual amplitude of the coefficient
      * @return the mapping function coefficient at a given day.
      */
-    private <T extends CalculusFieldElement<T>> T computeSeasonalFit(final int doy, final T A0, final T A1,
-                                                                 final T A2, final T B1, final T B2) {
-        final T coef = A0.getPi().multiply(2.0).multiply(doy / 365.25);
+    private <T extends CalculusFieldElement<T>> T computeSeasonalFit(final T doy, final T A0, final T A1,
+                                                                     final T A2, final T B1, final T B2) {
+        final T coef = A0.getPi().multiply(2.0).multiply(doy.divide(365.25));
         final FieldSinCos<T> sc1  = FastMath.sinCos(coef);
         final FieldSinCos<T> sc2  = FastMath.sinCos(coef.multiply(2.0));
 

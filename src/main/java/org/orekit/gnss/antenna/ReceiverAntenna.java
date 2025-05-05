@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.gnss.antenna;
 
 import java.util.Map;
 
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.RadioWave;
 
 /**
  * GNSS receiver antenna model.
@@ -40,7 +40,7 @@ public class ReceiverAntenna extends Antenna {
      * @param serialNumber serial number
      */
     public ReceiverAntenna(final String type, final String sinexCode,
-                           final Map<Frequency, FrequencyPattern> patterns,
+                           final Map<RadioWave, FrequencyPattern> patterns,
                            final String serialNumber) {
         super(type, sinexCode, patterns);
         this.serialNumber = serialNumber;

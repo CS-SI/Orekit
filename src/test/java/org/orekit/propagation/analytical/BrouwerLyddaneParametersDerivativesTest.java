@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -95,7 +95,7 @@ public class BrouwerLyddaneParametersDerivativesTest {
         final SpacecraftState initialState = propagator.getInitialState();
         final double[] stateVector = new double[6];
         OrbitType.CARTESIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngleType.MEAN, stateVector, null);
-        final AbsoluteDate target = initialState.getDate().shiftedBy(initialState.getKeplerianPeriod());
+        final AbsoluteDate target = initialState.getDate().shiftedBy(initialState.getOrbit().getKeplerianPeriod());
         BrouwerLyddaneHarvester harvester = (BrouwerLyddaneHarvester) propagator.setupMatricesComputation("stm", null, null);
         harvester.freezeColumnsNames();
         final SpacecraftState finalState = propagator.propagate(target);
@@ -136,10 +136,12 @@ public class BrouwerLyddaneParametersDerivativesTest {
         fillJacobianColumn(dYdPRef, 0, orbitType, h,
                            sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
 
+        // Verify
         for (int i = 0; i < 6; ++i) {
-            Assertions.assertEquals(0.0, (dYdPRef[i][0] - dYdP.getEntry(i, 0)) / dYdPRef[i][0], 1.06e-12);
+            double error = (dYdPRef[i][0] - dYdP.getEntry(i, 0)) / dYdPRef[i][0];
+            Assertions.assertEquals(0.0, error, 2.0e-13);
+            
         }
-
     }
 
     private void fillJacobianColumn(double[][] jacobian, int column,

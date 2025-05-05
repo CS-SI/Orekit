@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -66,7 +66,7 @@ public class AngularSeparationFromSatelliteDetectorTest {
         Assertions.assertEquals(proximityAngle, detector.getProximityAngle(), 1.0e-15);
         Assertions.assertSame(sun,    detector.getPrimaryObject());
         Assertions.assertSame(acatenango,  detector.getSecondaryObject());
-        Assertions.assertEquals(maxCheck, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(maxCheck, detector.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         propagator.addEventDetector(detector);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(3600 * 2));
         Assertions.assertEquals(4587.6472, finalState.getDate().durationFrom(iniDate), 1.0e-3);
@@ -103,7 +103,7 @@ public class AngularSeparationFromSatelliteDetectorTest {
         Assertions.assertEquals(proximityAngle, detector.getProximityAngle(), 1.0e-15);
         Assertions.assertSame(sun,    detector.getPrimaryObject());
         Assertions.assertSame(acatenango,  detector.getSecondaryObject());
-        Assertions.assertEquals(maxCheck, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(maxCheck, detector.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         propagator.addEventDetector(detector);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(3600 * 2));
         Assertions.assertEquals(7200.0, finalState.getDate().durationFrom(iniDate), 1.0e-3);

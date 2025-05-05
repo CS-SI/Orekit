@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -81,7 +81,7 @@ public class TabulatedLofOffsetTest {
     PVCoordinates pvSatEME2000;
 
     @Test
-    public void testConstantOffset() {
+    void testConstantOffset() {
 
         RandomGenerator random = new Well19937a(0x1199d4bb8f53d2b6l);
         for (LOFType type : LOFType.values()) {
@@ -117,7 +117,7 @@ public class TabulatedLofOffsetTest {
     }
 
     @Test
-    public void testYawCompensation() {
+    void testYawCompensation() {
 
         // create a sample from Yaw compensation law
         final LOFType type = LOFType.VNC;
@@ -172,7 +172,7 @@ public class TabulatedLofOffsetTest {
     }
 
     @Test
-    public void testNonPseudoInertialFrame() {
+    void testNonPseudoInertialFrame() {
         final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         try {
             new TabulatedLofOffset(itrf, LOFType.QSW,

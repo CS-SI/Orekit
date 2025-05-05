@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,9 @@
  */
 package org.orekit.errors;
 
-import org.hipparchus.exception.Localizable;
-import org.hipparchus.exception.UTF8Control;
-
 import java.util.Locale;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+
+import org.hipparchus.exception.Localizable;
 
 /**
  * Enumeration for localized messages formats.
@@ -57,14 +54,8 @@ public enum OrekitMessages implements Localizable {
     /** ALMOST_CRITICALLY_INCLINED_ORBIT. */
     ALMOST_CRITICALLY_INCLINED_ORBIT("almost critically inclined orbit (i = {0} degrees)"),
 
-    /** UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS. */
-    UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS("unable to compute Eckstein-Hechler mean parameters after {0} iterations"),
-
-    /** UNABLE_TO_COMPUTE_BROUWER_LYDDANE_MEAN_PARAMETERS. */
-    UNABLE_TO_COMPUTE_BROUWER_LYDDANE_MEAN_PARAMETERS("unable to compute Brouwer-Lyddane mean parameters after {0} iterations"),
-
-    /** UNABLE_TO_COMPUTE_TLE. */
-    UNABLE_TO_COMPUTE_TLE("unable to compute TLE after {0} iterations"),
+    /** UNABLE_TO_COMPUTE_MEAN_PARAMETERS. */
+    UNABLE_TO_COMPUTE_MEAN_PARAMETERS("unable to compute {0} mean parameters after {1} iterations"),
 
     /** NULL_PARENT_FOR_FRAME. */
     NULL_PARENT_FOR_FRAME("null parent for frame {0}"),
@@ -333,8 +324,11 @@ public enum OrekitMessages implements Localizable {
     /** TOO_SMALL_SCALE_FOR_PARAMETER. */
     TOO_SMALL_SCALE_FOR_PARAMETER("scale factor for parameter {0} is too small: {1}"),
 
-    /** UNKNOWN_ADDITIONAL_STATE. */
-    UNKNOWN_ADDITIONAL_STATE("unknown additional state \"{0}\""),
+    /** ADDITIONAL_STATE_BAD_TYPE. */
+    ADDITIONAL_STATE_BAD_TYPE("state \"{0}\" is not an array"),
+
+    /** UNKNOWN_ADDITIONAL_DATA. */
+    UNKNOWN_ADDITIONAL_DATA("unknown additional data \"{0}\""),
 
     /** UNKNOWN_MONTH. */
     UNKNOWN_MONTH("unknown month \"{0}\""),
@@ -444,6 +438,32 @@ public enum OrekitMessages implements Localizable {
     /** CCSDS_MISSING_SENSOR_INDEX. */
     CCSDS_MISSING_SENSOR_INDEX("missing sensor index {0}"),
 
+    /** IIRV_MISSING_LINEBREAK_IN_FILE. */
+    IIRV_MISSING_LINEBREAK_IN_FILE("line break(s) missing after vector number {0} in {1}"),
+
+    /** IIRV_INVALID_VECTOR_FORMAT. */
+    IIRV_INVALID_LINE_IN_VECTOR("line {0} in IIRV vector is not valid: \"{1}\""),
+
+    /** IIRV_EXCEEDS_MAX_VECTORS. */
+    IIRV_EXCEEDS_MAX_VECTORS("cannot embed more than 1000 vectors in a single IIRV message file: got {0}. " +
+        "Consider splitting the data into multiple files"),
+
+    /** IIRV_VALUE_TOO_LARGE. */
+    IIRV_VALUE_TOO_LARGE("numeric value \"{0}\" exceeds the maximum length of {1} for string representation"),
+
+    /** IIRV_INVALID_TERM_VALUE. */
+    IIRV_INVALID_TERM_VALUE("invalid IIRV term value: {0}"),
+
+    /** IIRV_TERM_CHANGES_WITHIN_FILE. */
+    IIRV_TERM_CHANGES_WITHIN_FILE("the \"{0}\" term cannot change within an IIRV message file"),
+
+    /** IIRV_SEQUENCE_NUMBER_MUST_BE_INCREASING_BY_ONE. */
+    IIRV_SEQUENCE_NUMBER_MUST_BE_INCREASING_BY_ONE("IIRV sequence number must increase by 1 for each " +
+        "subsequent vector entry. At at line {0}, expected sequence number {1}+1, but found {2}"),
+
+    /** IIRV_UNMAPPED_COORDINATE_SYSTEM. */
+    IIRV_UNMAPPED_COORDINATE_SYSTEM("IIRV coordinate system \"{0}\" ({1}) has not been mapped to an Orekit frame"),
+
     /** INCONSISTENT_NUMBER_OF_ELEMENTS. */
     INCONSISTENT_NUMBER_OF_ELEMENTS("inconsistent number of elements: expected {0}, got {1}"),
 
@@ -526,6 +546,9 @@ public enum OrekitMessages implements Localizable {
 
     /** NON_CHRONOLOGICALLY_SORTED_ENTRIES. */
     NON_CHRONOLOGICALLY_SORTED_ENTRIES("generated entries not sorted: {0} > {1} by {2,number,0.0##############E0} s"),
+
+    /** TRANSITION_DATES_COLLISION. */
+    TRANSITION_DATES_COLLISION("moving transition date from {0} to {1} collides with existing transition at {2}"),
 
     /** NO_DATA_GENERATED. */
     NO_DATA_GENERATED("no data generated around date: {0}"),
@@ -629,6 +652,12 @@ public enum OrekitMessages implements Localizable {
     /** UNKNOWN_SATELLITE_ANTENNA_CODE. */
     UNKNOWN_SATELLITE_ANTENNA_CODE("unknown satellite antenna code {0}"),
 
+    /** UNKNOWN_GNSS_ANTENNA. */
+    UNKNOWN_GNSS_ANTENNA("unknown GNSS antenna, name: {0}, radome code: {1}, serial number: {2}"),
+
+    /** UNKNOWN_GNSS_FREQUENCY. */
+    UNKNOWN_GNSS_FREQUENCY("unknown GNSS frequency, system: {0}, frequency code: {1} (line {2}, file {3})"),
+
     /** UNSUPPORTED_FREQUENCY_FOR_ANTENNA. */
     UNSUPPORTED_FREQUENCY_FOR_ANTENNA("frequency {0} is not supported by antenna {1}"),
 
@@ -695,8 +724,8 @@ public enum OrekitMessages implements Localizable {
     /** INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE. */
     INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE("number of maps {0} is inconsistent with header specification: {1}"),
 
-    /** NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER. */
-    NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER("file {0} does not contain latitude or longitude bondaries in its header section"),
+    /** NO_LATITUDE_LONGITUDE_BOUNDARIES_IN_IONEX_HEADER. */
+    NO_LATITUDE_LONGITUDE_BOUNDARIES_IN_IONEX_HEADER("file {0} does not contain latitude or longitude boundaries in its header section"),
 
     /** NO_EPOCH_IN_IONEX_HEADER. */
     NO_EPOCH_IN_IONEX_HEADER("file {0} does not contain epoch of first or last map in its header section"),
@@ -866,6 +895,9 @@ public enum OrekitMessages implements Localizable {
     /** NOT_STRICTLY_POSITIVE. */
     NOT_STRICTLY_POSITIVE("value is not strictly positive: {0}"),
 
+    /** NOT_POSITIVE. */
+    NOT_POSITIVE("value is not positive: {0}"),
+
     /** UNSUPPORTED_TRANSFORM. */
     UNSUPPORTED_TRANSFORM("transform from {0} to {1} is not implemented"),
 
@@ -932,8 +964,27 @@ public enum OrekitMessages implements Localizable {
     /** INFINITE_NRMSISE00_DENSITY. */
     INFINITE_NRLMSISE00_DENSITY("Infinite value appears during computation of atmospheric density in NRLMSISE00 model"),
 
+    /** FIELD_TOO_LONG. */
+    FIELD_TOO_LONG("field \"{0}\" is too long, maximum length is {1} characters"),
+
     /** PROPAGATOR_BUILDER_NOT_CLONEABLE. */
-    PROPAGATOR_BUILDER_NOT_CLONEABLE("Propagator builder cannot be cloned");
+    PROPAGATOR_BUILDER_NOT_CLONEABLE("Propagator builder cannot be cloned"),
+
+    /** WRONG_PROCESS_COVARIANCE_DIMENSION. */
+    WRONG_PROCESS_COVARIANCE_DIMENSION("Process covariance expecting dimension {0}, got {1}"),
+
+    /** WRONG_MEASUREMENT_COVARIANCE_DIMENSION. */
+    WRONG_MEASUREMENT_COVARIANCE_DIMENSION("Measurement covariance expecting dimension {0}, got {1}"),
+
+    /** CANNOT_PARSE_DATA. */
+    CANNOT_PARSE_DATA("cannot parse data {0}"),
+
+    /** COVARIANCE_MUST_BE_SQUARE. */
+    COVARIANCE_MUST_BE_SQUARE("covariance matrix is not square"),
+
+    /** INCONSISTENT_STATE_DIMENSIONS. */
+    INCONSISTENT_STATE_DIMENSIONS("state vector (dimension {0}) and covariance (dimension {1}) are inconsistent");
+
 
     /** Base name of the resource bundle in classpath. */
     private static final String RESOURCE_BASE_NAME = "assets/org/orekit/localization/OrekitMessages";
@@ -957,23 +1008,7 @@ public enum OrekitMessages implements Localizable {
 
     /** {@inheritDoc} */
     public String getLocalizedString(final Locale locale) {
-        try {
-            final ResourceBundle bundle = ResourceBundle.getBundle(RESOURCE_BASE_NAME, locale, new UTF8Control());
-            if (bundle.getLocale().getLanguage().equals(locale.getLanguage())) {
-                final String translated = bundle.getString(name());
-                if (!(translated.isEmpty() || translated.toLowerCase().contains("missing translation"))) {
-                    // the value of the resource is the translated format
-                    return translated;
-                }
-            }
-
-        } catch (MissingResourceException mre) {
-            // do nothing here
-        }
-
-        // either the locale is not supported or the resource is not translated or
-        // it is unknown: don't translate and fall back to using the source format
-        return sourceFormat;
-
+        return getLocalizedString(RESOURCE_BASE_NAME, name(), locale);
     }
+
 }

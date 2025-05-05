@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,21 +16,16 @@
  */
 package org.orekit.frames;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.annotation.DefaultDataContext;
-import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalarFunction;
@@ -45,9 +40,6 @@ import org.orekit.utils.IERSConventions;
  * @author Pascal Parraud
  */
 class MODProvider implements TransformProvider {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20130920L;
 
     /** Conventions. */
     private final IERSConventions conventions;
@@ -94,16 +86,18 @@ class MODProvider implements TransformProvider {
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
     public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         // compute the precession angles phiA, omegaA, chiA
         final T[] angles = precessionFunction.value(date);
 
-        @SuppressWarnings("unchecked")
-        final FieldRotation<T> fR4 =
-                (FieldRotation<T>) fieldR4.computeIfAbsent(date.getField(),
-                                                           f -> new FieldRotation<>((Field<T>) f, r4));
+        final FieldRotation<T> fR4;
+        synchronized (fieldR4) {
+            fR4 = (FieldRotation<T>) fieldR4.computeIfAbsent(date.getField(),
+                                                             f -> new FieldRotation<>((Field<T>) f, r4));
+        }
 
         // complete precession
         final FieldRotation<T> precession = fR4.compose(new FieldRotation<>(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
@@ -114,49 +108,6 @@ class MODProvider implements TransformProvider {
 
         // set up the transform from parent GCRF
         return new FieldTransform<>(date, precession);
-
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * <p>
-     * This intermediate class serializes only the frame key.
-     * </p>
-     * @return data transfer object that will be serialized
-     */
-    @DefaultDataContext
-    private Object writeReplace() {
-        return new DataTransferObject(conventions);
-    }
-
-    /** Internal class used only for serialization. */
-    @DefaultDataContext
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20131209L;
-
-        /** Conventions. */
-        private final IERSConventions conventions;
-
-        /** Simple constructor.
-         * @param conventions IERSConventions conventions
-         */
-        DataTransferObject(final IERSConventions conventions) {
-            this.conventions = conventions;
-        }
-
-        /** Replace the deserialized data transfer object with a {@link MODProvider}.
-         * @return replacement {@link MODProvider}
-         */
-        private Object readResolve() {
-            try {
-                // retrieve a managed frame
-                return new MODProvider(conventions,
-                        DataContext.getDefault().getTimeScales());
-            } catch (OrekitException oe) {
-                throw new OrekitInternalError(oe);
-            }
-        }
 
     }
 

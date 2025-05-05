@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,10 +16,6 @@
  */
 package org.orekit.propagation.events;
 
-import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.time.AbsoluteDate;
-
 /** Base class for adapting an existing detector.
  * <p>
  * This class is intended to be a base class for changing behaviour
@@ -29,8 +25,10 @@ import org.orekit.time.AbsoluteDate;
  * </p>
  * @author Luc Maisonobe
  * @since 9.3
+ * @deprecated since 13.0. Use {@link DetectorModifier} instead.
  */
-public class AdapterDetector implements EventDetector {
+@Deprecated
+public class AdapterDetector implements DetectorModifier {
 
     /** Wrapped detector. */
     private final EventDetector detector;
@@ -48,41 +46,4 @@ public class AdapterDetector implements EventDetector {
     public EventDetector getDetector() {
         return detector;
     }
-
-    /** {@inheritDoc} */
-    @Override
-    public void init(final SpacecraftState s0, final AbsoluteDate t) {
-        detector.init(s0, t);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double g(final SpacecraftState s) {
-        return detector.g(s);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double getThreshold() {
-        return detector.getThreshold();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public AdaptableInterval getMaxCheckInterval() {
-        return detector.getMaxCheckInterval();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public int getMaxIterationCount() {
-        return detector.getMaxIterationCount();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public EventHandler getHandler() {
-        return detector.getHandler();
-    }
-
 }

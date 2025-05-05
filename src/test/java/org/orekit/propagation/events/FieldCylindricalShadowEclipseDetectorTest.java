@@ -14,6 +14,8 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
+import org.orekit.propagation.events.handlers.FieldEventHandler;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.*;
@@ -26,17 +28,31 @@ class FieldCylindricalShadowEclipseDetectorTest {
     }
 
     @Test
+    void testConstructor() {
+        // GIVEN
+        final EventDetectionSettings settings = EventDetectionSettings.getDefaultEventDetectionSettings();
+        final FieldEventDetectionSettings<Complex> fieldSettings = new FieldEventDetectionSettings<>(ComplexField.getInstance(),
+                settings);
+        // WHEN
+        final FieldCylindricalShadowEclipseDetector<Complex> detector = new FieldCylindricalShadowEclipseDetector<>(Mockito.mock(ExtendedPositionProvider.class),
+                Complex.ONE, fieldSettings, Mockito.mock(FieldEventHandler.class));
+        // THEN
+        Assertions.assertEquals(fieldSettings.getMaxIterationCount(), detector.getDetectionSettings().getMaxIterationCount());
+        Assertions.assertEquals(fieldSettings.getThreshold(), detector.getDetectionSettings().getThreshold());
+    }
+
+    @Test
     void testCreate() {
         // GIVEN
-        final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final ExtendedPositionProvider sun = CelestialBodyFactory.getSun();
         final FieldCylindricalShadowEclipseDetector<Complex> eclipseDetector = new FieldCylindricalShadowEclipseDetector<>(sun,
                 getComplexEarthRadius(), new FieldContinueOnEvent<>());
         final FieldAdaptableInterval<Complex> adaptableInterval = FieldAdaptableInterval.of(1.);
         final Complex expectedThreshold = new Complex(0.1);
         final int expectedMaxIter = 10;
         // WHEN
-        final FieldCylindricalShadowEclipseDetector<Complex> detector = eclipseDetector.create(adaptableInterval, expectedThreshold,
-                expectedMaxIter, eclipseDetector.getHandler());
+        final FieldCylindricalShadowEclipseDetector<Complex> detector = eclipseDetector.create(new FieldEventDetectionSettings<>(adaptableInterval, expectedThreshold,
+                expectedMaxIter), eclipseDetector.getHandler());
         // THEN
         Assertions.assertEquals(expectedMaxIter, detector.getMaxIterationCount());
         Assertions.assertEquals(expectedThreshold, detector.getThreshold());
@@ -46,7 +62,7 @@ class FieldCylindricalShadowEclipseDetectorTest {
     @Test
     void testG0Eclipse() {
         // GIVEN
-        final ExtendedPVCoordinatesProvider sun = new TestDirectionProvider();
+        final ExtendedPositionProvider sun = new TestDirectionProvider();
         final FieldCylindricalShadowEclipseDetector<Complex> eclipseDetector = new FieldCylindricalShadowEclipseDetector<>(sun,
                 getComplexEarthRadius(), new FieldContinueOnEvent<>());
         final FieldVector3D<Complex> position = new FieldVector3D<>(ComplexField.getInstance(),
@@ -61,7 +77,7 @@ class FieldCylindricalShadowEclipseDetectorTest {
     @Test
     void testGEclipse() {
         // GIVEN
-        final ExtendedPVCoordinatesProvider sun = new TestDirectionProvider();
+        final ExtendedPositionProvider sun = new TestDirectionProvider();
         final FieldCylindricalShadowEclipseDetector<Complex> eclipseDetector = new FieldCylindricalShadowEclipseDetector<>(sun,
                 getComplexEarthRadius(), new FieldContinueOnEvent<>());
         final FieldVector3D<Complex> position = new FieldVector3D<>(ComplexField.getInstance(), new Vector3D(1e7, 0, -1e2));
@@ -75,7 +91,7 @@ class FieldCylindricalShadowEclipseDetectorTest {
     @Test
     void testGNoEclipse() {
         // GIVEN
-        final ExtendedPVCoordinatesProvider sun = new TestDirectionProvider();
+        final ExtendedPositionProvider sun = new TestDirectionProvider();
         final FieldCylindricalShadowEclipseDetector<Complex> eclipseDetector = new FieldCylindricalShadowEclipseDetector<>(sun,
                 getComplexEarthRadius(), new FieldContinueOnEvent<>());
         final FieldVector3D<Complex> position = new FieldVector3D<>(ComplexField.getInstance(), new Vector3D(0., 1e4, 0.));
@@ -89,7 +105,7 @@ class FieldCylindricalShadowEclipseDetectorTest {
     @Test
     void testGNoEclipse2() {
         // GIVEN
-        final ExtendedPVCoordinatesProvider sun = new TestDirectionProvider();
+        final ExtendedPositionProvider sun = new TestDirectionProvider();
         final FieldCylindricalShadowEclipseDetector<Complex> eclipseDetector = new FieldCylindricalShadowEclipseDetector<>(sun,
                 getComplexEarthRadius(), new FieldContinueOnEvent<>());
         final FieldVector3D<Complex> position = new FieldVector3D<>(ComplexField.getInstance(),
@@ -113,16 +129,16 @@ class FieldCylindricalShadowEclipseDetectorTest {
         return new Complex(Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
     }
 
-    private static class TestDirectionProvider implements ExtendedPVCoordinatesProvider {
+    private static class TestDirectionProvider implements ExtendedPositionProvider {
 
         @Override
-        public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(FieldAbsoluteDate<T> date, Frame frame) {
-            return new TimeStampedFieldPVCoordinates<>(date.getField(), getPVCoordinates(date.toAbsoluteDate(), frame));
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPosition(FieldAbsoluteDate<T> date, Frame frame) {
+            return new FieldVector3D<>(date.getField(), getPosition(date.toAbsoluteDate(), frame));
         }
 
         @Override
-        public TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame) {
-            return new TimeStampedPVCoordinates(date, new PVCoordinates(Vector3D.MINUS_I));
+        public Vector3D getPosition(AbsoluteDate date, Frame frame) {
+            return Vector3D.MINUS_I;
         }
     }
 

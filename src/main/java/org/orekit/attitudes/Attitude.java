@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,14 +16,13 @@
  */
 package org.orekit.attitudes;
 
-import java.io.Serializable;
-
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.AngularCoordinates;
@@ -47,11 +46,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 
-public class Attitude
-    implements TimeStamped, TimeShiftable<Attitude>, Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20140611L;
+public class Attitude implements TimeStamped, TimeShiftable<Attitude> {
 
     /** Reference frame. */
     private final Frame referenceFrame;
@@ -107,6 +102,22 @@ public class Attitude
      * @return a new attitude, shifted with respect to the instance (which is immutable)
      */
     public Attitude shiftedBy(final double dt) {
+        return new Attitude(referenceFrame, orientation.shiftedBy(dt));
+    }
+
+    /** Get a time-shifted attitude.
+     * <p>
+     * The state can be slightly shifted to close dates. This shift is based on
+     * a linear extrapolation for attitude taking the spin rate into account.
+     * It is <em>not</em> intended as a replacement for proper attitude propagation
+     * but should be sufficient for either small time shifts or coarse accuracy.
+     * </p>
+     * @param dt time shift
+     * @return a new attitude, shifted with respect to the instance (which is immutable)
+     * @since 13.0
+     */
+    @Override
+    public Attitude shiftedBy(final TimeOffset dt) {
         return new Attitude(referenceFrame, orientation.shiftedBy(dt));
     }
 

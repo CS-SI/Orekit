@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -67,15 +67,13 @@ public abstract class AbstractConstantThrustPropulsionModel implements ThrustPro
      * @param name name of the maneuver
      * @since 12.0
      */
-    public AbstractConstantThrustPropulsionModel(final double thrust,
-                                                 final double isp,
-                                                 final Vector3D direction,
-                                                 final Control3DVectorCostType control3DVectorCostType,
-                                                 final String name) {
+    protected AbstractConstantThrustPropulsionModel(final double thrust, final double isp, final Vector3D direction,
+                                                    final Control3DVectorCostType control3DVectorCostType,
+                                                    final String name) {
         this.name = name;
         this.initialThrustVector = direction.normalize().scalarMultiply(thrust);
         this.control3DVectorCostType = control3DVectorCostType;
-        this.initialFlowRate = -control3DVectorCostType.evaluate(initialThrustVector) / (Constants.G0_STANDARD_GRAVITY * isp);
+        this.initialFlowRate = -control3DVectorCostType.evaluate(initialThrustVector) / ThrustPropulsionModel.getExhaustVelocity(isp);
     }
 
     /** Constructor with default control cost type.
@@ -84,10 +82,8 @@ public abstract class AbstractConstantThrustPropulsionModel implements ThrustPro
      * @param direction initial thrust direction in S/C frame
      * @param name name of the maneuver
      */
-    public AbstractConstantThrustPropulsionModel(final double thrust,
-                                                 final double isp,
-                                                 final Vector3D direction,
-                                                 final String name) {
+    protected AbstractConstantThrustPropulsionModel(final double thrust, final double isp, final Vector3D direction,
+                                                    final String name) {
         this(thrust, isp, direction, DEFAULT_CONTROL_3D_VECTOR_COST_TYPE, name);
     }
 

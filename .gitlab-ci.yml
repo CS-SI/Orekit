@@ -29,9 +29,15 @@ variables:
   SONAR_PROJECT_NAME: "${CI_PROJECT_TITLE} (${CI_PROJECT_NAMESPACE}:${CI_PROJECT_NAME})"
   # Deployment target properties
   TARGET_URL_PREFIX: "cochise@ganymede.orekit.org:/var/www/mvn-sites/site-orekit"
+  # Default number of CPUs required for a job
+  KUBERNETES_CPU_REQUEST: "2"
 
 verify:
   stage: verify
+  variables:
+    # This is a heavy job, requiring all the CPUs available. VMs have 8 cores,
+    # but we need to save some for the K8S core services.
+    KUBERNETES_CPU_REQUEST: "7"
   script:
     - mvn $MAVEN_CLI_OPTS checkstyle:check verify site
     - test -z "$SONAR_TOKEN" || mvn $MAVEN_CLI_OPTS sonar:sonar
@@ -95,7 +101,7 @@ changelog:
     paths:
       - CHANGELOG.md
 
-# On main branches (develop, release-*, master) the produced artifacts are
+# On main branches (develop, release-*, main) the produced artifacts are
 # deployed on the Nexus of the project (https://packages.orekit.org/)
 deploy:artifacts:
   stage: deploy
@@ -105,7 +111,7 @@ deploy:artifacts:
     paths:
       - target/*.jar
   only:
-    - master@orekit/orekit
+    - main@orekit/orekit
     - /^release-[.0-9]+$/@orekit/orekit
     - develop@orekit/orekit
 
@@ -123,7 +129,7 @@ deploy:site:
     - rsync -rz --links --checksum --no-perms --chmod=u=rwX,go=rX --delete-after
             target/site/ ${TARGET_URL_PREFIX}-${PROJECT_VERSION}
   only:
-    - master@orekit/orekit
+    - main@orekit/orekit
     - /^release-[.0-9]+$/@orekit/orekit
     - develop@orekit/orekit
 

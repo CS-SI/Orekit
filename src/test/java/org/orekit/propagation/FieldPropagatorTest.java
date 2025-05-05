@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -109,22 +109,22 @@ class FieldPropagatorTest {
         }
 
         @Override
-        public void addAdditionalStateProvider(FieldAdditionalStateProvider<Complex> additionalStateProvider) {
+        public void addAdditionalDataProvider(FieldAdditionalDataProvider<?, Complex> additionalDataProvider) {
             // not used in test
         }
 
         @Override
-        public List<FieldAdditionalStateProvider<Complex>> getAdditionalStateProviders() {
+        public List<FieldAdditionalDataProvider<?, Complex>> getAdditionalDataProviders() {
             return null;
         }
 
         @Override
-        public boolean isAdditionalStateManaged(String name) {
+        public boolean isAdditionalDataManaged(String name) {
             return false;
         }
 
         @Override
-        public String[] getManagedAdditionalStates() {
+        public String[] getManagedAdditionalData() {
             return new String[0];
         }
 
@@ -134,7 +134,7 @@ class FieldPropagatorTest {
         }
 
         @Override
-        public Collection<FieldEventDetector<Complex>> getEventsDetectors() {
+        public Collection<FieldEventDetector<Complex>> getEventDetectors() {
             return null;
         }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,7 +30,7 @@ import org.orekit.utils.ParameterDriver;
 
 /** This class models isotropic drag effects.
  * <p>The model of this spacecraft is a simple spherical model, this
- * means that all coefficients are constant and do not depend of
+ * means that all coefficients are constant and do not depend on
  * the direction.</p>
  *
  * @see org.orekit.forces.BoxAndSolarArraySpacecraft
@@ -74,7 +74,7 @@ public class IsotropicDrag implements DragSensitive {
         // the single coefficient may be arbitrary, and even negative
         // the DRAG_COEFFICIENT parameter should be sufficient, but GLOBAL_DRAG_FACTOR
         // was added as of 12.0 for consistency with BoxAndSolarArraySpacecraft
-        // that only has a global multiplicatof factor, hence allowing this name
+        // that only has a global multiplication factor, hence allowing this name
         // to be used for both models
         this.dragParametersDrivers = new ArrayList<>(2);
         dragParametersDrivers.add(new ParameterDriver(DragSensitive.GLOBAL_DRAG_FACTOR,

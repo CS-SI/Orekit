@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -48,6 +48,7 @@ import org.orekit.propagation.analytical.Ephemeris;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.AbstractTimeInterpolator;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.AbsolutePVCoordinatesTest;
 import org.orekit.utils.Constants;
@@ -118,7 +119,7 @@ class OrbitBlenderTest {
 
         StateCovarianceKeplerianHermiteInterpolatorTest.configurePropagatorForSergeiCase(propagator);
 
-        propagator.addAdditionalStateProvider(stateCovarianceMatrixProvider);
+        propagator.addAdditionalDataProvider(stateCovarianceMatrixProvider);
 
         propagator.getMultiplexer().add(1, (currentState) -> {
             referenceStates.add(currentState);
@@ -251,7 +252,9 @@ class OrbitBlenderTest {
         final OrbitBlender                         orbitBlender = new OrbitBlender(quadratic, propagator, sergeiFrame);
 
         final TimeInterpolator<SpacecraftState> stateInterpolator =
-                new SpacecraftStateInterpolator(sergeiFrame, orbitBlender, null, null, null, null);
+                new SpacecraftStateInterpolator(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                                                AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+                                                sergeiFrame, orbitBlender, null, null, null, null);
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
@@ -287,12 +290,12 @@ class OrbitBlenderTest {
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
-                            0.05106377388516059,
-                            0.03671310671380644,
-                            0.05451875412478483,
-                            0.03654640625064279,
-                            0.09412869297314610,
-                            0.06642996306635666,
+                            0.1162978884760,
+                            0.0588245986334,
+                            0.1184075880169,
+                            0.0640733000793,
+                            0.2095374397997,
+                            0.0901515566892,
                             1e-13, false);
     }
 
@@ -316,16 +319,18 @@ class OrbitBlenderTest {
         final OrbitBlender orbitBlender = new OrbitBlender(quadratic, propagator, sergeiFrame);
 
         final TimeInterpolator<SpacecraftState> stateInterpolator =
-                new SpacecraftStateInterpolator(sergeiFrame, orbitBlender, null, null, null, null);
+                new SpacecraftStateInterpolator(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                                                AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+                                                sergeiFrame, orbitBlender, null, null, null, null);
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
-                            0.05106377388516059,
-                            0.03671310671380644,
-                            0.05451875412478483,
-                            0.03654640625064279,
-                            0.09412869297314610,
-                            0.06642996306635666,
+                            0.1162978884760,
+                            0.0588245986334,
+                            0.1184075880169,
+                            0.0640733000793,
+                            0.2095374397997,
+                            0.0901515566892,
                             1e-13, false);
     }
 
@@ -349,12 +354,12 @@ class OrbitBlenderTest {
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
-                            0.00854503692536256,
-                            0.01192593187393609,
-                            0.00895077301610845,
-                            0.01299681289409554,
-                            0.01600030634518512,
-                            0.01743228687362160,
+                            0.00854503692718802,
+                            0.01192593186465725,
+                            0.00895077301312331,
+                            0.01299681287562801,
+                            0.01600030634898298,
+                            0.01743228685360753,
                             1e-17, false);
                             
     }
@@ -376,18 +381,19 @@ class OrbitBlenderTest {
         final OrbitBlender orbitBlender = new OrbitBlender(quadratic, propagator, sergeiFrame);
 
         final TimeInterpolator<SpacecraftState> stateInterpolator =
-                new SpacecraftStateInterpolator(sergeiFrame, orbitBlender, null, null, null, null);
+                new SpacecraftStateInterpolator(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                                                AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+                                                sergeiFrame, orbitBlender, null, null, null, null);
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
-                            0.00854503692536256,
-                            0.01192593187393609,
-                            0.00895077301610845,
-                            0.01299681289409554,
-                            0.01600030634518512,
-                            0.01743228687362160,
+                            0.00854503692718802,
+                            0.01192593186465725,
+                            0.00895077301312331,
+                            0.01299681287562801,
+                            0.01600030634898298,
+                            0.01743228685360753,
                             1e-17, false);
-                            
     }
 
     @Test

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -56,8 +56,7 @@ import org.orekit.time.AbsoluteDate;
  * @since 7.1
  */
 
-public class EventEnablingPredicateFilter
-    extends AbstractDetector<EventEnablingPredicateFilter> {
+public class EventEnablingPredicateFilter implements DetectorModifier {
 
     /** Number of past transformers updates stored. */
     private static final int HISTORY_SIZE = 100;
@@ -74,6 +73,12 @@ public class EventEnablingPredicateFilter
     /** Update time of the transformers. */
     private final AbsoluteDate[] updates;
 
+    /** Event detection settings. */
+    private final EventDetectionSettings detectionSettings;
+
+    /** Specialized event handler. */
+    private final LocalHandler handler;
+
     /** Indicator for forward integration. */
     private boolean forward;
 
@@ -84,46 +89,37 @@ public class EventEnablingPredicateFilter
     private double extremeG;
 
     /** Wrap an {@link EventDetector event detector}.
-     * @param rawDetector event detector to wrap
+     * @param rawDetector event detector to wrap (its detection settings are taken as well)
      * @param enabler event enabling predicate function to use
      */
     public EventEnablingPredicateFilter(final EventDetector rawDetector,
                                         final EnablingPredicate enabler) {
-        this(rawDetector.getMaxCheckInterval(), rawDetector.getThreshold(),
-             rawDetector.getMaxIterationCount(), new LocalHandler(),
-             rawDetector, enabler);
+        this(rawDetector.getDetectionSettings(), rawDetector, enabler);
     }
 
-    /** Protected constructor with full parameters.
-     * <p>
-     * This constructor is not public as users are expected to use the builder
-     * API with the various {@code withXxx()} methods to set up the instance
-     * in a readable manner without using a huge amount of parameters.
-     * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
-     * @param handler event handler to call at event occurrences
+    /** Constructor with full parameters.
+     * @param detectionSettings event detection settings
      * @param rawDetector event detector to wrap
      * @param enabler event enabling function to use
+     * @since 13.0
      */
-    protected EventEnablingPredicateFilter(final AdaptableInterval maxCheck, final double threshold,
-                                           final int maxIter, final EventHandler handler,
-                                           final EventDetector rawDetector,
-                                           final EnablingPredicate enabler) {
-        super(maxCheck, threshold, maxIter, handler);
+    public EventEnablingPredicateFilter(final EventDetectionSettings detectionSettings,
+                                        final EventDetector rawDetector, final EnablingPredicate enabler) {
+        this.detectionSettings = detectionSettings;
+        this.handler = new LocalHandler();
         this.rawDetector  = rawDetector;
         this.enabler      = enabler;
         this.transformers = new Transformer[HISTORY_SIZE];
         this.updates      = new AbsoluteDate[HISTORY_SIZE];
     }
 
-    /** {@inheritDoc} */
-    @Override
-    protected EventEnablingPredicateFilter create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                                  final int newMaxIter,
-                                                  final EventHandler newHandler) {
-        return new EventEnablingPredicateFilter(newMaxCheck, newThreshold, newMaxIter, newHandler, rawDetector, enabler);
+    /**
+     * Builds a new instance from the input detection settings.
+     * @param settings event detection settings to be used
+     * @return a new detector
+     */
+    public EventEnablingPredicateFilter withDetectionSettings(final EventDetectionSettings settings) {
+        return new EventEnablingPredicateFilter(settings, rawDetector, enabler);
     }
 
     /**
@@ -135,24 +131,44 @@ public class EventEnablingPredicateFilter
         return rawDetector;
     }
 
-    /**  {@inheritDoc} */
-    public void init(final SpacecraftState s0,
-                     final AbsoluteDate t) {
-        super.init(s0, t);
+    /** {@inheritDoc} */
+    @Override
+    public EventHandler getHandler() {
+        return handler;
+    }
 
-        // delegate to raw detector
-        rawDetector.init(s0, t);
+    /** {@inheritDoc} */
+    @Override
+    public EventDetectionSettings getDetectionSettings() {
+        return detectionSettings;
+    }
+
+    /**  {@inheritDoc} */
+    @Override
+    public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        DetectorModifier.super.init(s0, t);
 
         // initialize events triggering logic
-        forward  = t.compareTo(s0.getDate()) >= 0;
+        forward  = AbstractDetector.checkIfForward(s0, t);
         extremeT = forward ? AbsoluteDate.PAST_INFINITY : AbsoluteDate.FUTURE_INFINITY;
         extremeG = Double.NaN;
+
         Arrays.fill(transformers, Transformer.UNINITIALIZED);
         Arrays.fill(updates, extremeT);
 
     }
 
     /**  {@inheritDoc} */
+    @Override
+    public void reset(final SpacecraftState state, final AbsoluteDate target) {
+        DetectorModifier.super.reset(state, target);
+        forward  = AbstractDetector.checkIfForward(state, target);
+        extremeT = forward ? AbsoluteDate.PAST_INFINITY : AbsoluteDate.FUTURE_INFINITY;
+        extremeG = Double.NaN;
+    }
+
+    /**  {@inheritDoc} */
+    @Override
     public double g(final SpacecraftState s) {
 
         final double  rawG      = rawDetector.g(s);
@@ -162,7 +178,7 @@ public class EventEnablingPredicateFilter
         }
 
         // search which transformer should be applied to g
-        if (forward) {
+        if (isForward()) {
             final int last = transformers.length - 1;
             if (extremeT.compareTo(s.getDate()) < 0) {
                 // we are at the forward end of the history
@@ -284,13 +300,20 @@ public class EventEnablingPredicateFilter
         }
     }
 
+    /** Check if the current propagation is forward or backward.
+     * @return true if the current propagation is forward
+     */
+    public boolean isForward() {
+        return forward;
+    }
+
     /** Local handler. */
     private static class LocalHandler implements EventHandler {
 
         /** {@inheritDoc} */
         public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
             final EventEnablingPredicateFilter ef = (EventEnablingPredicateFilter) detector;
-            final Transformer transformer = ef.forward ? ef.transformers[ef.transformers.length - 1] : ef.transformers[0];
+            final Transformer transformer = ef.isForward() ? ef.transformers[ef.transformers.length - 1] : ef.transformers[0];
             return ef.rawDetector.getHandler().eventOccurred(s, ef.rawDetector, transformer == Transformer.PLUS ? increasing : !increasing);
         }
 

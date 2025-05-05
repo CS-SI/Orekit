@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1044;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1044Data;
@@ -36,7 +37,7 @@ import java.util.ArrayList;
 
 public class Rtcm1044Test {
 
-    private double eps = 9.0e-10;
+    private final double eps = 9.0e-10;
 
     @BeforeEach
     public void setUp() {
@@ -85,7 +86,8 @@ public class Rtcm1044Test {
         ArrayList<Integer> messages = new ArrayList<>();
         messages.add(1044);
 
-        final Rtcm1044              rtcm1044      = (Rtcm1044) new RtcmMessagesParser(messages).parse(message, false);
+        final Rtcm1044              rtcm1044      = (Rtcm1044) new RtcmMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+                                                    parse(message, false);
         final Rtcm1044Data          ephemerisData = rtcm1044.getEphemerisData();
         final QZSSLegacyNavigationMessage qzssMessage   = ephemerisData.getQzssNavigationMessage();
 
@@ -109,7 +111,8 @@ public class Rtcm1044Test {
         Assertions.assertEquals(5.721445195376873E-4,   qzssMessage.getAf0(),                eps);
         Assertions.assertEquals(695,                    qzssMessage.getIODC());
         Assertions.assertEquals(0.0,                    qzssMessage.getCrs(),                eps);
-        Assertions.assertEquals(1.4587496546628753E-4,  qzssMessage.getMeanMotion(),         eps);
+        Assertions.assertEquals(1.4586338170358127E-4,  qzssMessage.getMeanMotion0(),        eps);
+        Assertions.assertEquals(1.4587496546628753E-4,  qzssMessage.getMeanMotion0() + qzssMessage.getDeltaN0(), eps);
         Assertions.assertEquals(0.1671775426328288,     qzssMessage.getM0(),                 eps);
         Assertions.assertEquals(0.0,                    qzssMessage.getCuc(),                eps);
         Assertions.assertEquals(0.0389980711042881,     qzssMessage.getE(),                  eps);
@@ -175,7 +178,8 @@ public class Rtcm1044Test {
        ArrayList<Integer> messages = new ArrayList<>();
        messages.add(9999999);
 
-       final Rtcm1044 rtcm1044 = (Rtcm1044) new RtcmMessagesParser(messages).parse(message, false);
+       final Rtcm1044 rtcm1044 = (Rtcm1044) new RtcmMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+                                 parse(message, false);
 
        Assertions.assertNull(rtcm1044);
     }

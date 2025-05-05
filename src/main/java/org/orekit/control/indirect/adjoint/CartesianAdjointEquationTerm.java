@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,36 +17,65 @@
 package org.orekit.control.indirect.adjoint;
 
 import org.hipparchus.CalculusFieldElement;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
 /**
- * Interface to define terms in the adjoint equations for Cartesian coordinates.
+ * Interface to define terms in the adjoint equations and Hamiltonian for Cartesian coordinates.
  * @author Romain Serra
  * @see CartesianAdjointDerivativesProvider
+ * @see FieldCartesianAdjointDerivativesProvider
  * @since 12.2
  */
 public interface CartesianAdjointEquationTerm {
 
     /**
-     * Computes the contribution to the rates of the velocity adjoint variables.
+     * Computes the contribution to the rates of the adjoint variables.
      *
-     * @param date date
+     * @param date             date
      * @param stateVariables   state variables
      * @param adjointVariables adjoint variables
-     * @return contribution to the velocity adjoing derivative vector
+     * @param frame            propagation frame
+     * @return contribution to the adjoint derivative vector
      */
-    double[] getVelocityAdjointContribution(AbsoluteDate date, double[] stateVariables, double[] adjointVariables);
+    double[] getRatesContribution(AbsoluteDate date, double[] stateVariables, double[] adjointVariables, Frame frame);
 
     /**
-     * Computes the contribution to the rates of the velocity adjoint variables.
+     * Computes the contribution to the rates of the adjoint variables.
      *
      * @param <T>              field type
      * @param date             date
      * @param stateVariables   state variables
      * @param adjointVariables adjoint variables
-     * @return contribution to the velocity adjoing derivative vector
+     * @param frame            propagation frame
+     * @return contribution to the adjoint derivative vector
      */
-    <T extends CalculusFieldElement<T>> T[] getVelocityAdjointContribution(FieldAbsoluteDate<T> date, T[] stateVariables, T[] adjointVariables);
+    <T extends CalculusFieldElement<T>> T[] getFieldRatesContribution(FieldAbsoluteDate<T> date, T[] stateVariables, T[] adjointVariables, Frame frame);
+
+    /**
+     * Computes the contribution to the Hamiltonian.
+     *
+     * @param date             date
+     * @param stateVariables   state variables
+     * @param adjointVariables adjoint variables
+     * @param frame            propagation frame
+     * @return contribution to the Hamiltonian
+     */
+    double getHamiltonianContribution(AbsoluteDate date, double[] stateVariables, double[] adjointVariables, Frame frame);
+
+    /**
+     * Computes the contribution to the Hamiltonian.
+     *
+     * @param date             date
+     * @param stateVariables   state variables
+     * @param adjointVariables adjoint variables
+     * @param frame            propagation frame
+     * @param <T> field type
+     * @return contribution to the Hamiltonian
+     */
+    <T extends CalculusFieldElement<T>> T getFieldHamiltonianContribution(FieldAbsoluteDate<T> date,
+                                                                          T[] stateVariables,
+                                                                          T[] adjointVariables, Frame frame);
 
 }

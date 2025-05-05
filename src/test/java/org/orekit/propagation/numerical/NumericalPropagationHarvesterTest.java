@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,6 +37,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.Constants;
@@ -137,7 +138,7 @@ public class NumericalPropagationHarvesterTest {
         for (int i = 0; i < p.length; i += 7) {
             p[i] = 1.0;
         }
-        SpacecraftState s = propagator.getInitialState().addAdditionalState(harvester.getStmName(), p);
+        SpacecraftState s = propagator.getInitialState().addAdditionalData(harvester.getStmName(), p);
         RealMatrix stm = harvester.getStateTransitionMatrix(s);
         Assertions.assertEquals(deltaId, stm.subtract(MatrixUtils.createRealIdentityMatrix(6)).getNorm1(), 1.0e-3);
         Assertions.assertEquals(type, harvester.getOrbitType());
@@ -152,7 +153,7 @@ public class NumericalPropagationHarvesterTest {
                                            Constants.EIGEN5C_EARTH_MU);
         double minStep = 0.0001;
         double maxStep = 60;
-        double[][] tolerances = NumericalPropagator.tolerances(0.001, initialOrbit, initialOrbit.getType());
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(initialOrbit, initialOrbit.getType());
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tolerances[0], tolerances[1]);
         integrator.setInitialStepSize(1.0);
         propagator = new NumericalPropagator(integrator);

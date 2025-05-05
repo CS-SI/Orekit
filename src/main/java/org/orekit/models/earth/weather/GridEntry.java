@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,13 @@
  */
 package org.orekit.models.earth.weather;
 
+import java.util.HashMap;
 import java.util.Map;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
 
 /** Grid entry in Global Pressure Temperature models.
  * @author Luc Maisonobe
@@ -48,7 +52,7 @@ class GridEntry {
     private final double hS;
 
     /** Seasonal models. */
-    private Map<SeasonalModelType, SeasonalModel> models;
+    private final Map<SeasonalModelType, SeasonalModel> models;
 
     /** Build an entry from its components.
      * @param latitude latitude (radian)
@@ -85,51 +89,93 @@ class GridEntry {
     /** Get latitude (radian).
      * @return latitude (radian)
      */
-    double getLatitude() {
+    public double getLatitude() {
         return latitude;
     }
 
     /** Get latitude key (mas).
      * @return latitude key (mas)
      */
-    int getLatKey() {
+    public int getLatKey() {
         return latKey;
     }
 
     /** Get longitude (radian).
      * @return longitude (radian)
      */
-    double getLongitude() {
+    public double getLongitude() {
         return longitude;
     }
 
     /** Get longitude key (mas).
      * @return longitude key (mas)
      */
-    int getLonKey() {
+    public int getLonKey() {
         return lonKey;
     }
 
     /** Get undulation.
      * @return undulation
      */
-    double getUndulation() {
+    public double getUndulation() {
         return undulation;
     }
 
     /** Get height correction.
      * @return height correction
      */
-    double getHs() {
+    public double getHs() {
         return hS;
     }
 
-    /** Get a model.
+    /** Check if an entry has a model.
      * @param type model type
-     * @return model
+     * @return true if the entry has the model
+     * @since 13.0
      */
-    SeasonalModel getModel(final SeasonalModelType type) {
-        return models.get(type);
+    public boolean hasModel(final SeasonalModelType type) {
+        return models.containsKey(type);
+    }
+
+    /** Evaluate the entry at one date.
+     * @param sc1 sine and cosine of yearly harmonic term
+     * @param sc2 sine and cosine of bi-yearly harmonic term
+     * @param altitude altitude
+     * @return evaluated entry
+     */
+    public EvaluatedGridEntry evaluate(final SinCos sc1, final SinCos sc2, final double altitude) {
+
+        // evaluate all models
+        final Map<SeasonalModelType, Double> evaluatedModels = new HashMap<>(models.size());
+        for (final Map.Entry<SeasonalModelType, SeasonalModel> entry : models.entrySet()) {
+            evaluatedModels.put(entry.getKey(), entry.getValue().evaluate(sc1, sc2));
+        }
+
+        // build the evaluated grid entry
+        return new EvaluatedGridEntry(this, altitude, evaluatedModels);
+
+    }
+
+    /** Evaluate the entry at one date.
+     * @param <T> type of the field elements
+     * @param sc1 sine and cosine of yearly harmonic term
+     * @param sc2 sine and cosine of bi-yearly harmonic term
+     * @param altitude altitude
+     * @return evaluated entry
+     */
+    public <T extends CalculusFieldElement<T>> FieldEvaluatedGridEntry<T> evaluate(final FieldSinCos<T> sc1,
+                                                                                   final FieldSinCos<T> sc2,
+                                                                                   final T altitude) {
+
+        // evaluate all models
+        final Map<SeasonalModelType, T> evaluatedModels = new HashMap<>(models.size());
+        for (final Map.Entry<SeasonalModelType, SeasonalModel> entry : models.entrySet()) {
+            evaluatedModels.put(entry.getKey(), entry.getValue().evaluate(sc1, sc2));
+        }
+
+        // build the evaluated grid entry
+        return new FieldEvaluatedGridEntry<>(this, altitude, evaluatedModels);
+
     }
 
 }

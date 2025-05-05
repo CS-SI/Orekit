@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,50 +16,50 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.AdamsBashforthIntegrator;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.ToleranceProvider;
 
 /** Builder for AdamsBashforthIntegrator.
  * @author Pascal Parraud
  * @since 6.0
  */
-public class AdamsBashforthIntegratorBuilder implements ODEIntegratorBuilder {
+public class AdamsBashforthIntegratorBuilder extends AbstractVariableStepIntegratorBuilder<AdamsBashforthIntegrator> {
 
     /** Number of steps. */
     private final int nSteps;
 
-    /** Minimum step size (s). */
-    private final double minStep;
-
-    /** Maximum step size (s). */
-    private final double maxStep;
-
-    /** Minimum step size (s). */
-    private final double dP;
-
-    /** Build a new instance.
+    /** Build a new instance using default integration tolerances.
      * @param nSteps number of steps
      * @param minStep minimum step size (s)
      * @param maxStep maximum step size (s)
      * @param dP position error (m)
      * @see AdamsBashforthIntegrator
-     * @see NumericalPropagator#tolerances(double, Orbit, OrbitType)
      */
     public AdamsBashforthIntegratorBuilder(final int nSteps, final double minStep,
                                            final double maxStep, final double dP) {
+        super(minStep, maxStep, getDefaultToleranceProvider(dP));
         this.nSteps  = nSteps;
-        this.minStep = minStep;
-        this.maxStep = maxStep;
-        this.dP      = dP;
+    }
+
+    /** Build a new instance.
+     * @param nSteps number of steps
+     * @param minStep minimum step size (s)
+     * @param maxStep maximum step size (s)
+     * @param toleranceProvider integration tolerance provider
+     *
+     * @since 13.0
+     * @see AdamsBashforthIntegrator
+     */
+    public AdamsBashforthIntegratorBuilder(final int nSteps, final double minStep,
+                                           final double maxStep, final ToleranceProvider toleranceProvider) {
+        super(minStep, maxStep, toleranceProvider);
+        this.nSteps  = nSteps;
     }
 
     /** {@inheritDoc} */
-    public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType) {
-        final double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
-        return new AdamsBashforthIntegrator(nSteps, minStep, maxStep, tol[0], tol[1]);
+    @Override
+    protected AdamsBashforthIntegrator buildIntegrator(final double[][] tolerances) {
+        return new AdamsBashforthIntegrator(nSteps, getMinStep(), getMaxStep(), tolerances[0], tolerances[1]);
     }
 
 }

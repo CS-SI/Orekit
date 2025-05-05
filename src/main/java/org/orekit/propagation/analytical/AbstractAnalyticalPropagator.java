@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
+import java.util.stream.Collectors;
 
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.ode.events.Action;
@@ -35,7 +36,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.AbstractPropagator;
-import org.orekit.propagation.AdditionalStateProvider;
+import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.MatricesHarvester;
@@ -62,7 +63,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
     /** Provider for attitude computation. */
-    private PVCoordinatesProvider pvProvider;
+    private final PVCoordinatesProvider pvProvider;
 
     /** Start date of last propagation. */
     private AbsoluteDate lastPropagationStart;
@@ -76,8 +77,11 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
     /** Indicator for last step. */
     private boolean isLastStep;
 
-    /** Event steps. */
-    private final Collection<EventState<?>> eventsStates;
+    /** User-defined event states. */
+    private final Collection<EventState<?>> userEventStates;
+
+    /** All event states, including internal ones. */
+    private Collection<EventState<?>> eventStates;
 
     /** Build a new instance.
      * @param attitudeProvider provider for attitude computation
@@ -88,7 +92,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         lastPropagationStart = AbsoluteDate.PAST_INFINITY;
         lastPropagationEnd   = AbsoluteDate.FUTURE_INFINITY;
         statesInitialized    = false;
-        eventsStates         = new ArrayList<>();
+        userEventStates = new ArrayList<>();
     }
 
     /** {@inheritDoc} */
@@ -99,13 +103,13 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
     /** {@inheritDoc} */
     public <T extends EventDetector> void addEventDetector(final T detector) {
-        eventsStates.add(new EventState<>(detector));
+        userEventStates.add(new EventState<>(detector));
     }
 
     /** {@inheritDoc} */
-    public Collection<EventDetector> getEventsDetectors() {
+    public Collection<EventDetector> getEventDetectors() {
         final List<EventDetector> list = new ArrayList<>();
-        for (final EventState<?> state : eventsStates) {
+        for (final EventState<?> state : userEventStates) {
             list.add(state.getEventDetector());
         }
         return Collections.unmodifiableCollection(list);
@@ -113,7 +117,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
     /** {@inheritDoc} */
     public void clearEventsDetectors() {
-        eventsStates.clear();
+        userEventStates.clear();
     }
 
     /** {@inheritDoc} */
@@ -124,14 +128,16 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
             lastPropagationStart = start;
 
-            // Initialize additional states
-            initializeAdditionalStates(target);
+            // Initialize additional data
+            initializeAdditionalData(target);
 
             final boolean isForward = target.compareTo(start) >= 0;
-            SpacecraftState state   = updateAdditionalStates(basicPropagate(start));
+            SpacecraftState state   = updateAdditionalData(basicPropagate(start));
 
             // initialize event detectors
-            for (final EventState<?> es : eventsStates) {
+            eventStates = getAttitudeProvider().getEventDetectors().map(EventState::new).collect(Collectors.toList());
+            eventStates.addAll(userEventStates);
+            for (final EventState<?> es : eventStates) {
                 es.init(state, target);
             }
 
@@ -145,7 +151,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
                 // attempt to advance to the target date
                 final SpacecraftState previous = state;
-                final SpacecraftState current = updateAdditionalStates(basicPropagate(target));
+                final SpacecraftState current = updateAdditionalData(basicPropagate(target));
                 final OrekitStepInterpolator interpolator =
                         new BasicStepInterpolator(isForward, previous, current);
 
@@ -154,9 +160,14 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
                 // Update the potential changes in the spacecraft state due to the events
                 // especially the potential attitude transition
-                state = updateAdditionalStates(basicPropagate(state.getDate()));
+                state = updateAdditionalData(basicPropagate(state.getDate()));
 
             } while (!isLastStep);
+
+            // Finalize event detectors
+            for (final EventState<?> es : eventStates) {
+                es.finish(state);
+            }
 
             // return the last computed state
             lastPropagationEnd = state.getDate();
@@ -196,9 +207,9 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         // initialize the events states if needed
         if (!statesInitialized) {
 
-            if (!eventsStates.isEmpty()) {
+            if (!eventStates.isEmpty()) {
                 // initialize the events states
-                for (final EventState<?> state : eventsStates) {
+                for (final EventState<?> state : eventStates) {
                     state.reinitializeBegin(interpolator);
                 }
             }
@@ -223,7 +234,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
             // Evaluate all event detectors for events
             occurringEvents.clear();
-            for (final EventState<?> state : eventsStates) {
+            for (final EventState<?> state : eventStates) {
                 if (state.evaluateStep(interpolator)) {
                     // the event occurs during the current step
                     occurringEvents.add(state);
@@ -245,7 +256,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
                     restricted = restricted.restrictStep(previous, eventState);
 
                     // try to advance all event states to current time
-                    for (final EventState<?> state : eventsStates) {
+                    for (final EventState<?> state : eventStates) {
                         if (state != currentEvent && state.tryAdvance(eventState, interpolator)) {
                             // we need to handle another event first
                             // remove event we just updated to prevent heap corruption
@@ -292,6 +303,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
                         // invalidate the derivatives, we need to recompute them
                         final SpacecraftState resetState = occurrence.getNewState();
                         resetIntermediateState(resetState, interpolator.isForward());
+                        eventStates.forEach(es -> es.getEventDetector().reset(resetState, target));
                         return resetState;
                     }
                     // at this point action == Action.CONTINUE or Action.RESET_EVENTS
@@ -319,7 +331,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
                 // is unreliable and RESET_EVENTS should be used instead. Might as well
                 // re-check here because we have to loop through all the detectors anyway
                 // and the alternative is to throw an exception.
-                for (final EventState<?> state : eventsStates) {
+                for (final EventState<?> state : eventStates) {
                     if (state.tryAdvance(current, interpolator)) {
                         occurringEvents.add(state);
                     }
@@ -366,17 +378,17 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
      * @param date target date for the orbit
      * @return extrapolated parameters
      */
-    protected abstract Orbit propagateOrbit(AbsoluteDate date);
+    public abstract Orbit propagateOrbit(AbsoluteDate date);
 
     /** Propagate an orbit without any fancy features.
      * <p>This method is similar in spirit to the {@link #propagate} method,
      * except that it does <strong>not</strong> call any handler during
      * propagation, nor any discrete events, not additional states. It always
-     * stop exactly at the specified date.</p>
+     * stops exactly at the specified date.</p>
      * @param date target date for propagation
      * @return state at specified date
      */
-    protected SpacecraftState basicPropagate(final AbsoluteDate date) {
+    public SpacecraftState basicPropagate(final AbsoluteDate date) {
         try {
 
             // evaluate orbit
@@ -387,7 +399,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
                 getAttitudeProvider().getAttitude(pvProvider, date, orbit.getFrame());
 
             // build raw state
-            return new SpacecraftState(orbit, attitude, getMass(date));
+            return new SpacecraftState(orbit, attitude).withMass(getMass(date));
 
         } catch (OrekitException oe) {
             throw new OrekitException(oe);
@@ -439,8 +451,8 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
             try {
                 // copy the same additional state providers as the original propagator
-                for (AdditionalStateProvider provider : AbstractAnalyticalPropagator.this.getAdditionalStateProviders()) {
-                    addAdditionalStateProvider(provider);
+                for (AdditionalDataProvider<?> provider : AbstractAnalyticalPropagator.this.getAdditionalDataProviders()) {
+                    addAdditionalDataProvider(provider);
                 }
             } catch (OrekitException oe) {
                 // as the generators are already compatible with each other,
@@ -461,7 +473,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
-        protected Orbit propagateOrbit(final AbsoluteDate target) {
+        public Orbit propagateOrbit(final AbsoluteDate target) {
             return AbstractAnalyticalPropagator.this.propagateOrbit(target);
         }
 
@@ -471,6 +483,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
+        @Override
         public void resetInitialState(final SpacecraftState state) {
             super.resetInitialState(state);
             AbstractAnalyticalPropagator.this.resetInitialState(state);
@@ -482,11 +495,13 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
+        @Override
         public SpacecraftState getInitialState() {
             return AbstractAnalyticalPropagator.this.getInitialState();
         }
 
         /** {@inheritDoc} */
+        @Override
         public Frame getFrame() {
             return AbstractAnalyticalPropagator.this.getFrame();
         }
@@ -552,7 +567,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
             final SpacecraftState basicState = basicPropagate(date);
 
             // add the additional states
-            return updateAdditionalStates(basicState);
+            return updateAdditionalData(basicState);
 
         }
 

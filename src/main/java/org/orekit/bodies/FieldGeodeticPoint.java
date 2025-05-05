@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -202,6 +202,15 @@ public class FieldGeodeticPoint<T extends CalculusFieldElement<T>> {
             west = getEast().negate();
         }
         return west;
+    }
+
+    /**
+     * Get non-Field equivalent.
+     * @return geodetic point
+     * @since 12.2
+     */
+    public GeodeticPoint toGeodeticPoint() {
+        return new GeodeticPoint(latitude.getReal(), longitude.getReal(), altitude.getReal());
     }
 
     @Override

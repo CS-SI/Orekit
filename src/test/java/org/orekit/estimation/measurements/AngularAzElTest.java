@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,7 +35,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
-import org.orekit.utils.StateFunction;
 
 class AngularAzElTest {
 
@@ -136,8 +135,8 @@ class AngularAzElTest {
             final AbsoluteDate datemeas  = measurement.getDate();
             SpacecraftState    state     = propagator.propagate(datemeas);
             final Vector3D     stationP  = stationParameter.getOffsetToInertial(state.getFrame(), datemeas, false).transformPosition(Vector3D.ZERO);
-            final double       meanDelay = AbstractMeasurement.signalTimeOfFlight(state.getPVCoordinates(), stationP,
-                                                                                  datemeas, state.getFrame());
+            final double       meanDelay = AbstractMeasurement.signalTimeOfFlightAdjustableEmitter(state.getPVCoordinates(), stationP,
+                                                                                                   datemeas, state.getFrame());
 
             final AbsoluteDate date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                                state     = propagator.propagate(date);
@@ -147,14 +146,15 @@ class AngularAzElTest {
 
             // compute a reference value using finite differences
             final double[][] finiteDifferencesJacobian =
-                Differentiation.differentiate(new StateFunction() {
-                    public double[] value(final SpacecraftState state) {
-                        return measurement.
-                               estimateWithoutDerivatives(new SpacecraftState[] { state }).
-                               getEstimatedValue();
-                    }
-                }, measurement.getDimension(), propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
-                   PositionAngleType.TRUE, 250.0, 4).value(state);
+                Differentiation.differentiate(state1 ->
+                                                  measurement.
+                                                      estimateWithoutDerivatives(new SpacecraftState[] { state1 }).
+                                                      getEstimatedValue(),
+                                              measurement.getDimension(),
+                                              propagator.getAttitudeProvider(),
+                                              OrbitType.CARTESIAN,
+                                              PositionAngleType.TRUE, 250.0, 4).
+                    value(state);
 
             Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
@@ -238,8 +238,8 @@ class AngularAzElTest {
             final AbsoluteDate    datemeas  = measurement.getDate();
             final SpacecraftState stateini  = propagator.propagate(datemeas);
             final Vector3D        stationP  = stationParameter.getOffsetToInertial(stateini.getFrame(), datemeas, false).transformPosition(Vector3D.ZERO);
-            final double          meanDelay = AbstractMeasurement.signalTimeOfFlight(stateini.getPVCoordinates(), stationP,
-                                                                                     datemeas, stateini.getFrame());
+            final double          meanDelay = AbstractMeasurement.signalTimeOfFlightAdjustableEmitter(stateini.getPVCoordinates(), stationP,
+                                                                                                      datemeas, stateini.getFrame());
 
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);

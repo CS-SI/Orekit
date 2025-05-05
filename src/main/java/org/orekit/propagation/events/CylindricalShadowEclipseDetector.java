@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,16 +45,15 @@ public class CylindricalShadowEclipseDetector extends AbstractDetector<Cylindric
      * Constructor.
      * @param sun light source provider (infinitely distant)
      * @param occultingBodyRadius occulting body radius
-     * @param maxCheck maximum check for event detection
-     * @param threshold threshold for event detection
-     * @param maxIter maximum iteration for event detection
+     * @param eventDetectionSettings detection settings
      * @param handler event handler
+     * @since 12.2
      */
     public CylindricalShadowEclipseDetector(final PVCoordinatesProvider sun,
                                             final double occultingBodyRadius,
-                                            final AdaptableInterval maxCheck, final double threshold,
-                                            final int maxIter, final EventHandler handler) {
-        super(maxCheck, threshold, maxIter, handler);
+                                            final EventDetectionSettings eventDetectionSettings,
+                                            final EventHandler handler) {
+        super(eventDetectionSettings, handler);
         this.sun = sun;
         this.occultingBodyRadius = FastMath.abs(occultingBodyRadius);
     }
@@ -67,7 +66,7 @@ public class CylindricalShadowEclipseDetector extends AbstractDetector<Cylindric
      */
     public CylindricalShadowEclipseDetector(final PVCoordinatesProvider sun,
                                             final double occultingBodyRadius, final EventHandler handler) {
-        this(sun, occultingBodyRadius, AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, handler);
+        this(sun, occultingBodyRadius, EventDetectionSettings.getDefaultEventDetectionSettings(), handler);
     }
 
     /**
@@ -94,8 +93,8 @@ public class CylindricalShadowEclipseDetector extends AbstractDetector<Cylindric
 
     /** {@inheritDoc} */
     @Override
-    protected CylindricalShadowEclipseDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                                      final int newMaxIter, final EventHandler newHandler) {
-        return new CylindricalShadowEclipseDetector(sun, occultingBodyRadius, newMaxCheck, newThreshold, newMaxIter, newHandler);
+    protected CylindricalShadowEclipseDetector create(final EventDetectionSettings detectionSettings,
+                                                      final EventHandler newHandler) {
+        return new CylindricalShadowEclipseDetector(sun, occultingBodyRadius, detectionSettings, newHandler);
     }
 }

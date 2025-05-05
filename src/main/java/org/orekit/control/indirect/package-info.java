@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,9 +17,22 @@
 /**
  *
  * This package provides routines to perform so-called indirect optimal control within the frame of orbital mechanics.
+ * <br>
  * Indirect means that optimality conditions are obtained first, before attempting to solve them, usually numerically by way of some discretization.
  * A common theorem to derive such conditions for optimality is the Pontryagin's Maximum Principle and its variants. It introduces so-called adjoint variables which are closely linked to the optimal solution.
  * This is in contrast with direct methods, which consist in performing discretization first, before resorting to finite-dimension, local optimization techniques.
+ * <p>
+ * See the Orekit internal note for more details on the present implementations:
+ * <br>
+ * https://orekit.org/doc/technical-notes/2025-02-05-Serra_R-Indirect_Approach_for_Optimal_Control_in_Orekit_v13.0.pdf
+ * </p>
+ * Some external references:
+ * <ul>
+ * <li> CERF, Max. Optimization Techniques II: Discrete and Functional Optimization. In : Optimization Techniques II. EDP Sciences, 2023.
+ * <li> TRÉLAT, Emmanuel. Optimal control and applications to aerospace: some results and challenges. Journal of Optimization Theory and Applications, 2012, vol. 154, p. 713-758.
+ * <li> COLASURDO, Guido and CASALINO, Lorenzo. Indirect methods for the optimization of spacecraft trajectories. Modeling and Optimization in Space Engineering, 2013, p. 141-158.
+ * <li> MAREC, Jean-Pierre. Optimal space trajectories. Elsevier, 2012.
+ * </ul>
  *
  * @author Romain Serra
  * @since 12.2
