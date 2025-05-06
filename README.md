@@ -67,7 +67,88 @@ Replace `/path/to/orekit-data` with the actual path to your unzipped data folder
 # Usage
 
 ## Keplerian propagation
-You will find below an example of a Keplerian propagation :
+
+In this section, you will learn the building blocks to create a ```KeplerianPropagator```.
+
+> **Note:** It is assumed that the code necessary to load the Orekit data is written at the beginning of your script as
+> explained in [Installation](#3-load-the-orekit-data)
+
+### 1. Create an `Orbit`
+The first step is to create an `Orbit`. Several types are available in Orekit:
+* `KeplerianOrbit`
+* `CartesianOrbit`
+* `EquinoctialOrbit`
+* `CircularOrbit`
+
+For the sake of this example, we will build a `KeplerianOrbit`
+
+```java
+double sma = 7000e3; // Semi-major axis [m]
+double ecc = 0.001; // Eccentricity [-]
+double inc = FastMath.toRadians(15); // Inclination [rad]
+double pa = FastMath.toRadians(30); // Perigee Argument [rad]
+double raan = FastMath.toRadians(45); // Right Ascension of the Ascending Node[rad]
+double anomaly = FastMath.toRadians(60); // Inclination [rad]
+
+PositionAngleType positionAngleType = PositionAngleType.MEAN; // Type of anomaly angle used (MEAN, TRUE, ECCENTRIC)
+Frame inertialFrame = FramesFactory.getGCRF(); // Earth-Centered Inertial frame
+AbsoluteDate date = new AbsoluteDate(2002, 1, 1, 0, 0, 0, TimeScalesFactory.getUTC()); // Date of the orbit
+double mu = Constants.EIGEN5C_EARTH_MU; // Earth's standard gravitational parameter used in EIGEN-5C gravity field model
+
+Orbit orbit = new KeplerianOrbit(sma, ecc, inc, pa, raan, anomaly,
+                                 positionAngleType, inertialFrame, date, mu);
+```
+<details>
+<summary>Output</summary>
+
+Displaying this orbit using:
+```java
+System.out.println(orbit);
+```
+should output:
+```text
+Keplerian parameters: {a: 7000000.0; e: 0.001; i: 15.000000000000002; pa: 30.000000000000004; raan: 45.0; v: 60.09930121319573;}
+```
+</details>
+
+### 2. Create a `Propagator`
+
+Now that we have defined an orbit, we can create a `Propagator` to specify how the orbit will be propagated through
+time. 
+
+In this case we will create a basic `KeplerianPropagator`:
+```java
+Propagator propagator = new KeplerianPropagator(orbit);
+```
+
+### 3. Propagate !
+You are now ready to propagate this orbit through time. To do so you can specify:
+* The final propagation date only, the propagator will propagate between internal state date and this final propagation date
+* The initial and final propagation dates, the propagator will propagate in this time interval
+
+We will propagate for one `Constants.JULIAN_DAY`:
+```java
+AbsoluteDate targetDate = date.shiftedBy(Constants.JULIAN_DAY);
+SpacecraftState propagatedState = propagator.propagate(targetDate);
+```
+> **Note:** The propagator outputs a `SpacecraftState` which holds the propagated `Orbit`
+
+<details>
+<summary>Output</summary>
+
+Displaying final state's orbit using:
+```java
+System.out.println(propagatedState.getOrbit());
+```
+should output:
+```text
+Keplerian parameters: {a: 7000000.0; e: 0.001; i: 15.000000000000002; pa: 30.000000000000004; raan: 45.0; v: 5396.513788732658;}
+```
+</details>
+
+<details>
+<summary>Full java code</summary>
+
 ```java
 import org.hipparchus.util.FastMath;
 import org.orekit.data.DataContext;
@@ -88,7 +169,7 @@ import org.orekit.utils.Constants;
 import java.io.File;
 
 public class KeplerianPropagation {
-  public static void main(String[] args) {
+public static void main(String[] args) {
 
     // Load the Orekit data
     final File orekitData = new File("/path/to/orekit/data/folder");
@@ -110,8 +191,8 @@ public class KeplerianPropagation {
     AbsoluteDate      date              = new AbsoluteDate(2002, 1, 1, 0, 0, 0, TimeScalesFactory.getUTC());
     double            mu                = Constants.EIGEN5C_EARTH_MU;
 
-    Orbit orbit = new KeplerianOrbit(sma, ecc, inc, perigeeArgument, raan, anomaly, positionAngleType, inertialFrame, date,
-                                     mu);
+    Orbit orbit = new KeplerianOrbit(sma, ecc, inc, perigeeArgument, raan, anomaly, 
+                                     positionAngleType, inertialFrame, date, mu);
 
     System.out.println(orbit);
 
@@ -123,24 +204,21 @@ public class KeplerianPropagation {
     SpacecraftState propagatedState = propagator.propagate(targetDate);
 
     System.out.println(propagatedState.getOrbit());
-  }
+}
 
 }
 ```
-
-You should get the following output when running this example:
-```text
-Keplerian parameters: {a: 7000000.0; e: 0.001; i: 15.000000000000002; pa: 30.000000000000004; raan: 45.0; v: 60.09930121319573;}
-Keplerian parameters: {a: 7000000.0; e: 0.001; i: 15.000000000000002; pa: 30.000000000000004; raan: 45.0; v: 5396.513788732658;}
-```
+</details>
 
 # Going further
 
 ## Documentation
 
-Project overview, architecture and development, detailed features list,
-Javadoc and a lot of other information is available on the
-[Maven site](https://www.orekit.org/site-orekit-development/).
+The following documentation is available:
+
+* [Latest API documentation](https://www.orekit.org/site-orekit-development/apidocs/index.html)
+* [Maven site](https://www.orekit.org/site-orekit-development/) for the project overview, architecture and development,
+  detailed features list, Javadoc and a lot of other information
 
 ## Getting help
 
@@ -155,6 +233,8 @@ out [building.md](src/site/markdown/building.md)
 
 ## Python wrapper
 
+If interested in the official python wrapper of Orekit, please check
+out https://gitlab.orekit.org/orekit-labs/python-wrapper/-/wikis/home
 
 ## Download
 
