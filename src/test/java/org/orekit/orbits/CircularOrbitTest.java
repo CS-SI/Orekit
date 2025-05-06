@@ -77,6 +77,39 @@ class CircularOrbitTest {
                 orbit.hasNonKeplerianAcceleration());
     }
 
+    @Test
+    void testNonKeplerianAcceleration() {
+        // GIVEN
+        final PVCoordinates pvCoordinates = new PVCoordinates(new Vector3D(1, 2, 3),
+                Vector3D.MINUS_K.scalarMultiply(0.1), new Vector3D(0, 1));
+        final CartesianOrbit cartesianOrbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(),
+                AbsoluteDate.ARBITRARY_EPOCH, 1.);
+        final CircularOrbit circularOrbit = (CircularOrbit) OrbitType.CIRCULAR.convertType(cartesianOrbit);
+        // WHEN
+        final Vector3D nonKeplerianAcceleration = circularOrbit.nonKeplerianAcceleration();
+        // THEN
+        final Vector3D expectedVector = computeLegacyNonKeplerianAcceleration(circularOrbit);
+        Assertions.assertArrayEquals(expectedVector.toArray(), nonKeplerianAcceleration.toArray(), 1e-10);
+    }
+
+    private Vector3D computeLegacyNonKeplerianAcceleration(final Orbit orbit) {
+        final double[][] dCdP = new double[6][6];
+        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
+        orbit.getJacobianWrtParameters(positionAngleType, dCdP);
+
+        final double[] derivatives = new double[6];
+        orbit.getType().mapOrbitToArray(orbit, positionAngleType, new double[6], derivatives);
+        derivatives[5] -= orbit.getKeplerianMeanMotion();
+        final double nonKeplerianAx = dCdP[3][0] * derivatives[0]  + dCdP[3][1] * derivatives[1] + dCdP[3][2] * derivatives[2] +
+                dCdP[3][3] * derivatives[3] + dCdP[3][4] * derivatives[4] + dCdP[3][5] * derivatives[5];
+        final double nonKeplerianAy = dCdP[4][0] * derivatives[0]  + dCdP[4][1] * derivatives[1] + dCdP[4][2] * derivatives[2] +
+                dCdP[4][3] * derivatives[3] + dCdP[4][4] * derivatives[4] + dCdP[4][5] * derivatives[5];
+        final double nonKeplerianAz = dCdP[5][0] * derivatives[0]  + dCdP[5][1] * derivatives[1] + dCdP[5][2] * derivatives[2] +
+                dCdP[5][3] * derivatives[3] + dCdP[5][4] * derivatives[4] + dCdP[5][5] * derivatives[5];
+
+        return new Vector3D(nonKeplerianAx, nonKeplerianAy, nonKeplerianAz);
+    }
+
     @ParameterizedTest
     @EnumSource(PositionAngleType.class)
     void testInFrameKeplerian(final PositionAngleType positionAngleType) {

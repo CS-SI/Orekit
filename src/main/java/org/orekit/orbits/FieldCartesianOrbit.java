@@ -73,10 +73,10 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends FieldOrbit<T> {
 
     /** Indicator for non-Keplerian acceleration. */
-    private final transient boolean hasNonKeplerianAcceleration;
+    private final boolean hasNonKeplerianAcceleration;
 
     /** Underlying equinoctial orbit to which high-level methods are delegated. */
-    private transient FieldEquinoctialOrbit<T> equinoctial;
+    private FieldEquinoctialOrbit<T> equinoctial;
 
     /** Constructor from Cartesian parameters.
      *
@@ -410,6 +410,14 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     @Override
     public boolean hasNonKeplerianAcceleration() {
         return hasNonKeplerianAcceleration;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected FieldVector3D<T> nonKeplerianAcceleration() {
+        final T norm = getPosition().getNorm();
+        final T factor = getMu().divide(norm.square().multiply(norm));
+        return getPVCoordinates().getAcceleration().add(new FieldVector3D<>(factor, getPosition()));
     }
 
     /** {@inheritDoc} */
