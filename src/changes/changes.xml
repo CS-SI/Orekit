@@ -24,6 +24,9 @@
         <action dev="luc" type="fix" issue="1724">
           Fixed parameter driver added twice.
         </action>
+        <action dev="evan" type="fix" issue="1726" due-to="Juwan Jacobe">
+            Fixed logic in EGMFormatReader to allow tide-free EGM2008 harmonics.
+        </action>
         <action dev="luc" type="fix" issue="1731">
           Avoid recomputing attitude twice in AggregateBoundedPropagator.
         </action>
