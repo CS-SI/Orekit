@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.1" date="TBD" description="TBD">
+        <action dev="evan" type="fix" issue="1726" due-to="Juwan Jacobe">
+            Fixed logic in EGMFormatReader to allow tide-free EGM2008 harmonics.
+        </action>
         <action dev="serrof" type="add" issue="1722">
             Add getter for (Field)EnablingPredicate.
         </action>
