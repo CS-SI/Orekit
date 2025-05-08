@@ -19,6 +19,8 @@ package org.orekit.propagation.events;
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.FieldSpacecraftState;
 
+import java.util.Arrays;
+
 /** This interface represents an event enabling predicate function.
  * @param <T> type of the field elements
  * @author Luc Maisonobe
@@ -35,4 +37,27 @@ public interface FieldEnablingPredicate<T extends CalculusFieldElement<T>> {
      */
     boolean eventIsEnabled(FieldSpacecraftState<T> state, FieldEventDetector<T> detector, T g);
 
+    /**
+     * Method combining predicated based on the OR logic operator.
+     * @param enablingPredicates predicates
+     * @param <T> field type
+     * @return combined predicate
+     * @since 13.1
+     */
+    @SafeVarargs
+    static <T extends CalculusFieldElement<T>> FieldEnablingPredicate<T> orCombine(FieldEnablingPredicate<T>... enablingPredicates) {
+        return (state, detector, g) -> Arrays.stream(enablingPredicates).anyMatch(p -> p.eventIsEnabled(state, detector, g));
+    }
+
+    /**
+     * Method combining predicated based on the AND logic operator.
+     * @param enablingPredicates predicates
+     * @param <T> field type
+     * @return combined predicate
+     * @since 13.1
+     */
+    @SafeVarargs
+    static <T extends CalculusFieldElement<T>> FieldEnablingPredicate<T> andCombine(FieldEnablingPredicate<T>... enablingPredicates) {
+        return (state, detector, g) -> Arrays.stream(enablingPredicates).allMatch(p -> p.eventIsEnabled(state, detector, g));
+    }
 }

@@ -65,7 +65,7 @@ public class EventEnablingPredicateFilter implements DetectorModifier {
     private final EventDetector rawDetector;
 
     /** Enabling predicate function. */
-    private final EnablingPredicate enabler;
+    private final EnablingPredicate predicate;
 
     /** Transformers of the g function. */
     private final Transformer[] transformers;
@@ -108,7 +108,7 @@ public class EventEnablingPredicateFilter implements DetectorModifier {
         this.detectionSettings = detectionSettings;
         this.handler = new LocalHandler();
         this.rawDetector  = rawDetector;
-        this.enabler      = enabler;
+        this.predicate = enabler;
         this.transformers = new Transformer[HISTORY_SIZE];
         this.updates      = new AbsoluteDate[HISTORY_SIZE];
     }
@@ -119,7 +119,7 @@ public class EventEnablingPredicateFilter implements DetectorModifier {
      * @return a new detector
      */
     public EventEnablingPredicateFilter withDetectionSettings(final EventDetectionSettings settings) {
-        return new EventEnablingPredicateFilter(settings, rawDetector, enabler);
+        return new EventEnablingPredicateFilter(settings, rawDetector, predicate);
     }
 
     /**
@@ -127,6 +127,7 @@ public class EventEnablingPredicateFilter implements DetectorModifier {
      * @return the wrapped raw detector
      * @since 11.1
      */
+    @Override
     public EventDetector getDetector() {
         return rawDetector;
     }
@@ -141,6 +142,15 @@ public class EventEnablingPredicateFilter implements DetectorModifier {
     @Override
     public EventDetectionSettings getDetectionSettings() {
         return detectionSettings;
+    }
+
+    /**
+     * Getter for the enabling predicate.
+     * @return predicate
+     * @since 13.1
+     */
+    public EnablingPredicate getPredicate() {
+        return predicate;
     }
 
     /**  {@inheritDoc} */
@@ -172,7 +182,7 @@ public class EventEnablingPredicateFilter implements DetectorModifier {
     public double g(final SpacecraftState s) {
 
         final double  rawG      = rawDetector.g(s);
-        final boolean isEnabled = enabler.eventIsEnabled(s, rawDetector, rawG);
+        final boolean isEnabled = predicate.eventIsEnabled(s, rawDetector, rawG);
         if (Double.isNaN(extremeG)) {
             extremeG = rawG;
         }
