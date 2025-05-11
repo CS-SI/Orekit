@@ -59,6 +59,19 @@ class FieldEventEnablingPredicateFilterTest {
     private FieldOrbit<Binary64> orbit;
 
     @Test
+    void testGetPredicate() {
+        // GIVEN
+        final FieldDateDetector<Binary64> detector = new FieldDateDetector<>(FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance()));
+        final FieldEnablingPredicate<Binary64> expectedPredicate = (s, e, t) -> true;
+        final FieldEventEnablingPredicateFilter<Binary64> filter = new FieldEventEnablingPredicateFilter<>(detector,
+                expectedPredicate);
+        // WHEN
+        final FieldEnablingPredicate<Binary64> enablingPredicate = filter.getPredicate();
+        // THEN
+        Assertions.assertEquals(expectedPredicate, enablingPredicate);
+    }
+
+    @Test
     @SuppressWarnings("unchecked")
     void testWithDetectionSettings() {
         // GIVEN

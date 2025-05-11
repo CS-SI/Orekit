@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.1" date="TBD" description="TBD">
+        <action dev="serrof" type="add" issue="1722">
+            Add getter for (Field)EnablingPredicate.
+        </action>
         <action dev="serrof" type="update" issue="1720">
             Speed up non-Keplerian acceleration in (Field)Orbit.
         </action>
