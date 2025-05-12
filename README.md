@@ -292,8 +292,10 @@ out [building.md](src/site/markdown/building.md)
 
 ## Python wrapper
 
-If interested in the official python wrapper of Orekit, please check
-out https://gitlab.orekit.org/orekit-labs/python-wrapper/-/wikis/home
+If interested in Official Orekit Python wrappers, please check
+out:
+* [The JCC wrapper](https://gitlab.orekit.org/orekit-labs/python-wrapper/-/wikis/home)
+* [The JPype wrapper](https://gitlab.orekit.org/orekit/orekit_jpype/-/tree/master)
 
 ## Download
 
