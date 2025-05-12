@@ -1,7 +1,8 @@
 <h1 align="center">
   <img src="https://www.orekit.org/img/orekit-logo.png" alt="Orekit">
 
-<a href="https://www.orekit.org/doc-javadoc.html">Documentation</a> |
+<a href="https://www.orekit.org/doc-javadoc.html">API</a> |
+<a href="https://www.orekit.org/doc-maven.html">Documentation</a> |
 <a href="https://forum.orekit.org/">Forum</a>
 </h1>
 
