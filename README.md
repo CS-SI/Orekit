@@ -72,9 +72,9 @@ For **Maven**, add the following to your `pom.xml` inside the `<dependencies>` s
 ```xml
 <!-- https://mvnrepository.com/artifact/org.orekit/orekit -->
 <dependency>
-    <groupId>org.orekit</groupId>
-    <artifactId>orekit</artifactId>
-    <version>VERSION_NUMBER</version>
+  <groupId>org.orekit</groupId>
+  <artifactId>orekit</artifactId>
+  <version>VERSION_NUMBER</version>
 </dependency>
 ```
 
@@ -83,15 +83,17 @@ For **Maven**, add the following to your `pom.xml` inside the `<dependencies>` s
 
 ## 3. Download Orekit Data
 
-Orekit requires external data files (Earth orientation parameters, leap seconds, etc.). To get these data, you can either:
+Orekit requires external data files (Earth orientation parameters, leap seconds, etc.). To get these data, you can
+either:
 
-* Download the `Physical Data` on the [Official Orekit website](https://www.orekit.org/download.html) and extract the archive
+* Download the `Physical Data` on the [Official Orekit website](https://www.orekit.org/download.html) and extract the
+  archive
 * Clone the [Official Orekit data repository](https://gitlab.orekit.org/orekit/orekit-data)
 
 ## 4. Load Orekit data
 
-Orekit will most likely require you to load previously downloaded Orekit data. A simple way to do this is to use the
-following code snippet:
+Your Orekit-dependant application will most likely require you to load previously downloaded Orekit data. A simple way
+to do this is to use the following code snippet:
 
 ```java
       final File orekitData = new File("path/to/orekit/data/folder");
@@ -159,28 +161,37 @@ Propagator propagator = new KeplerianPropagator(orbit);
 ```
 
 ### 3. Propagate !
+
 You are now ready to propagate this orbit through time. To do so you can specify:
+
 * The initial and final propagation dates, the propagator will propagate in this time interval
-* The final propagation date only, the propagator will propagate between internal state date and this final propagation date
+* The final propagation date only, the propagator will propagate between internal state date and this final propagation
+  date
 
 We will propagate for one `Constants.JULIAN_DAY` starting from the initial orbit date:
+
 ```java
 AbsoluteDate targetDate = date.shiftedBy(Constants.JULIAN_DAY);
 SpacecraftState propagatedState = propagator.propagate(targetDate);
 ```
+
 > **Note:** The propagator outputs a `SpacecraftState` which holds the propagated `Orbit`
 
 <details>
 <summary>Output</summary>
 
 Displaying final state's orbit using:
+
 ```java
 System.out.println(propagatedState.getOrbit());
 ```
+
 should output:
+
 ```text
 Keplerian parameters: {a: 7000000.0; e: 0.001; i: 15.000000000000002; pa: 30.000000000000004; raan: 45.0; v: 5396.513788732658;}
 ```
+
 </details>
 
 <details>
@@ -245,6 +256,7 @@ public static void main(String[] args) {
 
 }
 ```
+
 </details>
 
 # Going further
@@ -266,12 +278,13 @@ The following documentation is available:
 
 The main communication channel is our [forum](https://forum.orekit.org/). You
 can report bugs and suggest new features in our
-[issues tracking system](https://gitlab.orekit.org/orekit/orekit/issues). 
+[issues tracking system](https://gitlab.orekit.org/orekit/orekit/issues).
 
 > **Note:** When
-reporting security issues check the "This issue is confidential" box.
+> reporting security issues check the "This issue is confidential" box.
 
 ## Build & Run locally
+
 Want to include your own modifications to Orekit rather than simply relying on it as a dependency ? Please check
 out [building.md](src/site/markdown/building.md)
 
