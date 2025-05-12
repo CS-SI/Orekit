@@ -88,7 +88,7 @@ Orekit requires external data files (Earth orientation parameters, leap seconds,
 * Download the `Physical Data` on the [Official Orekit website](https://www.orekit.org/download.html) and extract the archive
 * Clone the [Official Orekit data repository](https://gitlab.orekit.org/orekit/orekit-data)
 
-## 4. Load the Orekit data
+## 4. Load Orekit data
 
 Orekit will most likely require you to load previously downloaded Orekit data. A simple way to do this is to use the
 following code snippet:
