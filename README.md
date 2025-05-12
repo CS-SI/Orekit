@@ -271,7 +271,7 @@ the [Official Orekit tutorials repository](https://gitlab.orekit.org/orekit/orek
 The following documentation is available:
 
 * [Latest API documentation](https://www.orekit.org/site-orekit-development/apidocs/index.html)
-* [Maven site](https://www.orekit.org/site-orekit-development/) for the project overview, architecture and development,
+* [Latest Maven site](https://www.orekit.org/site-orekit-development/) for the project overview, architecture and development,
   detailed features list, Javadoc and a lot of other information
 
 ## Getting help
