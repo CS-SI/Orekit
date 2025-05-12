@@ -31,7 +31,7 @@ import org.orekit.propagation.integration.CombinedDerivatives;
  * @since 11.1
  */
 class IntegrableJacobianColumnGenerator
-    implements AdditionalDerivativesProvider, StateTransitionMatrixGenerator.PartialsObserver {
+    implements AdditionalDerivativesProvider, AbstractStateTransitionMatrixGenerator.PartialsObserver {
 
     /** Name of the state for State Transition Matrix. */
     private final String stmName;
@@ -50,11 +50,13 @@ class IntegrableJacobianColumnGenerator
      * </p>
      * @param stmGenerator generator for State Transition Matrix
      * @param columnName name of the parameter corresponding to the column
+     * @param isMassIncluded flag to consider mass as a state variable
      */
-    IntegrableJacobianColumnGenerator(final StateTransitionMatrixGenerator stmGenerator, final String columnName) {
+    IntegrableJacobianColumnGenerator(final AbstractStateTransitionMatrixGenerator stmGenerator,
+                                      final String columnName, final boolean isMassIncluded) {
         this.stmName    = stmGenerator.getName();
         this.columnName = columnName;
-        this.pDot       = new double[getDimension()];
+        this.pDot       = new double[isMassIncluded ? 7 : 6];
         stmGenerator.addObserver(columnName, this);
     }
 
@@ -68,7 +70,7 @@ class IntegrableJacobianColumnGenerator
      * @return dimension of the generated column
      */
     public int getDimension() {
-        return 6;
+        return pDot.length;
     }
 
     /** {@inheritDoc}
@@ -84,15 +86,19 @@ class IntegrableJacobianColumnGenerator
 
     /** {@inheritDoc} */
     @Override
-    public void partialsComputed(final SpacecraftState state, final double[] factor, final double[] accelerationPartials) {
+    public void partialsComputed(final SpacecraftState state, final double[] factor, final double[] partials) {
         // retrieve current Jacobian column
         final double[] p = state.getAdditionalState(getName());
 
         // compute time derivative of the Jacobian column
-        StateTransitionMatrixGenerator.multiplyMatrix(factor, p, pDot, 1);
-        pDot[3] += accelerationPartials[0];
-        pDot[4] += accelerationPartials[1];
-        pDot[5] += accelerationPartials[2];
+        if (getDimension() == 7) {
+            ExtendedStateTransitionMatrixGenerator.staticMultiplyMatrix(factor, p, pDot, 1);
+        } else {
+            StateTransitionMatrixGenerator.staticMultiplyMatrix(factor, p, pDot, 1);
+        }
+        for (int i = 0; i < partials.length; i++) {
+            pDot[i + 3] += partials[i];
+        }
     }
 
     /** {@inheritDoc} */

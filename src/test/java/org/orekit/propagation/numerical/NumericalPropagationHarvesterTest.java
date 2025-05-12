@@ -48,7 +48,7 @@ import java.util.List;
 public class NumericalPropagationHarvesterTest {
 
     @Test
-    public void testNullStmName() {
+    void testNullStmName() {
          try {
             propagator.setupMatricesComputation(null, null, null);
             Assertions.fail("an exception should have been thrown");
@@ -59,7 +59,7 @@ public class NumericalPropagationHarvesterTest {
     }
 
     @Test
-    public void testUnknownStmName() {
+    void testUnknownStmName() {
         NumericalPropagationHarvester harvester =
                         (NumericalPropagationHarvester) propagator.setupMatricesComputation("stm",
                                                                                             MatrixUtils.createRealIdentityMatrix(6),
@@ -68,7 +68,7 @@ public class NumericalPropagationHarvesterTest {
     }
 
     @Test
-    public void testUnknownColumnName() {
+    void testUnknownColumnName() {
         NumericalPropagationHarvester harvester =
                         (NumericalPropagationHarvester) propagator.setupMatricesComputation("stm",
                                                                                             MatrixUtils.createRealIdentityMatrix(6),
@@ -77,7 +77,7 @@ public class NumericalPropagationHarvesterTest {
     }
 
     @Test
-    public void testDefaultNonNullInitialJacobian() {
+    void testDefaultNonNullInitialJacobian() {
         NumericalPropagationHarvester harvester =
                         (NumericalPropagationHarvester) propagator.setupMatricesComputation("stm",
                                                                                             MatrixUtils.createRealIdentityMatrix(6),
@@ -86,17 +86,17 @@ public class NumericalPropagationHarvesterTest {
     }
 
     @Test
-    public void testInitialStmCartesian() {
+    void testInitialStmCartesian() {
         doTestInitialStm(OrbitType.CARTESIAN, 0.0);
     }
 
     @Test
-    public void testInitialStmKeplerian() {
+    void testInitialStmKeplerian() {
         doTestInitialStm(OrbitType.KEPLERIAN, 2160.746);
     }
 
     @Test
-    public void testInitialStmAbsPV() {
+    void testInitialStmAbsPV() {
         SpacecraftState state = propagator.getInitialState();
         SpacecraftState absPV =
                         new SpacecraftState(new AbsolutePVCoordinates(state.getFrame(),
@@ -106,7 +106,7 @@ public class NumericalPropagationHarvesterTest {
     }
 
     @Test
-    public void testColumnsNames() {
+    void testColumnsNames() {
 
         NumericalPropagationHarvester harvester =
                         (NumericalPropagationHarvester) propagator.setupMatricesComputation("stm",
@@ -130,17 +130,18 @@ public class NumericalPropagationHarvesterTest {
 
     private void doTestInitialStm(OrbitType type, double deltaId) {
         PositionAngleType angle = PositionAngleType.TRUE;
+        final RealMatrix identity7 = MatrixUtils.createRealIdentityMatrix(7);
         NumericalPropagationHarvester harvester =
-                        (NumericalPropagationHarvester) propagator.setupMatricesComputation("stm", null, null);
+                        (NumericalPropagationHarvester) propagator.setupMatricesComputation("stm", identity7, null);
         propagator.setOrbitType(type);
         propagator.setPositionAngleType(angle);
-        double[] p = new double[36];
-        for (int i = 0; i < p.length; i += 7) {
+        double[] p = new double[49];
+        for (int i = 0; i < p.length; i += 8) {
             p[i] = 1.0;
         }
         SpacecraftState s = propagator.getInitialState().addAdditionalData(harvester.getStmName(), p);
         RealMatrix stm = harvester.getStateTransitionMatrix(s);
-        Assertions.assertEquals(deltaId, stm.subtract(MatrixUtils.createRealIdentityMatrix(6)).getNorm1(), 1.0e-3);
+        Assertions.assertEquals(deltaId, stm.subtract(identity7).getNorm1(), 1.0e-3);
         Assertions.assertEquals(type, harvester.getOrbitType());
         Assertions.assertEquals(angle, harvester.getPositionAngleType());
     }
