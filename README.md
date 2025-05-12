@@ -25,11 +25,8 @@ handle them (conversions, propagations, pointing, events detection, orbit determ
 - **Accurate Orbit Propagation:**  
   Supports analytical, semianalytical, numerical, and TLE-based propagation.
 
-  Geocentric & interplanetary.
-
 - **Flexible Orbit and Attitude Models:**  
   Easily switch between Cartesian, Keplerian, circular, and equinoctial orbit representations.
-
   Includes standard and customizable attitude laws (e.g., nadir, target pointing...).
 
 - **Event Detection:**  
@@ -40,7 +37,6 @@ handle them (conversions, propagations, pointing, events detection, orbit determ
 
 - **Robust Time and Reference Frames:**  
   High-precision time handling with multiple time scales and leap second support.
-
   Reference frames for Earth-centered and inertial calculations.
 
 - **Orbit Determination:**  
@@ -81,14 +77,8 @@ For **Maven**, add the following to your `pom.xml` inside the `<dependencies>` s
 </dependency>
 ```
 
-For **Gradle**, add this to your `build.gradle`:
-
-```text
-implementation 'org.orekit:orekit:VERSION_NUMBER'
-```
-
 > **Note:** You can find the available versions
-> on [maven repository](https://mvnrepository.com/artifact/org.orekit/orekit)
+> on [the maven repository](https://mvnrepository.com/artifact/org.orekit/orekit)
 
 ## 3. Download Orekit Data
 
