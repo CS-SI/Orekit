@@ -61,8 +61,12 @@ handle them (conversions, propagations, pointing, events detection, orbit determ
 
 ## 1. Requirements
 
-- Java Development Kit (JDK) installed (8 or higher)
-- Maven (recommended) or Gradle for dependency management
+Before you begin, make sure you have the following installed:
+
+| Requirement                                | Suggested link                        |
+|--------------------------------------------|---------------------------------------|
+| **Java Development Kit (JDK)** 8 or higher | https://openjdk.org/install/          |
+| **Apache Maven** (build automation)        | https://maven.apache.org/download.cgi |
 
 ## 2. Add Orekit as a Dependency
 
