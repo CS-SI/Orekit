@@ -237,7 +237,7 @@ public class OpmParserTest {
                             file.getManeuvers().get(1).getEpochIgnition());
         Assertions.assertEquals(0.0, file.getManeuver(1).getDuration(), 1e-10);
         Assertions.assertEquals(-1.469, file.getManeuver(1).getDeltaMass(), 1e-10);
-        Assertions.assertEquals(LOFType.QSW, file.getManeuver(1).getReferenceFrame().asOrbitRelativeFrame().getLofType());
+        Assertions.assertEquals(LOFType.QSW_INERTIAL, file.getManeuver(1).getReferenceFrame().asOrbitRelativeFrame().getLofType());
         Assertions.assertNull(file.getManeuver(1).getReferenceFrame().asFrame());
         Assertions.assertNull(file.getManeuver(1).getReferenceFrame().asCelestialBodyFrame());
         Assertions.assertEquals(0.0,
@@ -350,7 +350,7 @@ public class OpmParserTest {
                             file.getManeuvers().get(1).getEpochIgnition());
         Assertions.assertEquals(0.0, file.getManeuver(1).getDuration(), 1e-10);
         Assertions.assertEquals(-1.469, file.getManeuver(1).getDeltaMass(), 1e-10);
-        Assertions.assertEquals(LOFType.QSW, file.getManeuver(1).getReferenceFrame().asOrbitRelativeFrame().getLofType());
+        Assertions.assertEquals(LOFType.QSW_INERTIAL, file.getManeuver(1).getReferenceFrame().asOrbitRelativeFrame().getLofType());
         Assertions.assertNull(file.getManeuver(1).getReferenceFrame().asFrame());
         Assertions.assertNull(file.getManeuver(1).getReferenceFrame().asCelestialBodyFrame());
         Assertions.assertEquals(0.0,
@@ -362,7 +362,7 @@ public class OpmParserTest {
                             file.getManeuvers().get(2).getEpochIgnition());
         Assertions.assertEquals(0.0, file.getManeuver(2).getDuration(), 1e-10);
         Assertions.assertEquals(-1.469, file.getManeuver(2).getDeltaMass(), 1e-10);
-        Assertions.assertEquals(LOFType.QSW, file.getManeuver(2).getReferenceFrame().asOrbitRelativeFrame().getLofType());
+        Assertions.assertEquals(LOFType.QSW_INERTIAL, file.getManeuver(2).getReferenceFrame().asOrbitRelativeFrame().getLofType());
         Assertions.assertNull(file.getManeuver(2).getReferenceFrame().asFrame());
         Assertions.assertNull(file.getManeuver(2).getReferenceFrame().asCelestialBodyFrame());
         Assertions.assertEquals(0.0,

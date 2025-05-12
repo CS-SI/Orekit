@@ -18,6 +18,8 @@ package org.orekit.propagation.events;
 
 import org.orekit.propagation.SpacecraftState;
 
+import java.util.Arrays;
+
 /** This interface represents an event enabling predicate function.
  * @author Luc Maisonobe
  * @since 7.1
@@ -33,4 +35,23 @@ public interface EnablingPredicate {
      */
     boolean eventIsEnabled(SpacecraftState state, EventDetector detector, double g);
 
+    /**
+     * Method combining predicated based on the OR logic operator.
+     * @param enablingPredicates predicates
+     * @return combined predicate
+     * @since 13.1
+     */
+    static EnablingPredicate orCombine(EnablingPredicate... enablingPredicates) {
+        return (state, detector, g) -> Arrays.stream(enablingPredicates).anyMatch(p -> p.eventIsEnabled(state, detector, g));
+    }
+
+    /**
+     * Method combining predicated based on the AND logic operator.
+     * @param enablingPredicates predicates
+     * @return combined predicate
+     * @since 13.1
+     */
+    static EnablingPredicate andCombine(EnablingPredicate... enablingPredicates) {
+        return (state, detector, g) -> Arrays.stream(enablingPredicates).allMatch(p -> p.eventIsEnabled(state, detector, g));
+    }
 }

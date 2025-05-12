@@ -810,38 +810,6 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
 
     }
 
-    /** Compute non-Keplerian part of the acceleration from first time derivatives.
-     * @return non-Keplerian part of the acceleration
-     */
-    private FieldVector3D<T> nonKeplerianAcceleration() {
-
-        final T[][] dCdP = MathArrays.buildArray(a.getField(), 6, 6);
-        getJacobianWrtParameters(PositionAngleType.MEAN, dCdP);
-
-        final T nonKeplerianMeanMotion = getLMDot().subtract(getKeplerianMeanMotion());
-        final T nonKeplerianAx =     dCdP[3][0].multiply(aDot).
-                                 add(dCdP[3][1].multiply(exDot)).
-                                 add(dCdP[3][2].multiply(eyDot)).
-                                 add(dCdP[3][3].multiply(hxDot)).
-                                 add(dCdP[3][4].multiply(hyDot)).
-                                 add(dCdP[3][5].multiply(nonKeplerianMeanMotion));
-        final T nonKeplerianAy =     dCdP[4][0].multiply(aDot).
-                                 add(dCdP[4][1].multiply(exDot)).
-                                 add(dCdP[4][2].multiply(eyDot)).
-                                 add(dCdP[4][3].multiply(hxDot)).
-                                 add(dCdP[4][4].multiply(hyDot)).
-                                 add(dCdP[4][5].multiply(nonKeplerianMeanMotion));
-        final T nonKeplerianAz =     dCdP[5][0].multiply(aDot).
-                                 add(dCdP[5][1].multiply(exDot)).
-                                 add(dCdP[5][2].multiply(eyDot)).
-                                 add(dCdP[5][3].multiply(hxDot)).
-                                 add(dCdP[5][4].multiply(hyDot)).
-                                 add(dCdP[5][5].multiply(nonKeplerianMeanMotion));
-
-        return new FieldVector3D<>(nonKeplerianAx, nonKeplerianAy, nonKeplerianAz);
-
-    }
-
     /** {@inheritDoc} */
     @Override
     protected FieldVector3D<T> initPosition() {

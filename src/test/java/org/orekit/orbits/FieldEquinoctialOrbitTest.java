@@ -98,6 +98,24 @@ class FieldEquinoctialOrbitTest {
     }
 
     @Test
+    void testNonKeplerianAcceleration() {
+        // GIVEN
+        final PVCoordinates pvCoordinates = new PVCoordinates(new Vector3D(1, 2, 3),
+                Vector3D.MINUS_K.scalarMultiply(0.1), Vector3D.MINUS_I);
+        final CartesianOrbit cartesianOrbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(),
+                AbsoluteDate.ARBITRARY_EPOCH, 1.);
+        final EquinoctialOrbit equinoctialOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(cartesianOrbit);
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldCartesianOrbit<Binary64> fieldCartesianOrbit = new FieldCartesianOrbit<>(field, cartesianOrbit);
+        final FieldEquinoctialOrbit<Binary64> fieldEquinoctialOrbit = new FieldEquinoctialOrbit<>(field, equinoctialOrbit);
+        // WHEN
+        final FieldVector3D<Binary64> nonKeplerianAcceleration = fieldEquinoctialOrbit.nonKeplerianAcceleration();
+        // THEN
+        final FieldVector3D<Binary64> difference = nonKeplerianAcceleration.subtract(fieldCartesianOrbit.nonKeplerianAcceleration());
+        Assertions.assertEquals(0., difference.getNorm().getReal(), 1e-10);
+    }
+
+    @Test
     void testInFrameNonKeplerian() {
         testTemplateInFrame(Vector3D.MINUS_J, PositionAngleType.TRUE);
     }

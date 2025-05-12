@@ -139,6 +139,13 @@ public class CartesianOrbit extends Orbit {
         return OrbitType.CARTESIAN;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    protected Vector3D nonKeplerianAcceleration() {
+        final double norm = getPosition().getNorm();
+        return getPVCoordinates().getAcceleration().add(new Vector3D(getMu() / (norm * norm * norm), getPosition()));
+    }
+
     /** Lazy evaluation of equinoctial parameters. */
     private void initEquinoctial() {
         if (equinoctial == null) {

@@ -21,6 +21,12 @@
   </properties>
   <body>
     <release version="13.1" date="TBD" description="TBD">
+        <action dev="serrof" type="add" issue="1722">
+            Add getter for (Field)EnablingPredicate.
+        </action>
+        <action dev="serrof" type="update" issue="1720">
+            Speed up non-Keplerian acceleration in (Field)Orbit.
+        </action>
         <action dev="serrof" type="add" issue="1717">
             Add STM to Gradient state conversion.
         </action>
@@ -41,6 +47,9 @@
         </action>
         <action dev="serrof" type="add" issue="1683">
             Add (Field)ExtremumAngularSeparationDetector.
+        </action>
+        <action dev="vincent" type="fix" issue="1099">
+            Fixed OrbitRelativeFrame definition of ambiguous local orbital frames (CCSDS).
         </action>
     </release>
     <release version="13.0.2" date="2025-04-30" description="Orekit 13.0.2 is a patch release.

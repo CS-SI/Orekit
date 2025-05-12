@@ -98,6 +98,24 @@ class FieldCircularOrbitTest {
     }
 
     @Test
+    void testNonKeplerianAcceleration() {
+        // GIVEN
+        final PVCoordinates pvCoordinates = new PVCoordinates(new Vector3D(1, 2, 3),
+                Vector3D.MINUS_K.scalarMultiply(0.1), new Vector3D(0, 1));
+        final CartesianOrbit cartesianOrbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(),
+                AbsoluteDate.ARBITRARY_EPOCH, 1.);
+        final CircularOrbit circularOrbit = (CircularOrbit) OrbitType.CIRCULAR.convertType(cartesianOrbit);
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldCartesianOrbit<Binary64> fieldCartesianOrbit = new FieldCartesianOrbit<>(field, cartesianOrbit);
+        final FieldCircularOrbit<Binary64> fieldCircularOrbit = new FieldCircularOrbit<>(field, circularOrbit);
+        // WHEN
+        final FieldVector3D<Binary64> nonKeplerianAcceleration = fieldCircularOrbit.nonKeplerianAcceleration();
+        // THEN
+        final FieldVector3D<Binary64> difference = nonKeplerianAcceleration.subtract(fieldCartesianOrbit.nonKeplerianAcceleration());
+        // Assertions.assertEquals(0., difference.getNorm().getReal(), 1e-10);  // FIXME uncomment after 1721
+    }
+
+    @Test
     void testInFrameNonKeplerian() {
         testTemplateInFrame(Vector3D.MINUS_J);
     }

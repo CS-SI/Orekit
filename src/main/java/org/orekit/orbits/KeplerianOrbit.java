@@ -116,7 +116,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
     private final PositionAngleType cachedPositionAngleType;
 
     /** Partial Cartesian coordinates (position and velocity are valid, acceleration may be missing). */
-    private transient PVCoordinates partialPV;
+    private PVCoordinates partialPV;
 
     /** Creates a new instance.
      * @param a  semi-major axis (m), negative for hyperbolic orbits
@@ -970,26 +970,6 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
             partialPV = new PVCoordinates(position, velocity);
 
         }
-
-    }
-
-    /** Compute non-Keplerian part of the acceleration from first time derivatives.
-     * @return non-Keplerian part of the acceleration
-     */
-    private Vector3D nonKeplerianAcceleration() {
-
-        final double[][] dCdP = new double[6][6];
-        getJacobianWrtParameters(PositionAngleType.MEAN, dCdP);
-
-        final double nonKeplerianMeanMotion = getMeanAnomalyDot() - getKeplerianMeanMotion();
-        final double nonKeplerianAx = dCdP[3][0] * aDot    + dCdP[3][1] * eDot    + dCdP[3][2] * iDot    +
-                dCdP[3][3] * paDot   + dCdP[3][4] * raanDot + dCdP[3][5] * nonKeplerianMeanMotion;
-        final double nonKeplerianAy = dCdP[4][0] * aDot    + dCdP[4][1] * eDot    + dCdP[4][2] * iDot    +
-                dCdP[4][3] * paDot   + dCdP[4][4] * raanDot + dCdP[4][5] * nonKeplerianMeanMotion;
-        final double nonKeplerianAz = dCdP[5][0] * aDot    + dCdP[5][1] * eDot    + dCdP[5][2] * iDot    +
-                dCdP[5][3] * paDot   + dCdP[5][4] * raanDot + dCdP[5][5] * nonKeplerianMeanMotion;
-
-        return new Vector3D(nonKeplerianAx, nonKeplerianAy, nonKeplerianAz);
 
     }
 

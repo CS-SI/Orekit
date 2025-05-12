@@ -82,7 +82,7 @@ public class LocalOrbitalFrameTest {
                    Vector3D.crossProduct(pv.getMomentum(), pv.getVelocity()),
                    pv.getMomentum(),
                    pv.getMomentum().negate());
-        Assertions.assertEquals(OrbitRelativeFrame.TNW, LOFType.TNW.toOrbitRelativeFrame());
+        Assertions.assertEquals(OrbitRelativeFrame.TNW_ROTATING, LOFType.TNW.toOrbitRelativeFrame());
     }
 
     @Test
@@ -94,7 +94,7 @@ public class LocalOrbitalFrameTest {
                    Vector3D.crossProduct(pv.getMomentum(), pv.getPosition()),
                    pv.getMomentum(),
                    pv.getMomentum().negate());
-        Assertions.assertEquals(OrbitRelativeFrame.QSW, LOFType.QSW.toOrbitRelativeFrame());
+        Assertions.assertEquals(OrbitRelativeFrame.RSW_ROTATING, LOFType.QSW.toOrbitRelativeFrame());
     }
 
     @Test
@@ -123,7 +123,7 @@ public class LocalOrbitalFrameTest {
                    pv.getMomentum().negate(),
                    pv.getPosition().negate(),
                    pv.getMomentum().negate());
-        Assertions.assertEquals(OrbitRelativeFrame.LVLH, LOFType.LVLH_CCSDS.toOrbitRelativeFrame());
+        Assertions.assertEquals(OrbitRelativeFrame.LVLH_ROTATING, LOFType.LVLH_CCSDS.toOrbitRelativeFrame());
     }
 
     @Test
@@ -135,7 +135,7 @@ public class LocalOrbitalFrameTest {
                    pv.getMomentum().negate(),
                    pv.getPosition().negate(),
                    pv.getMomentum().negate());
-        Assertions.assertEquals(OrbitRelativeFrame.LVLH, LOFType.VVLH.toOrbitRelativeFrame());
+        Assertions.assertEquals(OrbitRelativeFrame.LVLH_ROTATING, LOFType.VVLH.toOrbitRelativeFrame());
     }
 
     @Test

@@ -111,11 +111,8 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
     /** True latitude argument derivative (rad/s). */
     private final double cachedAlphaDot;
 
-    /** Indicator for {@link PVCoordinates} serialization. */
-    private final boolean serializePV;
-
     /** Partial Cartesian coordinates (position and velocity are valid, acceleration may be missing). */
-    private transient PVCoordinates partialPV;
+    private PVCoordinates partialPV;
 
     /** Creates a new instance.
      * @param a  semi-major axis (m)
@@ -218,7 +215,6 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
         this.cachedAlpha = alphaUD.getValue();
         this.cachedAlphaDot = alphaUD.getFirstDerivative();
 
-        serializePV = false;
         partialPV   = null;
 
     }
@@ -297,7 +293,6 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
         this.cachedAlpha = alpha;
         this.cachedAlphaDot = alphaDot;
         this.cachedPositionAngleType = positionAngleType;
-        this.serializePV = true;
         this.partialPV   = null;
     }
 
@@ -408,8 +403,6 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
             cachedAlphaDot = computeKeplerianAlphaDot(cachedPositionAngleType, a, ex, ey, mu, cachedAlpha, cachedPositionAngleType);
         }
 
-        serializePV = true;
-
     }
 
     /** Constructor from Cartesian parameters.
@@ -479,7 +472,6 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
             cachedAlphaDot = computeKeplerianAlphaDot(cachedPositionAngleType, a, ex, ey, getMu(), cachedAlpha, cachedPositionAngleType);
         }
 
-        serializePV = false;
         partialPV   = null;
 
     }
@@ -990,26 +982,6 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
             }
 
         }
-
-    }
-
-    /** Compute non-Keplerian part of the acceleration from first time derivatives.
-     * @return non-Keplerian part of the acceleration
-     */
-    private Vector3D nonKeplerianAcceleration() {
-
-        final double[][] dCdP = new double[6][6];
-        getJacobianWrtParameters(PositionAngleType.MEAN, dCdP);
-
-        final double nonKeplerianMeanMotion = getAlphaMDot() - getKeplerianMeanMotion();
-        final double nonKeplerianAx = dCdP[3][0] * aDot    + dCdP[3][1] * exDot   + dCdP[3][2] * eyDot   +
-                                      dCdP[3][3] * iDot    + dCdP[3][4] * raanDot + dCdP[3][5] * nonKeplerianMeanMotion;
-        final double nonKeplerianAy = dCdP[4][0] * aDot    + dCdP[4][1] * exDot   + dCdP[4][2] * eyDot   +
-                                      dCdP[4][3] * iDot    + dCdP[4][4] * raanDot + dCdP[4][5] * nonKeplerianMeanMotion;
-        final double nonKeplerianAz = dCdP[5][0] * aDot    + dCdP[5][1] * exDot   + dCdP[5][2] * eyDot   +
-                                      dCdP[5][3] * iDot    + dCdP[5][4] * raanDot + dCdP[5][5] * nonKeplerianMeanMotion;
-
-        return new Vector3D(nonKeplerianAx, nonKeplerianAy, nonKeplerianAz);
 
     }
 

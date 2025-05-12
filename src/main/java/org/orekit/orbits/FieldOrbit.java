@@ -25,6 +25,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.linear.FieldDecompositionSolver;
 import org.hipparchus.linear.FieldLUDecomposition;
 import org.hipparchus.linear.FieldMatrix;
+import org.hipparchus.linear.FieldVector;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -185,6 +186,29 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
             this.pvCoordinates = fieldPVCoordinates;
         }
         this.frame = frame;
+    }
+
+    /** Compute non-Keplerian part of the acceleration from first time derivatives.
+     * @return non-Keplerian part of the acceleration
+     * @since 13.1
+     */
+    protected FieldVector3D<T> nonKeplerianAcceleration() {
+
+        final T[][] dPdC = MathArrays.buildArray(getField(), 6, 6);
+        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
+        getJacobianWrtCartesian(positionAngleType, dPdC);
+        final FieldMatrix<T> subMatrix = MatrixUtils.createFieldMatrix(dPdC);
+
+        final FieldDecompositionSolver<T> solver = getDecompositionSolver(subMatrix);
+
+        final T[] derivatives = dPdC[0].clone();
+        getType().mapOrbitToArray(this, positionAngleType, derivatives.clone(), derivatives);
+        derivatives[5] = derivatives[5].subtract(getKeplerianMeanMotion());
+
+        final FieldVector<T> solution = solver.solve(MatrixUtils.createFieldVector(derivatives));
+        // solution is vector-acceleration vector
+        return new FieldVector3D<>(solution.getEntry(3), solution.getEntry(4), solution.getEntry(5));
+
     }
 
     /** Check if Cartesian coordinates include non-Keplerian acceleration.
@@ -696,9 +720,19 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
 
         // invert the direct Jacobian
         final FieldMatrix<T> matrix = MatrixUtils.createFieldMatrix(directJacobian);
-        final FieldDecompositionSolver<T> solver = new FieldLUDecomposition<>(matrix).getSolver();
+        final FieldDecompositionSolver<T> solver = getDecompositionSolver(matrix);
         return solver.getInverse().getData();
 
+    }
+
+    /**
+     * Method to build a matrix decomposition solver.
+     * @param matrix matrix
+     * @return solver
+     * @since 13.1
+     */
+    protected FieldDecompositionSolver<T> getDecompositionSolver(final FieldMatrix<T> matrix) {
+        return new FieldLUDecomposition<>(matrix).getSolver();
     }
 
     /** Compute the Jacobian of the orbital parameters with mean angle with respect to the Cartesian parameters.

@@ -67,7 +67,7 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
     private final FieldEventDetector<T> rawDetector;
 
     /** Enabling predicate function. */
-    private final FieldEnablingPredicate<T> enabler;
+    private final FieldEnablingPredicate<T> predicate;
 
     /** Transformers of the g function. */
     private final Transformer[] transformers;
@@ -112,7 +112,7 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
         this.detectionSettings = detectionSettings;
         this.handler = new LocalHandler<>();
         this.rawDetector  = rawDetector;
-        this.enabler      = enabler;
+        this.predicate = enabler;
         this.transformers = new Transformer[HISTORY_SIZE];
         this.updates      = (FieldAbsoluteDate<T>[]) Array.newInstance(FieldAbsoluteDate.class, HISTORY_SIZE);
     }
@@ -123,7 +123,7 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
      * @return a new detector
      */
     public FieldEventEnablingPredicateFilter<T> withDetectionSettings(final FieldEventDetectionSettings<T> settings) {
-        return new FieldEventEnablingPredicateFilter<>(settings, rawDetector, enabler);
+        return new FieldEventEnablingPredicateFilter<>(settings, rawDetector, predicate);
     }
 
     /**
@@ -144,6 +144,15 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
     @Override
     public FieldEventDetectionSettings<T> getDetectionSettings() {
         return detectionSettings;
+    }
+
+    /**
+     * Getter for the enabling predicate.
+     * @return predicate
+     * @since 13.1
+     */
+    public FieldEnablingPredicate<T> getPredicate() {
+        return predicate;
     }
 
     /**  {@inheritDoc} */
@@ -177,7 +186,7 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
     public T g(final FieldSpacecraftState<T> s) {
 
         final T       rawG      = rawDetector.g(s);
-        final boolean isEnabled = enabler.eventIsEnabled(s, rawDetector, rawG);
+        final boolean isEnabled = predicate.eventIsEnabled(s, rawDetector, rawG);
         if (extremeG.isNaN()) {
             extremeG = rawG;
         }
