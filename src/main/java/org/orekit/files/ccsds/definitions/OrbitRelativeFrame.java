@@ -34,7 +34,7 @@ public enum OrbitRelativeFrame {
     LVLH_INERTIAL(LOFType.LVLH_CCSDS_INERTIAL, true),
 
     /** Local vertical, Local Horizontal (Z towards nadir, Y opposite to momentum). */
-    LVLH(LOFType.LVLH_CCSDS, false),
+    LVLH(LOFType.LVLH_CCSDS_INERTIAL, true),
 
     /** Nadir, Sun, Normal (X towards nadir, Y as close to Sun as possible). */
     NSW_ROTATING(null, false),
@@ -58,16 +58,16 @@ public enum OrbitRelativeFrame {
     RSW_INERTIAL(LOFType.QSW_INERTIAL, true),
 
     /** Another name for Radial, Transverse (along-track) and Normal. */
-    RSW(LOFType.QSW, false),
+    RSW(LOFType.QSW_INERTIAL, true),
 
     /** Another name for Radial, Transverse (along-track) and Normal (X towards zenith, Z towards momentum). */
-    RIC(LOFType.QSW, false),
+    RIC(LOFType.QSW_INERTIAL, true),
 
     /** Radial, Transverse (along-track) and Normal (X towards zenith, Z towards momentum). */
-    RTN(LOFType.QSW, false),
+    RTN(LOFType.QSW_INERTIAL, true),
 
     /** Another name for Radial, Transverse (along-track) and Normal (X towards zenith, Z towards momentum). */
-    QSW(LOFType.QSW, false),
+    QSW(LOFType.QSW_INERTIAL, true),
 
     /** Tangential, Normal, Cross-track coordinate system (X towards velocity, Z towards momentum). */
     TNW_ROTATING(LOFType.TNW, false),
@@ -77,7 +77,7 @@ public enum OrbitRelativeFrame {
 
     /** TNW : x-axis along the velocity vector, W along the orbital angular momentum vector and
     N completes the right-handed system. */
-    TNW(LOFType.TNW, false),
+    TNW(LOFType.TNW_INERTIAL, true),
 
     /** South, East, Zenith coordinate system. */
     SEZ_ROTATING(null, false),

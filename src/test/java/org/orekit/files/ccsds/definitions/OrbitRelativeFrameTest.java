@@ -76,8 +76,11 @@ class OrbitRelativeFrameTest {
 
         // Then
         Assertions.assertEquals(eqwInertialLOF.isQuasiInertial(), eqwInertialLOF.isQuasiInertial());
-        Assertions.assertEquals(lvlhRotating.isQuasiInertial(), lvlhRotatingLOF.isQuasiInertial());
         Assertions.assertEquals(lvlhInertial.isQuasiInertial(), lvlhInertialLOF.isQuasiInertial());
+        Assertions.assertEquals(lvlhInertial.isQuasiInertial(), LOFType.VVLH_INERTIAL.isQuasiInertial());
+        Assertions.assertEquals(lvlhRotating.isQuasiInertial(), lvlhRotatingLOF.isQuasiInertial());
+        Assertions.assertEquals(lvlhRotating.isQuasiInertial(), LOFType.VVLH.isQuasiInertial());
+        Assertions.assertEquals(lvlhRotating, LOFType.VVLH.toOrbitRelativeFrame());
         Assertions.assertEquals(lvlh.isQuasiInertial(), lvlhLOF.isQuasiInertial());
         Assertions.assertNull(nswRotatingLOF);
         Assertions.assertNull(nswInertialLOF);
@@ -107,25 +110,40 @@ class OrbitRelativeFrameTest {
 
             // Bypass cases where there is no Orekit equivalent
             if (orekitEquivalentLOF != null) {
-                // Assert that we come back to the initial CCSDS frame
+                // Convert back to CCSDS frame
                 final OrbitRelativeFrame ccsdsFrameFromOrekitLOF = orekitEquivalentLOF.toOrbitRelativeFrame();
 
-                // Filter out special cases for RTN local orbital frame
-                if (!isRTNNotInertialEquivalent(ccsdsFrame.name(), ccsdsFrameFromOrekitLOF.name())) {
-                    // Cases where we start from a "_ROTATING" enum and go back to the equivalent version without "_ROTATION" are
-                    // necessary equivalent
-                    if (!(ccsdsFrameFromOrekitLOF.name() + "_ROTATING").equals(ccsdsFrame.name())) {
-                        Assertions.assertEquals(ccsdsFrame, ccsdsFrameFromOrekitLOF);
-                    }
-                }
-
+                // Assert that we come back to the initial CCSDS frame
+                assertSameOrbitRelativeFrame(ccsdsFrame, ccsdsFrameFromOrekitLOF);
             }
         }
     }
 
-    private boolean isRTNNotInertialEquivalent(final String ccsdsFrameName, final String ccsdsFrameFromOrekitLOFName) {
-        return !ccsdsFrameFromOrekitLOFName.contains("_INERTIAL") && ccsdsFrameFromOrekitLOFName.contains("QSW")
-                && (ccsdsFrameName.contains("RSW") || ccsdsFrameName.contains("RTN") || ccsdsFrameName.contains("RIC"));
+    /**
+     * Method used to check that initial CCSDS orbital frame is equivalent to converted CCSDS orbital frame converted from
+     * {@link LOFType}.
+     *
+     * @param initialCCSDSFrame initial CCSDS orbital frame
+     * @param ccsdsFrameFromOrekitLOF CCSDS orbital frame converted from {@link LOFType}
+     */
+    private void assertSameOrbitRelativeFrame(final OrbitRelativeFrame initialCCSDSFrame,
+                                              final OrbitRelativeFrame ccsdsFrameFromOrekitLOF) {
+        switch (initialCCSDSFrame) {
+            case RSW:
+            case QSW:
+            case RTN:
+            case RIC:
+                Assertions.assertEquals(OrbitRelativeFrame.RSW_INERTIAL, ccsdsFrameFromOrekitLOF);
+                break;
+            case LVLH:
+                Assertions.assertEquals(OrbitRelativeFrame.LVLH_INERTIAL, ccsdsFrameFromOrekitLOF);
+                break;
+            case TNW:
+                Assertions.assertEquals(OrbitRelativeFrame.TNW_INERTIAL, ccsdsFrameFromOrekitLOF);
+                break;
+            default:
+                Assertions.assertEquals(initialCCSDSFrame, ccsdsFrameFromOrekitLOF);
+        }
     }
 
     @Test

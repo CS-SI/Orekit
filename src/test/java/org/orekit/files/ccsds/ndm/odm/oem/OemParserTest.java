@@ -161,7 +161,7 @@ public class OemParserTest {
         }
         Assertions.assertEquals(new AbsoluteDate("1996-12-28T21:29:07.267", TimeScalesFactory.getUTC()),
                             file.getSegments().get(2).getCovarianceMatrices().get(0).getEpoch());
-        Assertions.assertEquals(LOFType.QSW,
+        Assertions.assertEquals(LOFType.QSW_INERTIAL,
                             file.getSegments().get(2).getCovarianceMatrices().get(0).getReferenceFrame().asOrbitRelativeFrame().getLofType());
         Assertions.assertNull(file.getSegments().get(2).getCovarianceMatrices().get(0).getReferenceFrame().asFrame());
         Assertions.assertNull(file.getSegments().get(2).getCovarianceMatrices().get(0).getReferenceFrame().asCelestialBodyFrame());
