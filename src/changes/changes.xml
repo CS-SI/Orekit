@@ -39,6 +39,9 @@
         <action dev="serrof" type="add" issue="1683">
             Add (Field)ExtremumAngularSeparationDetector.
         </action>
+        <action dev="vincent" type="fix" issue="1099">
+            Fixed OrbitRelativeFrame definition of ambiguous local orbital frames (CCSDS).
+        </action>
     </release>
     <release version="13.0.2" date="2025-04-30" description="Orekit 13.0.2 is a patch release.
         It fixes several issues related to GNSS, data loading and indirect shooting.">
