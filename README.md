@@ -1,28 +1,70 @@
-![Orekit logo](https://www.orekit.org/img/orekit-logo.png)
+<h1 align="center">
+  <img src="https://www.orekit.org/img/orekit-logo.png" alt="Orekit">
 
-# Orekit
-
-> An accurate and efficient core layer for space flight dynamics applications
-
-[Orekit](https://www.orekit.org) is a low level space dynamics library written
-in Java. Orekit is designed to be easily used in very different contexts, from
-quick studies up to critical operations. As a library, Orekit provides basic
-elements (orbits, dates, attitude, frames, ...) and various algorithms to
-handle them (conversions, propagations, pointing, events detection, orbit determination ...).
+<a href="https://www.orekit.org/doc-javadoc.html">Documentation</a> |
+<a href="https://forum.orekit.org/">Forum</a>
+</h1>
 
 [![](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 [![](https://sonar.orekit.org/api/project_badges/measure?project=orekit%3Aorekit&metric=alert_status)](https://sonar.orekit.org/dashboard?id=orekit%3Aorekit)
 [![](https://sonar.orekit.org/api/project_badges/measure?project=orekit%3Aorekit&metric=coverage)](https://sonar.orekit.org/dashboard?id=orekit%3Aorekit)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7249096.svg)](https://doi.org/10.5281/zenodo.7249096)
 
+> An accurate and efficient core layer for space flight dynamics applications
+
+[Orekit](https://www.orekit.org) is a low level space dynamics library written
+in Java. Orekit is designed to be easily used in very different contexts, from
+quick studies up to critical operations.
+
+As a library, Orekit provides basic
+elements (orbits, dates, attitude, frames, ...) and various algorithms to
+handle them (conversions, propagations, pointing, events detection, orbit determination ...).
+
+# Features
+
+- **Accurate Orbit Propagation:**  
+  Supports analytical, semianalytical, numerical, and TLE-based propagation.
+
+  Geocentric & interplanetary.
+
+- **Flexible Orbit and Attitude Models:**  
+  Easily switch between Cartesian, Keplerian, circular, and equinoctial orbit representations.
+
+  Includes standard and customizable attitude laws (e.g., nadir, target pointing...).
+
+- **Event Detection:**  
+  Built-in detectors for eclipses, ground station visibility...
+
+- **Maneuver Modeling:**  
+  Supports impulse and continuous maneuvers with integration into propagation and event detection.
+
+- **Robust Time and Reference Frames:**  
+  High-precision time handling with multiple time scales and leap second support.
+
+  Reference frames for Earth-centered and inertial calculations.
+
+- **Orbit Determination:**  
+  Tools for orbit fitting, parameter estimation, and measurement processing.
+
+- **Reliable Earth and Environmental Models:**  
+  Includes Earth shape and potential for realistic simulations.
+
+- **Standard Format and Data Handling:**  
+  Supports reading and writing common space data formats for easy integration and interoperability.
+
+- **Open Source and Easy Integration:**  
+  Thanks to its Apache License 2.0.
+
+- [**And much more !**](https://www.orekit.org/site-orekit-development/index.html)
+
 # Installation
 
-## 0. Prerequisites
+## 1. Requirements
 
 - Java Development Kit (JDK) installed (8 or higher)
 - Maven (recommended) or Gradle for dependency management
 
-## 1. Add Orekit as a Dependency
+## 2. Add Orekit as a Dependency
 
 For **Maven**, add the following to your `pom.xml` inside the `<dependencies>` section:
 
@@ -44,14 +86,14 @@ implementation 'org.orekit:orekit:VERSION_NUMBER'
 > **Note:** You can find the available versions
 > on [maven repository](https://mvnrepository.com/artifact/org.orekit/orekit)
 
-## 2. Download Orekit Data
+## 3. Download Orekit Data
 
 Orekit requires external data files (Earth orientation parameters, leap seconds, etc.). To get these data, you can either:
 
 * Download the `Physical Data` on the [Official Orekit website](https://www.orekit.org/download.html) and extract the archive
 * Clone the [Official Orekit data repository](https://gitlab.orekit.org/orekit/orekit-data)
 
-## 3. Load the Orekit data
+## 4. Load the Orekit data
 
 Orekit will most likely require you to load previously downloaded Orekit data. A simple way to do this is to use the
 following code snippet:
@@ -64,7 +106,7 @@ following code snippet:
 
 Replace `/path/to/orekit-data` with the actual path to your unzipped data folder.
 
-# Usage
+# Getting Started
 
 ## Keplerian propagation
 
@@ -123,10 +165,10 @@ Propagator propagator = new KeplerianPropagator(orbit);
 
 ### 3. Propagate !
 You are now ready to propagate this orbit through time. To do so you can specify:
-* The final propagation date only, the propagator will propagate between internal state date and this final propagation date
 * The initial and final propagation dates, the propagator will propagate in this time interval
+* The final propagation date only, the propagator will propagate between internal state date and this final propagation date
 
-We will propagate for one `Constants.JULIAN_DAY`:
+We will propagate for one `Constants.JULIAN_DAY` starting from the initial orbit date:
 ```java
 AbsoluteDate targetDate = date.shiftedBy(Constants.JULIAN_DAY);
 SpacecraftState propagatedState = propagator.propagate(targetDate);
@@ -212,6 +254,11 @@ public static void main(String[] args) {
 
 # Going further
 
+## Tutorials
+
+For more advanced usage of Orekit, check out
+the [Official Orekit tutorials repository](https://gitlab.orekit.org/orekit/orekit-tutorials).
+
 ## Documentation
 
 The following documentation is available:
@@ -224,7 +271,9 @@ The following documentation is available:
 
 The main communication channel is our [forum](https://forum.orekit.org/). You
 can report bugs and suggest new features in our
-[issues tracking system](https://gitlab.orekit.org/orekit/orekit/issues). When
+[issues tracking system](https://gitlab.orekit.org/orekit/orekit/issues). 
+
+> **Note:** When
 reporting security issues check the "This issue is confidential" box.
 
 ## Build & Run locally
