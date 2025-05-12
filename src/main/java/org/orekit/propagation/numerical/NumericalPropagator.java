@@ -18,6 +18,7 @@ package org.orekit.propagation.numerical;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.QRDecomposition;
 import org.hipparchus.linear.RealMatrix;
@@ -99,8 +100,8 @@ import java.util.stream.Collectors;
  *   to be used for propagation where it is relevant ({@link
  *   #setPositionAngleType(PositionAngleType)}),</li>
  *   <li>whether {@link MatricesHarvester state transition matrices and Jacobians matrices}
- *   should be propagated along with orbital state ({@link
- *   #setupMatricesComputation(String, RealMatrix, DoubleArrayDictionary)}),</li>
+ *   (with the option to include mass if a 7x7 initial matrix is passed) should be propagated along with orbital state
+ *   ({@link #setupMatricesComputation(String, RealMatrix, DoubleArrayDictionary)}),</li>
  *   <li>whether {@link org.orekit.propagation.integration.AdditionalDerivativesProvider additional derivatives}
  *   should be propagated along with orbital state ({@link
  *   #addAdditionalDerivativesProvider(AdditionalDerivativesProvider)}),</li>
@@ -176,12 +177,6 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     /** Default position angle type. */
     public static final PositionAngleType DEFAULT_POSITION_ANGLE_TYPE = PositionAngleType.ECCENTRIC;
-
-    /** Space dimension. */
-    private static final int SPACE_DIMENSION = 3;
-
-    /** State dimension. */
-    private static final int STATE_DIMENSION = 2 * SPACE_DIMENSION;
 
     /** Threshold for matrix solving. */
     private static final double THRESHOLD = Precision.SAFE_MIN;
@@ -449,7 +444,12 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         return columnsNames;
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>
+     * Unlike other propagators, the numerical one can consider the mass as a state variable in the transition matrix.
+     * To do so, a 7x7 initial matrix is to be passed instead of 6x6.
+     * </p>
+     * */
     @Override
     protected AbstractMatricesHarvester createHarvester(final String stmName, final RealMatrix initialStm,
                                                         final DoubleArrayDictionary initialJacobianColumns) {
@@ -464,7 +464,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         if (harvester != null) {
 
             // set up the additional equations and additional state providers
-            final StateTransitionMatrixGenerator stmGenerator = setUpStmGenerator();
+            final AbstractStateTransitionMatrixGenerator stmGenerator = setUpStmGenerator();
             final List<String> triggersDates = setUpTriggerDatesJacobiansColumns(stmGenerator.getName());
             setUpRegularParametersJacobiansColumns(stmGenerator, triggersDates);
 
@@ -480,23 +480,29 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * @return State Transition Matrix Generator
      * @since 11.1
      */
-    private StateTransitionMatrixGenerator setUpStmGenerator() {
+    private AbstractStateTransitionMatrixGenerator setUpStmGenerator() {
 
         final AbstractMatricesHarvester harvester = getHarvester();
 
         // add the STM generator corresponding to the current settings, and setup state accordingly
-        StateTransitionMatrixGenerator stmGenerator = null;
+        AbstractStateTransitionMatrixGenerator stmGenerator = null;
         for (final AdditionalDerivativesProvider equations : getAdditionalDerivativesProviders()) {
-            if (equations instanceof StateTransitionMatrixGenerator &&
+            if (equations instanceof AbstractStateTransitionMatrixGenerator &&
                 equations.getName().equals(harvester.getStmName())) {
                 // the STM generator has already been set up in a previous propagation
-                stmGenerator = (StateTransitionMatrixGenerator) equations;
+                stmGenerator = (AbstractStateTransitionMatrixGenerator) equations;
                 break;
             }
         }
         if (stmGenerator == null) {
             // this is the first time we need the STM generate, create it
-            stmGenerator = new StateTransitionMatrixGenerator(harvester.getStmName(), getAllForceModels(), getAttitudeProvider());
+            if (harvester.getStateDimension() > 6) {
+                stmGenerator = new ExtendedStateTransitionMatrixGenerator(harvester.getStmName(), getAllForceModels(),
+                        getAttitudeProvider());
+            } else {
+                stmGenerator = new StateTransitionMatrixGenerator(harvester.getStmName(), getAllForceModels(),
+                        getAttitudeProvider());
+            }
             addAdditionalDerivativesProvider(stmGenerator);
         }
 
@@ -729,7 +735,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * @param triggerDates names of the columns already managed as trigger dates
      * @since 11.1
      */
-    private void setUpRegularParametersJacobiansColumns(final StateTransitionMatrixGenerator stmGenerator,
+    private void setUpRegularParametersJacobiansColumns(final AbstractStateTransitionMatrixGenerator stmGenerator,
                                                         final List<String> triggerDates) {
 
         // first pass: gather all parameters (excluding trigger dates), binding similar names together
@@ -771,7 +777,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
                 if (generator == null) {
                     // this is the first time we need the Jacobian column generator, create it
-                    generator = new IntegrableJacobianColumnGenerator(stmGenerator, currentNameSpan.getData());
+                    final boolean isMassIncluded = stmGenerator.getStateDimension() == 7;
+                    generator = new IntegrableJacobianColumnGenerator(stmGenerator, currentNameSpan.getData(), isMassIncluded);
                     addAdditionalDerivativesProvider(generator);
                 }
 
@@ -800,18 +807,22 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         final SpacecraftState state = getInitialState();
 
-        if (dYdQ.length != STATE_DIMENSION) {
-            throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
-                                      dYdQ.length, STATE_DIMENSION);
+        final AbstractStateTransitionMatrixGenerator generator = (AbstractStateTransitionMatrixGenerator)
+                getAdditionalDerivativesProviders().stream()
+                        .filter(AbstractStateTransitionMatrixGenerator.class::isInstance)
+                        .collect(Collectors.toList()).get(0);
+        final int expectedSize = generator.getStateDimension();
+        if (dYdQ.length != expectedSize) {
+            throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH, dYdQ.length, expectedSize);
         }
 
         // convert to Cartesian Jacobian
-        final double[][] dYdC = new double[STATE_DIMENSION][STATE_DIMENSION];
-        getOrbitType().convertType(state.getOrbit()).getJacobianWrtCartesian(getPositionAngleType(), dYdC);
-        final double[] column = new QRDecomposition(MatrixUtils.createRealMatrix(dYdC), THRESHOLD).
-                        getSolver().
-                        solve(MatrixUtils.createRealVector(dYdQ)).
-                        toArray();
+        final RealMatrix dYdC = MatrixUtils.createRealIdentityMatrix(expectedSize);
+        final double[][] jacobian = new double[6][6];
+        getOrbitType().convertType(state.getOrbit()).getJacobianWrtCartesian(getPositionAngleType(), jacobian);
+        dYdC.setSubMatrix(jacobian, 0, 0);
+        final DecompositionSolver solver = new QRDecomposition(dYdC, THRESHOLD).getSolver();
+        final double[] column = solver.solve(MatrixUtils.createRealVector(dYdQ)).toArray();
 
         // set additional state
         setInitialState(state.addAdditionalData(columnName, column));
