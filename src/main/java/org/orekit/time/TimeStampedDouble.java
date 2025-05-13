@@ -34,9 +34,21 @@ public class TimeStampedDouble implements TimeStamped {
      * Constructor.
      *
      * @param value value
-     * @param date date associated to value
+     * @param date  date associated to value
      */
+    @Deprecated
     public TimeStampedDouble(final double value, final AbsoluteDate date) {
+        this.date  = date;
+        this.value = value;
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param date date associated to value
+     * @param value value
+     */
+    public TimeStampedDouble(final AbsoluteDate date, final double value) {
         this.date  = date;
         this.value = value;
     }
@@ -54,4 +66,11 @@ public class TimeStampedDouble implements TimeStamped {
         return value;
     }
 
+    @Override
+    public String toString() {
+        return "{" +
+                "date=" + date +
+                ", value=" + value +
+                '}';
+    }
 }

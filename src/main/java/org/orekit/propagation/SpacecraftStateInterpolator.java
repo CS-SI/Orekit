@@ -426,7 +426,7 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
 
             // Add mass sample
             if (massInterpolator != null) {
-                masses.add(new TimeStampedDouble(state.getMass(), state.getDate()));
+                masses.add(new TimeStampedDouble(state.getDate(), state.getMass()));
             }
 
             // Add attitude sample if it is interpolated
@@ -657,7 +657,7 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
             final List<TimeStampedDouble> currentValueSample = new ArrayList<>();
 
             currentAdditionalSamples.forEach(
-                    currentSamples -> currentValueSample.add(new TimeStampedDouble(((double[]) currentSamples.getValue())[currentIndex], currentSamples.getFirst())));
+                    currentSamples -> currentValueSample.add(new TimeStampedDouble(currentSamples.getFirst(), ((double[]) currentSamples.getValue())[currentIndex])));
 
             // Interpolate
             currentInterpolatedAdditional[i] = additionalStateInterpolator.interpolate(interpolationDate, currentValueSample).getValue();

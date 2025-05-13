@@ -624,7 +624,7 @@ public class MarshallSolarActivityFutureEstimationTest {
             // Each task will evaluate value at specific date and store this value and associated date in a shared list
             tasks.add(() -> (results.getAndUpdate((listToUpdate) -> {
                 final List<TimeStampedDouble> newList = new ArrayList<>(listToUpdate);
-                newList.add(new TimeStampedDouble(weatherData.get24HoursKp(currentDate), currentDate));
+                newList.add(new TimeStampedDouble(currentDate, weatherData.get24HoursKp(currentDate)));
                 return newList;
             })));
         }
