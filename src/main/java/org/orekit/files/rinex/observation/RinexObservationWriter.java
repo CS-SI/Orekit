@@ -45,6 +45,7 @@ import org.orekit.time.ClockTimeScale;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
+import org.orekit.utils.formatting.FastRealFormatter;
 
 /** Writer for Rinex observation file.
  * <p>
@@ -87,34 +88,37 @@ public class RinexObservationWriter implements AutoCloseable {
     private static final String SIX_DIGITS_INTEGER = "%6d";
 
     /** Format for one 8.3 digits float field. */
-    private static final String EIGHT_THREE_DIGITS_FLOAT = "%8.3f";
+    private static final FastRealFormatter EIGHT_THREE_DIGITS_FLOAT = new FastRealFormatter(8, 3);
 
     /** Format for one 8.5 digits float field. */
-    private static final String EIGHT_FIVE_DIGITS_FLOAT = "%8.5f";
+    private static final FastRealFormatter EIGHT_FIVE_DIGITS_FLOAT = new FastRealFormatter(8, 5);
+
+    /** Format for one 9.2 digits float field. */
+    private static final FastRealFormatter NINE_TWO_DIGITS_FLOAT = new FastRealFormatter(9, 2);
 
     /** Format for one 9.4 digits float field. */
-    private static final String NINE_FOUR_DIGITS_FLOAT = "%9.4f";
+    private static final FastRealFormatter NINE_FOUR_DIGITS_FLOAT = new FastRealFormatter(9, 4);
 
     /** Format for one 10.3 digits float field. */
-    private static final String TEN_THREE_DIGITS_FLOAT = "%10.3f";
+    private static final FastRealFormatter TEN_THREE_DIGITS_FLOAT = new FastRealFormatter(10, 3);
 
     /** Format for one 11.7 digits float field. */
-    private static final String ELEVEN_SEVEN_DIGITS_FLOAT = "%11.7f";
+    private static final FastRealFormatter ELEVEN_SEVEN_DIGITS_FLOAT = new FastRealFormatter(11, 7);
 
     /** Format for one 12.9 digits float field. */
-    private static final String TWELVE_NINE_DIGITS_FLOAT = "%12.9f";
+    private static final FastRealFormatter TWELVE_NINE_DIGITS_FLOAT = new FastRealFormatter(12, 9);
 
     /** Format for one 13.7 digits float field. */
-    private static final String THIRTEEN_SEVEN_DIGITS_FLOAT = "%13.7f";
+    private static final FastRealFormatter THIRTEEN_SEVEN_DIGITS_FLOAT = new FastRealFormatter(13, 7);
 
     /** Format for one 14.3 digits float field. */
-    private static final String FOURTEEN_THREE_DIGITS_FLOAT = "%14.3f";
+    private static final FastRealFormatter FOURTEEN_THREE_DIGITS_FLOAT = new FastRealFormatter(14, 3);
 
     /** Format for one 14.4 digits float field. */
-    private static final String FOURTEEN_FOUR_DIGITS_FLOAT = "%14.4f";
+    private static final FastRealFormatter FOURTEEN_FOUR_DIGITS_FLOAT = new FastRealFormatter(14, 4);
 
     /** Format for one 15.12 digits float field. */
-    private static final String FIFTEEN_TWELVE_DIGITS_FLOAT = "%15.12f";
+    private static final FastRealFormatter FIFTEEN_TWELVE_DIGITS_FLOAT = new FastRealFormatter(15, 12);
 
     /** Threshold for considering measurements are at the sate time.
      * (we know the RINEX files encode dates with a resolution of 0.1µs)
@@ -277,7 +281,7 @@ public class RinexObservationWriter implements AutoCloseable {
         }
 
         // RINEX VERSION / TYPE
-        outputField("%9.2f", header.getFormatVersion(), 9);
+        outputField(NINE_TWO_DIGITS_FLOAT, header.getFormatVersion(), 9);
         outputField("",                 20, true);
         outputField("OBSERVATION DATA", 40, true);
         outputField(header.getSatelliteSystem().getKey(), 41);
@@ -901,17 +905,17 @@ public class RinexObservationWriter implements AutoCloseable {
     }
 
     /** Output one double field.
-     * @param format format to use
+     * @param formatter formatter to use
      * @param value field value
      * @param next target column for next field
      * @throws IOException if an I/O error occurs.
      */
-    private void outputField(final String format, final double value, final int next) throws IOException {
+    private void outputField(final FastRealFormatter formatter, final double value, final int next) throws IOException {
         if (Double.isNaN(value)) {
             // NaN values are replaced by blank fields
             outputField("", next, true);
         } else {
-            outputField(String.format(Locale.US, format, value), next, false);
+            outputField(formatter.toString(value), next, false);
         }
     }
 

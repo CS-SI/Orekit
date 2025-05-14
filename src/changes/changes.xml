@@ -20,6 +20,11 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="13.0.3" date="TBC" description="TBC">
+        <action dev="luc" type="fix" issue="1727">
+          Speed up numbers formatting in Rinex files.
+        </action>
+    </release>
     <release version="13.0.2" date="2025-04-30" description="Orekit 13.0.2 is a patch release.
         It fixes several issues related to GNSS, data loading and indirect shooting.">
         <action dev="luc" type="fix" issue="1713">
