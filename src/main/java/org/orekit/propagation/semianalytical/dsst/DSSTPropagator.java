@@ -433,7 +433,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             // (perhaps due to a previous propagation)
             setInitialState(stmGenerator.setInitialStateTransitionMatrix(getInitialState(),
                                                                          dsstHarvester.getInitialStateTransitionMatrix()),
-                            getPropagationType());
+                            initialIsOsculating() ? PropagationType.OSCULATING : PropagationType.MEAN);
         }
 
         return stmGenerator;
@@ -488,7 +488,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                     // (perhaps due to a previous propagation)
                     setInitialState(getInitialState().addAdditionalData(span.getData(),
                                                                          getHarvester().getInitialJacobianColumn(span.getData())),
-                                    getPropagationType());
+                                    initialIsOsculating() ? PropagationType.OSCULATING : PropagationType.MEAN);
                 }
             }
 
