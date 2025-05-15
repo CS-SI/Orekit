@@ -698,9 +698,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     public static SpacecraftState computeMeanState(final SpacecraftState osculating,
                                                    final AttitudeProvider attitudeProvider,
                                                    final Collection<DSSTForceModel> forceModels) {
-        final OsculatingToMeanConverter converter = new FixedPointConverter(EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT,
-                                                                            FixedPointConverter.DEFAULT_DAMPING);
-        return computeMeanState(osculating, attitudeProvider, forceModels, converter);
+        return computeMeanState(osculating, attitudeProvider, forceModels, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
     }
 
     /** Conversion from osculating to mean orbit.
