@@ -120,6 +120,30 @@ public class DSSTPropagatorTest {
 
     private DSSTPropagator dsstProp;
 
+    @Test
+    public void testIssue1703() {
+        // Orbit
+        final AbsoluteDate orbitEpoch = new AbsoluteDate(2023, 2, 18, TimeScalesFactory.getUTC());
+        final Frame inertial = FramesFactory.getCIRF(IERSConventions.IERS_2010, true);
+        final KeplerianOrbit orbit = new KeplerianOrbit(42166000.0, 0.00028, FastMath.toRadians(0.05), FastMath.toRadians(66.0),
+                                                        FastMath.toRadians(270.0), FastMath.toRadians(11.94), PositionAngleType.MEAN,
+                                                        inertial, orbitEpoch, Constants.WGS84_EARTH_MU);
+
+        // Setup propagator
+        DSSTPropagator propagator = new DSSTPropagator(new ClassicalRungeKuttaIntegrator(60.0), PropagationType.OSCULATING);
+        propagator.setInitialState(new SpacecraftState(orbit), PropagationType.MEAN);
+
+        // Verify initial state
+        Assertions.assertFalse(propagator.initialIsOsculating());
+
+        // Action to reproduce the issue
+        propagator.setupMatricesComputation("stm", null, null);
+        propagator.setUpStmAndJacobianGenerators();
+
+        // Verify that initial state is still mean state
+        Assertions.assertFalse(propagator.initialIsOsculating());
+    }
+
     /**
      * Test issue #1029 about DSST short period terms computation.
      * Issue #1029 is a regression introduced in version 10.0
