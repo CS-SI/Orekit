@@ -641,18 +641,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
                 PADDED_TWO_DIGITS_INTEGER.appendTo(builder, hour);
                 builder.append(':');
                 PADDED_TWO_DIGITS_INTEGER.appendTo(builder, minute);
-                builder.append(':');
-
-                if (second.isNaN()) {
-                    // special handling for NaN
-                    builder.append("NaN");
-                } else if (second.isNegativeInfinity()) {
-                    // special handling for -∞
-                    builder.append("-∞");
-                } else {
-                    // special handling for +∞
-                    builder.append("+∞");
-                }
+                builder.append(":NaN"); // ±∞ can never happen
 
             }
 
