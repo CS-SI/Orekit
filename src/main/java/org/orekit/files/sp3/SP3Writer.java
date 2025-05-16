@@ -244,7 +244,7 @@ public class SP3Writer {
                                          SP3Utils.VELOCITY_UNIT.fromSI(coordinate.getVelocity().getZ())));
 
         // clock rate
-       FOURTEEN_SIX_DIGITS_FLOAT.appendTo(lineBuilder, SP3Utils.CLOCK_RATE_UNIT.fromSI(coordinate.getClockRateChange()));
+        FOURTEEN_SIX_DIGITS_FLOAT.appendTo(lineBuilder, SP3Utils.CLOCK_RATE_UNIT.fromSI(coordinate.getClockRateChange()));
 
         // velocity accuracy
         if (coordinate.getVelocityAccuracy() == null) {
