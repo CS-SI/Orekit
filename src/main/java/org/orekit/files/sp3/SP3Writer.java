@@ -29,6 +29,8 @@ import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.CartesianDerivativesFilter;
+import org.orekit.utils.formatting.FastDoubleFormatter;
+import org.orekit.utils.formatting.FastLongFormatter;
 
 /** Writer for SP3 file.
  * @author Luc Maisonobe
@@ -52,13 +54,13 @@ public class SP3Writer {
     private static final String ADDITIONAL_PARAMETERS_LINE = "%i    0    0    0    0      0      0      0      0         0";
 
     /** Format for one 2 digits integer field. */
-    private static final String TWO_DIGITS_INTEGER = "%2d";
+    private static final FastLongFormatter TWO_DIGITS_INTEGER = new FastLongFormatter(2, false);
 
     /** Format for one 3 digits integer field. */
-    private static final String THREE_DIGITS_INTEGER = "%3d";
+    private static final FastLongFormatter THREE_DIGITS_INTEGER = new FastLongFormatter(3, false);
 
     /** Format for one 14.6 digits float field. */
-    private static final String FOURTEEN_SIX_DIGITS_FLOAT = "%14.6f";
+    private static final FastDoubleFormatter FOURTEEN_SIX_DIGITS_FLOAT = new FastDoubleFormatter(14, 6);
 
     /** Format for three blanks field. */
     private static final String THREE_BLANKS = "   ";
@@ -178,8 +180,8 @@ public class SP3Writer {
                                          SP3Utils.POSITION_UNIT.fromSI(coordinate.getPosition().getZ())));
 
         // clock
-        lineBuilder.append(String.format(Locale.US, FOURTEEN_SIX_DIGITS_FLOAT,
-                                         SP3Utils.CLOCK_UNIT.fromSI(coordinate.getClockCorrection())));
+        FOURTEEN_SIX_DIGITS_FLOAT.appendTo(lineBuilder,
+                                         SP3Utils.CLOCK_UNIT.fromSI(coordinate.getClockCorrection()));
 
         // position accuracy
         if (coordinate.getPositionAccuracy() == null) {
@@ -188,17 +190,17 @@ public class SP3Writer {
                         append(THREE_BLANKS);
         } else {
             lineBuilder.append(' ');
-            lineBuilder.append(String.format(Locale.US, TWO_DIGITS_INTEGER,
-                                             SP3Utils.indexAccuracy(SP3Utils.POSITION_ACCURACY_UNIT, header.getPosVelBase(),
-                                                                    coordinate.getPositionAccuracy().getX())));
+            TWO_DIGITS_INTEGER.appendTo(lineBuilder,
+                                        SP3Utils.indexAccuracy(SP3Utils.POSITION_ACCURACY_UNIT, header.getPosVelBase(),
+                                                               coordinate.getPositionAccuracy().getX()));
             lineBuilder.append(' ');
-            lineBuilder.append(String.format(Locale.US, TWO_DIGITS_INTEGER,
-                                             SP3Utils.indexAccuracy(SP3Utils.POSITION_ACCURACY_UNIT, header.getPosVelBase(),
-                                                                    coordinate.getPositionAccuracy().getY())));
+            TWO_DIGITS_INTEGER.appendTo(lineBuilder,
+                                        SP3Utils.indexAccuracy(SP3Utils.POSITION_ACCURACY_UNIT, header.getPosVelBase(),
+                                                               coordinate.getPositionAccuracy().getY()));
             lineBuilder.append(' ');
-            lineBuilder.append(String.format(Locale.US, TWO_DIGITS_INTEGER,
-                                             SP3Utils.indexAccuracy(SP3Utils.POSITION_ACCURACY_UNIT, header.getPosVelBase(),
-                                                                    coordinate.getPositionAccuracy().getZ())));
+            TWO_DIGITS_INTEGER.appendTo(lineBuilder,
+                                        SP3Utils.indexAccuracy(SP3Utils.POSITION_ACCURACY_UNIT, header.getPosVelBase(),
+                                                               coordinate.getPositionAccuracy().getZ()));
         }
 
         // clock accuracy
@@ -206,9 +208,9 @@ public class SP3Writer {
         if (Double.isNaN(coordinate.getClockAccuracy())) {
             lineBuilder.append(THREE_BLANKS);
         } else {
-            lineBuilder.append(String.format(Locale.US, THREE_DIGITS_INTEGER,
-                                             SP3Utils.indexAccuracy(SP3Utils.CLOCK_ACCURACY_UNIT, header.getClockBase(),
-                                                                    coordinate.getClockAccuracy())));
+            THREE_DIGITS_INTEGER.appendTo(lineBuilder,
+                                          SP3Utils.indexAccuracy(SP3Utils.CLOCK_ACCURACY_UNIT, header.getClockBase(),
+                                                                 coordinate.getClockAccuracy()));
         }
 
         // events
@@ -242,8 +244,7 @@ public class SP3Writer {
                                          SP3Utils.VELOCITY_UNIT.fromSI(coordinate.getVelocity().getZ())));
 
         // clock rate
-        lineBuilder.append(String.format(Locale.US, FOURTEEN_SIX_DIGITS_FLOAT,
-                                         SP3Utils.CLOCK_RATE_UNIT.fromSI(coordinate.getClockRateChange())));
+       FOURTEEN_SIX_DIGITS_FLOAT.appendTo(lineBuilder, SP3Utils.CLOCK_RATE_UNIT.fromSI(coordinate.getClockRateChange()));
 
         // velocity accuracy
         if (coordinate.getVelocityAccuracy() == null) {
@@ -252,17 +253,17 @@ public class SP3Writer {
                         append(THREE_BLANKS);
         } else {
             lineBuilder.append(' ');
-            lineBuilder.append(String.format(Locale.US, TWO_DIGITS_INTEGER,
-                                             SP3Utils.indexAccuracy(SP3Utils.VELOCITY_ACCURACY_UNIT, header.getPosVelBase(),
-                                                                    coordinate.getVelocityAccuracy().getX())));
+            TWO_DIGITS_INTEGER.appendTo(lineBuilder,
+                                        SP3Utils.indexAccuracy(SP3Utils.VELOCITY_ACCURACY_UNIT, header.getPosVelBase(),
+                                                               coordinate.getVelocityAccuracy().getX()));
             lineBuilder.append(' ');
-            lineBuilder.append(String.format(Locale.US, TWO_DIGITS_INTEGER,
-                                             SP3Utils.indexAccuracy(SP3Utils.VELOCITY_ACCURACY_UNIT, header.getPosVelBase(),
-                                                                    coordinate.getVelocityAccuracy().getY())));
+            TWO_DIGITS_INTEGER.appendTo(lineBuilder,
+                                        SP3Utils.indexAccuracy(SP3Utils.VELOCITY_ACCURACY_UNIT, header.getPosVelBase(),
+                                                               coordinate.getVelocityAccuracy().getY()));
             lineBuilder.append(' ');
-            lineBuilder.append(String.format(Locale.US, TWO_DIGITS_INTEGER,
-                                             SP3Utils.indexAccuracy(SP3Utils.VELOCITY_ACCURACY_UNIT, header.getPosVelBase(),
-                                                                    coordinate.getVelocityAccuracy().getZ())));
+            TWO_DIGITS_INTEGER.appendTo(lineBuilder,
+                                        SP3Utils.indexAccuracy(SP3Utils.VELOCITY_ACCURACY_UNIT, header.getPosVelBase(),
+                                                               coordinate.getVelocityAccuracy().getZ()));
         }
 
         // clock rate accuracy
@@ -270,9 +271,9 @@ public class SP3Writer {
         if (Double.isNaN(coordinate.getClockRateAccuracy())) {
             lineBuilder.append(THREE_BLANKS);
         } else {
-            lineBuilder.append(String.format(Locale.US, THREE_DIGITS_INTEGER,
-                                             SP3Utils.indexAccuracy(SP3Utils.CLOCK_RATE_ACCURACY_UNIT, header.getClockBase(),
-                                                                    coordinate.getClockRateAccuracy())));
+            THREE_DIGITS_INTEGER.appendTo(lineBuilder,
+                                          SP3Utils.indexAccuracy(SP3Utils.CLOCK_RATE_ACCURACY_UNIT, header.getClockBase(),
+                                                                 coordinate.getClockRateAccuracy()));
         }
 
         output.append(lineBuilder.toString().trim()).append(EOL);
@@ -364,7 +365,7 @@ public class SP3Writer {
         for (final String satId : satellites) {
             final double accuracy    = header.getAccuracy(satId);
             final int    accuracyExp = SP3Utils.indexAccuracy(SP3Utils.POSITION_ACCURACY_UNIT, SP3Utils.POS_VEL_BASE_ACCURACY, accuracy);
-            output.append(String.format(Locale.US, THREE_DIGITS_INTEGER, accuracyExp));
+            THREE_DIGITS_INTEGER.appendTo(output, accuracyExp);
             --remaining;
             column += 3;
             if (column >= 60 && remaining > 0) {

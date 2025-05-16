@@ -16,14 +16,17 @@
  */
 package org.orekit.time;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.Constants;
+import org.orekit.utils.formatting.FastLongFormatter;
 
 
 /** Class representing a time within the day broken up as hour,
@@ -47,6 +50,12 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      */
     public static final TimeComponents NaN   = new TimeComponents(0, 0, TimeOffset.NaN);
     // CHECKSTYLE: resume ConstantName
+
+    /** Format for one 2 digits integer field. */
+    private static final FastLongFormatter PADDED_TWO_DIGITS_INTEGER = new FastLongFormatter(2, true);
+
+    /** Format for one 18 digits integer field. */
+    private static final FastLongFormatter PADDED_EIGHTEEN_DIGITS_INTEGER = new FastLongFormatter(18, true);
 
     /** Wrapping limits for rounding to next minute.
      * @since 13.0
@@ -607,29 +616,52 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      */
     String toStringWithoutUtcOffset(final int fractionDigits) {
 
-        if (second.isFinite()) {
-            // general case for regular times
-            final long      rounding = ROUNDING[FastMath.min(fractionDigits, ROUNDING.length - 1)];
-            final TimeComponents rounded  = new TimeComponents(hour, minute,
-                                                               new TimeOffset(second.getSeconds(),
-                                                                              second.getAttoSeconds() + rounding));
+        try {
             final StringBuilder builder = new StringBuilder();
-            builder.append(String.format("%02d:%02d:%02d",
-                                         rounded.hour, rounded.minute, rounded.second.getSeconds()));
-            if (fractionDigits > 0) {
-                builder.append('.');
-                builder.append(String.format("%018d", rounded.second.getAttoSeconds()), 0, fractionDigits);
+            if (second.isFinite()) {
+                // general case for regular times
+                final long rounding = ROUNDING[FastMath.min(fractionDigits, ROUNDING.length - 1)];
+                final TimeComponents rounded = new TimeComponents(hour, minute,
+                                                                  new TimeOffset(second.getSeconds(),
+                                                                                 second.getAttoSeconds() + rounding));
+                PADDED_TWO_DIGITS_INTEGER.appendTo(builder, rounded.hour);
+                builder.append(':');
+                PADDED_TWO_DIGITS_INTEGER.appendTo(builder, rounded.minute);
+                builder.append(':');
+                PADDED_TWO_DIGITS_INTEGER.appendTo(builder, rounded.second.getSeconds());
+                if (fractionDigits > 0) {
+                    builder.append('.');
+                    builder.append(PADDED_EIGHTEEN_DIGITS_INTEGER.
+                                           toString(rounded.second.getAttoSeconds()).
+                                           substring(0, fractionDigits));
+                }
+
+            } else {
+
+                PADDED_TWO_DIGITS_INTEGER.appendTo(builder, hour);
+                builder.append(':');
+                PADDED_TWO_DIGITS_INTEGER.appendTo(builder, minute);
+                builder.append(':');
+
+                if (second.isNaN()) {
+                    // special handling for NaN
+                    builder.append("NaN");
+                } else if (second.isNegativeInfinity()) {
+                    // special handling for -∞
+                    builder.append("-∞");
+                } else {
+                    // special handling for +∞
+                    builder.append("+∞");
+                }
+
             }
+
             return builder.toString();
-        } else if (second.isNaN()) {
-            // special handling for NaN
-            return String.format("%02d:%02d:NaN", hour, minute);
-        } else if (second.isNegativeInfinity()) {
-            // special handling for -∞
-            return String.format("%02d:%02d:-∞", hour, minute);
-        } else {
-            // special handling for +∞
-            return String.format("%02d:%02d:+∞", hour, minute);
+
+        }
+        catch (IOException ioe) {
+            // this should never happen
+            throw new OrekitInternalError(ioe);
         }
 
     }
@@ -661,10 +693,20 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @see #toString()
      */
     public String formatUtcOffset() {
-        final int hourOffset = FastMath.abs(minutesFromUTC) / MINUTE;
-        final int minuteOffset = FastMath.abs(minutesFromUTC) % MINUTE;
-        return (minutesFromUTC < 0 ? '-' : '+') +
-                String.format("%02d:%02d", hourOffset, minuteOffset);
+        try {
+            final int           hourOffset   = FastMath.abs(minutesFromUTC) / MINUTE;
+            final int           minuteOffset = FastMath.abs(minutesFromUTC) % MINUTE;
+            final StringBuilder builder      = new StringBuilder();
+            builder.append(minutesFromUTC < 0 ? '-' : '+');
+            PADDED_TWO_DIGITS_INTEGER.appendTo(builder, hourOffset);
+            builder.append(':');
+            PADDED_TWO_DIGITS_INTEGER.appendTo(builder, minuteOffset);
+            return builder.toString();
+        }
+        catch (IOException ioe) {
+            // this should never happen
+            throw new OrekitInternalError(ioe);
+        }
     }
 
     /**

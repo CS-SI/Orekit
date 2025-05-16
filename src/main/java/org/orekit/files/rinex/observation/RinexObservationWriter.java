@@ -45,7 +45,8 @@ import org.orekit.time.ClockTimeScale;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
-import org.orekit.utils.formatting.FastRealFormatter;
+import org.orekit.utils.formatting.FastDoubleFormatter;
+import org.orekit.utils.formatting.FastLongFormatter;
 
 /** Writer for Rinex observation file.
  * <p>
@@ -67,58 +68,58 @@ public class RinexObservationWriter implements AutoCloseable {
     private static final int LABEL_INDEX = 60;
 
     /** Format for one 1 digit integer field. */
-    private static final String ONE_DIGIT_INTEGER = "%1d";
+    private static final FastLongFormatter ONE_DIGIT_INTEGER = new FastLongFormatter(1, false);
 
     /** Format for one 2 digits integer field. */
-    private static final String PADDED_TWO_DIGITS_INTEGER = "%02d";
+    private static final FastLongFormatter PADDED_TWO_DIGITS_INTEGER = new FastLongFormatter(2, true);
 
     /** Format for one 2 digits integer field. */
-    private static final String TWO_DIGITS_INTEGER = "%2d";
+    private static final FastLongFormatter TWO_DIGITS_INTEGER = new FastLongFormatter(2, false);
 
     /** Format for one 4 digits integer field. */
-    private static final String PADDED_FOUR_DIGITS_INTEGER = "%04d";
+    private static final FastLongFormatter PADDED_FOUR_DIGITS_INTEGER = new FastLongFormatter(4, true);
 
     /** Format for one 3 digits integer field. */
-    private static final String THREE_DIGITS_INTEGER = "%3d";
+    private static final FastLongFormatter THREE_DIGITS_INTEGER = new FastLongFormatter(3, false);
 
     /** Format for one 4 digits integer field. */
-    private static final String FOUR_DIGITS_INTEGER = "%4d";
+    private static final FastLongFormatter FOUR_DIGITS_INTEGER = new FastLongFormatter(4, false);
 
     /** Format for one 6 digits integer field. */
-    private static final String SIX_DIGITS_INTEGER = "%6d";
+    private static final FastLongFormatter SIX_DIGITS_INTEGER = new FastLongFormatter(6, false);
 
     /** Format for one 8.3 digits float field. */
-    private static final FastRealFormatter EIGHT_THREE_DIGITS_FLOAT = new FastRealFormatter(8, 3);
+    private static final FastDoubleFormatter EIGHT_THREE_DIGITS_FLOAT = new FastDoubleFormatter(8, 3);
 
     /** Format for one 8.5 digits float field. */
-    private static final FastRealFormatter EIGHT_FIVE_DIGITS_FLOAT = new FastRealFormatter(8, 5);
+    private static final FastDoubleFormatter EIGHT_FIVE_DIGITS_FLOAT = new FastDoubleFormatter(8, 5);
 
     /** Format for one 9.2 digits float field. */
-    private static final FastRealFormatter NINE_TWO_DIGITS_FLOAT = new FastRealFormatter(9, 2);
+    private static final FastDoubleFormatter NINE_TWO_DIGITS_FLOAT = new FastDoubleFormatter(9, 2);
 
     /** Format for one 9.4 digits float field. */
-    private static final FastRealFormatter NINE_FOUR_DIGITS_FLOAT = new FastRealFormatter(9, 4);
+    private static final FastDoubleFormatter NINE_FOUR_DIGITS_FLOAT = new FastDoubleFormatter(9, 4);
 
     /** Format for one 10.3 digits float field. */
-    private static final FastRealFormatter TEN_THREE_DIGITS_FLOAT = new FastRealFormatter(10, 3);
+    private static final FastDoubleFormatter TEN_THREE_DIGITS_FLOAT = new FastDoubleFormatter(10, 3);
 
     /** Format for one 11.7 digits float field. */
-    private static final FastRealFormatter ELEVEN_SEVEN_DIGITS_FLOAT = new FastRealFormatter(11, 7);
+    private static final FastDoubleFormatter ELEVEN_SEVEN_DIGITS_FLOAT = new FastDoubleFormatter(11, 7);
 
     /** Format for one 12.9 digits float field. */
-    private static final FastRealFormatter TWELVE_NINE_DIGITS_FLOAT = new FastRealFormatter(12, 9);
+    private static final FastDoubleFormatter TWELVE_NINE_DIGITS_FLOAT = new FastDoubleFormatter(12, 9);
 
     /** Format for one 13.7 digits float field. */
-    private static final FastRealFormatter THIRTEEN_SEVEN_DIGITS_FLOAT = new FastRealFormatter(13, 7);
+    private static final FastDoubleFormatter THIRTEEN_SEVEN_DIGITS_FLOAT = new FastDoubleFormatter(13, 7);
 
     /** Format for one 14.3 digits float field. */
-    private static final FastRealFormatter FOURTEEN_THREE_DIGITS_FLOAT = new FastRealFormatter(14, 3);
+    private static final FastDoubleFormatter FOURTEEN_THREE_DIGITS_FLOAT = new FastDoubleFormatter(14, 3);
 
     /** Format for one 14.4 digits float field. */
-    private static final FastRealFormatter FOURTEEN_FOUR_DIGITS_FLOAT = new FastRealFormatter(14, 4);
+    private static final FastDoubleFormatter FOURTEEN_FOUR_DIGITS_FLOAT = new FastDoubleFormatter(14, 4);
 
     /** Format for one 15.12 digits float field. */
-    private static final FastRealFormatter FIFTEEN_TWELVE_DIGITS_FLOAT = new FastRealFormatter(15, 12);
+    private static final FastDoubleFormatter FIFTEEN_TWELVE_DIGITS_FLOAT = new FastDoubleFormatter(15, 12);
 
     /** Threshold for considering measurements are at the sate time.
      * (we know the RINEX files encode dates with a resolution of 0.1µs)
@@ -895,13 +896,13 @@ public class RinexObservationWriter implements AutoCloseable {
     }
 
     /** Output one integer field.
-     * @param format format to use
+     * @param formatter formatter to use
      * @param value field value
      * @param next target column for next field
      * @throws IOException if an I/O error occurs.
      */
-    private void outputField(final String format, final int value, final int next) throws IOException {
-        outputField(String.format(Locale.US, format, value), next, false);
+    private void outputField(final FastLongFormatter formatter, final int value, final int next) throws IOException {
+        outputField(formatter.toString(value), next, false);
     }
 
     /** Output one double field.
@@ -910,7 +911,7 @@ public class RinexObservationWriter implements AutoCloseable {
      * @param next target column for next field
      * @throws IOException if an I/O error occurs.
      */
-    private void outputField(final FastRealFormatter formatter, final double value, final int next) throws IOException {
+    private void outputField(final FastDoubleFormatter formatter, final double value, final int next) throws IOException {
         if (Double.isNaN(value)) {
             // NaN values are replaced by blank fields
             outputField("", next, true);
