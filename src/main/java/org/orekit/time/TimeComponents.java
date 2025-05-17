@@ -56,13 +56,13 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
 
     /** Formatters for up to 18 digits integer field. */
     private static final FastLongFormatter[] PADDED_FORMATTERS = new FastLongFormatter[] {
-            null,                            new FastLongFormatter( 1, true), new FastLongFormatter( 2, true),
-            new FastLongFormatter( 3, true), new FastLongFormatter( 4, true), new FastLongFormatter( 5, true),
-            new FastLongFormatter( 6, true), new FastLongFormatter( 7, true), new FastLongFormatter( 8, true),
-            new FastLongFormatter( 9, true), new FastLongFormatter(10, true), new FastLongFormatter(11, true),
-            new FastLongFormatter(12, true), new FastLongFormatter(13, true), new FastLongFormatter(14, true),
-            new FastLongFormatter(15, true), new FastLongFormatter(16, true), new FastLongFormatter(17, true),
-            new FastLongFormatter(18, true)
+        null,                            new FastLongFormatter( 1, true), new FastLongFormatter( 2, true),
+        new FastLongFormatter( 3, true), new FastLongFormatter( 4, true), new FastLongFormatter( 5, true),
+        new FastLongFormatter( 6, true), new FastLongFormatter( 7, true), new FastLongFormatter( 8, true),
+        new FastLongFormatter( 9, true), new FastLongFormatter(10, true), new FastLongFormatter(11, true),
+        new FastLongFormatter(12, true), new FastLongFormatter(13, true), new FastLongFormatter(14, true),
+        new FastLongFormatter(15, true), new FastLongFormatter(16, true), new FastLongFormatter(17, true),
+        new FastLongFormatter(18, true)
     };
 
     /** Scaling factors used for rounding. */

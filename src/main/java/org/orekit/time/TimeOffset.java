@@ -173,6 +173,15 @@ public class TimeOffset
      */
     private static final FastLongFormatter ATTOSECONDS_FORMATTER = new FastLongFormatter(18, true);
 
+    /** NaN. */
+    private static final String NAN_STRING = "NaN";
+
+    /** +∞. */
+    private static final String POSITIVE_INFINITY_STRING = "+∞";
+
+    /** -∞. */
+    private static final String NEGATIVE_INTINITY_STRING = "-∞";
+
     /** Serializable UID. */
     private static final long serialVersionUID = 20240711L;
 
@@ -828,11 +837,11 @@ public class TimeOffset
 
         if (length == 0 || index < length) {
             // decomposition failed, either it is a special case or an unparsable string
-            if (s.equals("-∞")) {
+            if (s.equals(NEGATIVE_INTINITY_STRING)) {
                 return TimeOffset.NEGATIVE_INFINITY;
-            } else if (s.equals("+∞")) {
+            } else if (s.equals(POSITIVE_INFINITY_STRING)) {
                 return TimeOffset.POSITIVE_INFINITY;
-            } else if (s.equalsIgnoreCase("NaN")) {
+            } else if (s.equalsIgnoreCase(NAN_STRING)) {
                 return TimeOffset.NaN;
             } else {
                 throw new OrekitException(OrekitMessages.CANNOT_PARSE_DATA, s);
@@ -955,11 +964,11 @@ public class TimeOffset
             if (attoSeconds < 0) {
                 // gather all special cases in one big check to avoid rare multiple tests
                 if (isNaN()) {
-                    return "NaN";
+                    return NAN_STRING;
                 } else if (isPositiveInfinity()) {
-                    return "+∞";
+                    return POSITIVE_INFINITY_STRING;
                 } else {
-                    return "-∞";
+                    return NEGATIVE_INTINITY_STRING;
                 }
             } else {
                 final StringBuilder builder = new StringBuilder();
