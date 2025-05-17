@@ -73,10 +73,25 @@ public class EopCsvFilesLoaderTest extends AbstractFilesLoaderTest {
         Assertions.assertEquals(new AbsoluteDate(2023, 9, 1, utc), history.getEndDate());
     }
 
+    @Test
+    public void testIssue1728() {
+        EOPHistory csvHistory = load("eopc04_14_IAU2000.24.csv");
+        final AbsoluteDate date = new AbsoluteDate(2024, 7, 25, 23, 35, 4, utc);
+        // the reference values have been obtained from an EOP C04 file in column format
+        Assertions.assertEquals(0.021170741929032552,   csvHistory.getUT1MinusUTC(date),                           1.0e-25);
+        Assertions.assertEquals(-8.342402414219897E-5,  csvHistory.getLOD(date),                                   1.0e-25);
+        Assertions.assertEquals(7.316737126610988E-7,   csvHistory.getPoleCorrection(date).getXp(),                1.0e-25);
+        Assertions.assertEquals(2.325298397135211E-6,   csvHistory.getPoleCorrection(date).getYp(),                1.0e-25);
+        Assertions.assertEquals(3.82064825755344E-9,    csvHistory.getEquinoxNutationCorrection(date)[0],          1.0e-25);
+        Assertions.assertEquals(-1.1033150064768268E-9, csvHistory.getEquinoxNutationCorrection(date)[1],          1.0e-25);
+        Assertions.assertEquals(1.5135095005872742E-9,  csvHistory.getNonRotatinOriginNutationCorrection(date)[0], 1.0e-25);
+        Assertions.assertEquals(-1.111662473262389E-9,  csvHistory.getNonRotatinOriginNutationCorrection(date)[1], 1.0e-25);
+    }
+
     private EOPHistory load(final String name) {
         IERSConventions.NutationCorrectionConverter converter =
                         IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        SortedSet<EOPEntry> data = new TreeSet<>(new ChronologicalComparator());
         new EopCsvFilesLoader("^" + name + "$", manager, () -> utc).
         fillHistory(converter, data);
         return new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE, data, true);

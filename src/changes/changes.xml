@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0.3" date="TBC" description="TBC">
+        <action dev="luc" type="fix" issue="1728">
+          Fixed unit errors in EOP CSV format parser.
+        </action>
         <action dev="luc" type="fix" issue="1727">
           Speed up numbers formatting in Rinex files.
         </action>
