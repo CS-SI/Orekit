@@ -408,7 +408,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      *                       second.
      * @param fractionDigits the number of digits to include after the decimal point in
      *                       the string representation of the seconds. The date and time
-     *                       is first rounded as necessary. {@code fractionDigits} must
+     *                       are first rounded as necessary. {@code fractionDigits} must
      *                       be greater than or equal to {@code 0}.
      * @return string representation of this date, time, and UTC offset
      * @see #toStringRfc3339()
@@ -509,7 +509,6 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
             }
             // offset
             final int    minutesFromUTC = t.getMinutesFromUTC();
-            final String timeZoneString;
             if (minutesFromUTC == 0) {
                 builder.append("Z");
             } else {
