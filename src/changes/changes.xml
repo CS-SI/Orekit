@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.1" date="TBD" description="TBD">
+        <action dev="serrof" type="add" issue="1732">
+            Add linear Keplerian covariance step handler.
+        </action>
         <action dev="serrof" type="add" issue="1730">
             Add thrust model based on spherical coordinates.
         </action>
