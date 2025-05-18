@@ -72,12 +72,12 @@ public class IntegrableJacobianColumnGeneratorTest {
     }
 
     @Test
-    public void testDragParametersDerivatives() throws ParseException, IOException {
+    void testDragParametersDerivatives() throws ParseException, IOException {
         doTestParametersDerivatives(DragSensitive.DRAG_COEFFICIENT, 2.4e-3, OrbitType.values());
     }
 
     @Test
-    public void testMuParametersDerivatives() throws ParseException, IOException {
+    void testMuParametersDerivatives() throws ParseException, IOException {
         // TODO: for an unknown reason, derivatives with respect to central attraction
         // coefficient currently (June 2016) do not work in non-Cartesian orbits
         // we don't even know if the test is badly written or if the library code is wrong ...
@@ -219,7 +219,7 @@ public class IntegrableJacobianColumnGeneratorTest {
     }
 
     @Test
-    public void testJacobianIssue18() {
+    void testJacobianIssue18() {
 
         // Body mu
         final double mu = 3.9860047e14;
@@ -278,7 +278,7 @@ public class IntegrableJacobianColumnGeneratorTest {
                         new StateTransitionMatrixGenerator("stm",
                                                            propagator.getAllForceModels(),
                                                            propagator.getAttitudeProvider());
-        IntegrableJacobianColumnGenerator columnGenerator = new IntegrableJacobianColumnGenerator(stmGenerator, selected.getName());
+        IntegrableJacobianColumnGenerator columnGenerator = new IntegrableJacobianColumnGenerator(stmGenerator, selected.getName(), false);
         propagator.addAdditionalDerivativesProvider(columnGenerator);
         propagator.addAdditionalDerivativesProvider(stmGenerator);
 

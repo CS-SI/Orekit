@@ -100,7 +100,7 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
                   final RealMatrix initialStm, final DoubleArrayDictionary initialJacobianColumns) {
         super(stmName, initialStm, initialJacobianColumns);
         this.propagator                            = propagator;
-        this.shortPeriodDerivativesStm             = new double[STATE_DIMENSION][STATE_DIMENSION];
+        this.shortPeriodDerivativesStm             = new double[getStateDimension()][getStateDimension()];
         this.shortPeriodDerivativesJacobianColumns = new DoubleArrayDictionary();
         // Use identity hash map to have the same behavior as a getter on the force model
         this.fieldShortPeriodTerms                 = new IdentityHashMap<>();
@@ -112,10 +112,11 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
 
         final RealMatrix stm = super.getStateTransitionMatrix(state);
 
+        final int stateDimension = getStateDimension();
         if (propagator.getPropagationType() == PropagationType.OSCULATING) {
             // add the short period terms
-            for (int i = 0; i < STATE_DIMENSION; i++) {
-                for (int j = 0; j < STATE_DIMENSION; j++) {
+            for (int i = 0; i < stateDimension; i++) {
+                for (int j = 0; j < stateDimension; j++) {
                     stm.addToEntry(i, j, shortPeriodDerivativesStm[i][j]);
                 }
             }
@@ -136,7 +137,7 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
             final List<String> names = getJacobiansColumnsNames();
             for (int j = 0; j < names.size(); ++j) {
                 final double[] column = shortPeriodDerivativesJacobianColumns.get(names.get(j));
-                for (int i = 0; i < STATE_DIMENSION; i++) {
+                for (int i = 0; i < getStateDimension(); i++) {
                     jacobian.addToEntry(i, j, column[i]);
                 }
             }
@@ -157,11 +158,12 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
     public RealMatrix getB1() {
 
         // Initialize B1
-        final RealMatrix B1 = MatrixUtils.createRealMatrix(STATE_DIMENSION, STATE_DIMENSION);
+        final int stateDimension = getStateDimension();
+        final RealMatrix B1 = MatrixUtils.createRealMatrix(stateDimension, stateDimension);
 
         // add the short period terms
-        for (int i = 0; i < STATE_DIMENSION; i++) {
-            for (int j = 0; j < STATE_DIMENSION; j++) {
+        for (int i = 0; i < stateDimension; i++) {
+            for (int j = 0; j < stateDimension; j++) {
                 B1.addToEntry(i, j, shortPeriodDerivativesStm[i][j]);
             }
         }
@@ -206,12 +208,12 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
 
         // Initialize B4
         final List<String> names = getJacobiansColumnsNames();
-        final RealMatrix B4 = MatrixUtils.createRealMatrix(STATE_DIMENSION, names.size());
+        final RealMatrix B4 = MatrixUtils.createRealMatrix(getStateDimension(), names.size());
 
         // add the short period terms
         for (int j = 0; j < names.size(); ++j) {
             final double[] column = shortPeriodDerivativesJacobianColumns.get(names.get(j));
-            for (int i = 0; i < STATE_DIMENSION; i++) {
+            for (int i = 0; i < getStateDimension(); i++) {
                 B4.addToEntry(i, j, column[i]);
             }
         }
@@ -365,7 +367,7 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
                         DoubleArrayDictionary.Entry entry = shortPeriodDerivativesJacobianColumns.getEntry(span.getData());
                         if (entry == null) {
                             // create an entry filled with zeroes
-                            shortPeriodDerivativesJacobianColumns.put(span.getData(), new double[STATE_DIMENSION]);
+                            shortPeriodDerivativesJacobianColumns.put(span.getData(), new double[getStateDimension()]);
                             entry = shortPeriodDerivativesJacobianColumns.getEntry(span.getData());
                         }
 

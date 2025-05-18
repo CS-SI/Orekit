@@ -18,6 +18,7 @@ package org.orekit.propagation.numerical;
 
 import java.util.List;
 
+import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -44,6 +45,9 @@ class NumericalPropagationHarvester extends AbstractMatricesHarvester {
      * The arguments for initial matrices <em>must</em> be compatible with the {@link org.orekit.orbits.OrbitType orbit type}
      * and {@link PositionAngleType position angle} that will be used by propagator
      * </p>
+     * <p>
+     * If the initial matrix is 7x7, it means that the mass is considered as being a state variable.
+     * </p>
      * @param propagator propagator bound to this harvester
      * @param stmName State Transition Matrix state name
      * @param initialStm initial State Transition Matrix ∂Y/∂Y₀,
@@ -63,22 +67,19 @@ class NumericalPropagationHarvester extends AbstractMatricesHarvester {
     @Override
     protected double[][] getConversionJacobian(final SpacecraftState state) {
 
-        final double[][] dYdC = new double[STATE_DIMENSION][STATE_DIMENSION];
+        final double[][] identity = super.getConversionJacobian(state);
 
-        if (state.isOrbitDefined()) {
+        if (state.isOrbitDefined() && state.getOrbit().getType() != OrbitType.CARTESIAN) {
             // make sure the state is in the desired orbit type
             final Orbit orbit = propagator.getOrbitType().convertType(state.getOrbit());
 
             // compute the Jacobian, taking the position angle type into account
+            final double[][] dYdC = new double[identity.length][identity[0].length];
             orbit.getJacobianWrtCartesian(propagator.getPositionAngleType(), dYdC);
+            return dYdC;
         } else {
-            // for absolute PVA, parameters are already Cartesian
-            for (int i = 0; i < STATE_DIMENSION; ++i) {
-                dYdC[i][i] = 1.0;
-            }
+            return identity;
         }
-
-        return dYdC;
 
     }
 
@@ -104,6 +105,34 @@ class NumericalPropagationHarvester extends AbstractMatricesHarvester {
     @Override
     public PositionAngleType getPositionAngleType() {
         return propagator.getPositionAngleType();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RealMatrix getStateTransitionMatrix(final SpacecraftState state) {
+
+        if (!state.hasAdditionalData(getStmName())) {
+            return null;
+        }
+
+        // extract the additional state
+        final double[] p = state.getAdditionalState(getStmName());
+        final RealMatrix  dCdY0 = toSquareMatrix(p);
+
+        final RealMatrix  dYdY0;
+        if (!state.isOrbitDefined() || state.getOrbit().getType() == OrbitType.CARTESIAN) {
+            dYdY0 = dCdY0;
+        } else {
+            // get the conversion Jacobian
+            final RealMatrix dYdC = MatrixUtils.createRealIdentityMatrix(getStateDimension());
+            dYdC.setSubMatrix(getConversionJacobian(state), 0, 0);
+
+            // compute dYdC * dCdY0
+            dYdY0 = dYdC.multiply(dCdY0);
+        }
+
+        return dYdY0;
+
     }
 
 }

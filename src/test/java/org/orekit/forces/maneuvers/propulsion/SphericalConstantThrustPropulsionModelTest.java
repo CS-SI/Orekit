@@ -42,6 +42,9 @@ class SphericalConstantThrustPropulsionModelTest {
         // THEN
         assertArrayEquals(thrustVector.toArray(), actualThrustVector.toArray(), 1e-12);
         assertEquals(propulsionModel.getThrustVector(AbsoluteDate.ARBITRARY_EPOCH), actualThrustVector);
+        final BasicConstantThrustPropulsionModel basicConstantThrustPropulsionModel = new BasicConstantThrustPropulsionModel(thrustVector.getNorm(),
+                isp, thrustVector.normalize(), "");
+        assertEquals(basicConstantThrustPropulsionModel.getThrustVector(), thrustVector);
     }
 
     @Test

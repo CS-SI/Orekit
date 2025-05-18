@@ -30,11 +30,16 @@ import org.orekit.utils.DoubleArrayDictionary;
  */
 public abstract class AbstractMatricesHarvester implements MatricesHarvester {
 
-    /** State dimension, fixed to 6. */
+    /** State dimension, fixed to 6.
+     * @deprecated as of 13.1, use DEFAULT_STATE_DIMENSION */
+    @Deprecated
     public static final int STATE_DIMENSION = 6;
 
-    /** Identity conversion matrix. */
-    private static final double[][] IDENTITY = {
+    /** Default state dimension, equivalent to position and velocity vectors. */
+    public static final int DEFAULT_STATE_DIMENSION = 6;
+
+    /** Identity conversion matrix for Cartesian-like coordinates. */
+    private static final double[][] IDENTITY6 = {
         { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
         { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 },
         { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 },
@@ -66,8 +71,17 @@ public abstract class AbstractMatricesHarvester implements MatricesHarvester {
      */
     protected AbstractMatricesHarvester(final String stmName, final RealMatrix initialStm, final DoubleArrayDictionary initialJacobianColumns) {
         this.stmName                = stmName;
-        this.initialStm             = initialStm == null ? MatrixUtils.createRealIdentityMatrix(STATE_DIMENSION) : initialStm;
+        this.initialStm             = initialStm == null ? MatrixUtils.createRealIdentityMatrix(DEFAULT_STATE_DIMENSION) : initialStm;
         this.initialJacobianColumns = initialJacobianColumns == null ? new DoubleArrayDictionary() : initialJacobianColumns;
+    }
+
+    /**
+     * Getter for the state dimension.
+     * @return state dimension
+     * @since 13.1
+     */
+    public int getStateDimension() {
+        return initialStm.getColumnDimension();
     }
 
     /** Get the State Transition Matrix state name.
@@ -90,7 +104,42 @@ public abstract class AbstractMatricesHarvester implements MatricesHarvester {
      */
     public double[] getInitialJacobianColumn(final String columnName) {
         final DoubleArrayDictionary.Entry entry = initialJacobianColumns.getEntry(columnName);
-        return entry == null ? new double[STATE_DIMENSION] : entry.getValue();
+        return entry == null ? new double[getStateDimension()] : entry.getValue();
+    }
+
+    /** Convert a flattened array to a square matrix.
+     * @param array input array
+     * @return the corresponding matrix
+     * @since 13.1
+     */
+    protected RealMatrix toSquareMatrix(final double[] array) {
+        final int stateDimension = getStateDimension();
+        final RealMatrix matrix = MatrixUtils.createRealMatrix(stateDimension, stateDimension);
+        int index = 0;
+        for (int i = 0; i < stateDimension; ++i) {
+            for (int j = 0; j < stateDimension; ++j) {
+                matrix.setEntry(i, j, array[index++]);
+            }
+        }
+        return matrix;
+    }
+
+    /** Set the STM data into an array.
+     * @param matrix STM matrix
+     * @return an array containing the STM data
+     * @since 13.1
+     */
+    protected double[] toArray(final double[][] matrix) {
+        final int stateDimension = matrix.length;
+        final double[] array = new double[stateDimension * stateDimension];
+        int index = 0;
+        for (int i = 0; i < stateDimension; ++i) {
+            final double[] row = matrix[i];
+            for (int j = 0; j < stateDimension; ++j) {
+                array[index++] = row[j];
+            }
+        }
+        return array;
     }
 
     /** Get the conversion Jacobian between state parameters and parameters used for derivatives.
@@ -107,7 +156,7 @@ public abstract class AbstractMatricesHarvester implements MatricesHarvester {
      * @return conversion Jacobian
      */
     protected double[][] getConversionJacobian(final SpacecraftState state) {
-        return IDENTITY;
+        return IDENTITY6;
     }
 
     /** {@inheritDoc} */
@@ -131,15 +180,16 @@ public abstract class AbstractMatricesHarvester implements MatricesHarvester {
         final double[] p = state.getAdditionalState(stmName);
 
         // compute dYdY0 = dYdC * dCdY0
-        final RealMatrix  dYdY0 = MatrixUtils.createRealMatrix(STATE_DIMENSION, STATE_DIMENSION);
-        for (int i = 0; i < STATE_DIMENSION; i++) {
+        final int stateDimension = getStateDimension();
+        final RealMatrix  dYdY0 = MatrixUtils.createRealMatrix(stateDimension, stateDimension);
+        for (int i = 0; i < stateDimension; i++) {
             final double[] rowC = dYdC[i];
-            for (int j = 0; j < STATE_DIMENSION; ++j) {
+            for (int j = 0; j < stateDimension; ++j) {
                 double sum = 0;
                 int pIndex = j;
-                for (int k = 0; k < STATE_DIMENSION; ++k) {
+                for (int k = 0; k < stateDimension; ++k) {
                     sum += rowC[k] * p[pIndex];
-                    pIndex += STATE_DIMENSION;
+                    pIndex += stateDimension;
                 }
                 dYdY0.setEntry(i, j, sum);
             }
@@ -160,16 +210,17 @@ public abstract class AbstractMatricesHarvester implements MatricesHarvester {
         }
 
         // get the conversion Jacobian
-        final double[][] dYdC = getConversionJacobian(state);
+        final RealMatrix dYdC = MatrixUtils.createRealIdentityMatrix(getStateDimension());
+        dYdC.setSubMatrix(getConversionJacobian(state), 0, 0);
 
         // compute dYdP = dYdC * dCdP
-        final RealMatrix dYdP = MatrixUtils.createRealMatrix(STATE_DIMENSION, columnsNames.size());
+        final RealMatrix dYdP = MatrixUtils.createRealMatrix(getStateDimension(), columnsNames.size());
         for (int j = 0; j < columnsNames.size(); j++) {
             final double[] p = state.getAdditionalState(columnsNames.get(j));
-            for (int i = 0; i < STATE_DIMENSION; ++i) {
-                final double[] dYdCi = dYdC[i];
+            for (int i = 0; i < getStateDimension(); ++i) {
+                final double[] dYdCi = dYdC.getRow(i);
                 double sum = 0;
-                for (int k = 0; k < STATE_DIMENSION; ++k) {
+                for (int k = 0; k < getStateDimension(); ++k) {
                     sum += dYdCi[k] * p[k];
                 }
                 dYdP.setEntry(i, j, sum);
