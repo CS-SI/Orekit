@@ -39,15 +39,6 @@ import org.orekit.utils.ExtendedPositionProvider;
  * <p>
  * AIAA 2006-6166<br>
  * </p>
- * <p>
- * Two computation methods are proposed to the user:
- * <ul>
- * <li> one OREKIT independent and compliant with initial FORTRAN routine entry values:
- *        {@link #getDensity(double, double, double, double, double, double, double, double, double, double, double, double, double)}. </li>
- * <li> one compliant with OREKIT Atmosphere interface, necessary to the
- *        {@link org.orekit.forces.drag.DragForce
- *        drag force model} computation.</li>
- * </ul>
  *
  * <p>
  * This model provides dense output for all altitudes and positions. Output data are :
