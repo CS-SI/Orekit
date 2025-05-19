@@ -16,6 +16,7 @@
  */
 package org.orekit.models.earth.atmosphere;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -47,7 +48,6 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinatesProvider;
 
 import java.text.ParseException;
 
@@ -63,54 +63,57 @@ class JB2008Test {
         final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING, itrf);
-        final JB2008 atm = new JB2008(null, sun, earth);
-
-        // Reference input data
-        final double[] D1950  = {20035.00454861111, 20035.50362, 20036.00468, 20036.50375,
-                                 20037.00000, 20037.50556, 20038.00088, 20038.50644,
-                                 20039.00543, 20039.50450, 20040.00000, 20040.50556};
-        final double[] SUNRA  = {3.8826, 3.8914, 3.9001, 3.9089, 3.9176, 3.9265,
-                                 3.9352, 3.9441, 3.9529, 3.9618, 3.9706, 3.9795};
-        final double[] SUNDEC = {-0.2847, -0.2873, -0.2898, -0.2923, -0.2948, -0.2973,
-                                 -0.2998, -0.3022, -0.3046, -0.3070, -0.3094, -0.3117};
-        final double[] SATLON = {73.46, 218.68, 34.55, 46.25, 216.56, 32.00,
-                                 38.83, 213.67, 29.37, 38.12, 211.78, 26.64};
-        final double[] SATLAT = {-85.24, -18.65, 37.71, 74.36,  -8.85, -39.64,
-                                 -51.93, -21.25, 46.43, 65.97, -21.31, -51.87};
-        final double[] SATALT = {398.91, 376.75, 373.45, 380.61, 374.03, 385.05,
-                                 389.83, 376.98, 374.56, 378.97, 377.76, 390.09};
-        final double[] F10    = {128.80, 128.80, 129.60, 129.60, 124.10, 124.10,
-                                 140.90, 140.90, 104.60, 104.60,  94.90,  94.90};
-        final double[] F10B   = {105.60, 105.60, 105.60, 105.60, 105.60, 105.60,
-                                 105.60, 105.60, 105.70, 105.70, 105.90, 105.90};
-        final double[] S10    = {103.50, 103.50, 110.20, 110.20, 109.40, 109.40,
-                                 108.60, 108.60, 107.40, 107.40, 110.90, 110.90};
-        final double[] S10B   = {103.80, 103.80, 103.80, 103.80, 103.80, 103.80,
-                                 103.70, 103.70, 103.70, 103.70, 103.70, 103.70};
-        final double[] XM10   = {110.90, 110.90, 115.60, 115.60, 110.00, 110.00,
-                                 110.00, 110.00, 106.90, 106.90, 102.20, 102.20};
-        final double[] XM10B  = {106.90, 106.90, 106.90, 106.90, 106.90, 106.90,
-                                 107.00, 107.00, 107.10, 107.10, 107.10, 107.10};
-        final double[] Y10    = {127.90, 127.90, 125.90, 125.90, 127.70, 127.70,
-                                 125.60, 125.60, 126.60, 126.60, 126.80, 126.80};
-        final double[] Y10B   = {112.90, 112.90, 112.90, 112.90, 113.00, 113.00,
-                                 113.20, 113.20, 113.20, 113.20, 113.30, 113.30};
-        final double[] DSTDTC = {  3.,  80., 240., 307., 132.,  40.,
-                                 327., 327., 118.,  25.,  85., 251.};
+        final JB2008 atm = new JB2008(new LegacyInputParams(), sun, earth);
 
         // Loop over cases
         for (int i = 0; i < 12; i++) {
-            final double rho = atm.getDensity(MJD(D1950[i]), SUNRA[i], SUNDEC[i],
-                                              RAP(D1950[i], SATLON[i]),
-                                              FastMath.toRadians(SATLAT[i]),
-                                              SATALT[i] * 1000.,
-                                              F10[i], F10B[i], S10[i], S10B[i],
-                                              XM10[i], XM10B[i], Y10[i], Y10B[i], DSTDTC[i]);
+            final double rho = atm.computeDensity(LegacyInputParams.TC[i], LegacyInputParams.SUNRA[i], LegacyInputParams.SUNDEC[i],
+                                                  RAP(LegacyInputParams.TC[i], LegacyInputParams.SATLON[i]),
+                                                  FastMath.toRadians(LegacyInputParams.SATLAT[i]),
+                                                  LegacyInputParams.SATALT[i] * 1000.);
             checkLegacy(i, rho, print);
         }
 
     }
 
+    @Test
+    void testDensityWithLocalSolarActivityData() {
+        // First case of "testAltitude"
+        final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING, itrf);
+        final CelestialBody sun = CelestialBodyFactory.getSun();
+        final JB2008 model = new JB2008(null, sun, earth);
+        double referenceDensity = 0.27945654e-05;
+        double computedDensity = model.getDensity(52951.003805740744, 3.046653643566772, -0.285987757544287,
+                                                  1.28211886851503, -1.4877186543999,
+                                                  91.0e+3, 91.00, 137.10,
+                                                  108.80, 123.80, 116.70, 128.50,
+                                                  168.00, 138.60, 43.);
+        Assertions.assertEquals(referenceDensity, computedDensity, referenceDensity * 2.e-5);
+    }
+
+    @Test
+    void testDensityWithLocalSolarActivityDataField() {
+        doTestDensityWithLocalSolarActivityData(Binary64Field.getInstance());
+    }
+
+    <T extends CalculusFieldElement<T>> void doTestDensityWithLocalSolarActivityData(Field<T> field) {
+        // First case of "testAltitude"
+        T zero = field.getZero();
+        final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING, itrf);
+        final CelestialBody sun = CelestialBodyFactory.getSun();
+        final JB2008 model = new JB2008(null, sun, earth);
+        double referenceDensity = 0.27945654e-05;
+        double computedDensity = model.getDensity(zero.add(52951.003805740744), zero.add(3.046653643566772), zero.add(-0.285987757544287),
+                                                  zero.add(1.28211886851503), zero.add(-1.4877186543999),
+                                                  zero.add(91.0e+3), 91.00, 137.10,
+                                                  108.80, 123.80, 116.70, 128.50,
+                                                  168.00, 138.60, 43.).getReal();
+        Assertions.assertEquals(referenceDensity, computedDensity, referenceDensity * 2.e-5);
+    }
 
     @Test
     void testAltitude() {
@@ -167,7 +170,7 @@ class JB2008Test {
 
         // alt = 89.999km
         try {
-            atm.getDensity(0., 0., 0., 0., 0., 89999.0, 0., 0., 0., 0., 0., 0., 0., 0., 0.);
+            atm.computeDensity(AbsoluteDate.ARBITRARY_EPOCH, 0., 0., 0., 0., 89999.0);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.ALTITUDE_BELOW_ALLOWED_THRESHOLD, oe.getSpecifier());
@@ -320,20 +323,13 @@ class JB2008Test {
 
     }
 
-    /** Convert duration from fifties epoch to mjd epoch.
-     * @param d1950 duration from fifties epoch
-     * @return duration from mjd epoch
-     */
-    private double MJD(final double d1950) {
-        return d1950 + 33281.0;
-    }
-
     /** Convert longitude of position to right ascension of position.
      * @param d1950 duration from fifties epoch
      * @param satLon longitude of position (°)
      * @return right ascension of position (rad)
      */
-    private double RAP(final double d1950, final double satLon) {
+    private double RAP(final AbsoluteDate date, final double satLon) {
+        double d1950 = date.getMJD() - 33281.;
         double theta;
         final double nbday = FastMath.floor(d1950);
         if (nbday < 7305.) {
@@ -396,6 +392,179 @@ class JB2008Test {
     @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:atmosphere");
+    }
+
+    private static class LegacyInputParams implements JB2008InputParameters {
+
+        private static final AbsoluteDate[] TC  = {AbsoluteDate.createMJDDate(MJD(20035), 0.00454861111 * Constants.JULIAN_DAY, TimeScalesFactory.getUTC()),
+                                                   AbsoluteDate.createMJDDate(MJD(20035), 0.50362 * Constants.JULIAN_DAY, TimeScalesFactory.getUTC()),
+                                                   AbsoluteDate.createMJDDate(MJD(20036), 0.00468 * Constants.JULIAN_DAY, TimeScalesFactory.getUTC()),
+                                                   AbsoluteDate.createMJDDate(MJD(20036), 0.50375 * Constants.JULIAN_DAY, TimeScalesFactory.getUTC()),
+                                                   AbsoluteDate.createMJDDate(MJD(20037), 0. * Constants.JULIAN_DAY, TimeScalesFactory.getUTC()),
+                                                   AbsoluteDate.createMJDDate(MJD(20037), 0.50556 * Constants.JULIAN_DAY, TimeScalesFactory.getUTC()),
+                                                   AbsoluteDate.createMJDDate(MJD(20038), 0.00088 * Constants.JULIAN_DAY, TimeScalesFactory.getUTC()),
+                                                   AbsoluteDate.createMJDDate(MJD(20038), 0.50644 * Constants.JULIAN_DAY, TimeScalesFactory.getUTC()),
+                                                   AbsoluteDate.createMJDDate(MJD(20039), 0.00543 * Constants.JULIAN_DAY, TimeScalesFactory.getUTC()),
+                                                   AbsoluteDate.createMJDDate(MJD(20039), 0.50450* Constants.JULIAN_DAY, TimeScalesFactory.getUTC()),
+                                                   AbsoluteDate.createMJDDate(MJD(20040), 0. * Constants.JULIAN_DAY, TimeScalesFactory.getUTC()),
+                                                   AbsoluteDate.createMJDDate(MJD(20040), 0.50556 * Constants.JULIAN_DAY, TimeScalesFactory.getUTC())};
+
+        private static final double[] SUNRA  = {3.8826, 3.8914, 3.9001, 3.9089, 3.9176, 3.9265,
+                                                3.9352, 3.9441, 3.9529, 3.9618, 3.9706, 3.9795};
+
+        private static final double[] SUNDEC = {-0.2847, -0.2873, -0.2898, -0.2923, -0.2948, -0.2973,
+                                                -0.2998, -0.3022, -0.3046, -0.3070, -0.3094, -0.3117};
+
+        private static final double[] SATLON = {73.46, 218.68, 34.55, 46.25, 216.56, 32.00,
+                                                38.83, 213.67, 29.37, 38.12, 211.78, 26.64};
+
+        private static final double[] SATLAT = {-85.24, -18.65, 37.71, 74.36,  -8.85, -39.64,
+                                                -51.93, -21.25, 46.43, 65.97, -21.31, -51.87};
+
+        private static final double[] SATALT = {398.91, 376.75, 373.45, 380.61, 374.03, 385.05,
+                                                389.83, 376.98, 374.56, 378.97, 377.76, 390.09};
+
+        private static final double[] F10    = {128.80, 128.80, 129.60, 129.60, 124.10, 124.10,
+                                                140.90, 140.90, 104.60, 104.60,  94.90,  94.90};
+
+        private static final double[] F10B   = {105.60, 105.60, 105.60, 105.60, 105.60, 105.60,
+                                                105.60, 105.60, 105.70, 105.70, 105.90, 105.90};
+
+        private static final double[] S10    = {103.50, 103.50, 110.20, 110.20, 109.40, 109.40,
+                                                108.60, 108.60, 107.40, 107.40, 110.90, 110.90};
+
+        private static final double[] S10B   = {103.80, 103.80, 103.80, 103.80, 103.80, 103.80,
+                                                103.70, 103.70, 103.70, 103.70, 103.70, 103.70};
+
+        private static final double[] XM10   = {110.90, 110.90, 115.60, 115.60, 110.00, 110.00,
+                                                110.00, 110.00, 106.90, 106.90, 102.20, 102.20};
+
+        private static final double[] XM10B  = {106.90, 106.90, 106.90, 106.90, 106.90, 106.90,
+                                                107.00, 107.00, 107.10, 107.10, 107.10, 107.10};
+
+        private static final double[] Y10    = {127.90, 127.90, 125.90, 125.90, 127.70, 127.70,
+                                                125.60, 125.60, 126.60, 126.60, 126.80, 126.80};
+
+        private static final double[] Y10B   = {112.90, 112.90, 112.90, 112.90, 113.00, 113.00,
+                                                113.20, 113.20, 113.20, 113.20, 113.30, 113.30};
+
+        private static final double[] DSTDTC = {  3.,  80., 240., 307., 132.,  40.,
+                                                327., 327., 118.,  25.,  85., 251.};
+
+        @Override
+        public AbsoluteDate getMinDate() {
+            return TC[0];
+        }
+
+        @Override
+        public AbsoluteDate getMaxDate() {
+            return TC[TC.length - 1];
+        }
+
+        @Override
+        public double getF10(AbsoluteDate date)
+        {
+            for (int i = 0; i < TC.length; i++) {
+                if (date.equals(TC[i])) {
+                    return F10[i];
+                }
+            }
+            return Double.NaN;
+        }
+
+        @Override
+        public double getF10B(AbsoluteDate date)
+        {
+            for (int i = 0; i < TC.length; i++) {
+                if (date.equals(TC[i])) {
+                    return F10B[i];
+                }
+            }
+            return Double.NaN;
+        }
+
+        @Override
+        public double getS10(AbsoluteDate date)
+        {
+            for (int i = 0; i < TC.length; i++) {
+                if (date.equals(TC[i])) {
+                    return S10[i];
+                }
+            }
+            return Double.NaN;
+        }
+
+        @Override
+        public double getS10B(AbsoluteDate date)
+        {
+            for (int i = 0; i < TC.length; i++) {
+                if (date.equals(TC[i])) {
+                    return S10B[i];
+                }
+            }
+            return Double.NaN;
+        }
+
+        @Override
+        public double getXM10(AbsoluteDate date)
+        {
+            for (int i = 0; i < TC.length; i++) {
+                if (date.equals(TC[i])) {
+                    return XM10[i];
+                }
+            }
+            return Double.NaN;
+        }
+
+        @Override
+        public double getXM10B(AbsoluteDate date)
+        {
+            for (int i = 0; i < TC.length; i++) {
+                if (date.equals(TC[i])) {
+                    return XM10B[i];
+                }
+            }
+            return Double.NaN;
+        }
+
+        @Override
+        public double getY10(AbsoluteDate date)
+        {
+            for (int i = 0; i < TC.length; i++) {
+                if (date.equals(TC[i])) {
+                    return Y10[i];
+                }
+            }
+            return Double.NaN;
+        }
+
+        @Override
+        public double getY10B(AbsoluteDate date)
+        {
+            for (int i = 0; i < TC.length; i++) {
+                if (date.equals(TC[i])) {
+                    return Y10B[i];
+                }
+            }
+            return Double.NaN;
+        }
+
+        @Override
+        public double getDSTDTC(AbsoluteDate date)
+        {
+            for (int i = 0; i < TC.length; i++) {
+                if (date.equals(TC[i])) {
+                    return DSTDTC[i];
+                }
+            }
+            return Double.NaN;
+        }
+
+
+        private static int MJD(final int d1950) {
+            return d1950 + 33281;
+        }
+
     }
 
     private static class InputParams implements JB2008InputParameters {
