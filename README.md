@@ -230,18 +230,19 @@ public static void main(String[] args) {
     DataContext.getDefault().getDataProvidersManager().addProvider(dirCrawler);
 
     // Define an arbitrary orbit
-    double            sma               = 7000e3; // SMA [m]
-    double            ecc               = 0.001;
-    double            inc               = FastMath.toRadians(15); //rad
-    double            perigeeArgument   = FastMath.toRadians(30); //rad
-    double            raan              = FastMath.toRadians(45); //rad
-    double            anomaly           = FastMath.toRadians(60); //rad
-    PositionAngleType positionAngleType = PositionAngleType.MEAN;
-    Frame             inertialFrame     = FramesFactory.getGCRF();
-    AbsoluteDate      date              = new AbsoluteDate(2002, 1, 1, 0, 0, 0, TimeScalesFactory.getUTC());
-    double            mu                = Constants.EIGEN5C_EARTH_MU;
-
-    Orbit orbit = new KeplerianOrbit(sma, ecc, inc, perigeeArgument, raan, anomaly, 
+    double sma = 7000e3; // Semi-major axis [m]
+    double ecc = 0.001; // Eccentricity [-]
+    double inc = FastMath.toRadians(15); // Inclination [rad]
+    double pa = FastMath.toRadians(30); // Perigee Argument [rad]
+    double raan = FastMath.toRadians(45); // Right Ascension of the Ascending Node[rad]
+    double anomaly = FastMath.toRadians(60); // Inclination [rad]
+  
+    PositionAngleType positionAngleType = PositionAngleType.MEAN; // Type of anomaly angle used (MEAN, TRUE, ECCENTRIC)
+    Frame inertialFrame = FramesFactory.getGCRF(); // Earth-Centered Inertial frame
+    AbsoluteDate date = new AbsoluteDate(2002, 1, 1, 0, 0, 0, TimeScalesFactory.getUTC()); // Date of the orbit
+    double mu = Constants.EIGEN5C_EARTH_MU; // Earth's standard gravitational parameter used in EIGEN-5C gravity field model
+  
+    Orbit orbit = new KeplerianOrbit(sma, ecc, inc, pa, raan, anomaly,
                                      positionAngleType, inertialFrame, date, mu);
 
     System.out.println(orbit);
