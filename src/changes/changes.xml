@@ -57,6 +57,9 @@
         <action dev="serrof" type="add" issue="1683">
             Add (Field)ExtremumAngularSeparationDetector.
         </action>
+        <action dev="bryan" type="add" issue="1268">
+            Added Herrick-Gibbs initial orbit determination.
+        </action>
         <action dev="vincent" type="fix" issue="1099">
             Fixed OrbitRelativeFrame definition of ambiguous local orbital frames (CCSDS).
         </action>

@@ -229,7 +229,7 @@
     * orbit determination can be performed with numerical, DSST, SDP4/SGP4, Eckstein-Hechler, Brouwer-Lyddane, Keplerian or GNSS propagators
     * ephemeris-based orbit determination to estimate measurement parameters like station biases or clock offsets
     * multi-satellites orbit determination
-    * initial orbit determination methods (Gibbs, Gooding, Lambert, Gauss, and Laplace)
+    * initial orbit determination methods (Gibbs, Herrick-Gibbs, Gooding, Lambert, Gauss, and Laplace)
     * ground stations displacements due to solid tides
     * ground stations displacements due to ocean loading (based on Onsala Space Observatory files in BLQ format)
     * ground stations displacements due to plate tectonics
