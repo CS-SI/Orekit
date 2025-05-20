@@ -43,7 +43,8 @@ import org.orekit.utils.PVCoordinates;
  * Because this method is only approximate, it is not robust as the Gibbs method
  * for other cases.
  * </p>
- * @see Vallado, D., Fundamentals of Astrodynamics and Applications, 4th Edition.
+ *
+ * @see "Vallado, D., Fundamentals of Astrodynamics and Applications, 4th Edition."
  *
  * @author Bryan Cazabonne
  * @since 13.1
