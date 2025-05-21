@@ -465,7 +465,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
             // set up the additional equations and additional state providers
             final AbstractStateTransitionMatrixGenerator stmGenerator = setUpStmGenerator();
-            final List<String> triggersDates = setUpTriggerDatesJacobiansColumns(stmGenerator.getName());
+            final List<String> triggersDates = setUpTriggerDatesJacobiansColumns(stmGenerator);
             setUpRegularParametersJacobiansColumns(stmGenerator, triggersDates);
 
             // as we are now starting the propagation, everything is configured
@@ -520,12 +520,14 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     }
 
     /** Set up the Jacobians columns generator dedicated to trigger dates.
-     * @param stmName name of the State Transition Matrix state
+     * @param stmGenerator State Transition Matrix generator
      * @return names of the columns corresponding to trigger dates
-     * @since 11.1
+     * @since 13.1
      */
-    private List<String> setUpTriggerDatesJacobiansColumns(final String stmName) {
+    private List<String> setUpTriggerDatesJacobiansColumns(final AbstractStateTransitionMatrixGenerator stmGenerator) {
 
+        final String stmName = stmGenerator.getName();
+        final boolean isMassInStm = stmGenerator instanceof ExtendedStateTransitionMatrixGenerator;
         final List<String> names = new ArrayList<>();
         for (final ForceModel forceModel : getAllForceModels()) {
             if (forceModel instanceof Maneuver && ((Maneuver) forceModel).getManeuverTriggers() instanceof ResettableManeuverTriggers) {
@@ -546,7 +548,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                             // normally datedriver should have only 1 span but just in case the user defines several span, there will
                             // be no problem here
                             for (Span<String> span = d.getStartDriver().getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                                start = manageTriggerDate(stmName, maneuver, maneuverTriggers, span.getData(), true, d.getThreshold());
+                                start = manageTriggerDate(stmName, maneuver, maneuverTriggers, span.getData(), true,
+                                        d.getThreshold(), isMassInStm);
                                 names.add(start.getName());
                                 start = null;
                             }
@@ -555,7 +558,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                             // normally datedriver should have only 1 span but just in case the user defines several span, there will
                             // be no problem here
                             for (Span<String> span = d.getStopDriver().getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                                stop = manageTriggerDate(stmName, maneuver, maneuverTriggers, span.getData(), false, d.getThreshold());
+                                stop = manageTriggerDate(stmName, maneuver, maneuverTriggers, span.getData(), false,
+                                        d.getThreshold(), isMassInStm);
                                 names.add(stop.getName());
                                 stop = null;
                             }
@@ -615,15 +619,17 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * @param driverName name of the date driver
      * @param start if true, the driver is a maneuver start
      * @param threshold event detector threshold
+     * @param isMassInStm flag on presence on mass in STM
      * @return generator for the date driver
-     * @since 11.1
+     * @since 13.1
      */
     private TriggerDate manageTriggerDate(final String stmName,
                                           final Maneuver maneuver,
                                           final ResettableManeuverTriggers mt,
                                           final String driverName,
                                           final boolean start,
-                                          final double threshold) {
+                                          final double threshold,
+                                          final boolean isMassInStm) {
 
         TriggerDate triggerGenerator = null;
 
@@ -639,7 +645,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         if (triggerGenerator == null) {
             // this is the first time we need the Jacobian column generator, create it
-            triggerGenerator = new TriggerDate(stmName, driverName, start, maneuver, threshold);
+            triggerGenerator = new TriggerDate(stmName, driverName, start, maneuver, threshold, isMassInStm);
             mt.addResetter(triggerGenerator);
             addAdditionalDerivativesProvider(triggerGenerator.getMassDepletionDelay());
             addAdditionalDataProvider(triggerGenerator);
@@ -648,7 +654,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         if (!getInitialIntegrationState().hasAdditionalData(driverName)) {
             // add the initial Jacobian column if it is not already there
             // (perhaps due to a previous propagation)
-            setInitialColumn(triggerGenerator.getMassDepletionDelay().getName(), new double[6]);
+            final double[] zeroes = new double[triggerGenerator.getMassDepletionDelay().getDimension()];
+            setInitialColumn(triggerGenerator.getMassDepletionDelay().getName(), zeroes);
             setInitialColumn(driverName, getHarvester().getInitialJacobianColumn(driverName));
         }
 

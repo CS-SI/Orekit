@@ -41,10 +41,14 @@ public class MassDepletionDelay implements AdditionalDerivativesProvider {
     /** Maneuver that is delayed. */
     private final Maneuver maneuver;
 
+    /** Additional state dimension. */
+    private final int dimension;
+
     /** Indicator for forward propagation. */
     private boolean forward;
 
-    /** Simple constructor.
+
+    /** Constructor without mass as state variable in transition matrix.
      * <p>
      * The generated additional state and derivatives will be named by prepending
      * the {@link #PREFIX} to the name of the date trigger parameter.
@@ -54,9 +58,26 @@ public class MassDepletionDelay implements AdditionalDerivativesProvider {
      * @param maneuver maneuver that is delayed
      */
     public MassDepletionDelay(final String triggerName, final boolean manageStart, final Maneuver maneuver) {
+        this(triggerName, manageStart, maneuver, false);
+    }
+
+    /** Constructor.
+     * <p>
+     * The generated additional state and derivatives will be named by prepending
+     * the {@link #PREFIX} to the name of the date trigger parameter.
+     * </p>
+     * @param triggerName name of the date trigger parameter
+     * @param manageStart if true, we compute derivatives with respect to maneuver start
+     * @param maneuver maneuver that is delayed
+     * @param isMassInStm flag on mass inclusion as state variable in STM
+     * @since 13.1
+     */
+    public MassDepletionDelay(final String triggerName, final boolean manageStart, final Maneuver maneuver,
+                              final boolean isMassInStm) {
         this.depletionName = PREFIX + triggerName;
         this.manageStart   = manageStart;
         this.maneuver      = maneuver;
+        this.dimension     = isMassInStm ? 7 : 6;
     }
 
     /** {@inheritDoc} */
@@ -69,7 +90,7 @@ public class MassDepletionDelay implements AdditionalDerivativesProvider {
      * @return dimension of the generated column
      */
     public int getDimension() {
-        return 6;
+        return dimension;
     }
 
     /** {@inheritDoc} */
@@ -84,7 +105,7 @@ public class MassDepletionDelay implements AdditionalDerivativesProvider {
 
         // retrieve current Jacobian column
         final double[] p = state.getAdditionalState(getName());
-        final double[] pDot = new double[6];
+        final double[] pDot = new double[getDimension()];
 
         if (forward == manageStart) {
 
@@ -108,6 +129,9 @@ public class MassDepletionDelay implements AdditionalDerivativesProvider {
             pDot[3] = ratio * acceleration.getX();
             pDot[4] = ratio * acceleration.getY();
             pDot[5] = ratio * acceleration.getZ();
+            if (getDimension() > 6) {
+                pDot[6] = minusQ;
+            }
 
         }
 
