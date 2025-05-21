@@ -33,6 +33,9 @@
         <action dev="luc" type="fix" issue="1727">
           Speed up numbers formatting in Rinex files.
         </action>
+        <action dev="baubin" type="update" issue="1070">
+          Updated regular expression in GravityFieldFactory to read EGM2008 file as well as EGM96.
+        </action>
     </release>
     <release version="13.0.2" date="2025-04-30" description="Orekit 13.0.2 is a patch release.
         It fixes several issues related to GNSS, data loading and indirect shooting.">
