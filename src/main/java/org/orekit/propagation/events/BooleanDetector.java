@@ -211,6 +211,11 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
     }
 
     @Override
+    public boolean dependsOnTimeOnly() {
+        return getDetectors().stream().allMatch(EventDetector::dependsOnTimeOnly);
+    }
+
+    @Override
     public double g(final SpacecraftState s) {
         // can't use stream/lambda here because g(s) throws a checked exception
         // so write out and combine the map and reduce loops

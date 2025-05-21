@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.events;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -40,6 +41,18 @@ class TimeIntervalDetectorTest {
         final TimeInterval actualInterval = detector.getTimeInterval();
         // THEN
         assertEquals(interval, actualInterval);
+    }
+
+    @Test
+    void testDependsOnlyOnTime() {
+        // GIVEN
+        final AbsoluteDate startDate = AbsoluteDate.ARBITRARY_EPOCH;
+        final TimeInterval interval = TimeInterval.of(startDate, startDate.shiftedBy(1.));
+        final TimeIntervalDetector detector = new TimeIntervalDetector(mock(EventHandler.class), interval);
+        // WHEN
+        final boolean value = detector.dependsOnTimeOnly();
+        // THEN
+        Assertions.assertTrue(value);
     }
 
     @Test

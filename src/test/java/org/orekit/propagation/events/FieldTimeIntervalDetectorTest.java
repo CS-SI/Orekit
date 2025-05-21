@@ -18,6 +18,7 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -43,6 +44,19 @@ class FieldTimeIntervalDetectorTest {
         final TimeInterval actualInterval = detector.getTimeInterval();
         // THEN
         assertEquals(interval, actualInterval);
+    }
+
+    @Test
+    void testDependsOnlyOnTime() {
+        // GIVEN
+        final AbsoluteDate startDate = AbsoluteDate.ARBITRARY_EPOCH;
+        final TimeInterval interval = TimeInterval.of(startDate, startDate.shiftedBy(1.));
+        final FieldTimeIntervalDetector<Binary64> detector = new FieldTimeIntervalDetector<>(Binary64Field.getInstance(),
+                interval);
+        // WHEN
+        final boolean value = detector.dependsOnTimeOnly();
+        // THEN
+        Assertions.assertTrue(value);
     }
 
     @Test

@@ -223,6 +223,12 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
         return new FieldNegateDetector<>(detector);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean dependsOnTimeOnly() {
+        return getDetectors().stream().allMatch(FieldEventDetector::dependsOnTimeOnly);
+    }
+
     @Override
     public T g(final FieldSpacecraftState<T> s) {
         // can't use stream/lambda here because g(s) throws a checked exception

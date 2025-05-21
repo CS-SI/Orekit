@@ -95,6 +95,11 @@ public class FieldGroundAtNightDetector<T extends CalculusFieldElement<T>>
                 detectionSettings, newHandler);
     }
 
+    @Override
+    public boolean dependsOnTimeOnly() {
+        return true;
+    }
+
     /** {@inheritDoc}
      * <p>
      * The {@code g} function of this detector is positive when ground is at night

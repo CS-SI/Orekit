@@ -71,6 +71,12 @@ public class TimeIntervalDetector extends AbstractDetector<TimeIntervalDetector>
         return new TimeIntervalDetector(detectionSettings, newHandler, timeInterval);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean dependsOnTimeOnly() {
+        return true;
+    }
+
     @Override
     public double g(final SpacecraftState s) {
         final AbsoluteDate date = s.getDate();

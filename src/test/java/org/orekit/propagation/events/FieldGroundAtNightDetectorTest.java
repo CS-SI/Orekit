@@ -20,6 +20,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.TestUtils;
 import org.orekit.frames.TopocentricFrame;
@@ -38,6 +39,17 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class FieldGroundAtNightDetectorTest {
+
+    @Test
+    void testDependsOnlyOnTime() {
+        // GIVEN
+        final FieldGroundAtNightDetector<Binary64> fieldDetector = new FieldGroundAtNightDetector<>(mock(TopocentricFrame.class),
+                null, Binary64.ZERO, null);
+        // WHEN
+        final boolean value = fieldDetector.dependsOnTimeOnly();
+        // THEN
+        Assertions.assertTrue(value);
+    }
 
     @Test
     void testGRefraction() {
