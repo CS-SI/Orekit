@@ -14,21 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation;
 
-import org.orekit.utils.BoundedPVCoordinatesProvider;
+package org.orekit.utils;
 
-/** This interface is intended for ephemerides valid only during a time range.
+import org.hipparchus.CalculusFieldElement;
+import org.orekit.time.FieldAbsoluteDate;
+
+/**
+ * Interface for bounded, Field PV coordinates providers.
  *
- * <p>This interface provides a mean to retrieve orbital parameters at
- * any time within a given range. It should be implemented by orbit readers
- * based on external data files and by continuous models built after numerical
- * integration has been completed and dense output data as been
- * gathered.</p>
- *
- * @author Luc Maisonobe
- *
+ * @author Romain Serra
+ * @since 13.1
+ * @see FieldPVCoordinatesProvider
  */
-public interface BoundedPropagator extends Propagator, BoundedPVCoordinatesProvider {
+public interface FieldBoundedPVCoordinatesProvider<T extends CalculusFieldElement<T>>
+        extends FieldPVCoordinatesProvider<T> {
 
+    /** Get the first date of the range.
+     * @return the first date of the range
+     */
+    FieldAbsoluteDate<T> getMinDate();
+
+    /** Get the last date of the range.
+     * @return the last date of the range
+     */
+    FieldAbsoluteDate<T> getMaxDate();
 }
