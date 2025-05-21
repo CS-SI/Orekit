@@ -158,6 +158,14 @@ public class EGMFormatReaderTest {
     }
 
     @Test
+    void testEGM2008TideFreePattern() {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("dummy_egm2008_tidefree", true));
+        Assertions.assertEquals(TideSystem.TIDE_FREE,
+                            GravityFieldFactory.getUnnormalizedProvider(5, 5).getTideSystem());
+    }
+
+    @Test
     void testWgs84CoefficientOverride()
         {
         final double epsilon = Precision.EPSILON;

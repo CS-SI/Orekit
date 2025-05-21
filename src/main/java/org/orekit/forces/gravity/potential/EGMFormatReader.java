@@ -94,7 +94,11 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
         }
 
         final String lowerCaseName = name.toLowerCase(Locale.US);
-        if (lowerCaseName.contains("2008") || lowerCaseName.contains("zerotide")) {
+        if (lowerCaseName.contains("zerotide")) {
+            setTideSystem(TideSystem.ZERO_TIDE);
+        } else if (lowerCaseName.contains("tidefree")) {
+            setTideSystem(TideSystem.TIDE_FREE);
+        } else if (lowerCaseName.contains("2008")) {
             setTideSystem(TideSystem.ZERO_TIDE);
         } else {
             setTideSystem(TideSystem.TIDE_FREE);
