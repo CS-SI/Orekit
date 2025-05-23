@@ -26,6 +26,8 @@ import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.Utils;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
@@ -35,6 +37,7 @@ import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -235,6 +238,31 @@ public class StateCovarianceMatrixProviderTest {
         // Verify
         compareCovariance(refCovAfter60s, propagatedCov, 3.0e-5);
         Assertions.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = LOFType.class, names = {"QSW", "NTW", "LVLH", "TNW"})
+    void testStmLof(final LOFType lofType) {
+        // GIVEN
+        setUp();
+        final NumericalPropagator propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(100));
+        propagator.resetInitialState(initialState);
+        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
+        final MatricesHarvester harvester = propagator.setupMatricesComputation("stm", null, null);
+        final StateCovariance initialCovariance = new StateCovariance(MatrixUtils.createRealIdentityMatrix(6).scalarMultiply(1e-2),
+                initialState.getDate(), lofType);
+        final StateCovarianceMatrixProvider provider =
+                new StateCovarianceMatrixProvider("cov", "stm", harvester, initialCovariance);
+        propagator.setInitialState(initialState);
+        propagator.addAdditionalDataProvider(provider);
+        // WHEN
+        final SpacecraftState sameState = propagator.propagate(initialState.getDate());
+        // THEN
+        final StateCovariance actualCovariance = provider.getStateCovariance(sameState);
+        Assertions.assertEquals(initialCovariance.getDate(), actualCovariance.getDate());
+        Assertions.assertEquals(initialCovariance.getLOF(), actualCovariance.getLOF());
+        Assertions.assertEquals(initialCovariance.getFrame(), actualCovariance.getFrame());
+        Assertions.assertEquals(initialCovariance.getOrbitType(), actualCovariance.getOrbitType());
     }
 
     /**
