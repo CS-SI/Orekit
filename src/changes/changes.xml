@@ -36,6 +36,9 @@
         <action dev="luc" type="fix" issue="1727">
           Speed up numbers formatting in Rinex files.
         </action>
+        <action dev="vcucchie" type="fix" issue="1719">
+          Temporary fix to issue 1719 until GenericTimeStampedCache is fixed.
+        </action>
         <action dev="baubin" type="update" issue="1070">
           Updated regular expression in GravityFieldFactory to read EGM2008 file as well as EGM96.
         </action>
