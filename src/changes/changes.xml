@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0.3" date="TBC" description="TBC">
+        <action dev="serrof" type="fix" issue="1738">
+            Fixed LOF case in StateCovarianceMatrixProvider.
+        </action>
         <action dev="luc" type="fix" issue="1724">
           Fixed parameter driver added twice.
         </action>
@@ -35,6 +38,9 @@
         </action>
         <action dev="luc" type="fix" issue="1727">
           Speed up numbers formatting in Rinex files.
+        </action>
+        <action dev="serrof" type="fix" issue="1721">
+            Fixed problem with FieldCircularOrbit.
         </action>
         <action dev="vcucchie" type="fix" issue="1719">
           Temporary fix to issue 1719 until GenericTimeStampedCache is fixed.
