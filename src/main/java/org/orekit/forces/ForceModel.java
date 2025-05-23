@@ -117,7 +117,9 @@ public interface ForceModel extends ParameterDriversProvider, EventDetectorsProv
      * @param adder object where the contribution should be added
      */
     default void addContribution(SpacecraftState s, TimeDerivativesEquations adder) {
+        final double[] parameters = getParameters(s.getDate());
         adder.addNonKeplerianAcceleration(acceleration(s, getParameters(s.getDate())));
+        adder.addMassDerivative(getMassDerivative(s, parameters));
     }
 
     /** Compute the contribution of the force model to the perturbing
@@ -127,7 +129,32 @@ public interface ForceModel extends ParameterDriversProvider, EventDetectorsProv
      * @param <T> type of the elements
      */
     default <T extends CalculusFieldElement<T>> void addContribution(FieldSpacecraftState<T> s, FieldTimeDerivativesEquations<T> adder) {
-        adder.addNonKeplerianAcceleration(acceleration(s, getParameters(s.getDate().getField(), s.getDate())));
+        final T[] parameters = getParameters(s.getDate().getField(), s.getDate());
+        adder.addNonKeplerianAcceleration(acceleration(s, parameters));
+        adder.addMassDerivative(getMassDerivative(s, parameters));
+    }
+
+    /**
+     * Compute the mass rate. Zero by default.
+     * @param state current state information: date, kinematics, attitude
+     * @param parameters values of the force model parameters at state date
+     * @return mass rate (kg/s)
+     * @since 13.1
+     */
+    default double getMassDerivative(SpacecraftState state, double[] parameters) {
+        return 0.;
+    }
+
+    /**
+     * Compute the mass rate. Zero by default.
+     * @param <T> field type
+     * @param state current state information: date, kinematics, attitude
+     * @param parameters values of the force model parameters at state date
+     * @return mass rate (kg/s)
+     * @since 13.1
+     */
+    default <T extends CalculusFieldElement<T>> T getMassDerivative(FieldSpacecraftState<T> state, T[] parameters) {
+        return state.getMass().getField().getZero();
     }
 
     /** Check if force model depends on position only at a given, fixed date.

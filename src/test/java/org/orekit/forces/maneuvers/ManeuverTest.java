@@ -86,6 +86,42 @@ class ManeuverTest {
     }
 
     @Test
+    void testGetMassDerivativeNotFiring() {
+        // GIVEN
+        final ManeuverTriggers mockedTriggers = Mockito.mock(ManeuverTriggers.class);
+        final double[] array = new double[0];
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        Mockito.when(mockedTriggers.isFiring(date, array)).thenReturn(false);
+        final PropulsionModel mockedPropulsion = Mockito.mock(PropulsionModel.class);
+        final SpacecraftState mockedState = Mockito.mock();
+        Mockito.when(mockedState.getDate()).thenReturn(date);
+        // WHEN
+        final Maneuver maneuver = new Maneuver(null, mockedTriggers, mockedPropulsion);
+        final double rate = maneuver.getMassDerivative(mockedState, array);
+        // THEN
+        Assertions.assertEquals(0, rate);
+    }
+
+    @Test
+    void testFieldGetMassDerivativeNotFiring() {
+        // GIVEN
+        final ManeuverTriggers mockedTriggers = Mockito.mock(ManeuverTriggers.class);
+        final Binary64[] array = new Binary64[0];
+        final FieldAbsoluteDate<Binary64> date = FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance());
+        Mockito.when(mockedTriggers.isFiring(date, array)).thenReturn(false);
+        final PropulsionModel mockedPropulsion = Mockito.mock(PropulsionModel.class);
+        @SuppressWarnings("unchecked")
+        final FieldSpacecraftState<Binary64> mockedState = Mockito.mock();
+        Mockito.when(mockedState.getDate()).thenReturn(date);
+        Mockito.when(mockedState.getMass()).thenReturn(Binary64.ONE);
+        // WHEN
+        final Maneuver maneuver = new Maneuver(null, mockedTriggers, mockedPropulsion);
+        final Binary64 rate = maneuver.getMassDerivative(mockedState, array);
+        // THEN
+        Assertions.assertEquals(Binary64.ZERO, rate);
+    }
+
+    @Test
     void testGetControl3DVectorCostType() {
         // GIVEN
         final ManeuverTriggers mockedTriggers = Mockito.mock(ManeuverTriggers.class);

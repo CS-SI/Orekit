@@ -21,9 +21,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.forces.ForceModel;
-import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.utils.ParameterDriver;
 
 import java.util.List;
 
@@ -133,16 +131,14 @@ class ExtendedStateTransitionMatrixGenerator extends AbstractStateTransitionMatr
         }
 
         // deal with mass w.r.t. state
-        final long activeDrivers = forceModel.getParametersDrivers().stream().filter(ParameterDriver::isSelected).count();
-        Gradient massRate = Gradient.constant(EXTENDED_STATE_DIMENSION + (int) activeDrivers, 0.);
-        if (forceModel instanceof Maneuver) {
-            final Maneuver maneuver = (Maneuver) forceModel;
-            massRate = massRate.add(maneuver.getPropulsionModel().getMassDerivatives(fieldState, parameters));
+        final Gradient massRate = forceModel.getMassDerivative(fieldState, parameters);
+        if (!massRate.isZero()) {
             final double[] massRateDerivatives = massRate.getGradient();
             for (int i = 0; i < EXTENDED_STATE_DIMENSION; i++) {
                 factor[21 + i] += massRateDerivatives[i];
             }
         }
+
 
         // stack result
         final Gradient[] partials = MathArrays.buildArray(massRate.getField(), 4);
