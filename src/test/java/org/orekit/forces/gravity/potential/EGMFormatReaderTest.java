@@ -49,7 +49,7 @@ public class EGMFormatReaderTest {
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("EGM2008_to2190_TideFree.ascii", true));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
         NormalizedSphericalHarmonics harmonics = provider.onDate(AbsoluteDate.FUTURE_INFINITY);
-        Assertions.assertEquals(TideSystem.ZERO_TIDE, provider.getTideSystem());
+        Assertions.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
         Assertions.assertEquals( 0.957161207093473E-06, harmonics.getNormalizedCnm(3, 0), 1.0e-15);
         Assertions.assertEquals( 0.174811795496002E-06, harmonics.getNormalizedCnm(5, 5), 1.0e-15);
         Assertions.assertEquals( 0.0,                harmonics.getNormalizedSnm(4, 0), 1.0e-15);
