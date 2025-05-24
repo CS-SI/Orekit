@@ -20,6 +20,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
@@ -38,6 +39,7 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinatesProvider;
 
 import java.util.List;
 
@@ -123,6 +125,17 @@ class GroundAtNightDetectorTest {
                                 1.0e-3);
         }
 
+    }
+
+    @Test
+    void testDependsOnlyOnTime() {
+        // GIVEN
+        final GroundAtNightDetector detector = new GroundAtNightDetector(Mockito.mock(TopocentricFrame.class),
+                Mockito.mock(PVCoordinatesProvider.class), 1, null);
+        // WHEN
+        final boolean value = detector.dependsOnTimeOnly();
+        // THEN
+        Assertions.assertTrue(value);
     }
 
     @BeforeEach

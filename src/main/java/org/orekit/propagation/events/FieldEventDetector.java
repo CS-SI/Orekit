@@ -95,6 +95,16 @@ public interface FieldEventDetector <T extends CalculusFieldElement<T>> {
         // nothing by default
     }
 
+    /**
+     * Method returning true if and only if the detection function g does not depend on dependent variables,
+     * just the independent one i.e. time. This information is used for performance in propagation.
+     * @return flag
+     * @since 13.1
+     */
+    default boolean dependsOnTimeOnly() {
+        return false;
+    }
+
     /** Compute the value of the switching function.
      * This function must be continuous (at least in its roots neighborhood),
      * as the integrator will need to find its roots to locate the events.

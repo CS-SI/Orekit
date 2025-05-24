@@ -61,7 +61,19 @@ public class ParameterDrivenDateIntervalDetectorTest {
     }
 
     @Test
-    public void testNoShift() {
+    void testDependsOnlyOnTime() {
+        // GIVEN
+        final ParameterDrivenDateIntervalDetector detector = new ParameterDrivenDateIntervalDetector("a",
+                AbsoluteDate.ARBITRARY_EPOCH, AbsoluteDate.ARBITRARY_EPOCH);
+        // WHEN
+        final boolean value = detector.dependsOnTimeOnly();
+        // THEN
+        Assertions.assertTrue(value);
+    }
+
+
+    @Test
+    void testNoShift() {
         final AbsoluteDate t0    = propagator.getInitialState().getDate();
         final AbsoluteDate start = t0.shiftedBy( 120);
         final AbsoluteDate stop  = t0.shiftedBy(1120);
@@ -88,7 +100,7 @@ public class ParameterDrivenDateIntervalDetectorTest {
     }
 
     @Test
-    public void testSmallShift() {
+    void testSmallShift() {
         final AbsoluteDate t0    = propagator.getInitialState().getDate();
         final AbsoluteDate start = t0.shiftedBy( 120);
         final AbsoluteDate stop  = t0.shiftedBy(1120);
@@ -118,7 +130,7 @@ public class ParameterDrivenDateIntervalDetectorTest {
     }
 
     @Test
-    public void testLargeShift() {
+    void testLargeShift() {
         final AbsoluteDate t0       = propagator.getInitialState().getDate();
         final AbsoluteDate start    = t0.shiftedBy( 120);
         final AbsoluteDate stop     = t0.shiftedBy(1120);
@@ -149,7 +161,7 @@ public class ParameterDrivenDateIntervalDetectorTest {
     }
 
     @Test
-    public void testSelection() {
+    void testSelection() {
         final AbsoluteDate t0       = propagator.getInitialState().getDate();
         final AbsoluteDate start    = t0.shiftedBy( 120);
         final AbsoluteDate stop     = t0.shiftedBy(1120);
@@ -184,7 +196,7 @@ public class ParameterDrivenDateIntervalDetectorTest {
     }
 
     @Test
-    public void testStartStopToMedianDuration() {
+    void testStartStopToMedianDuration() {
         final AbsoluteDate t0       = propagator.getInitialState().getDate();
         final AbsoluteDate start    = t0.shiftedBy( 120);
         final AbsoluteDate stop     = t0.shiftedBy(1120);
@@ -211,7 +223,7 @@ public class ParameterDrivenDateIntervalDetectorTest {
     }
 
     @Test
-    public void testMedianDurationToStartStop() {
+    void testMedianDurationToStartStop() {
         final AbsoluteDate t0       = propagator.getInitialState().getDate();
         final AbsoluteDate start    = t0.shiftedBy( 120);
         final AbsoluteDate stop     = t0.shiftedBy(1120);

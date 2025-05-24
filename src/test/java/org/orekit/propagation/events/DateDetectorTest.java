@@ -63,14 +63,14 @@ public class DateDetectorTest {
     private NumericalPropagator propagator;
 
     @Test
-    public void testIssue1676() {
+    void testIssue1676() {
         final double expectedMinGap = 0.001;
         Assertions.assertEquals(expectedMinGap, new DateDetector(expectedMinGap, iniDate).getMinGap(), 1.0e-10);
 
     }
 
     @Test
-    public void testSimpleTimer() {
+    void testSimpleTimer() {
         DateDetector dateDetector = new DateDetector(iniDate.shiftedBy(2.0*dt)).
                                     withMaxCheck(maxCheck).
                                     withThreshold(threshold);
@@ -116,7 +116,7 @@ public class DateDetectorTest {
     }
 
     @Test
-    public void testEmbeddedTimer() {
+    void testEmbeddedTimer() {
         dateDetector = new DateDetector();
         Assertions.assertNull(dateDetector.getDate());
         EventDetector nodeDetector = new NodeDetector(iniOrbit, iniOrbit.getFrame()).
@@ -138,7 +138,7 @@ public class DateDetectorTest {
     }
 
     @Test
-    public void testAutoEmbeddedTimer() {
+    void testAutoEmbeddedTimer() {
         dateDetector = new DateDetector(iniDate.shiftedBy(-dt)).
                         withMaxCheck(maxCheck).
                         withThreshold(threshold).
@@ -157,7 +157,7 @@ public class DateDetectorTest {
     }
 
     @Test
-    public void testExceptionTimer() {
+    void testExceptionTimer() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             dateDetector = new DateDetector(iniDate.shiftedBy(dt)).
                             withMaxCheck(maxCheck).
@@ -181,7 +181,7 @@ public class DateDetectorTest {
      * Check that a generic event handler can be used with an event detector.
      */
     @Test
-    public void testGenericHandler() {
+    void testGenericHandler() {
         //setup
         dateDetector = new DateDetector(iniDate.shiftedBy(dt)).
                         withMaxCheck(maxCheck).
@@ -215,7 +215,7 @@ public class DateDetectorTest {
     }
 
     @Test
-    public void testIssue935() {
+    void testIssue935() {
 
         // startTime, endTime
         long start = 1570802400000L;
@@ -243,6 +243,16 @@ public class DateDetectorTest {
         SpacecraftState lastState = propagator.propagate(startDate, endDate.shiftedBy(1));
         Assertions.assertEquals(0.0, lastState.getDate().durationFrom(endDate), 1.0e-15);
 
+    }
+
+    @Test
+    void testDependsOnlyOnTime() {
+        // GIVEN
+        final DateDetector detector = new DateDetector();
+        // WHEN
+        final boolean value = detector.dependsOnTimeOnly();
+        // THEN
+        Assertions.assertTrue(value);
     }
 
     public static AbsoluteDate getAbsoluteDateFromTimestamp(final long timestamp) {

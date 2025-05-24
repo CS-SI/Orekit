@@ -62,7 +62,7 @@ public class FieldOrDetectorTest {
      * check {@link BooleanDetector#g(SpacecraftState)}.
      */
     @Test
-    public void testG() {
+    void testG() {
         // test zero cases
         a.g = b.g = new Binary64(0.0);
         Assertions.assertEquals(0.0, or.g(s).getReal(), 0);
@@ -101,7 +101,7 @@ public class FieldOrDetectorTest {
      * check when there is numeric cancellation between the two g values.
      */
     @Test
-    public void testCancellation() {
+    void testCancellation() {
         a.g = new Binary64(-1e-10);
         b.g = new Binary64(-1e10);
         Assertions.assertTrue(or.g(s).getReal() < 0, "negative");
@@ -127,7 +127,7 @@ public class FieldOrDetectorTest {
      */
     @SuppressWarnings("unchecked")
     @Test
-    public void testInit() {
+    void testInit() {
         // setup
         FieldEventDetector<Binary64> a = Mockito.mock(FieldEventDetector.class);
         Mockito.when(a.getMaxCheckInterval()).thenReturn(FieldAdaptableInterval.of(AbstractDetector.DEFAULT_MAX_CHECK));
@@ -153,7 +153,7 @@ public class FieldOrDetectorTest {
 
     /** check when no operands are passed to the constructor. */
     @Test
-    public void testZeroDetectors() {
+    void testZeroDetectors() {
         // action
         try {
             BooleanDetector.orCombine(Collections.emptyList());

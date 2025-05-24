@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.1" date="TBD" description="TBD">
+        <action dev="serrof" type="add" issue="1739">
+            Add dependsOnTimeOnly in (Field)EventDetector and use it in propagation for performance.
+        </action>
         <action dev="serrof" type="add" issue="1736">
             Add access to mass derivative in ForceModel.
         </action>

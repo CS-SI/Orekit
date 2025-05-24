@@ -24,6 +24,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
@@ -62,17 +64,17 @@ class DetectorModifierTest {
         Assertions.assertEquals(detectionSettings, actualSettings);
     }
 
-    @Test
-    void testGetHandler() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testDependsOnTimeOnly(final boolean value) {
         // GIVEN
         final EventDetector detector = Mockito.mock(EventDetector.class);
-        final EventHandler handler = Mockito.mock(EventHandler.class);
-        Mockito.when(detector.getHandler()).thenReturn(handler);
+        Mockito.when(detector.dependsOnTimeOnly()).thenReturn(value);
         final DetectorModifier detectorModifier = new TestDetectorModifier(detector);
         // WHEN
-        final EventHandler actualHandler = detectorModifier.getHandler();
+        final boolean actual = detectorModifier.dependsOnTimeOnly();
         // THEN
-        Assertions.assertEquals(handler, actualHandler);
+        Assertions.assertEquals(value, actual);
     }
 
     @Test

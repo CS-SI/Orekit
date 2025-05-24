@@ -95,6 +95,12 @@ public class FieldTimeIntervalDetector<T extends CalculusFieldElement<T>>
         return new FieldTimeIntervalDetector<>(detectionSettings, newHandler, timeInterval);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean dependsOnTimeOnly() {
+        return true;
+    }
+
     @Override
     public T g(final FieldSpacecraftState<T> s) {
         final FieldAbsoluteDate<T> date = s.getDate();

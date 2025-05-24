@@ -149,6 +149,12 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
         return new FieldDateDetector<>(detectionSettings, newHandler, minGap, dates);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean dependsOnTimeOnly() {
+        return true;
+    }
+
     /** Get all event field dates currently managed, in chronological order.
      * @return all event field dates currently managed, in chronological order
      * @since 12.0

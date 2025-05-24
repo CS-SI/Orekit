@@ -101,6 +101,34 @@ class NumericalPropagatorTest {
     private NumericalPropagator  propagator;
 
     @Test
+    void testDependsOnTimeOnlyWrong() {
+        // GIVEN
+        final AdditionalDataProvider<Boolean> dummyDataProvider = new AdditionalDataProvider<Boolean>() {
+            @Override
+            public String getName() {
+                return "dummy";
+            }
+            @Override
+            public Boolean getAdditionalData(SpacecraftState state) {
+                return Boolean.TRUE;
+            }
+        };
+        propagator.addAdditionalDataProvider(dummyDataProvider);
+        propagator.setInitialState(initialState.addAdditionalData(dummyDataProvider.getName(), Boolean.TRUE));
+        final EventDetector detectorCallingData = new DateDetector() {
+            @Override
+            public double g(SpacecraftState s) {
+                s.getAdditionalData(dummyDataProvider.getName());  // this will cause an exception since detector should not depend on additional variables
+                return super.g(s);
+            }
+        };
+        // WHEN & THEN
+        propagator.addEventDetector(detectorCallingData);
+        final AbsoluteDate targetDate = initialState.getDate().shiftedBy(1);
+        Assertions.assertThrows(OrekitException.class, () -> propagator.propagate(targetDate));
+    }
+
+    @Test
     void testIssue1032() {
         Assertions.assertEquals(PropagationType.OSCULATING, propagator.getPropagationType());
     }

@@ -211,6 +211,12 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
         return duration;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean dependsOnTimeOnly() {
+        return true;
+    }
+
     /** Compute the value of the switching function.
      * <p>
      * The function is positive for dates within the interval defined

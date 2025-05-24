@@ -28,7 +28,6 @@ import org.hipparchus.util.Precision;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.AttitudeProviderModifier;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -832,9 +831,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     /** {@inheritDoc} */
     @Override
     protected AttitudeProvider initializeAttitudeProviderForDerivatives() {
-        final AttitudeProvider attitudeProvider = getAttitudeProvider();
-        return needFullAttitudeForDerivatives ? attitudeProvider :
-                AttitudeProviderModifier.getFrozenAttitudeProvider(attitudeProvider);
+        return needFullAttitudeForDerivatives ? getAttitudeProvider() : getFrozenAttitudeProvider();
     }
 
     /** {@inheritDoc} */
