@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0.3" date="TBC" description="TBC">
+        <action dev="serrof" type="fix" issue="1740">
+            Improved performance of shiftedBy in (Field)Orbit for vanishing time of flight.
+        </action>
         <action dev="serrof" type="fix" issue="1738">
             Fixed LOF case in StateCovarianceMatrixProvider.
         </action>

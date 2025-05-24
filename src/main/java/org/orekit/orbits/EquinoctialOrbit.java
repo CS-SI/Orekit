@@ -884,7 +884,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
                                                                        getFrame(),
                                                                        getDate().shiftedBy(dt), getMu());
 
-        if (hasNonKeplerianRates()) {
+        if (dtS != 0. && hasNonKeplerianRates()) {
 
             // extract non-Keplerian acceleration from first time derivatives
             final Vector3D nonKeplerianAcceleration = nonKeplerianAcceleration();

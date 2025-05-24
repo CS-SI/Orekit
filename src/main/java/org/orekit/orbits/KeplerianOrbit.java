@@ -1089,7 +1089,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
                 getMeanAnomaly() + getKeplerianMeanMotion() * dtS, PositionAngleType.MEAN,
                 cachedPositionAngleType, getFrame(), getDate().shiftedBy(dt), getMu());
 
-        if (hasNonKeplerianAcceleration()) {
+        if (dtS != 0. && hasNonKeplerianAcceleration()) {
 
             // extract non-Keplerian acceleration from first time derivatives
             final Vector3D nonKeplerianAcceleration = nonKeplerianAcceleration();
