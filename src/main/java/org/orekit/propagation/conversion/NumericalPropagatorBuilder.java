@@ -106,6 +106,40 @@ public class NumericalPropagatorBuilder extends AbstractIntegratedPropagatorBuil
         this.impulseManeuvers = new ArrayList<>();
     }
 
+    /** Copy constructor.
+     *
+     * @param builder builder to copy
+     */
+    private NumericalPropagatorBuilder(final NumericalPropagatorBuilder builder) {
+        this(builder.createInitialOrbit(),
+             builder.getIntegratorBuilder(),
+             builder.getPositionAngleType(),
+             builder.getPositionScale(),
+             builder.getAttitudeProvider());
+    }
+
+    /** {@inheritDoc}. */
+    @Override
+    public NumericalPropagatorBuilder clone() {
+        // Call to super clone() method to avoid warning
+        final NumericalPropagatorBuilder clonedBuilder = (NumericalPropagatorBuilder) super.clone();
+
+        // Use copy constructor to unlink orbital drivers
+        final NumericalPropagatorBuilder builder =  new NumericalPropagatorBuilder(clonedBuilder);
+
+        // Set mass and force models
+        builder.setMass(getMass());
+        for (ForceModel model : forceModels) {
+            builder.addForceModel(model);
+        }
+
+        // Add impulse maneuvers
+        impulseManeuvers.forEach(builder::addImpulseManeuver);
+
+        return builder;
+    }
+
+
     /**
      * Add impulse maneuver.
      * @param impulseManeuver impulse maneuver

@@ -49,6 +49,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -173,12 +174,14 @@ public class DSSTPropagatorBuilderTest {
 
         builder.addForceModel(new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0)));
 
+        // Select propagation parameters to test this point
+        builder.getPropagationParametersDrivers().getDrivers().forEach(d -> d.setSelected(true));
+
         // When
-        final DSSTPropagatorBuilder copyBuilder = (DSSTPropagatorBuilder) builder.clone();
+        final DSSTPropagatorBuilder copyBuilder = builder.clone();
 
         // Then
         assertDSSTPropagatorBuilderIsACopy(builder, copyBuilder);
-
     }
 
     private void assertDSSTPropagatorBuilderIsACopy(final DSSTPropagatorBuilder expected,
@@ -214,7 +217,7 @@ public class DSSTPropagatorBuilderTest {
         builder.addForceModel(moon);
         builder.setMass(1000.);
 
-        final DSSTPropagator prop = (DSSTPropagator) builder.buildPropagator();
+        final DSSTPropagator prop = builder.buildPropagator();
 
         final Orbit orbitWithBuilder = prop.propagate(initDate.shiftedBy(600)).getOrbit();
 
@@ -324,6 +327,45 @@ public class DSSTPropagatorBuilderTest {
         }
     }
 
+    /** Test for issue #1741.
+     * <p>This test checks that orbital drivers in cloned propagator builders
+     * ain't at the same physical address, i.e. that they're not linked anymore.</p>
+     */
+    @Test
+    void testIssue1741() {
+
+        // Given
+        final ODEIntegratorBuilder integratorBuilder = new ClassicalRungeKuttaIntegratorBuilder(3600.0);
+        final Orbit orbit = new CartesianOrbit(new PVCoordinates(
+                        new Vector3D(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS + 400000, 0, 0),
+                        new Vector3D(0, 7668.6, 0)), FramesFactory.getGCRF(),
+                                               new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
+
+        final DSSTPropagatorBuilder builder =
+                        new DSSTPropagatorBuilder(orbit, integratorBuilder, 1.0, PropagationType.OSCULATING, PropagationType.OSCULATING);
+
+        builder.addForceModel(new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0)));
+
+        // When
+        final DSSTPropagatorBuilder copyBuilder = builder.clone();
+
+        // Change orbit of the copied builder
+        final TimeStampedPVCoordinates modifiedPv = orbit.shiftedBy(3600.).getPVCoordinates();
+        copyBuilder.resetOrbit(new CartesianOrbit(modifiedPv, orbit.getFrame(), orbit.getDate(), orbit.getMu()));
+
+
+        // Then
+        // Original builder should still have original orbit
+        final PVCoordinates originalPv = orbit.getPVCoordinates();
+        final PVCoordinates initialPv = builder.createInitialOrbit().getPVCoordinates();
+        final double dP = originalPv.getPosition().distance(initialPv.getPosition());
+        final double dV = originalPv.getVelocity().distance(initialPv.getVelocity());
+        final double dA = originalPv.getAcceleration().distance(initialPv.getAcceleration());
+        Assertions.assertEquals(0., dP, 0.);
+        Assertions.assertEquals(0., dV, 0.);
+        Assertions.assertEquals(0., dA, 0.);
+    }
+
     @BeforeEach
     public void setUp() throws IOException, ParseException {
 
@@ -335,7 +377,7 @@ public class DSSTPropagatorBuilderTest {
                 CartesianToleranceProvider.DEFAULT_ABSOLUTE_MASS_TOLERANCE));
 
         final Frame earthFrame = FramesFactory.getEME2000();
-        initDate = new AbsoluteDate(2003, 07, 01, 0, 0, 00.000, TimeScalesFactory.getUTC());
+        initDate = new AbsoluteDate(2003, 7, 1, 0, 0, 00.000, TimeScalesFactory.getUTC());
 
         final double mu = 3.986004415E14;
         // a    = 42163393.0 m
@@ -360,7 +402,7 @@ public class DSSTPropagatorBuilderTest {
 
         tolerance  = toleranceProvider.getTolerances(orbit, OrbitType.EQUINOCTIAL);
         propagator = new DSSTPropagator(new DormandPrince853Integrator(minStep, maxStep, tolerance[0], tolerance[1]));
-        propagator.setInitialState(new SpacecraftState(orbit, 1000.), PropagationType.MEAN);
+        propagator.setInitialState(new SpacecraftState(orbit).withMass(1000.), PropagationType.MEAN);
         propagator.addForceModel(moon);
 
     }

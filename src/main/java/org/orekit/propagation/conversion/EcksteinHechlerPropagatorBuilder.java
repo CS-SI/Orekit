@@ -174,6 +174,30 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractAnalyticalPropagat
                 positionAngleType, positionScale);
     }
 
+    /** Copy constructor.
+     * @param builder builder to copy from
+     */
+    public EcksteinHechlerPropagatorBuilder(final EcksteinHechlerPropagatorBuilder builder) {
+        this(builder.createInitialOrbit(), builder.provider, builder.getPositionAngleType(),
+             builder.getPositionScale(), builder.getAttitudeProvider());
+    }
+
+    /** {@inheritDoc}. */
+    @Override
+    public EcksteinHechlerPropagatorBuilder clone() {
+        // Call to super clone() method to avoid warning
+        final EcksteinHechlerPropagatorBuilder clonedBuilder = (EcksteinHechlerPropagatorBuilder) super.clone();
+
+        // Use copy constructor to unlink orbital drivers
+        final EcksteinHechlerPropagatorBuilder builder = new EcksteinHechlerPropagatorBuilder(clonedBuilder);
+
+        // Set mass
+        builder.setMass(getMass());
+
+        // Return cloned builder
+        return builder;
+    }
+
     /** Override central attraction coefficient.
      * @param templateOrbit template orbit
      * @param provider gravity field provider

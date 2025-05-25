@@ -41,6 +41,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class BrouwerLyddanePropagatorBuilderTest {
 
@@ -120,7 +121,7 @@ public class BrouwerLyddanePropagatorBuilderTest {
         }
 
         // Build the propagator
-        final BrouwerLyddanePropagator prop = (BrouwerLyddanePropagator) builder.buildPropagator();
+        final BrouwerLyddanePropagator prop = builder.buildPropagator();
 
         // Verify
         Assertions.assertEquals(M2, prop.getM2(), Double.MIN_VALUE);
@@ -171,7 +172,7 @@ public class BrouwerLyddanePropagatorBuilderTest {
         builder.getPropagationParametersDrivers().getDrivers().forEach(driver -> driver.setSelected(true));
 
         // When
-        final BrouwerLyddanePropagatorBuilder copyBuilder = (BrouwerLyddanePropagatorBuilder) builder.clone();
+        final BrouwerLyddanePropagatorBuilder copyBuilder = builder.clone();
 
         // Then
         assertPropagatorBuilderIsACopy(builder, copyBuilder);
@@ -180,4 +181,40 @@ public class BrouwerLyddanePropagatorBuilderTest {
         Assertions.assertTrue(copyBuilder.getPropagationParametersDrivers().getDrivers().get(0).isSelected());
     }
 
+    /** Test for issue #1741.
+     * <p>This test checks that orbital drivers in cloned propagator builders
+     * ain't at the same physical address, i.e. that they're not linked anymore.</p>
+     */
+    @Test
+    void testIssue1741() {
+
+        // Given
+        final Orbit orbit = new CartesianOrbit(new PVCoordinates(
+                        new Vector3D(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS + 400000, 0, 0),
+                        new Vector3D(10, 7668.6, 3)), FramesFactory.getGCRF(),
+                                               new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
+        final UnnormalizedSphericalHarmonicsProvider harmonicsProvider = GravityFieldFactory.getUnnormalizedProvider(5, 0);
+
+        final BrouwerLyddanePropagatorBuilder builder = new BrouwerLyddanePropagatorBuilder(orbit, harmonicsProvider,
+                                                                                            PositionAngleType.MEAN, 10.0, 1.0e-8);
+        builder.getPropagationParametersDrivers().getDrivers().forEach(driver -> driver.setSelected(true));
+
+        // When
+        final BrouwerLyddanePropagatorBuilder copyBuilder = builder.clone();
+
+        // Change orbit of the copied builder
+        final TimeStampedPVCoordinates modifiedPv = orbit.shiftedBy(3600.).getPVCoordinates();
+        copyBuilder.resetOrbit(new CartesianOrbit(modifiedPv, orbit.getFrame(), orbit.getDate(), orbit.getMu()));
+
+        // Then
+        // Original builder should still have original orbit
+        final PVCoordinates originalPv = orbit.getPVCoordinates();
+        final PVCoordinates initialPv = builder.createInitialOrbit().getPVCoordinates();
+        final double dP = originalPv.getPosition().distance(initialPv.getPosition());
+        final double dV = originalPv.getVelocity().distance(initialPv.getVelocity());
+        final double dA = originalPv.getAcceleration().distance(initialPv.getAcceleration());
+        Assertions.assertEquals(0., dP, 0.);
+        Assertions.assertEquals(0., dV, 0.);
+        Assertions.assertEquals(0., dA, 0.);
+    }
 }

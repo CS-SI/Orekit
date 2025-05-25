@@ -110,6 +110,33 @@ public class DSSTPropagatorBuilder extends AbstractIntegratedPropagatorBuilder<D
         this.stateType         = stateType;
     }
 
+    /** Copy constructor.
+     * @param builder builder to copy from
+     */
+    private DSSTPropagatorBuilder(final DSSTPropagatorBuilder builder) {
+        this(builder.createInitialOrbit(), builder.getIntegratorBuilder(),
+             builder.getPositionScale(), builder.getPropagationType(),
+             builder.getStateType(), builder.getAttitudeProvider());
+    }
+
+    /** {@inheritDoc}. */
+    @Override
+    public DSSTPropagatorBuilder clone() {
+        // Call to super clone() method to avoid warning
+        final DSSTPropagatorBuilder clonedBuilder = (DSSTPropagatorBuilder) super.clone();
+
+        // Use copy constructor to unlink orbital drivers
+        final DSSTPropagatorBuilder copyBuilder = new DSSTPropagatorBuilder(clonedBuilder);
+
+        // Update mass and force models
+        copyBuilder.setMass(getMass());
+        for (DSSTForceModel model : forceModels) {
+            copyBuilder.addForceModel(model);
+        }
+        return copyBuilder;
+
+    }
+
     /** Get the type of the elements used to define the orbital state (mean or osculating).
      * @return the type of the elements used to define the orbital state
      */
