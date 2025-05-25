@@ -156,6 +156,30 @@ public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder<Epheme
         this.provider               = attitudeProvider;
     }
 
+    /** Copy constructor.
+     * @param builder builder to copy from
+     */
+    public EphemerisPropagatorBuilder(final EphemerisPropagatorBuilder builder) {
+        this(builder.states, builder.stateInterpolator, builder.covariances,
+             builder.covarianceInterpolator, builder.getAttitudeProvider());
+    }
+
+    /** {@inheritDoc}. */
+    @Override
+    public EphemerisPropagatorBuilder clone() {
+        // Call to super clone() method to avoid warning
+        final EphemerisPropagatorBuilder clonedBuilder = (EphemerisPropagatorBuilder) super.clone();
+
+        // Use copy constructor to unlink orbital drivers
+        final EphemerisPropagatorBuilder builder = new EphemerisPropagatorBuilder(clonedBuilder);
+
+        // Set mass
+        builder.setMass(getMass());
+
+        // Return cloned builder
+        return builder;
+    }
+
     /** {@inheritDoc}. */
     @Override
     public Ephemeris buildPropagator(final double[] normalizedParameters) {

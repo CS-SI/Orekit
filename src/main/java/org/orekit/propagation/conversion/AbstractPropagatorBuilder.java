@@ -72,7 +72,7 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
     private final ParameterDriversList orbitalDrivers;
 
     /** List of the supported parameters. */
-    private ParameterDriversList propagationDrivers;
+    private final ParameterDriversList propagationDrivers;
 
     /** Orbit type to use. */
     private final OrbitType orbitType;
@@ -89,7 +89,7 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
     /** Additional derivatives providers.
      * @since 11.1
      */
-    private List<AdditionalDerivativesProvider> additionalDerivativesProviders;
+    private final List<AdditionalDerivativesProvider> additionalDerivativesProviders;
 
     /** Build a new instance.
      * <p>
@@ -229,7 +229,6 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
             });
             propagationDrivers.add(muDriver);
         }
-
     }
 
     /** Get the mass.
@@ -278,7 +277,9 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
         return propagationDrivers;
     }
 
+    /** {@inheritDoc}. */
     @Override
+    @SuppressWarnings("unchecked")
     public AbstractPropagatorBuilder<T> clone() {
         try {
             return (AbstractPropagatorBuilder<T>) super.clone();
@@ -499,5 +500,4 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
             driver.setSelected(false);
         }
     }
-
 }
