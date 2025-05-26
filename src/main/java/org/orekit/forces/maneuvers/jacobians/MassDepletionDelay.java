@@ -24,6 +24,7 @@ import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.time.AbsoluteDate;
 
 /** Generator for effect of delaying mass depletion when delaying a maneuver.
+ * It neglects the influence of mass in other force models e.g. drag.
  * @author Luc Maisonobe
  * @since 11.1
  */
@@ -44,7 +45,7 @@ public class MassDepletionDelay implements AdditionalDerivativesProvider {
     /** Indicator for forward propagation. */
     private boolean forward;
 
-    /** Simple constructor.
+    /** Constructor.
      * <p>
      * The generated additional state and derivatives will be named by prepending
      * the {@link #PREFIX} to the name of the date trigger parameter.
@@ -84,7 +85,7 @@ public class MassDepletionDelay implements AdditionalDerivativesProvider {
 
         // retrieve current Jacobian column
         final double[] p = state.getAdditionalState(getName());
-        final double[] pDot = new double[6];
+        final double[] pDot = new double[getDimension()];
 
         if (forward == manageStart) {
 

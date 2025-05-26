@@ -27,6 +27,9 @@
         <action dev="serrof" type="add" issue="1736">
             Add access to mass derivative in ForceModel.
         </action>
+        <action dev="serrof" type="update" issue="1735">
+            Enable TriggerDate with 7x7 STM.
+        </action>
         <action dev="serrof" type="add" issue="1733">
             Add (Field)BoundedPVCoordinatesProvider.
         </action>
