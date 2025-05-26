@@ -944,3 +944,6 @@ COVARIANCE_MUST_BE_SQUARE=la matrice de covariance doit être carrée
 
 # state vector (dimension {0}) and covariance (dimension {1}) are inconsistent
 INCONSISTENT_STATE_DIMENSIONS=les tailles du vecteur d''état (dimension {0}) et de la covariance (dimension {1}) ne sont pas compatibles
+
+# data at date {0} has already been automatically expunged
+EXPUNGED_SPAN=_SPAN=les données à la date {0} ont déjà été effacées automatiquement
