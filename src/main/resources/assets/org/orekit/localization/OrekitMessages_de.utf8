@@ -575,7 +575,7 @@ CCSDS_MISSING_SENSOR_INDEX=
 INCONSISTENT_NUMBER_OF_ELEMENTS=
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
-NOT_ENOUGH_PROPAGATORS=Das erstellen von AggregatePropagator benötigt zumindest einen Bestandteil des Propagator. Es wurden keine zur Verfügung gestellt
+NOT_ENOUGH_PROPAGATORS=Das erstellen von AggregatePropagator benötigt zumindest einen Bestandteil des Propagator. Es wurden keine zur Verfügung gestellt.
 
 # Creating an aggregate attitude provider requires at least one constituent attitude provider, but none were provided.
 NOT_ENOUGH_ATTITUDE_PROVIDERS=
@@ -754,7 +754,7 @@ FUNCTION_NOT_IMPLEMENTED=
 INVALID_TYPE_FOR_FUNCTION=
 
 # No data could be parsed from file {0}
-NO_DATA_IN_FILE=Keine gültigen Daten konnten aus der Datei {0} dekodiert werden.
+NO_DATA_IN_FILE=Keine gültigen Daten konnten aus der Datei {0} dekodiert werden
 
 # Unexpected end of CPF file (after line {0})
 CPF_UNEXPECTED_END_OF_FILE=
