@@ -23,7 +23,8 @@ import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.time.AbsoluteDate;
 
-/** Generator for effect of delaying mass depletion when delaying a maneuver.
+/** Generator for effect of delaying mass depletion when delaying a maneuver,
+ *  when the mass itself is not included in the transition matrix.
  * It neglects the influence of mass in other force models e.g. drag.
  * @author Luc Maisonobe
  * @since 11.1

@@ -128,25 +128,35 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         final String stmName = "stm";
         final MatricesHarvester harvester = propagator.setupMatricesComputation(stmName, MatrixUtils.createRealIdentityMatrix(7), null);
         final double thrustMagnitude = 0.1;
-        addPermanentManeuver(thrustMagnitude, propagator);
+        final Maneuver maneuver = getPermanentManeuver(thrustMagnitude);
+        propagator.addForceModel(maneuver);
         final double timeOfFlight = 1e3;
         final AbsoluteDate epoch = propagator.getInitialState().getDate();
         final AbsoluteDate targetDate = epoch.shiftedBy(timeOfFlight);
         // WHEN
         final SpacecraftState state = propagator.propagate(targetDate);
         // THEN
+        compareMassGradientWithFiniteDifferences(propagator.getInitialState(), maneuver, targetDate,
+                harvester.getStateTransitionMatrix(state));
+        final RealMatrix parameterJacobian = harvester.getParametersJacobian(state);
+        compareParameterJacobianWithFiniteDifferences(propagator, thrustMagnitude, targetDate, parameterJacobian);
+    }
+
+    private static void compareParameterJacobianWithFiniteDifferences(final NumericalPropagator propagator,
+                                                                      final double thrustMagnitude,
+                                                                      final AbsoluteDate targetDate,
+                                                                      final RealMatrix parameterJacobian) {
         final NumericalPropagator propagatorFiniteDifference1 = buildPropagator(propagator.getOrbitType(),
                 propagator.getAttitudeProvider());
         final double dP = 1e-5;
-        addPermanentManeuver(thrustMagnitude - dP / 2., propagatorFiniteDifference1);
+        propagatorFiniteDifference1.addForceModel(getPermanentManeuver((thrustMagnitude - dP / 2.)));
         final SpacecraftState finiteDifferencesState1 = propagatorFiniteDifference1.propagate(targetDate);
         final NumericalPropagator propagatorFiniteDifference2 = buildPropagator(propagator.getOrbitType(),
                 propagator.getAttitudeProvider());
-        addPermanentManeuver(thrustMagnitude + dP / 2., propagatorFiniteDifference2);
+        propagatorFiniteDifference2.addForceModel(getPermanentManeuver(thrustMagnitude + dP / 2.));
         final SpacecraftState finiteDifferencesState2 = propagatorFiniteDifference2.propagate(targetDate);
         final PVCoordinates relativePV = new PVCoordinates(finiteDifferencesState1.getPVCoordinates(),
                 finiteDifferencesState2.getPVCoordinates());
-        final RealMatrix parameterJacobian = harvester.getParametersJacobian(state);
         compareWithFiniteDifferences(relativePV, dP, parameterJacobian);
     }
 
@@ -160,15 +170,14 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         assertEquals(relativePV.getVelocity().getZ() / dP, parameterJacobian.getEntry(5, 0), 1e-5);
     }
 
-    private void addPermanentManeuver(final double thrustMagnitude, final NumericalPropagator propagator) {
+    private static Maneuver getPermanentManeuver(final double thrustMagnitude) {
         final Vector3D thrustVector = new Vector3D(3, 2).scalarMultiply(thrustMagnitude);
         final double isp = 100.;
         final String maneuverName = "man";
         final SphericalConstantThrustPropulsionModel propulsionModel = new SphericalConstantThrustPropulsionModel(isp,
                 thrustVector, maneuverName);
         propulsionModel.getParameterDriver(maneuverName + SphericalConstantThrustPropulsionModel.THRUST_MAGNITUDE).setSelected(true);
-        final Maneuver maneuver = new Maneuver(null, new TestManeuverTrigger(), propulsionModel);
-        propagator.addForceModel(maneuver);
+        return new Maneuver(null, new TestManeuverTrigger(), propulsionModel);
     }
 
     private static class TestManeuverTrigger implements ManeuverTriggers {
@@ -267,6 +276,29 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         propagator.setResetAtEnd(false);
         propagator.setInitialState(new SpacecraftState(orbit));
         return propagator;
+    }
+
+    private static void compareMassGradientWithFiniteDifferences(final SpacecraftState state,
+                                                                 final ForceModel forceModel,
+                                                                 final AbsoluteDate targetDate,
+                                                                 final RealMatrix stateTransitionMatrix) {
+        final double dM = 1.;
+        final NumericalPropagator propagator1 = buildPropagator(OrbitType.CARTESIAN);
+        propagator1.resetInitialState(state.withMass(state.getMass() - dM/2.));
+        propagator1.addForceModel(forceModel);
+        final SpacecraftState propagated1 = propagator1.propagate(targetDate);
+        final NumericalPropagator propagator2 = buildPropagator(OrbitType.CARTESIAN);
+        propagator2.resetInitialState(state.withMass(state.getMass() + dM/2.));
+        propagator2.addForceModel(forceModel);
+        final SpacecraftState propagated2 = propagator2.propagate(targetDate);
+        final PVCoordinates relativePV = new PVCoordinates(propagated1.getPVCoordinates(),
+                propagated2.getPVCoordinates());
+        assertEquals(relativePV.getPosition().getX() / dM, stateTransitionMatrix.getEntry(0, 6), 1e-3);
+        assertEquals(relativePV.getPosition().getY() / dM, stateTransitionMatrix.getEntry(1, 6), 1e-3);
+        assertEquals(relativePV.getPosition().getZ() / dM, stateTransitionMatrix.getEntry(2, 6), 1e-3);
+        assertEquals(relativePV.getVelocity().getX() / dM, stateTransitionMatrix.getEntry(3, 6), 1e-5);
+        assertEquals(relativePV.getVelocity().getY() / dM, stateTransitionMatrix.getEntry(4, 6), 1e-5);
+        assertEquals(relativePV.getVelocity().getZ() / dM, stateTransitionMatrix.getEntry(5, 6), 1e-5);
     }
 }
 

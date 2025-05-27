@@ -43,10 +43,12 @@ import org.orekit.utils.TimeSpanMap;
  * </p>
  * <p>
  * There are two parts in this Jacobian: the primary part corresponds to the full contribution
- * of the acceleration due to the maneuver as it is delayed by a small amount \(dt_1\), whereas
+ * of the jump in the dynamics due to the maneuver as it is delayed by a small amount \(dt_1\), whereas
  * the secondary part corresponds to change of acceleration after maneuver start as the mass
  * depletion is delayed and therefore the spacecraft mass is different from the mass for nominal
  * start time.
+ * This second part is already contained in the first one when the mass is included in the transition matrix
+ * (7x7 instead of 6x6).
  * </p>
  * <p>
  * The primary part is computed as follows. After trigger time \(t_1\) (according to propagation direction),
@@ -245,7 +247,7 @@ public class TriggerDate implements ManeuverTriggersResetter, AdditionalDataProv
             final double[] effect = getStm(state).operate(c);
 
             if (massDepletionDelay != null) {
-                // secondary effect: maneuver change throughout thrust as mass depletion is delayed
+                // secondary effect: maneuver change throughout thrust as mass depletion is delayed (only needed when mass is not in the STM)
                 final double[] secondary = state.getAdditionalState(massDepletionDelay.getName());
 
                 // sum up both effects
