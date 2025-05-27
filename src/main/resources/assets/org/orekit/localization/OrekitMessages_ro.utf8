@@ -239,7 +239,7 @@ FRAMES_MISMATCH=sistemul de referință {0} nu corespunde sistemului de referin�
 INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION=stare inițială nespecificată pentru propagarea orbitală
 
 # target event date must be before {1} by {3,number,0.0##############E0} seconds or after {2} by {3,number,0.0##############E0} seconds, but target event date {0} is {4,number,0.0##############E0} seconds before {1} and {5,number,0.0##############E0} seconds after {2} so it cannot be added
-EVENT_DATE_TOO_CLOSE=data evenimentului țintă trebuie să fie înainte de {1} cu {3,number,0.0##############E0} secunde sau după [2} cu {3,number,0.0##############E0} secunde, dar data evenimentului țintă {0} este cu {4,number,0.0##############E0} secunde înainte de {1} și {5,number,0.0##############E0} sende după {2} deci nu poate fi adăugată
+EVENT_DATE_TOO_CLOSE=data evenimentului țintă trebuie să fie înainte de {1} cu {3,number,0.0##############E0} secunde sau după {2} cu {3,number,0.0##############E0} secunde, dar data evenimentului țintă {0} este cu {4,number,0.0##############E0} secunde înainte de {1} și {5,number,0.0##############E0} sende după {2} deci nu poate fi adăugată
 
 # trying to propagate Cartesian adjoint whilst integration equations of motion with non-Cartesian coordinates
 WRONG_COORDINATES_FOR_ADJOINT_EQUATION=
@@ -488,10 +488,10 @@ UNABLE_TO_GENERATE_NEW_DATA_AFTER=imposibil de generat noi date înainte de {0},
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY=imposibil de calculat anomalia excentrică hiperbolică pornind de la anomalia medie după {0} iterații
 
 # unable to compute eccentric longitude argument from the mean one after {0} iterations
-UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT=unable to compute eccentric longitude argument from the mean one after {0} iterations
+UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT=
 
 # unable to compute eccentric latitude argument from the mean one after {0} iterations
-UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT=unable to compute eccentric latitude argument from the mean one after {0} iterations
+UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT=
 
 # unable to compute mean orbit from osculating orbit after {0} iterations
 UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS=imposibil de calculat orbita medie din orbita osculatorie după {0} iterații
@@ -557,7 +557,7 @@ CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL=factorul retrograd nu este permis în s
 CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS=număr greșit al unităților pentru manevra {0}
 
 # missing time field for maneuver {0}
-CCSDS_MANEUVER_MISSING_TIME=lipsește câmpul de timp  pentru manevra {0}
+CCSDS_MANEUVER_MISSING_TIME=lipsește câmpul de timp pentru manevra {0}
 
 # attitude type {0} and rate type {1} calls for {2} states, got {3}
 CCSDS_INCONSISTENT_NUMBER_OF_ATTITUDE_STATES=tipul de atitudine {0} și tipul de rată {1} necesită {2} stări, sunt definite {3}
@@ -626,7 +626,7 @@ UNKNOWN_GNSS_FREQUENCY=
 UNSUPPORTED_FREQUENCY_FOR_ANTENNA=frecvența {0} nu este luată în considerare de antena {1}
 
 # cannot find satellite {0} in satellite system {1}
-CANNOT_FIND_SATELLITE_IN_SYSTEM=imposibil de găsit satelitul {0}  in sistemul de sateliți {1}
+CANNOT_FIND_SATELLITE_IN_SYSTEM=imposibil de găsit satelitul {0} in sistemul de sateliți {1}
 
 # unknown RINEX frequency {0} in file {1}, line {2}
 UNKNOWN_RINEX_FREQUENCY=frecventa RINEX {0} din fișierul {1}, linia {2} este necunoscută
@@ -733,7 +733,7 @@ INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS=frecvențele {0} și {1
 NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS=observațiile nu sunt în ordine cronologică: {0} este cu {2,number,0.0##############E0} s după {1}
 
 # Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
-EXCEPTIONAL_DATA_CONTEXT=a fost detectată o utilizare a ExceptionalDataContext. Acest mecanism este utilizat în general pentru detectarea unei erori de dezvoltare
+EXCEPTIONAL_DATA_CONTEXT=A fost detectată o utilizare a ExceptionalDataContext. Acest mecanism este utilizat în general pentru detectarea unei erori de dezvoltare.
 
 # Observations must have different dates: {0}, {1} ({3,number,0.0##############E0} s from first observation), and {2} ({4,number,0.0##############E0} s from first observation, {5,number,0.0##############E0} s from second observation)
 NON_DIFFERENT_DATES_FOR_OBSERVATIONS=Observațiile trebuie să aibă date diferite: {0}, {1} ({3,number,0.0##############E0} s de la prima observație), și {2} ({4,number,0.0##############E0} s de la prima observație, {5,number,0.0##############E0} s de la a doua observație)
