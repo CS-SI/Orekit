@@ -226,6 +226,7 @@ public class TimeSpanMap<T> {
                 start.previous().setAfter(span);
             }
             start.setBefore(span);
+            updateFirstIfNeeded(span);
         } else {
 
             if (current.getStartTransition() != null) {
@@ -305,6 +306,7 @@ public class TimeSpanMap<T> {
             // the transition at the start of the current span is at the exact same date
             // we update it, without adding a new transition
             start.setAfter(span);
+            updateLastIfNeeded(span);
         } else {
             // we need to add a new transition somewhere inside the current span
             insertTransition(earliestValidityDate, current, span);
@@ -373,6 +375,7 @@ public class TimeSpanMap<T> {
                 // the transition at the start of the current span is at the exact same date
                 // we update it, without adding a new transition
                 start.setAfter(span);
+                updateLastIfNeeded(span);
             } else {
                 // we need to add a new transition somewhere inside the current span
                 insertTransition(earliestValidityDate, current, span);
@@ -470,12 +473,8 @@ public class TimeSpanMap<T> {
         final Transition<T> transition = new Transition<>(this, date);
         transition.setBefore(before);
         transition.setAfter(after);
-        if (before.getStartTransition() == null) {
-            firstSpan = before;
-        }
-        if (after.getEndTransition() == null) {
-            lastSpan = after;
-        }
+        updateFirstIfNeeded(before);
+        updateLastIfNeeded(after);
         ++nbSpans;
     }
 
@@ -628,6 +627,26 @@ public class TimeSpanMap<T> {
             --nbSpans;
         }
 
+    }
+
+    /** Update first span if needed.
+     * @param candidate candidate first span
+     * @since 13.1
+     */
+    private void updateFirstIfNeeded(final Span<T> candidate) {
+        if (candidate.getStartTransition() == null) {
+            firstSpan = candidate;
+        }
+    }
+
+    /** Update last span if needed.
+     * @param candidate candidate last span
+     * @since 13.1
+     */
+    private void updateLastIfNeeded(final Span<T> candidate) {
+        if (candidate.getEndTransition() == null) {
+            lastSpan = candidate;
+        }
     }
 
     /** Class holding transition times.
