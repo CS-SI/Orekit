@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.1" date="TBD" description="TBD">
+        <action dev="luc" type="add" issue="1742">
+            Added automatic expunge to TimeSpanMap.
+        </action>
         <action dev="serrof" type="add" issue="1739">
             Add dependsOnTimeOnly in (Field)EventDetector and use it in propagation for performance.
         </action>
