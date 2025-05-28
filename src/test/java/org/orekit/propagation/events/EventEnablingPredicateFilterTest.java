@@ -76,6 +76,18 @@ class EventEnablingPredicateFilterTest {
     }
 
     @Test
+    void testDependsOnTimeOnly() {
+        // GIVEN
+        final EventDetector detector = new DateDetector();
+        final EnablingPredicate enablingPredicate = Mockito.mock();
+        final EventEnablingPredicateFilter predicateFilter = new EventEnablingPredicateFilter(detector, enablingPredicate);
+        // WHEN
+        final boolean value = predicateFilter.dependsOnTimeOnly();
+        // THEN
+        Assertions.assertFalse(value);
+    }
+
+    @Test
     void testWithDetectionSettings() {
         // GIVEN
         final EventDetector detector = new DateDetector();

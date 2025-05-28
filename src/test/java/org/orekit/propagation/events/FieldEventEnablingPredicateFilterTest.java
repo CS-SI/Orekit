@@ -72,6 +72,19 @@ class FieldEventEnablingPredicateFilterTest {
     }
 
     @Test
+    void testDependsOnTimeOnly() {
+        // GIVEN
+        final FieldDateDetector<Binary64> detector = new FieldDateDetector<>(FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance()));
+        final FieldEnablingPredicate<Binary64> expectedPredicate = (s, e, t) -> true;
+        final FieldEventEnablingPredicateFilter<Binary64> filter = new FieldEventEnablingPredicateFilter<>(detector,
+                expectedPredicate);
+        // WHEN
+        final boolean value = filter.dependsOnTimeOnly();
+        // THEN
+        Assertions.assertFalse(value);
+    }
+
+    @Test
     @SuppressWarnings("unchecked")
     void testWithDetectionSettings() {
         // GIVEN

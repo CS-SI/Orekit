@@ -157,6 +157,12 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
 
     /**  {@inheritDoc} */
     @Override
+    public boolean dependsOnTimeOnly() {
+        return false;  // cannot know what predicate needs
+    }
+
+    /**  {@inheritDoc} */
+    @Override
     public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
         FieldDetectorModifier.super.init(s0, t);
 
