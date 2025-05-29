@@ -50,7 +50,7 @@
     <orekit.orekit.cyclonedx-maven-plugin.version>2.9.1</orekit.orekit.cyclonedx-maven-plugin.version>
     <orekit.mathjax.config>&lt;script type="text/x-mathjax-config"&gt;MathJax.Hub.Config({ TeX: { extensions: ["autoload.js"]}});&lt;/script&gt;</orekit.mathjax.config>
     <orekit.mathjax.enable>&lt;script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML"&gt;&lt;/script&gt;</orekit.mathjax.enable>
-    <orekit.hipparchus.version>4.0.1</orekit.hipparchus.version>
+    <orekit.hipparchus.version>4.1-SNAPSHOT</orekit.hipparchus.version>
     <orekit.junit.version>5.13.2</orekit.junit.version>
     <orekit.hamcrest.version>3.0</orekit.hamcrest.version>
     <orekit.compiler.source>1.8</orekit.compiler.source>
@@ -340,6 +340,9 @@
     </contributor>
     <contributor>
       <name>Tanner Mills</name>
+    </contributor>
+    <contributor>
+      <name>Ryan Moser</name>
     </contributor>
     <contributor>
       <name>Vincent Mouraux</name>

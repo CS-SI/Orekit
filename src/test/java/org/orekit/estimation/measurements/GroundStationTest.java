@@ -334,7 +334,7 @@ class GroundStationTest {
         Assertions.assertEquals(0.0, FastMath.abs(xp0 - computedXp),      5.9e-9);
         Assertions.assertEquals(0.0, FastMath.abs(xpDot - computedXpDot), 7.5e-9);
         Assertions.assertEquals(0.0, FastMath.abs(yp0 - computedYp),      1.1e-9);
-        Assertions.assertEquals(0.0, FastMath.abs(ypDot - computedYpDot), 1.1e-10);
+        Assertions.assertEquals(0.0, FastMath.abs(ypDot - computedYpDot), 1.2e-10);
 
         // thresholds to use if orbit is estimated
         // (i.e. when commenting out the loop above that sets orbital parameters drivers to "not selected")
@@ -424,7 +424,7 @@ class GroundStationTest {
         double relativeTolerancePositionValue      =  1.5e-15;
         double relativeTolerancePositionDerivative =  1.6e-10;
         double relativeToleranceVelocityValue      =  2.3e-15;
-        double relativeToleranceVelocityDerivative =  1.7e-10;
+        double relativeToleranceVelocityDerivative =  1.8e-10;
         doTestCartesianDerivatives(FastMath.toRadians(-35), FastMath.toRadians(-20), 1200.0, 100.0,
                                    relativeTolerancePositionValue, relativeTolerancePositionDerivative,
                                    relativeToleranceVelocityValue, relativeToleranceVelocityDerivative,
@@ -638,7 +638,7 @@ class GroundStationTest {
     @Test
     void testStationOffsetCartesianDerivativesOctantPxMyMz() {
         double relativeTolerancePositionValue      =  1.5e-15;
-        double relativeTolerancePositionDerivative =  4.2e-11;
+        double relativeTolerancePositionDerivative =  4.6e-11;
         double relativeToleranceVelocityValue      =  2.7e-15;
         double relativeToleranceVelocityDerivative =  6.8e-11;
         doTestCartesianDerivatives(FastMath.toRadians(-35), FastMath.toRadians(-20), 1200.0, 100.0,
