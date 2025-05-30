@@ -155,6 +155,12 @@ public class EventEnablingPredicateFilter implements DetectorModifier {
 
     /**  {@inheritDoc} */
     @Override
+    public boolean dependsOnTimeOnly() {
+        return false;  // cannot know what predicate needs
+    }
+
+    /**  {@inheritDoc} */
+    @Override
     public void init(final SpacecraftState s0, final AbsoluteDate t) {
         DetectorModifier.super.init(s0, t);
 
