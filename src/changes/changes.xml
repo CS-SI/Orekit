@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.1" date="TBD" description="TBD">
+        <action dev="luc" type="add" issue="1743">
+            Made FieldTimeSpanMap consistent with TimeSpanMap.
+        </action>
         <action dev="luc" type="add" issue="1742">
             Added automatic expunge to TimeSpanMap.
         </action>

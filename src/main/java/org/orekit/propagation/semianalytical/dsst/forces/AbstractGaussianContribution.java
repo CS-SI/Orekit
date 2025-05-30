@@ -158,7 +158,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     private GaussianShortPeriodicCoefficients gaussianSPCoefs;
 
     /** Short period terms. */
-    private Map<Field<?>, FieldGaussianShortPeriodicCoefficients<?>> gaussianFieldSPCoefs;
+    private final Map<Field<?>, FieldGaussianShortPeriodicCoefficients<?>> gaussianFieldSPCoefs;
 
     /** Driver for gravitational parameter. */
     private final ParameterDriver gmParameterDriver;
@@ -2122,9 +2122,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final FieldAbsoluteDate<T> first = meanStates[0].getDate();
             final FieldAbsoluteDate<T> last = meanStates[meanStates.length - 1].getDate();
             if (first.compareTo(last) <= 0) {
-                slots.addValidAfter(slot, first);
+                slots.addValidAfter(slot, first, false);
             } else {
-                slots.addValidBefore(slot, first);
+                slots.addValidBefore(slot, first, false);
             }
             return slot;
         }

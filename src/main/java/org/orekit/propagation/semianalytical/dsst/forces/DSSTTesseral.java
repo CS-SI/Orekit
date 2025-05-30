@@ -185,7 +185,7 @@ public class DSSTTesseral implements DSSTForceModel {
     private TesseralShortPeriodicCoefficients shortPeriodTerms;
 
     /** Short period terms. */
-    private Map<Field<?>, FieldTesseralShortPeriodicCoefficients<?>> fieldShortPeriodTerms;
+    private final Map<Field<?>, FieldTesseralShortPeriodicCoefficients<?>> fieldShortPeriodTerms;
 
     /** Driver for gravitational parameter. */
     private final ParameterDriver gmParameterDriver;
@@ -194,7 +194,7 @@ public class DSSTTesseral implements DSSTForceModel {
     private HansenObjects hansen;
 
     /** Hansen objects for field elements. */
-    private Map<Field<?>, FieldHansenObjects<?>> fieldHansen;
+    private final Map<Field<?>, FieldHansenObjects<?>> fieldHansen;
 
     /** Simple constructor with default reference values.
      * <p>
@@ -1966,9 +1966,9 @@ public class DSSTTesseral implements DSSTForceModel {
             final FieldAbsoluteDate<T> first = meanStates[0].getDate();
             final FieldAbsoluteDate<T> last  = meanStates[meanStates.length - 1].getDate();
             if (first.compareTo(last) <= 0) {
-                slots.addValidAfter(slot, first);
+                slots.addValidAfter(slot, first, false);
             } else {
-                slots.addValidBefore(slot, first);
+                slots.addValidBefore(slot, first, false);
             }
             return slot;
         }
@@ -2720,7 +2720,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
         /** A two dimensional array that contains the objects needed to build the Hansen coefficients. <br/>
          * The indexes are s + maxDegree and j */
-        private HansenTesseralLinear[][] hansenObjects;
+        private final HansenTesseralLinear[][] hansenObjects;
 
         /** Simple constructor.
          * @param ratio Ratio of satellite period to central body rotation period
@@ -2801,7 +2801,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
         /** A two dimensional array that contains the objects needed to build the Hansen coefficients. <br/>
          * The indexes are s + maxDegree and j */
-        private FieldHansenTesseralLinear<T>[][] hansenObjects;
+        private final FieldHansenTesseralLinear<T>[][] hansenObjects;
 
         /** Simple constructor.
          * @param ratio Ratio of satellite period to central body rotation period
