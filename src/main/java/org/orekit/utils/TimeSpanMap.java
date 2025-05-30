@@ -146,7 +146,7 @@ public class TimeSpanMap<T> {
      * @param newExpungePolicy expunge policy to apply when capacity is exceeded
      * @since 13.1
      */
-    public void configureExpunge(final int newMaxNbSpans, final double newMaxRange, final ExpungePolicy newExpungePolicy) {
+    public synchronized void configureExpunge(final int newMaxNbSpans, final double newMaxRange, final ExpungePolicy newExpungePolicy) {
         this.maxNbSpans    = newMaxNbSpans;
         this.maxRange      = newMaxRange;
         this.expungePolicy = newExpungePolicy;
