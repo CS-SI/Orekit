@@ -16,23 +16,12 @@
  */
 package org.orekit.utils;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.forces.gravity.potential.SHMFormatReader;
-import org.orekit.forces.maneuvers.ConstantThrustManeuver;
-import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.EquinoctialOrbit;
-import org.orekit.orbits.Orbit;
-import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeSpanMap.Transition;
@@ -1068,73 +1057,6 @@ public class TimeSpanMapTest {
             Assertions.assertEquals(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(3600), oe.getParts()[1]);
             Assertions.assertEquals(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(  50), oe.getParts()[2]);
         }
-    }
-
-    @Disabled
-    @Test
-    public void testComputationTimeIncrease() {
-
-        // Initialization
-        Utils.setDataRoot("regular-data:potential/shm-format");
-        final AbsoluteDate start = AbsoluteDate.J2000_EPOCH;
-        final AbsoluteDate end = AbsoluteDate.J2000_EPOCH.shiftedBy(7.0 * Constants.JULIAN_DAY);
-        GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
-        double mu  = GravityFieldFactory.getUnnormalizedProvider(0, 0).getMu();
-        final Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
-        final Vector3D  velocity     = new Vector3D(-500.0, 8000.0, 1000.0);
-        final Orbit     orbit        = new EquinoctialOrbit(new PVCoordinates(position, velocity), FramesFactory.getEME2000(), start, mu);
-        SpacecraftState initialState = new SpacecraftState(orbit);
-
-        // Create propagator builder
-        DormandPrince853Integrator integrator = new DormandPrince853Integrator(0.001, 300.0, 10.0, 10.0);
-        NumericalPropagator        propagator = new NumericalPropagator(integrator);
-        propagator.setInitialState(initialState);
-
-        // Test with 8 maneuvers inside the horizon
-        for (double dt = Constants.JULIAN_DAY; dt <= 7.0 * Constants.JULIAN_DAY; dt += Constants.JULIAN_DAY) {
-            propagator.addForceModel(new ConstantThrustManeuver(start.shiftedBy(dt), 10.0, 1.0, 320.0, Vector3D.PLUS_I));
-        }
-        double t0 = System.currentTimeMillis();
-        System.out.println("=============");
-        System.out.println("Propagation start: " + propagator.getInitialState().getDate().toString());
-        System.out.println("Propagation end: " + end.toString());
-        propagator.propagate(end);
-        double t1 = System.currentTimeMillis();
-        double duration = 0.001 * (t1 - t0);
-        System.out.println("Number of maneuvers: " + propagator.getAllForceModels().size());
-        System.out.println("Propagation duration: " + duration);
-
-        // Add 150 maneuvers before start propagation
-        for (double dt = -600.0; dt < -300; dt += 2.0) {
-            propagator.addForceModel(new ConstantThrustManeuver(start.shiftedBy(dt), 10.0, 1.0, 320.0, Vector3D.PLUS_I));
-
-        }
-        t0 = System.currentTimeMillis();
-        propagator.resetInitialState(initialState);
-        System.out.println("=============");
-        System.out.println("Propagation start: " + propagator.getInitialState().getDate().toString());
-        System.out.println("Propagation end: " + end.toString());
-        propagator.propagate(end);
-        t1 = System.currentTimeMillis();
-        duration = 0.001 * (t1 - t0);
-        System.out.println("Number of maneuvers: " + propagator.getAllForceModels().size());
-        System.out.println("Propagation duration: " + duration);
-
-        // Add 500 more maneuvers before start propagation
-        for (double dt = -2000.0; dt < -1000.0; dt += 2.0) {
-            propagator.addForceModel(new ConstantThrustManeuver(start.shiftedBy(dt), 10.0, 1.0, 320.0, Vector3D.PLUS_I));
-
-        }
-        t0 = System.currentTimeMillis();
-        propagator.resetInitialState(initialState);
-        System.out.println("=============");
-        System.out.println("Propagation start: " + propagator.getInitialState().getDate().toString());
-        System.out.println("Propagation end: " + end.toString());
-        propagator.propagate(end);
-        t1 = System.currentTimeMillis();
-        duration = 0.001 * (t1 - t0);
-        System.out.println("Number of maneuvers: " + propagator.getAllForceModels().size());
-        System.out.println("Propagation duration: " + duration);
     }
 
     private <T> void checkException(final TimeSpanMap<T> map,
