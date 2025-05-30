@@ -93,17 +93,17 @@ public class TimeSpanMap<T> {
     /** Maximum number of time spans.
      * @since 13.1
      */
-    private final int maxNbSpans;
+    private int maxNbSpans;
 
     /** Maximum time range between the earliest and the latest transitions.
      * @since 13.1
      */
-    private final double maxRange;
+    private double maxRange;
 
     /** Expunge policy.
      * @since 13.1
      */
-    private final ExpungePolicy expungePolicy;
+    private ExpungePolicy expungePolicy;
 
     /** Create a map containing a single object, initially valid throughout the timeline.
      * <p>
@@ -113,22 +113,21 @@ public class TimeSpanMap<T> {
      * added after} it.
      * </p>
      * <p>
-     * This constructor builds a map whose entries are never expunged.
+     * The initial {@link #configureExpung(int, double, ExpungePolicy) expunge policy}
+     * is to never expunge any entries, it can be changed afterward by calling
+     * {@link #configureExpung(int, double, ExpungePolicy)}
      * </p>
      * @param entry entry (initially valid throughout the timeline)
-     * @see #TimeSpanMap(Object, int, double, ExpungePolicy)
      */
     public TimeSpanMap(final T entry) {
-        this(entry, Integer.MAX_VALUE, Double.POSITIVE_INFINITY, ExpungePolicy.EXPUNGE_FARTHEST);
+        this.current   = new Span<>(entry);
+        this.firstSpan = current;
+        this.lastSpan  = current;
+        this.nbSpans   = 1;
+        configureExpung(Integer.MAX_VALUE, Double.POSITIVE_INFINITY, ExpungePolicy.EXPUNGE_FARTHEST);
     }
 
-    /** Create a map containing a single object, initially valid throughout the timeline.
-     * <p>
-     * The real validity of this first entry will be truncated as other
-     * entries are either {@link #addValidBefore(Object, AbsoluteDate, boolean)
-     * added before} it or {@link #addValidAfter(Object, AbsoluteDate, boolean)
-     * added after} it.
-     * </p>
+    /** Configure (or reconfigure) expunge policy for later additions.
      * <p>
      * When an entry is added to the map (using either {@link #addValidBefore(Object, AbsoluteDate, boolean)},
      * {@link #addValidBetween(Object, AbsoluteDate, AbsoluteDate)}, or
@@ -136,18 +135,19 @@ public class TimeSpanMap<T> {
      * of number of time spans or maximum time range between the earliest and the latest transitions,
      * then exceeding data is expunged according to the {@code expungePolicy}.
      * </p>
-     * @param entry entry (initially valid throughout the timeline)
+     * <p>
+     * Note that as the policy depends on the date at which new entries are added, the policy will be enforced
+     * only for the <em>next</em> calls to {@link #addValidBefore(Object, AbsoluteDate, boolean)},
+     * {@link #addValidBetween(Object, AbsoluteDate, AbsoluteDate)}, and {@link #addValidAfter(Object,
+     * AbsoluteDate, boolean)}, it is <em>not</em> enforce immediately.
+     * </p>
      * @param maxNbSpans maximum number of time spans
      * @param maxRange maximum time range between the earliest and the latest transitions
      * @param expungePolicy expunge policy to apply when capacity is exceeded
      * @see #TimeSpanMap(Object)
      * @since 13.1
      */
-    public TimeSpanMap(final T entry, final int maxNbSpans, final double maxRange, final ExpungePolicy expungePolicy) {
-        this.current       = new Span<>(entry);
-        this.firstSpan     = current;
-        this.lastSpan      = current;
-        this.nbSpans       = 1;
+    public void configureExpung(final int maxNbSpans, final double maxRange, final ExpungePolicy expungePolicy) {
         this.maxNbSpans    = maxNbSpans;
         this.maxRange      = maxRange;
         this.expungePolicy = expungePolicy;

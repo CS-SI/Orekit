@@ -1001,7 +1001,8 @@ public class TimeSpanMapTest {
                                final boolean fillUpForward, final int expectedNbSpans,
                                final Integer expectedFirst, final Integer expectedLast,
                                final double invalidOffset) {
-        final TimeSpanMap<Integer> map = new TimeSpanMap<>(null, maxNbSpans, maxRange, expungePolicy);
+        final TimeSpanMap<Integer> map = new TimeSpanMap<>(null);
+        map.configureExpung(maxNbSpans, maxRange, expungePolicy);
         if (fillUpForward) {
             for (int i = 0; i < 100; i += 10) {
                 map.addValidAfter(i, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i), false);
@@ -1020,6 +1021,32 @@ public class TimeSpanMapTest {
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.EXPUNGED_SPAN, oe.getSpecifier());
         }
+    }
+
+    @Test
+    public void testLateExpungeConfiguration() {
+
+        // initial setup
+        final TimeSpanMap<Integer> map = new TimeSpanMap<>(null);
+        for (int i = 0; i < 100; i += 10) {
+            map.addValidAfter(i, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i), false);
+        }
+        Assertions.assertEquals(  11, map.getSpansNumber());
+        Assertions.assertEquals(null, map.getFirstSpan().getData());
+        Assertions.assertEquals(  90, map.getLastSpan().getData());
+
+        // no changes just after configuration
+        map.configureExpung(5, Double.POSITIVE_INFINITY, ExpungePolicy.EXPUNGE_EARLIEST);
+        Assertions.assertEquals(  11, map.getSpansNumber());
+        Assertions.assertEquals(null, map.getFirstSpan().getData());
+        Assertions.assertEquals(  90, map.getLastSpan().getData());
+
+        // changes applied after addition
+        map.addValidAfter(100, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(100), false);
+        Assertions.assertEquals(  5, map.getSpansNumber());
+        Assertions.assertEquals( 60, map.getFirstSpan().getData());
+        Assertions.assertEquals(100, map.getLastSpan().getData());
+
     }
 
     @Test
