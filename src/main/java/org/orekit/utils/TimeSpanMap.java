@@ -141,16 +141,15 @@ public class TimeSpanMap<T> {
      * {@link #addValidBetween(Object, AbsoluteDate, AbsoluteDate)}, and {@link #addValidAfter(Object,
      * AbsoluteDate, boolean)}, it is <em>not</em> enforce immediately.
      * </p>
-     * @param maxNbSpans maximum number of time spans
-     * @param maxRange maximum time range between the earliest and the latest transitions
-     * @param expungePolicy expunge policy to apply when capacity is exceeded
-     * @see #TimeSpanMap(Object)
+     * @param newMaxNbSpans maximum number of time spans
+     * @param newMaxRange maximum time range between the earliest and the latest transitions
+     * @param newExpungePolicy expunge policy to apply when capacity is exceeded
      * @since 13.1
      */
-    public void configureExpunge(final int maxNbSpans, final double maxRange, final ExpungePolicy expungePolicy) {
-        this.maxNbSpans    = maxNbSpans;
-        this.maxRange      = maxRange;
-        this.expungePolicy = expungePolicy;
+    public void configureExpunge(final int newMaxNbSpans, final double newMaxRange, final ExpungePolicy newExpungePolicy) {
+        this.maxNbSpans    = newMaxNbSpans;
+        this.maxRange      = newMaxRange;
+        this.expungePolicy = newExpungePolicy;
         this.expungedEarly = AbsoluteDate.PAST_INFINITY;
         this.expungedLate  = AbsoluteDate.FUTURE_INFINITY;
     }
