@@ -237,7 +237,7 @@ public class ParameterDriver {
      * in accordance with value span map and validity period.
      * <p>
      * Note that if the expunge policy of the names map is
-     * {@link TimeSpanMap#configureExpung(int, double, ExpungePolicy) reconfigured},
+     * {@link TimeSpanMap#configureExpunge(int, double, ExpungePolicy) reconfigured},
      * then the expunge policy of the {@link #getValueSpanMap() values map} should
      * be reconfigured too with the same settings.
      * </p>
@@ -251,7 +251,7 @@ public class ParameterDriver {
     /** Get value time span map for parameterDriver.
      * <p>
      * Note that if the expunge policy of the values map is
-     * {@link TimeSpanMap#configureExpung(int, double, ExpungePolicy) reconfigured},
+     * {@link TimeSpanMap#configureExpunge(int, double, ExpungePolicy) reconfigured},
      * then the expunge policy of the {@link #getNamesSpanMap()} names map} should
      * be reconfigured too with the same settings.
      * </p>

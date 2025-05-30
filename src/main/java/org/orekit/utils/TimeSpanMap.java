@@ -113,9 +113,9 @@ public class TimeSpanMap<T> {
      * added after} it.
      * </p>
      * <p>
-     * The initial {@link #configureExpung(int, double, ExpungePolicy) expunge policy}
+     * The initial {@link #configureExpunge(int, double, ExpungePolicy) expunge policy}
      * is to never expunge any entries, it can be changed afterward by calling
-     * {@link #configureExpung(int, double, ExpungePolicy)}
+     * {@link #configureExpunge(int, double, ExpungePolicy)}
      * </p>
      * @param entry entry (initially valid throughout the timeline)
      */
@@ -124,7 +124,7 @@ public class TimeSpanMap<T> {
         this.firstSpan = current;
         this.lastSpan  = current;
         this.nbSpans   = 1;
-        configureExpung(Integer.MAX_VALUE, Double.POSITIVE_INFINITY, ExpungePolicy.EXPUNGE_FARTHEST);
+        configureExpunge(Integer.MAX_VALUE, Double.POSITIVE_INFINITY, ExpungePolicy.EXPUNGE_FARTHEST);
     }
 
     /** Configure (or reconfigure) expunge policy for later additions.
@@ -147,7 +147,7 @@ public class TimeSpanMap<T> {
      * @see #TimeSpanMap(Object)
      * @since 13.1
      */
-    public void configureExpung(final int maxNbSpans, final double maxRange, final ExpungePolicy expungePolicy) {
+    public void configureExpunge(final int maxNbSpans, final double maxRange, final ExpungePolicy expungePolicy) {
         this.maxNbSpans    = maxNbSpans;
         this.maxRange      = maxRange;
         this.expungePolicy = expungePolicy;
