@@ -18,11 +18,13 @@ package org.orekit.propagation.numerical;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -41,7 +43,10 @@ import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.maneuvers.ConstantThrustManeuver;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
+import org.orekit.forces.maneuvers.propulsion.ProfileThrustPropulsionModel;
 import org.orekit.forces.maneuvers.propulsion.SphericalConstantThrustPropulsionModel;
+import org.orekit.forces.maneuvers.propulsion.ThrustVectorProvider;
+import org.orekit.forces.maneuvers.trigger.DateBasedManeuverTriggers;
 import org.orekit.forces.maneuvers.trigger.ManeuverTriggers;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
@@ -59,6 +64,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -107,7 +113,7 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         final PVCoordinates relativePV = new PVCoordinates(finiteDifferencesState1.getPVCoordinates(),
                 finiteDifferencesState2.getPVCoordinates());
         final RealMatrix parameterJacobian = harvester.getParametersJacobian(state);
-        compareWithFiniteDifferences(relativePV, dP, parameterJacobian);
+        compareWithFiniteDifferences(relativePV, dP, parameterJacobian, 1e-3);
     }
 
     private static NumericalPropagator setupPropagator(final OrbitType orbitType, final AttitudeProvider attitudeProvider,
@@ -157,17 +163,17 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         final SpacecraftState finiteDifferencesState2 = propagatorFiniteDifference2.propagate(targetDate);
         final PVCoordinates relativePV = new PVCoordinates(finiteDifferencesState1.getPVCoordinates(),
                 finiteDifferencesState2.getPVCoordinates());
-        compareWithFiniteDifferences(relativePV, dP, parameterJacobian);
+        compareWithFiniteDifferences(relativePV, dP, parameterJacobian, 1e-3);
     }
 
     private static void compareWithFiniteDifferences(final PVCoordinates relativePV, final double dP,
-                                                     final RealMatrix parameterJacobian) {
-        assertEquals(relativePV.getPosition().getX() / dP, parameterJacobian.getEntry(0, 0), 1e-3);
-        assertEquals(relativePV.getPosition().getY() / dP, parameterJacobian.getEntry(1, 0), 1e-3);
-        assertEquals(relativePV.getPosition().getZ() / dP, parameterJacobian.getEntry(2, 0), 1e-3);
-        assertEquals(relativePV.getVelocity().getX() / dP, parameterJacobian.getEntry(3, 0), 1e-5);
-        assertEquals(relativePV.getVelocity().getY() / dP, parameterJacobian.getEntry(4, 0), 1e-5);
-        assertEquals(relativePV.getVelocity().getZ() / dP, parameterJacobian.getEntry(5, 0), 1e-5);
+                                                     final RealMatrix parameterJacobian, final double delta) {
+        assertEquals(relativePV.getPosition().getX() / dP, parameterJacobian.getEntry(0, 0), delta);
+        assertEquals(relativePV.getPosition().getY() / dP, parameterJacobian.getEntry(1, 0), delta);
+        assertEquals(relativePV.getPosition().getZ() / dP, parameterJacobian.getEntry(2, 0), delta);
+        assertEquals(relativePV.getVelocity().getX() / dP, parameterJacobian.getEntry(3, 0), delta * 1e-2);
+        assertEquals(relativePV.getVelocity().getY() / dP, parameterJacobian.getEntry(4, 0), delta * 1e-2);
+        assertEquals(relativePV.getVelocity().getZ() / dP, parameterJacobian.getEntry(5, 0), delta * 1e-2);
     }
 
     private static Maneuver getPermanentManeuver(final double thrustMagnitude) {
@@ -259,6 +265,71 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         for (int i = 0; i < 6; i++) {
             assertArrayEquals(expectedStm.getRow(i), Arrays.copyOfRange(actualStm.getRow(i), 0, 6));
         }
+    }
+
+    @Test
+    void testManeuverTriggerDateParameterWithProfileThrust() {
+        // GIVEN
+        final NumericalPropagator propagator = buildPropagator(OrbitType.CARTESIAN, null);
+        final LofOffset lofOffset = new LofOffset(propagator.getFrame(), LOFType.TNW);
+        propagator.setAttitudeProvider(lofOffset);
+        final String stmName = "stm";
+        final MatricesHarvester harvester = propagator.setupMatricesComputation(stmName, MatrixUtils.createRealIdentityMatrix(7), null);
+        final double duration = 100.;
+        final double timeOfFlight = duration * 3;
+        final AbsoluteDate epoch = propagator.getInitialState().getDate();
+        final AbsoluteDate targetDate = epoch.shiftedBy(timeOfFlight);
+        final AbsoluteDate startDate = epoch.shiftedBy(duration/2.);
+        final double slopeThrust = 1e-3;
+        final ThrustVectorProvider thrustVectorProvider = getThrustVector(epoch, slopeThrust);
+        final ProfileThrustPropulsionModel propulsionModel = buildProfileModel(thrustVectorProvider);
+        final Maneuver maneuver = new Maneuver(null, buildDatedBasedTriggers(startDate, duration, 0.), propulsionModel);
+        maneuver.getParameterDriver("triggers" + ParameterDrivenDateIntervalDetector.STOP_SUFFIX).setSelected(true);
+        propagator.addForceModel(maneuver);
+        // WHEN
+        final SpacecraftState state = propagator.propagate(targetDate);
+        // THEN
+        final double dT = 1e-1;
+        final NumericalPropagator propagatorFiniteDifference1 = buildPropagator(propagator.getOrbitType(), lofOffset);
+        final double shiftBackward = -dT /2.;
+        propagatorFiniteDifference1.addForceModel(new Maneuver(null, buildDatedBasedTriggers(startDate,
+                duration, shiftBackward), buildProfileModel(thrustVectorProvider)));
+        final SpacecraftState finiteDifferencesState1 = propagatorFiniteDifference1.propagate(targetDate);
+        final NumericalPropagator propagatorFiniteDifference2 = buildPropagator(propagator.getOrbitType(), lofOffset);
+        final double shiftForward = dT /2.;
+        propagatorFiniteDifference2.addForceModel(new Maneuver(null, buildDatedBasedTriggers(startDate,
+                duration, shiftForward), buildProfileModel(thrustVectorProvider)));
+        final SpacecraftState finiteDifferencesState2 = propagatorFiniteDifference2.propagate(targetDate);
+        final PVCoordinates relativePV = new PVCoordinates(finiteDifferencesState1.getPVCoordinates(),
+                finiteDifferencesState2.getPVCoordinates());
+        final RealMatrix parameterJacobian = harvester.getParametersJacobian(state);
+        compareWithFiniteDifferences(relativePV, dT, parameterJacobian, 1e-3);
+    }
+
+    private static DateBasedManeuverTriggers buildDatedBasedTriggers(final AbsoluteDate startDate,
+                                                                     final double duration, final double shiftEnd) {
+        return new DateBasedManeuverTriggers("triggers", startDate, duration + shiftEnd);
+    }
+
+    private static ProfileThrustPropulsionModel buildProfileModel(final ThrustVectorProvider thrustVectorProvider) {
+        final TimeSpanMap<ThrustVectorProvider> providerTimeSpanMap = new TimeSpanMap<>(null);
+        providerTimeSpanMap.addValidBetween(thrustVectorProvider, AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
+        return new ProfileThrustPropulsionModel(providerTimeSpanMap, 10.,"man");
+    }
+
+    private static ThrustVectorProvider getThrustVector(final AbsoluteDate referenceDate, final double slope) {
+        return new ThrustVectorProvider() {
+            @Override
+            public Vector3D getThrustVector(AbsoluteDate date, double mass) {
+                final double factor = slope * FastMath.abs(date.durationFrom(referenceDate));
+                return Vector3D.PLUS_I.scalarMultiply(factor);
+            }
+
+            @Override
+            public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(FieldAbsoluteDate<T> date, T mass) {
+                return new FieldVector3D<>(mass.getField(), getThrustVector(date.toAbsoluteDate(), mass.getReal()));
+            }
+        };
     }
 
     private static NumericalPropagator buildPropagator(final OrbitType orbitType) {

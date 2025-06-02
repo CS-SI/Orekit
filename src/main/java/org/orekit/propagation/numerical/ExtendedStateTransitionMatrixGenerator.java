@@ -132,7 +132,7 @@ class ExtendedStateTransitionMatrixGenerator extends AbstractStateTransitionMatr
 
         // deal with mass w.r.t. state
         final Gradient massRate = forceModel.getMassDerivative(fieldState, parameters);
-        if (!massRate.isZero()) {
+        if (massRate.getValue() != 0.) {
             final double[] massRateDerivatives = massRate.getGradient();
             for (int i = 0; i < EXTENDED_STATE_DIMENSION; i++) {
                 factor[21 + i] += massRateDerivatives[i];
