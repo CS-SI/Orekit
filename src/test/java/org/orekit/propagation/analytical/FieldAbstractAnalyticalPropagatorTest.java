@@ -32,6 +32,7 @@ import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.*;
+import org.orekit.propagation.FieldAdditionalDataProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.FieldDateDetector;
@@ -50,6 +51,31 @@ import java.util.List;
 import java.util.stream.Stream;
 
 class FieldAbstractAnalyticalPropagatorTest {
+
+    @Test
+    void testRemoveAdditionalDataProvider() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Orbit orbit = TestUtils.getDefaultOrbit(date);
+        final TestAnalyticalPropagator propagator = new TestAnalyticalPropagator(orbit);
+        final String name = "a";
+        final FieldAdditionalDataProvider<Boolean, Complex> dataProvider = new FieldAdditionalDataProvider<Boolean, Complex>() {
+            @Override
+            public String getName() {
+                return name;
+            }
+
+            @Override
+            public Boolean getAdditionalData(FieldSpacecraftState<Complex> state) {
+                return Boolean.TRUE;
+            }
+        };
+        // WHEN & THEN
+        propagator.addAdditionalDataProvider(dataProvider);
+        Assertions.assertFalse(propagator.getAdditionalDataProviders().isEmpty());
+        propagator.removeAdditionalDataProvider(dataProvider.getName());
+        Assertions.assertTrue(propagator.getAdditionalDataProviders().isEmpty());
+    }
 
     @ParameterizedTest
     @EnumSource(value = Action.class, names = {"RESET_STATE", "RESET_DERIVATIVES"})

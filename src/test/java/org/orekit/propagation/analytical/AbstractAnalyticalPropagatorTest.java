@@ -28,6 +28,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetectionSettings;
@@ -42,6 +43,31 @@ import java.util.stream.Stream;
 
 
 class AbstractAnalyticalPropagatorTest {
+
+    @Test
+    void testRemoveAdditionalDataProvider() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Orbit orbit = getOrbit(date);
+        final TestAnalyticalPropagator propagator = new TestAnalyticalPropagator(orbit);
+        final String name = "a";
+        final AdditionalDataProvider<Boolean> dataProvider = new AdditionalDataProvider<Boolean>() {
+            @Override
+            public String getName() {
+                return name;
+            }
+
+            @Override
+            public Boolean getAdditionalData(SpacecraftState state) {
+                return Boolean.TRUE;
+            }
+        };
+        // WHEN & THEN
+        propagator.addAdditionalDataProvider(dataProvider);
+        Assertions.assertFalse(propagator.getAdditionalDataProviders().isEmpty());
+        propagator.removeAdditionalDataProvider(dataProvider.getName());
+        Assertions.assertTrue(propagator.getAdditionalDataProviders().isEmpty());
+    }
 
     @Test
     void testInternalEventDetector() {
