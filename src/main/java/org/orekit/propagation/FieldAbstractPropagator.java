@@ -148,6 +148,15 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
         return Collections.unmodifiableList(additionalDataProviders);
     }
 
+    /**
+     * Remove an additional data provider.
+     * @param name data name
+     * @since 13.1
+     */
+    public void removeAdditionalDataProvider(final String name) {
+        additionalDataProviders.removeIf(provider -> provider.getName().equals(name));
+    }
+
     /** Update state by adding unmanaged states.
      * @param original original state
      * @return updated state, with unmanaged states included

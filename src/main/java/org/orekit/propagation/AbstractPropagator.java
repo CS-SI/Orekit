@@ -142,6 +142,15 @@ public abstract class AbstractPropagator implements Propagator {
         return Collections.unmodifiableList(additionalDataProviders);
     }
 
+    /**
+     * Remove an additional data provider.
+     * @param name data name
+     * @since 13.1
+     */
+    public void removeAdditionalDataProvider(final String name) {
+        additionalDataProviders.removeIf(provider -> provider.getName().equals(name));
+    }
+
     /** {@inheritDoc} */
     @Override
     public MatricesHarvester setupMatricesComputation(final String stmName, final RealMatrix initialStm,
