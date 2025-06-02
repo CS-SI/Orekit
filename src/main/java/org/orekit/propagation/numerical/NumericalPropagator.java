@@ -458,6 +458,27 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     /** {@inheritDoc} */
     @Override
+    public void clearMatricesComputation() {
+        final List<AdditionalDerivativesProvider> copiedDerivativesProviders = new ArrayList<>(getAdditionalDerivativesProviders());
+        copiedDerivativesProviders.stream().filter(AbstractStateTransitionMatrixGenerator.class::isInstance)
+                .forEach(provider -> removeAdditionalDerivativesProvider(provider.getName()));
+        final List<AdditionalDataProvider<?>> copiedDataProviders = new ArrayList<>(getAdditionalDataProviders());
+        for (final AdditionalDataProvider<?> additionalDataProvider: copiedDataProviders) {
+            if (additionalDataProvider instanceof TriggerDate) {
+                final TriggerDate triggerDate = (TriggerDate) additionalDataProvider;
+                if (triggerDate.getMassDepletionDelay() != null) {
+                    removeAdditionalDerivativesProvider(triggerDate.getMassDepletionDelay().getName());
+                }
+                removeAdditionalDataProvider(additionalDataProvider.getName());
+            } else if (additionalDataProvider instanceof MedianDate || additionalDataProvider instanceof Duration) {
+                removeAdditionalDataProvider(additionalDataProvider.getName());
+            }
+        }
+        super.clearMatricesComputation();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected void setUpStmAndJacobianGenerators() {
 
         final AbstractMatricesHarvester harvester = getHarvester();

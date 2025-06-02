@@ -21,6 +21,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -28,6 +29,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -60,6 +62,17 @@ public class KeplerianPropagatorTest {
 
     // Body mu
     private double mu;
+
+    @Test
+    void testClearMatricesComputation() {
+        // GIVEN
+        final KeplerianPropagator propagator = new KeplerianPropagator(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH));
+        propagator.setupMatricesComputation("stm", MatrixUtils.createRealIdentityMatrix(6), null);
+        // WHEN
+        propagator.clearMatricesComputation();
+        // THEN
+        Assertions.assertTrue(propagator.getAdditionalDataProviders().isEmpty());
+    }
 
     /**
      * Check that the date returned by {@link KeplerianPropagator#propagate(AbsoluteDate)}
