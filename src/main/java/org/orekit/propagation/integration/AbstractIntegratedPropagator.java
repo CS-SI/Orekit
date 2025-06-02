@@ -340,6 +340,15 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         return Collections.unmodifiableList(additionalDerivativesProviders);
     }
 
+    /**
+     * Remove additional derivatives provider.
+     * @param name provider's name.
+     * @since 13.1
+     */
+    protected void removeAdditionalDerivativesProvider(final String name) {
+        additionalDerivativesProviders.removeIf(provider -> provider.getName().equals(name));
+    }
+
     /** {@inheritDoc} */
     public void addEventDetector(final EventDetector detector) {
         detectors.add(detector);
