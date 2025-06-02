@@ -21,6 +21,7 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.QRDecomposition;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
+import org.orekit.forces.ForceModel;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.forces.maneuvers.trigger.ManeuverTriggersResetter;
 import org.orekit.propagation.AdditionalDataProvider;
@@ -85,13 +86,14 @@ import org.orekit.utils.TimeSpanMap;
  * if propagation starts outside of the maneuver and passes over \(t_1\) during integration.
  * </p>
  * <p>
- * The secondary part is computed as follows. We have acceleration \(\vec{\Gamma} = \frac{\vec{F}}{m}\) and
- * \(m = m_0 - q (t - t_s)\), where \(m\) is current mass, \(m_0\) is initial mass and \(t_s\) is
- * maneuver trigger time. A delay \(dt_s\) on trigger time induces delaying mass depletion.
- * We get:
- * \[d\vec{\Gamma} = \frac{-\vec{F}}{m^2} dm = \frac{-\vec{F}}{m^2} q dt_s = -\vec{\Gamma}\frac{q}{m} dt_s\]
- * From this total differential, we extract the partial derivative of the acceleration
- * \[\frac{\partial\vec{\Gamma}}{\partial t_s} = -\vec{\Gamma}\frac{q}{m}\]
+ * The secondary part, if needed (as it is not required if the mass is already included the state transition matrix
+ * i.e. when the latter is 7x7), is computed as follows. Let m be the mass and m_s its value at switching time t_s.
+ * Let (x,y,z) be the position vector, (vx, vy, vz) the velocity
+ * and (ax, ay, az) the total acceleration, we have \(\dot \frac{\partial x} {\partial \partial m_s} = \frac{\partial vx }{\partial m_s}))
+ * and similar expressions for y and z. Furthermore, \(\dot \frac{\partial vx}{ \partial \partial m_s} = \frac{\partial ax }{\partial m}
+ * . \frac{\partial m }{\partial m_s} \), and symmetric equations for vy and vy. The fact is that \( \frac{\partial m}{ \partial m_s} = 1 \)
+ * assuming the mass rate q only depends on time. On the other hand, \( \frac{\partial m_s}{ \partial t_s }= q(t_s) \)/
+ * By the chain rule of derivation, one gets the contribution due to the mass depletion delay.
  * </p>
  * <p>
  * The contribution of the secondary part to the Jacobian column can therefore be computed by integrating
@@ -151,16 +153,20 @@ public class TriggerDate implements ManeuverTriggersResetter, AdditionalDataProv
     /** Indicator for forward propagation. */
     private boolean forward;
 
+    /** Mass rate at trigger (sign depends on propagation direction). Set to zero until the maneuver has actually happened during a propagation. */
+    private double signedMassRateAtTrigger = 0.;
+
     /** Constructor without mass as state variable in transition matrix.
      * @param stmName name of State Transition Matrix state
      * @param triggerName name of the parameter corresponding to the trigger date column
      * @param manageStart if true, we compute derivatives with respect to maneuver start
      * @param maneuver maneuver force model
      * @param threshold event detector threshold
+     * @param nonGravitationalForces list of non-gravitational forces, used only if mass is not in STM
      */
     public TriggerDate(final String stmName, final String triggerName, final boolean manageStart,
-                       final Maneuver maneuver, final double threshold) {
-        this(stmName, triggerName, manageStart, maneuver, threshold, false);
+                       final Maneuver maneuver, final double threshold, final ForceModel... nonGravitationalForces) {
+        this(stmName, triggerName, manageStart, maneuver, threshold, false, nonGravitationalForces);
     }
 
     /** Constructor.
@@ -170,17 +176,19 @@ public class TriggerDate implements ManeuverTriggersResetter, AdditionalDataProv
      * @param maneuver maneuver force model
      * @param threshold event detector threshold
      * @param isMassInStm flag on mass inclusion as state variable in STM
+     * @param nonGravitationalForces list of non-gravitational forces, used only if mass is not in STM
      * @since 13.1
      */
     public TriggerDate(final String stmName, final String triggerName, final boolean manageStart,
-                       final Maneuver maneuver, final double threshold, final boolean isMassInStm) {
+                       final Maneuver maneuver, final double threshold, final boolean isMassInStm,
+                       final ForceModel... nonGravitationalForces) {
         this.stmName            = stmName;
         this.triggerName        = triggerName;
-        this.massDepletionDelay = isMassInStm ? null : new MassDepletionDelay(triggerName, manageStart, maneuver);
+        this.massDepletionDelay = isMassInStm ? null : new MassDepletionDelay(triggerName, manageStart, maneuver, nonGravitationalForces);
         this.manageStart        = manageStart;
         this.maneuver           = maneuver;
         this.threshold          = threshold;
-        this.stateDimension     = isMassInStm ? 7 :  6;
+        this.stateDimension     = isMassInStm ? 7 : 6;
         this.contribution       = null;
         this.trigger            = null;
         this.forward            = true;
@@ -206,7 +214,7 @@ public class TriggerDate implements ManeuverTriggersResetter, AdditionalDataProv
         }
     }
 
-    /** Get the mass depletion effect processor.
+    /** Get the mass depletion effect processor. Can be null.
      * @return mass depletion effect processor
      */
     public MassDepletionDelay getMassDepletionDelay() {
@@ -225,6 +233,7 @@ public class TriggerDate implements ManeuverTriggersResetter, AdditionalDataProv
         if (contribution == null || (forward ^ newForward)) {
             contribution = new TimeSpanMap<>(null);
             trigger      = null;
+            signedMassRateAtTrigger = 0.;
         }
 
         forward = newForward;
@@ -250,9 +259,9 @@ public class TriggerDate implements ManeuverTriggersResetter, AdditionalDataProv
                 // secondary effect: maneuver change throughout thrust as mass depletion is delayed (only needed when mass is not in the STM)
                 final double[] secondary = state.getAdditionalState(massDepletionDelay.getName());
 
-                // sum up both effects
+                // cumulate both effects
                 for (int i = 0; i < effect.length; ++i) {
-                    effect[i] += secondary[i];
+                    effect[i] += secondary[i] * signedMassRateAtTrigger;
                 }
             }
 
@@ -287,9 +296,9 @@ public class TriggerDate implements ManeuverTriggersResetter, AdditionalDataProv
         rhs.setEntry(3, sign * acceleration.getX());
         rhs.setEntry(4, sign * acceleration.getY());
         rhs.setEntry(5, sign * acceleration.getZ());
+        signedMassRateAtTrigger = sign * maneuver.getPropulsionModel().getMassDerivatives(state, parameters);
         if (stateDimension == 7) {
-            final double massDerivative = maneuver.getPropulsionModel().getMassDerivatives(state, parameters);
-            rhs.setEntry(6, sign * massDerivative);
+            rhs.setEntry(6, signedMassRateAtTrigger);
         }
 
         // get State Transition Matrix with respect to Cartesian parameters at trigger time

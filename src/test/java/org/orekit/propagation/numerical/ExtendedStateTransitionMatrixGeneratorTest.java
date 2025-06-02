@@ -268,6 +268,37 @@ class ExtendedStateTransitionMatrixGeneratorTest {
     }
 
     @Test
+    void testParameterJacobian7x7vs6x6ProfileThrust() {
+        // GIVEN
+        final NumericalPropagator propagator = buildPropagator(OrbitType.CARTESIAN);
+        final String stmName = "stm";
+        final MatricesHarvester harvester7x7 = propagator.setupMatricesComputation(stmName, MatrixUtils.createRealIdentityMatrix(7), null);
+        final double timeOfFlight = 1e3;
+        final AbsoluteDate epoch = propagator.getInitialState().getDate();
+        final AbsoluteDate targetDate = epoch.shiftedBy(timeOfFlight);
+        final double slopeThrust = 2e-2;
+        final ThrustVectorProvider thrustVectorProvider = getThrustVector(epoch, slopeThrust);
+        final ProfileThrustPropulsionModel propulsionModel = buildProfileModel(thrustVectorProvider);
+        final AbsoluteDate startDate = epoch.shiftedBy(5e2);
+        final double duration = 3e2;
+        final Maneuver maneuver = new Maneuver(null, buildDatedBasedTriggers(startDate, duration, 0.), propulsionModel);
+        final String parameterName = "triggers" + ParameterDrivenDateIntervalDetector.DURATION_SUFFIX;
+        maneuver.getParameterDriver(parameterName).setSelected(true);
+        propagator.addForceModel(maneuver);
+        // WHEN
+        final SpacecraftState state = propagator.propagate(targetDate);
+        final RealMatrix actualJacobian = harvester7x7.getParametersJacobian(state);
+        // THEN
+        final NumericalPropagator otherPropagator = buildPropagator(propagator.getOrbitType(), propagator.getAttitudeProvider());
+        otherPropagator.addForceModel(new Maneuver(null, buildDatedBasedTriggers(startDate, duration, 0.), propulsionModel));
+        otherPropagator.getAllForceModels().get(0).getParameterDriver(parameterName).setSelected(true);
+        final MatricesHarvester harvester6x6 = otherPropagator.setupMatricesComputation(stmName, MatrixUtils.createRealIdentityMatrix(6), null);
+        final SpacecraftState otherState = otherPropagator.propagate(targetDate);
+        final RealMatrix expectedJacobian = harvester6x6.getParametersJacobian(otherState);
+        assertArrayEquals(expectedJacobian.getColumn(0), Arrays.copyOfRange(actualJacobian.getColumn(0), 0, 6), 0.1);
+    }
+
+    @Test
     void testManeuverTriggerDateParameterWithProfileThrust() {
         // GIVEN
         final NumericalPropagator propagator = buildPropagator(OrbitType.CARTESIAN, null);
