@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0.3" date="TBC" description="TBC">
+        <action dev="baubin" type="fix" issue="1746">
+            Removed duplicate parameter of local clock offset in OneWayGNSSPhase.
+        </action>
         <action dev="serrof" type="fix" issue="1740">
             Improved performance of shiftedBy in (Field)Orbit for vanishing time of flight.
         </action>
