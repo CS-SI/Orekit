@@ -78,6 +78,9 @@
         <action dev="serrof" type="add" issue="1702">
             Add TimeInterval interface and some applications.
         </action>
+        <action dev="jtabeaud" type="add" issue="1692">
+            Add TimeStampedGeodeticPoint.
+        </action>
         <action dev="serrof" type="add" issue="1683">
             Add (Field)ExtremumAngularSeparationDetector.
         </action>
