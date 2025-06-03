@@ -519,6 +519,16 @@ public class OneWayGNSSPhaseTest {
         // Sort measurements chronologically
         measurements.sort(Comparator.naturalOrder());
 
+        // Check number of parameter drivers attached to measurement
+        List<ParameterDriver> paramDrivers = measurements.get(0).getParametersDrivers();
+        Assertions.assertEquals(4, paramDrivers.size());
+
+        // Check the parameter names
+        Assertions.assertEquals("clock-offset-sat-0", paramDrivers.get(0).getName());
+        Assertions.assertEquals("clock-drift-sat-0", paramDrivers.get(1).getName());
+        Assertions.assertEquals("clock-acceleration-sat-0", paramDrivers.get(2).getName());
+        Assertions.assertEquals("ambiguity-remote-sat-0-154.00", paramDrivers.get(3).getName());
+
         // Print results ? Header
         if (printResults) {
             System.out.format(Locale.US, "%-15s  %-23s  %-23s  " +

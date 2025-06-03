@@ -89,7 +89,6 @@ public class OneWayGNSSPhase extends AbstractOneWayGNSSMeasurement<OneWayGNSSPha
 
         // The local satellite clock offset affects the measurement
         addParameterDriver(ambiguityDriver);
-        addParameterDriver(local.getClockOffsetDriver());
 
         // Initialise fields
         this.wavelength = wavelength;
