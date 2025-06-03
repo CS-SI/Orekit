@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,21 +16,22 @@
  */
 package org.orekit.bodies;
 
-import org.hipparchus.util.FastMath;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeShiftable;
-import org.orekit.time.TimeStamped;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeStamped;
 
 /**
- * Implements a time-stamped {@link GeodeticPoint}.
- * @author Jérôme Tabeaud
+ * Implements a time-stamped {@link FieldGeodeticPoint}.
+ * @author Romain Serra
  * @since 13.1
  */
-public class TimeStampedGeodeticPoint extends GeodeticPoint implements TimeStamped, TimeShiftable<TimeStampedGeodeticPoint> {
+public class FieldTimeStampedGeodeticPoint<T extends CalculusFieldElement<T>> extends FieldGeodeticPoint<T>
+        implements FieldTimeStamped<T> {
     /**
-     * Date at which the {@link GeodeticPoint} is set.
+     * Date at which the {@link FieldGeodeticPoint} is set.
      */
-    private final AbsoluteDate date;
+    private final FieldAbsoluteDate<T> date;
 
     /**
      * Build a new instance from geodetic coordinates.
@@ -40,41 +41,37 @@ public class TimeStampedGeodeticPoint extends GeodeticPoint implements TimeStamp
      * @param longitude geodetic longitude (rad)
      * @param altitude  altitude above ellipsoid (m)
      */
-    public TimeStampedGeodeticPoint(final AbsoluteDate date, final double latitude, final double longitude,
-                                    final double altitude) {
+    public FieldTimeStampedGeodeticPoint(final FieldAbsoluteDate<T> date, final T latitude, final T longitude,
+                                         final T altitude) {
         super(latitude, longitude, altitude);
         this.date = date;
     }
 
     /**
-     * Build a new instance from a {@link GeodeticPoint}.
+     * Build a new instance from a {@link FieldGeodeticPoint}.
      *
      * @param date      date of the point
      * @param point     geodetic point
      */
-    public TimeStampedGeodeticPoint(final AbsoluteDate date, final GeodeticPoint point) {
+    public FieldTimeStampedGeodeticPoint(final FieldAbsoluteDate<T> date, final FieldGeodeticPoint<T> point) {
         this(date, point.getLatitude(), point.getLongitude(), point.getAltitude());
     }
 
-    @Override
-    public AbsoluteDate getDate() {
-        return date;
+    /**
+     * Build a new instance from a {@link TimeStampedGeodeticPoint}.
+     *
+     * @param field field
+     * @param timeStampedGeodeticPoint non-Field point
+     */
+    public FieldTimeStampedGeodeticPoint(final Field<T> field, final TimeStampedGeodeticPoint timeStampedGeodeticPoint) {
+        this(new FieldAbsoluteDate<>(field, timeStampedGeodeticPoint.getDate()), new FieldGeodeticPoint<>(field, timeStampedGeodeticPoint));
     }
 
     @Override
-    public String toString() {
-        return "{" +
-                "date: " + date +
-                ", lat: " + FastMath.toDegrees(getLatitude()) +
-                " deg, lon: " + FastMath.toDegrees(getLongitude()) +
-                " deg, alt: " + getAltitude() +
-                "}";
-    }
-
-    @Override
+    @SuppressWarnings("unchecked")
     public boolean equals(final Object object) {
-        if (object instanceof TimeStampedGeodeticPoint) {
-            final TimeStampedGeodeticPoint other = (TimeStampedGeodeticPoint) object;
+        if (object instanceof FieldTimeStampedGeodeticPoint<?>) {
+            final FieldTimeStampedGeodeticPoint<T> other = (FieldTimeStampedGeodeticPoint<T>) object;
             return other.date.isEqualTo(date) && super.equals(other);
         } else {
             return false;
@@ -87,7 +84,7 @@ public class TimeStampedGeodeticPoint extends GeodeticPoint implements TimeStamp
     }
 
     @Override
-    public TimeStampedGeodeticPoint shiftedBy(final double dt) {
-        return new TimeStampedGeodeticPoint(date.shiftedBy(dt), getLatitude(), getLongitude(), getAltitude());
+    public FieldAbsoluteDate<T> getDate() {
+        return date;
     }
 }

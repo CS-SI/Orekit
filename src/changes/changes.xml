@@ -48,6 +48,9 @@
         <action dev="serrof" type="add" issue="1730">
             Add thrust model based on spherical coordinates.
         </action>
+        <action dev="serrof" type="add" issue="1729">
+            Add FieldTimeStampedGeodeticPoint.
+        </action>
         <action dev="serrof" type="add" issue="1723">
             Add ability to include mass in numerical state transition matrix.
         </action>
