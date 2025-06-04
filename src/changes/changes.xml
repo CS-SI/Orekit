@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.1" date="TBD" description="TBD">
+        <action dev="serrof" type="add" issue="1750">
+            Add way not to reset (Field)PropagationStepRecorder.
+        </action>
         <action dev="serrof" type="add" issue="1747">
             Add method to remove AdditionalDataProvider.
         </action>
