@@ -31,6 +31,9 @@ import java.util.List;
  */
 public class PropagationStepRecorder implements OrekitStepHandler {
 
+    /** Flag to reset or not on (re)initialization. */
+    private boolean resetAutomatically;
+
     /**
      * Recorded times.
      */
@@ -38,9 +41,37 @@ public class PropagationStepRecorder implements OrekitStepHandler {
 
     /**
      * Constructor.
+     * @param resetAutomatically resetting flag
+     * @since 13.1
+     */
+    public PropagationStepRecorder(final boolean resetAutomatically) {
+        this.resetAutomatically  = resetAutomatically;
+        this.states = new ArrayList<>();
+    }
+
+    /**
+     * Constructor with default flag.
      */
     public PropagationStepRecorder() {
-        this.states = new ArrayList<>();
+        this(true);
+    }
+
+    /**
+     * Setter for resetting flag.
+     * @param resetAutomatically flag
+     * @since 13.1
+     */
+    public void setResetAutomatically(final boolean resetAutomatically) {
+        this.resetAutomatically = resetAutomatically;
+    }
+
+    /**
+     * Getter for resetting flag.
+     * @return flag
+     * @since 13.1
+     */
+    public boolean isResetAutomatically() {
+        return resetAutomatically;
     }
 
     /**
@@ -55,7 +86,9 @@ public class PropagationStepRecorder implements OrekitStepHandler {
     @Override
     public void init(final SpacecraftState s0, final AbsoluteDate t) {
         OrekitStepHandler.super.init(s0, t);
-        states.clear();
+        if (resetAutomatically) {
+            states.clear();
+        }
     }
 
     /** {@inheritDoc} */
