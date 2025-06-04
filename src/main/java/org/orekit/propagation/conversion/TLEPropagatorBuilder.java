@@ -134,7 +134,7 @@ public class TLEPropagatorBuilder extends AbstractAnalyticalPropagatorBuilder<TL
     /** Copy constructor.
      * @param builder builder to copy from
      */
-    public TLEPropagatorBuilder(final TLEPropagatorBuilder builder) {
+    private TLEPropagatorBuilder(final TLEPropagatorBuilder builder) {
         this(builder.getTemplateTLE(), builder.getPositionAngleType(),
              builder.getPositionScale(), builder.dataContext,
              builder.generationAlgorithm, builder.getAttitudeProvider());

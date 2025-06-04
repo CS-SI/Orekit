@@ -80,7 +80,7 @@ public class KeplerianPropagatorBuilder extends AbstractAnalyticalPropagatorBuil
     /** Copy constructor.
      * @param builder builder to copy from
      */
-    public KeplerianPropagatorBuilder(final KeplerianPropagatorBuilder builder) {
+    private KeplerianPropagatorBuilder(final KeplerianPropagatorBuilder builder) {
         this(builder.createInitialOrbit(), builder.getPositionAngleType(),
              builder.getPositionScale(), builder.getAttitudeProvider());
     }

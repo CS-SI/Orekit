@@ -159,7 +159,7 @@ public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder<Epheme
     /** Copy constructor.
      * @param builder builder to copy from
      */
-    public EphemerisPropagatorBuilder(final EphemerisPropagatorBuilder builder) {
+    private EphemerisPropagatorBuilder(final EphemerisPropagatorBuilder builder) {
         this(builder.states, builder.stateInterpolator, builder.covariances,
              builder.covarianceInterpolator, builder.getAttitudeProvider());
     }

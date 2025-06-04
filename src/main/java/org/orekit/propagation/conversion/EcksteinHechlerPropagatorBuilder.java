@@ -177,7 +177,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractAnalyticalPropagat
     /** Copy constructor.
      * @param builder builder to copy from
      */
-    public EcksteinHechlerPropagatorBuilder(final EcksteinHechlerPropagatorBuilder builder) {
+    private EcksteinHechlerPropagatorBuilder(final EcksteinHechlerPropagatorBuilder builder) {
         this(builder.createInitialOrbit(), builder.provider, builder.getPositionAngleType(),
              builder.getPositionScale(), builder.getAttitudeProvider());
     }
