@@ -111,7 +111,7 @@ public class EphemerisPropagatorBuilderTest {
                 new EphemerisPropagatorBuilder(states, stateInterpolator);
 
         // When
-        final Ephemeris builtPropagator = (Ephemeris) builder.buildPropagator();
+        final Ephemeris builtPropagator = builder.buildPropagator();
 
         // Then
         final Ephemeris expectedPropagator = new Ephemeris(states, stateInterpolator);
@@ -148,7 +148,7 @@ public class EphemerisPropagatorBuilderTest {
                 new EphemerisPropagatorBuilder(states, stateInterpolator, attitudeProvider);
 
         // When
-        final EphemerisPropagatorBuilder copyBuilder = (EphemerisPropagatorBuilder) builder.clone();
+        final EphemerisPropagatorBuilder copyBuilder = builder.clone();
 
         // Then
         assertPropagatorBuilderIsACopy(builder, copyBuilder);

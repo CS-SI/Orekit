@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0.3" date="TBC" description="TBC">
+        <action dev="maxime" type="fix" issue="1741">
+            Fixed clone behavior in propagator builders.
+        </action>
         <action dev="baubin" type="fix" issue="1746">
             Removed duplicate parameter of local clock offset in OneWayGNSSPhase.
         </action>

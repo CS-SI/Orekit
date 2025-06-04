@@ -30,6 +30,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
 
 /** Builder for Brouwer-Lyddane propagator.
  * <p>
@@ -37,18 +38,18 @@ import org.orekit.utils.ParameterDriver;
  * However, for low Earth orbits, the magnitude of the perturbative acceleration due to
  * atmospheric drag can be significant. Warren Phipps' 1992 thesis considered the atmospheric
  * drag by time derivatives of the <i>mean</i> mean anomaly using the catch-all coefficient M2.
- *
- * Usually, M2 is adjusted during an orbit determination process and it represents the
- * combination of all unmodeled secular along-track effects (i.e. not just the atmospheric drag).
+ * <p>
+ * Usually, M2 is adjusted during an orbit determination process, and it represents the
+ * combination of all un-modeled secular along-track effects (i.e. not just the atmospheric drag).
  * The behavior of M2 is closed to the {@link TLE#getBStar()} parameter for the TLE.
- *
+ * <p>
  * If the value of M2 is equal to {@link BrouwerLyddanePropagator#M2 0.0}, the along-track
  * secular effects are not considered in the dynamical model. Typical values for M2 are not known.
  * It depends on the orbit type. However, the value of M2 must be very small (e.g. between 1.0e-14 and 1.0e-15).
  * The unit of M2 is rad/s².
  * <p>
  * To estimate the M2 parameter, it is necessary to call the {@link #getPropagationParametersDrivers()} method
- * as follow:
+ * as follows:
  * <pre>
  *  for (ParameterDriver driver : builder.getPropagationParametersDrivers().getDrivers()) {
  *     if (BrouwerLyddanePropagator.M2_NAME.equals(driver.getName())) {
@@ -216,6 +217,35 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractAnalyticalPropagato
         addSupportedParameters(Collections.singletonList(M2Driver));
     }
 
+    /** Copy constructor.
+     * @param builder builder to copy from
+     */
+    private BrouwerLyddanePropagatorBuilder(final BrouwerLyddanePropagatorBuilder builder) {
+        this(builder.createInitialOrbit(), builder.provider, builder.getPositionAngleType(),
+             builder.getPositionScale(), builder.getAttitudeProvider(), builder.getM2Value());
+    }
+
+    /** {@inheritDoc}. */
+    @Override
+    public BrouwerLyddanePropagatorBuilder clone() {
+        // Call to super clone() method to avoid warning
+        final BrouwerLyddanePropagatorBuilder clonedBuilder = (BrouwerLyddanePropagatorBuilder) super.clone();
+
+        // Use copy constructor to unlink orbital drivers
+        final BrouwerLyddanePropagatorBuilder builder = new BrouwerLyddanePropagatorBuilder(clonedBuilder);
+
+        // Set mass
+        builder.setMass(getMass());
+
+        // Ensure drivers' selection consistency
+        final ParameterDriversList propDrivers = clonedBuilder.getPropagationParametersDrivers();
+        builder.getPropagationParametersDrivers().getDrivers().
+                        forEach(driver -> driver.setSelected(propDrivers.findByName(driver.getName()).isSelected()));
+
+        // Return cloned builder
+        return builder;
+    }
+
     /** Override central attraction coefficient.
      * @param templateOrbit template orbit
      * @param provider gravity field provider
@@ -264,7 +294,7 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractAnalyticalPropagato
     /**
      * Get the value of the M2 parameter.
      * <p>
-     *  M2 represents the combination of all unmodeled secular along-track effects
+     *  M2 represents the combination of all un-modeled secular along-track effects
      *  (e.g. drag). It is usually fitted during an orbit determination.
      * </p>
      * @return the value of the M2 parameter
