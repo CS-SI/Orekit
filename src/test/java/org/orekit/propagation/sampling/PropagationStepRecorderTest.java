@@ -17,6 +17,8 @@
 package org.orekit.propagation.sampling;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -26,6 +28,28 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PropagationStepRecorderTest {
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testSetter(final boolean resetAutomatically) {
+        // GIVEN
+        final PropagationStepRecorder recorder = new PropagationStepRecorder();
+        // WHEN
+        recorder.setResetAutomatically(resetAutomatically);
+        // THEN
+        assertEquals(resetAutomatically, recorder.isResetAutomatically());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testGetter(final boolean resetAutomatically) {
+        // GIVEN
+
+        // WHEN
+        final PropagationStepRecorder recorder = new PropagationStepRecorder(resetAutomatically);
+        // THEN
+        assertEquals(resetAutomatically, recorder.isResetAutomatically());
+    }
 
     @Test
     void copyStatesAtConstructionTest() {
@@ -49,8 +73,9 @@ class PropagationStepRecorderTest {
         assertEquals(0, states.size());
     }
 
-    @Test
-    void handleStepTest() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void handleStepTest(final boolean resetAutomatically) {
         // GIVEN
         final PropagationStepRecorder recorder = new PropagationStepRecorder();
         final OrekitStepInterpolator mockedInterpolator = mockInterpolator();
@@ -62,6 +87,11 @@ class PropagationStepRecorderTest {
         // WHEN
         final List<SpacecraftState> states = recorder.copyStates();
         assertEquals(expectedSize, states.size());
+        recorder.setResetAutomatically(resetAutomatically);
+        recorder.init(mockState(), AbsoluteDate.ARBITRARY_EPOCH);
+        if (resetAutomatically) {
+            assertTrue(recorder.copyStates().isEmpty());
+        }
     }
 
     private static OrekitStepInterpolator mockInterpolator() {

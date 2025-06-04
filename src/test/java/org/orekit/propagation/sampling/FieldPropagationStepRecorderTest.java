@@ -19,6 +19,8 @@ package org.orekit.propagation.sampling;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.TestUtils;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -30,6 +32,28 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FieldPropagationStepRecorderTest {
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testSetter(final boolean resetAutomatically) {
+        // GIVEN
+        final FieldPropagationStepRecorder<Binary64> recorder = new FieldPropagationStepRecorder<Binary64>();
+        // WHEN
+        recorder.setResetAutomatically(resetAutomatically);
+        // THEN
+        assertEquals(resetAutomatically, recorder.isResetAutomatically());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testGetter(final boolean resetAutomatically) {
+        // GIVEN
+
+        // WHEN
+        final FieldPropagationStepRecorder<Binary64> recorder = new FieldPropagationStepRecorder<Binary64>(resetAutomatically);
+        // THEN
+        assertEquals(resetAutomatically, recorder.isResetAutomatically());
+    }
 
     @Test
     void copyStatesAtConstructionTest() {
