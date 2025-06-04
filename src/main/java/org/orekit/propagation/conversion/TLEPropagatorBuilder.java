@@ -29,6 +29,7 @@ import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
 
 import java.util.List;
 
@@ -130,6 +131,33 @@ public class TLEPropagatorBuilder extends AbstractAnalyticalPropagatorBuilder<TL
         this.generationAlgorithm = generationAlgorithm;
     }
 
+    /** Copy constructor.
+     * @param builder builder to copy from
+     */
+    private TLEPropagatorBuilder(final TLEPropagatorBuilder builder) {
+        this(builder.getTemplateTLE(), builder.getPositionAngleType(),
+             builder.getPositionScale(), builder.dataContext,
+             builder.generationAlgorithm, builder.getAttitudeProvider());
+    }
+
+    /** {@inheritDoc}. */
+    @Override
+    public TLEPropagatorBuilder clone() {
+        // Call to super clone() method to avoid warning
+        final TLEPropagatorBuilder clonedBuilder = (TLEPropagatorBuilder) super.clone();
+
+        // Use copy constructor to unlink orbital drivers
+        final TLEPropagatorBuilder builder = new TLEPropagatorBuilder(clonedBuilder);
+
+        // Set mass
+        builder.setMass(getMass());
+
+        // Ensure drivers' selection consistency
+        final ParameterDriversList propDrivers = clonedBuilder.getPropagationParametersDrivers();
+        builder.getPropagationParametersDrivers().getDrivers().
+                        forEach(driver -> driver.setSelected(propDrivers.findByName(driver.getName()).isSelected()));
+        return new TLEPropagatorBuilder(clonedBuilder);
+    }
 
     /** {@inheritDoc} */
     @Override
