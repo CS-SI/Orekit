@@ -24,9 +24,11 @@ import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbstractTimeInterpolator;
@@ -288,6 +290,11 @@ class FieldAbsolutePVCoordinatesHermiteInterpolatorTest {
 
         }
 
+    }
+
+    @BeforeEach
+    public void setUp() {
+        Utils.setDataRoot("regular-data");
     }
 
 }

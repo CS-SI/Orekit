@@ -22,6 +22,7 @@ import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
@@ -306,6 +307,11 @@ public class TimeStampedPVCoordinatesTest {
         Assertions.assertEquals(expected.getAcceleration().getX(), real.getAcceleration().getX(), epsilon);
         Assertions.assertEquals(expected.getAcceleration().getY(), real.getAcceleration().getY(), epsilon);
         Assertions.assertEquals(expected.getAcceleration().getZ(), real.getAcceleration().getZ(), epsilon);
+    }
+
+    @BeforeEach
+    public void setUp() {
+        Utils.setDataRoot("regular-data");
     }
 
 }

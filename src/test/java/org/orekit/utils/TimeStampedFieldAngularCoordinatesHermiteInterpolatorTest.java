@@ -27,9 +27,11 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
+import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.AbstractTimeInterpolator;
 import org.orekit.time.FieldTimeInterpolator;
@@ -272,6 +274,11 @@ class TimeStampedFieldAngularCoordinatesHermiteInterpolatorTest {
         Assertions.assertEquals(AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
                                 interpolator.getExtrapolationThreshold());
         Assertions.assertEquals(filter, interpolator.getFilter());
+    }
+
+    @BeforeEach
+    public void setUp() {
+        Utils.setDataRoot("regular-data");
     }
 
 }

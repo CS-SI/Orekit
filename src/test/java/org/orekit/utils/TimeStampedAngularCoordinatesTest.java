@@ -26,7 +26,9 @@ import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well1024a;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
 
 public class TimeStampedAngularCoordinatesTest {
@@ -338,6 +340,11 @@ public class TimeStampedAngularCoordinatesTest {
         double q3 = random.nextDouble() * 2 - 1;
         double q  = FastMath.sqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
         return new Rotation(q0 / q, q1 / q, q2 / q, q3 / q, false);
+    }
+
+    @BeforeEach
+    public void setUp() {
+        Utils.setDataRoot("regular-data");
     }
 
 }
