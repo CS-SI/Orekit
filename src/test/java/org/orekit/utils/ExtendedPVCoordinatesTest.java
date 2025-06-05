@@ -22,7 +22,9 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.FieldAbsoluteDate;
@@ -52,6 +54,11 @@ public class ExtendedPVCoordinatesTest {
         Assertions.assertEquals(0.0, FieldVector3D.distance(pv.getVelocity(),     provider.getPVCoordinates(date, frame).getVelocity()).getReal(), 1.0e-15);
         Assertions.assertEquals(0.0, FieldVector3D.distance(pv.getAcceleration(), provider.getPVCoordinates(date, frame).getAcceleration()).getReal(), 1.0e-15);
 
+    }
+
+    @BeforeEach
+    public void setUp() {
+        Utils.setDataRoot("regular-data");
     }
 
 }

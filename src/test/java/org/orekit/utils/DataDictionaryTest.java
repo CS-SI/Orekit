@@ -20,7 +20,9 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
 
 public class DataDictionaryTest {
 
@@ -206,4 +208,10 @@ public class DataDictionaryTest {
         Assertions.assertEquals(4, map.size());
         Assertions.assertEquals(0, dictionary.size());
     }
+
+    @BeforeEach
+    public void setUp() {
+        Utils.setDataRoot("regular-data");
+    }
+
 }

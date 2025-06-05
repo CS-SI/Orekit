@@ -34,7 +34,9 @@ import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
@@ -403,6 +405,11 @@ public class TimeStampedFieldAngularCoordinatesTest {
         double y = random.nextDouble();
         double z = random.nextDouble();
         return new FieldVector3D<>(n, new FieldVector3D<>(new Binary64(x), new Binary64(y), new Binary64(z)).normalize());
+    }
+
+    @BeforeEach
+    public void setUp() {
+        Utils.setDataRoot("regular-data");
     }
 
 }

@@ -30,8 +30,10 @@ import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
+import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FramesFactory;
@@ -688,5 +690,10 @@ public class PVCoordinatesTest {
             return null;
         }
      }
+
+    @BeforeEach
+    public void setUp() {
+        Utils.setDataRoot("regular-data");
+    }
 
 }
