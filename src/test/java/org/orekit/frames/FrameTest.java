@@ -18,6 +18,7 @@ package org.orekit.frames;
 
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1Field;
 import org.hipparchus.complex.Complex;
@@ -25,6 +26,7 @@ import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,7 +49,7 @@ class FrameTest {
 
     @Test
     void testSameFrameRoot() {
-        Random random = new Random(0x29448c7d58b95565l);
+        Random random = new Random(0x29448c7d58b95565L);
         Frame  frame  = FramesFactory.getEME2000();
         checkNoTransform(frame.getTransformTo(frame, new AbsoluteDate()), random);
         Assertions.assertTrue(frame.getDepth() > 0);
@@ -56,7 +58,7 @@ class FrameTest {
 
     @Test
     void testSameFrameNoRoot() {
-        Random random = new Random(0xc6e88d0f53e29116l);
+        Random random = new Random(0xc6e88d0f53e29116L);
         Transform t   = randomTransform(random);
         Frame frame   = new Frame(FramesFactory.getEME2000(), t, null, true);
         checkNoTransform(frame.getTransformTo(frame, new AbsoluteDate()), random);
@@ -64,7 +66,7 @@ class FrameTest {
 
     @Test
     void testSimilarFrames() {
-        Random random = new Random(0x1b868f67a83666e5l);
+        Random random = new Random(0x1b868f67a83666e5L);
         Transform t   = randomTransform(random);
         Frame frame1  = new Frame(FramesFactory.getEME2000(), t, null, true);
         Frame frame2  = new Frame(FramesFactory.getEME2000(), t, null, false);
@@ -73,7 +75,7 @@ class FrameTest {
 
     @Test
     void testFromParent() {
-        Random random = new Random(0xb92fba1183fe11b8l);
+        Random random = new Random(0xb92fba1183fe11b8L);
         Transform fromEME2000  = randomTransform(random);
         Frame frame = new Frame(FramesFactory.getEME2000(), fromEME2000, null);
         Transform toEME2000 = frame.getTransformTo(FramesFactory.getEME2000(), new AbsoluteDate());
@@ -82,7 +84,7 @@ class FrameTest {
 
     @Test
     void testDecomposedTransform() {
-        Random random = new Random(0xb7d1a155e726da57l);
+        Random random = new Random(0xb7d1a155e726da57L);
         Transform t1  = randomTransform(random);
         Transform t2  = randomTransform(random);
         Transform t3  = randomTransform(random);
@@ -98,7 +100,7 @@ class FrameTest {
     @Test
     void testFindCommon() {
 
-        Random random = new Random(0xb7d1a155e726da57l);
+        Random random = new Random(0xb7d1a155e726da57L);
         Transform t1  = randomTransform(random);
         Transform t2  = randomTransform(random);
         Transform t3  = randomTransform(random);
@@ -120,7 +122,7 @@ class FrameTest {
 
     @Test
     void testDepthAndAncestor() {
-        Random random = new Random(0x01f8d3b944123044l);
+        Random random = new Random(0x01f8d3b944123044L);
         Frame root = Frame.getRoot();
 
         Frame f1 = new Frame(root, randomTransform(random), "f1");
@@ -138,12 +140,12 @@ class FrameTest {
         Assertions.assertEquals(3, f5.getDepth());
         Assertions.assertEquals(4, f6.getDepth());
 
-        Assertions.assertTrue(root == f1.getAncestor(1));
-        Assertions.assertTrue(root == f6.getAncestor(4));
-        Assertions.assertTrue(f1   == f6.getAncestor(3));
-        Assertions.assertTrue(f3   == f6.getAncestor(2));
-        Assertions.assertTrue(f5   == f6.getAncestor(1));
-        Assertions.assertTrue(f6   == f6.getAncestor(0));
+        Assertions.assertSame(root, f1.getAncestor(1));
+        Assertions.assertSame(root, f6.getAncestor(4));
+        Assertions.assertSame(f1, f6.getAncestor(3));
+        Assertions.assertSame(f3, f6.getAncestor(2));
+        Assertions.assertSame(f5, f6.getAncestor(1));
+        Assertions.assertSame(f6, f6.getAncestor(0));
 
         try {
             f6.getAncestor(5);
@@ -158,7 +160,7 @@ class FrameTest {
 
     @Test
     void testIsChildOf() {
-        Random random = new Random(0xb7d1a155e726da78l);
+        Random random = new Random(0xb7d1a155e726da78L);
         Frame eme2000 = FramesFactory.getEME2000();
 
         Frame f1 = new Frame(eme2000, randomTransform(random), "f1");
@@ -171,24 +173,24 @@ class FrameTest {
         Frame f9 = new Frame(f7     , randomTransform(random), "f9");
 
         // check if the root frame can be an ancestor of another frame
-        Assertions.assertEquals(false, eme2000.isChildOf(f5));
+        Assertions.assertFalse(eme2000.isChildOf(f5));
 
         // check if a frame which belongs to the same branch than the 2nd frame is a branch of it
-        Assertions.assertEquals(true, f5.isChildOf(f1));
+        Assertions.assertTrue(f5.isChildOf(f1));
 
         // check if a random frame is the child of the root frame
-        Assertions.assertEquals(true, f9.isChildOf(eme2000));
+        Assertions.assertTrue(f9.isChildOf(eme2000));
 
         // check that a frame is not its own child
-        Assertions.assertEquals(false, f4.isChildOf(f4));
+        Assertions.assertFalse(f4.isChildOf(f4));
 
         // check if a frame which belongs to a different branch than the 2nd frame can be a child for it
-        Assertions.assertEquals(false, f9.isChildOf(f5));
+        Assertions.assertFalse(f9.isChildOf(f5));
 
         // check if the root frame is not a child of itself
-        Assertions.assertEquals(false, eme2000.isChildOf(eme2000));
+        Assertions.assertFalse(eme2000.isChildOf(eme2000));
 
-        Assertions.assertEquals(false, f9.isChildOf(f8));
+        Assertions.assertFalse(f9.isChildOf(f8));
 
     }
 
@@ -367,6 +369,128 @@ class FrameTest {
         compareFieldVectorWithMargin(fieldTransform.getRotationAcceleration(), referenceTransform.getRotationAcceleration());
         Assertions.assertEquals(0., Rotation.distance(fieldTransform.getRotation().toRotation(),
                 referenceTransform.getRotation().toRotation()));
+    }
+
+    @Test
+    public void testNoPeering() {
+
+        Frame eme2000 = FramesFactory.getEME2000();
+        Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
+        Assertions.assertNull(eme2000.getPeer());
+        Assertions.assertNull(itrf.getPeer());
+
+        // with caching disabled, tB should be a new recomputed instance, similar to tA
+        final AbsoluteDate t0 = new AbsoluteDate(2004, 5, 7, 17, 42, 37.5, TimeScalesFactory.getUTC());
+        final Transform tA = eme2000.getTransformTo(itrf, t0);
+        final Transform tB = eme2000.getTransformTo(itrf, t0);
+        final Transform backAndForth = new Transform(t0, tA, tB.getInverse());
+        Assertions.assertNotSame(tA, tB);
+        Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle(), 1.0e-20);
+        Assertions.assertEquals(0.0, backAndForth.getCartesian().getPosition().getNorm(), 1.0e-20);
+
+    }
+
+    @Test
+    public void testNoPeeringField() {
+        doTestNoPeeringField(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestNoPeeringField(final Field<T> field) {
+
+        Frame eme2000 = FramesFactory.getEME2000();
+        Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
+        Assertions.assertNull(eme2000.getPeer());
+        Assertions.assertNull(itrf.getPeer());
+
+        // with caching disabled, tB should be a new recomputed instance, similar to tA
+        final FieldAbsoluteDate<T> t0 = new FieldAbsoluteDate<>(field, 2004, 5, 7, 17, 42, 37.5, TimeScalesFactory.getUTC());
+        final FieldTransform<T> tA = eme2000.getTransformTo(itrf, t0);
+        final FieldTransform<T> tB = eme2000.getTransformTo(itrf, t0);
+        final FieldTransform<T> backAndForth = new FieldTransform<>(t0, tA, tB.getInverse());
+        Assertions.assertNotSame(tA, tB);
+        Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle().getReal(), 1.0e-20);
+        Assertions.assertEquals(0.0, backAndForth.getCartesian().getPosition().getNorm().getReal(), 1.0e-20);
+
+    }
+
+    @Test
+    public void testPeering() {
+
+        Frame eme2000 = FramesFactory.getEME2000();
+        Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
+        Assertions.assertNull(eme2000.getPeer());
+        Assertions.assertNull(itrf.getPeer());
+
+        final int cachesize = 20;
+        eme2000.setPeerCaching(itrf, cachesize);
+        Assertions.assertSame(itrf,    eme2000.getPeer());
+        Assertions.assertSame(eme2000, itrf.getPeer());
+
+        // with caching activated, tB should be a reference to the same transform as tA
+        // without being recomputed
+        final AbsoluteDate t0 = new AbsoluteDate(2004, 5, 7, 17, 42, 37.5, TimeScalesFactory.getUTC());
+        final Transform tA = eme2000.getTransformTo(itrf, t0);
+        final Transform tB = eme2000.getTransformTo(itrf, t0);
+        final Transform backAndForth = new Transform(t0, tA, tB.getInverse());
+        Assertions.assertSame(tA, tB);
+        Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle(), 1.0e-20);
+        Assertions.assertEquals(0.0, backAndForth.getCartesian().getPosition().getNorm(), 1.0e-20);
+
+        final Transform[] direct  = new Transform[cachesize];
+        final Transform[] inverse = new Transform[cachesize];
+        for ( int i = 0; i < cachesize; i++ ) {
+            direct[i]  = eme2000.getTransformTo(itrf, t0.shiftedBy(i));
+            inverse[i] = itrf.getTransformTo(eme2000, t0.shiftedBy(i));
+        }
+
+        // with caching activated, we should not recompute any transform, just retrieve existing ones
+        for (int i = 0; i < 10000; ++i) {
+            Assertions.assertSame(direct[i % cachesize], eme2000.getTransformTo(itrf, t0.shiftedBy(i % cachesize)));
+            Assertions.assertSame(inverse[i % cachesize], itrf.getTransformTo(eme2000, t0.shiftedBy(i % cachesize)));
+        }
+
+    }
+
+    @Test
+    public void testPeeringField() {
+        doTestPeeringField(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestPeeringField(final Field<T> field) {
+
+        Frame eme2000 = FramesFactory.getEME2000();
+        Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
+        Assertions.assertNull(eme2000.getPeer());
+        Assertions.assertNull(itrf.getPeer());
+
+        // with caching activated, tB should be a reference to the same transform as tA
+        // without being recomputed
+        final int cachesize = 20;
+        eme2000.setPeerCaching(itrf, cachesize);
+        Assertions.assertSame(itrf,    eme2000.getPeer());
+        Assertions.assertSame(eme2000, itrf.getPeer());
+
+        final FieldAbsoluteDate<T> t0 = new FieldAbsoluteDate<>(field, 2004, 5, 7, 17, 42, 37.5, TimeScalesFactory.getUTC());
+        final FieldTransform<T> tA = eme2000.getTransformTo(itrf, t0);
+        final FieldTransform<T> tB = eme2000.getTransformTo(itrf, t0);
+        final FieldTransform<T> backAndForth = new FieldTransform<>(t0, tA, tB.getInverse());
+        Assertions.assertSame(tA, tB);
+        Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle().getReal(), 1.0e-20);
+        Assertions.assertEquals(0.0, backAndForth.getCartesian().getPosition().getNorm().getReal(), 1.0e-20);
+
+        final FieldTransform<T>[] direct  = new FieldTransform[cachesize];
+        final FieldTransform<T>[] inverse = new FieldTransform[cachesize];
+        for ( int i = 0; i < cachesize; i++ ) {
+            direct[i]  = eme2000.getTransformTo(itrf, t0.shiftedBy(i));
+            inverse[i] = itrf.getTransformTo(eme2000, t0.shiftedBy(i));
+        }
+
+        // with caching activated, we should not recompute any transform, just retrieve existing ones
+        for (int i = 0; i < 10000; ++i) {
+            Assertions.assertSame(direct[i % cachesize], eme2000.getTransformTo(itrf, t0.shiftedBy(i % cachesize)));
+            Assertions.assertSame(inverse[i % cachesize], itrf.getTransformTo(eme2000, t0.shiftedBy(i % cachesize)));
+        }
+
     }
 
     private static <T extends CalculusFieldElement<T>> void compareFieldVectorWithMargin(final FieldVector3D<T> expectedVector,
