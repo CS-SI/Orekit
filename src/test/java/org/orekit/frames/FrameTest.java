@@ -391,6 +391,44 @@ class FrameTest {
     }
 
     @Test
+    public void testNoPeeringKinematic() {
+
+        Frame eme2000 = FramesFactory.getEME2000();
+        Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
+        Assertions.assertNull(eme2000.getPeer());
+        Assertions.assertNull(itrf.getPeer());
+
+        // with caching disabled, tB should be a new recomputed instance, similar to tA
+        final AbsoluteDate t0 = new AbsoluteDate(2004, 5, 7, 17, 42, 37.5, TimeScalesFactory.getUTC());
+        final KinematicTransform tA = eme2000.getKinematicTransformTo(itrf, t0);
+        final KinematicTransform tB = eme2000.getKinematicTransformTo(itrf, t0);
+        final KinematicTransform backAndForth = KinematicTransform.compose(t0, tA, tB.getInverse());
+        Assertions.assertNotSame(tA, tB);
+        Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle(), 1.0e-20);
+        Assertions.assertEquals(0.0, backAndForth.getTranslation().getNorm(), 1.0e-20);
+
+    }
+
+    @Test
+    public void testNoPeeringStatic() {
+
+        Frame eme2000 = FramesFactory.getEME2000();
+        Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
+        Assertions.assertNull(eme2000.getPeer());
+        Assertions.assertNull(itrf.getPeer());
+
+        // with caching disabled, tB should be a new recomputed instance, similar to tA
+        final AbsoluteDate t0 = new AbsoluteDate(2004, 5, 7, 17, 42, 37.5, TimeScalesFactory.getUTC());
+        final StaticTransform tA = eme2000.getStaticTransformTo(itrf, t0);
+        final StaticTransform tB = eme2000.getStaticTransformTo(itrf, t0);
+        final StaticTransform backAndForth = StaticTransform.compose(t0, tA, tB.getInverse());
+        Assertions.assertNotSame(tA, tB);
+        Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle(), 1.0e-20);
+        Assertions.assertEquals(0.0, backAndForth.getTranslation().getNorm(), 1.0e-20);
+
+    }
+
+    @Test
     public void testNoPeeringField() {
         doTestNoPeeringField(Binary64Field.getInstance());
     }
@@ -410,6 +448,52 @@ class FrameTest {
         Assertions.assertNotSame(tA, tB);
         Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle().getReal(), 1.0e-20);
         Assertions.assertEquals(0.0, backAndForth.getCartesian().getPosition().getNorm().getReal(), 1.0e-20);
+
+    }
+
+    @Test
+    public void testNoPeeringFieldKinematic() {
+        doTestNoPeeringFieldKinematic(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestNoPeeringFieldKinematic(final Field<T> field) {
+
+        Frame eme2000 = FramesFactory.getEME2000();
+        Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
+        Assertions.assertNull(eme2000.getPeer());
+        Assertions.assertNull(itrf.getPeer());
+
+        // with caching disabled, tB should be a new recomputed instance, similar to tA
+        final FieldAbsoluteDate<T> t0 = new FieldAbsoluteDate<>(field, 2004, 5, 7, 17, 42, 37.5, TimeScalesFactory.getUTC());
+        final FieldKinematicTransform<T> tA = eme2000.getKinematicTransformTo(itrf, t0);
+        final FieldKinematicTransform<T> tB = eme2000.getKinematicTransformTo(itrf, t0);
+        final FieldKinematicTransform<T> backAndForth = FieldKinematicTransform.compose(t0, tA, tB.getInverse());
+        Assertions.assertNotSame(tA, tB);
+        Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle().getReal(), 1.0e-20);
+        Assertions.assertEquals(0.0, backAndForth.getTranslation().getNorm().getReal(), 1.0e-20);
+
+    }
+
+    @Test
+    public void testNoPeeringFieldStatic() {
+        doTestNoPeeringFieldStatic(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestNoPeeringFieldStatic(final Field<T> field) {
+
+        Frame eme2000 = FramesFactory.getEME2000();
+        Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
+        Assertions.assertNull(eme2000.getPeer());
+        Assertions.assertNull(itrf.getPeer());
+
+        // with caching disabled, tB should be a new recomputed instance, similar to tA
+        final FieldAbsoluteDate<T> t0 = new FieldAbsoluteDate<>(field, 2004, 5, 7, 17, 42, 37.5, TimeScalesFactory.getUTC());
+        final FieldStaticTransform<T> tA = eme2000.getStaticTransformTo(itrf, t0);
+        final FieldStaticTransform<T> tB = eme2000.getStaticTransformTo(itrf, t0);
+        final FieldStaticTransform<T> backAndForth = FieldStaticTransform.compose(t0, tA, tB.getInverse());
+        Assertions.assertNotSame(tA, tB);
+        Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle().getReal(), 1.0e-20);
+        Assertions.assertEquals(0.0, backAndForth.getTranslation().getNorm().getReal(), 1.0e-20);
 
     }
 
@@ -452,6 +536,82 @@ class FrameTest {
     }
 
     @Test
+    public void testPeeringKinematic() {
+
+        Frame eme2000 = FramesFactory.getEME2000();
+        Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
+        Assertions.assertNull(eme2000.getPeer());
+        Assertions.assertNull(itrf.getPeer());
+
+        final int cachesize = 20;
+        eme2000.setPeerCaching(itrf, cachesize);
+        Assertions.assertSame(itrf,    eme2000.getPeer());
+        Assertions.assertSame(eme2000, itrf.getPeer());
+
+        // with caching activated, tB should be a reference to the same transform as tA
+        // without being recomputed
+        final AbsoluteDate t0 = new AbsoluteDate(2004, 5, 7, 17, 42, 37.5, TimeScalesFactory.getUTC());
+        final KinematicTransform tA = eme2000.getKinematicTransformTo(itrf, t0);
+        final KinematicTransform tB = eme2000.getKinematicTransformTo(itrf, t0);
+        final KinematicTransform backAndForth = KinematicTransform.compose(t0, tA, tB.getInverse());
+        Assertions.assertSame(tA, tB);
+        Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle(), 1.0e-20);
+        Assertions.assertEquals(0.0, backAndForth.getTranslation().getNorm(), 1.0e-20);
+
+        final KinematicTransform[] direct  = new KinematicTransform[cachesize];
+        final KinematicTransform[] inverse = new KinematicTransform[cachesize];
+        for ( int i = 0; i < cachesize; i++ ) {
+            direct[i]  = eme2000.getKinematicTransformTo(itrf, t0.shiftedBy(i));
+            inverse[i] = itrf.getKinematicTransformTo(eme2000, t0.shiftedBy(i));
+        }
+
+        // with caching activated, we should not recompute any transform, just retrieve existing ones
+        for (int i = 0; i < 10000; ++i) {
+            Assertions.assertSame(direct[i % cachesize], eme2000.getKinematicTransformTo(itrf, t0.shiftedBy(i % cachesize)));
+            Assertions.assertSame(inverse[i % cachesize], itrf.getKinematicTransformTo(eme2000, t0.shiftedBy(i % cachesize)));
+        }
+
+    }
+
+    @Test
+    public void testPeeringStatic() {
+
+        Frame eme2000 = FramesFactory.getEME2000();
+        Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
+        Assertions.assertNull(eme2000.getPeer());
+        Assertions.assertNull(itrf.getPeer());
+
+        final int cachesize = 20;
+        eme2000.setPeerCaching(itrf, cachesize);
+        Assertions.assertSame(itrf,    eme2000.getPeer());
+        Assertions.assertSame(eme2000, itrf.getPeer());
+
+        // with caching activated, tB should be a reference to the same transform as tA
+        // without being recomputed
+        final AbsoluteDate t0 = new AbsoluteDate(2004, 5, 7, 17, 42, 37.5, TimeScalesFactory.getUTC());
+        final StaticTransform tA = eme2000.getStaticTransformTo(itrf, t0);
+        final StaticTransform tB = eme2000.getStaticTransformTo(itrf, t0);
+        final StaticTransform backAndForth = StaticTransform.compose(t0, tA, tB.getInverse());
+        Assertions.assertSame(tA, tB);
+        Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle(), 1.0e-20);
+        Assertions.assertEquals(0.0, backAndForth.getTranslation().getNorm(), 1.0e-20);
+
+        final StaticTransform[] direct  = new StaticTransform[cachesize];
+        final StaticTransform[] inverse = new StaticTransform[cachesize];
+        for ( int i = 0; i < cachesize; i++ ) {
+            direct[i]  = eme2000.getStaticTransformTo(itrf, t0.shiftedBy(i));
+            inverse[i] = itrf.getStaticTransformTo(eme2000, t0.shiftedBy(i));
+        }
+
+        // with caching activated, we should not recompute any transform, just retrieve existing ones
+        for (int i = 0; i < 10000; ++i) {
+            Assertions.assertSame(direct[i % cachesize], eme2000.getStaticTransformTo(itrf, t0.shiftedBy(i % cachesize)));
+            Assertions.assertSame(inverse[i % cachesize], itrf.getStaticTransformTo(eme2000, t0.shiftedBy(i % cachesize)));
+        }
+
+    }
+
+    @Test
     public void testPeeringField() {
         doTestPeeringField(Binary64Field.getInstance());
     }
@@ -489,6 +649,90 @@ class FrameTest {
         for (int i = 0; i < 10000; ++i) {
             Assertions.assertSame(direct[i % cachesize], eme2000.getTransformTo(itrf, t0.shiftedBy(i % cachesize)));
             Assertions.assertSame(inverse[i % cachesize], itrf.getTransformTo(eme2000, t0.shiftedBy(i % cachesize)));
+        }
+
+    }
+
+    @Test
+    public void testPeeringFieldKinematic() {
+        doTestPeeringField(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestPeeringFieldKinematic(final Field<T> field) {
+
+        Frame eme2000 = FramesFactory.getEME2000();
+        Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
+        Assertions.assertNull(eme2000.getPeer());
+        Assertions.assertNull(itrf.getPeer());
+
+        // with caching activated, tB should be a reference to the same transform as tA
+        // without being recomputed
+        final int cachesize = 20;
+        eme2000.setPeerCaching(itrf, cachesize);
+        Assertions.assertSame(itrf,    eme2000.getPeer());
+        Assertions.assertSame(eme2000, itrf.getPeer());
+
+        final FieldAbsoluteDate<T> t0 = new FieldAbsoluteDate<>(field, 2004, 5, 7, 17, 42, 37.5, TimeScalesFactory.getUTC());
+        final FieldKinematicTransform<T> tA = eme2000.getKinematicTransformTo(itrf, t0);
+        final FieldKinematicTransform<T> tB = eme2000.getKinematicTransformTo(itrf, t0);
+        final FieldKinematicTransform<T> backAndForth = FieldKinematicTransform.compose(t0, tA, tB.getInverse());
+        Assertions.assertSame(tA, tB);
+        Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle().getReal(), 1.0e-20);
+        Assertions.assertEquals(0.0, backAndForth.getTranslation().getNorm().getReal(), 1.0e-20);
+
+        final FieldKinematicTransform<T>[] direct  = new FieldKinematicTransform[cachesize];
+        final FieldKinematicTransform<T>[] inverse = new FieldKinematicTransform[cachesize];
+        for ( int i = 0; i < cachesize; i++ ) {
+            direct[i]  = eme2000.getKinematicTransformTo(itrf, t0.shiftedBy(i));
+            inverse[i] = itrf.getKinematicTransformTo(eme2000, t0.shiftedBy(i));
+        }
+
+        // with caching activated, we should not recompute any transform, just retrieve existing ones
+        for (int i = 0; i < 10000; ++i) {
+            Assertions.assertSame(direct[i % cachesize], eme2000.getKinematicTransformTo(itrf, t0.shiftedBy(i % cachesize)));
+            Assertions.assertSame(inverse[i % cachesize], itrf.getKinematicTransformTo(eme2000, t0.shiftedBy(i % cachesize)));
+        }
+
+    }
+
+    @Test
+    public void testPeeringFieldStatic() {
+        doTestPeeringFieldStatic(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestPeeringFieldStatic(final Field<T> field) {
+
+        Frame eme2000 = FramesFactory.getEME2000();
+        Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
+        Assertions.assertNull(eme2000.getPeer());
+        Assertions.assertNull(itrf.getPeer());
+
+        // with caching activated, tB should be a reference to the same transform as tA
+        // without being recomputed
+        final int cachesize = 20;
+        eme2000.setPeerCaching(itrf, cachesize);
+        Assertions.assertSame(itrf,    eme2000.getPeer());
+        Assertions.assertSame(eme2000, itrf.getPeer());
+
+        final FieldAbsoluteDate<T> t0 = new FieldAbsoluteDate<>(field, 2004, 5, 7, 17, 42, 37.5, TimeScalesFactory.getUTC());
+        final FieldStaticTransform<T> tA = eme2000.getStaticTransformTo(itrf, t0);
+        final FieldStaticTransform<T> tB = eme2000.getStaticTransformTo(itrf, t0);
+        final FieldStaticTransform<T> backAndForth = FieldStaticTransform.compose(t0, tA, tB.getInverse());
+        Assertions.assertSame(tA, tB);
+        Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle().getReal(), 1.0e-20);
+        Assertions.assertEquals(0.0, backAndForth.getTranslation().getNorm().getReal(), 1.0e-20);
+
+        final FieldStaticTransform<T>[] direct  = new FieldStaticTransform[cachesize];
+        final FieldStaticTransform<T>[] inverse = new FieldStaticTransform[cachesize];
+        for ( int i = 0; i < cachesize; i++ ) {
+            direct[i]  = eme2000.getStaticTransformTo(itrf, t0.shiftedBy(i));
+            inverse[i] = itrf.getStaticTransformTo(eme2000, t0.shiftedBy(i));
+        }
+
+        // with caching activated, we should not recompute any transform, just retrieve existing ones
+        for (int i = 0; i < 10000; ++i) {
+            Assertions.assertSame(direct[i % cachesize], eme2000.getStaticTransformTo(itrf, t0.shiftedBy(i % cachesize)));
+            Assertions.assertSame(inverse[i % cachesize], itrf.getStaticTransformTo(eme2000, t0.shiftedBy(i % cachesize)));
         }
 
     }

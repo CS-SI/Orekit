@@ -46,36 +46,72 @@ public class CachedTransformProvider {
     /** Number of transforms kept in the date-based cache. */
     private final int cacheSize;
 
-    /** Generator for transforms. */
-    private final Function<AbsoluteDate, Transform> generator;
+    /** Generator for full transforms. */
+    private final Function<AbsoluteDate, Transform> fullGenerator;
+
+    /** Generator for kinematic transforms. */
+    private final Function<AbsoluteDate, KinematicTransform> kinematicGenerator;
+
+    /** Generator for static transforms. */
+    private final Function<AbsoluteDate, StaticTransform> staticGenerator;
 
     /** Lock for concurrent access. */
     private final ReentrantLock lock;
 
     /** Transforms LRU cache. */
-    private final Map<AbsoluteDate, Transform> cache;
+    private final Map<AbsoluteDate, Transform> fullCache;
+
+    /** Transforms LRU cache. */
+    private final Map<AbsoluteDate, KinematicTransform> kinematicCache;
+
+    /** Transforms LRU cache. */
+    private final Map<AbsoluteDate, StaticTransform> staticCache;
 
     /** Simple constructor.
-     * @param origin      origin frame
-     * @param destination destination frame
-     * @param generator   generator for transforms
-     * @param cacheSize   number of transforms kept in the date-based cache
+     * @param origin             origin frame
+     * @param destination        destination frame
+     * @param fullGenerator      generator for full transforms
+     * @param kinematicGenerator generator for kinematic transforms
+     * @param staticGenerator    generator for static transforms
+     * @param cacheSize          number of transforms kept in the date-based cache
      */
     public CachedTransformProvider(final Frame origin, final Frame destination,
-                                   final Function<AbsoluteDate, Transform> generator,
+                                   final Function<AbsoluteDate, Transform> fullGenerator,
+                                   final Function<AbsoluteDate, KinematicTransform> kinematicGenerator,
+                                   Function<AbsoluteDate, StaticTransform> staticGenerator,
                                    final int cacheSize) {
 
-        this.origin      = origin;
-        this.destination = destination;
-        this.cacheSize   = cacheSize;
-        this.generator   = generator;
-        this.lock        = new ReentrantLock();
+        this.origin             = origin;
+        this.destination        = destination;
+        this.cacheSize          = cacheSize;
+        this.fullGenerator      = fullGenerator;
+        this.kinematicGenerator = kinematicGenerator;
+        this.staticGenerator    = staticGenerator;
+        this.lock               = new ReentrantLock();
 
-        // cache for regular dates
-        this.cache       = new LinkedHashMap<AbsoluteDate, Transform>(cacheSize, 0.75f, true) {
+        // cache for full transforms
+        this.fullCache = new LinkedHashMap<AbsoluteDate, Transform>(cacheSize, 0.75f, true) {
             /** {@inheritDoc} */
             @Override
             protected boolean removeEldestEntry(final Map.Entry<AbsoluteDate, Transform> eldest) {
+                return size() > cacheSize;
+            }
+        };
+
+        // cache for kinematic transforms
+        this.kinematicCache = new LinkedHashMap<AbsoluteDate, KinematicTransform>(cacheSize, 0.75f, true) {
+            /** {@inheritDoc} */
+            @Override
+            protected boolean removeEldestEntry(final Map.Entry<AbsoluteDate, KinematicTransform> eldest) {
+                return size() > cacheSize;
+            }
+        };
+
+        // cache for static transforms
+        this.staticCache = new LinkedHashMap<AbsoluteDate, StaticTransform>(cacheSize, 0.75f, true) {
+            /** {@inheritDoc} */
+            @Override
+            protected boolean removeEldestEntry(final Map.Entry<AbsoluteDate, StaticTransform> eldest) {
                 return size() > cacheSize;
             }
         };
@@ -110,7 +146,33 @@ public class CachedTransformProvider {
     public Transform getTransform(final AbsoluteDate date) {
         lock.lock();
         try {
-            return cache.computeIfAbsent(date, generator);
+            return fullCache.computeIfAbsent(date, fullGenerator);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /** Get the {@link Transform} corresponding to specified date.
+     * @param date current date
+     * @return transform at specified date
+     */
+    public KinematicTransform getKinematicTransform(final AbsoluteDate date) {
+        lock.lock();
+        try {
+            return kinematicCache.computeIfAbsent(date, kinematicGenerator);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /** Get the {@link Transform} corresponding to specified date.
+     * @param date current date
+     * @return transform at specified date
+     */
+    public StaticTransform getStaticTransform(final AbsoluteDate date) {
+        lock.lock();
+        try {
+            return staticCache.computeIfAbsent(date, staticGenerator);
         } finally {
             lock.unlock();
         }

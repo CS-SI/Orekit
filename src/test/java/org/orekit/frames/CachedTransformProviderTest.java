@@ -43,10 +43,7 @@ public class CachedTransformProviderTest {
 
     @Test
     public void testSingleThread() {
-        final CachedTransformProvider cachedTransformProvider =
-                new CachedTransformProvider(earth1, inertialFrame,
-                                            d -> earth1.getTransformTo(inertialFrame, d),
-                                            20);
+        final CachedTransformProvider cachedTransformProvider = buildCache(20);
         Assertions.assertSame(earth1,        cachedTransformProvider.getOrigin());
         Assertions.assertSame(inertialFrame, cachedTransformProvider.getDestination());
         Assertions.assertEquals(20,  cachedTransformProvider.getCacheSize());
@@ -62,11 +59,42 @@ public class CachedTransformProviderTest {
     }
 
     @Test
+    public void testSingleThreadKinematic() {
+        final CachedTransformProvider cachedTransformProvider = buildCache(20);
+        Assertions.assertSame(earth1,        cachedTransformProvider.getOrigin());
+        Assertions.assertSame(inertialFrame, cachedTransformProvider.getDestination());
+        Assertions.assertEquals(20,  cachedTransformProvider.getCacheSize());
+        final List<AbsoluteDate> dates = generateDates(new Well19937a(0x03fb4b0832dadcbe2L), 50, 5);
+        for (final AbsoluteDate date : dates) {
+            final KinematicTransform transform1   = cachedTransformProvider.getKinematicTransform(date);
+            final KinematicTransform transform2   = earth2.getKinematicTransformTo(inertialFrame, date);
+            final KinematicTransform backAndForth = KinematicTransform.compose(date, transform1, transform2.getInverse());
+            Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle(), 3.0e-15);
+        }
+        Assertions.assertEquals(10, earth1.count);
+        Assertions.assertEquals(dates.size(), earth2.count);
+    }
+
+    @Test
+    public void testSingleThreadStatic() {
+        final CachedTransformProvider cachedTransformProvider = buildCache(20);
+        Assertions.assertSame(earth1,        cachedTransformProvider.getOrigin());
+        Assertions.assertSame(inertialFrame, cachedTransformProvider.getDestination());
+        Assertions.assertEquals(20,  cachedTransformProvider.getCacheSize());
+        final List<AbsoluteDate> dates = generateDates(new Well19937a(0x03fb4b0832dadcbe2L), 50, 5);
+        for (final AbsoluteDate date : dates) {
+            final StaticTransform transform1   = cachedTransformProvider.getStaticTransform(date);
+            final StaticTransform transform2   = earth2.getStaticTransformTo(inertialFrame, date);
+            final StaticTransform backAndForth = StaticTransform.compose(date, transform1, transform2.getInverse());
+            Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle(), 3.0e-15);
+        }
+        Assertions.assertEquals(10, earth1.count);
+        Assertions.assertEquals(dates.size(), earth2.count);
+    }
+
+    @Test
     public void testMultiThread() throws InterruptedException, ExecutionException {
-        final CachedTransformProvider cachedTransformProvider =
-                new CachedTransformProvider(earth1, inertialFrame,
-                                            d -> earth1.getTransformTo(inertialFrame, d),
-                                            30);
+        final CachedTransformProvider cachedTransformProvider = buildCache(30);
         Assertions.assertEquals(30,  cachedTransformProvider.getCacheSize());
         final List<AbsoluteDate> dates = generateDates(new Well19937a(0x7d63ba984c6ae29eL), 300, 10);
         final List<Callable<Transform>> tasks = new ArrayList<>();
@@ -88,10 +116,7 @@ public class CachedTransformProviderTest {
     @Test
     public void testExhaust() {
         final RandomGenerator random = new Well19937a(0x3b18a628c1a8b5e9L);
-        final CachedTransformProvider cachedTransformProvider =
-                new CachedTransformProvider(earth1, inertialFrame,
-                                            d -> earth1.getTransformTo(inertialFrame, d),
-                                            20);
+        final CachedTransformProvider cachedTransformProvider = buildCache(20);
         final List<AbsoluteDate> dates = generateDates(random,
                                                        10 * cachedTransformProvider.getCacheSize(),
                                                        50 * cachedTransformProvider.getCacheSize());
@@ -129,6 +154,15 @@ public class CachedTransformProviderTest {
 
         // entry 14 should still be in the cache
         Assertions.assertSame(t14, cachedTransformProvider.getTransform(dates.get(14)));
+
+    }
+
+    private CachedTransformProvider buildCache(final int size) {
+        return new CachedTransformProvider(earth1, inertialFrame,
+                                           d -> earth1.getTransformTo(inertialFrame, d),
+                                           d -> earth1.getKinematicTransformTo(inertialFrame, d),
+                                           d -> earth1.getStaticTransformTo(inertialFrame, d),
+                                           size);
 
     }
 
@@ -172,6 +206,16 @@ public class CachedTransformProviderTest {
         public Transform getTransformTo(final Frame destination, final AbsoluteDate date) {
             ++count;
             return super.getTransformTo(destination, date);
+        }
+
+        public KinematicTransform getKinematicTransformTo(final Frame destination, final AbsoluteDate date) {
+            ++count;
+            return super.getKinematicTransformTo(destination, date);
+        }
+
+        public StaticTransform getStaticTransformTo(final Frame destination, final AbsoluteDate date) {
+            ++count;
+            return super.getStaticTransformTo(destination, date);
         }
 
     }

@@ -51,10 +51,7 @@ public class FieldCachedTransformProviderTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestSingleThread(final Field<T> field) {
-        final Function<FieldAbsoluteDate<T>, FieldTransform<T>> generator =
-                date -> earth1.getTransformTo(inertialFrame, date);
-        final FieldCachedTransformProvider<T> cachedTransformProvider =
-                new FieldCachedTransformProvider<>(earth1, inertialFrame, generator, 20);
+        final FieldCachedTransformProvider<T> cachedTransformProvider = buildCache(20);
         Assertions.assertSame(earth1,        cachedTransformProvider.getOrigin());
         Assertions.assertSame(inertialFrame, cachedTransformProvider.getDestination());
         Assertions.assertEquals(20,          cachedTransformProvider.getCacheSize());
@@ -70,16 +67,55 @@ public class FieldCachedTransformProviderTest {
     }
 
     @Test
+    public void testSingleThreadKinematic() {
+        doTestSingleThreadKinematic(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestSingleThreadKinematic(final Field<T> field) {
+        final FieldCachedTransformProvider<T> cachedTransformProvider = buildCache(20);
+        Assertions.assertSame(earth1,        cachedTransformProvider.getOrigin());
+        Assertions.assertSame(inertialFrame, cachedTransformProvider.getDestination());
+        Assertions.assertEquals(20,          cachedTransformProvider.getCacheSize());
+        final List<FieldAbsoluteDate<T>> dates = generateDates(field, new Well19937a(0x03fb4b0832dadcbe2L), 50, 5);
+        for (final FieldAbsoluteDate<T> date : dates) {
+            final FieldKinematicTransform<T> transform1   = cachedTransformProvider.getKinematicTransform(date);
+            final FieldKinematicTransform<T> transform2   = earth2.getKinematicTransformTo(inertialFrame, date);
+            final FieldKinematicTransform<T> backAndForth = FieldKinematicTransform.compose(date, transform1, transform2.getInverse());
+            Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle().getReal(), 3.0e-15);
+        }
+        Assertions.assertEquals(10, earth1.count);
+        Assertions.assertEquals(dates.size(), earth2.count);
+    }
+
+    @Test
+    public void testSingleThreadStatic() {
+        doTestSingleThreadStatic(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestSingleThreadStatic(final Field<T> field) {
+        final FieldCachedTransformProvider<T> cachedTransformProvider = buildCache(20);
+        Assertions.assertSame(earth1,        cachedTransformProvider.getOrigin());
+        Assertions.assertSame(inertialFrame, cachedTransformProvider.getDestination());
+        Assertions.assertEquals(20,          cachedTransformProvider.getCacheSize());
+        final List<FieldAbsoluteDate<T>> dates = generateDates(field, new Well19937a(0x03fb4b0832dadcbe2L), 50, 5);
+        for (final FieldAbsoluteDate<T> date : dates) {
+            final FieldStaticTransform<T> transform1   = cachedTransformProvider.getStaticTransform(date);
+            final FieldStaticTransform<T> transform2   = earth2.getStaticTransformTo(inertialFrame, date);
+            final FieldStaticTransform<T> backAndForth = FieldStaticTransform.compose(date, transform1, transform2.getInverse());
+            Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle().getReal(), 3.0e-15);
+        }
+        Assertions.assertEquals(10, earth1.count);
+        Assertions.assertEquals(dates.size(), earth2.count);
+    }
+
+    @Test
     public void testMultiThread() throws InterruptedException, ExecutionException {
         doTestMultiThread(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestMultiThread(final Field<T> field)
         throws InterruptedException, ExecutionException {
-        final Function<FieldAbsoluteDate<T>, FieldTransform<T>> generator =
-                date -> earth1.getTransformTo(inertialFrame, date);
-        final FieldCachedTransformProvider<T> cachedTransformProvider =
-                new FieldCachedTransformProvider<>(earth1, inertialFrame, generator, 30);
+        final FieldCachedTransformProvider<T> cachedTransformProvider = buildCache(30);
         Assertions.assertEquals(30, cachedTransformProvider.getCacheSize());
         final List<FieldAbsoluteDate<T>> dates = generateDates(field, new Well19937a(0x7d63ba984c6ae29eL), 300, 10);
         final List<Callable<FieldTransform<T>>> tasks = new ArrayList<>();
@@ -105,10 +141,7 @@ public class FieldCachedTransformProviderTest {
 
     private <T extends CalculusFieldElement<T>> void doTestExhaust(final Field<T> field) {
         final RandomGenerator random = new Well19937a(0x3b18a628c1a8b5e9L);
-        final FieldCachedTransformProvider<T> cachedTransformProvider =
-                new FieldCachedTransformProvider<>(earth1, inertialFrame,
-                                                   d -> earth1.getTransformTo(inertialFrame, d),
-                                                   20);
+        final FieldCachedTransformProvider<T> cachedTransformProvider = buildCache(20);
         final List<FieldAbsoluteDate<T>> dates = generateDates(field,
                                                                random,
                                                                10 * cachedTransformProvider.getCacheSize(),
@@ -148,6 +181,18 @@ public class FieldCachedTransformProviderTest {
         // entry 14 should still be in the cache
         Assertions.assertSame(t14, cachedTransformProvider.getTransform(dates.get(14)));
 
+    }
+
+    private <T extends CalculusFieldElement<T>> FieldCachedTransformProvider<T> buildCache(final int size) {
+        final Function<FieldAbsoluteDate<T>, FieldTransform<T>> fullGenerator =
+                date -> earth1.getTransformTo(inertialFrame, date);
+        final Function<FieldAbsoluteDate<T>, FieldKinematicTransform<T>> kinematicGenerator =
+                date -> earth1.getKinematicTransformTo(inertialFrame, date);
+        final Function<FieldAbsoluteDate<T>, FieldStaticTransform<T>> staticGenerator =
+                date -> earth1.getStaticTransformTo(inertialFrame, date);
+        return new FieldCachedTransformProvider<>(earth1, inertialFrame,
+                                                  fullGenerator, kinematicGenerator, staticGenerator,
+                                                  size);
     }
 
     private <T extends CalculusFieldElement<T>> List<FieldAbsoluteDate<T>> generateDates(final Field<T> field,
@@ -195,6 +240,18 @@ public class FieldCachedTransformProviderTest {
         getTransformTo(final Frame destination, final FieldAbsoluteDate<T> date) {
             ++count;
             return super.getTransformTo(destination, date);
+        }
+
+        public <T extends CalculusFieldElement<T>> FieldKinematicTransform<T>
+        getKinematicTransformTo(final Frame destination, final FieldAbsoluteDate<T> date) {
+            ++count;
+            return super.getKinematicTransformTo(destination, date);
+        }
+
+        public <T extends CalculusFieldElement<T>> FieldStaticTransform<T>
+        getStaticTransformTo(final Frame destination, final FieldAbsoluteDate<T> date) {
+            ++count;
+            return super.getStaticTransformTo(destination, date);
         }
 
     }

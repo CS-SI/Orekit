@@ -48,37 +48,73 @@ public class FieldCachedTransformProvider<T extends CalculusFieldElement<T>> {
     /** Number of transforms kept in the date-based cache. */
     private final int cacheSize;
 
-    /** Generator for transforms. */
-    private final Function<FieldAbsoluteDate<T>, FieldTransform<T>> generator;
+    /** Generator for full transforms. */
+    private final Function<FieldAbsoluteDate<T>, FieldTransform<T>> fullGenerator;
+
+    /** Generator for kinematic transforms. */
+    private final Function<FieldAbsoluteDate<T>, FieldKinematicTransform<T>> kinematicGenerator;
+
+    /** Generator for static transforms. */
+    private final Function<FieldAbsoluteDate<T>, FieldStaticTransform<T>> staticGenerator;
 
     /** Lock for concurrent access. */
     private final ReentrantLock lock;
 
     /** Transforms LRU cache. */
-    private final Map<FieldAbsoluteDate<T>, FieldTransform<T>> cache;
+    private final Map<FieldAbsoluteDate<T>, FieldTransform<T>> fullCache;
+
+    /** Transforms LRU cache. */
+    private final Map<FieldAbsoluteDate<T>, FieldKinematicTransform<T>> kinematicCache;
+
+    /** Transforms LRU cache. */
+    private final Map<FieldAbsoluteDate<T>, FieldStaticTransform<T>> staticCache;
 
     /**
      * Simple constructor.
-     * @param origin      origin frame
-     * @param destination destination frame
-     * @param generator   generator for transforms
-     * @param cacheSize   number of transforms kept in the date-based cache
+     * @param origin             origin frame
+     * @param destination        destination frame
+     * @param fullGenerator      generator for full transforms
+     * @param kinematicGenerator generator for kinematic transforms
+     * @param staticGenerator    generator for static transforms
+     * @param cacheSize          number of transforms kept in the date-based cache
      */
     public FieldCachedTransformProvider(final Frame origin, final Frame destination,
-                                        final Function<FieldAbsoluteDate<T>, FieldTransform<T>> generator,
+                                        final Function<FieldAbsoluteDate<T>, FieldTransform<T>> fullGenerator,
+                                        final Function<FieldAbsoluteDate<T>, FieldKinematicTransform<T>> kinematicGenerator,
+                                        final Function<FieldAbsoluteDate<T>, FieldStaticTransform<T>> staticGenerator,
                                         final int cacheSize) {
 
-        this.origin      = origin;
-        this.destination = destination;
-        this.cacheSize   = cacheSize;
-        this.generator   = generator;
-        this.lock        = new ReentrantLock();
+        this.origin             = origin;
+        this.destination        = destination;
+        this.cacheSize          = cacheSize;
+        this.fullGenerator      = fullGenerator;
+        this.kinematicGenerator = kinematicGenerator;
+        this.staticGenerator    = staticGenerator;
+        this.lock               = new ReentrantLock();
 
-        // cache for regular dates
-        this.cache       = new LinkedHashMap<FieldAbsoluteDate<T>, FieldTransform<T>>(cacheSize, 0.75f, true) {
+        // cache for full transforms
+        this.fullCache = new LinkedHashMap<FieldAbsoluteDate<T>, FieldTransform<T>>(cacheSize, 0.75f, true) {
             /** {@inheritDoc} */
             @Override
             protected boolean removeEldestEntry(final Map.Entry<FieldAbsoluteDate<T>, FieldTransform<T>> eldest) {
+                return size() > cacheSize;
+            }
+        };
+
+        // cache for kinematic transforms
+        this.kinematicCache = new LinkedHashMap<FieldAbsoluteDate<T>, FieldKinematicTransform<T>>(cacheSize, 0.75f, true) {
+            /** {@inheritDoc} */
+            @Override
+            protected boolean removeEldestEntry(final Map.Entry<FieldAbsoluteDate<T>, FieldKinematicTransform<T>> eldest) {
+                return size() > cacheSize;
+            }
+        };
+
+        // cache for static transforms
+        this.staticCache = new LinkedHashMap<FieldAbsoluteDate<T>, FieldStaticTransform<T>>(cacheSize, 0.75f, true) {
+            /** {@inheritDoc} */
+            @Override
+            protected boolean removeEldestEntry(final Map.Entry<FieldAbsoluteDate<T>, FieldStaticTransform<T>> eldest) {
                 return size() > cacheSize;
             }
         };
@@ -113,7 +149,33 @@ public class FieldCachedTransformProvider<T extends CalculusFieldElement<T>> {
     public FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
         lock.lock();
         try {
-            return cache.computeIfAbsent(date, generator);
+            return fullCache.computeIfAbsent(date, fullGenerator);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /** Get the {@link Transform} corresponding to specified date.
+     * @param date current date
+     * @return transform at specified date
+     */
+    public FieldKinematicTransform<T> getKinematicTransform(final FieldAbsoluteDate<T> date) {
+        lock.lock();
+        try {
+            return kinematicCache.computeIfAbsent(date, kinematicGenerator);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /** Get the {@link Transform} corresponding to specified date.
+     * @param date current date
+     * @return transform at specified date
+     */
+    public FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
+        lock.lock();
+        try {
+            return staticCache.computeIfAbsent(date, staticGenerator);
         } finally {
             lock.unlock();
         }
