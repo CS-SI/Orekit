@@ -78,7 +78,7 @@ public class CachedTransformProvider {
     public CachedTransformProvider(final Frame origin, final Frame destination,
                                    final Function<AbsoluteDate, Transform> fullGenerator,
                                    final Function<AbsoluteDate, KinematicTransform> kinematicGenerator,
-                                   Function<AbsoluteDate, StaticTransform> staticGenerator,
+                                   final Function<AbsoluteDate, StaticTransform> staticGenerator,
                                    final int cacheSize) {
 
         this.origin             = origin;
