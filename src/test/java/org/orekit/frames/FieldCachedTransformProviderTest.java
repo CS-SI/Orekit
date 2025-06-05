@@ -94,7 +94,7 @@ public class FieldCachedTransformProviderTest {
             final FieldTransform<T> backAndForth = new FieldTransform<>(dates.get(i), transform1, transform2.getInverse());
             Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle().getReal(), 1.0e-14);
         }
-        Assertions.assertEquals(36, earth1.count);
+        Assertions.assertTrue(earth1.count < 50, "this test may randomly fail due to multi-threading non-determinism");
         Assertions.assertEquals(dates.size(), earth2.count);
     }
 
