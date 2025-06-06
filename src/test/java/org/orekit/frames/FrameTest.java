@@ -508,7 +508,7 @@ class FrameTest {
         final int cachesize = 20;
         eme2000.setPeerCaching(itrf, cachesize);
         Assertions.assertSame(itrf,    eme2000.getPeer());
-        Assertions.assertSame(eme2000, itrf.getPeer());
+        Assertions.assertNull(itrf.getPeer());
 
         // with caching activated, tB should be a reference to the same transform as tA
         // without being recomputed
@@ -526,16 +526,13 @@ class FrameTest {
                                  eme2000.getTransformTo(gcrf, t0));
 
         final Transform[] direct  = new Transform[cachesize];
-        final Transform[] inverse = new Transform[cachesize];
         for ( int i = 0; i < cachesize; i++ ) {
             direct[i]  = eme2000.getTransformTo(itrf, t0.shiftedBy(i));
-            inverse[i] = itrf.getTransformTo(eme2000, t0.shiftedBy(i));
         }
 
         // with caching activated, we should not recompute any transform, just retrieve existing ones
         for (int i = 0; i < 10000; ++i) {
             Assertions.assertSame(direct[i % cachesize], eme2000.getTransformTo(itrf, t0.shiftedBy(i % cachesize)));
-            Assertions.assertSame(inverse[i % cachesize], itrf.getTransformTo(eme2000, t0.shiftedBy(i % cachesize)));
         }
 
     }
@@ -551,7 +548,7 @@ class FrameTest {
         final int cachesize = 20;
         eme2000.setPeerCaching(itrf, cachesize);
         Assertions.assertSame(itrf,    eme2000.getPeer());
-        Assertions.assertSame(eme2000, itrf.getPeer());
+        Assertions.assertNull(itrf.getPeer());
 
         // with caching activated, tB should be a reference to the same transform as tA
         // without being recomputed
@@ -569,16 +566,13 @@ class FrameTest {
                                  eme2000.getKinematicTransformTo(gcrf, t0));
 
         final KinematicTransform[] direct  = new KinematicTransform[cachesize];
-        final KinematicTransform[] inverse = new KinematicTransform[cachesize];
         for ( int i = 0; i < cachesize; i++ ) {
             direct[i]  = eme2000.getKinematicTransformTo(itrf, t0.shiftedBy(i));
-            inverse[i] = itrf.getKinematicTransformTo(eme2000, t0.shiftedBy(i));
         }
 
         // with caching activated, we should not recompute any transform, just retrieve existing ones
         for (int i = 0; i < 10000; ++i) {
             Assertions.assertSame(direct[i % cachesize], eme2000.getKinematicTransformTo(itrf, t0.shiftedBy(i % cachesize)));
-            Assertions.assertSame(inverse[i % cachesize], itrf.getKinematicTransformTo(eme2000, t0.shiftedBy(i % cachesize)));
         }
 
     }
@@ -594,7 +588,7 @@ class FrameTest {
         final int cachesize = 20;
         eme2000.setPeerCaching(itrf, cachesize);
         Assertions.assertSame(itrf,    eme2000.getPeer());
-        Assertions.assertSame(eme2000, itrf.getPeer());
+        Assertions.assertNull(itrf.getPeer());
 
         // with caching activated, tB should be a reference to the same transform as tA
         // without being recomputed
@@ -612,16 +606,13 @@ class FrameTest {
                                  eme2000.getStaticTransformTo(gcrf, t0));
 
         final StaticTransform[] direct  = new StaticTransform[cachesize];
-        final StaticTransform[] inverse = new StaticTransform[cachesize];
         for ( int i = 0; i < cachesize; i++ ) {
             direct[i]  = eme2000.getStaticTransformTo(itrf, t0.shiftedBy(i));
-            inverse[i] = itrf.getStaticTransformTo(eme2000, t0.shiftedBy(i));
         }
 
         // with caching activated, we should not recompute any transform, just retrieve existing ones
         for (int i = 0; i < 10000; ++i) {
             Assertions.assertSame(direct[i % cachesize], eme2000.getStaticTransformTo(itrf, t0.shiftedBy(i % cachesize)));
-            Assertions.assertSame(inverse[i % cachesize], itrf.getStaticTransformTo(eme2000, t0.shiftedBy(i % cachesize)));
         }
 
     }
@@ -643,7 +634,7 @@ class FrameTest {
         final int cachesize = 20;
         eme2000.setPeerCaching(itrf, cachesize);
         Assertions.assertSame(itrf,    eme2000.getPeer());
-        Assertions.assertSame(eme2000, itrf.getPeer());
+        Assertions.assertNull(itrf.getPeer());
 
         final FieldAbsoluteDate<T> t0 = new FieldAbsoluteDate<>(field, 2004, 5, 7, 17, 42, 37.5, TimeScalesFactory.getUTC());
         final FieldTransform<T> tA = eme2000.getTransformTo(itrf, t0);
@@ -659,16 +650,13 @@ class FrameTest {
                                  eme2000.getTransformTo(gcrf, t0));
 
         final FieldTransform<T>[] direct  = new FieldTransform[cachesize];
-        final FieldTransform<T>[] inverse = new FieldTransform[cachesize];
         for ( int i = 0; i < cachesize; i++ ) {
             direct[i]  = eme2000.getTransformTo(itrf, t0.shiftedBy(i));
-            inverse[i] = itrf.getTransformTo(eme2000, t0.shiftedBy(i));
         }
 
         // with caching activated, we should not recompute any transform, just retrieve existing ones
         for (int i = 0; i < 10000; ++i) {
             Assertions.assertSame(direct[i % cachesize], eme2000.getTransformTo(itrf, t0.shiftedBy(i % cachesize)));
-            Assertions.assertSame(inverse[i % cachesize], itrf.getTransformTo(eme2000, t0.shiftedBy(i % cachesize)));
         }
 
     }
@@ -690,7 +678,7 @@ class FrameTest {
         final int cachesize = 20;
         eme2000.setPeerCaching(itrf, cachesize);
         Assertions.assertSame(itrf,    eme2000.getPeer());
-        Assertions.assertSame(eme2000, itrf.getPeer());
+        Assertions.assertNull(itrf.getPeer());
 
         final FieldAbsoluteDate<T> t0 = new FieldAbsoluteDate<>(field, 2004, 5, 7, 17, 42, 37.5, TimeScalesFactory.getUTC());
         final FieldKinematicTransform<T> tA = eme2000.getKinematicTransformTo(itrf, t0);
@@ -706,16 +694,13 @@ class FrameTest {
                                  eme2000.getKinematicTransformTo(gcrf, t0));
 
         final FieldKinematicTransform<T>[] direct  = new FieldKinematicTransform[cachesize];
-        final FieldKinematicTransform<T>[] inverse = new FieldKinematicTransform[cachesize];
         for ( int i = 0; i < cachesize; i++ ) {
             direct[i]  = eme2000.getKinematicTransformTo(itrf, t0.shiftedBy(i));
-            inverse[i] = itrf.getKinematicTransformTo(eme2000, t0.shiftedBy(i));
         }
 
         // with caching activated, we should not recompute any transform, just retrieve existing ones
         for (int i = 0; i < 10000; ++i) {
             Assertions.assertSame(direct[i % cachesize], eme2000.getKinematicTransformTo(itrf, t0.shiftedBy(i % cachesize)));
-            Assertions.assertSame(inverse[i % cachesize], itrf.getKinematicTransformTo(eme2000, t0.shiftedBy(i % cachesize)));
         }
 
     }
@@ -737,7 +722,7 @@ class FrameTest {
         final int cachesize = 20;
         eme2000.setPeerCaching(itrf, cachesize);
         Assertions.assertSame(itrf,    eme2000.getPeer());
-        Assertions.assertSame(eme2000, itrf.getPeer());
+        Assertions.assertNull(itrf.getPeer());
 
         final FieldAbsoluteDate<T> t0 = new FieldAbsoluteDate<>(field, 2004, 5, 7, 17, 42, 37.5, TimeScalesFactory.getUTC());
         final FieldStaticTransform<T> tA = eme2000.getStaticTransformTo(itrf, t0);
@@ -753,16 +738,13 @@ class FrameTest {
                                  eme2000.getStaticTransformTo(gcrf, t0));
 
         final FieldStaticTransform<T>[] direct  = new FieldStaticTransform[cachesize];
-        final FieldStaticTransform<T>[] inverse = new FieldStaticTransform[cachesize];
         for ( int i = 0; i < cachesize; i++ ) {
             direct[i]  = eme2000.getStaticTransformTo(itrf, t0.shiftedBy(i));
-            inverse[i] = itrf.getStaticTransformTo(eme2000, t0.shiftedBy(i));
         }
 
         // with caching activated, we should not recompute any transform, just retrieve existing ones
         for (int i = 0; i < 10000; ++i) {
             Assertions.assertSame(direct[i % cachesize], eme2000.getStaticTransformTo(itrf, t0.shiftedBy(i % cachesize)));
-            Assertions.assertSame(inverse[i % cachesize], itrf.getStaticTransformTo(eme2000, t0.shiftedBy(i % cachesize)));
         }
 
     }

@@ -258,8 +258,10 @@ public class Frame {
      * If a peer was already associated with this frame, it will be overridden.
      * </p>
      * <p>
-     * Peering is automatically bidirectional, i.e. the peer is automatically
-     * peered with the instance too
+     * Peering is unidirectional, i.e. if frameA is peered with frameB,
+     * then frameB may be peered with another frameC or no frame at all.
+     * This allows several frames to be peered with a pivot one (typically
+     * Earth frame and many topocentric frames all peered with one inertial frame).
      * </p>
      * @param peer peer frame
      * @param cacheSize number of transforms kept in the date-based cache
@@ -268,12 +270,10 @@ public class Frame {
     public void setPeerCaching(final Frame peer, final int cacheSize) {
 
         // caching for regular dates
-        peerCache      = createDirectCache(peer, cacheSize);
-        peer.peerCache = createInverseCache(peerCache);
+        peerCache = createCache(peer, cacheSize);
 
         // caching for field dates
-        peerFieldCache      = new ConcurrentHashMap<>();
-        peer.peerFieldCache = new ConcurrentHashMap<>();
+        peerFieldCache = new ConcurrentHashMap<>();
 
     }
 
@@ -285,13 +285,13 @@ public class Frame {
         return peerCache == null ? null : peerCache.getDestination();
     }
 
-    /** Create direct cache.
+    /** Create cache.
      * @param peer peer frame
      * @param cacheSize number of transforms kept in the date-based cache
      * @return built cache
      * @since 13.0.3
      */
-    private CachedTransformProvider createDirectCache(final Frame peer, final int cacheSize) {
+    private CachedTransformProvider createCache(final Frame peer, final int cacheSize) {
         final Function<AbsoluteDate, Transform> fullGenerator =
                 date -> getTransformTo(peer,
                                        Transform.IDENTITY,
@@ -315,21 +315,7 @@ public class Frame {
                                            cacheSize);
     }
 
-    /** Create inverse cache.
-     * @param direct direct cache
-     * @return built cache
-     * @since 13.0.3
-     */
-    private CachedTransformProvider createInverseCache(final CachedTransformProvider direct) {
-        return new CachedTransformProvider(direct.getDestination(),
-                                           direct.getOrigin(),
-                                           d -> direct.getTransform(d).getInverse(),
-                                           d -> direct.getKinematicTransform(d).getInverse(),
-                                           d -> direct.getStaticTransform(d).getInverse(),
-                                           direct.getCacheSize());
-    }
-
-    /** Create field direct cache.
+    /** Create field cache.
      * @param <T> type of the field elements
      * @param peer peer frame
      * @param field field elements belong to
@@ -337,7 +323,7 @@ public class Frame {
      * @since 13.0.3
      */
     private <T extends CalculusFieldElement<T>> FieldCachedTransformProvider<T>
-        createDirectCache(final Frame peer, final Field<T> field) {
+    createCache(final Frame peer, final Field<T> field) {
         final Function<FieldAbsoluteDate<T>, FieldTransform<T>> fullGenerator =
                 d -> getTransformTo(peer,
                                     FieldTransform.getIdentity(field),
@@ -359,22 +345,6 @@ public class Frame {
         return new FieldCachedTransformProvider<>(this, peer,
                                                   fullGenerator, kinematicGenerator, staticGenerator,
                                                   peerCache.getCacheSize());
-    }
-
-    /** Create field inverse cache.
-     * @param <T> type of the field elements
-     * @param direct direct cache
-     * @return built cache
-     * @since 13.0.3
-     */
-    private <T extends CalculusFieldElement<T>> FieldCachedTransformProvider<T>
-        createInverseCache(final FieldCachedTransformProvider<T> direct) {
-        return new FieldCachedTransformProvider<>(direct.getDestination(),
-                                                  direct.getOrigin(),
-                                                  d -> direct.getTransform(d).getInverse(),
-                                                  d -> direct.getKinematicTransform(d).getInverse(),
-                                                  d -> direct.getStaticTransform(d).getInverse(),
-                                                  direct.getCacheSize());
     }
 
     /** Get the transform from the instance to another frame.
@@ -411,11 +381,7 @@ public class Frame {
             @SuppressWarnings("unchedked")
             final FieldCachedTransformProvider<T> cache =
                     (FieldCachedTransformProvider<T>) peerFieldCache.computeIfAbsent(date.getField(),
-                                                                                     field -> {
-                            final FieldCachedTransformProvider<T> direct = createDirectCache(destination, date.getField());
-                            destination.peerFieldCache.put(field, createInverseCache(direct));
-                            return direct;
-                        });
+                                                                                     field -> createCache(destination, date.getField()));
             return cache.getTransform(date);
         } else {
             // not our peer, just compute the transform and forget about it
@@ -520,11 +486,7 @@ public class Frame {
             @SuppressWarnings("unchedked")
             final FieldCachedTransformProvider<T> cache =
                     (FieldCachedTransformProvider<T>) peerFieldCache.computeIfAbsent(date.getField(),
-                                                                                     field -> {
-                            final FieldCachedTransformProvider<T> direct = createDirectCache(destination, date.getField());
-                            destination.peerFieldCache.put(field, createInverseCache(direct));
-                            return direct;
-                        });
+                                                                                     field -> createCache(destination, date.getField()));
             return cache.getStaticTransform(date);
         } else {
             // not our peer, just compute the transform and forget about it
@@ -566,11 +528,7 @@ public class Frame {
             @SuppressWarnings("unchedked")
             final FieldCachedTransformProvider<T> cache =
                     (FieldCachedTransformProvider<T>) peerFieldCache.computeIfAbsent(date.getField(),
-                                                                                     field -> {
-                            final FieldCachedTransformProvider<T> direct = createDirectCache(destination, date.getField());
-                            destination.peerFieldCache.put(field, createInverseCache(direct));
-                            return direct;
-                        });
+                                                                                     field -> createCache(destination, date.getField()));
             return cache.getKinematicTransform(date);
         }
         else {

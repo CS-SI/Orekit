@@ -277,7 +277,7 @@ public class FieldCachedTransformProviderTest {
         }
 
         // entry 14 should still be in the cache
-        Assertions.assertSame(t14, cachedTransformProvider.getTransform(dates.get(14)));
+        Assertions.assertSame(t14, cachedTransformProvider.getStaticTransform(dates.get(14)));
 
     }
 
