@@ -383,7 +383,7 @@ IIRV_EXCEEDS_MAX_VECTORS=No es poden incrustar més de 1000 vectors en un sol fi
 IIRV_VALUE_TOO_LARGE= Valor numéric "{0}" excedeix la llergada màxima de {1} per une representació de caràcters
 
 # invalid IIRV term value: {0}
-IIRV_INVALID_TERM_VALUE= Terme IRVV amb un valor invàlid
+IIRV_INVALID_TERM_VALUE= Terme IRVV amb un valor invàlid ({0})
 
 # the "{0}" term cannot change within an IIRV message file
 IIRV_TERM_CHANGES_WITHIN_FILE=el terme "{0}" no pot canviar dins d''un fitxer de missatge IIRV
