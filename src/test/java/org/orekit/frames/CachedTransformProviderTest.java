@@ -157,6 +157,94 @@ public class CachedTransformProviderTest {
 
     }
 
+    @Test
+    public void testExhaustKinematic() {
+        final RandomGenerator random = new Well19937a(0x3b18a628c1a8b5e9L);
+        final CachedTransformProvider cachedTransformProvider = buildCache(20);
+        final List<AbsoluteDate> dates = generateDates(random,
+                                                       10 * cachedTransformProvider.getCacheSize(),
+                                                       50 * cachedTransformProvider.getCacheSize());
+
+        // first batch, without exhausting
+        final List<KinematicTransform> firstBatch = new ArrayList<>();
+        for (int i = 0; i < cachedTransformProvider.getCacheSize(); i++) {
+            firstBatch.add(cachedTransformProvider.getKinematicTransform(dates.get(i)));
+        }
+        for (int i = 0; i < 1000; i++) {
+            // we should retrieve again and again the already computed instances
+            final int k = random.nextInt(firstBatch.size());
+            Assertions.assertSame(firstBatch.get(k), cachedTransformProvider.getKinematicTransform(dates.get(k)));
+        }
+        final KinematicTransform t14 = cachedTransformProvider.getKinematicTransform(dates.get(14));
+
+        // now exhaust the instance, except we force entry 14 to remain in the cache by reusing it
+        for (int i = 0; i < dates.size(); i++) {
+            Assertions.assertNotNull(cachedTransformProvider.getKinematicTransform(dates.get(dates.size() - 1 - i)));
+            Assertions.assertNotNull(cachedTransformProvider.getKinematicTransform(dates.get(14)));
+        }
+
+        for (int i = 0; i < 100; i++) {
+            // we should get new instances from the first already known dates,
+            // but they should correspond to similar transforms
+            final int                k            = random.nextInt(firstBatch.size());
+            final KinematicTransform t            = cachedTransformProvider.getTransform(dates.get(k));
+            final KinematicTransform backAndForth = KinematicTransform.compose(dates.get(k), firstBatch.get(k), t.getInverse());
+            if (k != 14) {
+                Assertions.assertNotSame(firstBatch.get(k), t);
+            }
+            Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle(), 1.0e-20);
+            Assertions.assertEquals(0.0, backAndForth.getTranslation().getNorm(), 1.0e-20);
+        }
+
+        // entry 14 should still be in the cache
+        Assertions.assertSame(t14, cachedTransformProvider.getKinematicTransform(dates.get(14)));
+
+    }
+
+    @Test
+    public void testExhaustStatic() {
+        final RandomGenerator random = new Well19937a(0x3b18a628c1a8b5e9L);
+        final CachedTransformProvider cachedTransformProvider = buildCache(20);
+        final List<AbsoluteDate> dates = generateDates(random,
+                                                       10 * cachedTransformProvider.getCacheSize(),
+                                                       50 * cachedTransformProvider.getCacheSize());
+
+        // first batch, without exhausting
+        final List<StaticTransform> firstBatch = new ArrayList<>();
+        for (int i = 0; i < cachedTransformProvider.getCacheSize(); i++) {
+            firstBatch.add(cachedTransformProvider.getStaticTransform(dates.get(i)));
+        }
+        for (int i = 0; i < 1000; i++) {
+            // we should retrieve again and again the already computed instances
+            final int k = random.nextInt(firstBatch.size());
+            Assertions.assertSame(firstBatch.get(k), cachedTransformProvider.getStaticTransform(dates.get(k)));
+        }
+        final StaticTransform t14 = cachedTransformProvider.getStaticTransform(dates.get(14));
+
+        // now exhaust the instance, except we force entry 14 to remain in the cache by reusing it
+        for (int i = 0; i < dates.size(); i++) {
+            Assertions.assertNotNull(cachedTransformProvider.getStaticTransform(dates.get(dates.size() - 1 - i)));
+            Assertions.assertNotNull(cachedTransformProvider.getStaticTransform(dates.get(14)));
+        }
+
+        for (int i = 0; i < 100; i++) {
+            // we should get new instances from the first already known dates,
+            // but they should correspond to similar transforms
+            final int             k            = random.nextInt(firstBatch.size());
+            final StaticTransform t            = cachedTransformProvider.getTransform(dates.get(k));
+            final StaticTransform backAndForth = StaticTransform.compose(dates.get(k), firstBatch.get(k), t.getInverse());
+            if (k != 14) {
+                Assertions.assertNotSame(firstBatch.get(k), t);
+            }
+            Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle(), 1.0e-20);
+            Assertions.assertEquals(0.0, backAndForth.getTranslation().getNorm(), 1.0e-20);
+        }
+
+        // entry 14 should still be in the cache
+        Assertions.assertSame(t14, cachedTransformProvider.getStaticTransform(dates.get(14)));
+
+    }
+
     private CachedTransformProvider buildCache(final int size) {
         return new CachedTransformProvider(earth1, inertialFrame,
                                            d -> earth1.getTransformTo(inertialFrame, d),

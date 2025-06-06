@@ -183,6 +183,104 @@ public class FieldCachedTransformProviderTest {
 
     }
 
+    @Test
+    public void testExhaustKinematic() {
+        doTestExhaustKinematic(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestExhaustKinematic(final Field<T> field) {
+        final RandomGenerator random = new Well19937a(0x3b18a628c1a8b5e9L);
+        final FieldCachedTransformProvider<T> cachedTransformProvider = buildCache(20);
+        final List<FieldAbsoluteDate<T>> dates = generateDates(field,
+                                                               random,
+                                                               10 * cachedTransformProvider.getCacheSize(),
+                                                               50 * cachedTransformProvider.getCacheSize());
+
+        // first batch, without exhausting
+        final List<FieldKinematicTransform<T>> firstBatch = new ArrayList<>();
+        for (int i = 0; i < cachedTransformProvider.getCacheSize(); i++) {
+            firstBatch.add(cachedTransformProvider.getKinematicTransform(dates.get(i)));
+        }
+        for (int i = 0; i < 1000; i++) {
+            // we should retrieve again and again the already computed instances
+            final int k = random.nextInt(firstBatch.size());
+            Assertions.assertSame(firstBatch.get(k), cachedTransformProvider.getKinematicTransform(dates.get(k)));
+        }
+        final FieldKinematicTransform<T> t14 = cachedTransformProvider.getKinematicTransform(dates.get(14));
+
+        // now exhaust the instance, except we force entry 14 to remain in the cache by reusing it
+        for (int i = 0; i < dates.size(); i++) {
+            Assertions.assertNotNull(cachedTransformProvider.getKinematicTransform(dates.get(dates.size() - 1 - i)));
+            Assertions.assertNotNull(cachedTransformProvider.getKinematicTransform(dates.get(14)));
+        }
+
+        for (int i = 0; i < 100; i++) {
+            // we should get new instances from the first already known dates,
+            // but they should correspond to similar transforms
+            final int                        k            = random.nextInt(firstBatch.size());
+            final FieldKinematicTransform<T> t            = cachedTransformProvider.getKinematicTransform(dates.get(k));
+            final FieldKinematicTransform<T> backAndForth = FieldKinematicTransform.compose(dates.get(k), firstBatch.get(k), t.getInverse());
+            if (k != 14) {
+                Assertions.assertNotSame(firstBatch.get(k), t);
+            }
+            Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle().getReal(), 1.0e-20);
+            Assertions.assertEquals(0.0, backAndForth.getTranslation().getNorm().getReal(), 1.0e-20);
+        }
+
+        // entry 14 should still be in the cache
+        Assertions.assertSame(t14, cachedTransformProvider.getKinematicTransform(dates.get(14)));
+
+    }
+
+    @Test
+    public void testExhaustStatic() {
+        doTestExhaustStatic(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestExhaustStatic(final Field<T> field) {
+        final RandomGenerator random = new Well19937a(0x3b18a628c1a8b5e9L);
+        final FieldCachedTransformProvider<T> cachedTransformProvider = buildCache(20);
+        final List<FieldAbsoluteDate<T>> dates = generateDates(field,
+                                                               random,
+                                                               10 * cachedTransformProvider.getCacheSize(),
+                                                               50 * cachedTransformProvider.getCacheSize());
+
+        // first batch, without exhausting
+        final List<FieldStaticTransform<T>> firstBatch = new ArrayList<>();
+        for (int i = 0; i < cachedTransformProvider.getCacheSize(); i++) {
+            firstBatch.add(cachedTransformProvider.getStaticTransform(dates.get(i)));
+        }
+        for (int i = 0; i < 1000; i++) {
+            // we should retrieve again and again the already computed instances
+            final int k = random.nextInt(firstBatch.size());
+            Assertions.assertSame(firstBatch.get(k), cachedTransformProvider.getStaticTransform(dates.get(k)));
+        }
+        final FieldStaticTransform<T> t14 = cachedTransformProvider.getStaticTransform(dates.get(14));
+
+        // now exhaust the instance, except we force entry 14 to remain in the cache by reusing it
+        for (int i = 0; i < dates.size(); i++) {
+            Assertions.assertNotNull(cachedTransformProvider.getStaticTransform(dates.get(dates.size() - 1 - i)));
+            Assertions.assertNotNull(cachedTransformProvider.getStaticTransform(dates.get(14)));
+        }
+
+        for (int i = 0; i < 100; i++) {
+            // we should get new instances from the first already known dates,
+            // but they should correspond to similar transforms
+            final int                     k            = random.nextInt(firstBatch.size());
+            final FieldStaticTransform<T> t            = cachedTransformProvider.getStaticTransform(dates.get(k));
+            final FieldStaticTransform<T> backAndForth = FieldStaticTransform.compose(dates.get(k), firstBatch.get(k), t.getInverse());
+            if (k != 14) {
+                Assertions.assertNotSame(firstBatch.get(k), t);
+            }
+            Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle().getReal(), 1.0e-20);
+            Assertions.assertEquals(0.0, backAndForth.getTranslation().getNorm().getReal(), 1.0e-20);
+        }
+
+        // entry 14 should still be in the cache
+        Assertions.assertSame(t14, cachedTransformProvider.getTransform(dates.get(14)));
+
+    }
+
     private <T extends CalculusFieldElement<T>> FieldCachedTransformProvider<T> buildCache(final int size) {
         final Function<FieldAbsoluteDate<T>, FieldTransform<T>> fullGenerator =
                 date -> earth1.getTransformTo(inertialFrame, date);
