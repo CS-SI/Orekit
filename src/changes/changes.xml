@@ -20,7 +20,14 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="13.0.3" date="TBC" description="TBC">
+    <release version="13.0.3" date="2025-06-06" description="Orekit 13.0.3 is a patch release.
+        It fixes several issues related to performances, data loading, and some wrong computation.">
+        <action dev="evan" type="fix" issue="1070" due-to="Brianna Aubin">
+            Update EGM default supported names for EGM 2008 .
+        </action>
+        <action dev="luc" type="fix" issue="1718">
+            Allow SinexParser to handle empty lines.
+        </action>
         <action dev="luc" type="fix" issue="1752">
             Fixed wrong date for frames transforms in ionospheric models.
         </action>
@@ -36,7 +43,7 @@
         <action dev="serrof" type="fix" issue="1740">
             Improved performance of shiftedBy in (Field)Orbit for vanishing time of flight.
         </action>
-        <action dev="serrof" type="fix" issue="1738">
+        <action dev="serrof" type="fix" issue="1737">
             Fixed LOF case in StateCovarianceMatrixProvider.
         </action>
         <action dev="luc" type="fix" issue="1724">
