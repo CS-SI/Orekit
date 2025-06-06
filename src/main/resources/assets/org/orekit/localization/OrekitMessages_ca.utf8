@@ -20,7 +20,7 @@ ALMOST_CRITICALLY_INCLINED_ORBIT=òrbita amb inclinació quasi crítica (i = {0}
 UNABLE_TO_COMPUTE_MEAN_PARAMETERS=després de {1} iteracions els paramètres mitjans de {0} no s''han aconseguit calcular
 
 # null parent for frame {0}
-NULL_PARENT_FOR_FRAME=sistema de referencia {0} orfe en l'arbre de sistemes de referencia
+NULL_PARENT_FOR_FRAME=sistema de referencia {0} orfe en l''arbre de sistemes de referencia
 
 # frame {0} is already attached to frame {1}
 FRAME_ALREADY_ATTACHED=el sistema de referencia {0} ja está lligat al sistema de referencia {1}
@@ -200,7 +200,7 @@ NON_EXISTENT_YEAR_MONTH_DAY=data inexistent {0}-{1}-{2}
 NON_EXISTENT_WEEK_DATE=data de la semana inexistent {0}-W{1}-{2}
 
 # non-existent date {0}
-NON_EXISTENT_DATE=fecha inexistente {0}
+NON_EXISTENT_DATE=data inexistente {0}
 
 # no day number {0} in year {1}
 NON_EXISTENT_DAY_NUMBER_IN_YEAR=no hi ha número del dia {0} en l''any {1}
@@ -242,7 +242,7 @@ INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION=estat inicial no especificat p
 EVENT_DATE_TOO_CLOSE=la data objectiu de l''esdeveniment ha de ser anterior a {1} de {3,number,0.0##############E0} segons o posterior a {2} de {3,number,0.0##############E0} segons; no obstant, la data objectiu {0} és {4,number,0.0##############E0} segons abans de {1} i {5,number,0.0##############E0} segons després de {2}, per això no es pot afegir
 
 # trying to propagate Cartesian adjoint whilst integration equations of motion with non-Cartesian coordinates
-WRONG_COORDINATES_FOR_ADJOINT_EQUATION=
+WRONG_COORDINATES_FOR_ADJOINT_EQUATION=intentant propagar el adjunt cartesià mentre es calculen les equacions del moviment amb coordenades no cartesianes
 
 # unable to read header record from JPL ephemerides binary file {0}
 UNABLE_TO_READ_JPL_HEADER=impossible de llegir la capçalera del fitxer binari d''efemèrides del JPL {0}
@@ -293,10 +293,10 @@ PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET=la funció setPeriod ja ha sigut utilitza
 TOO_SMALL_SCALE_FOR_PARAMETER=el factor d''escala pel paràmetre {0} és massa petit: {1}
 
 # state "{0}" is not an array
-ADDITIONAL_STATE_BAD_TYPE=
+ADDITIONAL_STATE_BAD_TYPE=l''estat "{0}" no és une matriu
 
 # unknown additional data "{0}"
-UNKNOWN_ADDITIONAL_DATA=
+UNKNOWN_ADDITIONAL_DATA=dada addicional "{0}" desconeguda
 
 # unknown month "{0}"
 UNKNOWN_MONTH=mes desconegut "{0}"
@@ -371,28 +371,28 @@ CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER=no s''ha trobat cap convertidor d''unita
 CCSDS_TIME_SYSTEM_NOT_READ_YET=el sistema temporal hauria d''haver sigut inicialitzat abans de la linea {0} del fitxer {1}
 
 # line break(s) missing after vector number {0} in {1}
-IIRV_MISSING_LINEBREAK_IN_FILE=
+IIRV_MISSING_LINEBREAK_IN_FILE=Falta(n) el(s) salt(s) de línia després del número de vector {0} en {1}
 
 # line {0} in IIRV vector is not valid: "{1}"
-IIRV_INVALID_LINE_IN_VECTOR=
+IIRV_INVALID_LINE_IN_VECTOR=La línia {0} en el vector IIRV no és vàlida: "{1}"
 
 # cannot embed more than 1000 vectors in a single IIRV message file: got {0}. Consider splitting the data into multiple files
-IIRV_EXCEEDS_MAX_VECTORS=
+IIRV_EXCEEDS_MAX_VECTORS=No es poden incrustar més de 1000 vectors en un sol fitxer de missatge IIRV: s''han obtingut {0}. Considera dividir les dades en diversos fitxers.
 
 # numeric value "{0}" exceeds the maximum length of {1} for string representation
-IIRV_VALUE_TOO_LARGE=
+IIRV_VALUE_TOO_LARGE= Valor numéric "{0}" excedeix la llergada màxima de {1} per une representació de caràcters
 
 # invalid IIRV term value: {0}
-IIRV_INVALID_TERM_VALUE=
+IIRV_INVALID_TERM_VALUE= Terme IRVV amb un valor invàlid ({0})
 
 # the "{0}" term cannot change within an IIRV message file
-IIRV_TERM_CHANGES_WITHIN_FILE=
+IIRV_TERM_CHANGES_WITHIN_FILE=el terme "{0}" no pot canviar dins d''un fitxer de missatge IIRV
 
 # IIRV sequence number must increase by 1 for each subsequent vector entry. At at line {0}, expected sequence number {1}+1, but found {2}
-IIRV_SEQUENCE_NUMBER_MUST_BE_INCREASING_BY_ONE=
+IIRV_SEQUENCE_NUMBER_MUST_BE_INCREASING_BY_ONE=el número de seqüència IIRV ha d''augmentar en 1 per a cada entrada de vector posterior. A la línia {0}, s''esperava el número de seqüència {1}+1, però s''ha trobat {2}
 
 # IIRV coordinate system "{0}" ({1}) has not been mapped to an Orekit frame
-IIRV_UNMAPPED_COORDINATE_SYSTEM=
+IIRV_UNMAPPED_COORDINATE_SYSTEM=Sistema de coordenades IRVV "{0}" ({1}) no ha estat assignat a un marc d''Orekit)
 
 # cannot estimate precession without proper derivatives
 CANNOT_ESTIMATE_PRECESSION_WITHOUT_PROPER_DERIVATIVES=impossible d''estimar la precisió sense les derivades correctes
@@ -434,7 +434,7 @@ SP3_INCOMPATIBLE_FILE_METADATA=impossible d''adjuntar els fitxers sp3 tenint met
 SP3_INCOMPATIBLE_SATELLITE_MEDATADA=impossible d''adjuntar els fitxers sp3 tenint metadata del satèl·lit {0} diferent
 
 # frame {0} not allowed here
-FRAME_NOT_ALLOWED=
+FRAME_NOT_ALLOWED=El sistema de refèrencia {0} no està permès aquí
 
 # STK coordinate system "{0}" is invalid or not yet supported
 STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM=el sistema de coordenades "{0}" de STK és invàlid o no s''ha implementat encara
@@ -473,7 +473,7 @@ NO_CACHED_ENTRIES=cap entrada emmagatzemada
 NON_CHRONOLOGICALLY_SORTED_ENTRIES=les entrades generades no estan ordenades: {0} > {1} de {2,number,0.0##############E0} segons
 
 # moving transition date from {0} to {1} collides with existing transition at {2}
-TRANSITION_DATES_COLLISION=
+TRANSITION_DATES_COLLISION=El canvi de data de transició de {0} a {1} entra en conflicte amb la transició existent a {2}.
 
 # no data generated around date: {0}
 NO_DATA_GENERATED=cap dada generada al voltant de la data: {0}
@@ -488,10 +488,10 @@ UNABLE_TO_GENERATE_NEW_DATA_AFTER=no es poden generar noves dades després de {0
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY=després de {0} iteracins no s''ha aconseguit calcular l''anomalia excèntrica hiperbòlica a partir de l''anomalia mitjana
 
 # unable to compute eccentric longitude argument from the mean one after {0} iterations
-UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT=
+UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT=No es pot calcular l''argument de longitud excèntrica a partir de l''argument de longitud mitjana després de {0} iteracions.
 
 # unable to compute eccentric latitude argument from the mean one after {0} iterations
-UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT=
+UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT=No es pot calcular l''argument de latitud excèntrica a partir de l''argument de latitud mitjana després de {0} iteracions.
 
 # unable to compute mean orbit from osculating orbit after {0} iterations
 UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS=no es pot calcular l''òrbita mitjana a partir de l''òrbita osculating al cap de {0} iteracions
@@ -617,10 +617,10 @@ UNKNOWN_CLOCK_DATA_TYPE=tipus de dades de rellotge desconegudes {0}
 UNKNOWN_SATELLITE_ANTENNA_CODE=codi d''antena de satèl·lit desconegut {0}
 
 # unknown GNSS antenna, name: {0}, radome code: {1}, serial number: {2}
-UNKNOWN_GNSS_ANTENNA=
+UNKNOWN_GNSS_ANTENNA=Antena GNSS desconeguda, nom: {0}, codi del radome: {1}, número de sèrie: {2}
 
 # unknown GNSS frequency, system: {0}, frequency code: {1} (line {2}, file {3})
-UNKNOWN_GNSS_FREQUENCY=
+UNKNOWN_GNSS_FREQUENCY=Freqüència GNSS desconeguda, sistema: {0}, codi de freqüència: {1} (línia {2}, fitxer {3})
 
 # frequency {0} is not supported by antenna {1}
 UNSUPPORTED_FREQUENCY_FOR_ANTENNA=frequència {0} no presa en compte per l''antena {1}
@@ -910,7 +910,7 @@ HEADER_ALREADY_WRITTEN=la capçalera del fitxer {0} ja s''ha escrit
 CANNOT_START_PROPAGATION_FROM_INFINITY=La propagagació no pot començar a partir d’’una data infinita
 
 # Too long time gap between data points: {0} s
-TOO_LONG_TIME_GAP_BETWEEN_DATA_POINTS=
+TOO_LONG_TIME_GAP_BETWEEN_DATA_POINTS=Interval de temps massa llarg entre punts de dades: {0} s
 
 # invalid satellite id {0}
 INVALID_SATELLITE_ID=Id {0} del satél·lit invàlid
@@ -919,31 +919,31 @@ INVALID_SATELLITE_ID=Id {0} del satél·lit invàlid
 WRONG_EOP_INTERPOLATION_DEGREE=El grau de l’’interpolador EOP ha de tenir la forma 4k-1, ara és {0}
 
 # number of planes {0} is inconsistent with number of satellites {1} in Walker constellation
-WALKER_INCONSISTENT_PLANES=
+WALKER_INCONSISTENT_PLANES=El nombre de plans {0} és inconsistent amb el nombre de satèl·lits {1} dins d''una constel·lació Walker.
 
 # Infinite value appears during computation of atmospheric density in NRLMSISE00 model
-INFINITE_NRLMSISE00_DENSITY=
+INFINITE_NRLMSISE00_DENSITY=Un valor infint apareix durant el calcul del model atmosfèric de densitat NRLMSISE00
 
 # Propagator builder cannot be cloned
-PROPAGATOR_BUILDER_NOT_CLONEABLE=
+PROPAGATOR_BUILDER_NOT_CLONEABLE=El constructor del propagador no és pot clonar
 
 # field "{0}" is too long, maximum length is {1} characters
-FIELD_TOO_LONG=
+FIELD_TOO_LONG=Camp "{0}" és massa llarg, la llargada màxima és de {1} caràcters
 
 # Process covariance expecting dimension {0}, got {1}
-WRONG_PROCESS_COVARIANCE_DIMENSION=
+WRONG_PROCESS_COVARIANCE_DIMENSION=S''esperava un procès de covariància de dimensió {0}, però s''ha obtingut {1}.
 
 # cannot parse data {0}
-CANNOT_PARSE_DATA=
+CANNOT_PARSE_DATA=No es poden analitzar les dades {0}.
 
 # Measurement covariance expecting dimension {0}, got {1}
-WRONG_MEASUREMENT_COVARIANCE_DIMENSION=
+WRONG_MEASUREMENT_COVARIANCE_DIMENSION=S''esperava la covariància de la mesura amb dimensió {0}, però s''ha obtingut {1}.
 
 # covariance must be square
-COVARIANCE_MUST_BE_SQUARE=
+COVARIANCE_MUST_BE_SQUARE=La covariànca ha de ser quadrada
 
 # state vector (dimension {0}) and covariance (dimension {1}) are inconsistent
-INCONSISTENT_STATE_DIMENSIONS=
+INCONSISTENT_STATE_DIMENSIONS=El vector d''estat (dimensió {0}) i la covariància (dimensió {1}) són inconsistents.
 
 # data at date {0} has already been automatically expunged
-EXPUNGED_SPAN=
+EXPUNGED_SPAN=dada a la data {0} ha estat automàticament esborrada
