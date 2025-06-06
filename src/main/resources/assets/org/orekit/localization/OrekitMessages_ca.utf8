@@ -945,5 +945,3 @@ COVARIANCE_MUST_BE_SQUARE=La covariànca ha de ser quadrada
 # state vector (dimension {0}) and covariance (dimension {1}) are inconsistent
 INCONSISTENT_STATE_DIMENSIONS=El vector d''estat (dimensió {0}) i la covariància (dimensió {1}) són inconsistents.
 
-# data at date {0} has already been automatically expunged
-EXPUNGED_SPAN=dada a la data {0} ha estat automàticament esborrada
