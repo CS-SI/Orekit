@@ -55,6 +55,7 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
 
     /** Minimum date for {@link #getMinDate()}. */
     private final AbsoluteDate min;
+
     /** Maximum date for {@link #getMaxDate()}. */
     private final AbsoluteDate max;
 
@@ -120,25 +121,30 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
         // do propagation
         final SpacecraftState state = getPropagator(date).propagate(date);
 
-        // evaluate attitude
-        final Attitude attitude =
-                getAttitudeProvider().getAttitude(this, date, state.getFrame());
-
-        // build raw state
-        if (state.isOrbitDefined()) {
-            return new SpacecraftState(
-                    state.getOrbit(), attitude, state.getMass(),
-                    state.getAdditionalDataValues(), state.getAdditionalStatesDerivatives());
+        if (getAttitudeProvider() instanceof AggregateAttitudeProvider) {
+            // we did not override attitude provider
+            // don't waste time recomputed the already known attitude
+            return state;
         } else {
-            return new SpacecraftState(
-                    state.getAbsPVA(), attitude, state.getMass(),
-                    state.getAdditionalDataValues(), state.getAdditionalStatesDerivatives());
+            // attitude provider has been overridden
+
+            // evaluate attitude
+            final Attitude attitude =
+                    getAttitudeProvider().getAttitude(this, date, state.getFrame());
+
+            // build raw state
+            if (state.isOrbitDefined()) {
+                return new SpacecraftState(state.getOrbit(), attitude, state.getMass(),
+                                           state.getAdditionalDataValues(), state.getAdditionalStatesDerivatives());
+            } else {
+                return new SpacecraftState(state.getAbsPVA(), attitude, state.getMass(),
+                                           state.getAdditionalDataValues(), state.getAdditionalStatesDerivatives());
+            }
         }
     }
 
     @Override
-    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date,
-                                                     final Frame frame) {
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
         return getPropagator(date).getPVCoordinates(date, frame);
     }
 
@@ -173,8 +179,7 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
     }
 
     @Override
-    protected void resetIntermediateState(final SpacecraftState state,
-                                          final boolean forward) {
+    protected void resetIntermediateState(final SpacecraftState state, final boolean forward) {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 

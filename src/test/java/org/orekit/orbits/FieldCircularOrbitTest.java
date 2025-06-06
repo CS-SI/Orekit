@@ -52,6 +52,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.function.Function;
 
@@ -95,6 +96,22 @@ class FieldCircularOrbitTest {
         Assertions.assertEquals(0., relativePosition.getNorm(), 1e-6);
         Assertions.assertEquals(fieldOrbit.hasNonKeplerianAcceleration(),
                 orbit.hasNonKeplerianAcceleration());
+    }
+
+    @Test
+    void test1721() {
+        // GIVEN
+        final PVCoordinates pvCoordinates = new PVCoordinates(new Vector3D(1, 2, 3),
+                Vector3D.MINUS_K.scalarMultiply(0.1), new Vector3D(0, 1));
+        final CircularOrbit circularOrbit = new CircularOrbit(new TimeStampedPVCoordinates(AbsoluteDate.ARBITRARY_EPOCH,
+                pvCoordinates), FramesFactory.getEME2000(), 1.);
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldCircularOrbit<Binary64> fieldCircularOrbit = new FieldCircularOrbit<>(field, circularOrbit);
+        // WHEN
+        final FieldVector3D<Binary64> velocity = fieldCircularOrbit.getPVCoordinates().getVelocity();
+        // THEN
+        final FieldVector3D<Binary64> difference = velocity.subtract(pvCoordinates.getVelocity());
+        Assertions.assertEquals(0., difference.getNorm().getReal(), 1e-10);
     }
 
     @Test

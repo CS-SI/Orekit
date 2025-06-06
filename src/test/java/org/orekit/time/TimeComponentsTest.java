@@ -343,6 +343,11 @@ public class TimeComponentsTest {
         }
     }
 
+    @Test
+    public void testNaN() {
+        Assertions.assertEquals("01:02:NaN+00:00", new TimeComponents(1, 2, TimeOffset.NaN).toString());
+    }
+
     private void check(final TimeComponents tc, int hour, int minute, double second) {
         MatcherAssert.assertThat(tc.getHour(), CoreMatchers.is(hour));
         MatcherAssert.assertThat(tc.getMinute(), CoreMatchers.is(minute));

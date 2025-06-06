@@ -168,7 +168,182 @@ public class TimeOffsetTest {
     }
 
     @Test
-    public void testPositiveDoubleContructor() {
+    public void testRoundingOffsetPositive() {
+        checkRoundingOffset(3,
+                            new TimeOffset(2L, TimeOffset.SECOND, 2345L, TimeOffset.MICROSECOND),
+                            new TimeOffset(2L, TimeOffset.SECOND, 2000L, TimeOffset.MICROSECOND));
+        checkRoundingOffset(3,
+                            new TimeOffset(2L, TimeOffset.SECOND, 2500L, TimeOffset.MICROSECOND),
+                            new TimeOffset(2L, TimeOffset.SECOND, 3000L, TimeOffset.MICROSECOND));
+        checkRoundingOffset(3,
+                            new TimeOffset(2L, TimeOffset.SECOND, 2500L, TimeOffset.MICROSECOND, -1, TimeOffset.ATTOSECOND),
+                            new TimeOffset(2L, TimeOffset.SECOND, 2000L, TimeOffset.MICROSECOND));
+        checkRoundingOffset(18,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND));
+        checkRoundingOffset(17,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345680L, TimeOffset.ATTOSECOND));
+        checkRoundingOffset(16,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345700L, TimeOffset.ATTOSECOND));
+        checkRoundingOffset(15,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012346000L, TimeOffset.ATTOSECOND));
+        checkRoundingOffset(14,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012350000L, TimeOffset.ATTOSECOND));
+        checkRoundingOffset(13,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012300000L, TimeOffset.ATTOSECOND));
+        checkRoundingOffset(12,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012000000L, TimeOffset.ATTOSECOND));
+        checkRoundingOffset(11,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789010000000L, TimeOffset.ATTOSECOND));
+        checkRoundingOffset(10,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789000000000L, TimeOffset.ATTOSECOND));
+        checkRoundingOffset(9,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789000000000L, TimeOffset.ATTOSECOND));
+        checkRoundingOffset(8,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456790000000000L, TimeOffset.ATTOSECOND));
+        checkRoundingOffset(7,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456800000000000L, TimeOffset.ATTOSECOND));
+        checkRoundingOffset(6,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123457000000000000L, TimeOffset.ATTOSECOND));
+        checkRoundingOffset(5,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123460000000000000L, TimeOffset.ATTOSECOND));
+        checkRoundingOffset(4,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123500000000000000L, TimeOffset.ATTOSECOND));
+        checkRoundingOffset(3,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123000000000000000L, TimeOffset.ATTOSECOND));
+        checkRoundingOffset(2,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND),
+                            new TimeOffset(6L, TimeOffset.SECOND, 120000000000000000L, TimeOffset.ATTOSECOND));
+        checkRoundingOffset(1,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND),
+                            new TimeOffset(6L, TimeOffset.SECOND, 100000000000000000L, TimeOffset.ATTOSECOND));
+        checkRoundingOffset(0,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND),
+                            new TimeOffset(6L, TimeOffset.SECOND,                  0L, TimeOffset.ATTOSECOND));
+    }
+
+    @Test
+    public void testRoundingOffsetNegative() {
+        checkRoundingOffset(3,
+                            new TimeOffset(2L, TimeOffset.SECOND, 2345L, TimeOffset.MICROSECOND).negate(),
+                            new TimeOffset(2L, TimeOffset.SECOND, 2000L, TimeOffset.MICROSECOND).negate());
+        checkRoundingOffset(3,
+                            new TimeOffset(2L, TimeOffset.SECOND, 2500L, TimeOffset.MICROSECOND).negate(),
+                            new TimeOffset(2L, TimeOffset.SECOND, 2000L, TimeOffset.MICROSECOND).negate());
+        checkRoundingOffset(3,
+                            new TimeOffset(2L, TimeOffset.SECOND, 2500L, TimeOffset.MICROSECOND, 1, TimeOffset.ATTOSECOND).negate(),
+                            new TimeOffset(2L, TimeOffset.SECOND, 3000L, TimeOffset.MICROSECOND).negate());
+        checkRoundingOffset(18,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND).negate(),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND).negate());
+        checkRoundingOffset(17,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND).negate(),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345680L, TimeOffset.ATTOSECOND).negate());
+        checkRoundingOffset(16,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND).negate(),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345700L, TimeOffset.ATTOSECOND).negate());
+        checkRoundingOffset(15,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND).negate(),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012346000L, TimeOffset.ATTOSECOND).negate());
+        checkRoundingOffset(14,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND).negate(),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012350000L, TimeOffset.ATTOSECOND).negate());
+        checkRoundingOffset(13,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND).negate(),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012300000L, TimeOffset.ATTOSECOND).negate());
+        checkRoundingOffset(12,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND).negate(),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012000000L, TimeOffset.ATTOSECOND).negate());
+        checkRoundingOffset(11,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND).negate(),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789010000000L, TimeOffset.ATTOSECOND).negate());
+        checkRoundingOffset(10,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND).negate(),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789000000000L, TimeOffset.ATTOSECOND).negate());
+        checkRoundingOffset(9,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND).negate(),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789000000000L, TimeOffset.ATTOSECOND).negate());
+        checkRoundingOffset(8,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND).negate(),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456790000000000L, TimeOffset.ATTOSECOND).negate());
+        checkRoundingOffset(7,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND).negate(),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456800000000000L, TimeOffset.ATTOSECOND).negate());
+        checkRoundingOffset(6,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND).negate(),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123457000000000000L, TimeOffset.ATTOSECOND).negate());
+        checkRoundingOffset(5,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND).negate(),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123460000000000000L, TimeOffset.ATTOSECOND).negate());
+        checkRoundingOffset(4,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND).negate(),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123500000000000000L, TimeOffset.ATTOSECOND).negate());
+        checkRoundingOffset(3,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND).negate(),
+                            new TimeOffset(6L, TimeOffset.SECOND, 123000000000000000L, TimeOffset.ATTOSECOND).negate());
+        checkRoundingOffset(2,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND).negate(),
+                            new TimeOffset(6L, TimeOffset.SECOND, 120000000000000000L, TimeOffset.ATTOSECOND).negate());
+        checkRoundingOffset(1,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND).negate(),
+                            new TimeOffset(6L, TimeOffset.SECOND, 100000000000000000L, TimeOffset.ATTOSECOND).negate());
+        checkRoundingOffset(0,
+                            new TimeOffset(6L, TimeOffset.SECOND, 123456789012345678L, TimeOffset.ATTOSECOND).negate(),
+                            new TimeOffset(6L, TimeOffset.SECOND,                  0L, TimeOffset.ATTOSECOND).negate());
+    }
+
+    private void checkRoundingOffset(final int fractionDigits, final TimeOffset base, final TimeOffset expected) {
+        Assertions.assertEquals(expected, base.getRoundedOffset(fractionDigits));
+    }
+
+    @Test
+    public void testRoundingOffsetSpecial() {
+        Assertions.assertEquals(TimeOffset.ZERO, TimeOffset.NaN.getRoundedOffset(3));
+        Assertions.assertEquals(TimeOffset.ZERO, TimeOffset.POSITIVE_INFINITY.getRoundedOffset(3));
+        Assertions.assertEquals(TimeOffset.ZERO, TimeOffset.NEGATIVE_INFINITY.getRoundedOffset(3));
+    }
+
+    @Test
+    public void testToString() {
+        Assertions.assertEquals("NaN", TimeOffset.NaN.toString());
+        Assertions.assertEquals("+∞",  TimeOffset.POSITIVE_INFINITY.toString());
+        Assertions.assertEquals("-∞",  TimeOffset.NEGATIVE_INFINITY.toString());
+        Assertions.assertEquals("0.000000000000000000", TimeOffset.ZERO.toString());
+        Assertions.assertEquals("0.000001000000000000", TimeOffset.MICROSECOND.toString());
+        Assertions.assertEquals("0.001000000000000000", TimeOffset.MILLISECOND.toString());
+        Assertions.assertEquals("1.000000000000000000", TimeOffset.SECOND.toString());
+        Assertions.assertEquals("60.000000000000000000", TimeOffset.MINUTE.toString());
+        Assertions.assertEquals("3600.000000000000000000", TimeOffset.HOUR.toString());
+        Assertions.assertEquals("86400.000000000000000000", TimeOffset.DAY.toString());
+        Assertions.assertEquals("0.002345000000000000",
+                                new TimeOffset(2345, TimeOffset.MICROSECOND).toString());
+        Assertions.assertEquals("-0.002345000000000000",
+                                new TimeOffset(2345, TimeOffset.MICROSECOND).negate().toString());
+        Assertions.assertEquals("2.002345000000000000",
+                                new TimeOffset(  2, TimeOffset.SECOND, 2345, TimeOffset.MICROSECOND).toString());
+        Assertions.assertEquals("-12.002345000000000000",
+                                new TimeOffset(12, TimeOffset.SECOND, 2345, TimeOffset.MICROSECOND).negate().toString());
+        Assertions.assertEquals("-11.997655000000000000",
+                                new TimeOffset(-12, TimeOffset.SECOND, 2345, TimeOffset.MICROSECOND).toString());
+    }
+
+    @Test
+    public void testPositiveDoubleConstructor() {
         final double d = 123.4567890123456789;
         final TimeOffset so = new TimeOffset(d);
         Assertions.assertEquals(123L, so.getSeconds());
@@ -179,7 +354,7 @@ public class TimeOffsetTest {
     }
 
     @Test
-    public void testNegativeDoubleContructor() {
+    public void testNegativeDoubleConstructor() {
         final double d = -123.4567890123456789;
         final TimeOffset so = new TimeOffset(d);
         Assertions.assertEquals(-124L, so.getSeconds());
@@ -190,7 +365,7 @@ public class TimeOffsetTest {
     }
 
     @Test
-    public void testSmallNegativeDoubleContructor() {
+    public void testSmallNegativeDoubleConstructor() {
         final TimeOffset so1 = new TimeOffset(-1.0e-17);
         Assertions.assertEquals(-1L, so1.getSeconds());
         Assertions.assertEquals(999999999999999990L, so1.getAttoSeconds());

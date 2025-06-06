@@ -20,9 +20,11 @@ import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
@@ -246,6 +248,11 @@ class AbsolutePVCoordinatesHermiteInterpolatorTest {
                                 interpolator.getExtrapolationThreshold());
         Assertions.assertEquals(frameMock, interpolator.getOutputFrame());
         Assertions.assertEquals(expectedFilter, interpolator.getFilter());
+    }
+
+    @BeforeEach
+    public void setUp() {
+        Utils.setDataRoot("regular-data");
     }
 
 }

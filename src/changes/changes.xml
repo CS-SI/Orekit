@@ -20,6 +20,60 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="13.0.3" date="2025-06-06" description="Orekit 13.0.3 is a patch release.
+        It fixes several issues related to performances, data loading, and some wrong computation.">
+        <action dev="evan" type="fix" issue="1070" due-to="Brianna Aubin">
+            Update EGM default supported names for EGM 2008 .
+        </action>
+        <action dev="luc" type="fix" issue="1718">
+            Allow SinexParser to handle empty lines.
+        </action>
+        <action dev="luc" type="fix" issue="1752">
+            Fixed wrong date for frames transforms in ionospheric models.
+        </action>
+        <action dev="luc" type="fix" issue="1751">
+            Avoid recomputing again and again the same transform between peered frames.
+        </action>
+        <action dev="maxime" type="fix" issue="1741">
+            Fixed clone behavior in propagator builders.
+        </action>
+        <action dev="baubin" type="fix" issue="1746">
+            Removed duplicate parameter of local clock offset in OneWayGNSSPhase.
+        </action>
+        <action dev="serrof" type="fix" issue="1740">
+            Improved performance of shiftedBy in (Field)Orbit for vanishing time of flight.
+        </action>
+        <action dev="serrof" type="fix" issue="1737">
+            Fixed LOF case in StateCovarianceMatrixProvider.
+        </action>
+        <action dev="luc" type="fix" issue="1724">
+            Fixed parameter driver added twice.
+        </action>
+        <action dev="evan" type="fix" issue="1726" due-to="Juwan Jacobe">
+            Fixed logic in EGMFormatReader to allow tide-free EGM2008 harmonics.
+        </action>
+        <action dev="luc" type="fix" issue="1731">
+            Avoid recomputing attitude twice in AggregateBoundedPropagator.
+        </action>
+        <action dev="luc" type="fix" issue="1728">
+            Fixed unit errors in EOP CSV format parser.
+        </action>
+        <action dev="luc" type="fix" issue="1727">
+            Speed up numbers formatting in Rinex files.
+        </action>
+        <action dev="serrof" type="fix" issue="1721">
+            Fixed problem with FieldCircularOrbit.
+        </action>
+        <action dev="vcucchie" type="fix" issue="1719">
+            Temporary fix to issue 1719 until GenericTimeStampedCache is fixed.
+        </action>
+        <action dev="baubin" type="update" issue="1070">
+            Updated regular expression in GravityFieldFactory to read EGM2008 file as well as EGM96.
+        </action>
+        <action dev="bryan" type="fix" issue="1703">
+          Fixed initial spacecraft state type when DSST Jacobian is activated.
+        </action>
+    </release>
     <release version="13.0.2" date="2025-04-30" description="Orekit 13.0.2 is a patch release.
         It fixes several issues related to GNSS, data loading and indirect shooting.">
         <action dev="luc" type="fix" issue="1713">

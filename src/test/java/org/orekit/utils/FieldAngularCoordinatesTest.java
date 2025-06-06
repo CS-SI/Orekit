@@ -47,7 +47,9 @@ import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -800,6 +802,11 @@ public class FieldAngularCoordinatesTest {
         double y = random.nextDouble();
         double z = random.nextDouble();
         return new FieldVector3D<>(n, new FieldVector3D<>(new Binary64(x), new Binary64(y), new Binary64(z)).normalize());
+    }
+
+    @BeforeEach
+    public void setUp() {
+        Utils.setDataRoot("regular-data");
     }
 
 }

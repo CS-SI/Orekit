@@ -23,9 +23,13 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.frames.FieldStaticTransform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 /**
@@ -47,7 +51,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class EstimatedIonosphericModel implements IonosphericModel {
+public class EstimatedIonosphericModel implements IonosphericModel, IonosphericDelayModel {
 
     /** Name of the parameter of this model: the Vertical Total Electron Content. */
     public static final String VERTICAL_TOTAL_ELECTRON_CONTENT = "vertical total electron content";
@@ -77,9 +81,23 @@ public class EstimatedIonosphericModel implements IonosphericModel {
     @Override
     public double pathDelay(final SpacecraftState state, final TopocentricFrame baseFrame,
                             final double frequency, final double[] parameters) {
+        return pathDelay(state, baseFrame, state.getDate(), frequency, parameters);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double pathDelay(final SpacecraftState state,
+                            final TopocentricFrame baseFrame, final AbsoluteDate receptionDate,
+                            final double frequency, final double[] parameters) {
+
+        // we use transform from base frame to inert frame and invert it
+        // because base frame could be peered with inertial frame (hence improving performances with caching)
+        // but the reverse is almost never used
+        final StaticTransform base2Inert = baseFrame.getStaticTransformTo(state.getFrame(), receptionDate);
+        final Vector3D        position   = base2Inert.getInverse().transformPosition(state.getPosition());
+
         // Elevation in radians
-        final Vector3D position  = state.getPosition(baseFrame);
-        final double   elevation = position.getDelta();
+        final double          elevation  = position.getDelta();
 
         // Only consider measures above the horizon
         if (elevation > 0.0) {
@@ -117,8 +135,22 @@ public class EstimatedIonosphericModel implements IonosphericModel {
     @Override
     public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
                                                        final double frequency, final T[] parameters) {
-        // Elevation and azimuth in radians
-        final FieldVector3D<T> position = state.getPosition(baseFrame);
+        return pathDelay(state, baseFrame, state.getDate(), frequency, parameters);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state,
+                                                           final TopocentricFrame baseFrame, final FieldAbsoluteDate<T> receptionDate,
+                                                           final double frequency, final T[] parameters) {
+
+        // we use transform from base frame to inert frame and invert it
+        // because base frame could be peered with inertial frame (hence improving performances with caching)
+        // but the reverse is almost never used
+        final FieldStaticTransform<T> base2Inert = baseFrame.getStaticTransformTo(state.getFrame(), receptionDate);
+        final FieldVector3D<T>        position   = base2Inert.getInverse().transformPosition(state.getPosition());
+
+        // Elevation in radians
         final T elevation = position.getDelta();
 
         if (elevation.getReal() > 0.0) {

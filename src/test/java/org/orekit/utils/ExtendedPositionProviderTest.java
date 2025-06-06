@@ -23,8 +23,10 @@ import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -97,6 +99,11 @@ class ExtendedPositionProviderTest {
             final T shift = date.durationFrom(referenceDate);
             return new FieldVector3D<>(zero.newInstance(1.).add(shift), zero.newInstance(2.), zero.newInstance(3.));
         }
+    }
+
+    @BeforeEach
+    public void setUp() {
+        Utils.setDataRoot("regular-data");
     }
 
 }

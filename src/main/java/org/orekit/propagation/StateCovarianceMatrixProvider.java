@@ -47,9 +47,6 @@ import org.orekit.time.AbsoluteDate;
  */
 public class StateCovarianceMatrixProvider implements AdditionalDataProvider<RealMatrix> {
 
-    /** Dimension of the state. */
-    private static final int STATE_DIMENSION = 6;
-
     /** Name of the state for State Transition Matrix. */
     private final String stmName;
 
@@ -72,7 +69,7 @@ public class StateCovarianceMatrixProvider implements AdditionalDataProvider<Rea
     private final PositionAngleType covAngleType;
 
     /** Initial state covariance. */
-    private StateCovariance covInit;
+    private final StateCovariance covInit;
 
     /** Initial state covariance matrix. */
     private RealMatrix covMatrixInit;
@@ -108,14 +105,12 @@ public class StateCovarianceMatrixProvider implements AdditionalDataProvider<Rea
     /** {@inheritDoc} */
     @Override
     public void init(final SpacecraftState initialState, final AbsoluteDate target) {
-        // Convert the initial state covariance in the same orbit type as the STM
-        covInit = covInit.changeCovarianceType(initialState.getOrbit(), stmOrbitType, stmAngleType);
+        // Convert the initial state covariance in the same orbit type and frame as the STM
+        final Orbit initialOrbit = initialState.getOrbit();
+        StateCovariance covariance = covInit.changeCovarianceFrame(initialOrbit, initialState.getFrame());
+        covariance = covariance.changeCovarianceType(initialOrbit, stmOrbitType, stmAngleType);
 
-        // Express covariance matrix in the same frame as the STM
-        final Orbit           initialOrbit      = initialState.getOrbit();
-        final StateCovariance covInitInSTMFrame = covInit.changeCovarianceFrame(initialOrbit, initialOrbit.getFrame());
-
-        covMatrixInit = covInitInSTMFrame.getMatrix();
+        covMatrixInit = covariance.getMatrix();
     }
 
     /**

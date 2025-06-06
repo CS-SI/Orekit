@@ -1145,7 +1145,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
                                                                                   getKeplerianMeanMotion().multiply(dt).add(getMeanAnomaly()),
                                                                                   PositionAngleType.MEAN, cachedPositionAngleType, getFrame(), getDate().shiftedBy(dt), getMu());
 
-        if (hasNonKeplerianRates()) {
+        if (!dt.isZero() && hasNonKeplerianRates()) {
 
             // extract non-Keplerian acceleration from first time derivatives
             final FieldVector3D<T> nonKeplerianAcceleration = nonKeplerianAcceleration();

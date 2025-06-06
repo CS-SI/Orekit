@@ -9,7 +9,8 @@
  INPUT              and previous version slrecc.191030.ILRS.une.snx                            
  INPUT              Numerous emails/reports from Van Husson’s review                            
 -FILE/REFERENCE                                                                 
-+INPUT/HISTORY                                                                  
+
++INPUT/HISTORY
  =SNX 2.02 JCT 20:111:61200 JCT 68:041:00000 20:111:61200 L 00549 0 X        
 -INPUT/HISTORY                                                                  
 +SITE/ID

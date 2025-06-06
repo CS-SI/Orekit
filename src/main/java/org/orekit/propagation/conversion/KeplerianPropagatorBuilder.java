@@ -77,6 +77,30 @@ public class KeplerianPropagatorBuilder extends AbstractAnalyticalPropagatorBuil
         super(templateOrbit, positionAngleType, positionScale, true, attitudeProvider, Propagator.DEFAULT_MASS);
     }
 
+    /** Copy constructor.
+     * @param builder builder to copy from
+     */
+    private KeplerianPropagatorBuilder(final KeplerianPropagatorBuilder builder) {
+        this(builder.createInitialOrbit(), builder.getPositionAngleType(),
+             builder.getPositionScale(), builder.getAttitudeProvider());
+    }
+
+    /** {@inheritDoc}. */
+    @Override
+    public KeplerianPropagatorBuilder clone() {
+        // Call to super clone() method to avoid warning
+        final KeplerianPropagatorBuilder clonedBuilder = (KeplerianPropagatorBuilder) super.clone();
+
+        // Use copy constructor to unlink orbital drivers
+        final KeplerianPropagatorBuilder builder = new KeplerianPropagatorBuilder(clonedBuilder);
+
+        // Set mass
+        builder.setMass(getMass());
+
+        // Return cloned builder
+        return builder;
+    }
+
     /** {@inheritDoc} */
     public KeplerianPropagator buildPropagator(final double[] normalizedParameters) {
         setParameters(normalizedParameters);

@@ -16,13 +16,15 @@
  */
 package org.orekit.time;
 
+import java.io.IOException;
 import java.io.Serializable;
-import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.utils.formatting.FastLongFormatter;
 
 /** Class representing a date broken up as year, month and day components.
  * <p>This class uses the astronomical convention for calendars,
@@ -103,6 +105,16 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
 
     /** Offset between julian day epoch and modified julian day epoch. */
     public static final double JD_TO_MJD = 2400000.5;
+
+    /** Format for one 4 digits integer field.
+     * @since 13.0.3
+     */
+    private static final FastLongFormatter PADDED_FOUR_DIGITS_INTEGER = new FastLongFormatter(4, true);
+
+    /** Format for one 2 digits integer field.
+     * @since 13.0.3
+     */
+    private static final FastLongFormatter PADDED_TWO_DIGITS_INTEGER = new FastLongFormatter(2, true);
 
     /** Serializable UID. */
     private static final long serialVersionUID = -2462694707837970938L;
@@ -466,7 +478,18 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
      * @return string representation of the date.
      */
     public String toString() {
-        return String.format(Locale.US, "%04d-%02d-%02d", year, month, day);
+        try {
+            final StringBuilder builder = new StringBuilder();
+            PADDED_FOUR_DIGITS_INTEGER.appendTo(builder, year);
+            builder.append('-');
+            PADDED_TWO_DIGITS_INTEGER.appendTo(builder, month);
+            builder.append('-');
+            PADDED_TWO_DIGITS_INTEGER.appendTo(builder, day);
+            return builder.toString();
+        } catch (IOException ioe) {
+            // this should never happen
+            throw new OrekitInternalError(ioe);
+        }
     }
 
     /** {@inheritDoc} */
