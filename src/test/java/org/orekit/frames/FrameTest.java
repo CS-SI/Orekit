@@ -520,6 +520,11 @@ class FrameTest {
         Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle(), 1.0e-20);
         Assertions.assertEquals(0.0, backAndForth.getCartesian().getPosition().getNorm(), 1.0e-20);
 
+        // non-peered frames should still be recomputed
+        Frame gcrf = FramesFactory.getGCRF();
+        Assertions.assertNotSame(eme2000.getTransformTo(gcrf, t0),
+                                 eme2000.getTransformTo(gcrf, t0));
+
         final Transform[] direct  = new Transform[cachesize];
         final Transform[] inverse = new Transform[cachesize];
         for ( int i = 0; i < cachesize; i++ ) {
@@ -558,6 +563,11 @@ class FrameTest {
         Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle(), 1.0e-20);
         Assertions.assertEquals(0.0, backAndForth.getTranslation().getNorm(), 1.0e-20);
 
+        // non-peered frames should still be recomputed
+        Frame gcrf = FramesFactory.getGCRF();
+        Assertions.assertNotSame(eme2000.getKinematicTransformTo(gcrf, t0),
+                                 eme2000.getKinematicTransformTo(gcrf, t0));
+
         final KinematicTransform[] direct  = new KinematicTransform[cachesize];
         final KinematicTransform[] inverse = new KinematicTransform[cachesize];
         for ( int i = 0; i < cachesize; i++ ) {
@@ -595,6 +605,11 @@ class FrameTest {
         Assertions.assertSame(tA, tB);
         Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle(), 1.0e-20);
         Assertions.assertEquals(0.0, backAndForth.getTranslation().getNorm(), 1.0e-20);
+
+        // non-peered frames should still be recomputed
+        Frame gcrf = FramesFactory.getGCRF();
+        Assertions.assertNotSame(eme2000.getStaticTransformTo(gcrf, t0),
+                                 eme2000.getStaticTransformTo(gcrf, t0));
 
         final StaticTransform[] direct  = new StaticTransform[cachesize];
         final StaticTransform[] inverse = new StaticTransform[cachesize];
@@ -638,6 +653,11 @@ class FrameTest {
         Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle().getReal(), 1.0e-20);
         Assertions.assertEquals(0.0, backAndForth.getCartesian().getPosition().getNorm().getReal(), 1.0e-20);
 
+        // non-peered frames should still be recomputed
+        Frame gcrf = FramesFactory.getGCRF();
+        Assertions.assertNotSame(eme2000.getTransformTo(gcrf, t0),
+                                 eme2000.getTransformTo(gcrf, t0));
+
         final FieldTransform<T>[] direct  = new FieldTransform[cachesize];
         final FieldTransform<T>[] inverse = new FieldTransform[cachesize];
         for ( int i = 0; i < cachesize; i++ ) {
@@ -655,7 +675,7 @@ class FrameTest {
 
     @Test
     public void testPeeringFieldKinematic() {
-        doTestPeeringField(Binary64Field.getInstance());
+        doTestPeeringFieldKinematic(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestPeeringFieldKinematic(final Field<T> field) {
@@ -679,6 +699,11 @@ class FrameTest {
         Assertions.assertSame(tA, tB);
         Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle().getReal(), 1.0e-20);
         Assertions.assertEquals(0.0, backAndForth.getTranslation().getNorm().getReal(), 1.0e-20);
+
+        // non-peered frames should still be recomputed
+        Frame gcrf = FramesFactory.getGCRF();
+        Assertions.assertNotSame(eme2000.getKinematicTransformTo(gcrf, t0),
+                                 eme2000.getKinematicTransformTo(gcrf, t0));
 
         final FieldKinematicTransform<T>[] direct  = new FieldKinematicTransform[cachesize];
         final FieldKinematicTransform<T>[] inverse = new FieldKinematicTransform[cachesize];
@@ -721,6 +746,11 @@ class FrameTest {
         Assertions.assertSame(tA, tB);
         Assertions.assertEquals(0.0, backAndForth.getRotation().getAngle().getReal(), 1.0e-20);
         Assertions.assertEquals(0.0, backAndForth.getTranslation().getNorm().getReal(), 1.0e-20);
+
+        // non-peered frames should still be recomputed
+        Frame gcrf = FramesFactory.getGCRF();
+        Assertions.assertNotSame(eme2000.getStaticTransformTo(gcrf, t0),
+                                 eme2000.getStaticTransformTo(gcrf, t0));
 
         final FieldStaticTransform<T>[] direct  = new FieldStaticTransform[cachesize];
         final FieldStaticTransform<T>[] inverse = new FieldStaticTransform[cachesize];
