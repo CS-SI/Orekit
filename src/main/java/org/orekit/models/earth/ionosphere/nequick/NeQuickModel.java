@@ -21,12 +21,18 @@ import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.frames.FieldStaticTransform;
+import org.orekit.frames.Frame;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.TopocentricFrame;
+import org.orekit.models.earth.ionosphere.IonosphericDelayModel;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -49,7 +55,7 @@ import org.orekit.utils.units.Unit;
  *
  * @since 10.1
  */
-public abstract class NeQuickModel implements IonosphericModel {
+public abstract class NeQuickModel implements IonosphericModel, IonosphericDelayModel {
 
     /** Mean Earth radius in m (Ref Table 2.5.2). */
     public static final double RE = 6371200.0;
@@ -95,16 +101,32 @@ public abstract class NeQuickModel implements IonosphericModel {
     @Override
     public double pathDelay(final SpacecraftState state, final TopocentricFrame baseFrame,
                             final double frequency, final double[] parameters) {
+        return pathDelay(state, baseFrame, state.getDate(), frequency, parameters);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double pathDelay(final SpacecraftState state,
+                            final TopocentricFrame baseFrame, final AbsoluteDate receptionDate,
+                            final double frequency, final double[] parameters) {
+
+        // Reference body shape
+        final BodyShape ellipsoid = baseFrame.getParentShape();
+
+        // we use transform from body frame to inert frame and invert it
+        // because base frame could be peered with inertial frame (hence improving performances with caching)
+        // but the reverse is almost never used
+        final Frame           bodyFrame  = ellipsoid.getBodyFrame();
+        final StaticTransform body2Inert = bodyFrame.getStaticTransformTo(state.getFrame(), receptionDate);
+        final Vector3D        position   = body2Inert.getInverse().transformPosition(state.getPosition());
+
         // Point
         final GeodeticPoint recPoint = baseFrame.getPoint();
         // Date
         final AbsoluteDate date = state.getDate();
 
-        // Reference body shape
-        final BodyShape ellipsoid = baseFrame.getParentShape();
         // Satellite geodetic coordinates
-        final GeodeticPoint satPoint = ellipsoid.transform(state.getPosition(ellipsoid.getBodyFrame()),
-                                                           ellipsoid.getBodyFrame(), state.getDate());
+        final GeodeticPoint satPoint = ellipsoid.transform(position, bodyFrame, state.getDate());
 
         // Total Electron Content
         final double tec = stec(date, recPoint, satPoint);
@@ -120,16 +142,33 @@ public abstract class NeQuickModel implements IonosphericModel {
                                                            final TopocentricFrame baseFrame,
                                                            final double frequency,
                                                            final T[] parameters) {
+        return pathDelay(state, baseFrame, state.getDate(), frequency, parameters);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state,
+                                                           final TopocentricFrame baseFrame,
+                                                           final FieldAbsoluteDate<T> receptionDate,
+                                                           final double frequency,
+                                                           final T[] parameters) {
+        // Reference body shape
+        final BodyShape ellipsoid = baseFrame.getParentShape();
+
+        // we use transform from body frame to inert frame and invert it
+        // because base frame could be peered with inertial frame (hence improving performances with caching)
+        // but the reverse is almost never used
+        final Frame                   bodyFrame  = ellipsoid.getBodyFrame();
+        final FieldStaticTransform<T> body2Inert = bodyFrame.getStaticTransformTo(state.getFrame(), receptionDate);
+        final FieldVector3D<T>        position   = body2Inert.getInverse().transformPosition(state.getPosition());
+
         // Date
         final FieldAbsoluteDate<T> date = state.getDate();
         // Point
         final FieldGeodeticPoint<T> recPoint = baseFrame.getPoint(date.getField());
 
-
-        // Reference body shape
-        final BodyShape ellipsoid = baseFrame.getParentShape();
         // Satellite geodetic coordinates
-        final FieldGeodeticPoint<T> satPoint = ellipsoid.transform(state.getPosition(ellipsoid.getBodyFrame()), ellipsoid.getBodyFrame(), state.getDate());
+        final FieldGeodeticPoint<T> satPoint = ellipsoid.transform(position, bodyFrame, state.getDate());
 
         // Total Electron Content
         final T tec = stec(date, recPoint, satPoint);

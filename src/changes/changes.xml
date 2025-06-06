@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0.3" date="TBC" description="TBC">
+        <action dev="luc" type="fix" issue="1752">
+            Fixed wrong date for frames transforms in ionospheric models.
+        </action>
         <action dev="luc" type="fix" issue="1751">
             Avoid recomputing again and again the same transform between peered frames.
         </action>

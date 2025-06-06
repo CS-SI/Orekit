@@ -31,6 +31,8 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.data.DataContext;
+import org.orekit.frames.FieldStaticTransform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -65,7 +67,7 @@ import org.orekit.utils.ParameterDriver;
  * @since 7.1
  *
  */
-public class KlobucharIonoModel implements IonosphericModel {
+public class KlobucharIonoModel implements IonosphericModel, IonosphericDelayModel {
 
     /** The 4 coefficients of a cubic equation representing the amplitude of the vertical delay. Units are sec/semi-circle^(i-1) for the i-th coefficient, i=1, 2, 3, 4. */
     private final double[] alpha;
@@ -189,9 +191,22 @@ public class KlobucharIonoModel implements IonosphericModel {
     @Override
     public double pathDelay(final SpacecraftState state, final TopocentricFrame baseFrame,
                             final double frequency, final double[] parameters) {
+        return pathDelay(state, baseFrame, state.getDate(), frequency, parameters);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double pathDelay(final SpacecraftState state,
+                            final TopocentricFrame baseFrame, final AbsoluteDate receptionDate,
+                            final double frequency, final double[] parameters) {
+
+        // we use transform from base frame to inert frame and invert it
+        // because base frame could be peered with inertial frame (hence improving performances with caching)
+        // but the reverse is almost never used
+        final StaticTransform base2Inert = baseFrame.getStaticTransformTo(state.getFrame(), receptionDate);
+        final Vector3D        position   = base2Inert.getInverse().transformPosition(state.getPosition());
 
         // Elevation in radians
-        final Vector3D position  = state.getPosition(baseFrame);
         final double   elevation = position.getDelta();
 
         // Only consider measures above the horizon
@@ -297,9 +312,22 @@ public class KlobucharIonoModel implements IonosphericModel {
     @Override
     public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
                                                        final double frequency, final T[] parameters) {
+        return pathDelay(state, baseFrame, state.getDate(), frequency, parameters);
+    }
 
-        // Elevation and azimuth in radians
-        final FieldVector3D<T> position = state.getPosition(baseFrame);
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state,
+                                                           final TopocentricFrame baseFrame, final FieldAbsoluteDate<T> receptionDate,
+                                                           final double frequency, final T[] parameters) {
+
+        // we use transform from base frame to inert frame and invert it
+        // because base frame could be peered with inertial frame (hence improving performances with caching)
+        // but the reverse is almost never used
+        final FieldStaticTransform<T> base2Inert = baseFrame.getStaticTransformTo(state.getFrame(), receptionDate);
+        final FieldVector3D<T>        position   = base2Inert.getInverse().transformPosition(state.getPosition());
+
+        // Elevation in radians
         final T elevation = position.getDelta();
 
         if (elevation.getReal() > 0.0) {
