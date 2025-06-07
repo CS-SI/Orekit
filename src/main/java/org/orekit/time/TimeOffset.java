@@ -19,8 +19,11 @@ package org.orekit.time;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.utils.formatting.FastLongFormatter;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 
@@ -135,9 +138,9 @@ public class TimeOffset
     /** Number of digits after separator for attoseconds. */
     private static final int DIGITS_ATTOS = 18;
 
-    /** Multipliers for parsing partial strings. */
+    /** Scaling factors used for parsing partial strings and for rounding. */
     // CHECKSTYLE: stop Indentation check
-    private static final long[] MULTIPLIERS = new long[] {
+    private static final long[] SCALING = new long[] {
                          1L,
                         10L,
                        100L,
@@ -159,6 +162,25 @@ public class TimeOffset
        1000000000000000000L
     };
     // CHECKSTYLE: resume Indentation check
+
+    /** Formatter for seconds.
+     * @since 13.0.3
+     */
+    private static final FastLongFormatter SECONDS_FORMATTER = new FastLongFormatter(1, false);
+
+    /** Formatter for attoseconds.
+     * @since 13.0.3
+     */
+    private static final FastLongFormatter ATTOSECONDS_FORMATTER = new FastLongFormatter(18, true);
+
+    /** NaN. */
+    private static final String NAN_STRING = "NaN";
+
+    /** +∞. */
+    private static final String POSITIVE_INFINITY_STRING = "+∞";
+
+    /** -∞. */
+    private static final String NEGATIVE_INTINITY_STRING = "-∞";
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20240711L;
@@ -237,7 +259,7 @@ public class TimeOffset
     /**
      * Multiplicative constructor.
      * <p>
-     * This constructors builds a split time corresponding to {@code factor} ⨉ {@code time}
+     * This constructor builds a split time corresponding to {@code factor} ⨉ {@code time}
      * </p>
      * @param factor multiplicative factor (negative values allowed here, contrary to {@link #multiply(long)})
      * @param time base time
@@ -249,7 +271,7 @@ public class TimeOffset
     /**
      * Linear combination constructor.
      * <p>
-     * This constructors builds a split time corresponding to
+     * This constructor builds a split time corresponding to
      * {@code f1} ⨉ {@code t1} + {@code f2} ⨉ {@code t2}
      * </p>
      * @param f1 first multiplicative factor (negative values allowed here, contrary to {@link #multiply(long)})
@@ -265,7 +287,7 @@ public class TimeOffset
     /**
      * Linear combination constructor.
      * <p>
-     * This constructors builds a split time corresponding to
+     * This constructor builds a split time corresponding to
      * {@code f1} ⨉ {@code t1} + {@code f2} ⨉ {@code t2} + {@code f3} ⨉ {@code t3}
      * </p>
      * @param f1 first multiplicative factor (negative values allowed here, contrary to {@link #multiply(long)})
@@ -284,7 +306,7 @@ public class TimeOffset
     /**
      * Linear combination constructor.
      * <p>
-     * This constructors builds a split time corresponding to
+     * This constructor builds a split time corresponding to
      * {@code f1} ⨉ {@code t1} + {@code f2} ⨉ {@code t2} + {@code f3} ⨉ {@code t3} + {@code f4} ⨉ {@code t4}
      * </p>
      * @param f1 first multiplicative factor (negative values allowed here, contrary to {@link #multiply(long)})
@@ -309,7 +331,7 @@ public class TimeOffset
     /**
      * Linear combination constructor.
      * <p>
-     * This constructors builds a split time corresponding to
+     * This constructor builds a split time corresponding to
      * {@code f1} ⨉ {@code t1} + {@code f2} ⨉ {@code t2} + {@code f3} ⨉ {@code t3} + {@code f4} ⨉ {@code t4} + {@code f5} ⨉ {@code t5}
      * </p>
      * @param f1 first multiplicative factor (negative values allowed here, contrary to {@link #multiply(long)})
@@ -652,6 +674,31 @@ public class TimeOffset
         }
     }
 
+    /** Round to specified accuracy.
+     * <p>
+     * For simplicity of implementation, the tiebreaking rule applied here is to round half
+     * towards positive infinity. This implies that rounding to 3 fraction digits an
+     * offset of exactly 2.0025s implies adding 0.0005s so the rounded value becomes 2.003s, whereas
+     * rounding to 3 fraction digits an offset of exactly -2.0025s also implies adding 0.0005s
+     * so the rounded value becomes -2.002s.
+     * </p>
+     * @param fractionDigits the number of decimal digits after the decimal point in the seconds number
+     * @return rounded time offset
+     * @since 13.0.3
+     */
+    public TimeOffset getRoundedOffset(final int fractionDigits) {
+
+        // handle special cases
+        if (attoSeconds < 0) {
+            // gather all special cases in one big check to avoid rare multiple tests
+            return ZERO;
+        }
+
+        final long scaling = SCALING[FastMath.min(18, FastMath.max(0, 18 - fractionDigits))];
+        return new TimeOffset(seconds, ((attoSeconds + scaling / 2) / scaling) * scaling);
+
+    }
+
     /** Get the normalized seconds part of the time.
      * @return normalized seconds part of the time (may be negative)
      */
@@ -790,11 +837,11 @@ public class TimeOffset
 
         if (length == 0 || index < length) {
             // decomposition failed, either it is a special case or an unparsable string
-            if (s.equals("-∞")) {
+            if (s.equals(NEGATIVE_INTINITY_STRING)) {
                 return TimeOffset.NEGATIVE_INFINITY;
-            } else if (s.equals("+∞")) {
+            } else if (s.equals(POSITIVE_INFINITY_STRING)) {
                 return TimeOffset.POSITIVE_INFINITY;
-            } else if (s.equalsIgnoreCase("NaN")) {
+            } else if (s.equalsIgnoreCase(NAN_STRING)) {
                 return TimeOffset.NaN;
             } else {
                 throw new OrekitException(OrekitMessages.CANNOT_PARSE_DATA, s);
@@ -806,17 +853,17 @@ public class TimeOffset
         long attoseconds;
         if (exponentSign < 0) {
             // the part before separator must be split into seconds and attoseconds
-            if (exponent >= MULTIPLIERS.length) {
+            if (exponent >= SCALING.length) {
                 seconds = 0L;
-                if (exponent - DIGITS_ATTOS >= MULTIPLIERS.length) {
+                if (exponent - DIGITS_ATTOS >= SCALING.length) {
                     // underflow
                     attoseconds = 0L;
                 } else {
-                    attoseconds = beforeSeparator / MULTIPLIERS[exponent - DIGITS_ATTOS];
+                    attoseconds = beforeSeparator / SCALING[exponent - DIGITS_ATTOS];
                 }
             } else {
-                final long secondsMultiplier    = MULTIPLIERS[exponent];
-                final long attoBeforeMultiplier = MULTIPLIERS[DIGITS_ATTOS - exponent];
+                final long secondsMultiplier    = SCALING[exponent];
+                final long attoBeforeMultiplier = SCALING[DIGITS_ATTOS - exponent];
                 seconds     = beforeSeparator / secondsMultiplier;
                 attoseconds = (beforeSeparator - seconds * secondsMultiplier) * attoBeforeMultiplier;
                 while (digitsAfter + exponent > DIGITS_ATTOS) {
@@ -824,12 +871,12 @@ public class TimeOffset
                     afterSeparator /= 10;
                     digitsAfter--;
                 }
-                final long attoAfterMultiplier = MULTIPLIERS[DIGITS_ATTOS - exponent - digitsAfter];
+                final long attoAfterMultiplier = SCALING[DIGITS_ATTOS - exponent - digitsAfter];
                 attoseconds += afterSeparator * attoAfterMultiplier;
             }
         } else {
             // the part after separator must be split into seconds and attoseconds
-            if (exponent >= MULTIPLIERS.length) {
+            if (exponent >= SCALING.length) {
                 if (beforeSeparator == 0L && afterSeparator == 0L) {
                     return TimeOffset.ZERO;
                 } else if (significandSign < 0) {
@@ -838,16 +885,16 @@ public class TimeOffset
                     return TimeOffset.POSITIVE_INFINITY;
                 }
             } else {
-                final long secondsMultiplier = MULTIPLIERS[exponent];
+                final long secondsMultiplier = SCALING[exponent];
                 seconds = beforeSeparator * secondsMultiplier;
                 if (exponent > digitsAfter) {
-                    seconds += afterSeparator * MULTIPLIERS[exponent - digitsAfter];
+                    seconds += afterSeparator * SCALING[exponent - digitsAfter];
                     attoseconds = 0L;
                 } else {
-                    final long q = afterSeparator / MULTIPLIERS[digitsAfter - exponent];
+                    final long q = afterSeparator / SCALING[digitsAfter - exponent];
                     seconds    += q;
-                    attoseconds = (afterSeparator - q * MULTIPLIERS[digitsAfter - exponent]) *
-                                  MULTIPLIERS[DIGITS_ATTOS - digitsAfter + exponent];
+                    attoseconds = (afterSeparator - q * SCALING[digitsAfter - exponent]) *
+                                  SCALING[DIGITS_ATTOS - digitsAfter + exponent];
                 }
             }
         }
@@ -908,6 +955,39 @@ public class TimeOffset
     @Override
     public int hashCode() {
         return Long.hashCode(seconds) ^ Long.hashCode(attoSeconds);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+        try {
+            if (attoSeconds < 0) {
+                // gather all special cases in one big check to avoid rare multiple tests
+                if (isNaN()) {
+                    return NAN_STRING;
+                } else if (isPositiveInfinity()) {
+                    return POSITIVE_INFINITY_STRING;
+                } else {
+                    return NEGATIVE_INTINITY_STRING;
+                }
+            } else {
+                final StringBuilder builder = new StringBuilder();
+                final TimeOffset abs;
+                if (seconds < 0L) {
+                    builder.append('-');
+                    abs = negate();
+                } else {
+                    abs = this;
+                }
+                SECONDS_FORMATTER.appendTo(builder, abs.seconds);
+                builder.append('.');
+                ATTOSECONDS_FORMATTER.appendTo(builder, abs.attoSeconds);
+                return builder.toString();
+            }
+        } catch (IOException ioe) {
+            // this should never happen
+            throw new OrekitInternalError(ioe);
+        }
     }
 
     /** Local class for summing several instances. */

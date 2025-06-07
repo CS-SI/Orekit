@@ -582,6 +582,20 @@ public class MarshallSolarActivityFutureEstimationTest {
         });
     }
 
+    @Test
+    void testIssue1719() {
+        // GIVEN
+        MarshallSolarActivityFutureEstimation msfe = new MarshallSolarActivityFutureEstimation(
+              MarshallSolarActivityFutureEstimation.DEFAULT_SUPPORTED_NAMES,
+              MarshallSolarActivityFutureEstimation.StrengthLevel.STRONG);
+
+        // WHEN & THEN
+        Assertions.assertDoesNotThrow(() -> {
+            msfe.getAverageFlux(new AbsoluteDate("2025-04-13T23:59:59.999999999999999999Z",
+                                                 TimeScalesFactory.getUTC()));
+        });
+    }
+
     /**
      * This test in a multi-threaded environment would not necessarily fail without the fix (even though it will very likely
      * fail).

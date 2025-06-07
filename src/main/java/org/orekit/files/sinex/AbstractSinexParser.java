@@ -65,30 +65,34 @@ public abstract class AbstractSinexParser<T extends AbstractSinex, P extends Par
                 for (parseInfo.setLine(br.readLine()); parseInfo.getLine() != null; parseInfo.setLine(br.readLine())) {
                     parseInfo.incrementLineNumber();
 
-                    // ignore all comment lines
-                    if (parseInfo.getLine().charAt(0) == '*') {
-                        continue;
-                    }
+                    if (!parseInfo.getLine().isEmpty()) {
 
-                    // find a parser for the current line among the available candidates
-                    for (final LineParser<P> candidate : candidateParsers) {
-                        try {
-                            if (candidate.parseIfRecognized(parseInfo)) {
-                                // candidate successfully parsed the line
-                                candidateParsers = candidate.allowedNextParsers(parseInfo);
-                                continue nextLine;
-                            }
-                        } catch (StringIndexOutOfBoundsException | NumberFormatException e) {
-                            throw new OrekitException(e, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                      parseInfo.getLineNumber(), parseInfo.getName(),
-                                                      parseInfo.getLine());
+                        // ignore all comment lines
+                        if (parseInfo.getLine().charAt(0) == '*') {
+                            continue;
                         }
-                    }
 
-                    // no candidate could parse this line
-                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                              parseInfo.getLineNumber(), parseInfo.getName(),
-                                              parseInfo.getLine());
+                        // find a parser for the current line among the available candidates
+                        for (final LineParser<P> candidate : candidateParsers) {
+                            try {
+                                if (candidate.parseIfRecognized(parseInfo)) {
+                                    // candidate successfully parsed the line
+                                    candidateParsers = candidate.allowedNextParsers(parseInfo);
+                                    continue nextLine;
+                                }
+                            }
+                            catch (StringIndexOutOfBoundsException | NumberFormatException e) {
+                                throw new OrekitException(e, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                          parseInfo.getLineNumber(), parseInfo.getName(),
+                                                          parseInfo.getLine());
+                            }
+                        }
+
+                        // no candidate could parse this line
+                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                  parseInfo.getLineNumber(), parseInfo.getName(),
+                                                  parseInfo.getLine());
+                    }
 
                 }
 

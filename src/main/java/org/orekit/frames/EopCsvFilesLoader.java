@@ -91,14 +91,14 @@ class EopCsvFilesLoader extends AbstractEopLoader implements EopHistoryLoader {
     /** Header for dY. */
     private static final String DY = "dY";
 
-    /** Converter for milliarcseconds. */
-    private static final Unit MAS = Unit.parse("mas");
+    /** Converter for arcseconds. */
+    private static final Unit AS = Unit.parse("as");
 
-    /** Converter for milliarcseconds per day. */
-    private static final Unit MAS_D = Unit.parse("mas/day");
+    /** Converter for arcseconds per day. */
+    private static final Unit AS_D = Unit.parse("as/day");
 
-    /** Converter for milliseconds. */
-    private static final Unit MS = Unit.parse("ms");
+    /** Converter for seconds. */
+    private static final Unit S = Unit.parse("s");
 
     /** Build a loader for IERS EOP csv files.
      * @param supportedNames regular expression for supported files names
@@ -328,25 +328,25 @@ class EopCsvFilesLoader extends AbstractEopLoader implements EopHistoryLoader {
                 configuration = itrfVersionProvider.getConfiguration(name, mjd);
             }
 
-            final double x     = parseField(fields, xPoleColumn,     MAS);
-            final double y     = parseField(fields, yPoleColumn,     MAS);
-            final double xRate = parseField(fields, xRatePoleColumn, MAS_D);
-            final double yRate = parseField(fields, yRatePoleColumn, MAS_D);
-            final double dtu1  = parseField(fields, ut1Column,       MS);
-            final double lod   = parseField(fields, lodColumn,       MS);
+            final double x     = parseField(fields, xPoleColumn,     AS);
+            final double y     = parseField(fields, yPoleColumn,     AS);
+            final double xRate = parseField(fields, xRatePoleColumn, AS_D);
+            final double yRate = parseField(fields, yRatePoleColumn, AS_D);
+            final double dtu1  = parseField(fields, ut1Column,       S);
+            final double lod   = parseField(fields, lodColumn,       S);
 
             if (dxColumn >= 0) {
                 // non-rotatin origin paradigm
-                final double dx = parseField(fields, dxColumn, MAS);
-                final double dy = parseField(fields, dyColumn, MAS);
+                final double dx = parseField(fields, dxColumn, AS);
+                final double dy = parseField(fields, dyColumn, AS);
                 final double[] equinox = getConverter().toEquinox(date, dx, dy);
                 return new EOPEntry(dc.getMJD(), dtu1, lod, x, y, xRate, yRate,
                                     equinox[0], equinox[1], dx, dy,
                                     configuration.getVersion(), date);
             } else {
                 // equinox paradigm
-                final double ddPsi      = parseField(fields, dPsiColumn,     MAS);
-                final double dddEpsilon = parseField(fields, dEpsilonColumn, MAS);
+                final double ddPsi      = parseField(fields, dPsiColumn,     AS);
+                final double dddEpsilon = parseField(fields, dEpsilonColumn, AS);
                 final double[] nro = getConverter().toNonRotating(date, ddPsi, dddEpsilon);
                 return new EOPEntry(dc.getMJD(), dtu1, lod, x, y, xRate, yRate,
                                     ddPsi, dddEpsilon, nro[0], nro[1],

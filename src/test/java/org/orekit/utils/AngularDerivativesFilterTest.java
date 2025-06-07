@@ -17,7 +17,9 @@
 package org.orekit.utils;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
 
 public class AngularDerivativesFilterTest {
 
@@ -58,6 +60,11 @@ public class AngularDerivativesFilterTest {
         } catch (IllegalArgumentException iae) {
             // expected
         }
+    }
+
+    @BeforeEach
+    public void setUp() {
+        Utils.setDataRoot("regular-data");
     }
 
 }

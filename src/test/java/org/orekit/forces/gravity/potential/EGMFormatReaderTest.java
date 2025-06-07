@@ -30,7 +30,7 @@ import org.orekit.utils.Constants;
 public class EGMFormatReaderTest {
 
     @Test
-    void testReadNormalized() {
+    void testReadNormalizedEgm96() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.ascii", true));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
@@ -41,6 +41,20 @@ public class EGMFormatReaderTest {
         Assertions.assertEquals( 0.0,                harmonics.getNormalizedSnm(4, 0), 1.0e-15);
         Assertions.assertEquals( 0.308853169333E-06, harmonics.getNormalizedSnm(4, 4), 1.0e-15);
         Assertions.assertEquals(-0.295301647654E-06, harmonics.getNormalizedCnm(5, 4), 1.0e-15);
+    }
+
+    @Test
+    void testReadNormalizedEgm2008() {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("EGM2008_to2190_TideFree.ascii", true));
+        NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
+        NormalizedSphericalHarmonics harmonics = provider.onDate(AbsoluteDate.FUTURE_INFINITY);
+        Assertions.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
+        Assertions.assertEquals( 0.957161207093473E-06, harmonics.getNormalizedCnm(3, 0), 1.0e-15);
+        Assertions.assertEquals( 0.174811795496002E-06, harmonics.getNormalizedCnm(5, 5), 1.0e-15);
+        Assertions.assertEquals( 0.0,                harmonics.getNormalizedSnm(4, 0), 1.0e-15);
+        Assertions.assertEquals( 0.308803882149194E-06, harmonics.getNormalizedSnm(4, 4), 1.0e-15);
+        Assertions.assertEquals(-0.295328761175629E-06, harmonics.getNormalizedCnm(5, 4), 1.0e-15);
     }
 
     @Test
@@ -144,6 +158,14 @@ public class EGMFormatReaderTest {
     }
 
     @Test
+    void testEGM2008TideFreePattern() {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("dummy_egm2008_tidefree", true));
+        Assertions.assertEquals(TideSystem.TIDE_FREE,
+                            GravityFieldFactory.getUnnormalizedProvider(5, 5).getTideSystem());
+    }
+
+    @Test
     void testWgs84CoefficientOverride()
         {
         final double epsilon = Precision.EPSILON;
@@ -161,6 +183,20 @@ public class EGMFormatReaderTest {
         GravityFieldFactory.getNormalizedProvider(5, 5);
         Assertions.assertEquals(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, wgs84Egm96Reader.getAe(), epsilon);
         Assertions.assertEquals(Constants.WGS84_EARTH_MU, wgs84Egm96Reader.getMu(), epsilon);
+
+        Utils.setDataRoot("potential");
+        EGMFormatReader egm2008Reader = new EGMFormatReader("EGM2008_to2190_TideFree.ascii", true);
+        GravityFieldFactory.addPotentialCoefficientsReader(egm2008Reader);
+        GravityFieldFactory.getNormalizedProvider(5, 5);
+        Assertions.assertEquals(Constants.EGM96_EARTH_EQUATORIAL_RADIUS, egm2008Reader.getAe(), epsilon);
+        Assertions.assertEquals(Constants.EGM96_EARTH_MU, egm2008Reader.getMu(), epsilon);
+
+        Utils.setDataRoot("potential");
+        EGMFormatReader wgs84Egm2008Reader = new EGMFormatReader("EGM2008_to2190_TideFree.ascii", true, true);
+        GravityFieldFactory.addPotentialCoefficientsReader(wgs84Egm2008Reader);
+        GravityFieldFactory.getNormalizedProvider(5, 5);
+        Assertions.assertEquals(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, wgs84Egm2008Reader.getAe(), epsilon);
+        Assertions.assertEquals(Constants.WGS84_EARTH_MU, wgs84Egm2008Reader.getMu(), epsilon);
 
     }
 

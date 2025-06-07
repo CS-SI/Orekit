@@ -18,13 +18,18 @@ package org.orekit.propagation.analytical;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
@@ -36,9 +41,13 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinatesProvider;
+import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeSpanMap;
 
 import java.util.ArrayList;
@@ -338,6 +347,33 @@ public class AggregateBoundedPropagatorTest {
                                 Vector3D.angle(s0.getPosition(),
                                                s0.getAttitude().getRotation().applyInverseTo(Vector3D.MINUS_K)),
                                 3.0e-16);
+
+        final FieldSpacecraftState<Binary64>       fs0 = new FieldSpacecraftState<>(Binary64Field.getInstance(), s0);
+        final AttitudeProvider                     ap2 = p2.getAttitudeProvider();
+        final AttitudeProvider                     apc = actual.getAttitudeProvider();
+        final PVCoordinatesProvider                o   = s0.getOrbit();
+        final AbsoluteDate                         d   = s0.getDate();
+        final Frame                                f   = s0.getFrame();
+        final FieldPVCoordinatesProvider<Binary64> fo  = fs0.getOrbit();
+        final FieldAbsoluteDate<Binary64>          fd  = fs0.getDate();
+        Assertions.assertEquals(0,
+                                Rotation.
+                                    distance(ap2.getAttitude(o, d, f).getRotation(), apc.getAttitude(o, d, f).getRotation()),
+                                1.0e-20);
+        Assertions.assertEquals(0,
+                                Rotation.
+                                    distance(ap2.getAttitudeRotation(o, d, f), apc.getAttitudeRotation(o, d, f)),
+                                1.0e-20);
+        Assertions.assertEquals(0,
+                                FieldRotation.
+                                    distance(ap2.getAttitude(fo, fd, f).getRotation(), apc.getAttitude(fo, fd, f).getRotation()).
+                                    getReal(),
+                                1.0e-20);
+        Assertions.assertEquals(0,
+                                FieldRotation.
+                                    distance(ap2.getAttitudeRotation(fo, fd, f), apc.getAttitudeRotation(fo, fd, f)).
+                                    getReal(),
+                                1.0e-20);
 
         // overriding explicitly the global attitude provider
         actual.setAttitudeProvider(new FrameAlignedProvider(p1.getInitialState().getFrame()));

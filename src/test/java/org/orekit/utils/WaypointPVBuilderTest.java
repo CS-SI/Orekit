@@ -316,4 +316,10 @@ public class WaypointPVBuilderTest {
                 p1.getAltitude() + (p2.getAltitude() + p1.getAltitude()) * (fraction + 1. / 3600.));
         return body.transform(pointPrime).subtract(body.transform(point));
     }
+
+    @BeforeEach
+    public void setUp() {
+        Utils.setDataRoot("regular-data");
+    }
+
 }

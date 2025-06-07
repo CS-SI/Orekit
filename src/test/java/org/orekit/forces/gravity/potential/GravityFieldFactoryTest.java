@@ -41,7 +41,7 @@ public class GravityFieldFactoryTest {
         // we explicitly DON'T call GravityFieldFactory.addPotentialCoefficientsReader
         // to make sure we use only the default readers
         try {
-            GravityFieldFactory.getUnnormalizedProvider(5, 3);
+            GravityFieldFactory.getUnnormalizedProvider(8, 5);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE, oe.getSpecifier());

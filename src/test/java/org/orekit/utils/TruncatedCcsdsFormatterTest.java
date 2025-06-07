@@ -17,7 +17,9 @@
 package org.orekit.utils;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
 
 import java.io.IOException;
 
@@ -72,6 +74,11 @@ public class TruncatedCcsdsFormatterTest {
                 new TruncatedCcsdsFormatter().toString(20210, 300, 260, 900, 450, 600.0));
         Assertions.assertEquals("-2021--3--26T-9:-45:-01.0",
                 new TruncatedCcsdsFormatter().toString(-2021, -3, -26, -9, -45, -1.0));
+    }
+
+    @BeforeEach
+    public void setUp() {
+        Utils.setDataRoot("regular-data");
     }
 
 }

@@ -428,7 +428,7 @@ public class CartesianOrbit extends Orbit {
         final PVCoordinates shiftedPV = KeplerianMotionCartesianUtility.predictPositionVelocity(dt, pvP,
             getPVCoordinates().getVelocity(), getMu());
 
-        if (hasNonKeplerianAcceleration) {
+        if (dt != 0. && hasNonKeplerianAcceleration) {
 
             // extract non-Keplerian part of the initial acceleration
             final double r2 = pvP.getNormSq();

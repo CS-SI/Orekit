@@ -433,7 +433,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             // (perhaps due to a previous propagation)
             setInitialState(stmGenerator.setInitialStateTransitionMatrix(getInitialState(),
                                                                          dsstHarvester.getInitialStateTransitionMatrix()),
-                            getPropagationType());
+                            initialIsOsculating() ? PropagationType.OSCULATING : PropagationType.MEAN);
         }
 
         return stmGenerator;
@@ -488,7 +488,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                     // (perhaps due to a previous propagation)
                     setInitialState(getInitialState().addAdditionalData(span.getData(),
                                                                          getHarvester().getInitialJacobianColumn(span.getData())),
-                                    getPropagationType());
+                                    initialIsOsculating() ? PropagationType.OSCULATING : PropagationType.MEAN);
                 }
             }
 
@@ -698,9 +698,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     public static SpacecraftState computeMeanState(final SpacecraftState osculating,
                                                    final AttitudeProvider attitudeProvider,
                                                    final Collection<DSSTForceModel> forceModels) {
-        final OsculatingToMeanConverter converter = new FixedPointConverter(EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT,
-                                                                            FixedPointConverter.DEFAULT_DAMPING);
-        return computeMeanState(osculating, attitudeProvider, forceModels, converter);
+        return computeMeanState(osculating, attitudeProvider, forceModels, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
     }
 
     /** Conversion from osculating to mean orbit.

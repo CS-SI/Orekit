@@ -194,22 +194,14 @@ class SpacecraftStateTest {
         //          600                     1200                    5.7                   0.024               0.006
         //          900                     3600                   10.6                   0.034               0.02
         // the expected maximum residuals with respect to these models are about 0.4m, 0.5mm/s, 8μm/s² and 3e-6°
-        PolynomialFunction pModel = new PolynomialFunction(new double[] {
-            1.5664070631933846e-01,  7.5504722733047560e-03, -8.2460562451009510e-05,
-            6.9546332080305580e-06, -1.7045365367533077e-09, -4.2187860791066264e-13
-        });
-        PolynomialFunction vModel = new PolynomialFunction(new double[] {
-           -3.5472364019908720e-04,  1.6568103861124980e-05,  1.9637913327830596e-05,
-           -3.4248792843039766e-09, -5.6565135131014254e-12,  1.4730170946808630e-15
-        });
-        PolynomialFunction aModel = new PolynomialFunction(new double[] {
-            3.0731707577766896e-06,  3.9770746399850350e-05,  1.9779039254538660e-09,
-            8.0263328220724900e-12, -1.5600835252366078e-14,  1.1785257001549687e-18
-        });
-        PolynomialFunction rModel = new PolynomialFunction(new double[] {
-           -2.7689062063188115e-06,  1.7406542538258334e-07,  2.5109795349592287e-09,
-            2.0399322661074575e-11,  9.9126348912426750e-15, -3.5015638905729510e-18
-        });
+        PolynomialFunction pModel = new PolynomialFunction(1.5664070631933846e-01, 7.5504722733047560e-03, -8.2460562451009510e-05,
+                6.9546332080305580e-06, -1.7045365367533077e-09, -4.2187860791066264e-13);
+        PolynomialFunction vModel = new PolynomialFunction(-3.5472364019908720e-04, 1.6568103861124980e-05, 1.9637913327830596e-05,
+                -3.4248792843039766e-09, -5.6565135131014254e-12, 1.4730170946808630e-15);
+        PolynomialFunction aModel = new PolynomialFunction(3.0731707577766896e-06, 3.9770746399850350e-05, 1.9779039254538660e-09,
+                8.0263328220724900e-12, -1.5600835252366078e-14, 1.1785257001549687e-18);
+        PolynomialFunction rModel = new PolynomialFunction(-2.7689062063188115e-06, 1.7406542538258334e-07, 2.5109795349592287e-09,
+                2.0399322661074575e-11, 9.9126348912426750e-15, -3.5015638905729510e-18);
 
         AbsoluteDate centerDate = orbit.getDate().shiftedBy(100.0);
         SpacecraftState centerState = propagator.propagate(centerDate);
@@ -217,7 +209,8 @@ class SpacecraftStateTest {
         double maxResidualV = 0;
         double maxResidualA = 0;
         double maxResidualR = 0;
-        for (double dt = 0; dt < 900.0; dt += 5) {
+        final double dtStep = 5;
+        for (double dt = dtStep; dt < 900.0; dt += dtStep) {
             SpacecraftState shifted = centerState.shiftedBy(dt);
             SpacecraftState propagated = propagator.propagate(centerDate.shiftedBy(dt));
             PVCoordinates dpv = new PVCoordinates(propagated.getPVCoordinates(), shifted.getPVCoordinates());
