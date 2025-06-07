@@ -99,6 +99,7 @@
         <action dev="vincent" type="fix" issue="1099">
             Fixed OrbitRelativeFrame definition of ambiguous local orbital frames (CCSDS).
         </action>
+    </release>
     <release version="13.0.3" date="2025-06-07" description="Orekit 13.0.3 is a patch release.
         It fixes several issues related to performances, data loading, and some wrong computation.">
         <action dev="evan" type="fix" issue="1070" due-to="Brianna Aubin">
