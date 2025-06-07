@@ -34,6 +34,7 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
+import org.orekit.forces.drag.AbstractDragForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.inertia.InertialForces;
 import org.orekit.forces.maneuvers.Maneuver;
@@ -43,6 +44,7 @@ import org.orekit.forces.maneuvers.jacobians.MedianDate;
 import org.orekit.forces.maneuvers.jacobians.TriggerDate;
 import org.orekit.forces.maneuvers.trigger.ManeuverTriggerDetector;
 import org.orekit.forces.maneuvers.trigger.ResettableManeuverTriggers;
+import org.orekit.forces.radiation.RadiationForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -76,6 +78,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /** This class propagates {@link org.orekit.orbits.Orbit orbits} using
@@ -645,7 +648,17 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         if (triggerGenerator == null) {
             // this is the first time we need the Jacobian column generator, create it
-            triggerGenerator = new TriggerDate(stmName, driverName, start, maneuver, threshold, isMassInStm);
+            if (isMassInStm) {
+                triggerGenerator = new TriggerDate(stmName, driverName, start, maneuver, threshold, true);
+            } else {
+                final Optional<ForceModel> dragForce = getAllForceModels().stream().filter(AbstractDragForceModel.class::isInstance).findFirst();
+                final Optional<ForceModel> srpForce = getAllForceModels().stream().filter(RadiationForceModel.class::isInstance).findFirst();
+                final List<ForceModel> nonGravitationalForces = new ArrayList<>();
+                dragForce.ifPresent(nonGravitationalForces::add);
+                srpForce.ifPresent(nonGravitationalForces::add);
+                triggerGenerator = new TriggerDate(stmName, driverName, start, maneuver, threshold, false,
+                        nonGravitationalForces.toArray(new ForceModel[0]));
+            }
             mt.addResetter(triggerGenerator);
             final MassDepletionDelay depletionDelay = triggerGenerator.getMassDepletionDelay();
             if (depletionDelay != null) {
