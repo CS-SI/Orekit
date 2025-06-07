@@ -5,7 +5,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>13.0.3-SNAPSHOT</version>
+  <version>13.0.3</version>
   <name>OREKIT</name>
   <url>https://www.orekit.org/</url>
 
