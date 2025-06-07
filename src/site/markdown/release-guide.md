@@ -151,7 +151,7 @@ Several files must be updated to take into account the new version:
 
 Once the files have been updated, commit the changes:
 
-    git add src/site/markdown/*.md
+    git add src/site/markdown/*.md src/site/markdown/*.md.vm
     git commit -m "Updated documentation for the release."
 
 ## 6. Change library version number

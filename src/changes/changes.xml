@@ -20,7 +20,7 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="13.0.3" date="2025-06-06" description="Orekit 13.0.3 is a patch release.
+    <release version="13.0.3" date="2025-06-07" description="Orekit 13.0.3 is a patch release.
         It fixes several issues related to performances, data loading, and some wrong computation.">
         <action dev="evan" type="fix" issue="1070" due-to="Brianna Aubin">
             Update EGM default supported names for EGM 2008 .
