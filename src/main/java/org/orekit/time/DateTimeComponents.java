@@ -16,11 +16,14 @@
  */
 package org.orekit.time;
 
+import java.io.IOException;
 import java.io.Serializable;
 
 import java.util.concurrent.TimeUnit;
 import org.hipparchus.util.FastMath;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.utils.Constants;
+import org.orekit.utils.formatting.FastLongFormatter;
 
 /** Holder for date and time components.
  * <p>This class is a simple holder with no processing methods.</p>
@@ -39,6 +42,16 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      */
     public static final DateTimeComponents JULIAN_EPOCH =
             new DateTimeComponents(DateComponents.JULIAN_EPOCH, TimeComponents.H12);
+
+    /** Format for one 4 digits integer field.
+     * @since 13.0.3
+     */
+    private static final FastLongFormatter PADDED_FOUR_DIGITS_INTEGER = new FastLongFormatter(4, true);
+
+    /** Format for one 2 digits integer field.
+     * @since 13.0.3
+     */
+    private static final FastLongFormatter PADDED_TWO_DIGITS_INTEGER = new FastLongFormatter(2, true);
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20240720L;
@@ -395,7 +408,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      *                       second.
      * @param fractionDigits the number of digits to include after the decimal point in
      *                       the string representation of the seconds. The date and time
-     *                       is first rounded as necessary. {@code fractionDigits} must
+     *                       are first rounded as necessary. {@code fractionDigits} must
      *                       be greater than or equal to {@code 0}.
      * @return string representation of this date, time, and UTC offset
      * @see #toStringRfc3339()
@@ -466,43 +479,54 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      * @see #toStringWithoutUtcOffset()
      */
     public String toStringRfc3339() {
+        final StringBuilder builder = new StringBuilder();
         final DateComponents d = this.getDate();
         final TimeComponents t = this.getTime();
-        // date
-        final String dateString = String.format("%04d-%02d-%02dT",
-                d.getYear(), d.getMonth(), d.getDay());
-        // time
-        final String timeString;
-        if (!t.getSplitSecondsInLocalDay().isZero()) {
-            final String formatted = t.toStringWithoutUtcOffset(18);
-            int last = formatted.length() - 1;
-            while (formatted.charAt(last) == '0') {
-                // we want to remove final zeros
-                --last;
+        try {
+            // date
+            PADDED_FOUR_DIGITS_INTEGER.appendTo(builder, d.getYear());
+            builder.append('-');
+            PADDED_TWO_DIGITS_INTEGER.appendTo(builder, d.getMonth());
+            builder.append('-');
+            PADDED_TWO_DIGITS_INTEGER.appendTo(builder, d.getDay());
+            builder.append('T');
+            // time
+            if (!t.getSplitSecondsInLocalDay().isZero()) {
+                final String formatted = t.toStringWithoutUtcOffset(18);
+                int          last      = formatted.length() - 1;
+                while (formatted.charAt(last) == '0') {
+                    // we want to remove final zeros
+                    --last;
+                }
+                if (formatted.charAt(last) == '.') {
+                    // remove the decimal point if no decimals follow
+                    --last;
+                }
+                builder.append(formatted.substring(0, last + 1));
+            } else {
+                // shortcut for midnight local time
+                builder.append("00:00:00");
             }
-            if (formatted.charAt(last) == '.') {
-                // remove the decimal point if no decimals follow
-                --last;
+            // offset
+            final int    minutesFromUTC = t.getMinutesFromUTC();
+            if (minutesFromUTC == 0) {
+                builder.append("Z");
+            } else {
+                // sign must be accounted for separately because there is no -0 in Java.
+                final String sign         = minutesFromUTC < 0 ? "-" : "+";
+                final int    utcOffset    = FastMath.abs(minutesFromUTC);
+                final int    hourOffset   = utcOffset / 60;
+                final int    minuteOffset = utcOffset % 60;
+                builder.append(sign);
+                PADDED_TWO_DIGITS_INTEGER.appendTo(builder, hourOffset);
+                builder.append(':');
+                PADDED_TWO_DIGITS_INTEGER.appendTo(builder, minuteOffset);
             }
-            timeString = formatted.substring(0, last + 1);
-        } else {
-            // shortcut for midnight local time
-            timeString = "00:00:00";
+            return builder.toString();
+        } catch (IOException ioe) {
+            // this should never happen
+            throw new OrekitInternalError(ioe);
         }
-        // offset
-        final int minutesFromUTC = t.getMinutesFromUTC();
-        final String timeZoneString;
-        if (minutesFromUTC == 0) {
-            timeZoneString = "Z";
-        } else {
-            // sign must be accounted for separately because there is no -0 in Java.
-            final String sign = minutesFromUTC < 0 ? "-" : "+";
-            final int utcOffset = FastMath.abs(minutesFromUTC);
-            final int hourOffset = utcOffset / 60;
-            final int minuteOffset = utcOffset % 60;
-            timeZoneString = sign + String.format("%02d:%02d", hourOffset, minuteOffset);
-        }
-        return dateString + timeString + timeZoneString;
     }
 
 }

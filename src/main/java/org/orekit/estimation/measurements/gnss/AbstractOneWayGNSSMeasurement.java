@@ -77,10 +77,7 @@ public abstract class AbstractOneWayGNSSMeasurement<T extends ObservedMeasuremen
                                          final double baseWeight, final ObservableSatellite local) {
         // Call super constructor
         super(date, range, sigma, baseWeight, Collections.singletonList(local));
-        // The local satellite clock offset affects the measurement
-        addParameterDriver(local.getClockOffsetDriver());
-        addParameterDriver(local.getClockDriftDriver());
-        addParameterDriver(local.getClockAccelerationDriver());
+
         // Initialise fields
         this.remotePV    = remotePV;
         this.remoteClock = remoteClock;

@@ -16,14 +16,17 @@
  */
 package org.orekit.time;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.Constants;
+import org.orekit.utils.formatting.FastLongFormatter;
 
 
 /** Class representing a time within the day broken up as hour,
@@ -48,6 +51,45 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     public static final TimeComponents NaN   = new TimeComponents(0, 0, TimeOffset.NaN);
     // CHECKSTYLE: resume ConstantName
 
+    /** Format for one 2 digits integer field. */
+    private static final FastLongFormatter PADDED_TWO_DIGITS_INTEGER = new FastLongFormatter(2, true);
+
+    /** Formatters for up to 18 digits integer field. */
+    private static final FastLongFormatter[] PADDED_FORMATTERS = new FastLongFormatter[] {
+        null,                            new FastLongFormatter( 1, true), new FastLongFormatter( 2, true),
+        new FastLongFormatter( 3, true), new FastLongFormatter( 4, true), new FastLongFormatter( 5, true),
+        new FastLongFormatter( 6, true), new FastLongFormatter( 7, true), new FastLongFormatter( 8, true),
+        new FastLongFormatter( 9, true), new FastLongFormatter(10, true), new FastLongFormatter(11, true),
+        new FastLongFormatter(12, true), new FastLongFormatter(13, true), new FastLongFormatter(14, true),
+        new FastLongFormatter(15, true), new FastLongFormatter(16, true), new FastLongFormatter(17, true),
+        new FastLongFormatter(18, true)
+    };
+
+    /** Scaling factors used for rounding. */
+    // CHECKSTYLE: stop Indentation check
+    private static final long[] SCALING = new long[] {
+       1000000000000000000L,
+        100000000000000000L,
+         10000000000000000L,
+          1000000000000000L,
+           100000000000000L,
+            10000000000000L,
+             1000000000000L,
+              100000000000L,
+               10000000000L,
+                1000000000L,
+                 100000000L,
+                  10000000L,
+                   1000000L,
+                    100000L,
+                     10000L,
+                      1000L,
+                       100L,
+                        10L,
+                         1L
+    };
+    // CHECKSTYLE: resume Indentation check
+
     /** Wrapping limits for rounding to next minute.
      * @since 13.0
      */
@@ -71,33 +113,6 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         new TimeOffset(59L, 999999999999999950L), // round to 10⁻¹⁶ second
         new TimeOffset(59L, 999999999999999995L)  // round to 10⁻¹⁷ second
     };
-
-    /** Offset values for rounding attoseconds.
-     * @since 13.0
-     */
-    // CHECKSTYLE: stop Indentation check */
-    private static final long[] ROUNDING = new long[] {
-        500000000000000000L, // round to second
-         50000000000000000L, // round to 10⁻¹ second
-          5000000000000000L, // round to 10⁻² second
-           500000000000000L, // round to 10⁻³ second
-            50000000000000L, // round to 10⁻⁴ second
-             5000000000000L, // round to 10⁻⁵ second
-              500000000000L, // round to 10⁻⁶ second
-               50000000000L, // round to 10⁻⁷ second
-                5000000000L, // round to 10⁻⁸ second
-                 500000000L, // round to 10⁻⁹ second
-                  50000000L, // round to 10⁻¹⁰ second
-                   5000000L, // round to 10⁻¹¹ second
-                    500000L, // round to 10⁻¹² second
-                     50000L, // round to 10⁻¹³ second
-                      5000L, // round to 10⁻¹⁴ second
-                       500L, // round to 10⁻¹⁵ second
-                        50L, // round to 10⁻¹⁶ second
-                         5L, // round to 10⁻¹⁷ second
-                         0L, // round to 10⁻¹⁸ second
-    };
-    // CHECKSTYLE: resume Indentation check */
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20240712L;
@@ -600,36 +615,41 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * times, see #590, #591.
      *
      * @param fractionDigits the number of digits to include after the decimal point in the string representation of the
-     *                       seconds. The date and time is first rounded as necessary. {@code fractionDigits} must be
+     *                       seconds. The date and time are first rounded as necessary. {@code fractionDigits} must be
      *                       greater than or equal to {@code 0}.
      * @return string without UTC offset.
      * @since 13.0
      */
     String toStringWithoutUtcOffset(final int fractionDigits) {
 
-        if (second.isFinite()) {
-            // general case for regular times
-            final long      rounding = ROUNDING[FastMath.min(fractionDigits, ROUNDING.length - 1)];
-            final TimeComponents rounded  = new TimeComponents(hour, minute,
-                                                               new TimeOffset(second.getSeconds(),
-                                                                              second.getAttoSeconds() + rounding));
+        try {
             final StringBuilder builder = new StringBuilder();
-            builder.append(String.format("%02d:%02d:%02d",
-                                         rounded.hour, rounded.minute, rounded.second.getSeconds()));
-            if (fractionDigits > 0) {
-                builder.append('.');
-                builder.append(String.format("%018d", rounded.second.getAttoSeconds()), 0, fractionDigits);
+            if (second.isFinite()) {
+                // general case for regular times
+                final TimeComponents rounded = new TimeComponents(hour, minute, second.getRoundedOffset(fractionDigits));
+                PADDED_TWO_DIGITS_INTEGER.appendTo(builder, rounded.hour);
+                builder.append(':');
+                PADDED_TWO_DIGITS_INTEGER.appendTo(builder, rounded.minute);
+                builder.append(':');
+                PADDED_TWO_DIGITS_INTEGER.appendTo(builder, rounded.second.getSeconds());
+                if (fractionDigits > 0) {
+                    builder.append('.');
+                    final int index = FastMath.min(PADDED_FORMATTERS.length - 1, fractionDigits);
+                    PADDED_FORMATTERS[index].appendTo(builder, rounded.second.getAttoSeconds() / SCALING[index]);
+                }
+
+            } else {
+                PADDED_TWO_DIGITS_INTEGER.appendTo(builder, hour);
+                builder.append(':');
+                PADDED_TWO_DIGITS_INTEGER.appendTo(builder, minute);
+                builder.append(":NaN"); // ±∞ can never happen
             }
+
             return builder.toString();
-        } else if (second.isNaN()) {
-            // special handling for NaN
-            return String.format("%02d:%02d:NaN", hour, minute);
-        } else if (second.isNegativeInfinity()) {
-            // special handling for -∞
-            return String.format("%02d:%02d:-∞", hour, minute);
-        } else {
-            // special handling for +∞
-            return String.format("%02d:%02d:+∞", hour, minute);
+
+        } catch (IOException ioe) {
+            // this should never happen
+            throw new OrekitInternalError(ioe);
         }
 
     }
@@ -661,10 +681,20 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @see #toString()
      */
     public String formatUtcOffset() {
-        final int hourOffset = FastMath.abs(minutesFromUTC) / MINUTE;
-        final int minuteOffset = FastMath.abs(minutesFromUTC) % MINUTE;
-        return (minutesFromUTC < 0 ? '-' : '+') +
-                String.format("%02d:%02d", hourOffset, minuteOffset);
+        try {
+            final int           hourOffset   = FastMath.abs(minutesFromUTC) / MINUTE;
+            final int           minuteOffset = FastMath.abs(minutesFromUTC) % MINUTE;
+            final StringBuilder builder      = new StringBuilder();
+            builder.append(minutesFromUTC < 0 ? '-' : '+');
+            PADDED_TWO_DIGITS_INTEGER.appendTo(builder, hourOffset);
+            builder.append(':');
+            PADDED_TWO_DIGITS_INTEGER.appendTo(builder, minuteOffset);
+            return builder.toString();
+        }
+        catch (IOException ioe) {
+            // this should never happen
+            throw new OrekitInternalError(ioe);
+        }
     }
 
     /**

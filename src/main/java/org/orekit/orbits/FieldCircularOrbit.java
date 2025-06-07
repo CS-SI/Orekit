@@ -912,7 +912,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
         final T x      = a.multiply(beta.negate().multiply(ey2).add(1).multiply(cLe).add(beta.multiply(exey).multiply(sLe)).subtract(equEx));
         final T y      = a.multiply(beta.negate().multiply(ex2).add(1).multiply(sLe).add(beta.multiply(exey).multiply(cLe)).subtract(equEy));
 
-        final T factor = getOne().add(getMu()).divide(a).sqrt().divide(exCeyS.negate().add(1));
+        final T factor = (getMu().divide(a).sqrt()).divide(exCeyS.negate().add(1));
         final T xdot   = factor.multiply( beta.multiply(equEy).multiply(exCeyS).subtract(sLe ));
         final T ydot   = factor.multiply( cLe.subtract(beta.multiply(equEx).multiply(exCeyS)));
 
@@ -1115,7 +1115,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
                                                                                 PositionAngleType.MEAN, cachedPositionAngleType, getFrame(),
                                                                                 getDate().shiftedBy(dt), getMu());
 
-        if (hasNonKeplerianRates()) {
+        if (!dt.isZero() && hasNonKeplerianRates()) {
 
             // extract non-Keplerian acceleration from first time derivatives
             final FieldVector3D<T> nonKeplerianAcceleration = nonKeplerianAcceleration();

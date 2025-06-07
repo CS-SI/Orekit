@@ -54,6 +54,7 @@ import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.estimation.measurements.gnss.PhaseMeasurementCreator;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.PredefinedGnssSignal;
+import org.orekit.models.earth.ionosphere.IonosphericDelayModel;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
 import org.orekit.orbits.OrbitType;
@@ -63,6 +64,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 public class IonoModifierTest {
@@ -656,7 +658,7 @@ public class IonoModifierTest {
 
     }
 
-    private static class MockIonosphericModel implements IonosphericModel {
+    private static class MockIonosphericModel implements IonosphericModel, IonosphericDelayModel {
 
         /** Driver for the ionospheric delay.*/
         private final ParameterDriver ionoDelay;
@@ -676,8 +678,23 @@ public class IonoModifierTest {
         }
 
         @Override
+        public double pathDelay(final SpacecraftState state,
+                                final TopocentricFrame baseFrame, final AbsoluteDate receptionDate,
+                                final double frequency, double[] parameters) {
+            return parameters[0];
+        }
+
+        @Override
         public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
                                                            final double frequency, final  T[] parameters) {
+            return parameters[0];
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state,
+                                                               final TopocentricFrame baseFrame,
+                                                               final FieldAbsoluteDate<T> receptionDate,
+                                                               final double frequency, final  T[] parameters) {
             return parameters[0];
         }
 

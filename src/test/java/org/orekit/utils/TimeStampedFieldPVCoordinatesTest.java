@@ -30,6 +30,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
@@ -407,6 +408,11 @@ public class TimeStampedFieldPVCoordinatesTest {
         return new FieldVector3D<>(factory.variable(0, x),
                                    factory.variable(1, y),
                                    factory.variable(2, z));
+    }
+
+    @BeforeEach
+    public void setUp() {
+        Utils.setDataRoot("regular-data");
     }
 
 }

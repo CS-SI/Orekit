@@ -1120,7 +1120,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
                                                                  PositionAngleType.MEAN, cachedPositionAngleType,
                                                                  getFrame(), getDate().shiftedBy(dt), getMu());
 
-        if (hasNonKeplerianRates()) {
+        if (dtS != 0. && hasNonKeplerianRates()) {
 
             // extract non-Keplerian acceleration from first time derivatives
             final Vector3D nonKeplerianAcceleration = nonKeplerianAcceleration();

@@ -29,12 +29,16 @@ import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.SinCos;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.frames.FieldStaticTransform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.metric.messages.ssr.subtype.SsrIm201;
 import org.orekit.gnss.metric.messages.ssr.subtype.SsrIm201Data;
 import org.orekit.gnss.metric.messages.ssr.subtype.SsrIm201Header;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldLegendrePolynomials;
 import org.orekit.utils.LegendrePolynomials;
@@ -54,7 +58,7 @@ import org.orekit.utils.ParameterDriver;
  * @since 11.0
  * @see "IGS State Space Representation (SSR) Format, Version 1.00, October 2020."
  */
-public class SsrVtecIonosphericModel implements IonosphericModel {
+public class SsrVtecIonosphericModel implements IonosphericModel, IonosphericDelayModel {
 
     /** Earth radius in meters (see reference). */
     private static final double EARTH_RADIUS = 6370000.0;
@@ -77,9 +81,22 @@ public class SsrVtecIonosphericModel implements IonosphericModel {
     @Override
     public double pathDelay(final SpacecraftState state, final TopocentricFrame baseFrame,
                             final double frequency, final double[] parameters) {
+        return pathDelay(state, baseFrame, state.getDate(), frequency, parameters);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double pathDelay(final SpacecraftState state,
+                            final TopocentricFrame baseFrame, final AbsoluteDate receptionDate,
+                            final double frequency, final double[] parameters) {
+
+        // we use transform from base frame to inert frame and invert it
+        // because base frame could be peered with inertial frame (hence improving performances with caching)
+        // but the reverse is almost never used
+        final StaticTransform base2Inert = baseFrame.getStaticTransformTo(state.getFrame(), receptionDate);
+        final Vector3D        position   = base2Inert.getInverse().transformPosition(state.getPosition());
 
         // Elevation in radians
-        final Vector3D position  = state.getPosition(baseFrame);
         final double   elevation = position.getDelta();
 
         // Only consider measures above the horizon
@@ -116,12 +133,25 @@ public class SsrVtecIonosphericModel implements IonosphericModel {
     @Override
     public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
                                                        final double frequency, final T[] parameters) {
+        return pathDelay(state, baseFrame, state.getDate(), frequency, parameters);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state,
+                                                           final TopocentricFrame baseFrame, final FieldAbsoluteDate<T> receptionDate,
+                                                           final double frequency, final T[] parameters) {
 
         // Field
         final Field<T> field = state.getDate().getField();
 
+        // we use transform from base frame to inert frame and invert it
+        // because base frame could be peered with inertial frame (hence improving performances with caching)
+        // but the reverse is almost never used
+        final FieldStaticTransform<T> base2Inert = baseFrame.getStaticTransformTo(state.getFrame(), receptionDate);
+        final FieldVector3D<T>        position   = base2Inert.getInverse().transformPosition(state.getPosition());
+
         // Elevation in radians
-        final FieldVector3D<T> position  = state.getPosition(baseFrame);
         final T                elevation = position.getDelta();
 
         // Only consider measures above the horizon

@@ -44,7 +44,7 @@ public class GravityFieldFactory {
     public static final String SHM_FILENAME = "^eigen[-_](\\w)+_coef$";
 
     /** Default regular expression for EGM files. */
-    public static final String EGM_FILENAME = "^egm\\d\\d_to\\d.*$";
+    public static final String EGM_FILENAME = "(?i:egm)\\d{2,4}_to\\d{1,4}.*$";
 
     /** Default regular expression for GRGS files. */
     public static final String GRGS_FILENAME = "^grim\\d_.*$";

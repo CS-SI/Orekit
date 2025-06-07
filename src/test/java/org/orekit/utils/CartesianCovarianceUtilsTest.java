@@ -21,9 +21,11 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.orekit.Utils;
 import org.orekit.frames.*;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.OrbitType;
@@ -95,6 +97,11 @@ class CartesianCovarianceUtilsTest {
         matrix.setEntry(index4, index5, otherEntry);
         matrix.setEntry(index5, index4, otherEntry);
         return matrix;
+    }
+
+    @BeforeEach
+    public void setUp() {
+        Utils.setDataRoot("regular-data");
     }
 
 }

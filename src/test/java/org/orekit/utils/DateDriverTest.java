@@ -17,7 +17,9 @@
 package org.orekit.utils;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
 
 public class DateDriverTest {
@@ -35,6 +37,11 @@ public class DateDriverTest {
         Assertions.assertEquals(0.001, driver.getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-15);
         Assertions.assertEquals(Double.NEGATIVE_INFINITY, driver.getMinValue(), 1.0);
         Assertions.assertEquals(Double.POSITIVE_INFINITY, driver.getMaxValue(), 1.0);
+    }
+
+    @BeforeEach
+    public void setUp() {
+        Utils.setDataRoot("regular-data");
     }
 
 }

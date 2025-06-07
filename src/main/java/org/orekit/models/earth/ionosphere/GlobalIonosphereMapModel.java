@@ -41,7 +41,9 @@ import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -118,7 +120,7 @@ import org.orekit.utils.TimeSpanMap;
  * @author Bryan Cazabonne
  *
  */
-public class GlobalIonosphereMapModel implements IonosphericModel {
+public class GlobalIonosphereMapModel implements IonosphericModel, IonosphericDelayModel {
 
     /** Map of interpolable TEC. */
     private final TimeSpanMap<TECMapPair> tecMap;
@@ -231,14 +233,24 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
     @Override
     public double pathDelay(final SpacecraftState state, final TopocentricFrame baseFrame,
                             final double frequency, final double[] parameters) {
+        return pathDelay(state, baseFrame, state.getDate(), frequency, parameters);
+    }
 
-        // Satellite position in body frame
-        final Frame    bodyFrame = baseFrame.getParentShape().getBodyFrame();
-        final Vector3D satPoint  = state.getPosition(bodyFrame);
+    @Override
+    public double pathDelay(final SpacecraftState state,
+                            final TopocentricFrame baseFrame, final AbsoluteDate receptionDate,
+                            final double frequency, final double[] parameters) {
+
+        // we use transform from body frame to inert frame and invert it
+        // because base frame could be peered with inertial frame (hence improving performances with caching)
+        // but the reverse is almost never used
+        final Frame           bodyFrame  = baseFrame.getParentShape().getBodyFrame();
+        final StaticTransform body2Inert = bodyFrame.getStaticTransformTo(state.getFrame(), receptionDate);
+        final Vector3D        satPoint   = body2Inert.getInverse().transformPosition(state.getPosition());
 
         // Elevation in radians
         final double   elevation = bodyFrame.
-                                   getStaticTransformTo(baseFrame, state.getDate()).
+                                   getStaticTransformTo(baseFrame, receptionDate).
                                    transformPosition(satPoint).
                                    getDelta();
 
@@ -297,14 +309,24 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
     @Override
     public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
                                                            final double frequency, final T[] parameters) {
+        return pathDelay(state, baseFrame, state.getDate(), frequency, parameters);
+    }
 
-        // Satellite position in body frame
-        final Frame            bodyFrame = baseFrame.getParentShape().getBodyFrame();
-        final FieldVector3D<T> satPoint  = state.getPosition(bodyFrame);
+    @Override
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state,
+                                                           final TopocentricFrame baseFrame, final FieldAbsoluteDate<T> receptionDate,
+                                                           final double frequency, final T[] parameters) {
+
+        // we use transform from body frame to inert frame and invert it
+        // because base frame could be peered with inertial frame (hence improving performances with caching)
+        // but the reverse is almost never used
+        final Frame                   bodyFrame  = baseFrame.getParentShape().getBodyFrame();
+        final FieldStaticTransform<T> body2Inert = bodyFrame.getStaticTransformTo(state.getFrame(), receptionDate);
+        final FieldVector3D<T>        satPoint   = body2Inert.getInverse().transformPosition(state.getPosition());
 
         // Elevation in radians
         final T                elevation = bodyFrame.
-                                           getStaticTransformTo(baseFrame, state.getDate()).
+                                           getStaticTransformTo(baseFrame, receptionDate).
                                            transformPosition(satPoint).
                                            getDelta();
 
