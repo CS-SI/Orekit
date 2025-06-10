@@ -456,7 +456,11 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
             final ParameterDriversList selectedOrbitalDrivers = getSelectedOrbitalParametersDriversForBuilder(p);
             final int nbOrbParams = selectedOrbitalDrivers.getNbParams();
             if (nbOrbParams > 0) {
-                final RealMatrix dYdY0 = harvesters[p].getStateTransitionMatrix(evaluationStates[k]);
+                RealMatrix dYdY0 = harvesters[p].getStateTransitionMatrix(evaluationStates[k]);
+                if (dYdY0.getRowDimension() == 7) {
+                    // mass was included in STM propagation, removed it now
+                    dYdY0 = dYdY0.getSubMatrix(0, 5, 0, 5);
+                }
                 final RealMatrix dMdY0 = dMdY.multiply(dYdY0);
                 for (int i = 0; i < dMdY0.getRowDimension(); ++i) {
                     for (int j = orbitsStartColumns[p]; j < orbitsEndColumns[p]; ++j) {
@@ -473,7 +477,11 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
             final ParameterDriversList selectedPropagationDrivers = getSelectedPropagationDriversForBuilder(p);
             final int nbParams = selectedPropagationDrivers.getNbParams();
             if (nbParams > 0) {
-                final RealMatrix dYdPp = harvesters[p].getParametersJacobian(evaluationStates[k]);
+                RealMatrix dYdPp = harvesters[p].getParametersJacobian(evaluationStates[k]);
+                if (dYdPp.getRowDimension() == 7) {
+                    // mass was included in STM propagation, removed it now
+                    dYdPp = dYdPp.getSubMatrix(0, 5, 0, dYdPp.getColumnDimension() - 1);
+                }
                 final RealMatrix dMdPp = dMdY.multiply(dYdPp);
 
                 for (int i = 0; i < dMdPp.getRowDimension(); ++i) {

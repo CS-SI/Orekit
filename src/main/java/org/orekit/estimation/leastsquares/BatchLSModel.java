@@ -18,11 +18,14 @@ package org.orekit.estimation.leastsquares;
 
 import java.util.List;
 
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.RealMatrix;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.PropagatorBuilder;
+import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.utils.ParameterDriversList;
 
 /** Bridge between {@link ObservedMeasurement measurements} and {@link
@@ -53,7 +56,13 @@ public class BatchLSModel extends AbstractBatchLSModel {
     /** {@inheritDoc} */
     @Override
     protected MatricesHarvester configureHarvester(final Propagator propagator) {
-        return propagator.setupMatricesComputation(STM_NAME, null, null);
+        final RealMatrix initialStm;
+        if (propagator instanceof NumericalPropagator) {
+            initialStm = MatrixUtils.createRealIdentityMatrix(7);
+        } else {
+            initialStm = MatrixUtils.createRealIdentityMatrix(6);
+        }
+        return propagator.setupMatricesComputation(STM_NAME, initialStm, null);
     }
 
     /** {@inheritDoc} */
