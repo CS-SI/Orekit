@@ -60,7 +60,7 @@ import java.util.List;
  * state transition, measurement, kalman gain matrices etc.
  * @author Maxime Journot
  */
-public class KalmanModelTest {
+class KalmanModelTest {
 
     /** Orbit type for propagation. */
     private final OrbitType orbitType = OrbitType.CARTESIAN;

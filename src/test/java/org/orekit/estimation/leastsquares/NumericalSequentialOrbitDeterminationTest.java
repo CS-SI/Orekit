@@ -62,7 +62,7 @@ import java.text.ParseException;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public class NumericalSequentialOrbitDeterminationTest extends AbstractOrbitDetermination<NumericalPropagatorBuilder> {
+class NumericalSequentialOrbitDeterminationTest extends AbstractOrbitDetermination<NumericalPropagatorBuilder> {
 
     /** Gravity field. */
     private NormalizedSphericalHarmonicsProvider gravityField;

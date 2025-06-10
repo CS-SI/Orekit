@@ -206,6 +206,7 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
 
     /**
      * Extract Jacobian matrix of state w.r.t. model parameter.
+     * @param harvester matrix harvester
      * @param state state
      * @return jacobian matrix
      * @since 13.1

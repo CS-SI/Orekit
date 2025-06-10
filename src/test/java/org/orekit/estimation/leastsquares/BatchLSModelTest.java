@@ -41,10 +41,10 @@ import org.orekit.utils.ParameterDriversList;
 import java.util.List;
 import java.util.Map;
 
-public class BatchLSModelTest {
+class BatchLSModelTest {
 
     @Test
-    public void testPerfectValue() {
+    void testPerfectValue() {
 
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -111,7 +111,7 @@ public class BatchLSModelTest {
     }
 
     @Test
-    public void testBackwardPropagation() {
+    void testBackwardPropagation() {
 
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 

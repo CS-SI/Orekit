@@ -28,10 +28,10 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class KalmanEstimatorUtilTest {
+class KalmanEstimatorUtilTest {
 
 	@Test
-	public void testDimension() {
+	void testDimension() {
 
 		// Orbital drivers
 		final ParameterDriversList orbital = new ParameterDriversList();
@@ -62,7 +62,7 @@ public class KalmanEstimatorUtilTest {
 	}
 
 	@Test
-	public void testRejectedMeasurement() {
+	void testRejectedMeasurement() {
 		final EstimatedMeasurement<Range> estimated = new EstimatedMeasurement<>(null, 1, 1, new SpacecraftState[1], new TimeStampedPVCoordinates[1]);
 		estimated.setStatus(Status.REJECTED);
 		Assertions.assertNull(KalmanEstimatorUtil.computeInnovationVector(estimated, new double[1]));

@@ -64,7 +64,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
 
-public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDetermination<NumericalPropagatorBuilder> {
+class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDetermination<NumericalPropagatorBuilder> {
 
     /** Gravity field. */
     private NormalizedSphericalHarmonicsProvider gravityField;
@@ -205,7 +205,7 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
 
 
     @Test
-    public void testLageos2Extended() throws URISyntaxException, IOException {
+    void testLageos2Extended() throws URISyntaxException, IOException {
 
         // Position/velocity accuracy
         final double distanceAccuracy = 2.47;
@@ -233,7 +233,7 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
     }
 
     @Test
-    public void testLageos2Unscented() throws URISyntaxException, IOException {
+    void testLageos2Unscented() throws URISyntaxException, IOException {
 
         // Position/velocity accuracy
         final double distanceAccuracy = 2.46;
@@ -404,7 +404,7 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
     }
 
     @Test
-    public void testW3BExtended() throws URISyntaxException, IOException {
+    void testW3BExtended() throws URISyntaxException, IOException {
         // Batch LS result: -0.2154;
         final double dragCoef  = 2.0010;
 

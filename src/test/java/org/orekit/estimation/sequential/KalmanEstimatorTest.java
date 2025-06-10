@@ -59,7 +59,7 @@ import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class KalmanEstimatorTest {
+class KalmanEstimatorTest {
 
     @Test
     void testEstimationStepWithBStarOnly() {
@@ -87,7 +87,7 @@ public class KalmanEstimatorTest {
     }
 
     @Test
-    public void testTwoOrbitalParameters() {
+    void testTwoOrbitalParameters() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -158,7 +158,7 @@ public class KalmanEstimatorTest {
     }
 
     @Test
-    public void testTwoOrbitalParametersMulti() {
+    void testTwoOrbitalParametersMulti() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -300,7 +300,7 @@ public class KalmanEstimatorTest {
     }
 
     @Test
-    public void testWrongProcessCovarianceDimension() {
+    void testWrongProcessCovarianceDimension() {
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -407,7 +407,7 @@ public class KalmanEstimatorTest {
     }
 
     @Test
-    public void testWrongMeasurementCovarianceDimension() {
+    void testWrongMeasurementCovarianceDimension() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -527,7 +527,7 @@ public class KalmanEstimatorTest {
     }
 
     @Test
-    public void testMissingPropagatorBuilder() {
+    void testMissingPropagatorBuilder() {
         try {
             new KalmanEstimatorBuilder().
             build();
@@ -542,7 +542,7 @@ public class KalmanEstimatorTest {
      * Keplerian formalism
      */
     @Test
-    public void testKeplerianPV() {
+    void testKeplerianPV() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -610,7 +610,7 @@ public class KalmanEstimatorTest {
      * Keplerian formalism
      */
     @Test
-    public void testKeplerianRange() {
+    void testKeplerianRange() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -691,7 +691,7 @@ public class KalmanEstimatorTest {
      * Keplerian formalism
      */
     @Test
-    public void testKeplerianRangeWithOnBoardAntennaOffset() {
+    void testKeplerianRangeWithOnBoardAntennaOffset() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -787,7 +787,7 @@ public class KalmanEstimatorTest {
      * Cartesian formalism
      */
     @Test
-    public void testCartesianRangeRate() {
+    void testCartesianRangeRate() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -868,7 +868,7 @@ public class KalmanEstimatorTest {
      * Circular formalism
      */
     @Test
-    public void testCircularAzimuthElevation() {
+    void testCircularAzimuthElevation() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -946,7 +946,7 @@ public class KalmanEstimatorTest {
      * Equinoctial formalism
      */
     @Test
-    public void testEquinoctialRightAscensionDeclination() {
+    void testEquinoctialRightAscensionDeclination() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -1024,7 +1024,7 @@ public class KalmanEstimatorTest {
      *  Keplerian formalism
      */
     @Test
-    public void testKeplerianRangeAzElAndRangeRate() {
+    void testKeplerianRangeAzElAndRangeRate() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -1128,7 +1128,7 @@ public class KalmanEstimatorTest {
      * Perfect range and range rate measurements with a perfect start
      */
     @Test
-    public void testKeplerianRangeAndRangeRate() {
+    void testKeplerianRangeAndRangeRate() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -1213,7 +1213,7 @@ public class KalmanEstimatorTest {
     }
 
     @Test
-    public void testMultiSat() {
+    void testMultiSat() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -1330,7 +1330,7 @@ public class KalmanEstimatorTest {
      * Test of a wrapped exception in a Kalman observer
      */
     @Test
-    public void testWrappedException() {
+    void testWrappedException() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -1378,7 +1378,7 @@ public class KalmanEstimatorTest {
     }
 
     @Test
-    public void testIssue695() {
+    void testIssue695() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
