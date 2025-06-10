@@ -57,7 +57,7 @@ public class RinexObservation extends RinexFile<RinexObservationHeader> {
      * <p>
      * The observations are the same as the ones provided by {@link #getObservationDataSets()},
      * but instead of one single list covering the whole Rinex file, several lists
-     * are made available, all observations withing each list sharing a common date
+     * are made available, all observations within each list sharing a common date
      * </p>
      * @return an iterable view of observations bundled by common date
      * @see #getObservationDataSets()
