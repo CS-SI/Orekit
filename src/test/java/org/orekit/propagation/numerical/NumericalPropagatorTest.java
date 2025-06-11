@@ -38,6 +38,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
@@ -55,6 +56,7 @@ import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
+import org.orekit.forces.maneuvers.ConstantThrustManeuver;
 import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
@@ -1926,6 +1928,26 @@ class NumericalPropagatorTest {
         final Frame frame = FramesFactory.getEME2000();
         final double mu   = Constants.EIGEN5C_EARTH_MU;
         return new CartesianOrbit(pv, frame, mu);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {6, 7})
+    void testClearMatricesComputation(final int stateDimension) {
+        // GIVEN
+        propagator.setupMatricesComputation("stm", MatrixUtils.createRealIdentityMatrix(stateDimension), null);
+        propagator.setInitialState(initialState);
+        propagator.setResetAtEnd(false);
+        final Maneuver maneuver = new ConstantThrustManeuver(initDate, 10, 1., 100, Vector3D.MINUS_I);
+        propagator.addForceModel(maneuver);
+        maneuver.getParameterDriver(ParameterDrivenDateIntervalDetector.MEDIAN_SUFFIX).setSelected(true);
+        maneuver.getParameterDriver(ParameterDrivenDateIntervalDetector.DURATION_SUFFIX).setSelected(true);
+        final AbsoluteDate targetDate = initialState.getDate().shiftedBy(1);
+        propagator.propagate(targetDate);
+        // WHEN
+        propagator.clearMatricesComputation();
+        // THEN
+        Assertions.assertTrue(propagator.getAdditionalDataProviders().isEmpty());
+        Assertions.assertTrue(propagator.getAdditionalDerivativesProviders().isEmpty());
     }
 
     @Test
