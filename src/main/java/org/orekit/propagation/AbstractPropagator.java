@@ -162,6 +162,14 @@ public abstract class AbstractPropagator implements Propagator {
         return harvester;
     }
 
+    /**
+     * Erases the internal matrices harvester.
+     * @since 13.1
+     */
+    public void clearMatricesComputation() {
+        harvester = null;
+    }
+
     /** Create the harvester suitable for propagator.
      * @param stmName State Transition Matrix state name
      * @param initialStm initial State Transition Matrix ∂Y/∂Y₀,

@@ -406,6 +406,14 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         }
     }
 
+    @Override
+    public void clearMatricesComputation() {
+        final List<AdditionalDataProvider<?>> copiedProviders = new ArrayList<>(getAdditionalDataProviders());
+        copiedProviders.stream().filter(AbstractAnalyticalMatricesHarvester.class::isInstance)
+                .forEach(provider -> removeAdditionalDataProvider(provider.getName()));
+        super.clearMatricesComputation();
+    }
+
     /**
      * Get the names of the parameters in the matrix returned by {@link MatricesHarvester#getParametersJacobian}.
      * @return names of the parameters (i.e. columns) of the Jacobian matrix

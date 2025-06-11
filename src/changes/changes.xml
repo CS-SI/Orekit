@@ -24,6 +24,9 @@
         <action dev="serrof" type="add" issue="1750">
             Add way not to reset (Field)PropagationStepRecorder.
         </action>
+        <action dev="serrof" type="add" issue="1749">
+            Add way to clear matrices harvester in propagator.
+        </action>
         <action dev="serrof" type="fix" issue="1748">
             Fix problem in TriggerDate without mass in STM.
         </action>
