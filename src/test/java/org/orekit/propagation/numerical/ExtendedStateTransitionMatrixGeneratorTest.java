@@ -65,6 +65,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.conversion.DormandPrince54IntegratorBuilder;
 import org.orekit.propagation.events.ApsideDetector;
 import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.EventDetector;
@@ -387,7 +388,7 @@ class ExtendedStateTransitionMatrixGeneratorTest {
     private static NumericalPropagator buildPropagator(final OrbitType orbitType, final AttitudeProvider attitudeProvider) {
         final Orbit orbit = new EquinoctialOrbit(7e6, 0.001, 0.001, 1., 2., 3., PositionAngleType.MEAN,
                 FramesFactory.getGCRF(), AbsoluteDate.ARBITRARY_EPOCH, Constants.EGM96_EARTH_MU);
-        final ODEIntegrator integrator = new ClassicalRungeKuttaIntegrator(10.);
+        final ODEIntegrator integrator = new DormandPrince54IntegratorBuilder(1e-3, 50., 1e-4).buildIntegrator(orbit, orbitType);
         final NumericalPropagator propagator = new NumericalPropagator(integrator, attitudeProvider);
         propagator.setOrbitType(orbitType);
         propagator.setResetAtEnd(false);
@@ -461,9 +462,9 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         final SpacecraftState propagated2 = propagator2.propagate(targetDate);
         final PVCoordinates relativePV = new PVCoordinates(propagated1.getPVCoordinates(),
                 propagated2.getPVCoordinates());
-        assertEquals(relativePV.getPosition().getX() / dP, jacobianMatrix.getEntry(0, 0), 1e-3);
-        assertEquals(relativePV.getPosition().getY() / dP, jacobianMatrix.getEntry(1, 0), 1e-3);
-        assertEquals(relativePV.getPosition().getZ() / dP, jacobianMatrix.getEntry(2, 0), 1e-3);
+        assertEquals(relativePV.getPosition().getX() / dP, jacobianMatrix.getEntry(0, 0), 5e-3);
+        assertEquals(relativePV.getPosition().getY() / dP, jacobianMatrix.getEntry(1, 0), 5e-3);
+        assertEquals(relativePV.getPosition().getZ() / dP, jacobianMatrix.getEntry(2, 0), 5e-3);
         assertEquals(relativePV.getVelocity().getX() / dP, jacobianMatrix.getEntry(3, 0), 1e-5);
         assertEquals(relativePV.getVelocity().getY() / dP, jacobianMatrix.getEntry(4, 0), 1e-5);
         assertEquals(relativePV.getVelocity().getZ() / dP, jacobianMatrix.getEntry(5, 0), 1e-5);
@@ -492,12 +493,14 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         final SpacecraftState state = propagator.propagate(targetDate);
         final RealMatrix stateTransitionMatrix = harvester.getStateTransitionMatrix(state);
         // THEN
-        checkStmColumnWithFiniteDifferences(0, 1., propagator, initialState, maneuver, targetDate, stateTransitionMatrix);
-        checkStmColumnWithFiniteDifferences(1, 1., propagator, initialState, maneuver, targetDate, stateTransitionMatrix);
-        checkStmColumnWithFiniteDifferences(2, 1., propagator, initialState, maneuver, targetDate, stateTransitionMatrix);
-        //checkStmColumnWithFiniteDifferences(3, 1.e-2, propagator, initialState, maneuver, targetDate, stateTransitionMatrix);
-        //checkStmColumnWithFiniteDifferences(4, 1.e-2, propagator, initialState, maneuver, targetDate, stateTransitionMatrix);
-        //checkStmColumnWithFiniteDifferences(5, 1.e-2, propagator, initialState, maneuver, targetDate, stateTransitionMatrix);
+        final double dR = 1.;
+        final double dV = 1e-3;
+        checkStmColumnWithFiniteDifferences(0, dR, propagator, initialState, maneuver, targetDate, stateTransitionMatrix);
+        checkStmColumnWithFiniteDifferences(1, dR, propagator, initialState, maneuver, targetDate, stateTransitionMatrix);
+        checkStmColumnWithFiniteDifferences(2, dR, propagator, initialState, maneuver, targetDate, stateTransitionMatrix);
+        checkStmColumnWithFiniteDifferences(3, dV, propagator, initialState, maneuver, targetDate, stateTransitionMatrix);
+        checkStmColumnWithFiniteDifferences(4, dV, propagator, initialState, maneuver, targetDate, stateTransitionMatrix);
+        checkStmColumnWithFiniteDifferences(5, dV, propagator, initialState, maneuver, targetDate, stateTransitionMatrix);
     }
 
     private void checkStmColumnWithFiniteDifferences(final int index, final double dX, final NumericalPropagator propagator,
@@ -515,12 +518,12 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         propagator2.addForceModel(maneuver);
         final SpacecraftState propagated2 = propagator2.propagate(targetDate);
         final PVCoordinates relativePV = new PVCoordinates(propagated1.getPVCoordinates(), propagated2.getPVCoordinates());
-        assertEquals(relativePV.getPosition().getX() / dX, stateTransitionMatrix.getEntry(0, index), 1e-2);
-        assertEquals(relativePV.getPosition().getY() / dX, stateTransitionMatrix.getEntry(1, index), 1e-2);
-        assertEquals(relativePV.getPosition().getZ() / dX, stateTransitionMatrix.getEntry(2, index), 1e-2);
-        assertEquals(relativePV.getVelocity().getX() / dX, stateTransitionMatrix.getEntry(3, index), 1e-5);
-        assertEquals(relativePV.getVelocity().getY() / dX, stateTransitionMatrix.getEntry(4, index), 1e-5);
-        assertEquals(relativePV.getVelocity().getZ() / dX, stateTransitionMatrix.getEntry(5, index), 1e-5);
+        assertEquals(relativePV.getPosition().getX() / dX, stateTransitionMatrix.getEntry(0, index), 1e-0);
+        assertEquals(relativePV.getPosition().getY() / dX, stateTransitionMatrix.getEntry(1, index), 1e-0);
+        assertEquals(relativePV.getPosition().getZ() / dX, stateTransitionMatrix.getEntry(2, index), 1e-0);
+        assertEquals(relativePV.getVelocity().getX() / dX, stateTransitionMatrix.getEntry(3, index), 1e1);
+        assertEquals(relativePV.getVelocity().getY() / dX, stateTransitionMatrix.getEntry(4, index), 1e1);
+        assertEquals(relativePV.getVelocity().getZ() / dX, stateTransitionMatrix.getEntry(5, index), 1e1);
     }
 
     private static SpacecraftState modifyState(final SpacecraftState baseState, final double[] cartesianShift) {

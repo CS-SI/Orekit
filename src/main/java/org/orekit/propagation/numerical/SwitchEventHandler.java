@@ -126,17 +126,20 @@ class SwitchEventHandler implements EventHandler {
 
     private double[] computeDeltaDerivatives(final SpacecraftState stateAtSwitch) {
         final double[] derivatives = timeDerivativesEquations.computeTimeDerivatives(stateAtSwitch);
-        final TimeStampedPVCoordinates pvCoordinates = stateAtSwitch.getPVCoordinates();
-        final double twoThreshold = 2. * switchFieldDetector.getThreshold().getValue();
-        final double dt = isForward ? -twoThreshold : twoThreshold;
-        final TimeStampedPVCoordinates pvCoordinatesBefore = pvCoordinates.shiftedBy(dt);
-        final SpacecraftState stateBeforeSwitch = buildState(stateAtSwitch, pvCoordinatesBefore);
-        final double[] derivativesBefore = timeDerivativesEquations.computeTimeDerivatives(stateBeforeSwitch);
+        final double[] derivativesBefore = computeDerivativesBefore(stateAtSwitch);
         final double[] deltaDerivatives = new double[4];
         for (int i = 0; i < deltaDerivatives.length; i++) {
             deltaDerivatives[i] = derivativesBefore[i + 3] - derivatives[i + 3];
         }
         return deltaDerivatives;
+    }
+
+    private double[] computeDerivativesBefore(final SpacecraftState stateAtSwitch) {
+        final double twoThreshold = 2. * switchFieldDetector.getThreshold().getValue();
+        final double dt = isForward ? -twoThreshold : twoThreshold;
+        final TimeStampedPVCoordinates pvCoordinatesBefore = stateAtSwitch.getPVCoordinates().shiftedBy(dt);
+        final SpacecraftState stateBeforeSwitch = buildState(stateAtSwitch, pvCoordinatesBefore);
+        return timeDerivativesEquations.computeTimeDerivatives(stateBeforeSwitch);
     }
 
     private SpacecraftState buildState(final SpacecraftState templateState,
@@ -182,21 +185,26 @@ class SwitchEventHandler implements EventHandler {
 
     private SpacecraftState updateAdditionalVariables(final SpacecraftState stateAtSwitch,
                                                       final double[] deltaDerivatives) {
-        final RealMatrix product = computeUpdateMatrix(stateAtSwitch, deltaDerivatives);
+        final RealMatrix updateMatrix = computeUpdateMatrix(stateAtSwitch, deltaDerivatives);
         final String stmName = matricesHarvester.getStmName();
         final double[] flatStm = stateAtSwitch.getAdditionalState(stmName);
         final RealMatrix oldStm = MatrixUtils.createRealMatrix(matricesHarvester.toSquareMatrix(flatStm).getData());
-        final RealMatrix stm = product.multiply(oldStm);
+        final RealMatrix stm = updateMatrix.multiply(oldStm);
         final DataDictionary additionalData = new DataDictionary(stateAtSwitch.getAdditionalDataValues());
         additionalData.remove(stmName);
         additionalData.put(stmName, matricesHarvester.toArray(stm.getData()));
+        updateParametersJacobian(stateAtSwitch, updateMatrix, additionalData);
+        return stateAtSwitch.withAdditionalData(additionalData);
+    }
+
+    private void updateParametersJacobian(final SpacecraftState stateAtSwitch, final RealMatrix updateMatrix,
+                                          final DataDictionary additionalData) {
         for (final String parameterName: matricesHarvester.getJacobiansColumnsNames()) {
             final double[] oldParameterDerivatives = stateAtSwitch.getAdditionalState(parameterName);
             additionalData.remove(parameterName);
-            final double[] parameterDerivatives = product.operate(oldParameterDerivatives);
+            final double[] parameterDerivatives = updateMatrix.operate(oldParameterDerivatives);
             additionalData.put(parameterName, parameterDerivatives);
         }
-        return stateAtSwitch.withAdditionalData(additionalData);
     }
 
     private RealMatrix computeUpdateMatrix(final SpacecraftState stateAtSwitch,
