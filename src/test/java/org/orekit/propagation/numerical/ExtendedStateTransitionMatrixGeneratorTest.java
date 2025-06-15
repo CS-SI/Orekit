@@ -22,6 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.linear.RealVector;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
@@ -477,9 +478,9 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         final NumericalPropagator propagator = buildPropagator(OrbitType.CARTESIAN);
         final String stmName = "stm";
         final MatricesHarvester harvester = propagator.setupMatricesComputation(stmName, MatrixUtils.createRealIdentityMatrix(7), null);
-        final double thrustMagnitude = 1e-3;
+        final double thrustMagnitude = 5e-3;
         final Vector3D thrustDirection = Vector3D.PLUS_I;
-        final double isp = 1000;
+        final double isp = 10;
         final PropulsionModel propulsionModel = new BasicConstantThrustPropulsionModel(thrustMagnitude, isp,
                 thrustDirection, "");
         final EventDetectionSettings detectionSettings = EventDetectionSettings.getDefaultEventDetectionSettings();
@@ -495,17 +496,17 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         // THEN
         final double dR = 1.;
         final double dV = 1e-3;
-        checkStmColumnWithFiniteDifferences(0, dR, propagator, initialState, maneuver, targetDate, stateTransitionMatrix);
-        checkStmColumnWithFiniteDifferences(1, dR, propagator, initialState, maneuver, targetDate, stateTransitionMatrix);
-        checkStmColumnWithFiniteDifferences(2, dR, propagator, initialState, maneuver, targetDate, stateTransitionMatrix);
-        checkStmColumnWithFiniteDifferences(3, dV, propagator, initialState, maneuver, targetDate, stateTransitionMatrix);
-        checkStmColumnWithFiniteDifferences(4, dV, propagator, initialState, maneuver, targetDate, stateTransitionMatrix);
-        checkStmColumnWithFiniteDifferences(5, dV, propagator, initialState, maneuver, targetDate, stateTransitionMatrix);
+        checkStmColumnWithFiniteDifferences(0, dR, propagator, initialState, maneuver, targetDate, stateTransitionMatrix.getColumnVector(0));
+        checkStmColumnWithFiniteDifferences(1, dR, propagator, initialState, maneuver, targetDate, stateTransitionMatrix.getColumnVector(1));
+        checkStmColumnWithFiniteDifferences(2, dR, propagator, initialState, maneuver, targetDate, stateTransitionMatrix.getColumnVector(2));
+        checkStmColumnWithFiniteDifferences(3, dV, propagator, initialState, maneuver, targetDate, stateTransitionMatrix.getColumnVector(3));
+        checkStmColumnWithFiniteDifferences(4, dV, propagator, initialState, maneuver, targetDate, stateTransitionMatrix.getColumnVector(4));
+        checkStmColumnWithFiniteDifferences(5, dV, propagator, initialState, maneuver, targetDate, stateTransitionMatrix.getColumnVector(5));
     }
 
     private void checkStmColumnWithFiniteDifferences(final int index, final double dX, final NumericalPropagator propagator,
                                                      final SpacecraftState initialState, final Maneuver maneuver,
-                                                     final AbsoluteDate targetDate, final RealMatrix stateTransitionMatrix) {
+                                                     final AbsoluteDate targetDate, final RealVector stateTransitionMatrixColumn) {
         final double[] cartesianVector = new double[6];
         cartesianVector[index] = -dX/2.;
         final NumericalPropagator propagator1 = buildPropagator(propagator.getOrbitType(), propagator.getAttitudeProvider());
@@ -518,12 +519,12 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         propagator2.addForceModel(maneuver);
         final SpacecraftState propagated2 = propagator2.propagate(targetDate);
         final PVCoordinates relativePV = new PVCoordinates(propagated1.getPVCoordinates(), propagated2.getPVCoordinates());
-        assertEquals(relativePV.getPosition().getX() / dX, stateTransitionMatrix.getEntry(0, index), 1e-0);
-        assertEquals(relativePV.getPosition().getY() / dX, stateTransitionMatrix.getEntry(1, index), 1e-0);
-        assertEquals(relativePV.getPosition().getZ() / dX, stateTransitionMatrix.getEntry(2, index), 1e-0);
-        assertEquals(relativePV.getVelocity().getX() / dX, stateTransitionMatrix.getEntry(3, index), 1e1);
-        assertEquals(relativePV.getVelocity().getY() / dX, stateTransitionMatrix.getEntry(4, index), 1e1);
-        assertEquals(relativePV.getVelocity().getZ() / dX, stateTransitionMatrix.getEntry(5, index), 1e1);
+        assertEquals(relativePV.getPosition().getX() / dX, stateTransitionMatrixColumn.getEntry(0), 1e-0);
+        assertEquals(relativePV.getPosition().getY() / dX, stateTransitionMatrixColumn.getEntry(1), 1e-0);
+        assertEquals(relativePV.getPosition().getZ() / dX, stateTransitionMatrixColumn.getEntry(2), 1e-0);
+        assertEquals(relativePV.getVelocity().getX() / dX, stateTransitionMatrixColumn.getEntry(3), 1e1);
+        assertEquals(relativePV.getVelocity().getY() / dX, stateTransitionMatrixColumn.getEntry(4), 1e1);
+        assertEquals(relativePV.getVelocity().getZ() / dX, stateTransitionMatrixColumn.getEntry(5), 1e1);
     }
 
     private static SpacecraftState modifyState(final SpacecraftState baseState, final double[] cartesianShift) {

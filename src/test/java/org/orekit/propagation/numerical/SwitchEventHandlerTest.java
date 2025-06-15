@@ -80,7 +80,7 @@ class SwitchEventHandlerTest {
         // GIVEN
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
         final Vector3D acceleration = new Vector3D(1, 2, 3);
-        final ForceModel forceModel = new TestForce(acceleration, date);
+        final ForceModel forceModel = new TestForce(acceleration, acceleration, date);
         final ForceModel forceWithDetectors = getForceModelWithWrappedDateDetectors(forceModel, date);
         final NumericalPropagationHarvester harvester = mockHarvester();
         final SwitchEventHandler switchEventHandler = buildSwitchEventHandler(forceWithDetectors, harvester,
@@ -119,11 +119,11 @@ class SwitchEventHandlerTest {
     }
 
     @Test
-    void testResetStateDetectorIndependentOfTime() {
+    void testResetStateDetectorIndependentOfState() {
         // GIVEN
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
         final Vector3D acceleration = Vector3D.MINUS_I;
-        final ForceModel forceModel = new TestForce(acceleration, date);
+        final ForceModel forceModel = new TestForce(Vector3D.ZERO, acceleration, date);
         final ForceModel forceWithDetectors = getForceModelWithWrappedDateDetectors(forceModel, date);
         final NumericalPropagationHarvester harvester = mockHarvester();
         final SwitchEventHandler switchEventHandler = buildSwitchEventHandler(forceWithDetectors, harvester,
@@ -148,8 +148,8 @@ class SwitchEventHandlerTest {
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
         final RealMatrix stm = buildStm();
         final NumericalPropagationHarvester harvester = mockHarvester();
-        final SpacecraftState stateAtSwitch = buildAbsoluteState(date, harvester.toArray(stm.getData()));
-        final ForceModel forceWithDetectors = getForceModelWithoutSwitch(date, stateAtSwitch);
+        final SpacecraftState stateAtSwitch = buildOrbitState(date, harvester.toArray(stm.getData()));
+        final ForceModel forceWithDetectors = getForceModelWithoutSwitch(stateAtSwitch.getPVCoordinates());
         final SwitchEventHandler switchEventHandler = buildSwitchEventHandler(forceWithDetectors, harvester,
                 new ResetDerivativesOnEvent());
         final EventDetector eventDetector = forceWithDetectors.getEventDetectors().collect(Collectors.toList()).get(0);
@@ -172,14 +172,15 @@ class SwitchEventHandlerTest {
         return matrix;
     }
 
-    private static ForceModel getForceModelWithoutSwitch(AbsoluteDate date, SpacecraftState stateAtSwitch) {
-        return getForceModel(date, Vector3D.ZERO, stateAtSwitch);
+    private static ForceModel getForceModelWithoutSwitch(TimeStampedPVCoordinates pvCoordinates) {
+        final Vector3D acceleration = new Vector3D(2, 1);
+        return getForceModel(acceleration, acceleration, pvCoordinates);
     }
 
-    private static ForceModel getForceModel(final AbsoluteDate date,  final Vector3D acceleration,
-                                            final SpacecraftState stateAtSwitch) {
-        final ForceModel forceModel = new TestForce(acceleration, date);
-        final TimeStampedPVCoordinates trivialPV = new TimeStampedPVCoordinates(date, new PVCoordinates());
+    private static ForceModel getForceModel(final Vector3D accelerationBefore, final Vector3D accelerationAfter,
+                                            final TimeStampedPVCoordinates pvCoordinates) {
+        final ForceModel forceModel = new TestForce(accelerationBefore, accelerationAfter, pvCoordinates.getDate());
+        final TimeStampedPVCoordinates trivialPV = new TimeStampedPVCoordinates(pvCoordinates.getDate(), new PVCoordinates());
         return new ForceModelModifier() {
             @Override
             public ForceModel getUnderlyingModel() {
@@ -188,13 +189,13 @@ class SwitchEventHandlerTest {
 
             @Override
             public Stream<EventDetector> getEventDetectors() {
-                return Stream.of(new TimeStampedPVDetector(trivialPV), new TimeStampedPVDetector(stateAtSwitch.getPVCoordinates()));
+                return Stream.of(new TimeStampedPVDetector(trivialPV), new TimeStampedPVDetector(pvCoordinates));
             }
 
             @Override
             public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field) {
                 return Stream.of(new FieldPTimeStampedVDetector<>(field, trivialPV),
-                        new FieldPTimeStampedVDetector<>(field, stateAtSwitch.getPVCoordinates()));
+                        new FieldPTimeStampedVDetector<>(field,  pvCoordinates));
             }
         };
     }
@@ -203,11 +204,12 @@ class SwitchEventHandlerTest {
     void testResetState() {
         // GIVEN
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
-        final Vector3D acceleration = new Vector3D(1, 2, 3);
+        final Vector3D accelerationBefore = Vector3D.MINUS_I;
+        final Vector3D accelerationAfter = new Vector3D(1, 2, 3);
         final RealMatrix stm = buildStm();
         final NumericalPropagationHarvester harvester = mockHarvester();
-        final SpacecraftState stateAtSwitch = buildOrbitState(date, harvester.toArray(stm.getData()));
-        final ForceModel forceWithDetectors = getForceModel(date, acceleration, stateAtSwitch);
+        final SpacecraftState stateAtSwitch = buildAbsoluteState(date, harvester.toArray(stm.getData()));
+        final ForceModel forceWithDetectors = getForceModel(accelerationBefore, accelerationAfter, stateAtSwitch.getPVCoordinates());
         final SwitchEventHandler switchEventHandler = buildSwitchEventHandler(forceWithDetectors, harvester,
                 new ResetDerivativesOnEvent());
         final EventDetector eventDetector = new TimeStampedPVDetector(stateAtSwitch.getPVCoordinates());
@@ -218,10 +220,26 @@ class SwitchEventHandlerTest {
         compareStatesWithoutAdditionalVariables(stateAtSwitch, resetState);
         final GradientField field = GradientField.getField(8);
         final RealMatrix actualStm = harvester.toSquareMatrix(resetState.getAdditionalState(STM_NAME));
-        final RealMatrix expectedStm = computeExpectedStm(stateAtSwitch,
-                new FieldPTimeStampedVDetector<>(field, stateAtSwitch.getPVCoordinates()), acceleration);
+        final FieldPTimeStampedVDetector<Gradient> fieldDetector = new FieldPTimeStampedVDetector<>(field, stateAtSwitch.getPVCoordinates());
+        final double[] derivativesBefore = new double[7];
+        final Vector3D velocity = stateAtSwitch.getPVCoordinates().getVelocity();
+        derivativesBefore[0] = velocity.getX();
+        derivativesBefore[1] = velocity.getY();
+        derivativesBefore[2] = velocity.getZ();
+        derivativesBefore[3] = accelerationBefore.getX();
+        derivativesBefore[4] = accelerationBefore.getY();
+        derivativesBefore[5] = accelerationBefore.getZ();
+        RealMatrix expectedStm = updateStm(stateAtSwitch, stm, fieldDetector, derivativesBefore);
+        final double[] derivativesAfter = derivativesBefore.clone();
+        derivativesAfter[0] = -velocity.getX();
+        derivativesAfter[1] = -velocity.getY();
+        derivativesAfter[2] = -velocity.getZ();
+        derivativesAfter[3] = -accelerationAfter.getX();
+        derivativesAfter[4] = -accelerationAfter.getY();
+        derivativesAfter[5] = -accelerationAfter.getZ();
+        expectedStm = updateStm(stateAtSwitch, expectedStm, fieldDetector, derivativesAfter);
         for (int i = 0; i < 7; i++) {
-            assertArrayEquals(expectedStm.getRow(i), actualStm.getRow(i), 5e-2);
+            assertArrayEquals(expectedStm.getRow(i), actualStm.getRow(i), 1e-7);
         }
     }
 
@@ -231,25 +249,23 @@ class SwitchEventHandlerTest {
         switchEventHandler.eventOccurred(stateAtSwitch, eventDetector, true);
     }
 
-    private static RealMatrix computeExpectedStm(final SpacecraftState state,
+    private static RealMatrix updateStm(final SpacecraftState state, final RealMatrix stm,
                                                  final FieldEventDetector<Gradient> fieldDetector,
-                                                 final Vector3D acceleration) {
-        final NumericalPropagationHarvester harvester = mockHarvester();
+                                                 final double[] derivatives) {
         final Gradient dt = Gradient.variable(8, 7, 0);
-        final RealMatrix stm = harvester.toSquareMatrix(state.getAdditionalState(STM_NAME));
         final RealMatrix augmentedStm = MatrixUtils.createRealMatrix(8, 8);
         augmentedStm.setSubMatrix(stm.getData(), 0, 0);
         final FieldSpacecraftState<Gradient> fieldState = DerivativeStateUtils.buildSpacecraftStateTransitionGradient(state,
-                augmentedStm, null).shiftedBy(dt);
+                augmentedStm,  null).shiftedBy(dt);
         final Gradient g = fieldDetector.g(fieldState);
         final RealMatrix matrixToInverse = MatrixUtils.createRealIdentityMatrix(8);
         matrixToInverse.setRow(7, g.getGradient());
         final RealMatrix inverted = new QRDecomposition(matrixToInverse).getSolver().getInverse();
         final RealMatrix lhs = MatrixUtils.createRealMatrix(8, 8);
         lhs.setSubMatrix(stm.getData(), 0, 0);
-        lhs.setEntry(3, 7, acceleration.getX());
-        lhs.setEntry(4, 7, acceleration.getY());
-        lhs.setEntry(5, 7, acceleration.getZ());
+        for (int i = 0; i < 7; i++) {
+            lhs.setEntry(i, 7, derivatives[i]);
+        }
         final RealMatrix product = lhs.multiply(inverted);
         return product.getSubMatrix(0, 6, 0, 6);
     }
@@ -257,21 +273,21 @@ class SwitchEventHandlerTest {
     private static SwitchEventHandler buildSwitchEventHandler(final ForceModel forceModel,
                                                               final NumericalPropagationHarvester harvester,
                                                               final EventHandler handler) {
-        final NumericalTimeDerivativesEquations equations = new NumericalTimeDerivativesEquations(OrbitType.CARTESIAN,
+        final NumericalTimeDerivativesEquations equations = new NumericalTimeDerivativesEquations(null,
                 null, Collections.singletonList(forceModel));
         final AttitudeProvider attitudeProvider = new FrameAlignedProvider(Rotation.IDENTITY);
         return new SwitchEventHandler(handler, harvester, equations, attitudeProvider);
     }
 
     private static SpacecraftState buildAbsoluteState(final AbsoluteDate date, final double[] stmArray) {
-        final PVCoordinates pvCoordinates = new PVCoordinates();
+        final PVCoordinates pvCoordinates = buildOrbitState(date, stmArray).getPVCoordinates();
         final AbsolutePVCoordinates absolutePVCoordinates = new AbsolutePVCoordinates(FramesFactory.getEME2000(), date,
                 pvCoordinates);
         return new SpacecraftState(absolutePVCoordinates).addAdditionalData(STM_NAME, stmArray);
     }
 
     private static SpacecraftState buildOrbitState(final AbsoluteDate date, final double[] stmArray) {
-        final PVCoordinates pvCoordinates = new PVCoordinates(Vector3D.PLUS_I.scalarMultiply(7e6), Vector3D.MINUS_K.scalarMultiply(7e3));
+        final PVCoordinates pvCoordinates = new PVCoordinates(new Vector3D(7e6, 3e3, -1e2), new Vector3D(-1e2, 7e3, 1e1));
         final CartesianOrbit cartesianOrbit = new CartesianOrbit(new TimeStampedPVCoordinates(date, pvCoordinates),
                 FramesFactory.getEME2000(), Constants.EGM96_EARTH_MU);
         return new SpacecraftState(cartesianOrbit).addAdditionalData(STM_NAME, stmArray);
@@ -379,11 +395,14 @@ class SwitchEventHandlerTest {
 
     private static class TestForce implements ForceModel {
 
-        private final Vector3D switchAcceleration;
+        private final Vector3D accelerationBefore;
+        private final Vector3D accelerationAfter;
         private final AbsoluteDate switchDate;
 
-        TestForce(final Vector3D switchAcceleration, final AbsoluteDate switchDate) {
-            this.switchAcceleration = switchAcceleration;
+        TestForce(final Vector3D accelerationBefore, final Vector3D accelerationAfter,
+                  final AbsoluteDate switchDate) {
+            this.accelerationBefore = accelerationBefore;
+            this.accelerationAfter = accelerationAfter;
             this.switchDate = switchDate;
         }
 
@@ -394,7 +413,7 @@ class SwitchEventHandlerTest {
 
         @Override
         public Vector3D acceleration(SpacecraftState s, double[] parameters) {
-            return s.getDate().isBefore(switchDate) ? Vector3D.ZERO : switchAcceleration;
+            return s.getDate().isBeforeOrEqualTo(switchDate) ? accelerationBefore : accelerationAfter;
         }
 
         @Override
