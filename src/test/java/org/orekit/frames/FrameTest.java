@@ -31,7 +31,6 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
@@ -297,10 +296,9 @@ class FrameTest {
     void testGetStaticTransformIdentity() {
         // GIVEN
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
-        final Frame mockedFrame = Mockito.mock(Frame.class);
-        Mockito.when(mockedFrame.getStaticTransformTo(mockedFrame, date)).thenCallRealMethod();
+        final Frame frame = FramesFactory.getGCRF();
         // WHEN
-        final StaticTransform staticTransform = mockedFrame.getStaticTransformTo(mockedFrame, date);
+        final StaticTransform staticTransform = frame.getStaticTransformTo(frame, date);
         // THEN
         Assertions.assertEquals(staticTransform, staticTransform.getStaticInverse());
     }
