@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.1" date="TBD" description="TBD">
+        <action dev="serrof" type="add" issue="1755">
+            Add Lambert differential correction.
+        </action>
         <action dev="serrof" type="add" issue="1750">
             Add way not to reset (Field)PropagationStepRecorder.
         </action>
