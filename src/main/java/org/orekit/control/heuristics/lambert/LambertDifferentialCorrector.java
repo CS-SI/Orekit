@@ -93,7 +93,7 @@ public class LambertDifferentialCorrector {
     }
 
     /**
-     * Getter for the boundary conditions
+     * Getter for the boundary conditions.
      * @return conditions
      */
     public LambertBoundaryConditions getLambertBoundaryConditions() {
@@ -104,7 +104,7 @@ public class LambertDifferentialCorrector {
      * Setter for the initial mass.
      * @param initialMass initial mass
      */
-    public void setInitialMass(double initialMass) {
+    public void setInitialMass(final double initialMass) {
         this.initialMass = initialMass;
     }
 
@@ -128,7 +128,7 @@ public class LambertDifferentialCorrector {
      * Setter for the position tolerance.
      * @param positionTolerance tolerance
      */
-    public void setPositionTolerance(double positionTolerance) {
+    public void setPositionTolerance(final double positionTolerance) {
         this.positionTolerance = positionTolerance;
     }
 
@@ -136,7 +136,7 @@ public class LambertDifferentialCorrector {
      * Setter for the threshold used in linear system solving.
      * @param thresholdMatrixSolver threshold
      */
-    public void setThresholdMatrixSolver(double thresholdMatrixSolver) {
+    public void setThresholdMatrixSolver(final double thresholdMatrixSolver) {
         this.thresholdMatrixSolver = thresholdMatrixSolver;
     }
 
@@ -152,7 +152,7 @@ public class LambertDifferentialCorrector {
      * Setter for the state transition matrix name.
      * @param stmName name
      */
-    public void setStmName(String stmName) {
+    public void setStmName(final String stmName) {
         this.stmName = stmName;
     }
 
@@ -176,7 +176,7 @@ public class LambertDifferentialCorrector {
      * Setter for the maximum number of iterations.
      * @param maxIter maximum iterations
      */
-    public void setMaxIter(int maxIter) {
+    public void setMaxIter(final int maxIter) {
         this.maxIter = maxIter;
     }
 
@@ -184,7 +184,7 @@ public class LambertDifferentialCorrector {
      * Protected setter for the current iteration number.
      * @param currentIter iteration number
      */
-    protected void setCurrentIter(int currentIter) {
+    protected void setCurrentIter(final int currentIter) {
         this.currentIter = currentIter;
     }
 
@@ -282,7 +282,7 @@ public class LambertDifferentialCorrector {
         final LambertBoundaryConditions boundaryValue = getLambertBoundaryConditions();
         final Frame referenceFrame = boundaryValue.getReferenceFrame();
         final TimeStampedPVCoordinates pvCoordinates = new TimeStampedPVCoordinates(boundaryValue.getInitialDate(),
-          boundaryValue.getInitialPosition(), initialVelocity);
+                boundaryValue.getInitialPosition(), initialVelocity);
         final AttitudeProvider attitudeProvider = propagator.getAttitudeProvider();
         final SpacecraftState baseState;
         if (templateState.isOrbitDefined()) {
@@ -293,7 +293,7 @@ public class LambertDifferentialCorrector {
         } else {
             final AbsolutePVCoordinates absolutePVCoordinates = new AbsolutePVCoordinates(referenceFrame, pvCoordinates);
             final Attitude attitude = attitudeProvider.getAttitude(absolutePVCoordinates,
-              absolutePVCoordinates.getDate(), absolutePVCoordinates.getFrame());
+                    absolutePVCoordinates.getDate(), absolutePVCoordinates.getFrame());
             baseState = new SpacecraftState(absolutePVCoordinates, attitude);
         }
         final DataDictionary additionalData = new DataDictionary(templateState.getAdditionalDataValues());
@@ -334,7 +334,7 @@ public class LambertDifferentialCorrector {
             final Orbit initialOrbit = orbitType.convertType(initialState.getOrbit());
             final RealMatrix initialJacobianCartesian = computeJacobianWrtCartesian(initialOrbit);
             final RealMatrix terminalJacobianOrbital = computeJacobianWrtOrbitalParameters(
-              terminalState.getOrbit());
+                    terminalState.getOrbit());
             return terminalJacobianOrbital.multiply(stm).multiply(initialJacobianCartesian);
         } else {
             return stm;
