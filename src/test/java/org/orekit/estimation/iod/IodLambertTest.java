@@ -18,11 +18,13 @@
 package org.orekit.estimation.iod;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.control.heuristics.lambert.LambertSolver;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
@@ -61,6 +63,24 @@ import java.util.List;
  *
  */
 public class IodLambertTest {
+
+    @Deprecated
+    @Test
+    void testSolveLambertPb() {
+        // GIVEN
+        final IodLambert iodLambert = new IodLambert(1.);
+        final double r1 = 1.;
+        final double r2 = 1.;
+        final double tof = 0.1;
+        final double theta = 2.;
+        final double[] v = new double[2];
+        // WHEN
+        iodLambert.solveLambertPb(r1, r2, theta, tof, 0, v);
+        // THEN
+        final Vector2D solution = LambertSolver.solveNormalized2D(r1, r2, theta, tof, 0);
+        Assertions.assertEquals(solution.getX(), v[0]);
+        Assertions.assertEquals(solution.getY(), v[1]);
+    }
 
     @Test
     public void testLambert() {
