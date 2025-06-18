@@ -44,23 +44,22 @@ class LambertSolverTest {
     @ParameterizedTest
     @ValueSource(doubles = {-1e4, 1e5, 1e6, 1e7})
     void testSolveGeoTimes(final double timeOfFlight) {
-        testSolveGeo(timeOfFlight, 0.1, true,  1);
+        testSolveGeo(timeOfFlight, 0.1, true);
     }
 
     @ParameterizedTest
     @ValueSource(doubles = {0.1, 0.2, 0.3})
     void testSolveGeoLongitude(final double longitude) {
-        testSolveGeo(Constants.JULIAN_DAY * 1.5, longitude, true,  1);
+        testSolveGeo(Constants.JULIAN_DAY * 1.5, longitude, true);
     }
 
     @ParameterizedTest
     @ValueSource(booleans =  {true, false})
     void testSolveGeoDirection(final boolean posigrade) {
-        testSolveGeo(1e8, 0.1, posigrade,  1);
+        testSolveGeo(1e8, 0.1, posigrade);
     }
 
-    private void testSolveGeo(final double timeOfFlight, final double longitude2, final boolean posigrade,
-                              final double tolerance) {
+    private void testSolveGeo(final double timeOfFlight, final double longitude2, final boolean posigrade) {
         // GIVEN
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
         final double latitude = 0.;
@@ -75,14 +74,15 @@ class LambertSolverTest {
         final LambertSolver solver = new LambertSolver(orbit2.getMu());
         final int nRev = (int) FastMath.floor(timeOfFlight / orbit1.getKeplerianPeriod());
         // WHEN
-        final LambertBoundaryVelocities solution = solver.solve(posigrade, nRev, orbit1.getPosition(),
-                orbit1.getDate(), orbit2.getPosition(), orbit2.getDate());
+        final LambertBoundaryConditions boundaryConditions = new LambertBoundaryConditions(orbit1.getDate(),
+                orbit1.getPosition(), orbit2.getDate(), orbit2.getPosition(), orbit2.getFrame());
+        final LambertBoundaryVelocities solution = solver.solve(posigrade, nRev, boundaryConditions);
         // THEN
         final Orbit lambertOrbit = new CartesianOrbit(new TimeStampedPVCoordinates(orbit1.getDate(), orbit1.getPosition(), solution.getInitialVelocity()),
                 orbit1.getFrame(), orbit1.getMu());
         final KeplerianPropagator propagator = new  KeplerianPropagator(lambertOrbit);
         final Orbit propagatedOrbit = propagator.propagateOrbit(orbit2.getDate());
-        assertArrayEquals(orbit2.getPosition().toArray(), propagatedOrbit.getPosition().toArray(), tolerance);
+        assertArrayEquals(orbit2.getPosition().toArray(), propagatedOrbit.getPosition().toArray(), 1.);
     }
 
     private static Orbit buildOrbitFromGeodetic(final OneAxisEllipsoid ellipsoid,

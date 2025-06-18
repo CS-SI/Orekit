@@ -18,6 +18,7 @@ package org.orekit.estimation.iod;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
+import org.orekit.control.heuristics.lambert.LambertBoundaryConditions;
 import org.orekit.control.heuristics.lambert.LambertBoundaryVelocities;
 import org.orekit.control.heuristics.lambert.LambertSolver;
 import org.orekit.errors.OrekitException;
@@ -167,7 +168,9 @@ public class IodLambert {
             throw new OrekitException(OrekitMessages.NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS, t1, t2, -tau);
         }
         final LambertSolver solver = new LambertSolver(mu);
-        final LambertBoundaryVelocities velocities = solver.solve(posigrade, nRev, p1, t1, p2, t2);
+        final LambertBoundaryConditions boundaryConditions = new LambertBoundaryConditions(t1, p1, t2, p2,
+                frame);
+        final LambertBoundaryVelocities velocities = solver.solve(posigrade, nRev, boundaryConditions);
         if (velocities == null) {
             return null;
         } else {

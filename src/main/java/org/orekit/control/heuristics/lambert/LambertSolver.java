@@ -20,7 +20,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.util.FastMath;
 import org.orekit.orbits.KeplerianMotionCartesianUtility;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
 /**
@@ -35,6 +34,7 @@ import org.orekit.utils.PVCoordinates;
  * </p>
  * @author Joris Olympio
  * @see LambertBoundaryConditions
+ * @see LambertBoundaryVelocities
  * @since 13.1
  */
 public class LambertSolver {
@@ -75,23 +75,23 @@ public class LambertSolver {
      * </p>
      * @param posigrade flag indicating the direction of motion
      * @param nRev      number of revolutions
-     * @param p1        position vector 1
-     * @param t1        date of observation 1
-     * @param p2        position vector 2
-     * @param t2        date of observation 2
+     * @param boundaryConditions Lambert problem boundary conditions
      * @return  an initial Keplerian orbit estimate at the first observation date t1
      */
     public LambertBoundaryVelocities solve(final boolean posigrade, final int nRev,
-                                           final Vector3D p1, final AbsoluteDate t1,
-                                           final Vector3D p2, final AbsoluteDate t2) {
-
+                                           final LambertBoundaryConditions boundaryConditions) {
+        final Vector3D p1 = boundaryConditions.getInitialPosition();
+        final Vector3D p2 = boundaryConditions.getTerminalPosition();
         final double r1 = p1.getNorm();
         final double r2 = p2.getNorm();
-        final double tau = t2.durationFrom(t1); // in seconds
+        final double tau = boundaryConditions.getTerminalDate().durationFrom(boundaryConditions.getInitialDate());
 
         // deal with backward case recursively
         if (tau < 0.0) {
-            final LambertBoundaryVelocities solutionForward = solve(posigrade, nRev, p2, t2, p1, t1);
+            final LambertBoundaryConditions backwardConditions = new LambertBoundaryConditions(boundaryConditions.getTerminalDate(),
+                    boundaryConditions.getTerminalPosition(), boundaryConditions.getInitialDate(), boundaryConditions.getInitialPosition(),
+                    boundaryConditions.getReferenceFrame());
+            final LambertBoundaryVelocities solutionForward = solve(posigrade, nRev, backwardConditions);
             if (solutionForward != null) {
                 return new LambertBoundaryVelocities(solutionForward.getTerminalVelocity(),
                         solutionForward.getInitialVelocity());
