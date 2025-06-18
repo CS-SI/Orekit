@@ -33,6 +33,7 @@ import org.orekit.utils.PVCoordinates;
  *  Lancaster, E.R. and Blanchard, R.C., A Unified Form of Lambert’s Theorem, Goddard Space Flight Center, 1968.
  * </p>
  * @author Joris Olympio
+ * @author Romain Serra
  * @see LambertBoundaryConditions
  * @see LambertBoundaryVelocities
  * @since 13.1
