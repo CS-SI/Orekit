@@ -19,6 +19,7 @@ package org.orekit.control.heuristics.lambert;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.Utils;
@@ -40,6 +41,19 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 import static org.junit.jupiter.api.Assertions.*;
 
 class LambertSolverTest {
+
+    @Test
+    void testSolveFailure() {
+        // GIVEN
+        final LambertSolver solver = new LambertSolver(1.);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final LambertBoundaryConditions boundaryConditions = new LambertBoundaryConditions(date,
+                Vector3D.PLUS_I, date.shiftedBy(1), Vector3D.PLUS_J, FramesFactory.getEME2000());
+        // WHEN
+        final LambertBoundaryVelocities solution = solver.solve(true, 10, boundaryConditions);
+        // THEN
+        assertNull(solution);
+    }
 
     @ParameterizedTest
     @ValueSource(doubles = {-1e4, 1e5, 1e6, 1e7})

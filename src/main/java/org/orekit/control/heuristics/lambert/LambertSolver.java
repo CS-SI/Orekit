@@ -50,7 +50,7 @@ public class LambertSolver {
         this.mu = mu;
     }
 
-    /** Estimate a Keplerian orbit given two position vectors and a duration.
+    /** Solve for the corresponding velocity vectors given two position vectors and a duration.
      * <p>
      * The logic for setting {@code posigrade} and {@code nRev} is that the
      * sweep angle Δυ travelled by the object between {@code t1} and {@code t2} is
@@ -76,7 +76,7 @@ public class LambertSolver {
      * @param posigrade flag indicating the direction of motion
      * @param nRev      number of revolutions
      * @param boundaryConditions Lambert problem boundary conditions
-     * @return  an initial Keplerian orbit estimate at the first observation date t1
+     * @return boundary velocity vectors
      */
     public LambertBoundaryVelocities solve(final boolean posigrade, final int nRev,
                                            final LambertBoundaryConditions boundaryConditions) {
@@ -153,8 +153,8 @@ public class LambertSolver {
      * @param mRev number of revs
      * @return velocity at departure in (T, N) basis. Is Vector2D.NaN if solving fails
      */
-    public Vector2D solveNormalized2D(final double r1, final double r2, final double dth, final double tau,
-                                      final int mRev) {
+    public static Vector2D solveNormalized2D(final double r1, final double r2, final double dth, final double tau,
+                                             final int mRev) {
         // decide whether to use the left or right branch (for multi-revolution
         // problems), and the long- or short way.
         final boolean leftbranch = dth < FastMath.PI;
@@ -320,8 +320,8 @@ public class LambertSolver {
      * @param chord      chord of the arc of orbit
      * @return the time of flight for the given arc of orbit
      */
-    private double timeOfFlight(final double x, final int longway, final int mrev, final double minSma,
-                                final double speri, final double chord) {
+    private static double timeOfFlight(final double x, final int longway, final int mrev, final double minSma,
+                                       final double speri, final double chord) {
 
         final double a = minSma / (1 - x * x);
 

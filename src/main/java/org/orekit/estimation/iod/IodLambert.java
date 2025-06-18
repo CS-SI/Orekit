@@ -193,8 +193,7 @@ public class IodLambert {
      */
     boolean solveLambertPb(final double r1, final double r2, final double dth, final double tau,
                            final int mRev, final double[] V1) {
-        final LambertSolver solver = new LambertSolver(mu);
-        final Vector2D solution = solver.solveNormalized2D(r1, r2, dth, tau, mRev);
+        final Vector2D solution = LambertSolver.solveNormalized2D(r1, r2, dth, tau, mRev);
         if (solution == Vector2D.NaN) {
             return false;
         } else {

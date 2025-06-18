@@ -94,9 +94,6 @@ public class IodGooding {
     /** factor for FD. */
     private double facFiniteDiff;
 
-    /** Simple Lambert's problem solver. */
-    private LambertSolver lambert;
-
     /**
      * Constructor.
      *
@@ -389,9 +386,6 @@ public class IodGooding {
         R = FastMath.max(rho1init, rho3init);
         V = FastMath.sqrt(mu / R);
         T = R / V;
-
-        // Initialize Lambert's problem solver for non-dimensional units.
-        lambert = new LambertSolver(1.);
 
         this.vObserverPosition1 = O1.scalarMultiply(1. / R);
         this.vObserverPosition2 = O2.scalarMultiply(1. / R);
@@ -737,7 +731,7 @@ public class IodGooding {
 
         // Solve the Lambert's problem to get the velocities at endpoints
         // work with non-dimensional units (MU=1)
-        final Vector2D v1 = lambert.solveNormalized2D(R1, R3, TH, T13, nRev);
+        final Vector2D v1 = LambertSolver.solveNormalized2D(R1, R3, TH, T13, nRev);
         final double[] V1 = v1.toArray();
 
         if (v1 != Vector2D.NaN) {
