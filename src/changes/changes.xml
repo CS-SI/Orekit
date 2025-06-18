@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.1" date="TBD" description="TBD">
+        <action dev="serrof" type="update" issue="1756">
+            Move Lambert solver in dedicated package and wrap it for IOD.
+        </action>
         <action dev="serrof" type="add" issue="1755">
             Add Lambert differential correction.
         </action>
