@@ -16,10 +16,17 @@
  */
 package org.orekit.control.heuristics.lambert;
 
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
+import org.hipparchus.linear.DecompositionSolver;
+import org.hipparchus.linear.LUDecomposition;
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.orekit.orbits.KeplerianMotionCartesianUtility;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
 /**
@@ -341,5 +348,81 @@ public class LambertSolver {
         }
 
         return tof;
+    }
+
+    /**
+     * Computes the 6x8 Jacobian matrix of the Lambert solution.
+     * The rows represent the initial and terminal velocity vectors.
+     * The columns represent the parameters: initial time, initial position, terminal time, terminal velocity.
+     * <p>
+     * Reference:
+     * Di Lizia, P., Armellin, R., Zazzera, F. B., & Berz, M.
+     * High Order Expansion of the Solution of Two-Point Boundary Value Problems using Differential Algebra:
+     * Applications to Spacecraft Dynamics.
+     * </p>
+     * @param posigrade direction flag
+     * @param nRev number of revolutions
+     * @param boundaryConditions Lambert boundary conditions
+     * @return Jacobian matrix
+     */
+    public RealMatrix computeJacobian(final boolean posigrade, final int nRev,
+                                      final LambertBoundaryConditions boundaryConditions) {
+        final LambertBoundaryVelocities velocities = solve(posigrade, nRev, boundaryConditions);
+        if (velocities != null) {
+            return computeNonTrivialCase(boundaryConditions, velocities);
+        } else {
+            final RealMatrix nanMatrix = MatrixUtils.createRealMatrix(8, 8);
+            for (int i = 0; i < nanMatrix.getRowDimension(); i++) {
+                for (int j = 0; j < nanMatrix.getColumnDimension(); j++) {
+                    nanMatrix.setEntry(i, j, Double.NaN);
+                }
+            }
+            return nanMatrix;
+        }
+    }
+
+    /**
+     * Compute Jacobian matrix assuming there is a solution.
+     * @param boundaryConditions Lambert boundary conditions
+     * @param velocities Lambert solution
+     * @return Jacobian matrix
+     */
+    private RealMatrix computeNonTrivialCase(final LambertBoundaryConditions boundaryConditions,
+                                             final LambertBoundaryVelocities velocities) {
+        // propagate with automatic differentiation, using initial position as independent variables
+        final int freeParameters = 8;
+        final Vector3D nominalInitialPosition = boundaryConditions.getInitialPosition();
+        final FieldVector3D<Gradient> initialPosition = new FieldVector3D<>(Gradient.variable(freeParameters, 5, nominalInitialPosition.getX()),
+                Gradient.variable(freeParameters, 6, nominalInitialPosition.getY()),
+                Gradient.variable(freeParameters, 7, nominalInitialPosition.getZ()));
+        final Vector3D nominalInitialVelocity = velocities.getInitialVelocity();
+        final FieldVector3D<Gradient> initialVelocity = new FieldVector3D<>(Gradient.variable(freeParameters, 1, nominalInitialVelocity.getX()),
+                Gradient.variable(freeParameters, 2, nominalInitialVelocity.getY()),
+                Gradient.variable(freeParameters, 3, nominalInitialVelocity.getZ()));
+        final double dt = boundaryConditions.getTerminalDate().durationFrom(boundaryConditions.getInitialDate());
+        final Gradient fieldDt = Gradient.variable(freeParameters, 4, dt).subtract(Gradient.variable(freeParameters, 0, 0));
+        final FieldPVCoordinates<Gradient> terminalPV = KeplerianMotionCartesianUtility.predictPositionVelocity(fieldDt,
+                initialPosition, initialVelocity, fieldDt.newInstance(mu));
+        // fill in intermediate Jacobian matrix
+        final RealMatrix intermediate = MatrixUtils.createRealMatrix(6, freeParameters);
+        final FieldVector3D<Gradient> terminalVelocity = terminalPV.getVelocity();
+        intermediate.setRow(0, initialVelocity.getX().getGradient());
+        intermediate.setRow(1, initialVelocity.getY().getGradient());
+        intermediate.setRow(2, initialVelocity.getZ().getGradient());
+        intermediate.setRow(3, terminalVelocity.getX().getGradient());
+        intermediate.setRow(4, terminalVelocity.getY().getGradient());
+        intermediate.setRow(5, terminalVelocity.getZ().getGradient());
+        // swap variables (position becomes dependent)
+        final RealMatrix matrixToInvert = MatrixUtils.createRealIdentityMatrix(freeParameters);
+        matrixToInvert.setRow(1, initialPosition.getX().getGradient());
+        matrixToInvert.setRow(2, initialPosition.getY().getGradient());
+        matrixToInvert.setRow(3, initialPosition.getZ().getGradient());
+        final FieldVector3D<Gradient> terminalPosition = terminalPV.getPosition();
+        matrixToInvert.setRow(5, terminalPosition.getX().getGradient());
+        matrixToInvert.setRow(6, terminalPosition.getY().getGradient());
+        matrixToInvert.setRow(7, terminalPosition.getZ().getGradient());
+        final DecompositionSolver solver = new LUDecomposition(matrixToInvert).getSolver();
+        final RealMatrix inverse = solver.getInverse();
+        return intermediate.multiply(inverse);
     }
 }
