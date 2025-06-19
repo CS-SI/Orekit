@@ -81,6 +81,10 @@ public class LambertSolver {
      * one period after {@code t1}, {@code posigrade} should be {@code false} and
      * {@code nRev} should be 0.
      * </p>
+     * <p>
+     * If solving fails completely, null is returned.
+     * If only the computation of terminal velocity fails, a partial pair of velocities is returned (with some NaNs).
+     * </p>
      * @param posigrade flag indicating the direction of motion
      * @param nRev      number of revolutions
      * @param boundaryConditions Lambert problem boundary conditions
@@ -138,14 +142,19 @@ public class LambertSolver {
             }
 
             // velocity vector at P1
-            final Vector3D Vel1 = new Vector3D(V * Vdep[0] / r1, p1,
-                    V * Vdep[1] / RT, Pt);
+            final Vector3D Vel1 = new Vector3D(V * Vdep[0] / r1, p1,V * Vdep[1] / RT, Pt);
 
             // propagate to get terminal velocity
-            final PVCoordinates pv2 = KeplerianMotionCartesianUtility.predictPositionVelocity(tau, p1, Vel1, mu);
+            Vector3D terminalVelocity;
+            try {
+                final PVCoordinates pv2 = KeplerianMotionCartesianUtility.predictPositionVelocity(tau, p1, Vel1, mu);
+                terminalVelocity = pv2.getVelocity();
+            } catch (final Exception exception) {  // failure can happen for hyperbolic orbits
+                terminalVelocity = Vector3D.NaN;
+            }
 
             // form output
-            return new LambertBoundaryVelocities(Vel1, pv2.getVelocity());
+            return new LambertBoundaryVelocities(Vel1, terminalVelocity);
         }
 
         return null;
@@ -351,7 +360,7 @@ public class LambertSolver {
     }
 
     /**
-     * Computes the 6x8 Jacobian matrix of the Lambert solution.
+     * Computes the Jacobian matrix of the Lambert solution.
      * The rows represent the initial and terminal velocity vectors.
      * The columns represent the parameters: initial time, initial position, terminal time, terminal velocity.
      * <p>
