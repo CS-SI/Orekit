@@ -17,6 +17,7 @@
 package org.orekit.control.heuristics.lambert;
 
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
@@ -142,14 +143,14 @@ public class LambertSolver {
             }
 
             // velocity vector at P1
-            final Vector3D Vel1 = new Vector3D(V * Vdep[0] / r1, p1,V * Vdep[1] / RT, Pt);
+            final Vector3D Vel1 = new Vector3D(V * Vdep[0] / r1, p1, V * Vdep[1] / RT, Pt);
 
             // propagate to get terminal velocity
             Vector3D terminalVelocity;
             try {
                 final PVCoordinates pv2 = KeplerianMotionCartesianUtility.predictPositionVelocity(tau, p1, Vel1, mu);
                 terminalVelocity = pv2.getVelocity();
-            } catch (final Exception exception) {  // failure can happen for hyperbolic orbits
+            } catch (final MathIllegalStateException exception) {  // failure can happen for hyperbolic orbits
                 terminalVelocity = Vector3D.NaN;
             }
 
