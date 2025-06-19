@@ -366,7 +366,7 @@ public class LambertSolver {
      * The columns represent the parameters: initial time, initial position, terminal time, terminal velocity.
      * <p>
      * Reference:
-     * Di Lizia, P., Armellin, R., Zazzera, F. B., & Berz, M.
+     * Di Lizia, P., Armellin, R., Zazzera, F. B., and Berz, M.
      * High Order Expansion of the Solution of Two-Point Boundary Value Problems using Differential Algebra:
      * Applications to Spacecraft Dynamics.
      * </p>
