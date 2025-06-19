@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.1" date="TBD" description="TBD">
+        <action dev="serrof" type="add" issue="1758">
+            Add durationFrom with TimeStamped in FieldTimeStamped.
+        </action>
         <action dev="serrof" type="update" issue="1757">
             Add Jacobian matrix to Lambert solver.
         </action>
