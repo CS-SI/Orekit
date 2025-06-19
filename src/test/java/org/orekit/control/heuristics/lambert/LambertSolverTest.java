@@ -17,6 +17,7 @@
 package org.orekit.control.heuristics.lambert;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,8 +52,10 @@ class LambertSolverTest {
                 Vector3D.PLUS_I, date.shiftedBy(1), Vector3D.PLUS_J, FramesFactory.getEME2000());
         // WHEN
         final LambertBoundaryVelocities solution = solver.solve(true, 10, boundaryConditions);
+        final RealMatrix jacobian = solver.computeJacobian(true, 10, boundaryConditions);
         // THEN
         assertNull(solution);
+        assertTrue(Double.isNaN(jacobian.getEntry(0,0)));
     }
 
     @ParameterizedTest
@@ -77,7 +80,7 @@ class LambertSolverTest {
         // GIVEN
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
         final double latitude = 0.;
-        final double altitude = 42157e6 -  6378136.;
+        final double altitude = 42157e6 - 6378136.;
         final OneAxisEllipsoid ellipsoid = ReferenceEllipsoid.getWgs84(FramesFactory.getGTOD(false));
         final TimeStampedGeodeticPoint point1 = new TimeStampedGeodeticPoint(date, new GeodeticPoint(latitude, 0., altitude));
         final Frame frame = FramesFactory.getGCRF();
@@ -107,6 +110,97 @@ class LambertSolverTest {
                 geodeticPoint.getDate());
         final PVCoordinates pvCoordinates = transform.transformOnlyPV(new PVCoordinates(position));
         return new CartesianOrbit(pvCoordinates, frame, geodeticPoint.getDate(), Constants.EGM96_EARTH_MU);
+    }
+
+    @Test
+    void testSolveJacobian() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame frame = FramesFactory.getGCRF();
+        final double mu = Constants.EGM96_EARTH_MU;
+        final Orbit orbit1 = new CartesianOrbit(new TimeStampedPVCoordinates(date, new Vector3D(7.557249611265823E9, -4.1474095848830185E10, -958845.3227159644),
+                new Vector3D(3024339.1189172766, 551083.3948309845, 96.84004762824829)), frame, mu);
+        final double timeOfFlight = Constants.JULIAN_DAY * 1.5;
+        final Orbit orbit2 = new CartesianOrbit(new TimeStampedPVCoordinates(date.shiftedBy(timeOfFlight),
+                new Vector3D(-1.6651012438926659E10, 3.8729271015852745E10, 650886.2988349741),
+                new Vector3D(-2824183.311624355, -1214211.1159693908, -108.81575040466626)), frame, mu);
+        final LambertSolver solver = new LambertSolver(orbit2.getMu());
+        final int nRev = (int) FastMath.floor(timeOfFlight / orbit1.getKeplerianPeriod());
+        final boolean posigrade = true;
+        // WHEN
+        final LambertBoundaryConditions boundaryConditions = new LambertBoundaryConditions(orbit1.getDate(),
+                orbit1.getPosition(), orbit2.getDate(), orbit2.getPosition(), orbit2.getFrame());
+        final RealMatrix jacobian = solver.computeJacobian(posigrade, nRev, boundaryConditions);
+        // THEN
+        assertFalse(Double.isNaN(jacobian.getEntry(0, 0)));
+        checkJacobianWithFiniteDifferences(solver, posigrade, nRev, boundaryConditions, jacobian);
+    }
+
+    private static void checkJacobianWithFiniteDifferences(final LambertSolver solver, final boolean posigrade,
+                                                           final int nRev,
+                                                           final LambertBoundaryConditions boundaryConditions,
+                                                           final RealMatrix actualJacobian) {
+        checkPartialDerivativesWrtTimes(solver, posigrade, nRev, boundaryConditions, actualJacobian);
+        final double dV = 1e-1;
+        final double toleranceForVelocity = 1e-7;
+        for (int i = 1; i < 4; i++) {
+            final double[] shift = new double[8];
+            shift[i] = -dV/2.;
+            final LambertBoundaryVelocities solutionBefore = solver.solve(posigrade, nRev, perturbConditions(boundaryConditions, shift));
+            shift[i] = dV/2.;
+            final LambertBoundaryVelocities solutionAfter = solver.solve(posigrade, nRev, perturbConditions(boundaryConditions, shift));
+            checkColumn(solutionBefore, solutionAfter, dV, actualJacobian.getColumn(i), toleranceForVelocity);
+        }
+        for (int i = 5; i < 8; i++) {
+            final double[] shift = new double[8];
+            shift[i] = -dV/2.;
+            final LambertBoundaryVelocities solutionBefore = solver.solve(posigrade, nRev, perturbConditions(boundaryConditions, shift));
+            shift[i] = dV/2.;
+            final LambertBoundaryVelocities solutionAfter = solver.solve(posigrade, nRev, perturbConditions(boundaryConditions, shift));
+            checkColumn(solutionBefore, solutionAfter, dV, actualJacobian.getColumn(i), toleranceForVelocity);
+        }
+    }
+
+    private static void checkPartialDerivativesWrtTimes(final LambertSolver solver, final boolean posigrade,
+                                                        final int nRev,
+                                                        final LambertBoundaryConditions boundaryConditions,
+                                                        final RealMatrix actualJacobian) {
+        final double dt = 1.;
+        final double toleranceForTime = 1e-6;
+        final LambertBoundaryVelocities solution0Before = solver.solve(posigrade, nRev,
+                perturbConditions(boundaryConditions, new double[] {-dt/2., 0., 0., 0., 0., 0., 0., 0.}));
+        final LambertBoundaryVelocities solution0After = solver.solve(posigrade, nRev,
+                perturbConditions(boundaryConditions, new double[] {dt/2., 0., 0., 0., 0., 0., 0., 0.}));
+        checkColumn(solution0Before, solution0After, dt, actualJacobian.getColumn(0), toleranceForTime);
+        final LambertBoundaryVelocities solution7Before = solver.solve(posigrade, nRev,
+                perturbConditions(boundaryConditions, new double[] {0., 0., 0., 0., -dt/2., 0., 0., 0.}));
+        final LambertBoundaryVelocities solution7After = solver.solve(posigrade, nRev,
+                perturbConditions(boundaryConditions, new double[] {0., 0., 0., 0., dt/2.,0., 0., 0.}));
+        checkColumn(solution7Before, solution7After, dt, actualJacobian.getColumn(4), toleranceForTime);
+    }
+
+    private static void checkColumn(final LambertBoundaryVelocities solutionBefore,
+                                    final LambertBoundaryVelocities solutionAfter,
+                                    final double dP, final double[] actualColumn, final double tolerance) {
+        final double[] difference = new double[actualColumn.length];
+        final Vector3D differenceInitial = solutionAfter.getInitialVelocity().subtract(solutionBefore.getInitialVelocity());
+        final Vector3D differenceTerminal = solutionAfter.getTerminalVelocity().subtract(solutionBefore.getTerminalVelocity());
+        difference[0] = differenceInitial.getX() / dP;
+        difference[1] = differenceInitial.getY() / dP;
+        difference[2] = differenceInitial.getZ() / dP;
+        difference[3] = differenceTerminal.getX() /dP;
+        difference[4] = differenceTerminal.getY() / dP;
+        difference[5] = differenceTerminal.getZ() / dP;
+        assertArrayEquals(difference, actualColumn, tolerance);
+    }
+
+    private static LambertBoundaryConditions perturbConditions(final LambertBoundaryConditions conditions,
+                                                               final double[] shift) {
+        return new LambertBoundaryConditions(conditions.getInitialDate().shiftedBy(shift[0]),
+                conditions.getInitialPosition().add(new Vector3D(shift[1], shift[2], shift[3])),
+                conditions.getTerminalDate().shiftedBy(shift[4]),
+                conditions.getTerminalPosition().add(new Vector3D(shift[5], shift[6], shift[7])),
+                conditions.getReferenceFrame());
     }
 
     @BeforeEach
