@@ -533,6 +533,11 @@ class FrameTest {
             Assertions.assertSame(direct[i % cachesize], eme2000.getTransformTo(itrf, t0.shiftedBy(i % cachesize)));
         }
 
+        // check we can clear the cache
+        eme2000.setPeerCaching(null, cachesize);
+        Assertions.assertNull(eme2000.getPeer());
+        Assertions.assertNotNull(eme2000.getTransformTo(itrf, t0));
+
     }
 
     @Test

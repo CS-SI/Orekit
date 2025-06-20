@@ -72,13 +72,20 @@ class PeerCache {
      * This allows several frames to be peered with a pivot one (typically
      * Earth frame and many topocentric frames all peered with one inertial frame).
      * </p>
-     * @param peer peer frame
+     * @param peer peer frame (if null, cache is cleared)
      * @param cacheSize number of transforms kept in the date-based cache
      */
     public void setPeerCaching(final Frame peer, final int cacheSize) {
 
         lock.writeLock().lock();
         try {
+
+            if (peer == null) {
+                // clear peering
+                cache       = null;
+                fieldCaches = null;
+            }
+
             // caching for regular dates
             cache = createCache(peer, cacheSize);
 
