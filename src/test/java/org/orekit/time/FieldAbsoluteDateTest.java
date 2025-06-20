@@ -231,6 +231,21 @@ class FieldAbsoluteDateTest {
     }
 
     @Test
+    void testEqualsAddendum() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final UnivariateDerivative1 derivative1 = new UnivariateDerivative1(0., 1);
+        final UnivariateDerivative1Field field = UnivariateDerivative1Field.getInstance();
+        final FieldAbsoluteDate<UnivariateDerivative1> fieldDate = new FieldAbsoluteDate<>(field,
+                date).shiftedBy(derivative1);
+        // WHEN
+        final boolean isEqual = fieldDate.equals(new FieldAbsoluteDate<>(field, date));
+        // THEN
+        Assertions.assertFalse(isEqual);
+        Assertions.assertEquals(new FieldAbsoluteDate<>(field, date).shiftedBy(derivative1), fieldDate);
+    }
+
+    @Test
     void testIsEqualTo() { doTestIsEqualTo(Binary64Field.getInstance()); }
 
     @Test

@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.1" date="TBD" description="TBD">
+        <action dev="serrof" type="fix" issue="1759">
+            Fix equals in FieldAbsoluteDate.
+        </action>
         <action dev="serrof" type="add" issue="1758">
             Add durationFrom with TimeStamped in FieldTimeStamped.
         </action>

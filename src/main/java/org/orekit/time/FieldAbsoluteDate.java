@@ -1327,7 +1327,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
 
     /** Check if the instance represents the same time as another instance.
      * @param other other date
-     * @return true if the instance and the other date refer to the same instant
+     * @return true if the instance and the other date refer to the same instant with same Field and addendum
      */
     public boolean equals(final Object other) {
 
@@ -1339,7 +1339,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
         if (other instanceof FieldAbsoluteDate) {
             final FieldAbsoluteDate<?> otherF = (FieldAbsoluteDate<?>) other;
             return fieldOffset.getField().equals(otherF.fieldOffset.getField()) &&
-                   date.equals(otherF.date);
+                   date.equals(otherF.date) && fieldOffset.getAddendum().equals(otherF.fieldOffset.getAddendum());
         }
 
         return false;
