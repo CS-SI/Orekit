@@ -28,6 +28,15 @@ public class TimeStampedDoubleTest {
         Assertions.assertEquals(date, tsd.getDate());
         Assertions.assertEquals(1.68, tsd.getValue());
     }
+
+    @Test
+    @Deprecated
+    public void testDeprecatedConstructor() {
+        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+        final TimeStampedDouble tsd = new TimeStampedDouble(1.68, date);
+        Assertions.assertEquals(date, tsd.getDate());
+        Assertions.assertEquals(1.68, tsd.getValue());
+    }
     
     @Test
     public void testToString() {

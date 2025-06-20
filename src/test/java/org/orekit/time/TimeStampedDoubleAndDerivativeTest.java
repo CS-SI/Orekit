@@ -27,6 +27,17 @@ public class TimeStampedDoubleAndDerivativeTest {
         final TimeStampedDoubleAndDerivative tsd = new TimeStampedDoubleAndDerivative(date, 1.68, 3.14);
         Assertions.assertEquals(date, tsd.getDate());
         Assertions.assertEquals(1.68, tsd.getValue());
+        Assertions.assertEquals(3.14, tsd.getDerivative());
+    }
+
+    @Test
+    @Deprecated
+    public void testDeprecatedConstructor() {
+        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+        final TimeStampedDoubleAndDerivative tsd = new TimeStampedDoubleAndDerivative(1.68, 3.14, date);
+        Assertions.assertEquals(date, tsd.getDate());
+        Assertions.assertEquals(1.68, tsd.getValue());
+        Assertions.assertEquals(3.14, tsd.getDerivative());
     }
 
     @Test
