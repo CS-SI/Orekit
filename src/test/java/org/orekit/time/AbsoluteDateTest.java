@@ -730,14 +730,14 @@ public class AbsoluteDateTest {
         Assertions.assertTrue(AbsoluteDate.JULIAN_EPOCH.compareTo(AbsoluteDate.FUTURE_INFINITY) < 0);
         Assertions.assertTrue(AbsoluteDate.J2000_EPOCH.compareTo(AbsoluteDate.PAST_INFINITY) > 0);
         Assertions.assertTrue(AbsoluteDate.J2000_EPOCH.compareTo(AbsoluteDate.FUTURE_INFINITY) < 0);
-        Assertions.assertTrue(AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.PAST_INFINITY) == 0);
+        Assertions.assertEquals(0, AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.PAST_INFINITY));
         Assertions.assertTrue(AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.JULIAN_EPOCH) < 0);
         Assertions.assertTrue(AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.J2000_EPOCH) < 0);
         Assertions.assertTrue(AbsoluteDate.PAST_INFINITY.compareTo(AbsoluteDate.FUTURE_INFINITY) < 0);
         Assertions.assertTrue(AbsoluteDate.FUTURE_INFINITY.compareTo(AbsoluteDate.JULIAN_EPOCH) > 0);
         Assertions.assertTrue(AbsoluteDate.FUTURE_INFINITY.compareTo(AbsoluteDate.J2000_EPOCH) > 0);
         Assertions.assertTrue(AbsoluteDate.FUTURE_INFINITY.compareTo(AbsoluteDate.PAST_INFINITY) > 0);
-        Assertions.assertTrue(AbsoluteDate.FUTURE_INFINITY.compareTo(AbsoluteDate.FUTURE_INFINITY) == 0);
+        Assertions.assertEquals(0, AbsoluteDate.FUTURE_INFINITY.compareTo(AbsoluteDate.FUTURE_INFINITY));
         Assertions.assertTrue(Double.isInfinite(AbsoluteDate.FUTURE_INFINITY.durationFrom(AbsoluteDate.J2000_EPOCH)));
         Assertions.assertTrue(Double.isInfinite(AbsoluteDate.FUTURE_INFINITY.durationFrom(AbsoluteDate.PAST_INFINITY)));
         Assertions.assertTrue(Double.isInfinite(AbsoluteDate.PAST_INFINITY.durationFrom(AbsoluteDate.J2000_EPOCH)));
@@ -745,15 +745,13 @@ public class AbsoluteDateTest {
         Assertions.assertTrue(Double.isNaN(AbsoluteDate.PAST_INFINITY.durationFrom(AbsoluteDate.PAST_INFINITY)));
         Assertions.assertEquals("5881610-07-11T23:59:59.999Z",  AbsoluteDate.FUTURE_INFINITY.toString());
         Assertions.assertEquals("-5877490-03-03T00:00:00.000Z", AbsoluteDate.PAST_INFINITY.toString());
-        Assertions.assertEquals(true, AbsoluteDate.FUTURE_INFINITY.equals(AbsoluteDate.FUTURE_INFINITY));
-        Assertions.assertEquals(true, AbsoluteDate.PAST_INFINITY.equals(AbsoluteDate.PAST_INFINITY));
-        Assertions.assertEquals(false, AbsoluteDate.PAST_INFINITY.equals(AbsoluteDate.FUTURE_INFINITY));
-        Assertions.assertEquals(false, AbsoluteDate.FUTURE_INFINITY.equals(AbsoluteDate.PAST_INFINITY));
+        Assertions.assertTrue(AbsoluteDate.FUTURE_INFINITY.equals(AbsoluteDate.FUTURE_INFINITY));
+        Assertions.assertTrue(AbsoluteDate.PAST_INFINITY.equals(AbsoluteDate.PAST_INFINITY));
+        Assertions.assertFalse(AbsoluteDate.PAST_INFINITY.equals(AbsoluteDate.FUTURE_INFINITY));
+        Assertions.assertFalse(AbsoluteDate.FUTURE_INFINITY.equals(AbsoluteDate.PAST_INFINITY));
 
-        Assertions.assertTrue(AbsoluteDate.J2000_EPOCH.durationFrom(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(Double.NEGATIVE_INFINITY))
-                          == Double.POSITIVE_INFINITY);
-        Assertions.assertTrue(AbsoluteDate.J2000_EPOCH.durationFrom(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(Double.POSITIVE_INFINITY))
-                          == Double.NEGATIVE_INFINITY);
+        Assertions.assertEquals(Double.POSITIVE_INFINITY, AbsoluteDate.J2000_EPOCH.durationFrom(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(Double.NEGATIVE_INFINITY)));
+        Assertions.assertEquals(Double.NEGATIVE_INFINITY, AbsoluteDate.J2000_EPOCH.durationFrom(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(Double.POSITIVE_INFINITY)));
 
     }
 
@@ -768,7 +766,7 @@ public class AbsoluteDateTest {
         AbsoluteDate d = epoch;
         double epsilon = 1.0 - FastMath.nextDown(1.0);
         Assertions.assertTrue(d.compareTo(d.shiftedBy(epsilon)) < 0);
-        Assertions.assertTrue(d.compareTo(d.shiftedBy(0)) == 0);
+        Assertions.assertEquals(0, d.compareTo(d.shiftedBy(0)));
         Assertions.assertTrue(d.compareTo(d.shiftedBy(-epsilon)) > 0);
         // check date with negative offset
         d = epoch.shiftedBy(496891466)

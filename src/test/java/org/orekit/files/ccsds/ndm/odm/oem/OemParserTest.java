@@ -231,8 +231,8 @@ public class OemParserTest {
         Assertions.assertEquals("1996-062A", file.getSegments().get(0).getMetadata().getObjectID());
 
         Assertions.assertEquals(1, file.getSatellites().size());
-        Assertions.assertEquals(true, file.getSatellites().containsKey("1996-062A"));
-        Assertions.assertEquals(false, file.getSatellites().containsKey("MARS GLOBAL SURVEYOR"));
+        Assertions.assertTrue(file.getSatellites().containsKey("1996-062A"));
+        Assertions.assertFalse(file.getSatellites().containsKey("MARS GLOBAL SURVEYOR"));
         Assertions.assertEquals(1, file.getSatellites().size());
         Assertions.assertEquals("1996-062A", file.getSatellites().values().iterator().next().getId());
         Assertions.assertEquals(
@@ -355,8 +355,8 @@ public class OemParserTest {
         Assertions.assertEquals("2000-028A", file.getSegments().get(0).getMetadata().getObjectID());
 
         Assertions.assertEquals(1, file.getSatellites().size());
-        Assertions.assertEquals(true, file.getSatellites().containsKey("2000-028A"));
-        Assertions.assertEquals(false, file.getSatellites().containsKey("MARS GLOBAL SURVEYOR"));
+        Assertions.assertTrue(file.getSatellites().containsKey("2000-028A"));
+        Assertions.assertFalse(file.getSatellites().containsKey("MARS GLOBAL SURVEYOR"));
         Assertions.assertEquals(1, file.getSatellites().size());
         Assertions.assertEquals("2000-028A", file.getSatellites().values().iterator().next().getId());
         Assertions.assertEquals(
@@ -484,8 +484,8 @@ public class OemParserTest {
         Assertions.assertEquals("1996-062A", file.getSegments().get(0).getMetadata().getObjectID());
 
         Assertions.assertEquals(1, file.getSatellites().size());
-        Assertions.assertEquals(true, file.getSatellites().containsKey("1996-062A"));
-        Assertions.assertEquals(false, file.getSatellites().containsKey("MARS GLOBAL SURVEYOR"));
+        Assertions.assertTrue(file.getSatellites().containsKey("1996-062A"));
+        Assertions.assertFalse(file.getSatellites().containsKey("MARS GLOBAL SURVEYOR"));
         Assertions.assertEquals(1, file.getSatellites().size());
         Assertions.assertEquals("1996-062A", file.getSatellites().values().iterator().next().getId());
         Assertions.assertEquals(

@@ -1021,13 +1021,13 @@ public class TimeSpanMapTest {
             map.addValidAfter(i, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i), false);
         }
         Assertions.assertEquals(  11, map.getSpansNumber());
-        Assertions.assertEquals(null, map.getFirstSpan().getData());
+        Assertions.assertNull(map.getFirstSpan().getData());
         Assertions.assertEquals(  90, map.getLastSpan().getData());
 
         // no changes just after configuration
         map.configureExpunge(5, Double.POSITIVE_INFINITY, ExpungePolicy.EXPUNGE_EARLIEST);
         Assertions.assertEquals(  11, map.getSpansNumber());
-        Assertions.assertEquals(null, map.getFirstSpan().getData());
+        Assertions.assertNull(map.getFirstSpan().getData());
         Assertions.assertEquals(  90, map.getLastSpan().getData());
 
         // changes applied after addition

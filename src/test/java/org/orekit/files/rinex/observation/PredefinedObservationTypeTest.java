@@ -32,13 +32,13 @@ public class PredefinedObservationTypeTest {
                     Assertions.assertTrue(c == 'C' || c == 'P');
                     break;
                 case CARRIER_PHASE :
-                    Assertions.assertTrue(c == 'L');
+                    Assertions.assertEquals('L', c);
                     break;
                 case DOPPLER :
-                    Assertions.assertTrue(c == 'D');
+                    Assertions.assertEquals('D', c);
                     break;
                 case SIGNAL_STRENGTH :
-                    Assertions.assertTrue(c == 'S');
+                    Assertions.assertEquals('S', c);
                     break;
                 default :
                     Assertions.fail("unknown " + rf.getMeasurementType());

@@ -303,7 +303,7 @@ public class PropagatorsParallelizerTest {
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertNotNull(oe.getCause());
-            Assertions.assertTrue(oe.getCause() instanceof RuntimeException);
+            Assertions.assertInstanceOf(RuntimeException.class, oe.getCause());
             Assertions.assertEquals(LocalizedCoreFormats.SIMPLE_MESSAGE, oe.getSpecifier());
             Assertions.assertTrue(((String) oe.getParts()[0]).endsWith("boo!"));
         }

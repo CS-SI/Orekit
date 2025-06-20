@@ -123,7 +123,7 @@ public class FramesTest {
             Assertions.assertEquals(entries.get(i).getITRFType(),    entriesFull.get(i).getITRFType());
         }
         // ICRF
-        Assertions.assertEquals(null, frames.getICRF());
+        Assertions.assertNull(frames.getICRF());
     }
 
     /** Check transforms between frames from different data contexts. */

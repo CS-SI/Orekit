@@ -448,7 +448,7 @@ public class FieldAngularCoordinatesTest {
 
         AngularCoordinates ac = new AngularCoordinates(A.toPVCoordinates(), B.toPVCoordinates(), PLUS_K.toPVCoordinates(), PLUS_J.toPVCoordinates(), 1.0e-6);
 
-        Assertions.assertTrue( fac.getRotationRate().toVector3D().equals(ac.getRotationRate()));
+        Assertions.assertEquals(fac.getRotationRate().toVector3D(), ac.getRotationRate());
 
     }
 

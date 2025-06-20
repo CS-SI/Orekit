@@ -53,7 +53,7 @@ public class FilesListCrawlerTest extends AbstractListCrawlerTest<File> {
                                                   DataContext.getDefault().getDataProvidersManager());
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertTrue(oe.getCause() instanceof FileNotFoundException);
+            Assertions.assertInstanceOf(FileNotFoundException.class, oe.getCause());
             Assertions.assertTrue(oe.getLocalizedMessage().contains("inexistant-directory"));
         }
    }

@@ -243,26 +243,26 @@ public class DateComponentsTest {
             for (int j = 0; j < dates.length; ++j) {
                 if (dates[i][0].compareTo(dates[j][1]) < 0) {
                     Assertions.assertTrue(dates[j][1].compareTo(dates[i][0]) > 0);
-                    Assertions.assertFalse(dates[i][0].equals(dates[j][1]));
-                    Assertions.assertFalse(dates[j][1].equals(dates[i][0]));
+                    Assertions.assertNotEquals(dates[i][0], dates[j][1]);
+                    Assertions.assertNotEquals(dates[j][1], dates[i][0]);
                     Assertions.assertTrue(dates[i][0].hashCode() != dates[j][1].hashCode());
                     Assertions.assertTrue(i < j);
                 } else if (dates[i][0].compareTo(dates[j][1]) > 0) {
                     Assertions.assertTrue(dates[j][1].compareTo(dates[i][0]) < 0);
-                    Assertions.assertFalse(dates[i][0].equals(dates[j][1]));
-                    Assertions.assertFalse(dates[j][1].equals(dates[i][0]));
+                    Assertions.assertNotEquals(dates[i][0], dates[j][1]);
+                    Assertions.assertNotEquals(dates[j][1], dates[i][0]);
                     Assertions.assertTrue(dates[i][0].hashCode() != dates[j][1].hashCode());
                     Assertions.assertTrue(i > j);
                 } else {
-                    Assertions.assertTrue(dates[j][1].compareTo(dates[i][0]) == 0);
-                    Assertions.assertTrue(dates[i][0].equals(dates[j][1]));
-                    Assertions.assertTrue(dates[j][1].equals(dates[i][0]));
-                    Assertions.assertTrue(dates[i][0].hashCode() == dates[j][1].hashCode());
-                    Assertions.assertTrue(i == j);
+                    Assertions.assertEquals(0, dates[j][1].compareTo(dates[i][0]));
+                    Assertions.assertEquals(dates[i][0], dates[j][1]);
+                    Assertions.assertEquals(dates[j][1], dates[i][0]);
+                    Assertions.assertEquals(dates[i][0].hashCode(), dates[j][1].hashCode());
+                    Assertions.assertEquals(i, j);
                 }
             }
         }
-        Assertions.assertFalse(dates[0][0].equals(this));
+        Assertions.assertNotEquals(dates[0][0], this);
     }
 
     @Test
@@ -397,7 +397,7 @@ public class DateComponentsTest {
                         // well-formed dates should have sequential J2000 days
                         DateComponents date = new DateComponents(year, month, day);
                         Assertions.assertEquals(k++, date.getJ2000Day());
-                        Assertions.assertTrue(!expectedIllFormed);
+                        Assertions.assertFalse(expectedIllFormed);
                     } catch (IllegalArgumentException iae) {
                         Assertions.assertTrue(expectedIllFormed);
                     }

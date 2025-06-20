@@ -75,7 +75,7 @@ public class LazyLoadedTimeScalesTest {
                 Assertions.assertSame(gmst, timeScales.getGMST(conventions, simpleEop), message);
                 double expected = 24110.54841 + ut1.offsetFromTAI(date).toDouble();
                 Assertions.assertEquals(expected, gmst.offsetFromTAI(date).toDouble(), 0, message);
-                Assertions.assertTrue(!scales.contains(gmst), message + " " + scales);
+                Assertions.assertFalse(scales.contains(gmst), message + " " + scales);
                 scales.add(gmst);
             }
         }
@@ -106,7 +106,7 @@ public class LazyLoadedTimeScalesTest {
                     expected += conventions.getEOPTidalCorrection(timeScales).value(date)[2];
                 }
                 Assertions.assertEquals(expected, ut1.offsetFromTAI(date).toDouble(), 0, message);
-                Assertions.assertTrue(!scales.contains(ut1), message + " " + scales);
+                Assertions.assertFalse(scales.contains(ut1), message + " " + scales);
                 scales.add(ut1);
             }
         }
