@@ -88,7 +88,7 @@ public class TimeStampedDoubleAndDerivativeHermiteInterpolator
         }
 
         final double[][] y = interpolator.derivatives(0, 1);
-        return new TimeStampedDoubleAndDerivative(y[0][0], y[1][0], interpolationDate);
+        return new TimeStampedDoubleAndDerivative(interpolationDate, y[0][0], y[1][0]);
     }
 
 }

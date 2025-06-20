@@ -58,8 +58,8 @@ class TimeStampedDoubleAndDerivativeHermiteInterpolatorTest {
         final List<TimeStampedDoubleAndDerivative> sample      = new ArrayList<>();
         final List<AbsoluteDate>                   dates       = new ArrayList<>();
         for (int i = 1; i < sampleSize + 1; i++) {
-            sample.add(new TimeStampedDoubleAndDerivative(i * i, i / 30.0,
-                                                          initialDate.shiftedBy(i * 60)));
+            sample.add(new TimeStampedDoubleAndDerivative(initialDate.shiftedBy(i * 60), i * i, i / 30.0
+            ));
             dates.add(initialDate.shiftedBy(i * 60));
         }
 

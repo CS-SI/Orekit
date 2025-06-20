@@ -83,6 +83,6 @@ public class TimeStampedDoubleHermiteInterpolator extends AbstractTimeInterpolat
             interpolator.addSamplePoint(deltaT, new double[] { value.getValue() });
         }
 
-        return new TimeStampedDouble(interpolator.value(0)[0], interpolationDate);
+        return new TimeStampedDouble(interpolationDate, interpolator.value(0)[0]);
     }
 }

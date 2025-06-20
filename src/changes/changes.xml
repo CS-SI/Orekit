@@ -106,6 +106,9 @@
             Add TimeInterval interface and some applications.
         </action>
         <action dev="jtabeaud" type="add" issue="1692">
+            Change argument order of TimeStampedDouble and TimeStampedDoubleAndDerivative for consistency with the rest of Orekit.
+        </action>
+        <action dev="jtabeaud" type="add" issue="1692">
             Add TimeStampedGeodeticPoint.
         </action>
         <action dev="serrof" type="add" issue="1683">

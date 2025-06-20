@@ -510,7 +510,7 @@ public class MarshallSolarActivityFutureEstimation
             }
 
             // Returns the 81 day average flux
-            return new TimeStampedDouble(average / 81, date);
+            return new TimeStampedDouble(date, average / 81);
         }
     }
 
