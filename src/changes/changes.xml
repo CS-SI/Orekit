@@ -21,6 +21,21 @@
   </properties>
   <body>
     <release version="13.1" date="TBD" description="TBD">
+        <action dev="serrof" type="fix" issue="1759">
+            Fix equals in FieldAbsoluteDate.
+        </action>
+        <action dev="serrof" type="add" issue="1758">
+            Add durationFrom with TimeStamped in FieldTimeStamped.
+        </action>
+        <action dev="serrof" type="update" issue="1757">
+            Add Jacobian matrix to Lambert solver.
+        </action>
+        <action dev="serrof" type="update" issue="1756">
+            Move Lambert solver in dedicated package and wrap it for IOD.
+        </action>
+        <action dev="serrof" type="add" issue="1755">
+            Add Lambert differential correction.
+        </action>
         <action dev="serrof" type="add" issue="1750">
             Add way not to reset (Field)PropagationStepRecorder.
         </action>

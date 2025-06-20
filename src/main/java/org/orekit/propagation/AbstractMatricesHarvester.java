@@ -112,7 +112,7 @@ public abstract class AbstractMatricesHarvester implements MatricesHarvester {
      * @return the corresponding matrix
      * @since 13.1
      */
-    protected RealMatrix toSquareMatrix(final double[] array) {
+    public RealMatrix toSquareMatrix(final double[] array) {
         final int stateDimension = getStateDimension();
         final RealMatrix matrix = MatrixUtils.createRealMatrix(stateDimension, stateDimension);
         int index = 0;
@@ -129,7 +129,7 @@ public abstract class AbstractMatricesHarvester implements MatricesHarvester {
      * @return an array containing the STM data
      * @since 13.1
      */
-    protected double[] toArray(final double[][] matrix) {
+    public double[] toArray(final double[][] matrix) {
         final int stateDimension = matrix.length;
         final double[] array = new double[stateDimension * stateDimension];
         int index = 0;
