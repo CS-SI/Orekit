@@ -90,7 +90,7 @@ public class EopXmlLoaderTest extends AbstractFilesLoaderTest {
             new EopXmlLoader("^malformed\\.xml$", manager, () -> utc).fillHistory(converter, history);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertTrue(oe.getCause() instanceof SAXException);
+            Assertions.assertInstanceOf(SAXException.class, oe.getCause());
         }
     }
 

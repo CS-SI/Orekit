@@ -65,7 +65,7 @@ public class EllipsoidTest {
         checkPrincipalAxes(xy, Vector3D.PLUS_J, Vector3D.MINUS_I);
         Assertions.assertEquals(2.0, xy.getA(), 1.0e-15);
         Assertions.assertEquals(1.0, xy.getB(), 1.0e-15);
-        Assertions.assertTrue(xy.getFrame() == ellipsoid.getFrame());
+        Assertions.assertSame(xy.getFrame(), ellipsoid.getFrame());
         Assertions.assertEquals(0.0, errorOnEllipsoid(xy, ellipsoid), 1.0e-15);
         Assertions.assertEquals(0.0, errorOnPlane(xy, Vector3D.ZERO, Vector3D.PLUS_K), 1.0e-15);
 
@@ -74,7 +74,7 @@ public class EllipsoidTest {
         checkPrincipalAxes(yz, Vector3D.PLUS_K, Vector3D.MINUS_J);
         Assertions.assertEquals(3.0, yz.getA(), 1.0e-15);
         Assertions.assertEquals(2.0, yz.getB(), 1.0e-15);
-        Assertions.assertTrue(yz.getFrame() == ellipsoid.getFrame());
+        Assertions.assertSame(yz.getFrame(), ellipsoid.getFrame());
         Assertions.assertEquals(0.0, errorOnEllipsoid(yz, ellipsoid), 1.0e-15);
         Assertions.assertEquals(0.0, errorOnPlane(yz, Vector3D.ZERO, Vector3D.PLUS_I), 1.0e-15);
 
@@ -83,7 +83,7 @@ public class EllipsoidTest {
         checkPrincipalAxes(zx, Vector3D.PLUS_K, Vector3D.PLUS_I);
         Assertions.assertEquals(3.0, zx.getA(), 1.0e-15);
         Assertions.assertEquals(1.0, zx.getB(), 1.0e-15);
-        Assertions.assertTrue(zx.getFrame() == ellipsoid.getFrame());
+        Assertions.assertSame(zx.getFrame(), ellipsoid.getFrame());
         Assertions.assertEquals(0.0, errorOnEllipsoid(zx, ellipsoid), 1.0e-15);
         Assertions.assertEquals(0.0, errorOnPlane(zx, Vector3D.ZERO, Vector3D.PLUS_J), 1.0e-15);
 
@@ -111,7 +111,7 @@ public class EllipsoidTest {
         checkPrincipalAxes(xy, plusJ, minusI);
         Assertions.assertEquals(2.0, xy.getA().getReal(), 1.0e-15);
         Assertions.assertEquals(1.0, xy.getB().getReal(), 1.0e-15);
-        Assertions.assertTrue(xy.getFrame() == ellipsoid.getFrame());
+        Assertions.assertSame(xy.getFrame(), ellipsoid.getFrame());
         Assertions.assertEquals(0.0, errorOnEllipsoid(xy, ellipsoid).getReal(), 1.0e-15);
         Assertions.assertEquals(0.0, errorOnPlane(xy, zero, plusK).getReal(), 1.0e-15);
 
@@ -120,7 +120,7 @@ public class EllipsoidTest {
         checkPrincipalAxes(yz, plusK, minusJ);
         Assertions.assertEquals(3.0, yz.getA().getReal(), 1.0e-15);
         Assertions.assertEquals(2.0, yz.getB().getReal(), 1.0e-15);
-        Assertions.assertTrue(yz.getFrame() == ellipsoid.getFrame());
+        Assertions.assertSame(yz.getFrame(), ellipsoid.getFrame());
         Assertions.assertEquals(0.0, errorOnEllipsoid(yz, ellipsoid).getReal(), 1.0e-15);
         Assertions.assertEquals(0.0, errorOnPlane(yz, zero, plusI).getReal(), 1.0e-15);
 
@@ -129,7 +129,7 @@ public class EllipsoidTest {
         checkPrincipalAxes(zx, plusK, plusI);
         Assertions.assertEquals(3.0, zx.getA().getReal(), 1.0e-15);
         Assertions.assertEquals(1.0, zx.getB().getReal(), 1.0e-15);
-        Assertions.assertTrue(zx.getFrame() == ellipsoid.getFrame());
+        Assertions.assertSame(zx.getFrame(), ellipsoid.getFrame());
         Assertions.assertEquals(0.0, errorOnEllipsoid(zx, ellipsoid).getReal(), 1.0e-15);
         Assertions.assertEquals(0.0, errorOnPlane(zx, zero, plusJ).getReal(), 1.0e-15);
 

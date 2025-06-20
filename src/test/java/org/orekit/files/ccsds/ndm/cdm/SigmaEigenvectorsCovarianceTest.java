@@ -53,6 +53,6 @@ public class SigmaEigenvectorsCovarianceTest {
         // Check get/setCsig3eigvec3 when null
         cov = new SigmaEigenvectorsCovariance(true);
         cov.setCsig3eigvec3(null);
-        Assertions.assertEquals(null, cov.getCsig3eigvec3());
+        Assertions.assertNull(cov.getCsig3eigvec3());
     }
 }

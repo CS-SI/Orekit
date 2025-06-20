@@ -166,6 +166,7 @@ public class ViennaThree extends AbstractVienna {
 
    /** {@inheritDoc} */
     @Override
+    @SuppressWarnings("unchecked")
     public <T extends CalculusFieldElement<T>> T[] mappingFactors(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                                   final FieldGeodeticPoint<T> point,
                                                                   final FieldAbsoluteDate<T> date) {

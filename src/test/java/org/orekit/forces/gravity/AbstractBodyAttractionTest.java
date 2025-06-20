@@ -88,6 +88,7 @@ class AbstractBodyAttractionTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void testGetFieldPosition() {
         // GIVEN
         final CelestialBody mockedBody = Mockito.mock(CelestialBody.class);

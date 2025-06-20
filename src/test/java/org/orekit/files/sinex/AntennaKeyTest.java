@@ -37,10 +37,10 @@ public class AntennaKeyTest {
 
     @Test
     public void testEquals() {
-        Assertions.assertTrue(key1.equals(key1));
-        Assertions.assertTrue(key2.equals(key2));
-        Assertions.assertFalse(key1.equals(key2));
-        Assertions.assertFalse(key1.equals(key1.getName()));
+        Assertions.assertEquals(key1, key1);
+        Assertions.assertEquals(key2, key2);
+        Assertions.assertNotEquals(key1, key2);
+        Assertions.assertNotEquals(key1, key1.getName());
     }
 
     @Test

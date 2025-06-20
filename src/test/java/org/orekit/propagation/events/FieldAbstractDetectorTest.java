@@ -28,6 +28,7 @@ import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 class FieldAbstractDetectorTest {
 
     @Test
+    @SuppressWarnings("unchecked")
     void testWithDetectionSettings() {
         // GIVEN
         final ComplexField field = ComplexField.getInstance();

@@ -741,7 +741,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldEcksteinHechlerPropagator<T> propagator =
             new FieldEcksteinHechlerPropagator<>(orbit, provider);
         FieldNodeDetector<T> detector = new FieldNodeDetector<>(orbit, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        Assertions.assertTrue(FramesFactory.getITRF(IERSConventions.IERS_2010, true) == detector.getFrame());
+        Assertions.assertSame(FramesFactory.getITRF(IERSConventions.IERS_2010, true), detector.getFrame());
         propagator.addEventDetector(detector);
 
         FieldAbsoluteDate<T> farTarget = date.shiftedBy(10000.0);
@@ -877,7 +877,7 @@ public class FieldEcksteinHechlerPropagatorTest {
             new TopocentricFrame(earthShape, new GeodeticPoint(0.389, -2.962, 0), null);
         FieldElevationDetector<T> detector = new FieldElevationDetector<>(zero.add(60), zero.add(1.0e-9), topo).withConstantElevation(0.09);
         Assertions.assertEquals(0.09, detector.getMinElevation(), 1.0e-12);
-        Assertions.assertTrue(topo == detector.getTopocentricFrame());
+        Assertions.assertSame(topo, detector.getTopocentricFrame());
         propagator.addEventDetector(detector);
 
         FieldAbsoluteDate<T> farTarget = date.shiftedBy(10000.0);

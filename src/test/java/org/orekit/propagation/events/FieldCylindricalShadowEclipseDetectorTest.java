@@ -23,11 +23,12 @@ import org.orekit.utils.*;
 class FieldCylindricalShadowEclipseDetectorTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void testConstructor() {
         // GIVEN
         final EventDetectionSettings settings = EventDetectionSettings.getDefaultEventDetectionSettings();

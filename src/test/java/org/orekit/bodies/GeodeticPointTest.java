@@ -100,10 +100,10 @@ public class GeodeticPointTest {
 
         // actions + verify
         Assertions.assertEquals(point, new GeodeticPoint(1, 2, 3));
-        Assertions.assertFalse(point.equals(new GeodeticPoint(0, 2, 3)));
-        Assertions.assertFalse(point.equals(new GeodeticPoint(1, 0, 3)));
-        Assertions.assertFalse(point.equals(new GeodeticPoint(1, 2, 0)));
-        Assertions.assertFalse(point.equals(new Object()));
+        Assertions.assertNotEquals(point, new GeodeticPoint(0, 2, 3));
+        Assertions.assertNotEquals(point, new GeodeticPoint(1, 0, 3));
+        Assertions.assertNotEquals(point, new GeodeticPoint(1, 2, 0));
+        Assertions.assertNotEquals(point, new Object());
         Assertions.assertEquals(point.hashCode(), new GeodeticPoint(1, 2, 3).hashCode());
         Assertions.assertNotEquals(point.hashCode(), new GeodeticPoint(1, FastMath.nextUp(2), 3).hashCode());
     }

@@ -189,7 +189,7 @@ class EventsLoggerTest {
             PVCoordinates pv1 = e1.getState().getPVCoordinates();
             PVCoordinates pv2 = e2.getState().getPVCoordinates();
 
-            Assertions.assertTrue(e1.getEventDetector() == e2.getEventDetector());
+            Assertions.assertSame(e1.getEventDetector(), e2.getEventDetector());
             Assertions.assertEquals(0, pv1.getPosition().subtract(pv2.getPosition()).getNorm(), 1.0e-10);
             Assertions.assertEquals(0, pv1.getVelocity().subtract(pv2.getVelocity()).getNorm(), 1.0e-10);
             Assertions.assertEquals(e1.isIncreasing(), e2.isIncreasing());
