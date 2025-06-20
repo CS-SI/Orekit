@@ -100,7 +100,7 @@ class ProfileThrustPropulsionModelTest {
             new KeplerianOrbit(a, e, i, omega, OMEGA, lv, positionAngleType,
                                FramesFactory.getEME2000(), initDate, Constants.EIGEN5C_EARTH_MU);
         final SpacecraftState initialState =
-            new SpacecraftState(initOrbit, law.getAttitude(initOrbit, initOrbit.getDate(), initOrbit.getFrame()), mass);
+            new SpacecraftState(initOrbit, law.getAttitude(initOrbit, initOrbit.getDate(), initOrbit.getFrame())).withMass(mass);
 
         final AbsoluteDate fireDate = new AbsoluteDate(new DateComponents(2004, 1, 2),
                                                        new TimeComponents(4, 15, 34.080),
@@ -190,7 +190,7 @@ class ProfileThrustPropulsionModelTest {
                                       FramesFactory.getEME2000(), initDate,
                                       zero.newInstance(Constants.EIGEN5C_EARTH_MU));
         final FieldSpacecraftState<T> initialState =
-            new FieldSpacecraftState<>(initOrbit, law.getAttitude(initOrbit, initOrbit.getDate(), initOrbit.getFrame()), mass);
+            new FieldSpacecraftState<>(initOrbit, law.getAttitude(initOrbit, initOrbit.getDate(), initOrbit.getFrame())).withMass(mass);
 
         final FieldAbsoluteDate<T> fireDate = new FieldAbsoluteDate<>(field,
                                                                       new DateComponents(2004, 1, 2),

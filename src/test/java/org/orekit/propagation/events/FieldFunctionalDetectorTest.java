@@ -77,8 +77,7 @@ public class FieldFunctionalDetectorTest {
                                 new FieldVector3D<>(one, new Vector3D(4, 5, 6))),
                         FramesFactory.getGCRF(),
                         new FieldAbsoluteDate<>(field, AbsoluteDate.CCSDS_EPOCH),
-                        zero.add(4)),
-                zero.add(5));
+                        zero.add(4))).withMass(zero.add(5));
         MatcherAssert.assertThat(detector.g(state).getReal(), CoreMatchers.is(5.0));
         MatcherAssert.assertThat(detector.getHandler().eventOccurred(null, detector, false),
                 CoreMatchers.is(Action.STOP));

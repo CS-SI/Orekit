@@ -102,7 +102,7 @@ public class EphemerisEventsTest {
         for (int j = 0; j<= nbIntervals; j++) {
             SpacecraftState state = propagator.propagate(initDate.shiftedBy((j * deltaT) / nbIntervals));
             tab.add(new SpacecraftState(type.convertType(state.getOrbit()),
-                                        state.getAttitude(), state.getMass()));
+                                        state.getAttitude()).withMass(state.getMass()));
         }
 
         final TimeInterpolator<SpacecraftState> interpolator = new SpacecraftStateInterpolator(2, frame, frame);

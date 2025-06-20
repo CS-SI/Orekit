@@ -97,7 +97,7 @@ public class FieldDSSTThirdBodyTest {
                                                                 zero.add(mu));
 
         final T mass = zero.add(1000.0);
-        final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit, mass);
+        final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit).withMass(mass);
 
         final DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), mu);
 

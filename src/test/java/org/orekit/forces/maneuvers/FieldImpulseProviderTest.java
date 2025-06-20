@@ -55,7 +55,7 @@ class FieldImpulseProviderTest {
         final Vector3D forwardImpulse = new Vector3D(1, 2, 3);
         final Binary64Field field = Binary64Field.getInstance();
         final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
-        final SpacecraftState state = new SpacecraftState(orbit, 100);
+        final SpacecraftState state = new SpacecraftState(orbit).withMass(100);
         final FieldSpacecraftState<Binary64> fieldState = new FieldSpacecraftState<>(field, state);
         // WHEN
         final FieldImpulseProvider<Binary64> provider = FieldImpulseProvider.of(new FieldVector3D<>(field, forwardImpulse));

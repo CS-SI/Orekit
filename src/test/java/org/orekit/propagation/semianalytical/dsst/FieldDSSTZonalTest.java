@@ -106,7 +106,7 @@ public class FieldDSSTZonalTest {
                                                                 zero.add(3.986004415E14));
 
         final T mass = zero.add(1000.0);
-        final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit, mass);
+        final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit).withMass(mass);
 
         final DSSTForceModel zonal = new DSSTZonal(provider, 4, 3, 9);
 
@@ -208,7 +208,7 @@ public class FieldDSSTZonalTest {
                                                                 initDate,
                                                                 zero.add(3.986004415E14));
 
-        final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit, zero.add(1000.0));
+        final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit).withMass(zero.add(1000.0));
 
         final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
 
@@ -612,7 +612,7 @@ public class FieldDSSTZonalTest {
                         zero.newInstance(unnormalized.getMu()));
         
         final FieldOrbit<T> oscOrbit0 = new FieldEquinoctialOrbit<>(oscCircOrbit0);
-        final FieldSpacecraftState<T> oscState0 = new FieldSpacecraftState<>(oscOrbit0, zero.newInstance(mass));
+        final FieldSpacecraftState<T> oscState0 = new FieldSpacecraftState<>(oscOrbit0).withMass(zero.newInstance(mass));
         final AttitudeProvider attProvider = new FrameAlignedProvider(inertialFrame);
 
         // Propagation duration

@@ -247,7 +247,7 @@ public class IntegrableJacobianColumnGeneratorTest {
             new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
                                FramesFactory.getEME2000(), initDate, mu);
         SpacecraftState initialState =
-            new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
+            new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame())).withMass(mass);
 
         final AbsoluteDate fireDate = new AbsoluteDate(new DateComponents(2004, 01, 02),
                                                        new TimeComponents(04, 15, 34.080),
@@ -331,7 +331,7 @@ public class IntegrableJacobianColumnGeneratorTest {
         Orbit orbit = orbitType.mapArrayToOrbit(array[0], array[1], angleType, date, mu, frame);
         return (array.length > 6) ?
                new SpacecraftState(orbit, attitude) :
-               new SpacecraftState(orbit, attitude, array[0][6]);
+               new SpacecraftState(orbit, attitude).withMass(array[0][6]);
     }
 
     private NumericalPropagator setUpPropagator(Orbit orbit, double dP,

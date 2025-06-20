@@ -274,7 +274,7 @@ class EventSlopeFilterTest {
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
         Assertions.assertEquals(0, ((Counter) detector.getHandler()).getIncreasingCounter());
         Assertions.assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
-        Assertions.assertEquals(FilterType.TRIGGER_ONLY_DECREASING_EVENTS, enteringEclipseDetector.getFilter());
+        Assertions.assertEquals(FilterType.TRIGGER_ONLY_DECREASING_EVENTS, enteringEclipseDetector.getFilterType());
 
     }
 

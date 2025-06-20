@@ -499,7 +499,7 @@ class DragForceTest extends AbstractLegacyForceModelTest {
         propagator.setMu(orbit.getMu());
         propagator.addForceModel(new DragForce(atmosphere, shape));
         MatricesHarvester harvester = propagator.setupMatricesComputation("partials", null, null);
-        propagator.setInitialState(new SpacecraftState(orbit, mass));
+        propagator.setInitialState(new SpacecraftState(orbit).withMass(mass));
 
         SpacecraftState state = propagator.propagate(new AbsoluteDate(2004, 1, 1, 1, 30, 0., TimeScalesFactory.getUTC()));
         RealMatrix dYdY0 = harvester.getStateTransitionMatrix(state);
@@ -509,7 +509,7 @@ class DragForceTest extends AbstractLegacyForceModelTest {
                                                                         orbit.getPosition().add(new Vector3D(delta, 0, 0)),
                                                                         orbit.getPVCoordinates().getVelocity()),
                                            orbit.getFrame(), orbit.getMu());
-        propagator.setInitialState(new SpacecraftState(shifted, mass));
+        propagator.setInitialState(new SpacecraftState(shifted).withMass(mass));
         SpacecraftState newState = propagator.propagate(new AbsoluteDate(2004, 1, 1, 1, 30, 0., TimeScalesFactory.getUTC()));
         double[] dPVdX = new double[] {
             (newState.getPosition().getX() - state.getPVCoordinates().getPosition().getX()) / delta,

@@ -51,7 +51,7 @@ public class NodeDetectorTest {
         AbsoluteDate initialDate = new AbsoluteDate(2014, 01, 01, 0, 0, 0, TimeScalesFactory.getUTC());
         AbsoluteDate finalDate = initialDate.shiftedBy(5000);
         KeplerianOrbit initialOrbit = new KeplerianOrbit(a, e, i, w, raan, v, PositionAngleType.TRUE, inertialFrame, initialDate, Constants.WGS84_EARTH_MU);
-        SpacecraftState initialState = new SpacecraftState(initialOrbit, 1000);
+        SpacecraftState initialState = new SpacecraftState(initialOrbit).withMass(1000);
 
         double[][] tol = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(initialOrbit, initialOrbit.getType());
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);

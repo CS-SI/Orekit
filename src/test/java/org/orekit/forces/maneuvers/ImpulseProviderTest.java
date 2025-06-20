@@ -31,7 +31,7 @@ class ImpulseProviderTest {
         // GIVEN
         final Vector3D forwardImpulse = new Vector3D(1, 2, 3);
         final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
-        final SpacecraftState state = new SpacecraftState(orbit, 100);
+        final SpacecraftState state = new SpacecraftState(orbit).withMass(100);
         // WHEN
         final ImpulseProvider provider = ImpulseProvider.of(forwardImpulse);
         final Vector3D vector3D = provider.getImpulse(state, true);

@@ -854,7 +854,7 @@ public class FieldNumericalPropagatorTest {
         final FieldAbsoluteDate<T> resetDate = initDate.shiftedBy(1000);
         CheckingHandler<T> checking = new CheckingHandler<T>(Action.RESET_STATE) {
             public FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector, FieldSpacecraftState<T> oldState) {
-                return new FieldSpacecraftState<>(oldState.getOrbit(), oldState.getAttitude(), oldState.getMass().subtract(200.0));
+                return new FieldSpacecraftState<>(oldState.getOrbit(), oldState.getAttitude()).withMass(oldState.getMass().subtract(200.0));
             }
         };
         FieldDateDetector<T> detector = new FieldDateDetector<>(field, resetDate).withHandler(checking);
@@ -1191,7 +1191,7 @@ public class FieldNumericalPropagatorTest {
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);
         T mass = field.getZero().add(1000.0);
-        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(geo, mass);
+        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(geo).withMass(mass);
         propagator.setInitialState(initialState);
         propagator.setOrbitType(OrbitType.CARTESIAN);
 
@@ -1975,7 +1975,7 @@ public class FieldNumericalPropagatorTest {
                     orbitType.mapOrbitToArray(o, angleType, stateVector, null);
                     final FieldOrbit<T> fixedOrbit = orbitType.mapArrayToOrbit(stateVector, null, angleType,
                                                                                o.getDate(), o.getMu(), o.getFrame());
-                    referenceState = new FieldSpacecraftState<>(fixedOrbit, s.getAttitude(), s.getMass());
+                    referenceState = new FieldSpacecraftState<>(fixedOrbit, s.getAttitude()).withMass(s.getMass());
                 }
             } else {
                 // recurring event, we compare with the shifted reference state

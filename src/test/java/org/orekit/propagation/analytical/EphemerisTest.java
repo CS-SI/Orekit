@@ -598,7 +598,7 @@ public class EphemerisTest {
         for (double dt = 0; dt >= -1200; dt -= 60.0) {
             final SpacecraftState original = propagator.propagate(initDate.shiftedBy(dt));
             final SpacecraftState modified = new SpacecraftState(original.getOrbit(),
-                                                                 original.getAttitude(),
+                                                                 original.getAttitude()).withMass(
                                                                  original.getMass() - 0.0625 * dt);
             states.add(modified);
         }

@@ -138,7 +138,7 @@ class FieldDSSTAtmosphericDragTest {
         final FieldAttitude<T> att = new FieldAttitude<>(earthFrame, orientation);
 
         final T mass = zero.add(1000.0);
-        final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit, att, mass);
+        final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit, att).withMass(mass);
         final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
 
         // Force model parameters

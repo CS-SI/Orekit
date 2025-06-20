@@ -60,7 +60,7 @@ public class FixedPointTleGenerationAlgorithmTest {
     }
 
     @Test
-    public void testOneMoreRevolution() {
+    void testOneMoreRevolution() {
         final TLEPropagator propagator = TLEPropagator.selectExtrapolator(leoTLE);
         final int initRevolutionNumber = leoTLE.getRevolutionNumberAtEpoch();
         final double dt =  2 * FastMath.PI / leoTLE.getMeanMotion();
@@ -72,7 +72,7 @@ public class FixedPointTleGenerationAlgorithmTest {
     }
 
     @Test
-    public void testOneLessRevolution() {
+    void testOneLessRevolution() {
         final TLEPropagator propagator = TLEPropagator.selectExtrapolator(leoTLE);
         final int initRevolutionNumber = leoTLE.getRevolutionNumberAtEpoch();
         final double dt =  - 2 * FastMath.PI / leoTLE.getMeanMotion();
@@ -84,7 +84,7 @@ public class FixedPointTleGenerationAlgorithmTest {
     }
 
     @Test
-    public void testIssue781() {
+    void testIssue781() {
 
         final DSFactory factory = new DSFactory(6, 3);
         final String line1 = "1 05709U 71116A   21105.62692147  .00000088  00000-0  00000-0 0  9999";
@@ -99,7 +99,7 @@ public class FixedPointTleGenerationAlgorithmTest {
     }
 
     @Test
-    public void testIssue802() {
+    void testIssue802() {
 
         // Initialize TLE
         final TLE tleISS = new TLE("1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
@@ -125,7 +125,7 @@ public class FixedPointTleGenerationAlgorithmTest {
     }
 
     @Test
-    public void testIssue802Field() {
+    void testIssue802Field() {
         doTestIssue802Field(Binary64Field.getInstance());
     }
 
@@ -155,7 +155,7 @@ public class FixedPointTleGenerationAlgorithmTest {
     }
 
     @Test
-    public void testIssue864() {
+    void testIssue864() {
 
         // Initialize TLE
         final TLE tleISS = new TLE("1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
@@ -179,7 +179,7 @@ public class FixedPointTleGenerationAlgorithmTest {
     }
 
     @Test
-    public void testIssue864Field() {
+    void testIssue864Field() {
         doTestIssue864Field(Binary64Field.getInstance());
     }
 
@@ -207,7 +207,7 @@ public class FixedPointTleGenerationAlgorithmTest {
     }
 
     @Test
-    public void testIssue859() {
+    void testIssue859() {
 
         // INTELSAT 25 TLE taken from Celestrak the 2021-11-24T07:45:00.000
         // Because the satellite eccentricity and inclination are closed to zero, this satellite
@@ -240,7 +240,7 @@ public class FixedPointTleGenerationAlgorithmTest {
     }
 
     @Test
-    public void testIssue859Field() {
+    void testIssue859Field() {
         dotestIssue859Field(Binary64Field.getInstance());
     }
 
@@ -277,12 +277,12 @@ public class FixedPointTleGenerationAlgorithmTest {
     }
 
     @Test
-    public void testConversionLeo() {
+    void testConversionLeo() {
         checkConversion(leoTLE, 5.2e-9);
     }
 
     @Test
-    public void testConversionGeo() {
+    void testConversionGeo() {
         checkConversion(geoTLE, 9.2e-8);
     }
 
@@ -311,7 +311,7 @@ public class FixedPointTleGenerationAlgorithmTest {
     }
 
     @Test
-    public void testConversionLeoField() {
+    void testConversionLeoField() {
         doTestConversionLeoField(Binary64Field.getInstance());
     }
 
@@ -322,7 +322,7 @@ public class FixedPointTleGenerationAlgorithmTest {
     }
 
     @Test
-    public void testConversionGeoField() {
+    void testConversionGeoField() {
         doConversionGeoField(Binary64Field.getInstance());
     }
 
@@ -356,7 +356,8 @@ public class FixedPointTleGenerationAlgorithmTest {
     }
 
     @Test
-    public void testIssue1408() {
+    @Deprecated
+    void testIssue1408() {
         // The result of the TLE generation shall not be affected by the value of the gravitational
         // parameter of the input orbit.
 

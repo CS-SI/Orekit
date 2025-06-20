@@ -287,7 +287,7 @@ class SmallManeuverAnalyticalModelTest {
 
         AttitudeProvider law = new LofOffset(orbit.getFrame(), LOFType.LVLH);
         final SpacecraftState initialState =
-            new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
+            new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame())).withMass(mass);
 
 
         // set up numerical propagator
