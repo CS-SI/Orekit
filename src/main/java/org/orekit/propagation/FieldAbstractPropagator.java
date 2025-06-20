@@ -288,9 +288,9 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
             if (tsm != null) {
                 // this is an unmanaged state
                 if (forward) {
-                    tsm.addValidAfter(changed.getValue(), date);
+                    tsm.addValidAfter(changed.getValue(), date, false);
                 } else {
-                    tsm.addValidBefore(changed.getValue(), date);
+                    tsm.addValidBefore(changed.getValue(), date, false);
                 }
             }
         }

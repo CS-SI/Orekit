@@ -71,7 +71,7 @@ public class BeidouPropagatorTest {
     }
 
     @Test
-    public void testBeidouCycle() {
+    void testBeidouCycle() {
         // Builds the BeiDou propagator from the almanac
         final GNSSPropagator propagator = almanac.getPropagator();
         // Intermediate verification
@@ -91,7 +91,7 @@ public class BeidouPropagatorTest {
     }
 
     @Test
-    public void testFrames() {
+    void testFrames() {
         // Builds the BeiDou propagator from the almanac
         final GNSSPropagator propagator = almanac.getPropagator();
         Assertions.assertEquals("EME2000", propagator.getFrame().getName());
@@ -109,24 +109,24 @@ public class BeidouPropagatorTest {
     }
 
     @Test
-    public void testResetInitialState() {
+    void testResetInitialState() {
         final GNSSPropagator propagator = almanac.getPropagator();
         final SpacecraftState old = propagator.getInitialState();
-        propagator.resetInitialState(new SpacecraftState(old.getOrbit(), old.getAttitude(), old.getMass() + 1000));
+        propagator.resetInitialState(new SpacecraftState(old.getOrbit(), old.getAttitude()).withMass(old.getMass() + 1000));
         Assertions.assertEquals(old.getMass() + 1000, propagator.getInitialState().getMass(), 1.0e-9);
     }
 
     @Test
-    public void testResetIntermediateState() {
+    void testResetIntermediateState() {
         GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
         final SpacecraftState old = propagator.getInitialState();
-        propagator.resetIntermediateState(new SpacecraftState(old.getOrbit(), old.getAttitude(), old.getMass() + 1000),
+        propagator.resetIntermediateState(new SpacecraftState(old.getOrbit(), old.getAttitude()).withMass(old.getMass() + 1000),
                                           true);
         Assertions.assertEquals(old.getMass() + 1000, propagator.getInitialState().getMass(), 1.0e-9);
     }
 
     @Test
-    public void testDerivativesConsistency() {
+    void testDerivativesConsistency() {
 
         final Frame eme2000 = FramesFactory.getEME2000();
         double errorP = 0;
@@ -161,7 +161,7 @@ public class BeidouPropagatorTest {
     }
 
     @Test
-    public void testPosition() {
+    void testPosition() {
         // Initial BeiDou orbital elements (Ref: IGS)
         final BeidouLegacyNavigationMessage boe =
             new BeidouLegacyNavigationMessage(DataContext.getDefault().getTimeScales(),
@@ -198,7 +198,7 @@ public class BeidouPropagatorTest {
     }
 
     @Test
-    public void testIssue544() {
+    void testIssue544() {
         // Builds the BeidouPropagator from the almanac
         final GNSSPropagator propagator = almanac.getPropagator();
         // In order to test the issue, we voluntary set a Double.NaN value in the date.
@@ -211,7 +211,7 @@ public class BeidouPropagatorTest {
     }
 
     @Test
-    public void testConversion() {
+    void testConversion() {
         GnssTestUtils.checkFieldConversion(almanac);
     }
 

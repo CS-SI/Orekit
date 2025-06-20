@@ -135,7 +135,7 @@ public class PointingPanelTest {
                                                                                  Rotation.IDENTITY,
                                                                                  Vector3D.ZERO,
                                                                                  Vector3D.ZERO));
-        final SpacecraftState state = new SpacecraftState(orbit, attitude, 1000.0);
+        final SpacecraftState state = new SpacecraftState(orbit, attitude).withMass(1000.0);
         Vector3D normal = panel.getNormal(state);
         Assertions.assertEquals(0, Vector3D.dotProduct(normal, Vector3D.PLUS_J), 1.0e-16);
     }
@@ -167,7 +167,7 @@ public class PointingPanelTest {
                                                                                  Rotation.IDENTITY,
                                                                                  Vector3D.ZERO,
                                                                                  Vector3D.ZERO));
-        final SpacecraftState state = new SpacecraftState(orbit, attitude, 1000.0);
+        final SpacecraftState state = new SpacecraftState(orbit, attitude).withMass(1000.0);
         Field<Binary64> field = Binary64Field.getInstance();
         FieldVector3D<Binary64> normal = panel.getNormal(new FieldSpacecraftState<>(field, state));
         Assertions.assertEquals(0, FieldVector3D.dotProduct(normal, Vector3D.PLUS_J).getReal(), 1.0e-16);

@@ -269,7 +269,7 @@ public abstract class AbstractForceModelTest {
                                         new FieldVector3D<>(field, state0.getAttitude().getRotationAcceleration()));
         final FieldSpacecraftState<DerivativeStructure> fState =
                         new FieldSpacecraftState<>(new FieldCartesianOrbit<>(fPVA, state0.getFrame(), field.getZero().add(state0.getOrbit().getMu())),
-                                                   new FieldAttitude<>(state0.getFrame(), fAC),
+                                                   new FieldAttitude<>(state0.getFrame(), fAC)).withMass(
                                                    field.getZero().add(state0.getMass()));
         FieldVector3D<DerivativeStructure> dsJacobian = forceModel.acceleration(fState,
                                                                                 forceModel.getParameters(fState.getDate().getField(), fState.getDate()));
@@ -366,7 +366,7 @@ public abstract class AbstractForceModelTest {
                                         new FieldVector3D<>(field, state0.getAttitude().getRotationAcceleration()));
         final FieldSpacecraftState<Gradient> fState =
                         new FieldSpacecraftState<>(new FieldCartesianOrbit<>(fPVA, state0.getFrame(), field.getZero().add(state0.getOrbit().getMu())),
-                                                   new FieldAttitude<>(state0.getFrame(), fAC),
+                                                   new FieldAttitude<>(state0.getFrame(), fAC)).withMass(
                                                    field.getZero().add(state0.getMass()));
         FieldVector3D<Gradient> gJacobian = forceModel.acceleration(fState,
                                                                      forceModel.getParameters(fState.getDate().getField(), fState.getDate()));
@@ -861,8 +861,7 @@ public abstract class AbstractForceModelTest {
         a[index] += h;
         SpacecraftState shiftedState = new SpacecraftState(orbitType.mapArrayToOrbit(a, aDot, angleType, state0.getDate(),
                                                                                      state0.getOrbit().getMu(), state0.getFrame()),
-                                                           state0.getAttitude(),
-                                                           state0.getMass());
+                                                           state0.getAttitude()).withMass(state0.getMass());
         propagator.setInitialState(shiftedState);
         SpacecraftState integratedState = propagator.propagate(targetDate);
         orbitType.mapOrbitToArray(integratedState.getOrbit(), angleType, a, null);

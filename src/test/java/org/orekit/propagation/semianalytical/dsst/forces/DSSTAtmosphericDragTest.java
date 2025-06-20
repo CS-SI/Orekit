@@ -105,7 +105,7 @@ class DSSTAtmosphericDragTest {
         TimeStampedAngularCoordinates orientation = new TimeStampedAngularCoordinates(initDate, rotation, rotationRate, rotationAcceleration);
         final Attitude att = new Attitude(earthFrame, orientation);
 
-        final SpacecraftState state = new SpacecraftState(orbit, att, 1000.0);
+        final SpacecraftState state = new SpacecraftState(orbit, att).withMass(1000.0);
         final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
 
         // Force model parameters
@@ -231,7 +231,7 @@ class DSSTAtmosphericDragTest {
         TimeStampedAngularCoordinates orientation = new TimeStampedAngularCoordinates(initDate, rotation, rotationRate, rotationAcceleration);
         final Attitude att = new Attitude(eme2000Frame, orientation);
 
-        final SpacecraftState state = new SpacecraftState(orbit, att, 1000.0);
+        final SpacecraftState state = new SpacecraftState(orbit, att).withMass(1000.0);
         final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
 
         // Force model parameters

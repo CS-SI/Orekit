@@ -423,7 +423,7 @@ class FieldImpulseManeuverTest {
                                                             final double initialMass) {
         final ClassicalRungeKuttaIntegrator integrator = new ClassicalRungeKuttaIntegrator(stepSize);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
-        propagator.setInitialState(new SpacecraftState(initialOrbit, initialMass));
+        propagator.setInitialState(new SpacecraftState(initialOrbit).withMass(initialMass));
         propagator.setOrbitType(orbitType);
         propagator.setPositionAngleType(positionAngleType);
         return propagator;
@@ -438,7 +438,7 @@ class FieldImpulseManeuverTest {
                 fieldIntegrator);
         final FieldOrbit<T> fieldInitialOrbit = createConstantFieldOrbit(field, initialOrbit);
         final T fieldInitialMass = field.getZero().add(initialMass);
-        fieldPropagator.setInitialState(new FieldSpacecraftState<>(fieldInitialOrbit, fieldInitialMass));
+        fieldPropagator.setInitialState(new FieldSpacecraftState<>(fieldInitialOrbit).withMass(fieldInitialMass));
         fieldPropagator.setOrbitType(orbitType);
         fieldPropagator.setPositionAngleType(positionAngleType);
         return fieldPropagator;

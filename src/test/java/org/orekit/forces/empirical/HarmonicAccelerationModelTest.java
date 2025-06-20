@@ -145,8 +145,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         SpacecraftState initialState = new SpacecraftState(initialOrbit,
                                                            maneuverLaw.getAttitude(initialOrbit,
                                                                                    initialOrbit.getDate(),
-                                                                                   initialOrbit.getFrame()),
-                                                           mass);
+                                                                                   initialOrbit.getFrame())).withMass(mass);
 
         double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(initialOrbit, initialOrbit.getType());
 
@@ -262,8 +261,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
                                                                           new SpacecraftState(initialOrbit,
                                                                                               maneuverLaw.getAttitude(initialOrbit,
                                                                                                                       initialOrbit.getDate(),
-                                                                                                                      initialOrbit.getFrame()),
-                                                                                              mass));
+                                                                                                                      initialOrbit.getFrame())).withMass(mass));
 
         double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(10).getTolerances(
                                                                    initialState.getOrbit(),
@@ -364,8 +362,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         SpacecraftState initialState = new SpacecraftState(orbit,
                                                            maneuverLaw.getAttitude(orbit,
                                                                                    orbit.getDate(),
-                                                                                   orbit.getFrame()),
-                                                           mass);
+                                                                                   orbit.getFrame())).withMass(mass);
 
         double dP      = 10.0;
         double minStep = 0.001;

@@ -67,8 +67,7 @@ public class FunctionalDetectorTest {
                                 new Vector3D(4, 5, 6)),
                         FramesFactory.getGCRF(),
                         AbsoluteDate.CCSDS_EPOCH,
-                        4),
-                5);
+                        4)).withMass(5);
         MatcherAssert.assertThat(detector.g(state), CoreMatchers.is(5.0));
         MatcherAssert.assertThat(detector.getHandler().eventOccurred(null, detector, false), CoreMatchers.is(Action.STOP));
         MatcherAssert.assertThat(detector.getFunction(), CoreMatchers.is(g));

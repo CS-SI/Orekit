@@ -468,7 +468,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
     public static SpacecraftState generateSergeiReferenceState() {
         final Orbit  orbit      = generateSergeiReferenceOrbit();
         final double sergeiMass = 0.04;
-        return new SpacecraftState(orbit, sergeiMass);
+        return new SpacecraftState(orbit).withMass(sergeiMass);
     }
 
     public static Orbit generateSergeiReferenceOrbit() {

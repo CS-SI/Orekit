@@ -206,8 +206,7 @@ class AdditionalDataProviderTest {
                             state.getFrame(),
                             new Rotation(0, 0, 0, 1, false),
                             Vector3D.ZERO,
-                            Vector3D.ZERO),
-                    2 * SpacecraftState.DEFAULT_MASS);
+                            Vector3D.ZERO)).withMass(2 * SpacecraftState.DEFAULT_MASS);
         }
     }
 

@@ -96,7 +96,7 @@ class DSSTZonalTest {
                                                  initDate,
                                                  3.986004415E14);
 
-        final SpacecraftState state = new SpacecraftState(orbit, 1000.0);
+        final SpacecraftState state = new SpacecraftState(orbit).withMass(1000.0);
 
         final DSSTForceModel zonal;
         if (testIssue1104) {
@@ -207,7 +207,7 @@ class DSSTZonalTest {
                                                  initDate,
                                                  3.986004415E14);
 
-        final SpacecraftState state = new SpacecraftState(orbit, 1000.0);
+        final SpacecraftState state = new SpacecraftState(orbit).withMass(1000.0);
 
         final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
 
@@ -345,7 +345,7 @@ class DSSTZonalTest {
                                                               inertialFrame, t0, unnormalized.getMu());
         
         final Orbit oscOrbit0 = new EquinoctialOrbit(oscCircOrbit0);
-        final SpacecraftState oscState0 = new SpacecraftState(oscOrbit0, mass);
+        final SpacecraftState oscState0 = new SpacecraftState(oscOrbit0).withMass(mass);
         final AttitudeProvider attProvider = new FrameAlignedProvider(inertialFrame);
 
         // Propagation duration

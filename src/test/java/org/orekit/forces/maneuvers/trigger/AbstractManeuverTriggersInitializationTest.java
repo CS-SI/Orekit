@@ -129,7 +129,7 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
         double mu = Constants.EGM96_EARTH_MU;
         Orbit orbit = new KeplerianOrbit(a, e, i, pa, raan, anomaly,
                 type, frame, startDate, mu);
-        initialState = new SpacecraftState(orbit, mass);
+        initialState = new SpacecraftState(orbit).withMass(mass);
 
         //Numerical Propagator
         double minStep = 1.0e-5;

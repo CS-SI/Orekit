@@ -169,7 +169,7 @@ class GPSPropagatorTest {
     void testResetInitialState() {
         final GNSSPropagator propagator = almanacs.get(0).getPropagator();
         final SpacecraftState old = propagator.getInitialState();
-        propagator.resetInitialState(new SpacecraftState(old.getOrbit(), old.getAttitude(), old.getMass() + 1000));
+        propagator.resetInitialState(new SpacecraftState(old.getOrbit(), old.getAttitude()).withMass(old.getMass() + 1000));
         Assertions.assertEquals(old.getMass() + 1000, propagator.getInitialState().getMass(), 1.0e-9);
     }
 
@@ -177,7 +177,7 @@ class GPSPropagatorTest {
     void testResetIntermediateState() {
         GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).build();
         final SpacecraftState old = propagator.getInitialState();
-        propagator.resetIntermediateState(new SpacecraftState(old.getOrbit(), old.getAttitude(), old.getMass() + 1000),
+        propagator.resetIntermediateState(new SpacecraftState(old.getOrbit(), old.getAttitude()).withMass( old.getMass() + 1000),
                                           true);
         Assertions.assertEquals(old.getMass() + 1000, propagator.getInitialState().getMass(), 1.0e-9);
     }

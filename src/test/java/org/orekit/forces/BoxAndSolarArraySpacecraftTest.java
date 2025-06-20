@@ -302,8 +302,7 @@ public class BoxAndSolarArraySpacecraftTest {
                                                                 new TimeStampedAngularCoordinates(date,
                                                                                                   Rotation.IDENTITY,
                                                                                                   Vector3D.ZERO,
-                                                                                                  Vector3D.ZERO)),
-                                                    1000.0);
+                                                                                                  Vector3D.ZERO))).withMass(1000.0);
 
         // head-on, there acceleration with lift should be twice acceleration without lift
         Vector3D headOnVelocity = new Vector3D(2000, 0.0, 0.0);

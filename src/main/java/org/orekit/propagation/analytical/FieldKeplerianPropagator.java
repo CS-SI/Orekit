@@ -179,9 +179,9 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
     @Override
     protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward) {
         if (forward) {
-            states.addValidAfter(state, state.getDate());
+            states.addValidAfter(state, state.getDate(), false);
         } else {
-            states.addValidBefore(state, state.getDate());
+            states.addValidBefore(state, state.getDate(), false);
         }
         stateChanged(state);
     }

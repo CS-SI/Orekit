@@ -239,7 +239,7 @@ class RadiationPressureModelTest {
     }
 
     private SpacecraftState createState(final double radius) {
-        return new SpacecraftState(createOrbit(radius), 100);
+        return new SpacecraftState(createOrbit(radius)).withMass(100);
     }
 
     private Orbit createOrbit(final double radius) {

@@ -103,7 +103,7 @@ public class FieldDSSTTesseralTest {
                                                                 zero.add(3.986004415E14));
 
         final T mass = zero.add(1000.0);
-        final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit, mass);
+        final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit).withMass(mass);
 
         final DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
@@ -167,7 +167,7 @@ public class FieldDSSTTesseralTest {
                                                       nshp, 8, 8, 4, 12, 8, 8, 4);
 
         // Initial state
-        final FieldSpacecraftState<T> meanState = new FieldSpacecraftState<>(orbit, zero.add(45.0));
+        final FieldSpacecraftState<T> meanState = new FieldSpacecraftState<>(orbit).withMass(zero.add(45.0));
 
         //Create the auxiliary object
         final FieldAuxiliaryElements<T> aux = new FieldAuxiliaryElements<>(orbit, 1);
@@ -228,7 +228,7 @@ public class FieldDSSTTesseralTest {
                                                                 initDate,
                                                                 zero.add(3.986004415E14));
 
-        final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit, zero.add(1000.0));
+        final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit).withMass(zero.add(1000.0));
 
         final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
 

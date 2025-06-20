@@ -128,8 +128,7 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
         SpacecraftState initialState = new SpacecraftState(initialOrbit,
                                                            maneuverLaw.getAttitude(initialOrbit,
                                                                                    initialOrbit.getDate(),
-                                                                                   initialOrbit.getFrame()),
-                                                           mass);
+                                                                                   initialOrbit.getFrame())).withMass(mass);
 
         double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(initialOrbit, initialOrbit.getType());
 
@@ -239,8 +238,7 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
                                                                           new SpacecraftState(initialOrbit,
                                                                                               maneuverLaw.getAttitude(initialOrbit,
                                                                                                                       initialOrbit.getDate(),
-                                                                                                                      initialOrbit.getFrame()),
-                                                                                              mass));
+                                                                                                                      initialOrbit.getFrame())).withMass(mass));
 
         double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(10).getTolerances(
                                                                    initialState.getOrbit(),
