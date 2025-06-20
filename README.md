@@ -349,6 +349,12 @@ all released under business friendly FOSS licenses.
 More detailed information is available in the
 [Maven site](https://www.orekit.org/site-orekit-development/dependencies.html).
 
+# How to cite
+
+To cite Orekit in publications, please refer to the following Digital Object Identifier for the latest release: [10.5281/zenodo.7249096](https://doi.org/10.5281/zenodo.7249096)
+
+For a specific version, search the zenodo website for their respective DOI.
+
 # License
 
 Orekit is licensed by [CS GROUP](https://www.cs-soprasteria.com/) under
