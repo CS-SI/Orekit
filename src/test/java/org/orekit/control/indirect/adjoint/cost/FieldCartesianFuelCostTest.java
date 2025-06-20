@@ -102,6 +102,7 @@ class FieldCartesianFuelCostTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void testGetFieldHamiltonianContribution() {
         // GIVEN
         final FieldCartesianFuelCost<Binary64> cartesianFuel = Mockito.mock(FieldCartesianFuelCost.class);

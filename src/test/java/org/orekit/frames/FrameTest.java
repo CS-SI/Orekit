@@ -625,6 +625,7 @@ class FrameTest {
         doTestPeeringField(Binary64Field.getInstance());
     }
 
+    @SuppressWarnings("unchecked")
     private <T extends CalculusFieldElement<T>> void doTestPeeringField(final Field<T> field) {
 
         Frame eme2000 = FramesFactory.getEME2000();
@@ -669,6 +670,7 @@ class FrameTest {
         doTestPeeringFieldKinematic(Binary64Field.getInstance());
     }
 
+    @SuppressWarnings("unchecked")
     private <T extends CalculusFieldElement<T>> void doTestPeeringFieldKinematic(final Field<T> field) {
 
         Frame eme2000 = FramesFactory.getEME2000();
@@ -713,6 +715,7 @@ class FrameTest {
         doTestPeeringFieldStatic(Binary64Field.getInstance());
     }
 
+    @SuppressWarnings("unchecked")
     private <T extends CalculusFieldElement<T>> void doTestPeeringFieldStatic(final Field<T> field) {
 
         Frame eme2000 = FramesFactory.getEME2000();
