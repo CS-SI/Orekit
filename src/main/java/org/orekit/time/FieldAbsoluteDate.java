@@ -1440,7 +1440,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @return hashcode
      */
     public int hashCode() {
-        return date.hashCode();
+        return date.hashCode() + fieldOffset.getAddendum().hashCode();
     }
 
     /**
