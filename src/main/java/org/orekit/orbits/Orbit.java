@@ -517,6 +517,15 @@ public abstract class Orbit
         return position;
     }
 
+    /** Get the velocity in definition frame.
+     * @return velocity in the definition frame
+     * @see #getPVCoordinates()
+     * @since 13.1
+     */
+    public Vector3D getVelocity() {
+        return getPVCoordinates().getVelocity();
+    }
+
     /** Get the {@link TimeStampedPVCoordinates} in definition frame.
      * @return pvCoordinates in the definition frame
      * @see #getPVCoordinates(Frame)

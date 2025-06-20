@@ -43,6 +43,16 @@ public interface FieldPVCoordinatesProvider<T extends CalculusFieldElement<T>> {
         return getPVCoordinates(date, frame).getPosition();
     }
 
+    /** Get the velocity of the body in the selected frame.
+     * @param date current date
+     * @param frame the frame where to define the velocity
+     * @return velocity of the body (m/s)
+     * @since 13.1
+     */
+    default FieldVector3D<T> getVelocity(final FieldAbsoluteDate<T> date, final Frame frame) {
+        return getPVCoordinates(date, frame).getVelocity();
+    }
+
     /** Get the {@link FieldPVCoordinates} of the body in the selected frame.
      * @param date current date
      * @param frame the frame where to define the position

@@ -546,6 +546,15 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
         return position;
     }
 
+    /** Get the velocity in definition frame.
+     * @return velocity in the definition frame
+     * @see #getPVCoordinates()
+     * @since 13.1
+     */
+    public FieldVector3D<T> getVelocity() {
+        return getPVCoordinates().getVelocity();
+    }
+
     /** Get the {@link TimeStampedPVCoordinates} in definition frame.
      * @return FieldPVCoordinates in the definition frame
      * @see #getPVCoordinates(Frame)
