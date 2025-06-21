@@ -15,48 +15,68 @@ Three types of versions can be released:
  Once again APIs incompatibility with version xx.y or xx.0 are not allowed.  
  A patch version is the only type of version where a vote from the PMC isn't required to publish the release.
 
+# 0. Prerequisites
 
-Since there are some differences in the releasing process between minor/major versions and patch versions, this guide is split in two distinct sections.  
-The first one deals with releasing a major/minor version, while the second one is dedicated to patch versions and is mainly a list of differences between the two releasing processes.
+The following tasks are one-time actions, they just prepare the credentials for
+performing the release, but these credentials will remain valid for years and
+for several releases.
 
-# Releasing a Major / Minor version
+## Signing Key
 
-## 0. Prerequisites
+Orekit artifacts are signed with a specific GPG signing key that is shared among
+all release managers. The id of this key is `0802AB8C87B0B1AEC1C1C5871550FDBD6375C33B`.
+Release managers should ask for this key and its password before they can sign
+releases. There are no automatic process for this, candidate release managers should
+just send direct messages to existing release managers, and they will proceed with
+sending the key and password, using any means they see fit.
 
-### SonaType OSS Account
+## Sonatype central portal
 
-1. Obtain private key of the Orekit Signing Key, key id:
-   `0802AB8C87B0B1AEC1C1C5871550FDBD6375C33B`
-2. Register for account on OSSRH and associate it with the Orekit project, see:
-   https://central.sonatype.org/pages/ossrh-guide.html
+Binary artifacts are published in the maven central repository, which is managed by Sonatype.
+The `org.orekit` namespace is used for these artifacts, and only people that have
+been identified as allowed to publish releases can push binary artifacts for publication.
 
-If you need help with either ask on the development section of the Orekit
-forum.
+In order to publish, candidate relese managers should therefore create an account on
+Sonatype central repository using the
+[central portal login page](https://central.sonatype.com/account). Once the
+account has been created they should ask existing release managers to add them to the
+allowed list for the `org.orekit` namespace.
 
-Once you have a SonaType OSS account, the corresponding credentials must be set
-in the `servers` section of the `$HOME/.m2/settings.xml` file, using a generated
-token. Token generation procedure is detailed in [sonatype website](https://central.sonatype.org/publish/generate-token/?__hstc=31049440.752958227ec9a663b14fcde02f9eff5e.1718741134490.1718741134490.1718741740031.2&__hssc=31049440.2.1718741740031&__hsfp=677136553):
+Note that the central portal account and the associated credentials are different from
+the legacy OSSRH system that was used before Orekit 13.1. This implies that people that
+were able to publish Orekit releases prior to ORekit 13.1 must create a new account on
+the new central portal system, their older account on legacy OSSRH is obsolete.
+
+After creating the account on Sonatype central portal, release managers should create
+a User Token. This is done by login to
+[central portal login page](https://central.sonatype.com/account), selecting
+the `View Account` item from the menu drop list at the upper right of the page (small
+button that displays the start of the username) and selectins the `Generate User Token`
+button in the `Setup Token-Based Authentication` page. This will generate a token with a
+small random Id and a long random password. They should copy the xml snippet that has been
+generated into their `$HOME/.m2/settings.xml` file, in the `servers` section, taking care
+that the popup window automatically disappears after one minute:
 
     <servers>
       <server>
-        <id>ossrh</id>
-        <username>the generated tokenuser</username>
-        <password>the generated tokenkey</password>
+        <id>central</id>
+        <username>the generated username</username>
+        <password>the generated password</password>
       </server>
     </servers>
 
-### Install Graphviz 2.38
+The Sonatype [publish portal guide](https://central.sonatype.org/publish/publish-portal-guide/)
+explains everything in detail, but this release guide is sufficient to perform a release.
 
-Graphviz is used to produce the UML diagrams for the site (see /src/design/*.puml files).  
-Graphviz (dot) 2.39 and above put too much blank space in the generated
-diagrams. The bug has not yet been fixed in graphviz, so we have to use 2.38 or
-earlier. The version in CentOS 7 works, the version in Ubuntu 18.04 does not.
+# 1. Verify the status of start branch
 
-## 1. Verify the status of develop branch
+Major and minor versions are released starting from the develop branch. Patch versions
+are released from a dedicated branch (typically named patch-X.Y.Z where X.Y.Z is the
+candidate version number).
 
 Before anything, check on the [continuous integration
 site](https://sonar.orekit.org/dashboard?id=orekit%3Aorekit) that everything is fine on
-develop branch:
+start branch:
 
 * All tests pass;
 * Code coverage is up to the requirements;
@@ -67,8 +87,54 @@ If not, fix the warnings and errors first!
 It is also necessary to check on the [Gitlab CI/CD](https://gitlab.orekit.org/orekit/orekit/pipelines)
 that everything is fine on develop branch (i.e. all stages are passed).
 
-## 2. Prepare Git branch for release
+## 2. Run the release.sh script
 
+There is a `release.sh` shell script in the `scripts` directory that
+helps performing the release. It handles many steps automatically. It
+asks questions and waits for input and confirmation at various stages,
+creating branches, checking them out, performing some automated
+edition on several files, commit the changes, compiling the library,
+signing the artifacts and ultimately pushing everything to maven
+central portal in a staging area.
+
+It performs the release on a temporary branch that is merged only at
+the final step, and it automatically removes it without merging if
+something goes wrong before this final step, hence ensuring everything
+remains clean.
+
+When releasing a major or minor version, the script will automatically
+post a vote thread to the forum Orekit community and PMC members
+can vote on the release and then it will stop.
+
+When releasing patch version, the script will skip the vote thread and
+continue up to promoting the release from staging to published.
+
+The script does not handle (yet) the final stages like updating the web site
+or announcing the release on the GitHub mirror repoitory. These stages are
+described in the next section.
+
+This script must be run from the command line on a computer with
+several Linux utilities (git, sed, xsltproc, curl…), with the git worktree
+already set to the start branch (i.e. develop or a patch branch):
+
+    sh scripts/release.sh
+
+Here are the steps the script will perform on its own, asking
+for user confirmation before any commit:
+
+    - perform safety checks (files and directories present, utilities available)
+    - check if the release is a major, minor or patch release,
+      using the -SNAPSHOT version number from the current branch pom.xml
+    - for major release, create a release-X.Y branch from develop
+    - checkout the release-X.Y branch
+    - create a release-X.Y-temporary branch
+    - checkout the release-X.Y-temporary branch
+    - drop -SNAPSHOT version number from pom.xml and commit the change
+    - compute candidate release date 5 days in the future
+    - update changes.xml with date and user-provided description and commit the change
+    -
+    
+The script 
 Release will be performed on a dedicated branch, not directly on main or
 develop branch. So a new branch must be created as follows and used for
 everything else:
