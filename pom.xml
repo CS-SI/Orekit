@@ -47,7 +47,7 @@
     <orekit.mockito-core.version>4.11.0</orekit.mockito-core.version>
     <orekit.jgit.buildnumber.version>1.2.12</orekit.jgit.buildnumber.version>
     <orekit.build-helper-maven-plugin.version>3.6.0</orekit.build-helper-maven-plugin.version>
-    <orekit.nexus-staging-maven-plugin.version>1.7.0</orekit.nexus-staging-maven-plugin.version>
+    <orekit.central-publishing-maven-plugin.version>0.8.0</orekit.central-publishing-maven-plugin.version>
     <orekit.maven-gpg-plugin.version>3.2.7</orekit.maven-gpg-plugin.version>
     <orekit.maven-install-plugin.version>3.1.4</orekit.maven-install-plugin.version>
     <orekit.mathjax.config>&lt;script type="text/x-mathjax-config"&gt;MathJax.Hub.Config({ TeX: { extensions: ["autoload.js"]}});&lt;/script&gt;</orekit.mathjax.config>
@@ -1042,16 +1042,6 @@
     </profile>
     <profile>
       <id>release</id>
-      <distributionManagement>
-        <repository>
-          <id>ossrh</id>
-          <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
-        </repository>
-        <snapshotRepository>
-          <id>ossrh</id>
-          <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-      </distributionManagement>
       <build>
         <plugins>
           <plugin>
@@ -1081,14 +1071,13 @@
             </executions>
           </plugin>
           <plugin>
-            <groupId>org.sonatype.plugins</groupId>
-            <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>${orekit.nexus-staging-maven-plugin.version}</version>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>${orekit.central-publishing-maven-plugin.version}</version>
             <extensions>true</extensions>
             <configuration>
-              <serverId>ossrh</serverId>
-              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-              <autoReleaseAfterClose>false</autoReleaseAfterClose>
+              <publishingServerId>central</publishingServerId>
+              <autoPublish>false</autoPublish>
             </configuration>
           </plugin>
           <plugin>
