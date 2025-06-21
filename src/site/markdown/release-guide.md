@@ -49,13 +49,15 @@ the new central portal system, their older account on legacy OSSRH is obsolete.
 
 After creating the account on Sonatype central portal, release managers should create
 a User Token. This is done by login to
-[central portal login page](https://central.sonatype.com/account), selecting
-the `View Account` item from the menu drop list at the upper right of the page (small
-button that displays the start of the username) and selectins the `Generate User Token`
-button in the `Setup Token-Based Authentication` page. This will generate a token with a
-small random Id and a long random password. They should copy the xml snippet that has been
-generated into their `$HOME/.m2/settings.xml` file, in the `servers` section, taking care
-that the popup window automatically disappears after one minute:
+[central portal login page](https://central.sonatype.com/account), selecting the
+`View Account` item from the menu drop list at the upper right of the page (small
+button that displays the start of the username) and selecting the
+`Generate User Token` button in the `Setup Token-Based Authentication` page. This
+will generate a token with a small random Id and a long random password. They
+should copy the xml snippet that has been generated into their
+`$HOME/.m2/settings.xml` file, in the `servers` section (except for server name that
+should be set to `central`), taking care that the popup window automatically disappears
+after one minute:
 
     <servers>
       <server>
@@ -65,8 +67,58 @@ that the popup window automatically disappears after one minute:
       </server>
     </servers>
 
+Note that the popup suggests to use `${server}` as the id, but we really should use `central`
+as in the snippet above because this is what the `release.sh` script will use to retrieve
+the credentials when it will use the central portal API.
+
 The Sonatype [publish portal guide](https://central.sonatype.org/publish/publish-portal-guide/)
 explains everything in detail, but this release guide is sufficient to perform a release.
+
+## Note on maven plugins versions
+
+Maven plugins should be updated from time to time, but it is probably
+unwise to do it at release time, it is tool lates, so these updates
+should happen well before the release. All maven plugin versions are
+gathered at one place, in a set of properties in `pom.xml`:
+
+    <!-- Project specific plugin versions -->
+    <orekit.spotbugs-maven-plugin.version>3.1.11</orekit.spotbugs-maven-plugin.version>
+    <orekit.jacoco-maven-plugin.version>0.8.3</orekit.jacoco-maven-plugin.version>
+    <orekit.maven-assembly-plugin.version>3.1.1</orekit.maven-assembly-plugin.version>
+    ...
+
+You can find the latest version of the plugins using the search feature at
+[https://central.sonatype.com/](https://central.sonatype.com/). The
+properties name all follow the pattern `orekit.some-plugin-name.version`, the
+plugin name should be used in the web form to check for available versions.
+
+Beware that in some cases, the latest version cannot be used due to
+incompatibilities. For example when a plugin was not recently updated and
+conflicts appear with newer versions of its dependencies.
+
+Beware also that some plugins use configuration files that may need update too.
+This is typically the case with `maven-checkstyle-plugin` and
+`spotbugs-maven-plugin`. The `/checkstyle.xml` and
+`/spotbugs-exclude-filter.xml` files may need to be checked.
+
+Before committing these changes, you have to check that everything works. So
+run the following command:
+
+    mvn clean
+    LANG=C mvn -Prelease site
+
+If something goes wrong, either fix it by changing the plugin configuration or
+roll back to an earlier version of the plugin.
+
+Browse the generated site starting at page `target/site/index.html` and check
+that everything is rendered properly.
+
+When everything runs fine and the generated site is OK, then you can commit the
+changes:
+
+    git add orekit/pom.xml orekit/checkstyle.xml orekit/spotbugs-exclude-filter.xml
+    git commit -m "Updated maven plugins versions."
+
 
 # 1. Verify the status of start branch
 
@@ -113,8 +165,8 @@ The script does not handle (yet) the final stages like updating the web site
 or announcing the release on the GitHub mirror repoitory. These stages are
 described in the next section.
 
-This script must be run from the command line on a computer with
-several Linux utilities (git, sed, xsltproc, curl…), with the git worktree
+This script must be run from the command line on a computer with several Linux
+utilities (git, sed, xsltproc, gpg-agent, curl…), with the git worktree
 already set to the start branch (i.e. develop or a patch branch):
 
     sh scripts/release.sh
@@ -122,171 +174,31 @@ already set to the start branch (i.e. develop or a patch branch):
 Here are the steps the script will perform on its own, asking
 for user confirmation before any commit:
 
-    - perform safety checks (files and directories present, utilities available)
-    - check if the release is a major, minor or patch release,
-      using the -SNAPSHOT version number from the current branch pom.xml
-    - for major release, create a release-X.Y branch from develop
+    - perform safety checks (files and directories present, utilities available, java version)
+    - retrieve central portal credentials from `$HOME/.m2/settings.xml`
+    - check if the release is a major, minor or patch release
+      using the -SNAPSHOT version number from the current branch `pom.xml`
+    - for major or minor release, create a release-X.Y branch from develop (reuse existing branch for patch release)
     - checkout the release-X.Y branch
     - create a release-X.Y-temporary branch
     - checkout the release-X.Y-temporary branch
-    - drop -SNAPSHOT version number from pom.xml and commit the change
+    - merge the start branch into the release-X.Y-temporary branch
+    - drop -SNAPSHOT version number from `pom.xml` and commit the change
     - compute candidate release date 5 days in the future
-    - update changes.xml with date and user-provided description and commit the change
-    -
-    
-The script 
-Release will be performed on a dedicated branch, not directly on main or
-develop branch. So a new branch must be created as follows and used for
-everything else:
-
-    git branch release-X.Y
-    git checkout release-X.Y
-
-## 3. Update Maven plugins versions
-
-Release is a good opportunity to update the maven plugin versions. They are all
-gathered at one place, in a set of properties in `orekit/pom.xml`:
-
-    <!-- Project specific plugin versions -->
-    <orekit.spotbugs-maven-plugin.version>3.1.11</orekit.spotbugs-maven-plugin.version>
-    <orekit.jacoco-maven-plugin.version>0.8.3</orekit.jacoco-maven-plugin.version>
-    <orekit.maven-assembly-plugin.version>3.1.1</orekit.maven-assembly-plugin.version>
-    ...
-
-You can find the latest version of the plugins using the search feature at
-[http://search.maven.org/#search](http://search.maven.org/#search). The
-properties name all follow the pattern `orekit.some-plugin-name.version`, the
-plugin name should be used in the web form to check for available versions.
-
-Beware that in some cases, the latest version cannot be used due to
-incompatibilities. For example when a plugin was not recently updated and
-conflicts appear with newer versions of its dependencies.
-
-Beware also that some plugins use configuration files that may need update too.
-This is typically the case with `maven-checkstyle-plugin` and
-`spotbugs-maven-plugin`. The `/checkstyle.xml` and
-`/spotbugs-exclude-filter.xml` files may need to be checked.
-
-Before committing these changes, you have to check that everything works. So
-run the following command:
-
-    mvn clean
-    LANG=C mvn -Prelease site
-
-If something goes wrong, either fix it by changing the plugin configuration or
-roll back to an earlier version of the plugin.
-
-Browse the generated site starting at page `target/site/index.html` and check
-that everything is rendered properly.
-
-When everything runs fine and the generated site is OK, then you can commit the
-changes:
-
-    git add orekit/pom.xml orekit/checkstyle.xml orekit/spotbugs-exclude-filter.xml
-    git commit -m "Updated maven plugins versions."
-
-## 4. Updating changes.xml
-
-Finalize the file `/src/changes/changes.xml` file.
-
-The release date and description, which are often only set to `TBD` during
-development, must be set to appropriate values. The release date at this step
-is only a guess one or two weeks in the future, in order to take into account
-the 5 days release vote delay.
-
-Replace the `TBD` description with a text describing the version released:
-state if it is a minor or major version, list the major features introduced by
-the version etc. (see examples in descriptions of former versions).
-
-Commit the `changes.xml` file.
-
-    git add src/changes/changes.xml
-    git commit -m "Updated changes.xml for official release."
-
-## 5. Updating documentation
-
-Several files must be updated to take into account the new version:
-
-|               file name                  |       usage       |                                     required update                                                    |
-|------------------------------------------|-------------------|--------------------------------------------------------------------------------------------------------|
-| `src/site/markdown/index.md`             | site home page    | Update the text about the latest available version, including important changes from **changes.xml**   |
-| `src/main/java/org/orekit/overview.html` | API documentation | Update the text about the latest available version, including important changes from **changes.xml**   |
-| `src/site/markdown/downloads.md.vm`      | downloads links   | Declare the new versions, don't forget the date                                                        |
-| `src/site/markdown/faq.md`               | FAQ               | Add line to the table of dependencies.                                                                 |
+    - update `changes.xml` with date and user-provided description and commit the change
+    - update downloads and faq pages and commit the changes
+    - put a temporary tag on the temporary branch, just to prime gpg-agent for later signatures
+    - perform a complete build, including test and site generation, this can take a long time
+    - merge release-X.Y-temporary branch into release-X.Y branch
+    - delete release-X.Y-temporary branch
+    - deploy the maven artifacts to central portal
+    - tag and sign the repository (the passphrase for the key should not be asked again if gpg-agent was properly primed)
+    - push the branch and the tag to origin
 
 
-Once the files have been updated, commit the changes:
+===========  TODO: the following steps are from the previous release guide, they should be adapted (and more steps added to the script) =========
 
-    git add src/site/markdown/*.md src/site/markdown/*.md.vm
-    git commit -m "Updated documentation for the release."
-
-## 6. Change library version number
-
-The `pom.xml` file contains the version number of the library. During
-development, this version number has the form `X.Y-SNAPSHOT`. For release, the
-`-SNAPSHOT` part must be removed.
-
-Commit the change:
-
-    git add pom.xml
-    git commit -m "Dropped -SNAPSHOT in version number for official release."
-
-## 7. Check the JavaDoc
-
-Depending the JDK version (Oracle, OpenJDK, etc), some JavaDoc warnings can be present.
-Make sure there is no JavaDoc warnings by running the following command:
-
-    mvn javadoc:javadoc
-
-If possible, run the above command with different JDK versions.
-
-## 8. Build the site
-
-The site is generated locally using:
-
-    mvn clean
-    LANG=C mvn site
-
-The official site is automatically updated on the hosting platform when work is 
-merged into branches `develop`, `release-*` or `main`.
-
-## 9. Tag and sign the git repository
-
-When all previous steps have been performed, the local git repository holds the
-final state of the sources and build files for the release. It must be tagged
-and the tag must be signed. Note that before the vote is finished, the tag can
-only signed with a `-RCx` suffix to denote Release Candidate. The final tag
-without the `-RCx` suffix will be put once the vote succeeds, on the same
-commit (which will therefore have two tags). Tagging and signing is done using
-the following command, with `-RCn` replaced with the Release Candidate number:
-
-    git tag X.Y-RCn -s -u 0802AB8C87B0B1AEC1C1C5871550FDBD6375C33B -m "Release Candidate n for version X.Y."
-
-The tag should be verified using command:
-
-    git tag -v X.Y-RCn
-
-## 10. Pushing the branch and the tag
-
-When the tag is ready, the branch and the tag must be pushed to Gitlab so
-everyone can review it:
-
-    git push --tags origin release-X.Y
-
-*Good practice*: wait for the CI to succeed on the branch then release-X.Y branch on [SonarQube](https://sonar.orekit.org/dashboard?id=orekit%3Aorekit) and check that everything is fine
-
-## 11. Generating signed artifacts
-
-When these settings have been set up, generating the artifacts is done by
-running the following commands:
-
-    mvn deploy -DskipStagingRepositoryClose=true -Prelease
-
-During the generation, maven will trigger gpg which will ask the user for the
-pass phrase to access the signing key. Maven didn’t prompt for me, so I had to
-add `-Dgpg.passphrase=[passphrase]`
-
-Once the commands ends, log into the SonaType OSS site
+Once the commands ends, log into the Sonatype central portal site
 [https://oss.sonatype.org/](https://oss.sonatype.org/) and check the staging
 repository contains the expected artifacts with associated signatures and
 checksums:
@@ -299,7 +211,7 @@ checksums:
 The signature and checksum files have similar names with added extensions `.asc`,
 `.md5` and `.sha1`.
 
-Sometimes, the deployment to Sonatype OSS site also adds files with double extension
+Sometimes, the deployment to Sonatype site also adds files with double extension
 `.asc.md5` and `.asc.sha1`, which are in fact checksum files on a signature file
 and serve no purpose and can be deleted.
 
