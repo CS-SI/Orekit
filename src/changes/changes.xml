@@ -21,7 +21,10 @@
   </properties>
   <body>
     <release version="13.1" date="TBD" description="TBD">
-        <action dev="serrof" type="fix" issue="1762">
+        <action dev="serrof" type="update" issue="1763">
+            Improved shiftedBy in (Field)StateCovariance.
+        </action>
+        <action dev="serrof" type="update" issue="1762">
             Override getPosition in (Field)ShiftingPVCoordinatesProvider.
         </action>
         <action dev="serrof" type="fix" issue="1761">

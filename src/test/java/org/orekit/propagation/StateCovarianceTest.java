@@ -26,6 +26,8 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -35,6 +37,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOF;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -51,7 +54,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class StateCovarianceTest {
 
-    final private double          DEFAULT_VALLADO_THRESHOLD = 1e-6;
+    final private static double          DEFAULT_VALLADO_THRESHOLD = 1e-6;
     private       SpacecraftState initialState;
     private       double[][]      initCov;
 
@@ -59,7 +62,7 @@ public class StateCovarianceTest {
      * Unit test for the covariance frame transformation.
      */
     @Test
-    public void testFrameConversion() {
+    void testFrameConversion() {
 
         // Initialization
         setUp();
@@ -83,7 +86,7 @@ public class StateCovarianceTest {
     }
 
     @Test
-    public void testConstructor() {
+    void testConstructor() {
         final AbsoluteDate initialDate          = new AbsoluteDate();
         final Frame        initialInertialFrame = FramesFactory.getGCRF();
     	final StateCovariance stateCovariance = new StateCovariance(getValladoInitialCovarianceMatrix(), initialDate, initialInertialFrame, OrbitType.CARTESIAN, PositionAngleType.MEAN);
@@ -94,7 +97,7 @@ public class StateCovarianceTest {
     	assertEquals(initialDate, stateCovariance.getDate());
     }
 
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
         Orbit initialOrbit = new CartesianOrbit(
@@ -138,7 +141,7 @@ public class StateCovarianceTest {
 
     @Test
     @DisplayName("Test conversion from inertial frame to RTN local orbital frame")
-    public void should_return_same_covariance_matrix() {
+    void should_return_same_covariance_matrix() {
 
         // Given
         final AbsoluteDate initialDate          = new AbsoluteDate();
@@ -176,7 +179,7 @@ public class StateCovarianceTest {
      * Unit test for the covariance type transformation.
      */
     @Test
-    public void testTypeConversion() {
+    void testTypeConversion() {
 
         // Initialization
         setUp();
@@ -203,7 +206,7 @@ public class StateCovarianceTest {
 
     @Test
     @DisplayName("Test covariance conversion from inertial frame to RTN local orbital frame")
-    public void should_rotate_covariance_matrix_by_ninety_degrees() {
+    void should_rotate_covariance_matrix_by_ninety_degrees() {
 
         // Given
         final AbsoluteDate initialDate          = new AbsoluteDate();
@@ -249,7 +252,7 @@ public class StateCovarianceTest {
 
     @Test
     @DisplayName("Test covariance conversion from RTN local orbital frame to inertial frame")
-    public void should_rotate_covariance_matrix_by_minus_ninety_degrees() {
+    void should_rotate_covariance_matrix_by_minus_ninety_degrees() {
 
         // Given
         final AbsoluteDate initialDate          = new AbsoluteDate();
@@ -306,7 +309,7 @@ public class StateCovarianceTest {
      */
     @Test
     @DisplayName("Test covariance conversion Vallado test case : ECI cartesian to RTN")
-    public void should_return_Vallado_RSW_covariance_matrix_from_ECI() {
+    void should_return_Vallado_RSW_covariance_matrix_from_ECI() {
 
         // Initialize Orekit
         Utils.setDataRoot("regular-data");
@@ -354,7 +357,7 @@ public class StateCovarianceTest {
      */
     @Test
     @DisplayName("Test covariance conversion Vallado test case : ECI cartesian to RTN")
-    public void should_return_Vallado_RSW_non_inertial_covariance_matrix_from_ECI() {
+    void should_return_Vallado_RSW_non_inertial_covariance_matrix_from_ECI() {
 
         // Initialize Orekit
         Utils.setDataRoot("regular-data");
@@ -427,7 +430,7 @@ public class StateCovarianceTest {
      */
     @Test
     @DisplayName("Test covariance conversion Vallado test case : ECI cartesian to NTW ( considered inertial)")
-    public void should_return_Vallado_NTW_covariance_matrix_from_ECI() {
+    void should_return_Vallado_NTW_covariance_matrix_from_ECI() {
 
         // Initialize orekit
         Utils.setDataRoot("regular-data");
@@ -474,7 +477,7 @@ public class StateCovarianceTest {
      */
     @Test
     @DisplayName("Test covariance conversion Vallado test case : ECI cartesian to NTW (non inertial)")
-    public void should_return_Vallado_NTW_non_inertial_covariance_matrix_from_ECI() {
+    void should_return_Vallado_NTW_non_inertial_covariance_matrix_from_ECI() {
 
         // Initialize orekit
         Utils.setDataRoot("regular-data");
@@ -527,7 +530,7 @@ public class StateCovarianceTest {
      */
     @Test
     @DisplayName("Test custom covariance conversion Vallado test case : GCRF -> TEME -> IRTF -> NTW -> RTN -> ITRF -> GCRF")
-    public  void should_return_initial_covariance_after_multiple_conversion() {
+    void should_return_initial_covariance_after_multiple_conversion() {
 
         // Initialize orekit
         Utils.setDataRoot("regular-data");
@@ -601,7 +604,7 @@ public class StateCovarianceTest {
      */
     @Test
     @DisplayName("Test covariance conversion Vallado test case : ECI cartesian to PEF")
-    public void should_return_Vallado_PEF_covariance_matrix_from_ECI() {
+    void should_return_Vallado_PEF_covariance_matrix_from_ECI() {
 
         // Initialize orekit
         Utils.setDataRoot("regular-data");
@@ -648,7 +651,7 @@ public class StateCovarianceTest {
      */
     @Test
     @DisplayName("Test covariance conversion Vallado test case : PEF cartesian to ECI")
-    public void should_return_Vallado_ECI_covariance_matrix_from_PEF() {
+    void should_return_Vallado_ECI_covariance_matrix_from_PEF() {
 
         // Initialize orekit
         Utils.setDataRoot("regular-data");
@@ -694,7 +697,7 @@ public class StateCovarianceTest {
      */
     @Test
     @DisplayName("Test covariance conversion Vallado test case : ECI cartesian to MOD")
-    public void should_return_Vallado_MOD_covariance_matrix_from_ECI() {
+    void should_return_Vallado_MOD_covariance_matrix_from_ECI() {
 
         // Initialize orekit
         Utils.setDataRoot("regular-data");
@@ -741,7 +744,7 @@ public class StateCovarianceTest {
      */
     @Test
     @DisplayName("Test covariance conversion from Vallado test case NTW to RSW")
-    public void should_convert_Vallado_NTW_to_RSW() {
+    void should_convert_Vallado_NTW_to_RSW() {
 
         // Initialize orekit
         Utils.setDataRoot("regular-data");
@@ -783,6 +786,53 @@ public class StateCovarianceTest {
 
     }
 
+    @Test
+    @Deprecated
+    void testGetStm() {
+        // Given
+        final AbsoluteDate  initialDate      = new AbsoluteDate();
+        final Frame         inertialFrame    = FramesFactory.getGCRF();
+        final PVCoordinates pv               = getValladoInitialPV();
+        final double        mu               = Constants.IERS2010_EARTH_MU;
+        final Orbit initialOrbit = new CartesianOrbit(pv, inertialFrame, initialDate, mu);
+        final double dt = 100;
+
+        // When
+        final RealMatrix stm = StateCovariance.getStm(initialOrbit, dt);
+
+        // Then
+        final RealMatrix expectedStm          = MatrixUtils.createRealIdentityMatrix(6);
+        final double     sma          = initialOrbit.getA();
+        final double     contribution = -1.5 * dt * FastMath.sqrt(mu / FastMath.pow(sma, 5));
+        stm.setEntry(5, 0, contribution);
+        Assertions.assertEquals(0., expectedStm.subtract(stm).getNorm1(), 1e-7);
+    }
+
+    @ParameterizedTest
+    @EnumSource(OrbitType.class)
+    void testGetKeplerianStm(final OrbitType orbitType) {
+        // GIVEN
+        final AbsoluteDate  initialDate      = new AbsoluteDate();
+        final Frame         inertialFrame    = FramesFactory.getGCRF();
+        final PVCoordinates pv               = getValladoInitialPV();
+        final Orbit initialOrbit = new CartesianOrbit(pv, inertialFrame, initialDate, Constants.EGM96_EARTH_MU);
+        final StateCovariance cartesianCovariance = new StateCovariance(getValladoInitialCovarianceMatrix(), initialDate,
+                inertialFrame, OrbitType.CARTESIAN, PositionAngleType.MEAN);
+        final StateCovariance covariance = cartesianCovariance.changeCovarianceType(initialOrbit, orbitType,
+                cartesianCovariance.getPositionAngleType());
+        final double dt = 1e3;
+
+        // WHEN
+        final RealMatrix actualStm = covariance.getKeplerianStm(initialOrbit, dt);
+
+        // THEN
+        final CartesianOrbit orbitWithNonKeplerianAcceleration = new CartesianOrbit(new PVCoordinates(pv.getPosition(),
+                pv.getVelocity(), new Vector3D(1, 2, 3)), inertialFrame, initialDate, initialOrbit.getMu());
+        final RealMatrix expectedStm = covariance.getKeplerianStm(orbitWithNonKeplerianAcceleration, dt);
+        Assertions.assertEquals(0., expectedStm.subtract(actualStm).getNorm1());
+
+    }
+
     /**
      * The goal of this test is to check the shiftedBy method of {@link StateCovariance} by creating one state
      * covariance expressed in 3 different ways (inertial Equinoctial, LOF cartesian and non inertial cartesian) -> shift
@@ -791,7 +841,7 @@ public class StateCovarianceTest {
      */
     @Test
     @DisplayName("Test shiftedBy method of StateCovariance")
-    public void should_return_expected_shifted_state_covariance() {
+    void should_return_expected_shifted_state_covariance() {
 
         // Initialize orekit
         Utils.setDataRoot("regular-data");
@@ -803,6 +853,8 @@ public class StateCovarianceTest {
         final PVCoordinates pv               = getValladoInitialPV();
         final double        mu               = Constants.IERS2010_EARTH_MU;
         final Orbit initialOrbit = new CartesianOrbit(pv, inertialFrame, initialDate, mu);
+        final EquinoctialOrbit equinoctialOrbit = ((EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(initialOrbit)).withCachedPositionAngleType(PositionAngleType.MEAN);
+        final KeplerianOrbit keplerianOrbit = ((KeplerianOrbit) OrbitType.KEPLERIAN.convertType(initialOrbit)).withCachedPositionAngleType(PositionAngleType.MEAN);
 
         final double timeShift = 300; // In s
 
@@ -812,7 +864,7 @@ public class StateCovarianceTest {
                                     OrbitType.CARTESIAN, PositionAngleType.MEAN);
 
         final StateCovariance covarianceInEquinoctial =
-                initialCovarianceInCartesian.changeCovarianceType(initialOrbit, OrbitType.EQUINOCTIAL, PositionAngleType.MEAN);
+                initialCovarianceInCartesian.changeCovarianceType(equinoctialOrbit, OrbitType.EQUINOCTIAL, PositionAngleType.MEAN);
 
         final StateCovariance covarianceInCartesianInLOF =
                 initialCovarianceInCartesian.changeCovarianceFrame(initialOrbit, LOFType.QSW);
@@ -822,9 +874,9 @@ public class StateCovarianceTest {
 
         // When
         final StateCovariance shiftedCovarianceInEquinoctial =
-                covarianceInEquinoctial.shiftedBy(initialOrbit, timeShift);
+                covarianceInEquinoctial.shiftedBy(equinoctialOrbit, timeShift);
         final RealMatrix shiftedCovarianceInEquinoctialBackToInitial =
-                shiftedCovarianceInEquinoctial.changeCovarianceType(initialOrbit.shiftedBy(timeShift),
+                shiftedCovarianceInEquinoctial.changeCovarianceType(equinoctialOrbit.shiftedBy(timeShift),
                                                                   OrbitType.CARTESIAN, PositionAngleType.MEAN)
                         .getMatrix();
 
@@ -843,25 +895,22 @@ public class StateCovarianceTest {
                         .getMatrix();
 
         // Then
-        // Compute expected covariance
-        final RealMatrix stm          = MatrixUtils.createRealIdentityMatrix(6);
-        final double     sma          = initialOrbit.getA();
-        final double     contribution = -1.5 * timeShift * FastMath.sqrt(mu / FastMath.pow(sma, 5));
-        stm.setEntry(5, 0, contribution);
 
+        final OrbitType keplerianType = OrbitType.KEPLERIAN;
         final StateCovariance initialCovarianceInKeplerian =
-                initialCovarianceInCartesian.changeCovarianceType(initialOrbit, OrbitType.KEPLERIAN, PositionAngleType.MEAN);
+                initialCovarianceInCartesian.changeCovarianceType(keplerianOrbit, keplerianType, PositionAngleType.MEAN);
 
+        final RealMatrix stm          = initialCovarianceInKeplerian.getKeplerianStm(keplerianOrbit, timeShift);
         final RealMatrix referenceCovarianceMatrixInKeplerian =
                 stm.multiply(initialCovarianceInKeplerian.getMatrix().multiplyTransposed(stm));
 
         final RealMatrix referenceCovarianceMatrixInCartesian =
                 new StateCovariance(referenceCovarianceMatrixInKeplerian, initialDate.shiftedBy(timeShift),
-                                    inertialFrame, OrbitType.KEPLERIAN, PositionAngleType.MEAN).changeCovarianceType(
-                        initialOrbit.shiftedBy(timeShift), OrbitType.CARTESIAN, PositionAngleType.MEAN).getMatrix();
+                                    inertialFrame, keplerianType, PositionAngleType.MEAN).changeCovarianceType(
+                        keplerianOrbit.shiftedBy(timeShift), OrbitType.CARTESIAN, PositionAngleType.MEAN).getMatrix();
 
         // Compare with results
-        compareCovariance(referenceCovarianceMatrixInCartesian, shiftedCovarianceInEquinoctialBackToInitial, 1e-7);
+        compareCovariance(referenceCovarianceMatrixInCartesian, shiftedCovarianceInEquinoctialBackToInitial, 1e-6);
         compareCovariance(referenceCovarianceMatrixInCartesian, shiftedCovarianceInCartesianInLOFBackToInitial, 1e-7);
         compareCovariance(referenceCovarianceMatrixInCartesian, shiftedCovarianceInCartesianInNonInertialBackToInitial, 1e-7);
 
@@ -878,7 +927,7 @@ public class StateCovarianceTest {
     @Test
     @DisplayName("Test thrown error if input frame is not pseudo-inertial and "
             + "the covariance matrix is not expressed in cartesian elements")
-    public void should_return_orekit_exception() {
+    void should_return_orekit_exception() {
 
         // Initialize orekit
         Utils.setDataRoot("regular-data");

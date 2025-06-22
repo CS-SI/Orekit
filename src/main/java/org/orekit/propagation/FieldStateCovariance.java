@@ -18,6 +18,8 @@ package org.orekit.propagation;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.FieldGradient;
+import org.hipparchus.analysis.differentiation.FieldGradientField;
 import org.hipparchus.linear.Array2DRowFieldMatrix;
 import org.hipparchus.linear.BlockRealMatrix;
 import org.hipparchus.linear.FieldMatrix;
@@ -340,20 +342,13 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
             if (frame.isPseudoInertial()) {
 
                 // Compute STM
-                final FieldMatrix<T> stm = getStm(field, orbit, dt);
-
-                // Convert covariance in STM type (i.e., Equinoctial elements)
-                final FieldStateCovariance<T> inStmType = changeTypeAndCreate(orbit, epoch, frame, orbitType, angleType,
-                                                                              OrbitType.EQUINOCTIAL, PositionAngleType.MEAN,
-                                                                              orbitalCovariance);
+                final FieldMatrix<T> stm = getKeplerianStm(orbit, dt);
 
                 // Shift covariance by applying the STM
-                final FieldMatrix<T> shiftedCov = stm.multiply(inStmType.getMatrix().multiplyTransposed(stm));
+                final FieldMatrix<T> shiftedCov = stm.multiply(getMatrix().multiplyTransposed(stm));
+                return new FieldStateCovariance<>(shiftedCov, getDate().shiftedBy(dt), frame, orbitType,
+                        getPositionAngleType());
 
-                // Restore the initial covariance type
-                return changeTypeAndCreate(shifted, shifted.getDate(), frame,
-                                           OrbitType.EQUINOCTIAL, PositionAngleType.MEAN,
-                                           orbitType, angleType, shiftedCov);
             }
 
             // State covariance expressed in a non pseudo-inertial frame
@@ -760,26 +755,40 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
     }
 
     /**
-     * Get the state transition matrix considering Keplerian contribution only.
+     * Get the state transition matrix of Keplerian motion.
+     * The coordinates used are those of the covariance itself.
      *
-     * @param field to which the elements belong
      * @param initialOrbit orbit to which the initial covariance matrix should correspond
      * @param dt time difference between the two orbits
-     *
      * @return the state transition matrix used to shift the covariance matrix
+     * @since 13.1
      */
-    private FieldMatrix<T> getStm(final Field<T> field, final FieldOrbit<T> initialOrbit, final T dt) {
+    @SuppressWarnings("unchecked")
+    FieldMatrix<T> getKeplerianStm(final FieldOrbit<T> initialOrbit, final T dt) {
+        final Field<T> field = dt.getField();
 
-        // initialize the STM
+        // compute derivatives of Keplerian motion
+        final FieldGradientField<T> gradientField = FieldGradientField.getField(initialOrbit.getDate().getField(), STATE_DIMENSION);
+        final T[] stateVector = MathArrays.buildArray(field, STATE_DIMENSION);
+        orbitType.mapOrbitToArray(initialOrbit, getPositionAngleType(), stateVector, null);
+        final FieldGradient<T>[] fieldGradientStateVector = MathArrays.buildArray(gradientField, STATE_DIMENSION);
+        for (int i = 0; i < STATE_DIMENSION; i++) {
+            fieldGradientStateVector[i] = FieldGradient.variable(STATE_DIMENSION, i, stateVector[i]);
+        }
+        final AbsoluteDate absoluteDate = getDate().toAbsoluteDate();
+        final FieldAbsoluteDate<FieldGradient<T>> fieldGradientDate = new FieldAbsoluteDate<>(gradientField, absoluteDate)
+                .shiftedBy(FieldGradient.constant(STATE_DIMENSION, getDate().durationFrom(absoluteDate)));
+        final FieldOrbit<FieldGradient<T>> fieldOrbit = orbitType.mapArrayToOrbit(fieldGradientStateVector, null, getPositionAngleType(),
+                fieldGradientDate, gradientField.getOne().newInstance(initialOrbit.getMu()), initialOrbit.getFrame());
+        final FieldOrbit<FieldGradient<T>> shiftedOrbit = fieldOrbit.shiftedBy(gradientField.getZero().newInstance(dt));  // automatic differentiation
+        final FieldGradient<T>[] gradient = MathArrays.buildArray(gradientField, STATE_DIMENSION);
+        orbitType.mapOrbitToArray(shiftedOrbit, getPositionAngleType(), gradient, null);
+
+        // Return state transition matrix
         final FieldMatrix<T> stm = MatrixUtils.createFieldIdentityMatrix(field, STATE_DIMENSION);
-
-        // State transition matrix using Keplerian contribution only
-        final T mu           = initialOrbit.getMu();
-        final T sma          = initialOrbit.getA();
-        final T contribution = mu.divide(sma.pow(5)).sqrt().multiply(dt).multiply(-1.5);
-        stm.setEntry(5, 0, contribution);
-
-        // Return
+        for (int i = 0; i < gradient.length; i++) {
+            stm.setRow(i, gradient[i].getGradient());
+        }
         return stm;
 
     }
