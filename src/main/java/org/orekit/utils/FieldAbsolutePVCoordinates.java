@@ -234,6 +234,7 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> exten
      * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
+    @Override
     public FieldAbsolutePVCoordinates<T> shiftedBy(final T dt) {
         final TimeStampedFieldPVCoordinates<T> spv = super.shiftedBy(dt);
         return new FieldAbsolutePVCoordinates<>(frame, spv);
@@ -249,6 +250,7 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> exten
      * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
+    @Override
     public FieldAbsolutePVCoordinates<T> shiftedBy(final double dt) {
         final TimeStampedFieldPVCoordinates<T> spv = super.shiftedBy(dt);
         return new FieldAbsolutePVCoordinates<>(frame, spv);
@@ -263,20 +265,7 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> exten
      * @return provider based on Taylor expansion, for small time shifts around instance date
      */
     public FieldPVCoordinatesProvider<T> toTaylorProvider() {
-        return new FieldPVCoordinatesProvider<T>() {
-            /** {@inheritDoc} */
-            public FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> d,  final Frame f) {
-                final TimeStampedFieldPVCoordinates<T> shifted   = shiftedBy(d.durationFrom(getDate()));
-                final FieldStaticTransform<T>          transform = frame.getStaticTransformTo(f, d);
-                return transform.transformPosition(shifted.getPosition());
-            }
-            /** {@inheritDoc} */
-            public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> d,  final Frame f) {
-                final TimeStampedFieldPVCoordinates<T> shifted   = shiftedBy(d.durationFrom(getDate()));
-                final FieldTransform<T>                transform = frame.getTransformTo(f, d);
-                return transform.transformPVCoordinates(shifted);
-            }
-        };
+        return new FieldShiftingPVCoordinatesProvider<>(this, frame);
     }
 
     /** Get the frame in which the coordinates are defined.

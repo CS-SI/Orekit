@@ -17,6 +17,7 @@
 
 package org.orekit.utils;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
@@ -50,4 +51,11 @@ public class ShiftingPVCoordinatesProvider implements PVCoordinatesProvider {
         return referenceFrame.getTransformTo(frame, date).transformPVCoordinates(shifted);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
+        final double duration = date.durationFrom(referencePV);
+        final Vector3D position = referencePV.getPosition().add((referencePV.getVelocity().add(referencePV.getAcceleration().scalarMultiply(duration / 2))).scalarMultiply(duration));
+        return referenceFrame.getStaticTransformTo(frame, date).transformPosition(position);
+    }
 }

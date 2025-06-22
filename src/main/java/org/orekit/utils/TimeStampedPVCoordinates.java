@@ -22,8 +22,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
-import org.orekit.frames.StaticTransform;
-import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScale;
@@ -196,6 +194,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
      * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
+    @Override
     public TimeStampedPVCoordinates shiftedBy(final double dt) {
         final PVCoordinates spv = super.shiftedBy(dt);
         return new TimeStampedPVCoordinates(date.shiftedBy(dt),
@@ -213,6 +212,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
      * @return a new state, shifted with respect to the instance (which is immutable)
      * @since 13.0
      */
+    @Override
     public TimeStampedPVCoordinates shiftedBy(final TimeOffset dt) {
         final PVCoordinates spv = super.shiftedBy(dt);
         return new TimeStampedPVCoordinates(date.shiftedBy(dt),
@@ -229,20 +229,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
      * @return provider based on Taylor expansion, for small time shifts around instance date
      */
     public PVCoordinatesProvider toTaylorProvider(final Frame instanceFrame) {
-        return new PVCoordinatesProvider() {
-            /** {@inheritDoc} */
-            public Vector3D getPosition(final AbsoluteDate d,  final Frame f) {
-                final TimeStampedPVCoordinates shifted   = shiftedBy(d.durationFrom(getDate()));
-                final StaticTransform          transform = instanceFrame.getStaticTransformTo(f, d);
-                return transform.transformPosition(shifted.getPosition());
-            }
-            /** {@inheritDoc} */
-            public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate d,  final Frame f) {
-                final TimeStampedPVCoordinates shifted   = shiftedBy(d.durationFrom(date));
-                final Transform                transform = instanceFrame.getTransformTo(f, d);
-                return transform.transformPVCoordinates(shifted);
-            }
-        };
+        return new ShiftingPVCoordinatesProvider(this, instanceFrame);
     }
 
     /** Return a string representation of this date, position, velocity, and acceleration.
