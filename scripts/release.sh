@@ -180,7 +180,7 @@ echo "BEWARE! In the next step, the signing key will be used."
 echo "Gpg-agent will most likely display a dialog window that will PREVENT"
 echo "retrieving the passphrase from password management tools like KeePassXC."
 echo "If you need to retrieve the passphrase from such a password management tool,"
-echo "do it now, and enter 'yes' fast on the following prompt so you can paste it in gpg-dialog."
+echo "do it now, and enter 'yes' fast on the following prompt so you can paste it in gpg-agent dialog."
 request_confirmation "create and sign tag $release_tag?"
 (cd $top ; git tag $release_tag -s -u $signing_key -m "Release Candidate $next_rc for version $release_version."; git tag -v $release_tag ; git push)
 
