@@ -146,7 +146,7 @@ the develop branch.
 ## 2. Run the release.sh script
 
 There is a `release.sh` shell script in the `scripts` directory that
-helps performing the release. It handles many steps automatically. It
+helps perform the release. It handles many steps automatically. It
 asks questions and waits for input and confirmation at various stages,
 creating branches, checking them out, performing some automated
 edition on several files, commit the changes, compiling the library,
