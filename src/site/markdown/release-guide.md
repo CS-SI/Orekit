@@ -126,9 +126,10 @@ Major and minor versions are released starting from the develop branch. Patch ve
 are released from a dedicated branch (typically named patch-X.Y.Z where X.Y.Z is the
 candidate version number).
 
-Before anything, check on the [continuous integration
-site](https://sonar.orekit.org/dashboard?id=orekit%3Aorekit) that everything is fine on
-start branch:
+Before anything, check on the
+[continuous integration](https://sonar.orekit.org/dashboard?id=orekit%3Aorekit&branch=develop)
+that everything is fine on develop branch for major or minor release; adapt the URL for patch
+release which start from dedicated branches and not from the develop branch.
 
 * All tests pass;
 * Code coverage is up to the requirements;
@@ -136,8 +137,11 @@ start branch:
 
 If not, fix the warnings and errors first!
 
-It is also necessary to check on the [Gitlab CI/CD](https://gitlab.orekit.org/orekit/orekit/pipelines)
-that everything is fine on develop branch (i.e. all stages are passed).
+It is also necessary to check on the
+[Gitlab CI/CD](https://gitlab.orekit.org/orekit/orekit/-/pipelines?scope=all&page=1&ref=develop)
+that everything is fine on develop branch (i.e. all stages are passed); here again,
+adapt the URL for patch release which start  from dedicated branches and not from
+the develop branch.
 
 ## 2. Run the release.sh script
 

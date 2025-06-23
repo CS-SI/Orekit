@@ -1,9 +1,8 @@
 #!/bin/sh
 
-tmpdir=/tmp/tmp-dir.$$
+tmpdir=$(mktemp -d /tmp/orekit-release.XXXXXX)
 trap "rm -fr $tmpdir" 0
 trap "exit 1" 1 2 15
-mkdir $tmpdir
 
 complain()
 {
@@ -18,17 +17,17 @@ complain()
     exit 1
 }
 
-find_java_8_home()
+find_java_home()
 {
     for d in /usr/lib/jvm/* ; do
         if test -f "$d/bin/java" ; then
-            if test "$($d/bin/java -version 2>&1 | sed -n 's,.*version *\"\([0-9]*\.[0-9]*\).*,\1,p')" = "1.8" ; then
+            if test "$($d/bin/java -version 2>&1 | sed -n 's,.*version *\"\([0-9]*\.[0-9]*\).*,\1,p')" = $1 ; then
                 echo $d
                 return
             fi
         fi
     done
-    complain "Java 8 home not found"
+    complain "Java home $1 not found"
 }
 
 request_confirmation()
@@ -51,7 +50,7 @@ test -d $top/.git                          || complain "$top/.git folder not fou
 test -f $top/pom.xml                       || complain "$top/pom.xml not found"
 test -d $top/src/main/java/org/orekit/time || complain "$top/src/main/java/org/orekit/time not found"
 test -f $HOME/.m2/settings.xml             || complain "$HOME/.m2/settings.xml not found"
-export JAVA_HOME=$(find_java_8_home)
+export JAVA_HOME=$(find_java_home 1.8)
 export PATH=${JAVA_HOME}/bin:$PATH
 echo "JAVA_HOME set to $JAVA_HOME"
 
@@ -117,9 +116,17 @@ release_date=$(date -d "+5 days" +"%Y-%m-%d")
 
 # ask for release description
 release_description=""
-echo "enter release description to be put in changes.xml (end by Ctrl-D)"
-while IFS= read line ; do
-    release_description="$release_description $line"
+while test -z "$release_description" ; do
+  echo "enter release description to be put in changes.xml (end by Ctrl-D)"
+  while IFS= read line ; do
+      release_description="$release_description $line"
+  done
+  echo "description will be:"
+  echo "$release_description"
+  read -p "do you agree with this description? (enter yes to continue, no to enter again the description) " answer
+  if "$answer" != "yes" ; then
+    release_description=""
+  fi
 done
 
 # update changes.xml
