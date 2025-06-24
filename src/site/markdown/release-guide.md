@@ -129,7 +129,7 @@ candidate version number).
 Before anything, check on the
 [continuous integration](https://sonar.orekit.org/dashboard?id=orekit%3Aorekit&branch=develop)
 that everything is fine on develop branch for major or minor release; adapt the URL for patch
-release which start from dedicated branches and not from the develop branch.
+release which starts from dedicated branches and not from the develop branch.
 
 * All tests pass;
 * Code coverage is up to the requirements;
@@ -139,8 +139,8 @@ If not, fix the warnings and errors first!
 
 It is also necessary to check on the
 [Gitlab CI/CD](https://gitlab.orekit.org/orekit/orekit/-/pipelines?scope=all&page=1&ref=develop)
-that everything is fine on develop branch (i.e. all stages are passed); here again,
-adapt the URL for patch release which start  from dedicated branches and not from
+that everything is fine on develop branch (i.e., all stages are passed); here again,
+adapt the URL for patch release which starts from dedicated branches and not from
 the develop branch.
 
 ## 2. Run the release.sh script
@@ -149,7 +149,7 @@ There is a `release.sh` shell script in the `scripts` directory that
 helps perform the release. It handles many steps automatically. It
 asks questions and waits for input and confirmation at various stages,
 creating branches, checking them out, performing some automated
-edition on several files, commit the changes, compiling the library,
+edition on several files, commiting the changes, compiling the library,
 signing the artifacts and ultimately pushing everything to maven
 central portal in a staging area.
 
@@ -162,16 +162,16 @@ When releasing a major or minor version, the script will automatically
 post a vote thread to the forum Orekit community and PMC members
 can vote on the release and then it will stop.
 
-When releasing patch version, the script will skip the vote thread and
+When releasing a patch version, the script will skip the vote thread and
 continue up to promoting the release from staging to published.
 
-The script does not handle (yet) the final stages like updating the web site
-or announcing the release on the GitHub mirror repoitory. These stages are
+The script does not handle (yet) the final stages like updating the website
+or announcing the release on the GitHub mirror repository. These stages are
 described in the next section.
 
 This script must be run from the command line on a computer with several Linux
 utilities (git, sed, xsltproc, gpg-agent, curl…), with the git worktree
-already set to the start branch (i.e. develop or a patch branch):
+already set to the start branch (i.e., develop or a patch branch):
 
     sh scripts/release.sh
 
@@ -200,9 +200,9 @@ for user confirmation before any commit:
     - push the branch and the tag to origin
 
 
-===========  TODO: the following steps are from the previous release guide, they should be adapted (and more steps added to the script) =========
+=========== TODO: the following steps are from the previous release guide, they should be adapted (and more steps added to the script) =========
 
-Once the commands ends, log into the Sonatype central portal site
+Once the commands end, log into the Sonatype central portal site
 [https://oss.sonatype.org/](https://oss.sonatype.org/) and check the staging
 repository contains the expected artifacts with associated signatures and
 checksums:
@@ -317,14 +317,14 @@ button in [Nexus Repository Manager](https://oss.sonatype.org/).
 
 Navigate to Projects > Orekit > Deployments > Releases and make sure the X.Y release notes looks nice.
 
-## 18. Synchronize the Github mirror
+## 18. Synchronize the GitHub mirror
 
 To enhance the visibility of the project,
-[a mirror](https://github.com/CS-SI/Orekit) is maintained on Github. The
+[a mirror](https://github.com/CS-SI/Orekit) is maintained on GitHub. The
 releases created on Gitlab are not automatically pushed on this mirror. They
 have to be declared manually to make visible the vitality of Orekit.
 
-1. Login to Github
+1. Login to GitHub
 2. Go to the [Orekit releases](https://github.com/CS-SI/Orekit/releases) page
 3. Click on the [Draft a new release](https://github.com/CS-SI/Orekit/releases) button
 4. In the “Tag version” field of the form and in the “Release title” field,
@@ -389,7 +389,7 @@ and content of the form:
 
 # Releasing a Patch version
 
-Here the main difference are that:
+Here the main differences are that:
  - We're going to use a former release branch to do the release;
  - A vote of the PMC is not required to release the version.
 
@@ -399,7 +399,7 @@ With:
  - Y: Minor version number
  - Z: Patch version number
 
- Once again, a patch version should only contain bug fixes that do not break APIs !
+ Once again, a patch version should only contain bug fixes that do not break APIs!
 
 ## 0. Prerequisites
 Prerequisites are the same as for a minor/major version.
@@ -420,7 +420,7 @@ Start from the [milestone](https://gitlab.orekit.org/orekit/orekit/-/milestones)
 
 Then, for each MR:
 * Check that the pipeline was a success (i.e. all stages passed)
-* If it exists, find the SonarQube report for the MR, either in a short-lived branch of [Orekit main CI report](https://sonar.orekit.org/dashboard?id=orekit%3Aorekit) or on the developer own [sub-project](https://sonar.orekit.org/projects?sort=-analysis_date) on SonarQube.  
+* If it exists, find the SonarQube report for the MR, either in a short-lived branch of [Orekit main CI report](https://sonar.orekit.org/dashboard?id=orekit%3Aorekit) or on the developer's own [sub-project](https://sonar.orekit.org/projects?sort=-analysis_date) on SonarQube.  
 Check that:
   * All tests pass;
   * Code coverage is up to the requirements;
@@ -430,7 +430,7 @@ If not, ask for a fix of the warnings and errors first!
 
 ## 2. Prepare Git branch for release
 
-The patch release will be performed on previous release branch.
+The patch release will be performed on the previous release branch.
 
 So first, check out the dedicated branch:
 
@@ -444,7 +444,7 @@ There are two cases here, they are detailed in the two points below.
 
 If the developer made his changes starting from branch `release-X.Y`, you can simply merge the branch of the MR in branch `release-X.Y`.
 
-Note that if there aren't any conflict in Gitlab you can directly do the merge from Gitlab; just make sure that the target branch is `release-X.Y` and not "develop".
+Note that if there aren't any conflicts in Gitlab you can directly do the merge from Gitlab; just make sure that the target branch is `release-X.Y` and not "develop".
 
 Find the MR on the repository, it should be in branch `origin/merge-requests/XXX` with XXX the number of the MR  
 
@@ -459,15 +459,15 @@ Eventually, resolve any conflict and commit the result.
 
 If the developer started from develop branch (or any other branch), then the MR branch may contain code that should not be added to the release.  
 You will have to cherry-pick the appropriate commits and add them to a dedicated branch.  
-It is advised to use an IDE to do the cherry-picking although the command lines below will help you.
+It is advised to use an IDE to do the cherry-picking, although the command lines below will help you.
 
 Find the MR on the repository and the commits you are interested in.
 
-Create a dedicated branch for the issue on your local repository:
+Create a dedicated branch for the issue in your local repository:
 
     git checkout -b issue-YYY
 
-Where YYY is the number of the issue that the MR XXX fixes.  
+Where YYY is the issue number that the MR XXX fixes.  
 If the branch already exists, give it a different name like `integrate-issue-YYY` or `integrate-MR-XXX`
 
 Make a list of the IDs of the commits you want to add, example `A B C D` (in the order they were committed).
