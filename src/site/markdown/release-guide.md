@@ -26,7 +26,7 @@ for several releases.
 Orekit artifacts are signed with a specific GPG signing key that is shared among
 all release managers. The id of this key is `0802AB8C87B0B1AEC1C1C5871550FDBD6375C33B`.
 Release managers should ask for this key and its password before they can sign
-releases. There are no automatic process for this, candidate release managers should
+releases. There are no automatic processes for this, candidate release managers should
 just send direct messages to existing release managers, and they will proceed with
 sending the key and password, using any means they see fit.
 
@@ -44,7 +44,7 @@ allowed list for the `org.orekit` namespace.
 
 Note that the central portal account and the associated credentials are different from
 the legacy OSSRH system that was used before Orekit 13.1. This implies that people that
-were able to publish Orekit releases prior to ORekit 13.1 must create a new account on
+were able to publish Orekit releases prior to Orekit 13.1 must create a new account on
 the new central portal system, their older account on legacy OSSRH is obsolete.
 
 After creating the account on Sonatype central portal, release managers should create
@@ -68,8 +68,8 @@ after one minute:
     </servers>
 
 Note that the popup suggests to use `${server}` as the id, but we really should use `central`
-as in the snippet above because this is what the `release.sh` script will use to retrieve
-the credentials when it will use the central portal API.
+as in the snippet above because this is what both the maven deployement plugin and the
+`release.sh` script will use to retrieve the credentials when connecting to the central portal API.
 
 The Sonatype [publish portal guide](https://central.sonatype.org/publish/publish-portal-guide/)
 explains everything in detail, but this release guide is sufficient to perform a release.
@@ -77,7 +77,7 @@ explains everything in detail, but this release guide is sufficient to perform a
 ## Note on maven plugins versions
 
 Maven plugins should be updated from time to time, but it is probably
-unwise to do it at release time, it is tool lates, so these updates
+unwise to do it at release time, it is too late, so these updates
 should happen well before the release. All maven plugin versions are
 gathered at one place, in a set of properties in `pom.xml`:
 
@@ -93,7 +93,7 @@ properties name all follow the pattern `orekit.some-plugin-name.version`, the
 plugin name should be used in the web form to check for available versions.
 
 Beware that in some cases, the latest version cannot be used due to
-incompatibilities. For example when a plugin was not recently updated and
+incompatibilities. For example, when a plugin was not recently updated and
 conflicts appear with newer versions of its dependencies.
 
 Beware also that some plugins use configuration files that may need update too.
@@ -102,10 +102,11 @@ This is typically the case with `maven-checkstyle-plugin` and
 `/spotbugs-exclude-filter.xml` files may need to be checked.
 
 Before committing these changes, you have to check that everything works. So
-run the following command:
+run the following command, taking care to use the Java version that matches
+the compatibility requirements (Java 8 at time of writing):
 
     mvn clean
-    LANG=C mvn -Prelease site
+    LANG=C JAVA_HOME=/path/to/correct/java/version PATH=${JAVA_HOME}/bin:$PATH mvn -Prelease site
 
 If something goes wrong, either fix it by changing the plugin configuration or
 roll back to an earlier version of the plugin.
@@ -160,10 +161,9 @@ remains clean.
 
 When releasing a major or minor version, the script will automatically
 post a vote thread to the forum Orekit community and PMC members
-can vote on the release and then it will stop.
-
-When releasing a patch version, the script will skip the vote thread and
-continue up to promoting the release from staging to published.
+can vote on the release and then it will stop. When releasing a patch version,
+the script will skip the vote thread and continue up to promoting the release
+from staging to published.
 
 The script does not handle (yet) the final stages like updating the website
 or announcing the release on the GitHub mirror repository. These stages are
@@ -191,12 +191,11 @@ for user confirmation before any commit:
     - compute candidate release date 5 days in the future
     - update `changes.xml` with date and user-provided description and commit the change
     - update downloads and faq pages and commit the changes
-    - put a temporary tag on the temporary branch, just to prime gpg-agent for later signatures
     - perform a complete build, including test and site generation, this can take a long time
     - merge release-X.Y-temporary branch into release-X.Y branch
     - delete release-X.Y-temporary branch
     - deploy the maven artifacts to central portal
-    - tag and sign the repository (the passphrase for the key should not be asked again if gpg-agent was properly primed)
+    - tag and sign the repository (the passphrase for the key should be asked at this stage)
     - push the branch and the tag to origin
 
 
