@@ -861,6 +861,14 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         return isOrbitDefined() ? orbit.getPosition() : absPva.getPosition();
     }
 
+    /** Get the velocity in orbit definition frame.
+     * @return velocity in orbit definition frame
+     * @since 13.1
+     */
+    public FieldVector3D<T> getVelocity() {
+        return isOrbitDefined() ? orbit.getPVCoordinates().getVelocity() : absPva.getVelocity();
+    }
+
     /** Get the {@link TimeStampedFieldPVCoordinates} in orbit definition frame.
      * <p>
      * Compute the position and velocity of the satellite. This method caches its

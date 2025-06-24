@@ -20,6 +20,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
@@ -65,6 +66,18 @@ class OrbitTest {
     @Test
     void testIsNotElliptical() {
         templateTestIsElliptical(-1.);
+    }
+
+    @Test
+    public void testIssue1557() {
+        // GIVEN
+        final Orbit fakeOrbit = TestUtils.getFakeOrbit();
+
+        // WHEN
+        final Vector3D velocity = fakeOrbit.getVelocity();
+
+        // THEN
+        Assertions.assertEquals(fakeOrbit.getPVCoordinates().getVelocity(), velocity);
     }
 
     private void templateTestIsElliptical(final double aIn) {

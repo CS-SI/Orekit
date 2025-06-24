@@ -66,7 +66,17 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.*;
+import org.orekit.utils.AbsolutePVCoordinates;
+import org.orekit.utils.Constants;
+import org.orekit.utils.FieldAbsolutePVCoordinates;
+import org.orekit.utils.FieldAngularCoordinates;
+import org.orekit.utils.FieldArrayDictionary;
+import org.orekit.utils.FieldDataDictionary;
+import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
 
 class FieldSpacecraftStateTest {
@@ -287,6 +297,26 @@ class FieldSpacecraftStateTest {
                 actualStaticTransform.getTranslation().getZ().getReal(), tolerance);
         Assertions.assertEquals(0., Rotation.distance(expectedStaticTransform.getRotation().toRotation(),
                 actualStaticTransform.getRotation().toRotation()));
+    }
+
+    @Test
+    public void testIssue1557() {
+        // GIVEN
+        // Define orbit state
+        final FieldOrbit<Binary64>           mockOrbit  = TestUtils.getFakeFieldOrbit();
+        final FieldSpacecraftState<Binary64> orbitState = new FieldSpacecraftState<>(mockOrbit);
+
+        // Define PVA state
+        final FieldAbsolutePVCoordinates<Binary64> pva      = TestUtils.getFakeFieldAbsolutePVACoordinates();
+        final FieldSpacecraftState<Binary64>       pvaState = new FieldSpacecraftState<>(pva);
+
+        // WHEN
+        final FieldVector3D<Binary64> pvaVelocity   = pvaState.getVelocity();
+        final FieldVector3D<Binary64> orbitVelocity = orbitState.getVelocity();
+
+        // THEN
+        Assertions.assertEquals(pvaState.getPVCoordinates().getVelocity(), pvaVelocity);
+        Assertions.assertEquals(orbitState.getPVCoordinates().getVelocity(), orbitVelocity);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldVsReal(final Field<T> field) {

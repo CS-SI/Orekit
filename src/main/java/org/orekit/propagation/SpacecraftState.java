@@ -773,6 +773,15 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
         return isOrbitDefined() ? orbit.getPosition() : absPva.getPosition();
     }
 
+    /** Get the velocity in orbit definition frame.
+     * @return velocity in orbit definition frame
+     * @since 13.1
+     * @see #getPVCoordinates()
+     */
+    public Vector3D getVelocity() {
+        return isOrbitDefined() ? orbit.getPVCoordinates().getVelocity() : absPva.getVelocity();
+    }
+
     /** Get the {@link TimeStampedPVCoordinates} in orbit definition frame.
      * <p>
      * Compute the position and velocity of the satellite. This method caches its
