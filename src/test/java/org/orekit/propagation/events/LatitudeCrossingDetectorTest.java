@@ -87,11 +87,11 @@ public class LatitudeCrossingDetectorTest {
             if (previous != null) {
                 if (e.isIncreasing()) {
                     // crossing northward
-                    Assertions.assertTrue(state.getPVCoordinates().getVelocity().getZ() > 3611.0);
+                    Assertions.assertTrue(state.getVelocity().getZ() > 3611.0);
                     Assertions.assertEquals(4954.70, state.getDate().durationFrom(previous), 0.01);
                 } else {
                     // crossing southward
-                    Assertions.assertTrue(state.getPVCoordinates().getVelocity().getZ() < -3615.0);
+                    Assertions.assertTrue(state.getVelocity().getZ() < -3615.0);
                     Assertions.assertEquals(956.17, state.getDate().durationFrom(previous), 0.01);
                 }
             }

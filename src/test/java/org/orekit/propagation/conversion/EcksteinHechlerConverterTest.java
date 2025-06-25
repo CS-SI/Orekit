@@ -68,7 +68,7 @@ public class EcksteinHechlerConverterTest {
         CircularOrbit modified = new CircularOrbit(new TimeStampedPVCoordinates(orbit.getDate(),
                                                                                 new Vector3D(1, orbit.getPosition(),
                                                                                              3.0, Vector3D.PLUS_J),
-                                                                                orbit.getPVCoordinates().getVelocity()),
+                                                                                orbit.getVelocity()),
                                                    orbit.getFrame(),
                                                    orbit.getMu());
         Propagator p = new EcksteinHechlerPropagator(modified, provider);
@@ -113,15 +113,15 @@ public class EcksteinHechlerConverterTest {
                             fitted.getPosition().getZ(),
                             eps * modified.getPosition().getZ());
 
-        Assertions.assertEquals(modified.getPVCoordinates().getVelocity().getX(),
-                            fitted.getPVCoordinates().getVelocity().getX(),
-                            eps * modified.getPVCoordinates().getVelocity().getX());
-        Assertions.assertEquals(modified.getPVCoordinates().getVelocity().getY(),
-                            fitted.getPVCoordinates().getVelocity().getY(),
-                            -eps * modified.getPVCoordinates().getVelocity().getY());
-        Assertions.assertEquals(modified.getPVCoordinates().getVelocity().getZ(),
-                            fitted.getPVCoordinates().getVelocity().getZ(),
-                            -eps * modified.getPVCoordinates().getVelocity().getZ());
+        Assertions.assertEquals(modified.getVelocity().getX(),
+                            fitted.getVelocity().getX(),
+                            eps * modified.getVelocity().getX());
+        Assertions.assertEquals(modified.getVelocity().getY(),
+                            fitted.getVelocity().getY(),
+                            -eps * modified.getVelocity().getY());
+        Assertions.assertEquals(modified.getVelocity().getZ(),
+                            fitted.getVelocity().getZ(),
+                            -eps * modified.getVelocity().getZ());
 
     }
 

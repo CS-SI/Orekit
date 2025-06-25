@@ -315,8 +315,8 @@ class FieldSpacecraftStateTest {
         final FieldVector3D<Binary64> orbitVelocity = orbitState.getVelocity();
 
         // THEN
-        Assertions.assertEquals(pvaState.getPVCoordinates().getVelocity(), pvaVelocity);
-        Assertions.assertEquals(orbitState.getPVCoordinates().getVelocity(), orbitVelocity);
+        Assertions.assertEquals(pvaState.getVelocity(), pvaVelocity);
+        Assertions.assertEquals(orbitState.getVelocity(), orbitVelocity);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldVsReal(final Field<T> field) {
@@ -361,9 +361,9 @@ class FieldSpacecraftStateTest {
             Assertions.assertEquals(control_r.getPosition().getX(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getX(), 1e-10);
             Assertions.assertEquals(control_r.getPosition().getY(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getY(), 1e-10);
             Assertions.assertEquals(control_r.getPosition().getZ(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getZ(), 1e-10);
-            Assertions.assertEquals(control_r.getPVCoordinates().getVelocity().getX(), control_f.getPVCoordinates().toPVCoordinates().getVelocity().getX(), 1e-10);
-            Assertions.assertEquals(control_r.getPVCoordinates().getVelocity().getY(), control_f.getPVCoordinates().toPVCoordinates().getVelocity().getY(), 1e-10);
-            Assertions.assertEquals(control_r.getPVCoordinates().getVelocity().getZ(), control_f.getPVCoordinates().toPVCoordinates().getVelocity().getZ(), 1e-10);
+            Assertions.assertEquals(control_r.getVelocity().getX(), control_f.getPVCoordinates().toPVCoordinates().getVelocity().getX(), 1e-10);
+            Assertions.assertEquals(control_r.getVelocity().getY(), control_f.getPVCoordinates().toPVCoordinates().getVelocity().getY(), 1e-10);
+            Assertions.assertEquals(control_r.getVelocity().getZ(), control_f.getPVCoordinates().toPVCoordinates().getVelocity().getZ(), 1e-10);
             Assertions.assertEquals(control_r.getPVCoordinates().getAcceleration().getX(), control_f.getPVCoordinates().toPVCoordinates().getAcceleration().getX(), 1e-10);
             Assertions.assertEquals(control_r.getPVCoordinates().getAcceleration().getY(), control_f.getPVCoordinates().toPVCoordinates().getAcceleration().getY(), 1e-10);
             Assertions.assertEquals(control_r.getPVCoordinates().getAcceleration().getZ(), control_f.getPVCoordinates().toPVCoordinates().getAcceleration().getZ(), 1e-10);
@@ -811,9 +811,9 @@ class FieldSpacecraftStateTest {
             Assertions.assertEquals(control_r.getPosition().getX(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getX(), 1e-10);
             Assertions.assertEquals(control_r.getPosition().getY(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getY(), 1e-10);
             Assertions.assertEquals(control_r.getPosition().getZ(), control_f.getPVCoordinates().toPVCoordinates().getPosition().getZ(), 1e-10);
-            Assertions.assertEquals(control_r.getPVCoordinates().getVelocity().getX(), control_f.getPVCoordinates().toPVCoordinates().getVelocity().getX(), 1e-10);
-            Assertions.assertEquals(control_r.getPVCoordinates().getVelocity().getY(), control_f.getPVCoordinates().toPVCoordinates().getVelocity().getY(), 1e-10);
-            Assertions.assertEquals(control_r.getPVCoordinates().getVelocity().getZ(), control_f.getPVCoordinates().toPVCoordinates().getVelocity().getZ(), 1e-10);
+            Assertions.assertEquals(control_r.getVelocity().getX(), control_f.getPVCoordinates().toPVCoordinates().getVelocity().getX(), 1e-10);
+            Assertions.assertEquals(control_r.getVelocity().getY(), control_f.getPVCoordinates().toPVCoordinates().getVelocity().getY(), 1e-10);
+            Assertions.assertEquals(control_r.getVelocity().getZ(), control_f.getPVCoordinates().toPVCoordinates().getVelocity().getZ(), 1e-10);
             Assertions.assertEquals(control_r.getPVCoordinates().getAcceleration().getX(), control_f.getPVCoordinates().toPVCoordinates().getAcceleration().getX(), 1e-10);
             Assertions.assertEquals(control_r.getPVCoordinates().getAcceleration().getY(), control_f.getPVCoordinates().toPVCoordinates().getAcceleration().getY(), 1e-10);
             Assertions.assertEquals(control_r.getPVCoordinates().getAcceleration().getZ(), control_f.getPVCoordinates().toPVCoordinates().getAcceleration().getZ(), 1e-10);

@@ -132,7 +132,7 @@ public class ExtremumApproachDetector extends AbstractDetector<ExtremumApproachD
      */
     public PVCoordinates computeDeltaPV(final SpacecraftState s) {
         final Vector3D primaryPos = s.getPosition();
-        final Vector3D primaryVel = s.getPVCoordinates().getVelocity();
+        final Vector3D primaryVel = s.getVelocity();
 
         final PVCoordinates secondaryPV  = secondaryPVProvider.getPVCoordinates(s.getDate(), s.getFrame());
         final Vector3D      secondaryPos = secondaryPV.getPosition();

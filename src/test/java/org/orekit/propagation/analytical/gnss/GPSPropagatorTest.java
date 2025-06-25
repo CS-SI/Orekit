@@ -476,8 +476,8 @@ class GPSPropagatorTest {
                                                   rebuilt.getInitialState().getPVCoordinates().getPosition()),
                                 3.8e-7);
         Assertions.assertEquals(0,
-                                Vector3D.distance(propagator.getInitialState().getPVCoordinates().getVelocity(),
-                                                  rebuilt.getInitialState().getPVCoordinates().getVelocity()),
+                                Vector3D.distance(propagator.getInitialState().getVelocity(),
+                                                  rebuilt.getInitialState().getVelocity()),
                                 4.0e-11);
 
         // general parameters

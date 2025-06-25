@@ -116,7 +116,7 @@ class CartesianAdjointDerivativesProviderTest {
         // WHEN
         final double hamiltonian = derivativesProvider.evaluateHamiltonian(state);
         // THEN
-        final Vector3D velocity = state.getPVCoordinates().getVelocity();
+        final Vector3D velocity = state.getVelocity();
         Assertions.assertEquals(velocity.dotProduct(new Vector3D(1, 1, 1)), hamiltonian);
     }
 

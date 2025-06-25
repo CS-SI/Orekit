@@ -124,7 +124,7 @@ public class EquinoctialOrbitTest {
                                       5.300, PositionAngleType.MEAN,
                                       FramesFactory.getEME2000(), date, mu);
         Vector3D pos = equi.getPosition();
-        Vector3D vit = equi.getPVCoordinates().getVelocity();
+        Vector3D vit = equi.getVelocity();
 
         PVCoordinates pvCoordinates = new PVCoordinates(pos, vit);
 
@@ -158,7 +158,7 @@ public class EquinoctialOrbitTest {
                                       5.300, PositionAngleType.MEAN,
                                       FramesFactory.getEME2000(), date, mu);
         Vector3D posCir = equiCir.getPosition();
-        Vector3D vitCir = equiCir.getPVCoordinates().getVelocity();
+        Vector3D vitCir = equiCir.getVelocity();
 
         PVCoordinates pvCoordinates = new PVCoordinates(posCir, vitCir);
 
@@ -193,7 +193,7 @@ public class EquinoctialOrbitTest {
                                       5.300, PositionAngleType.MEAN,
                                       FramesFactory.getEME2000(), date, mu);
         Vector3D pos = equi.getPosition();
-        Vector3D vit = equi.getPVCoordinates().getVelocity();
+        Vector3D vit = equi.getVelocity();
 
         // verif of 1/a = 2/X - V2/mu
         double oneovera = (2. / pos.getNorm()) - vit.getNorm() * vit.getNorm() / mu;
@@ -382,8 +382,8 @@ public class EquinoctialOrbitTest {
         Assertions.assertEquals(a * epsilon * epsilon / ksi, p.getPosition().getNorm(),
                      Utils.epsilonTest * FastMath.abs(p.getPosition().getNorm()));
         Assertions.assertEquals(na * FastMath.sqrt(ksi * ksi + nu * nu) / epsilon, p
-                     .getPVCoordinates().getVelocity().getNorm(), Utils.epsilonTest
-                     * FastMath.abs(p.getPVCoordinates().getVelocity().getNorm()));
+                     .getVelocity().getNorm(), Utils.epsilonTest
+                     * FastMath.abs(p.getVelocity().getNorm()));
 
         // circular and equatorial orbit
         EquinoctialOrbit pCirEqua =
@@ -405,8 +405,8 @@ public class EquinoctialOrbitTest {
                      .getNorm(), Utils.epsilonTest
                      * FastMath.abs(pCirEqua.getPosition().getNorm()));
         Assertions.assertEquals(na * FastMath.sqrt(ksi * ksi + nu * nu) / epsilon, pCirEqua
-                     .getPVCoordinates().getVelocity().getNorm(), Utils.epsilonTest
-                     * FastMath.abs(pCirEqua.getPVCoordinates().getVelocity().getNorm()));
+                     .getVelocity().getNorm(), Utils.epsilonTest
+                     * FastMath.abs(pCirEqua.getVelocity().getNorm()));
     }
 
     @Test
@@ -419,7 +419,7 @@ public class EquinoctialOrbitTest {
                                  FramesFactory.getEME2000(), date, mu);
 
         Vector3D position = p.getPosition();
-        Vector3D velocity = p.getPVCoordinates().getVelocity();
+        Vector3D velocity = p.getVelocity();
         Vector3D momentum = p.getPVCoordinates().getMomentum().normalize();
 
         double apogeeRadius = p.getA() * (1 + p.getE());
@@ -438,7 +438,7 @@ public class EquinoctialOrbitTest {
             Assertions.assertTrue((position.getNorm() - perigeeRadius) >= (-perigeeRadius * Utils.epsilonTest));
 
             position = position.normalize();
-            velocity = p.getPVCoordinates().getVelocity();
+            velocity = p.getVelocity();
             velocity = velocity.normalize();
 
             // at this stage of computation, all the vectors (position, velocity and
@@ -457,7 +457,7 @@ public class EquinoctialOrbitTest {
                                  FramesFactory.getEME2000(), date, mu);
 
         position = pCirEqua.getPosition();
-        velocity = pCirEqua.getPVCoordinates().getVelocity();
+        velocity = pCirEqua.getVelocity();
 
         momentum = Vector3D.crossProduct(position, velocity).normalize();
 
@@ -479,7 +479,7 @@ public class EquinoctialOrbitTest {
             Assertions.assertTrue((position.getNorm() - perigeeRadius) >= (-perigeeRadius * Utils.epsilonTest));
 
             position = position.normalize();
-            velocity = pCirEqua.getPVCoordinates().getVelocity();
+            velocity = pCirEqua.getVelocity();
             velocity = velocity.normalize();
 
             // at this stage of computation, all the vectors (position, velocity and
@@ -507,8 +507,8 @@ public class EquinoctialOrbitTest {
         Vector3D v = Vector3D.crossProduct(p.getPVCoordinates().getMomentum(), u).normalize();
 
         // compute radius of curvature in the orbital plane from Cartesian coordinates
-        double xDot    = Vector3D.dotProduct(p.getPVCoordinates().getVelocity(),     u);
-        double yDot    = Vector3D.dotProduct(p.getPVCoordinates().getVelocity(),     v);
+        double xDot    = Vector3D.dotProduct(p.getVelocity(),     u);
+        double yDot    = Vector3D.dotProduct(p.getVelocity(),     v);
         double xDotDot = Vector3D.dotProduct(p.getPVCoordinates().getAcceleration(), u);
         double yDotDot = Vector3D.dotProduct(p.getPVCoordinates().getAcceleration(), v);
         double dot2    = xDot * xDot + yDot * yDot;
@@ -542,7 +542,7 @@ public class EquinoctialOrbitTest {
                                                   FramesFactory.getEME2000(), date, mu);
 
         Vector3D positionOffset = p.getPosition().subtract(position);
-        Vector3D velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
+        Vector3D velocityOffset = p.getVelocity().subtract(velocity);
 
         Assertions.assertEquals(0, positionOffset.getNorm(), 7.5e-12);
         Assertions.assertEquals(0, velocityOffset.getNorm(), 1.0e-15);
@@ -555,7 +555,7 @@ public class EquinoctialOrbitTest {
                                  FramesFactory.getEME2000(), date, mu);
 
         positionOffset = p.getPosition().subtract(position);
-        velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
+        velocityOffset = p.getVelocity().subtract(velocity);
 
         Assertions.assertEquals(0, positionOffset.getNorm(), 1.1e-11);
         Assertions.assertEquals(0, velocityOffset.getNorm(), 1.0e-15);
@@ -738,7 +738,7 @@ public class EquinoctialOrbitTest {
         // at constant energy (i.e. constant semi major axis), we have dV = -mu dP / (V * r^2)
         // we use this to compute a velocity step size from the position step size
         Vector3D p = orbit.getPosition();
-        Vector3D v = orbit.getPVCoordinates().getVelocity();
+        Vector3D v = orbit.getVelocity();
         double hV = orbit.getMu() * hP / (v.getNorm() * p.getNormSq());
 
         double h;
@@ -1031,8 +1031,8 @@ public class EquinoctialOrbitTest {
                                               shiftedOrbitCopy.getPosition()),
                             1.0e-10);
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(shiftedOrbit.getPVCoordinates().getVelocity(),
-                                              shiftedOrbitCopy.getPVCoordinates().getVelocity()),
+                            Vector3D.distance(shiftedOrbit.getVelocity(),
+                                              shiftedOrbitCopy.getVelocity()),
                             1.0e-10);
 
     }

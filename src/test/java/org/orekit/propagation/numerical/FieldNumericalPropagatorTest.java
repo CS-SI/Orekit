@@ -434,11 +434,11 @@ public class FieldNumericalPropagatorTest {
         final FieldSpacecraftState<T> finalState = propagator.propagate(initDate);
         // Initial orbit definition
         final FieldVector3D<T> initialPosition = initialState.getPosition();
-        final FieldVector3D<T> initialVelocity = initialState.getPVCoordinates().getVelocity();
+        final FieldVector3D<T> initialVelocity = initialState.getVelocity();
 
         // Final orbit definition
         final FieldVector3D<T> finalPosition   = finalState.getPosition();
-        final FieldVector3D<T> finalVelocity   = finalState.getPVCoordinates().getVelocity();
+        final FieldVector3D<T> finalVelocity   = finalState.getVelocity();
 
         // Check results
         Assertions.assertEquals(initialPosition.getX().getReal(), finalPosition.getX().getReal(), 1.0e-10);

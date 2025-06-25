@@ -125,7 +125,7 @@ class FieldOrbitTest {
         final FieldVector3D<Binary64> velocity = fakeOrbit.getVelocity();
 
         // THEN
-        Assertions.assertEquals(fakeOrbit.getPVCoordinates().getVelocity(), velocity);
+        Assertions.assertEquals(fakeOrbit.getVelocity(), velocity);
     }
 
     private static class TestFieldOrbit extends FieldOrbit<Complex> {

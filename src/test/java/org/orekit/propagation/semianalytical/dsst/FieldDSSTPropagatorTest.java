@@ -315,11 +315,11 @@ public class FieldDSSTPropagatorTest {
 
         // Initial orbit definition
         final FieldVector3D<T> initialPosition = state.getPosition();
-        final FieldVector3D<T> initialVelocity = state.getPVCoordinates().getVelocity();
+        final FieldVector3D<T> initialVelocity = state.getVelocity();
 
         // Final orbit definition
         final FieldVector3D<T> finalPosition = finalState.getPosition();
-        final FieldVector3D<T> finalVelocity = finalState.getPVCoordinates().getVelocity();
+        final FieldVector3D<T> finalVelocity = finalState.getVelocity();
 
         // Check results
         Assertions.assertEquals(initialPosition.getX().getReal(), finalPosition.getX().getReal(), 0.0);

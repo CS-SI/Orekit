@@ -72,7 +72,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         {
         try {
             final FieldVector3D<DerivativeStructure> position = state.getPVCoordinates().getPosition();
-            final FieldVector3D<DerivativeStructure> velocity = state.getPVCoordinates().getVelocity();
+            final FieldVector3D<DerivativeStructure> velocity = state.getVelocity();
             double gm = forceModel.
                         getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).
                         getValue(state.getDate().toAbsoluteDate());
@@ -99,7 +99,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         {
         try {
             final FieldVector3D<Gradient> position = state.getPVCoordinates().getPosition();
-            final FieldVector3D<Gradient> velocity = state.getPVCoordinates().getVelocity();
+            final FieldVector3D<Gradient> velocity = state.getVelocity();
             double gm = forceModel.
                         getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).
                         getValue(state.getDate().toAbsoluteDate());

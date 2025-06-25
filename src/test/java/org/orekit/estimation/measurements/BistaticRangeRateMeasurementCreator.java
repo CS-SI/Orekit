@@ -79,7 +79,7 @@ public class BistaticRangeRateMeasurementCreator extends MeasurementCreator {
         final AbsoluteDate  date     = currentState.getDate();
         final Frame         inertial = currentState.getFrame();
         final Vector3D      position = currentState.getPosition();
-        final Vector3D      velocity = currentState.getPVCoordinates().getVelocity();
+        final Vector3D      velocity = currentState.getVelocity();
 
         // Create a BRR measurement only if elevation for both stations is higher than 30°
         if ((emitter.getBaseFrame().getTrackingCoordinates(position, inertial, date).getElevation()  > FastMath.toRadians(30.0)) &&

@@ -306,7 +306,7 @@ public class UnscentedEstimationTestUtils {
 
 		final Orbit estimatedOrbit = estimator.estimate()[0].getInitialState().getOrbit();
 		final Vector3D estimatedPosition = estimatedOrbit.getPosition();
-		final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
+		final Vector3D estimatedVelocity = estimatedOrbit.getVelocity();
 
 		Assertions.assertEquals(iterations, estimator.getIterationsCount());
 		Assertions.assertEquals(evaluations, estimator.getEvaluationsCount());
@@ -336,7 +336,7 @@ public class UnscentedEstimationTestUtils {
 		final double rms = FastMath.sqrt(sum / k);
 		final double deltaPos = Vector3D.distance(context.initialOrbit.getPosition(),
 				estimatedPosition);
-		final double deltaVel = Vector3D.distance(context.initialOrbit.getPVCoordinates().getVelocity(),
+		final double deltaVel = Vector3D.distance(context.initialOrbit.getVelocity(),
 				estimatedVelocity);
 		Assertions.assertEquals(expectedRMS, rms, rmsEps);
 		Assertions.assertEquals(expectedMax, max, maxEps);
@@ -395,7 +395,7 @@ public class UnscentedEstimationTestUtils {
         	 // Get the last estimation
     		final Orbit estimatedOrbit = estimated[k].getInitialState().getOrbit();
     		final Vector3D estimatedPosition = estimatedOrbit.getPosition();
-    		final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
+    		final Vector3D estimatedVelocity = estimatedOrbit.getVelocity();
 
             // Get the last covariance matrix estimation
     		final RealMatrix estimatedP = kalman.getPhysicalEstimatedCovarianceMatrix();
@@ -416,7 +416,7 @@ public class UnscentedEstimationTestUtils {
 
 //          // FIXME: debug print values
 //          final double dPos = Vector3D.distance(refOrbit[k].getPosition(), estimatedPosition);
-//          final double dVel = Vector3D.distance(refOrbit[k].getPVCoordinates().getVelocity(), estimatedVelocity);
+//          final double dVel = Vector3D.distance(refOrbit[k].getVelocity(), estimatedVelocity);
 //          System.out.println("Nb Meas = " + kalman.getCurrentMeasurementNumber());
 //          System.out.println("dPos    = " + dPos + " m");
 //          System.out.println("dVel    = " + dVel + " m/s");
@@ -429,7 +429,7 @@ public class UnscentedEstimationTestUtils {
 //          //debug
 
     		final double deltaPosK = Vector3D.distance(refOrbit[k].getPosition(), estimatedPosition);
-    		final double deltaVelK = Vector3D.distance(refOrbit[k].getPVCoordinates().getVelocity(), estimatedVelocity);
+    		final double deltaVelK = Vector3D.distance(refOrbit[k].getVelocity(), estimatedVelocity);
     		Assertions.assertEquals(expectedDeltaPos[k], deltaPosK, posEps[k]);
     		Assertions.assertEquals(expectedDeltaVel[k], deltaVelK, velEps[k]);
 

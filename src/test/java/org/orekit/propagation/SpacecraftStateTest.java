@@ -732,8 +732,8 @@ class SpacecraftStateTest {
         final Vector3D orbitVelocity = orbitState.getVelocity();
 
         // THEN
-        Assertions.assertEquals(pvaState.getPVCoordinates().getVelocity(), pvaVelocity);
-        Assertions.assertEquals(orbitState.getPVCoordinates().getVelocity(), orbitVelocity);
+        Assertions.assertEquals(pvaState.getVelocity(), pvaVelocity);
+        Assertions.assertEquals(orbitState.getVelocity(), orbitVelocity);
     }
 
     @BeforeEach

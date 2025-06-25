@@ -72,7 +72,7 @@ public interface CartesianToleranceProvider {
      * @return absolute and relative tolerances
      */
     default double[][] getTolerances(CartesianOrbit cartesianOrbit) {
-        return getTolerances(cartesianOrbit.getPosition(), cartesianOrbit.getPVCoordinates().getVelocity());
+        return getTolerances(cartesianOrbit.getPosition(), cartesianOrbit.getVelocity());
     }
 
     /**
@@ -91,7 +91,7 @@ public interface CartesianToleranceProvider {
      * @return absolute and relative tolerances
      */
     default double[][] getTolerances(AbsolutePVCoordinates absolutePVCoordinates) {
-        return getTolerances(absolutePVCoordinates.getPosition(), absolutePVCoordinates.getPVCoordinates().getVelocity());
+        return getTolerances(absolutePVCoordinates.getPosition(), absolutePVCoordinates.getVelocity());
     }
 
     /**

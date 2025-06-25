@@ -77,7 +77,7 @@ class OrbitTest {
         final Vector3D velocity = fakeOrbit.getVelocity();
 
         // THEN
-        Assertions.assertEquals(fakeOrbit.getPVCoordinates().getVelocity(), velocity);
+        Assertions.assertEquals(fakeOrbit.getVelocity(), velocity);
     }
 
     private void templateTestIsElliptical(final double aIn) {

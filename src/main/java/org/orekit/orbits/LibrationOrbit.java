@@ -124,7 +124,7 @@ public abstract class LibrationOrbit {
         return new PVCoordinates(s.getPosition().add(new Vector3D(eigenVector.getEntry(0),
                                                                   eigenVector.getEntry(1),
                                                                   eigenVector.getEntry(2)).scalarMultiply(epsilon)),
-                                 s.getPVCoordinates().getVelocity().add(new Vector3D(eigenVector.getEntry(3),
+                                 s.getVelocity().add(new Vector3D(eigenVector.getEntry(3),
                                                                                      eigenVector.getEntry(4),
                                                                                      eigenVector.getEntry(5)).scalarMultiply(epsilon)));
     }

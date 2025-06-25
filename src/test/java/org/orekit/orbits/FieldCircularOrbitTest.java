@@ -108,7 +108,7 @@ class FieldCircularOrbitTest {
         final Binary64Field field = Binary64Field.getInstance();
         final FieldCircularOrbit<Binary64> fieldCircularOrbit = new FieldCircularOrbit<>(field, circularOrbit);
         // WHEN
-        final FieldVector3D<Binary64> velocity = fieldCircularOrbit.getPVCoordinates().getVelocity();
+        final FieldVector3D<Binary64> velocity = fieldCircularOrbit.getVelocity();
         // THEN
         final FieldVector3D<Binary64> difference = velocity.subtract(pvCoordinates.getVelocity());
         Assertions.assertEquals(0., difference.getNorm().getReal(), 1e-10);
@@ -438,7 +438,7 @@ class FieldCircularOrbitTest {
                                      zero.add(5.300).subtract(raan), PositionAngleType.MEAN,
                                      FramesFactory.getEME2000(), date, zero.add(mu));
         FieldVector3D<T> pos = circ.getPosition();
-        FieldVector3D<T> vit = circ.getPVCoordinates().getVelocity();
+        FieldVector3D<T> vit = circ.getVelocity();
 
         FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(pos, vit);
 
@@ -536,7 +536,7 @@ class FieldCircularOrbitTest {
                                         raan.negate().add(5.300), PositionAngleType.MEAN,
                                         FramesFactory.getEME2000(), date, zero.add(mu));
         FieldVector3D<T> posCir = circCir.getPosition();
-        FieldVector3D<T> vitCir = circCir.getPVCoordinates().getVelocity();
+        FieldVector3D<T> vitCir = circCir.getVelocity();
 
         FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>( posCir, vitCir);
 
@@ -570,7 +570,7 @@ class FieldCircularOrbitTest {
                                      raan.negate().add(5.300), PositionAngleType.MEAN,
                                      FramesFactory.getEME2000(), date, zero.add(mu));
         FieldVector3D<T> pos = circ.getPosition();
-        FieldVector3D<T> vel = circ.getPVCoordinates().getVelocity();
+        FieldVector3D<T> vel = circ.getVelocity();
 
         // check 1/a = 2/r  - V2/mu
         T r = pos.getNorm();
@@ -780,8 +780,8 @@ class FieldCircularOrbitTest {
                      p.getPosition().getNorm().getReal(),
                      Utils.epsilonTest * FastMath.abs(p.getPosition().getNorm().getReal()));
         Assertions.assertEquals(na.getReal() * FastMath.sqrt(ksi.getReal() * ksi.getReal() + nu.getReal() * nu.getReal()) / epsilon.getReal(),
-                     p.getPVCoordinates().getVelocity().getNorm().getReal(),
-                     Utils.epsilonTest * FastMath.abs(p.getPVCoordinates().getVelocity().getNorm().getReal()));
+                     p.getVelocity().getNorm().getReal(),
+                     Utils.epsilonTest * FastMath.abs(p.getVelocity().getNorm().getReal()));
 
     }
 
@@ -840,8 +840,8 @@ class FieldCircularOrbitTest {
                             pCirEqua.getPosition().getNorm().getReal(),
                             Utils.epsilonTest * FastMath.abs(pCirEqua.getPosition().getNorm().getReal()));
         Assertions.assertEquals(na.getReal() * FastMath.sqrt(ksi.getReal() * ksi.getReal() + nu.getReal() * nu.getReal()) / epsilon.getReal(),
-                            pCirEqua.getPVCoordinates().getVelocity().getNorm().getReal(),
-                            Utils.epsilonTest * FastMath.abs(pCirEqua.getPVCoordinates().getVelocity().getNorm().getReal()));
+                            pCirEqua.getVelocity().getNorm().getReal(),
+                            Utils.epsilonTest * FastMath.abs(pCirEqua.getVelocity().getNorm().getReal()));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestGeometryEll(Field<T> field) {
@@ -859,7 +859,7 @@ class FieldCircularOrbitTest {
                                      FramesFactory.getEME2000(), date, zero.add(mu));
 
         FieldVector3D<T> position = p.getPosition();
-        FieldVector3D<T> velocity = p.getPVCoordinates().getVelocity();
+        FieldVector3D<T> velocity = p.getVelocity();
         FieldVector3D<T> momentum = p.getPVCoordinates().getMomentum().normalize();
 
         T apogeeRadius  = p.getA().multiply( p.getE().add(1));
@@ -876,7 +876,7 @@ class FieldCircularOrbitTest {
             Assertions.assertTrue((position.getNorm().getReal() - perigeeRadius.getReal()) >= (- perigeeRadius.getReal() * Utils.epsilonTest));
 
             position= position.normalize();
-            velocity = p.getPVCoordinates().getVelocity();
+            velocity = p.getVelocity();
             velocity= velocity.normalize();
 
             // at this stage of computation, all the vectors (position, velocity and momemtum) are normalized here
@@ -905,7 +905,7 @@ class FieldCircularOrbitTest {
                                     FramesFactory.getEME2000(), date, zero.add(mu));
 
         FieldVector3D<T> position = pCirEqua.getPosition();
-        FieldVector3D<T> velocity = pCirEqua.getPVCoordinates().getVelocity();
+        FieldVector3D<T> velocity = pCirEqua.getVelocity();
         FieldVector3D<T> momentum = pCirEqua.getPVCoordinates().getMomentum().normalize();
 
         T apogeeRadius  = pCirEqua.getA().multiply( pCirEqua.getE().add(1));
@@ -924,7 +924,7 @@ class FieldCircularOrbitTest {
             Assertions.assertTrue((position.getNorm().getReal() - perigeeRadius.getReal()) >= (- perigeeRadius.getReal() * Utils.epsilonTest));
 
             position= position.normalize();
-            velocity = pCirEqua.getPVCoordinates().getVelocity();
+            velocity = pCirEqua.getVelocity();
             velocity= velocity.normalize();
 
             // at this stage of computation, all the vectors (position, velocity and momemtum) are normalized here
@@ -949,7 +949,7 @@ class FieldCircularOrbitTest {
         FieldCircularOrbit<T> p = new FieldCircularOrbit<>(pvCoordinates, FramesFactory.getEME2000(), date, zero.add(mu));
 
         FieldVector3D<T> positionOffset = p.getPosition();
-        FieldVector3D<T> velocityOffset = p.getPVCoordinates().getVelocity();
+        FieldVector3D<T> velocityOffset = p.getVelocity();
 
         positionOffset = positionOffset.subtract(position);
         velocityOffset = velocityOffset.subtract(velocity);
@@ -971,7 +971,7 @@ class FieldCircularOrbitTest {
         FieldCircularOrbit<T> p = new FieldCircularOrbit<>(pvCoordinates, FramesFactory.getEME2000(), date, zero.add(mu));
 
         FieldVector3D<T> positionOffset = p.getPosition().subtract(position);
-        FieldVector3D<T> velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
+        FieldVector3D<T> velocityOffset = p.getVelocity().subtract(velocity);
 
         Assertions.assertEquals(0.0, positionOffset.getNorm().getReal(), position.getNorm().getReal() * Utils.epsilonTest);
         Assertions.assertEquals(0.0, velocityOffset.getNorm().getReal(), velocity.getNorm().getReal() * Utils.epsilonTest);
@@ -1142,7 +1142,7 @@ class FieldCircularOrbitTest {
         // at constant energy (i.e. constant semi major axis), we have dV = -mu dP / (V * r^2)
         // we use this to compute a velocity step size from the position step size
         FieldVector3D<T> p = orbit.getPosition();
-        FieldVector3D<T> v = orbit.getPVCoordinates().getVelocity();
+        FieldVector3D<T> v = orbit.getVelocity();
         T hV =  hP.multiply(orbit.getMu()).divide(v.getNorm().multiply(p.getNormSq()));
 
         T h;
@@ -1452,8 +1452,8 @@ class FieldCircularOrbitTest {
                                                    shiftedOrbitCopy.getPosition()).getReal(),
                             1.0e-10);
         Assertions.assertEquals(0.0,
-                            FieldVector3D.distance(shiftedOrbit.getPVCoordinates().getVelocity(),
-                                                   shiftedOrbitCopy.getPVCoordinates().getVelocity()).getReal(),
+                            FieldVector3D.distance(shiftedOrbit.getVelocity(),
+                                                   shiftedOrbitCopy.getVelocity()).getReal(),
                             1.0e-10);
 
     }
