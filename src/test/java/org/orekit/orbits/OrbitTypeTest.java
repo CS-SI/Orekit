@@ -139,8 +139,8 @@ class OrbitTypeTest {
         final double tolerance = 1e-6;
         Assertions.assertArrayEquals(expectedFieldOrbit.getPosition().toVector3D().toArray(),
                 actualFieldOrbit.getPosition().toVector3D().toArray(), tolerance);
-        Assertions.assertArrayEquals(expectedFieldOrbit.getPVCoordinates().getVelocity().toVector3D().toArray(),
-                actualFieldOrbit.getPVCoordinates().getVelocity().toVector3D().toArray(), tolerance);
+        Assertions.assertArrayEquals(expectedFieldOrbit.getVelocity().toVector3D().toArray(),
+                actualFieldOrbit.getVelocity().toVector3D().toArray(), tolerance);
         Assertions.assertArrayEquals(expectedFieldOrbit.getPVCoordinates().getAcceleration().toVector3D().toArray(),
                 actualFieldOrbit.getPVCoordinates().getAcceleration().toVector3D().toArray(), tolerance);
     }

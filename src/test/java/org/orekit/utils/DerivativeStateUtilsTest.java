@@ -70,9 +70,9 @@ class DerivativeStateUtilsTest {
                 assertEquals(1., fieldOrbit.getPosition().getX().getGradient()[0]);
                 assertEquals(1., fieldOrbit.getPosition().getY().getGradient()[1]);
                 assertEquals(1., fieldOrbit.getPosition().getZ().getGradient()[2]);
-                assertEquals(1., fieldOrbit.getPVCoordinates().getVelocity().getX().getGradient()[3]);
-                assertEquals(1., fieldOrbit.getPVCoordinates().getVelocity().getY().getGradient()[4]);
-                assertEquals(1., fieldOrbit.getPVCoordinates().getVelocity().getZ().getGradient()[5]);
+                assertEquals(1., fieldOrbit.getVelocity().getX().getGradient()[3]);
+                assertEquals(1., fieldOrbit.getVelocity().getY().getGradient()[4]);
+                assertEquals(1., fieldOrbit.getVelocity().getZ().getGradient()[5]);
                 break;
 
             case EQUINOCTIAL:
@@ -138,8 +138,8 @@ class DerivativeStateUtilsTest {
             assertEquals(0., fieldOrbit.getPosition().getX().getGradient()[i]);
         }
         if (freeParameters <= 3) {
-            assertArrayEquals(orbit.getPVCoordinates().getVelocity().toArray(),
-                    fieldOrbit.getPVCoordinates().getVelocity().toVector3D().toArray());
+            assertArrayEquals(orbit.getVelocity().toArray(),
+                    fieldOrbit.getVelocity().toVector3D().toArray());
         } else {
             assertEquals(1., fieldOrbit.getPosition().getY().getGradient()[1]);
             assertEquals(1., fieldOrbit.getPosition().getZ().getGradient()[2]);
@@ -162,8 +162,8 @@ class DerivativeStateUtilsTest {
         assertArrayEquals(new double[freeParameters], fieldPV.getDate().durationFrom(pvCoordinates.getDate()).getGradient());
         final FieldOrbit<Gradient> fieldOrbit = DerivativeStateUtils.buildOrbitGradient(field, orbit);
         assertArrayEquals(fieldPV.getPosition().toArray(), fieldOrbit.getPosition().toArray());
-        assertArrayEquals(fieldPV.getPVCoordinates().getVelocity().toArray(),
-                fieldOrbit.getPVCoordinates().getVelocity().toArray());
+        assertArrayEquals(fieldPV.getVelocity().toArray(),
+                fieldOrbit.getVelocity().toArray());
     }
 
     @ParameterizedTest
@@ -229,9 +229,9 @@ class DerivativeStateUtilsTest {
         assertArrayEquals(data[0], fieldState.getPosition().getX().getGradient());
         assertArrayEquals(data[1], fieldState.getPosition().getY().getGradient());
         assertArrayEquals(data[2], fieldState.getPosition().getZ().getGradient());
-        assertArrayEquals(data[3], fieldState.getPVCoordinates().getVelocity().getX().getGradient());
-        assertArrayEquals(data[4], fieldState.getPVCoordinates().getVelocity().getY().getGradient());
-        assertArrayEquals(data[5], fieldState.getPVCoordinates().getVelocity().getZ().getGradient());
+        assertArrayEquals(data[3], fieldState.getVelocity().getX().getGradient());
+        assertArrayEquals(data[4], fieldState.getVelocity().getY().getGradient());
+        assertArrayEquals(data[5], fieldState.getVelocity().getZ().getGradient());
         assertArrayEquals(data[6], fieldState.getMass().getGradient());
     }
 
@@ -251,7 +251,7 @@ class DerivativeStateUtilsTest {
         assertEquals(expectedFieldState.getMass(), fieldState.getMass());
         assertEquals(expectedFieldState.getDate(), fieldState.getDate());
         assertEquals(expectedFieldState.getPosition(), fieldState.getPosition());
-        assertEquals(expectedFieldState.getPVCoordinates().getVelocity(), fieldState.getPVCoordinates().getVelocity());
+        assertEquals(expectedFieldState.getVelocity(), fieldState.getVelocity());
         assertEquals(expectedFieldState.getPVCoordinates().getAcceleration(), fieldState.getPVCoordinates().getAcceleration());
     }
 
@@ -270,7 +270,7 @@ class DerivativeStateUtilsTest {
         assertEquals(expectedFieldState.getMass(), fieldState.getMass());
         assertEquals(expectedFieldState.getDate(), fieldState.getDate());
         assertEquals(expectedFieldState.getPosition(), fieldState.getPosition());
-        assertEquals(expectedFieldState.getPVCoordinates().getVelocity(), fieldState.getPVCoordinates().getVelocity());
+        assertEquals(expectedFieldState.getVelocity(), fieldState.getVelocity());
         assertEquals(expectedFieldState.getPVCoordinates().getAcceleration(), fieldState.getPVCoordinates().getAcceleration());
     }
 }

@@ -225,7 +225,7 @@ public class BoxAndSolarArraySpacecraftTest {
 
             // simple Earth fixed atmosphere
             Vector3D p = state.getPosition();
-            Vector3D v = state.getPVCoordinates().getVelocity();
+            Vector3D v = state.getVelocity();
             Vector3D vAtm = Vector3D.crossProduct(earthRot, p);
             Vector3D relativeVelocity = vAtm.subtract(v);
 
@@ -257,7 +257,7 @@ public class BoxAndSolarArraySpacecraftTest {
 
             // simple Earth fixed atmosphere
             Vector3D p = state.getPosition();
-            Vector3D v = state.getPVCoordinates().getVelocity();
+            Vector3D v = state.getVelocity();
             Vector3D vAtm = Vector3D.crossProduct(earthRot, p);
             Vector3D relativeVelocity = vAtm.subtract(v);
 
@@ -480,7 +480,7 @@ public class BoxAndSolarArraySpacecraftTest {
 
             // Data used in acceleration computation
             Vector3D position = state.getPosition();
-            Vector3D velocity = state.getPVCoordinates().getVelocity();
+            Vector3D velocity = state.getVelocity();
             Vector3D vAtm = Vector3D.crossProduct(earthRot, position);
             Vector3D relativeVelocity = vAtm.subtract(velocity);
 

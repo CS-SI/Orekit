@@ -141,7 +141,7 @@ class AlignedAndConstrainedTest {
     void testAlignmentsVelocityMomentum() {
         doTestAlignment(Vector3D.MINUS_J, PredefinedTarget.VELOCITY,
                         Vector3D.MINUS_K, PredefinedTarget.MOMENTUM,
-                        t -> orbit.shiftedBy(t.durationFrom(orbit.getDate())).getPVCoordinates().getVelocity().normalize(),
+                        t -> orbit.shiftedBy(t.durationFrom(orbit.getDate())).getVelocity().normalize(),
                         t -> orbit.shiftedBy(t.durationFrom(orbit.getDate())).getPVCoordinates().getMomentum().normalize(),
                         1.0e-10, 1.0e-15);
     }
@@ -152,7 +152,7 @@ class AlignedAndConstrainedTest {
         doTestAlignment(field,
                         Vector3D.MINUS_J, PredefinedTarget.VELOCITY,
                         Vector3D.MINUS_K, PredefinedTarget.MOMENTUM,
-                        t -> getOrbit(field).shiftedBy(t.durationFrom(orbit.getDate())).getPVCoordinates().getVelocity().normalize(),
+                        t -> getOrbit(field).shiftedBy(t.durationFrom(orbit.getDate())).getVelocity().normalize(),
                         t -> getOrbit(field).shiftedBy(t.durationFrom(orbit.getDate())).getPVCoordinates().getMomentum().normalize(),
                         1.0e-10, 1.0e-15);
     }

@@ -69,8 +69,8 @@ public class CR3BPForceModel implements ForceModel {
                                  final double[] parameters) {
 
         // Spacecraft Velocity
-        final double vx = s.getPVCoordinates().getVelocity().getX();
-        final double vy = s.getPVCoordinates().getVelocity().getY();
+        final double vx = s.getVelocity().getX();
+        final double vy = s.getVelocity().getY();
 
         // Spacecraft Potential
         final DerivativeStructure potential = getPotential(s);
@@ -98,8 +98,8 @@ public class CR3BPForceModel implements ForceModel {
                                                                          final T[] parameters) {
 
         // Spacecraft Velocity
-        final T vx = s.getPVCoordinates().getVelocity().getX();
-        final T vy = s.getPVCoordinates().getVelocity().getY();
+        final T vx = s.getVelocity().getX();
+        final T vy = s.getVelocity().getY();
 
         // Spacecraft Potential
         final FieldDerivativeStructure<T> fieldPotential = getPotential(s);

@@ -145,7 +145,7 @@ public interface ToleranceProvider extends CartesianToleranceProvider {
                                             final PositionAngleType positionAngleType) {
                 // compute Cartesian-related tolerances
                 final double[][] cartesianTolerances = getTolerances(referenceOrbit.getPosition(),
-                        referenceOrbit.getPVCoordinates().getVelocity());
+                        referenceOrbit.getVelocity());
                 if (propagationOrbitType == OrbitType.CARTESIAN) {
                     return cartesianTolerances;
                 }

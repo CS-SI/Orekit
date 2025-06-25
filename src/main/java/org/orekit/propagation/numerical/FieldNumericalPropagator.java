@@ -568,7 +568,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
             if (superGetOrbitType() == null) {
                 // position derivative is velocity, and was not added above in the force models
                 // (it is added when orbit type is non-null because NewtonianAttraction considers it)
-                final FieldVector3D<T> velocity = currentState.getPVCoordinates().getVelocity();
+                final FieldVector3D<T> velocity = currentState.getVelocity();
                 yDot[0] = yDot[0].add(velocity.getX());
                 yDot[1] = yDot[1].add(velocity.getY());
                 yDot[2] = yDot[2].add(velocity.getZ());

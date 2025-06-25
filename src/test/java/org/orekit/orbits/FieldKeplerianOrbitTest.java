@@ -533,7 +533,7 @@ public class FieldKeplerianOrbitTest {
 
         FieldVector3D<T> pos = kep.getPosition();
 
-        FieldVector3D<T> vit = kep.getPVCoordinates().getVelocity();
+        FieldVector3D<T> vit = kep.getVelocity();
 
         FieldKeplerianOrbit<T> param = new FieldKeplerianOrbit<>(new FieldPVCoordinates<>(pos, vit),
                                                                  FramesFactory.getEME2000(), date, field.getZero().add(mu));
@@ -562,7 +562,7 @@ public class FieldKeplerianOrbitTest {
                                       FramesFactory.getEME2000(), date, field.getZero().add(mu));
 
         FieldVector3D<T> posCir = kepCir.getPosition();
-        FieldVector3D<T> vitCir = kepCir.getPVCoordinates().getVelocity();
+        FieldVector3D<T> vitCir = kepCir.getVelocity();
 
         FieldKeplerianOrbit<T> paramCir = new FieldKeplerianOrbit<>(new FieldPVCoordinates<>(posCir, vitCir),
                                                                     FramesFactory.getEME2000(), date, field.getZero().add(mu));
@@ -591,7 +591,7 @@ public class FieldKeplerianOrbitTest {
 
         FieldVector3D<T> posHyp = kepHyp.getPosition();
 
-        FieldVector3D<T> vitHyp = kepHyp.getPVCoordinates().getVelocity();
+        FieldVector3D<T> vitHyp = kepHyp.getVelocity();
 
         FieldKeplerianOrbit<T> paramHyp = new FieldKeplerianOrbit<>(new FieldPVCoordinates<>(posHyp, vitHyp),
                                                                     FramesFactory.getEME2000(), date, field.getZero().add(mu));
@@ -621,7 +621,7 @@ public class FieldKeplerianOrbitTest {
                                       FramesFactory.getEME2000(), date, field.getZero().add(mu));
 
         FieldVector3D<T> pos = kep.getPosition();
-        FieldVector3D<T> vit = kep.getPVCoordinates().getVelocity();
+        FieldVector3D<T> vit = kep.getVelocity();
         Assertions.assertEquals(-0.107622532467967e+07, pos.getX().getReal(), Utils.epsilonTest * FastMath.abs(pos.getX().getReal()));
         Assertions.assertEquals(-0.676589636432773e+07, pos.getY().getReal(), Utils.epsilonTest * FastMath.abs(pos.getY().getReal()));
         Assertions.assertEquals(-0.332308783350379e+06, pos.getZ().getReal(), Utils.epsilonTest * FastMath.abs(pos.getZ().getReal()));
@@ -772,8 +772,8 @@ public class FieldKeplerianOrbitTest {
 
         // validation of: V = sqrt(mu.(1+2e.cos(v)+e2)/a.(1-e2) )
         Assertions.assertEquals(na.getReal() * FastMath.sqrt(ksi.getReal() * ksi.getReal() + nu.getReal() * nu.getReal()) / epsilon.getReal(),
-                            p.getPVCoordinates().getVelocity().getNorm().getReal(),
-                            Utils.epsilonTest * FastMath.abs(p.getPVCoordinates().getVelocity().getNorm().getReal()));
+                            p.getVelocity().getNorm().getReal(),
+                            Utils.epsilonTest * FastMath.abs(p.getVelocity().getNorm().getReal()));
 
 
         //  circular and equatorial orbit
@@ -798,8 +798,8 @@ public class FieldKeplerianOrbitTest {
 
         // validation of: V = sqrt(mu.(1+2e.cos(v)+e2)/a.(1-e2) )
         Assertions.assertEquals(na.getReal() * FastMath.sqrt(ksi.getReal() * ksi.getReal() + nu.getReal() * nu.getReal()) / epsilon.getReal(),
-                            pCirEqua.getPVCoordinates().getVelocity().getNorm().getReal(),
-                            Utils.epsilonTest * FastMath.abs(pCirEqua.getPVCoordinates().getVelocity().getNorm().getReal()));
+                            pCirEqua.getVelocity().getNorm().getReal(),
+                            Utils.epsilonTest * FastMath.abs(pCirEqua.getVelocity().getNorm().getReal()));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestGeometry(final Field<T> field) {
@@ -811,7 +811,7 @@ public class FieldKeplerianOrbitTest {
                                       FramesFactory.getEME2000(), date, field.getZero().add(mu));
 
         FieldVector3D<T> position = p.getPosition();
-        FieldVector3D<T> velocity = p.getPVCoordinates().getVelocity();
+        FieldVector3D<T> velocity = p.getVelocity();
         FieldVector3D<T> momentum = p.getPVCoordinates().getMomentum().normalize();
 
         T apogeeRadius  = p.getA().multiply(p.getE().add(1));
@@ -831,7 +831,7 @@ public class FieldKeplerianOrbitTest {
             Assertions.assertTrue((position.getNorm().getReal() - perigeeRadius.getReal()) >= (- perigeeRadius.getReal() * Utils.epsilonTest));
 
             position = position.normalize();
-            velocity = p.getPVCoordinates().getVelocity();
+            velocity = p.getVelocity();
             velocity = velocity.normalize();
 
             // at this stage of computation, all the vectors (position, velocity and momemtum) are normalized here
@@ -860,14 +860,14 @@ public class FieldKeplerianOrbitTest {
 
         Assertions.assertTrue(FastMath.abs(p.getPosition().getZ().getReal()) < p.getPosition().getNorm().getReal() * Utils.epsilonTest);
 
-        Assertions.assertTrue(p.getPVCoordinates().getVelocity().getZ().getReal() < 0);
+        Assertions.assertTrue(p.getVelocity().getZ().getReal() < 0);
 
         // ascending node
         p = new FieldKeplerianOrbit<>(p.getA(), p.getE(), p.getI(), p.getPerigeeArgument(),
                                       p.getRightAscensionOfAscendingNode(), field.getZero().add(2.0 * FastMath.PI - p.getPerigeeArgument().getReal()) , PositionAngleType.TRUE,
                                       p.getFrame(), p.getDate(), p.getMu());
         Assertions.assertTrue(FastMath.abs(p.getPosition().getZ().getReal()) < p.getPosition().getNorm().getReal() * Utils.epsilonTest);
-        Assertions.assertTrue(p.getPVCoordinates().getVelocity().getZ().getReal() > 0);
+        Assertions.assertTrue(p.getVelocity().getZ().getReal() > 0);
 
         //  circular and equatorial orbit
         FieldKeplerianOrbit<T> pCirEqua =
@@ -881,7 +881,7 @@ public class FieldKeplerianOrbitTest {
                                       FramesFactory.getEME2000(), date, field.getZero().add(mu));
 
         position = pCirEqua.getPosition();
-        velocity = pCirEqua.getPVCoordinates().getVelocity();
+        velocity = pCirEqua.getVelocity();
         momentum = FieldVector3D.crossProduct(position, velocity).normalize();
 
         apogeeRadius  = pCirEqua.getA().multiply(pCirEqua.getE().add(1));
@@ -905,7 +905,7 @@ public class FieldKeplerianOrbitTest {
             Assertions.assertTrue((position.getNorm().getReal() - perigeeRadius.getReal()) >= (- perigeeRadius.getReal() * Utils.epsilonTest));
 
             position = position.normalize();
-            velocity = pCirEqua.getPVCoordinates().getVelocity();
+            velocity = pCirEqua.getVelocity();
             velocity = velocity.normalize();
 
             // at this stage of computation, all the vectors (position, velocity and momemtum) are normalized here
@@ -926,7 +926,7 @@ public class FieldKeplerianOrbitTest {
         FieldKeplerianOrbit<T> p = new FieldKeplerianOrbit<>(new FieldPVCoordinates<>(position, velocity),
                                                              FramesFactory.getEME2000(), date, field.getZero().add(mu));
         FieldVector3D<T> positionOffset = p.getPosition().subtract(position);
-        FieldVector3D<T> velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
+        FieldVector3D<T> velocityOffset = p.getVelocity().subtract(velocity);
 
        Assertions.assertEquals(0, positionOffset.getNorm().getReal(), 2.9e-9);
        Assertions.assertEquals(0, velocityOffset.getNorm().getReal(), 1.0e-15);
@@ -939,7 +939,7 @@ public class FieldKeplerianOrbitTest {
         p = new FieldKeplerianOrbit<>(new FieldPVCoordinates<>(position, velocity),
                                       FramesFactory.getEME2000(), date, field.getZero().add(mu));
         positionOffset = p.getPosition().subtract(position);
-        velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
+        velocityOffset = p.getVelocity().subtract(velocity);
 
        Assertions.assertEquals(0, positionOffset.getNorm().getReal(), 4.8e-9);
        Assertions.assertEquals(0, velocityOffset.getNorm().getReal(), 1.0e-15);
@@ -1092,7 +1092,7 @@ public class FieldKeplerianOrbitTest {
         // big dV along Y
         final FieldVector3D<T> deltaV = new FieldVector3D<>(field.getZero().add(0.0), field.getZero().add(110000.0), field.getZero());
         final FieldPVCoordinates<T> pv1 = new FieldPVCoordinates<>(orb0.getPosition(),
-                                                                   orb0.getPVCoordinates().getVelocity().add(deltaV));
+                                                                   orb0.getVelocity().add(deltaV));
         final FieldKeplerianOrbit<T> orb1 = new FieldKeplerianOrbit<>(pv1, eme2000, date, field.getZero().add(mu));
 
         // Despite large eccentricity, the conversion of mean anomaly to hyperbolic eccentric anomaly
@@ -1455,7 +1455,7 @@ public class FieldKeplerianOrbitTest {
         // at constant energy (i.e. constant semi major axis), we have dV = -mu dP / (V * r^2)
         // we use this to compute a velocity step size from the position step size
         FieldVector3D<T> p = orbit.getPosition();
-        FieldVector3D<T> v = orbit.getPVCoordinates().getVelocity();
+        FieldVector3D<T> v = orbit.getVelocity();
         T hV = hP.multiply(orbit.getMu()).divide(v.getNorm().multiply(p.getNormSq()));
         T h;
         FieldVector3D<T> dP = new FieldVector3D<>(p.getX().getField().getZero(), p.getX().getField().getZero(), p.getX().getField().getZero());
@@ -1569,7 +1569,7 @@ public class FieldKeplerianOrbitTest {
                                                                                                                     field.getZero().add(-7842.))),
                                                                        FramesFactory.getEME2000(), date, field.getZero().add(mu));
         final FieldVector3D<T> p = orbit.getPosition();
-        final FieldVector3D<T> v = orbit.getPVCoordinates().getVelocity();
+        final FieldVector3D<T> v = orbit.getVelocity();
         final FieldVector3D<T> a = orbit.getPVCoordinates().getAcceleration();
 
         // check that despite we did not provide acceleration, it got recomputed
@@ -1577,23 +1577,23 @@ public class FieldKeplerianOrbitTest {
 
         // check velocity is the derivative of position
         Assertions.assertEquals(differentiate(orbit, shifted -> shifted.getPosition().getX()),
-                            orbit.getPVCoordinates().getVelocity().getX().getReal(),
+                            orbit.getVelocity().getX().getReal(),
                             4.0e-12 * v.getNorm().getReal());
         Assertions.assertEquals(differentiate(orbit, shifted -> shifted.getPosition().getY()),
-                            orbit.getPVCoordinates().getVelocity().getY().getReal(),
+                            orbit.getVelocity().getY().getReal(),
                             4.0e-12 * v.getNorm().getReal());
         Assertions.assertEquals(differentiate(orbit, shifted -> shifted.getPosition().getZ()),
-                            orbit.getPVCoordinates().getVelocity().getZ().getReal(),
+                            orbit.getVelocity().getZ().getReal(),
                             4.0e-12 * v.getNorm().getReal());
 
         // check acceleration is the derivative of velocity
-        Assertions.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getVelocity().getX()),
+        Assertions.assertEquals(differentiate(orbit, shifted -> shifted.getVelocity().getX()),
                             orbit.getPVCoordinates().getAcceleration().getX().getReal(),
                             6.0e-12 * a.getNorm().getReal());
-        Assertions.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getVelocity().getY()),
+        Assertions.assertEquals(differentiate(orbit, shifted -> shifted.getVelocity().getY()),
                             orbit.getPVCoordinates().getAcceleration().getY().getReal(),
                             6.0e-12 * a.getNorm().getReal());
-        Assertions.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getVelocity().getZ()),
+        Assertions.assertEquals(differentiate(orbit, shifted -> shifted.getVelocity().getZ()),
                             orbit.getPVCoordinates().getAcceleration().getZ().getReal(),
                             6.0e-12 * a.getNorm().getReal());
 
@@ -2012,8 +2012,8 @@ public class FieldKeplerianOrbitTest {
                                                    shiftedOrbitCopy.getPosition()).getReal(),
                             1.0e-10);
         Assertions.assertEquals(0.0,
-                            FieldVector3D.distance(shiftedOrbit.getPVCoordinates().getVelocity(),
-                                                   shiftedOrbitCopy.getPVCoordinates().getVelocity()).getReal(),
+                            FieldVector3D.distance(shiftedOrbit.getVelocity(),
+                                                   shiftedOrbitCopy.getVelocity()).getReal(),
                             1.0e-10);
 
     }

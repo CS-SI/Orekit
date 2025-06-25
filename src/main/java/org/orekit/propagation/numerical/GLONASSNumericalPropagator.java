@@ -648,7 +648,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
                     dataContext.getTimeScales().getGLONASS());
 
             // Position and Velocity vectors
-            final Vector3D vel = state.getPVCoordinates().getVelocity();
+            final Vector3D vel = state.getVelocity();
             final Vector3D pos = state.getPosition();
 
             Arrays.fill(yDot, 0.0);

@@ -24,6 +24,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -394,6 +395,19 @@ public class AbsolutePVCoordinatesTest {
                                 Vector3D.distance(actual.getPVCoordinates(frame).getAcceleration(),
                                                   actual.getPVCoordinates(date, otherEme2000).getAcceleration()),
                                 1.0e-15);
+    }
+
+    @Test
+    public void testIssue1557(){
+        // GIVEN
+        final AbsolutePVCoordinates absPV = TestUtils.getFakeAbsolutePVCoordinates();
+
+        // WHEN
+        final Vector3D velocity = absPV.getVelocity(absPV.getDate(), absPV.getFrame());
+
+        // THEN
+        final PVCoordinates refPV = absPV.getPVCoordinates();
+        Assertions.assertEquals(refPV.getVelocity(), velocity);
     }
 
     @Test

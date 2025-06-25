@@ -156,7 +156,7 @@ class CircularOrbitTest {
                         5.300 - raan, PositionAngleType.MEAN,
                         FramesFactory.getEME2000(), date, mu);
         Vector3D pos = circ.getPosition();
-        Vector3D vit = circ.getPVCoordinates().getVelocity();
+        Vector3D vit = circ.getVelocity();
 
         PVCoordinates pvCoordinates = new PVCoordinates( pos, vit);
 
@@ -184,7 +184,7 @@ class CircularOrbitTest {
                         5.300 - raan, PositionAngleType.MEAN,
                         FramesFactory.getEME2000(), date, mu);
         Vector3D posCir = circCir.getPosition();
-        Vector3D vitCir = circCir.getPVCoordinates().getVelocity();
+        Vector3D vitCir = circCir.getVelocity();
 
         PVCoordinates pvCoordinates = new PVCoordinates( posCir, vitCir);
 
@@ -217,7 +217,7 @@ class CircularOrbitTest {
                         5.300 - raan, PositionAngleType.MEAN,
                         FramesFactory.getEME2000(), date, mu);
         Vector3D pos = circ.getPosition();
-        Vector3D vel = circ.getPVCoordinates().getVelocity();
+        Vector3D vel = circ.getVelocity();
 
         // check 1/a = 2/r  - V2/mu
         double r = pos.getNorm();
@@ -419,8 +419,8 @@ class CircularOrbitTest {
                 p.getPosition().getNorm(),
                 Utils.epsilonTest * FastMath.abs(p.getPosition().getNorm()));
         Assertions.assertEquals(na * FastMath.sqrt(ksi * ksi + nu * nu) / epsilon,
-                p.getPVCoordinates().getVelocity().getNorm(),
-                Utils.epsilonTest * FastMath.abs(p.getPVCoordinates().getVelocity().getNorm()));
+                p.getVelocity().getNorm(),
+                Utils.epsilonTest * FastMath.abs(p.getVelocity().getNorm()));
 
     }
 
@@ -476,8 +476,8 @@ class CircularOrbitTest {
                 pCirEqua.getPosition().getNorm(),
                 Utils.epsilonTest * FastMath.abs(pCirEqua.getPosition().getNorm()));
         Assertions.assertEquals(na * FastMath.sqrt(ksi * ksi + nu * nu) / epsilon,
-                pCirEqua.getPVCoordinates().getVelocity().getNorm(),
-                Utils.epsilonTest * FastMath.abs(pCirEqua.getPVCoordinates().getVelocity().getNorm()));
+                pCirEqua.getVelocity().getNorm(),
+                Utils.epsilonTest * FastMath.abs(pCirEqua.getVelocity().getNorm()));
     }
 
     @Test
@@ -494,7 +494,7 @@ class CircularOrbitTest {
                         FramesFactory.getEME2000(), date, mu);
 
         Vector3D position = p.getPosition();
-        Vector3D velocity = p.getPVCoordinates().getVelocity();
+        Vector3D velocity = p.getVelocity();
         Vector3D momentum = p.getPVCoordinates().getMomentum().normalize();
 
         double apogeeRadius  = p.getA() * (1 + p.getE());
@@ -511,7 +511,7 @@ class CircularOrbitTest {
             Assertions.assertTrue((position.getNorm() - perigeeRadius) >= (- perigeeRadius * Utils.epsilonTest));
 
             position= position.normalize();
-            velocity = p.getPVCoordinates().getVelocity();
+            velocity = p.getVelocity();
             velocity= velocity.normalize();
 
             // at this stage of computation, all the vectors (position, velocity and momemtum) are normalized here
@@ -538,7 +538,7 @@ class CircularOrbitTest {
                         FramesFactory.getEME2000(), date, mu);
 
         Vector3D position = pCirEqua.getPosition();
-        Vector3D velocity = pCirEqua.getPVCoordinates().getVelocity();
+        Vector3D velocity = pCirEqua.getVelocity();
         Vector3D momentum = pCirEqua.getPVCoordinates().getMomentum().normalize();
 
         double apogeeRadius  = pCirEqua.getA() * (1 + pCirEqua.getE());
@@ -557,7 +557,7 @@ class CircularOrbitTest {
             Assertions.assertTrue((position.getNorm() - perigeeRadius) >= (- perigeeRadius * Utils.epsilonTest));
 
             position= position.normalize();
-            velocity = pCirEqua.getPVCoordinates().getVelocity();
+            velocity = pCirEqua.getVelocity();
             velocity= velocity.normalize();
 
             // at this stage of computation, all the vectors (position, velocity and momemtum) are normalized here
@@ -580,7 +580,7 @@ class CircularOrbitTest {
         CircularOrbit p = new CircularOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
 
         Vector3D positionOffset = p.getPosition();
-        Vector3D velocityOffset = p.getPVCoordinates().getVelocity();
+        Vector3D velocityOffset = p.getVelocity();
 
         positionOffset = positionOffset.subtract(position);
         velocityOffset = velocityOffset.subtract(velocity);
@@ -600,7 +600,7 @@ class CircularOrbitTest {
         CircularOrbit p = new CircularOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
 
         Vector3D positionOffset = p.getPosition().subtract(position);
-        Vector3D velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
+        Vector3D velocityOffset = p.getVelocity().subtract(velocity);
 
         Assertions.assertEquals(0.0, positionOffset.getNorm(), position.getNorm() * Utils.epsilonTest);
         Assertions.assertEquals(0.0, velocityOffset.getNorm(), velocity.getNorm() * Utils.epsilonTest);
@@ -759,7 +759,7 @@ class CircularOrbitTest {
         // at constant energy (i.e. constant semi major axis), we have dV = -mu dP / (V * r^2)
         // we use this to compute a velocity step size from the position step size
         Vector3D p = orbit.getPosition();
-        Vector3D v = orbit.getPVCoordinates().getVelocity();
+        Vector3D v = orbit.getVelocity();
         double hV = orbit.getMu() * hP / (v.getNorm() * p.getNormSq());
 
         double h;
@@ -1073,8 +1073,8 @@ class CircularOrbitTest {
                         shiftedOrbitCopy.getPosition()),
                 1.0e-10);
         Assertions.assertEquals(0.0,
-                Vector3D.distance(shiftedOrbit.getPVCoordinates().getVelocity(),
-                        shiftedOrbitCopy.getPVCoordinates().getVelocity()),
+                Vector3D.distance(shiftedOrbit.getVelocity(),
+                        shiftedOrbitCopy.getVelocity()),
                 1.0e-10);
 
     }

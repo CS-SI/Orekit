@@ -96,11 +96,11 @@ public class FieldLatitudeCrossingDetectorTest {
             if (previous != null) {
                 if (e.isIncreasing()) {
                     // crossing northward
-                    Assertions.assertTrue(state.getPVCoordinates().getVelocity().getZ().getReal() > 3611.0);
+                    Assertions.assertTrue(state.getVelocity().getZ().getReal() > 3611.0);
                     Assertions.assertEquals(4954.70, state.getDate().durationFrom(previous).getReal(), 0.01);
                 } else {
                     // crossing southward
-                    Assertions.assertTrue(state.getPVCoordinates().getVelocity().getZ().getReal() < -3615.0);
+                    Assertions.assertTrue(state.getVelocity().getZ().getReal() < -3615.0);
                     Assertions.assertEquals(956.17, state.getDate().durationFrom(previous).getReal(), 0.01);
                 }
             }

@@ -993,7 +993,7 @@ class EphemerisTest {
     }
 
     private double calculateVelocityDelta(SpacecraftState state1, SpacecraftState state2) {
-        return Vector3D.distance(state1.getPVCoordinates().getVelocity(), state2.getPVCoordinates().getVelocity());
+        return Vector3D.distance(state1.getVelocity(), state2.getVelocity());
     }
 
     private double calculateAttitudeDelta(SpacecraftState state1, SpacecraftState state2) {

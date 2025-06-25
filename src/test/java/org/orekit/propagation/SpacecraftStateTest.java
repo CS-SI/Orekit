@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -715,6 +716,24 @@ class SpacecraftStateTest {
         Assertions.assertEquals(expectedStaticTransform.getTranslation(), actualStaticTransform.getTranslation());
         Assertions.assertEquals(0., Rotation.distance(expectedStaticTransform.getRotation(),
                 actualStaticTransform.getRotation()));
+    }
+
+    @Test
+    public void testIssue1557() {
+        // GIVEN
+        // Define orbit state
+        final SpacecraftState orbitState = new SpacecraftState(TestUtils.getFakeOrbit());
+
+        // Define PVA state
+        final SpacecraftState pvaState = new SpacecraftState(TestUtils.getFakeAbsolutePVCoordinates());
+
+        // WHEN
+        final Vector3D pvaVelocity   = pvaState.getVelocity();
+        final Vector3D orbitVelocity = orbitState.getVelocity();
+
+        // THEN
+        Assertions.assertEquals(pvaState.getVelocity(), pvaVelocity);
+        Assertions.assertEquals(orbitState.getVelocity(), orbitVelocity);
     }
 
     @BeforeEach

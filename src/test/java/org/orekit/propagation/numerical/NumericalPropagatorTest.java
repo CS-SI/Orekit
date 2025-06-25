@@ -482,11 +482,11 @@ class NumericalPropagatorTest {
 
         // Initial orbit definition
         final Vector3D initialPosition = initialState.getPosition();
-        final Vector3D initialVelocity = initialState.getPVCoordinates().getVelocity();
+        final Vector3D initialVelocity = initialState.getVelocity();
 
         // Final orbit definition
         final Vector3D finalPosition   = finalState.getPosition();
-        final Vector3D finalVelocity   = finalState.getPVCoordinates().getVelocity();
+        final Vector3D finalVelocity   = finalState.getVelocity();
 
         // Check results
         Assertions.assertEquals(initialPosition.getX(), finalPosition.getX(), 1.0e-10);

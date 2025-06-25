@@ -101,7 +101,7 @@ public class OneWayGNSSRangeBuilderTest {
         final Orbit o1 = context.initialOrbit;
         // for the second satellite, we simply reverse velocity
         final Orbit o2 = new KeplerianOrbit(new PVCoordinates(o1.getPosition(),
-                                                              o1.getPVCoordinates().getVelocity().negate()),
+                                                              o1.getVelocity().negate()),
                                             o1.getFrame(), o1.getDate(), o1.getMu());
         ObservableSatellite remote = generator.addPropagator(new KeplerianPropagator(o2)); // useful sixth propagator
         final double step = 60.0;
