@@ -1054,7 +1054,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             if (getOrbitType() == null) {
                 // position derivative is velocity, and was not added above in the force models
                 // (it is added when orbit type is non-null because NewtonianAttraction considers it)
-                final Vector3D velocity = currentState.getPVCoordinates().getVelocity();
+                final Vector3D velocity = currentState.getVelocity();
                 yDot[0] += velocity.getX();
                 yDot[1] += velocity.getY();
                 yDot[2] += velocity.getZ();

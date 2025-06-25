@@ -57,12 +57,12 @@ public class DataStreamRecordTest {
         Assertions.assertEquals("DEU",                                 str.getCountry());
         Assertions.assertEquals(50.09,                                 FastMath.toDegrees(str.getLatitude()),  1.0e-10);
         Assertions.assertEquals(8.66,                                  FastMath.toDegrees(str.getLongitude()), 1.0e-10);
-        Assertions.assertEquals(false,                                 str.isNMEARequired());
-        Assertions.assertEquals(true,                                  str.isNetworked());
+        Assertions.assertFalse(str.isNMEARequired());
+        Assertions.assertTrue(str.isNetworked());
         Assertions.assertEquals("RTNet",                               str.getGenerator());
         Assertions.assertEquals("none",                                str.getCompressionEncryption());
         Assertions.assertEquals(Authentication.BASIC,                  str.getAuthentication());
-        Assertions.assertEquals(false,                                 str.areFeesRequired());
+        Assertions.assertFalse(str.areFeesRequired());
         Assertions.assertEquals(1000,                                  str.getBitRate());
         Assertions.assertEquals("BKG IGS-SSR",                         str.getMisc());
     }
@@ -84,12 +84,12 @@ public class DataStreamRecordTest {
         Assertions.assertEquals("DEU",                str.getCountry());
         Assertions.assertEquals(49.87,                FastMath.toDegrees(str.getLatitude()),  1.0e-15);
         Assertions.assertEquals( 8.62,                FastMath.toDegrees(str.getLongitude()), 1.0e-15);
-        Assertions.assertEquals(false,                str.isNMEARequired());
-        Assertions.assertEquals(true,                 str.isNetworked());
+        Assertions.assertFalse(str.isNMEARequired());
+        Assertions.assertTrue(str.isNetworked());
         Assertions.assertEquals("RETINA",             str.getGenerator());
         Assertions.assertEquals("none",               str.getCompressionEncryption());
         Assertions.assertEquals(Authentication.BASIC, str.getAuthentication());
-        Assertions.assertEquals(false,                str.areFeesRequired());
+        Assertions.assertFalse(str.areFeesRequired());
         Assertions.assertEquals(1400,                 str.getBitRate());
         Assertions.assertEquals("IGS Combination",    str.getMisc());
     }
@@ -134,12 +134,12 @@ public class DataStreamRecordTest {
         Assertions.assertEquals("DEU",                                 str.getCountry());
         Assertions.assertEquals(48.09,                                 FastMath.toDegrees(str.getLatitude()),  1.0e-15);
         Assertions.assertEquals(11.28,                                 FastMath.toDegrees(str.getLongitude()), 1.0e-15);
-        Assertions.assertEquals(false,                                 str.isNMEARequired());
-        Assertions.assertEquals(true,                                  str.isNetworked());
+        Assertions.assertFalse(str.isNMEARequired());
+        Assertions.assertTrue(str.isNetworked());
         Assertions.assertEquals("RETICLE",                             str.getGenerator());
         Assertions.assertEquals("none",                                str.getCompressionEncryption());
         Assertions.assertEquals(Authentication.NONE,                   str.getAuthentication());
-        Assertions.assertEquals(false,                                 str.areFeesRequired());
+        Assertions.assertFalse(str.areFeesRequired());
         Assertions.assertEquals(13600,                                 str.getBitRate());
         Assertions.assertEquals("gnss.gsoc.dlr.de:2101/BCEP0_DEU1(1)", str.getMisc());
     }

@@ -117,7 +117,7 @@ public class CdmMetaDataTest {
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.CCSDS_INVALID_FRAME, oe.getSpecifier());
-            Assertions.assertEquals(null, oe.getParts()[0]);
+            Assertions.assertNull(oe.getParts()[0]);
         }
         
         // Frame not allowed (allowed frames are GCRF, EME2000, ITRF)

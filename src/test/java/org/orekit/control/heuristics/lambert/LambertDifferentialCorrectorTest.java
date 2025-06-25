@@ -135,7 +135,7 @@ class LambertDifferentialCorrectorTest {
         final LambertBoundaryConditions conditions = new LambertBoundaryConditions(initialOrbit.getDate(),
                 initialOrbit.getPosition(), terminalOrbit.getDate(), terminalOrbit.getPosition(), initialOrbit.getFrame());
         final LambertDifferentialCorrector corrector = buildCorrector(conditions);
-        final Vector3D terminalVelocity = terminalOrbit.getPVCoordinates().getVelocity();
+        final Vector3D terminalVelocity = terminalOrbit.getVelocity();
         final LambertBoundaryVelocities guess = new LambertBoundaryVelocities(terminalVelocity, terminalVelocity);
         final KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit);
         // WHEN
@@ -153,8 +153,8 @@ class LambertDifferentialCorrectorTest {
         final LambertBoundaryConditions conditions = new LambertBoundaryConditions(initialOrbit.getDate(),
                 initialOrbit.getPosition(), terminalOrbit.getDate(), terminalOrbit.getPosition(), initialOrbit.getFrame());
         final LambertDifferentialCorrector corrector = buildCorrector(conditions);
-        final LambertBoundaryVelocities guess = new LambertBoundaryVelocities(initialOrbit.getPVCoordinates().getVelocity(),
-                terminalOrbit.getPVCoordinates().getVelocity());
+        final LambertBoundaryVelocities guess = new LambertBoundaryVelocities(initialOrbit.getVelocity(),
+                terminalOrbit.getVelocity());
         final KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit);
         final AbsoluteDate stoppingDate = initialOrbit.getDate().shiftedBy(1e2);
         propagator.addEventDetector(new DateDetector(stoppingDate).withHandler(new StopOnEvent()));
@@ -173,8 +173,8 @@ class LambertDifferentialCorrectorTest {
         final LambertBoundaryConditions conditions = new LambertBoundaryConditions(initialOrbit.getDate(),
                 initialOrbit.getPosition(), terminalOrbit.getDate(), terminalOrbit.getPosition(), initialOrbit.getFrame());
         final LambertDifferentialCorrector corrector = buildCorrector(conditions);
-        final LambertBoundaryVelocities guess = new LambertBoundaryVelocities(initialOrbit.getPVCoordinates().getVelocity(),
-                terminalOrbit.getPVCoordinates().getVelocity());
+        final LambertBoundaryVelocities guess = new LambertBoundaryVelocities(initialOrbit.getVelocity(),
+                terminalOrbit.getVelocity());
         final KeplerianPropagator propagator = new KeplerianPropagator(orbitType.convertType(initialOrbit));
         // WHEN
         final LambertBoundaryVelocities velocities = corrector.solve(propagator, guess.getInitialVelocity());
@@ -191,8 +191,8 @@ class LambertDifferentialCorrectorTest {
         final LambertBoundaryConditions conditions = new LambertBoundaryConditions(terminalOrbit.getDate(),
                 terminalOrbit.getPosition(), initialOrbit.getDate(), initialOrbit.getPosition(), initialOrbit.getFrame());
         final LambertDifferentialCorrector corrector = buildCorrector(conditions);
-        final LambertBoundaryVelocities guess = new LambertBoundaryVelocities(terminalOrbit.getPVCoordinates().getVelocity(),
-                initialOrbit.getPVCoordinates().getVelocity());
+        final LambertBoundaryVelocities guess = new LambertBoundaryVelocities(terminalOrbit.getVelocity(),
+                initialOrbit.getVelocity());
         final KeplerianPropagator propagator = new KeplerianPropagator(terminalOrbit);
         // WHEN
         final LambertBoundaryVelocities velocities = corrector.solve(propagator, guess.getInitialVelocity());
@@ -210,8 +210,8 @@ class LambertDifferentialCorrectorTest {
                 initialOrbit.getPosition(), terminalOrbit.getDate(), terminalOrbit.getPosition(), initialOrbit.getFrame());
         final LambertDifferentialCorrector corrector = buildCorrector(conditions);
         corrector.setPositionTolerance(1e-3);
-        final LambertBoundaryVelocities guess = new LambertBoundaryVelocities(initialOrbit.getPVCoordinates().getVelocity(),
-                terminalOrbit.getPVCoordinates().getVelocity());
+        final LambertBoundaryVelocities guess = new LambertBoundaryVelocities(initialOrbit.getVelocity(),
+                terminalOrbit.getVelocity());
         final NumericalPropagator propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(10.));
         propagator.setOrbitType(null);
         propagator.addForceModel(new NewtonianAttraction(initialOrbit.getMu()));
@@ -233,8 +233,8 @@ class LambertDifferentialCorrectorTest {
         final LambertBoundaryConditions conditions = new LambertBoundaryConditions(initialOrbit.getDate(),
                 initialOrbit.getPosition(), terminalOrbit.getDate(), terminalOrbit.getPosition(), initialOrbit.getFrame());
         final LambertDifferentialCorrector corrector = buildCorrector(conditions);
-        final LambertBoundaryVelocities guess = new LambertBoundaryVelocities(initialOrbit.getPVCoordinates().getVelocity(),
-                terminalOrbit.getPVCoordinates().getVelocity());
+        final LambertBoundaryVelocities guess = new LambertBoundaryVelocities(initialOrbit.getVelocity(),
+                terminalOrbit.getVelocity());
         final NumericalPropagator propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(10.));
         propagator.setOrbitType(orbitType);
         propagator.setInitialState(new SpacecraftState(initialOrbit));
@@ -264,8 +264,8 @@ class LambertDifferentialCorrectorTest {
         final LambertBoundaryConditions conditions = new LambertBoundaryConditions(initialOrbit.getDate(),
                 initialOrbit.getPosition(), terminalOrbit.getDate(), terminalOrbit.getPosition(), initialOrbit.getFrame());
         final LambertDifferentialCorrector corrector = buildCorrector(conditions);
-        final LambertBoundaryVelocities guess = new LambertBoundaryVelocities(initialOrbit.getPVCoordinates().getVelocity(),
-                terminalOrbit.getPVCoordinates().getVelocity());
+        final LambertBoundaryVelocities guess = new LambertBoundaryVelocities(initialOrbit.getVelocity(),
+                terminalOrbit.getVelocity());
         final DormandPrince54IntegratorBuilder integratorBuilder = new DormandPrince54IntegratorBuilder(1e-2,
                 1e2, 1e-3);
         final OrbitType orbitType = OrbitType.EQUINOCTIAL;

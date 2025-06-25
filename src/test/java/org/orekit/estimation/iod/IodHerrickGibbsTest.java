@@ -77,7 +77,7 @@ class IodHerrickGibbsTest {
         // Verify
         Assertions.assertEquals(0.0, orbit.durationFrom(t2));
         Assertions.assertEquals(r2.getNorm(), orbit.getPosition().getNorm(), 1.0e-10);
-        Assertions.assertEquals(referenceV2.getNorm(), orbit.getPVCoordinates().getVelocity().getNorm(),  1.0e-10);
+        Assertions.assertEquals(referenceV2.getNorm(), orbit.getVelocity().getNorm(),  1.0e-10);
 
     }
 
@@ -116,7 +116,7 @@ class IodHerrickGibbsTest {
         // Verify
         Assertions.assertEquals(0.0, orbit.durationFrom(t2).getReal());
         Assertions.assertEquals(r2.getNorm().getReal(), orbit.getPosition().getNorm().getReal(), 1.0e-10);
-        Assertions.assertEquals(referenceV2.getNorm(), orbit.getPVCoordinates().getVelocity().getNorm().getReal(),  1.0e-10);
+        Assertions.assertEquals(referenceV2.getNorm(), orbit.getVelocity().getNorm().getReal(),  1.0e-10);
 
     }
 

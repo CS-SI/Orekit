@@ -16,18 +16,23 @@
  */
 package org.orekit.propagation;
 
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.KinematicTransform;
 import org.orekit.frames.LOF;
+import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.CartesianCovarianceUtils;
 
@@ -362,21 +367,11 @@ public class StateCovariance implements TimeStamped {
             // State covariance expressed in a pseudo-inertial frame
             if (frame.isPseudoInertial()) {
 
-                // Compute STM
-                final RealMatrix stm = getStm(orbit, dt);
-
-                // Convert covariance in STM type (i.e., Equinoctial elements)
-                final StateCovariance inStmType = changeTypeAndCreate(orbit, epoch, frame, orbitType, angleType,
-                                                                      OrbitType.EQUINOCTIAL, PositionAngleType.MEAN,
-                                                                      orbitalCovariance);
-
                 // Shift covariance by applying the STM
-                final RealMatrix shiftedCov = stm.multiply(inStmType.getMatrix().multiplyTransposed(stm));
+                final RealMatrix stm = getKeplerianStm(orbit, dt);
+                return new StateCovariance(stm.multiply(getMatrix().multiplyTransposed(stm)), getDate().shiftedBy(dt),
+                        frame, orbitType, getPositionAngleType());
 
-                // Restore the initial covariance type
-                return changeTypeAndCreate(shifted, shifted.getDate(), frame,
-                                           OrbitType.EQUINOCTIAL, PositionAngleType.MEAN,
-                                           orbitType, angleType, shiftedCov);
             }
 
             // State covariance expressed in a non pseudo-inertial frame
@@ -729,14 +724,18 @@ public class StateCovariance implements TimeStamped {
     }
 
     /**
-     * Get the state transition matrix considering Keplerian contribution only.
+     * Get the state transition matrix considering Keplerian contribution only and assuming equinoctial elements with mean anomaly.
      *
      * @param initialOrbit orbit to which the initial covariance matrix should correspond
      * @param dt time difference between the two orbits
      * @return the state transition matrix used to shift the covariance matrix
+     * @deprecated since 13.1. If you must, do:
+     * final RealMatrix stm = MatrixUtils.createRealIdentityMatrix(STATE_DIMENSION);
+     * double contribution = initialOrbit.getMeanAnomalyDotWrtA() * dt;
+     * stm.setEntry(5, 0, contribution);
      */
+    @Deprecated
     public static RealMatrix getStm(final Orbit initialOrbit, final double dt) {
-
         // initialize the STM
         final RealMatrix stm = MatrixUtils.createRealIdentityMatrix(STATE_DIMENSION);
 
@@ -745,6 +744,40 @@ public class StateCovariance implements TimeStamped {
         stm.setEntry(5, 0, contribution);
 
         // Return
+        return stm;
+    }
+
+    /**
+     * Get the state transition matrix of Keplerian motion.
+     * The coordinates used are those of the covariance itself.
+     *
+     * @param initialOrbit orbit to which the initial covariance matrix should correspond
+     * @param dt time difference between the two orbits
+     * @return the state transition matrix used to shift the covariance matrix
+     * @since 13.1
+     */
+    RealMatrix getKeplerianStm(final Orbit initialOrbit, final double dt) {
+
+        // compute derivatives of Keplerian motion
+        final GradientField field = GradientField.getField(STATE_DIMENSION);
+        final double[] stateVector = new double[STATE_DIMENSION];
+        orbitType.mapOrbitToArray(initialOrbit, getPositionAngleType(), stateVector, null);
+        final Gradient[] fieldGradientStateVector = MathArrays.buildArray(field, STATE_DIMENSION);
+        for (int i = 0; i < STATE_DIMENSION; i++) {
+            fieldGradientStateVector[i] = Gradient.variable(STATE_DIMENSION, i, stateVector[i]);
+        }
+        final FieldAbsoluteDate<Gradient> fieldGradientDate = new FieldAbsoluteDate<>(field, initialOrbit.getDate());
+        final FieldOrbit<Gradient> fieldOrbit = orbitType.mapArrayToOrbit(fieldGradientStateVector, null, getPositionAngleType(),
+                fieldGradientDate, field.getOne().newInstance(initialOrbit.getMu()), initialOrbit.getFrame());
+        final FieldOrbit<Gradient> shiftedOrbit = fieldOrbit.shiftedBy(dt);  // automatic differentiation
+        final Gradient[] gradient = MathArrays.buildArray(field, STATE_DIMENSION);
+        orbitType.mapOrbitToArray(shiftedOrbit, getPositionAngleType(), gradient, null);
+
+        // Return state transition matrix
+        final RealMatrix stm = MatrixUtils.createRealIdentityMatrix(STATE_DIMENSION);
+        for (int i = 0; i < gradient.length; i++) {
+            stm.setRow(i, gradient[i].getGradient());
+        }
         return stm;
 
     }

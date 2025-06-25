@@ -135,6 +135,7 @@ class ToleranceProviderTest {
         final Vector3D vector = Vector3D.ZERO;
         final CartesianToleranceProvider mockedProvider = Mockito.mock(CartesianToleranceProvider.class);
         Mockito.when(mockedOrbit.getPosition()).thenReturn(vector);
+        Mockito.when(mockedOrbit.getVelocity()).thenReturn(vector);
         Mockito.when(mockedOrbit.getPVCoordinates()).thenReturn(new TimeStampedPVCoordinates(AbsoluteDate.ARBITRARY_EPOCH, vector, vector));
         Mockito.when(mockedProvider.getTolerances(vector, vector))
                 .thenReturn(new double[][] {absoluteTolerances, relativeTolerances});

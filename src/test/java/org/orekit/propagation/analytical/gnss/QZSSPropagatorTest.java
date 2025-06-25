@@ -107,7 +107,7 @@ public class QZSSPropagatorTest {
     public void testResetInitialState() {
         final GNSSPropagator propagator = almanac.getPropagator();
         final SpacecraftState old = propagator.getInitialState();
-        propagator.resetInitialState(new SpacecraftState(old.getOrbit(), old.getAttitude(), old.getMass() + 1000));
+        propagator.resetInitialState(new SpacecraftState(old.getOrbit(), old.getAttitude()).withMass(old.getMass() + 1000));
         Assertions.assertEquals(old.getMass() + 1000, propagator.getInitialState().getMass(), 1.0e-9);
     }
 
@@ -115,7 +115,7 @@ public class QZSSPropagatorTest {
     public void testResetIntermediateState() {
         GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
         final SpacecraftState old = propagator.getInitialState();
-        propagator.resetIntermediateState(new SpacecraftState(old.getOrbit(), old.getAttitude(), old.getMass() + 1000),
+        propagator.resetIntermediateState(new SpacecraftState(old.getOrbit(), old.getAttitude()).withMass(old.getMass() + 1000),
                                           true);
         Assertions.assertEquals(old.getMass() + 1000, propagator.getInitialState().getMass(), 1.0e-9);
     }

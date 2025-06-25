@@ -90,7 +90,7 @@ public class DSSTJ2SquaredClosedFormTest {
 
         // Spacecraft state
         final Orbit orbit = createOrbit(200000.0, 210000.0);
-        final SpacecraftState state = new SpacecraftState(orbit, 1000.0);
+        final SpacecraftState state = new SpacecraftState(orbit).withMass(1000.0);
 
         // Force model
         final DSSTForceModel j2Squared = new DSSTJ2SquaredClosedForm(new ZeisModel(), provider);
@@ -122,7 +122,7 @@ public class DSSTJ2SquaredClosedFormTest {
 
         // Spacecraft state
         final FieldOrbit<Binary64> orbit = createOrbit(field, 200000.0, 210000.0);
-        final FieldSpacecraftState<Binary64> state = new FieldSpacecraftState<>(orbit, zero.add(1000.0));
+        final FieldSpacecraftState<Binary64> state = new FieldSpacecraftState<>(orbit).withMass(zero.add(1000.0));
 
         // Force model
         final DSSTForceModel j2Squared = new DSSTJ2SquaredClosedForm(new ZeisModel(), provider);
@@ -149,7 +149,7 @@ public class DSSTJ2SquaredClosedFormTest {
 
         // Initial spacecraft state
         final Orbit initialOrbit = createOrbit(perigeeAltitude, apogeeAltitude);
-        final SpacecraftState initialState = new SpacecraftState(initialOrbit, 1000.0);
+        final SpacecraftState initialState = new SpacecraftState(initialOrbit).withMass(1000.0);
 
         // Propagation duration
         final double duration = 2.0 * Constants.JULIAN_DAY;
@@ -232,7 +232,7 @@ public class DSSTJ2SquaredClosedFormTest {
         // Spacecraft state
         final OrbitType orbitType = OrbitType.EQUINOCTIAL;
         final Orbit orbit = createOrbit(650000.0, 680000.0);
-        final SpacecraftState state = new SpacecraftState(orbit, 1000.0);
+        final SpacecraftState state = new SpacecraftState(orbit).withMass(1000.0);
 
         // Force model
         final DSSTForceModel j2Squared = new DSSTJ2SquaredClosedForm(new ZeisModel(), provider);

@@ -411,7 +411,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
             final Vector3D radialUnit = currentState.getOrbit().getPosition().normalize();
 
             // Get along track direction
-            final Vector3D velocity = currentState.getOrbit().getPVCoordinates().getVelocity();
+            final Vector3D velocity = currentState.getOrbit().getVelocity();
             final Vector3D alongTrackUnit = velocity.subtract(radialUnit.scalarMultiply(velocity.dotProduct(radialUnit))).normalize();
 
             // Get cross track direction

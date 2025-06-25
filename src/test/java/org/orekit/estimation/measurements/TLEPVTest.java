@@ -107,7 +107,7 @@ public class TLEPVTest {
 
         // Dummy P, V, T
         final Vector3D     position = initialOrbit.getPosition();
-        final Vector3D     velocity = initialOrbit.getPVCoordinates().getVelocity();
+        final Vector3D     velocity = initialOrbit.getVelocity();
         final AbsoluteDate date     = initialOrbit.getDate();
 
         // Initialize standard deviations and weight
@@ -178,7 +178,7 @@ public class TLEPVTest {
 
         // Dummy P, V, T
         final Vector3D     position = initialOrbit.getPosition();
-        final Vector3D     velocity = initialOrbit.getPVCoordinates().getVelocity();
+        final Vector3D     velocity = initialOrbit.getVelocity();
         final AbsoluteDate date     = initialOrbit.getDate();
 
         // Initialize standard deviations and weight
@@ -253,7 +253,7 @@ public class TLEPVTest {
 
         // Dummy P, V, T
         final Vector3D     position = initialOrbit.getPosition();
-        final Vector3D     velocity = initialOrbit.getPVCoordinates().getVelocity();
+        final Vector3D     velocity = initialOrbit.getVelocity();
         final AbsoluteDate date     = initialOrbit.getDate();
 
         // Initialize standard deviations and weight
@@ -341,7 +341,7 @@ public class TLEPVTest {
 
         // Dummy P, V, T
         final Vector3D     position = initialOrbit.getPosition();
-        final Vector3D     velocity = initialOrbit.getPVCoordinates().getVelocity();
+        final Vector3D     velocity = initialOrbit.getVelocity();
         final AbsoluteDate date     = initialOrbit.getDate();
 
         // Initialize standard deviations, weight and corr coeff
@@ -419,7 +419,7 @@ public class TLEPVTest {
 
         // Dummy P, V, T
         final Vector3D     position = initialOrbit.getPosition();
-        final Vector3D     velocity = initialOrbit.getPVCoordinates().getVelocity();
+        final Vector3D     velocity = initialOrbit.getVelocity();
         final AbsoluteDate date     = initialOrbit.getDate();
         final double       weight   = 1.;
         final ObservableSatellite sat = new ObservableSatellite(0);

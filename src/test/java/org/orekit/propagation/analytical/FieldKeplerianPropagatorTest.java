@@ -120,7 +120,7 @@ public class FieldKeplerianPropagatorTest {
         propagator.setStepHandler(field.getZero().add(10.0),
                                  s -> {
                                      FieldVector3D<Tuple> p = s.getPosition();
-                                     FieldVector3D<Tuple> v = s.getPVCoordinates().getVelocity();
+                                     FieldVector3D<Tuple> v = s.getVelocity();
                                      Vector3D p0 = new Vector3D(p.getX().getComponent(0),
                                                                 p.getY().getComponent(0),
                                                                 p.getZ().getComponent(0));

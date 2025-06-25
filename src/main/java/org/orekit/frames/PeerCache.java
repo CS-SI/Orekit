@@ -132,6 +132,7 @@ class PeerCache {
      * @param field field elements belong to
      * @return cached transform provider, or null if destination is not the instance peer
      */
+    @SuppressWarnings("unchecked")
     <T extends CalculusFieldElement<T>> FieldCachedTransformProvider<T> getCachedTransformProvider(final Frame destination,
                                                                                                    final Field<T> field) {
         lock.readLock().lock();

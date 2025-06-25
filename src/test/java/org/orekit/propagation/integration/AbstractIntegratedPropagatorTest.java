@@ -154,10 +154,10 @@ class AbstractIntegratedPropagatorTest {
         
         // Check that all three states are identical
         final double dpOsc = oscState.getPosition().distance(state.getPosition());
-        final double dvOsc = oscState.getPVCoordinates().getVelocity().distance(state.getPVCoordinates().getVelocity());
+        final double dvOsc = oscState.getVelocity().distance(state.getVelocity());
         
         final double dpMean = meanState.getPosition().distance(state.getPosition());
-        final double dvMean = meanState.getPVCoordinates().getVelocity().distance(state.getPVCoordinates().getVelocity());
+        final double dvMean = meanState.getVelocity().distance(state.getVelocity());
         
         Assertions.assertEquals(0., dpOsc, 0.);
         Assertions.assertEquals(0., dvOsc, 0.);

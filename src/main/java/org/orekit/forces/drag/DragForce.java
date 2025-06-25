@@ -86,7 +86,7 @@ public class DragForce extends AbstractDragForceModel {
 
         final double rho    = getAtmosphere().getDensity(date, position, frame);
         final Vector3D vAtm = getAtmosphere().getVelocity(date, position, frame);
-        final Vector3D relativeVelocity = vAtm.subtract(s.getPVCoordinates().getVelocity());
+        final Vector3D relativeVelocity = vAtm.subtract(s.getVelocity());
 
         return spacecraft.dragAcceleration(s, rho, relativeVelocity, parameters);
 
@@ -104,7 +104,7 @@ public class DragForce extends AbstractDragForceModel {
         final Frame                frame    = s.getFrame();
         final FieldVector3D<T>     position = s.getPosition();
         final FieldVector3D<T> vAtm = getAtmosphere().getVelocity(date, position, frame);
-        final FieldVector3D<T> relativeVelocity = vAtm.subtract(s.getPVCoordinates().getVelocity());
+        final FieldVector3D<T> relativeVelocity = vAtm.subtract(s.getVelocity());
 
         // Drag acceleration along with its derivatives
         return spacecraft.dragAcceleration(s, rho, relativeVelocity, parameters);

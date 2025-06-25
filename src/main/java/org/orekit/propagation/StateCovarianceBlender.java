@@ -17,6 +17,7 @@
 package org.orekit.propagation;
 
 import org.hipparchus.analysis.polynomials.SmoothStepFactory;
+import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
@@ -36,7 +37,7 @@ import java.util.List;
  * exposed in : "Efficient Covariance Interpolation using Blending of Approximate State Error Transitions" by Sergei
  * Tanygin.
  * <p>
- * It propagates tabulated values to the interpolation date assuming a standard keplerian model and then blend each
+ * It propagates tabulated values to the interpolation date assuming a standard Keplerian model and then blend each
  * propagated covariances using a smoothstep function.
  * <p>
  * It gives accurate results as explained <a
@@ -160,13 +161,14 @@ public class StateCovarianceBlender extends AbstractStateCovarianceInterpolator 
                 tabulatedCovariance.changeCovarianceFrame(tabulatedOrbit, interpolatedOrbitFrame);
 
         // First convert the covariance matrix to equinoctial elements to avoid singularities inherent to keplerian elements
+        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final RealMatrix covarianceMatrixInEquinoctial =
-                tabulatedCovarianceInOrbitFrame.changeCovarianceType(tabulatedOrbit, OrbitType.EQUINOCTIAL,
-                                                                     DEFAULT_POSITION_ANGLE).getMatrix();
+                tabulatedCovarianceInOrbitFrame.changeCovarianceType(tabulatedOrbit, OrbitType.EQUINOCTIAL, positionAngleType).getMatrix();
 
         // Compute state error transition matrix in equinoctial elements (identical to the one in keplerian elements)
-        final RealMatrix stateErrorTransitionMatrixInEquinoctial =
-                StateCovariance.getStm(tabulatedOrbit, interpolationTime.durationFrom(tabulatedOrbit.getDate()));
+        final RealMatrix stateErrorTransitionMatrixInEquinoctial = MatrixUtils.createRealIdentityMatrix(6);
+        final double contribution = tabulatedOrbit.getMeanAnomalyDotWrtA() * interpolationTime.durationFrom(tabulatedOrbit.getDate());
+        stateErrorTransitionMatrixInEquinoctial.setEntry(5, 0, contribution);
 
         // Propagate the covariance matrix using the previously computed state error transition matrix
         final RealMatrix propagatedCovarianceMatrixInEquinoctial =
@@ -176,7 +178,7 @@ public class StateCovarianceBlender extends AbstractStateCovarianceInterpolator 
         // Recreate a StateCovariance instance
         final StateCovariance propagatedCovarianceInEquinoctial =
                 new StateCovariance(propagatedCovarianceMatrixInEquinoctial, interpolationTime,
-                                    interpolatedOrbitFrame, OrbitType.EQUINOCTIAL, DEFAULT_POSITION_ANGLE);
+                                    interpolatedOrbitFrame, OrbitType.EQUINOCTIAL, positionAngleType);
 
         // Output propagated state covariance after converting back to cartesian elements
         return propagatedCovarianceInEquinoctial.changeCovarianceType(orbitAtInterpolatingTime,

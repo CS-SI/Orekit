@@ -482,11 +482,11 @@ class NumericalPropagatorTest {
 
         // Initial orbit definition
         final Vector3D initialPosition = initialState.getPosition();
-        final Vector3D initialVelocity = initialState.getPVCoordinates().getVelocity();
+        final Vector3D initialVelocity = initialState.getVelocity();
 
         // Final orbit definition
         final Vector3D finalPosition   = finalState.getPosition();
-        final Vector3D finalVelocity   = finalState.getPVCoordinates().getVelocity();
+        final Vector3D finalVelocity   = finalState.getVelocity();
 
         // Check results
         Assertions.assertEquals(initialPosition.getX(), finalPosition.getX(), 1.0e-10);
@@ -738,7 +738,7 @@ class NumericalPropagatorTest {
         final AbsoluteDate resetDate = initDate.shiftedBy(1000);
         CheckingHandler checking = new CheckingHandler(Action.RESET_STATE) {
             public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
-                return new SpacecraftState(oldState.getOrbit(), oldState.getAttitude(), oldState.getMass() - 200.0);
+                return new SpacecraftState(oldState.getOrbit(), oldState.getAttitude()).withMass(oldState.getMass() - 200.0);
             }
         };
         propagator.addEventDetector(new DateDetector(resetDate).withHandler(checking));
@@ -983,7 +983,7 @@ class NumericalPropagatorTest {
         // Numerical propagator based on the integrator
         propagator = new NumericalPropagator(integrator);
         double mass = 1000.;
-        SpacecraftState initialState = new SpacecraftState(geo, mass);
+        SpacecraftState initialState = new SpacecraftState(geo).withMass(mass);
         propagator.setInitialState(initialState);
         propagator.setOrbitType(OrbitType.CARTESIAN);
 
@@ -1185,7 +1185,7 @@ class NumericalPropagatorTest {
         final AbsoluteDate initialDate = new AbsoluteDate(2003, 1, 1, 00, 00, 00.000, utc);
         final Orbit initialOrbit = new CartesianOrbit( new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngleType.MEAN,
                                                                           inertialFrame, initialDate, mu));
-        final SpacecraftState initialState = new SpacecraftState(initialOrbit, 1000);
+        final SpacecraftState initialState = new SpacecraftState(initialOrbit).withMass( 1000);
 
         // initialize the testing points
         final List<SpacecraftState> states = new ArrayList<SpacecraftState>();
@@ -1509,7 +1509,7 @@ class NumericalPropagatorTest {
                     orbitType.mapOrbitToArray(o, angleType, stateVector, null);
                     final Orbit fixedOrbit = orbitType.mapArrayToOrbit(stateVector, null, angleType,
                                                                        o.getDate(), o.getMu(), o.getFrame());
-                    referenceState = new SpacecraftState(fixedOrbit, s.getAttitude(), s.getMass());
+                    referenceState = new SpacecraftState(fixedOrbit, s.getAttitude()).withMass(s.getMass());
                 }
             } else {
                 // recurring event, we compare with the shifted reference state

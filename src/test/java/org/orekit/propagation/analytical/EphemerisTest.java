@@ -63,7 +63,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-public class EphemerisTest {
+class EphemerisTest {
 
     private AbsoluteDate initDate;
     private AbsoluteDate finalDate;
@@ -362,7 +362,7 @@ public class EphemerisTest {
     }
 
     @Test
-    public void testAttitudeOverride() throws IllegalArgumentException, OrekitException {
+    void testAttitudeOverride() throws IllegalArgumentException, OrekitException {
         setUp();
 
         final double positionTolerance = 1e-6;
@@ -425,7 +425,7 @@ public class EphemerisTest {
     }
 
     @Test
-    public void testAttitudeSequenceTransition() {
+    void testAttitudeSequenceTransition() {
         setUp();
 
         // Initialize the orbit
@@ -521,7 +521,7 @@ public class EphemerisTest {
     }
 
     @Test
-    public void testNonResettableState() {
+    void testNonResettableState() {
         setUp();
         try {
             propagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.LVLH_CCSDS));
@@ -543,7 +543,7 @@ public class EphemerisTest {
     }
 
     @Test
-    public void testAdditionalStates() {
+    void testAdditionalStates() {
         setUp();
 
         final String name1 = "dt0";
@@ -587,7 +587,7 @@ public class EphemerisTest {
     }
 
     @Test
-    public void testProtectedMethods()
+    void testProtectedMethods()
             throws SecurityException, NoSuchMethodException,
             InvocationTargetException, IllegalAccessException {
         setUp();
@@ -598,7 +598,7 @@ public class EphemerisTest {
         for (double dt = 0; dt >= -1200; dt -= 60.0) {
             final SpacecraftState original = propagator.propagate(initDate.shiftedBy(dt));
             final SpacecraftState modified = new SpacecraftState(original.getOrbit(),
-                                                                 original.getAttitude(),
+                                                                 original.getAttitude()).withMass(
                                                                  original.getMass() - 0.0625 * dt);
             states.add(modified);
         }
@@ -624,7 +624,7 @@ public class EphemerisTest {
     }
 
     @Test
-    public void testGetCovariance() {
+    void testGetCovariance() {
 
         // Given
         setUp();
@@ -697,7 +697,7 @@ public class EphemerisTest {
         StateCovarianceTest.compareCovariance(zeroMatrix,
                                               blendedCovarianceBetweenT0AndT1.getMatrix()
                                                                              .subtract(initialMatrixShiftedByHalfTimeStep),
-                                              1e-9);
+                                              2e-8);
         StateCovarianceTest.compareCovariance(zeroMatrix, blendedCovarianceAtT1.getMatrix()
                                                                                .subtract(initialMatrixShiftedByTimeStep),
                                               1e-9);
@@ -708,7 +708,7 @@ public class EphemerisTest {
         StateCovarianceTest.compareCovariance(zeroMatrix,
                                               hermiteCovarianceBetweenT0AndT1.getMatrix()
                                                                              .subtract(initialMatrixShiftedByHalfTimeStep),
-                                              1e-9);
+                                              2e-8);
         StateCovarianceTest.compareCovariance(zeroMatrix, hermiteCovarianceAtT1.getMatrix()
                                                                                .subtract(initialMatrixShiftedByTimeStep),
                                               1e-8);
@@ -728,7 +728,7 @@ public class EphemerisTest {
     }
 
     @Test
-    public void testExtrapolation() {
+    void testExtrapolation() {
         setUp();
 
         double                dt       = finalDate.durationFrom(initDate);
@@ -783,7 +783,7 @@ public class EphemerisTest {
     }
 
     @Test
-    public void testIssue662() {
+    void testIssue662() {
         setUp();
 
         // Input parameters
@@ -821,7 +821,7 @@ public class EphemerisTest {
     }
 
     @Test
-    public void testIssue680() {
+    void testIssue680() {
         setUp();
 
         // Initial PV coordinates
@@ -873,7 +873,7 @@ public class EphemerisTest {
 
     /** Error with specific propagators & additional state provider throwing a NullPointerException when propagating */
     @Test
-    public void testIssue949() {
+    void testIssue949() {
         // GIVEN
         final AbsoluteDate initialDate  = new AbsoluteDate();
         final Orbit        initialOrbit = TestUtils.getDefaultOrbit(initialDate);
@@ -993,7 +993,7 @@ public class EphemerisTest {
     }
 
     private double calculateVelocityDelta(SpacecraftState state1, SpacecraftState state2) {
-        return Vector3D.distance(state1.getPVCoordinates().getVelocity(), state2.getPVCoordinates().getVelocity());
+        return Vector3D.distance(state1.getVelocity(), state2.getVelocity());
     }
 
     private double calculateAttitudeDelta(SpacecraftState state1, SpacecraftState state2) {

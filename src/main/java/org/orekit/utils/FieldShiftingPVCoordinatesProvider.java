@@ -18,6 +18,7 @@
 package org.orekit.utils;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -53,4 +54,10 @@ public class FieldShiftingPVCoordinatesProvider<T extends CalculusFieldElement<T
         return referenceFrame.getTransformTo(frame, date).transformPVCoordinates(shifted);
     }
 
+    @Override
+    public FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> date, final Frame frame) {
+        final T duration = date.durationFrom(referencePV);
+        final FieldVector3D<T> position = referencePV.getPosition().add((referencePV.getVelocity().add(referencePV.getAcceleration().scalarMultiply(duration.divide(2)))).scalarMultiply(duration));
+        return referenceFrame.getStaticTransformTo(frame, date).transformPosition(position);
+    }
 }

@@ -276,8 +276,8 @@ public class FieldAdditionalDataProviderTest {
                                     field.getOne(),
                                     false),
                             FieldVector3D.getZero(field),
-                            FieldVector3D.getZero(field)),
-                    field.getZero().newInstance(2 * SpacecraftState.DEFAULT_MASS));
+                            FieldVector3D.getZero(field)))
+                    .withMass(field.getZero().newInstance(2 * SpacecraftState.DEFAULT_MASS));
         }
     }
 

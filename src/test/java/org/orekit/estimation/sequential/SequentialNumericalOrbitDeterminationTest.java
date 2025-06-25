@@ -324,7 +324,7 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
         final Orbit refOrbit = runReference(input, orbitType, refPos0, refVel0, null,
                                             kalmanLageos2.getEstimatedPV().getDate());
         final Vector3D refPos = refOrbit.getPosition();
-        final Vector3D refVel = refOrbit.getPVCoordinates().getVelocity();
+        final Vector3D refVel = refOrbit.getVelocity();
 
         // Check distances
         final double dP = Vector3D.distance(refPos, estimatedPos);
@@ -348,7 +348,7 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
         final Orbit initialOrbit = runReference(input, orbitType, refPos0, refVel0, null,
                 kalmanLageos2.getSmoothedState().getDate());
         final Vector3D initialPos = initialOrbit.getPosition();
-        final Vector3D initialVel = initialOrbit.getPVCoordinates().getVelocity();
+        final Vector3D initialVel = initialOrbit.getVelocity();
 
         // Check smoother distances
         final double[] smoothedState = kalmanLageos2.getSmoothedState().getState().toArray();
@@ -676,7 +676,7 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
 
         // Test on last orbit
         final Vector3D refPos = refOrbit.getPosition();
-        final Vector3D refVel = refOrbit.getPVCoordinates().getVelocity();
+        final Vector3D refVel = refOrbit.getVelocity();
 
         // Check distances
         final double dP = Vector3D.distance(refPos, estimatedPos);

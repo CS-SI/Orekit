@@ -20,6 +20,15 @@
   </properties>
   <body>
     <release version="13.1" date="TBD" description="TBD">
+        <action dev="serrof" type="update" issue="1763">
+            Improved shiftedBy in (Field)StateCovariance.
+        </action>
+        <action dev="serrof" type="update" issue="1762">
+            Override getPosition in (Field)ShiftingPVCoordinatesProvider.
+        </action>
+        <action dev="serrof" type="fix" issue="1761">
+            Remove some calls to deprecated methods.
+        </action>
         <action dev="serrof" type="fix" issue="1759">
             Fix equals in FieldAbsoluteDate.
         </action>
@@ -112,6 +121,9 @@
         </action>
         <action dev="serrof" type="add" issue="1683">
             Add (Field)ExtremumAngularSeparationDetector.
+        </action>
+        <action dev="vcucchie" type="add" issue="1557">
+            Added getVelocity method.
         </action>
         <action dev="bryan" type="add" issue="1268">
             Added Herrick-Gibbs initial orbit determination.

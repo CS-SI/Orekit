@@ -294,7 +294,7 @@ public class AdapterPropagatorTest {
         throws ParseException, IOException {
 
         SpacecraftState initialState =
-            new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
+            new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame())).withMass(mass);
 
         // add some dummy additional states
         initialState = initialState.addAdditionalData("dummy 1", new double[]{1.25, 2.5});

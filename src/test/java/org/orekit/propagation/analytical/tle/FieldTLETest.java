@@ -529,7 +529,7 @@ public class FieldTLETest {
                         FieldTLE<T> tle = new FieldTLE<T>(field, line1, line2);
 
                         int satNum = Integer.parseInt(title[1]);
-                        Assertions.assertTrue(satNum==tle.getSatelliteNumber());
+                        Assertions.assertEquals(satNum, tle.getSatelliteNumber());
                         final T[] parameters;
                         parameters = MathArrays.buildArray(field, 1);
                         parameters[0] = field.getZero().add(tle.getBStar());
@@ -605,7 +605,7 @@ public class FieldTLETest {
                                                   "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
         FieldTLE<T> tleB = new FieldTLE<T>(field, "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
                                                   "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
-        Assertions.assertTrue(tleA.equals(tleB));
+        Assertions.assertEquals(tleA, tleB);
     }
 
     public <T extends CalculusFieldElement<T>> void doTestNonEqualTLE(Field<T> field) {
@@ -613,7 +613,7 @@ public class FieldTLETest {
                                                   "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
         FieldTLE<T> tleB = new FieldTLE<T>(field, "1 05555U 71086J   12026.96078249 -.00000004  00001-9  01234-9 0  9082",
                                                   "2 05555  74.0161 228.9750 0075476 328.9888  30.6709 12.26882470804545");
-        Assertions.assertFalse(tleA.equals(tleB));
+        Assertions.assertNotEquals(tleA, tleB);
     }
 
     public <T extends CalculusFieldElement<T>> void doTestIssue388(Field<T> field) {
@@ -708,7 +708,7 @@ public class FieldTLETest {
                                 "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
         final FieldTLE<T> fieldTle = new FieldTLE<T>(field, tle.getLine1(), tle.getLine2());
         final TLE rebuilt = fieldTle.toTLE();
-        Assertions.assertTrue(rebuilt.equals(tle));
+        Assertions.assertEquals(rebuilt, tle);
         Assertions.assertEquals(tle.toString(), rebuilt.toString());
     }
 

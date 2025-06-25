@@ -1091,7 +1091,7 @@ public class FieldTimeSpanMapTest {
             map.addValidAfter(i, arbitraryEpoch.shiftedBy(i));
         }
         for (int i = 50; i < 100; i +=10) {
-            map.addValidBefore(i, arbitraryEpoch.shiftedBy(i + 10));
+            map.addValidBefore(i, arbitraryEpoch.shiftedBy(i + 10), false);
         }
         Assertions.assertEquals(11, map.getSpansNumber());
         SortedSet<FieldTimeSpanMap.Transition<Integer, Binary64>> transitions = map.getTransitions();

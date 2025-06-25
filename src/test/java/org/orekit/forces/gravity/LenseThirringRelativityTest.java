@@ -73,7 +73,7 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
         try {
             final AbsoluteDate                       date     = state.getDate().toAbsoluteDate();
             final FieldVector3D<DerivativeStructure> position = state.getPVCoordinates().getPosition();
-            final FieldVector3D<DerivativeStructure> velocity = state.getPVCoordinates().getVelocity();
+            final FieldVector3D<DerivativeStructure> velocity = state.getVelocity();
             java.lang.reflect.Field bodyFrameField = LenseThirringRelativity.class.getDeclaredField("bodyFrame");
             bodyFrameField.setAccessible(true);
             Frame bodyFrame = (Frame) bodyFrameField.get(forceModel);
@@ -106,7 +106,7 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
         try {
             final AbsoluteDate                       date     = state.getDate().toAbsoluteDate();
             final FieldVector3D<Gradient> position = state.getPVCoordinates().getPosition();
-            final FieldVector3D<Gradient> velocity = state.getPVCoordinates().getVelocity();
+            final FieldVector3D<Gradient> velocity = state.getVelocity();
             java.lang.reflect.Field bodyFrameField = LenseThirringRelativity.class.getDeclaredField("bodyFrame");
             bodyFrameField.setAccessible(true);
             Frame bodyFrame = (Frame) bodyFrameField.get(forceModel);

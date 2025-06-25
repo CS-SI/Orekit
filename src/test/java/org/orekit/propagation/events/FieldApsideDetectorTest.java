@@ -87,6 +87,7 @@ class FieldApsideDetectorTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void testConstructor() {
         // GIVEN
         final double period = 10.;

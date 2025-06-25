@@ -93,6 +93,6 @@ class FieldNegateDetectorTest {
 
         //verify
         MatcherAssert.assertThat(actual.getMaxCheckInterval().currentInterval(null, true), CoreMatchers.is(100.0));
-        Assertions.assertTrue(actual.getOriginal() == a);
+        Assertions.assertSame(actual.getOriginal(), a);
     }
 }

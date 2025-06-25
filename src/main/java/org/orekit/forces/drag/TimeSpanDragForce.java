@@ -242,7 +242,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
 
         // Spacecraft relative velocity with respect to the atmosphere
         final Vector3D vAtm = getAtmosphere().getVelocity(date, position, frame);
-        final Vector3D relativeVelocity = vAtm.subtract(s.getPVCoordinates().getVelocity());
+        final Vector3D relativeVelocity = vAtm.subtract(s.getVelocity());
 
         // Extract the proper parameters valid at date from the input array
         final double[] extractedParameters = extractParameters(parameters, date);
@@ -264,7 +264,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
         final Frame                frame    = s.getFrame();
         final FieldVector3D<T>     position = s.getPosition();
         final FieldVector3D<T> vAtm = getAtmosphere().getVelocity(date, position, frame);
-        final FieldVector3D<T> relativeVelocity = vAtm.subtract(s.getPVCoordinates().getVelocity());
+        final FieldVector3D<T> relativeVelocity = vAtm.subtract(s.getVelocity());
 
         // Extract the proper parameters valid at date from the input array
         final T[] extractedParameters = extractParameters(parameters, date);

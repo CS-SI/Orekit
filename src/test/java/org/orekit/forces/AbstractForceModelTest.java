@@ -161,7 +161,7 @@ public abstract class AbstractForceModelTest {
                                                              final AttitudeProvider attitudeProvider) {
 
         final Vector3D p = state.getPosition();
-        final Vector3D v = state.getPVCoordinates().getVelocity();
+        final Vector3D v = state.getVelocity();
         final Vector3D a = state.getPVCoordinates().getAcceleration();
         DSFactory factory = new DSFactory(6, 1);
         Field<DerivativeStructure> field = factory.getDerivativeField();
@@ -200,7 +200,7 @@ public abstract class AbstractForceModelTest {
                                                         final AttitudeProvider attitudeProvider) {
 
         final Vector3D p = state.getPosition();
-        final Vector3D v = state.getPVCoordinates().getVelocity();
+        final Vector3D v = state.getVelocity();
         final Vector3D a = state.getPVCoordinates().getAcceleration();
         final int freeParameters = 6;
         Field<Gradient> field = GradientField.getField(freeParameters);
@@ -249,7 +249,7 @@ public abstract class AbstractForceModelTest {
         Field<DerivativeStructure> field = factory.getDerivativeField();
         final FieldAbsoluteDate<DerivativeStructure> fDate = new FieldAbsoluteDate<>(field, state0.getDate());
         final Vector3D p = state0.getPosition();
-        final Vector3D v = state0.getPVCoordinates().getVelocity();
+        final Vector3D v = state0.getVelocity();
         final Vector3D a = state0.getPVCoordinates().getAcceleration();
         final TimeStampedFieldPVCoordinates<DerivativeStructure> fPVA =
                         new TimeStampedFieldPVCoordinates<>(fDate,
@@ -269,7 +269,7 @@ public abstract class AbstractForceModelTest {
                                         new FieldVector3D<>(field, state0.getAttitude().getRotationAcceleration()));
         final FieldSpacecraftState<DerivativeStructure> fState =
                         new FieldSpacecraftState<>(new FieldCartesianOrbit<>(fPVA, state0.getFrame(), field.getZero().add(state0.getOrbit().getMu())),
-                                                   new FieldAttitude<>(state0.getFrame(), fAC),
+                                                   new FieldAttitude<>(state0.getFrame(), fAC)).withMass(
                                                    field.getZero().add(state0.getMass()));
         FieldVector3D<DerivativeStructure> dsJacobian = forceModel.acceleration(fState,
                                                                                 forceModel.getParameters(fState.getDate().getField(), fState.getDate()));
@@ -346,7 +346,7 @@ public abstract class AbstractForceModelTest {
         Field<Gradient> field = GradientField.getField(freePrameters);
         final FieldAbsoluteDate<Gradient> fDate = new FieldAbsoluteDate<>(field, state0.getDate());
         final Vector3D p = state0.getPosition();
-        final Vector3D v = state0.getPVCoordinates().getVelocity();
+        final Vector3D v = state0.getVelocity();
         final Vector3D a = state0.getPVCoordinates().getAcceleration();
         final TimeStampedFieldPVCoordinates<Gradient> fPVA =
                         new TimeStampedFieldPVCoordinates<>(fDate,
@@ -366,7 +366,7 @@ public abstract class AbstractForceModelTest {
                                         new FieldVector3D<>(field, state0.getAttitude().getRotationAcceleration()));
         final FieldSpacecraftState<Gradient> fState =
                         new FieldSpacecraftState<>(new FieldCartesianOrbit<>(fPVA, state0.getFrame(), field.getZero().add(state0.getOrbit().getMu())),
-                                                   new FieldAttitude<>(state0.getFrame(), fAC),
+                                                   new FieldAttitude<>(state0.getFrame(), fAC)).withMass(
                                                    field.getZero().add(state0.getMass()));
         FieldVector3D<Gradient> gJacobian = forceModel.acceleration(fState,
                                                                      forceModel.getParameters(fState.getDate().getField(), fState.getDate()));
@@ -861,8 +861,7 @@ public abstract class AbstractForceModelTest {
         a[index] += h;
         SpacecraftState shiftedState = new SpacecraftState(orbitType.mapArrayToOrbit(a, aDot, angleType, state0.getDate(),
                                                                                      state0.getOrbit().getMu(), state0.getFrame()),
-                                                           state0.getAttitude(),
-                                                           state0.getMass());
+                                                           state0.getAttitude()).withMass(state0.getMass());
         propagator.setInitialState(shiftedState);
         SpacecraftState integratedState = propagator.propagate(targetDate);
         orbitType.mapOrbitToArray(integratedState.getOrbit(), angleType, a, null);

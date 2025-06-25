@@ -520,8 +520,8 @@ class BatchLSEstimatorTest {
                                                     closeOrbit.getMu());
         Assertions.assertEquals(4.7246, Vector3D.distance(closeOrbit.getPosition(),
                           before.getPosition()), 1.0e-3);
-        Assertions.assertEquals(0.0010514, Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
-                          before.getPVCoordinates().getVelocity()), 1.0e-6);
+        Assertions.assertEquals(0.0010514, Vector3D.distance(closeOrbit.getVelocity(),
+                          before.getVelocity()), 1.0e-6);
         EstimationTestUtils.checkFit(context, estimator, 3, 4,
                                      0.0, 5e-06,
                                      0.0, 1.3e-05,
@@ -540,8 +540,8 @@ class BatchLSEstimatorTest {
                                                     closeOrbit.getMu());
         Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPosition(),
                           determined.getPosition()), 6.2e-6);
-        Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
-                          determined.getPVCoordinates().getVelocity()), 1.6e-9);
+        Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getVelocity(),
+                          determined.getVelocity()), 1.6e-9);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one
@@ -714,8 +714,8 @@ class BatchLSEstimatorTest {
                                                 closeOrbit.getMu());
         Assertions.assertEquals(4.7246, Vector3D.distance(closeOrbit.getPosition(),
                           before.getPosition()), 1.0e-3);
-        Assertions.assertEquals(0.0010514, Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
-                          before.getPVCoordinates().getVelocity()), 1.0e-6);
+        Assertions.assertEquals(0.0010514, Vector3D.distance(closeOrbit.getVelocity(),
+                          before.getVelocity()), 1.0e-6);
         EstimationTestUtils.checkFit(context, estimator, 5, 6,
                                      0.0, 5.3e-06,
                                      0.0, 1.4e-05,
@@ -734,8 +734,8 @@ class BatchLSEstimatorTest {
                                                     closeOrbit.getMu());
         Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPosition(),
                           determined.getPosition()), 5.3e-6);
-        Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
-                          determined.getPVCoordinates().getVelocity()), 2.9e-9);
+        Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getVelocity(),
+                          determined.getVelocity()), 2.9e-9);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one
@@ -881,8 +881,8 @@ class BatchLSEstimatorTest {
                                                     closeOrbit.getMu());
         Assertions.assertEquals(4.7246, Vector3D.distance(closeOrbit.getPosition(),
                           before.getPosition()), 1.0e-3);
-        Assertions.assertEquals(0.0010514, Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
-                          before.getPVCoordinates().getVelocity()), 1.0e-6);
+        Assertions.assertEquals(0.0010514, Vector3D.distance(closeOrbit.getVelocity(),
+                          before.getVelocity()), 1.0e-6);
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
                                      0.0, 2.9e-06,
                                      0.0, 8.1e-06,
@@ -901,8 +901,8 @@ class BatchLSEstimatorTest {
                                                     closeOrbit.getMu());
         Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPosition(),
                           determined.getPosition()), 4.6e-6);
-        Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
-                          determined.getPVCoordinates().getVelocity()), 1.6e-9);
+        Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getVelocity(),
+                          determined.getVelocity()), 1.6e-9);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one

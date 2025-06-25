@@ -85,7 +85,7 @@ public class LatitudeRangeCrossingDetectorTest {
             double latitude = earth.transform(state.getPVCoordinates(earth.getBodyFrame()).getPosition(),
                 earth.getBodyFrame(), null).getLatitude();
             if (e.isIncreasing()) {
-                if (state.getPVCoordinates().getVelocity().getZ() < 0) {
+                if (state.getVelocity().getZ() < 0) {
                     // entering northward
                     Assertions.assertEquals(60.0, FastMath.toDegrees(latitude), FastMath.toRadians(1e-4));
                 } else {
@@ -93,7 +93,7 @@ public class LatitudeRangeCrossingDetectorTest {
                     Assertions.assertEquals(50.0, FastMath.toDegrees(latitude), FastMath.toRadians(1e-4));
                 }
             } else {
-                if (state.getPVCoordinates().getVelocity().getZ() < 0) {
+                if (state.getVelocity().getZ() < 0) {
                     // exiting southward
                     Assertions.assertEquals(50.0, FastMath.toDegrees(latitude), FastMath.toRadians(1e-4));
                 } else {

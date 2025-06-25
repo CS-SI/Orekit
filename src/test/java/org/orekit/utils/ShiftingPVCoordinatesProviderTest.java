@@ -14,29 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.forces.maneuvers;
+
+package org.orekit.utils;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.TestUtils;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
-class ImpulseProviderTest {
+import static org.junit.jupiter.api.Assertions.*;
+
+class ShiftingPVCoordinatesProviderTest {
 
     @Test
-    void testOf() {
+    void testGetPosition() {
         // GIVEN
-        final Vector3D forwardImpulse = new Vector3D(1, 2, 3);
         final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
-        final SpacecraftState state = new SpacecraftState(orbit).withMass(100);
+        final TimeStampedPVCoordinates pvCoordinates = orbit.getPVCoordinates();
+        final ShiftingPVCoordinatesProvider pvCoordinatesProvider = new ShiftingPVCoordinatesProvider(pvCoordinates,
+                orbit.getFrame());
+        final Frame frame = FramesFactory.getEME2000();
+        final AbsoluteDate shiftedDate = orbit.getDate().shiftedBy(1000);
         // WHEN
-        final ImpulseProvider provider = ImpulseProvider.of(forwardImpulse);
-        final Vector3D vector3D = provider.getImpulse(state, true);
+        final Vector3D position = pvCoordinatesProvider.getPosition(shiftedDate, frame);
         // THEN
-        Assertions.assertEquals(forwardImpulse, vector3D);
-        Assertions.assertEquals(forwardImpulse.negate(), provider.getImpulse(state, false));
+        final PVCoordinates shiftedPV = pvCoordinatesProvider.getPVCoordinates(shiftedDate, frame);
+        assertArrayEquals(shiftedPV.getPosition().toArray(), position.toArray(), 1e-9);
     }
 }

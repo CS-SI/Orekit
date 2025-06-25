@@ -42,7 +42,8 @@ public class AbstractPropagatorBuilderTest {
 
     /** Test method resetOrbit. */
     @Test
-    public void testResetOrbit() {
+    @SuppressWarnings("unchecked")
+    void testResetOrbit() {
         // Load a context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 

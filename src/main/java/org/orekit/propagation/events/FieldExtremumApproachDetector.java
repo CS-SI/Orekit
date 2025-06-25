@@ -153,7 +153,7 @@ public class FieldExtremumApproachDetector<T extends CalculusFieldElement<T>>
      */
     public FieldPVCoordinates<T> computeDeltaPV(final FieldSpacecraftState<T> s) {
         final FieldVector3D<T> primaryPos = s.getPosition();
-        final FieldVector3D<T> primaryVel = s.getPVCoordinates().getVelocity();
+        final FieldVector3D<T> primaryVel = s.getVelocity();
 
         final FieldPVCoordinates<T> secondaryPV  = secondaryPVProvider.getPVCoordinates(s.getDate(), s.getFrame());
         final FieldVector3D<T>      secondaryPos = secondaryPV.getPosition();

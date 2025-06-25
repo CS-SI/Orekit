@@ -342,7 +342,7 @@ public class IodLambertTest {
             AbsoluteDate t1 = new AbsoluteDate(2010, 1, 1, 0, 0, 0, TimeScalesFactory.getUTC());
             KeplerianOrbit kep1 = new KeplerianOrbit(a, e, i, aop, raan, nu0, PositionAngleType.TRUE, j2000, t1, mu);
             Vector3D p1 = kep1.getPosition();
-            Vector3D v1 = kep1.getPVCoordinates().getVelocity();
+            Vector3D v1 = kep1.getVelocity();
 
             // Assign t2 date (defined as the date after a swept angle of "trueAnomalyDifference" after periapsis)
             KeplerianOrbit kep2 = new KeplerianOrbit(a, e, i, aop, raan, trueAnomalyDifference, PositionAngleType.TRUE, j2000, t1, mu);
@@ -430,11 +430,11 @@ public class IodLambertTest {
                                                       new Position(date2,   posR2, 1.0, 1.0, satellite));
 
         // Test for the norm of the first velocity
-        Assertions.assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR1.getNorm(),  1e-3);
+        Assertions.assertEquals(0.0, orbit.getVelocity().getNorm() - velR1.getNorm(),  1e-3);
 
         // Test the norm of the second velocity
         final KeplerianPropagator kepler = new KeplerianPropagator(orbit);
-        Assertions.assertEquals(0.0, kepler.propagate(date2).getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(),  1e-3);
+        Assertions.assertEquals(0.0, kepler.propagate(date2).getVelocity().getNorm() - velR2.getNorm(),  1e-3);
 
 
     }
@@ -472,11 +472,11 @@ public class IodLambertTest {
                                                       new PV(date2,   posR2, velR2, 1.0, 1.0, 1.0, satellite));
 
         // Test for the norm of the first velocity
-        Assertions.assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR1.getNorm(),  1e-3);
+        Assertions.assertEquals(0.0, orbit.getVelocity().getNorm() - velR1.getNorm(),  1e-3);
 
         // Test the norm of the second velocity
         final KeplerianPropagator kepler = new KeplerianPropagator(orbit);
-        Assertions.assertEquals(0.0, kepler.propagate(date2).getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(),  1e-3);
+        Assertions.assertEquals(0.0, kepler.propagate(date2).getVelocity().getNorm() - velR2.getNorm(),  1e-3);
 
 
     }

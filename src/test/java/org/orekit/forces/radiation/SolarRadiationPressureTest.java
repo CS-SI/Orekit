@@ -588,7 +588,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         // Step Handler
         calc.setStepHandler(FastMath.floor(period), new SolarStepHandler());
         AbsoluteDate finalDate = date.shiftedBy(10 * period);
-        calc.setInitialState(new SpacecraftState(orbit, 1500.0));
+        calc.setInitialState(new SpacecraftState(orbit).withMass(1500.0));
         calc.propagate(finalDate);
         Assertions.assertTrue(calc.getCalls() < 7100);
     }
@@ -772,7 +772,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                           FastMath.toRadians(0.0), PositionAngleType.MEAN,
                                           FramesFactory.getMOD(IERSConventions.IERS_2010),
                                           initialDate, gravityField.getMu());
-        final SpacecraftState initialState = new SpacecraftState(initialOrbit, 30.0);
+        final SpacecraftState initialState = new SpacecraftState(initialOrbit).withMass(30.0);
 
         final CelestialBody      sun            = CelestialBodyFactory.getSun();
         final CelestialBody      moon           = CelestialBodyFactory.getMoon();

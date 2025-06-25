@@ -332,14 +332,14 @@ public class OceanTidesTest {
         // Then
         Assertions.assertFalse(detectors.isEmpty());
         Assertions.assertEquals(1, detectors.size());
-        Assertions.assertTrue(detectors.get(0) instanceof DateDetector);
+        Assertions.assertInstanceOf(DateDetector.class, detectors.get(0));
         
         Assertions.assertEquals(1, dates.size());
         Assertions.assertEquals(0., dates.get(0).durationFrom(t0), 0.);
         
         Assertions.assertFalse(fieldDetectors.isEmpty());
         Assertions.assertEquals(1, fieldDetectors.size());
-        Assertions.assertTrue(fieldDetectors.get(0) instanceof FieldDateDetector);
+        Assertions.assertInstanceOf(FieldDateDetector.class, fieldDetectors.get(0));
         Assertions.assertEquals(0., fieldDate.durationFrom(t0).getReal(), 0.);
     }
 

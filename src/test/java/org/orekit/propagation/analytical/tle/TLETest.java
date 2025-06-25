@@ -393,7 +393,7 @@ public class TLETest {
                         TLE tle = new TLE(line1, line2);
 
                         int satNum = Integer.parseInt(title[1]);
-                        Assertions.assertTrue(satNum==tle.getSatelliteNumber());
+                        Assertions.assertEquals(satNum, tle.getSatelliteNumber());
                         TLEPropagator ex = TLEPropagator.selectExtrapolator(tle);
 
                         for (rline = rResults.readLine(); (rline!=null)&&(rline.charAt(0)!='r'); rline = rResults.readLine()) {
