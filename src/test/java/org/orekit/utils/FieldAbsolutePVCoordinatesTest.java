@@ -24,10 +24,12 @@ import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -101,6 +103,19 @@ public class FieldAbsolutePVCoordinatesTest {
     @Test
     public void testTaylorProvider() {
         doTestTaylorProvider(Binary64Field.getInstance());
+    }
+
+    @Test
+    public void testIssue1557() {
+        // GIVEN
+        final FieldAbsolutePVCoordinates<Binary64> absPV = TestUtils.getFakeFieldAbsolutePVACoordinates();
+
+        // WHEN
+        final FieldVector3D<Binary64> velocity = absPV.getVelocity(absPV.getDate(), absPV.getFrame());
+
+        // THEN
+        final FieldPVCoordinates<Binary64> refPV = absPV.getPVCoordinates();
+        Assertions.assertEquals(refPV.getVelocity(), velocity);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestPVOnlyConstructor(Field<T> field) {

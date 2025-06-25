@@ -312,11 +312,11 @@ public class DSSTPropagatorTest {
 
         // Initial orbit definition
         final Vector3D initialPosition = state.getPosition();
-        final Vector3D initialVelocity = state.getPVCoordinates().getVelocity();
+        final Vector3D initialVelocity = state.getVelocity();
 
         // Final orbit definition
         final Vector3D finalPosition = finalState.getPosition();
-        final Vector3D finalVelocity = finalState.getPVCoordinates().getVelocity();
+        final Vector3D finalVelocity = finalState.getVelocity();
 
         // Check results
         Assertions.assertEquals(initialPosition.getX(), finalPosition.getX(), 0.0);

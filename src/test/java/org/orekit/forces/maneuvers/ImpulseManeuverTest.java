@@ -131,7 +131,7 @@ class ImpulseManeuverTest {
         final double finalVzExpected = initialVz + deltaZ;
         final double maneuverTolerance = 1e-4;
 
-        final Vector3D finalVelocity = finalState.getPVCoordinates().getVelocity();
+        final Vector3D finalVelocity = finalState.getVelocity();
         Assertions.assertEquals(finalVxExpected, finalVelocity.getX(), maneuverTolerance);
         Assertions.assertEquals(finalVyExpected, finalVelocity.getY(), maneuverTolerance);
         Assertions.assertEquals(finalVzExpected, finalVelocity.getZ(), maneuverTolerance);
@@ -197,8 +197,8 @@ class ImpulseManeuverTest {
         Assertions.assertEquals(expectedState.getMass(), actualState.getMass());
         Assertions.assertEquals(expectedState.getAttitude(), actualState.getAttitude());
         Assertions.assertEquals(expectedState.getPosition(), actualState.getPosition());
-        Assertions.assertEquals(expectedState.getPVCoordinates().getVelocity(),
-                actualState.getPVCoordinates().getVelocity());
+        Assertions.assertEquals(expectedState.getVelocity(),
+                actualState.getVelocity());
     }
 
     @Test
@@ -262,8 +262,8 @@ class ImpulseManeuverTest {
                                               rebuiltPast.getPosition()),
                             2.0e-8);
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(pastOrbit.getPVCoordinates().getVelocity(),
-                                              rebuiltPast.getPVCoordinates().getVelocity()),
+                            Vector3D.distance(pastOrbit.getVelocity(),
+                                              rebuiltPast.getVelocity()),
                             2.0e-11);
         Assertions.assertEquals(pastMass, rebuiltPast.getMass(), 5.0e-13);
 

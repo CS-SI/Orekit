@@ -398,7 +398,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         propagator0.setStepHandler(10.0,
                                    state ->
                                    measurements.add(new PV(state.getDate(),
-                                                           state.getPosition(), state.getPVCoordinates().getVelocity(),
+                                                           state.getPosition(), state.getVelocity(),
                                                            1.0e-3, 1.0e-6, 1.0, sat0)));
         propagator0.propagate(orbit.getDate().shiftedBy(900));
 

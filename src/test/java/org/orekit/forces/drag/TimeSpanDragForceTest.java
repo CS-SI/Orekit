@@ -87,7 +87,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
 
             final AbsoluteDate                       date     = state.getDate().toAbsoluteDate();
             final FieldVector3D<DerivativeStructure> position = state.getPVCoordinates().getPosition();
-            final FieldVector3D<DerivativeStructure> velocity = state.getPVCoordinates().getVelocity();
+            final FieldVector3D<DerivativeStructure> velocity = state.getVelocity();
             java.lang.reflect.Field atmosphereField = AbstractDragForceModel.class.getDeclaredField("atmosphere");
             atmosphereField.setAccessible(true);
             Atmosphere atmosphere = (Atmosphere) atmosphereField.get(forceModel);
@@ -151,7 +151,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
 
             final AbsoluteDate                       date     = state.getDate().toAbsoluteDate();
             final FieldVector3D<Gradient> position = state.getPVCoordinates().getPosition();
-            final FieldVector3D<Gradient> velocity = state.getPVCoordinates().getVelocity();
+            final FieldVector3D<Gradient> velocity = state.getVelocity();
             java.lang.reflect.Field atmosphereField = AbstractDragForceModel.class.getDeclaredField("atmosphere");
             atmosphereField.setAccessible(true);
             Atmosphere atmosphere = (Atmosphere) atmosphereField.get(forceModel);

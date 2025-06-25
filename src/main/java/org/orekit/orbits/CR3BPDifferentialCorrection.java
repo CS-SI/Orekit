@@ -182,8 +182,8 @@ public class CR3BPDifferentialCorrection {
             final RealMatrix phiHalo = stm.getStateTransitionMatrix(finalStateHalo);
 
             // Gap from desired X and Z axis velocity value ()
-            final double dvxf = -finalStateHalo.getPVCoordinates().getVelocity().getX();
-            final double dvzf = -finalStateHalo.getPVCoordinates().getVelocity().getZ();
+            final double dvxf = -finalStateHalo.getVelocity().getX();
+            final double dvzf = -finalStateHalo.getVelocity().getZ();
 
             orbitalPeriod = 2 * finalStateHalo.getDate().durationFrom(START_DATE);
 
@@ -192,7 +192,7 @@ public class CR3BPDifferentialCorrection {
             }
 
             // Y axis velocity
-            final double vy = finalStateHalo.getPVCoordinates().getVelocity().getY();
+            final double vy = finalStateHalo.getVelocity().getY();
 
             // Spacecraft acceleration
             final Vector3D acc  = finalStateHalo.getPVCoordinates().getAcceleration();
@@ -266,7 +266,7 @@ public class CR3BPDifferentialCorrection {
             final RealMatrix phi = stm.getStateTransitionMatrix(finalStateLyapunov);
 
             // Gap from desired y position and x velocity value ()
-            final double dvxf = -finalStateLyapunov.getPVCoordinates().getVelocity().getX();
+            final double dvxf = -finalStateLyapunov.getVelocity().getX();
 
             orbitalPeriod = 2 * finalStateLyapunov.getDate().durationFrom(START_DATE);
 
@@ -275,7 +275,7 @@ public class CR3BPDifferentialCorrection {
             }
 
             // Y axis velocity
-            final double vy = finalStateLyapunov.getPVCoordinates().getVelocity().getY();
+            final double vy = finalStateLyapunov.getVelocity().getY();
 
             // Spacecraft acceleration
             final double accy = finalStateLyapunov.getPVCoordinates().getAcceleration().getY();

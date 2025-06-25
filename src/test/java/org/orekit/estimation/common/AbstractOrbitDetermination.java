@@ -2753,9 +2753,9 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
                 // Orbital correction = DP & DV between predicted orbit and estimated orbit
                 final Vector3D predictedP = estimation.getPredictedSpacecraftStates()[0].getPosition();
-                final Vector3D predictedV = estimation.getPredictedSpacecraftStates()[0].getPVCoordinates().getVelocity();
+                final Vector3D predictedV = estimation.getPredictedSpacecraftStates()[0].getVelocity();
                 final Vector3D estimatedP = estimation.getCorrectedSpacecraftStates()[0].getPosition();
-                final Vector3D estimatedV = estimation.getCorrectedSpacecraftStates()[0].getPVCoordinates().getVelocity();
+                final Vector3D estimatedV = estimation.getCorrectedSpacecraftStates()[0].getVelocity();
                 final double DPcorr       = Vector3D.distance(predictedP, estimatedP);
                 final double DVcorr       = Vector3D.distance(predictedV, estimatedV);
 

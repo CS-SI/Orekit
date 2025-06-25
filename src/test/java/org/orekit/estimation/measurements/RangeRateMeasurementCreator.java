@@ -78,7 +78,7 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
             final AbsoluteDate     date      = currentState.getDate();
             final Frame            inertial  = currentState.getFrame();
             final Vector3D         position  = currentState.getPosition();
-            final Vector3D         velocity  = currentState.getPVCoordinates().getVelocity();
+            final Vector3D         velocity  = currentState.getVelocity();
             final double           groundDft = station.getClockDriftDriver().getValue(date);
             final double           satDft    = satellite.getClockDriftDriver().getValue(date);
             final double           deltaD    = Constants.SPEED_OF_LIGHT * (groundDft - satDft);

@@ -27,6 +27,7 @@ import org.hipparchus.util.Binary64;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.FieldAbsoluteDate;
@@ -113,6 +114,18 @@ class FieldOrbitTest {
         // THEN
         final boolean expectedValue = aIn > 0.;
         Assertions.assertEquals(expectedValue, actualValue);
+    }
+
+    @Test
+    public void testIssue1557() {
+        // GIVEN
+        final FieldOrbit<Binary64> fakeOrbit = TestUtils.getFakeFieldOrbit();
+
+        // WHEN
+        final FieldVector3D<Binary64> velocity = fakeOrbit.getVelocity();
+
+        // THEN
+        Assertions.assertEquals(fakeOrbit.getVelocity(), velocity);
     }
 
     private static class TestFieldOrbit extends FieldOrbit<Complex> {

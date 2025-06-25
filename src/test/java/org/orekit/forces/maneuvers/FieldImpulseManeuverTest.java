@@ -274,8 +274,8 @@ class FieldImpulseManeuverTest {
         Assertions.assertEquals(expectedState.getMass(), actualState.getMass());
         Assertions.assertEquals(expectedState.getAttitude(), actualState.getAttitude());
         Assertions.assertEquals(expectedState.getPosition(), actualState.getPosition());
-        Assertions.assertEquals(expectedState.getPVCoordinates().getVelocity(),
-                actualState.getPVCoordinates().getVelocity());
+        Assertions.assertEquals(expectedState.getVelocity(),
+                actualState.getVelocity());
     }
 
     @Test
@@ -591,7 +591,7 @@ class FieldImpulseManeuverTest {
                 propagate(new FieldAbsoluteDate<>(field, endOfPropagationDate));
         // Then
         final FieldVector3D<Gradient> fieldTerminalPosition = fieldTerminalState.getPosition();
-        final FieldVector3D<Gradient> fieldTerminalVelocity = fieldTerminalState.getPVCoordinates().getVelocity();
+        final FieldVector3D<Gradient> fieldTerminalVelocity = fieldTerminalState.getVelocity();
         final double tolerance = 1e0;
         for (int i = 0; i < 3; i++) {
             Assertions.assertEquals(stm.getEntry(0, 3 + i),

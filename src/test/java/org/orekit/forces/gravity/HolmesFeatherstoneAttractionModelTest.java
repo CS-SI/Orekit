@@ -919,7 +919,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
             SpacecraftState EHPOrbit   = referencePropagator.propagate(currentState.getDate());
             Vector3D posEHP  = EHPOrbit.getPosition();
             Vector3D posDROZ = currentState.getPosition();
-            Vector3D velEHP  = EHPOrbit.getPVCoordinates().getVelocity();
+            Vector3D velEHP  = EHPOrbit.getVelocity();
             Vector3D dif     = posEHP.subtract(posDROZ);
 
             Vector3D T = new Vector3D(1 / velEHP.getNorm(), velEHP);

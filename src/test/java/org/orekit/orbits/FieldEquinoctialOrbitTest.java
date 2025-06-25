@@ -419,7 +419,7 @@ class FieldEquinoctialOrbitTest {
                                         zero.add(5.300), PositionAngleType.MEAN,
                                         FramesFactory.getEME2000(), date, zero.add(mu));
         FieldVector3D<T> pos = equi.getPosition();
-        FieldVector3D<T> vit = equi.getPVCoordinates().getVelocity();
+        FieldVector3D<T> vit = equi.getVelocity();
 
         FieldPVCoordinates<T> FieldPVCoordinates = new FieldPVCoordinates<>(pos, vit);
 
@@ -454,7 +454,7 @@ class FieldEquinoctialOrbitTest {
                                         zero.add(5.300), PositionAngleType.MEAN,
                                         FramesFactory.getEME2000(), date, zero.add(mu));
         FieldVector3D<T> posCir = equiCir.getPosition();
-        FieldVector3D<T> vitCir = equiCir.getPVCoordinates().getVelocity();
+        FieldVector3D<T> vitCir = equiCir.getVelocity();
 
         FieldPVCoordinates<T> FieldPVCoordinates = new FieldPVCoordinates<>(posCir, vitCir);
 
@@ -490,7 +490,7 @@ class FieldEquinoctialOrbitTest {
                                                     zero.add(5.300), PositionAngleType.MEAN,
                                                    FramesFactory.getEME2000(), date, zero.add(mu));
         FieldVector3D<T> pos = equi.getPosition();
-        FieldVector3D<T> vit = equi.getPVCoordinates().getVelocity();
+        FieldVector3D<T> vit = equi.getVelocity();
 
         // verif of 1/a = 2/X - V2/mu
         T oneovera = (pos.getNorm().reciprocal().multiply(2)).subtract(vit.getNorm().multiply(vit.getNorm()).divide(mu));
@@ -746,8 +746,8 @@ class FieldEquinoctialOrbitTest {
                             p.getPosition().getNorm().getReal(),
                      Utils.epsilonTest * FastMath.abs(p.getPosition().getNorm().getReal()));
         Assertions.assertEquals(na.getReal() * FastMath.sqrt(ksi.getReal() * ksi.getReal() + nu.getReal() * nu.getReal()) / epsilon.getReal(),
-                            p.getPVCoordinates().getVelocity().getNorm().getReal(),
-                            Utils.epsilonTest * FastMath.abs(p.getPVCoordinates().getVelocity().getNorm().getReal()));
+                            p.getVelocity().getNorm().getReal(),
+                            Utils.epsilonTest * FastMath.abs(p.getVelocity().getNorm().getReal()));
 
         // circular and equatorial orbit
         FieldEquinoctialOrbit<T> pCirEqua =
@@ -769,8 +769,8 @@ class FieldEquinoctialOrbitTest {
                             .getNorm().getReal(), Utils.epsilonTest
                             * FastMath.abs(pCirEqua.getPosition().getNorm().getReal()));
         Assertions.assertEquals(na.getReal() * FastMath.sqrt(ksi.getReal() * ksi.getReal() + nu.getReal() * nu.getReal()) / epsilon.getReal(),
-                            pCirEqua.getPVCoordinates().getVelocity().getNorm().getReal(), Utils.epsilonTest
-                            * FastMath.abs(pCirEqua.getPVCoordinates().getVelocity().getNorm().getReal()));
+                            pCirEqua.getVelocity().getNorm().getReal(), Utils.epsilonTest
+                            * FastMath.abs(pCirEqua.getVelocity().getNorm().getReal()));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestGeometry(Field<T> field) {
@@ -788,7 +788,7 @@ class FieldEquinoctialOrbitTest {
                                         FramesFactory.getEME2000(), date, zero.add(mu));
 
         FieldVector3D<T> position = p.getPosition();
-        FieldVector3D<T> velocity = p.getPVCoordinates().getVelocity();
+        FieldVector3D<T> velocity = p.getVelocity();
         FieldVector3D<T> momentum = p.getPVCoordinates().getMomentum().normalize();
 
         T apogeeRadius = p.getA().multiply(p.getE().add(1.0));
@@ -807,7 +807,7 @@ class FieldEquinoctialOrbitTest {
             Assertions.assertTrue((position.getNorm().getReal() - perigeeRadius.getReal()) >= (-perigeeRadius.getReal() * Utils.epsilonTest));
 
             position = position.normalize();
-            velocity = p.getPVCoordinates().getVelocity();
+            velocity = p.getVelocity();
             velocity = velocity.normalize();
 
             // at this stage of computation, all the vectors (position, velocity and
@@ -827,7 +827,7 @@ class FieldEquinoctialOrbitTest {
                                         FramesFactory.getEME2000(), date, zero.add(mu));
 
         position = pCirEqua.getPosition();
-        velocity = pCirEqua.getPVCoordinates().getVelocity();
+        velocity = pCirEqua.getVelocity();
 
         momentum = FieldVector3D.crossProduct(position, velocity).normalize();
 
@@ -849,7 +849,7 @@ class FieldEquinoctialOrbitTest {
             Assertions.assertTrue((position.getNorm().getReal() - perigeeRadius.getReal()) >= (-perigeeRadius.getReal() * Utils.epsilonTest));
 
             position = position.normalize();
-            velocity = pCirEqua.getPVCoordinates().getVelocity();
+            velocity = pCirEqua.getVelocity();
             velocity = velocity.normalize();
 
             // at this stage of computation, all the vectors (position, velocity and
@@ -878,8 +878,8 @@ class FieldEquinoctialOrbitTest {
         FieldVector3D<T> v = FieldVector3D.crossProduct(p.getPVCoordinates().getMomentum(), u).normalize();
 
         // compute radius of curvature in the orbital plane from Cartesian coordinates
-        T xDot    = FieldVector3D.dotProduct(p.getPVCoordinates().getVelocity(),     u);
-        T yDot    = FieldVector3D.dotProduct(p.getPVCoordinates().getVelocity(),     v);
+        T xDot    = FieldVector3D.dotProduct(p.getVelocity(),     u);
+        T yDot    = FieldVector3D.dotProduct(p.getVelocity(),     v);
         T xDotDot = FieldVector3D.dotProduct(p.getPVCoordinates().getAcceleration(), u);
         T yDotDot = FieldVector3D.dotProduct(p.getPVCoordinates().getAcceleration(), v);
         T dot2    = xDot.multiply(xDot).add(yDot.multiply(yDot));
@@ -916,7 +916,7 @@ class FieldEquinoctialOrbitTest {
                                                                  FramesFactory.getEME2000(), date, zero.add(mu));
 
         FieldVector3D<T> positionOffset = p.getPosition().subtract(position);
-        FieldVector3D<T> velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
+        FieldVector3D<T> velocityOffset = p.getVelocity().subtract(velocity);
 
         Assertions.assertEquals(0, positionOffset.getNorm().getReal(), 7.5e-12);
         Assertions.assertEquals(0, velocityOffset.getNorm().getReal(), 1.0e-15);
@@ -929,7 +929,7 @@ class FieldEquinoctialOrbitTest {
                                         FramesFactory.getEME2000(), date, zero.add(mu));
 
         positionOffset = p.getPosition().subtract(position);
-        velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
+        velocityOffset = p.getVelocity().subtract(velocity);
 
         Assertions.assertEquals(0, positionOffset.getNorm().getReal(), 1.1e-11);
         Assertions.assertEquals(0, velocityOffset.getNorm().getReal(), 1.0e-15);
@@ -1120,7 +1120,7 @@ class FieldEquinoctialOrbitTest {
         // at constant energy (i.e. constant semi major axis), we have dV = -mu dP / (V * r^2)
         // we use this to compute a velocity step size from the position step size
         FieldVector3D<T> p = orbit.getPosition();
-        FieldVector3D<T> v = orbit.getPVCoordinates().getVelocity();
+        FieldVector3D<T> v = orbit.getVelocity();
         T hV = hP.multiply(orbit.getMu()).divide(v.getNorm().multiply(p.getNormSq()));
 
         T h;
@@ -1415,8 +1415,8 @@ class FieldEquinoctialOrbitTest {
                                                    shiftedOrbitCopy.getPosition()).getReal(),
                             1.0e-10);
         Assertions.assertEquals(0.0,
-                            FieldVector3D.distance(shiftedOrbit.getPVCoordinates().getVelocity(),
-                                                   shiftedOrbitCopy.getPVCoordinates().getVelocity()).getReal(),
+                            FieldVector3D.distance(shiftedOrbit.getVelocity(),
+                                                   shiftedOrbitCopy.getVelocity()).getReal(),
                             1.0e-10);
 
     }

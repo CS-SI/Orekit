@@ -117,9 +117,9 @@ public abstract class AbstractIodTest {
     // Computation of the relative error in velocity
     protected double getRelativeVelocityError(final Orbit estimatedGauss, final Orbit orbitRef) {
 
-        return FastMath.abs(estimatedGauss.getPVCoordinates().getVelocity().getNorm() -
-                                    orbitRef.getPVCoordinates().getVelocity().getNorm()) /
-                FastMath.abs(orbitRef.getPVCoordinates().getVelocity().getNorm());
+        return FastMath.abs(estimatedGauss.getVelocity().getNorm() -
+                                    orbitRef.getVelocity().getNorm()) /
+                FastMath.abs(orbitRef.getVelocity().getNorm());
     }
     
     /** Calculate the estimated Line Of Sight of a RADEC measurement at a given date.

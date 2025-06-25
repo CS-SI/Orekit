@@ -109,7 +109,7 @@ public class UnscentedKalmanEstimatorTest {
         final SpacecraftState state = propagator.propagate(measurementDate);
         final ObservedMeasurement<?> measurement = new PV(measurementDate,
                 state.getPosition().add(new Vector3D(10.0, -10.0, 5.0)),
-                state.getPVCoordinates().getVelocity().add(new Vector3D(-10.0, 5.0, -5.0)),
+                state.getVelocity().add(new Vector3D(-10.0, 5.0, -5.0)),
                 5.0, 5.0, 1.0, new ObservableSatellite(0));
 
         // Unselect all orbital propagation parameters
@@ -185,11 +185,11 @@ public class UnscentedKalmanEstimatorTest {
         final SpacecraftState state = propagator.propagate(measurementDate);
         final ObservedMeasurement<?> measurement1 = new PV(measurementDate,
                 state.getPosition().add(new Vector3D(10.0, -10.0, 5.0)),
-                state.getPVCoordinates().getVelocity().add(new Vector3D(-10.0, 5.0, -5.0)),
+                state.getVelocity().add(new Vector3D(-10.0, 5.0, -5.0)),
                 5.0, 5.0, 1.0, new ObservableSatellite(0));
         final ObservedMeasurement<?> measurement2 = new PV(measurementDate,
                 state.getPosition().add(new Vector3D(-10.0, 20.0, -1.0)),
-                state.getPVCoordinates().getVelocity().add(new Vector3D(10.0, 50.0, -10.0)),
+                state.getVelocity().add(new Vector3D(10.0, 50.0, -10.0)),
                 5.0, 5.0, 1.0, new ObservableSatellite(1));
         final ObservedMeasurement<?> combinedMeasurement =
                 new MultiplexedMeasurement(Arrays.asList(measurement1, measurement2));
@@ -421,7 +421,7 @@ public class UnscentedKalmanEstimatorTest {
         
         // Create shifted initial state
         final Vector3D initialPosShifted = context.initialOrbit.getPosition().add(new Vector3D(sigmaPos, sigmaPos, sigmaPos));
-        final Vector3D initialVelShifted = context.initialOrbit.getPVCoordinates().getVelocity().add(new Vector3D(sigmaVel, sigmaVel, sigmaVel));
+        final Vector3D initialVelShifted = context.initialOrbit.getVelocity().add(new Vector3D(sigmaVel, sigmaVel, sigmaVel));
 
         final TimeStampedPVCoordinates pv = new TimeStampedPVCoordinates(context.initialOrbit.getDate(), initialPosShifted, initialVelShifted);
         
@@ -969,8 +969,8 @@ public class UnscentedKalmanEstimatorTest {
                                               before.getPosition()),
                             1.0e-3);
         Assertions.assertEquals(0.0010514,
-                            Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
-                                              before.getPVCoordinates().getVelocity()),
+                            Vector3D.distance(closeOrbit.getVelocity(),
+                                              before.getVelocity()),
                             1.0e-6);
 
         Orbit[] refOrbits = new Orbit[] {

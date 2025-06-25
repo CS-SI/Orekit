@@ -230,7 +230,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // -----------------------
 
         // QMt = Primary station position at tmeas = t = signal arrival at primary station
-        final Vector3D vel      = state.getPVCoordinates().getVelocity();
+        final Vector3D vel      = state.getVelocity();
         final Transform FMt     = primaryGroundStation.getOffsetToInertial(state.getFrame(), getDate(), false);
         final PVCoordinates QMt = FMt.transformPVCoordinates(PVCoordinates.ZERO);
         final Vector3D QMt_V    = QMt.getVelocity();
@@ -815,7 +815,7 @@ public class TurnAroundRangeAnalytic extends TurnAroundRange {
         // -----------------------
 
         // QMt_PV = Primary station PV at tmeas = t = signal arrival at primary station
-        final Vector3D vel         = state.getPVCoordinates().getVelocity();
+        final Vector3D vel         = state.getVelocity();
         final PVCoordinates QMt_PV = primaryTopoToInert.transformPVCoordinates(PVCoordinates.ZERO);
         final Vector3D QMt_V       = QMt_PV.getVelocity();
         final Vector3D pos2        = state2.getPosition();

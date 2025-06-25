@@ -72,7 +72,7 @@ public class TabulatedEphemerisTest {
             public SpacecraftState filter(SpacecraftState state) {
                 CartesianOrbit c = (CartesianOrbit) state.getOrbit();
                 Vector3D p    = c.getPosition();
-                Vector3D v    = c.getPVCoordinates().getVelocity();
+                Vector3D v    = c.getVelocity();
                 double r2 = p.getNormSq();
                 double r  = FastMath.sqrt(r2);
                 Vector3D kepA = new Vector3D(-c.getMu() / (r * r2), c.getPosition());
@@ -166,8 +166,8 @@ public class TabulatedEphemerisTest {
                                  Vector3D.distance(c1.getPosition(),
                                                    c2.getPosition()));
             maxV  = FastMath.max(maxV,
-                                 Vector3D.distance(c1.getPVCoordinates().getVelocity(),
-                                                   c2.getPVCoordinates().getVelocity()));
+                                 Vector3D.distance(c1.getVelocity(),
+                                                   c2.getVelocity()));
         }
 
         Assertions.assertEquals(expectedDP, maxP, 0.1 * expectedDP);

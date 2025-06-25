@@ -97,7 +97,7 @@ public class InertialForces implements ForceModel {
         final Vector3D  oDot1             = inertToStateFrame.getAngular().getRotationAcceleration();
 
         final Vector3D  p2                = s.getPosition();
-        final Vector3D  v2                = s.getPVCoordinates().getVelocity();
+        final Vector3D  v2                = s.getVelocity();
 
         final Vector3D crossCrossP        = Vector3D.crossProduct(o1,    Vector3D.crossProduct(o1, p2));
         final Vector3D crossV             = Vector3D.crossProduct(o1,    v2);
@@ -121,7 +121,7 @@ public class InertialForces implements ForceModel {
         final FieldVector3D<T>  oDot1             = inertToStateFrame.getAngular().getRotationAcceleration();
 
         final FieldVector3D<T>  p2                = s.getPosition();
-        final FieldVector3D<T>  v2                = s.getPVCoordinates().getVelocity();
+        final FieldVector3D<T>  v2                = s.getVelocity();
 
         final FieldVector3D<T> crossCrossP        = FieldVector3D.crossProduct(o1,    FieldVector3D.crossProduct(o1, p2));
         final FieldVector3D<T> crossV             = FieldVector3D.crossProduct(o1,    v2);

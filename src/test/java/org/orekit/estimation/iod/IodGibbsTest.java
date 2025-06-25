@@ -127,7 +127,7 @@ public class IodGibbsTest {
                                            posR1, dateRef, posR2, date2, posR3, date3);
 
         //test
-        Assertions.assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(), 1e-3);
+        Assertions.assertEquals(0.0, orbit.getVelocity().getNorm() - velR2.getNorm(), 1e-3);
     }
 
     @Test
@@ -161,7 +161,7 @@ public class IodGibbsTest {
                                            posR1, dateRef, posR2, date2, posR3, date3);
 
         //test for the norm of the velocity
-        Assertions.assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(),  1e-3);
+        Assertions.assertEquals(0.0, orbit.getVelocity().getNorm() - velR2.getNorm(),  1e-3);
 
     }
 
@@ -199,7 +199,7 @@ public class IodGibbsTest {
                                            new Position(date3, posR3, 1.0, 1.0, satellite));
 
         // Test for the norm of the velocity
-        Assertions.assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(),  1e-3);
+        Assertions.assertEquals(0.0, orbit.getVelocity().getNorm() - velR2.getNorm(),  1e-3);
 
     }
 

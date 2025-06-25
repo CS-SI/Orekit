@@ -61,9 +61,9 @@ class AbstractFixedInitialCartesianSingleShootingTest {
         Assertions.assertEquals(state.getDate(), fieldState.getDate().toAbsoluteDate());
         Assertions.assertEquals(expectedMass, fieldState.getMass().getReal());
         final FieldVector3D<Gradient> fieldPosition = fieldState.getPosition();
-        final FieldVector3D<Gradient> fieldVelocity = fieldState.getPVCoordinates().getVelocity();
+        final FieldVector3D<Gradient> fieldVelocity = fieldState.getVelocity();
         Assertions.assertEquals(state.getPosition(), fieldPosition.toVector3D());
-        Assertions.assertEquals(state.getPVCoordinates().getVelocity(), fieldVelocity.toVector3D());
+        Assertions.assertEquals(state.getVelocity(), fieldVelocity.toVector3D());
         Assertions.assertEquals(1., fieldState.getAdditionalState("adjoint")[0].getGradient()[0]);
     }
 
@@ -116,9 +116,9 @@ class AbstractFixedInitialCartesianSingleShootingTest {
         fullState[0] = new Binary64(state.getPosition().getX());
         fullState[1] = new Binary64(state.getPosition().getY());
         fullState[2] = new Binary64(state.getPosition().getZ());
-        fullState[3] = new Binary64(state.getPVCoordinates().getVelocity().getX());
-        fullState[4] = new Binary64(state.getPVCoordinates().getVelocity().getY());
-        fullState[5] = new Binary64(state.getPVCoordinates().getVelocity().getZ());
+        fullState[3] = new Binary64(state.getVelocity().getX());
+        fullState[4] = new Binary64(state.getVelocity().getY());
+        fullState[5] = new Binary64(state.getVelocity().getZ());
         fullState[6] = new Binary64(state.getMass());
         for (int i = 0; i < adjoint.length; i++) {
             fullState[7 + i] = new Binary64(adjoint[i]);

@@ -318,7 +318,7 @@ public class IodGaussTest extends AbstractIodTest {
         // Verify
         final TimeStampedPVCoordinates truth = prop.getPVCoordinates(azEl2.getDate(), gcrf);
         Assertions.assertEquals(0.0, Vector3D.distance(truth.getPosition(), estOrbit.getPosition()), 262.0);
-        Assertions.assertEquals(0.0, Vector3D.distance(truth.getVelocity(), estOrbit.getPVCoordinates().getVelocity()), 0.3);
+        Assertions.assertEquals(0.0, Vector3D.distance(truth.getVelocity(), estOrbit.getVelocity()), 0.3);
     }
 
     // Private method to have a gauss estimated orbit

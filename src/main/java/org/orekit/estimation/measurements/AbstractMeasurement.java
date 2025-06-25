@@ -542,7 +542,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
 
         // Velocity of the satellite expressed as a gradient
         // The components of the velocity are the 3 second derivative parameters
-        final Vector3D v = state.getPVCoordinates().getVelocity();
+        final Vector3D v = state.getVelocity();
         final FieldVector3D<Gradient> vDS =
                         new FieldVector3D<>(Gradient.variable(freeParameters, firstDerivative + 3, v.getX()),
                                             Gradient.variable(freeParameters, firstDerivative + 4, v.getY()),

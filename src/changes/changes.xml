@@ -123,6 +123,9 @@
         <action dev="serrof" type="add" issue="1683">
             Add (Field)ExtremumAngularSeparationDetector.
         </action>
+        <action dev="vcucchie" type="add" issue="1557">
+            Added getVelocity method.
+        </action>
         <action dev="bryan" type="add" issue="1268">
             Added Herrick-Gibbs initial orbit determination.
         </action>

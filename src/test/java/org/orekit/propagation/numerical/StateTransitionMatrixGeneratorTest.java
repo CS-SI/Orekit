@@ -732,7 +732,7 @@ class StateTransitionMatrixGeneratorTest {
                                                                                  final T[] parameters)
         {
             this.accelerationDerivativesPosition = (FieldVector3D<DerivativeStructure>) s.getPosition();
-            this.accelerationDerivativesVelocity = (FieldVector3D<DerivativeStructure>) s.getPVCoordinates().getVelocity();
+            this.accelerationDerivativesVelocity = (FieldVector3D<DerivativeStructure>) s.getVelocity();
             return s.getPosition();
         }
 

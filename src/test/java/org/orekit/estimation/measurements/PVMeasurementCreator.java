@@ -30,7 +30,7 @@ public class PVMeasurementCreator extends MeasurementCreator {
 
     public void handleStep(final SpacecraftState currentState) {
         final Vector3D p = currentState.getPosition();
-        final Vector3D v = currentState.getPVCoordinates().getVelocity();
+        final Vector3D v = currentState.getVelocity();
         final PV measurement = new PV(currentState.getDate(), p, v, 1.0, 0.001, 1.0, satellite);
         Assertions.assertEquals(0.0, Vector3D.distance(p, measurement.getPosition()), 1.0e-10);
         Assertions.assertEquals(0.0, Vector3D.distance(v, measurement.getVelocity()), 1.0e-10);

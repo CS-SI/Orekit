@@ -101,7 +101,7 @@ class FieldCartesianAdjointDerivativesProviderTest {
         // WHEN
         final Binary64 hamiltonian = derivativesProvider.evaluateHamiltonian(state);
         // THEN
-        final FieldVector3D<Binary64> velocity = state.getPVCoordinates().getVelocity();
+        final FieldVector3D<Binary64> velocity = state.getVelocity();
         final FieldVector3D<Binary64> vector = new FieldVector3D<>(Binary64.ONE, Binary64.ONE, Binary64.ONE);
         Assertions.assertEquals(velocity.dotProduct(vector).add(mu), hamiltonian);
     }

@@ -234,7 +234,7 @@ public class LeastSquaresConverter implements OsculatingToMeanConverter {
 
         // Position/Velocity
         final Vector3D position = initialized.getPVCoordinates().getPosition();
-        final Vector3D velocity = initialized.getPVCoordinates().getVelocity();
+        final Vector3D velocity = initialized.getVelocity();
 
         // Fill state vector
         stateVector.setEntry(0, position.getX());
@@ -250,7 +250,7 @@ public class LeastSquaresConverter implements OsculatingToMeanConverter {
 
         // Weights
         final double[] weights = new double[6];
-        final double velocityWeight = initialized.getPVCoordinates().getVelocity().getNorm() *
+        final double velocityWeight = initialized.getVelocity().getNorm() *
                                       initialized.getPVCoordinates().getPosition().getNormSq() / initialized.getMu();
         for (int i = 0; i < 3; i++) {
             weights[i] = 1.0;
