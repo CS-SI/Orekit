@@ -115,7 +115,7 @@ public abstract class AbstractWindUp<T extends ObservedMeasurement<T>> implement
         // ensure continuity across measurements
         // we assume the various measurements are close enough in time
         // (less the one satellite half-turn) so the angles remain close
-        angularWindUp = MathUtils.normalizeAngle(correction, angularWindUp);
+        setAngularWindUp(MathUtils.normalizeAngle(correction, angularWindUp));
 
     }
 
@@ -125,6 +125,14 @@ public abstract class AbstractWindUp<T extends ObservedMeasurement<T>> implement
      */
     public double getAngularWindUp() {
         return angularWindUp;
+    }
+
+    /** Set cached value of angular wind-up.
+     * @param angularWindUp angular wind-up value
+     * @since 13.1
+     */
+    public void setAngularWindUp(final  double angularWindUp) {
+        this.angularWindUp = angularWindUp;
     }
 
     /** {@inheritDoc} */
