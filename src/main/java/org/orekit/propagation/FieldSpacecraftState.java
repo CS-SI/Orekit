@@ -853,20 +853,20 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         return FieldStaticTransform.of(getDate(), getPosition().negate(), attitude.getRotation());
     }
 
-    /** Get the position in orbit definition frame.
-     * @return position in orbit definition frame
+    /** Get the position in state definition frame.
+     * @return position in state definition frame
      * @since 12.0
      */
     public FieldVector3D<T> getPosition() {
         return isOrbitDefined() ? orbit.getPosition() : absPva.getPosition();
     }
 
-    /** Get the velocity in orbit definition frame.
-     * @return velocity in orbit definition frame
+    /** Get the velocity in state definition frame.
+     * @return velocity in state definition frame
      * @since 13.1
      */
     public FieldVector3D<T> getVelocity() {
-        return isOrbitDefined() ? orbit.getPVCoordinates().getVelocity() : absPva.getVelocity();
+        return isOrbitDefined() ? orbit.getVelocity() : absPva.getVelocity();
     }
 
     /** Get the {@link TimeStampedFieldPVCoordinates} in orbit definition frame.
