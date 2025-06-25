@@ -46,7 +46,7 @@ top=$(cd $(dirname $0)/.. ; pwd)
 for cmd in git sed curl xsltproc ; do
     which -s $cmd || complain "$cmd command not found"
 done
-test -d $top/.git                          || complain "$top/.git folder not found"
+git -C "$top" rev-parse 2>/dev/null        || complain "$top does not contain a git repository"
 test -f $top/pom.xml                       || complain "$top/pom.xml not found"
 test -d $top/src/main/java/org/orekit/time || complain "$top/src/main/java/org/orekit/time not found"
 test -f $HOME/.m2/settings.xml             || complain "$HOME/.m2/settings.xml not found"
