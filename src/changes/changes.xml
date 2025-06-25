@@ -20,6 +20,9 @@
   </properties>
   <body>
     <release version="13.1" date="TBD" description="TBD">
+        <action dev="luc" type="update" issue="1765">
+            Allow resetting wind-up.
+        </action>
         <action dev="serrof" type="update" issue="1763">
             Improved shiftedBy in (Field)StateCovariance.
         </action>
