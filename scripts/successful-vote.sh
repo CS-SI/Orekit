@@ -106,7 +106,8 @@ xsltproc --stringparam release-version "${next_version}-SNAPSHOT" \
 cp -p $top/src/changes/changes.xml $tmpdir/original-changes.xml
 xsltproc --stringparam release-version "${next_version}" \
          $top/scripts/prepare-next-release-in-changes.xsl \
-         $tmpdir/original-changes.xml \
+         $tmpdir/original-changes.xml | \
+         sed 's,<body><release \([^/]*\)/>,<body>\n    <release \1>\n    </release>,' \
          > $top/src/changes/changes.xml
 echo
 (cd $top ; git diff)
