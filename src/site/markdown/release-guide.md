@@ -257,9 +257,11 @@ for user confirmation before any commit:
     - update downloads and faq pages and commit the changes
     - merge release-X.Y-temporary branch into release-X.Y branch
     - delete release-X.Y-temporary branch
+    - tag and sign the repository
+      (the passphrase for the signing key should be asked for at this stage)
     - perform a full build and deploy the maven artifacts to central portal
+      (the passphrase for the signing key may be asked for again at the end of this stage if it was not cached)
     - save the deployment id in `$HOME/.local/share/orekit-release-scripts/deployment-ids` for future scripts
-    - tag and sign the repository (the passphrase for the key should be asked at this stage)
     - push the branch and the tag to origin
     - if the release is a patch release, call immediately the `successful-vote.sh` script
     - if the release is a minor or major release, propose text to copy-paste into the forum for creating the vote topic
