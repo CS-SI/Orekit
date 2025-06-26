@@ -36,6 +36,7 @@ central_portal_username=$(xsltproc $top/scripts/get-central-username.xsl $HOME/.
 test ! -z "central_portal_username" || complain "username for central portal not found in $HOME/.m2/settings.xml"
 central_portal_password=$(xsltproc $top/scripts/get-central-password.xsl $HOME/.m2/settings.xml)
 test ! -z "central_portal_password" || complain "password for central portal not found in $HOME/.m2/settings.xml"
+central_bearer=$(echo ${central_portal_username}:${central_portal_password} | base64)
 
 start_branch=$(cd $top ; git branch --show-current)
 echo "start branch is $start_branch"
@@ -56,17 +57,17 @@ test -z "$(cd $top; git tag -l \"${release_tag}\")" || complain "tag ${release_t
 
 # publish maven artifacts to central portal
 save_dir=${HOME}/.local/share/orekit-release-scripts
-test -f "$save_dir/deployment_ids" || complain "$save_dir/deployment_ids" not found
-deployment_id=$(sed -n "s,^$rc_tag \([^]*\)$,\1,p")
+test -f "$save_dir/deployment-ids" || complain "$save_dir/deployment-ids" not found
+deployment_id=$(sed -n "s,^$rc_tag \([^]*\)$,\1,p" "$save_dir/deployment-ids")
 test ! -z "$deployment_id" || complain "deployment id for $rc_tag not found"
 request_confirmation "publish maven artifacts for deployment id $deployment_id?"
 curl --request POST \
      --verbose \
-     --header "Authorization: Bearer $(echo ${central_portal_username}:${central_portal_password} | base64)" \
+     --header "Authorization: Bearer $central_bearer" \
      "https://central.sonatype.com/api/v1/publisher/deployment/$deployment_id"
 
 # clean up saved deployment id file
-sed -i "/^$rc_tag .*/d" "$save_dir/deployment_ids"
+sed -i "/^$rc_tag .*/d" "$save_dir/deployment-ids"
 
 signing_key="0802AB8C87B0B1AEC1C1C5871550FDBD6375C33B"
 echo "BEWARE! In the next step, the signing key will be used."

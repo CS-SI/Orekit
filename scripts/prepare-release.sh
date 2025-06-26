@@ -12,6 +12,13 @@ complain()
         (cd $top ; git reset -q --hard; git checkout $start_branch)
         test -z "$(git branch --list $temporary_branch)"  || (cd $top ; git branch -D $temporary_branch)
         test "$delete_release_branch_on_cleanup" = "true" && (cd $top ; git branch -D $release_branch)
+        if test ! -z "$deployment_id" ; then
+            echo "deleting deployment id $deployment_id on central portal" 1>&2
+            curl --request DELETE \
+                 --verbose \
+                 --header "Authorization: Bearer $central_bearer" \
+                 "https://central.sonatype.com/api/v1/publisher/deployment/$deployment_id"
+        fi
         echo "everything has been cleaned, branch set back to $start_branch" 1>&2
     fi
     exit 1
@@ -132,7 +139,11 @@ Highlights in the ${release_version} release are:"
 while test -z "$release_description" ; do
   echo "enter release description to be put in both changes.xml and in the vote topic on the forum (end by Ctrl-D)"
   while IFS= read line ; do
-      release_description="$release_description $line"
+      if  test -z "$release_description" ; then
+          release_description="$line"
+      else
+          release_description="${release_description}; $line"
+      fi
       vote_topic="$vote_topic
       - $line"
   done
@@ -186,23 +197,8 @@ echo
 request_confirmation "commit downloads.md.vm and faq.md?"
 (cd $top ; git add src/site/markdown/downloads.md.vm src/site/markdown/faq.md ; git commit -m "Updated documentation for official release.")
 
-# perform a full build
-(cd $top ; mvn clean ; LANG=C mvn site)
-request_confirmation "please review generated site (javadoc, reports…)"
-
 # delete temporary branch
 (cd $top ; git checkout $release_branch ; git merge --no-ff -m "merging $temporary_branch into $release_branch" $temporary_branch ; git branch -d $temporary_branch)
-
-
-# deploy maven artifacts to central portal
-request_confirmation "deploy maven artifacts to central portal?"
-(cd $top ; mvn deploy -Prelease | tee $tmpdir/maven-deploy-output)
-deployment_id=$(sed -n 's,\[INFO\] *Deployment *\([-a-f0-9]*\) *' $tmpdir/maven-deploy-output)
-save_dir=${HOME}/.local/share/orekit-release-scripts
-test -d "$save_dir"                || mkdir -p "$save_dir"
-test -f "$save_dir/deployment_ids" || touch "$save_dir/deployment_ids"
-echo "$release_tag $deployment_id" >> "$save_dir/deployment_ids"
-echo "deployment ID $deployment_id for tag $release_tag saved in $save_dir/deployment_ids"
 
 signing_key="0802AB8C87B0B1AEC1C1C5871550FDBD6375C33B"
 echo ""
@@ -213,6 +209,16 @@ echo "If you need to retrieve the passphrase from such a password management too
 echo "do it now, and enter 'yes' fast on the following prompt so you can paste it in gpg-agent dialog."
 request_confirmation "create and sign tag $release_tag?"
 (cd $top ; git tag $release_tag -s -u $signing_key -m "Release Candidate $next_rc for version $release_version."; git tag -v $release_tag)
+
+# deploy maven artifacts to central portal
+request_confirmation "build and deploy maven artifacts to central portal?"
+(cd $top ; mvn clean ; LANG=C mvn site deploy -Prelease | tee $tmpdir/maven-deploy-output)
+deployment_id=$(sed -n 's,\[INFO\] *Deployment *\([-a-f0-9]*\) *' $tmpdir/maven-deploy-output)
+save_dir=${HOME}/.local/share/orekit-release-scripts
+test -d "$save_dir"                || mkdir -p "$save_dir"
+test -f "$save_dir/deployment-ids" || touch "$save_dir/deployment-ids"
+echo "$release_tag $deployment_id" >> "$save_dir/deployment-ids"
+echo "deployment ID $deployment_id for tag $release_tag saved in $save_dir/deployment-ids"
 
 # push to origin
 request_confirmation "push $release_branch branch and $release_tag tag to origin?"

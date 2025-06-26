@@ -36,6 +36,7 @@ central_portal_username=$(xsltproc $top/scripts/get-central-username.xsl $HOME/.
 test ! -z "central_portal_username" || complain "username for central portal not found in $HOME/.m2/settings.xml"
 central_portal_password=$(xsltproc $top/scripts/get-central-password.xsl $HOME/.m2/settings.xml)
 test ! -z "central_portal_password" || complain "password for central portal not found in $HOME/.m2/settings.xml"
+central_bearer=$(echo ${central_portal_username}:${central_portal_password} | base64)
 
 start_branch=$(cd $top ; git branch --show-current)
 echo "start branch is $start_branch"
@@ -55,14 +56,14 @@ release_tag="${release_version}-RC$last_rc"
 
 # delete maven artifacts to central portal
 save_dir=${HOME}/.local/share/orekit-release-scripts
-test -f "$save_dir/deployment_ids" || complain "$save_dir/deployment_ids" not found
-deployment_id=$(sed -n "s,^$release_tag \([^]*\)$,\1,p")
+test -f "$save_dir/deployment-ids" || complain "$save_dir/deployment-ids" not found
+deployment_id=$(sed -n "s,^$release_tag \([^]*\)$,\1,p" "$save_dir/deployment-ids")
 test ! -z "$deployment_id" || complain "deployment id for $release_tag not found"
 request_confirmation "delete maven artifacts for deployment id $deployment_id?"
 curl --request DELETE \
      --verbose \
-     --header "Authorization: Bearer $(echo ${central_portal_username}:${central_portal_password} | base64)" \
+     --header "Authorization: Bearer $central_bearer" \
      "https://central.sonatype.com/api/v1/publisher/deployment/$deployment_id"
 
 # clean up saved deployment id file
-sed -i "/^$release_tag .*/d" "$save_dir/deployment_ids"
+sed -i "/^$release_tag .*/d" "$save_dir/deployment-ids"

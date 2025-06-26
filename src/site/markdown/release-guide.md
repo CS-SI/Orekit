@@ -220,7 +220,8 @@ central portal in a staging area.
 It performs the release on a temporary branch that is merged only at
 the final step, and it automatically removes it without merging if
 something goes wrong before this final step, hence ensuring everything
-remains clean.
+remains clean. It will also delete the uploaded artifacts on central
+portal if something goes wrong after upload but before script completion.
 
 When releasing a major or minor version, the script will automatically
 post a vote thread to the forum Orekit community and PMC members
@@ -242,6 +243,7 @@ Here are the steps the script will perform on its own, asking
 for user confirmation before any commit:
 
     - perform safety checks (files and directories present, utilities available, java version)
+    - retrieve central portal credentials from `$HOME/.m2/settings.xml`
     - check if the release is a major, minor or patch release
       using the -SNAPSHOT version number from the current branch `pom.xml`
     - for major or minor release, create a release-X.Y branch from develop (reuse existing branch for patch release)
@@ -253,11 +255,10 @@ for user confirmation before any commit:
     - compute candidate release date 5 days in the future
     - update `changes.xml` with date and user-provided description and commit the change
     - update downloads and faq pages and commit the changes
-    - perform a complete build, including test and site generation, this can take a long time
     - merge release-X.Y-temporary branch into release-X.Y branch
     - delete release-X.Y-temporary branch
-    - deploy the maven artifacts to central portal
-    - save the deployment id in `$HOME/.local/share/orekit-release-scripts/deployment_ids` for future scripts
+    - perform a full build and deploy the maven artifacts to central portal
+    - save the deployment id in `$HOME/.local/share/orekit-release-scripts/deployment-ids` for future scripts
     - tag and sign the repository (the passphrase for the key should be asked at this stage)
     - push the branch and the tag to origin
     - if the release is a patch release, call immediately the `successful-vote.sh` script
