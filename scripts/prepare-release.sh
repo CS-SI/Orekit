@@ -1,6 +1,6 @@
 #!/bin/sh
 
-tmpdir=$(mktemp -d /tmp/orekit-release.XXXXXX)
+tmpdir=$(mktemp -d /tmp/orekit-prepare-release.XXXXXX)
 trap "rm -fr $tmpdir" 0
 trap "exit 1" 1 2 15
 
@@ -43,7 +43,7 @@ request_confirmation()
 top=$(cd $(dirname $0)/.. ; pwd)
 
 # safety checks
-for cmd in git sed curl xsltproc ; do
+for cmd in git sed xsltproc mvn tee sort tail ; do
     which -s $cmd || complain "$cmd command not found"
 done
 git -C "$top" rev-parse 2>/dev/null        || complain "$top does not contain a git repository"
@@ -53,12 +53,6 @@ test -f $HOME/.m2/settings.xml             || complain "$HOME/.m2/settings.xml n
 export JAVA_HOME=$(find_java_home 1.8)
 export PATH=${JAVA_HOME}/bin:$PATH
 echo "JAVA_HOME set to $JAVA_HOME"
-
-# get user credentials
-central_portal_username=$(xsltproc $top/scripts/get-central-username.xsl $HOME/.m2/settings.xml)
-test ! -z "central_portal_username" || complain "username for central portal not found in $HOME/.m2/settings.xml"
-central_portal_password=$(xsltproc $top/scripts/get-central-password.xsl $HOME/.m2/settings.xml)
-test ! -z "central_portal_password" || complain "password for central portal not found in $HOME/.m2/settings.xml"
 
 start_branch=$(cd $top ; git branch --show-current)
 echo "start branch is $start_branch"
@@ -111,19 +105,55 @@ echo
 request_confirmation "commit pom.xml?"
 (cd $top; git add pom.xml ; git commit -m "Dropped -SNAPSHOT in version number for official release.")
 
-# compute release date 5 days in the future
-release_date=$(date -d "+5 days" +"%Y-%m-%d")
+# compute release date in the future (1 hour allocated to build, and 5 days allocated to vote)
+vote_date=$(TZ=UTC date -d "+5 days 1 hour" +"%Y-%m-%dT%H:%M:%SZ")
+release_date=$(echo $vote_date | sed 's,T.*,,')
 
-# ask for release description
+if test "$release_type" = "patch" ; then
+    # patch release do not need release candidates
+    release_tag="$release_version"
+else
+    # compute release candidate number
+    last_rc="$(cd $top; git tag -l \"${release_version}-RC*\" | sed 's,.*-RC,,' | sort -n | tail -1)"
+    if test -z "$last_rc" ; then
+        next_rc=1
+    else
+        next_rc=$(expr $last_rc + 1)
+    fi
+    release_tag="${release_version}-RC$next_rc"
+fi
+
+# ask for release description (also used for the vote topic)
 release_description=""
+vote_topic="This is a VOTE in order to release version ${release_version} of the Orekit library.
+Version ${release_version} is a $'release_type} release.
+
+Highlights in the ${release version} release are:"
 while test -z "$release_description" ; do
-  echo "enter release description to be put in changes.xml (end by Ctrl-D)"
+  echo "enter release description to be put in both changes.xml and in the vote topic on the forum (end by Ctrl-D)"
   while IFS= read line ; do
       release_description="$release_description $line"
+      vote_topic="$vote_topic
+      - $line"
   done
   echo "description will be:"
   echo "$release_description"
-  read -p "do you agree with this description? (enter yes to continue, no to enter again the description) " answer
+  echo ""
+  echo ""
+  if test "$release_type" = "patch" ; then
+      echo "as this is a patch release, there will be no vote topic"
+  else
+      echo "vote topic will be:"
+      vote_topic="$vote_topic
+
+The release candidate $next_rc can be found in the gitlab repository
+as tag $release_tag in the $release_branch branch:
+    https://gitlab.orekit.org/orekit/orekit/tree/$release_tag
+
+the vote will be tallied at $vote_date (this is UTC time)"
+      echo "$vote_topic"
+  fi
+  read -p "do you agree with these description and vote topic? (enter yes to continue, no to enter again) " answer
   if "$answer" != "yes" ; then
     release_description=""
   fi
@@ -166,31 +196,42 @@ request_confirmation "please review generated site (javadoc, reports…)"
 
 # deploy maven artifacts to central portal
 request_confirmation "deploy maven artifacts to central portal?"
-(cd $top ; mvn deploy -Prelease)
+(cd $top ; mvn deploy -Prelease | tee $tmpdir/maven-deploy-output)
+deployment_id=$(sed -n 's,\[INFO\] *Deployment *\([-a-f0-9]*\) *' $tmpdir/maven-deploy-output)
+save_dir=${HOME}/.local/share/orekit-release-scripts
+test -d "$save_dir"                || mkdir -p "$save_dir"
+test -f "$save_dir/deployment_ids" || touch "$save_dir/deployment_ids"
+echo "$release_tag $deployment_id" >> "$save_dir/deployment_ids"
+echo "deployment ID $deployment_id for tag $release_tag saved in $save_dir/deployment_ids"
 
-if test "$release_type" = "patch" ; then
-    # patch release do not need release candidates
-    release_tag="$release_version"
-else
-    # compute RC number
-    last_tag="$(cd $top; git tag -l \"${release_version}-RC*\")"
-    if test -z "$last_tag" ; then
-        last_rc=0
-    else
-        last_rc=$(echo $last_tag | sed 's,.*-RC,,')
-    fi
-    next_rc=$(expr $last_rc + 1)
-    release_tag="${release_version}-RC$next_rc"
-fi
 signing_key="0802AB8C87B0B1AEC1C1C5871550FDBD6375C33B"
+echo ""
 echo "BEWARE! In the next step, the signing key will be used."
-echo "Gpg-agent will most likely display a dialog window that will PREVENT"
+echo "gpg-agent will most likely display a dialog window that will PREVENT"
 echo "retrieving the passphrase from password management tools like KeePassXC."
 echo "If you need to retrieve the passphrase from such a password management tool,"
 echo "do it now, and enter 'yes' fast on the following prompt so you can paste it in gpg-agent dialog."
 request_confirmation "create and sign tag $release_tag?"
-(cd $top ; git tag $release_tag -s -u $signing_key -m "Release Candidate $next_rc for version $release_version."; git tag -v $release_tag ; git push)
+(cd $top ; git tag $release_tag -s -u $signing_key -m "Release Candidate $next_rc for version $release_version."; git tag -v $release_tag)
 
 # push to origin
 request_confirmation "push $release_branch branch and $release_tag tag to origin?"
 (cd $top ; git push origin $release_branch $release_tag)
+
+if test "$release_type" = "patch" ; then
+    # for patch release, there are no votes, we jump directly to the publish step
+    sh successful-vote.sh
+else
+    # propose vote topic
+    echo "please go to https://forum.orekit.org/c/orekit-development/ and create a new topic with title"
+    echo ""
+    echo "[VOTE] Releasing Orekit ${release_version} from release candidate $next_rc"
+    echo ""
+    echo "and with content:"
+    echo ""
+    echo "$vote_topic"
+    echo ""
+    echo ""
+    echo "please ping PMC members so they are aware of the vote."
+    echo "Their vote is essential for a release as per project governance."
+fi
