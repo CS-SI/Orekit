@@ -128,7 +128,7 @@ release_description=""
 vote_topic="This is a VOTE in order to release version ${release_version} of the Orekit library.
 Version ${release_version} is a $'release_type} release.
 
-Highlights in the ${release version} release are:"
+Highlights in the ${release_version} release are:"
 while test -z "$release_description" ; do
   echo "enter release description to be put in both changes.xml and in the vote topic on the forum (end by Ctrl-D)"
   while IFS= read line ; do
@@ -154,7 +154,7 @@ the vote will be tallied at $vote_date (this is UTC time)"
       echo "$vote_topic"
   fi
   read -p "do you agree with these description and vote topic? (enter yes to continue, no to enter again) " answer
-  if "$answer" != "yes" ; then
+  if test "$answer" != "yes" ; then
     release_description=""
   fi
 done
