@@ -213,7 +213,7 @@ request_confirmation "create and sign tag $release_tag?"
 # deploy maven artifacts to central portal
 request_confirmation "build and deploy maven artifacts to central portal?"
 (cd $top ; mvn clean ; LANG=C mvn site deploy -Prelease | tee $tmpdir/maven-deploy-output)
-deployment_id=$(sed -n 's,\[INFO\] *Deployment *\([-a-fA-F0-9]*\) *.*,\1,p' $tmpdir/maven-deploy-output)
+deployment_id=$(sed -n 's,.*INFO.* *Deployment *\([-a-fA-F0-9]*\) has been validated.*,\1,p' $tmpdir/maven-deploy-output)
 save_dir=${HOME}/.local/share/orekit-release-scripts
 test -d "$save_dir"                || mkdir -p "$save_dir"
 test -f "$save_dir/deployment-ids" || touch "$save_dir/deployment-ids"
