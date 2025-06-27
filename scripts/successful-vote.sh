@@ -58,7 +58,7 @@ test -z "$(cd $top; git tag -l \"${release_tag}\")" || complain "tag ${release_t
 # publish maven artifacts to central portal
 save_dir=${HOME}/.local/share/orekit-release-scripts
 test -f "$save_dir/deployment-ids" || complain "$save_dir/deployment-ids" not found
-deployment_id=$(sed -n "s,^$rc_tag \([^]*\)$,\1,p" "$save_dir/deployment-ids")
+deployment_id=$(sed -n "s,^$rc_tag  \([^ ]*\)$,\1,p" "$save_dir/deployment-ids")
 test ! -z "$deployment_id" || complain "deployment id for $rc_tag not found"
 request_confirmation "publish maven artifacts for deployment id $deployment_id?"
 curl --request POST \

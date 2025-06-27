@@ -57,7 +57,7 @@ release_tag="${release_version}-RC$last_rc"
 # delete maven artifacts to central portal
 save_dir=${HOME}/.local/share/orekit-release-scripts
 test -f "$save_dir/deployment-ids" || complain "$save_dir/deployment-ids" not found
-deployment_id=$(sed -n "s,^$release_tag \([^]*\)$,\1,p" "$save_dir/deployment-ids")
+deployment_id=$(sed -n "s,^$release_tag *\([^ ]*\)$,\1,p" "$save_dir/deployment-ids")
 test ! -z "$deployment_id" || complain "deployment id for $release_tag not found"
 request_confirmation "delete maven artifacts for deployment id $deployment_id?"
 curl --request DELETE \
