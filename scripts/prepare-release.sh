@@ -121,7 +121,7 @@ if test "$release_type" = "patch" ; then
     release_tag="$release_version"
 else
     # compute release candidate number
-    last_rc="$(cd $top; git tag -l \"${release_version}-RC*\" | sed 's,.*-RC,,' | sort -n | tail -1)"
+    last_rc=$(cd $top; git tag -l ${release_version}-RC* | sed 's,.*-RC,,' | sort -n | tail -1)
     if test -z "$last_rc" ; then
         next_rc=1
     else

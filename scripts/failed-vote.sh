@@ -50,7 +50,7 @@ release_branch=$(echo $release_version | sed 's,\([0-9]\+.[0-9]\+\)[.0-9]*,relea
 test "$start_branch" = "$release_branch" || complain "$start_branch is not a release branch"
 
 # check tag for failed release candidate
-last_rc="$(cd $top; git tag -l \"${release_version}-RC*\" | sed 's,.*-RC,,' | sort -n | tail -1)"
+last_rc=$(cd $top; git tag -l ${release_version}-RC* | sed 's,.*-RC,,' | sort -n | tail -1)
 test ! -z "$last_rc" || complain "there was no release candidate for $release_version"
 release_tag="${release_version}-RC$last_rc"
 
