@@ -61,7 +61,6 @@ deployment_id=$(sed -n "s,^$release_tag *\([^ ]*\)$,\1,p" "$save_dir/deployment-
 test ! -z "$deployment_id" || complain "deployment id for $release_tag not found"
 request_confirmation "delete maven artifacts for deployment id $deployment_id?"
 curl --request DELETE \
-     --verbose \
      --header "Authorization: Bearer $central_bearer" \
      "https://central.sonatype.com/api/v1/publisher/deployment/$deployment_id"
 
