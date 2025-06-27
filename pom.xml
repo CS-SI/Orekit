@@ -24,7 +24,7 @@
     <orekit.spotbugs-maven-plugin.version>4.2.3</orekit.spotbugs-maven-plugin.version>
     <orekit.jacoco-maven-plugin.version>0.8.12</orekit.jacoco-maven-plugin.version>
     <orekit.maven-bundle-plugin.version>5.1.9</orekit.maven-bundle-plugin.version>
-    <orekit.maven-changes-plugin.version>2.12.1</orekit.maven-changes-plugin.version>
+    <orekit.maven-changes-plugin.version>3.0.0-M3</orekit.maven-changes-plugin.version>
     <orekit.maven-checkstyle-plugin.version>3.6.0</orekit.maven-checkstyle-plugin.version>
     <!-- Checkstyle 9.3 seems to be the last version usable with JDK 8 -->
     <orekit.checkstyle.version>9.3</orekit.checkstyle.version>
@@ -36,7 +36,7 @@
     <orekit.plantuml-maven-plugin.version>1.2</orekit.plantuml-maven-plugin.version>
     <orekit.plantuml.version>1.2025.2</orekit.plantuml.version>
     <orekit.maven-resources-plugin.version>3.3.1</orekit.maven-resources-plugin.version>
-    <orekit.maven-site-plugin.version>3.12.1</orekit.maven-site-plugin.version>
+    <orekit.maven-site-plugin.version>3.21.0</orekit.maven-site-plugin.version>
     <orekit.maven-project-info-reports-plugin.version>3.9.0</orekit.maven-project-info-reports-plugin.version>
     <orekit.maven-wagon-ssh-external-plugin.version>3.5.3</orekit.maven-wagon-ssh-external-plugin.version>
     <orekit.maven-source-plugin.version>3.3.1</orekit.maven-source-plugin.version>
@@ -950,7 +950,7 @@
         <reportSets>
           <reportSet>
             <reports>
-              <report>changes-report</report>
+              <report>changes</report>
             </reports>
           </reportSet>
         </reportSets>
