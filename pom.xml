@@ -40,9 +40,7 @@
     <orekit.maven-project-info-reports-plugin.version>3.9.0</orekit.maven-project-info-reports-plugin.version>
     <orekit.maven-wagon-ssh-external-plugin.version>3.5.3</orekit.maven-wagon-ssh-external-plugin.version>
     <orekit.maven-source-plugin.version>3.3.1</orekit.maven-source-plugin.version>
-    <!-- Surefire 2.22.2 is the last to support CentOS/RedHat 7 due to
-         https://issues.apache.org/jira/browse/SUREFIRE-1628 -->
-    <orekit.maven-surefire-plugin.version>2.22.2</orekit.maven-surefire-plugin.version>
+    <orekit.maven-surefire-plugin.version>3.5.3</orekit.maven-surefire-plugin.version>
     <orekit.maven-surefire-report-plugin.version>3.5.2</orekit.maven-surefire-report-plugin.version>
     <!-- Mockito 4.11.0 is the last supported version with java 8
          https://github.com/mockito/mockito/releases -->
@@ -55,7 +53,7 @@
     <orekit.mathjax.config>&lt;script type=&quot;text/x-mathjax-config&quot;&gt;MathJax.Hub.Config({ TeX: { extensions: [&quot;autoload.js&quot;]}});&lt;/script&gt;</orekit.mathjax.config>
     <orekit.mathjax.enable>&lt;script type=&quot;text/javascript&quot; src=&quot;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML&quot;&gt;&lt;/script&gt;</orekit.mathjax.enable>
     <orekit.hipparchus.version>4.0.1</orekit.hipparchus.version>
-    <orekit.junit.version>5.11.4</orekit.junit.version>
+    <orekit.junit.version>5.13.2</orekit.junit.version>
     <orekit.hamcrest.version>3.0</orekit.hamcrest.version>
     <orekit.compiler.source>1.8</orekit.compiler.source>
     <orekit.compiler.target>1.8</orekit.compiler.target>
@@ -491,22 +489,9 @@
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
+      <artifactId>junit-jupiter</artifactId>
       <version>${orekit.junit.version}</version>
       <optional>false</optional>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
-      <version>${orekit.junit.version}</version>
-      <optional>false</optional>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-params</artifactId>
-      <version>${orekit.junit.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -516,12 +501,6 @@
       <optional>false</optional>
       <scope>test</scope>
     </dependency>
-      <dependency>
-          <groupId>junit</groupId>
-          <artifactId>junit</artifactId>
-          <version>4.13.2</version>
-          <scope>test</scope>
-      </dependency>
   </dependencies>
 
   <build>
