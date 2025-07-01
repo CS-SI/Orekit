@@ -127,14 +127,74 @@ public enum RinexLabels {
     /** GLONASS phase bias corrections. */
     GLONASS_COD_PHS_BIS("GLONASS COD/PHS/BIS"),
 
-    /** Leap seconds. */
+    /** Time system used for time tags.
+     * @since 14.0
+     */
+    TIME_SYSTEM_ID("TIME SYSTEM ID"),
+
+    /** Leap seconds separating UTC and TAI. */
     LEAP_SECONDS("LEAP SECONDS"),
+
+    /** Leap seconds separating UTC and GNSS system times.
+     * @since 14.0
+     */
+    LEAP_SECONDS_GNSS("LEAP SECONDS GNSS"),
 
     /** Number of satellites. */
     NB_OF_SATELLITES("# OF SATELLITES"),
 
     /** PRN and number of observations . */
     PRN_NB_OF_OBS("PRN / # OF OBS"),
+
+    /** Number of different clock data types.
+     * @since 14.0
+     */
+    NB_TYPES_OF_DATA("# / TYPES OF DATA"),
+
+    /** 4-character or 9-character site ID.
+     * @since 14.0
+     */
+    STATION_NAME_NUM("STATION NAME / NUM"),
+
+    /** Unique identifier for external reference clock.
+     * @since 14.0
+     */
+    STATION_CLK_REF("STATION CLK REF"),
+
+    /** Name of Analysis Center.
+     * @since 14.0
+     */
+    ANALYSIS_CENTER("ANALYSIS CENTER"),
+
+    /** Number of analysis clock references.
+     * @since 14.0
+     */
+    NB_OF_CLK_REF("# OF CLK REF"),
+
+    /** List of the analysis clock references.
+     * @since 14.0
+     */
+    ANALYSIS_CLK_REF("ANALYSIS CLK REF"),
+
+    /** Number of receivers included in the clock data records.
+     * @since 14.0
+     */
+    NB_OF_SOLN_STA_TRF("# OF SOLN STA / TRF"),
+
+    /** Solution station data.
+     * @since 14.0
+     */
+    SOLN_STA_NAME_NUM("SOLN STA NAME / NUM"),
+
+    /** Number of different satellites in the clock data records.
+     * @since 14.0
+     */
+    NB_OF_SOLN_SATS("# OF SOLN SATS"),
+
+    /** List of all satellites reported in this file.
+     * @since 14.0
+     */
+    PRN_LIST("PRN LIST"),
 
     /** End of header. */
     END("END OF HEADER");

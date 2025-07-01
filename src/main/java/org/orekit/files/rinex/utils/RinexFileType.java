@@ -28,7 +28,12 @@ public enum RinexFileType {
     OBSERVATION("O"),
 
     /** Rinex navigation (G is for Glonass navigation, in Rinex 2.X). */
-    NAVIGATION("N", "G");
+    NAVIGATION("N", "G"),
+
+    /** Rinex Clock.
+     * @since 14.0
+     */
+    CLOCK("O");
 
     /** Parsing map. */
     private static final Map<String, RinexFileType> KEYS_MAP = new HashMap<>();

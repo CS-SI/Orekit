@@ -39,9 +39,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.AppliedDCBS;
 import org.orekit.files.rinex.AppliedPCVS;
-import org.orekit.files.rinex.clock.RinexClock.ClockDataType;
-import org.orekit.files.rinex.clock.RinexClock.Receiver;
-import org.orekit.files.rinex.clock.RinexClock.ReferenceClock;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.IGSUtils;
 import org.orekit.gnss.ObservationType;
@@ -324,7 +321,7 @@ public class RinexClockParser {
                         throw new OrekitException(OrekitMessages.CLOCK_FILE_UNSUPPORTED_VERSION, version);
                     }
 
-                    pi.file.setFormatVersion(version);
+                    pi.file.getHeader().setFormatVersion(version);
 
                     // Second element is clock file indicator, not used here
 
@@ -335,7 +332,7 @@ public class RinexClockParser {
                     if (!satelliteSystemString.isEmpty()) {
                         // Record satellite system and default time system in clock file object
                         final SatelliteSystem satelliteSystem = SatelliteSystem.parseSatelliteSystem(satelliteSystemString);
-                        pi.file.setSatelliteSystem(satelliteSystem);
+                        pi.file.getHeader().setSatelliteSystem(satelliteSystem);
                         if (satelliteSystem.getObservationTimeScale() != null) {
                             pi.file.setTimeScale(satelliteSystem.getObservationTimeScale().getTimeScale(pi.timeScales));
                         }
@@ -358,16 +355,16 @@ public class RinexClockParser {
 
                 // First element of the name of the generating program
                 final String programName = line.substring(0, 20).trim();
-                pi.file.setProgramName(programName);
+                pi.file.getHeader().setProgramName(programName);
 
                 // Second element is the name of the emiting agency
-                final String agencyName = line.substring(20, 40).trim();
-                pi.file.setAgencyName(agencyName);
+                final String runByName = line.substring(20, 40).trim();
+                pi.file.getHeader().setRunByName(runByName);
 
                 // Third element is date
                 String dateString = "";
 
-                if (pi.file.getFormatVersion() < 3.04) {
+                if (pi.file.getHeader().getFormatVersion() < 3.04) {
 
                     // Date string location before 3.04 format version
                     dateString = line.substring(40, 60);
@@ -392,7 +389,7 @@ public class RinexClockParser {
             @Override
             public void parse(final String line, final ParseInfo pi) {
 
-                if (pi.file.getFormatVersion() < 3.04) {
+                if (pi.file.getHeader().getFormatVersion() < 3.04) {
                     pi.file.addComment(line.substring(0, 60).trim());
                 } else {
                     pi.file.addComment(line.substring(0, 65).trim());
@@ -464,8 +461,7 @@ public class RinexClockParser {
                     // Only element is the time system code
                     final TimeSystem timeSystem = TimeSystem.parseTimeSystem(scanner.next());
                     final TimeScale timeScale = timeSystem.getTimeScale(pi.timeScales);
-                    pi.file.setTimeSystem(timeSystem);
-                    pi.file.setTimeScale(timeScale);
+                    pi.file.getHeader().setTimeSystem(timeSystem);
                 }
             }
 
@@ -482,8 +478,8 @@ public class RinexClockParser {
                      Scanner scanner = s2.useLocale(Locale.US)) {
 
                     // Only element is the number of leap seconds
-                    final int numberOfLeapSeconds = scanner.nextInt();
-                    pi.file.setNumberOfLeapSeconds(numberOfLeapSeconds);
+                    final int leapSeconds = scanner.nextInt();
+                    pi.file.getHeader().setLeapSeconds(leapSeconds);
                 }
             }
 
@@ -500,8 +496,8 @@ public class RinexClockParser {
                      Scanner scanner = s2.useLocale(Locale.US)) {
 
                     // Only element is the number of leap seconds GNSS
-                    final int numberOfLeapSecondsGNSS = scanner.nextInt();
-                    pi.file.setNumberOfLeapSecondsGNSS(numberOfLeapSecondsGNSS);
+                    final int leapSecondsGNSS = scanner.nextInt();
+                    pi.file.getHeader().setLeapSecondsGNSS(leapSecondsGNSS);
                 }
             }
 
@@ -522,8 +518,8 @@ public class RinexClockParser {
                     final String progDCBS = line.substring(2, 20).trim();
 
                     // Third element is the source of the corrections
-                    String sourceDCBS = "";
-                    if (pi.file.getFormatVersion() < 3.04) {
+                    final String sourceDCBS;
+                    if (pi.file.getHeader().getFormatVersion() < 3.04) {
                         sourceDCBS = line.substring(19, 60).trim();
                     } else {
                         sourceDCBS = line.substring(22, 65).trim();
@@ -531,7 +527,7 @@ public class RinexClockParser {
 
                     // Check if sought fields were not actually blanks
                     if (!progDCBS.isEmpty()) {
-                        pi.file.addAppliedDCBS(new AppliedDCBS(satelliteSystem, progDCBS, sourceDCBS));
+                        pi.file.getHeader().addAppliedDCBS(new AppliedDCBS(satelliteSystem, progDCBS, sourceDCBS));
                     }
                 }
             }
@@ -554,8 +550,8 @@ public class RinexClockParser {
                     final String progPCVS = line.substring(2, 20).trim();
 
                     // Third element is the source of the corrections
-                    String sourcePCVS = "";
-                    if (pi.file.getFormatVersion() < 3.04) {
+                    final String sourcePCVS;
+                    if (pi.file.getHeader().getFormatVersion() < 3.04) {
                         sourcePCVS = line.substring(19, 60).trim();
                     } else {
                         sourcePCVS = line.substring(22, 65).trim();
@@ -563,7 +559,7 @@ public class RinexClockParser {
 
                     // Check if sought fields were not actually blanks
                     if (!progPCVS.isEmpty() || !sourcePCVS.isEmpty()) {
-                        pi.file.addAppliedPCVS(new AppliedPCVS(satelliteSystem, progPCVS, sourcePCVS));
+                        pi.file.getHeader().addAppliedPCVS(new AppliedPCVS(satelliteSystem, progPCVS, sourcePCVS));
                     }
                 }
             }
@@ -586,7 +582,7 @@ public class RinexClockParser {
                     // Loop over data types
                     for (int i = 0; i < numberOfDifferentDataTypes; i++) {
                         final ClockDataType dataType = ClockDataType.parseClockDataType(scanner.next());
-                        pi.file.addClockDataType(dataType);
+                        pi.file.getHeader().addClockDataType(dataType);
                     }
                 }
             }
@@ -605,11 +601,11 @@ public class RinexClockParser {
 
                     // First element is the station clock reference ID
                     final String stationName = scanner.next();
-                    pi.file.setStationName(stationName);
+                    pi.file.getHeader().setStationName(stationName);
 
                     // Second element is the station clock reference identifier
                     final String stationIdentifier = scanner.next();
-                    pi.file.setStationIdentifier(stationIdentifier);
+                    pi.file.getHeader().setStationIdentifier(stationIdentifier);
                 }
             }
 
@@ -621,10 +617,10 @@ public class RinexClockParser {
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
-                if (pi.file.getFormatVersion() < 3.04) {
-                    pi.file.setExternalClockReference(line.substring(0, 60).trim());
+                if (pi.file.getHeader().getFormatVersion() < 3.04) {
+                    pi.file.getHeader().setExternalClockReference(line.substring(0, 60).trim());
                 } else {
-                    pi.file.setExternalClockReference(line.substring(0, 65).trim());
+                    pi.file.getHeader().setExternalClockReference(line.substring(0, 65).trim());
                 }
             }
 
@@ -639,16 +635,16 @@ public class RinexClockParser {
 
                 // First element is IGS AC designator
                 final String analysisCenterID = line.substring(0, 3).trim();
-                pi.file.setAnalysisCenterID(analysisCenterID);
+                pi.file.getHeader().setAnalysisCenterID(analysisCenterID);
 
                 // Then, the full name of the analysis center
-                String analysisCenterName = "";
-                if (pi.file.getFormatVersion() < 3.04) {
+                final String analysisCenterName;
+                if (pi.file.getHeader().getFormatVersion() < 3.04) {
                     analysisCenterName = line.substring(5, 60).trim();
                 } else {
                     analysisCenterName = line.substring(5, 65).trim();
                 }
-                pi.file.setAnalysisCenterName(analysisCenterName);
+                pi.file.getHeader().setAnalysisCenterName(analysisCenterName);
             }
 
         },
@@ -665,8 +661,8 @@ public class RinexClockParser {
 
                     if (!pi.pendingReferenceClocks.isEmpty()) {
                         // Modify time span map of the reference clocks to accept the pending reference clock
-                        pi.file.addReferenceClockList(pi.pendingReferenceClocks,
-                                                      pi.referenceClockStartDate);
+                        pi.file.getHeader().addReferenceClockList(pi.pendingReferenceClocks,
+                                                                  pi.referenceClockStartDate);
                         pi.pendingReferenceClocks = new ArrayList<>();
                     }
 
@@ -692,8 +688,8 @@ public class RinexClockParser {
                         final int endDay    = scanner.nextInt();
                         final int endHour   = scanner.nextInt();
                         final int endMin    = scanner.nextInt();
-                        double endSec       = 0.0;
-                        if (pi.file.getFormatVersion() < 3.04) {
+                        final double endSec;
+                        if (pi.file.getHeader().getFormatVersion() < 3.04) {
                             endSec = Double.parseDouble(line.substring(51, 60));
                         } else {
                             endSec = scanner.nextDouble();
@@ -758,7 +754,7 @@ public class RinexClockParser {
 
                     // Second element is the frame linked to given receiver positions
                     final String frameString = scanner.next();
-                    pi.file.setFrameName(frameString);
+                    pi.file.getHeader().setFrameName(frameString);
                 }
             }
 
@@ -772,21 +768,21 @@ public class RinexClockParser {
             public void parse(final String line, final ParseInfo pi) {
 
                 // First element is the receiver designator
-                String designator = line.substring(0, 10).trim();
+                final String designator;
 
                 // Second element is the receiver identifier
-                String receiverIdentifier = line.substring(10, 30).trim();
+                final String receiverIdentifier;
 
                 // Third element if X coordinates, in millimeters in the file frame.
-                String xString = "";
+                final String xString;
 
                 // Fourth element if Y coordinates, in millimeters in the file frame.
-                String yString = "";
+                final String yString;
 
                 // Fifth element if Z coordinates, in millimeters in the file frame.
-                String zString = "";
+                final String zString;
 
-                if (pi.file.getFormatVersion() < 3.04) {
+                if (pi.file.getHeader().getFormatVersion() < 3.04) {
                     designator = line.substring(0, 4).trim();
                     receiverIdentifier = line.substring(5, 25).trim();
                     xString = line.substring(25, 36).trim();
@@ -805,7 +801,7 @@ public class RinexClockParser {
                 final double z = MILLIMETER * Double.parseDouble(zString);
 
                 final Receiver receiver = new Receiver(designator, receiverIdentifier, x, y, z);
-                pi.file.addReceiver(receiver);
+                pi.file.getHeader().addReceiver(receiver);
 
             }
 
@@ -840,7 +836,7 @@ public class RinexClockParser {
 
                     // Browse the line until its end
                     while (!prn.equals("PRN")) {
-                        pi.file.addSatellite(prn);
+                        pi.file.getHeader().addSatellite(prn);
                         prn = scanner.next();
                     }
                 }
@@ -856,7 +852,7 @@ public class RinexClockParser {
             public void parse(final String line, final ParseInfo pi) {
                 if (!pi.pendingReferenceClocks.isEmpty()) {
                     // Modify time span map of the reference clocks to accept the pending reference clock
-                    pi.file.addReferenceClockList(pi.pendingReferenceClocks, pi.referenceClockStartDate);
+                    pi.file.getHeader().addReferenceClockList(pi.pendingReferenceClocks, pi.referenceClockStartDate);
                 }
             }
 
@@ -910,14 +906,14 @@ public class RinexClockParser {
                     // Check if continuation line is required
                     if (pi.currentNumberOfValues <= 2) {
                         // No continuation line is required
-                        pi.file.addClockData(pi.currentName, pi.file.new ClockDataLine(pi.currentDataType,
-                                                                                       pi.currentName,
-                                                                                       pi.currentDateComponents,
-                                                                                       pi.currentTimeComponents,
-                                                                                       pi.currentNumberOfValues,
-                                                                                       pi.currentDataValues[0],
-                                                                                       pi.currentDataValues[1],
-                                                                                       0.0, 0.0, 0.0, 0.0));
+                        pi.file.addClockData(pi.currentName, new ClockDataLine(pi.currentDataType,
+                                                                               pi.currentName,
+                                                                               pi.currentDateComponents,
+                                                                               pi.currentTimeComponents,
+                                                                               pi.currentNumberOfValues,
+                                                                               pi.currentDataValues[0],
+                                                                               pi.currentDataValues[1],
+                                                                               0.0, 0.0, 0.0, 0.0));
                     }
                 }
             }
@@ -948,17 +944,17 @@ public class RinexClockParser {
                     }
 
                     // Add clock data line
-                    pi.file.addClockData(pi.currentName, pi.file.new ClockDataLine(pi.currentDataType,
-                                                                                   pi.currentName,
-                                                                                   pi.currentDateComponents,
-                                                                                   pi.currentTimeComponents,
-                                                                                   pi.currentNumberOfValues,
-                                                                                   pi.currentDataValues[0],
-                                                                                   pi.currentDataValues[1],
-                                                                                   pi.currentDataValues[2],
-                                                                                   pi.currentDataValues[3],
-                                                                                   pi.currentDataValues[4],
-                                                                                   pi.currentDataValues[5]));
+                    pi.file.addClockData(pi.currentName, new ClockDataLine(pi.currentDataType,
+                                                                           pi.currentName,
+                                                                           pi.currentDateComponents,
+                                                                           pi.currentTimeComponents,
+                                                                           pi.currentNumberOfValues,
+                                                                           pi.currentDataValues[0],
+                                                                           pi.currentDataValues[1],
+                                                                           pi.currentDataValues[2],
+                                                                           pi.currentDataValues[3],
+                                                                           pi.currentDataValues[4],
+                                                                           pi.currentDataValues[5]));
 
                 }
             }
@@ -1067,14 +1063,14 @@ public class RinexClockParser {
                 // Format is not handled or date is missing. Do nothing...
             }
 
-            pi.file.setCreationDateString(date);
-            pi.file.setCreationTimeString(time);
-            pi.file.setCreationTimeZoneString(zone);
+            pi.file.getHeader().setCreationDateString(date);
+            pi.file.getHeader().setCreationTimeString(time);
+            pi.file.getHeader().setCreationTimeZoneString(zone);
 
             if (dateComponents != null) {
-                pi.file.setCreationDate(new AbsoluteDate(dateComponents,
-                                                         timeComponents,
-                                                         TimeSystem.parseTimeSystem(zone).getTimeScale(pi.timeScales)));
+                pi.file.getHeader().setCreationDate(new AbsoluteDate(dateComponents,
+                                                                     timeComponents,
+                                                                    TimeSystem.parseTimeSystem(zone).getTimeScale(pi.timeScales)));
             }
         }
     }
