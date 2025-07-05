@@ -19,9 +19,11 @@ package org.orekit.propagation.numerical;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.QRDecomposition;
 import org.hipparchus.linear.RealMatrix;
-import org.hipparchus.linear.RealVector;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
@@ -36,13 +38,13 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.DataDictionary;
-import org.orekit.utils.DerivativeStateUtils;
+import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -167,22 +169,34 @@ class SwitchEventHandler implements EventHandler {
      * @return updated state
      */
     private SpacecraftState updateState(final SpacecraftState stateAtSwitch) {
+        final RealMatrix factorMatrix = computeUpdateMatrix(stateAtSwitch);
+        // update STM
         final String stmName = matricesHarvester.getStmName();
         final RealMatrix oldStm = matricesHarvester.toSquareMatrix(stateAtSwitch.getAdditionalState(stmName));
-        final RealMatrix jacobian = updateStm(stateAtSwitch, oldStm);
+        final RealMatrix stm = factorMatrix.multiply(oldStm);
         final DataDictionary additionalData = new DataDictionary(stateAtSwitch.getAdditionalDataValues());
         additionalData.remove(stmName);
-        additionalData.put(stmName, matricesHarvester.toArray(jacobian.getSubMatrix(0, 6, 0, 6).getData()));
+        additionalData.put(stmName, matricesHarvester.toArray(stm.getData()));
+        // update model parameters Jacobian if present
+        if (!matricesHarvester.getJacobiansColumnsNames().isEmpty()) {
+            final RealMatrix oldJacobian = matricesHarvester.getParametersJacobian(stateAtSwitch);
+            final RealMatrix jacobian = factorMatrix.multiply(oldJacobian);
+            int index = 0;
+            for (final String parameterName : matricesHarvester.getJacobiansColumnsNames()) {
+                additionalData.remove(parameterName);
+                additionalData.put(parameterName, jacobian.getColumn(index));
+                index++;
+            }
+        }
         return stateAtSwitch.withAdditionalData(additionalData);
     }
 
     /**
-     * Update STM.
+     * Compute matrix used in product to update STM.
      * @param state state
-     * @param stm State Transition Matrix immediately before switch
-     * @return updated STM
+     * @return factor matrix
      */
-    private RealMatrix updateStm(final SpacecraftState state, final RealMatrix stm) {
+    private RealMatrix computeUpdateMatrix(final SpacecraftState state) {
         final double twoThreshold = switchFieldDetector.getThreshold().getValue() * 2.;
         final double dt = isForward ? -twoThreshold : twoThreshold;
         final SpacecraftState stateBefore = shift(state, dt);
@@ -191,16 +205,18 @@ class SwitchEventHandler implements EventHandler {
         final double[] derivativesAfter = timeDerivativesEquations.computeTimeDerivatives(stateAfter);
         final double[] deltaDerivatives = new double[7];
         for (int i = 3; i < 7; i++) {
-            deltaDerivatives[i] = derivativesAfter[i] - derivativesBefore[i];
+            deltaDerivatives[i] = derivativesBefore[i] - derivativesAfter[i];
         }
         final Gradient g = evaluateG(state, derivativesBefore[6]);
-        final double gLastDerivative = g.getPartialDerivative(7);
-        final double gDot = isForward ? gLastDerivative : -gLastDerivative;
-        final double[] gGradientState = Arrays.copyOfRange(g.getGradient(), 0, 7);
-        final RealVector lhs = MatrixUtils.createRealVector(deltaDerivatives);
-        final RealVector rhs = MatrixUtils.createRealVector(gGradientState).mapMultiply(1. / gDot);
-        final RealMatrix factorMatrix = MatrixUtils.createRealIdentityMatrix(7).add(lhs.outerProduct(rhs));
-        return factorMatrix.multiply(stm);
+        final RealMatrix matrixToInverse = MatrixUtils.createRealIdentityMatrix(8);
+        matrixToInverse.setRow(7, g.getGradient());
+        final RealMatrix inverted = new QRDecomposition(matrixToInverse).getSolver().getInverse();
+        final RealMatrix lhs = MatrixUtils.createRealIdentityMatrix(8);
+        for (int i = 0; i < 7; i++) {
+            lhs.setEntry(i, 7, deltaDerivatives[i]);
+        }
+        final RealMatrix product = lhs.multiply(inverted);
+        return product.getSubMatrix(0, 6, 0, 6);
     }
 
     /**
@@ -250,15 +266,25 @@ class SwitchEventHandler implements EventHandler {
      * @return g in Taylor algebra
      */
     private Gradient evaluateG(final SpacecraftState state, final double massRate) {
-        Gradient time = Gradient.variable(8, 7, 0);
-        if (!isForward) {
-            time = time.negate();
-        }
-        final GradientField field = time.getField();
-        FieldSpacecraftState<Gradient> fieldState = DerivativeStateUtils.buildSpacecraftStateGradient(field,
-                state, attitudeProvider);
-        fieldState = fieldState.shiftedBy(time);
-        fieldState = fieldState.withMass(fieldState.getMass().add(time.multiply(massRate)));
+        final int freeParameters = 8;
+        final Gradient dt = Gradient.variable(freeParameters, 7, 0);
+        final GradientField field = dt.getField();
+        final Vector3D position = state.getPosition();
+        final Vector3D velocity = state.getVelocity();
+        final FieldVector3D<Gradient> fieldPosition = new FieldVector3D<>(Gradient.variable(freeParameters, 0, position.getX()),
+                Gradient.variable(freeParameters, 1, position.getY()),
+                Gradient.variable(freeParameters, 2, position.getZ())).add(new FieldVector3D<>(field,
+                velocity).scalarMultiply(dt));
+        final FieldVector3D<Gradient> fieldVelocity = new FieldVector3D<>(Gradient.variable(freeParameters, 3, velocity.getX()),
+                Gradient.variable(freeParameters, 4, velocity.getY()),
+                Gradient.variable(freeParameters, 5, velocity.getZ())).add(new FieldVector3D<>(field,
+                state.getPVCoordinates().getAcceleration()).scalarMultiply(dt));
+        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(dt.getField(), state.getDate()).shiftedBy(dt);
+        final FieldAbsolutePVCoordinates<Gradient> fieldAbsolutePVCoordinates = new FieldAbsolutePVCoordinates<>(
+                state.getFrame(), fieldDate, fieldPosition, fieldVelocity);
+        final Gradient fieldMass = Gradient.variable(freeParameters, 6, state.getMass()).add(dt.multiply(massRate));
+        final FieldSpacecraftState<Gradient> fieldState = new FieldSpacecraftState<>(fieldAbsolutePVCoordinates)
+                .withMass(fieldMass);
         return switchFieldDetector.g(fieldState);
     }
 
