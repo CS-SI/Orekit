@@ -23,14 +23,12 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.QRDecomposition;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.ODEIntegrator;
-import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
@@ -57,8 +55,10 @@ import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
+import org.orekit.propagation.events.DetectorModifier;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.ParameterDrivenDateIntervalDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.StateMapper;
@@ -74,7 +74,6 @@ import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -868,12 +867,22 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         final double[][] jacobian = new double[6][6];
         getOrbitType().convertType(state.getOrbit()).getJacobianWrtCartesian(getPositionAngleType(), jacobian);
         dYdC.setSubMatrix(jacobian, 0, 0);
-        final DecompositionSolver solver = new QRDecomposition(dYdC, THRESHOLD).getSolver();
+        final DecompositionSolver solver = getSolver(dYdC);
         final double[] column = solver.solve(MatrixUtils.createRealVector(dYdQ)).toArray();
 
         // set additional state
         setInitialState(state.addAdditionalData(columnName, column));
 
+    }
+
+    /**
+     * Method to get a linear system solver.
+     * @param matrix matrix involved in linear systems
+     * @return solver
+     * @since 13.1
+     */
+    private DecompositionSolver getSolver(final RealMatrix matrix) {
+        return new QRDecomposition(matrix, THRESHOLD).getSolver();
     }
 
     /** {@inheritDoc} */
@@ -914,6 +923,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         }
 
         /** {@inheritDoc} */
+        @Override
         public SpacecraftState mapArrayToState(final AbsoluteDate date, final double[] y, final double[] yDot,
                                                final PropagationType type) {
             // the parameter type is ignored for the Numerical Propagator
@@ -972,135 +982,102 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     /** {@inheritDoc} */
     protected MainStateEquations getMainStateEquations(final ODEIntegrator integrator) {
-        return new Main(integrator);
+        return new Main(integrator, getOrbitType(), getPositionAngleType(), getAllForceModels());
     }
 
     /** Internal class for osculating parameters integration. */
-    private class Main implements MainStateEquations, TimeDerivativesEquations {
-
-        /** Derivatives array. */
-        private final double[] yDot;
-
-        /** Current state. */
-        private SpacecraftState currentState;
-
-        /** Jacobian of the orbital parameters with respect to the Cartesian parameters. */
-        private final double[][] jacobian;
+    private class Main extends NumericalTimeDerivativesEquations implements MainStateEquations {
 
         /** Flag keeping track whether Jacobian matrix needs to be recomputed or not. */
-        private boolean recomputingJacobian;
+        private final boolean recomputingJacobian;
 
         /** Simple constructor.
          * @param integrator numerical integrator to use for propagation.
+         * @param orbitType orbit type
+         * @param positionAngleType angle type
+         * @param forceModelList forces
          */
-        Main(final ODEIntegrator integrator) {
+        Main(final ODEIntegrator integrator, final OrbitType orbitType, final PositionAngleType positionAngleType,
+             final List<ForceModel> forceModelList) {
 
-            this.yDot     = new double[7];
-            this.jacobian = new double[6][6];
-            this.recomputingJacobian = true;
+            super(orbitType, positionAngleType, forceModelList);
+            final int numberOfForces = forceModelList.size();
+            if (orbitType != null && orbitType != OrbitType.CARTESIAN && numberOfForces > 0) {
+                if (numberOfForces > 1) {
+                    recomputingJacobian = true;
+                } else {
+                    recomputingJacobian = !(forceModelList.get(0) instanceof NewtonianAttraction);
+                }
+            } else {
+                recomputingJacobian = false;
+            }
 
             // feed internal event detectors
-            for (final ForceModel forceModel : forceModels) {
-                forceModel.getEventDetectors().forEach(detector -> setUpEventDetector(integrator, detector));
-            }
-            getAttitudeProvider().getEventDetectors().forEach(detector -> setUpEventDetector(integrator, detector));
+            setUpInternalDetectors(integrator);
 
-            // default value for Jacobian is identity
-            for (int i = 0; i < jacobian.length; ++i) {
-                Arrays.fill(jacobian[i], 0.0);
-                jacobian[i][i] = 1.0;
-            }
+        }
 
+        /** Set up all user defined event detectors.
+         * @param integrator numerical integrator to use for propagation.
+         */
+        private void setUpInternalDetectors(final ODEIntegrator integrator) {
+            final NumericalTimeDerivativesEquations cartesianEquations = new NumericalTimeDerivativesEquations(OrbitType.CARTESIAN,
+                    null, forceModels);
+            for (final ForceModel forceModel : getForceModels()) {
+                forceModel.getEventDetectors().forEach(detector -> setUpInternalEventDetector(integrator, detector,
+                        cartesianEquations));
+            }
+            getAttitudeProvider().getEventDetectors().forEach(detector -> setUpInternalEventDetector(integrator,
+                    detector, cartesianEquations));
+        }
+
+        /** Set up one internal event detector.
+         * @param integrator numerical integrator to use for propagation.
+         * @param eventDetector detector
+         * @param cartesianEquations Cartesian derivatives model
+         */
+        private void setUpInternalEventDetector(final ODEIntegrator integrator,
+                                                final EventDetector eventDetector,
+                                                final NumericalTimeDerivativesEquations cartesianEquations) {
+            final Optional<ExtendedStateTransitionMatrixGenerator> generator = getAdditionalDerivativesProviders().stream()
+                    .filter(ExtendedStateTransitionMatrixGenerator.class::isInstance)
+                    .map(ExtendedStateTransitionMatrixGenerator.class::cast)
+                    .findFirst();
+            final EventDetector internalDetector;
+            if (generator.isPresent() && !eventDetector.dependsOnTimeOnly()) {
+                // need to modify STM at each dynamics discontinuities
+                final NumericalPropagationHarvester harvester = (NumericalPropagationHarvester) getHarvester();
+                final SwitchEventHandler handler = new SwitchEventHandler(eventDetector.getHandler(), harvester,
+                        cartesianEquations, getAttitudeProvider());
+                internalDetector = getLocalDetector(eventDetector, handler);
+            } else {
+                internalDetector = eventDetector;
+            }
+            setUpEventDetector(integrator, internalDetector);
         }
 
         /** {@inheritDoc} */
         @Override
         public void init(final SpacecraftState initialState, final AbsoluteDate target) {
-            needFullAttitudeForDerivatives = forceModels.stream().anyMatch(ForceModel::dependsOnAttitudeRate);
+            final List<ForceModel> forceModelList = getForceModels();
+            needFullAttitudeForDerivatives = forceModelList.stream().anyMatch(ForceModel::dependsOnAttitudeRate);
 
-            forceModels.forEach(fm -> fm.init(initialState, target));
+            forceModelList.forEach(fm -> fm.init(initialState, target));
 
-            final int numberOfForces = forceModels.size();
-            final OrbitType orbitType = getOrbitType();
-            if (orbitType != null && orbitType != OrbitType.CARTESIAN && numberOfForces > 0) {
-                if (numberOfForces > 1) {
-                    recomputingJacobian = true;
-                } else {
-                    recomputingJacobian = !(forceModels.get(0) instanceof NewtonianAttraction);
-                }
-            } else {
-                recomputingJacobian = false;
-            }
         }
 
         /** {@inheritDoc} */
         @Override
         public double[] computeDerivatives(final SpacecraftState state) {
-
-            currentState = state;
-            Arrays.fill(yDot, 0.0);
+            setCurrentState(state);
             if (recomputingJacobian) {
                 // propagation uses Jacobian matrix of orbital parameters w.r.t. Cartesian ones
-                currentState.getOrbit().getJacobianWrtCartesian(getPositionAngleType(), jacobian);
+                final double[][] jacobian = new double[6][6];
+                state.getOrbit().getJacobianWrtCartesian(getPositionAngleType(), jacobian);
+                setCoordinatesJacobian(jacobian);
             }
+            return computeTimeDerivatives(state);
 
-            // compute the contributions of all perturbing forces,
-            // using the Kepler contribution at the end since
-            // NewtonianAttraction is always the last instance in the list
-            for (final ForceModel forceModel : forceModels) {
-                forceModel.addContribution(state, this);
-            }
-
-            if (getOrbitType() == null) {
-                // position derivative is velocity, and was not added above in the force models
-                // (it is added when orbit type is non-null because NewtonianAttraction considers it)
-                final Vector3D velocity = currentState.getVelocity();
-                yDot[0] += velocity.getX();
-                yDot[1] += velocity.getY();
-                yDot[2] += velocity.getZ();
-            }
-
-
-            return yDot.clone();
-
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void addKeplerContribution(final double mu) {
-            if (getOrbitType() == null) {
-                // if mu is neither 0 nor NaN, we want to include Newtonian acceleration
-                if (mu > 0) {
-                    // velocity derivative is Newtonian acceleration
-                    final Vector3D position = currentState.getPosition();
-                    final double r2         = position.getNormSq();
-                    final double coeff      = -mu / (r2 * FastMath.sqrt(r2));
-                    yDot[3] += coeff * position.getX();
-                    yDot[4] += coeff * position.getY();
-                    yDot[5] += coeff * position.getZ();
-                }
-
-            } else {
-                // propagation uses regular orbits
-                currentState.getOrbit().addKeplerContribution(getPositionAngleType(), mu, yDot);
-            }
-        }
-
-        /** {@inheritDoc} */
-        public void addNonKeplerianAcceleration(final Vector3D gamma) {
-            for (int i = 0; i < 6; ++i) {
-                final double[] jRow = jacobian[i];
-                yDot[i] += jRow[3] * gamma.getX() + jRow[4] * gamma.getY() + jRow[5] * gamma.getZ();
-            }
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void addMassDerivative(final double q) {
-            if (q > 0) {
-                throw new OrekitIllegalArgumentException(OrekitMessages.POSITIVE_FLOW_RATE, q);
-            }
-            yDot[6] += q;
         }
 
     }
@@ -1197,4 +1174,24 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     }
 
+    /**
+     * Creates local detector wrapping input one and using specific handler for dynamics discontinuities and STM.
+     * @param eventDetector detector
+     * @param switchEventHandler special handler
+     * @return wrapped detector
+     */
+    private static EventDetector getLocalDetector(final EventDetector eventDetector,
+                                                  final SwitchEventHandler switchEventHandler) {
+        return new DetectorModifier() {
+            @Override
+            public EventDetector getDetector() {
+                return eventDetector;
+            }
+
+            @Override
+            public EventHandler getHandler() {
+                return switchEventHandler;
+            }
+        };
+    }
 }
