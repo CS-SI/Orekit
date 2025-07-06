@@ -49,7 +49,7 @@ import java.util.stream.Stream;
 
 /**
  * Class handling the State Transition Matrix update in the presence of dynamics discontinuities.
- * Reference: Russell, R. P., “Primer Vector Theory Applied to Global Low-Thrust Trade Studies,”
+ * Reference: Eq. (29-30) in Russell, R. P., “Primer Vector Theory Applied to Global Low-Thrust Trade Studies,”
  * Journal of Guidance, Control, and Dynamics, Vol. 30, No. 2, 2007, pp. 460-472.
  *
  * @author Romain Serra
@@ -167,22 +167,34 @@ class SwitchEventHandler implements EventHandler {
      * @return updated state
      */
     private SpacecraftState updateState(final SpacecraftState stateAtSwitch) {
+        final RealMatrix factorMatrix = computeUpdateMatrix(stateAtSwitch);
+        // update STM
         final String stmName = matricesHarvester.getStmName();
         final RealMatrix oldStm = matricesHarvester.toSquareMatrix(stateAtSwitch.getAdditionalState(stmName));
-        final RealMatrix jacobian = updateStm(stateAtSwitch, oldStm);
+        final RealMatrix stm = factorMatrix.multiply(oldStm);
         final DataDictionary additionalData = new DataDictionary(stateAtSwitch.getAdditionalDataValues());
         additionalData.remove(stmName);
-        additionalData.put(stmName, matricesHarvester.toArray(jacobian.getSubMatrix(0, 6, 0, 6).getData()));
+        additionalData.put(stmName, matricesHarvester.toArray(stm.getData()));
+        // update model parameters Jacobian if present
+        if (!matricesHarvester.getJacobiansColumnsNames().isEmpty()) {
+            final RealMatrix oldJacobian = matricesHarvester.getParametersJacobian(stateAtSwitch);
+            final RealMatrix jacobian = factorMatrix.multiply(oldJacobian);
+            int index = 0;
+            for (final String parameterName : matricesHarvester.getJacobiansColumnsNames()) {
+                additionalData.remove(parameterName);
+                additionalData.put(parameterName, jacobian.getColumn(index));
+                index++;
+            }
+        }
         return stateAtSwitch.withAdditionalData(additionalData);
     }
 
     /**
-     * Update STM.
+     * Compute matrix needed to update STM and the like.
      * @param state state
-     * @param stm State Transition Matrix immediately before switch
-     * @return updated STM
+     * @return matrix
      */
-    private RealMatrix updateStm(final SpacecraftState state, final RealMatrix stm) {
+    private RealMatrix computeUpdateMatrix(final SpacecraftState state) {
         final double twoThreshold = switchFieldDetector.getThreshold().getValue() * 2.;
         final double dt = isForward ? -twoThreshold : twoThreshold;
         final SpacecraftState stateBefore = shift(state, dt);
@@ -199,8 +211,7 @@ class SwitchEventHandler implements EventHandler {
         final double[] gGradientState = Arrays.copyOfRange(g.getGradient(), 0, 7);
         final RealVector lhs = MatrixUtils.createRealVector(deltaDerivatives);
         final RealVector rhs = MatrixUtils.createRealVector(gGradientState).mapMultiply(1. / gDot);
-        final RealMatrix factorMatrix = MatrixUtils.createRealIdentityMatrix(7).add(lhs.outerProduct(rhs));
-        return factorMatrix.multiply(stm);
+        return MatrixUtils.createRealIdentityMatrix(7).add(lhs.outerProduct(rhs));
     }
 
     /**
