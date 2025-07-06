@@ -31,7 +31,7 @@ import java.util.Map;
 /** Base container for both Rinex clock and observations headers.
  * @since 14.0
  */
-public class RinexClockObsBaseHeader extends RinexBaseHeader {
+public abstract class RinexClockObsBaseHeader extends RinexBaseHeader {
 
     /** Observation types for each satellite systems. */
     private final Map<SatelliteSystem, List<ObservationType>> mapTypeObs;

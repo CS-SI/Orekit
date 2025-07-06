@@ -19,6 +19,7 @@ package org.orekit.files.rinex.navigation;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.orekit.files.rinex.section.Label;
 import org.orekit.files.rinex.section.RinexBaseHeader;
 import org.orekit.files.rinex.utils.RinexFileType;
 
@@ -27,6 +28,9 @@ import org.orekit.files.rinex.utils.RinexFileType;
  * @since 12.0
  */
 public class RinexNavigationHeader extends RinexBaseHeader {
+
+    /** Index of label in header lines. */
+    private static final int LABEL_INDEX = 60;
 
     /** Ionospheric correction type. */
     private IonosphericCorrectionType ionosphericCorrectionType;
@@ -114,6 +118,12 @@ public class RinexNavigationHeader extends RinexBaseHeader {
      */
     public void setNumberOfLeapSeconds(final int numberOfLeapSeconds) {
         this.numberOfLeapSeconds = numberOfLeapSeconds;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean matchFound(final Label label, final String line) {
+        return label.matches(line.substring(LABEL_INDEX).trim());
     }
 
 }

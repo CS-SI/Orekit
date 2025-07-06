@@ -44,9 +44,6 @@ import org.orekit.time.TimeScales;
  */
 public class RinexUtils {
 
-    /** Index of label in header lines. */
-    public static final int LABEL_INDEX = 60;
-
     /** Pattern for splitting date, time and time zone. */
     private static final Pattern SPLITTING_PATTERN = Pattern.compile("([0-9A-Za-z/-]+) *([0-9:]+) *([A-Z][A-Z0-9_-]*)?");
 
@@ -68,23 +65,6 @@ public class RinexUtils {
      * the compiler from generating one automatically.</p>
      */
     private RinexUtils() {
-    }
-
-    /** Get the trimmed label from a header line.
-     * @param line header line to parse
-     * @return trimmed label
-     */
-    public static String getLabel(final String line) {
-        return line.length() < LABEL_INDEX ? "" : line.substring(LABEL_INDEX).trim();
-    }
-
-    /** Check if a header line matches an expected label.
-     * @param line header line to check
-     * @param label expected label
-     * @return true if line matches expected label
-     */
-    public static boolean matchesLabel(final String line, final String label) {
-        return getLabel(line).equals(label);
     }
 
     /** Parse version, file type and satellite system.
@@ -139,7 +119,7 @@ public class RinexUtils {
                     header.setSatelliteSystem(SatelliteSystem.GPS);
 
                     // look if default is overridden somewhere in the entry
-                    final String entry = parseString(line, 0, LABEL_INDEX).toUpperCase();
+                    final String entry = parseString(line, 0, 80).toUpperCase();
                     for (final SatelliteSystem satelliteSystem : SatelliteSystem.values()) {
                         if (entry.contains(satelliteSystem.name())) {
                             // we found a satellite system hidden in the middle of the line
@@ -154,6 +134,9 @@ public class RinexUtils {
                 }
                 break;
             }
+            case CLOCK:
+                header.setSatelliteSystem(SatelliteSystem.parseSatelliteSystemWithGPSDefault(parseString(line, 40, 1)));
+                break;
             default:
                 //  this should never happen
                 throw new OrekitInternalError(null);

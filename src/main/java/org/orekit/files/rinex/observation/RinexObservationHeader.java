@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
+import org.orekit.files.rinex.section.Label;
 import org.orekit.files.rinex.section.RinexClockObsBaseHeader;
 import org.orekit.files.rinex.utils.RinexFileType;
 import org.orekit.gnss.ObservationType;
@@ -35,6 +36,9 @@ import org.orekit.time.AbsoluteDate;
  * @since 9.2
  */
 public class RinexObservationHeader extends RinexClockObsBaseHeader {
+
+    /** Index of label in header lines. */
+    private static final int LABEL_INDEX = 60;
 
     /** Name of the Antenna Marker. */
     private String markerName;
@@ -758,6 +762,12 @@ public class RinexObservationHeader extends RinexClockObsBaseHeader {
      */
     public double getC2pCodePhaseBias() {
         return c2pCodePhaseBias;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean matchFound(final Label label, final String line) {
+        return label.matches(line.substring(LABEL_INDEX).trim());
     }
 
 }

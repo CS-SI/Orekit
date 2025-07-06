@@ -24,7 +24,7 @@ import org.orekit.time.DateTimeComponents;
 /** Base container for Rinex headers.
  * @since 12.0
  */
-public class RinexBaseHeader {
+public abstract class RinexBaseHeader {
 
     /** File type . */
     private final RinexFileType fileType;
@@ -249,5 +249,14 @@ public class RinexBaseHeader {
     public void setStationInformation(final String stationInformation) {
         this.stationInformation = stationInformation;
     }
+
+    /**
+     * Check if a label is found in a line
+     * @param label label to check
+     * @param line header line
+     * @return true if label is found in the header line
+     * @since 14.0
+     */
+    public abstract boolean matchFound(Label label, String line);
 
 }
