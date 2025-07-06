@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -37,7 +36,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.AppliedDCBS;
 import org.orekit.files.rinex.AppliedPCVS;
-import org.orekit.files.rinex.section.RinexLabels;
+import org.orekit.files.rinex.section.CommonLabel;
 import org.orekit.files.rinex.utils.parsing.RinexUtils;
 import org.orekit.gnss.ObservationTimeScale;
 import org.orekit.gnss.ObservationType;
@@ -151,7 +150,7 @@ public class RinexObservationParser {
             nextLine:
                 for (String line = br.readLine(); line != null; line = br.readLine()) {
                     for (final LineParser candidate : candidateParsers) {
-                        if (candidate.canHandle.test(line)) {
+                        if (candidate.canHandle.apply(parseInfo.file.getHeader(), line)) {
                             try {
                                 candidate.parsingMethod.parse(line, parseInfo);
                                 ++parseInfo.lineNumber;
@@ -345,7 +344,7 @@ public class RinexObservationParser {
     private enum LineParser {
 
         /** Parser for version, file type and satellite system. */
-        VERSION(line -> RinexLabels.VERSION.matches(RinexUtils.getLabel(line)),
+        VERSION((header, line) -> header.matchFound(CommonLabel.VERSION, line),
                 (line, parseInfo) ->  RinexUtils.parseVersionFileTypeSatelliteSystem(line, parseInfo.name, parseInfo.file.getHeader(),
                                                                                      2.00, 2.10, 2.11, 2.12, 2.20,
                                                                                      3.00, 3.01, 3.02, 3.03, 3.04, 3.05,
@@ -353,33 +352,33 @@ public class RinexObservationParser {
                 LineParser::headerNext),
 
         /** Parser for generating program and emitting agency. */
-        PROGRAM(line -> RinexLabels.PROGRAM.matches(RinexUtils.getLabel(line)),
+        PROGRAM((header, line) -> header.matchFound(CommonLabel.PROGRAM, line),
                 (line, parseInfo) -> RinexUtils.parseProgramRunByDate(line, parseInfo.lineNumber, parseInfo.name,
                                                                       parseInfo.timeScales, parseInfo.file.getHeader()),
                 LineParser::headerNext),
 
         /** Parser for comments. */
-        COMMENT(line -> RinexLabels.COMMENT.matches(RinexUtils.getLabel(line)),
+        COMMENT((header, line) -> header.matchFound(CommonLabel.COMMENT, line),
                        (line, parseInfo) -> RinexUtils.parseComment(parseInfo.lineNumber, line, parseInfo.file),
                        LineParser::commentNext),
 
         /** Parser for marker name. */
-        MARKER_NAME(line -> RinexLabels.MARKER_NAME.matches(RinexUtils.getLabel(line)),
-                    (line, parseInfo) ->  parseInfo.file.getHeader().setMarkerName(RinexUtils.parseString(line, 0, RinexUtils.LABEL_INDEX)),
+        MARKER_NAME((header, line) -> header.matchFound(ObservationLabel.MARKER_NAME, line),
+                    (line, parseInfo) ->  parseInfo.file.getHeader().setMarkerName(RinexUtils.parseString(line, 0, 80)),
                     LineParser::headerNext),
 
         /** Parser for marker number. */
-        MARKER_NUMBER(line -> RinexLabels.MARKER_NUMBER.matches(RinexUtils.getLabel(line)),
+        MARKER_NUMBER((header, line) -> header.matchFound(ObservationLabel.MARKER_NUMBER, line),
                       (line, parseInfo) -> parseInfo.file.getHeader().setMarkerNumber(RinexUtils.parseString(line, 0, 20)),
                       LineParser::headerNext),
 
         /** Parser for marker type. */
-        MARKER_TYPE(line -> RinexLabels.MARKER_TYPE.matches(RinexUtils.getLabel(line)),
+        MARKER_TYPE((header, line) -> header.matchFound(ObservationLabel.MARKER_TYPE, line),
                     (line, parseInfo) -> parseInfo.file.getHeader().setMarkerType(RinexUtils.parseString(line, 0, 20)),
                     LineParser::headerNext),
 
         /** Parser for observer agency. */
-        OBSERVER_AGENCY(line -> RinexLabels.OBSERVER_AGENCY.matches(RinexUtils.getLabel(line)),
+        OBSERVER_AGENCY((header, line) -> header.matchFound(ObservationLabel.OBSERVER_AGENCY, line),
                         (line, parseInfo) -> {
                             parseInfo.file.getHeader().setObserverName(RinexUtils.parseString(line, 0, 20));
                             parseInfo.file.getHeader().setAgencyName(RinexUtils.parseString(line, 20, 40));
@@ -387,7 +386,7 @@ public class RinexObservationParser {
                         LineParser::headerNext),
 
         /** Parser for receiver number, type and version. */
-        REC_NB_TYPE_VERS(line -> RinexLabels.REC_NB_TYPE_VERS.matches(RinexUtils.getLabel(line)),
+        REC_NB_TYPE_VERS((header, line) -> header.matchFound(ObservationLabel.REC_NB_TYPE_VERS, line),
                          (line, parseInfo) -> {
                              parseInfo.file.getHeader().setReceiverNumber(RinexUtils.parseString(line, 0, 20));
                              parseInfo.file.getHeader().setReceiverType(RinexUtils.parseString(line, 20, 20));
@@ -396,7 +395,7 @@ public class RinexObservationParser {
                          LineParser::headerNext),
 
         /** Parser for antenna number and type. */
-        ANT_NB_TYPE(line -> RinexLabels.ANT_NB_TYPE.matches(RinexUtils.getLabel(line)),
+        ANT_NB_TYPE((header, line) -> header.matchFound(ObservationLabel.ANT_NB_TYPE, line),
                     (line, parseInfo) -> {
                         parseInfo.file.getHeader().setAntennaNumber(RinexUtils.parseString(line, 0, 20));
                         parseInfo.file.getHeader().setAntennaType(RinexUtils.parseString(line, 20, 20));
@@ -404,14 +403,14 @@ public class RinexObservationParser {
                     LineParser::headerNext),
 
         /** Parser for approximative position. */
-        APPROX_POSITION_XYZ(line -> RinexLabels.APPROX_POSITION_XYZ.matches(RinexUtils.getLabel(line)),
+        APPROX_POSITION_XYZ((header, line) -> header.matchFound(ObservationLabel.APPROX_POSITION_XYZ, line),
                             (line, parseInfo) -> parseInfo.file.getHeader().setApproxPos(new Vector3D(RinexUtils.parseDouble(line, 0, 14),
                                                                                                   RinexUtils.parseDouble(line, 14, 14),
                                                                                                   RinexUtils.parseDouble(line, 28, 14))),
                             LineParser::headerNext),
 
         /** Parser for antenna reference point. */
-        ANTENNA_DELTA_H_E_N(line -> RinexLabels.ANTENNA_DELTA_H_E_N.matches(RinexUtils.getLabel(line)),
+        ANTENNA_DELTA_H_E_N((header, line) -> header.matchFound(ObservationLabel.ANTENNA_DELTA_H_E_N, line),
                             (line, parseInfo) -> {
                                 parseInfo.file.getHeader().setAntennaHeight(RinexUtils.parseDouble(line, 0, 14));
                                 parseInfo.file.getHeader().setEccentricities(new Vector2D(RinexUtils.parseDouble(line, 14, 14),
@@ -420,14 +419,14 @@ public class RinexObservationParser {
                             LineParser::headerNext),
 
         /** Parser for antenna reference point. */
-        ANTENNA_DELTA_X_Y_Z(line -> RinexLabels.ANTENNA_DELTA_X_Y_Z.matches(RinexUtils.getLabel(line)),
+        ANTENNA_DELTA_X_Y_Z((header, line) -> header.matchFound(ObservationLabel.ANTENNA_DELTA_X_Y_Z, line),
                             (line, parseInfo) -> parseInfo.file.getHeader().setAntennaReferencePoint(new Vector3D(RinexUtils.parseDouble(line, 0, 14),
                                                                                                                   RinexUtils.parseDouble(line, 14, 14),
                                                                                                                   RinexUtils.parseDouble(line, 28, 14))),
                             LineParser::headerNext),
 
         /** Parser for antenna phase center. */
-        ANTENNA_PHASE_CENTER(line -> RinexLabels.ANTENNA_PHASE_CENTER.matches(RinexUtils.getLabel(line)),
+        ANTENNA_PHASE_CENTER((header, line) -> header.matchFound(ObservationLabel.ANTENNA_PHASE_CENTER, line),
                              (line, parseInfo) -> {
                                  parseInfo.file.getHeader().setPhaseCenterSystem(SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 0, 1)));
                                  parseInfo.file.getHeader().setObservationCode(RinexUtils.parseString(line, 2, 3));
@@ -438,33 +437,33 @@ public class RinexObservationParser {
                              LineParser::headerNext),
 
         /** Parser for antenna bore sight. */
-        ANTENNA_B_SIGHT_XYZ(line -> RinexLabels.ANTENNA_B_SIGHT_XYZ.matches(RinexUtils.getLabel(line)),
+        ANTENNA_B_SIGHT_XYZ((header, line) -> header.matchFound(ObservationLabel.ANTENNA_B_SIGHT_XYZ, line),
                             (line, parseInfo) -> parseInfo.file.getHeader().setAntennaBSight(new Vector3D(RinexUtils.parseDouble(line, 0, 14),
                                                                                                           RinexUtils.parseDouble(line, 14, 14),
                                                                                                           RinexUtils.parseDouble(line, 28, 14))),
                             LineParser::headerNext),
 
         /** Parser for antenna zero direction. */
-        ANTENNA_ZERODIR_AZI(line -> RinexLabels.ANTENNA_ZERODIR_AZI.matches(RinexUtils.getLabel(line)),
+        ANTENNA_ZERODIR_AZI((header, line) -> header.matchFound(ObservationLabel.ANTENNA_ZERODIR_AZI, line),
                             (line, parseInfo) -> parseInfo.file.getHeader().setAntennaAzimuth(FastMath.toRadians(RinexUtils.parseDouble(line, 0, 14))),
                             LineParser::headerNext),
 
         /** Parser for antenna zero direction. */
-        ANTENNA_ZERODIR_XYZ(line -> RinexLabels.ANTENNA_ZERODIR_XYZ.matches(RinexUtils.getLabel(line)),
+        ANTENNA_ZERODIR_XYZ((header, line) -> header.matchFound(ObservationLabel.ANTENNA_ZERODIR_XYZ, line),
                             (line, parseInfo) -> parseInfo.file.getHeader().setAntennaZeroDirection(new Vector3D(RinexUtils.parseDouble(line, 0, 14),
                                                                                                                  RinexUtils.parseDouble(line, 14, 14),
                                                                                                                  RinexUtils.parseDouble(line, 28, 14))),
                             LineParser::headerNext),
 
         /** Parser for wavelength factors. */
-        WAVELENGTH_FACT_L1_2(line -> RinexLabels.WAVELENGTH_FACT_L1_2.matches(RinexUtils.getLabel(line)),
+        WAVELENGTH_FACT_L1_2((header, line) -> header.matchFound(ObservationLabel.WAVELENGTH_FACT_L1_2, line),
                              (line, parseInfo) -> {
                                  // optional line in Rinex 2 header, not stored for now
                              },
                              LineParser::headerNext),
 
         /** Parser for observations scale factor. */
-        OBS_SCALE_FACTOR(line -> RinexLabels.OBS_SCALE_FACTOR.matches(RinexUtils.getLabel(line)),
+        OBS_SCALE_FACTOR((header, line) -> header.matchFound(ObservationLabel.OBS_SCALE_FACTOR, line),
                          (line, parseInfo) -> {
                              final int scaleFactor      = FastMath.max(1, RinexUtils.parseInt(line, 0,  6));
                              final int nbObsScaleFactor = RinexUtils.parseInt(line, 6, 6);
@@ -478,7 +477,7 @@ public class RinexObservationParser {
                          LineParser::headerNext),
 
         /** Parser for center of mass. */
-        CENTER_OF_MASS_XYZ(line -> RinexLabels.CENTER_OF_MASS_XYZ.matches(RinexUtils.getLabel(line)),
+        CENTER_OF_MASS_XYZ((header, line) -> header.matchFound(ObservationLabel.CENTER_OF_MASS_XYZ, line),
                            (line, parseInfo) -> parseInfo.file.getHeader().setCenterMass(new Vector3D(RinexUtils.parseDouble(line, 0, 14),
                                                                                                       RinexUtils.parseDouble(line, 14, 14),
                                                                                                       RinexUtils.parseDouble(line, 28, 14))),
@@ -487,27 +486,27 @@ public class RinexObservationParser {
         /** Parser for DOI.
          * @since 12.0
          */
-        DOI(line -> RinexLabels.DOI.matches(RinexUtils.getLabel(line)),
-            (line, parseInfo) -> parseInfo.file.getHeader().setDoi(RinexUtils.parseString(line, 0, RinexUtils.LABEL_INDEX)),
+        DOI((header, line) -> header.matchFound(CommonLabel.DOI, line),
+            (line, parseInfo) -> parseInfo.file.getHeader().setDoi(RinexUtils.parseString(line, 0, 80)),
             LineParser::headerNext),
 
         /** Parser for license.
          * @since 12.0
          */
-        LICENSE(line -> RinexLabels.LICENSE.matches(RinexUtils.getLabel(line)),
-                (line, parseInfo) -> parseInfo.file.getHeader().setLicense(RinexUtils.parseString(line, 0, RinexUtils.LABEL_INDEX)),
+        LICENSE((header, line) -> header.matchFound(CommonLabel.LICENSE, line),
+                (line, parseInfo) -> parseInfo.file.getHeader().setLicense(RinexUtils.parseString(line, 0, 80)),
                 LineParser::headerNext),
 
         /** Parser for station information.
          * @since 12.0
          */
-        STATION_INFORMATION(line -> RinexLabels.STATION_INFORMATION.matches(RinexUtils.getLabel(line)),
-                            (line, parseInfo) -> parseInfo.file.getHeader().setStationInformation(RinexUtils.parseString(line, 0, RinexUtils.LABEL_INDEX)),
+        STATION_INFORMATION((header, line) -> header.matchFound(CommonLabel.STATION_INFORMATION, line),
+                            (line, parseInfo) -> parseInfo.file.getHeader().setStationInformation(RinexUtils.parseString(line, 0, 80)),
                             LineParser::headerNext),
 
         /** Parser for number and types of observations. */
-        SYS_NB_TYPES_OF_OBSERV(line -> RinexLabels.SYS_NB_TYPES_OF_OBSERV.matches(RinexUtils.getLabel(line)) ||
-                                       RinexLabels.NB_TYPES_OF_OBSERV.matches(RinexUtils.getLabel(line)),
+        SYS_NB_TYPES_OF_OBSERV((header, line) -> header.matchFound(CommonLabel.SYS_NB_TYPES_OF_OBSERV, line) ||
+                                       header.matchFound(ObservationLabel.NB_TYPES_OF_OBSERV, line),
                                (line, parseInfo) -> {
                                    final double version = parseInfo.file.getHeader().getFormatVersion();
                                    if (parseInfo.nbTypes < 0) {
@@ -534,7 +533,7 @@ public class RinexObservationParser {
                                    final int increment  = version < 3 ?  6 : 4;
                                    final int size       = version < 3 ?  2 : 3;
                                    for (int i = firstIndex;
-                                                   (i + size) <= RinexUtils.LABEL_INDEX && parseInfo.typesObs.size() < parseInfo.nbTypes;
+                                                   (i + size) <= 80 && parseInfo.typesObs.size() < parseInfo.nbTypes;
                                                    i += increment) {
                                        final String type = RinexUtils.parseString(line, i, size);
                                        try {
@@ -556,17 +555,17 @@ public class RinexObservationParser {
                                LineParser::headerNbTypesObs),
 
         /** Parser for unit of signal strength. */
-        SIGNAL_STRENGTH_UNIT(line -> RinexLabels.SIGNAL_STRENGTH_UNIT.matches(RinexUtils.getLabel(line)),
+        SIGNAL_STRENGTH_UNIT((header, line) -> header.matchFound(ObservationLabel.SIGNAL_STRENGTH_UNIT, line),
                              (line, parseInfo) -> parseInfo.file.getHeader().setSignalStrengthUnit(RinexUtils.parseString(line, 0, 20)),
                              LineParser::headerNext),
 
         /** Parser for observation interval. */
-        INTERVAL(line -> RinexLabels.INTERVAL.matches(RinexUtils.getLabel(line)),
+        INTERVAL((header, line) -> header.matchFound(ObservationLabel.INTERVAL, line),
                  (line, parseInfo) -> parseInfo.file.getHeader().setInterval(RinexUtils.parseDouble(line, 0, 10)),
                  LineParser::headerNext),
 
         /** Parser for time of first observation. */
-        TIME_OF_FIRST_OBS(line -> RinexLabels.TIME_OF_FIRST_OBS.matches(RinexUtils.getLabel(line)),
+        TIME_OF_FIRST_OBS((header, line) -> header.matchFound(ObservationLabel.TIME_OF_FIRST_OBS, line),
                           (line, parseInfo) -> {
                               try {
                                   // general case: TIME OF FIRST OBS specifies the time scale
@@ -599,7 +598,7 @@ public class RinexObservationParser {
                           LineParser::headerNext),
 
         /** Parser for time of last observation. */
-        TIME_OF_LAST_OBS(line -> RinexLabels.TIME_OF_LAST_OBS.matches(RinexUtils.getLabel(line)),
+        TIME_OF_LAST_OBS((header, line) -> header.matchFound(ObservationLabel.TIME_OF_LAST_OBS, line),
                          (line, parseInfo) -> parseInfo.file.getHeader().setTLastObs(new AbsoluteDate(RinexUtils.parseInt(line, 0, 6),
                                                                                                       RinexUtils.parseInt(line, 6, 6),
                                                                                                       RinexUtils.parseInt(line, 12, 6),
@@ -610,26 +609,26 @@ public class RinexObservationParser {
                          LineParser::headerNext),
 
         /** Parser for indicator of receiver clock offset application. */
-        RCV_CLOCK_OFFS_APPL(line -> RinexLabels.RCV_CLOCK_OFFS_APPL.matches(RinexUtils.getLabel(line)),
+        RCV_CLOCK_OFFS_APPL((header, line) -> header.matchFound(ObservationLabel.RCV_CLOCK_OFFS_APPL, line),
                             (line, parseInfo) -> parseInfo.file.getHeader().setClockOffsetApplied(RinexUtils.parseInt(line, 0, 6) > 0),
                             LineParser::headerNext),
 
         /** Parser for differential code bias corrections. */
-        SYS_DCBS_APPLIED(line -> RinexLabels.SYS_DCBS_APPLIED.matches(RinexUtils.getLabel(line)),
+        SYS_DCBS_APPLIED((header, line) -> header.matchFound(CommonLabel.SYS_DCBS_APPLIED, line),
                          (line, parseInfo) -> parseInfo.file.getHeader().addAppliedDCBS(new AppliedDCBS(SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 0, 1)),
                                                                                                         RinexUtils.parseString(line, 2, 17),
                                                                                                         RinexUtils.parseString(line, 20, 40))),
                          LineParser::headerNext),
 
         /** Parser for phase center variations corrections. */
-        SYS_PCVS_APPLIED(line -> RinexLabels.SYS_PCVS_APPLIED.matches(RinexUtils.getLabel(line)),
+        SYS_PCVS_APPLIED((header, line) -> header.matchFound(CommonLabel.SYS_PCVS_APPLIED, line),
                          (line, parseInfo) -> parseInfo.file.getHeader().addAppliedPCVS(new AppliedPCVS(SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 0, 1)),
                                                                                                         RinexUtils.parseString(line, 2, 17),
                                                                                                         RinexUtils.parseString(line, 20, 40))),
                          LineParser::headerNext),
 
         /** Parser for scale factor. */
-        SYS_SCALE_FACTOR(line -> RinexLabels.SYS_SCALE_FACTOR.matches(RinexUtils.getLabel(line)),
+        SYS_SCALE_FACTOR((header, line) -> header.matchFound(ObservationLabel.SYS_SCALE_FACTOR, line),
                          (line, parseInfo) -> {
 
                              int scaleFactor = 1;
@@ -643,7 +642,7 @@ public class RinexObservationParser {
                              if (parseInfo.nbObsScaleFactor == 0) {
                                  parseInfo.typesObsScaleFactor.addAll(parseInfo.file.getHeader().getTypeObs().get(parseInfo.currentSystem));
                              } else {
-                                 for (int i = 11; i < RinexUtils.LABEL_INDEX && parseInfo.typesObsScaleFactor.size() < parseInfo.nbObsScaleFactor; i += 4) {
+                                 for (int i = 11; i < 80 && parseInfo.typesObsScaleFactor.size() < parseInfo.nbObsScaleFactor; i += 4) {
                                      parseInfo.typesObsScaleFactor.add(parseInfo.buildType(RinexUtils.parseString(line, i, 3)));
                                  }
                              }
@@ -661,7 +660,7 @@ public class RinexObservationParser {
                          LineParser::headerNext),
 
         /** Parser for phase shift. */
-        SYS_PHASE_SHIFT(line -> RinexLabels.SYS_PHASE_SHIFT.matches(RinexUtils.getLabel(line)),
+        SYS_PHASE_SHIFT((header, line) -> header.matchFound(ObservationLabel.SYS_PHASE_SHIFT, line),
                         (line, parseInfo) -> {
 
                             if (parseInfo.phaseShiftNbSat < 0) {
@@ -673,7 +672,7 @@ public class RinexObservationParser {
                                 parseInfo.phaseShiftNbSat   = RinexUtils.parseInt(line, 16, 2);
                             }
 
-                            for (int i = 19; i + 3 < RinexUtils.LABEL_INDEX && parseInfo.satPhaseShift.size() < parseInfo.phaseShiftNbSat; i += 4) {
+                            for (int i = 19; i + 3 < 80 && parseInfo.satPhaseShift.size() < parseInfo.phaseShiftNbSat; i += 4) {
                                 final String satSpec = line.charAt(i) == ' ' ?
                                                        parseInfo.currentSystem.getKey() + line.substring(i + 1, i + 3) :
                                                        line.substring(i, i + 3);
@@ -694,7 +693,7 @@ public class RinexObservationParser {
                         LineParser::headerPhaseShift),
 
         /** Parser for GLONASS slot and frequency number. */
-        GLONASS_SLOT_FRQ_NB(line -> RinexLabels.GLONASS_SLOT_FRQ_NB.matches(RinexUtils.getLabel(line)),
+        GLONASS_SLOT_FRQ_NB((header, line) -> header.matchFound(ObservationLabel.GLONASS_SLOT_FRQ_NB, line),
                             (line, parseInfo) -> {
 
                                 if (parseInfo.nbGlonass < 0) {
@@ -703,7 +702,7 @@ public class RinexObservationParser {
                                 }
 
                                 for (int i = 4;
-                                     i < RinexUtils.LABEL_INDEX && parseInfo.file.getHeader().getGlonassChannels().size() < parseInfo.nbGlonass;
+                                     i < 80 && parseInfo.file.getHeader().getGlonassChannels().size() < parseInfo.nbGlonass;
                                      i += 7) {
                                     final int k = RinexUtils.parseInt(line, i + 4, 2);
                                     parseInfo.file.getHeader().addGlonassChannel(new GlonassSatelliteChannel(new SatInSystem(line.substring(i, i + 3)), k));
@@ -713,7 +712,7 @@ public class RinexObservationParser {
                             LineParser::headerNext),
 
         /** Parser for GLONASS phase bias corrections. */
-        GLONASS_COD_PHS_BIS(line -> RinexLabels.GLONASS_COD_PHS_BIS.matches(RinexUtils.getLabel(line)),
+        GLONASS_COD_PHS_BIS((header, line) -> header.matchFound(ObservationLabel.GLONASS_COD_PHS_BIS, line),
                             (line, parseInfo) -> {
 
                                 // C1C signal
@@ -744,7 +743,7 @@ public class RinexObservationParser {
                             LineParser::headerNext),
 
         /** Parser for leap seconds. */
-        LEAP_SECONDS(line -> RinexLabels.LEAP_SECONDS.matches(RinexUtils.getLabel(line)),
+        LEAP_SECONDS((header, line) -> header.matchFound(CommonLabel.LEAP_SECONDS, line),
                      (line, parseInfo) -> {
                          parseInfo.file.getHeader().setLeapSeconds(RinexUtils.parseInt(line, 0, 6));
                          if (parseInfo.file.getHeader().getFormatVersion() >= 3.0) {
@@ -756,12 +755,12 @@ public class RinexObservationParser {
                      LineParser::headerNext),
 
         /** Parser for number of satellites. */
-        NB_OF_SATELLITES(line -> RinexLabels.NB_OF_SATELLITES.matches(RinexUtils.getLabel(line)),
+        NB_OF_SATELLITES((header, line) -> header.matchFound(ObservationLabel.NB_OF_SATELLITES, line),
                          (line, parseInfo) -> parseInfo.file.getHeader().setNbSat(RinexUtils.parseInt(line, 0, 6)),
                          LineParser::headerNext),
 
         /** Parser for PRN and number of observations . */
-        PRN_NB_OF_OBS(line -> RinexLabels.PRN_NB_OF_OBS.matches(RinexUtils.getLabel(line)),
+        PRN_NB_OF_OBS((header, line) -> header.matchFound(ObservationLabel.PRN_NB_OF_OBS, line),
                       (line, parseInfo) ->  {
                           final String systemName = RinexUtils.parseString(line, 3, 1);
                           if (!systemName.isEmpty()) {
@@ -774,7 +773,7 @@ public class RinexObservationParser {
                           final int increment  = 6;
                           final int size       = 6;
                           for (int i = firstIndex;
-                               (i + size) <= RinexUtils.LABEL_INDEX && parseInfo.nbTypes < types.size();
+                               (i + size) <= 80 && parseInfo.nbTypes < types.size();
                                i += increment) {
                               final String nb = RinexUtils.parseString(line, i, size);
                               if (!nb.isEmpty()) {
@@ -788,7 +787,7 @@ public class RinexObservationParser {
                       LineParser::headerNext),
 
         /** Parser for the end of header. */
-        END(line -> RinexLabels.END.matches(RinexUtils.getLabel(line)),
+        END((header, line) -> header.matchFound(CommonLabel.END, line),
             (line, parseInfo) -> {
 
                 parseInfo.headerCompleted = true;
@@ -825,7 +824,7 @@ public class RinexObservationParser {
             LineParser::headerEndNext),
 
         /** Parser for Rinex 2 data list of satellites. */
-        RINEX_2_DATA_SAT_LIST(line -> true,
+        RINEX_2_DATA_SAT_LIST((header, line) -> true,
                               (line, parseInfo) -> {
                                   for (int index = 32; parseInfo.satObs.size() < parseInfo.nbSatObs && index < 68; index += 3) {
                                       // add one PRN to the list of observed satellites
@@ -852,7 +851,7 @@ public class RinexObservationParser {
                               LineParser::first2),
 
         /** Parser for Rinex 2 data first line. */
-        RINEX_2_DATA_FIRST(line -> true,
+        RINEX_2_DATA_FIRST((header, line) -> true,
                            (line, parseInfo) -> {
 
                                // flag
@@ -924,14 +923,14 @@ public class RinexObservationParser {
                            LineParser::first2),
 
         /** Parser for Rinex 2 special record. */
-        RINEX_2_IGNORED_SPECIAL_RECORD(line -> true,
+        RINEX_2_IGNORED_SPECIAL_RECORD((header, line) -> true,
                            (line, parseInfo) -> {
                                // nothing to do
                            },
                            LineParser::ignore2),
 
         /** Parser for Rinex 2 observation line. */
-        RINEX_2_OBSERVATION(line -> true,
+        RINEX_2_OBSERVATION((header, line) -> true,
                             (line, parseInfo) -> {
                                 final List<ObservationType> types = parseInfo.file.getHeader().getTypeObs().get(parseInfo.file.getHeader().getSatelliteSystem());
                                 for (int index = 0;
@@ -970,7 +969,7 @@ public class RinexObservationParser {
                             LineParser::observation2),
 
         /** Parser for Rinex 3 observation line. */
-        RINEX_3_OBSERVATION(line -> true,
+        RINEX_3_OBSERVATION((header, line) -> true,
                             (line, parseInfo) -> {
                                 final SatInSystem sat = new SatInSystem(line.substring(0, 3));
                                 final List<ObservationType> types = parseInfo.file.getHeader().getTypeObs().get(sat.getSystem());
@@ -1006,7 +1005,7 @@ public class RinexObservationParser {
                             LineParser::observation3),
 
         /** Parser for Rinex 3 data first line. */
-        RINEX_3_DATA_FIRST(line -> line.startsWith(">"),
+        RINEX_3_DATA_FIRST((header, line) -> line.startsWith(">"),
                            (line, parseInfo) -> {
 
                                // flag
@@ -1075,7 +1074,7 @@ public class RinexObservationParser {
 
 
         /** Predicate for identifying lines that can be parsed. */
-        private final Predicate<String> canHandle;
+        private final BiFunction<RinexObservationHeader, String, Boolean> canHandle;
 
         /** Parsing method. */
         private final ParsingMethod parsingMethod;
@@ -1088,7 +1087,7 @@ public class RinexObservationParser {
          * @param parsingMethod parsing method
          * @param allowedNextProvider supplier for allowed parsers for next line
          */
-        LineParser(final Predicate<String> canHandle, final ParsingMethod parsingMethod,
+        LineParser(final BiFunction<RinexObservationHeader, String, Boolean> canHandle, final ParsingMethod parsingMethod,
                    final Function<ParseInfo, Iterable<LineParser>> allowedNextProvider) {
             this.canHandle           = canHandle;
             this.parsingMethod       = parsingMethod;

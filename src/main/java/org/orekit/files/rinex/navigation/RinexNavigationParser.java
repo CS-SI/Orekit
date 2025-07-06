@@ -22,8 +22,8 @@ import java.io.Reader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.InputMismatchException;
+import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
@@ -32,6 +32,7 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.rinex.section.CommonLabel;
 import org.orekit.files.rinex.utils.parsing.RinexUtils;
 import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.gnss.SatelliteSystem;
@@ -164,39 +165,39 @@ public class RinexNavigationParser {
     public RinexNavigation parse(final DataSource source) throws IOException {
 
         // initialize internal data structures
-        final ParseInfo pi = new ParseInfo(source.getName());
+        final ParseInfo parseInfo = new ParseInfo(source.getName());
 
         Iterable<LineParser> candidateParsers = Collections.singleton(LineParser.HEADER_VERSION);
         try (Reader reader = source.getOpener().openReaderOnce();
              BufferedReader br = new BufferedReader(reader)) {
             nextLine:
                 for (String line = br.readLine(); line != null; line = br.readLine()) {
-                    ++pi.lineNumber;
+                    ++parseInfo.lineNumber;
                     for (final LineParser candidate : candidateParsers) {
-                        if (candidate.canHandle.test(line)) {
+                        if (candidate.canHandle.apply(parseInfo.file.getHeader(), line)) {
                             try {
-                                candidate.parsingMethod.parse(line, pi);
-                                candidateParsers = candidate.allowedNextProvider.apply(pi);
+                                candidate.parsingMethod.parse(line, parseInfo);
+                                candidateParsers = candidate.allowedNextProvider.apply(parseInfo);
                                 continue nextLine;
                             } catch (StringIndexOutOfBoundsException | NumberFormatException | InputMismatchException e) {
                                 throw new OrekitException(e,
                                                           OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                          pi.lineNumber, source.getName(), line);
+                                                          parseInfo.lineNumber, source.getName(), line);
                             }
                         }
                     }
                     throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                              pi.lineNumber, source.getName(), line);
+                                              parseInfo.lineNumber, source.getName(), line);
                 }
         }
 
-        if (!pi.headerParsed) {
+        if (!parseInfo.headerParsed) {
             throw new OrekitException(OrekitMessages.UNEXPECTED_END_OF_FILE, source.getName());
         }
 
-        pi.closePendingMessage();
+        parseInfo.closePendingMessage();
 
-        return pi.file;
+        return parseInfo.file;
 
     }
 
@@ -308,7 +309,7 @@ public class RinexNavigationParser {
     private enum LineParser {
 
         /** Parser for version, file type and satellite system. */
-        HEADER_VERSION(line -> RinexUtils.matchesLabel(line, "RINEX VERSION / TYPE"),
+        HEADER_VERSION((header, line) -> header.matchFound(CommonLabel.VERSION, line),
                        (line, pi) -> {
                            RinexUtils.parseVersionFileTypeSatelliteSystem(line, pi.name, pi.file.getHeader(),
                                                                           2.0, 2.01, 2.10, 2.11,
@@ -319,17 +320,17 @@ public class RinexNavigationParser {
                        LineParser::headerNext),
 
         /** Parser for generating program and emitting agency. */
-        HEADER_PROGRAM(line -> RinexUtils.matchesLabel(line, "PGM / RUN BY / DATE"),
+        HEADER_PROGRAM((header, line) -> header.matchFound(CommonLabel.PROGRAM, line),
                        (line, pi) -> RinexUtils.parseProgramRunByDate(line, pi.lineNumber, pi.name, pi.timeScales, pi.file.getHeader()),
                        LineParser::headerNext),
 
         /** Parser for comments. */
-        HEADER_COMMENT(line -> RinexUtils.matchesLabel(line, "COMMENT"),
+        HEADER_COMMENT((header, line) -> header.matchFound(CommonLabel.COMMENT, line),
                        (line, pi) -> RinexUtils.parseComment(pi.lineNumber, line, pi.file),
                        LineParser::headerNext),
 
         /** Parser for ionospheric correction parameters. */
-        HEADER_ION_ALPHA(line -> RinexUtils.matchesLabel(line, "ION ALPHA"),
+        HEADER_ION_ALPHA((header, line) -> header.matchFound(NavigationLabel.ION_ALPHA, line),
                          (line, pi) -> {
 
                              pi.file.getHeader().setIonosphericCorrectionType(IonosphericCorrectionType.GPS);
@@ -347,7 +348,7 @@ public class RinexNavigationParser {
                          LineParser::headerNext),
 
         /** Parser for ionospheric correction parameters. */
-        HEADER_ION_BETA(line -> RinexUtils.matchesLabel(line, "ION BETA"),
+        HEADER_ION_BETA((header, line) -> header.matchFound(NavigationLabel.ION_BETA, line),
                         (line, pi) -> {
 
                             pi.file.getHeader().setIonosphericCorrectionType(IonosphericCorrectionType.GPS);
@@ -364,7 +365,7 @@ public class RinexNavigationParser {
                         LineParser::headerNext),
 
         /** Parser for ionospheric correction parameters. */
-        HEADER_IONOSPHERIC(line -> RinexUtils.matchesLabel(line, "IONOSPHERIC CORR"),
+        HEADER_IONOSPHERIC((header, line) -> header.matchFound(NavigationLabel.IONOSPHERIC_CORR, line),
                            (line, pi) -> {
 
                                // ionospheric correction type
@@ -410,7 +411,7 @@ public class RinexNavigationParser {
                            LineParser::headerNext),
 
         /** Parser for corrections to transform the system time to UTC or to other time systems. */
-        HEADER_DELTA_UTC(line -> RinexUtils.matchesLabel(line, "DELTA-UTC: A0,A1,T,W"),
+        HEADER_DELTA_UTC((header, line) -> header.matchFound(NavigationLabel.DELTA_UTC, line),
                          (line, pi) -> {
                              // Read fields
                              final double a0      = RinexUtils.parseDouble(line, 3,  19);
@@ -429,7 +430,7 @@ public class RinexNavigationParser {
                          LineParser::headerNext),
 
         /** Parser for corrections to transform the GLONASS system time to UTC or to other time systems. */
-        HEADER_CORR_SYSTEM_TIME(line -> RinexUtils.matchesLabel(line, "CORR TO SYSTEM TIME"),
+        HEADER_CORR_SYSTEM_TIME((header, line) -> header.matchFound(NavigationLabel.CORR_TO_SYSTEM_TIME, line),
                          (line, pi) -> {
                              // Read fields
                              final int year        = RinexUtils.parseInt(line,  0, 6);
@@ -450,7 +451,7 @@ public class RinexNavigationParser {
                          LineParser::headerNext),
 
         /** Parser for corrections to transform the system time to UTC or to other time systems. */
-        HEADER_TIME(line -> RinexUtils.matchesLabel(line, "TIME SYSTEM CORR"),
+        HEADER_TIME((header, line) -> header.matchFound(NavigationLabel.TIME_SYSTEM_CORR, line),
                     (line, pi) -> {
 
                         // Read fields
@@ -480,40 +481,43 @@ public class RinexNavigationParser {
                     LineParser::headerNext),
 
         /** Parser for leap seconds. */
-        HEADER_LEAP_SECONDS(line -> RinexUtils.matchesLabel(line, "LEAP SECONDS"),
+        HEADER_LEAP_SECONDS((header, line) -> header.matchFound(CommonLabel.LEAP_SECONDS,line),
                             (line, pi) -> pi.file.getHeader().setNumberOfLeapSeconds(RinexUtils.parseInt(line, 0, 6)),
                             LineParser::headerNext),
 
         /** Parser for DOI.
          * @since 12.0
          */
-        HEADER_DOI(line -> RinexUtils.matchesLabel(line, "DOI"),
-                   (line, pi) -> pi.file.getHeader().setDoi(RinexUtils.parseString(line, 0, RinexUtils.LABEL_INDEX)),
+        HEADER_DOI((header, line) -> header.matchFound(CommonLabel.DOI, line),
+                   (line, pi) -> pi.file.getHeader().
+                       setDoi(RinexUtils.parseString(line, 0, 80)),
                    LineParser::headerNext),
 
         /** Parser for license.
          * @since 12.0
          */
-        HEADER_LICENSE(line -> RinexUtils.matchesLabel(line, "LICENSE OF USE"),
-                       (line, pi) -> pi.file.getHeader().setLicense(RinexUtils.parseString(line, 0, RinexUtils.LABEL_INDEX)),
+        HEADER_LICENSE((header, line) -> header.matchFound(CommonLabel.LICENSE, line),
+                       (line, pi) -> pi.file.getHeader().
+                           setLicense(RinexUtils.parseString(line, 0, 80)),
                        LineParser::headerNext),
 
         /** Parser for stationInformation.
          * @since 12.0
          */
-        HEADER_STATION_INFORMATION(line -> RinexUtils.matchesLabel(line, "STATION INFORMATION"),
-                                   (line, pi) -> pi.file.getHeader().setStationInformation(RinexUtils.parseString(line, 0, RinexUtils.LABEL_INDEX)),
+        HEADER_STATION_INFORMATION((header, line) -> header.matchFound(CommonLabel.STATION_INFORMATION, line),
+                                   (line, pi) -> pi.file.getHeader().
+                                       setStationInformation(RinexUtils.parseString(line, 0, 80)),
                                    LineParser::headerNext),
 
         /** Parser for merged files.
          * @since 12.0
          */
-        HEADER_MERGED_FILE(line -> RinexUtils.matchesLabel(line, "MERGED FILE"),
+        HEADER_MERGED_FILE((header, line) -> header.matchFound(NavigationLabel.MERGED_FILE, line),
                            (line, pi) -> pi.file.getHeader().setMergedFiles(RinexUtils.parseInt(line, 0, 9)),
                            LineParser::headerNext),
 
        /** Parser for the end of header. */
-        HEADER_END(line -> RinexUtils.matchesLabel(line, "END OF HEADER"),
+        HEADER_END((header, line) -> header.matchFound(CommonLabel.END, line),
                    (line, pi) -> {
                        // get rinex format version
                        final RinexNavigationHeader header = pi.file.getHeader();
@@ -531,7 +535,7 @@ public class RinexNavigationParser {
                    LineParser::navigationNext),
 
         /** Parser for navigation message space vehicle epoch and clock. */
-        NAVIGATION_SV_EPOCH_CLOCK_RINEX_2(line -> true,
+        NAVIGATION_SV_EPOCH_CLOCK_RINEX_2((header, line) -> true,
                                           (line, pi) -> {
 
                                               // Set the line number to 0
@@ -548,7 +552,7 @@ public class RinexNavigationParser {
                                           LineParser::navigationNext),
 
         /** Parser for navigation message space vehicle epoch and clock. */
-        NAVIGATION_SV_EPOCH_CLOCK(line -> INITIALS.indexOf(line.charAt(0)) >= 0,
+        NAVIGATION_SV_EPOCH_CLOCK((header, line) -> INITIALS.indexOf(line.charAt(0)) >= 0,
                                   (line, pi) -> {
 
                                       // Set the line number to 0
@@ -570,7 +574,7 @@ public class RinexNavigationParser {
                                   LineParser::navigationNext),
 
         /** Parser for navigation message type. */
-        EPH_TYPE(line -> line.startsWith("> EPH"),
+        EPH_TYPE((header, line) -> line.startsWith("> EPH"),
                  (line, pi) -> {
                      final SatelliteSystem system = SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 6, 1));
                      final String          type   = RinexUtils.parseString(line, 10, 4);
@@ -580,7 +584,7 @@ public class RinexNavigationParser {
                  pi -> Collections.singleton(NAVIGATION_SV_EPOCH_CLOCK)),
 
         /** Parser for broadcast orbit. */
-        BROADCAST_ORBIT(line -> line.startsWith("   "),
+        BROADCAST_ORBIT((header, line) -> line.startsWith("   "),
                         (line, pi) -> {
                             switch (++pi.messageLineNumber) {
                                 case 1: pi.systemLineParser.parseFirstBroadcastOrbit(line, pi);
@@ -611,7 +615,7 @@ public class RinexNavigationParser {
                         LineParser::navigationNext),
 
         /** Parser for system time offset message model. */
-        STO_LINE_1(line -> true,
+        STO_LINE_1((header, line) -> true,
                    (line, pi) -> {
                        pi.sto.setTransmissionTime(Unit.SECOND.toSI(RinexUtils.parseDouble(line,  4, 19)));
                        pi.sto.setA0(Unit.SECOND.toSI(RinexUtils.parseDouble(line, 23, 19)));
@@ -623,7 +627,7 @@ public class RinexNavigationParser {
                    LineParser::navigationNext),
 
         /** Parser for system time offset message space vehicle epoch and clock. */
-        STO_SV_EPOCH_CLOCK(line -> true,
+        STO_SV_EPOCH_CLOCK((header, line) -> true,
                            (line, pi) -> {
 
                                pi.sto.setDefinedTimeSystem(TimeSystem.parseTwoLettersCode(RinexUtils.parseString(line, 24, 2)));
@@ -647,7 +651,7 @@ public class RinexNavigationParser {
                            pi -> Collections.singleton(STO_LINE_1)),
 
         /** Parser for system time offset message type. */
-        STO_TYPE(line -> line.startsWith("> STO"),
+        STO_TYPE((header, line) -> line.startsWith("> STO"),
                  (line, pi) -> {
                      pi.closePendingMessage();
                      pi.sto = new SystemTimeOffsetMessage(SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 6, 1)),
@@ -657,7 +661,7 @@ public class RinexNavigationParser {
                  pi -> Collections.singleton(STO_SV_EPOCH_CLOCK)),
 
         /** Parser for Earth orientation parameter message model. */
-        EOP_LINE_2(line -> true,
+        EOP_LINE_2((header, line) -> true,
                    (line, pi) -> {
                        pi.eop.setTransmissionTime(Unit.SECOND.toSI(RinexUtils.parseDouble(line,  4, 19)));
                        pi.eop.setDut1(Unit.SECOND.toSI(RinexUtils.parseDouble(line, 23, 19)));
@@ -669,7 +673,7 @@ public class RinexNavigationParser {
                    LineParser::navigationNext),
 
         /** Parser for Earth orientation parameter message model. */
-        EOP_LINE_1(line -> true,
+        EOP_LINE_1((header, line) -> true,
                    (line, pi) -> {
                        pi.eop.setYp(Unit.ARC_SECOND.toSI(RinexUtils.parseDouble(line, 23, 19)));
                        pi.eop.setYpDot(AS_PER_DAY.toSI(RinexUtils.parseDouble(line, 42, 19)));
@@ -678,24 +682,24 @@ public class RinexNavigationParser {
                    pi -> Collections.singleton(EOP_LINE_2)),
 
         /** Parser for Earth orientation parameter message model. */
-        EOP_LINE_0(line -> true,
-                           (line, pi) -> {
-                               final int year  = RinexUtils.parseInt(line, 4, 4);
-                               final int month = RinexUtils.parseInt(line, 9, 2);
-                               final int day   = RinexUtils.parseInt(line, 12, 2);
-                               final int hours = RinexUtils.parseInt(line, 15, 2);
-                               final int min   = RinexUtils.parseInt(line, 18, 2);
-                               final int sec   = RinexUtils.parseInt(line, 21, 2);
-                               pi.eop.setReferenceEpoch(new AbsoluteDate(year, month, day, hours, min, sec,
-                                                                         pi.eop.getSystem().getObservationTimeScale().getTimeScale(pi.timeScales)));
-                               pi.eop.setXp(Unit.ARC_SECOND.toSI(RinexUtils.parseDouble(line, 23, 19)));
-                               pi.eop.setXpDot(AS_PER_DAY.toSI(RinexUtils.parseDouble(line, 42, 19)));
-                               pi.eop.setXpDotDot(AS_PER_DAY2.toSI(RinexUtils.parseDouble(line, 61, 19)));
-                           },
-                           pi -> Collections.singleton(EOP_LINE_1)),
+        EOP_LINE_0((header, line) -> true,
+                   (line, pi) -> {
+                       final int year  = RinexUtils.parseInt(line, 4, 4);
+                       final int month = RinexUtils.parseInt(line, 9, 2);
+                       final int day   = RinexUtils.parseInt(line, 12, 2);
+                       final int hours = RinexUtils.parseInt(line, 15, 2);
+                       final int min   = RinexUtils.parseInt(line, 18, 2);
+                       final int sec   = RinexUtils.parseInt(line, 21, 2);
+                       pi.eop.setReferenceEpoch(new AbsoluteDate(year, month, day, hours, min, sec,
+                                                                 pi.eop.getSystem().getObservationTimeScale().getTimeScale(pi.timeScales)));
+                       pi.eop.setXp(Unit.ARC_SECOND.toSI(RinexUtils.parseDouble(line, 23, 19)));
+                       pi.eop.setXpDot(AS_PER_DAY.toSI(RinexUtils.parseDouble(line, 42, 19)));
+                       pi.eop.setXpDotDot(AS_PER_DAY2.toSI(RinexUtils.parseDouble(line, 61, 19)));
+                       },
+                   pi -> Collections.singleton(EOP_LINE_1)),
 
         /** Parser for Earth orientation parameter message type. */
-        EOP_TYPE(line -> line.startsWith("> EOP"),
+        EOP_TYPE((header, line) -> line.startsWith("> EOP"),
                  (line, pi) -> {
                      pi.closePendingMessage();
                      pi.eop = new EarthOrientationParameterMessage(SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 6, 1)),
@@ -705,7 +709,7 @@ public class RinexNavigationParser {
                  pi -> Collections.singleton(EOP_LINE_0)),
 
         /** Parser for ionosphere Klobuchar message model. */
-        KLOBUCHAR_LINE_2(line -> true,
+        KLOBUCHAR_LINE_2((header, line) -> true,
                          (line, pi) -> {
                              pi.klobuchar.setBetaI(3, IonosphereKlobucharMessage.S_PER_SC_N[3].toSI(RinexUtils.parseDouble(line,  4, 19)));
                              pi.klobuchar.setRegionCode(RinexUtils.parseDouble(line, 23, 19) < 0.5 ?
@@ -716,7 +720,7 @@ public class RinexNavigationParser {
                          LineParser::navigationNext),
 
         /** Parser for ionosphere Klobuchar message model. */
-        KLOBUCHAR_LINE_1(line -> true,
+        KLOBUCHAR_LINE_1((header, line) -> true,
                          (line, pi) -> {
                              pi.klobuchar.setAlphaI(3, IonosphereKlobucharMessage.S_PER_SC_N[3].toSI(RinexUtils.parseDouble(line,  4, 19)));
                              pi.klobuchar.setBetaI(0, IonosphereKlobucharMessage.S_PER_SC_N[0].toSI(RinexUtils.parseDouble(line, 23, 19)));
@@ -726,7 +730,7 @@ public class RinexNavigationParser {
                          pi -> Collections.singleton(KLOBUCHAR_LINE_2)),
 
         /** Parser for ionosphere Klobuchar message model. */
-        KLOBUCHAR_LINE_0(line -> true,
+        KLOBUCHAR_LINE_0((header, line) -> true,
                          (line, pi) -> {
                              final int year  = RinexUtils.parseInt(line, 4, 4);
                              final int month = RinexUtils.parseInt(line, 9, 2);
@@ -743,7 +747,7 @@ public class RinexNavigationParser {
                          pi -> Collections.singleton(KLOBUCHAR_LINE_1)),
 
         /** Parser for ionosphere Nequick-G message model. */
-        NEQUICK_LINE_1(line -> true,
+        NEQUICK_LINE_1((header, line) -> true,
                        (line, pi) -> {
                            pi.nequickG.setFlags((int) FastMath.rint(RinexUtils.parseDouble(line, 4, 19)));
                            pi.file.addNequickGMessage(pi.nequickG);
@@ -752,7 +756,7 @@ public class RinexNavigationParser {
                        LineParser::navigationNext),
 
         /** Parser for ionosphere Nequick-G message model. */
-        NEQUICK_LINE_0(line -> true,
+        NEQUICK_LINE_0((header, line) -> true,
                        (line, pi) -> {
                            final int year  = RinexUtils.parseInt(line, 4, 4);
                            final int month = RinexUtils.parseInt(line, 9, 2);
@@ -769,7 +773,7 @@ public class RinexNavigationParser {
                        pi -> Collections.singleton(NEQUICK_LINE_1)),
 
         /** Parser for ionosphere BDGIM message model. */
-        BDGIM_LINE_2(line -> true,
+        BDGIM_LINE_2((header, line) -> true,
                      (line, pi) -> {
                          pi.bdgim.setAlphaI(7, Unit.TOTAL_ELECTRON_CONTENT_UNIT.toSI(RinexUtils.parseDouble(line,  4, 19)));
                          pi.bdgim.setAlphaI(8, Unit.TOTAL_ELECTRON_CONTENT_UNIT.toSI(RinexUtils.parseDouble(line, 23, 19)));
@@ -779,7 +783,7 @@ public class RinexNavigationParser {
                      LineParser::navigationNext),
 
         /** Parser for ionosphere BDGIM message model. */
-        BDGIM_LINE_1(line -> true,
+        BDGIM_LINE_1((header, line) -> true,
                      (line, pi) -> {
                          pi.bdgim.setAlphaI(3, Unit.TOTAL_ELECTRON_CONTENT_UNIT.toSI(RinexUtils.parseDouble(line,  4, 19)));
                          pi.bdgim.setAlphaI(4, Unit.TOTAL_ELECTRON_CONTENT_UNIT.toSI(RinexUtils.parseDouble(line, 23, 19)));
@@ -789,7 +793,7 @@ public class RinexNavigationParser {
                      pi -> Collections.singleton(BDGIM_LINE_2)),
 
         /** Parser for ionosphere BDGIM message model. */
-        BDGIM_LINE_0(line -> true,
+        BDGIM_LINE_0((header, line) -> true,
                      (line, pi) -> {
                          final int year  = RinexUtils.parseInt(line, 4, 4);
                          final int month = RinexUtils.parseInt(line, 9, 2);
@@ -806,7 +810,7 @@ public class RinexNavigationParser {
                      pi -> Collections.singleton(BDGIM_LINE_1)),
 
         /** Parser for ionosphere message type. */
-        IONO_TYPE(line -> line.startsWith("> ION"),
+        IONO_TYPE((header, line) -> line.startsWith("> ION"),
                   (line, pi) -> {
                       pi.closePendingMessage();
                       final SatelliteSystem system = SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 6, 1));
@@ -827,7 +831,7 @@ public class RinexNavigationParser {
                   pi -> Collections.singleton(pi.nequickG != null ? NEQUICK_LINE_0 : (pi.bdgim != null ? BDGIM_LINE_0 : KLOBUCHAR_LINE_0)));
 
         /** Predicate for identifying lines that can be parsed. */
-        private final Predicate<String> canHandle;
+        private final BiFunction<RinexNavigationHeader, String, Boolean> canHandle;
 
         /** Parsing method. */
         private final ParsingMethod parsingMethod;
@@ -840,7 +844,8 @@ public class RinexNavigationParser {
          * @param parsingMethod parsing method
          * @param allowedNextProvider supplier for allowed parsers for next line
          */
-        LineParser(final Predicate<String> canHandle, final ParsingMethod parsingMethod,
+        LineParser(final BiFunction<RinexNavigationHeader, String, Boolean> canHandle,
+                   final ParsingMethod parsingMethod,
                    final Function<ParseInfo, Iterable<LineParser>> allowedNextProvider) {
             this.canHandle           = canHandle;
             this.parsingMethod       = parsingMethod;

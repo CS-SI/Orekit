@@ -14,22 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.rinex.section;
+package org.orekit.files.rinex.observation;
 
-/** Labels for Rinex files.
+import org.orekit.files.rinex.section.Label;
+
+/** Label for Rinex observation files.
  * @author Luc Maisonobe
- * @since 12.0
+ * @since 14.0
  */
-public enum RinexLabels {
-
-    /** Version, file type and satellite system. */
-    VERSION("RINEX VERSION / TYPE"),
-
-    /** Generating program and emiting agency. */
-    PROGRAM("PGM / RUN BY / DATE"),
-
-    /** Comments. */
-    COMMENT("COMMENT"),
+public enum ObservationLabel implements Label {
 
     /** Marker name. */
     MARKER_NAME("MARKER NAME"),
@@ -79,20 +72,8 @@ public enum RinexLabels {
     /** Center of mass. */
     CENTER_OF_MASS_XYZ("CENTER OF MASS: XYZ"),
 
-    /** DOI. */
-    DOI("DOI"),
-
-    /** Llicense. */
-    LICENSE("LICENSE OF USE"),
-
-    /** Station information.*/
-    STATION_INFORMATION("STATION INFORMATION"),
-
     /** Number and types of observations. */
     NB_TYPES_OF_OBSERV("# / TYPES OF OBSERV"),
-
-    /** Number and types of observations. */
-    SYS_NB_TYPES_OF_OBSERV("SYS / # / OBS TYPES"),
 
     /** Unit of signal strength. */
     SIGNAL_STRENGTH_UNIT("SIGNAL STRENGTH UNIT"),
@@ -109,12 +90,6 @@ public enum RinexLabels {
     /** Indicator of receiver clock offset application. */
     RCV_CLOCK_OFFS_APPL("RCV CLOCK OFFS APPL"),
 
-    /** Differential code bias corrections. */
-    SYS_DCBS_APPLIED("SYS / DCBS APPLIED"),
-
-    /** Phase center variations corrections. */
-    SYS_PCVS_APPLIED("SYS / PCVS APPLIED"),
-
     /** Scale factor. */
     SYS_SCALE_FACTOR("SYS / SCALE FACTOR"),
 
@@ -127,79 +102,13 @@ public enum RinexLabels {
     /** GLONASS phase bias corrections. */
     GLONASS_COD_PHS_BIS("GLONASS COD/PHS/BIS"),
 
-    /** Time system used for time tags.
-     * @since 14.0
-     */
-    TIME_SYSTEM_ID("TIME SYSTEM ID"),
-
-    /** Leap seconds separating UTC and TAI. */
-    LEAP_SECONDS("LEAP SECONDS"),
-
-    /** Leap seconds separating UTC and GNSS system times.
-     * @since 14.0
-     */
-    LEAP_SECONDS_GNSS("LEAP SECONDS GNSS"),
-
     /** Number of satellites. */
     NB_OF_SATELLITES("# OF SATELLITES"),
 
     /** PRN and number of observations . */
-    PRN_NB_OF_OBS("PRN / # OF OBS"),
+    PRN_NB_OF_OBS("PRN / # OF OBS");
 
-    /** Number of different clock data types.
-     * @since 14.0
-     */
-    NB_TYPES_OF_DATA("# / TYPES OF DATA"),
-
-    /** 4-character or 9-character site ID.
-     * @since 14.0
-     */
-    STATION_NAME_NUM("STATION NAME / NUM"),
-
-    /** Unique identifier for external reference clock.
-     * @since 14.0
-     */
-    STATION_CLK_REF("STATION CLK REF"),
-
-    /** Name of Analysis Center.
-     * @since 14.0
-     */
-    ANALYSIS_CENTER("ANALYSIS CENTER"),
-
-    /** Number of analysis clock references.
-     * @since 14.0
-     */
-    NB_OF_CLK_REF("# OF CLK REF"),
-
-    /** List of the analysis clock references.
-     * @since 14.0
-     */
-    ANALYSIS_CLK_REF("ANALYSIS CLK REF"),
-
-    /** Number of receivers included in the clock data records.
-     * @since 14.0
-     */
-    NB_OF_SOLN_STA_TRF("# OF SOLN STA / TRF"),
-
-    /** Solution station data.
-     * @since 14.0
-     */
-    SOLN_STA_NAME_NUM("SOLN STA NAME / NUM"),
-
-    /** Number of different satellites in the clock data records.
-     * @since 14.0
-     */
-    NB_OF_SOLN_SATS("# OF SOLN SATS"),
-
-    /** List of all satellites reported in this file.
-     * @since 14.0
-     */
-    PRN_LIST("PRN LIST"),
-
-    /** End of header. */
-    END("END OF HEADER");
-
-    /** Labels. */
+    /** Label. */
     private final String[] labels;
 
     /** Simple constructor.
@@ -209,14 +118,12 @@ public enum RinexLabels {
      * </p>
      * @param labels labels
      */
-    RinexLabels(final String... labels) {
+    ObservationLabel(final String... labels) {
         this.labels = labels.clone();
     }
 
-    /** Check if label matches.
-     * @param label label to check
-     * @return true if label matches one of the allowed label
-     */
+    /** {@inheritDoc} */
+    @Override
     public boolean matches(final String label) {
         for (String allowed : labels) {
             if (allowed.equals(label)) {
