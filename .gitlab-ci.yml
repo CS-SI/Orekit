@@ -51,6 +51,7 @@ verify:
     paths:
       - target/*.jar
       - target/site
+      - target/bom.*
     reports:
       junit:
         - target/surefire-reports/*.xml
