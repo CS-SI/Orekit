@@ -23,20 +23,13 @@ request_confirmation()
 top=$(cd $(dirname $0)/.. ; pwd)
 
 # safety checks
-for cmd in git sed xsltproc sort tail curl base64 ; do
+for cmd in git sed xsltproc sort tail curl base64 jq ; do
     which -s $cmd || complain "$cmd command not found"
 done
 git -C "$top" rev-parse 2>/dev/null        || complain "$top does not contain a git repository"
 test -f $top/pom.xml                       || complain "$top/pom.xml not found"
 test -d $top/src/main/java/org/orekit/time || complain "$top/src/main/java/org/orekit/time not found"
 test -f $HOME/.m2/settings.xml             || complain "$HOME/.m2/settings.xml not found"
-
-# get user credentials
-central_portal_username=$(xsltproc $top/scripts/get-central-username.xsl $HOME/.m2/settings.xml)
-test ! -z "central_portal_username" || complain "username for central portal not found in $HOME/.m2/settings.xml"
-central_portal_password=$(xsltproc $top/scripts/get-central-password.xsl $HOME/.m2/settings.xml)
-test ! -z "central_portal_password" || complain "password for central portal not found in $HOME/.m2/settings.xml"
-central_bearer=$(echo ${central_portal_username}:${central_portal_password} | base64)
 
 start_branch=$(cd $top ; git branch --show-current)
 echo "start branch is $start_branch"
@@ -55,18 +48,53 @@ rc_tag="${release_version}-RC$last_rc"
 release_tag="$release_version"
 test -z "$(cd $top; git tag -l \"${release_tag}\")" || complain "tag ${release_tag} already exists"
 
+# retrieve artifacts from Orekit Nexus repository
+bundle_dir=$tmpdir/bundle/org/orekit/orekit/${release_version};
+mkdir $bundle_dir
+base_url="https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/${release_version}"
+for asset in "-cyclonedx.json" "-javadoc.jar" "-sources.zip" ".jar" ".pom" ".zip" ; do
+    for suffix in "" ".md5" ".sha1" ; do
+      curl --output ${bundle_dir}/orekit-${release_version}${suffix} \
+           $base_url/orekit-${release_version}${suffix}
+    done
+done
+(cd $tmpdir/bundle ; tar czf orekit-${release_version}.tar.gz ./org)
+
+# get user credentials
+read -p "enter your central portal user token name" central_username
+while test -z "central_password" ; do
+    echo "enter your central portal user token password"
+    stty_orig=$(stty -g)
+    stty -echo
+    read central_password
+    stty $stty_orig
+done
+central_bearer=$(echo ${central_username}:${central_password} | base64)
+
+# upload maven artifacts to central portal
+request_confirmation "upload maven artifacts to central portal?"
+deployment_id=$(cd $tmpdit/bundle ;
+                curl --request POST \
+                     --header "Authorization: Bearer $central_bearer" \
+                     --form bundle=@orekit-${release_version}.tar.gz \
+                      https://central.sonatype.com/api/v1/publisher/upload?name=${orekit-${release_version}&publishingType=USER_MANAGED})
+
+# wait for validation
+status=""
+while test "$status" != "VALIDATED" ; do
+  sleep 2
+  status=$(curl --request POST \
+                --header "Authorization: Bearer $central_bearer" \
+                https://central.sonatype.com/api/v1/publisher/deployment/status?id=${deployment_id} \
+           | jq .deploymentState)
+  echo "deployment status is \"$status\", still waiting for validation…"
+done
+
 # publish maven artifacts to central portal
-save_dir=${HOME}/.local/share/orekit-release-scripts
-test -f "$save_dir/deployment-ids" || complain "$save_dir/deployment-ids" not found
-deployment_id=$(sed -n "s,^$rc_tag  \([^ ]*\)$,\1,p" "$save_dir/deployment-ids")
-test ! -z "$deployment_id" || complain "deployment id for $rc_tag not found"
-request_confirmation "publish maven artifacts for deployment id $deployment_id?"
+request_confirmation "publish maven artifacts to central portal?"
 curl --request POST \
      --header "Authorization: Bearer $central_bearer" \
-     "https://central.sonatype.com/api/v1/publisher/deployment/$deployment_id"
-
-# clean up saved deployment id file
-sed -i "/^$rc_tag .*/d" "$save_dir/deployment-ids"
+     https://central.sonatype.com/api/v1/publisher/deployment/${deployment_id}
 
 signing_key="0802AB8C87B0B1AEC1C1C5871550FDBD6375C33B"
 echo "BEWARE! In the next step, the signing key will be used."

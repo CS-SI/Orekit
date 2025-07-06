@@ -23,20 +23,13 @@ request_confirmation()
 top=$(cd $(dirname $0)/.. ; pwd)
 
 # safety checks
-for cmd in git sed xsltproc sort tail curl base64 ; do
+for cmd in git sed xsltproc sort tail ; do
     which -s $cmd || complain "$cmd command not found"
 done
 git -C "$top" rev-parse 2>/dev/null        || complain "$top does not contain a git repository"
 test -f $top/pom.xml                       || complain "$top/pom.xml not found"
 test -d $top/src/main/java/org/orekit/time || complain "$top/src/main/java/org/orekit/time not found"
 test -f $HOME/.m2/settings.xml             || complain "$HOME/.m2/settings.xml not found"
-
-# get user credentials
-central_portal_username=$(xsltproc $top/scripts/get-central-username.xsl $HOME/.m2/settings.xml)
-test ! -z "central_portal_username" || complain "username for central portal not found in $HOME/.m2/settings.xml"
-central_portal_password=$(xsltproc $top/scripts/get-central-password.xsl $HOME/.m2/settings.xml)
-test ! -z "central_portal_password" || complain "password for central portal not found in $HOME/.m2/settings.xml"
-central_bearer=$(echo ${central_portal_username}:${central_portal_password} | base64)
 
 start_branch=$(cd $top ; git branch --show-current)
 echo "start branch is $start_branch"
@@ -54,15 +47,23 @@ last_rc=$(cd $top; git tag -l ${release_version}-RC* | sed 's,.*-RC,,' | sort -n
 test ! -z "$last_rc" || complain "there was no release candidate for $release_version"
 release_tag="${release_version}-RC$last_rc"
 
-# delete maven artifacts to central portal
-save_dir=${HOME}/.local/share/orekit-release-scripts
-test -f "$save_dir/deployment-ids" || complain "$save_dir/deployment-ids" not found
-deployment_id=$(sed -n "s,^$release_tag *\([^ ]*\)$,\1,p" "$save_dir/deployment-ids")
-test ! -z "$deployment_id" || complain "deployment id for $release_tag not found"
-request_confirmation "delete maven artifacts for deployment id $deployment_id?"
-curl --request DELETE \
-     --header "Authorization: Bearer $central_bearer" \
-     "https://central.sonatype.com/api/v1/publisher/deployment/$deployment_id"
+# delete maven artifacts on Orekit Nexus repository
+read -p "enter your Nexus repository user name" nexus_username
+while test -z "nexus_password" ; do
+    echo "enter your Nexus repository API key"
+    stty_orig=$(stty -g)
+    stty -echo
+    read nexus_password
+    stty $stty_orig
+done
+cat > $tmpdir.curl-config <<EOD
+--user ${nexus_username}:${nexus_password}
+EOD
 
-# clean up saved deployment id file
-sed -i "/^$release_tag .*/d" "$save_dir/deployment-ids"
+request_confirmation "delete maven artifacts for release tag ${release_tag}?"
+base_url="https://packages.orekit.org/service/rest/v1/assets?repository=maven-staging/org/orekit/orekit"
+for asset in "-cyclonedx.json" "-javadoc.jar" "-sources.zip" ".jar" ".pom" ".zip" ; do
+    curl --config $tmpdir.curl-config \\
+         --request DELETE \
+         "${base_url}/${release_version}/orekit-${release_version}${asset}"
+done

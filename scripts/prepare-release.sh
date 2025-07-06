@@ -12,13 +12,6 @@ complain()
         (cd $top ; git reset -q --hard; git checkout $start_branch)
         test -z "$(git branch --list $temporary_branch)"  || (cd $top ; git branch -D $temporary_branch)
         test "$delete_release_branch_on_cleanup" = "true" && (cd $top ; git branch -D $release_branch)
-        if test ! -z "$deployment_id" ; then
-            echo "deleting deployment id $deployment_id on central portal" 1>&2
-            curl --request DELETE \
-                 --verbose \
-                 --header "Authorization: Bearer $central_bearer" \
-                 "https://central.sonatype.com/api/v1/publisher/deployment/$deployment_id"
-        fi
         echo "everything has been cleaned, branch set back to $start_branch" 1>&2
     fi
     exit 1
@@ -50,7 +43,7 @@ request_confirmation()
 top=$(cd $(dirname $0)/.. ; pwd)
 
 # safety checks
-for cmd in git sed xsltproc mvn tee sort tail ; do
+for cmd in git sed xsltproc mvn tee sort tail curl ; do
     which -s $cmd || complain "$cmd command not found"
 done
 git -C "$top" rev-parse 2>/dev/null        || complain "$top does not contain a git repository"
@@ -130,51 +123,11 @@ else
     release_tag="${release_version}-RC$next_rc"
 fi
 
-# ask for release description (also used for the vote topic)
-release_description=""
-vote_topic="This is a VOTE in order to release version ${release_version} of the Orekit library.
-Version ${release_version} is a $'release_type} release.
-
-Highlights in the ${release_version} release are:"
-while test -z "$release_description" ; do
-  echo "enter release description to be put in both changes.xml and in the vote topic on the forum (end by Ctrl-D)"
-  while IFS= read line ; do
-      if  test -z "$release_description" ; then
-          release_description="$line"
-      else
-          release_description="${release_description}; $line"
-      fi
-      vote_topic="$vote_topic
-      - $line"
-  done
-  echo "description will be:"
-  echo "$release_description"
-  echo ""
-  echo ""
-  if test "$release_type" = "patch" ; then
-      echo "as this is a patch release, there will be no vote topic"
-  else
-      echo "vote topic will be:"
-      vote_topic="$vote_topic
-
-The release candidate $next_rc can be found in the gitlab repository
-as tag $release_tag in the $release_branch branch:
-    https://gitlab.orekit.org/orekit/orekit/tree/$release_tag
-
-the vote will be tallied at $vote_date (this is UTC time)"
-      echo "$vote_topic"
-  fi
-  read -p "do you agree with these description and vote topic? (enter yes to continue, no to enter again) " answer
-  if test "$answer" != "yes" ; then
-    release_description=""
-  fi
-done
-
 # update changes.xml
 cp -p $top/src/changes/changes.xml $tmpdir/original-changes.xml
 xsltproc --stringparam release-version     "$release_version" \
          --stringparam release-date        "$release_date" \
-         --stringparam release-description "$release_description" \
+         --stringparam release-description "$release_version is a $release_type release." \
          $top/scripts/update-changes.xsl \
          $tmpdir/original-changes.xml \
          > $top/src/changes/changes.xml
@@ -206,21 +159,12 @@ echo "BEWARE! In the next step, the signing key will be used."
 echo "gpg-agent will most likely display a dialog window that will PREVENT"
 echo "retrieving the passphrase from password management tools like KeePassXC."
 echo "If you need to retrieve the passphrase from such a password management tool,"
-echo "do it now, and enter 'yes' fast on the following prompt so you can paste it in gpg-agent dialog."
+echo " do it now,and type 'yes' fast on the following prompt,"
+ecgo "so you can paste the passphrase in gpg-agent dialog."
 request_confirmation "create and sign tag $release_tag?"
 (cd $top ; git tag $release_tag -s -u $signing_key -m "Release Candidate $next_rc for version $release_version."; git tag -v $release_tag)
 
-# deploy maven artifacts to central portal
-request_confirmation "build and deploy maven artifacts to central portal?"
-(cd $top ; mvn clean ; LANG=C mvn site deploy -Prelease | tee $tmpdir/maven-deploy-output)
-deployment_id=$(sed -n 's,.*INFO.* *Deployment *\([-a-fA-F0-9]*\) has been validated.*,\1,p' $tmpdir/maven-deploy-output)
-save_dir=${HOME}/.local/share/orekit-release-scripts
-test -d "$save_dir"                || mkdir -p "$save_dir"
-test -f "$save_dir/deployment-ids" || touch "$save_dir/deployment-ids"
-echo "$release_tag $deployment_id" >> "$save_dir/deployment-ids"
-echo "deployment ID $deployment_id for tag $release_tag saved in $save_dir/deployment-ids"
-
-# push to origin
+# push to origin (this will trigger automatic deployment to Orekit Nexus instance)
 request_confirmation "push $release_branch branch and $release_tag tag to origin?"
 (cd $top ; git push origin $release_branch $release_tag)
 
@@ -228,15 +172,48 @@ if test "$release_type" = "patch" ; then
     # for patch release, there are no votes, we jump directly to the publish step
     sh successful-vote.sh
 else
-    # propose vote topic
-    echo "please go to https://forum.orekit.org/c/orekit-development/ and create a new topic with title"
-    echo ""
-    echo "[VOTE] Releasing Orekit ${release_version} from release candidate $next_rc"
-    echo ""
-    echo "and with content:"
-    echo ""
-    echo "$vote_topic"
-    echo ""
+    # create vote topic
+    orekit_dev_category=5
+    topic_title="[VOTE] Releasing Orekit ${release_version} from release candidate $next_rc"
+    topic_raw="This is a vote in order to release version ${release_version} of the Orekit library.
+Version ${release_version} is a ${release_type} release.
+
+$(xsltproc $top/scripts/changes2release.xsl $top/src/changes/changes.xml)
+
+The release candidate ${next_rc} can be found on the GitLab repository
+as tag $release_tag in the ${release_branch} branch:
+https://gitlab.orekit.org/orekit/orekit/tree/${release_branch}
+
+The maven artifacts are available in the Orekit Nexus repository staging area at
+https://packages.orekit.org/#browse/browse:maven-staging:org%2Forekit%2Forekit%2F${release_version}
+
+The generated site is available at
+https://www.orekit.org/site-orekit-${release_version}/index.html
+
+The vote will be tallied on ${release_date}"
+
+    echo "proposed vote topic for the forum:"
+    echo "$topic_raw"
+    request_confirmation "OK to post vote topic on forum?"
+
+    read -p "enter your forum user name" forum_username
+    while test -z "forum_password" ; do
+        echo "enter your forum API key"
+        stty_orig=$(stty -g)
+        stty -echo
+        read forum_password
+        stty $stty_orig
+    done
+
+    post_url=$(curl -H "Content-Type: application/json" \
+                    -H "Accept: application/json" \
+                    -H "Api-Username: $forum_username"\
+                    -H "Api-Key: $forum_password" \
+                    -X POST https://forum.orekit.org/posts.json
+                    -d "{ \"title\": \"topic_title\", \"raw\": \"$topic_raw\", \"category\": \"$orekit_dev_category\" }" \
+            | jp .post_url | sed "s,\"\(.*\)\",https://forum.orekit.org\1,")
+    echo "post URLis : $post_url"
+
     echo ""
     echo "please ping PMC members so they are aware of the vote."
     echo "Their vote is essential for a release as per project governance."

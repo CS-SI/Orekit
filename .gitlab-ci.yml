@@ -97,7 +97,7 @@ changelog:
   before_script:
     - apk add libxslt
   script:
-    - xsltproc .CI/changes2release.xsl src/changes/changes.xml > CHANGELOG.md
+    - xsltproc scripts/changes2release.xsl src/changes/changes.xml > CHANGELOG.md
   artifacts:
     paths:
       - CHANGELOG.md
@@ -146,6 +146,25 @@ performance:
   trigger: orekit/orekit-performance
   only:
     - develop@orekit/orekit
+
+staging:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  script:
+    - cat CHANGELOG.md
+  release:
+    tag_name: $CI_COMMIT_TAG
+    description: './CHANGELOG.md'
+    assets:
+      links:
+        - name: orekit-${CI_COMMIT_TAG}.jar
+          url: https://packages.orekit.org/repository/maven-staging/org/orekit/orekit/${CI_COMMIT_TAG}/orekit-${CI_COMMIT_TAG}.jar
+        - name: orekit-${CI_COMMIT_TAG}-javadoc.jar
+          url: https://packages.orekit.org/repository/maven-staging/org/orekit/orekit/${CI_COMMIT_TAG}/orekit-${CI_COMMIT_TAG}-javadoc.jar
+        - name: orekit-${CI_COMMIT_TAG}-sources.jar
+          url: https://packages.orekit.org/repository/maven-staging/org/orekit/orekit/${CI_COMMIT_TAG}/orekit-${CI_COMMIT_TAG}-sources.jar
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^[.0-9]+-RC[0-9]+$/'
 
 release:
   stage: release
