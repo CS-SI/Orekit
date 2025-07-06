@@ -520,9 +520,6 @@ public enum OrekitMessages implements Localizable {
     /** STK_UNEXPECTED_END_OF_FILE. */
     STK_UNEXPECTED_END_OF_FILE("unexpected end of STK file (after line {0})"),
 
-    /** CLOCK_FILE_UNSUPPORTED_VERSION. */
-    CLOCK_FILE_UNSUPPORTED_VERSION("unsupported clock file version {0}"),
-
     /** UNSUPPORTED_FILE_FORMAT_VERSION. */
     UNSUPPORTED_FILE_FORMAT_VERSION("version {0} from file {1} is not supported, supported version: {2}"),
 

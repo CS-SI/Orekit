@@ -445,9 +445,6 @@ STK_UNMAPPED_COORDINATE_SYSTEM=
 # unexpected end of STK file (after line {0})
 STK_UNEXPECTED_END_OF_FILE=fine inattesa di un file STK (dopo la linea {0})
 
-# unsupported clock file version {0}
-CLOCK_FILE_UNSUPPORTED_VERSION=versione del file orologio {0} non supportata
-
 # version {0} from file {1} is not supported, supported version: {2}
 UNSUPPORTED_FILE_FORMAT_VERSION=
 
