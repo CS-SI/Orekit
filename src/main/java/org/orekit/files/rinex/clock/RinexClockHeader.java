@@ -16,6 +16,8 @@
  */
 package org.orekit.files.rinex.clock;
 
+import org.orekit.files.rinex.section.CommonLabel;
+import org.orekit.files.rinex.section.Label;
 import org.orekit.files.rinex.section.RinexClockObsBaseHeader;
 import org.orekit.files.rinex.utils.RinexFileType;
 import org.orekit.frames.Frame;
@@ -37,6 +39,12 @@ import java.util.function.Function;
  * @since 14.0
  */
 public class RinexClockHeader extends RinexClockObsBaseHeader {
+
+    /** Index of label in header lines before 3.04. */
+    private static final int LABEL_INDEX_300_302 = 60;
+
+    /** Index of label in header lines for version 3.04 and later. */
+    private static final int LABEL_INDEX_304_PLUS = 65;
 
     /** Maps {@link #frameName} to a {@link Frame}. */
     private final Function<? super String, ? extends Frame> frameBuilder;
@@ -352,6 +360,21 @@ public class RinexClockHeader extends RinexClockObsBaseHeader {
      */
     public List<String> getSatellites() {
         return Collections.unmodifiableList(satellites);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean matchFound(final Label label, final String line) {
+        // the position of the labels changes depending on version
+        if (label == CommonLabel.VERSION) {
+            // we are parsing the line RINEX VERSION / TYPE itself, the version is not known yet
+            // so we try both positions
+            return label.matches(line.substring(LABEL_INDEX_300_302).trim()) ||
+                   label.matches(line.substring(LABEL_INDEX_304_PLUS).trim());
+        } else {
+            final int index = getFormatVersion() < 3.04 ? LABEL_INDEX_300_302 : LABEL_INDEX_304_PLUS;
+            return label.matches(line.substring(index).trim());
+        }
     }
 
 }

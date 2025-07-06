@@ -36,10 +36,10 @@ import org.orekit.data.GzipFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.rinex.clock.RinexClock.ClockDataLine;
-import org.orekit.files.rinex.clock.RinexClock.ClockDataType;
-import org.orekit.files.rinex.clock.RinexClock.Receiver;
-import org.orekit.files.rinex.clock.RinexClock.ReferenceClock;
+import org.orekit.files.rinex.clock.ClockDataLine;
+import org.orekit.files.rinex.clock.ClockDataType;
+import org.orekit.files.rinex.clock.Receiver;
+import org.orekit.files.rinex.clock.ReferenceClock;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
@@ -928,7 +928,7 @@ public class ClockFileParserTest {
             parser.parse(inEntry);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CLOCK_FILE_UNSUPPORTED_VERSION, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT_VERSION, oe.getSpecifier());
             Assertions.assertEquals("0.05", Double.toString((double) oe.getParts()[0]));
         }
     }
