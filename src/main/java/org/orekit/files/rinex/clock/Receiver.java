@@ -19,7 +19,7 @@ package org.orekit.files.rinex.clock;
 /** Container for a receiver or a satellite with its position in the considered frame.
  * @since 14.0
  */
-class Receiver {
+public class Receiver {
 
     /** Designator. */
     private final String designator;

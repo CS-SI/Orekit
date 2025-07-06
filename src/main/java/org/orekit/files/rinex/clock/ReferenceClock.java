@@ -21,7 +21,7 @@ import org.orekit.time.AbsoluteDate;
 /** Reference clock with its validity time span.
  * @since 14.0
  */
-class ReferenceClock {
+public class ReferenceClock {
 
     /** Receiver/satellite embedding the reference clock name. */
     private final String referenceName;

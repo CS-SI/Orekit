@@ -36,10 +36,6 @@ import org.orekit.data.GzipFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.rinex.clock.ClockDataLine;
-import org.orekit.files.rinex.clock.ClockDataType;
-import org.orekit.files.rinex.clock.Receiver;
-import org.orekit.files.rinex.clock.ReferenceClock;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
@@ -623,7 +619,7 @@ public class ClockFileParserTest {
         final Map<SatelliteSystem, List<ObservationType>> obsTypeMap = file.getSystemObservationTypes();
 
         // Check map content
-        Assertions.assertEquals(numberOfSatelliteSystems, obsTypeMap.keySet().size());
+        Assertions.assertEquals(numberOfSatelliteSystems, obsTypeMap.size());
         Assertions.assertEquals(numberOfObservationTypesGPS, file.numberOfObsTypes(SatelliteSystem.GPS));
         Assertions.assertEquals(numberOfObservationTypesGAL, file.numberOfObsTypes(SatelliteSystem.GALILEO));
     }

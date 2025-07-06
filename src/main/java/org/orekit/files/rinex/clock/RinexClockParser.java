@@ -24,11 +24,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.InputMismatchException;
 import java.util.List;
-import java.util.Locale;
-import java.util.Scanner;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.annotation.DefaultDataContext;

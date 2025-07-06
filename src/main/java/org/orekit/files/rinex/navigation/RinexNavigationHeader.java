@@ -36,7 +36,7 @@ public class RinexNavigationHeader extends RinexBaseHeader {
     private IonosphericCorrectionType ionosphericCorrectionType;
 
     /** List of time system corrections. */
-    private List<TimeSystemCorrection> timeSystemCorrections;
+    private final List<TimeSystemCorrection> timeSystemCorrections;
 
     /** Number of merged files. */
     private int mergedFiles;
