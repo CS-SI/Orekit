@@ -269,7 +269,8 @@ class SwitchEventHandler implements EventHandler {
         FieldSpacecraftState<Gradient> fieldState = DerivativeStateUtils.buildSpacecraftStateGradient(field,
                 state, attitudeProvider);
         fieldState = fieldState.shiftedBy(time);
-        fieldState = fieldState.withMass(fieldState.getMass().add(time.multiply(massRate)));
+        final Gradient shiftedMass = time.multiply(massRate).add(state.getMass());
+        fieldState = fieldState.withMass(shiftedMass);  // necessary because shiftedBy does not consider mass
         return switchFieldDetector.g(fieldState);
     }
 
