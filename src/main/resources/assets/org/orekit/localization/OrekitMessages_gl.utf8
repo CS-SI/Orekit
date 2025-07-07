@@ -407,7 +407,7 @@ NON_RESETABLE_STATE=reinicialización do estado non autorizado
 DSST_NEWCOMB_OPERATORS_COMPUTATION=imposible de calcula-las operacións de Newcomb con sigma ({0}) > rho ({1})
 
 # Cannot compute the Vmns coefficient with m > n ({0} > {1})
-DSST_VMNS_COEFFICIENT_ERROR_MS=imposible de calcula-los coeficientes Vmns con  m > n ({0} > {1})
+DSST_VMNS_COEFFICIENT_ERROR_MS=Imposible de calcula los coeficientes Vmns con m > n ({0} > {1})
 
 # inconsistent shadow computation: entry = {0} whereas exit = {1}
 DSST_SPR_SHADOW_INCONSISTENT=cálculo de sombra incoherente : entrada = {0} e saída = {1}
@@ -485,10 +485,10 @@ UNABLE_TO_GENERATE_NEW_DATA_AFTER=
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY=imposible de calcular la anomalía excéntrica hiperbólica a partir de la anomalía media después de {0} iteraciones
 
 # unable to compute eccentric longitude argument from the mean one after {0} iterations
-UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT=unable to compute eccentric longitude argument from the mean one after {0} iterations
+UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT=
 
 # unable to compute eccentric latitude argument from the mean one after {0} iterations
-UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT=unable to compute eccentric latitude argument from the mean one after {0} iterations
+UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT=
 
 # unable to compute mean orbit from osculating orbit after {0} iterations
 UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS=

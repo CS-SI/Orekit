@@ -485,10 +485,10 @@ UNABLE_TO_GENERATE_NEW_DATA_AFTER=
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY=kan ikke beregne hyperbolsk eksentrisk anomali fra hovedanomalien etter {0} iterasjoner
 
 # unable to compute eccentric longitude argument from the mean one after {0} iterations
-UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT=unable to compute eccentric longitude argument from the mean one after {0} iterations
+UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT=
 
 # unable to compute eccentric latitude argument from the mean one after {0} iterations
-UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT=unable to compute eccentric latitude argument from the mean one after {0} iterations
+UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT=
 
 # unable to compute mean orbit from osculating orbit after {0} iterations
 UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS=kan ikke beregne hovedbane utfra osculærbane etter {0} gjentakelser
@@ -530,7 +530,7 @@ NO_YUMA_ALMANAC_AVAILABLE=Ingen Yuma almanakkfil funnet
 NOT_A_SUPPORTED_YUMA_ALMANAC_FILE=filen {0} er ikke en støttet Yuma almanakkfil
 
 # only {0} GNSS orbits are provided while {1} are needed to compute the DOP
-NOT_ENOUGH_GNSS_FOR_DOP=Bare {0} GNSS baner har blitt presistert mens {1} baner trengs for å regne ut DOP'en
+NOT_ENOUGH_GNSS_FOR_DOP=bare {0} GNSS baner har blitt presistert mens {1} baner trengs for å regne ut DOP''en
 
 # use of time system {0} in CCSDS files requires an additional ICD and is not implemented in Orekit
 CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED=Bruk av tidssystemet {0} i CCSDS-filer krever en ytterligere ICD og er ikke støttet av Orekit
