@@ -142,7 +142,7 @@ public class OcmWriterTest extends AbstractWriterTest<OdmHeader, Segment<OcmMeta
             }
 
             buffer.flip();
-            return buffer.toString();
+            return buffer.toString().replaceAll("\r\n", "\n");
         }
     }
 

@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.1" date="TBD" description="TBD">
+        <action dev="luc" type="fix" issue="1771">
+            Fixed failing tests on Windows.
+        </action>
         <action dev="serrof" type="update" issue="1770">
             Add model parameters Jacobian update from dynamics switches.
         </action>
