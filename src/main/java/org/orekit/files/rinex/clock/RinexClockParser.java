@@ -502,6 +502,7 @@ public class RinexClockParser {
         CLOCK_DATA((header, line) -> line.charAt(0) != ' ',
                    (line, parseInfo) -> {
 
+                       final RinexClockHeader header = parseInfo.file.getHeader();
                        try {
                            parseInfo.currentDataType = ClockDataType.valueOf(line.substring(0, 2));
                         } catch (IllegalArgumentException iae) {
@@ -516,17 +517,21 @@ public class RinexClockParser {
                        parseInfo.currentName = RinexUtils.parseString(line, 3, length);
 
                        // Third element is data epoch
-                       final int year = scanner.nextInt();
-                       final int month = scanner.nextInt();
-                       final int day = scanner.nextInt();
-                       final int hour = scanner.nextInt();
-                       final int min = scanner.nextInt();
-                       final double sec = scanner.nextDouble();
-                       parseInfo.currentDateComponents = new DateComponents(year, month, day);
-                       parseInfo.currentTimeComponents = new TimeComponents(hour, min, sec);
+                       final int startI = 13;
+                       final int startD = 30;
+                       final AbsoluteDate epoch =
+                               new AbsoluteDate(RinexUtils.parseInt(line,    startI,       4),
+                                                RinexUtils.parseInt(line,    startI +  5,  2),
+                                                RinexUtils.parseInt(line,    startI +  8,  2),
+                                                RinexUtils.parseInt(line,    startI + 11,  2),
+                                                RinexUtils.parseInt(line,    startI + 14,  2),
+                                                RinexUtils.parseDouble(line, startD,       9),
+                                                parseInfo.timeScaleBuilder.
+                                                        apply(header.getSatelliteSystem(),
+                                                              parseInfo.timeScales));
 
                        // Fourth element is number of data values
-                       parseInfo.currentNumberOfValues = scanner.nextInt();
+                       parseInfo.currentNumberOfValues = RinexUtils.parseInt(line, startD + 10, 2);
 
                        // Get the values in this line, there are at most 2.
                        // Some entries claim less values than there actually are.

@@ -21,6 +21,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
+import org.orekit.time.TimeStamped;
 
 /** Clock data for a single station.
  * <p> Data epoch is not linked to any time system in order to parse files with missing lines.
@@ -36,8 +37,8 @@ public class ClockDataLine {
     /** Receiver/Satellite name. */
     private final String name;
 
-    /** Epoch date and time components. */
-    private final DateTimeComponents dateTimeComponents;
+    /** Data line epoch. */
+    private final AbsoluteDate epoch;
 
     /** Number of data values to follow. This number might not represent the non zero values in the line. */
     private final int numberOfValues;
@@ -61,25 +62,25 @@ public class ClockDataLine {
     private final double clockAccelerationSigma;
 
     /** Constructor.
-     * @param type                   the clock data type
-     * @param name                   the receiver/satellite name
-     * @param dateComponents         the epoch date components
-     * @param timeComponents         the epoch time components
-     * @param numberOfValues         the number of values to follow
-     * @param clockBias              the clock bias in seconds
-     * @param clockBiasSigma         the clock bias sigma in seconds
-     * @param clockRate              the clock rate
-     * @param clockRateSigma         the clock rate sigma
-     * @param clockAcceleration      the clock acceleration in seconds^-1
-     * @param clockAccelerationSigma the clock acceleration in seconds^-1
+     * @param type                   clock data type
+     * @param name                   receiver/satellite name
+     * @param epoch                  data line epoch
+     * @param numberOfValues         number of values to follow
+     * @param clockBias              clock bias in seconds
+     * @param clockBiasSigma         clock bias sigma in seconds
+     * @param clockRate              clock rate
+     * @param clockRateSigma         clock rate sigma
+     * @param clockAcceleration      clock acceleration in seconds^-1
+     * @param clockAccelerationSigma clock acceleration in seconds^-1
      */
-    public ClockDataLine(final ClockDataType type, final String name, final DateComponents dateComponents,
-                         final TimeComponents timeComponents, final int numberOfValues, final double clockBias,
-                         final double clockBiasSigma, final double clockRate, final double clockRateSigma,
+    public ClockDataLine(final ClockDataType type, final String name,
+                         final AbsoluteDate epoch, final int numberOfValues,
+                         final double clockBias, final double clockBiasSigma,
+                         final double clockRate, final double clockRateSigma,
                          final double clockAcceleration, final double clockAccelerationSigma) {
         this.dataType               = type;
         this.name                   = name;
-        this.dateTimeComponents     = new DateTimeComponents(dateComponents, timeComponents);
+        this.epoch                  = epoch;
         this.numberOfValues         = numberOfValues;
         this.clockBias              = clockBias;
         this.clockBiasSigma         = clockBiasSigma;
@@ -110,29 +111,11 @@ public class ClockDataLine {
         return numberOfValues;
     }
 
-    /** Get the date/time components.
-     * @return date/time components
-     */
-    public DateTimeComponents getDateTimeComponents() {
-        return dateTimeComponents;
-    }
-
-    /** Get data line epoch. This method should be used if Time System ID line is present in the clock file. If it is
-     * missing, UTC time scale will be applied. To specify tim scale, use
-     * {@link #getEpoch(TimeScale) getEpoch(TimeScale)} method.
+    /** Get data line epoch.
      * @return the data line epoch
      */
     public AbsoluteDate getEpoch() {
-        return new AbsoluteDate(dateTimeComponents, timeScale);
-    }
-
-    /** Get data line epoch. This method should be used in case Time System ID line is missing. Otherwise, it is adviced
-     * to rather use {@link #getEpoch() getEpoch()} method.
-     * @param epochTimeScale the time scale in which the epoch is defined
-     * @return the data line epoch set in the specified time scale
-     */
-    public AbsoluteDate getEpoch(final TimeScale epochTimeScale) {
-        return new AbsoluteDate(dateTimeComponents, epochTimeScale);
+        return epoch;
     }
 
     /** Getter for the clock bias.
