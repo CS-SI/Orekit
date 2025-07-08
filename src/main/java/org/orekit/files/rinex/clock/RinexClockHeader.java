@@ -20,11 +20,14 @@ import org.orekit.files.rinex.section.CommonLabel;
 import org.orekit.files.rinex.section.Label;
 import org.orekit.files.rinex.section.RinexClockObsBaseHeader;
 import org.orekit.files.rinex.utils.RinexFileType;
+import org.orekit.files.rinex.utils.parsing.RinexUtils;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScales;
 import org.orekit.utils.TimeSpanMap;
 
 import java.util.ArrayList;
@@ -32,7 +35,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 /** Header for Rinex Clock.
  * @author Luc Maisonobe
@@ -46,8 +48,11 @@ public class RinexClockHeader extends RinexClockObsBaseHeader {
     /** Index of label in header lines for version 3.04 and later. */
     private static final int LABEL_INDEX_304_PLUS = 65;
 
-    /** Maps {@link #frameName} to a {@link Frame}. */
-    private final Function<? super String, ? extends Frame> frameBuilder;
+    /** System time scale. */
+    private TimeScale timeScale;
+
+    /** Earth centered frame. */
+    private Frame frame;
 
     /** Earth centered frame name as a string. */
     private String frameName;
@@ -89,11 +94,9 @@ public class RinexClockHeader extends RinexClockObsBaseHeader {
     private final List<String> satellites;
 
     /** Simple constructor.
-     * @param frameBuilder for constructing a reference frame from the identifier
      */
-    public RinexClockHeader(final Function<? super String, ? extends Frame> frameBuilder) {
+    public RinexClockHeader() {
         super(RinexFileType.CLOCK);
-        this.frameBuilder            = frameBuilder;
         this.frameName               = "";
         this.systemObservationTypes  = new HashMap<>();
         this.clockDataTypes          = new ArrayList<>();
@@ -109,6 +112,32 @@ public class RinexClockHeader extends RinexClockObsBaseHeader {
         this.satellites              = new ArrayList<>();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public SatelliteSystem parseSatelliteSystem(final String line) {
+        final String satSystemString = (getFormatVersion() < 3.04 ? line.substring(40, 41) : line.substring(42, 43)).trim();
+        return SatelliteSystem.parseSatelliteSystemWithGPSDefault(satSystemString);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void parseProgramRunByDate(final String line, final int lineNumber,
+                                      final String name, final TimeScales timeScales) {
+        if (getFormatVersion() < 3.04) {
+            parseProgramRunByDate(line,
+                                  RinexUtils.parseString(line,  0, 20),
+                                  RinexUtils.parseString(line, 20, 20),
+                                  RinexUtils.parseString(line, 40, 20),
+                                  lineNumber, name, timeScales);
+        } else {
+            parseProgramRunByDate(line,
+                                  RinexUtils.parseString(line,  0, 19),
+                                  RinexUtils.parseString(line, 21, 19),
+                                  RinexUtils.parseString(line, 42, 21),
+                                  lineNumber, name, timeScales);
+        }
+    }
+
     /** Getter for the file time system.
      * @return the file time system
      */
@@ -121,6 +150,20 @@ public class RinexClockHeader extends RinexClockObsBaseHeader {
      */
     public void setTimeSystem(final TimeSystem timeSystem) {
         this.timeSystem = timeSystem;
+    }
+
+    /** Get the system time scale.
+     * @return system time scale
+     */
+    public TimeScale getTimeScale() {
+        return timeScale;
+    }
+
+    /** Set the system time scale.
+     * @param timeScale system time scale
+     */
+    public void setTimeScale(final TimeScale timeScale) {
+        this.timeScale = timeScale;
     }
 
     /** Getter for the station name.
@@ -281,7 +324,14 @@ public class RinexClockHeader extends RinexClockObsBaseHeader {
      * @return the reference frame for station positions
      */
     public Frame getFrame() {
-        return frameBuilder.apply(frameName);
+        return frame;
+    }
+
+    /** Set the reference frame for the station positions.
+     * @param frame reference frame for station positions
+     */
+    public void setFrame(final Frame frame) {
+        this.frame = frame;
     }
 
     /** Getter for the frame name.
@@ -291,19 +341,11 @@ public class RinexClockHeader extends RinexClockObsBaseHeader {
         return frameName;
     }
 
-
     /** Setter for the frame name.
      * @param frameName the frame name to set
      */
     public void setFrameName(final String frameName) {
         this.frameName = frameName;
-    }
-
-    /** Get the frame builder.
-     * @return frame builder
-     */
-    public Function<? super String, ? extends Frame> getFrameBuilder() {
-        return frameBuilder;
     }
 
     /** Add a new satellite with a given identifier to the list of stored satellites.
@@ -364,6 +406,18 @@ public class RinexClockHeader extends RinexClockObsBaseHeader {
 
     /** {@inheritDoc} */
     @Override
+    public void checkType(final String line, final String name) {
+        checkType(line, getFormatVersion() < 3.04 ? 20 : 21, name);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getLabelIndex() {
+        return getFormatVersion() < 3.04 ? LABEL_INDEX_300_302 : LABEL_INDEX_304_PLUS;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public boolean matchFound(final Label label, final String line) {
         // the position of the labels changes depending on version
         if (label == CommonLabel.VERSION) {
@@ -372,8 +426,7 @@ public class RinexClockHeader extends RinexClockObsBaseHeader {
             return label.matches(line.substring(LABEL_INDEX_300_302).trim()) ||
                    label.matches(line.substring(LABEL_INDEX_304_PLUS).trim());
         } else {
-            final int index = getFormatVersion() < 3.04 ? LABEL_INDEX_300_302 : LABEL_INDEX_304_PLUS;
-            return label.matches(line.substring(index).trim());
+            return label.matches(line.substring(getLabelIndex()).trim());
         }
     }
 

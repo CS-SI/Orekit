@@ -29,7 +29,7 @@ import org.orekit.time.TimeStamped;
  * The latter can be set with a default value (UTC). Caution is recommended.
  * @since 14.0
  */
-public class ClockDataLine {
+public class ClockDataLine implements TimeStamped{
 
     /** Clock data type. */
     private final ClockDataType dataType;
@@ -38,7 +38,7 @@ public class ClockDataLine {
     private final String name;
 
     /** Data line epoch. */
-    private final AbsoluteDate epoch;
+    private final AbsoluteDate date;
 
     /** Number of data values to follow. This number might not represent the non zero values in the line. */
     private final int numberOfValues;
@@ -64,7 +64,7 @@ public class ClockDataLine {
     /** Constructor.
      * @param type                   clock data type
      * @param name                   receiver/satellite name
-     * @param epoch                  data line epoch
+     * @param date                   data line epoch
      * @param numberOfValues         number of values to follow
      * @param clockBias              clock bias in seconds
      * @param clockBiasSigma         clock bias sigma in seconds
@@ -74,13 +74,13 @@ public class ClockDataLine {
      * @param clockAccelerationSigma clock acceleration in seconds^-1
      */
     public ClockDataLine(final ClockDataType type, final String name,
-                         final AbsoluteDate epoch, final int numberOfValues,
+                         final AbsoluteDate date, final int numberOfValues,
                          final double clockBias, final double clockBiasSigma,
                          final double clockRate, final double clockRateSigma,
                          final double clockAcceleration, final double clockAccelerationSigma) {
         this.dataType               = type;
         this.name                   = name;
-        this.epoch                  = epoch;
+        this.date                   = date;
         this.numberOfValues         = numberOfValues;
         this.clockBias              = clockBias;
         this.clockBiasSigma         = clockBiasSigma;
@@ -111,11 +111,10 @@ public class ClockDataLine {
         return numberOfValues;
     }
 
-    /** Get data line epoch.
-     * @return the data line epoch
-     */
-    public AbsoluteDate getEpoch() {
-        return epoch;
+    /** {@inheritDoc} */
+    @Override
+    public AbsoluteDate getDate() {
+        return date;
     }
 
     /** Getter for the clock bias.

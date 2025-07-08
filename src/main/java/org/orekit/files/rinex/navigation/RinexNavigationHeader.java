@@ -22,6 +22,9 @@ import java.util.List;
 import org.orekit.files.rinex.section.Label;
 import org.orekit.files.rinex.section.RinexBaseHeader;
 import org.orekit.files.rinex.utils.RinexFileType;
+import org.orekit.files.rinex.utils.parsing.RinexUtils;
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.TimeScales;
 
 /** Header for Rinex Navigation.
  * @author Luc Maisonobe
@@ -51,6 +54,41 @@ public class RinexNavigationHeader extends RinexBaseHeader {
         this.timeSystemCorrections = new ArrayList<>();
         this.mergedFiles           = -1;
         this.numberOfLeapSeconds   = -1;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public SatelliteSystem parseSatelliteSystem(final String line) {
+        if (getFormatVersion() < 3.0) {
+            // the satellite system is hidden within the entry, with GPS as default
+
+            // look if default is overridden somewhere in the entry
+            final String entry = line.substring(0, 80).toUpperCase();
+            for (final SatelliteSystem satelliteSystem : SatelliteSystem.values()) {
+                if (entry.contains(satelliteSystem.name())) {
+                    // we found a satellite system hidden in the middle of the line
+                    return satelliteSystem;
+                }
+            }
+
+            // return default value
+            return SatelliteSystem.GPS;
+
+        } else {
+            // the satellite system is in column 40 for 3.X and later
+            return SatelliteSystem.parseSatelliteSystemWithGPSDefault(line.substring(40, 41));
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void parseProgramRunByDate(final String line, final int lineNumber,
+                                      final String name, final TimeScales timeScales) {
+        parseProgramRunByDate(line,
+                              RinexUtils.parseString(line,  0, 20),
+                              RinexUtils.parseString(line, 20, 20),
+                              RinexUtils.parseString(line, 40, 20),
+                              lineNumber, name, timeScales);
     }
 
     /**
@@ -122,8 +160,21 @@ public class RinexNavigationHeader extends RinexBaseHeader {
 
     /** {@inheritDoc} */
     @Override
+    public void checkType(final String line, final String name) {
+        checkType(line, 20, name);
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public int getLabelIndex() {
+        return LABEL_INDEX;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public boolean matchFound(final Label label, final String line) {
-        return label.matches(line.substring(LABEL_INDEX).trim());
+        return label.matches(line.substring(getLabelIndex()).trim());
     }
 
 }

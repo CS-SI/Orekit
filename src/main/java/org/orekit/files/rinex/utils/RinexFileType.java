@@ -33,7 +33,7 @@ public enum RinexFileType {
     /** Rinex Clock.
      * @since 14.0
      */
-    CLOCK("O");
+    CLOCK("C");
 
     /** Parsing map. */
     private static final Map<String, RinexFileType> KEYS_MAP = new HashMap<>();

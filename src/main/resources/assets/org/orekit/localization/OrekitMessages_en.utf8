@@ -944,3 +944,6 @@ INCONSISTENT_STATE_DIMENSIONS=state vector (dimension {0}) and covariance (dimen
 
 # data at date {0} has already been automatically expunged
 EXPUNGED_SPAN=data at date {0} has already been automatically expunged
+
+# missing time system definition in file {0}
+MISSING_TIME_SYSTEM_DEFINITION=missing time system definition in file {0}

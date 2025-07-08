@@ -944,3 +944,6 @@ INCONSISTENT_STATE_DIMENSIONS=les tailles du vecteur d''état (dimension {0}) et
 
 # data at date {0} has already been automatically expunged
 EXPUNGED_SPAN=_SPAN=les données à la date {0} ont déjà été effacées automatiquement
+
+# missing time system definition in file {0}
+MISSING_TIME_SYSTEM_DEFINITION=définition de temps système manquante dans le fichier {0}

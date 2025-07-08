@@ -24,16 +24,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.RinexFile;
 import org.orekit.frames.Frame;
+import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.ClockOffset;
 import org.orekit.time.SampledClockModel;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScales;
 import org.orekit.utils.TimeSpanMap;
 
 /** Represents a parsed clock file from the IGS.
@@ -66,10 +70,10 @@ public class RinexClock extends RinexFile<RinexClockHeader> {
     private AbsoluteDate latestEpoch;
 
     /** Constructor.
-     * @param frameBuilder for constructing a reference frame from the identifier
+     * @snce 14.0
      */
-    public RinexClock(final Function<? super String, ? extends Frame> frameBuilder) {
-        super(new RinexClockHeader(frameBuilder));
+    public RinexClock() {
+        super(new RinexClockHeader());
 
         // Initialize fields with default data
         this.clockData     = new HashMap<>();
@@ -104,7 +108,7 @@ public class RinexClock extends RinexFile<RinexClockHeader> {
                 final double offset       = c.getClockBias();
                 final double rate         = c.getNumberOfValues() > 2 ? c.getClockRate()         : Double.NaN;
                 final double acceleration = c.getNumberOfValues() > 4 ? c.getClockAcceleration() : Double.NaN;
-                sample.add(new ClockOffset(c.getEpoch(), offset, rate, acceleration));
+                sample.add(new ClockOffset(c.getDate(), offset, rate, acceleration));
             });
         return new SampledClockModel(sample, nbInterpolationPoints);
     }
@@ -128,7 +132,7 @@ public class RinexClock extends RinexFile<RinexClockHeader> {
             list = clockData.computeIfAbsent(id, i -> new ArrayList<>());
         }
         list.add(clockDataLine);
-        final AbsoluteDate epoch = clockDataLine.getEpoch();
+        final AbsoluteDate epoch = clockDataLine.getDate();
         if (epoch.isBefore(earliestEpoch)) {
             earliestEpoch = epoch;
         }
@@ -196,7 +200,7 @@ public class RinexClock extends RinexFile<RinexClockHeader> {
 
         // prepare spliced file
         final RinexClock first   = sorted.first();
-        final RinexClock spliced = new RinexClock(first.getHeader().getFrameBuilder());
+        final RinexClock spliced = new RinexClock();
         spliced.getHeader().setFormatVersion(first.getHeader().getFormatVersion());
         spliced.getHeader().setSatelliteSystem(first.getHeader().getSatelliteSystem());
         spliced.getHeader().setProgramName(first.getHeader().getProgramName());
@@ -220,6 +224,7 @@ public class RinexClock extends RinexFile<RinexClockHeader> {
         spliced.getHeader().setExternalClockReference(first.getHeader().getExternalClockReference());
         spliced.getHeader().setAnalysisCenterID(first.getHeader().getAnalysisCenterID());
         spliced.getHeader().setAnalysisCenterName(first.getHeader().getAnalysisCenterName());
+        spliced.getHeader().setFrame(first.getHeader().getFrame());
         spliced.getHeader().setFrameName(first.getHeader().getFrameName());
 
         // merge reference clocks maps
@@ -263,7 +268,7 @@ public class RinexClock extends RinexFile<RinexClockHeader> {
             for (final RinexClock rc : sorted) {
                 for (final ClockDataLine cd : rc.getClockData().get(clockId)) {
                     if (pending != null) {
-                        final double dt = cd.getDateTimeComponents().offsetFrom(pending.getDateTimeComponents());
+                        final double dt = cd.getDate().durationFrom(pending.getDate());
                         if (dt > maxGap) {
                             throw new OrekitException(OrekitMessages.TOO_LONG_TIME_GAP_BETWEEN_DATA_POINTS, dt);
                         }

@@ -19,7 +19,6 @@ package org.orekit.files.rinex.clock;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -45,6 +44,7 @@ import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ClockModel;
 import org.orekit.time.ClockOffset;
+import org.orekit.time.DateTimeComponents;
 import org.orekit.time.SampledClockModel;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -67,8 +67,7 @@ public class ClockFileParserTest {
         final String ex = "/gnss/clock/Exple_analysis_1_304.clk";
 
         final RinexClockParser parser = new RinexClockParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexClock file = parser.parse(fileName);
+        final RinexClock file = parser.parse(new DataSource(getClass().getResource(ex).toURI()));
 
         // Check content of the file
         final double version = 3.04;
@@ -84,10 +83,9 @@ public class ClockFileParserTest {
         final String analysisCenterID = "USN";
         final String analysisCenterName = "USNO USING GIPSY/OASIS-II";
         final String externalClockReference = "";
-        final String creationDateString = "19960403";
-        final String creationTimeString = "001000";
+        final DateTimeComponents creationDateComponents = new DateTimeComponents(1996, 4, 3, 0, 10, 0.0);
         final String creationZoneString = "UTC";
-        final AbsoluteDate creationDate = new AbsoluteDate(1996, 4, 3, 0, 10, 0., TimeScalesFactory.getUTC());
+        final AbsoluteDate creationDate = new AbsoluteDate(creationDateComponents, TimeScalesFactory.getUTC());
         final int numberOfLeapSeconds = 10;
         final int numberOfLeapSecondsGPS = 0;
         final int numberOfDBCS = 1;
@@ -112,17 +110,13 @@ public class ClockFileParserTest {
         checkClockFileContent(file, version, satelliteSystem, timeSystem,
                               programName, agencyName, comments, stationName, stationIdentifier,
                               analysisCenterID, analysisCenterName, externalClockReference,
-                              creationDateString, creationTimeString, creationZoneString, creationDate,
+                              creationDateComponents, creationZoneString, creationDate,
                               numberOfLeapSeconds, numberOfLeapSecondsGPS, numberOfDBCS, numberOfPCVS,
                               numberOfDataTypes, numberOfObservationTypes, frameString,
                               numberOfReceivers, numberOfSatellites, numberOfDataLines,
                               id, type, timeScale, dataEpoch, numberOfValues,
                               clockBias, clockBiasSigma, clockRate, clockRateSigma, clockAcceleration, clockAccelerationSigma);
 
-        // In this case, time system in properlydefined, check getEpoch() methods
-        // Get data line
-        final ClockDataLine dataLine = file.getClockData().get(id).get(0);
-        Assertions.assertEquals(dataLine.getEpoch(), dataLine.getEpoch(file.getTimeScale()));
     }
 
     /** Second example given in the 3.04 RINEX clock file format.
@@ -135,8 +129,7 @@ public class ClockFileParserTest {
         final String ex = "/gnss/clock/Exple_analysis_2_304.clk";
 
         final RinexClockParser parser = new RinexClockParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexClock file = parser.parse(fileName);
+        final RinexClock file = parser.parse(new DataSource(getClass().getResource(ex).toURI()));
 
 
 
@@ -158,10 +151,9 @@ public class ClockFileParserTest {
         final String analysisCenterID = "IGS";
         final String analysisCenterName = "IGSACC @ GA and MIT";
         final String externalClockReference = "";
-        final String creationDateString = "20170312";
-        final String creationTimeString = "052227";
+        final DateTimeComponents creationDateComponents = new DateTimeComponents(2017, 3, 12, 5, 22, 27.0);
         final String creationZoneString = "UTC";
-        final AbsoluteDate creationDate = new AbsoluteDate(2017, 3, 12, 5, 22, 27., TimeScalesFactory.getUTC());
+        final AbsoluteDate creationDate = new AbsoluteDate(creationDateComponents, TimeScalesFactory.getUTC());
         final int numberOfLeapSeconds = 37;
         final int numberOfLeapSecondsGPS = 18;
         final int numberOfDBCS = 0;
@@ -186,7 +178,7 @@ public class ClockFileParserTest {
         checkClockFileContent(file, version, satelliteSystem, timeSystem,
                               programName, agencyName, comments, stationName, stationIdentifier,
                               analysisCenterID, analysisCenterName, externalClockReference,
-                              creationDateString, creationTimeString, creationZoneString, creationDate,
+                              creationDateComponents, creationZoneString, creationDate,
                               numberOfLeapSeconds, numberOfLeapSecondsGPS, numberOfDBCS, numberOfPCVS,
                               numberOfDataTypes, numberOfObservationTypes, frameString,
                               numberOfReceivers, numberOfSatellites, numberOfDataLines,
@@ -205,13 +197,12 @@ public class ClockFileParserTest {
         final String ex = "/gnss/clock/Exple_calibration_304.clk";
 
         final RinexClockParser parser = new RinexClockParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexClock file = parser.parse(fileName);
+        final RinexClock file = parser.parse(new DataSource(getClass().getResource(ex).toURI()));
 
         // Check content of the file
         final double version = 3.04;
-        final SatelliteSystem satelliteSystem = null;
-        final TimeSystem timeSystem = null;
+        final SatelliteSystem satelliteSystem = SatelliteSystem.GPS;
+        final TimeSystem timeSystem = TimeSystem.GPS;
         final String programName = "TORINEXC V9.9";
         final String agencyName = "USNO";
         final String comments = "EXAMPLE OF A CLOCK DATA FILE\n" +
@@ -221,10 +212,9 @@ public class ClockFileParserTest {
         final String analysisCenterID = "";
         final String analysisCenterName = "";
         final String externalClockReference = "UTC(USNO) MASTER CLOCK VIA CONTINUOUS CABLE MONITOR";
-        final String creationDateString = "19960403";
-        final String creationTimeString = "001000";
+        final DateTimeComponents creationDateComponents = new DateTimeComponents(1996, 4, 3, 0, 1, 0.0);
         final String creationZoneString = "UTC";
-        final AbsoluteDate creationDate = new AbsoluteDate(1996, 4, 3, 0, 10, 0., TimeScalesFactory.getUTC());
+        final AbsoluteDate creationDate = new AbsoluteDate(creationDateComponents, TimeScalesFactory.getUTC());
         final int numberOfLeapSeconds = 0;
         final int numberOfLeapSecondsGPS = 10;
         final int numberOfDBCS = 0;
@@ -249,7 +239,7 @@ public class ClockFileParserTest {
         checkClockFileContent(file, version, satelliteSystem, timeSystem,
                               programName, agencyName, comments, stationName, stationIdentifier,
                               analysisCenterID, analysisCenterName, externalClockReference,
-                              creationDateString, creationTimeString, creationZoneString, creationDate,
+                              creationDateComponents, creationZoneString, creationDate,
                               numberOfLeapSeconds, numberOfLeapSecondsGPS, numberOfDBCS, numberOfPCVS,
                               numberOfDataTypes, numberOfObservationTypes, frameString,
                               numberOfReceivers, numberOfSatellites, numberOfDataLines,
@@ -268,8 +258,7 @@ public class ClockFileParserTest {
         final String ex = "/gnss/clock/mit19044_truncated_300.clk";
 
         final RinexClockParser parser = new RinexClockParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexClock file = parser.parse(fileName);
+        final RinexClock file = parser.parse(new DataSource(getClass().getResource(ex).toURI()));
 
         // Check content of the file
         final double version = 3.00;
@@ -283,8 +272,7 @@ public class ClockFileParserTest {
         final String analysisCenterID = "MIT";
         final String analysisCenterName = "";
         final String externalClockReference = "";
-        final String creationDateString = "2016-07-14";
-        final String creationTimeString = "16:28";
+        final DateTimeComponents creationDateComponents = new DateTimeComponents(2016, 7, 14, 6, 28, 0.0);
         final String creationZoneString = "";
         final AbsoluteDate creationDate = null;
         final int numberOfLeapSeconds = 17;
@@ -311,7 +299,7 @@ public class ClockFileParserTest {
         checkClockFileContent(file, version, satelliteSystem, timeSystem,
                               programName, agencyName, comments, stationName, stationIdentifier,
                               analysisCenterID, analysisCenterName, externalClockReference,
-                              creationDateString, creationTimeString, creationZoneString, creationDate,
+                              creationDateComponents, creationZoneString, creationDate,
                               numberOfLeapSeconds, numberOfLeapSecondsGPS, numberOfDBCS, numberOfPCVS,
                               numberOfDataTypes, numberOfObservationTypes, frameString,
                               numberOfReceivers, numberOfSatellites, numberOfDataLines,
@@ -320,7 +308,7 @@ public class ClockFileParserTest {
     }
 
     /** Another example of the 3.00 RINEX clock file format.
-     * It is espicially missing creation date, time system ID and satellite system.
+     * It is especially missing creation date, time system ID and satellite system.
      * PCVS block is not placed where it should be.
      */
     @Test
@@ -330,8 +318,7 @@ public class ClockFileParserTest {
         final String ex = "/gnss/clock/igr21101_truncated_300.clk";
 
         final RinexClockParser parser = new RinexClockParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexClock file = parser.parse(fileName);
+        final RinexClock file = parser.parse(new DataSource(getClass().getResource(ex).toURI()));
 
         // Check content of the file
         final double version = 3.00;
@@ -352,8 +339,7 @@ public class ClockFileParserTest {
         final String analysisCenterID = "IGS";
         final String analysisCenterName = "IGSACC @ GA MIT";
         final String externalClockReference = "";
-        final String creationDateString = "";
-        final String creationTimeString = "";
+        final DateTimeComponents creationDateComponents = null;
         final String creationZoneString = "";
         final AbsoluteDate creationDate = null;
         final int numberOfLeapSeconds = 18;
@@ -380,7 +366,7 @@ public class ClockFileParserTest {
         checkClockFileContent(file, version, satelliteSystem, timeSystem,
                               programName, agencyName, comments, stationName, stationIdentifier,
                               analysisCenterID, analysisCenterName,  externalClockReference,
-                              creationDateString, creationTimeString, creationZoneString, creationDate,
+                              creationDateComponents, creationZoneString, creationDate,
                               numberOfLeapSeconds, numberOfLeapSecondsGPS, numberOfDBCS, numberOfPCVS,
                               numberOfDataTypes, numberOfObservationTypes, frameString,
                               numberOfReceivers, numberOfSatellites, numberOfDataLines,
@@ -395,18 +381,17 @@ public class ClockFileParserTest {
         final String ex = "/gnss/clock/cod17381_truncated_200.clk";
 
         final RinexClockParser parser = new RinexClockParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexClock file = parser.parse(fileName);
+        final RinexClock file = parser.parse(new DataSource(getClass().getResource(ex).toURI()));
         final ClockModel  clockModel  = file.extractClockModel("AMC2", 2);
 
         // points exactly on files entries
-        final ClockOffset c1 = clockModel.getOffset(new AbsoluteDate(2013, 4, 29, 0, 0,  0.0, file.getTimeScale()));
-        final ClockOffset c2 = clockModel.getOffset(new AbsoluteDate(2013, 4, 29, 0, 0, 30.0, file.getTimeScale()));
+        final ClockOffset c1 = clockModel.getOffset(new AbsoluteDate(2013, 4, 29, 0, 0,  0.0, file.getHeader().getTimeScale()));
+        final ClockOffset c2 = clockModel.getOffset(new AbsoluteDate(2013, 4, 29, 0, 0, 30.0, file.getHeader().getTimeScale()));
         Assertions.assertEquals(0.192309152524E-08, c1.getOffset(), 1.0e-21);
         Assertions.assertEquals(0.192333320310E-08, c2.getOffset(), 1.0e-21);
 
         // intermediate point
-        final ClockOffset c = clockModel.getOffset(new AbsoluteDate(2013, 4, 29, 0, 0, 12.0, file.getTimeScale()));
+        final ClockOffset c = clockModel.getOffset(new AbsoluteDate(2013, 4, 29, 0, 0, 12.0, file.getHeader().getTimeScale()));
         Assertions.assertEquals(0.1923188196384e-08, c.getOffset(),       1.0e-21);
         Assertions.assertEquals(8.05592866666e-15,   c.getRate(),         1.0e-26);
         Assertions.assertEquals( 0.0,                c.getAcceleration(), 1.0e-40);
@@ -421,8 +406,7 @@ public class ClockFileParserTest {
         final String ex = "/gnss/clock/emr10491_truncated_200.clk";
 
         final RinexClockParser parser = new RinexClockParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexClock file = parser.parse(fileName);
+        final RinexClock file = parser.parse(new DataSource(getClass().getResource(ex).toURI()));
 
         // Check content of the file
         final double version = 2.00;
@@ -437,8 +421,7 @@ public class ClockFileParserTest {
         final String analysisCenterID = "EMR";
         final String analysisCenterName = "NATURAL RESOURCES CANADA";
         final String externalClockReference = "";
-        final String creationDateString = "1-Mar-2000";
-        final String creationTimeString = "20:36";
+        final DateTimeComponents creationDateComponents = new DateTimeComponents(2000, 3, 1, 20, 36, 0.0);
         final String creationZoneString = "";
         final AbsoluteDate creationDate = null;
         final int numberOfLeapSeconds = -13;
@@ -465,7 +448,7 @@ public class ClockFileParserTest {
         checkClockFileContent(file, version, satelliteSystem, timeSystem,
                               programName, agencyName, comments, stationName, stationIdentifier,
                               analysisCenterID, analysisCenterName, externalClockReference,
-                              creationDateString, creationTimeString, creationZoneString, creationDate,
+                              creationDateComponents, creationZoneString, creationDate,
                               numberOfLeapSeconds, numberOfLeapSecondsGPS, numberOfDBCS, numberOfPCVS,
                               numberOfDataTypes, numberOfObservationTypes, frameString,
                               numberOfReceivers, numberOfSatellites, numberOfDataLines,
@@ -481,8 +464,7 @@ public class ClockFileParserTest {
         final String ex = "/gnss/clock/jpl11456_truncated_200.clk";
 
         final RinexClockParser parser = new RinexClockParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexClock file = parser.parse(fileName);
+        final RinexClock file = parser.parse(new DataSource(getClass().getResource(ex).toURI()));
 
         // Check content of the file
         final double version = 2.00;
@@ -501,8 +483,7 @@ public class ClockFileParserTest {
         final String analysisCenterID = "JPL";
         final String analysisCenterName = "Jet Propulsion Laboratory";
         final String externalClockReference = "";
-        final String creationDateString = "2002 Jan 3";
-        final String creationTimeString = "13:36:17";
+        final DateTimeComponents creationDateComponents = new DateTimeComponents(2002, 1, 3, 13, 36, 17.0);
         final String creationZoneString = "";
         final AbsoluteDate creationDate = null;
         final int numberOfLeapSeconds = 13;
@@ -529,7 +510,7 @@ public class ClockFileParserTest {
         checkClockFileContent(file, version, satelliteSystem, timeSystem,
                               programName, agencyName, comments, stationName, stationIdentifier,
                               analysisCenterID, analysisCenterName, externalClockReference,
-                              creationDateString, creationTimeString, creationZoneString, creationDate,
+                              creationDateComponents, creationZoneString, creationDate,
                               numberOfLeapSeconds, numberOfLeapSecondsGPS, numberOfDBCS, numberOfPCVS,
                               numberOfDataTypes, numberOfObservationTypes, frameString,
                               numberOfReceivers, numberOfSatellites, numberOfDataLines,
@@ -545,8 +526,7 @@ public class ClockFileParserTest {
         final String ex = "/gnss/clock/cod17381_truncated_200.clk";
 
         final RinexClockParser parser = new RinexClockParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexClock file = parser.parse(fileName);
+        final RinexClock file = parser.parse(new DataSource(getClass().getResource(ex).toURI()));
 
         // Check content of the file
         final double version = 2.00;
@@ -563,8 +543,7 @@ public class ClockFileParserTest {
         final String analysisCenterID = "COD";
         final String analysisCenterName = "Center for Orbit Determination in Europe";
         final String externalClockReference = "";
-        final String creationDateString = "04-MAY-13";
-        final String creationTimeString = "04:39";
+        final DateTimeComponents creationDateComponents = new DateTimeComponents(2013, 5, 4, 4, 39, 0.0);
         final String creationZoneString = "";
         final AbsoluteDate creationDate = null;
         final int numberOfLeapSeconds = 16;
@@ -591,7 +570,7 @@ public class ClockFileParserTest {
         checkClockFileContent(file, version, satelliteSystem, timeSystem,
                               programName, agencyName, comments, stationName, stationIdentifier,
                               analysisCenterID, analysisCenterName, externalClockReference,
-                              creationDateString, creationTimeString, creationZoneString, creationDate,
+                              creationDateComponents, creationZoneString, creationDate,
                               numberOfLeapSeconds, numberOfLeapSecondsGPS, numberOfDBCS, numberOfPCVS,
                               numberOfDataTypes, numberOfObservationTypes, frameString,
                               numberOfReceivers, numberOfSatellites, numberOfDataLines,
@@ -607,8 +586,7 @@ public class ClockFileParserTest {
         final String ex = "/gnss/clock/Exple_analysis_1_304_more_obs_types.clk";
 
         final RinexClockParser parser = new RinexClockParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexClock file = parser.parse(fileName);
+        final RinexClock file = parser.parse(new DataSource(getClass().getResource(ex).toURI()));
 
         // Theorical values
         final int numberOfObservationTypesGPS = 16;
@@ -616,12 +594,12 @@ public class ClockFileParserTest {
         final int numberOfSatelliteSystems = 1;
 
         // Get the satellite systems - observation types map
-        final Map<SatelliteSystem, List<ObservationType>> obsTypeMap = file.getSystemObservationTypes();
+        final Map<SatelliteSystem, List<ObservationType>> obsTypeMap = file.getHeader().getSystemObservationTypes();
 
         // Check map content
         Assertions.assertEquals(numberOfSatelliteSystems, obsTypeMap.size());
-        Assertions.assertEquals(numberOfObservationTypesGPS, file.numberOfObsTypes(SatelliteSystem.GPS));
-        Assertions.assertEquals(numberOfObservationTypesGAL, file.numberOfObsTypes(SatelliteSystem.GALILEO));
+        Assertions.assertEquals(numberOfObservationTypesGPS, file.getHeader().numberOfObsTypes(SatelliteSystem.GPS));
+        Assertions.assertEquals(numberOfObservationTypesGAL, file.getHeader().numberOfObsTypes(SatelliteSystem.GALILEO));
     }
 
     /** Check receiver inforamtion. */
@@ -631,8 +609,7 @@ public class ClockFileParserTest {
         // Parse file
         final String ex = "/gnss/clock/Exple_analysis_2_304.clk";
         final RinexClockParser parser = new RinexClockParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexClock file = parser.parse(fileName);
+        final RinexClock file = parser.parse(new DataSource(getClass().getResource(ex).toURI()));
 
         // Get theorical values
         final int index = 3;
@@ -643,7 +620,7 @@ public class ClockFileParserTest {
         final double z = 1488904.394;
 
         // Get the receiver in the parsed clock file
-        final List<Receiver> receivers = file.getReceivers();
+        final List<Receiver> receivers = file.getHeader().getReceivers();
         final Receiver receiver = receivers.get(index);
 
         //Check content
@@ -671,17 +648,15 @@ public class ClockFileParserTest {
 
         // Parse file with expected frame ITRF96
         final String ex1 = "/gnss/clock/Exple_analysis_1_304.clk";
-        final String fileName1 = Paths.get(getClass().getResource(ex1).toURI()).toString();
-        final RinexClock file1 = parser.parse(fileName1);
+        final RinexClock file1 = parser.parse(new DataSource(getClass().getResource(ex1).toURI()));
 
         // Parse file with default expected frame ITRF 2014
         final String ex2 = "/gnss/clock/Exple_analysis_2_304.clk";
-        final String fileName2 = Paths.get(getClass().getResource(ex2).toURI()).toString();
-        final RinexClock file2 = parser.parse(fileName2);
+        final RinexClock file2 = parser.parse(new DataSource(getClass().getResource(ex2).toURI()));
 
         // Check frames
-        Assertions.assertSame(itrf1996, file1.getFrame());
-        Assertions.assertSame(itrf2014, file2.getFrame());
+        Assertions.assertSame(itrf1996, file1.getHeader().getFrame());
+        Assertions.assertSame(itrf2014, file2.getHeader().getFrame());
     }
 
     /** Test the reference clocks.  */
@@ -691,11 +666,10 @@ public class ClockFileParserTest {
         // Parse file
         final String ex = "/gnss/clock/Exple_analysis_1_304.clk";
         final RinexClockParser parser = new RinexClockParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexClock file = parser.parse(fileName);
+        final RinexClock file = parser.parse(new DataSource(getClass().getResource(ex).toURI()));
 
         // Get reference clocks
-        final TimeSpanMap<List<ReferenceClock>> referenceClocksMap = file.getReferenceClocks();
+        final TimeSpanMap<List<ReferenceClock>> referenceClocksMap = file.getHeader().getReferenceClocks();
 
         // Theorical time scale
         final TimeScale gps = TimeScalesFactory.getGPS();
@@ -739,11 +713,10 @@ public class ClockFileParserTest {
         // Parse file
         final String ex = "/gnss/clock/Exple_analysis_1_304.clk";
         final RinexClockParser parser = new RinexClockParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexClock file = parser.parse(fileName);
+        final RinexClock file = parser.parse(new DataSource(getClass().getResource(ex).toURI()));
 
         // Get satellite list
-        final List<String> satellites = file.getSatellites();
+        final List<String> satellites = file.getHeader().getSatellites();
 
         // Expected list
         final String prnLine = "G01 G02 G03 G04 G05 G06 G07 G08 G09 G10 G13 G14 G15 G16 G17 G18 " +
@@ -762,11 +735,10 @@ public class ClockFileParserTest {
         // Parse file
         final String ex = "/gnss/clock/two_same_receivers_and_satellites.clk";
         final RinexClockParser parser = new RinexClockParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexClock file = parser.parse(fileName);
+        final RinexClock file = parser.parse(new DataSource(getClass().getResource(ex).toURI()));
 
-        Assertions.assertEquals(1, file.getNumberOfReceivers());
-        Assertions.assertEquals(1, file.getNumberOfSatellites());
+        Assertions.assertEquals(1, file.getHeader().getNumberOfReceivers());
+        Assertions.assertEquals(1, file.getHeader().getNumberOfSatellites());
     }
 
     /** Test the clock data type list.  */
@@ -776,11 +748,10 @@ public class ClockFileParserTest {
         // Parse file
         final String ex = "/gnss/clock/Exple_calibration_304.clk";
         final RinexClockParser parser = new RinexClockParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexClock file = parser.parse(fileName);
+        final RinexClock file = parser.parse(new DataSource(getClass().getResource(ex).toURI()));
 
         // Get satellite list
-        final List<ClockDataType> dataTypes = file.getClockDataTypes();
+        final List<ClockDataType> dataTypes = file.getHeader().getClockDataTypes();
 
         // Expected list
         final List<ClockDataType> expected =  new ArrayList<>();
@@ -801,35 +772,35 @@ public class ClockFileParserTest {
         final String     ex1  = "/gnss/clock/part-1.clk";
         final RinexClock clk1 = parser.parse(new DataSource(ex1, () -> getClass().getResourceAsStream(ex1)));
         Assertions.assertEquals(0,
-                                new AbsoluteDate(2020, 9, 1, 0,  0,  0.0, clk1.getTimeScale()).durationFrom(clk1.getEarliestEpoch()),
+                                new AbsoluteDate(2020, 9, 1, 0,  0,  0.0, clk1.getHeader().getTimeScale()).durationFrom(clk1.getEarliestEpoch()),
                                 1.0e-15);
         Assertions.assertEquals(0,
-                                new AbsoluteDate(2020, 9, 1, 0,  5,  0.0, clk1.getTimeScale()).durationFrom(clk1.getLatestEpoch()),
+                                new AbsoluteDate(2020, 9, 1, 0,  5,  0.0, clk1.getHeader().getTimeScale()).durationFrom(clk1.getLatestEpoch()),
                                 1.0e-15);
-        Assertions.assertEquals(5, clk1.getNumberOfReceivers());
-        Assertions.assertEquals(7, clk1.getNumberOfSatellites());
+        Assertions.assertEquals(5, clk1.getHeader().getNumberOfReceivers());
+        Assertions.assertEquals(7, clk1.getHeader().getNumberOfSatellites());
 
         final String     ex2  = "/gnss/clock/part-2.clk";
         final RinexClock clk2 = parser.parse(new DataSource(ex2, () -> getClass().getResourceAsStream(ex2)));
         Assertions.assertEquals(0,
-                                new AbsoluteDate(2020, 9, 1, 0,  5,  0.0, clk2.getTimeScale()).durationFrom(clk2.getEarliestEpoch()),
+                                new AbsoluteDate(2020, 9, 1, 0,  5,  0.0, clk2.getHeader().getTimeScale()).durationFrom(clk2.getEarliestEpoch()),
                                 1.0e-15);
         Assertions.assertEquals(0,
-                                new AbsoluteDate(2020, 9, 1, 0,  9, 30.0, clk2.getTimeScale()).durationFrom(clk2.getLatestEpoch()),
+                                new AbsoluteDate(2020, 9, 1, 0,  9, 30.0, clk2.getHeader().getTimeScale()).durationFrom(clk2.getLatestEpoch()),
                                 1.0e-15);
-        Assertions.assertEquals(4, clk2.getNumberOfReceivers());
-        Assertions.assertEquals(7, clk2.getNumberOfSatellites());
+        Assertions.assertEquals(4, clk2.getHeader().getNumberOfReceivers());
+        Assertions.assertEquals(7, clk2.getHeader().getNumberOfSatellites());
 
         final String     ex3  = "/gnss/clock/part-3.clk";
         final RinexClock clk3 = parser.parse(new DataSource(ex3, () -> getClass().getResourceAsStream(ex3)));
         Assertions.assertEquals(0,
-                                new AbsoluteDate(2020, 9, 1, 0, 10,  0.0, clk3.getTimeScale()).durationFrom(clk3.getEarliestEpoch()),
+                                new AbsoluteDate(2020, 9, 1, 0, 10,  0.0, clk3.getHeader().getTimeScale()).durationFrom(clk3.getEarliestEpoch()),
                                 1.0e-15);
         Assertions.assertEquals(0,
-                                new AbsoluteDate(2020, 9, 1, 0, 14, 30.0, clk3.getTimeScale()).durationFrom(clk3.getLatestEpoch()),
+                                new AbsoluteDate(2020, 9, 1, 0, 14, 30.0, clk3.getHeader().getTimeScale()).durationFrom(clk3.getLatestEpoch()),
                                 1.0e-15);
-        Assertions.assertEquals(5, clk3.getNumberOfReceivers());
-        Assertions.assertEquals(6, clk3.getNumberOfSatellites());
+        Assertions.assertEquals(5, clk3.getHeader().getNumberOfReceivers());
+        Assertions.assertEquals(6, clk3.getHeader().getNumberOfSatellites());
 
         // Splice all files
         try {
@@ -844,13 +815,13 @@ public class ClockFileParserTest {
         // we intentionally provide the files in non-chronological order for testing purposes
         final RinexClock spliced = RinexClock.splice(Arrays.asList(clk3, clk1, clk2), 60.0);
         Assertions.assertEquals(0,
-                                new AbsoluteDate(2020, 9, 1, 0,  0,  0.0, spliced.getTimeScale()).durationFrom(spliced.getEarliestEpoch()),
+                                new AbsoluteDate(2020, 9, 1, 0,  0,  0.0, spliced.getHeader().getTimeScale()).durationFrom(spliced.getEarliestEpoch()),
                                 1.0e-15);
         Assertions.assertEquals(0,
-                                new AbsoluteDate(2020, 9, 1, 0, 14, 30.0, spliced.getTimeScale()).durationFrom(spliced.getLatestEpoch()),
+                                new AbsoluteDate(2020, 9, 1, 0, 14, 30.0, spliced.getHeader().getTimeScale()).durationFrom(spliced.getLatestEpoch()),
                                 1.0e-15);
-        Assertions.assertEquals(4, spliced.getNumberOfReceivers());
-        Assertions.assertEquals(5, spliced.getNumberOfSatellites());
+        Assertions.assertEquals(4, spliced.getHeader().getNumberOfReceivers());
+        Assertions.assertEquals(5, spliced.getHeader().getNumberOfSatellites());
         for (final String id : Arrays.asList("CHPI", "GLPS", "KITG", "OWMG",
                                              "G17", "G27", "R17", "R23", "J01")) {
             SampledClockModel cm = spliced.extractClockModel(id, 4);
@@ -859,12 +830,12 @@ public class ClockFileParserTest {
             Assertions.assertEquals(30, cm.getCache().getAll().size());
         }
 
-        final AbsoluteDate between1And2 = new AbsoluteDate(2020, 9, 1, 0, 4, 45.0, spliced.getTimeScale());
+        final AbsoluteDate between1And2 = new AbsoluteDate(2020, 9, 1, 0, 4, 45.0, spliced.getHeader().getTimeScale());
         Assertions.assertEquals(-1.83536264242e-4,
                                 spliced.extractClockModel("J01", 4).getOffset(between1And2).getOffset(),
                                 1.0e-12);
 
-        final AbsoluteDate between2And3 = new AbsoluteDate(2020, 9, 1, 0,  9, 45.0, spliced.getTimeScale());
+        final AbsoluteDate between2And3 = new AbsoluteDate(2020, 9, 1, 0,  9, 45.0, spliced.getHeader().getTimeScale());
         try {
             clk2.extractClockModel("J01", 4).getOffset(between2And3);
             Assertions.fail("an exception should have been thrown");
@@ -891,7 +862,7 @@ public class ClockFileParserTest {
             final String ex = "/gnss/clock/error_in_line_4.clk";
             final RinexClockParser parser = new RinexClockParser();
             final InputStream inEntry = getClass().getResourceAsStream(ex);
-            parser.parse(inEntry);
+            parser.parse(new DataSource("dummy", () -> inEntry));
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
@@ -906,7 +877,7 @@ public class ClockFileParserTest {
             final String ex = "/gnss/clock/missing_block_end_of_header.clk";
             final RinexClockParser parser = new RinexClockParser();
             final InputStream inEntry = getClass().getResourceAsStream(ex);
-            parser.parse(inEntry);
+            parser.parse(new DataSource("dummy", () -> inEntry));
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
@@ -921,7 +892,7 @@ public class ClockFileParserTest {
             final String ex = "/gnss/clock/unsupported_clock_file_version.clk";
             final RinexClockParser parser = new RinexClockParser();
             final InputStream inEntry = getClass().getResourceAsStream(ex);
-            parser.parse(inEntry);
+            parser.parse(new DataSource("dummy", () -> inEntry));
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT_VERSION, oe.getSpecifier());
@@ -936,11 +907,25 @@ public class ClockFileParserTest {
             final String ex = "/gnss/clock/wrong_clock_data_type.clk";
             final RinexClockParser parser = new RinexClockParser();
             final InputStream inEntry = getClass().getResourceAsStream(ex);
-            parser.parse(inEntry);
+            parser.parse(new DataSource("dummy", () -> inEntry));
             Assertions.fail("an exception should have been thrown");
-        } catch (OrekitIllegalArgumentException oe) {
+        } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNKNOWN_CLOCK_DATA_TYPE, oe.getSpecifier());
             Assertions.assertEquals("XX", oe.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testMissingTimeSystem() {
+        try {
+            final String ex = "/gnss/clock/missing_time_system.clk";
+            final RinexClockParser parser = new RinexClockParser();
+            final InputStream inEntry = getClass().getResourceAsStream(ex);
+            parser.parse(new DataSource("dummy", () -> inEntry));
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.MISSING_TIME_SYSTEM_DEFINITION, oe.getSpecifier());
+            Assertions.assertEquals("dummy", oe.getParts()[0]);
         }
     }
 
@@ -951,7 +936,7 @@ public class ClockFileParserTest {
             final String ex = "/gnss/clock/unknown_time_system.clk";
             final RinexClockParser parser = new RinexClockParser();
             final InputStream inEntry = getClass().getResourceAsStream(ex);
-            parser.parse(inEntry);
+            parser.parse(new DataSource("dummy", () -> inEntry));
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oe) {
             Assertions.assertEquals(OrekitMessages.UNKNOWN_TIME_SYSTEM, oe.getSpecifier());
@@ -991,13 +976,12 @@ public class ClockFileParserTest {
         final String ex = "/gnss/clock/issue845.clk";
 
         final RinexClockParser parser = new RinexClockParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final RinexClock file = parser.parse(fileName);
+        final RinexClock file = parser.parse(new DataSource(getClass().getResource(ex).toURI()));
 
-        Assertions.assertEquals(3.0, file.getFormatVersion(), 1.0e-3);
-        Assertions.assertEquals("GeoForschungsZentrum Potsdam", file.getAnalysisCenterName());
-        Assertions.assertEquals("GFZ", file.getAgencyName());
-        Assertions.assertEquals("IGS14", file.getFrameName());
+        Assertions.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-3);
+        Assertions.assertEquals("GeoForschungsZentrum Potsdam", file.getHeader().getAnalysisCenterName());
+        Assertions.assertEquals("GFZ", file.getHeader().getRunByName());
+        Assertions.assertEquals("IGS14", file.getHeader().getFrameName());
     }
 
     @Test
@@ -1012,12 +996,12 @@ public class ClockFileParserTest {
 
         final RinexClock file = new RinexClockParser().parse(source);
 
-        Assertions.assertEquals(3.0, file.getFormatVersion(), 1.0e-3);
-        Assertions.assertEquals(SatelliteSystem.MIXED, file.getSatelliteSystem());
-        Assertions.assertEquals(54, file.getSatellites().size());
-        Assertions.assertEquals(10, file.getReceivers().size());
-        Assertions.assertTrue(file.getListAppliedDCBS().isEmpty());
-        Assertions.assertTrue(file.getListAppliedPCVS().isEmpty());
+        Assertions.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-3);
+        Assertions.assertEquals(SatelliteSystem.MIXED, file.getHeader().getSatelliteSystem());
+        Assertions.assertEquals(54, file.getHeader().getSatellites().size());
+        Assertions.assertEquals(10, file.getHeader().getReceivers().size());
+        Assertions.assertTrue(file.getHeader().getListAppliedDCBS().isEmpty());
+        Assertions.assertTrue(file.getHeader().getListAppliedPCVS().isEmpty());
     }
 
     /** Check the content of a clock file. */
@@ -1025,9 +1009,11 @@ public class ClockFileParserTest {
                                        final double version, final SatelliteSystem satelliteSystem, final TimeSystem timeSystem,
                                        final String programName, final String agencyName, final String comments,
                                        final String stationName, final String stationIdentifier,
-                                       final String analysisCenterID, final String analysisCenterName, final String externalClockReference,
-                                       final String creationDateString, final String creationTimeString, final String creationZoneString,
-                                       final AbsoluteDate creationDate, final int numberOfLeapSeconds, final int numberOfLeapSecondsGPS,
+                                       final String analysisCenterID, final String analysisCenterName,
+                                       final String externalClockReference,
+                                       final DateTimeComponents creationDateComponents,  final String creationZoneString,
+                                       final AbsoluteDate creationDate,
+                                       final int numberOfLeapSeconds, final int numberOfLeapSecondsGPS,
                                        final int numberOfDBCS, final int numberOfPCVS,
                                        final int numberOfDataTypes, final int numberOfObservationTypes, final String frameString,
                                        final int numberOfReceivers, final int numberOfSatellites,
@@ -1038,37 +1024,36 @@ public class ClockFileParserTest {
                                        final double clockAcceleration, final double clockAccelerationSigma) {
 
         // Check header
-        Assertions.assertEquals(version, file.getFormatVersion(), 1E-3);
-        Assertions.assertSame(satelliteSystem, file.getSatelliteSystem());
-        Assertions.assertSame(timeSystem, file.getTimeSystem());
-        Assertions.assertEquals(programName, file.getProgramName());
-        Assertions.assertEquals(agencyName, file.getAgencyName());
+        Assertions.assertEquals(version, file.getHeader().getFormatVersion(), 1E-3);
+        Assertions.assertSame(satelliteSystem, file.getHeader().getSatelliteSystem());
+        Assertions.assertSame(timeSystem, file.getHeader().getTimeSystem());
+        Assertions.assertEquals(programName, file.getHeader().getProgramName());
+        Assertions.assertEquals(agencyName, file.getHeader().getRunByName());
         Assertions.assertEquals(comments, file.getComments());
-        Assertions.assertEquals(stationName, file.getStationName());
-        Assertions.assertEquals(stationIdentifier, file.getStationIdentifier());
-        Assertions.assertEquals(analysisCenterID, file.getAnalysisCenterID());
-        Assertions.assertEquals(analysisCenterName, file.getAnalysisCenterName());
-        Assertions.assertEquals(externalClockReference, file.getExternalClockReference());
-        Assertions.assertEquals(creationDateString, file.getCreationDateString());
-        Assertions.assertEquals(creationTimeString, file.getCreationTimeString());
-        Assertions.assertEquals(creationZoneString, file.getCreationTimeZoneString());
+        Assertions.assertEquals(stationName, file.getHeader().getStationName());
+        Assertions.assertEquals(stationIdentifier, file.getHeader().getStationIdentifier());
+        Assertions.assertEquals(analysisCenterID, file.getHeader().getAnalysisCenterID());
+        Assertions.assertEquals(analysisCenterName, file.getHeader().getAnalysisCenterName());
+        Assertions.assertEquals(externalClockReference, file.getHeader().getExternalClockReference());
+        Assertions.assertEquals(creationDateComponents, file.getHeader().getCreationDateComponents());
+        Assertions.assertEquals(creationZoneString, file.getHeader().getCreationTimeZone());
         if (null != creationDate) {
-            Assertions.assertEquals(file.getCreationDate(), creationDate);
+            Assertions.assertEquals(file.getHeader().getCreationDate(), creationDate);
         }
-        Assertions.assertEquals(numberOfLeapSeconds, file.getNumberOfLeapSeconds());
-        Assertions.assertEquals(numberOfLeapSecondsGPS, file.getNumberOfLeapSecondsGNSS());
-        Assertions.assertEquals(numberOfDBCS, file.getListAppliedDCBS().size());
-        Assertions.assertEquals(numberOfPCVS, file.getListAppliedPCVS().size());
-        Assertions.assertEquals(numberOfDataTypes, file.getNumberOfClockDataTypes());
+        Assertions.assertEquals(numberOfLeapSeconds, file.getHeader().getLeapSeconds());
+        Assertions.assertEquals(numberOfLeapSecondsGPS, file.getHeader().getLeapSecondsGNSS());
+        Assertions.assertEquals(numberOfDBCS, file.getHeader().getListAppliedDCBS().size());
+        Assertions.assertEquals(numberOfPCVS, file.getHeader().getListAppliedPCVS().size());
+        Assertions.assertEquals(numberOfDataTypes, file.getHeader().getNumberOfClockDataTypes());
         int observationTypes = 0;
-        for (SatelliteSystem system : file.getSystemObservationTypes().keySet()) {
-            observationTypes += file.getSystemObservationTypes().get(system).size();
+        for (SatelliteSystem system : file.getHeader().getSystemObservationTypes().keySet()) {
+            observationTypes += file.getHeader().getSystemObservationTypes().get(system).size();
         }
         Assertions.assertEquals(numberOfObservationTypes, observationTypes);
-        Assertions.assertEquals(frameString, file.getFrameName());
-        Assertions.assertEquals(numberOfReceivers, file.getNumberOfReceivers());
-        Assertions.assertEquals(numberOfSatellites, file.getNumberOfSatellites());
-        Assertions.assertEquals(timeScale.getName(), file.getTimeScale().getName());
+        Assertions.assertEquals(frameString, file.getHeader().getFrameName());
+        Assertions.assertEquals(numberOfReceivers, file.getHeader().getNumberOfReceivers());
+        Assertions.assertEquals(numberOfSatellites, file.getHeader().getNumberOfSatellites());
+        Assertions.assertEquals(timeScale.getName(), file.getHeader().getTimeScale().getName());
 
         // Check total number of data lines
         Assertions.assertEquals(numberOfDataLines, file.getTotalNumberOfDataLines());
@@ -1080,7 +1065,7 @@ public class ClockFileParserTest {
             final ClockDataLine clockDataLine = clockDataLines.get(i);
             if (clockDataLine.getName().equals(id) &&
                 clockDataLine.getDataType().equals(type) &&
-                clockDataLine.getEpoch().equals(dataEpoch) &&
+                clockDataLine.getDate().equals(dataEpoch) &&
                 clockDataLine.getNumberOfValues() == numberOfValues &&
                 clockDataLine.getClockBias() == clockBias &&
                 clockDataLine.getClockBiasSigma() == clockBiasSigma &&

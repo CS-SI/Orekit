@@ -24,10 +24,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.InputMismatchException;
 import java.util.List;
+import java.util.Locale;
+import java.util.Scanner;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
@@ -44,8 +47,6 @@ import org.orekit.gnss.PredefinedObservationType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
-import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.units.Unit;
@@ -70,6 +71,9 @@ public class RinexClockParser {
     /** Millimeter unit. */
     private static final Unit MILLIMETER = Unit.parse("mm");
 
+    /** Spaces delimiters. */
+    private static final String SPACES = "\\s+";
+
     /** Mapping from frame identifier in the file to a {@link Frame}. */
     private final Function<? super String, ? extends Frame> frameBuilder;
 
@@ -78,11 +82,6 @@ public class RinexClockParser {
      */
     private final Function<? super String, ? extends ObservationType> typeBuilder;
 
-    /** Mapper from satellite system to time scales.
-     * @since 14.0
-     */
-    private final BiFunction<SatelliteSystem, TimeScales, ? extends TimeScale> timeScaleBuilder;
-
     /** Set of time scales. */
     private final TimeScales timeScales;
 
@@ -90,39 +89,33 @@ public class RinexClockParser {
      * <p>
      * This constructor uses the {@link DataContext#getDefault() default data context}
      * and {@link IGSUtils#guessFrame(String)}, it recognizes only {@link
-     * PredefinedObservationType} and {@link SatelliteSystem}bwith non-null
+     * PredefinedObservationType} and {@link SatelliteSystem} with non-null
      * {@link SatelliteSystem#getObservationTimeScale() time scales} (i.e., neither
      * user-defined, nor {@link SatelliteSystem#SBAS}, nor {@link SatelliteSystem#MIXED}).
      * </p>
-     * @see #RinexClockParser(Function, Function, BiFunction, TimeScales)
+     * @see #RinexClockParser(Function, Function, TimeScales)
      */
     @DefaultDataContext
     public RinexClockParser() {
         this(IGSUtils::guessFrame,
              PredefinedObservationType::valueOf,
-             (system, ts) -> system.getObservationTimeScale() == null ?
-                             null :
-                             system.getObservationTimeScale().getTimeScale(ts),
              DataContext.getDefault().getTimeScales());
     }
 
     /** Constructor, build the IGS clock file parser.
-     * @param frameBuilder     is a function that can construct a frame from a clock file
-     *                         coordinate system string. The coordinate system can be
-     *                         any 5 characters string e.g., ITR92, IGb08.
-     * @param typeBuilder      mapper from string to the observation type
-     * @param timeScaleBuilder mapper from satellite system to time scales (useful for user-defined satellite systems)
-     * @param timeScales       the set of time scales used for parsing dates.
+     * @param frameBuilder is a function that can construct a frame from a clock file
+     *                     coordinate system string. The coordinate system can be
+     *                     any 5 characters string e.g., ITR92, IGb08.
+     * @param typeBuilder  mapper from string to the observation type
+     * @param timeScales   the set of time scales used for parsing dates.
      * @since 14.0
      */
     public RinexClockParser(final Function<? super String, ? extends Frame> frameBuilder,
                             final Function<? super String, ? extends ObservationType> typeBuilder,
-                            final BiFunction<SatelliteSystem, TimeScales, ? extends TimeScale> timeScaleBuilder,
                             final TimeScales timeScales) {
-        this.frameBuilder     = frameBuilder;
-        this.typeBuilder      = typeBuilder;
-        this.timeScaleBuilder = timeScaleBuilder;
-        this.timeScales       = timeScales;
+        this.frameBuilder = frameBuilder;
+        this.typeBuilder  = typeBuilder;
+        this.timeScales   = timeScales;
     }
 
     /** Parse an IGS clock file from a {@link DataSource}.
@@ -176,12 +169,14 @@ public class RinexClockParser {
         /** Name of the data source. */
         private final String name;
 
-        /** Mapper from satellite system to time scales.
-         * @since 13.0
+        /** Mapping from frame identifier in the file to a {@link Frame}.
+         * @since 14.0
          */
-        private final BiFunction<SatelliteSystem, TimeScales, ? extends TimeScale> timeScaleBuilder;
+        private final Function<? super String, ? extends Frame> frameBuilder;
 
-        /** Set of time scales for parsing dates. */
+        /** Set of time scales for parsing dates.
+         * @since 14.0
+         */
         private final TimeScales timeScales;
 
         /** Current line number of the navigation message. */
@@ -217,28 +212,29 @@ public class RinexClockParser {
         /** Current receiver/satellite name. */
         private String currentName;
 
-        /** Current data date components. */
-        private DateComponents currentDateComponents;
+        /** Date if the clock data line. */
+        private AbsoluteDate date;
 
-        /** Current data time components. */
-        private TimeComponents currentTimeComponents;
+        /** Total number of values to parse. */
+        private int totalValues;
 
-        /** Current data number of data values to follow. */
-        private int currentNumberOfValues;
+        /** Index of next value to parse. */
+        private int valueIndex;
 
         /** Current data values. */
-        private double[] currentDataValues;
+        private final double[] values;
 
         /** Constructor, build the ParseInfo object.
          * @param name name of the data source
          */
         ParseInfo(final String name) {
             this.name                   = name;
+            this.frameBuilder           = RinexClockParser.this.frameBuilder;
             this.timeScales             = RinexClockParser.this.timeScales;
-            this.timeScaleBuilder       = RinexClockParser.this.timeScaleBuilder;
-            this.file                   = new RinexClock(frameBuilder);
+            this.file                   = new RinexClock();
             this.lineNumber             = 0;
             this.pendingReferenceClocks = new ArrayList<>();
+            this.values                 = new double[6];
         }
 
         /** Build an observation type.
@@ -259,16 +255,16 @@ public class RinexClockParser {
         VERSION((header, line) -> header.matchFound(CommonLabel.VERSION, line),
                 (line, parseInfo) ->  {
                     final RinexClockHeader header = parseInfo.file.getHeader();
-                    RinexUtils.parseVersionFileTypeSatelliteSystem(line, parseInfo.name, header,
-                                                                   2.00, 3.00, 3.01, 3.02, 3.04);
+                    header.parseVersionFileTypeSatelliteSystem(line, parseInfo.name,
+                                                               2.00, 3.00, 3.01, 3.02, 3.04);
                     parseInfo.before304 = header.getFormatVersion() < 3.04;
                 },
                 LineParser::headerNext),
 
         /** Parser for generating program and emiting agency. */
         PROGRAM((header, line) -> header.matchFound(CommonLabel.PROGRAM, line),
-                (line, parseInfo) -> RinexUtils.parseProgramRunByDate(line, parseInfo.lineNumber, parseInfo.name,
-                                                                      parseInfo.timeScales, parseInfo.file.getHeader()),
+                (line, parseInfo) -> parseInfo.file.getHeader().
+                    parseProgramRunByDate(line, parseInfo.lineNumber, parseInfo.name, parseInfo.timeScales),
                 LineParser::headerNext),
 
         /** Parser for comments. */
@@ -279,6 +275,7 @@ public class RinexClockParser {
         /** Parser for satellite system and related observation types. */
         SYS_NB_TYPES_OF_OBSERV((header, line) -> header.matchFound(CommonLabel.SYS_NB_TYPES_OF_OBSERV, line),
                                (line, parseInfo) -> {
+                                   final RinexClockHeader header = parseInfo.file.getHeader();
                                    if (parseInfo.remainingObsTypes == 0) {
                                        // we are starting a new satellite system
                                        parseInfo.currentSatelliteSystem =
@@ -288,17 +285,20 @@ public class RinexClockParser {
                                    for (int i = 0; i < 14 && parseInfo.remainingObsTypes > 0; ++i) {
                                        parseInfo.remainingObsTypes--;
                                        final String obsType = RinexUtils.parseString(line, 8 + 4 * i, 3);
-                                       parseInfo.file.getHeader()
-                                           .addSystemObservationType(parseInfo.currentSatelliteSystem,
-                                                                     parseInfo.buildType(obsType));
+                                       header.addSystemObservationType(parseInfo.currentSatelliteSystem,
+                                                                       parseInfo.buildType(obsType));
                                    }
                                },
                                LineParser::sysObsTypesNext),
 
         /** Parser for time system identifier. */
         TIME_SYSTEM_ID((header, line) -> header.matchFound(ClockLabel.TIME_SYSTEM_ID, line),
-                       (line, parseInfo) -> parseInfo.file.getHeader().
-                           setTimeSystem(TimeSystem.parseTimeSystem(RinexUtils.parseString(line, 3, 3))),
+                       (line, parseInfo) -> {
+                           final RinexClockHeader header = parseInfo.file.getHeader();
+                           final TimeSystem timeSystem = TimeSystem.parseTimeSystem(RinexUtils.parseString(line, 3, 3));
+                           header.setTimeSystem(timeSystem);
+                           header.setTimeScale(timeSystem.getTimeScale(parseInfo.timeScales));
+                       },
                        LineParser::headerNext),
 
         /** Parser for leap seconds. */
@@ -334,8 +334,12 @@ public class RinexClockParser {
                          (line, parseInfo) -> {
                              final int n = RinexUtils.parseInt(line, 0, 6);
                              for (int i = 0; i < n; i++) {
-                                 final String type = RinexUtils.parseString(line, 6 + i * 6, 4);
-                                 parseInfo.file.getHeader().addClockDataType(ClockDataType.parseClockDataType(type));
+                                 final String type = RinexUtils.parseString(line, 10 + i * 6, 4);
+                                 try {
+                                     parseInfo.file.getHeader().addClockDataType(ClockDataType.valueOf(type));
+                                 } catch (IllegalArgumentException iae) {
+                                     throw new OrekitException(OrekitMessages.UNKNOWN_CLOCK_DATA_TYPE, type);
+                                 }
                              }
                          },
                          LineParser::headerNext),
@@ -388,33 +392,35 @@ public class RinexClockParser {
                                                            parseInfo.referenceClockStartDate);
                               parseInfo.pendingReferenceClocks = new ArrayList<>();
                           }
-                          final int startI = 7;
-                          final int startD = parseInfo.before304 ? 23 : 24;
-                          final int endI   = parseInfo.before304 ? 34 : 36;
-                          final int endD   = parseInfo.before304 ? 50 : 53;
-                              if (RinexUtils.parseString(line, startI, endD + 10 - startI).trim().isEmpty()) {
+
+                          final String startStop = line.substring(7, header.getLabelIndex()).trim();
+                          if (startStop.isEmpty()) {
                               // no start/stop epoch the record applies to the whole file
                               parseInfo.referenceClockStartDate = AbsoluteDate.PAST_INFINITY;
                               parseInfo.referenceClockEndDate   = AbsoluteDate.FUTURE_INFINITY;
                           } else {
-                              parseInfo.referenceClockStartDate =
-                                  new AbsoluteDate(RinexUtils.parseInt(line,    startI,       4),
-                                                   RinexUtils.parseInt(line,    startI +  5,  2),
-                                                   RinexUtils.parseInt(line,    startI +  8,  2),
-                                                   RinexUtils.parseInt(line,    startI + 11,  2),
-                                                   RinexUtils.parseInt(line,    startI + 14,  2),
-                                                   RinexUtils.parseDouble(line, startD,      10),
-                                                   parseInfo.timeScaleBuilder.apply(header.getSatelliteSystem(),
-                                                                                    parseInfo.timeScales));
-                              parseInfo.referenceClockEndDate =
-                                  new AbsoluteDate(RinexUtils.parseInt(line,    endI,       4),
-                                                   RinexUtils.parseInt(line,    endI +  5,  2),
-                                                   RinexUtils.parseInt(line,    endI +  8,  2),
-                                                   RinexUtils.parseInt(line,    endI + 11,  2),
-                                                   RinexUtils.parseInt(line,    endI + 14,  2),
-                                                   RinexUtils.parseDouble(line, endD,      10),
-                                                   parseInfo.timeScaleBuilder.apply(header.getSatelliteSystem(),
-                                                                                    parseInfo.timeScales));
+                              // we use a Scanner here instead of relying on the character indices
+                              // because some files do NOT respect the format
+                              // it is a pity that the reference example in table A17 of the rinex 3.04 specification
+                              // itself exhibits errors (the seconds field in start date is shifted 1 character to the
+                              // left wrt. specification, the first fields in end date are shifted 2 characters to the
+                              // left wrt. specification, and the seconds field in end date is shifted 3 characters to
+                              // the left wrt. specification, i.e. this line in table A17 is consistent with
+                              // rinex 3.02 specification, not with rinex 3.04…)
+                              // we were not able to find any real 3.04 files that have non-empty dates.
+                              // We therefore fall back to a Scanner, which should handle all format versions properly
+                              try (Scanner s1      = new Scanner(startStop);
+                                   Scanner s2      = s1.useDelimiter(SPACES);
+                                   Scanner scanner = s2.useLocale(Locale.US)) {
+                                  parseInfo.referenceClockStartDate =
+                                      new AbsoluteDate(scanner.nextInt(), scanner.nextInt(), scanner.nextInt(),
+                                                       scanner.nextInt(), scanner.nextInt(), scanner.nextDouble(),
+                                                       header.getTimeScale());
+                                  parseInfo.referenceClockEndDate =
+                                      new AbsoluteDate(scanner.nextInt(), scanner.nextInt(), scanner.nextInt(),
+                                                       scanner.nextInt(), scanner.nextInt(), scanner.nextDouble(),
+                                                       header.getTimeScale());
+                              }
                           }
                       },
                       LineParser::headerNext),
@@ -447,9 +453,22 @@ public class RinexClockParser {
 
         /** Parser for the number of stations embedded in the file and the related frame. */
         NB_OF_SOLN_STA_TRF((header, line) -> header.matchFound(ClockLabel.NB_OF_SOLN_STA_TRF, line),
-                           (line, parseInfo) ->
-                               parseInfo.file.getHeader().
-                                   setFrameName(RinexUtils.parseString(line, 10, parseInfo.before304 ? 50 : 55)),
+                           (line, parseInfo) -> {
+                               final RinexClockHeader header = parseInfo.file.getHeader();
+                               final String complete = RinexUtils.parseString(line, 10, parseInfo.before304 ? 50 : 55);
+                               int first = 0;
+                               while (first < complete.length() && complete.charAt(first) == ' ') {
+                                   ++first;
+                               }
+                               int last = first;
+                               while (last < complete.length() &&
+                                      Character.isLetterOrDigit(complete.charAt(last))) {
+                                   ++last;
+                               }
+                               final String frameName = complete.substring(first, last);
+                               header.setFrameName(frameName);
+                               header.setFrame(parseInfo.frameBuilder.apply(frameName));
+                           },
                            LineParser::headerNext),
 
         /** Parser for the stations embedded in the file and the related positions. */
@@ -458,9 +477,9 @@ public class RinexClockParser {
                                  final int    length     = parseInfo.before304 ? 4 : 9;
                                  final String designator = RinexUtils.parseString(line, 0, length);
                                  final String identifier = RinexUtils.parseString(line, length + 1, 20);
-                                 final double x          = MILLIMETER.toSI(RinexUtils.parseInt(line, length + 21, 11));
-                                 final double y          = MILLIMETER.toSI(RinexUtils.parseInt(line, length + 33, 11));
-                                 final double z          = MILLIMETER.toSI(RinexUtils.parseInt(line, length + 45, 11));
+                                 final double x          = MILLIMETER.toSI(RinexUtils.parseLong(line, length + 21, 11));
+                                 final double y          = MILLIMETER.toSI(RinexUtils.parseLong(line, length + 33, 11));
+                                 final double z          = MILLIMETER.toSI(RinexUtils.parseLong(line, length + 45, 11));
                                  final Receiver receiver = new Receiver(designator, identifier, x, y, z);
                                  parseInfo.file.getHeader().addReceiver(receiver);
                              },
@@ -494,6 +513,9 @@ public class RinexClockParser {
                            // Modify time span map of the reference clocks to accept the pending reference clock
                            parseInfo.file.getHeader().addReferenceClockList(parseInfo.pendingReferenceClocks, parseInfo.referenceClockStartDate);
                        };
+                       if (!parseInfo.before304 && parseInfo.file.getHeader().getTimeSystem() == null) {
+                           throw new OrekitException(OrekitMessages.MISSING_TIME_SYSTEM_DEFINITION, parseInfo.name);
+                       }
                        parseInfo.headerCompleted = true;
                    },
                    LineParser::headerEndNext),
@@ -509,80 +531,71 @@ public class RinexClockParser {
                            throw new OrekitException(OrekitMessages.UNKNOWN_CLOCK_DATA_TYPE, line.substring(0, 2));
                        }
 
-                       // Initialise current values
-                       parseInfo.currentDataValues = new double[6];
-
                        // Second element is receiver/satellite name
                        final int length = parseInfo.before304 ? 4 : 9;
                        parseInfo.currentName = RinexUtils.parseString(line, 3, length);
 
                        // Third element is data epoch
-                       final int startI = 13;
-                       final int startD = 30;
-                       final AbsoluteDate epoch =
+                       final int startI = parseInfo.before304 ?  8 : 13;
+                       final int startD = parseInfo.before304 ? 24 : 29;
+                       parseInfo.date =
                                new AbsoluteDate(RinexUtils.parseInt(line,    startI,       4),
-                                                RinexUtils.parseInt(line,    startI +  5,  2),
-                                                RinexUtils.parseInt(line,    startI +  8,  2),
-                                                RinexUtils.parseInt(line,    startI + 11,  2),
-                                                RinexUtils.parseInt(line,    startI + 14,  2),
-                                                RinexUtils.parseDouble(line, startD,       9),
-                                                parseInfo.timeScaleBuilder.
-                                                        apply(header.getSatelliteSystem(),
-                                                              parseInfo.timeScales));
+                                                RinexUtils.parseInt(line,    startI +  4,  4),
+                                                RinexUtils.parseInt(line,    startI +  7,  3),
+                                                RinexUtils.parseInt(line,    startI + 10,  3),
+                                                RinexUtils.parseInt(line,    startI + 13,  3),
+                                                RinexUtils.parseDouble(line, startD,      10),
+                                                header.getTimeScale());
 
                        // Fourth element is number of data values
-                       parseInfo.currentNumberOfValues = RinexUtils.parseInt(line, startD + 10, 2);
+                       parseInfo.totalValues = RinexUtils.parseInt(line, startD + 11, 2);
+                       parseInfo.valueIndex  = 0;
 
-                       // Get the values in this line, there are at most 2.
-                       // Some entries claim less values than there actually are.
-                       // All values are added to the set, regardless of their claimed number.
-                       int i = 0;
-                       while (scanner.hasNextDouble()) {
-                           parseInfo.currentDataValues[i++] = scanner.nextDouble();
+                       // Get the values in this line
+                       Arrays.fill(parseInfo.values, Double.NaN);
+                       int start = parseInfo.before304 ?  40 : 45;
+                       while (parseInfo.valueIndex < FastMath.min(2, parseInfo.totalValues)) {
+                           parseInfo.values[parseInfo.valueIndex++] = RinexUtils.parseDouble(line, start, 19);
+                           start += parseInfo.before304 ? 20 : 21;
                        }
 
                        // Check if continuation line is required
-                       if (parseInfo.currentNumberOfValues <= 2) {
+                       if (parseInfo.valueIndex == parseInfo.totalValues) {
                            // No continuation line is required
                            parseInfo.file.addClockData(parseInfo.currentName,
                                                        new ClockDataLine(parseInfo.currentDataType,
                                                                          parseInfo.currentName,
-                                                                         parseInfo.currentDateComponents,
-                                                                         parseInfo.currentTimeComponents,
-                                                                         parseInfo.currentNumberOfValues,
-                                                                         parseInfo.currentDataValues[0],
-                                                                         parseInfo.currentDataValues[1], 0.0, 0.0, 0.0,
-                                                                         0.0));
+                                                                         parseInfo.date,
+                                                                         parseInfo.totalValues,
+                                                                         parseInfo.values[0],
+                                                                         parseInfo.values[1],
+                                                                         parseInfo.values[2],
+                                                                         parseInfo.values[3],
+                                                                         parseInfo.values[4],
+                                                                         parseInfo.values[5]));
                        }
                    },
                    LineParser::dataNext),
 
         /** Parser for a continuation clock data line. */
-        CLOCK_DATA_CONTINUATION((header, line) -> line.charAt(0) == ' ',
+        CLOCK_DATA_CONTINUATION((header, line) -> true,
                                 (line, parseInfo) -> {
-
-                                    // Get the values in this continuation line.
-                                    // Some entries claim less values than there actually are.
-                                    // All values are added to the set, regardless of their claimed number.
-                                    int i = 2;
-                                    while (scanner.hasNextDouble()) {
-                                        parseInfo.currentDataValues[i++] = scanner.nextDouble();
+                                    int start = parseInfo.before304 ? 0 : 3;
+                                    while (parseInfo.valueIndex < parseInfo.totalValues) {
+                                        parseInfo.values[parseInfo.valueIndex++] =
+                                            RinexUtils.parseDouble(line, start, 19);
+                                        start += parseInfo.before304 ? 20 : 21;
                                     }
-
-                                    // Add clock data line
                                     parseInfo.file.addClockData(parseInfo.currentName,
                                                                 new ClockDataLine(parseInfo.currentDataType,
-                                                                                  parseInfo.currentName,
-                                                                                  parseInfo.currentDateComponents,
-                                                                                  parseInfo.currentTimeComponents,
-                                                                                  parseInfo.currentNumberOfValues,
-                                                                                  parseInfo.currentDataValues[0],
-                                                                                  parseInfo.currentDataValues[1],
-                                                                                  parseInfo.currentDataValues[2],
-                                                                                  parseInfo.currentDataValues[3],
-                                                                                  parseInfo.currentDataValues[4],
-                                                                                  parseInfo.currentDataValues[5]));
-
+                                                                                  parseInfo.currentName, parseInfo.date,
+                                                                                  parseInfo.totalValues,
+                                                                                  parseInfo.values[0],
+                                                                                  parseInfo.values[1],
+                                                                                  parseInfo.values[2],
+                                                                                  parseInfo.values[3],
+                                                                                  parseInfo.values[4],
+                                                                                  parseInfo.values[5]));
                                 },
                                 LineParser::dataNext);
 
@@ -613,9 +626,21 @@ public class RinexClockParser {
          * @return allowed parsers for next line
          */
         private static Iterable<LineParser> headerNext(final ParseInfo parseInfo) {
-            return Arrays.asList(PROGRAM, COMMENT, SYS_NB_TYPES_OF_OBSERV, TIME_SYSTEM_ID,
-                                 LEAP_SECONDS, ANALYSIS_CENTER, NB_OF_CLK_REF, ANALYSIS_CLK_REF,
-                                 NB_OF_SOLN_STA_TRF, SOLN_STA_NAME_NUM, NB_OF_SOLN_SATS, PRN_LIST, HEADER_END);
+            if (parseInfo.before304) {
+                return Arrays.asList(PROGRAM, COMMENT, SYS_NB_TYPES_OF_OBSERV, TIME_SYSTEM_ID,
+                                     LEAP_SECONDS, SYS_DCBS_APPLIED, SYS_PCVS_APPLIED,
+                                     NB_TYPES_OF_DATA, STATION_NAME_NUM, STATION_CLK_REF,
+                                     ANALYSIS_CENTER, NB_OF_CLK_REF, ANALYSIS_CLK_REF,
+                                     NB_OF_SOLN_STA_TRF, SOLN_STA_NAME_NUM, NB_OF_SOLN_SATS,
+                                     PRN_LIST, HEADER_END);
+            } else {
+                return Arrays.asList(PROGRAM, COMMENT, SYS_NB_TYPES_OF_OBSERV, TIME_SYSTEM_ID,
+                                     LEAP_SECONDS, LEAP_SECONDS_GNSS, SYS_DCBS_APPLIED, SYS_PCVS_APPLIED,
+                                     NB_TYPES_OF_DATA, STATION_NAME_NUM, STATION_CLK_REF,
+                                     ANALYSIS_CENTER, NB_OF_CLK_REF, ANALYSIS_CLK_REF,
+                                     NB_OF_SOLN_STA_TRF, SOLN_STA_NAME_NUM, NB_OF_SOLN_SATS,
+                                     PRN_LIST, HEADER_END);
+            }
         }
 
         /** Get the allowed parsers for next lines while parsing comments.
@@ -650,7 +675,9 @@ public class RinexClockParser {
          * @return allowed parsers for next line
          */
         private static Iterable<LineParser> dataNext(final ParseInfo parseInfo) {
-            return Arrays.asList(LineParser.CLOCK_DATA, LineParser.CLOCK_DATA_CONTINUATION);
+            return parseInfo.valueIndex < parseInfo.totalValues ?
+                   Collections.singleton(LineParser.CLOCK_DATA_CONTINUATION) :
+                   Collections.singleton(LineParser.CLOCK_DATA);
         }
 
     }

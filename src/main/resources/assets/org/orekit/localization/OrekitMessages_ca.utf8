@@ -944,3 +944,6 @@ INCONSISTENT_STATE_DIMENSIONS=El vector d''estat (dimensió {0}) i la covariànc
 
 # data at date {0} has already been automatically expunged
 EXPUNGED_SPAN=dada a la data {0} ha estat automàticament esborrada
+
+# missing time system definition in file {0}
+MISSING_TIME_SYSTEM_DEFINITION=

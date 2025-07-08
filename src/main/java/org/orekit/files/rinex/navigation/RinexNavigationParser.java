@@ -311,17 +311,18 @@ public class RinexNavigationParser {
         /** Parser for version, file type and satellite system. */
         HEADER_VERSION((header, line) -> header.matchFound(CommonLabel.VERSION, line),
                        (line, pi) -> {
-                           RinexUtils.parseVersionFileTypeSatelliteSystem(line, pi.name, pi.file.getHeader(),
-                                                                          2.0, 2.01, 2.10, 2.11,
-                                                                          3.01, 3.02, 3.03, 3.04, 3.05,
-                                                                          4.00, 4.01, 4.02);
+                           pi.file.getHeader().parseVersionFileTypeSatelliteSystem(line, pi.name,
+                                                                                   2.0, 2.01, 2.10, 2.11,
+                                                                                   3.01, 3.02, 3.03, 3.04, 3.05,
+                                                                                   4.00, 4.01, 4.02);
                            pi.initialSpaces = pi.file.getHeader().getFormatVersion() < 3.0 ? 3 : 4;
                        },
                        LineParser::headerNext),
 
         /** Parser for generating program and emitting agency. */
         HEADER_PROGRAM((header, line) -> header.matchFound(CommonLabel.PROGRAM, line),
-                       (line, pi) -> RinexUtils.parseProgramRunByDate(line, pi.lineNumber, pi.name, pi.timeScales, pi.file.getHeader()),
+                       (line, pi) -> pi.file.getHeader().
+                           parseProgramRunByDate(line, pi.lineNumber, pi.name, pi.timeScales),
                        LineParser::headerNext),
 
         /** Parser for comments. */
@@ -337,7 +338,7 @@ public class RinexNavigationParser {
 
                              // Read coefficients
                              final double[] parameters = new double[4];
-                             parameters[0] = RinexUtils.parseDouble(line, 2,  12);
+                             parameters[0] = RinexUtils.parseDouble(line,  2, 12);
                              parameters[1] = RinexUtils.parseDouble(line, 14, 12);
                              parameters[2] = RinexUtils.parseDouble(line, 26, 12);
                              parameters[3] = RinexUtils.parseDouble(line, 38, 12);
@@ -355,7 +356,7 @@ public class RinexNavigationParser {
 
                             // Read coefficients
                             final double[] parameters = new double[4];
-                            parameters[0] = RinexUtils.parseDouble(line, 2,  12);
+                            parameters[0] = RinexUtils.parseDouble(line,  2, 12);
                             parameters[1] = RinexUtils.parseDouble(line, 14, 12);
                             parameters[2] = RinexUtils.parseDouble(line, 26, 12);
                             parameters[3] = RinexUtils.parseDouble(line, 38, 12);
@@ -375,7 +376,7 @@ public class RinexNavigationParser {
 
                                // Read coefficients
                                final double[] parameters = new double[4];
-                               parameters[0] = RinexUtils.parseDouble(line, 5,  12);
+                               parameters[0] = RinexUtils.parseDouble(line,  5, 12);
                                parameters[1] = RinexUtils.parseDouble(line, 17, 12);
                                parameters[2] = RinexUtils.parseDouble(line, 29, 12);
                                parameters[3] = RinexUtils.parseDouble(line, 41, 12);
@@ -414,7 +415,7 @@ public class RinexNavigationParser {
         HEADER_DELTA_UTC((header, line) -> header.matchFound(NavigationLabel.DELTA_UTC, line),
                          (line, pi) -> {
                              // Read fields
-                             final double a0      = RinexUtils.parseDouble(line, 3,  19);
+                             final double a0      = RinexUtils.parseDouble(line,  3, 19);
                              final double a1      = RinexUtils.parseDouble(line, 22, 19);
                              final int    refTime = RinexUtils.parseInt(line, 41, 9);
                              final int    refWeek = RinexUtils.parseInt(line, 50, 9);
@@ -455,8 +456,8 @@ public class RinexNavigationParser {
                     (line, pi) -> {
 
                         // Read fields
-                        final String type    = RinexUtils.parseString(line, 0,  4);
-                        final double a0      = RinexUtils.parseDouble(line, 5,  17);
+                        final String type    = RinexUtils.parseString(line,  0, 4);
+                        final double a0      = RinexUtils.parseDouble(line,  5, 17);
                         final double a1      = RinexUtils.parseDouble(line, 22, 16);
                         final int    refTime = RinexUtils.parseInt(line, 38, 7);
                         final int    refWeek = RinexUtils.parseInt(line, 46, 5);
@@ -490,7 +491,7 @@ public class RinexNavigationParser {
          */
         HEADER_DOI((header, line) -> header.matchFound(CommonLabel.DOI, line),
                    (line, pi) -> pi.file.getHeader().
-                       setDoi(RinexUtils.parseString(line, 0, 80)),
+                       setDoi(RinexUtils.parseString(line, 0, pi.file.getHeader().getLabelIndex())),
                    LineParser::headerNext),
 
         /** Parser for license.
@@ -498,7 +499,7 @@ public class RinexNavigationParser {
          */
         HEADER_LICENSE((header, line) -> header.matchFound(CommonLabel.LICENSE, line),
                        (line, pi) -> pi.file.getHeader().
-                           setLicense(RinexUtils.parseString(line, 0, 80)),
+                           setLicense(RinexUtils.parseString(line, 0, pi.file.getHeader().getLabelIndex())),
                        LineParser::headerNext),
 
         /** Parser for stationInformation.
@@ -506,7 +507,7 @@ public class RinexNavigationParser {
          */
         HEADER_STATION_INFORMATION((header, line) -> header.matchFound(CommonLabel.STATION_INFORMATION, line),
                                    (line, pi) -> pi.file.getHeader().
-                                       setStationInformation(RinexUtils.parseString(line, 0, 80)),
+                                       setStationInformation(RinexUtils.parseString(line, 0, pi.file.getHeader().getLabelIndex())),
                                    LineParser::headerNext),
 
         /** Parser for merged files.

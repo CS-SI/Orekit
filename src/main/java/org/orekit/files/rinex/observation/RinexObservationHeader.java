@@ -27,10 +27,12 @@ import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.orekit.files.rinex.section.Label;
 import org.orekit.files.rinex.section.RinexClockObsBaseHeader;
 import org.orekit.files.rinex.utils.RinexFileType;
+import org.orekit.files.rinex.utils.parsing.RinexUtils;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScales;
 
 /** Container for Rinex observation file header.
  * @since 9.2
@@ -198,6 +200,24 @@ public class RinexObservationHeader extends RinexClockObsBaseHeader {
         c1pCodePhaseBias       = Double.NaN;
         c2cCodePhaseBias       = Double.NaN;
         c2pCodePhaseBias       = Double.NaN;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public SatelliteSystem parseSatelliteSystem(final String line) {
+        // for observation files, the satellite system is in column 40, and empty defaults to GPS
+        return SatelliteSystem.parseSatelliteSystemWithGPSDefault(line.substring(40, 41));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void parseProgramRunByDate(final String line, final int lineNumber,
+                                      final String name, final TimeScales timeScales) {
+        parseProgramRunByDate(line,
+                              RinexUtils.parseString(line, 0, 20),
+                              RinexUtils.parseString(line, 20, 20),
+                              RinexUtils.parseString(line, 40, 20),
+                              lineNumber, name, timeScales);
     }
 
     /** Set name of the antenna marker.
@@ -766,8 +786,21 @@ public class RinexObservationHeader extends RinexClockObsBaseHeader {
 
     /** {@inheritDoc} */
     @Override
+    public void checkType(final String line, final String name) {
+        checkType(line, 20, name);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getLabelIndex() {
+        return LABEL_INDEX;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public boolean matchFound(final Label label, final String line) {
-        return label.matches(line.substring(LABEL_INDEX).trim());
+        final int max = getLabelIndex();
+        return line.length() >= max && label.matches(line.substring(max).trim());
     }
 
 }
