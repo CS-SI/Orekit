@@ -346,7 +346,7 @@ public class RinexObservationParser {
         /** Parser for version, file type and satellite system. */
         VERSION((header, line) -> header.matchFound(CommonLabel.VERSION, line),
                 (line, parseInfo) ->  parseInfo.file.getHeader().
-                    parseVersionFileTypeSatelliteSystem(line, parseInfo.name,
+                    parseVersionFileTypeSatelliteSystem(line, SatelliteSystem.GPS, parseInfo.name,
                                                         2.00, 2.10, 2.11, 2.12, 2.20,
                                                         3.00, 3.01, 3.02, 3.03, 3.04, 3.05,
                                                         4.00, 4.01, 4.02),
@@ -354,8 +354,7 @@ public class RinexObservationParser {
 
         /** Parser for generating program and emitting agency. */
         PROGRAM((header, line) -> header.matchFound(CommonLabel.PROGRAM, line),
-                (line, parseInfo) -> parseInfo.file.getHeader().
-                    parseProgramRunByDate(line, parseInfo.lineNumber, parseInfo.name, parseInfo.timeScales),
+                (line, parseInfo) -> parseInfo.file.getHeader().parseProgramRunByDate(line, parseInfo.timeScales),
                 LineParser::headerNext),
 
         /** Parser for comments. */

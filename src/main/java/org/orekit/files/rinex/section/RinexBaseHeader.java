@@ -40,10 +40,15 @@ import java.util.regex.Pattern;
 public abstract class RinexBaseHeader {
 
     /** Pattern for splitting date, time and time zone. */
-    private static final Pattern SPLITTING_PATTERN = Pattern.compile("([0-9A-Za-z/-]+) *([0-9:]+) *([A-Z][A-Z0-9_-]*)?");
+    private static final Pattern SPLITTING_PATTERN = Pattern.compile("([0-9]+[/ -]?[0-9A-Za-z]+[/ -]?[0-9]+) +([0-9:]+) *([A-Z]+)?");
 
     /** Pattern for dates with month abbrevation. */
-    private static final Pattern DATE_DD_MMM_YY_PATTERN = Pattern.compile("([0-9]{2})-([A-Za-z]{3})-([0-9]{2})");
+    private static final Pattern DATE_DD_MMM_YY_PATTERN = Pattern.compile("([0-9]{1,2})-([A-Za-z]{3})-([0-9]{2,4})");
+
+    /** Pattern for dates with month abbrevation.
+     * @since 14.0
+     */
+    private static final Pattern DATE_YYYY_MMM_DD_PATTERN = Pattern.compile("([0-9]{4})[- ]([A-Za-z]{3})[- ]([0-9]{1,2})");
 
     /** Pattern for dates in ISO-8601 complete representation (basic or extended). */
     private static final Pattern DATE_ISO_8601_PATTERN = Pattern.compile("([0-9]{4})-?([0-9]{2})-?([0-9]{2})");
@@ -147,10 +152,11 @@ public abstract class RinexBaseHeader {
     /**
      * Parse satellite system.
      * @param line header line
+     * @param defaultSatelliteSystem satellite system to use if string is null or empty
      * @return parsed satellite system
      * @since 14.0
      */
-    public abstract SatelliteSystem parseSatelliteSystem(String line);
+    public abstract SatelliteSystem parseSatelliteSystem(String line, SatelliteSystem defaultSatelliteSystem);
 
     /**
      * Getter for the program name.
@@ -218,6 +224,12 @@ public abstract class RinexBaseHeader {
 
     /**
      * Getter for the creation date.
+     * <p>
+     * The creation date seems to be mandatory, but we have seen several files
+     * missing it, even files created by IGS itself (in clock files, essentially).
+     * We accept these null dates to at least allow parsing the files
+     * as this header information does not really seem essential
+     * </p>
      * @return the creation date
      */
     public AbsoluteDate getCreationDate() {
@@ -288,11 +300,13 @@ public abstract class RinexBaseHeader {
 
     /** Parse version, file type and satellite system.
      * @param line line to parse
+     * @param defaultSatelliteSystem satellite system to use if string is null or empty
      * @param name file name (for error message generation)
      * @param supportedVersions supported versions
+     * @since 14.0
      */
-    public void parseVersionFileTypeSatelliteSystem(final String line, final String name,
-                                                    final double... supportedVersions) {
+    public void parseVersionFileTypeSatelliteSystem(final String line, final SatelliteSystem defaultSatelliteSystem,
+                                                    final String name, final double... supportedVersions) {
 
         // Rinex version
         final double parsedVersion = RinexUtils.parseDouble(line, 0, 9);
@@ -321,30 +335,26 @@ public abstract class RinexBaseHeader {
         checkType(line, name);
 
         // Satellite system
-        setSatelliteSystem(parseSatelliteSystem(line));
+        setSatelliteSystem(parseSatelliteSystem(line, defaultSatelliteSystem));
 
     }
 
     /** Parse program, run/by and date.
      * @param line line to parse
-     * @param lineNumber line number
-     * @param name file name (for error message generation)
      * @param timeScales the set of time scales used for parsing dates
+     * @since 14.0
      */
-    public abstract void parseProgramRunByDate(String line, int lineNumber,
-                                               String name, TimeScales timeScales);
+    public abstract void parseProgramRunByDate(String line, TimeScales timeScales);
 
     /** Parse program, run/by and date.
-     * @param line line to parse
      * @param prgm  PGM field
      * @param run  RUN BY field
      * @param date  date field
-     * @param lineNumber line number
-     * @param name file name (for error message generation)
      * @param timeScales the set of time scales used for parsing dates
+     * @since 14.0
      */
-    protected void parseProgramRunByDate(final String line, final String prgm, final String run, final String date,
-                                         final int lineNumber, final String name, final TimeScales timeScales) {
+    protected void parseProgramRunByDate(final String prgm, final String run, final String date,
+                                         final TimeScales timeScales) {
 
         // Name of the generating program
         setProgramName(prgm);
@@ -366,32 +376,45 @@ public abstract class RinexBaseHeader {
         // however, we have also found:
         // NetR9 5.03          Receiver Operator   11-JAN-16 00:00:00  PGM / RUN BY / DATE
 
+        // in clock files, we have found patterns like:
+        // CLKRINEX V1.0       NRCan               1-Mar-2000 20:36    PGM / RUN BY / DATE
+        // tdp2clk v1.13       JPL                 2002 Jan 3 13:36:17 PGM / RUN BY / DATE
+
         // so we cannot rely on the format version, we have to check several variations
         final Matcher splittingMatcher = SPLITTING_PATTERN.matcher(date);
         if (splittingMatcher.matches()) {
 
             // date part
             final DateComponents dc;
-            final Matcher abbrevMatcher = DATE_DD_MMM_YY_PATTERN.matcher(splittingMatcher.group(1));
-            if (abbrevMatcher.matches()) {
+            final Matcher abbrev1Matcher = DATE_DD_MMM_YY_PATTERN.matcher(splittingMatcher.group(1));
+            if (abbrev1Matcher.matches()) {
+                final int rawYear = Integer.parseInt(abbrev1Matcher.group(3));
                 // hoping this obsolete format will not be used past year 2079…
-                dc = new DateComponents(RinexUtils.convert2DigitsYear(Integer.parseInt(abbrevMatcher.group(3))),
-                                        Month.parseMonth(abbrevMatcher.group(2)).getNumber(),
-                                        Integer.parseInt(abbrevMatcher.group(1)));
+                dc = new DateComponents(rawYear < 100 ? RinexUtils.convert2DigitsYear(rawYear) : rawYear,
+                                        Month.parseMonth(abbrev1Matcher.group(2)).getNumber(),
+                                        Integer.parseInt(abbrev1Matcher.group(1)));
             } else {
-                final Matcher isoMatcher = DATE_ISO_8601_PATTERN.matcher(splittingMatcher.group(1));
-                if (isoMatcher.matches()) {
-                    dc = new DateComponents(Integer.parseInt(isoMatcher.group(1)),
-                                            Integer.parseInt(isoMatcher.group(2)),
-                                            Integer.parseInt(isoMatcher.group(3)));
+                final Matcher abbrev2Matcher = DATE_YYYY_MMM_DD_PATTERN.matcher(splittingMatcher.group(1));
+                if (abbrev2Matcher.matches()) {
+                    dc = new DateComponents(Integer.parseInt(abbrev2Matcher.group(1)),
+                                            Month.parseMonth(abbrev2Matcher.group(2)).getNumber(),
+                                            Integer.parseInt(abbrev2Matcher.group(3)));
                 } else {
-                    final Matcher europeanMatcher = DATE_EUROPEAN_PATTERN.matcher(splittingMatcher.group(1));
-                    if (europeanMatcher.matches()) {
-                        dc = new DateComponents(RinexUtils.convert2DigitsYear(Integer.parseInt(europeanMatcher.group(3))),
-                                                Integer.parseInt(europeanMatcher.group(2)),
-                                                Integer.parseInt(europeanMatcher.group(1)));
+                    final Matcher isoMatcher = DATE_ISO_8601_PATTERN.matcher(splittingMatcher.group(1));
+                    if (isoMatcher.matches()) {
+                        dc = new DateComponents(Integer.parseInt(isoMatcher.group(1)),
+                                               Integer.parseInt(isoMatcher.group(2)),
+                                               Integer.parseInt(isoMatcher.group(3)));
                     } else {
-                        dc = null;
+                        final Matcher europeanMatcher = DATE_EUROPEAN_PATTERN.matcher(splittingMatcher.group(1));
+                        if (europeanMatcher.matches()) {
+                            dc = new DateComponents(
+                                    RinexUtils.convert2DigitsYear(Integer.parseInt(europeanMatcher.group(3))),
+                                    Integer.parseInt(europeanMatcher.group(2)),
+                                    Integer.parseInt(europeanMatcher.group(1)));
+                        } else {
+                            dc = null;
+                        }
                     }
                 }
             }
@@ -404,13 +427,20 @@ public abstract class RinexBaseHeader {
                                         Integer.parseInt(timeMatcher.group(2)),
                                         timeMatcher.group(3) != null ? Integer.parseInt(timeMatcher.group(3)) : 0);
             } else {
-                tc = null;
+                tc = TimeComponents.H00;
             }
 
             // zone part
-            final String zone = splittingMatcher.groupCount() > 2 ? splittingMatcher.group(3) : "";
+            final String zone = splittingMatcher.group(3);
+            setCreationTimeZone(zone == null ? "" : zone);
 
-            if (dc != null && tc != null) {
+            if (dc == null) {
+                // despite the creation date seems to be mandatory, we have seen several files
+                // missing it, even files created by IGS itself (in clock files, essentially).
+                // We accept these null dates to at least allow parsing the files
+                // as this header information does not really seem essential
+                setCreationDate(null);
+            } else {
                 // we successfully parsed everything
                 final DateTimeComponents dtc = new DateTimeComponents(dc, tc);
                 setCreationDateComponents(dtc);
@@ -418,15 +448,12 @@ public abstract class RinexBaseHeader {
                                             timeScales.getUTC() :
                                             TimeSystem.parseTimeSystem(zone).getTimeScale(timeScales);
                 setCreationDate(new AbsoluteDate(dtc, timeScale));
-                setCreationTimeZone(zone);
-                return;
             }
 
+        } else {
+            setCreationDate(null);
+            setCreationTimeZone("");
         }
-
-        // we were not able to extract date
-        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                      lineNumber, name, line);
 
     }
 
@@ -453,6 +480,7 @@ public abstract class RinexBaseHeader {
 
     /** Get the index of the header label.
      * @return index of the header label
+     * @since 14.0
      */
     public abstract int getLabelIndex();
 

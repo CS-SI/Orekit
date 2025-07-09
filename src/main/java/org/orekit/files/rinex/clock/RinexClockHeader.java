@@ -23,6 +23,7 @@ import org.orekit.files.rinex.utils.RinexFileType;
 import org.orekit.files.rinex.utils.parsing.RinexUtils;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.ObservationType;
+import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
@@ -91,7 +92,10 @@ public class RinexClockHeader extends RinexClockObsBaseHeader {
     private final List<Receiver> receivers;
 
     /** List of the satellites in the file. */
-    private final List<String> satellites;
+    private final List<SatInSystem> satellites;
+
+    /** Merged satellites systems. */
+    private SatelliteSystem mergedSystems;
 
     /** Simple constructor.
      */
@@ -110,31 +114,29 @@ public class RinexClockHeader extends RinexClockObsBaseHeader {
         this.leapSecondsGNSS         = 0;
         this.receivers               = new ArrayList<>();
         this.satellites              = new ArrayList<>();
+        this.mergedSystems           = null;
     }
 
     /** {@inheritDoc} */
     @Override
-    public SatelliteSystem parseSatelliteSystem(final String line) {
+    public SatelliteSystem parseSatelliteSystem(final String line, final SatelliteSystem defaultSatelliteSystem) {
         final String satSystemString = (getFormatVersion() < 3.04 ? line.substring(40, 41) : line.substring(42, 43)).trim();
-        return SatelliteSystem.parseSatelliteSystemWithGPSDefault(satSystemString);
+        return SatelliteSystem.parseSatelliteSystem(satSystemString, defaultSatelliteSystem);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void parseProgramRunByDate(final String line, final int lineNumber,
-                                      final String name, final TimeScales timeScales) {
+    public void parseProgramRunByDate(final String line, final TimeScales timeScales) {
         if (getFormatVersion() < 3.04) {
-            parseProgramRunByDate(line,
-                                  RinexUtils.parseString(line,  0, 20),
+            parseProgramRunByDate(RinexUtils.parseString(line,  0, 20),
                                   RinexUtils.parseString(line, 20, 20),
                                   RinexUtils.parseString(line, 40, 20),
-                                  lineNumber, name, timeScales);
+                                  timeScales);
         } else {
-            parseProgramRunByDate(line,
-                                  RinexUtils.parseString(line,  0, 19),
+            parseProgramRunByDate(RinexUtils.parseString(line,  0, 19),
                                   RinexUtils.parseString(line, 21, 19),
                                   RinexUtils.parseString(line, 42, 21),
-                                  lineNumber, name, timeScales);
+                                  timeScales);
         }
     }
 
@@ -351,11 +353,29 @@ public class RinexClockHeader extends RinexClockObsBaseHeader {
     /** Add a new satellite with a given identifier to the list of stored satellites.
      * @param satId the satellite identifier
      */
-    public void addSatellite(final String satId) {
+    public void addSatellite(final SatInSystem satId) {
+
         // only add satellites which have not been added before
         if (!satellites.contains(satId)) {
             satellites.add(satId);
+
+            // check if we have only one satellite system or mixed systems
+            if (mergedSystems == null) {
+                mergedSystems = satId.getSystem();
+            } else if (satId.getSystem() != mergedSystems) {
+                mergedSystems = SatelliteSystem.MIXED;
+            }
+
         }
+
+    }
+
+    /** Get the merged satellites systems.
+     * @return merged satellites systems
+     * @since 14.0
+     */
+    SatelliteSystem getMergedSystem() {
+        return mergedSystems;
     }
 
     /** Add a new receiver to the list of stored receivers.
@@ -400,7 +420,7 @@ public class RinexClockHeader extends RinexClockObsBaseHeader {
     /** Getter for the satellites.
      * @return the list of the satellites
      */
-    public List<String> getSatellites() {
+    public List<SatInSystem> getSatellites() {
         return Collections.unmodifiableList(satellites);
     }
 

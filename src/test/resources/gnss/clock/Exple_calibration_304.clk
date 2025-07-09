@@ -1,8 +1,8 @@
-3.04                 C                    G                      RINEX VERSION / TYPE
+3.04                 C                                           RINEX VERSION / TYPE
 TORINEXC V9.9        USNO                 19960403  001000 UTC   PGM / RUN BY / DATE
 EXAMPLE OF A CLOCK DATA FILE                                     COMMENT
 IN THIS CASE CALIBRATION/DISCONTINUITY DATA GIVEN                COMMENT
-   GPS                                                           TIME SYSTEM ID
+   UTC                                                           TIME SYSTEM ID
     10                                                           LEAP SECONDS GNSS
      2    CR    DR                                               # / TYPES OF DATA
 USNO 40451S003                                                   STATION NAME / NUM

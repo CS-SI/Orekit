@@ -44,6 +44,7 @@ import org.orekit.frames.Frame;
 import org.orekit.gnss.IGSUtils;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.PredefinedObservationType;
+import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
@@ -255,16 +256,21 @@ public class RinexClockParser {
         VERSION((header, line) -> header.matchFound(CommonLabel.VERSION, line),
                 (line, parseInfo) ->  {
                     final RinexClockHeader header = parseInfo.file.getHeader();
-                    header.parseVersionFileTypeSatelliteSystem(line, parseInfo.name,
+                    header.parseVersionFileTypeSatelliteSystem(line, null, parseInfo.name,
                                                                2.00, 3.00, 3.01, 3.02, 3.04);
                     parseInfo.before304 = header.getFormatVersion() < 3.04;
+                    if (header.getFormatVersion() < 3.0) {
+                        // before 3.0, only GPS system was used
+                        header.setSatelliteSystem(SatelliteSystem.GPS);
+                        header.setTimeSystem(TimeSystem.GPS);
+                        header.setTimeScale(TimeSystem.GPS.getTimeScale(parseInfo.timeScales));
+                    }
                 },
                 LineParser::headerNext),
 
         /** Parser for generating program and emiting agency. */
         PROGRAM((header, line) -> header.matchFound(CommonLabel.PROGRAM, line),
-                (line, parseInfo) -> parseInfo.file.getHeader().
-                    parseProgramRunByDate(line, parseInfo.lineNumber, parseInfo.name, parseInfo.timeScales),
+                (line, parseInfo) -> parseInfo.file.getHeader().parseProgramRunByDate(line, parseInfo.timeScales),
                 LineParser::headerNext),
 
         /** Parser for comments. */
@@ -315,24 +321,42 @@ public class RinexClockParser {
 
         /** Parser for differential code bias corrections. */
         SYS_DCBS_APPLIED((header, line) -> header.matchFound(CommonLabel.SYS_DCBS_APPLIED, line),
-                         (line, parseInfo) -> parseInfo.file.getHeader().
-                             addAppliedDCBS(new AppliedDCBS(SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 0, 1)),
-                                                            RinexUtils.parseString(line, 3, 17),
-                                                            RinexUtils.parseString(line, 22, 43))),
+                         (line, parseInfo) -> {
+                                 final RinexClockHeader header = parseInfo.file.getHeader();
+                                 final SatelliteSystem satelliteSystem =
+                                     SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 0, 1),
+                                                                          header.getSatelliteSystem());
+                                 header.addAppliedDCBS(new AppliedDCBS(satelliteSystem,
+                                                                       RinexUtils.parseString(line, 3, 17),
+                                                                       RinexUtils.parseString(line,
+                                                                                              parseInfo.before304 ? 20 : 22,
+                                                                                              parseInfo.before304 ? 40 : 43)));
+                         },
                          LineParser::headerNext),
 
         /** Parser for phase center variations corrections. */
         SYS_PCVS_APPLIED((header, line) -> header.matchFound(CommonLabel.SYS_PCVS_APPLIED, line),
-                         (line, parseInfo) -> parseInfo.file.getHeader().
-                             addAppliedPCVS(new AppliedPCVS(SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 0, 1)),
-                                                            RinexUtils.parseString(line, 3, 17),
-                                                            RinexUtils.parseString(line, 22, 43))),
+                         (line, parseInfo) -> {
+                                 final RinexClockHeader header = parseInfo.file.getHeader();
+                                 final SatelliteSystem satelliteSystem =
+                                     SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 0, 1),
+                                                                          header.getSatelliteSystem());
+                                 header.addAppliedPCVS(new AppliedPCVS(satelliteSystem,
+                                                                       RinexUtils.parseString(line, 3, 17),
+                                                                       RinexUtils.parseString(line,
+                                                                                              parseInfo.before304 ? 20 : 22,
+                                                                                              parseInfo.before304 ? 40 : 43)));
+                         },
                          LineParser::headerNext),
 
         /** Parser for the different clock data types that are stored in the file. */
         NB_TYPES_OF_DATA((header, line) -> header.matchFound(ClockLabel.NB_TYPES_OF_DATA, line),
                          (line, parseInfo) -> {
                              final int n = RinexUtils.parseInt(line, 0, 6);
+                             if (n < 1) {
+                                 throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                           parseInfo.lineNumber, parseInfo.name, line);
+                             }
                              for (int i = 0; i < n; i++) {
                                  final String type = RinexUtils.parseString(line, 10 + i * 6, 4);
                                  try {
@@ -347,9 +371,20 @@ public class RinexClockParser {
         /** Parser for the station with reference clock. */
         STATION_NAME_NUM((header, line) -> header.matchFound(ClockLabel.STATION_NAME_NUM, line),
                          (line, parseInfo) -> {
+                             // we use a Scanner here instead of relying on the character indices
+                             // because some files do NOT respect the format
+                             // the reference example in table A18 of the rinex 3.04 specification itself exhibits
+                             // errors (the DOMES number field is shifted 5 characters to the left wrt. the
+                             // specification, i.e. this line in table A18 is consistent with the rinex clock 3.02
+                             // specification, not with the rinex clock 3.04 specification…).
+                             // We fall back to a Scanner, which should handle all format versions properly
                              final RinexClockHeader header = parseInfo.file.getHeader();
-                             header.setStationName(RinexUtils.parseString(line, 0, 9));
-                             header.setStationIdentifier(RinexUtils.parseString(line, 10, 20));
+                                 try (Scanner s1      = new Scanner(line.substring(0, header.getLabelIndex()));
+                                      Scanner s2      = s1.useDelimiter(SPACES);
+                                      Scanner scanner = s2.useLocale(Locale.US)) {
+                                 header.setStationName(scanner.next());
+                                 header.setStationIdentifier(scanner.next());
+                             }
                          },
                          LineParser::headerNext),
 
@@ -401,25 +436,27 @@ public class RinexClockParser {
                           } else {
                               // we use a Scanner here instead of relying on the character indices
                               // because some files do NOT respect the format
-                              // it is a pity that the reference example in table A17 of the rinex 3.04 specification
-                              // itself exhibits errors (the seconds field in start date is shifted 1 character to the
-                              // left wrt. specification, the first fields in end date are shifted 2 characters to the
-                              // left wrt. specification, and the seconds field in end date is shifted 3 characters to
-                              // the left wrt. specification, i.e. this line in table A17 is consistent with
-                              // rinex 3.02 specification, not with rinex 3.04…)
-                              // we were not able to find any real 3.04 files that have non-empty dates.
-                              // We therefore fall back to a Scanner, which should handle all format versions properly
+                              // the reference example in table A17 of the rinex 3.04 specification itself exhibits
+                              // errors (the seconds field in start date is shifted 1 character to the left wrt.
+                              // the specification, the first few fields in end date are shifted 2 characters to the
+                              // left wrt. the specification, and the seconds field in end date is shifted 3 characters
+                              // to the left wrt. specification, i.e. this line in table A17 is consistent with
+                              // the rinex clock 3.02 specification, not with the rinex clock 3.04 specification…).
+                              // we were not able to find any real 3.04 files that have non-empty dates on clock ref lines.
+                              // We fall back to a Scanner, which should handle all format versions properly
                               try (Scanner s1      = new Scanner(startStop);
                                    Scanner s2      = s1.useDelimiter(SPACES);
                                    Scanner scanner = s2.useLocale(Locale.US)) {
+                                  final TimeScale ts = header.getFormatVersion() < 3.02 ?
+                                                       parseInfo.timeScales.getGPS() : header.getTimeScale();
                                   parseInfo.referenceClockStartDate =
                                       new AbsoluteDate(scanner.nextInt(), scanner.nextInt(), scanner.nextInt(),
                                                        scanner.nextInt(), scanner.nextInt(), scanner.nextDouble(),
-                                                       header.getTimeScale());
+                                                       ts);
                                   parseInfo.referenceClockEndDate =
                                       new AbsoluteDate(scanner.nextInt(), scanner.nextInt(), scanner.nextInt(),
                                                        scanner.nextInt(), scanner.nextInt(), scanner.nextDouble(),
-                                                       header.getTimeScale());
+                                                       ts);
                               }
                           }
                       },
@@ -500,7 +537,7 @@ public class RinexClockParser {
                          if (prn.isEmpty()) {
                              break;
                          } else {
-                             header.addSatellite(prn);
+                             header.addSatellite(new SatInSystem(prn));
                          }
                      }
                  },
@@ -509,12 +546,22 @@ public class RinexClockParser {
         /** Parser for the end of header. */
         HEADER_END((header, line) -> header.matchFound(CommonLabel.END, line),
                    (line, parseInfo) -> {
+                       final RinexClockHeader header = parseInfo.file.getHeader();
                        if (!parseInfo.pendingReferenceClocks.isEmpty()) {
                            // Modify time span map of the reference clocks to accept the pending reference clock
-                           parseInfo.file.getHeader().addReferenceClockList(parseInfo.pendingReferenceClocks, parseInfo.referenceClockStartDate);
-                       };
-                       if (!parseInfo.before304 && parseInfo.file.getHeader().getTimeSystem() == null) {
-                           throw new OrekitException(OrekitMessages.MISSING_TIME_SYSTEM_DEFINITION, parseInfo.name);
+                           header.addReferenceClockList(parseInfo.pendingReferenceClocks, parseInfo.referenceClockStartDate);
+                       }
+                       if (header.getTimeSystem() == null) {
+                           if (header.getMergedSystem() == null ||
+                               header.getMergedSystem() == SatelliteSystem.MIXED) {
+                               if (header.getFormatVersion() >= 3.0) {
+                                   throw new OrekitException(OrekitMessages.MISSING_TIME_SYSTEM_DEFINITION, parseInfo.name);
+                               }
+                           } else {
+                               // we force the systems using the satellite list
+                               header.setTimeSystem(TimeSystem.parseOneLetterCode(String.valueOf(header.getMergedSystem().getKey())));
+                               header.setTimeScale(header.getTimeSystem().getTimeScale(parseInfo.timeScales));
+                           }
                        }
                        parseInfo.headerCompleted = true;
                    },
@@ -552,7 +599,7 @@ public class RinexClockParser {
                        parseInfo.valueIndex  = 0;
 
                        // Get the values in this line
-                       Arrays.fill(parseInfo.values, Double.NaN);
+                       Arrays.fill(parseInfo.values, 0.0);
                        int start = parseInfo.before304 ?  40 : 45;
                        while (parseInfo.valueIndex < FastMath.min(2, parseInfo.totalValues)) {
                            parseInfo.values[parseInfo.valueIndex++] = RinexUtils.parseDouble(line, start, 19);

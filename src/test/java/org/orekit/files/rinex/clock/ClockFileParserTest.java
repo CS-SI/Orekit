@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -35,10 +36,12 @@ import org.orekit.data.GzipFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.rinex.section.RinexComment;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.gnss.ObservationType;
+import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
@@ -75,9 +78,10 @@ public class ClockFileParserTest {
         final TimeSystem timeSystem = TimeSystem.GPS;
         final String programName = "TORINEXC V9.9";
         final String agencyName = "USNO";
-        final String comments = "EXAMPLE OF A CLOCK DATA ANALYSIS FILE\n" +
-                                "IN THIS CASE ANALYSIS RESULTS FROM GPS ONLY ARE INCLUDED\n" +
-                                "No re-alignment of the clocks has been applied.\n";
+        final List<RinexComment> comments =
+            Arrays.asList(new RinexComment(3, "EXAMPLE OF A CLOCK DATA ANALYSIS FILE"),
+                          new RinexComment(4, "IN THIS CASE ANALYSIS RESULTS FROM GPS ONLY ARE INCLUDED"),
+                          new RinexComment(5, "No re-alignment of the clocks has been applied."));
         final String stationName = "";
         final String stationIdentifier = "";
         final String analysisCenterID = "USN";
@@ -117,6 +121,10 @@ public class ClockFileParserTest {
                               id, type, timeScale, dataEpoch, numberOfValues,
                               clockBias, clockBiasSigma, clockRate, clockRateSigma, clockAcceleration, clockAccelerationSigma);
 
+        final ClockDataLine dataLine = file.getClockData().get(id).get(0);
+        Assertions.assertEquals(new AbsoluteDate(1994, 7, 14, 20, 59, 0.0, TimeScalesFactory.getGPS()),
+                                dataLine.getDate());
+
     }
 
     /** Second example given in the 3.04 RINEX clock file format.
@@ -131,21 +139,20 @@ public class ClockFileParserTest {
         final RinexClockParser parser = new RinexClockParser();
         final RinexClock file = parser.parse(new DataSource(getClass().getResource(ex).toURI()));
 
-
-
         // Check content of the file
         final double version = 3.04;
         final SatelliteSystem satelliteSystem = SatelliteSystem.GPS;
         final TimeSystem timeSystem = TimeSystem.GPS;
         final String programName = "CCLOCK";
         final String agencyName = "IGSACC @ GA & MIT";
-        final String comments = "GPS week: 1939   Day: 6   MJD: 57823\n" +
-                                "THE COMBINED CLOCKS ARE A WEIGHTED AVERAGE OF:\n" +
-                                "cod emr esa gfz jpl\n" +
-                                "THE FOLLOWING REFERENCE CLOCKS WERE USED BY ACs:\n" +
-                                "PIE1 HERS AMC2 ZECK\n" +
-                                "THE COMBINED CLOCKS ARE ALIGNED TO GPS TIME\n" +
-                                "USING THE SATELLITE BROADCAST EPHEMERIDES\n";
+        final List<RinexComment> comments =
+            Arrays.asList(new RinexComment(3, "GPS week: 1939   Day: 6   MJD: 57823"),
+                          new RinexComment(4, "THE COMBINED CLOCKS ARE A WEIGHTED AVERAGE OF:"),
+                          new RinexComment(5, "cod emr esa gfz jpl"),
+                          new RinexComment(6, "THE FOLLOWING REFERENCE CLOCKS WERE USED BY ACs:"),
+                          new RinexComment(7, "PIE1 HERS AMC2 ZECK"),
+                          new RinexComment(8, "THE COMBINED CLOCKS ARE ALIGNED TO GPS TIME"),
+                          new RinexComment(9, "USING THE SATELLITE BROADCAST EPHEMERIDES"));
         final String stationName = "";
         final String stationIdentifier = "";
         final String analysisCenterID = "IGS";
@@ -201,18 +208,19 @@ public class ClockFileParserTest {
 
         // Check content of the file
         final double version = 3.04;
-        final SatelliteSystem satelliteSystem = SatelliteSystem.GPS;
-        final TimeSystem timeSystem = TimeSystem.GPS;
+        final SatelliteSystem satelliteSystem = null;
+        final TimeSystem timeSystem = TimeSystem.UTC;
         final String programName = "TORINEXC V9.9";
         final String agencyName = "USNO";
-        final String comments = "EXAMPLE OF A CLOCK DATA FILE\n" +
-                                "IN THIS CASE CALIBRATION/DISCONTINUITY DATA GIVEN\n";
+        final List<RinexComment> comments =
+            Arrays.asList(new RinexComment(3, "EXAMPLE OF A CLOCK DATA FILE"),
+                          new RinexComment(4, "IN THIS CASE CALIBRATION/DISCONTINUITY DATA GIVEN"));
         final String stationName = "USNO";
         final String stationIdentifier = "40451S003";
         final String analysisCenterID = "";
         final String analysisCenterName = "";
         final String externalClockReference = "UTC(USNO) MASTER CLOCK VIA CONTINUOUS CABLE MONITOR";
-        final DateTimeComponents creationDateComponents = new DateTimeComponents(1996, 4, 3, 0, 1, 0.0);
+        final DateTimeComponents creationDateComponents = new DateTimeComponents(1996, 4, 3, 0, 10, 0.0);
         final String creationZoneString = "UTC";
         final AbsoluteDate creationDate = new AbsoluteDate(creationDateComponents, TimeScalesFactory.getUTC());
         final int numberOfLeapSeconds = 0;
@@ -263,16 +271,16 @@ public class ClockFileParserTest {
         // Check content of the file
         final double version = 3.00;
         final SatelliteSystem satelliteSystem = null;
-        final TimeSystem timeSystem = null;
+        final TimeSystem timeSystem = TimeSystem.GPS;
         final String programName = "autcln 3.33+MIG";
         final String agencyName = "MIT";
-        final String comments = "";
+        final List<RinexComment> comments = Collections.emptyList();
         final String stationName = "";
         final String stationIdentifier = "";
         final String analysisCenterID = "MIT";
         final String analysisCenterName = "";
         final String externalClockReference = "";
-        final DateTimeComponents creationDateComponents = new DateTimeComponents(2016, 7, 14, 6, 28, 0.0);
+        final DateTimeComponents creationDateComponents = new DateTimeComponents(2016, 7, 14, 16, 28, 0.0);
         final String creationZoneString = "";
         final AbsoluteDate creationDate = null;
         final int numberOfLeapSeconds = 17;
@@ -287,11 +295,11 @@ public class ClockFileParserTest {
         final int numberOfDataLines = 10;
         final String id = "G19";
         final ClockDataType type = ClockDataType.AS;
-        final TimeScale timeScale = TimeScalesFactory.getUTC();
+        final TimeScale timeScale = TimeScalesFactory.getGPS();
         final AbsoluteDate dataEpoch = new AbsoluteDate(2016, 7, 7, 0, 0, 30.0, timeScale);
         final int numberOfValues = 1;
         final double clockBias = -0.525123304077E-03;
-        final double clockBiasSigma = 0.200000000000E-09;
+        final double clockBiasSigma = 0.0;
         final double clockRate = 0.0;
         final double clockRateSigma = 0.0;
         final double clockAcceleration = 0.0;
@@ -323,17 +331,18 @@ public class ClockFileParserTest {
         // Check content of the file
         final double version = 3.00;
         final SatelliteSystem satelliteSystem = null;
-        final TimeSystem timeSystem = null;
+        final TimeSystem timeSystem = TimeSystem.GPS;
         final String programName = "CCLOCK";
         final String agencyName = "IGSACC @ GA MIT";
-        final String comments = "GPS week: 2110   Day: 1   MJD: 59015\n" +
-                                "THE COMBINED CLOCKS ARE A WEIGHTED AVERAGE OF:\n" +
-                                "cod emr esa gfz jpl\n" +
-                                "THE FOLLOWING REFERENCE CLOCKS WERE USED BY ACs:\n" +
-                                "MGUE NRC1 HERS BRUX\n" +
-                                "THE COMBINED CLOCKS ARE ALIGNED TO GPS TIME\n" +
-                                "USING THE SATELLITE BROADCAST EPHEMERIDES\n" +
-                                "All clocks have been re-aligned to the IGS time scale: IGST\n";
+        final List<RinexComment> comments =
+            Arrays.asList(new RinexComment( 3, "GPS week: 2110   Day: 1   MJD: 59015"),
+                          new RinexComment( 4, "THE COMBINED CLOCKS ARE A WEIGHTED AVERAGE OF:"),
+                          new RinexComment( 5, "cod emr esa gfz jpl"),
+                          new RinexComment( 6, "THE FOLLOWING REFERENCE CLOCKS WERE USED BY ACs:"),
+                          new RinexComment( 7, "MGUE NRC1 HERS BRUX"),
+                          new RinexComment( 8, "THE COMBINED CLOCKS ARE ALIGNED TO GPS TIME"),
+                          new RinexComment( 9, "USING THE SATELLITE BROADCAST EPHEMERIDES"),
+                          new RinexComment(10, "All clocks have been re-aligned to the IGS time scale: IGST"));
         final String stationName = "";
         final String stationIdentifier = "";
         final String analysisCenterID = "IGS";
@@ -354,7 +363,7 @@ public class ClockFileParserTest {
         final int numberOfDataLines = 7;
         final String id = "GPST";
         final ClockDataType type = ClockDataType.AR;
-        final TimeScale timeScale = TimeScalesFactory.getUTC();
+        final TimeScale timeScale = TimeScalesFactory.getGPS();
         final AbsoluteDate dataEpoch = new AbsoluteDate(2020, 6, 15, 0, 0, 0.0, timeScale);
         final int numberOfValues = 2;
         final double clockBias = -5.447980630520e-09;
@@ -410,12 +419,13 @@ public class ClockFileParserTest {
 
         // Check content of the file
         final double version = 2.00;
-        final SatelliteSystem satelliteSystem = null;
-        final TimeSystem timeSystem = null;
+        final SatelliteSystem satelliteSystem = SatelliteSystem.GPS;
+        final TimeSystem timeSystem = TimeSystem.GPS;
         final String programName = "CLKRINEX V1.0";
         final String agencyName = "NRCan";
-        final String comments = "CLK ANT Z-OFFSET(M): II/IIA 1.023; IIR 0.000\n" +
-                                "No re-alignment of the clocks has been applied.\n";
+        final List<RinexComment> comments =
+            Arrays.asList(new RinexComment(3, "CLK ANT Z-OFFSET(M): II/IIA 1.023; IIR 0.000"),
+                          new RinexComment(4, "No re-alignment of the clocks has been applied."));
         final String stationName = "";
         final String stationIdentifier = "";
         final String analysisCenterID = "EMR";
@@ -436,7 +446,7 @@ public class ClockFileParserTest {
         final int numberOfDataLines = 7;
         final String id = "CHUR";
         final ClockDataType type = ClockDataType.AR;
-        final TimeScale timeScale = TimeScalesFactory.getUTC();
+        final TimeScale timeScale = TimeScalesFactory.getGPS();
         final AbsoluteDate dataEpoch = new AbsoluteDate(2000, 2, 14, 0, 0, 0.0, timeScale);
         final int numberOfValues = 2;
         final double clockBias = 2.301824851111E-05;
@@ -468,16 +478,17 @@ public class ClockFileParserTest {
 
         // Check content of the file
         final double version = 2.00;
-        final SatelliteSystem satelliteSystem = null;
-        final TimeSystem timeSystem = null;
+        final SatelliteSystem satelliteSystem = SatelliteSystem.GPS;
+        final TimeSystem timeSystem = TimeSystem.GPS;
         final String programName = "tdp2clk v1.13";
         final String agencyName = "JPL";
-        final String comments = "G11 G13 G14 G18 G20 G28      clk ant z-offset (m):  0.000\n" +
-                                "G01 G03 G04 G05 G06 G07 G08  clk ant z-offset (m):  1.023\n" +
-                                "G09 G10 G21 G22 G23 G24 G25  clk ant z-offset (m):  1.023\n" +
-                                "G26 G27 G29 G30 G31          clk ant z-offset (m):  1.023\n" +
-                                "clk ant z-offset (m): II/IIA 1.023; IIR 0.000\n" +
-                                "Re-alignment to GPS time by broadcast clocks and linear fit\n";
+        final List<RinexComment> comments =
+            Arrays.asList(new RinexComment(3, "G11 G13 G14 G18 G20 G28      clk ant z-offset (m):  0.000"),
+                          new RinexComment(4, "G01 G03 G04 G05 G06 G07 G08  clk ant z-offset (m):  1.023"),
+                          new RinexComment(5, "G09 G10 G21 G22 G23 G24 G25  clk ant z-offset (m):  1.023"),
+                          new RinexComment(6, "G26 G27 G29 G30 G31          clk ant z-offset (m):  1.023"),
+                          new RinexComment(7, "clk ant z-offset (m): II/IIA 1.023; IIR 0.000"),
+                          new RinexComment(8, "Re-alignment to GPS time by broadcast clocks and linear fit"));
         final String stationName = "";
         final String stationIdentifier = "";
         final String analysisCenterID = "JPL";
@@ -498,7 +509,7 @@ public class ClockFileParserTest {
         final int numberOfDataLines = 1;
         final String id = "ALGO";
         final ClockDataType type = ClockDataType.AR;
-        final TimeScale timeScale = TimeScalesFactory.getUTC();
+        final TimeScale timeScale = TimeScalesFactory.getGPS();
         final AbsoluteDate dataEpoch = new AbsoluteDate(2001, 12, 22, 0, 0, 0.0, timeScale);
         final int numberOfValues = 2;
         final double clockBias = 1.598690662191e-06;
@@ -530,14 +541,15 @@ public class ClockFileParserTest {
 
         // Check content of the file
         final double version = 2.00;
-        final SatelliteSystem satelliteSystem = null;
+        final SatelliteSystem satelliteSystem = SatelliteSystem.GPS;
         final TimeSystem timeSystem = TimeSystem.GPS;
         final String programName = "CCRNXC V5.3";
         final String agencyName = "AIUB";
-        final String comments = "CODE final GPS clock information for day 119, 2013, 3D-sol\n" +
-                                "Clock information consistent with phase and P1/P2 code data\n" +
-                                "Satellite/receiver clock values at intervals of 30/300 sec\n" +
-                                "High-rate (30 sec) clock interpolation based on phase data\n";
+        final List<RinexComment> comments =
+            Arrays.asList(new RinexComment(3, "CODE final GPS clock information for day 119, 2013, 3D-sol"),
+                          new RinexComment(4, "Clock information consistent with phase and P1/P2 code data"),
+                          new RinexComment(5, "Satellite/receiver clock values at intervals of 30/300 sec"),
+                          new RinexComment(6, "High-rate (30 sec) clock interpolation based on phase data"));
         final String stationName = "";
         final String stationIdentifier = "";
         final String analysisCenterID = "COD";
@@ -716,7 +728,7 @@ public class ClockFileParserTest {
         final RinexClock file = parser.parse(new DataSource(getClass().getResource(ex).toURI()));
 
         // Get satellite list
-        final List<String> satellites = file.getHeader().getSatellites();
+        final List<SatInSystem> satellites = file.getHeader().getSatellites();
 
         // Expected list
         final String prnLine = "G01 G02 G03 G04 G05 G06 G07 G08 G09 G10 G13 G14 G15 G16 G17 G18 " +
@@ -724,7 +736,7 @@ public class ClockFileParserTest {
         final String[] expected = prnLine.split(" ");
 
         for (int i = 0; i < satellites.size(); i++) {
-            Assertions.assertArrayEquals(expected, satellites.toArray());
+            Assertions.assertEquals(expected[i], satellites.get(i).toString());
         }
     }
 
@@ -1000,14 +1012,18 @@ public class ClockFileParserTest {
         Assertions.assertEquals(SatelliteSystem.MIXED, file.getHeader().getSatelliteSystem());
         Assertions.assertEquals(54, file.getHeader().getSatellites().size());
         Assertions.assertEquals(10, file.getHeader().getReceivers().size());
-        Assertions.assertTrue(file.getHeader().getListAppliedDCBS().isEmpty());
-        Assertions.assertTrue(file.getHeader().getListAppliedPCVS().isEmpty());
+        Assertions.assertEquals(1, file.getHeader().getListAppliedDCBS().size());
+        Assertions.assertEquals(SatelliteSystem.MIXED, file.getHeader().getListAppliedDCBS().get(0).getSatelliteSystem());
+        Assertions.assertEquals("P1C1_RINEX_20200830.DCB", file.getHeader().getListAppliedDCBS().get(0).getSourceDCBS());
+        Assertions.assertEquals(1, file.getHeader().getListAppliedPCVS().size());
+        Assertions.assertEquals(SatelliteSystem.MIXED, file.getHeader().getListAppliedPCVS().get(0).getSatelliteSystem());
+        Assertions.assertEquals("igs14_20200830.atx", file.getHeader().getListAppliedPCVS().get(0).getSourcePCVS());
     }
 
     /** Check the content of a clock file. */
     private void checkClockFileContent(final RinexClock file,
                                        final double version, final SatelliteSystem satelliteSystem, final TimeSystem timeSystem,
-                                       final String programName, final String agencyName, final String comments,
+                                       final String programName, final String agencyName, final List<RinexComment> comments,
                                        final String stationName, final String stationIdentifier,
                                        final String analysisCenterID, final String analysisCenterName,
                                        final String externalClockReference,
@@ -1029,7 +1045,11 @@ public class ClockFileParserTest {
         Assertions.assertSame(timeSystem, file.getHeader().getTimeSystem());
         Assertions.assertEquals(programName, file.getHeader().getProgramName());
         Assertions.assertEquals(agencyName, file.getHeader().getRunByName());
-        Assertions.assertEquals(comments, file.getComments());
+        Assertions.assertEquals(comments.size(), file.getComments().size());
+        for (int i = 0; i < comments.size(); ++i) {
+            Assertions.assertEquals(comments.get(i).getLineNumber(), file.getComments().get(i).getLineNumber());
+            Assertions.assertEquals(comments.get(i).getText(),       file.getComments().get(i).getText());
+        }
         Assertions.assertEquals(stationName, file.getHeader().getStationName());
         Assertions.assertEquals(stationIdentifier, file.getHeader().getStationIdentifier());
         Assertions.assertEquals(analysisCenterID, file.getHeader().getAnalysisCenterID());

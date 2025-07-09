@@ -204,20 +204,18 @@ public class RinexObservationHeader extends RinexClockObsBaseHeader {
 
     /** {@inheritDoc} */
     @Override
-    public SatelliteSystem parseSatelliteSystem(final String line) {
+    public SatelliteSystem parseSatelliteSystem(final String line, final SatelliteSystem defaultSatelliteSystem) {
         // for observation files, the satellite system is in column 40, and empty defaults to GPS
-        return SatelliteSystem.parseSatelliteSystemWithGPSDefault(line.substring(40, 41));
+        return SatelliteSystem.parseSatelliteSystem(line.substring(40, 41), defaultSatelliteSystem);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void parseProgramRunByDate(final String line, final int lineNumber,
-                                      final String name, final TimeScales timeScales) {
-        parseProgramRunByDate(line,
-                              RinexUtils.parseString(line, 0, 20),
+    public void parseProgramRunByDate(final String line, final TimeScales timeScales) {
+        parseProgramRunByDate(RinexUtils.parseString(line, 0, 20),
                               RinexUtils.parseString(line, 20, 20),
                               RinexUtils.parseString(line, 40, 20),
-                              lineNumber, name, timeScales);
+                              timeScales);
     }
 
     /** Set name of the antenna marker.

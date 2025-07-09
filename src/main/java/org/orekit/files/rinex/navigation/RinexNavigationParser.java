@@ -311,7 +311,8 @@ public class RinexNavigationParser {
         /** Parser for version, file type and satellite system. */
         HEADER_VERSION((header, line) -> header.matchFound(CommonLabel.VERSION, line),
                        (line, pi) -> {
-                           pi.file.getHeader().parseVersionFileTypeSatelliteSystem(line, pi.name,
+                           pi.file.getHeader().parseVersionFileTypeSatelliteSystem(line, SatelliteSystem.GPS,
+                                                                                   pi.name,
                                                                                    2.0, 2.01, 2.10, 2.11,
                                                                                    3.01, 3.02, 3.03, 3.04, 3.05,
                                                                                    4.00, 4.01, 4.02);
@@ -321,8 +322,7 @@ public class RinexNavigationParser {
 
         /** Parser for generating program and emitting agency. */
         HEADER_PROGRAM((header, line) -> header.matchFound(CommonLabel.PROGRAM, line),
-                       (line, pi) -> pi.file.getHeader().
-                           parseProgramRunByDate(line, pi.lineNumber, pi.name, pi.timeScales),
+                       (line, pi) -> pi.file.getHeader().parseProgramRunByDate(line, pi.timeScales),
                        LineParser::headerNext),
 
         /** Parser for comments. */

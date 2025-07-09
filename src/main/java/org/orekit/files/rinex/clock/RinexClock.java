@@ -24,20 +24,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.RinexFile;
-import org.orekit.frames.Frame;
-import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.ClockOffset;
 import org.orekit.time.SampledClockModel;
-import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScales;
 import org.orekit.utils.TimeSpanMap;
 
 /** Represents a parsed clock file from the IGS.
@@ -70,7 +64,7 @@ public class RinexClock extends RinexFile<RinexClockHeader> {
     private AbsoluteDate latestEpoch;
 
     /** Constructor.
-     * @snce 14.0
+     * @since 14.0
      */
     public RinexClock() {
         super(new RinexClockHeader());
@@ -214,6 +208,7 @@ public class RinexClock extends RinexFile<RinexClockHeader> {
             getSystemObservationTypes().
             forEach((s, l) -> l.forEach(o -> spliced.getHeader().addSystemObservationType(s, o)));
         spliced.getHeader().setTimeSystem(first.getHeader().getTimeSystem());
+        spliced.getHeader().setTimeScale(first.getHeader().getTimeScale());
         spliced.getHeader().setLeapSeconds(first.getHeader().getLeapSeconds());
         spliced.getHeader().setLeapSecondsGNSS(first.getHeader().getLeapSecondsGNSS());
         first.getHeader().getListAppliedDCBS().forEach(dcbs -> spliced.getHeader().addAppliedDCBS(dcbs));
@@ -256,10 +251,10 @@ public class RinexClock extends RinexFile<RinexClockHeader> {
             getHeader().
             getSatellites().
             stream().
-            filter(s -> availableInAllFiles(s, sorted)).
+            filter(s -> availableInAllFiles(s.toString(), sorted)).
             forEach(s -> {
                 spliced.getHeader().addSatellite(s);
-                clockIds.add(s);
+                clockIds.add(s.toString());
             });
 
         // add the clock lines

@@ -3,7 +3,7 @@ TORINEXC V9.9        USNO                 19960403  001000 UTC   PGM / RUN BY / 
 EXAMPLE OF A CLOCK DATA ANALYSIS FILE                            COMMENT
 IN THIS CASE ANALYSIS RESULTS FROM GPS ONLY ARE INCLUDED         COMMENT
 No re-alignment of the clocks has been applied.                  COMMENT
-G   16  C1W L1W C2W L2W C1  C2 C5  C6  C7  C8  P1  P2  L1  L2    SYS / # / OBS TYPES
+G   16  C1W L1W C2W L2W C1  C2  C5  C6  C7  C8  P1  P2  L1  L2   SYS / # / OBS TYPES
         LA  LB                                                   SYS / # / OBS TYPES
    GPS                                                           TIME SYSTEM ID
     10                                                           LEAP SECONDS

@@ -3,6 +3,7 @@ autcln 3.33+MIG     MIT                 2016-07-14 16:28    PGM / RUN BY / DATE
 G GAMIT 10.60       IGS08_1887                              SYS / PCVS APPLIED
           AS    AR                                          # / TYPES OF DATA
 MIT                                                         ANALYSIS CENTER
+   GPS                                                           TIME SYSTEM ID
     17                                                      LEAP SECONDS
      1 2016  7  7  0  0  0.000000 2016  7  7 23 59 30.000000# OF CLK REF
 HOB2 50116M004                                              ANALYSIS CLK REF
