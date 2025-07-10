@@ -118,7 +118,7 @@ public class RinexObservationWriter implements AutoCloseable {
     /** Format for one 15.12 digits float field. */
     private static final FastDoubleFormatter FIFTEEN_TWELVE_DIGITS_FLOAT = new FastDoubleFormatter(15, 12);
 
-    /** Threshold for considering measurements are at the sate time.
+    /** Threshold for considering measurements that occur at the same time.
      * (we know the RINEX files encode dates with a resolution of 0.1µs)
      */
     private static final double EPS_DATE = 1.0e-8;

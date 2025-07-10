@@ -186,6 +186,11 @@ public class RinexObservationParser {
         /** Name of the data source. */
         private final String name;
 
+        /** Mapper from string to observation type.
+         * @since 14.0
+         */
+        private final Function<? super String, ? extends ObservationType> typeBuilder;
+
         /** Mapper from satellite system to time scales.
          * @since 13.0
          */
@@ -281,6 +286,7 @@ public class RinexObservationParser {
         ParseInfo(final String name) {
             // Initialize default values for fields
             this.name                   = name;
+            this.typeBuilder            = RinexObservationParser.this.typeBuilder;
             this.timeScales             = RinexObservationParser.this.timeScales;
             this.timeScaleBuilder       = RinexObservationParser.this.timeScaleBuilder;
             this.file                   = new RinexObservation();
@@ -327,15 +333,6 @@ public class RinexObservationParser {
                 }
                 tObs = rawDate.shiftedBy(-rcvrClkOffset);
             }
-        }
-
-        /** Build one observation type.
-         * @param type type to add
-         * @return built type
-         * @since 13.0
-         */
-        ObservationType buildType(final String type) {
-            return RinexObservationParser.this.typeBuilder.apply(type);
         }
 
     }
@@ -470,7 +467,7 @@ public class RinexObservationParser {
                              final int nbObsScaleFactor = RinexUtils.parseInt(line, 6, 6);
                              final List<ObservationType> types = new ArrayList<>(nbObsScaleFactor);
                              for (int i = 0; i < nbObsScaleFactor; i++) {
-                                 types.add(parseInfo.buildType(RinexUtils.parseString(line, 16 + (6 * i), 2)));
+                                 types.add(parseInfo.typeBuilder.apply(RinexUtils.parseString(line, 16 + (6 * i), 2)));
                              }
                              parseInfo.file.getHeader().addScaleFactorCorrection(parseInfo.file.getHeader().getSatelliteSystem(),
                                                                                  new ScaleFactorCorrection(scaleFactor, types));
@@ -542,7 +539,7 @@ public class RinexObservationParser {
                                                    i += increment) {
                                        final String type = RinexUtils.parseString(line, i, size);
                                        try {
-                                           parseInfo.typesObs.add(parseInfo.buildType(type));
+                                           parseInfo.typesObs.add(parseInfo.typeBuilder.apply(type));
                                        } catch (IllegalArgumentException iae) {
                                            throw new OrekitException(iae, OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
                                                                      type, parseInfo.name, parseInfo.lineNumber);
@@ -651,7 +648,7 @@ public class RinexObservationParser {
                                  for (int i = 11;
                                       i < header.getLabelIndex() && parseInfo.typesObsScaleFactor.size() < parseInfo.nbObsScaleFactor;
                                       i += 4) {
-                                     parseInfo.typesObsScaleFactor.add(parseInfo.buildType(RinexUtils.parseString(line, i, 3)));
+                                     parseInfo.typesObsScaleFactor.add(parseInfo.typeBuilder.apply(RinexUtils.parseString(line, i, 3)));
                                  }
                              }
 
@@ -676,7 +673,9 @@ public class RinexObservationParser {
                                 // first line of phase shift
                                 parseInfo.currentSystem     = SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 0, 1));
                                 final String to             = RinexUtils.parseString(line, 2, 3);
-                                parseInfo.phaseShiftTypeObs = to.isEmpty() ? null : parseInfo.buildType(to.length() < 3 ? "L" + to : to);
+                                parseInfo.phaseShiftTypeObs = to.isEmpty() ?
+                                                              null :
+                                                              parseInfo.typeBuilder.apply(to.length() < 3 ? "L" + to : to);
                                 parseInfo.corrPhaseShift    = RinexUtils.parseDouble(line, 6, 8);
                                 parseInfo.phaseShiftNbSat   = RinexUtils.parseInt(line, 16, 2);
                             }

@@ -175,6 +175,11 @@ public class RinexClockParser {
          */
         private final Function<? super String, ? extends Frame> frameBuilder;
 
+        /** Mapper from string to the observation type.
+         * @since 14.0
+         */
+        private final Function<? super String, ? extends ObservationType> typeBuilder;
+
         /** Set of time scales for parsing dates.
          * @since 14.0
          */
@@ -231,19 +236,12 @@ public class RinexClockParser {
         ParseInfo(final String name) {
             this.name                   = name;
             this.frameBuilder           = RinexClockParser.this.frameBuilder;
+            this.typeBuilder            = RinexClockParser.this.typeBuilder;
             this.timeScales             = RinexClockParser.this.timeScales;
             this.file                   = new RinexClock();
             this.lineNumber             = 0;
             this.pendingReferenceClocks = new ArrayList<>();
             this.values                 = new double[6];
-        }
-
-        /** Build an observation type.
-         * @param type observation type
-         * @return built type
-         */
-        ObservationType buildType(final String type) {
-            return RinexClockParser.this.typeBuilder.apply(type);
         }
 
     }
@@ -292,7 +290,7 @@ public class RinexClockParser {
                                        parseInfo.remainingObsTypes--;
                                        final String obsType = RinexUtils.parseString(line, 8 + 4 * i, 3);
                                        header.addSystemObservationType(parseInfo.currentSatelliteSystem,
-                                                                       parseInfo.buildType(obsType));
+                                                                       parseInfo.typeBuilder.apply(obsType));
                                    }
                                },
                                LineParser::sysObsTypesNext),
