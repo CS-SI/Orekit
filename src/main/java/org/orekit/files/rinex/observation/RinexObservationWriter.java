@@ -64,9 +64,6 @@ import org.orekit.utils.formatting.FastLongFormatter;
  */
 public class RinexObservationWriter implements AutoCloseable {
 
-    /** Index of label in header lines. */
-    private static final int LABEL_INDEX = 60;
-
     /** Format for one 1 digit integer field. */
     private static final FastLongFormatter ONE_DIGIT_INTEGER = new FastLongFormatter(1, false);
 
@@ -420,7 +417,7 @@ public class RinexObservationWriter implements AutoCloseable {
             }
             for (final ObservationType observationType : entry.getValue()) {
                 int next = column + (header.getFormatVersion() < 3.0 ? 6 : 4);
-                if (next > LABEL_INDEX) {
+                if (next > RinexObservationHeader.LABEL_INDEX) {
                     // we need to set up a continuation line
                     finishHeaderLine(header.getFormatVersion() < 3.0 ?
                                      ObservationLabel.NB_TYPES_OF_OBSERV :
@@ -503,7 +500,7 @@ public class RinexObservationWriter implements AutoCloseable {
                             outputField(TWO_DIGITS_INTEGER,  sfc.getTypesObsScaled().size(), 10);
                             for (ObservationType observationType : sfc.getTypesObsScaled()) {
                                 int next = column + 4;
-                                if (next > LABEL_INDEX) {
+                                if (next > RinexObservationHeader.LABEL_INDEX) {
                                     // we need to set up a continuation line
                                     finishHeaderLine(ObservationLabel.SYS_SCALE_FACTOR);
                                     outputField("", 10, true);
@@ -528,7 +525,7 @@ public class RinexObservationWriter implements AutoCloseable {
                 outputField(TWO_DIGITS_INTEGER, psc.getSatsCorrected().size(), 18);
                 for (final SatInSystem sis : psc.getSatsCorrected()) {
                     int next = column + 4;
-                    if (next > LABEL_INDEX) {
+                    if (next > RinexObservationHeader.LABEL_INDEX) {
                         // we need to set up a continuation line
                         finishHeaderLine(ObservationLabel.SYS_PHASE_SHIFT);
                         outputField("", 18, true);
@@ -547,7 +544,7 @@ public class RinexObservationWriter implements AutoCloseable {
                 outputField("", 4, true);
                 for (final GlonassSatelliteChannel channel : header.getGlonassChannels()) {
                     int next = column + 7;
-                    if (next > LABEL_INDEX) {
+                    if (next > RinexObservationHeader.LABEL_INDEX) {
                         // we need to set up a continuation line
                         finishHeaderLine(ObservationLabel.GLONASS_SLOT_FRQ_NB);
                         outputField("", 4, true);
@@ -618,7 +615,7 @@ public class RinexObservationWriter implements AutoCloseable {
             outputField(sis.toString(), 6, false);
             for (final Map.Entry<ObservationType, Integer> entry2 : entry1.getValue().entrySet()) {
                 int next = column + 6;
-                if (next > LABEL_INDEX) {
+                if (next > RinexObservationHeader.LABEL_INDEX) {
                     // we need to set up a continuation line
                     finishHeaderLine(ObservationLabel.PRN_NB_OF_OBS);
                     outputField("", 6, true);
@@ -854,7 +851,7 @@ public class RinexObservationWriter implements AutoCloseable {
      * @throws IOException if an I/O error occurs.
      */
     private void finishHeaderLine(final Label label) throws IOException {
-        for (int i = column; i < LABEL_INDEX; ++i) {
+        for (int i = column; i < RinexObservationHeader.LABEL_INDEX; ++i) {
             output.append(' ');
         }
         output.append(label.getLabel());
@@ -874,7 +871,7 @@ public class RinexObservationWriter implements AutoCloseable {
         // emit comments that should be placed at next lines
         for (final RinexComment comment : savedComments) {
             if (comment.getLineNumber() == lineNumber) {
-                outputField(comment.getText(), LABEL_INDEX, true);
+                outputField(comment.getText(), RinexObservationHeader.LABEL_INDEX, true);
                 output.append(CommonLabel.COMMENT.getLabel());
                 output.append(System.lineSeparator());
                 lineNumber++;

@@ -33,7 +33,7 @@ import org.orekit.time.TimeScales;
 public class RinexNavigationHeader extends RinexBaseHeader {
 
     /** Index of label in header lines. */
-    private static final int LABEL_INDEX = 60;
+    public static final int LABEL_INDEX = 60;
 
     /** Ionospheric correction type. */
     private IonosphericCorrectionType ionosphericCorrectionType;

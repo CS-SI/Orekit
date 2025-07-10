@@ -40,7 +40,7 @@ import org.orekit.time.TimeScales;
 public class RinexObservationHeader extends RinexClockObsBaseHeader {
 
     /** Index of label in header lines. */
-    private static final int LABEL_INDEX = 60;
+    public static final int LABEL_INDEX = 60;
 
     /** Name of the Antenna Marker. */
     private String markerName;
