@@ -19,8 +19,8 @@ package org.orekit.files.rinex.clock;
 import org.orekit.files.rinex.section.CommonLabel;
 import org.orekit.files.rinex.section.Label;
 import org.orekit.files.rinex.section.RinexClockObsBaseHeader;
+import org.orekit.files.rinex.utils.ParsingUtils;
 import org.orekit.files.rinex.utils.RinexFileType;
-import org.orekit.files.rinex.utils.parsing.RinexUtils;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatInSystem;
@@ -44,10 +44,13 @@ import java.util.Map;
 public class RinexClockHeader extends RinexClockObsBaseHeader {
 
     /** Index of label in header lines before 3.04. */
-    private static final int LABEL_INDEX_300_302 = 60;
+    public static final int LABEL_INDEX_300_302 = 60;
 
     /** Index of label in header lines for version 3.04 and later. */
-    private static final int LABEL_INDEX_304_PLUS = 65;
+    public static final int LABEL_INDEX_304_PLUS = 65;
+
+    /** Indicator for header before version 3.04. */
+    private boolean before304;
 
     /** System time scale. */
     private TimeScale timeScale;
@@ -119,6 +122,20 @@ public class RinexClockHeader extends RinexClockObsBaseHeader {
 
     /** {@inheritDoc} */
     @Override
+    public void setFormatVersion(final double formatVersion) {
+        super.setFormatVersion(formatVersion);
+        before304 = formatVersion < 3.04;
+    }
+
+    /** Check if header corresponds to a version before 3.04.
+     * @return true if header corresponds to a version before 3.04
+     */
+    boolean isBefore304() {
+        return before304;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public SatelliteSystem parseSatelliteSystem(final String line, final SatelliteSystem defaultSatelliteSystem) {
         final String satSystemString = (getFormatVersion() < 3.04 ? line.substring(40, 41) : line.substring(42, 43)).trim();
         return SatelliteSystem.parseSatelliteSystem(satSystemString, defaultSatelliteSystem);
@@ -128,14 +145,14 @@ public class RinexClockHeader extends RinexClockObsBaseHeader {
     @Override
     public void parseProgramRunByDate(final String line, final TimeScales timeScales) {
         if (getFormatVersion() < 3.04) {
-            parseProgramRunByDate(RinexUtils.parseString(line,  0, 20),
-                                  RinexUtils.parseString(line, 20, 20),
-                                  RinexUtils.parseString(line, 40, 20),
+            parseProgramRunByDate(ParsingUtils.parseString(line, 0, 20),
+                                  ParsingUtils.parseString(line, 20, 20),
+                                  ParsingUtils.parseString(line, 40, 20),
                                   timeScales);
         } else {
-            parseProgramRunByDate(RinexUtils.parseString(line,  0, 19),
-                                  RinexUtils.parseString(line, 21, 19),
-                                  RinexUtils.parseString(line, 42, 21),
+            parseProgramRunByDate(ParsingUtils.parseString(line, 0, 19),
+                                  ParsingUtils.parseString(line, 21, 19),
+                                  ParsingUtils.parseString(line, 42, 21),
                                   timeScales);
         }
     }

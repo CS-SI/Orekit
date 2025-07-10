@@ -39,7 +39,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.AppliedDCBS;
 import org.orekit.files.rinex.AppliedPCVS;
 import org.orekit.files.rinex.section.CommonLabel;
-import org.orekit.files.rinex.utils.parsing.RinexUtils;
+import org.orekit.files.rinex.utils.ParsingUtils;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.IGSUtils;
 import org.orekit.gnss.ObservationType;
@@ -191,9 +191,6 @@ public class RinexClockParser {
         /** The corresponding clock file object. */
         private final RinexClock file;
 
-        /** Indicator for format before 3.04. */
-        private boolean before304;
-
         /** Current satellite system for observation type parsing. */
         private SatelliteSystem currentSatelliteSystem;
 
@@ -256,7 +253,6 @@ public class RinexClockParser {
                     final RinexClockHeader header = parseInfo.file.getHeader();
                     header.parseVersionFileTypeSatelliteSystem(line, null, parseInfo.name,
                                                                2.00, 3.00, 3.01, 3.02, 3.04);
-                    parseInfo.before304 = header.getFormatVersion() < 3.04;
                     if (header.getFormatVersion() < 3.0) {
                         // before 3.0, only GPS system was used
                         header.setSatelliteSystem(SatelliteSystem.GPS);
@@ -273,7 +269,7 @@ public class RinexClockParser {
 
         /** Parser for comments. */
         COMMENT((header, line) -> header.matchFound(CommonLabel.COMMENT, line),
-                (line, parseInfo) -> RinexUtils.parseComment(parseInfo.lineNumber, line, parseInfo.file),
+                (line, parseInfo) -> ParsingUtils.parseComment(parseInfo.lineNumber, line, parseInfo.file),
                 LineParser::commentNext),
 
         /** Parser for satellite system and related observation types. */
@@ -283,12 +279,12 @@ public class RinexClockParser {
                                    if (parseInfo.remainingObsTypes == 0) {
                                        // we are starting a new satellite system
                                        parseInfo.currentSatelliteSystem =
-                                           SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 0, 1));
-                                       parseInfo.remainingObsTypes = RinexUtils.parseInt(line, 3, 3);
+                                           SatelliteSystem.parseSatelliteSystem(ParsingUtils.parseString(line, 0, 1));
+                                       parseInfo.remainingObsTypes = ParsingUtils.parseInt(line, 3, 3);
                                    }
                                    for (int i = 0; i < 14 && parseInfo.remainingObsTypes > 0; ++i) {
                                        parseInfo.remainingObsTypes--;
-                                       final String obsType = RinexUtils.parseString(line, 8 + 4 * i, 3);
+                                       final String obsType = ParsingUtils.parseString(line, 8 + 4 * i, 3);
                                        header.addSystemObservationType(parseInfo.currentSatelliteSystem,
                                                                        parseInfo.typeBuilder.apply(obsType));
                                    }
@@ -299,7 +295,7 @@ public class RinexClockParser {
         TIME_SYSTEM_ID((header, line) -> header.matchFound(ClockLabel.TIME_SYSTEM_ID, line),
                        (line, parseInfo) -> {
                            final RinexClockHeader header = parseInfo.file.getHeader();
-                           final TimeSystem timeSystem = TimeSystem.parseTimeSystem(RinexUtils.parseString(line, 3, 3));
+                           final TimeSystem timeSystem = TimeSystem.parseTimeSystem(ParsingUtils.parseString(line, 3, 3));
                            header.setTimeSystem(timeSystem);
                            header.setTimeScale(timeSystem.getTimeScale(parseInfo.timeScales));
                        },
@@ -308,13 +304,13 @@ public class RinexClockParser {
         /** Parser for leap seconds. */
         LEAP_SECONDS((header, line) -> header.matchFound(CommonLabel.LEAP_SECONDS, line),
                      ((line, parseInfo) -> parseInfo.file.getHeader().
-                         setLeapSeconds(RinexUtils.parseInt(line, 0, 6))),
+                         setLeapSeconds(ParsingUtils.parseInt(line, 0, 6))),
                      LineParser::headerNext),
 
         /** Parser for leap seconds GNSS. */
         LEAP_SECONDS_GNSS((header, line) -> header.matchFound(ClockLabel.LEAP_SECONDS_GNSS, line),
                      ((line, parseInfo) -> parseInfo.file.getHeader().
-                         setLeapSecondsGNSS(RinexUtils.parseInt(line, 0, 6))),
+                         setLeapSecondsGNSS(ParsingUtils.parseInt(line, 0, 6))),
                      LineParser::headerNext),
 
         /** Parser for differential code bias corrections. */
@@ -322,13 +318,13 @@ public class RinexClockParser {
                          (line, parseInfo) -> {
                                  final RinexClockHeader header = parseInfo.file.getHeader();
                                  final SatelliteSystem satelliteSystem =
-                                     SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 0, 1),
+                                     SatelliteSystem.parseSatelliteSystem(ParsingUtils.parseString(line, 0, 1),
                                                                           header.getSatelliteSystem());
                                  header.addAppliedDCBS(new AppliedDCBS(satelliteSystem,
-                                                                       RinexUtils.parseString(line, 3, 17),
-                                                                       RinexUtils.parseString(line,
-                                                                                              parseInfo.before304 ? 20 : 22,
-                                                                                              parseInfo.before304 ? 40 : 43)));
+                                                                       ParsingUtils.parseString(line, 3, 17),
+                                                                       ParsingUtils.parseString(line,
+                                                                                                header.isBefore304() ? 20 : 22,
+                                                                                                header.isBefore304() ? 40 : 43)));
                          },
                          LineParser::headerNext),
 
@@ -337,26 +333,26 @@ public class RinexClockParser {
                          (line, parseInfo) -> {
                                  final RinexClockHeader header = parseInfo.file.getHeader();
                                  final SatelliteSystem satelliteSystem =
-                                     SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 0, 1),
+                                     SatelliteSystem.parseSatelliteSystem(ParsingUtils.parseString(line, 0, 1),
                                                                           header.getSatelliteSystem());
                                  header.addAppliedPCVS(new AppliedPCVS(satelliteSystem,
-                                                                       RinexUtils.parseString(line, 3, 17),
-                                                                       RinexUtils.parseString(line,
-                                                                                              parseInfo.before304 ? 20 : 22,
-                                                                                              parseInfo.before304 ? 40 : 43)));
+                                                                       ParsingUtils.parseString(line, 3, 17),
+                                                                       ParsingUtils.parseString(line,
+                                                                                                header.isBefore304() ? 20 : 22,
+                                                                                                header.isBefore304() ? 40 : 43)));
                          },
                          LineParser::headerNext),
 
         /** Parser for the different clock data types that are stored in the file. */
         NB_TYPES_OF_DATA((header, line) -> header.matchFound(ClockLabel.NB_TYPES_OF_DATA, line),
                          (line, parseInfo) -> {
-                             final int n = RinexUtils.parseInt(line, 0, 6);
+                             final int n = ParsingUtils.parseInt(line, 0, 6);
                              if (n < 1) {
                                  throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                            parseInfo.lineNumber, parseInfo.name, line);
                              }
                              for (int i = 0; i < n; i++) {
-                                 final String type = RinexUtils.parseString(line, 10 + i * 6, 4);
+                                 final String type = ParsingUtils.parseString(line, 10 + i * 6, 4);
                                  try {
                                      parseInfo.file.getHeader().addClockDataType(ClockDataType.valueOf(type));
                                  } catch (IllegalArgumentException iae) {
@@ -390,7 +386,7 @@ public class RinexClockParser {
         STATION_CLK_REF((header, line) -> header.matchFound(ClockLabel.STATION_CLK_REF, line),
                         (line, parseInfo) ->  {
                             final RinexClockHeader header = parseInfo.file.getHeader();
-                            if (parseInfo.before304) {
+                            if (header.isBefore304()) {
                                 header.setExternalClockReference(line.substring(0, 60).trim());
                             } else {
                                 header.setExternalClockReference(line.substring(0, 65).trim());
@@ -404,13 +400,13 @@ public class RinexClockParser {
                             final RinexClockHeader header = parseInfo.file.getHeader();
 
                             // First element is IGS AC designator
-                            header.setAnalysisCenterID(RinexUtils.parseString(line, 0, 3));
+                            header.setAnalysisCenterID(ParsingUtils.parseString(line, 0, 3));
 
                             // Then, the full name of the analysis center
-                            if (parseInfo.before304) {
-                                header.setAnalysisCenterName(RinexUtils.parseString(line, 5, 55));
+                            if (header.isBefore304()) {
+                                header.setAnalysisCenterName(ParsingUtils.parseString(line, 5, 55));
                             } else {
-                                header.setAnalysisCenterName(RinexUtils.parseString(line, 5, 60));
+                                header.setAnalysisCenterName(ParsingUtils.parseString(line, 5, 60));
                             }
                         },
                         LineParser::headerNext),
@@ -465,14 +461,14 @@ public class RinexClockParser {
                          (line, parseInfo) -> {
 
                              // First element is the name of the receiver/satellite embedding the reference clock
-                             final int length = parseInfo.before304 ? 4 : 9;
-                             final String referenceName = RinexUtils.parseString(line, 0, length);
+                             final int length = parseInfo.file.getHeader().isBefore304() ? 4 : 9;
+                             final String referenceName = ParsingUtils.parseString(line, 0, length);
 
                              // Second element is the reference clock ID
-                             final String clockID = RinexUtils.parseString(line, length + 1, 20);
+                             final String clockID = ParsingUtils.parseString(line, length + 1, 20);
 
                              // Optionally, third element is an a priori clock constraint, by default equal to zero
-                             double clockConstraint = RinexUtils.parseDouble(line, length + 36, 19);
+                             double clockConstraint = ParsingUtils.parseDouble(line, length + 36, 19);
                              if (Double.isNaN(clockConstraint)) {
                                  clockConstraint = 0.0;
                              }
@@ -490,7 +486,7 @@ public class RinexClockParser {
         NB_OF_SOLN_STA_TRF((header, line) -> header.matchFound(ClockLabel.NB_OF_SOLN_STA_TRF, line),
                            (line, parseInfo) -> {
                                final RinexClockHeader header = parseInfo.file.getHeader();
-                               final String complete = RinexUtils.parseString(line, 10, parseInfo.before304 ? 50 : 55);
+                               final String complete = ParsingUtils.parseString(line, 10, header.isBefore304() ? 50 : 55);
                                int first = 0;
                                while (first < complete.length() && complete.charAt(first) == ' ') {
                                    ++first;
@@ -509,12 +505,12 @@ public class RinexClockParser {
         /** Parser for the stations embedded in the file and the related positions. */
         SOLN_STA_NAME_NUM((header, line) -> header.matchFound(ClockLabel.SOLN_STA_NAME_NUM, line),
                           (line, parseInfo) -> {
-                                 final int    length     = parseInfo.before304 ? 4 : 9;
-                                 final String designator = RinexUtils.parseString(line, 0, length);
-                                 final String identifier = RinexUtils.parseString(line, length + 1, 20);
-                                 final double x          = MILLIMETER.toSI(RinexUtils.parseLong(line, length + 21, 11));
-                                 final double y          = MILLIMETER.toSI(RinexUtils.parseLong(line, length + 33, 11));
-                                 final double z          = MILLIMETER.toSI(RinexUtils.parseLong(line, length + 45, 11));
+                                 final int    length     = parseInfo.file.getHeader().isBefore304() ? 4 : 9;
+                                 final String designator = ParsingUtils.parseString(line, 0, length);
+                                 final String identifier = ParsingUtils.parseString(line, length + 1, 20);
+                                 final double x          = MILLIMETER.toSI(ParsingUtils.parseLong(line, length + 21, 11));
+                                 final double y          = MILLIMETER.toSI(ParsingUtils.parseLong(line, length + 33, 11));
+                                 final double z          = MILLIMETER.toSI(ParsingUtils.parseLong(line, length + 45, 11));
                                  final Receiver receiver = new Receiver(designator, identifier, x, y, z);
                                  parseInfo.file.getHeader().addReceiver(receiver);
                              },
@@ -529,9 +525,9 @@ public class RinexClockParser {
         PRN_LIST((header, line) -> header.matchFound(ClockLabel.PRN_LIST, line),
                  (line, parseInfo) -> {
                      final RinexClockHeader header = parseInfo.file.getHeader();
-                     final int nMax = parseInfo.before304 ? 15 : 16;
+                     final int nMax = header.isBefore304() ? 15 : 16;
                      for (int i = 0; i < nMax; ++i) {
-                         final String prn = RinexUtils.parseString(line, 4 * i, 3);
+                         final String prn = ParsingUtils.parseString(line, 4 * i, 3);
                          if (prn.isEmpty()) {
                              break;
                          } else {
@@ -577,31 +573,31 @@ public class RinexClockParser {
                        }
 
                        // Second element is receiver/satellite name
-                       final int length = parseInfo.before304 ? 4 : 9;
-                       parseInfo.currentName = RinexUtils.parseString(line, 3, length);
+                       final int length = header.isBefore304() ? 4 : 9;
+                       parseInfo.currentName = ParsingUtils.parseString(line, 3, length);
 
                        // Third element is data epoch
-                       final int startI = parseInfo.before304 ?  8 : 13;
-                       final int startD = parseInfo.before304 ? 24 : 29;
+                       final int startI = header.isBefore304() ?  8 : 13;
+                       final int startD = header.isBefore304() ? 24 : 29;
                        parseInfo.date =
-                               new AbsoluteDate(RinexUtils.parseInt(line,    startI,       4),
-                                                RinexUtils.parseInt(line,    startI +  4,  4),
-                                                RinexUtils.parseInt(line,    startI +  7,  3),
-                                                RinexUtils.parseInt(line,    startI + 10,  3),
-                                                RinexUtils.parseInt(line,    startI + 13,  3),
-                                                RinexUtils.parseDouble(line, startD,      10),
+                               new AbsoluteDate(ParsingUtils.parseInt(line, startI, 4),
+                                                ParsingUtils.parseInt(line, startI +  4, 4),
+                                                ParsingUtils.parseInt(line, startI +  7, 3),
+                                                ParsingUtils.parseInt(line, startI + 10, 3),
+                                                ParsingUtils.parseInt(line, startI + 13, 3),
+                                                ParsingUtils.parseDouble(line, startD, 10),
                                                 header.getTimeScale());
 
                        // Fourth element is number of data values
-                       parseInfo.totalValues = RinexUtils.parseInt(line, startD + 11, 2);
+                       parseInfo.totalValues = ParsingUtils.parseInt(line, startD + 11, 2);
                        parseInfo.valueIndex  = 0;
 
                        // Get the values in this line
                        Arrays.fill(parseInfo.values, 0.0);
-                       int start = parseInfo.before304 ?  40 : 45;
+                       int start = header.isBefore304() ?  40 : 45;
                        while (parseInfo.valueIndex < FastMath.min(2, parseInfo.totalValues)) {
-                           parseInfo.values[parseInfo.valueIndex++] = RinexUtils.parseDouble(line, start, 19);
-                           start += parseInfo.before304 ? 20 : 21;
+                           parseInfo.values[parseInfo.valueIndex++] = ParsingUtils.parseDouble(line, start, 19);
+                           start += header.isBefore304() ? 20 : 21;
                        }
 
                        // Check if continuation line is required
@@ -625,11 +621,12 @@ public class RinexClockParser {
         /** Parser for a continuation clock data line. */
         CLOCK_DATA_CONTINUATION((header, line) -> true,
                                 (line, parseInfo) -> {
-                                    int start = parseInfo.before304 ? 0 : 3;
+                                    final RinexClockHeader header = parseInfo.file.getHeader();
+                                    int start = header.isBefore304() ? 0 : 3;
                                     while (parseInfo.valueIndex < parseInfo.totalValues) {
                                         parseInfo.values[parseInfo.valueIndex++] =
-                                            RinexUtils.parseDouble(line, start, 19);
-                                        start += parseInfo.before304 ? 20 : 21;
+                                            ParsingUtils.parseDouble(line, start, 19);
+                                        start += header.isBefore304() ? 20 : 21;
                                     }
                                     parseInfo.file.addClockData(parseInfo.currentName,
                                                                 new ClockDataLine(parseInfo.currentDataType,
@@ -671,7 +668,7 @@ public class RinexClockParser {
          * @return allowed parsers for next line
          */
         private static Iterable<LineParser> headerNext(final ParseInfo parseInfo) {
-            if (parseInfo.before304) {
+            if (parseInfo.file.getHeader().isBefore304()) {
                 return Arrays.asList(PROGRAM, COMMENT, SYS_NB_TYPES_OF_OBSERV, TIME_SYSTEM_ID,
                                      LEAP_SECONDS, SYS_DCBS_APPLIED, SYS_PCVS_APPLIED,
                                      NB_TYPES_OF_DATA, STATION_NAME_NUM, STATION_CLK_REF,

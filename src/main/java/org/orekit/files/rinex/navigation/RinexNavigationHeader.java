@@ -22,7 +22,7 @@ import java.util.List;
 import org.orekit.files.rinex.section.Label;
 import org.orekit.files.rinex.section.RinexBaseHeader;
 import org.orekit.files.rinex.utils.RinexFileType;
-import org.orekit.files.rinex.utils.parsing.RinexUtils;
+import org.orekit.files.rinex.utils.ParsingUtils;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.TimeScales;
 
@@ -83,9 +83,9 @@ public class RinexNavigationHeader extends RinexBaseHeader {
     /** {@inheritDoc} */
     @Override
     public void parseProgramRunByDate(final String line, final TimeScales timeScales) {
-        parseProgramRunByDate(RinexUtils.parseString(line,  0, 20),
-                              RinexUtils.parseString(line, 20, 20),
-                              RinexUtils.parseString(line, 40, 20),
+        parseProgramRunByDate(ParsingUtils.parseString(line, 0, 20),
+                              ParsingUtils.parseString(line, 20, 20),
+                              ParsingUtils.parseString(line, 40, 20),
                               timeScales);
     }
 

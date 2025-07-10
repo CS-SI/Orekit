@@ -19,8 +19,8 @@ package org.orekit.files.rinex.section;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.rinex.utils.ParsingUtils;
 import org.orekit.files.rinex.utils.RinexFileType;
-import org.orekit.files.rinex.utils.parsing.RinexUtils;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
@@ -309,7 +309,7 @@ public abstract class RinexBaseHeader {
                                                     final String name, final double... supportedVersions) {
 
         // Rinex version
-        final double parsedVersion = RinexUtils.parseDouble(line, 0, 9);
+        final double parsedVersion = ParsingUtils.parseDouble(line, 0, 9);
 
         boolean found = false;
         for (final double supported : supportedVersions) {
@@ -390,7 +390,7 @@ public abstract class RinexBaseHeader {
             if (abbrev1Matcher.matches()) {
                 final int rawYear = Integer.parseInt(abbrev1Matcher.group(3));
                 // hoping this obsolete format will not be used past year 2079…
-                dc = new DateComponents(rawYear < 100 ? RinexUtils.convert2DigitsYear(rawYear) : rawYear,
+                dc = new DateComponents(rawYear < 100 ? ParsingUtils.convert2DigitsYear(rawYear) : rawYear,
                                         Month.parseMonth(abbrev1Matcher.group(2)).getNumber(),
                                         Integer.parseInt(abbrev1Matcher.group(1)));
             } else {
@@ -409,9 +409,9 @@ public abstract class RinexBaseHeader {
                         final Matcher europeanMatcher = DATE_EUROPEAN_PATTERN.matcher(splittingMatcher.group(1));
                         if (europeanMatcher.matches()) {
                             dc = new DateComponents(
-                                    RinexUtils.convert2DigitsYear(Integer.parseInt(europeanMatcher.group(3))),
-                                    Integer.parseInt(europeanMatcher.group(2)),
-                                    Integer.parseInt(europeanMatcher.group(1)));
+                                ParsingUtils.convert2DigitsYear(Integer.parseInt(europeanMatcher.group(3))),
+                                Integer.parseInt(europeanMatcher.group(2)),
+                                Integer.parseInt(europeanMatcher.group(1)));
                         } else {
                             dc = null;
                         }

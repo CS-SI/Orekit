@@ -26,8 +26,8 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.orekit.files.rinex.section.Label;
 import org.orekit.files.rinex.section.RinexClockObsBaseHeader;
+import org.orekit.files.rinex.utils.ParsingUtils;
 import org.orekit.files.rinex.utils.RinexFileType;
-import org.orekit.files.rinex.utils.parsing.RinexUtils;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
@@ -212,9 +212,9 @@ public class RinexObservationHeader extends RinexClockObsBaseHeader {
     /** {@inheritDoc} */
     @Override
     public void parseProgramRunByDate(final String line, final TimeScales timeScales) {
-        parseProgramRunByDate(RinexUtils.parseString(line, 0, 20),
-                              RinexUtils.parseString(line, 20, 20),
-                              RinexUtils.parseString(line, 40, 20),
+        parseProgramRunByDate(ParsingUtils.parseString(line, 0, 20),
+                              ParsingUtils.parseString(line, 20, 20),
+                              ParsingUtils.parseString(line, 40, 20),
                               timeScales);
     }
 

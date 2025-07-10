@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.rinex.utils.parsing;
+package org.orekit.files.rinex.utils;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.files.rinex.RinexFile;
@@ -25,14 +25,14 @@ import org.orekit.files.rinex.section.RinexComment;
  * @since 12.0
  *
  */
-public class RinexUtils {
+public class ParsingUtils {
 
     /** Private constructor.
      * <p>This class is a utility class, it should neither have a public
      * nor a default constructor. This private constructor prevents
      * the compiler from generating one automatically.</p>
      */
-    private RinexUtils() {
+    private ParsingUtils() {
     }
 
     /** Parse a comment.
