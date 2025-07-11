@@ -42,6 +42,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
@@ -221,15 +222,14 @@ public class TLE implements TimeStamped, ParameterDriversProvider {
         ephemerisType   = ParseUtils.parseInteger(line1, 62, 1);
         elementNumber   = ParseUtils.parseInteger(line1, 64, 4);
 
-        // Date format transform (nota: 27/31250 == 86400/100000000)
-        final int    year      = ParseUtils.parseYear(line1, 18);
-        final int    dayInYear = ParseUtils.parseInteger(line1, 20, 3);
-        final long   df        = 27l * ParseUtils.parseInteger(line1, 24, 8);
-        final int    secondsA  = (int) (df / 31250l);
-        final double secondsB  = (df % 31250l) / 31250.0;
+        final int    year        = ParseUtils.parseYear(line1, 18);
+        final int    dayInYear   = ParseUtils.parseInteger(line1, 20, 3);
+        final int dayFractionDigits = ParseUtils.parseInteger(line1, 24, 8);
+        final long nanoSecondsCount = dayFractionDigits * (long) Constants.JULIAN_DAY * 10;
+        final TimeOffset dayFraction = TimeOffset.NANOSECOND.multiply(nanoSecondsCount);
         epoch = new AbsoluteDate(new DateComponents(year, dayInYear),
-                                 new TimeComponents(secondsA, secondsB),
-                                 utc);
+          new TimeComponents(dayFraction),
+          utc);
 
         // mean motion development
         // converted from rev/day, 2 * rev/day^2 and 6 * rev/day^3 to rad/s, rad/s^2 and rad/s^3
