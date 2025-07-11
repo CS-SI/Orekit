@@ -132,39 +132,49 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
      * @exception IOException if an I/O error occurs.
      */
     public void writeHeader(final RinexClockHeader header) throws IOException {
-        if (header.isBefore304()) {
-            super.writeHeader(header, RinexClockHeader.LABEL_INDEX_300_302);
-            writeHeaderBefore304(header);
-        } else {
-            super.writeHeader(header, RinexClockHeader.LABEL_INDEX_304_PLUS);
-            writeHeader304AndLater(header);
-        }
-    }
-
-    /** Write header for a version before version 3.04.
-     * @param header header to write
-     * @exception IOException if an I/O error occurs.
-     */
-    private void writeHeaderBefore304(final RinexClockHeader header) throws IOException {
+        super.writeHeader(header,
+                          header.isBefore304() ?
+                          RinexClockHeader.LABEL_INDEX_300_302 :
+                          RinexClockHeader.LABEL_INDEX_304_PLUS);
 
         // RINEX VERSION / TYPE
-        outputField(NINE_TWO_DIGITS_FLOAT, header.getFormatVersion(), 9);
-        outputField("", 20, true);
-        outputField("C", 40, true);
-        outputField(header.getSatelliteSystem() == null ? ' ' : header.getSatelliteSystem().getKey(), 41);
+        if (header.isBefore304()) {
+            outputField(NINE_TWO_DIGITS_FLOAT, header.getFormatVersion(), 9);
+            outputField("", 20, true);
+            outputField("C", 40, true);
+            outputField(header.getSatelliteSystem() == null ? ' ' : header.getSatelliteSystem().getKey(), 41);
+        } else {
+            outputField(FOUR_TWO_DIGITS_FLOAT, header.getFormatVersion(), 4);
+            outputField("", 21, true);
+            outputField("C", 42, true);
+            outputField(header.getSatelliteSystem() == null ? ' ' : header.getSatelliteSystem().getKey(), 43);
+        }
         finishHeaderLine(CommonLabel.VERSION);
 
         // PGM / RUN BY / DATE
-        outputField(header.getProgramName(), 20, true);
-        outputField(header.getRunByName(),   40, true);
-        final DateTimeComponents dtc = header.getCreationDateComponents();
-        outputField(PADDED_FOUR_DIGITS_INTEGER, dtc.getDate().getYear(), 44);
-        outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getMonth(), 46);
-        outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getDay(), 48);
-        outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getHour(), 51);
-        outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getMinute(), 53);
-        outputField(PADDED_TWO_DIGITS_INTEGER, (int) FastMath.rint(dtc.getTime().getSecond()), 55);
-        outputField(header.getCreationTimeZone(), 59, true);
+        if (header.isBefore304()) {
+            outputField(header.getProgramName(), 20, true);
+            outputField(header.getRunByName(), 40, true);
+            final DateTimeComponents dtc = header.getCreationDateComponents();
+            outputField(PADDED_FOUR_DIGITS_INTEGER, dtc.getDate().getYear(), 44);
+            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getMonth(), 46);
+            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getDay(), 48);
+            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getHour(), 51);
+            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getMinute(), 53);
+            outputField(PADDED_TWO_DIGITS_INTEGER, (int) FastMath.rint(dtc.getTime().getSecond()), 55);
+            outputField(header.getCreationTimeZone(), 59, true);
+        } else {
+            outputField(header.getProgramName(), 21, true);
+            outputField(header.getRunByName(), 42, true);
+            final DateTimeComponents dtc = header.getCreationDateComponents();
+            outputField(PADDED_FOUR_DIGITS_INTEGER, dtc.getDate().getYear(), 46);
+            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getMonth(), 48);
+            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getDay(), 50);
+            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getHour(), 54);
+            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getMinute(), 56);
+            outputField(PADDED_TWO_DIGITS_INTEGER, (int) FastMath.rint(dtc.getTime().getSecond()), 58);
+            outputField(header.getCreationTimeZone(), 63, true);
+        }
         finishHeaderLine(CommonLabel.PROGRAM);
 
         // SYS / # / OBS TYPES
@@ -172,218 +182,24 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
             outputField(entry.getKey().getKey(), 1);
             outputField(' ', 3);
             outputField(THREE_DIGITS_INTEGER, entry.getValue().size(), 6);
+            if (!header.isBefore304()) {
+                outputField(' ', 8);
+            }
             for (final ObservationType type : entry.getValue()) {
                 int next = getColumn() + 4;
                 if (exceedsHeaderLength(next)) {
                     // we need to set up a continuation line
                     finishHeaderLine(CommonLabel.SYS_NB_TYPES_OF_OBSERV);
-                    outputField(' ', 6);
+                    outputField(' ', header.isBefore304() ? 6 : 8);
                     next = getColumn() + 4;
                 }
-                outputField(' ', next - 3);
-                outputField(type.getName(), next, false);
-            }
-            finishHeaderLine(CommonLabel.SYS_NB_TYPES_OF_OBSERV);
-        }
-
-        // TIME SYSTEM ID
-        if (header.getFormatVersion() > 2.0) {
-            outputField(header.getTimeSystem().getKey(), 6, false);
-            finishHeaderLine(ClockLabel.TIME_SYSTEM_ID);
-        }
-
-        // LEAP SECONDS
-        if (header.getLeapSeconds() > 0) {
-            outputField(SIX_DIGITS_INTEGER, header.getLeapSeconds(), 6);
-            finishHeaderLine(CommonLabel.LEAP_SECONDS);
-        }
-
-        // SYS / DCBS APPLIED
-        for (final AppliedDCBS appliedDCBS : header.getListAppliedDCBS()) {
-            outputField(appliedDCBS.getSatelliteSystem().getKey(),  1);
-            outputField(' ',                                        2);
-            outputField(appliedDCBS.getProgDCBS(),                 19, true);
-            outputField(' ',                                       20);
-            outputField(appliedDCBS.getSourceDCBS(),               60, true);
-            finishHeaderLine(CommonLabel.SYS_DCBS_APPLIED);
-        }
-
-        // SYS / PCVS APPLIED
-        for (final AppliedPCVS appliedPCVS : header.getListAppliedPCVS()) {
-            outputField(appliedPCVS.getSatelliteSystem().getKey(),  1);
-            outputField(' ',                                        2);
-            outputField(appliedPCVS.getProgPCVS(),                 19, true);
-            outputField(' ',                                       20);
-            outputField(appliedPCVS.getSourcePCVS(),               60, true);
-            finishHeaderLine(CommonLabel.SYS_PCVS_APPLIED);
-        }
-
-        // # / TYPES OF DATA
-        outputField(SIX_DIGITS_INTEGER, header.getClockDataTypes().size(), 6);
-        for (final ClockDataType clockDataType : header.getClockDataTypes()) {
-            outputField(clockDataType.name(), getColumn() + 6, false);
-        }
-        finishHeaderLine(ClockLabel.NB_TYPES_OF_DATA);
-
-        // STATION NAME / NUM
-        if (!header.getStationName().isEmpty()) {
-            outputField(header.getStationName(), 4, true);
-            outputField(' ', 5);
-            outputField(header.getStationIdentifier(), 25, true);
-            finishHeaderLine(ClockLabel.STATION_NAME_NUM);
-        }
-
-        // STATION CLK REF
-        if (!header.getExternalClockReference().isEmpty()) {
-            outputField(header.getExternalClockReference(), 60, true);
-            finishHeaderLine(ClockLabel.STATION_CLK_REF);
-        }
-
-        // ANALYSIS CENTER
-        if (!header.getAnalysisCenterName().isEmpty()) {
-            outputField(header.getAnalysisCenterID(),   3, true);
-            outputField("", 5, true);
-            outputField(header.getAnalysisCenterName(), 60, true);
-            finishHeaderLine(ClockLabel.ANALYSIS_CENTER);
-        }
-
-        // # OF CLK REF / ANALYSIS CLK REF
-        for (TimeSpanMap.Span<List<ReferenceClock>> span = header.getReferenceClocks().getFirstSpan();
-             span != null;
-             span = span.next()) {
-            if (span.getData() != null) {
-                outputField(SIX_DIGITS_INTEGER, span.getData().size(), 6);
-                if (span.getStart().isFinite()) {
-                    outputField(' ', 7);
-                    final DateTimeComponents startDtc = span.getStart().getComponents(header.getTimeScale());
-                    final DateTimeComponents endDtc   = span.getEnd().getComponents(header.getTimeScale());
-                    outputField(FOUR_DIGITS_INTEGER, startDtc.getDate().getYear(), 11);
-                    outputField(' ', 12);
-                    outputField(PADDED_TWO_DIGITS_INTEGER, startDtc.getDate().getMonth(), 14);
-                    outputField(' ', 15);
-                    outputField(PADDED_TWO_DIGITS_INTEGER, startDtc.getDate().getDay(), 17);
-                    outputField(' ', 18);
-                    outputField(PADDED_TWO_DIGITS_INTEGER, startDtc.getTime().getHour(), 20);
-                    outputField(' ', 21);
-                    outputField(PADDED_TWO_DIGITS_INTEGER, startDtc.getTime().getMinute(), 23);
-                    outputField(TEN_SIX_DIGITS_FLOAT, startDtc.getTime().getSecond(), 33);
-                    outputField(' ', 34);
-                    outputField(FOUR_DIGITS_INTEGER, endDtc.getDate().getYear(), 38);
-                    outputField(' ', 39);
-                    outputField(PADDED_TWO_DIGITS_INTEGER, endDtc.getDate().getMonth(), 41);
-                    outputField(' ', 42);
-                    outputField(PADDED_TWO_DIGITS_INTEGER, endDtc.getDate().getDay(), 44);
-                    outputField(' ', 45);
-                    outputField(PADDED_TWO_DIGITS_INTEGER, endDtc.getTime().getHour(), 47);
-                    outputField(' ', 48);
-                    outputField(PADDED_TWO_DIGITS_INTEGER, endDtc.getTime().getMinute(), 50);
-                    outputField(TEN_SIX_DIGITS_FLOAT, endDtc.getTime().getSecond(), 60);
+                if (header.isBefore304()) {
+                    outputField(' ', next - 3);
+                    outputField(type.getName(), next, false);
+                } else {
+                    outputField(type.getName(), next - 1, false);
+                    outputField(' ', next);
                 }
-                finishHeaderLine(ClockLabel.NB_OF_CLK_REF);
-                for (final ReferenceClock clock : span.getData()) {
-                    outputField(clock.getReferenceName(), 4, true);
-                    outputField(' ', 5);
-                    outputField(clock.getClockID(), 25, true);
-                    outputField(' ', 40);
-                    if (clock.getClockConstraint() != 0.0) {
-                        write1912(clock.getClockConstraint());
-                    }
-                    finishHeaderLine(ClockLabel.ANALYSIS_CLK_REF);
-                }
-            }
-        }
-
-        // # OF SOLN STA / TRF
-        if (header.getNumberOfReceivers() > 0) {
-            outputField(SIX_DIGITS_INTEGER, header.getNumberOfReceivers(), 6);
-            outputField("", 10, true);
-            outputField(header.getFrameName(), 60, true);
-            finishHeaderLine(ClockLabel.NB_OF_SOLN_STA_TRF);
-        }
-
-        // SOLN STA NAME / NUM
-        for (final Receiver receiver : header.getReceivers()) {
-            outputField(receiver.getDesignator(), 4, true);
-            outputField(' ', 5);
-            outputField(receiver.getReceiverIdentifier(), 25, true);
-            outputField(ELEVEN_DIGITS_INTEGER, FastMath.round(MILLIMETER.fromSI(receiver.getX())), 36);
-            outputField(' ', 37);
-            outputField(ELEVEN_DIGITS_INTEGER, FastMath.round(MILLIMETER.fromSI(receiver.getY())), 48);
-            outputField(' ', 49);
-            outputField(ELEVEN_DIGITS_INTEGER, FastMath.round(MILLIMETER.fromSI(receiver.getZ())), 60);
-            finishHeaderLine(ClockLabel.SOLN_STA_NAME_NUM);
-        }
-
-        // # OF SOLN SATS
-        if (header.getNumberOfSatellites() > 0) {
-            outputField(SIX_DIGITS_INTEGER, header.getNumberOfSatellites(), 6);
-            finishHeaderLine(ClockLabel.NB_OF_SOLN_SATS);
-        }
-
-        // PRN LIST
-        boolean wrotePRN = false;
-        for (final SatInSystem satInSystem : header.getSatellites()) {
-            int next = getColumn() + 4;
-            if (exceedsHeaderLength(next)) {
-                // we need to set up a continuation line
-                finishHeaderLine(ClockLabel.PRN_LIST);
-                next = 4;
-            }
-            outputField(satInSystem.toString(), next, true);
-            wrotePRN = true;
-        }
-        if (wrotePRN) {
-            finishHeaderLine(ClockLabel.PRN_LIST);
-        }
-
-        // END OF HEADER
-        writeHeaderLine("", CommonLabel.END);
-
-    }
-
-    /** Write header for a version 3.04 or later.
-     * @param header header to write
-     * @exception IOException if an I/O error occurs.
-     */
-    private void writeHeader304AndLater(final RinexClockHeader header)
-        throws IOException {
-
-        // RINEX VERSION / TYPE
-        outputField(FOUR_TWO_DIGITS_FLOAT, header.getFormatVersion(), 4);
-        outputField("",  21, true);
-        outputField("C", 42, true);
-        outputField(header.getSatelliteSystem() == null ? ' ' : header.getSatelliteSystem().getKey(), 43);
-        finishHeaderLine(CommonLabel.VERSION);
-
-        // PGM / RUN BY / DATE
-        outputField(header.getProgramName(), 21, true);
-        outputField(header.getRunByName(),   42, true);
-        final DateTimeComponents dtc = header.getCreationDateComponents();
-        outputField(PADDED_FOUR_DIGITS_INTEGER, dtc.getDate().getYear(), 46);
-        outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getMonth(), 48);
-        outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getDay(), 50);
-        outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getHour(), 54);
-        outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getMinute(), 56);
-        outputField(PADDED_TWO_DIGITS_INTEGER, (int) FastMath.rint(dtc.getTime().getSecond()), 58);
-        outputField(header.getCreationTimeZone(), 63, true);
-        finishHeaderLine(CommonLabel.PROGRAM);
-
-        // SYS / # / OBS TYPES  xxxxxx
-        for (Map.Entry<SatelliteSystem, List<ObservationType>> entry : header.getSystemObservationTypes().entrySet()) {
-            outputField(entry.getKey().getKey(), 1);
-            outputField(' ', 3);
-            outputField(THREE_DIGITS_INTEGER, entry.getValue().size(), 6);
-            outputField(' ', 8);
-            for (final ObservationType type : entry.getValue()) {
-                int next = getColumn() + 4;
-                if (exceedsHeaderLength(next)) {
-                    // we need to set up a continuation line
-                    finishHeaderLine(CommonLabel.SYS_NB_TYPES_OF_OBSERV);
-                    outputField(' ', 8);
-                    next = getColumn() + 4;
-                }
-                outputField(type.getName(), next - 1, false);
-                outputField(' ', next);
             }
             finishHeaderLine(CommonLabel.SYS_NB_TYPES_OF_OBSERV);
         }
@@ -401,7 +217,7 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
         }
 
         // LEAP SECONDS GNSS
-        if (header.getLeapSecondsGNSS() > 0) {
+        if (!header.isBefore304() && header.getLeapSecondsGNSS() > 0) {
             outputField(SIX_DIGITS_INTEGER, header.getLeapSecondsGNSS(), 6);
             finishHeaderLine(ClockLabel.LEAP_SECONDS_GNSS);
         }
@@ -409,20 +225,34 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
         // SYS / DCBS APPLIED
         for (final AppliedDCBS appliedDCBS : header.getListAppliedDCBS()) {
             outputField(appliedDCBS.getSatelliteSystem().getKey(),  1);
-            outputField(' ',                                        3);
-            outputField(appliedDCBS.getProgDCBS(),                 20, true);
-            outputField(' ',                                       22);
-            outputField(appliedDCBS.getSourceDCBS(),               65, true);
+            if (header.isBefore304()) {
+                outputField(' ', 2);
+                outputField(appliedDCBS.getProgDCBS(), 19, true);
+                outputField(' ', 20);
+                outputField(appliedDCBS.getSourceDCBS(), 60, true);
+            } else {
+                outputField(' ', 3);
+                outputField(appliedDCBS.getProgDCBS(), 20, true);
+                outputField(' ', 22);
+                outputField(appliedDCBS.getSourceDCBS(), 65, true);
+            }
             finishHeaderLine(CommonLabel.SYS_DCBS_APPLIED);
         }
 
         // SYS / PCVS APPLIED
         for (final AppliedPCVS appliedPCVS : header.getListAppliedPCVS()) {
-            outputField(appliedPCVS.getSatelliteSystem().getKey(),  1);
-            outputField(' ',                                        3);
-            outputField(appliedPCVS.getProgPCVS(),                 20, true);
-            outputField(' ',                                       22);
-            outputField(appliedPCVS.getSourcePCVS(),               65, true);
+            outputField(appliedPCVS.getSatelliteSystem().getKey(), 1);
+            if (header.isBefore304()) {
+                outputField(' ', 2);
+                outputField(appliedPCVS.getProgPCVS(), 19, true);
+                outputField(' ', 20);
+                outputField(appliedPCVS.getSourcePCVS(), 60, true);
+            } else {
+                outputField(' ', 3);
+                outputField(appliedPCVS.getProgPCVS(), 20, true);
+                outputField(' ', 22);
+                outputField(appliedPCVS.getSourcePCVS(), 65, true);
+            }
             finishHeaderLine(CommonLabel.SYS_PCVS_APPLIED);
         }
 
@@ -435,15 +265,21 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
 
         // STATION NAME / NUM
         if (!header.getStationName().isEmpty()) {
-            outputField(header.getStationName(), 9, true);
-            outputField(' ', 10);
-            outputField(header.getStationIdentifier(), 30, true);
+            if (header.isBefore304()) {
+                outputField(header.getStationName(), 4, true);
+                outputField(' ', 5);
+                outputField(header.getStationIdentifier(), 25, true);
+            } else {
+                outputField(header.getStationName(), 9, true);
+                outputField(' ', 10);
+                outputField(header.getStationIdentifier(), 30, true);
+            }
             finishHeaderLine(ClockLabel.STATION_NAME_NUM);
         }
 
         // STATION CLK REF
         if (!header.getExternalClockReference().isEmpty()) {
-            outputField(header.getExternalClockReference(), 65, true);
+            outputField(header.getExternalClockReference(), header.isBefore304() ? 60 : 65, true);
             finishHeaderLine(ClockLabel.STATION_CLK_REF);
         }
 
@@ -451,7 +287,7 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
         if (!header.getAnalysisCenterName().isEmpty()) {
             outputField(header.getAnalysisCenterID(),   3, true);
             outputField("", 5, true);
-            outputField(header.getAnalysisCenterName(), 60, true);
+            outputField(header.getAnalysisCenterName(), header.isBefore304() ? 60 : 65, true);
             finishHeaderLine(ClockLabel.ANALYSIS_CENTER);
         }
 
@@ -474,27 +310,49 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
                     outputField(PADDED_TWO_DIGITS_INTEGER, startDtc.getTime().getHour(), 20);
                     outputField(' ', 21);
                     outputField(PADDED_TWO_DIGITS_INTEGER, startDtc.getTime().getMinute(), 23);
-                    outputField(' ', 24);
-                    outputField(TEN_SIX_DIGITS_FLOAT, startDtc.getTime().getSecond(), 34);
-                    outputField(' ', 36);
-                    outputField(FOUR_DIGITS_INTEGER, endDtc.getDate().getYear(), 40);
-                    outputField(' ', 41);
-                    outputField(PADDED_TWO_DIGITS_INTEGER, endDtc.getDate().getMonth(), 43);
-                    outputField(' ', 44);
-                    outputField(PADDED_TWO_DIGITS_INTEGER, endDtc.getDate().getDay(), 46);
-                    outputField(' ', 47);
-                    outputField(PADDED_TWO_DIGITS_INTEGER, endDtc.getTime().getHour(), 49);
-                    outputField(' ', 50);
-                    outputField(PADDED_TWO_DIGITS_INTEGER, endDtc.getTime().getMinute(), 52);
-                    outputField(' ', 53);
-                    outputField(TEN_SIX_DIGITS_FLOAT, endDtc.getTime().getSecond(), 63);
+                    if (header.isBefore304()) {
+                        outputField(TEN_SIX_DIGITS_FLOAT, startDtc.getTime().getSecond(), 33);
+                        outputField(' ', 34);
+                        outputField(FOUR_DIGITS_INTEGER, endDtc.getDate().getYear(), 38);
+                        outputField(' ', 39);
+                        outputField(PADDED_TWO_DIGITS_INTEGER, endDtc.getDate().getMonth(), 41);
+                        outputField(' ', 42);
+                        outputField(PADDED_TWO_DIGITS_INTEGER, endDtc.getDate().getDay(), 44);
+                        outputField(' ', 45);
+                        outputField(PADDED_TWO_DIGITS_INTEGER, endDtc.getTime().getHour(), 47);
+                        outputField(' ', 48);
+                        outputField(PADDED_TWO_DIGITS_INTEGER, endDtc.getTime().getMinute(), 50);
+                        outputField(TEN_SIX_DIGITS_FLOAT, endDtc.getTime().getSecond(), 60);
+                    } else {
+                        outputField(' ', 24);
+                        outputField(TEN_SIX_DIGITS_FLOAT, startDtc.getTime().getSecond(), 34);
+                        outputField(' ', 36);
+                        outputField(FOUR_DIGITS_INTEGER, endDtc.getDate().getYear(), 40);
+                        outputField(' ', 41);
+                        outputField(PADDED_TWO_DIGITS_INTEGER, endDtc.getDate().getMonth(), 43);
+                        outputField(' ', 44);
+                        outputField(PADDED_TWO_DIGITS_INTEGER, endDtc.getDate().getDay(), 46);
+                        outputField(' ', 47);
+                        outputField(PADDED_TWO_DIGITS_INTEGER, endDtc.getTime().getHour(), 49);
+                        outputField(' ', 50);
+                        outputField(PADDED_TWO_DIGITS_INTEGER, endDtc.getTime().getMinute(), 52);
+                        outputField(' ', 53);
+                        outputField(TEN_SIX_DIGITS_FLOAT, endDtc.getTime().getSecond(), 63);
+                    }
                 }
                 finishHeaderLine(ClockLabel.NB_OF_CLK_REF);
                 for (final ReferenceClock clock : span.getData()) {
-                    outputField(clock.getReferenceName(), 9, true);
-                    outputField(' ', 10);
-                    outputField(clock.getClockID(), 30, true);
-                    outputField(' ', 45);
+                    if (header.isBefore304()) {
+                        outputField(clock.getReferenceName(), 4, true);
+                        outputField(' ', 5);
+                        outputField(clock.getClockID(), 25, true);
+                        outputField(' ', 40);
+                    } else {
+                        outputField(clock.getReferenceName(), 9, true);
+                        outputField(' ', 10);
+                        outputField(clock.getClockID(), 30, true);
+                        outputField(' ', 45);
+                    }
                     if (clock.getClockConstraint() != 0.0) {
                         write1912(clock.getClockConstraint());
                     }
@@ -507,20 +365,31 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
         if (header.getNumberOfReceivers() > 0) {
             outputField(SIX_DIGITS_INTEGER, header.getNumberOfReceivers(), 6);
             outputField("", 10, true);
-            outputField(header.getFrameName(), 65, true);
+            outputField(header.getFrameName(), header.isBefore304() ? 60 : 65, true);
             finishHeaderLine(ClockLabel.NB_OF_SOLN_STA_TRF);
         }
 
         // SOLN STA NAME / NUM
         for (final Receiver receiver : header.getReceivers()) {
-            outputField(receiver.getDesignator(), 9, true);
-            outputField(' ', 10);
-            outputField(receiver.getReceiverIdentifier(), 30, true);
-            outputField(ELEVEN_DIGITS_INTEGER, FastMath.round(MILLIMETER.fromSI(receiver.getX())), 41);
-            outputField(' ', 42);
-            outputField(ELEVEN_DIGITS_INTEGER, FastMath.round(MILLIMETER.fromSI(receiver.getY())), 53);
-            outputField(' ', 54);
-            outputField(ELEVEN_DIGITS_INTEGER, FastMath.round(MILLIMETER.fromSI(receiver.getZ())), 65);
+            if (header.isBefore304()) {
+                outputField(receiver.getDesignator(), 4, true);
+                outputField(' ', 5);
+                outputField(receiver.getReceiverIdentifier(), 25, true);
+                outputField(ELEVEN_DIGITS_INTEGER, FastMath.round(MILLIMETER.fromSI(receiver.getX())), 36);
+                outputField(' ', 37);
+                outputField(ELEVEN_DIGITS_INTEGER, FastMath.round(MILLIMETER.fromSI(receiver.getY())), 48);
+                outputField(' ', 49);
+                outputField(ELEVEN_DIGITS_INTEGER, FastMath.round(MILLIMETER.fromSI(receiver.getZ())), 60);
+            } else {
+                outputField(receiver.getDesignator(), 9, true);
+                outputField(' ', 10);
+                outputField(receiver.getReceiverIdentifier(), 30, true);
+                outputField(ELEVEN_DIGITS_INTEGER, FastMath.round(MILLIMETER.fromSI(receiver.getX())), 41);
+                outputField(' ', 42);
+                outputField(ELEVEN_DIGITS_INTEGER, FastMath.round(MILLIMETER.fromSI(receiver.getY())), 53);
+                outputField(' ', 54);
+                outputField(ELEVEN_DIGITS_INTEGER, FastMath.round(MILLIMETER.fromSI(receiver.getZ())), 65);
+            }
             finishHeaderLine(ClockLabel.SOLN_STA_NAME_NUM);
         }
 
