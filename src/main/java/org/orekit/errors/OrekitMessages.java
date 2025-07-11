@@ -986,7 +986,13 @@ public enum OrekitMessages implements Localizable {
     EXPUNGED_SPAN("data at date {0} has already been automatically expunged"),
 
     /** MISSING_TIME_SYSTEM_DEFINITION. */
-    MISSING_TIME_SYSTEM_DEFINITION("missing time system definition in file {0}");
+    MISSING_TIME_SYSTEM_DEFINITION("missing time system definition in file {0}"),
+
+    /** WRONG_STATIONS_NUMBER. */
+    WRONG_STATIONS_NUMBER("wrong stations numbers in file {0}, expected {1}, got {2}"),
+
+    /** WRONG_SATELLITES_NUMBER. */
+    WRONG_SATELLITES_NUMBER("wrong satellites numbers in file {0}, expected {1}, got {2}");
 
     /** Base name of the resource bundle in classpath. */
     private static final String RESOURCE_BASE_NAME = "assets/org/orekit/localization/OrekitMessages";

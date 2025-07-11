@@ -61,7 +61,7 @@ public class RinexClockWriterTest {
     @DefaultDataContext
     @Test
     public void testWriteHeaderTwice() throws IOException {
-        final RinexClock rclock = load("gnss/clock/igr21101_truncated_300.clk",
+        final RinexClock rclock = load("gnss/clock/Exple_analysis_1_304.clk",
                                        IGSUtils::guessFrame,
                                        PredefinedObservationType::valueOf,
                                        PredefinedTimeSystem::parseTimeSystem,
@@ -86,7 +86,7 @@ public class RinexClockWriterTest {
                                        PredefinedObservationType::valueOf,
                                        PredefinedTimeSystem::parseTimeSystem,
                                        DataContext.getDefault().getTimeScales());
-        rclock.getHeader().setRunByName("much too long run-by name exceeding 40 characters");
+        rclock.getHeader().setRunByName("much too long run-by name exceeding 20 characters");
         final CharArrayWriter  caw  = new CharArrayWriter();
         try {
             RinexClockWriter writer = new RinexClockWriter(caw, "dummy");
@@ -95,8 +95,8 @@ public class RinexClockWriterTest {
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.FIELD_TOO_LONG, oe.getSpecifier());
-            Assertions.assertEquals("much too long run-by name exceeding 40 characters", oe.getParts()[0]);
-            Assertions.assertEquals(40, (Integer) oe.getParts()[1]);
+            Assertions.assertEquals("much too long run-by name exceeding 20 characters", oe.getParts()[0]);
+            Assertions.assertEquals(20, (Integer) oe.getParts()[1]);
         }
     }
 
@@ -212,9 +212,21 @@ public class RinexClockWriterTest {
         Assertions.assertEquals(first.getSatelliteSystem(),        second.getSatelliteSystem());
         Assertions.assertEquals(first.getProgramName(),            second.getProgramName());
         Assertions.assertEquals(first.getRunByName(),              second.getRunByName());
-        Assertions.assertEquals(first.getCreationDateComponents(), second.getCreationDateComponents());
+        // we allow for large gaps  here (one minute) because some test files
+        // have a null creation date (which is probably not really standard-compliant)
+        // so we will end up with the default date set up by Orekit, and it will be
+        // slightly different as the two files will have been created at different times
+        Assertions.assertEquals(0,
+                                first.getCreationDateComponents().offsetFrom(second.getCreationDateComponents()),
+                                60.0);
         Assertions.assertEquals(first.getCreationTimeZone(),       second.getCreationTimeZone());
-        checkDate(first.getCreationDate(), second.getCreationDate());
+        if (first.getCreationDate() != null) {
+            // some reference files have a null creation date (which is probably not really standard-compliant)
+            // but in order to avoid null pointer exceptions while writing the file
+            // Orekit set up a default creation date at run time
+            // se we check the date only if it was non-null in the reference file
+            checkDate(first.getCreationDate(), second.getCreationDate());
+        }
         Assertions.assertEquals(first.getDoi(),                    second.getDoi());
         Assertions.assertEquals(first.getLicense(),                second.getLicense());
         Assertions.assertEquals(first.getStationInformation(),     second.getStationInformation());
@@ -300,24 +312,27 @@ public class RinexClockWriterTest {
         TimeSpanMap.Span<List<ReferenceClock>> spanSecond = second.getFirstSpan();
 
         while (spanFirst != null) {
-            checkDate(spanFirst.getStart(), spanSecond.getStart());
-            checkDate(spanFirst.getEnd(),   spanSecond.getEnd());
-            Assertions.assertEquals(spanFirst.getData().size(), spanSecond.getData().size());
-            for (int i = 0; i < spanFirst.getData().size(); ++i) {
-                final ReferenceClock clockFirst  = spanFirst.getData().get(i);
-                final ReferenceClock clockSecond = spanSecond.getData().get(i);
-                Assertions.assertEquals(clockFirst.getReferenceName(), clockSecond.getReferenceName());
-                Assertions.assertEquals(clockFirst.getClockID(),       clockSecond.getClockID());
-                Assertions.assertEquals(clockFirst.getClockConstraint(), clockSecond.getClockConstraint(),
-                                        1.0e-15 * FastMath.abs(clockFirst.getClockConstraint()));
-                checkDate(clockFirst.getStartDate(), clockSecond.getStartDate());
-                checkDate(clockFirst.getEndDate(), clockSecond.getEndDate());
+            if (spanFirst.getData() != null) {
+                Assertions.assertNotNull(spanSecond.getData());
+                checkDate(spanFirst.getStart(), spanSecond.getStart());
+                checkDate(spanFirst.getEnd(), spanSecond.getEnd());
+                Assertions.assertEquals(spanFirst.getData().size(), spanSecond.getData().size());
+                for (int i = 0; i < spanFirst.getData().size(); ++i) {
+                    final ReferenceClock clockFirst = spanFirst.getData().get(i);
+                    final ReferenceClock clockSecond = spanSecond.getData().get(i);
+                    Assertions.assertEquals(clockFirst.getReferenceName(), clockSecond.getReferenceName());
+                    Assertions.assertEquals(clockFirst.getClockID(), clockSecond.getClockID());
+                    Assertions.assertEquals(clockFirst.getClockConstraint(), clockSecond.getClockConstraint(),
+                                            1.0e-15 * FastMath.abs(clockFirst.getClockConstraint()));
+                    checkDate(clockFirst.getStartDate(), clockSecond.getStartDate());
+                    checkDate(clockFirst.getEndDate(), clockSecond.getEndDate());
+                }
             }
             spanFirst  = spanFirst.next();
             spanSecond = spanSecond.next();
         }
 
-        Assertions.assertNotNull(spanSecond);
+        Assertions.assertNull(spanSecond);
 
     }
 

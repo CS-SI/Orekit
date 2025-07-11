@@ -37,6 +37,9 @@ import java.util.List;
 public abstract class BaseRinexWriter<T extends RinexBaseHeader> {
 
     /** Format for one 2 digits integer field. */
+    protected static final FastLongFormatter TWO_DIGITS_INTEGER = new FastLongFormatter(2, false);
+
+    /** Format for one 2 digits integer field. */
     protected static final FastLongFormatter PADDED_TWO_DIGITS_INTEGER = new FastLongFormatter(2, true);
 
     /** Format for one 3 digits integer field. */

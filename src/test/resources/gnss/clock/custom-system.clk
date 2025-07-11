@@ -1,10 +1,10 @@
-3.04                 C                    G                      RINEX VERSION / TYPE
+3.04                 C                    PYR                    RINEX VERSION / TYPE
 TORINEXC V9.9        USNO                 19960403  001000 UTC   PGM / RUN BY / DATE
 EXAMPLE OF A CLOCK DATA ANALYSIS FILE                            COMMENT
 IN THIS CASE ANALYSIS RESULTS FROM GPS ONLY ARE INCLUDED         COMMENT
 No re-alignment of the clocks has been applied.                  COMMENT
-G    4  C1W L1W C2W L2W                                          SYS / # / OBS TYPES
-   GPS                                                           TIME SYSTEM ID
+P    4  C1W L1W C2W L2W                                          SYS / # / OBS TYPES
+   PYR                                                           TIME SYSTEM ID
     10                                                           LEAP SECONDS
 G CC2NONCC          p1c1bias.hist @ goby.nrl.navy.mil            SYS / DCBS APPLIED
 G PAGES             igs05.atx @ igscb.jpl.nasa.gov               SYS / PCVS APPLIED

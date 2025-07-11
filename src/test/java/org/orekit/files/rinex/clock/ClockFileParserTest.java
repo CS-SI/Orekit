@@ -702,11 +702,14 @@ public class ClockFileParserTest {
         final AbsoluteDate endDate2 = new AbsoluteDate(1994, 7, 14, 21, 59, 0.0, gps);
 
         // Check number of time spans
-        Assertions.assertEquals(3, referenceClocksMap.getSpansNumber());
+        Assertions.assertEquals(5, referenceClocksMap.getSpansNumber());
 
-        // Get the two lists of reference clocks
+        // Get the two non-null lists of reference clocks
+        Assertions.assertNull(referenceClocksMap.get(new AbsoluteDate(1994, 7, 13, 23, 59, 30.0, gps)));
         final List<ReferenceClock> referenceClocks1 = referenceClocksMap.get(new AbsoluteDate(1994, 7, 14, 15, 0, 0.0, gps));
+        Assertions.assertNull(referenceClocksMap.get(new AbsoluteDate(1994, 7, 14, 20, 59, 30.0, gps)));
         final List<ReferenceClock> referenceClocks2 = referenceClocksMap.get(new AbsoluteDate(1994, 7, 14, 21, 30, 0.0, gps));
+        Assertions.assertNull(referenceClocksMap.get(new AbsoluteDate(1994, 7, 14, 21, 59, 30.0, gps)));
 
         // Check total number of reference clocks
         final int totalReferenceClockNumber = referenceClocks1.size() + referenceClocks2.size();
@@ -748,10 +751,14 @@ public class ClockFileParserTest {
         // Parse file
         final String ex = "/gnss/clock/two_same_receivers_and_satellites.clk";
         final RinexClockParser parser = new RinexClockParser();
-        final RinexClock file = parser.parse(new DataSource(getClass().getResource(ex).toURI()));
-
-        Assertions.assertEquals(1, file.getHeader().getNumberOfReceivers());
-        Assertions.assertEquals(1, file.getHeader().getNumberOfSatellites());
+        try {
+         parser.parse(new DataSource(getClass().getResource(ex).toURI()));
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.WRONG_STATIONS_NUMBER, oe.getSpecifier());
+            Assertions.assertEquals(ex.substring(ex.lastIndexOf('/') + 1), oe.getParts()[0]);
+            Assertions.assertEquals(2, oe.getParts()[1]);
+            Assertions.assertEquals(1, oe.getParts()[2]);
+        }
     }
 
     /** Test the clock data type list.  */
@@ -913,7 +920,6 @@ public class ClockFileParserTest {
         }
     }
 
-    /** Wrong clock data type exception throwing test. */
     @Test
     public void testWrongClockDataType() {
         try {
@@ -925,6 +931,38 @@ public class ClockFileParserTest {
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNKNOWN_CLOCK_DATA_TYPE, oe.getSpecifier());
             Assertions.assertEquals("XX", oe.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testWrongStationsNumber() {
+        try {
+            final String ex = "/gnss/clock/wrong_stations_number.clk";
+            final RinexClockParser parser = new RinexClockParser();
+            final InputStream inEntry = getClass().getResourceAsStream(ex);
+            parser.parse(new DataSource("dummy", () -> inEntry));
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.WRONG_STATIONS_NUMBER, oe.getSpecifier());
+            Assertions.assertEquals("dummy", oe.getParts()[0]);
+            Assertions.assertEquals(4, oe.getParts()[1]);
+            Assertions.assertEquals(5, oe.getParts()[2]);
+        }
+    }
+
+    @Test
+    public void testWrongSatellitesNumber() {
+        try {
+            final String ex = "/gnss/clock/wrong_satellites_number.clk";
+            final RinexClockParser parser = new RinexClockParser();
+            final InputStream inEntry = getClass().getResourceAsStream(ex);
+            parser.parse(new DataSource("dummy", () -> inEntry));
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.WRONG_SATELLITES_NUMBER, oe.getSpecifier());
+            Assertions.assertEquals("dummy", oe.getParts()[0]);
+            Assertions.assertEquals(28, oe.getParts()[1]);
+            Assertions.assertEquals(27, oe.getParts()[2]);
         }
     }
 
@@ -1056,9 +1094,11 @@ public class ClockFileParserTest {
         Assertions.assertEquals(analysisCenterID, file.getHeader().getAnalysisCenterID());
         Assertions.assertEquals(analysisCenterName, file.getHeader().getAnalysisCenterName());
         Assertions.assertEquals(externalClockReference, file.getHeader().getExternalClockReference());
-        Assertions.assertEquals(creationDateComponents, file.getHeader().getCreationDateComponents());
+        if (creationDateComponents != null) {
+             Assertions.assertEquals(creationDateComponents, file.getHeader().getCreationDateComponents());
+        }
         Assertions.assertEquals(creationZoneString, file.getHeader().getCreationTimeZone());
-        if (null != creationDate) {
+        if (creationDate != null) {
             Assertions.assertEquals(file.getHeader().getCreationDate(), creationDate);
         }
         Assertions.assertEquals(numberOfLeapSeconds, file.getHeader().getLeapSeconds());

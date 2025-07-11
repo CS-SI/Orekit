@@ -31,6 +31,8 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -102,8 +104,19 @@ public abstract class RinexBaseHeader {
      * @param fileType file type
      */
     protected RinexBaseHeader(final RinexFileType fileType) {
+
         this.fileType      = fileType;
         this.formatVersion = Double.NaN;
+
+        // set default creation date to now
+        final ZonedDateTime now = ZonedDateTime.now(ZoneId.of("UTC"));
+        setCreationDateComponents(new DateTimeComponents(new DateComponents(now.getYear(),
+                                                                            now.getMonthValue(),
+                                                                            now.getDayOfMonth()),
+                                                         new TimeComponents(now.getHour(),
+                                                                            now.getMinute(),
+                                                                            now.getSecond())));
+
     }
 
     /**

@@ -947,3 +947,9 @@ EXPUNGED_SPAN=_SPAN=les données à la date {0} ont déjà été effacées autom
 
 # missing time system definition in file {0}
 MISSING_TIME_SYSTEM_DEFINITION=définition de temps système manquante dans le fichier {0}
+
+# wrong stations numbers in file {0}, expected {1}, got {2}
+WRONG_STATIONS_NUMBER=nombre de stations erroné dans le fichier {0}, {1} attendues, {2} définies
+
+# wrong satellites numbers in file {0}, expected {1}, got {2}
+WRONG_SATELLITES_NUMBER=nombre de satellites erroné dans le fichier {0}, {1} attendus, {2} définis

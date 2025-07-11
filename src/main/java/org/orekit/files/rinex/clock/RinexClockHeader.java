@@ -105,19 +105,18 @@ public class RinexClockHeader extends RinexClockObsBaseHeader {
     public RinexClockHeader() {
         super(RinexFileType.CLOCK);
         this.frameName               = "";
-        this.systemObservationTypes  = new HashMap<>();
-        this.clockDataTypes          = new ArrayList<>();
+        this.systemObservationTypes = new HashMap<>();
+        this.clockDataTypes         = new ArrayList<>();
         this.timeSystem              = null;
         this.stationIdentifier       = "";
         this.stationName             = "";
         this.externalClockReference  = "";
         this.analysisCenterID        = "";
         this.analysisCenterName      = "";
-        this.referenceClocks         = new TimeSpanMap<>(null);
-        this.leapSecondsGNSS         = 0;
-        this.receivers               = new ArrayList<>();
-        this.satellites              = new ArrayList<>();
-        this.mergedSystems           = null;
+        this.referenceClocks        = new TimeSpanMap<>(null);
+        this.leapSecondsGNSS        = 0;
+        this.receivers              = new ArrayList<>();
+        this.satellites             = new ArrayList<>();
     }
 
     /** {@inheritDoc} */
@@ -265,11 +264,12 @@ public class RinexClockHeader extends RinexClockObsBaseHeader {
     /** Add a list of reference clocks which will be used after a specified date.
      * If the reference map has not been already created, it will be.
      * @param referenceClockList the reference clock list
-     * @param startDate the date the list will be valid after.
+     * @param startDate          start date of list validity
+     * @param endDate            end date of validity
      */
     public void addReferenceClockList(final List<ReferenceClock> referenceClockList,
-                                      final AbsoluteDate startDate) {
-        referenceClocks.addValidAfter(referenceClockList, startDate, false);
+                                      final AbsoluteDate startDate, final AbsoluteDate endDate) {
+        referenceClocks.addValidBetween(referenceClockList, startDate, endDate);
     }
 
     /** Getter for the different observation type for each satellite system.

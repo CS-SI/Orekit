@@ -15,7 +15,7 @@ USN  USNO USING GIPSY/OASIS-II                                   ANALYSIS CENTER
 USNO      40451S003                           -.123456789012E+00 ANALYSIS CLK REF
      1 1994 07 14 21  0  0.000000 1994 07 14 21 59  0.000000     # OF CLK REF
 TIDB      50103M108                          -0.123456789012E+00 ANALYSIS CLK REF
-     4    ITRF96                                                 # OF SOLN STA / TRF
+     5    ITRF96                                                 # OF SOLN STA / TRF
 GOLD      40405S031            1234567890 -1234567890 -1234567890SOLN STA NAME / NUM
 AREQ      42202M005           -1234567890  1234567890 -1234567890SOLN STA NAME / NUM
 TIDB      50103M108            1234567890 -1234567890  1234567890SOLN STA NAME / NUM

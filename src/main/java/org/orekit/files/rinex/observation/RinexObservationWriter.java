@@ -63,9 +63,6 @@ public class RinexObservationWriter extends BaseRinexWriter<RinexObservationHead
     /** Format for one 1 digit integer field. */
     private static final FastLongFormatter ONE_DIGIT_INTEGER = new FastLongFormatter(1, false);
 
-    /** Format for one 2 digits integer field. */
-    private static final FastLongFormatter TWO_DIGITS_INTEGER = new FastLongFormatter(2, false);
-
     /** Format for one 8.3 digits float field. */
     private static final FastDoubleFormatter EIGHT_THREE_DIGITS_FLOAT = new FastDoubleFormatter(8, 3);
 

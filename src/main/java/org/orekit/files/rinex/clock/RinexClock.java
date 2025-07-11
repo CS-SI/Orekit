@@ -227,7 +227,7 @@ public class RinexClock extends RinexFile<RinexClockHeader> {
             TimeSpanMap.Span<List<ReferenceClock>> span = rc.getHeader().getReferenceClocks().getFirstSpan();
             while (span != null) {
                 if (span.getData() != null) {
-                    spliced.getHeader().addReferenceClockList(span.getData(), span.getStart());
+                    spliced.getHeader().addReferenceClockList(span.getData(), span.getStart(), span.getEnd());
                 }
                 span = span.next();
             }

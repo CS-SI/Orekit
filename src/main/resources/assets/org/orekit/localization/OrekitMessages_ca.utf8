@@ -947,3 +947,9 @@ EXPUNGED_SPAN=dada a la data {0} ha estat automàticament esborrada
 
 # missing time system definition in file {0}
 MISSING_TIME_SYSTEM_DEFINITION=
+
+# wrong stations numbers in file {0}, expected {1}, got {2}
+WRONG_STATIONS_NUMBER=
+
+# wrong satellites numbers in file {0}, expected {1}, got {2}
+WRONG_SATELLITES_NUMBER=

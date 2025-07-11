@@ -54,6 +54,9 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
     /** Format for one 4.2 digits float field. */
     private static final FastDoubleFormatter FOUR_TWO_DIGITS_FLOAT = new FastDoubleFormatter(4, 2);
 
+    /** Format for one 9.6 digits float field. */
+    private static final FastDoubleFormatter NINE_SIX_DIGITS_FLOAT = new FastDoubleFormatter(9, 6);
+
     /** Format for one 10.6 digits float field. */
     private static final FastDoubleFormatter TEN_SIX_DIGITS_FLOAT = new FastDoubleFormatter(10, 6);
 
@@ -148,7 +151,7 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
         outputField(NINE_TWO_DIGITS_FLOAT, header.getFormatVersion(), 9);
         outputField("", 20, true);
         outputField("C", 40, true);
-        outputField(header.getSatelliteSystem().getKey(), 41);
+        outputField(header.getSatelliteSystem() == null ? ' ' : header.getSatelliteSystem().getKey(), 41);
         finishHeaderLine(CommonLabel.VERSION);
 
         // PGM / RUN BY / DATE
@@ -167,15 +170,17 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
         // SYS / # / OBS TYPES
         for (Map.Entry<SatelliteSystem, List<ObservationType>> entry : header.getSystemObservationTypes().entrySet()) {
             outputField(entry.getKey().getKey(), 1);
+            outputField(' ', 3);
             outputField(THREE_DIGITS_INTEGER, entry.getValue().size(), 6);
             for (final ObservationType type : entry.getValue()) {
                 int next = getColumn() + 4;
                 if (exceedsHeaderLength(next)) {
                     // we need to set up a continuation line
                     finishHeaderLine(CommonLabel.SYS_NB_TYPES_OF_OBSERV);
-                    outputField("", 6, true);
+                    outputField(' ', 6);
                     next = getColumn() + 4;
                 }
+                outputField(' ', next - 3);
                 outputField(type.getName(), next, false);
             }
             finishHeaderLine(CommonLabel.SYS_NB_TYPES_OF_OBSERV);
@@ -208,7 +213,7 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
             outputField(appliedPCVS.getSatelliteSystem().getKey(),  1);
             outputField(' ',                                        2);
             outputField(appliedPCVS.getProgPCVS(),                 19, true);
-            outputField(' ',                                        2);
+            outputField(' ',                                       20);
             outputField(appliedPCVS.getSourcePCVS(),               60, true);
             finishHeaderLine(CommonLabel.SYS_PCVS_APPLIED);
         }
@@ -221,35 +226,35 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
         finishHeaderLine(ClockLabel.NB_TYPES_OF_DATA);
 
         // STATION NAME / NUM
-        if (header.getStationName() != null) {
+        if (!header.getStationName().isEmpty()) {
             outputField(header.getStationName(), 4, true);
             outputField(' ', 5);
             outputField(header.getStationIdentifier(), 25, true);
+            finishHeaderLine(ClockLabel.STATION_NAME_NUM);
         }
-        finishHeaderLine(ClockLabel.STATION_NAME_NUM);
 
         // STATION CLK REF
-        if (header.getExternalClockReference() != null) {
+        if (!header.getExternalClockReference().isEmpty()) {
             outputField(header.getExternalClockReference(), 60, true);
+            finishHeaderLine(ClockLabel.STATION_CLK_REF);
         }
-        finishHeaderLine(ClockLabel.STATION_CLK_REF);
 
         // ANALYSIS CENTER
-        if (header.getAnalysisCenterName() != null) {
+        if (!header.getAnalysisCenterName().isEmpty()) {
             outputField(header.getAnalysisCenterID(),   3, true);
             outputField("", 5, true);
             outputField(header.getAnalysisCenterName(), 60, true);
+            finishHeaderLine(ClockLabel.ANALYSIS_CENTER);
         }
-        finishHeaderLine(ClockLabel.ANALYSIS_CENTER);
 
         // # OF CLK REF / ANALYSIS CLK REF
         for (TimeSpanMap.Span<List<ReferenceClock>> span = header.getReferenceClocks().getFirstSpan();
-             span.getData() != null;
+             span != null;
              span = span.next()) {
             if (span.getData() != null) {
                 outputField(SIX_DIGITS_INTEGER, span.getData().size(), 6);
                 if (span.getStart().isFinite()) {
-                    outputField("", 7, true);
+                    outputField(' ', 7);
                     final DateTimeComponents startDtc = span.getStart().getComponents(header.getTimeScale());
                     final DateTimeComponents endDtc   = span.getEnd().getComponents(header.getTimeScale());
                     outputField(FOUR_DIGITS_INTEGER, startDtc.getDate().getYear(), 11);
@@ -279,6 +284,7 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
                     outputField(clock.getReferenceName(), 4, true);
                     outputField(' ', 5);
                     outputField(clock.getClockID(), 25, true);
+                    outputField(' ', 40);
                     if (clock.getClockConstraint() != 0.0) {
                         write1912(clock.getClockConstraint());
                     }
@@ -305,7 +311,7 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
             outputField(ELEVEN_DIGITS_INTEGER, FastMath.round(MILLIMETER.fromSI(receiver.getY())), 48);
             outputField(' ', 49);
             outputField(ELEVEN_DIGITS_INTEGER, FastMath.round(MILLIMETER.fromSI(receiver.getZ())), 60);
-            finishHeaderLine(ClockLabel.NB_OF_SOLN_STA_TRF);
+            finishHeaderLine(ClockLabel.SOLN_STA_NAME_NUM);
         }
 
         // # OF SOLN SATS
@@ -315,6 +321,7 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
         }
 
         // PRN LIST
+        boolean wrotePRN = false;
         for (final SatInSystem satInSystem : header.getSatellites()) {
             int next = getColumn() + 4;
             if (exceedsHeaderLength(next)) {
@@ -323,8 +330,11 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
                 next = 4;
             }
             outputField(satInSystem.toString(), next, true);
+            wrotePRN = true;
         }
-        finishHeaderLine(ClockLabel.PRN_LIST);
+        if (wrotePRN) {
+            finishHeaderLine(ClockLabel.PRN_LIST);
+        }
 
         // END OF HEADER
         writeHeaderLine("", CommonLabel.END);
@@ -342,7 +352,7 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
         outputField(FOUR_TWO_DIGITS_FLOAT, header.getFormatVersion(), 4);
         outputField("",  21, true);
         outputField("C", 42, true);
-        outputField(header.getSatelliteSystem().getKey(), 43);
+        outputField(header.getSatelliteSystem() == null ? ' ' : header.getSatelliteSystem().getKey(), 43);
         finishHeaderLine(CommonLabel.VERSION);
 
         // PGM / RUN BY / DATE
@@ -361,6 +371,7 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
         // SYS / # / OBS TYPES  xxxxxx
         for (Map.Entry<SatelliteSystem, List<ObservationType>> entry : header.getSystemObservationTypes().entrySet()) {
             outputField(entry.getKey().getKey(), 1);
+            outputField(' ', 3);
             outputField(THREE_DIGITS_INTEGER, entry.getValue().size(), 6);
             outputField(' ', 8);
             for (final ObservationType type : entry.getValue()) {
@@ -368,10 +379,11 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
                 if (exceedsHeaderLength(next)) {
                     // we need to set up a continuation line
                     finishHeaderLine(CommonLabel.SYS_NB_TYPES_OF_OBSERV);
-                    outputField("", 8, true);
+                    outputField(' ', 8);
                     next = getColumn() + 4;
                 }
-                outputField(type.getName(), next, false);
+                outputField(type.getName(), next - 1, false);
+                outputField(' ', next);
             }
             finishHeaderLine(CommonLabel.SYS_NB_TYPES_OF_OBSERV);
         }
@@ -422,35 +434,35 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
         finishHeaderLine(ClockLabel.NB_TYPES_OF_DATA);
 
         // STATION NAME / NUM
-        if (header.getStationName() != null) {
+        if (!header.getStationName().isEmpty()) {
             outputField(header.getStationName(), 9, true);
             outputField(' ', 10);
             outputField(header.getStationIdentifier(), 30, true);
+            finishHeaderLine(ClockLabel.STATION_NAME_NUM);
         }
-        finishHeaderLine(ClockLabel.STATION_NAME_NUM);
 
         // STATION CLK REF
-        if (header.getExternalClockReference() != null) {
+        if (!header.getExternalClockReference().isEmpty()) {
             outputField(header.getExternalClockReference(), 65, true);
+            finishHeaderLine(ClockLabel.STATION_CLK_REF);
         }
-        finishHeaderLine(ClockLabel.STATION_CLK_REF);
 
         // ANALYSIS CENTER
-        if (header.getAnalysisCenterName() != null) {
+        if (!header.getAnalysisCenterName().isEmpty()) {
             outputField(header.getAnalysisCenterID(),   3, true);
             outputField("", 5, true);
             outputField(header.getAnalysisCenterName(), 60, true);
+            finishHeaderLine(ClockLabel.ANALYSIS_CENTER);
         }
-        finishHeaderLine(ClockLabel.ANALYSIS_CENTER);
 
         // # OF CLK REF / ANALYSIS CLK REF
         for (TimeSpanMap.Span<List<ReferenceClock>> span = header.getReferenceClocks().getFirstSpan();
-             span.getData() != null;
+             span != null;
              span = span.next()) {
             if (span.getData() != null) {
                 outputField(SIX_DIGITS_INTEGER, span.getData().size(), 6);
                 if (span.getStart().isFinite()) {
-                    outputField("", 7, true);
+                    outputField(' ', 7);
                     final DateTimeComponents startDtc = span.getStart().getComponents(header.getTimeScale());
                     final DateTimeComponents endDtc   = span.getEnd().getComponents(header.getTimeScale());
                     outputField(FOUR_DIGITS_INTEGER, startDtc.getDate().getYear(), 11);
@@ -462,7 +474,8 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
                     outputField(PADDED_TWO_DIGITS_INTEGER, startDtc.getTime().getHour(), 20);
                     outputField(' ', 21);
                     outputField(PADDED_TWO_DIGITS_INTEGER, startDtc.getTime().getMinute(), 23);
-                    outputField(TEN_SIX_DIGITS_FLOAT, startDtc.getTime().getSecond(), 33);
+                    outputField(' ', 24);
+                    outputField(TEN_SIX_DIGITS_FLOAT, startDtc.getTime().getSecond(), 34);
                     outputField(' ', 36);
                     outputField(FOUR_DIGITS_INTEGER, endDtc.getDate().getYear(), 40);
                     outputField(' ', 41);
@@ -473,13 +486,15 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
                     outputField(PADDED_TWO_DIGITS_INTEGER, endDtc.getTime().getHour(), 49);
                     outputField(' ', 50);
                     outputField(PADDED_TWO_DIGITS_INTEGER, endDtc.getTime().getMinute(), 52);
-                    outputField(TEN_SIX_DIGITS_FLOAT, endDtc.getTime().getSecond(), 62);
+                    outputField(' ', 53);
+                    outputField(TEN_SIX_DIGITS_FLOAT, endDtc.getTime().getSecond(), 63);
                 }
                 finishHeaderLine(ClockLabel.NB_OF_CLK_REF);
                 for (final ReferenceClock clock : span.getData()) {
                     outputField(clock.getReferenceName(), 9, true);
                     outputField(' ', 10);
                     outputField(clock.getClockID(), 30, true);
+                    outputField(' ', 45);
                     if (clock.getClockConstraint() != 0.0) {
                         write1912(clock.getClockConstraint());
                     }
@@ -506,7 +521,7 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
             outputField(ELEVEN_DIGITS_INTEGER, FastMath.round(MILLIMETER.fromSI(receiver.getY())), 53);
             outputField(' ', 54);
             outputField(ELEVEN_DIGITS_INTEGER, FastMath.round(MILLIMETER.fromSI(receiver.getZ())), 65);
-            finishHeaderLine(ClockLabel.NB_OF_SOLN_STA_TRF);
+            finishHeaderLine(ClockLabel.SOLN_STA_NAME_NUM);
         }
 
         // # OF SOLN SATS
@@ -516,6 +531,7 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
         }
 
         // PRN LIST
+        boolean wrotePRN = false;
         for (final SatInSystem satInSystem : header.getSatellites()) {
             int next = getColumn() + 4;
             if (exceedsHeaderLength(next)) {
@@ -524,8 +540,11 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
                 next = 4;
             }
             outputField(satInSystem.toString(), next, true);
+            wrotePRN = true;
         }
-        finishHeaderLine(ClockLabel.PRN_LIST);
+        if (wrotePRN) {
+            finishHeaderLine(ClockLabel.PRN_LIST);
+        }
 
         // END OF HEADER
         writeHeaderLine("", CommonLabel.END);
@@ -545,6 +564,7 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
      * @exception IOException if an I/O error occurs.
      */
     public void writeClockDataLine(final ClockDataLine clockDataLine) throws IOException {
+        checkHeaderWritten();
         if (getHeader().isBefore304()) {
             outputField(clockDataLine.getDataType().name(), 2, true);
             outputField(' ', 3);
@@ -567,8 +587,8 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
             if (clockDataLine.getNumberOfValues() > 1) {
                 outputField(' ', 60);
                 write1912(clockDataLine.getClockBiasSigma());
-                finishLine();
                 if (clockDataLine.getNumberOfValues() > 2) {
+                    finishLine();
                     write1912(clockDataLine.getClockRate());
                     if (clockDataLine.getNumberOfValues() > 3) {
                         outputField(' ', 20);
@@ -599,15 +619,17 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
             outputField(PADDED_TWO_DIGITS_INTEGER, epoch.getTime().getHour(), 26);
             outputField(' ', 27);
             outputField(PADDED_TWO_DIGITS_INTEGER, epoch.getTime().getMinute(), 29);
-            outputField(TEN_SIX_DIGITS_FLOAT, epoch.getTime().getSecond(), 39);
-            outputField(THREE_DIGITS_INTEGER, clockDataLine.getNumberOfValues(), 42);
+            outputField(' ', 30);
+            outputField(NINE_SIX_DIGITS_FLOAT, epoch.getTime().getSecond(), 39);
+            outputField(' ', 40);
+            outputField(TWO_DIGITS_INTEGER, clockDataLine.getNumberOfValues(), 42);
             outputField(' ', 45);
             write1912(clockDataLine.getClockBias());
             if (clockDataLine.getNumberOfValues() > 1) {
-                outputField(' ', 65);
+                outputField(' ', 66);
                 write1912(clockDataLine.getClockBiasSigma());
-                finishLine();
                 if (clockDataLine.getNumberOfValues() > 2) {
+                    finishLine();
                     outputField(' ', 3);
                     write1912(clockDataLine.getClockRate());
                     if (clockDataLine.getNumberOfValues() > 3) {
@@ -625,6 +647,7 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
                 }
             }
         }
+        finishLine();
     }
 
     /** Container for clock data lines iterator. */
@@ -670,7 +693,7 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
          * @return date of next entry
          */
         AbsoluteDate nextDate() {
-            return index <  lines.size() ? lines.get(index++).getDate() : AbsoluteDate.FUTURE_INFINITY;
+            return index <  lines.size() ? lines.get(index).getDate() : AbsoluteDate.FUTURE_INFINITY;
         }
 
     }
