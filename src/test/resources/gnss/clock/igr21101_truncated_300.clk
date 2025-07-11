@@ -8,9 +8,15 @@ THE FOLLOWING REFERENCE CLOCKS WERE USED BY ACs:            COMMENT
 THE COMBINED CLOCKS ARE ALIGNED TO GPS TIME                 COMMENT             
 USING THE SATELLITE BROADCAST EPHEMERIDES                   COMMENT             
 All clocks have been re-aligned to the IGS time scale: IGST COMMENT             
-    18                                                      LEAP SECONDS        
+G   16 C1W L1W C2W L2W  C1  C2  C5  C6  C7  C8  P1  P2  L1  SYS / # / OBS TYPES
+        L2  LA  LB                                          SYS / # / OBS TYPES
+    18                                                      LEAP SECONDS
      2    AR    AS                                          # / TYPES OF DATA   
-IGS  IGSACC @ GA MIT                                        ANALYSIS CENTER     
+USNO 40451S003                                              STATION NAME / NUM
+UTC(USNO) MASTER CLOCK VIA CONTINUOUS CABLE MONITOR         STATION CLK REF
+IGS  IGSACC @ GA MIT                                        ANALYSIS CENTER
+     1 2020 06 15  0  0  0.000000 2025 06 15 20 59  0.000000# OF CLK REF
+USNO 40451S003                          -0.123456789012E+00 ANALYSIS CLK REF
    18     IGb14 : AN UPDATE OF IGS14                        # OF SOLN STA / TRF 
 ABMF 97103M001            2919785789 -5383744954  1774604865SOLN STA NAME / NUM 
 ALBH 40129M003           -2341333112 -3539049534  4745791252SOLN STA NAME / NUM 

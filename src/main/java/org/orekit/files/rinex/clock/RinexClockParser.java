@@ -304,9 +304,13 @@ public class RinexClockParser {
                                            SatelliteSystem.parseSatelliteSystem(ParsingUtils.parseString(line, 0, 1));
                                        parseInfo.remainingObsTypes = ParsingUtils.parseInt(line, 3, 3);
                                    }
-                                   for (int i = 0; i < 14 && parseInfo.remainingObsTypes > 0; ++i) {
+                                   for (int i = 0;
+                                        i < (header.isBefore304() ? 13 : 14) && parseInfo.remainingObsTypes > 0;
+                                        ++i) {
                                        parseInfo.remainingObsTypes--;
-                                       final String obsType = ParsingUtils.parseString(line, 8 + 4 * i, 3);
+                                       final String obsType = ParsingUtils.parseString(line,
+                                                                                       (header.isBefore304() ? 7 : 8) + 4 * i,
+                                                                                       3);
                                        header.addSystemObservationType(parseInfo.currentSatelliteSystem,
                                                                        parseInfo.typeBuilder.apply(obsType));
                                    }

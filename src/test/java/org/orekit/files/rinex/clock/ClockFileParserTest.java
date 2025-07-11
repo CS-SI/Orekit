@@ -344,11 +344,11 @@ public class ClockFileParserTest {
                           new RinexComment( 8, "THE COMBINED CLOCKS ARE ALIGNED TO GPS TIME"),
                           new RinexComment( 9, "USING THE SATELLITE BROADCAST EPHEMERIDES"),
                           new RinexComment(10, "All clocks have been re-aligned to the IGS time scale: IGST"));
-        final String stationName = "";
-        final String stationIdentifier = "";
+        final String stationName = "USNO";
+        final String stationIdentifier = "40451S003";
         final String analysisCenterID = "IGS";
         final String analysisCenterName = "IGSACC @ GA MIT";
-        final String externalClockReference = "";
+        final String externalClockReference = "UTC(USNO) MASTER CLOCK VIA CONTINUOUS CABLE MONITOR";
         final DateTimeComponents creationDateComponents = null;
         final String creationZoneString = "";
         final AbsoluteDate creationDate = null;
@@ -357,7 +357,7 @@ public class ClockFileParserTest {
         final int numberOfDBCS = 0;
         final int numberOfPCVS = 1;
         final int numberOfDataTypes = 2;
-        final int numberOfObservationTypes = 0;
+        final int numberOfObservationTypes = 16;
         final String frameString = "IGb14";
         final int numberOfReceivers = 18;
         final int numberOfSatellites = 31;

@@ -401,7 +401,7 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
         }
 
         // LEAP SECONDS GNSS
-        if (header.getLeapSeconds() > 0) {
+        if (header.getLeapSecondsGNSS() > 0) {
             outputField(SIX_DIGITS_INTEGER, header.getLeapSecondsGNSS(), 6);
             finishHeaderLine(ClockLabel.LEAP_SECONDS_GNSS);
         }

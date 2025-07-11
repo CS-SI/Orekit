@@ -133,8 +133,14 @@ public class RinexClockWriterTest {
 
     @DefaultDataContext
     @Test
-    public void testRoundTripRinex304() throws IOException {
+    public void testRoundTripRinex304A() throws IOException {
         doTestRoundTrip("gnss/clock/Exple_analysis_1_304.clk");
+    }
+
+    @DefaultDataContext
+    @Test
+    public void testRoundTripRinex304B() throws IOException {
+        doTestRoundTrip("gnss/clock/Exple_calibration_304.clk");
     }
 
     @DefaultDataContext
@@ -269,8 +275,10 @@ public class RinexClockWriterTest {
             Assertions.assertEquals(first.getClockDataTypes().get(i), second.getClockDataTypes().get(i));
         }
         Assertions.assertEquals(first.getLeapSecondsGNSS(), second.getLeapSecondsGNSS());
-        Assertions.assertEquals(first.getFrame().getName(), second.getFrame().getName());
-        Assertions.assertEquals(first.getFrameName(),       second.getFrameName());
+        if (first.getFrame() != null) {
+            Assertions.assertEquals(first.getFrame().getName(), second.getFrame().getName());
+            Assertions.assertEquals(first.getFrameName(),       second.getFrameName());
+        }
         Assertions.assertEquals(first.getNumberOfReceivers(), second.getNumberOfReceivers());
         for (int i = 0; i < first.getNumberOfReceivers(); ++i) {
             checkReceivers(first.getReceivers().get(i), second.getReceivers().get(i));
