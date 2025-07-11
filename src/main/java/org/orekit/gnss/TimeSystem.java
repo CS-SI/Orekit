@@ -50,6 +50,6 @@ public interface TimeSystem {
      * @param timeScales the set of time scales to use
      * @return the time scale corresponding to time system in the set of time scales
      */
-    TimeScale getTimeScale(final TimeScales timeScales);
+    TimeScale getTimeScale(TimeScales timeScales);
 
 }

@@ -25,7 +25,7 @@ import org.orekit.time.TimeStamped;
  * The latter can be set with a default value (UTC). Caution is recommended.
  * @since 14.0
  */
-public class ClockDataLine implements TimeStamped{
+public class ClockDataLine implements TimeStamped {
 
     /** Clock data type. */
     private final ClockDataType dataType;
