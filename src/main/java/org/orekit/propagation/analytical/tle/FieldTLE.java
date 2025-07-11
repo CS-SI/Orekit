@@ -40,7 +40,6 @@ import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationUtil;
 import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
 import org.orekit.propagation.conversion.osc2mean.TLETheory;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
@@ -229,11 +228,8 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
         final int    dayInYear   = ParseUtils.parseInteger(line1, 20, 3);
         final int dayFractionDigits = ParseUtils.parseInteger(line1, 24, 8);
         final long nanoSecondsCount = dayFractionDigits * (long) Constants.JULIAN_DAY * 10;
-        final TimeOffset dayFraction = TimeOffset.NANOSECOND.multiply(nanoSecondsCount);
-        epoch = new FieldAbsoluteDate<>(field,
-          new DateComponents(year, dayInYear),
-          new TimeComponents(dayFraction),
-          utc);
+        final TimeOffset dayFraction = new TimeOffset(nanoSecondsCount, TimeOffset.NANOSECOND);
+        epoch = new FieldAbsoluteDate<>(field, new DateComponents(year, dayInYear), new TimeComponents(dayFraction), utc);
 
         // mean motion development
         // converted from rev/day, 2 * rev/day^2 and 6 * rev/day^3 to rad/s, rad/s^2 and rad/s^3
