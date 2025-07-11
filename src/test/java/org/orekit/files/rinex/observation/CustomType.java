@@ -24,11 +24,11 @@ import org.orekit.gnss.SignalCode;
 
 import java.util.Collections;
 
-class CustomType implements ObservationType {
+public class CustomType implements ObservationType {
 
     private final String name;
 
-    CustomType(final String name) {
+    public CustomType(final String name) {
         this.name = name;
     }
 

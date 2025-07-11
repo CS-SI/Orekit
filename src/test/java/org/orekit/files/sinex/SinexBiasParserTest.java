@@ -28,6 +28,7 @@ import org.orekit.Utils;
 import org.orekit.data.DataSource;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.PredefinedObservationType;
+import org.orekit.gnss.PredefinedTimeSystem;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
@@ -78,11 +79,11 @@ public class SinexBiasParserTest {
         String determinationMethod = dcbDesc.getDeterminationMethod();
         int observationSampling = dcbDesc.getObservationSampling();
         int parameterSpacing = dcbDesc.getParameterSpacing();
-        Assertions.assertEquals(timeSystem, TimeSystem.GPS);
-        Assertions.assertEquals(biasMode, "RELATIVE");
-        Assertions.assertEquals(determinationMethod, "INTER-FREQUENCY_BIAS_ESTIMATION");
-        Assertions.assertEquals(parameterSpacing, 86400);
-        Assertions.assertEquals(observationSampling, 30);
+        Assertions.assertEquals(PredefinedTimeSystem.GPS, timeSystem);
+        Assertions.assertEquals("RELATIVE", biasMode);
+        Assertions.assertEquals("INTER-FREQUENCY_BIAS_ESTIMATION", determinationMethod);
+        Assertions.assertEquals(86400, parameterSpacing);
+        Assertions.assertEquals(30, observationSampling);
     }
     
     @Test
@@ -95,11 +96,11 @@ public class SinexBiasParserTest {
         String determinationMethod = dcbDesc.getDeterminationMethod();
         int observationSampling = dcbDesc.getObservationSampling();
         int parameterSpacing = dcbDesc.getParameterSpacing();
-        Assertions.assertEquals(timeSystem, TimeSystem.GPS);
-        Assertions.assertEquals(biasMode, "RELATIVE");
-        Assertions.assertEquals(determinationMethod, "INTER-FREQUENCY_BIAS_ESTIMATION");
-        Assertions.assertEquals(parameterSpacing, 86400);
-        Assertions.assertEquals(observationSampling, 30);
+        Assertions.assertEquals(PredefinedTimeSystem.GPS, timeSystem);
+        Assertions.assertEquals("RELATIVE", biasMode);
+        Assertions.assertEquals("INTER-FREQUENCY_BIAS_ESTIMATION", determinationMethod);
+        Assertions.assertEquals(86400, parameterSpacing);
+        Assertions.assertEquals(30, observationSampling);
     }
     
     @Test
@@ -175,7 +176,7 @@ public class SinexBiasParserTest {
         
                 
         // Test getSatelliteSystem
-        Assertions.assertEquals(satDsb.getSatellite().getSystem(), SatelliteSystem.GPS);
+        Assertions.assertEquals(SatelliteSystem.GPS, satDsb.getSatellite().getSystem());
         
         // Test getPRN
         Assertions.assertEquals(1, satDsb.getSatellite().getPRN());
@@ -207,7 +208,7 @@ public class SinexBiasParserTest {
         Assertions.assertTrue(sinexBias.getStationsDsb().isEmpty());
 
         final TimeSystem ts = sinexBias.getDescription().getTimeSystem();
-        Assertions.assertEquals(TimeSystem.GPS, ts);
+        Assertions.assertEquals(PredefinedTimeSystem.GPS, ts);
         final TimeScale timeScale = ts.getTimeScale(TimeScalesFactory.getTimeScales());
 
         // Observations test
@@ -251,7 +252,7 @@ public class SinexBiasParserTest {
         Assertions.assertTrue(sinexBias.getStationsDsb().isEmpty());
 
         final TimeSystem ts = sinexBias.getDescription().getTimeSystem();
-        Assertions.assertEquals(TimeSystem.GALILEO, ts);
+        Assertions.assertEquals(PredefinedTimeSystem.GALILEO, ts);
         final TimeScale timeScale = ts.getTimeScale(TimeScalesFactory.getTimeScales());
 
         Assertions.assertEquals(1, staOsb.getAvailableSatelliteSystems().size());

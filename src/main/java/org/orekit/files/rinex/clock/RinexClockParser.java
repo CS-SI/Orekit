@@ -44,6 +44,7 @@ import org.orekit.frames.Frame;
 import org.orekit.gnss.IGSUtils;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.PredefinedObservationType;
+import org.orekit.gnss.PredefinedTimeSystem;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
@@ -83,6 +84,11 @@ public class RinexClockParser {
      */
     private final Function<? super String, ? extends ObservationType> typeBuilder;
 
+    /** Mapper from string to time system.
+     * @since 14.0
+     */
+    private final Function<? super String, ? extends TimeSystem> timeSystemBuilder;
+
     /** Set of time scales. */
     private final TimeScales timeScales;
 
@@ -90,33 +96,35 @@ public class RinexClockParser {
      * <p>
      * This constructor uses the {@link DataContext#getDefault() default data context}
      * and {@link IGSUtils#guessFrame(String)}, it recognizes only {@link
-     * PredefinedObservationType} and {@link SatelliteSystem} with non-null
-     * {@link SatelliteSystem#getObservationTimeScale() time scales} (i.e., neither
-     * user-defined, nor {@link SatelliteSystem#SBAS}, nor {@link SatelliteSystem#MIXED}).
+     * org.orekit.gnss.PredefinedObservationType} and {@link org.orekit.gnss.PredefinedTimeSystem}.
      * </p>
-     * @see #RinexClockParser(Function, Function, TimeScales)
+     * @see #RinexClockParser(Function, Function, Function, TimeScales)
      */
     @DefaultDataContext
     public RinexClockParser() {
         this(IGSUtils::guessFrame,
              PredefinedObservationType::valueOf,
+             PredefinedTimeSystem::parseTimeSystem,
              DataContext.getDefault().getTimeScales());
     }
 
     /** Constructor, build the IGS clock file parser.
-     * @param frameBuilder is a function that can construct a frame from a clock file
-     *                     coordinate system string. The coordinate system can be
-     *                     any 5 characters string e.g., ITR92, IGb08.
-     * @param typeBuilder  mapper from string to the observation type
-     * @param timeScales   the set of time scales used for parsing dates.
+     * @param frameBuilder      is a function that can construct a frame from a clock file
+     *                          coordinate system string. The coordinate system can be
+     *                          any 5 characters string e.g., ITR92, IGb08.
+     * @param typeBuilder       mapper from string to the observation type
+     * @param timeSystemBuilder mapper from string to time system (useful for user-defined time systems)
+     * @param timeScales        the set of time scales used for parsing dates.
      * @since 14.0
      */
     public RinexClockParser(final Function<? super String, ? extends Frame> frameBuilder,
                             final Function<? super String, ? extends ObservationType> typeBuilder,
+                            final Function<? super String, ? extends TimeSystem> timeSystemBuilder,
                             final TimeScales timeScales) {
-        this.frameBuilder = frameBuilder;
-        this.typeBuilder  = typeBuilder;
-        this.timeScales   = timeScales;
+        this.frameBuilder      = frameBuilder;
+        this.typeBuilder       = typeBuilder;
+        this.timeSystemBuilder = timeSystemBuilder;
+        this.timeScales        = timeScales;
     }
 
     /** Parse an IGS clock file from a {@link DataSource}.
@@ -180,6 +188,11 @@ public class RinexClockParser {
          */
         private final Function<? super String, ? extends ObservationType> typeBuilder;
 
+        /** Mapper from string to time system.
+         * @since 14.0
+         */
+        private final Function<? super String, ? extends TimeSystem> timeSystemBuilder;
+
         /** Set of time scales for parsing dates.
          * @since 14.0
          */
@@ -234,6 +247,7 @@ public class RinexClockParser {
             this.name                   = name;
             this.frameBuilder           = RinexClockParser.this.frameBuilder;
             this.typeBuilder            = RinexClockParser.this.typeBuilder;
+            this.timeSystemBuilder      = RinexClockParser.this.timeSystemBuilder;
             this.timeScales             = RinexClockParser.this.timeScales;
             this.file                   = new RinexClock();
             this.lineNumber             = 0;
@@ -256,8 +270,10 @@ public class RinexClockParser {
                     if (header.getFormatVersion() < 3.0) {
                         // before 3.0, only GPS system was used
                         header.setSatelliteSystem(SatelliteSystem.GPS);
-                        header.setTimeSystem(TimeSystem.GPS);
-                        header.setTimeScale(TimeSystem.GPS.getTimeScale(parseInfo.timeScales));
+                        header.setTimeSystem(PredefinedTimeSystem.GPS);
+                        header.setTimeScale(parseInfo.timeSystemBuilder.
+                                            apply(PredefinedTimeSystem.GPS.getKey()).
+                                            getTimeScale(parseInfo.timeScales));
                     }
                 },
                 LineParser::headerNext),
@@ -295,7 +311,8 @@ public class RinexClockParser {
         TIME_SYSTEM_ID((header, line) -> header.matchFound(ClockLabel.TIME_SYSTEM_ID, line),
                        (line, parseInfo) -> {
                            final RinexClockHeader header = parseInfo.file.getHeader();
-                           final TimeSystem timeSystem = TimeSystem.parseTimeSystem(ParsingUtils.parseString(line, 3, 3));
+                           final TimeSystem timeSystem = parseInfo.timeSystemBuilder.
+                                                         apply(ParsingUtils.parseString(line, 3, 3));
                            header.setTimeSystem(timeSystem);
                            header.setTimeScale(timeSystem.getTimeScale(parseInfo.timeScales));
                        },
@@ -553,7 +570,8 @@ public class RinexClockParser {
                                }
                            } else {
                                // we force the systems using the satellite list
-                               header.setTimeSystem(TimeSystem.parseOneLetterCode(String.valueOf(header.getMergedSystem().getKey())));
+                               header.setTimeSystem(PredefinedTimeSystem.
+                                                    parseOneLetterCode(String.valueOf(header.getMergedSystem().getKey())));
                                header.setTimeScale(header.getTimeSystem().getTimeScale(parseInfo.timeScales));
                            }
                        }

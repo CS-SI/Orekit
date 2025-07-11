@@ -17,20 +17,16 @@
 package org.orekit.files.rinex.clock;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.files.rinex.AppliedDCBS;
 import org.orekit.files.rinex.AppliedPCVS;
 import org.orekit.files.rinex.section.CommonLabel;
 import org.orekit.files.rinex.utils.BaseRinexWriter;
 import org.orekit.gnss.ObservationType;
-import org.orekit.gnss.PredefinedObservationType;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
-import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScales;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.formatting.FastDoubleFormatter;
 import org.orekit.utils.formatting.FastLongFormatter;
@@ -42,7 +38,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.function.BiFunction;
 
 /** Writer for Rinex clock file.
  * @author Luc Maisonobe
@@ -65,33 +60,13 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
     /** Simple constructor.
      * <p>
      * This constructor uses the {@link DataContext#getDefault() default data context}
-     * and recognizes only {@link PredefinedObservationType} and {@link SatelliteSystem}
-     * with non-null {@link SatelliteSystem#getObservationTimeScale() time scales}
-     * (i.e. neither user-defined, nor {@link SatelliteSystem#SBAS}, nor {@link SatelliteSystem#MIXED}).
+     * and recognizes only {@link org.orekit.gnss.PredefinedTimeSystem}.
      * </p>
      * @param output destination of generated output
      * @param outputName output name for error messages
      */
-    @DefaultDataContext
     public RinexClockWriter(final Appendable output, final String outputName) {
-        this(output, outputName,
-             (system, ts) -> system.getObservationTimeScale() == null ?
-                             null :
-                             system.getObservationTimeScale().getTimeScale(ts),
-             DataContext.getDefault().getTimeScales());
-    }
-
-    /** Simple constructor.
-     * @param output destination of generated output
-     * @param outputName output name for error messages
-     * @param timeScaleBuilder mapper from satellite system to time scales (useful for user-defined satellite systems)
-     * @param timeScales the set of time scales to use when parsing dates
-     * @since 13.0
-     */
-    public RinexClockWriter(final Appendable output, final String outputName,
-                            final BiFunction<SatelliteSystem, TimeScales, ? extends TimeScale> timeScaleBuilder,
-                            final TimeScales timeScales) {
-        super(output, outputName, timeScaleBuilder, timeScales);
+        super(output, outputName);
     }
 
     /** Write a complete clock file.

@@ -22,16 +22,12 @@ import org.orekit.files.rinex.section.CommonLabel;
 import org.orekit.files.rinex.section.Label;
 import org.orekit.files.rinex.section.RinexBaseHeader;
 import org.orekit.files.rinex.section.RinexComment;
-import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScales;
 import org.orekit.utils.formatting.FastDoubleFormatter;
 import org.orekit.utils.formatting.FastLongFormatter;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BiFunction;
 
 /** Base write for Rinex files.
  * @param <T> type of the header
@@ -64,12 +60,6 @@ public abstract class BaseRinexWriter<T extends RinexBaseHeader> {
     /** Output name for error messages. */
     private final String outputName;
 
-    /** Set of time scales. */
-    private final TimeScales timeScales;
-
-    /** Mapper from satellite system to time scales. */
-    private final BiFunction<SatelliteSystem, TimeScales, ? extends TimeScale> timeScaleBuilder;
-
     /** Saved header. */
     private T savedHeader;
 
@@ -88,17 +78,11 @@ public abstract class BaseRinexWriter<T extends RinexBaseHeader> {
     /** Simple constructor.
      * @param output destination of generated output
      * @param outputName output name for error messages
-     * @param timeScaleBuilder mapper from satellite system to time scales (useful for user-defined satellite systems)
-     * @param timeScales the set of time scales to use when parsing dates
      */
-    public BaseRinexWriter(final Appendable output, final String outputName,
-                           final BiFunction<SatelliteSystem, TimeScales, ? extends TimeScale> timeScaleBuilder,
-                           final TimeScales timeScales) {
-        this.output           = output;
-        this.outputName       = outputName;
-        this.timeScaleBuilder = timeScaleBuilder;
-        this.timeScales       = timeScales;
-        this.savedComments    = Collections.emptyList();
+    public BaseRinexWriter(final Appendable output, final String outputName) {
+        this.output        = output;
+        this.outputName    = outputName;
+        this.savedComments = Collections.emptyList();
     }
 
     /** Prepare comments to be emitted at specified lines.
@@ -130,14 +114,6 @@ public abstract class BaseRinexWriter<T extends RinexBaseHeader> {
      */
     protected T getHeader() {
         return savedHeader;
-    }
-
-    /** Build a time scale.
-     * @param system satellite system
-     * @return time scale corresponding to satellite system
-     */
-    protected TimeScale buildTimeScale(final SatelliteSystem system) {
-        return timeScaleBuilder.apply(system, timeScales);
     }
 
     /** Get column number.

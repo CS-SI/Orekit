@@ -40,8 +40,8 @@ public class RinexFile<T extends RinexBaseHeader> {
      * @param header header
      */
     protected RinexFile(final T header) {
-        this.header       = header;
-        this.comments     = new ArrayList<>();
+        this.header   = header;
+        this.comments = new ArrayList<>();
     }
 
     /** Get the header.

@@ -35,8 +35,8 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.section.CommonLabel;
 import org.orekit.files.rinex.utils.ParsingUtils;
 import org.orekit.gnss.PredefinedGnssSignal;
+import org.orekit.gnss.PredefinedTimeSystem;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.gnss.TimeSystem;
 import org.orekit.propagation.analytical.gnss.data.AbstractNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.BeidouCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
@@ -633,10 +633,10 @@ public class RinexNavigationParser {
         STO_SV_EPOCH_CLOCK((header, line) -> true,
                            (line, pi) -> {
 
-                               pi.sto.setDefinedTimeSystem(TimeSystem.parseTwoLettersCode(
-                                   ParsingUtils.parseString(line, 24, 2)));
-                               pi.sto.setReferenceTimeSystem(TimeSystem.parseTwoLettersCode(
-                                   ParsingUtils.parseString(line, 26, 2)));
+                               pi.sto.setDefinedTimeSystem(PredefinedTimeSystem.
+                                                           parseTwoLettersCode(ParsingUtils.parseString(line, 24, 2)));
+                               pi.sto.setReferenceTimeSystem(PredefinedTimeSystem.
+                                                             parseTwoLettersCode(ParsingUtils.parseString(line, 26, 2)));
                                final String sbas = ParsingUtils.parseString(line, 43, 18);
                                pi.sto.setSbasId(!sbas.isEmpty() ? SbasId.valueOf(sbas) : null);
                                final String utc = ParsingUtils.parseString(line, 62, 18);

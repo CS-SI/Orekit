@@ -21,8 +21,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.utils.ParsingUtils;
 import org.orekit.files.rinex.utils.RinexFileType;
+import org.orekit.gnss.PredefinedTimeSystem;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
@@ -446,7 +446,7 @@ public abstract class RinexBaseHeader {
                 setCreationDateComponents(dtc);
                 final TimeScale timeScale = zone == null ?
                                             timeScales.getUTC() :
-                                            TimeSystem.parseTimeSystem(zone).getTimeScale(timeScales);
+                                            PredefinedTimeSystem.parseTimeSystem(zone).getTimeScale(timeScales);
                 setCreationDate(new AbsoluteDate(dtc, timeScale));
             }
 

@@ -104,6 +104,12 @@ public class RinexObservationWriter extends BaseRinexWriter<RinexObservationHead
     /** Receiver clock offset model. */
     private ClockModel receiverClockModel;
 
+    /** Mapper from satellite system to time scales. */
+    private final BiFunction<SatelliteSystem, TimeScales, ? extends TimeScale> timeScaleBuilder;
+
+    /** Set of time scales. */
+    private final TimeScales timeScales;
+
     /** Time scale for writing dates. */
     private TimeScale timeScale;
 
@@ -139,7 +145,9 @@ public class RinexObservationWriter extends BaseRinexWriter<RinexObservationHead
     public RinexObservationWriter(final Appendable output, final String outputName,
                                   final BiFunction<SatelliteSystem, TimeScales, ? extends TimeScale> timeScaleBuilder,
                                   final TimeScales timeScales) {
-        super(output, outputName, timeScaleBuilder, timeScales);
+        super(output, outputName);
+        this.timeScaleBuilder = timeScaleBuilder;
+        this.timeScales       = timeScales;
         this.pending = new ArrayList<>();
     }
 
@@ -192,12 +200,12 @@ public class RinexObservationWriter extends BaseRinexWriter<RinexObservationHead
         super.writeHeader(header, RinexObservationHeader.LABEL_INDEX);
 
         final String timeScaleName;
-        final TimeScale built = buildTimeScale(header.getSatelliteSystem());
+        final TimeScale built = timeScaleBuilder.apply(header.getSatelliteSystem(), timeScales);
         if (built != null) {
             timeScale     = built;
             timeScaleName = "   ";
         } else {
-            timeScale     = buildTimeScale(SatelliteSystem.GPS);
+            timeScale     = timeScaleBuilder.apply(SatelliteSystem.GPS, timeScales);
             timeScaleName = timeScale.getName();
         }
         if (!header.getClockOffsetApplied() && receiverClockModel != null) {

@@ -41,6 +41,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.gnss.ObservationType;
+import org.orekit.gnss.PredefinedTimeSystem;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
@@ -75,7 +76,7 @@ public class ClockFileParserTest {
         // Check content of the file
         final double version = 3.04;
         final SatelliteSystem satelliteSystem = SatelliteSystem.GPS;
-        final TimeSystem timeSystem = TimeSystem.GPS;
+        final TimeSystem timeSystem = PredefinedTimeSystem.GPS;
         final String programName = "TORINEXC V9.9";
         final String agencyName = "USNO";
         final List<RinexComment> comments =
@@ -142,7 +143,7 @@ public class ClockFileParserTest {
         // Check content of the file
         final double version = 3.04;
         final SatelliteSystem satelliteSystem = SatelliteSystem.GPS;
-        final TimeSystem timeSystem = TimeSystem.GPS;
+        final TimeSystem timeSystem = PredefinedTimeSystem.GPS;
         final String programName = "CCLOCK";
         final String agencyName = "IGSACC @ GA & MIT";
         final List<RinexComment> comments =
@@ -209,7 +210,7 @@ public class ClockFileParserTest {
         // Check content of the file
         final double version = 3.04;
         final SatelliteSystem satelliteSystem = null;
-        final TimeSystem timeSystem = TimeSystem.UTC;
+        final TimeSystem timeSystem = PredefinedTimeSystem.UTC;
         final String programName = "TORINEXC V9.9";
         final String agencyName = "USNO";
         final List<RinexComment> comments =
@@ -271,7 +272,7 @@ public class ClockFileParserTest {
         // Check content of the file
         final double version = 3.00;
         final SatelliteSystem satelliteSystem = null;
-        final TimeSystem timeSystem = TimeSystem.GPS;
+        final TimeSystem timeSystem = PredefinedTimeSystem.GPS;
         final String programName = "autcln 3.33+MIG";
         final String agencyName = "MIT";
         final List<RinexComment> comments = Collections.emptyList();
@@ -331,7 +332,7 @@ public class ClockFileParserTest {
         // Check content of the file
         final double version = 3.00;
         final SatelliteSystem satelliteSystem = null;
-        final TimeSystem timeSystem = TimeSystem.GPS;
+        final TimeSystem timeSystem = PredefinedTimeSystem.GPS;
         final String programName = "CCLOCK";
         final String agencyName = "IGSACC @ GA MIT";
         final List<RinexComment> comments =
@@ -420,7 +421,7 @@ public class ClockFileParserTest {
         // Check content of the file
         final double version = 2.00;
         final SatelliteSystem satelliteSystem = SatelliteSystem.GPS;
-        final TimeSystem timeSystem = TimeSystem.GPS;
+        final TimeSystem timeSystem = PredefinedTimeSystem.GPS;
         final String programName = "CLKRINEX V1.0";
         final String agencyName = "NRCan";
         final List<RinexComment> comments =
@@ -479,7 +480,7 @@ public class ClockFileParserTest {
         // Check content of the file
         final double version = 2.00;
         final SatelliteSystem satelliteSystem = SatelliteSystem.GPS;
-        final TimeSystem timeSystem = TimeSystem.GPS;
+        final TimeSystem timeSystem = PredefinedTimeSystem.GPS;
         final String programName = "tdp2clk v1.13";
         final String agencyName = "JPL";
         final List<RinexComment> comments =
@@ -542,7 +543,7 @@ public class ClockFileParserTest {
         // Check content of the file
         final double version = 2.00;
         final SatelliteSystem satelliteSystem = SatelliteSystem.GPS;
-        final TimeSystem timeSystem = TimeSystem.GPS;
+        final TimeSystem timeSystem = PredefinedTimeSystem.GPS;
         final String programName = "CCRNXC V5.3";
         final String agencyName = "AIUB";
         final List<RinexComment> comments =
@@ -957,27 +958,27 @@ public class ClockFileParserTest {
     }
 
     @Test
-    public void testTimeSystem() {
+    public void testPredefinedTimeSystem() {
         Assertions.assertEquals(TimeScalesFactory.getGPS(),
-                TimeSystem.GPS.getTimeScale(DataContext.getDefault().getTimeScales()));
+                PredefinedTimeSystem.GPS.getTimeScale(DataContext.getDefault().getTimeScales()));
         Assertions.assertEquals(TimeScalesFactory.getGST(),
-                TimeSystem.GALILEO.getTimeScale(DataContext.getDefault().getTimeScales()));
+                PredefinedTimeSystem.GALILEO.getTimeScale(DataContext.getDefault().getTimeScales()));
         Assertions.assertEquals(TimeScalesFactory.getGLONASS(),
-                TimeSystem.GLONASS.getTimeScale(DataContext.getDefault().getTimeScales()));
+                PredefinedTimeSystem.GLONASS.getTimeScale(DataContext.getDefault().getTimeScales()));
         Assertions.assertEquals(TimeScalesFactory.getQZSS(),
-                TimeSystem.QZSS.getTimeScale(DataContext.getDefault().getTimeScales()));
+                PredefinedTimeSystem.QZSS.getTimeScale(DataContext.getDefault().getTimeScales()));
         Assertions.assertEquals(TimeScalesFactory.getTAI(),
-                TimeSystem.TAI.getTimeScale(DataContext.getDefault().getTimeScales()));
+                PredefinedTimeSystem.TAI.getTimeScale(DataContext.getDefault().getTimeScales()));
         Assertions.assertEquals(TimeScalesFactory.getUTC(),
-                TimeSystem.UTC.getTimeScale(DataContext.getDefault().getTimeScales()));
+                PredefinedTimeSystem.UTC.getTimeScale(DataContext.getDefault().getTimeScales()));
         Assertions.assertEquals(TimeScalesFactory.getBDT(),
-                TimeSystem.BEIDOU.getTimeScale(DataContext.getDefault().getTimeScales()));
+                PredefinedTimeSystem.BEIDOU.getTimeScale(DataContext.getDefault().getTimeScales()));
         Assertions.assertEquals(TimeScalesFactory.getNavIC(),
-                TimeSystem.NAVIC.getTimeScale(DataContext.getDefault().getTimeScales()));
+                PredefinedTimeSystem.NAVIC.getTimeScale(DataContext.getDefault().getTimeScales()));
         Assertions.assertEquals(TimeScalesFactory.getUTC(),
-                                TimeSystem.GMT.getTimeScale(DataContext.getDefault().getTimeScales()));
+                                PredefinedTimeSystem.GMT.getTimeScale(DataContext.getDefault().getTimeScales()));
         Assertions.assertEquals(TimeScalesFactory.getGPS(),
-                                TimeSystem.UNKNOWN.getTimeScale(DataContext.getDefault().getTimeScales()));
+                                PredefinedTimeSystem.UNKNOWN.getTimeScale(DataContext.getDefault().getTimeScales()));
     }
 
     /** Test parsing file of issue #845 (https://gitlab.orekit.org/orekit/orekit/-/issues/845). */
@@ -1080,9 +1081,8 @@ public class ClockFileParserTest {
 
         // Look for a particular, random data line
         final List<ClockDataLine> clockDataLines = file.getClockData().get(id);
-        boolean find = false;
-        for (int i = 0; i < clockDataLines.size(); i++) {
-            final ClockDataLine clockDataLine = clockDataLines.get(i);
+        boolean found = false;
+        for (final ClockDataLine clockDataLine : clockDataLines) {
             if (clockDataLine.getName().equals(id) &&
                 clockDataLine.getDataType().equals(type) &&
                 clockDataLine.getDate().equals(dataEpoch) &&
@@ -1093,12 +1093,12 @@ public class ClockFileParserTest {
                 clockDataLine.getClockRateSigma() == clockRateSigma &&
                 clockDataLine.getClockAcceleration() == clockAcceleration &&
                 clockDataLine.getClockAccelerationSigma() == clockAccelerationSigma) {
-
-                find = true;
+                found = true;
+                break;
             }
         }
 
-        Assertions.assertTrue(find);
+        Assertions.assertTrue(found);
 
     }
 

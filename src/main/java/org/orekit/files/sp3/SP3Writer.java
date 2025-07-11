@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.gnss.PredefinedTimeSystem;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
@@ -397,7 +398,7 @@ public class SP3Writer {
             output.append(TIME_SYSTEM_DEFAULT).append(EOL);
         } else {
             final TimeSystem ts = header.getTimeSystem().getKey() == null ?
-                                  TimeSystem.UTC :
+                                  PredefinedTimeSystem.UTC :
                                   header.getTimeSystem();
             output.append(String.format(Locale.US, "%%c %1s  cc %3s ccc cccc cccc cccc cccc ccccc ccccc ccccc ccccc%n",
                                         header.getType().getKey(), ts.getKey()));

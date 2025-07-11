@@ -20,6 +20,14 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="14.0" date="TBD" description="TBD">
+        <action dev="luc" type="add" issue="xxx">
+            Revamped RinexClock and added a RinexClockWriter.
+        </action>
+        <action dev="luc" type="add" issue="xxx">
+            Allow custom GNSS time systems.
+        </action>
+    </release>
     <release version="13.1" date="TBD" description="TBD">
         <action dev="luc" type="fix" issue="1771">
             Fixed failing tests on Windows.

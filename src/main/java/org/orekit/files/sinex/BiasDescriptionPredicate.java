@@ -16,7 +16,7 @@
  */
 package org.orekit.files.sinex;
 
-import org.orekit.gnss.TimeSystem;
+import org.orekit.gnss.PredefinedTimeSystem;
 
 import java.util.function.Predicate;
 
@@ -69,11 +69,11 @@ enum BiasDescriptionPredicate implements Predicate<SinexBiasParseInfo> {
         protected void store(final SinexBiasParseInfo parseInfo) {
             final String ts = parseInfo.parseString(41, 3);
             if ("UTC".equals(ts)) {
-                parseInfo.setTimeSystem(TimeSystem.UTC);
+                parseInfo.setTimeSystem(PredefinedTimeSystem.UTC);
             } else if ("TAI".equals(ts)) {
-                parseInfo.setTimeSystem(TimeSystem.TAI);
+                parseInfo.setTimeSystem(PredefinedTimeSystem.TAI);
             } else {
-                parseInfo.setTimeSystem(TimeSystem.parseOneLetterCode(ts));
+                parseInfo.setTimeSystem(PredefinedTimeSystem.parseOneLetterCode(ts));
             }
         }
     };
