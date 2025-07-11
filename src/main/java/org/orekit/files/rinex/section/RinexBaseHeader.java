@@ -470,22 +470,20 @@ public abstract class RinexBaseHeader {
 
     }
 
-    /**
-     * Check file type.
+    /** Check file type.
      * @param line header line
      * @param name file name (for error message)
      * @since 14.0
      */
     public abstract void checkType(String line, String name);
 
-    /**
-     * Check file type.
+    /** Check file type.
      * @param line header line
      * @param typeIndex index of the file type in the line
      * @param name file name (for error message)
      * @since 14.0
      */
-    protected void checkType(String line, int typeIndex, String name) {
+    protected void checkType(final String line, final int typeIndex, final String name) {
         if (fileType != RinexFileType.parseRinexFileType(line.substring(typeIndex, typeIndex + 1))) {
             throw new OrekitException(OrekitMessages.WRONG_PARSING_TYPE, name);
         }
@@ -497,8 +495,7 @@ public abstract class RinexBaseHeader {
      */
     public abstract int getLabelIndex();
 
-    /**
-     * Check if a label is found in a line
+    /** Check if a label is found in a line.
      * @param label label to check
      * @param line header line
      * @return true if label is found in the header line

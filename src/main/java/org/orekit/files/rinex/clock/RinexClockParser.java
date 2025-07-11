@@ -326,53 +326,53 @@ public class RinexClockParser {
 
         /** Parser for leap seconds. */
         LEAP_SECONDS((header, line) -> header.matchFound(CommonLabel.LEAP_SECONDS, line),
-                     ((line, parseInfo) -> parseInfo.file.getHeader().
-                         setLeapSeconds(ParsingUtils.parseInt(line, 0, 6))),
+                     (line, parseInfo) -> parseInfo.file.getHeader().
+                                          setLeapSeconds(ParsingUtils.parseInt(line, 0, 6)),
                      LineParser::headerNext),
 
         /** Parser for leap seconds GNSS. */
         LEAP_SECONDS_GNSS((header, line) -> header.matchFound(ClockLabel.LEAP_SECONDS_GNSS, line),
-                     ((line, parseInfo) -> parseInfo.file.getHeader().
-                         setLeapSecondsGNSS(ParsingUtils.parseInt(line, 0, 6))),
-                     LineParser::headerNext),
+                          (line, parseInfo) -> parseInfo.file.getHeader().
+                                               setLeapSecondsGNSS(ParsingUtils.parseInt(line, 0, 6)),
+                          LineParser::headerNext),
 
         /** Parser for differential code bias corrections. */
         SYS_DCBS_APPLIED((header, line) -> header.matchFound(CommonLabel.SYS_DCBS_APPLIED, line),
                          (line, parseInfo) -> {
-                                 // we added small margins to the character indices here because some files
-                                 // do NOT respect the format
-                                 // the reference example in table A17 of the rinex 3.04 specification itself exhibits
-                                 // errors (the source field is shifted 2 characters to the left wrt. the specification,
-                                 // i.e. this line in table A17 is consistent with the rinex clock 3.02 specification,
-                                 // not with the rinex clock 3.04 specification…).
-                                 final RinexClockHeader header = parseInfo.file.getHeader();
-                                 final SatelliteSystem satelliteSystem =
-                                     SatelliteSystem.parseSatelliteSystem(ParsingUtils.parseString(line, 0, 1),
-                                                                          header.getSatelliteSystem());
-                                 header.addAppliedDCBS(new AppliedDCBS(satelliteSystem,
-                                                                       ParsingUtils.parseString(line,  2, 18),
-                                                                       ParsingUtils.parseString(line, 20,
-                                                                                                header.getLabelIndex() - 20)));
+                             // we added small margins to the character indices here because some files
+                             // do NOT respect the format
+                             // the reference example in table A17 of the rinex 3.04 specification itself exhibits
+                             // errors (the source field is shifted 2 characters to the left wrt. the specification,
+                             // i.e. this line in table A17 is consistent with the rinex clock 3.02 specification,
+                             // not with the rinex clock 3.04 specification…).
+                             final RinexClockHeader header = parseInfo.file.getHeader();
+                             final SatelliteSystem satelliteSystem =
+                                 SatelliteSystem.parseSatelliteSystem(ParsingUtils.parseString(line, 0, 1),
+                                                                      header.getSatelliteSystem());
+                             header.addAppliedDCBS(new AppliedDCBS(satelliteSystem,
+                                                                   ParsingUtils.parseString(line,  2, 18),
+                                                                   ParsingUtils.parseString(line, 20,
+                                                                                            header.getLabelIndex() - 20)));
                          },
                          LineParser::headerNext),
 
         /** Parser for phase center variations corrections. */
         SYS_PCVS_APPLIED((header, line) -> header.matchFound(CommonLabel.SYS_PCVS_APPLIED, line),
                          (line, parseInfo) -> {
-                                 // we added small margins to the character indices here because some files
-                                 // do NOT respect the format
-                                 // the reference example in table A17 of the rinex 3.04 specification itself exhibits
-                                 // errors (the source field is shifted 2 characters to the left wrt. the specification,
-                                 // i.e. this line in table A17 is consistent with the rinex clock 3.02 specification,
-                                 // not with the rinex clock 3.04 specification…).
-                                 final RinexClockHeader header = parseInfo.file.getHeader();
-                                 final SatelliteSystem satelliteSystem =
-                                         SatelliteSystem.parseSatelliteSystem(ParsingUtils.parseString(line, 0, 1),
-                                                                              header.getSatelliteSystem());
-                                 header.addAppliedPCVS(new AppliedPCVS(satelliteSystem,
-                                                                       ParsingUtils.parseString(line,  2, 18),
-                                                                       ParsingUtils.parseString(line, 20,
-                                                                                                header.getLabelIndex() - 20)));
+                             // we added small margins to the character indices here because some files
+                             // do NOT respect the format
+                             // the reference example in table A17 of the rinex 3.04 specification itself exhibits
+                             // errors (the source field is shifted 2 characters to the left wrt. the specification,
+                             // i.e. this line in table A17 is consistent with the rinex clock 3.02 specification,
+                             // not with the rinex clock 3.04 specification…).
+                             final RinexClockHeader header = parseInfo.file.getHeader();
+                             final SatelliteSystem satelliteSystem =
+                                     SatelliteSystem.parseSatelliteSystem(ParsingUtils.parseString(line, 0, 1),
+                                                                          header.getSatelliteSystem());
+                             header.addAppliedPCVS(new AppliedPCVS(satelliteSystem,
+                                                                   ParsingUtils.parseString(line,  2, 18),
+                                                                   ParsingUtils.parseString(line, 20,
+                                                                                            header.getLabelIndex() - 20)));
                          },
                          LineParser::headerNext),
 
@@ -540,15 +540,15 @@ public class RinexClockParser {
         /** Parser for the stations embedded in the file and the related positions. */
         SOLN_STA_NAME_NUM((header, line) -> header.matchFound(ClockLabel.SOLN_STA_NAME_NUM, line),
                           (line, parseInfo) -> {
-                                 final int    length     = parseInfo.file.getHeader().isBefore304() ? 4 : 9;
-                                 final String designator = ParsingUtils.parseString(line, 0, length);
-                                 final String identifier = ParsingUtils.parseString(line, length + 1, 20);
-                                 final double x          = MILLIMETER.toSI(ParsingUtils.parseLong(line, length + 21, 11));
-                                 final double y          = MILLIMETER.toSI(ParsingUtils.parseLong(line, length + 33, 11));
-                                 final double z          = MILLIMETER.toSI(ParsingUtils.parseLong(line, length + 45, 11));
-                                 final Receiver receiver = new Receiver(designator, identifier, x, y, z);
-                                 parseInfo.file.getHeader().addReceiver(receiver);
-                             },
+                              final int    length     = parseInfo.file.getHeader().isBefore304() ? 4 : 9;
+                              final String designator = ParsingUtils.parseString(line, 0, length);
+                              final String identifier = ParsingUtils.parseString(line, length + 1, 20);
+                              final double x          = MILLIMETER.toSI(ParsingUtils.parseLong(line, length + 21, 11));
+                              final double y          = MILLIMETER.toSI(ParsingUtils.parseLong(line, length + 33, 11));
+                              final double z          = MILLIMETER.toSI(ParsingUtils.parseLong(line, length + 45, 11));
+                              final Receiver receiver = new Receiver(designator, identifier, x, y, z);
+                              parseInfo.file.getHeader().addReceiver(receiver);
+                          },
                           LineParser::headerNext),
 
         /** Parser for the number of satellites embedded in the file. */
@@ -616,7 +616,7 @@ public class RinexClockParser {
                        final RinexClockHeader header = parseInfo.file.getHeader();
                        try {
                            parseInfo.currentDataType = ClockDataType.valueOf(line.substring(0, 2));
-                        } catch (IllegalArgumentException iae) {
+                       } catch (IllegalArgumentException iae) {
                            throw new OrekitException(OrekitMessages.UNKNOWN_CLOCK_DATA_TYPE, line.substring(0, 2));
                        }
 

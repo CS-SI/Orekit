@@ -17,10 +17,6 @@
 package org.orekit.files.rinex.clock;
 
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
-import org.orekit.time.DateTimeComponents;
-import org.orekit.time.TimeComponents;
-import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 
 /** Clock data for a single station.

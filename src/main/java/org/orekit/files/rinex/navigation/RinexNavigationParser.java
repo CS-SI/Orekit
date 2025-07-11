@@ -482,7 +482,7 @@ public class RinexNavigationParser {
                     LineParser::headerNext),
 
         /** Parser for leap seconds. */
-        HEADER_LEAP_SECONDS((header, line) -> header.matchFound(CommonLabel.LEAP_SECONDS,line),
+        HEADER_LEAP_SECONDS((header, line) -> header.matchFound(CommonLabel.LEAP_SECONDS, line),
                             (line, pi) -> pi.file.getHeader().setNumberOfLeapSeconds(ParsingUtils.parseInt(line, 0, 6)),
                             LineParser::headerNext),
 
@@ -701,7 +701,7 @@ public class RinexNavigationParser {
                        pi.eop.setXp(Unit.ARC_SECOND.toSI(ParsingUtils.parseDouble(line, 23, 19)));
                        pi.eop.setXpDot(AS_PER_DAY.toSI(ParsingUtils.parseDouble(line, 42, 19)));
                        pi.eop.setXpDotDot(AS_PER_DAY2.toSI(ParsingUtils.parseDouble(line, 61, 19)));
-                       },
+                   },
                    pi -> Collections.singleton(EOP_LINE_1)),
 
         /** Parser for Earth orientation parameter message type. */

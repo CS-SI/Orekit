@@ -49,7 +49,7 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
     private static final Unit MILLIMETER = Unit.parse("mm");
 
     /** Format for one 11 digits integer field. */
-    protected static final FastLongFormatter ELEVEN_DIGITS_INTEGER = new FastLongFormatter(11, false);
+    private static final FastLongFormatter ELEVEN_DIGITS_INTEGER = new FastLongFormatter(11, false);
 
     /** Format for one 4.2 digits float field. */
     private static final FastDoubleFormatter FOUR_TWO_DIGITS_FLOAT = new FastDoubleFormatter(4, 2);
