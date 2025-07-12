@@ -24,6 +24,9 @@
         <action dev="guillaumefiorello" type="fix" issue="1773">
             Fixed regression on TLE date parsing.
         </action>
+        <action dev="serrof" type="add" issue="1772">
+            Add event handler logging secondary.
+        </action>
         <action dev="luc" type="fix" issue="1771">
             Fixed failing tests on Windows.
         </action>
