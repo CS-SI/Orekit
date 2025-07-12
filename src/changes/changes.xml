@@ -20,6 +20,15 @@
   </properties>
   <body>
     <release version="13.1" date="TBD" description="TBD">
+        <action dev="guillaumefiorello" type="fix" issue="1773">
+            Fixed regression on TLE date parsing.
+        </action>
+        <action dev="luc" type="fix" issue="1771">
+            Fixed failing tests on Windows.
+        </action>
+        <action dev="serrof" type="update" issue="1770">
+            Add model parameters Jacobian update from dynamics switches.
+        </action>
         <action dev="luc" type="fix" issue="1769">
             Fixed use of wrong class loader.
         </action>
@@ -49,6 +58,9 @@
         </action>
         <action dev="serrof" type="add" issue="1755">
             Add Lambert differential correction.
+        </action>
+        <action dev="serrof" type="add" issue="1753">
+            Add STM update from dynamics switches.
         </action>
         <action dev="serrof" type="add" issue="1750">
             Add way not to reset (Field)PropagationStepRecorder.
