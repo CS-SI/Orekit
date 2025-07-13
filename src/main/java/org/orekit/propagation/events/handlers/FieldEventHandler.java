@@ -46,7 +46,7 @@ public interface FieldEventHandler<T extends CalculusFieldElement<T>> {
      * @param detector event detector related to the event handler
      * @since 11.1
      */
-    default void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target, FieldEventDetector<T> detector) {
+    default void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target, final FieldEventDetector<T> detector) {
         // nothing by default
     }
 
@@ -75,7 +75,7 @@ public interface FieldEventHandler<T extends CalculusFieldElement<T>> {
      * @param oldState old state
      * @return new state
      */
-    default FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector, FieldSpacecraftState<T> oldState) {
+    default FieldSpacecraftState<T> resetState(final FieldEventDetector<T> detector, final FieldSpacecraftState<T> oldState) {
         return oldState;
     }
 

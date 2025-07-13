@@ -71,7 +71,7 @@ public interface AttitudeProvider extends EventDetectorsProvider, AttitudeRotati
      * @return attitude-related rotation on the specified date and position-velocity state
      * @since 12.0
      */
-    default Rotation getAttitudeRotation(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) {
+    default Rotation getAttitudeRotation(final PVCoordinatesProvider pvProv, final AbsoluteDate date, final Frame frame) {
         return getAttitude(pvProv, date, frame).getRotation();
     }
 
@@ -83,9 +83,9 @@ public interface AttitudeProvider extends EventDetectorsProvider, AttitudeRotati
      * @return rotation on the specified date and position-velocity state
      * @since 12.0
      */
-    default <T extends CalculusFieldElement<T>> FieldRotation<T> getAttitudeRotation(FieldPVCoordinatesProvider<T> pvProv,
-                                                                                     FieldAbsoluteDate<T> date,
-                                                                                     Frame frame) {
+    default <T extends CalculusFieldElement<T>> FieldRotation<T> getAttitudeRotation(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                                     final FieldAbsoluteDate<T> date,
+                                                                                     final Frame frame) {
         return getAttitude(pvProv, date, frame).getRotation();
     }
 

@@ -296,13 +296,13 @@ public interface Propagator extends PVCoordinatesProvider {
 
     /** {@inheritDoc} */
     @Override
-    default TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame) {
+    default TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
         return propagate(date).getPVCoordinates(frame);
     }
 
     /** {@inheritDoc} */
     @Override
-    default Vector3D getPosition(AbsoluteDate date, Frame frame) {
+    default Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
         return propagate(date).getPosition(frame);
     }
 

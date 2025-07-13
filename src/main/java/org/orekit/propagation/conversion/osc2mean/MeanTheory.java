@@ -43,7 +43,7 @@ public interface MeanTheory {
      * @param osculating the osculating orbit to be treated
      * @return preprocessed osculating orbit
      */
-    default Orbit preprocessing(Orbit osculating) {
+    default Orbit preprocessing(final Orbit osculating) {
         return osculating;
     }
 
@@ -52,7 +52,7 @@ public interface MeanTheory {
      * @param osculating the osculating orbit
      * @return initial mean orbit
      */
-    default Orbit initialize(Orbit osculating) {
+    default Orbit initialize(final Orbit osculating) {
         return osculating;
     }
 
@@ -69,7 +69,7 @@ public interface MeanTheory {
      * @param mean the converted mean orbit
      * @return postprocessed mean orbit
      */
-    default Orbit postprocessing(Orbit osculating, Orbit mean) {
+    default Orbit postprocessing(final Orbit osculating, final Orbit mean) {
         return osculating.getType().convertType(mean);
     }
 
@@ -79,7 +79,7 @@ public interface MeanTheory {
      * @param osculating the osculating orbit to be treated
      * @return preprocessed osculating orbit
      */
-    default <T extends CalculusFieldElement<T>> FieldOrbit<T> preprocessing(FieldOrbit<T> osculating) {
+    default <T extends CalculusFieldElement<T>> FieldOrbit<T> preprocessing(final FieldOrbit<T> osculating) {
         return osculating;
     }
 
@@ -89,7 +89,7 @@ public interface MeanTheory {
      * @param osculating the osculating orbit
      * @return initial mean orbit
      */
-    default <T extends CalculusFieldElement<T>> FieldOrbit<T> initialize(FieldOrbit<T> osculating) {
+    default <T extends CalculusFieldElement<T>> FieldOrbit<T> initialize(final FieldOrbit<T> osculating) {
         return osculating;
     }
 
@@ -108,8 +108,8 @@ public interface MeanTheory {
      * @param mean the converted mean orbit
      * @return postprocessed mean orbit
      */
-    default <T extends CalculusFieldElement<T>> FieldOrbit<T> postprocessing(FieldOrbit<T> osculating,
-                                                                             FieldOrbit<T> mean) {
+    default <T extends CalculusFieldElement<T>> FieldOrbit<T> postprocessing(final FieldOrbit<T> osculating,
+                                                                             final FieldOrbit<T> mean) {
         return osculating.getType().convertType(mean);
     }
 

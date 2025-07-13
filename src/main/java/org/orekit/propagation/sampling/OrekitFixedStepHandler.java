@@ -41,7 +41,7 @@ public interface OrekitFixedStepHandler {
      *             positive even if propagation is backwards.
      * @since 9.0
      */
-    default void init(SpacecraftState s0, AbsoluteDate t, double step) {
+    default void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {
     }
 
     /** Handle the current step.
@@ -54,7 +54,7 @@ public interface OrekitFixedStepHandler {
      * @param finalState state at propagation end
      * @since 11.0
      */
-    default void finish(SpacecraftState finalState) {
+    default void finish(final SpacecraftState finalState) {
         // nothing by default
     }
 

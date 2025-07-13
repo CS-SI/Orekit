@@ -86,7 +86,7 @@ public interface EventDetectorsProvider {
      * @param parameterDrivers list of parameter drivers
      * @return stream of event detectors
      */
-    default Stream<EventDetector> getEventDetectors(List<ParameterDriver> parameterDrivers) {
+    default Stream<EventDetector> getEventDetectors(final List<ParameterDriver> parameterDrivers) {
         // If force model does not have parameter Driver, an empty stream is given as results
         final ArrayList<TimeStamped> transitionDates = new ArrayList<>();
         for (final ParameterDriver driver : parameterDrivers) {
@@ -117,8 +117,8 @@ public interface EventDetectorsProvider {
      * @param <T> extends CalculusFieldElement&lt;T&gt;
      * @return stream of event detectors
      */
-    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field,
-                                                                                                     List<ParameterDriver> parameterDrivers) {
+    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field,
+                                                                                                     final List<ParameterDriver> parameterDrivers) {
         // If force model does not have parameter Driver, an empty stream is given as results
         final ArrayList<AbsoluteDate> transitionDates = new ArrayList<>();
         for (ParameterDriver driver : parameterDrivers) {

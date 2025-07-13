@@ -120,7 +120,7 @@ public interface FieldAdditionalDataProvider<O, T extends CalculusFieldElement<T
      * as the state is incrementally built up
      * @since 11.1
      */
-    default boolean yields(FieldSpacecraftState<T> state) {
+    default boolean yields(final FieldSpacecraftState<T> state) {
         return false;
     }
 

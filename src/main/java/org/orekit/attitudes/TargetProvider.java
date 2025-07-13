@@ -46,10 +46,10 @@ public interface TargetProvider
      * @param frame inertial frame
      * @return target direction in the spacecraft state frame, with second order time derivative
      */
-    default FieldVector3D<UnivariateDerivative2> getDerivative2TargetDirection(ExtendedPositionProvider sun,
-                                                                               OneAxisEllipsoid earth,
-                                                                               TimeStampedPVCoordinates pv,
-                                                                               Frame frame) {
+    default FieldVector3D<UnivariateDerivative2> getDerivative2TargetDirection(final ExtendedPositionProvider sun,
+                                                                               final OneAxisEllipsoid earth,
+                                                                               final TimeStampedPVCoordinates pv,
+                                                                               final Frame frame) {
         final FieldPVCoordinates<UnivariateDerivative2> ud2PV = pv.toUnivariateDerivative2PV();
         final UnivariateDerivative2Field field = UnivariateDerivative2Field.getInstance();
         final UnivariateDerivative2 dt = new UnivariateDerivative2(0., 1., 0.);
@@ -65,8 +65,8 @@ public interface TargetProvider
      * @param frame inertial frame
      * @return target direction in the spacecraft state frame
      */
-    default Vector3D getTargetDirection(ExtendedPositionProvider sun, OneAxisEllipsoid earth,
-                                        TimeStampedPVCoordinates pv, Frame frame) {
+    default Vector3D getTargetDirection(final ExtendedPositionProvider sun, final OneAxisEllipsoid earth,
+                                        final TimeStampedPVCoordinates pv, final Frame frame) {
         return getDerivative2TargetDirection(sun, earth, pv, frame).toVector3D();
     }
 
@@ -79,10 +79,10 @@ public interface TargetProvider
      * @param frame inertial frame
      * @return target direction in the spacecraft state frame, with second order time derivative
      */
-    default <T extends CalculusFieldElement<T>> FieldVector3D<FieldUnivariateDerivative2<T>> getDerivative2TargetDirection(ExtendedPositionProvider sun,
-                                                                                                                           OneAxisEllipsoid earth,
-                                                                                                                           TimeStampedFieldPVCoordinates<T> pv,
-                                                                                                                           Frame frame) {
+    default <T extends CalculusFieldElement<T>> FieldVector3D<FieldUnivariateDerivative2<T>> getDerivative2TargetDirection(final ExtendedPositionProvider sun,
+                                                                                                                           final OneAxisEllipsoid earth,
+                                                                                                                           final TimeStampedFieldPVCoordinates<T> pv,
+                                                                                                                           final Frame frame) {
         final FieldPVCoordinates<FieldUnivariateDerivative2<T>> ud2PV = pv.toUnivariateDerivative2PV();
         final FieldAbsoluteDate<FieldUnivariateDerivative2<T>> ud2Date = pv.getDate().toFUD2Field();
         return getTargetDirection(sun, earth, new TimeStampedFieldPVCoordinates<>(ud2Date, ud2PV), frame);

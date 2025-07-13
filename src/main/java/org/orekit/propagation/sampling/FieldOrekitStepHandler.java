@@ -39,7 +39,7 @@ public interface FieldOrekitStepHandler<T extends CalculusFieldElement<T>> {
      * @param s0 initial state
      * @param t target time for the integration
      */
-    default void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t) {
+    default void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
         // do nothing by default
     }
 
@@ -53,7 +53,7 @@ public interface FieldOrekitStepHandler<T extends CalculusFieldElement<T>> {
      * @param finalState state at propagation end
      * @since 11.0
      */
-    default void finish(FieldSpacecraftState<T> finalState) {
+    default void finish(final FieldSpacecraftState<T> finalState) {
         // nothing by default
     }
 
