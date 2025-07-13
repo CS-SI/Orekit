@@ -47,6 +47,7 @@
     <orekit.build-helper-maven-plugin.version>3.6.0</orekit.build-helper-maven-plugin.version>
     <orekit.maven-gpg-plugin.version>3.2.7</orekit.maven-gpg-plugin.version>
     <orekit.maven-install-plugin.version>3.1.4</orekit.maven-install-plugin.version>
+    <orekit.orekit.cyclonedx-maven-plugin.version>2.9.1</orekit.orekit.cyclonedx-maven-plugin.version>
     <orekit.mathjax.config>&lt;script type="text/x-mathjax-config"&gt;MathJax.Hub.Config({ TeX: { extensions: ["autoload.js"]}});&lt;/script&gt;</orekit.mathjax.config>
     <orekit.mathjax.enable>&lt;script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML"&gt;&lt;/script&gt;</orekit.mathjax.enable>
     <orekit.hipparchus.version>4.0.1</orekit.hipparchus.version>
@@ -864,6 +865,7 @@
       <plugin>
         <groupId>org.cyclonedx</groupId>
         <artifactId>cyclonedx-maven-plugin</artifactId>
+        <version>${orekit.cyclonedx-maven-plugin.version}</version>
         <executions>
           <execution>
             <phase>package</phase>
