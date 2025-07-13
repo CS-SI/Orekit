@@ -128,7 +128,7 @@ public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends C
      * @return estimated measurement
      * @since 12.1
      */
-    default EstimatedMeasurementBase<T> estimateWithoutDerivatives(SpacecraftState[] states) {
+    default EstimatedMeasurementBase<T> estimateWithoutDerivatives(final SpacecraftState[] states) {
         return estimateWithoutDerivatives(0, 0, states);
     }
 

@@ -44,7 +44,7 @@ public interface EventHandler {
      * @param detector event detector related to the event handler
      *
      */
-    default void init(SpacecraftState initialState, AbsoluteDate target, final EventDetector detector) {
+    default void init(final SpacecraftState initialState, final AbsoluteDate target, final EventDetector detector) {
         // nothing by default
     }
 
@@ -73,7 +73,7 @@ public interface EventHandler {
      * @param oldState old state
      * @return new state
      */
-    default SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
+    default SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
         return oldState;
     }
 

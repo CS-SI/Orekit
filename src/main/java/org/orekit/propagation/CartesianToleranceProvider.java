@@ -61,8 +61,8 @@ public interface CartesianToleranceProvider {
      * @param <T> field type
      * @return absolute and relative tolerances
      */
-    default <T extends CalculusFieldElement<T>> double[][] getTolerances(FieldVector3D<T> position,
-                                                                         FieldVector3D<T> velocity) {
+    default <T extends CalculusFieldElement<T>> double[][] getTolerances(final FieldVector3D<T> position,
+                                                                         final FieldVector3D<T> velocity) {
         return getTolerances(position.toVector3D(), velocity.toVector3D());
     }
 
@@ -71,7 +71,7 @@ public interface CartesianToleranceProvider {
      * @param cartesianOrbit reference orbit
      * @return absolute and relative tolerances
      */
-    default double[][] getTolerances(CartesianOrbit cartesianOrbit) {
+    default double[][] getTolerances(final CartesianOrbit cartesianOrbit) {
         return getTolerances(cartesianOrbit.getPosition(), cartesianOrbit.getVelocity());
     }
 
@@ -81,7 +81,7 @@ public interface CartesianToleranceProvider {
      * @param <T> field type
      * @return absolute and relative tolerances
      */
-    default <T extends CalculusFieldElement<T>> double[][] getTolerances(FieldCartesianOrbit<T> cartesianOrbit) {
+    default <T extends CalculusFieldElement<T>> double[][] getTolerances(final FieldCartesianOrbit<T> cartesianOrbit) {
         return getTolerances(cartesianOrbit.toOrbit());
     }
 
@@ -90,7 +90,7 @@ public interface CartesianToleranceProvider {
      * @param absolutePVCoordinates reference position-velocity
      * @return absolute and relative tolerances
      */
-    default double[][] getTolerances(AbsolutePVCoordinates absolutePVCoordinates) {
+    default double[][] getTolerances(final AbsolutePVCoordinates absolutePVCoordinates) {
         return getTolerances(absolutePVCoordinates.getPosition(), absolutePVCoordinates.getVelocity());
     }
 
@@ -100,7 +100,7 @@ public interface CartesianToleranceProvider {
      * @param <T> field type
      * @return absolute and relative tolerances
      */
-    default <T extends CalculusFieldElement<T>> double[][] getTolerances(FieldAbsolutePVCoordinates<T> absolutePVCoordinates) {
+    default <T extends CalculusFieldElement<T>> double[][] getTolerances(final FieldAbsolutePVCoordinates<T> absolutePVCoordinates) {
         return getTolerances(absolutePVCoordinates.toAbsolutePVCoordinates());
     }
 

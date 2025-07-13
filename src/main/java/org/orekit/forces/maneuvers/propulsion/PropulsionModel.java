@@ -47,7 +47,7 @@ public interface PropulsionModel extends ParameterDriversProvider, EventDetector
      * @param initialState initial spacecraft state (at the start of propagation).
      * @param target date of propagation. Not equal to {@code initialState.getDate()}.
      */
-    default void init(SpacecraftState initialState, AbsoluteDate target) {
+    default void init(final SpacecraftState initialState, final AbsoluteDate target) {
     }
 
     /** Initialization method.
@@ -57,7 +57,7 @@ public interface PropulsionModel extends ParameterDriversProvider, EventDetector
      * @param <T> type of the elements
      * @since 11.1
      */
-    default <T extends CalculusFieldElement<T>> void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target) {
+    default <T extends CalculusFieldElement<T>> void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target) {
         init(initialState.toSpacecraftState(), target.toAbsoluteDate());
     }
 
@@ -69,7 +69,7 @@ public interface PropulsionModel extends ParameterDriversProvider, EventDetector
 
     /** {@inheritDoc}.*/
     @Override
-    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field) {
+    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
         return getFieldEventDetectors(field, getParametersDrivers());
     }
 

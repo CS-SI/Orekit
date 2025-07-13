@@ -76,7 +76,7 @@ public interface ForceModel extends ParameterDriversProvider, EventDetectorsProv
      * @param initialState spacecraft state at the start of propagation.
      * @param target       date of propagation. Not equal to {@code initialState.getDate()}.
      */
-    default void init(SpacecraftState initialState, AbsoluteDate target) {
+    default void init(final SpacecraftState initialState, final AbsoluteDate target) {
     }
 
     /**
@@ -91,7 +91,7 @@ public interface ForceModel extends ParameterDriversProvider, EventDetectorsProv
      * @param target       date of propagation. Not equal to {@code initialState.getDate()}.
      * @param <T> type of the elements
      */
-    default <T extends CalculusFieldElement<T>> void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target) {
+    default <T extends CalculusFieldElement<T>> void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target) {
         init(initialState.toSpacecraftState(), target.toAbsoluteDate());
     }
 
@@ -103,7 +103,7 @@ public interface ForceModel extends ParameterDriversProvider, EventDetectorsProv
 
     /** {@inheritDoc}.*/
     @Override
-    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field) {
+    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
         return getFieldEventDetectors(field, getParametersDrivers());
     }
 
@@ -116,7 +116,7 @@ public interface ForceModel extends ParameterDriversProvider, EventDetectorsProv
      * @param s current state information: date, kinematics, attitude
      * @param adder object where the contribution should be added
      */
-    default void addContribution(SpacecraftState s, TimeDerivativesEquations adder) {
+    default void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder) {
         final double[] parameters = getParameters(s.getDate());
         adder.addNonKeplerianAcceleration(acceleration(s, getParameters(s.getDate())));
         adder.addMassDerivative(getMassDerivative(s, parameters));
@@ -128,7 +128,7 @@ public interface ForceModel extends ParameterDriversProvider, EventDetectorsProv
      * @param adder object where the contribution should be added
      * @param <T> type of the elements
      */
-    default <T extends CalculusFieldElement<T>> void addContribution(FieldSpacecraftState<T> s, FieldTimeDerivativesEquations<T> adder) {
+    default <T extends CalculusFieldElement<T>> void addContribution(final FieldSpacecraftState<T> s, final FieldTimeDerivativesEquations<T> adder) {
         final T[] parameters = getParameters(s.getDate().getField(), s.getDate());
         adder.addNonKeplerianAcceleration(acceleration(s, parameters));
         adder.addMassDerivative(getMassDerivative(s, parameters));
@@ -141,7 +141,7 @@ public interface ForceModel extends ParameterDriversProvider, EventDetectorsProv
      * @return mass rate (kg/s)
      * @since 13.1
      */
-    default double getMassDerivative(SpacecraftState state, double[] parameters) {
+    default double getMassDerivative(final SpacecraftState state, final double[] parameters) {
         return 0.;
     }
 

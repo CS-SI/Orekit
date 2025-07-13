@@ -59,7 +59,7 @@ public interface WaterVaporPressureProvider {
      * @param e water vapor pressure (Pa)
      * @return relative humidity, as a ratio (50% → 0.5)
      */
-    default <T extends CalculusFieldElement<T>> T relativeHumidity(final T p, T t, T e) {
+    default <T extends CalculusFieldElement<T>> T relativeHumidity(final T p, final T t, final T e) {
         final T saturationPressure = waterVaporPressure(p, t, p.getField().getOne());
         return e.divide(saturationPressure);
     }
