@@ -116,6 +116,7 @@ deploy:artifacts:
     - if $CI_COMMIT_BRANCH == main
     - if $CI_COMMIT_BRANCH =~ /^release-[.0-9]+$/
     - if $CI_COMMIT_BRANCH == develop
+    - if $CI_COMMIT_BRANCH == issue-1760
 
 deploy:site:
   stage: deploy
