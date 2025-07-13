@@ -865,7 +865,7 @@
       <plugin>
         <groupId>org.cyclonedx</groupId>
         <artifactId>cyclonedx-maven-plugin</artifactId>
-        <version>${orekit.cyclonedx-maven-plugin.version}</version>
+        <version>${orekit.orekit.cyclonedx-maven-plugin.version}</version>
         <executions>
           <execution>
             <phase>package</phase>
