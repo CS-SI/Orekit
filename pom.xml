@@ -1053,28 +1053,6 @@
             </executions>
           </plugin>
           <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>build-helper-maven-plugin</artifactId>
-            <version>${orekit.build-helper-maven-plugin.version}</version>
-            <executions>
-              <execution>
-                <id>attach-artifacts</id>
-                <phase>verify</phase>
-                <goals>
-                  <goal>attach-artifact</goal>
-                </goals>
-                <configuration>
-                  <artifacts>
-                    <artifact>
-                      <file>${basedir}/target/orekit-${project.version}-sources.jar</file>
-                      <type>source-jar</type>
-                    </artifact>
-                  </artifacts>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
             <version>${orekit.maven-gpg-plugin.version}</version>
