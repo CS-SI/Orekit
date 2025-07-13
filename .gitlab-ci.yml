@@ -113,10 +113,10 @@ deploy:artifacts:
       - target/*.jar
       - target/*.asc
   rules:
-    - if: $CI_COMMIT_BRANCH == main
+    - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH =~ /^release-[.0-9]+$/
-    - if: $CI_COMMIT_BRANCH == develop
-    - if: $CI_COMMIT_BRANCH == issue-1760
+    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "issue-1760"
 
 deploy:site:
   stage: deploy
@@ -132,9 +132,9 @@ deploy:site:
     - rsync -rz --links --checksum --no-perms --chmod=u=rwX,go=rX --delete-after
             target/site/ ${TARGET_URL_PREFIX}-${PROJECT_VERSION}
   rules:
-    - if: $CI_COMMIT_BRANCH == main
+    - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH =~ /^release-[.0-9]+$/
-    - if: $CI_COMMIT_BRANCH == develop
+    - if: $CI_COMMIT_BRANCH == "develop"
 
 # trigger performance tests after artifacts are deployed to Nexus
 # similar to Jenkins' "build after a snapshot dependency is built"
