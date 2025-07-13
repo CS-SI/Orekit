@@ -49,26 +49,26 @@ public interface ForceModelModifier extends ForceModel {
 
     /** {@inheritDoc} */
     @Override
-    default void init(SpacecraftState initialState, AbsoluteDate target) {
+    default void init(final SpacecraftState initialState, final AbsoluteDate target) {
         getUnderlyingModel().init(initialState, target);
     }
 
     /** {@inheritDoc} */
     @Override
-    default <T extends CalculusFieldElement<T>> void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target) {
+    default <T extends CalculusFieldElement<T>> void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target) {
         getUnderlyingModel().init(initialState, target);
     }
 
     /** {@inheritDoc} */
     @Override
-    default Vector3D acceleration(SpacecraftState s, double[] parameters) {
+    default Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
         return getUnderlyingModel().acceleration(s, parameters);
     }
 
     /** {@inheritDoc} */
     @Override
-    default <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s,
-                                                                              T[] parameters) {
+    default <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
+                                                                              final T[] parameters) {
         return getUnderlyingModel().acceleration(s, parameters);
     }
 
@@ -92,7 +92,7 @@ public interface ForceModelModifier extends ForceModel {
 
     /** {@inheritDoc} */
     @Override
-    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field) {
+    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
         return getUnderlyingModel().getFieldEventDetectors(field);
     }
 

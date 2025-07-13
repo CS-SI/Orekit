@@ -51,7 +51,7 @@ public interface TimeStampedCache<T extends TimeStamped> {
      *         of the list is guaranteed to be {@link #getMaxNeighborsSize()}.
      * @see #getNeighbors(AbsoluteDate, int)
      */
-    default Stream<T> getNeighbors(AbsoluteDate central) {
+    default Stream<T> getNeighbors(final AbsoluteDate central) {
         return getNeighbors(central, getMaxNeighborsSize());
     }
 

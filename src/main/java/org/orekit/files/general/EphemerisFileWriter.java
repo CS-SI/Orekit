@@ -78,7 +78,7 @@ public interface EphemerisFileWriter {
      *             the origin at an unspecified celestial body, etc.)
      */
     default <C extends TimeStampedPVCoordinates, S extends EphemerisFile.EphemerisSegment<C>>
-        void write(final String outputFilePath, EphemerisFile<C, S> ephemerisFile)
+        void write(final String outputFilePath, final EphemerisFile<C, S> ephemerisFile)
             throws IOException {
         try (BufferedWriter writer =
                         Files.newBufferedWriter(Paths.get(outputFilePath), StandardCharsets.UTF_8)) {

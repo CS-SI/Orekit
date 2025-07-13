@@ -41,7 +41,7 @@ public interface FieldOrekitFixedStepHandler<T extends CalculusFieldElement<T>> 
      * @param step the duration in seconds of the fixed step. This value is
      *             positive even if propagation is backwards.
      */
-    default void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t, T step) {
+    default void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t, final T step) {
         // do nothing by default
     }
 
@@ -55,7 +55,7 @@ public interface FieldOrekitFixedStepHandler<T extends CalculusFieldElement<T>> 
      * @param finalState state at propagation end
      * @since 11.0
      */
-    default void finish(FieldSpacecraftState<T> finalState) {
+    default void finish(final FieldSpacecraftState<T> finalState) {
         // nothing by default
     }
 

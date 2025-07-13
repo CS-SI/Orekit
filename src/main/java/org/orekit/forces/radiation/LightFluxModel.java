@@ -44,7 +44,7 @@ public interface LightFluxModel {
      * @param targetDate target date for propagation
      * @since 12.2
      */
-    default void init(SpacecraftState initialState, final AbsoluteDate targetDate) {
+    default void init(final SpacecraftState initialState, final AbsoluteDate targetDate) {
         // nothing by default
     }
 
@@ -55,7 +55,7 @@ public interface LightFluxModel {
      * @param <T> field type
      * @since 12.2
      */
-    default <T extends CalculusFieldElement<T>> void init(FieldSpacecraftState<T> initialState,
+    default <T extends CalculusFieldElement<T>> void init(final FieldSpacecraftState<T> initialState,
                                                           final FieldAbsoluteDate<T> targetDate) {
         // nothing by default
     }

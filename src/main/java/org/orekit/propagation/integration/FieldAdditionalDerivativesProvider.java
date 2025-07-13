@@ -94,7 +94,7 @@ public interface FieldAdditionalDerivativesProvider<T extends CalculusFieldEleme
      * @return true if this provider should yield so another provider has an opportunity to add missing parts
      * as the state is incrementally built up
      */
-    default boolean yields(FieldSpacecraftState<T> state) {
+    default boolean yields(final FieldSpacecraftState<T> state) {
         return false;
     }
 

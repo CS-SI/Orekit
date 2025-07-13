@@ -91,7 +91,7 @@ public interface AdditionalDerivativesProvider {
      * @return true if this provider should yield so another provider has an opportunity to add missing parts
      * as the state is incrementally built up
      */
-    default boolean yields(SpacecraftState state) {
+    default boolean yields(final SpacecraftState state) {
         return false;
     }
 

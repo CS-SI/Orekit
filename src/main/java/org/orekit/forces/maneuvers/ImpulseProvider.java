@@ -41,7 +41,7 @@ public interface ImpulseProvider {
      * @param initialState state at start of propagation
      * @param targetDate target end date
      */
-    default void init(SpacecraftState initialState, AbsoluteDate targetDate) {
+    default void init(final SpacecraftState initialState, final AbsoluteDate targetDate) {
         // nothing by default
     }
 
@@ -49,7 +49,7 @@ public interface ImpulseProvider {
      * Method called at end of propagation.
      * @param finalState state at end of propagation
      */
-    default void finish(SpacecraftState finalState) {
+    default void finish(final SpacecraftState finalState) {
         // nothing by default
     }
 

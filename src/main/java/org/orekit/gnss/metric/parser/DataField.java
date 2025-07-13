@@ -29,7 +29,7 @@ public interface DataField {
      * @param message message containing the data
      * @return boolean value of the field
      */
-    default boolean booleanValue(EncodedMessage message) {
+    default boolean booleanValue(final EncodedMessage message) {
         // this method should be overwritten
         throw new OrekitInternalError(null);
     }
@@ -38,7 +38,7 @@ public interface DataField {
      * @param message message containing the data
      * @return integer value of the field
      */
-    default int intValue(EncodedMessage message) {
+    default int intValue(final EncodedMessage message) {
         // this method should be overwritten
         throw new OrekitInternalError(null);
     }
@@ -47,7 +47,7 @@ public interface DataField {
      * @param message message containing the data
      * @return double value of the field
      */
-    default double doubleValue(EncodedMessage message) {
+    default double doubleValue(final EncodedMessage message) {
         // this method should be overwritten
         throw new OrekitInternalError(null);
     }
@@ -57,7 +57,7 @@ public interface DataField {
      * @param n number of UTF8 characters
      * @return String value of the field
      */
-    default String stringValue(EncodedMessage message, int n) {
+    default String stringValue(final EncodedMessage message, final int n) {
         // this method should be overwritten
         throw new OrekitInternalError(null);
     }

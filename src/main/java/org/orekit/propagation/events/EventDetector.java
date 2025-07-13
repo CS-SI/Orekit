@@ -77,7 +77,7 @@ public interface EventDetector {
      * @param t target time for the integration
      *
      */
-    default void init(SpacecraftState s0, AbsoluteDate t) {
+    default void init(final SpacecraftState s0, final AbsoluteDate t) {
         getHandler().init(s0, t, this);
     }
 
@@ -89,7 +89,7 @@ public interface EventDetector {
      * @param target target time for the integration
      * @since 13.0
      */
-    default void reset(SpacecraftState state, AbsoluteDate target) {
+    default void reset(final SpacecraftState state, final AbsoluteDate target) {
         // nothing by default
     }
 
@@ -143,7 +143,7 @@ public interface EventDetector {
      * @param state state at propagation end
      * @since 12.2
      */
-    default void finish(SpacecraftState state) {
+    default void finish(final SpacecraftState state) {
         getHandler().finish(state, this);
     }
 

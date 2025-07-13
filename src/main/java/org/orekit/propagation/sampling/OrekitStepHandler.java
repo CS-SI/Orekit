@@ -40,7 +40,7 @@ public interface OrekitStepHandler {
      * @param s0 initial state
      * @param t target time for the integration
      */
-    default void init(SpacecraftState s0, AbsoluteDate t) {
+    default void init(final SpacecraftState s0, final AbsoluteDate t) {
         // nothing by default
     }
 
@@ -54,7 +54,7 @@ public interface OrekitStepHandler {
      * @param finalState state at propagation end
      * @since 11.0
      */
-    default void finish(SpacecraftState finalState) {
+    default void finish(final SpacecraftState finalState) {
         // nothing by default
     }
 

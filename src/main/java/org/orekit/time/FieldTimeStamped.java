@@ -60,7 +60,7 @@ public interface FieldTimeStamped<T extends CalculusFieldElement<T>> {
      * @see FieldAbsoluteDate#durationFrom(FieldAbsoluteDate)
      * @since 12.0
      */
-    default T durationFrom(FieldTimeStamped<T> other) {
+    default T durationFrom(final FieldTimeStamped<T> other) {
         return getDate().durationFrom(other.getDate());
     }
 
