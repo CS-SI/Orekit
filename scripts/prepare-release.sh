@@ -49,7 +49,6 @@ done
 git -C "$top" rev-parse 2>/dev/null        || complain "$top does not contain a git repository"
 test -f $top/pom.xml                       || complain "$top/pom.xml not found"
 test -d $top/src/main/java/org/orekit/time || complain "$top/src/main/java/org/orekit/time not found"
-test -f $HOME/.m2/settings.xml             || complain "$HOME/.m2/settings.xml not found"
 export JAVA_HOME=$(find_java_home 1.8)
 export PATH=${JAVA_HOME}/bin:$PATH
 echo "JAVA_HOME set to $JAVA_HOME"
@@ -153,16 +152,8 @@ request_confirmation "commit downloads.md.vm and faq.md?"
 # delete temporary branch
 (cd $top ; git checkout $release_branch ; git merge --no-ff -m "merging $temporary_branch into $release_branch" $temporary_branch ; git branch -d $temporary_branch)
 
-signing_key="0802AB8C87B0B1AEC1C1C5871550FDBD6375C33B"
-echo ""
-echo "BEWARE! In the next step, the signing key will be used."
-echo "gpg-agent will most likely display a dialog window that will PREVENT"
-echo "retrieving the passphrase from password management tools like KeePassXC."
-echo "If you need to retrieve the passphrase from such a password management tool,"
-echo " do it now,and type 'yes' fast on the following prompt,"
-ecgo "so you can paste the passphrase in gpg-agent dialog."
-request_confirmation "create and sign tag $release_tag?"
-(cd $top ; git tag $release_tag -s -u $signing_key -m "Release Candidate $next_rc for version $release_version."; git tag -v $release_tag)
+request_confirmation "create tag $release_tag?"
+(cd $top ; git tag $release_tag -m "Release Candidate $next_rc for version $release_version.")
 
 # push to origin (this will trigger automatic deployment to Orekit Nexus instance)
 request_confirmation "push $release_branch branch and $release_tag tag to origin?"
@@ -184,11 +175,13 @@ The release candidate ${next_rc} can be found on the GitLab repository
 as tag $release_tag in the ${release_branch} branch:
 https://gitlab.orekit.org/orekit/orekit/tree/${release_branch}
 
-The maven artifacts are available in the Orekit Nexus repository staging area at
-https://packages.orekit.org/#browse/browse:maven-staging:org%2Forekit%2Forekit%2F${release_version}
+Once the Continuous Integration has finished its job (this should hopefully take less than
+one hour), it will put:
 
-The generated site is available at
-https://www.orekit.org/site-orekit-${release_version}/index.html
+  - the maven artifacts in the Orekit Nexus repository at:
+    https://packages.orekit.org/#browse/browse:maven-release:org%2Forekit%2Forekit%2F${release_version}
+  - the generated site  available at:
+    https://www.orekit.org/site-orekit-${release_version}/index.html
 
 The vote will be tallied on ${release_date}"
 
@@ -197,18 +190,18 @@ The vote will be tallied on ${release_date}"
     request_confirmation "OK to post vote topic on forum?"
 
     read -p "enter your forum user name" forum_username
-    while test -z "forum_password" ; do
+    while test -z "forum_api_key" ; do
         echo "enter your forum API key"
         stty_orig=$(stty -g)
         stty -echo
-        read forum_password
+        read forum_api_key
         stty $stty_orig
     done
 
     post_url=$(curl -H "Content-Type: application/json" \
                     -H "Accept: application/json" \
                     -H "Api-Username: $forum_username"\
-                    -H "Api-Key: $forum_password" \
+                    -H "Api-Key: $forum_api_key" \
                     -X POST https://forum.orekit.org/posts.json
                     -d "{ \"title\": \"topic_title\", \"raw\": \"$topic_raw\", \"category\": \"$orekit_dev_category\" }" \
             | jp .post_url | sed "s,\"\(.*\)\",https://forum.orekit.org\1,")

@@ -18,15 +18,6 @@ The following tasks are one-time actions, they just prepare the credentials for
 performing the release, but these credentials will remain valid for years and
 for several releases.
 
-## Signing Key
-
-Orekit artifacts are signed with a specific GPG signing key that is shared among
-all release managers. The id of this key is `0802AB8C87B0B1AEC1C1C5871550FDBD6375C33B`.
-Release managers should ask for this key and its password before they can sign
-releases. There are no automatic processes for this, candidate release managers should
-just send direct messages to existing release managers, and they will proceed with
-sending the key and password, using any means they see fit.
-
 ## Forum API Key
 
 The release process script shell described below creates the vote topic automatically
@@ -212,22 +203,25 @@ Return to the start branch and merge the branch issue-YYY:
 ## 2. Run the prepare-release.sh script
 
 There is a `prepare-release.sh` shell script in the `scripts` directory that
-helps perform the release. It handles many steps automatically. It asks
-questions and waits for input and confirmation at various stages. It creates
-branches, checks them out, performs some automated edition on several files,
-commits the changes, compiles the library, signs the artifacts, pushes everything
-to Orekit Nexus repository in a staging area and ultimately creates the vote topic.
-
-It performs the release on a temporary branch that is merged only near
-the final step, and it automatically removes it without merging if
-something goes wrong before this final step, hence ensuring everything
-remains clean. It will also delete the uploaded artifacts on the central
-portal if something goes wrong after upload but before script completion.
+automatically performs all the release steps by itself. It asks questions and
+waits for confirmation at various stages. It creates branches, checks them out,
+performs some automated edition on several files, commits the changes, sets up
+tags that will be recognized by Orekit Continuous Integration setup, and pushes
+everything to Orekit Gitlab forge.
 
 When releasing a major or minor version, the script automatically posts a vote topic
-on the Orekit forum community and PMC members can vote on the release and then it stops.
+on the Orekit forum so that community and PMC members can vote on the release.
 When releasing a patch version, the script skips the vote topic creation and continues
 up to promoting the release from staging to published.
+
+The shell script performs the release on a temporary branch that is merged only near
+the final step, and it automatically removes it without merging if something goes
+wrong before this final step, hence ensuring everything remains clean.
+
+As the tag is pushed to Orekit Gitlab forge, the Continuous Integration is
+automatically triggered. It performs a full build, signs the artifacts using the
+release key and puts them in a staging repository, where users will be able to
+review them during the voting period.
 
 The script does not handle (yet) the final stages like updating the website
 or announcing the release on the GitHub mirror repository. These stages are
@@ -251,44 +245,32 @@ for user confirmation before any commit:
     - checkout the release-X.Y-temporary branch
     - merge the start branch into the release-X.Y-temporary branch
     - drop -SNAPSHOT version number from `pom.xml` and commit the change
-    - compute candidate release date 5 days in the future
+    - compute candidate release date, allocating 1 hour for the build and 5 days for the vote
+    - for major or minor release, set up a release candidate number, counting from 1 for the first release attempt
     - update `changes.xml` with release date and release type and commit the change
     - update downloads and faq pages and commit the changes
     - merge release-X.Y-temporary branch into release-X.Y branch
     - delete release-X.Y-temporary branch
-    - tag and sign the repository
-      (the passphrase for the signing key should be asked for at this stage)
-    - perform a full build
-      (the passphrase for the signing key may be asked for again at the end of this stage if it was not cached)
-    - push the branch and the tag to origin (this will trigger deployment to Orekit Nexus repository staging area)
+    - tag the repository
+    - push the tagged repository to origin
+      (this will trigger full build, signing and deployment to Orekit Nexus instance)
     - if the release is a patch release, call immediately the `successful-vote.sh` script
-    - if the release is a minor or major release, create the vote topic automatically on the forum
+    - if the release is a major or minor release, create the vote topic automatically on the forum
       (the API key for posting to the forum will be asked for here)
 
 ## 3. Voting period
 
-For minor and major releases, the script generates the vote topic on the forum by itself.
-The voting period is 5 days, so release managers should wait until this time as elapsed before
+For major and minor releases, the script generates the vote topic on the forum by itself.
+The voting period is 5 days, so release managers should wait until this time has elapsed before
 concluding. Of course, if one of the voters raises concerns that should be addressed, the
 vote can be canceled before the 5-day duration.
 
 ### 3.1. Failed or canceled vote
 
-If the vote fails or is canceled, the maven artifacts must be removed from the staging area.
-This is done by running the `failed-or-canceled-vote.sh` script, taking care to run it from
-the release-X.Y branch:
+If the vote fails or is canceled, there is nothing to do. The failed release
+candidate can be kept, it will just not be published.
 
-    sh scripts/failed-or-canceled-vote.sh
-
-Here are the steps the script performs on its own, asking
-for user confirmation before any commit:
-
-    - perform safety checks (files and directories present, utilities available)
-    - check the branch to see it is really a release branch
-    - check the tag for the failed release candidate
-    - delete maven artifacts from the Orekit Nexus repository
-
-Then the process should be started again using the `prepare-release.sh` script.
+The release process should just be started again using the `prepare-release.sh` script.
 Note that the script keeps track of the release candidate number on its own as it looks
 for the tags in the git repository and as release candidate tags are never deleted.
 
@@ -307,10 +289,10 @@ for user confirmation before any commit:
     - perform safety checks (files and directories present, utilities available)
     - check the branch to see it is really a release branch
     - check the tag for the successful release candidate
-    - retrieve maven artifacts for the Orekit Nexus repository
+    - retrieve maven artifacts from the Orekit Nexus repository
     - publish maven artifacts to the central portal
-    - tag and sign the repository (the passphrase for the key should be asked at this stage)
-    - push the branch and the tag to origin
+    - tag the repository
+    - push the tagged repository to origin
     - merge release branch to main branch
     - push main branch to origin
     - merge main branch to develop branch
@@ -371,7 +353,7 @@ announcements category of the forum with a subject line of the form:
 and content of the form:
 
     The Orekit team is pleased to announce the release of Orekit version X.Y.
-    This is a minor/major version, including both new features and bug fixes.
+    This is a major/minor/patch version.
     The main changes are:
 
       - feature 1 description

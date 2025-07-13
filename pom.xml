@@ -1090,10 +1090,8 @@
             <artifactId>maven-gpg-plugin</artifactId>
             <version>${orekit.maven-gpg-plugin.version}</version>
             <configuration>
-              <gpgArguments>
-                <arg>--digest-algo=SHA512</arg>
-              </gpgArguments>
-              <keyname>0802AB8C87B0B1AEC1C1C5871550FDBD6375C33B</keyname>
+              <signer>bc</signer>
+              <useAgent>false</useAgent>
             </configuration>
             <executions>
               <execution>
@@ -1129,7 +1127,7 @@
             <version>${orekit.maven-surefire-plugin.version}</version>
             <configuration>
               <!-- Orekit is mostly a computational library. -->
-              <!-- As there is not a lot of I/O it is better to not overide the number of CPU. -->
+              <!-- As there is not a lot of I/O it is better to not override the number of CPU. -->
               <forkCount>0.5C</forkCount>
               <argLine>@{argLine} -Xmx2048m</argLine>
             </configuration>

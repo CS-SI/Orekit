@@ -29,7 +29,6 @@ done
 git -C "$top" rev-parse 2>/dev/null        || complain "$top does not contain a git repository"
 test -f $top/pom.xml                       || complain "$top/pom.xml not found"
 test -d $top/src/main/java/org/orekit/time || complain "$top/src/main/java/org/orekit/time not found"
-test -f $HOME/.m2/settings.xml             || complain "$HOME/.m2/settings.xml not found"
 
 start_branch=$(cd $top ; git branch --show-current)
 echo "start branch is $start_branch"
@@ -53,7 +52,7 @@ bundle_dir=$tmpdir/bundle/org/orekit/orekit/${release_version};
 mkdir $bundle_dir
 base_url="https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/${release_version}"
 for asset in "-cyclonedx.json" "-javadoc.jar" "-sources.zip" ".jar" ".pom" ".zip" ; do
-    for suffix in "" ".md5" ".sha1" ; do
+    for suffix in "" ".asc" ".md5" ".sha1" ; do
       curl --output ${bundle_dir}/orekit-${release_version}${suffix} \
            $base_url/orekit-${release_version}${suffix}
     done
@@ -96,14 +95,8 @@ curl --request POST \
      --header "Authorization: Bearer $central_bearer" \
      https://central.sonatype.com/api/v1/publisher/deployment/${deployment_id}
 
-signing_key="0802AB8C87B0B1AEC1C1C5871550FDBD6375C33B"
-echo "BEWARE! In the next step, the signing key will be used."
-echo "gpg-agent will most likely display a dialog window that will PREVENT"
-echo "retrieving the passphrase from password management tools like KeePassXC."
-echo "If you need to retrieve the passphrase from such a password management tool,"
-echo "do it now, and enter 'yes' fast on the following prompt so you can paste it in gpg-agent dialog."
-request_confirmation "create and sign tag $release_tag?"
-(cd $top ; git tag $release_tag -s -u $signing_key -m "Version $release_version."; git tag -v $release_tag)
+request_confirmation "create tag $release_tag?"
+(cd $top ; git tag $release_tag -m "Version $release_version.")
 
 # push to origin
 request_confirmation "push $release_branch branch and $release_tag tag to origin?"
