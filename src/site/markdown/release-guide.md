@@ -228,7 +228,7 @@ or announcing the release on the GitHub mirror repository. These stages are
 described in the next section.
 
 This script must be run from the command line on a computer with several Linux
-utilities (git, java, maven, sed, xsltproc, curl…), with the git worktree
+utilities (git, sed, xsltproc, curl…), with the git worktree
 already set to the start branch (i.e., develop or a patch branch):
 
     sh scripts/prepare-release.sh

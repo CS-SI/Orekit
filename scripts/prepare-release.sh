@@ -17,19 +17,6 @@ complain()
     exit 1
 }
 
-find_java_home()
-{
-    for d in /usr/lib/jvm/* ; do
-        if test -f "$d/bin/java" ; then
-            if test "$($d/bin/java -version 2>&1 | sed -n 's,.*version *\"\([0-9]*\.[0-9]*\).*,\1,p')" = $1 ; then
-                echo $d
-                return
-            fi
-        fi
-    done
-    complain "Java home $1 not found"
-}
-
 request_confirmation()
 {
     answer=""
@@ -43,15 +30,12 @@ request_confirmation()
 top=$(cd $(dirname $0)/.. ; pwd)
 
 # safety checks
-for cmd in git sed xsltproc mvn tee sort tail curl ; do
+for cmd in git sed xsltproc tee sort tail curl ; do
     which -s $cmd || complain "$cmd command not found"
 done
 git -C "$top" rev-parse 2>/dev/null        || complain "$top does not contain a git repository"
 test -f $top/pom.xml                       || complain "$top/pom.xml not found"
 test -d $top/src/main/java/org/orekit/time || complain "$top/src/main/java/org/orekit/time not found"
-export JAVA_HOME=$(find_java_home 1.8)
-export PATH=${JAVA_HOME}/bin:$PATH
-echo "JAVA_HOME set to $JAVA_HOME"
 
 start_branch=$(cd $top ; git branch --show-current)
 echo "start branch is $start_branch"
