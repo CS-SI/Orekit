@@ -35,7 +35,7 @@ public interface AccelerationModel extends ParameterDriversProvider {
      * @param initialState spacecraft state at the start of propagation.
      * @param target       date of propagation. Not equal to {@code initialState.getDate()}.
      */
-    default void init(SpacecraftState initialState, AbsoluteDate target) {
+    default void init(final SpacecraftState initialState, final AbsoluteDate target) {
         // Nothing by default
     }
 

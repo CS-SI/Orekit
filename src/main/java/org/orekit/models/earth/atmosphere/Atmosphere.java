@@ -65,7 +65,7 @@ public interface Atmosphere {
      * @param frame the frame in which is defined the position
      * @return velocity (m/s) (defined in the same frame as the position)
      */
-    default Vector3D getVelocity(AbsoluteDate date, Vector3D position, Frame frame) {
+    default Vector3D getVelocity(final AbsoluteDate date, final Vector3D position, final Frame frame) {
         final KinematicTransform bodyToFrame = getFrame().getKinematicTransformTo(frame, date);
         final Vector3D      posInBody   = bodyToFrame.getStaticInverse().transformPosition(position);
         final PVCoordinates pvBody      = new PVCoordinates(posInBody, Vector3D.ZERO);
@@ -80,9 +80,9 @@ public interface Atmosphere {
      * @param <T> instance of CalculusFieldElement
      * @return velocity (m/s) (defined in the same frame as the position)
      */
-    default <T extends CalculusFieldElement<T>> FieldVector3D<T> getVelocity(FieldAbsoluteDate<T> date,
-                                                                             FieldVector3D<T> position,
-                                                                             Frame frame) {
+    default <T extends CalculusFieldElement<T>> FieldVector3D<T> getVelocity(final FieldAbsoluteDate<T> date,
+                                                                             final FieldVector3D<T> position,
+                                                                             final Frame frame) {
         final FieldKinematicTransform<T> bodyToFrame = getFrame().getKinematicTransformTo(frame, date);
         final FieldVector3D<T>      posInBody   = bodyToFrame.getStaticInverse().transformPosition(position);
         final FieldPVCoordinates<T> pvBody      = new FieldPVCoordinates<>(posInBody,

@@ -253,7 +253,7 @@ public interface FieldPropagator<T extends CalculusFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     @Override
-    default TimeStampedFieldPVCoordinates<T> getPVCoordinates(FieldAbsoluteDate<T> date, Frame frame) {
+    default TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
         return propagate(date).getPVCoordinates(frame);
     }
 
