@@ -15,12 +15,27 @@ Three types of versions can be released:
 # 0. Prerequisites
 
 The following tasks are one-time actions, they just prepare the credentials for
-performing the release, but these credentials will remain valid for years and
+performing the release, but these credentials will remain valid for months and
 for several releases.
+
+## Gitlab personal access token
+
+The release process shell script described below monitors the continuous integration
+run that creates and signs the binary artifacts. In order to do this, it needs a personal
+access token with api and write_repository scopes. This access token can be created
+by users directly from their Gitlab account (User Settings → Access Tokens) or by following
+the link below:
+https://gitlab.orekit.org/-/user_settings/personal_access_tokens?scopes=api,write_repository
+
+Note that the access token is only visible once from this page, so it must be saved before
+leaving the page.
+
+The Gitlab personal access token lifetime is limited to 11 months, so this step must be
+renewed from time to time.
 
 ## Forum API Key
 
-The release process script shell described below creates the vote topic automatically
+The release process shell script described below creates the vote topic automatically
 on the Orekit forum https://forum.orekit.org. In order to do this, it needs an API key
 to post on behalf of the release manager. There are no automatic processes for setting
 up such a key, candidate release managers should just send direct messages to the forum
@@ -228,7 +243,7 @@ or announcing the release on the GitHub mirror repository. These stages are
 described in the next section.
 
 This script must be run from the command line on a computer with several Linux
-utilities (git, sed, xsltproc, curl…), with the git worktree
+utilities (git, sed, xsltproc, curl, glab…), with the git worktree
 already set to the start branch (i.e., develop or a patch branch):
 
     sh scripts/prepare-release.sh
@@ -254,6 +269,7 @@ for user confirmation before any commit:
     - tag the repository
     - push the tagged repository to origin
       (this will trigger full build, signing and deployment to Orekit Nexus instance)
+    - monitor continuous integration run
     - if the release is a patch release, call immediately the `successful-vote.sh` script
     - if the release is a major or minor release, create the vote topic automatically on the forum
       (the API key for posting to the forum will be asked for here)

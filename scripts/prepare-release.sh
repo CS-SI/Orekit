@@ -30,7 +30,7 @@ request_confirmation()
 top=$(cd $(dirname $0)/.. ; pwd)
 
 # safety checks
-for cmd in git sed xsltproc tee sort tail curl ; do
+for cmd in git sed xsltproc tee sort tail curl glab ; do
     which -s $cmd || complain "$cmd command not found"
 done
 git -C "$top" rev-parse 2>/dev/null        || complain "$top does not contain a git repository"
@@ -142,6 +142,12 @@ request_confirmation "create tag $release_tag?"
 # push to origin (this will trigger automatic deployment to Orekit Nexus instance)
 request_confirmation "push $release_branch branch and $release_tag tag to origin?"
 (cd $top ; git push origin $release_branch $release_tag)
+
+# monitor continuous integration
+glab auth login --hostname gitlab.orekit.org
+glab ci status --live --branch=${release_branch}
+# glab auth logout is available only starting with glab version 1.55
+test $(glab version | sed 's,.*:.\([0-9]*\)\.\([0-9]*\).*,\1\2,') -ge 155 && glab auth logout --hostname gitlab.orekit.org
 
 if test "$release_type" = "patch" ; then
     # for patch release, there are no votes, we jump directly to the publish step
