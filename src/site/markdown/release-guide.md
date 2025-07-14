@@ -20,18 +20,16 @@ for several releases.
 
 ## Gitlab personal access token
 
-The release process shell script described below monitors the continuous integration
-run that creates and signs the binary artifacts. In order to do this, it needs a personal
-access token with api and write_repository scopes. This access token can be created
-by users directly from their Gitlab account (User Settings → Access Tokens) or by following
-the link below:
+The release process shell script described below triggers merge requests and monitors
+the continuous integration run that creates and signs the binary artifacts. In order to
+do this, it needs a personal access token with api and write_repository scopes. This
+access token can be created by users directly from their Gitlab account
+(User Settings → Access Tokens) or by following the link below:
 https://gitlab.orekit.org/-/user_settings/personal_access_tokens?scopes=api,write_repository
 
 Note that the access token is only visible once from this page, so it must be saved before
-leaving the page.
-
-The Gitlab personal access token lifetime is limited to 11 months, so this step must be
-renewed from time to time.
+leaving the page. The Gitlab personal access token lifetime is limited to 11 months, this
+step must therefore be renewed from time to time.
 
 ## Forum API Key
 
@@ -256,18 +254,17 @@ for user confirmation before any commit:
       using the -SNAPSHOT version number from the current branch `pom.xml`
     - for major or minor release, create a release-X.Y branch from develop (reuse existing branch for patch release)
     - checkout the release-X.Y branch
-    - create a release-X.Y-temporary branch
-    - checkout the release-X.Y-temporary branch
-    - merge the start branch into the release-X.Y-temporary branch
+    - set up a release candidate number, counting from 1 for the first release attempt
+    - create a release-X.Y-RCn branch
+    - checkout the release-X.Y-RCn branch
+    - merge the start branch into the release-X.Y-RCn branch
     - drop -SNAPSHOT version number from `pom.xml` and commit the change
     - compute candidate release date, allocating 5 days for the vote
-    - for major or minor release, set up a release candidate number, counting from 1 for the first release attempt
     - update `changes.xml` with release date and release type and commit the change
     - update downloads and faq pages and commit the changes
-    - merge release-X.Y-temporary branch into release-X.Y branch
-    - delete release-X.Y-temporary branch
-    - tag the repository
-    - push the tagged repository to origin
+    - tag the release-X.Y-RCn branch with tag X.Y-RCn
+    - push the tagged release-X.Y-RCn branch to origin
+    - trigger a merge request from release-X.Y-RCn branch to release-X.Y branch
       (this will trigger full build, signing and deployment to Orekit Nexus instance)
     - monitor continuous integration run
     - if the release is a patch release, call immediately the `successful-vote.sh` script
