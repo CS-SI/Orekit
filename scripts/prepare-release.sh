@@ -132,11 +132,12 @@ request_confirmation "create tag $rc_tag?"
 
 # push to origin
 request_confirmation "push $rc_branch branch and $rc_tag tag to origin?"
-(cd $top ; git push origin $rc_branch $rc_tag)
+(cd $top ; git push luc $rc_branch $rc_tag)
 
-# trigger merge request
+# trigger merge request (this will trigger continuous integration pipelines)
 glab auth login --hostname gitlab.orekit.org
 glab mr create -f -s $rc_branch -b $release_branch
+glab mr merge --sha $(git rev-parse --verify HEAD)
 
 # monitor continuous integration
 glab ci status --live --branch=${release_branch}
