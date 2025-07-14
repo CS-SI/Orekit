@@ -156,7 +156,7 @@ while test "${job_status}" != "running" ; do
   echo "waiting for pipeline job start ($count/100)"
   sleep 6
   job_status=$(cd $top ; glab ci list --updated-after "$merge_date" | sed -n "s,(\([a-z]*\)).*$release_branch.*,\1,p")
-  test $count -gt 100 || complain "job not started after 10 minutes, exiting"
+  test $count -lt 100 || complain "job not started after 10 minutes, exiting"
 done
 (cd $top ; glab ci status --live --branch=${release_branch})
 
