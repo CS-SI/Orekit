@@ -137,12 +137,16 @@ request_confirmation "push $rc_branch branch and $rc_tag tag to origin?"
 # trigger merge request (this will trigger continuous integration pipelines)
 merge_date=$(TZ=UTC date +"%Y-%m-%dT%H:%M:%SZ")
 (cd $top ; glab auth login --hostname gitlab.orekit.org)
+if test -z "$(cd $top ; git branch -a --list origin/${release_branch})" ; then
+  # create the release branch on origin, so we can merge into it
+  (cd $top ; glab api --silent --method POST "projects/orekit%2Forekit/repository/branches?branch=${release_branch}&ref=develop")
+fi
 (cd $top ; glab mr create --fill --source-branch $rc_branch --target-branch $release_branch --yes)
 mr_id=$(cd $top ; glab mr list --source-branch $rc_branch | sed -n 's,^!\([0-9]*\).*,\1,p')
 (cd $top ; glab mr merge $mr_id --remove-source-branch --yes)
 
 # switch to release branch
-(cd $top ; git checkout $release_branch ; git branch --set-upstream-to origin/$release_branch; git pull)
+(cd $top ; git fetch ; git checkout $release_branch ; git branch --set-upstream-to origin/$release_branch; git pull)
 
 # delete release candidate branch
 request_confirmation "delete $rc_branch release candidate branch? (note that tag $rc_tag will be preserved)"
@@ -156,7 +160,7 @@ while test "${job_status}" != "running" ; do
   echo "waiting for pipeline job start ($count/100)"
   sleep 6
   job_status=$(cd $top ; glab ci list --updated-after "$merge_date" | sed -n "s,(\([a-z]*\)).*$release_branch.*,\1,p")
-  test $count -gt 100 || complain "job not started after 10 minutes, exiting"
+  test $count -lt 100 || complain "job not started after 10 minutes, exiting"
 done
 (cd $top ; glab ci status --live --branch=${release_branch})
 
