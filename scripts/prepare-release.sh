@@ -74,7 +74,7 @@ fi
 rc_tag="${release_version}-RC$next_rc"
 
 # create release candidate branch
-rc_branch="${release_branch}-RC$next_rc"
+rc_branch="RC${next_rc}-${release_version}"
 test -z "$(git branch --list $rc_branch)" || complain "branch $rc_branch already exists, stopping"
 (cd $top ; git branch $rc_branch ; git checkout $rc_branch ; git merge --no-ff --no-commit $start_branch)
 if test ! -z "$(cd $top ; git status --porcelain)" ; then
