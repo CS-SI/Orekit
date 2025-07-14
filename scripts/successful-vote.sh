@@ -49,12 +49,12 @@ test -z "$(cd $top; git tag -l \"${release_tag}\")" || complain "tag ${release_t
 
 # retrieve artifacts from Orekit Nexus repository
 bundle_dir=$tmpdir/bundle/org/orekit/orekit/${release_version};
-mkdir $bundle_dir
+mkdir -p $bundle_dir
 base_url="https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/${release_version}"
-for asset in "-cyclonedx.json" "-javadoc.jar" "-sources.zip" ".jar" ".pom" ".zip" ; do
+for artifact in "-cyclonedx.json" "-cyclonedx.xml" "-javadoc.jar" "-sources.jar" ".jar" ".pom" ; do
     for suffix in "" ".asc" ".md5" ".sha1" ; do
-      curl --output ${bundle_dir}/orekit-${release_version}${suffix} \
-           $base_url/orekit-${release_version}${suffix}
+      curl --output ${bundle_dir}/orekit-${release_version}${artifact}${suffix} \
+           $base_url/orekit-${release_version}${artifact}${suffix}
     done
 done
 (cd $tmpdir/bundle ; tar czf orekit-${release_version}.tar.gz ./org)

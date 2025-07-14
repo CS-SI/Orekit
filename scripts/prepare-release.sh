@@ -10,7 +10,7 @@ complain()
     if test ! -z "$start_branch" && test "$(cd $top ; git branch --show-current)" != "$start_branch" ; then
         # we need to clean up the branches and rewind everything
         (cd $top ; git reset -q --hard; git checkout $start_branch)
-        test -z "$(git branch --list $temporary_branch)"  || (cd $top ; git branch -D $temporary_branch)
+        test -z "$(git branch --list $rc_branch)"  || (cd $top ; git branch -D $rc_branch)
         test "$delete_release_branch_on_cleanup" = "true" && (cd $top ; git branch -D $release_branch)
         echo "everything has been cleaned, branch set back to $start_branch" 1>&2
     fi
@@ -30,7 +30,7 @@ request_confirmation()
 top=$(cd $(dirname $0)/.. ; pwd)
 
 # safety checks
-for cmd in git sed xsltproc tee sort tail curl ; do
+for cmd in git sed xsltproc tee sort tail curl glab ; do
     which -s $cmd || complain "$cmd command not found"
 done
 git -C "$top" rev-parse 2>/dev/null        || complain "$top does not contain a git repository"
@@ -64,14 +64,23 @@ else
 fi
 (cd $top ; git checkout $release_branch)
 
-# create temporary branch for the release process, starting from the release branch
-temporary_branch=${release_branch}-temporary
-test -z "$(git branch --list $temporary_branch)" || complain "branch $temporary_branch already exists, stopping"
-(cd $top ; git branch $temporary_branch ; git checkout $temporary_branch ; git merge --no-ff --no-commit $start_branch)
+# compute release candidate number
+last_rc=$(cd $top; git tag -l ${release_version}-RC* | sed 's,.*-RC,,' | sort -n | tail -1)
+if test -z "$last_rc" ; then
+    next_rc=1
+else
+    next_rc=$(expr $last_rc + 1)
+fi
+rc_tag="${release_version}-RC$next_rc"
+
+# create release candidate branch
+rc_branch="${release_branch}-RC$next_rc"
+test -z "$(git branch --list $rc_branch)" || complain "branch $rc_branch already exists, stopping"
+(cd $top ; git branch $rc_branch ; git checkout $rc_branch ; git merge --no-ff --no-commit $start_branch)
 if test ! -z "$(cd $top ; git status --porcelain)" ; then
     (cd $top ; git status)
     request_confirmation "commit merge from $start_branch?"
-    (cd $top ; git commit -m "merging $start_branch to $temporary_branch")
+    (cd $top ; git commit -m "merging $start_branch to $rc_branch")
 fi
 
 # modify pom
@@ -88,23 +97,8 @@ echo
 request_confirmation "commit pom.xml?"
 (cd $top; git add pom.xml ; git commit -m "Dropped -SNAPSHOT in version number for official release.")
 
-# compute release date in the future (1 hour allocated to build, and 5 days allocated to vote)
-vote_date=$(TZ=UTC date -d "+5 days 1 hour" +"%Y-%m-%dT%H:%M:%SZ")
-release_date=$(echo $vote_date | sed 's,T.*,,')
-
-if test "$release_type" = "patch" ; then
-    # patch release do not need release candidates
-    release_tag="$release_version"
-else
-    # compute release candidate number
-    last_rc=$(cd $top; git tag -l ${release_version}-RC* | sed 's,.*-RC,,' | sort -n | tail -1)
-    if test -z "$last_rc" ; then
-        next_rc=1
-    else
-        next_rc=$(expr $last_rc + 1)
-    fi
-    release_tag="${release_version}-RC$next_rc"
-fi
+# compute release date in the future
+release_date=$(TZ=UTC date -d "+5 days" +"%Y-%m-%d")
 
 # update changes.xml
 cp -p $top/src/changes/changes.xml $tmpdir/original-changes.xml
@@ -133,21 +127,48 @@ echo
 request_confirmation "commit downloads.md.vm and faq.md?"
 (cd $top ; git add src/site/markdown/downloads.md.vm src/site/markdown/faq.md ; git commit -m "Updated documentation for official release.")
 
-# delete temporary branch
-(cd $top ; git checkout $release_branch ; git merge --no-ff -m "merging $temporary_branch into $release_branch" $temporary_branch ; git branch -d $temporary_branch)
+request_confirmation "create tag $rc_tag?"
+(cd $top ; git tag $rc_tag -m "Release Candidate $next_rc for version $release_version.")
 
-request_confirmation "create tag $release_tag?"
-(cd $top ; git tag $release_tag -m "Release Candidate $next_rc for version $release_version.")
+# push to origin
+request_confirmation "push $rc_branch branch and $rc_tag tag to origin?"
+(cd $top ; git push origin $rc_branch $rc_tag)
 
-# push to origin (this will trigger automatic deployment to Orekit Nexus instance)
-request_confirmation "push $release_branch branch and $release_tag tag to origin?"
-(cd $top ; git push origin $release_branch $release_tag)
+# trigger merge request (this will trigger continuous integration pipelines)
+merge_date=$(TZ=UTC date +"%Y-%m-%dT%H:%M:%SZ")
+(cd $top ; glab auth login --hostname gitlab.orekit.org)
+(cd $top ; glab mr create --fill --source-branch $rc_branch --target-branch $release_branch --yes)
+mr_id=$(cd $top ; glab mr list --source-branch $rc_branch | sed -n 's,^!\([0-9]*\).*,\1,p')
+(cd $top ; glab mr merge $mr_id --remove-source-branch --yes)
+
+# switch to release branch
+(cd $top ; git checkout $release_branch ; git branch --set-upstream-to origin/$release_branch; git pull)
+
+# delete release candidate branch
+request_confirmation "delete $rc_branch release candidate branch? (note that tag $rc_tag will be preserved)"
+(cd $top ; git branch -d $rc_branch)
+
+# monitor continuous integration
+job_status="pending"
+count=0
+while test "${job_status}" != "running" ; do
+  count=$(expr $count + 1)
+  echo "waiting for pipeline job start ($count/100)"
+  sleep 6
+  job_status=$(cd $top ; glab ci list --updated-after "$merge_date" | sed -n "s,(\([a-z]*\)).*$release_branch.*,\1,p")
+  test $count -gt 100 || complain "job not started after 10 minutes, exiting"
+done
+(cd $top ; glab ci status --live --branch=${release_branch})
+
+# glab auth logout is available only starting with glab version 1.55
+test $(glab version | sed 's,.*:.\([0-9]*\)\.\([0-9]*\).*,\1\2,') -ge 155 && (cd $top ; glab auth logout --hostname gitlab.orekit.org)
 
 if test "$release_type" = "patch" ; then
     # for patch release, there are no votes, we jump directly to the publish step
-    sh successful-vote.sh
+    sh $top/scripts/successful-vote.sh
 else
     # create vote topic
+    vote_date=$(TZ=UTC date -d "+5 days" +"%Y-%m-%dT%H:%M:%SZ")
     orekit_dev_category=5
     topic_title="[VOTE] Releasing Orekit ${release_version} from release candidate $next_rc"
     topic_raw="This is a vote in order to release version ${release_version} of the Orekit library.
@@ -156,18 +177,16 @@ Version ${release_version} is a ${release_type} release.
 $(xsltproc $top/scripts/changes2release.xsl $top/src/changes/changes.xml)
 
 The release candidate ${next_rc} can be found on the GitLab repository
-as tag $release_tag in the ${release_branch} branch:
+as tag $rc_tag in the ${release_branch} branch:
 https://gitlab.orekit.org/orekit/orekit/tree/${release_branch}
 
-Once the Continuous Integration has finished its job (this should hopefully take less than
-one hour), it will put:
+The maven artifacts are available in the Orekit Nexus repository at:
+https://packages.orekit.org/#browse/browse:maven-release:org%2Forekit%2Forekit%2F${release_version}
 
-  - the maven artifacts in the Orekit Nexus repository at:
-    https://packages.orekit.org/#browse/browse:maven-release:org%2Forekit%2Forekit%2F${release_version}
-  - the generated site  available at:
-    https://www.orekit.org/site-orekit-${release_version}/index.html
+The generated site is available at:
+https://www.orekit.org/site-orekit-${release_version}/index.html
 
-The vote will be tallied on ${release_date}"
+The vote will be tallied on ${vote_date}"
 
     echo "proposed vote topic for the forum:"
     echo "$topic_raw"

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:c="http://maven.apache.org/changes/2.0.0" version="1.0">
   <xsl:output method="xml" omit-xml-declaration="yes"/>
 
   <!-- catch-all template -->
@@ -12,7 +12,7 @@
   <!-- specific template for releases -->
   <!-- the release-version, release-date and release-description parameters
          must be passed as stringparam when calling xsltproc -->
-  <xsl:template match="document/body/release">
+  <xsl:template match="c:document/c:body/c:release">
     <!-- we use <xsl:if> to work around XSLT 1.0 limitation that forbids use of variables in match clauses -->
     <xsl:if test="@version=$release-version">
       <!-- this is the version we want to update -->

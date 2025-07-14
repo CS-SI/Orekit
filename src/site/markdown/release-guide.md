@@ -15,12 +15,25 @@ Three types of versions can be released:
 # 0. Prerequisites
 
 The following tasks are one-time actions, they just prepare the credentials for
-performing the release, but these credentials will remain valid for years and
+performing the release, but these credentials will remain valid for months and
 for several releases.
+
+## GitLab personal access token
+
+The release process shell script described below triggers merge requests and monitors
+the continuous integration run that creates and signs the binary artifacts. In order to
+do this, it needs a personal access token with api and write_repository scopes. This
+access token can be created by users directly from their GitLab account
+(User Settings → Access Tokens) or by following the link below:
+https://gitlab.orekit.org/-/user_settings/personal_access_tokens?scopes=api,write_repository
+
+Note that the access token is only visible once from this page, so it must be saved before
+leaving the page. The GitLab personal access token lifetime is limited to 11 months, this
+step must therefore be renewed from time to time.
 
 ## Forum API Key
 
-The release process script shell described below creates the vote topic automatically
+The release process shell script described below creates the vote topic automatically
 on the Orekit forum https://forum.orekit.org. In order to do this, it needs an API key
 to post on behalf of the release manager. There are no automatic processes for setting
 up such a key, candidate release managers should just send direct messages to the forum
@@ -146,7 +159,7 @@ On the start branch, check that:
 If not, fix the warnings and errors first!
 
 It is also necessary to check on the
-[Gitlab CI/CD](https://gitlab.orekit.org/orekit/orekit/-/pipelines?scope=all&page=1&ref=develop)
+[GitLab CI/CD](https://gitlab.orekit.org/orekit/orekit/-/pipelines?scope=all&page=1&ref=develop)
 that everything is fine on develop branch (i.e., all stages are passed); here again,
 adapt the URL for patch release which starts from dedicated branches and not from
 the develop branch.
@@ -157,8 +170,8 @@ For patch releases, it is possible to include merge requests if they were create
 `release-X.Y` branch, but not if they were created from the `develop` branch as it would
 include evolutions and not only bug fixes.
 
-Note that if there aren't any conflicts in Gitlab you can directly do
-the merge from Gitlab; just make sure that the target branch is
+Note that if there aren't any conflicts in GitLab you can directly do
+the merge from GitLab; just make sure that the target branch is
 `release-X.Y` and not "develop".
 
 Find the MR on the repository, it should be in branch `origin/merge-requests/XXX` with XXX the number of the MR  
@@ -207,7 +220,7 @@ automatically performs all the release steps by itself. It asks questions and
 waits for confirmation at various stages. It creates branches, checks them out,
 performs some automated edition on several files, commits the changes, sets up
 tags that will be recognized by Orekit Continuous Integration setup, and pushes
-everything to Orekit Gitlab forge.
+everything to Orekit GitLab forge.
 
 When releasing a major or minor version, the script automatically posts a vote topic
 on the Orekit forum so that community and PMC members can vote on the release.
@@ -218,7 +231,7 @@ The shell script performs the release on a temporary branch that is merged only 
 the final step, and it automatically removes it without merging if something goes
 wrong before this final step, hence ensuring everything remains clean.
 
-As the tag is pushed to Orekit Gitlab forge, the Continuous Integration is
+As the tag is pushed to Orekit GitLab forge, the Continuous Integration is
 automatically triggered. It performs a full build, signs the artifacts using the
 release key and puts them in a staging repository, where users will be able to
 review them during the voting period.
@@ -228,7 +241,7 @@ or announcing the release on the GitHub mirror repository. These stages are
 described in the next section.
 
 This script must be run from the command line on a computer with several Linux
-utilities (git, sed, xsltproc, curl…), with the git worktree
+utilities (git, sed, xsltproc, curl, glab…), with the git worktree
 already set to the start branch (i.e., develop or a patch branch):
 
     sh scripts/prepare-release.sh
@@ -241,22 +254,26 @@ for user confirmation before any commit:
       using the -SNAPSHOT version number from the current branch `pom.xml`
     - for major or minor release, create a release-X.Y branch from develop (reuse existing branch for patch release)
     - checkout the release-X.Y branch
-    - create a release-X.Y-temporary branch
-    - checkout the release-X.Y-temporary branch
-    - merge the start branch into the release-X.Y-temporary branch
+    - set up a release candidate number, starting from 1 or incrementing existing RC tags
+    - create a release-X.Y-RCn branch
+    - checkout the release-X.Y-RCn branch
+    - merge the start branch into the release-X.Y-RCn branch
     - drop -SNAPSHOT version number from `pom.xml` and commit the change
-    - compute candidate release date, allocating 1 hour for the build and 5 days for the vote
-    - for major or minor release, set up a release candidate number, counting from 1 for the first release attempt
+    - compute candidate release date, allocating 5 days for the vote
     - update `changes.xml` with release date and release type and commit the change
     - update downloads and faq pages and commit the changes
-    - merge release-X.Y-temporary branch into release-X.Y branch
-    - delete release-X.Y-temporary branch
-    - tag the repository
-    - push the tagged repository to origin
-      (this will trigger full build, signing and deployment to Orekit Nexus instance)
+    - tag the release-X.Y-RCn branch with tag X.Y-RCn
+    - push the tagged release-X.Y-RCn branch to origin
+    - trigger a merge request from release-X.Y-RCn branch to release-X.Y branch
+      (the GitLab personal access token will be asked for at this point;
+       this will trigger full build, signing and deployment to Orekit Nexus instance)
+    - delete release-X.Y-RCn branch (but keep the X.Y-RCn tag)
+    - switch to release-X.Y branch
+    - pull merged branch from origin
+    - monitor continuous integration run
     - if the release is a patch release, call immediately the `successful-vote.sh` script
     - if the release is a major or minor release, create the vote topic automatically on the forum
-      (the API key for posting to the forum will be asked for here)
+      (the API key for posting to the forum will be asked for at this point)
 
 ## 3. Voting period
 
@@ -304,7 +321,7 @@ for user confirmation before any commit:
 
 To enhance the visibility of the project,
 [a mirror](https://github.com/CS-SI/Orekit) is maintained on GitHub. The
-releases created on Gitlab are not automatically pushed on this mirror. They
+releases created on GitLab are not automatically pushed on this mirror. They
 have to be declared manually to make visible the vitality of Orekit.
 
 1. Login to GitHub
@@ -312,7 +329,7 @@ have to be declared manually to make visible the vitality of Orekit.
 3. Click on the [Draft a new release](https://github.com/CS-SI/Orekit/releases) button
 4. In the “Tag version” field of the form and in the “Release title” field,
    enter the tag of the release to be declared
-5. Describe the release as it has been done on Gitlab
+5. Describe the release as it has been done on GitLab
 6. Click on “Publish release”
 
 Github automically adds two assets (zip and tarball archives of the tagged source code)
@@ -333,14 +350,14 @@ Edit `overview.html`:
 
 Create a new post for the release in `_post/`, it will be visible in the `News` page (see section *Announce Release* for the content of the post).
 
-Push the modifications on `develop` branch, wait until the pipeline on Gitlab is finished, then the [test website](https://test.orekit.org/) will be updated.
+Push the modifications on `develop` branch, wait until the pipeline on GitLab is finished, then the [test website](https://test.orekit.org/) will be updated.
 
 Check that everything looks nice and then merge `develop` on `main` branch and push the modifications.  
-When the Gitlab pipeline is finished, the [official website](https://orekit.org/) should be updated according to your changes.
+When the GitLab pipeline is finished, the [official website](https://orekit.org/) should be updated according to your changes.
 
 ## 6. Close X.Y milestone
 
-In Gitlab, navigate to Projects > Orekit > Issues > Milestones.
+In GitLab, navigate to Projects > Orekit > Issues > Milestones.
 Click “Close Milestone” for the line corresponding to the release X.Y.
 
 ## 7. Announce release
