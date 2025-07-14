@@ -255,19 +255,19 @@ for user confirmation before any commit:
     - for major or minor release, create a release-X.Y branch from develop (reuse existing branch for patch release)
     - checkout the release-X.Y branch
     - set up a release candidate number, starting from 1 or incrementing existing RC tags
-    - create a release-X.Y-RCn branch
-    - checkout the release-X.Y-RCn branch
-    - merge the start branch into the release-X.Y-RCn branch
+    - create a RCn-X.Y branch
+    - checkout the RCn-X.Y branch
+    - merge the start branch into the RCn-X.Y branch
     - drop -SNAPSHOT version number from `pom.xml` and commit the change
     - compute candidate release date, allocating 5 days for the vote
     - update `changes.xml` with release date and release type and commit the change
     - update downloads and faq pages and commit the changes
-    - tag the release-X.Y-RCn branch with tag X.Y-RCn
-    - push the tagged release-X.Y-RCn branch to origin
-    - trigger a merge request from release-X.Y-RCn branch to release-X.Y branch
+    - tag the RCn-X.Y branch with tag X.Y-RCn
+    - push the tagged RCn-X.Y branch to origin
+    - trigger a merge request from RCn-X.Y branch to release-X.Y branch
       (the GitLab personal access token will be asked for at this point;
        this will trigger full build, signing and deployment to Orekit Nexus instance)
-    - delete release-X.Y-RCn branch (but keep the X.Y-RCn tag)
+    - delete RCn-X.Y branch (but keep the X.Y-RCn tag)
     - switch to release-X.Y branch
     - pull merged branch from origin
     - monitor continuous integration run
