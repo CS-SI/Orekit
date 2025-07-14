@@ -136,11 +136,13 @@ request_confirmation "push $rc_branch branch and $rc_tag tag to origin?"
 
 # trigger merge request (this will trigger continuous integration pipelines)
 glab auth login --hostname gitlab.orekit.org
-glab mr create -f -s $rc_branch -b $release_branch
-glab mr merge --sha $(git rev-parse --verify HEAD)
+glab mr create --fill push --source-branch $rc_branch --target-branch $release_branch --yes
+mr_id=$(glab mr list --source-branch $rc_branch | sed 's,^!\([0-9]*\).*,\1,')
+glab mr merge $mr_id --yes
 
 # monitor continuous integration
 glab ci status --live --branch=${release_branch}
+
 # glab auth logout is available only starting with glab version 1.55
 test $(glab version | sed 's,.*:.\([0-9]*\)\.\([0-9]*\).*,\1\2,') -ge 155 && glab auth logout --hostname gitlab.orekit.org
 
