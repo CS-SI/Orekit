@@ -44,6 +44,9 @@
         <action dev="serrof" type="fix" issue="1761">
             Remove some calls to deprecated methods.
         </action>
+        <action dev="luc" type="fix" issue="1760">
+            Revamped release process, using fully automated scripts and continuous integration.
+        </action>
         <action dev="serrof" type="fix" issue="1759">
             Fix equals in FieldAbsoluteDate.
         </action>
