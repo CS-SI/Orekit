@@ -137,6 +137,10 @@ request_confirmation "push $rc_branch branch and $rc_tag tag to origin?"
 # trigger merge request (this will trigger continuous integration pipelines)
 merge_date=$(TZ=UTC date +"%Y-%m-%dT%H:%M:%SZ")
 (cd $top ; glab auth login --hostname gitlab.orekit.org)
+if test -z "$(cd $top ; git branch -a --list origin/${release_branch})" ; then
+  # create the release branch on origin, so we can merge into it
+  (cd $top ; glab api --method POST "projects/orekit%2Forekit/repository/branches?branch=${release_branch}&ref=develop")
+fi
 (cd $top ; glab mr create --fill --source-branch $rc_branch --target-branch $release_branch --yes)
 mr_id=$(cd $top ; glab mr list --source-branch $rc_branch | sed -n 's,^!\([0-9]*\).*,\1,p')
 (cd $top ; glab mr merge $mr_id --remove-source-branch --yes)
