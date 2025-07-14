@@ -135,20 +135,37 @@ request_confirmation "push $rc_branch branch and $rc_tag tag to origin?"
 (cd $top ; git push luc $rc_branch $rc_tag)
 
 # trigger merge request (this will trigger continuous integration pipelines)
-glab auth login --hostname gitlab.orekit.org
-glab mr create --fill push --source-branch $rc_branch --target-branch $release_branch --yes
-mr_id=$(glab mr list --source-branch $rc_branch | sed 's,^!\([0-9]*\).*,\1,')
-glab mr merge $mr_id --yes
+merge_date=$(TZ=UTC date +"%Y-%m-%dT%H:%M:%SZ")
+(cd $top ; glab auth login --hostname gitlab.orekit.org)
+(cd $top ; glab mr create --fill --source-branch $rc_branch --target-branch $release_branch --yes)
+mr_id=$(cd $top ; glab mr list --source-branch $rc_branch | sed -n 's,^!\([0-9]*\).*,\1,p')
+(cd $top ; glab mr merge $mr_id --remove-source-branch --yes)
+
+# switch to release branch
+(cd $top ; git checkout $release_branch ; git branch --set-upstream-to origin/$release_branch; git pull)
+
+# delete release candidate branch
+request_confirmation "delete $rc_branch release candidate branch? (note that tag $rc_tag will be preserved)"
+(cd $top ; git branch -d $rc_branch)
 
 # monitor continuous integration
-glab ci status --live --branch=${release_branch}
+job_status="pending"
+count=0
+while test "${job_status}" != "running" ; do
+  count=$(expr $count + 1)
+  echo "waiting for pipeline job start ($count/100)"
+  sleep 6
+  job_status=$(cd $top ; glab ci list --updated-after "$merge_date" | sed -n "s,(\([a-z]*\)).*$release_branch.*,\1,p")
+  test $count -gt 100 || complain "job not started after 10 minutes, exiting"
+done
+(cd $top ; glab ci status --live --branch=${release_branch})
 
 # glab auth logout is available only starting with glab version 1.55
-test $(glab version | sed 's,.*:.\([0-9]*\)\.\([0-9]*\).*,\1\2,') -ge 155 && glab auth logout --hostname gitlab.orekit.org
+test $(glab version | sed 's,.*:.\([0-9]*\)\.\([0-9]*\).*,\1\2,') -ge 155 && (cd $top ; glab auth logout --hostname gitlab.orekit.org)
 
 if test "$release_type" = "patch" ; then
     # for patch release, there are no votes, we jump directly to the publish step
-    sh successful-vote.sh
+    sh $top/scripts/successful-vote.sh
 else
     # create vote topic
     vote_date=$(TZ=UTC date -d "+5 days" +"%Y-%m-%dT%H:%M:%SZ")
