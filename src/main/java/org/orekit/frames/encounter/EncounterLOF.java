@@ -56,9 +56,9 @@ public interface EncounterLOF extends LOF {
      * {@link #rotationFromInertial(Field, FieldPVCoordinates)} instead.
      */
     @Override
-    default <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(Field<T> field,
-                                                                                      FieldAbsoluteDate<T> date,
-                                                                                      FieldPVCoordinates<T> pv) {
+    default <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
+                                                                                      final FieldAbsoluteDate<T> date,
+                                                                                      final FieldPVCoordinates<T> pv) {
         return rotationFromInertial(field, pv);
     }
 
@@ -67,7 +67,7 @@ public interface EncounterLOF extends LOF {
      * {@link #rotationFromInertial(PVCoordinates)} instead.
      */
     @Override
-    default Rotation rotationFromInertial(AbsoluteDate date, PVCoordinates pv) {
+    default Rotation rotationFromInertial(final AbsoluteDate date, final PVCoordinates pv) {
         return rotationFromInertial(pv);
     }
 
@@ -140,7 +140,7 @@ public interface EncounterLOF extends LOF {
      *
      * @return projected matrix onto the collision plane defined by this encounter local orbital frame
      */
-    default RealMatrix projectOntoCollisionPlane(RealMatrix matrix) {
+    default RealMatrix projectOntoCollisionPlane(final RealMatrix matrix) {
         final RealMatrix projectionMatrix = computeProjectionMatrix();
         return projectionMatrix.multiply(matrix.multiplyTransposed(projectionMatrix));
     }
@@ -177,7 +177,7 @@ public interface EncounterLOF extends LOF {
      *
      * @return projected matrix onto the collision plane defined by this encounter local orbital frame
      */
-    default <T extends CalculusFieldElement<T>> FieldMatrix<T> projectOntoCollisionPlane(FieldMatrix<T> matrix) {
+    default <T extends CalculusFieldElement<T>> FieldMatrix<T> projectOntoCollisionPlane(final FieldMatrix<T> matrix) {
         final FieldMatrix<T> projectionMatrix = computeProjectionMatrix(matrix.getField());
         return projectionMatrix.multiply(matrix.multiplyTransposed(projectionMatrix));
     }
@@ -191,7 +191,7 @@ public interface EncounterLOF extends LOF {
      *
      * @return 2x3 projection matrix
      */
-    default <T extends CalculusFieldElement<T>> FieldMatrix<T> computeProjectionMatrix(Field<T> field) {
+    default <T extends CalculusFieldElement<T>> FieldMatrix<T> computeProjectionMatrix(final Field<T> field) {
         // Remove axis normal to collision plane from the identity matrix
         final FieldMatrix<T> identity = MatrixUtils.createFieldIdentityMatrix(field, 3);
         final List<T[]> projectionMatrixDataList = Arrays.stream(identity.getData())
@@ -226,7 +226,7 @@ public interface EncounterLOF extends LOF {
      *
      * @return projected vector onto the collision plane defined by this encounter local orbital frame
      */
-    default Vector2D projectOntoCollisionPlane(Vector3D vector) {
+    default Vector2D projectOntoCollisionPlane(final Vector3D vector) {
         final RealMatrix projectionMatrix = computeProjectionMatrix();
         final RealMatrix vectorInMatrix   = new Array2DRowRealMatrix(vector.toArray());
 

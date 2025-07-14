@@ -50,7 +50,7 @@ public interface FieldTimeInterpolator<T extends FieldTimeStamped<KK>, KK extend
      * @see TimeStamped
      * @see AbsoluteDate
      */
-    default T interpolate(AbsoluteDate interpolationDate, Stream<T> sample) {
+    default T interpolate(final AbsoluteDate interpolationDate, final Stream<T> sample) {
         return interpolate(interpolationDate, sample.collect(Collectors.toList()));
     }
 
@@ -62,7 +62,7 @@ public interface FieldTimeInterpolator<T extends FieldTimeStamped<KK>, KK extend
      *
      * @return a new instance, interpolated at specified date
      */
-    default T interpolate(AbsoluteDate interpolationDate, Collection<T> sample) {
+    default T interpolate(final AbsoluteDate interpolationDate, final Collection<T> sample) {
         final Optional<T> optionalElement = sample.stream().findAny();
         if (optionalElement.isPresent()) {
             final T element = optionalElement.get();

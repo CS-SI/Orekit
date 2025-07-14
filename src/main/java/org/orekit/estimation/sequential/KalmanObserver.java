@@ -31,7 +31,7 @@ public interface KalmanObserver {
     /** Initialise the observer on the initial state of the filter, before processing the first measurement.
      * @param estimation estimation performed by Kalman estimator
      */
-    default void init(KalmanEstimation estimation) {
+    default void init(final KalmanEstimation estimation) {
     }
 
     /** Notification callback after each one of a Kalman filter estimation.

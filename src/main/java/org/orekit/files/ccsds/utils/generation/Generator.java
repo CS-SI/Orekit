@@ -131,7 +131,7 @@ public interface Generator extends AutoCloseable {
      * @param mandatory if true, null values triggers exception, otherwise they are silently ignored
      * @throws IOException if an I/O error occurs.
      */
-    default void writeEntry(String key, Integer value, boolean mandatory) throws IOException {
+    default void writeEntry(final String key, final Integer value, final boolean mandatory) throws IOException {
         writeEntry(key, value == null ? null : value.toString(), null, mandatory);
     }
 

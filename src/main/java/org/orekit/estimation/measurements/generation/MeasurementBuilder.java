@@ -81,7 +81,7 @@ public interface MeasurementBuilder<T extends ObservedMeasurement<T>> {
      * @return generated measurement
      * @since 12.1
      */
-    default EstimatedMeasurementBase<T> build(AbsoluteDate date, SpacecraftState[] states) {
+    default EstimatedMeasurementBase<T> build(final AbsoluteDate date, final SpacecraftState[] states) {
         final Map<ObservableSatellite, OrekitStepInterpolator> interpolators = new ConcurrentHashMap<>();
 
         for (int i = 0; i < states.length; i++) {

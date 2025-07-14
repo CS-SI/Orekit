@@ -47,7 +47,7 @@ public interface ThrustPropulsionModel extends PropulsionModel {
      * @param s current spacecraft state
      * @return specific impulse (s).
      */
-    default double getIsp(SpacecraftState s) {
+    default double getIsp(final SpacecraftState s) {
         final double flowRate = getFlowRate(s);
         return -getControl3DVectorCostType().evaluate(getThrustVector(s)) / (Constants.G0_STANDARD_GRAVITY * flowRate);
     }
@@ -58,7 +58,7 @@ public interface ThrustPropulsionModel extends PropulsionModel {
      * @param s current spacecraft state
      * @return thrust direction in spacecraft frame
      */
-    default Vector3D getDirection(SpacecraftState s) {
+    default Vector3D getDirection(final SpacecraftState s) {
         final Vector3D thrustVector = getThrustVector(s);
         final double   norm         = thrustVector.getNorm();
         if (norm <= Precision.EPSILON) {
@@ -158,7 +158,7 @@ public interface ThrustPropulsionModel extends PropulsionModel {
      * Mass derivatives are directly extracted here from the flow rate value.
      */
     @Override
-    default double getMassDerivatives(SpacecraftState s, double[] parameters) {
+    default double getMassDerivatives(final SpacecraftState s, final double[] parameters) {
         return getFlowRate(s, parameters);
     }
 
@@ -166,7 +166,7 @@ public interface ThrustPropulsionModel extends PropulsionModel {
      * Mass derivatives are directly extracted here from the flow rate value.
      */
     @Override
-    default <T extends CalculusFieldElement<T>> T getMassDerivatives(FieldSpacecraftState<T> s, T[] parameters) {
+    default <T extends CalculusFieldElement<T>> T getMassDerivatives(final FieldSpacecraftState<T> s, final T[] parameters) {
         return getFlowRate(s, parameters);
     }
 

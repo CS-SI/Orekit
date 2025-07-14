@@ -45,7 +45,7 @@ public interface FieldImpulseProvider<T extends CalculusFieldElement<T>> {
      * @param initialState state at start of propagation
      * @param targetDate target end date
      */
-    default void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> targetDate) {
+    default void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> targetDate) {
         // nothing by default
     }
 
@@ -53,7 +53,7 @@ public interface FieldImpulseProvider<T extends CalculusFieldElement<T>> {
      * Method called at end of propagation.
      * @param finalState state at end of propagation
      */
-    default void finish(FieldSpacecraftState<T> finalState) {
+    default void finish(final FieldSpacecraftState<T> finalState) {
         // nothing by default
     }
 

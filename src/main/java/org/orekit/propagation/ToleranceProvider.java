@@ -60,7 +60,7 @@ public interface ToleranceProvider extends CartesianToleranceProvider {
      * @param propagationOrbitType orbit type for propagation (can be different from the input orbit one)
      * @return absolute and relative tolerances
      */
-    default double[][] getTolerances(Orbit referenceOrbit, OrbitType propagationOrbitType) {
+    default double[][] getTolerances(final Orbit referenceOrbit, final OrbitType propagationOrbitType) {
         return getTolerances(referenceOrbit, propagationOrbitType, NumericalPropagator.DEFAULT_POSITION_ANGLE_TYPE);
     }
 
@@ -72,9 +72,9 @@ public interface ToleranceProvider extends CartesianToleranceProvider {
      * @param <T> field type
      * @return absolute and relative tolerances
      */
-    default <T extends CalculusFieldElement<T>> double[][] getTolerances(FieldOrbit<T> referenceOrbit,
-                                                                         OrbitType propagationOrbitType,
-                                                                         PositionAngleType positionAngleType) {
+    default <T extends CalculusFieldElement<T>> double[][] getTolerances(final FieldOrbit<T> referenceOrbit,
+                                                                         final OrbitType propagationOrbitType,
+                                                                         final PositionAngleType positionAngleType) {
         return getTolerances(referenceOrbit.toOrbit(), propagationOrbitType, positionAngleType);
     }
 
@@ -85,8 +85,8 @@ public interface ToleranceProvider extends CartesianToleranceProvider {
      * @param <T> field type
      * @return absolute and relative tolerances
      */
-    default <T extends CalculusFieldElement<T>> double[][] getTolerances(FieldOrbit<T> referenceOrbit,
-                                                                         OrbitType propagationOrbitType) {
+    default <T extends CalculusFieldElement<T>> double[][] getTolerances(final FieldOrbit<T> referenceOrbit,
+                                                                         final OrbitType propagationOrbitType) {
         return getTolerances(referenceOrbit, propagationOrbitType, NumericalPropagator.DEFAULT_POSITION_ANGLE_TYPE);
     }
 
