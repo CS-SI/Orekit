@@ -88,9 +88,8 @@ echo
 request_confirmation "commit pom.xml?"
 (cd $top; git add pom.xml ; git commit -m "Dropped -SNAPSHOT in version number for official release.")
 
-# compute release date in the future (1 hour allocated to build, and 5 days allocated to vote)
-vote_date=$(TZ=UTC date -d "+5 days 1 hour" +"%Y-%m-%dT%H:%M:%SZ")
-release_date=$(echo $vote_date | sed 's,T.*,,')
+# compute release date in the future
+release_date=$(TZ=UTC date -d "+5 days" +"%Y-%m-%d")
 
 if test "$release_type" = "patch" ; then
     # patch release do not need release candidates
@@ -154,6 +153,7 @@ if test "$release_type" = "patch" ; then
     sh successful-vote.sh
 else
     # create vote topic
+    vote_date=$(TZ=UTC date -d "+5 days" +"%Y-%m-%dT%H:%M:%SZ")
     orekit_dev_category=5
     topic_title="[VOTE] Releasing Orekit ${release_version} from release candidate $next_rc"
     topic_raw="This is a vote in order to release version ${release_version} of the Orekit library.
@@ -165,15 +165,13 @@ The release candidate ${next_rc} can be found on the GitLab repository
 as tag $release_tag in the ${release_branch} branch:
 https://gitlab.orekit.org/orekit/orekit/tree/${release_branch}
 
-Once the Continuous Integration has finished its job (this should hopefully take less than
-one hour), it will put:
+The maven artifacts are available in the Orekit Nexus repository at:
+https://packages.orekit.org/#browse/browse:maven-release:org%2Forekit%2Forekit%2F${release_version}
 
-  - the maven artifacts in the Orekit Nexus repository at:
-    https://packages.orekit.org/#browse/browse:maven-release:org%2Forekit%2Forekit%2F${release_version}
-  - the generated site  available at:
-    https://www.orekit.org/site-orekit-${release_version}/index.html
+The generated site is available at:
+https://www.orekit.org/site-orekit-${release_version}/index.html
 
-The vote will be tallied on ${release_date}"
+The vote will be tallied on ${vote_date}"
 
     echo "proposed vote topic for the forum:"
     echo "$topic_raw"

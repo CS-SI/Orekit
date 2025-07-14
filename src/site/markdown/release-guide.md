@@ -260,7 +260,7 @@ for user confirmation before any commit:
     - checkout the release-X.Y-temporary branch
     - merge the start branch into the release-X.Y-temporary branch
     - drop -SNAPSHOT version number from `pom.xml` and commit the change
-    - compute candidate release date, allocating 1 hour for the build and 5 days for the vote
+    - compute candidate release date, allocating 5 days for the vote
     - for major or minor release, set up a release candidate number, counting from 1 for the first release attempt
     - update `changes.xml` with release date and release type and commit the change
     - update downloads and faq pages and commit the changes
