@@ -20,6 +20,9 @@
   </properties>
   <body>
     <release version="13.1" date="TBD" description="TBD">
+        <action dev="serrof" type="fix" issue="1086">
+            Fixed NaN with Gradient in Keplerian motion with circular orbit computed in Cartesian coordinates.
+        </action>
         <action dev="guillaumefiorello" type="fix" issue="1773">
             Fixed regression on TLE date parsing.
         </action>
