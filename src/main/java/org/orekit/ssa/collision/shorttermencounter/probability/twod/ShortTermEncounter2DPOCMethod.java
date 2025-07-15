@@ -61,7 +61,7 @@ public interface ShortTermEncounter2DPOCMethod {
      *
      * @return probability of collision
      */
-    default ProbabilityOfCollision compute(Cdm cdm, double primaryRadius, double secondaryRadius) {
+    default ProbabilityOfCollision compute(final Cdm cdm, final double primaryRadius, final double secondaryRadius) {
         return compute(cdm, primaryRadius + secondaryRadius);
     }
 
@@ -85,9 +85,9 @@ public interface ShortTermEncounter2DPOCMethod {
      *
      * @return probability of collision
      */
-    default <T extends CalculusFieldElement<T>> FieldProbabilityOfCollision<T> compute(Cdm cdm,
-                                                                                       T primaryRadius,
-                                                                                       T secondaryRadius) {
+    default <T extends CalculusFieldElement<T>> FieldProbabilityOfCollision<T> compute(final Cdm cdm,
+                                                                                       final T primaryRadius,
+                                                                                       final T secondaryRadius) {
         return compute(cdm, primaryRadius.add(secondaryRadius));
     }
 
@@ -100,8 +100,8 @@ public interface ShortTermEncounter2DPOCMethod {
      *
      * @return probability of collision
      */
-    default <T extends CalculusFieldElement<T>> FieldProbabilityOfCollision<T> compute(Cdm cdm,
-                                                                                       T combinedRadius) {
+    default <T extends CalculusFieldElement<T>> FieldProbabilityOfCollision<T> compute(final Cdm cdm,
+                                                                                       final T combinedRadius) {
         return compute(cdm, combinedRadius, DEFAULT_ZERO_THRESHOLD);
     }
 
@@ -131,12 +131,12 @@ public interface ShortTermEncounter2DPOCMethod {
      *
      * @return probability of collision
      */
-    default ProbabilityOfCollision compute(Orbit primaryAtTCA,
-                                           StateCovariance primaryCovariance,
-                                           double primaryRadius,
-                                           Orbit secondaryAtTCA,
-                                           StateCovariance secondaryCovariance,
-                                           double secondaryRadius) {
+    default ProbabilityOfCollision compute(final Orbit primaryAtTCA,
+                                           final StateCovariance primaryCovariance,
+                                           final double primaryRadius,
+                                           final Orbit secondaryAtTCA,
+                                           final StateCovariance secondaryCovariance,
+                                           final double secondaryRadius) {
         return compute(primaryAtTCA, primaryCovariance, secondaryAtTCA, secondaryCovariance,
                        primaryRadius + secondaryRadius);
     }
@@ -153,11 +153,11 @@ public interface ShortTermEncounter2DPOCMethod {
      *
      * @return probability of collision
      */
-    default ProbabilityOfCollision compute(Orbit primaryAtTCA,
-                                           StateCovariance primaryCovariance,
-                                           Orbit secondaryAtTCA,
-                                           StateCovariance secondaryCovariance,
-                                           double combinedRadius) {
+    default ProbabilityOfCollision compute(final Orbit primaryAtTCA,
+                                           final StateCovariance primaryCovariance,
+                                           final Orbit secondaryAtTCA,
+                                           final StateCovariance secondaryCovariance,
+                                           final double combinedRadius) {
         return compute(primaryAtTCA, primaryCovariance, secondaryAtTCA, secondaryCovariance,
                        combinedRadius, DEFAULT_ZERO_THRESHOLD);
     }
@@ -193,12 +193,12 @@ public interface ShortTermEncounter2DPOCMethod {
      *
      * @return probability of collision
      */
-    default <T extends CalculusFieldElement<T>> FieldProbabilityOfCollision<T> compute(FieldOrbit<T> primaryAtTCA,
-                                                                                       FieldStateCovariance<T> primaryCovariance,
-                                                                                       T primaryRadius,
-                                                                                       FieldOrbit<T> secondaryAtTCA,
-                                                                                       FieldStateCovariance<T> secondaryCovariance,
-                                                                                       T secondaryRadius) {
+    default <T extends CalculusFieldElement<T>> FieldProbabilityOfCollision<T> compute(final FieldOrbit<T> primaryAtTCA,
+                                                                                       final FieldStateCovariance<T> primaryCovariance,
+                                                                                       final T primaryRadius,
+                                                                                       final FieldOrbit<T> secondaryAtTCA,
+                                                                                       final FieldStateCovariance<T> secondaryCovariance,
+                                                                                       final T secondaryRadius) {
         return compute(primaryAtTCA, primaryCovariance, secondaryAtTCA, secondaryCovariance,
                        primaryRadius.add(secondaryRadius));
     }
@@ -216,11 +216,11 @@ public interface ShortTermEncounter2DPOCMethod {
      *
      * @return probability of collision
      */
-    default <T extends CalculusFieldElement<T>> FieldProbabilityOfCollision<T> compute(FieldOrbit<T> primaryAtTCA,
-                                                                                       FieldStateCovariance<T> primaryCovariance,
-                                                                                       FieldOrbit<T> secondaryAtTCA,
-                                                                                       FieldStateCovariance<T> secondaryCovariance,
-                                                                                       T combinedRadius) {
+    default <T extends CalculusFieldElement<T>> FieldProbabilityOfCollision<T> compute(final FieldOrbit<T> primaryAtTCA,
+                                                                                       final FieldStateCovariance<T> primaryCovariance,
+                                                                                       final FieldOrbit<T> secondaryAtTCA,
+                                                                                       final FieldStateCovariance<T> secondaryCovariance,
+                                                                                       final T combinedRadius) {
         return compute(primaryAtTCA, primaryCovariance, secondaryAtTCA, secondaryCovariance,
                        combinedRadius, DEFAULT_ZERO_THRESHOLD);
     }
@@ -253,7 +253,7 @@ public interface ShortTermEncounter2DPOCMethod {
      *
      * @return probability of collision
      */
-    default ProbabilityOfCollision compute(ShortTermEncounter2DDefinition encounter) {
+    default ProbabilityOfCollision compute(final ShortTermEncounter2DDefinition encounter) {
         return compute(encounter, DEFAULT_ZERO_THRESHOLD);
     }
 
@@ -276,7 +276,7 @@ public interface ShortTermEncounter2DPOCMethod {
      * @return probability of collision
      */
     default <T extends CalculusFieldElement<T>> FieldProbabilityOfCollision<T> compute(
-            FieldShortTermEncounter2DDefinition<T> encounter) {
+        final FieldShortTermEncounter2DDefinition<T> encounter) {
         return compute(encounter, DEFAULT_ZERO_THRESHOLD);
     }
 

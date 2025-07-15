@@ -97,7 +97,7 @@ changelog:
   before_script:
     - apk add libxslt
   script:
-    - xsltproc .CI/changes2release.xsl src/changes/changes.xml > CHANGELOG.md
+    - xsltproc scripts/changes2release.xsl src/changes/changes.xml > CHANGELOG.md
   artifacts:
     paths:
       - CHANGELOG.md
@@ -107,14 +107,15 @@ changelog:
 deploy:artifacts:
   stage: deploy
   script:
-    - mvn $MAVEN_CLI_OPTS javadoc:jar source:jar deploy -DskipTests=true -Pci-deploy
+    - mvn $MAVEN_CLI_OPTS javadoc:jar source:jar deploy -DskipTests=true -Prelease,ci-deploy
   artifacts:
     paths:
       - target/*.jar
-  only:
-    - main@orekit/orekit
-    - /^release-[.0-9]+$/@orekit/orekit
-    - develop@orekit/orekit
+      - target/*.asc
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH =~ /^release-[.0-9]+$/
+    - if: $CI_COMMIT_BRANCH == "develop"
 
 deploy:site:
   stage: deploy
@@ -129,10 +130,10 @@ deploy:site:
     - PROJECT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
     - rsync -rz --links --checksum --no-perms --chmod=u=rwX,go=rX --delete-after
             target/site/ ${TARGET_URL_PREFIX}-${PROJECT_VERSION}
-  only:
-    - main@orekit/orekit
-    - /^release-[.0-9]+$/@orekit/orekit
-    - develop@orekit/orekit
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH =~ /^release-[.0-9]+$/
+    - if: $CI_COMMIT_BRANCH == "develop"
 
 # trigger performance tests after artifacts are deployed to Nexus
 # similar to Jenkins' "build after a snapshot dependency is built"
@@ -144,8 +145,8 @@ performance:
     - job: deploy:artifacts
       artifacts: false
   trigger: orekit/orekit-performance
-  only:
-    - develop@orekit/orekit
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"
 
 release:
   stage: release

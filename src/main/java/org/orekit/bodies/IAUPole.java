@@ -63,7 +63,7 @@ public interface IAUPole extends Serializable {
      * @return body Q Node direction in ICRF frame
      * @since 9.1
      */
-    default Vector3D getNode(AbsoluteDate date) {
+    default Vector3D getNode(final AbsoluteDate date) {
         return Vector3D.crossProduct(Vector3D.PLUS_K, getPole(date));
     }
 
@@ -73,7 +73,7 @@ public interface IAUPole extends Serializable {
      * @return body Q Node direction in ICRF frame
      * @since 9.1
      */
-    default <T extends CalculusFieldElement<T>> FieldVector3D<T> getNode(FieldAbsoluteDate<T> date) {
+    default <T extends CalculusFieldElement<T>> FieldVector3D<T> getNode(final FieldAbsoluteDate<T> date) {
         return FieldVector3D.crossProduct(FieldVector3D.getPlusK(date.getField()), getPole(date));
     }
 

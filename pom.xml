@@ -1,6 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
@@ -47,11 +45,11 @@
     <orekit.mockito-core.version>4.11.0</orekit.mockito-core.version>
     <orekit.jgit.buildnumber.version>1.2.12</orekit.jgit.buildnumber.version>
     <orekit.build-helper-maven-plugin.version>3.6.0</orekit.build-helper-maven-plugin.version>
-    <orekit.nexus-staging-maven-plugin.version>1.7.0</orekit.nexus-staging-maven-plugin.version>
     <orekit.maven-gpg-plugin.version>3.2.7</orekit.maven-gpg-plugin.version>
     <orekit.maven-install-plugin.version>3.1.4</orekit.maven-install-plugin.version>
-    <orekit.mathjax.config>&lt;script type=&quot;text/x-mathjax-config&quot;&gt;MathJax.Hub.Config({ TeX: { extensions: [&quot;autoload.js&quot;]}});&lt;/script&gt;</orekit.mathjax.config>
-    <orekit.mathjax.enable>&lt;script type=&quot;text/javascript&quot; src=&quot;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML&quot;&gt;&lt;/script&gt;</orekit.mathjax.enable>
+    <orekit.orekit.cyclonedx-maven-plugin.version>2.9.1</orekit.orekit.cyclonedx-maven-plugin.version>
+    <orekit.mathjax.config>&lt;script type="text/x-mathjax-config"&gt;MathJax.Hub.Config({ TeX: { extensions: ["autoload.js"]}});&lt;/script&gt;</orekit.mathjax.config>
+    <orekit.mathjax.enable>&lt;script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML"&gt;&lt;/script&gt;</orekit.mathjax.enable>
     <orekit.hipparchus.version>4.0.1</orekit.hipparchus.version>
     <orekit.junit.version>5.13.2</orekit.junit.version>
     <orekit.hamcrest.version>3.0</orekit.hamcrest.version>
@@ -133,8 +131,8 @@
       </roles>
     </developer>
     <developer>
-      <name>V&#233;ronique Pommier-Maurussane</name>
-      <id>v&#233;ronique</id>
+      <name>Véronique Pommier-Maurussane</name>
+      <id>véronique</id>
       <roles>
         <role>developer</role>
       </roles>
@@ -189,7 +187,7 @@
       </roles>
     </developer>
     <developer>
-      <name>Cl&#233;ment Jonglez</name>
+      <name>Clément Jonglez</name>
       <id>clement</id>
       <roles>
         <role>developer</role>
@@ -212,7 +210,7 @@
       <name>Roberto Alacevich</name>
     </contributor>
     <contributor>
-      <name>Albert Alcarraz Garc&#237;a</name>
+      <name>Albert Alcarraz García</name>
     </contributor>
     <contributor>
       <name>Daniel Aguilar Taboada</name>
@@ -230,7 +228,7 @@
       <name>Rafael Ayala</name>
     </contributor>
     <contributor>
-      <name>Lucian B&#259;rbulescu</name>
+      <name>Lucian Bărbulescu</name>
     </contributor>
     <contributor>
       <name>Julie Bayard</name>
@@ -245,7 +243,7 @@
       <name>Nicolas Bernard</name>
     </contributor>
     <contributor>
-      <name>Espen Bj&#248;rntvedt</name>
+      <name>Espen Bjørntvedt</name>
     </contributor>
     <contributor>
       <name>Paul Cefola</name>
@@ -260,10 +258,10 @@
       <name>Sébastien Dinot</name>
     </contributor>
     <contributor>
-      <name>&#201;douard Delente</name>
+      <name>Édouard Delente</name>
     </contributor>
     <contributor>
-      <name>Rapha&#235;l Ferm&#233;</name>
+      <name>Raphaël Fermé</name>
     </contributor>
     <contributor>
       <name>Christine Fernandez-Martin</name>
@@ -275,10 +273,13 @@
       <name>Mikael Fillastre</name>
     </contributor>
     <contributor>
+      <name>Guillaume Fiorello</name>
+    </contributor>
+    <contributor>
       <name>Andrea Fiorentino</name>
     </contributor>
     <contributor>
-      <name>Alberto Foss&#224;</name>
+      <name>Alberto Fossà</name>
     </contributor>
     <contributor>
       <name>Laura Garcia</name>
@@ -323,7 +324,7 @@
       <name>Nick LaFarge</name>
     </contributor>
     <contributor>
-      <name>Fran&#231;ois-Xavier Laffont</name>
+      <name>François-Xavier Laffont</name>
     </contributor>
     <contributor>
       <name>Julien Leblond</name>
@@ -344,7 +345,7 @@
       <name>Theo Nguyen</name>
     </contributor>
     <contributor>
-      <name>Lars N&#230;sbye Christensen</name>
+      <name>Lars Næsbye Christensen</name>
     </contributor>
     <contributor>
       <name>Emmanuel Papanagiotou</name>
@@ -353,7 +354,7 @@
       <name>Thomas Paulet</name>
     </contributor>
     <contributor>
-      <name>Ga&#235;tan Pierre</name>
+      <name>Gaëtan Pierre</name>
     </contributor>
     <contributor>
       <name>Steven Ports</name>
@@ -362,13 +363,13 @@
       <name>Joseph Reed</name>
     </contributor>
     <contributor>
-      <name>Silvia R&#237;os Berganti&#241;os</name>
+      <name>Silvia Ríos Bergantiños</name>
     </contributor>
     <contributor>
       <name>Francesco Rocca</name>
     </contributor>
     <contributor>
-      <name>Mathieu Rom&#233;ro</name>
+      <name>Mathieu Roméro</name>
     </contributor>
     <contributor>
       <name>Li Rongwang</name>
@@ -377,7 +378,7 @@
       <name>Chiara Rusconi</name>
     </contributor>
     <contributor>
-      <name>Beatriz Salazar Garc&#237;a</name>
+      <name>Beatriz Salazar García</name>
     </contributor>
     <contributor>
       <name>Pascal Sauer</name>
@@ -407,7 +408,7 @@
       <name>Jean-Baptiste Valet</name>
     </contributor>
     <contributor>
-      <name>M&#233;lina Vanel</name>
+      <name>Mélina Vanel</name>
     </contributor>
   </contributors>
 
@@ -704,11 +705,11 @@
           <additionalOptions>
             <option>--allow-script-in-comments</option>
             <option>-header</option>
-            <option>&apos;${orekit.mathjax.config} ${orekit.mathjax.enable}&apos;</option>
+            <option>'${orekit.mathjax.config} ${orekit.mathjax.enable}'</option>
             <option>-extdirs</option>
             <option>${tools.jar.dir}</option>
           </additionalOptions>
-          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="https://www.csgroup.eu">CS GROUP</a>. All rights reserved.]]></bottom>
+          <bottom>Copyright &amp;copy; ${project.inceptionYear}-{currentYear} &lt;a href="https://www.csgroup.eu"&gt;CS GROUP&lt;/a&gt;. All rights reserved.</bottom>
           <links>
             <link>https://docs.oracle.com/javase/8/docs/api/</link>
             <link>https://www.hipparchus.org/apidocs/</link>
@@ -864,6 +865,7 @@
       <plugin>
         <groupId>org.cyclonedx</groupId>
         <artifactId>cyclonedx-maven-plugin</artifactId>
+        <version>${orekit.orekit.cyclonedx-maven-plugin.version}</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -952,7 +954,7 @@
         <version>${orekit.maven-jxr-plugin.version}</version>
         <configuration>
           <linkJavadoc>false</linkJavadoc>
-          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="https://www.csgroup.eu">CS GROUP</a>. All rights reserved.]]></bottom>
+          <bottom>Copyright &amp;copy; ${project.inceptionYear}-{currentYear} &lt;a href="https://www.csgroup.eu"&gt;CS GROUP&lt;/a&gt;. All rights reserved.</bottom>
         </configuration>
       </plugin>
       <plugin>
@@ -964,11 +966,11 @@
           <additionalOptions>
             <option>--allow-script-in-comments</option>
             <option>-header</option>
-            <option>&apos;${orekit.mathjax.config} ${orekit.mathjax.enable}&apos;</option>
+            <option>'${orekit.mathjax.config} ${orekit.mathjax.enable}'</option>
             <option>-extdirs</option>
             <option>${tools.jar.dir}</option>
           </additionalOptions>
-          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="https://www.csgroup.eu">CS GROUP</a>. All rights reserved.]]></bottom>
+          <bottom>Copyright &amp;copy; ${project.inceptionYear}-{currentYear} &lt;a href="https://www.csgroup.eu"&gt;CS GROUP&lt;/a&gt;. All rights reserved.</bottom>
           <links>
             <link>https://docs.oracle.com/javase/8/docs/api/</link>
             <link>https://www.hipparchus.org/apidocs/</link>
@@ -1035,31 +1037,8 @@
     </profile>
     <profile>
       <id>release</id>
-      <distributionManagement>
-        <repository>
-          <id>ossrh</id>
-          <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
-        </repository>
-        <snapshotRepository>
-          <id>ossrh</id>
-          <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-      </distributionManagement>
       <build>
         <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-source-plugin</artifactId>
-            <version>${orekit.maven-source-plugin.version}</version>
-            <executions>
-              <execution>
-                <id>attach-sources</id>
-                <goals>
-                  <goal>jar-no-fork</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
@@ -1074,47 +1053,12 @@
             </executions>
           </plugin>
           <plugin>
-            <groupId>org.sonatype.plugins</groupId>
-            <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>${orekit.nexus-staging-maven-plugin.version}</version>
-            <extensions>true</extensions>
-            <configuration>
-              <serverId>ossrh</serverId>
-              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-              <autoReleaseAfterClose>false</autoReleaseAfterClose>
-            </configuration>
-          </plugin>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>build-helper-maven-plugin</artifactId>
-            <version>${orekit.build-helper-maven-plugin.version}</version>
-            <executions>
-              <execution>
-                <id>attach-artifacts</id>
-                <phase>verify</phase>
-                <goals>
-                  <goal>attach-artifact</goal>
-                </goals>
-                <configuration>
-                  <artifacts>
-                    <artifact>
-                      <file>${basedir}/target/orekit-${project.version}-sources.jar</file>
-                      <type>source-jar</type>
-                    </artifact>
-                  </artifacts>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
             <version>${orekit.maven-gpg-plugin.version}</version>
             <configuration>
-              <gpgArguments>
-                <arg>--digest-algo=SHA512</arg>
-              </gpgArguments>
-              <keyname>0802AB8C87B0B1AEC1C1C5871550FDBD6375C33B</keyname>
+              <signer>bc</signer>
+              <useAgent>false</useAgent>
             </configuration>
             <executions>
               <execution>
@@ -1150,7 +1094,7 @@
             <version>${orekit.maven-surefire-plugin.version}</version>
             <configuration>
               <!-- Orekit is mostly a computational library. -->
-              <!-- As there is not a lot of I/O it is better to not overide the number of CPU. -->
+              <!-- As there is not a lot of I/O it is better to not override the number of CPU. -->
               <forkCount>0.5C</forkCount>
               <argLine>@{argLine} -Xmx2048m</argLine>
             </configuration>

@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <!-- Copyright 2002-2025 CS GROUP
   Licensed to CS GROUP (CS) under one or more
   contributor license agreements.  See the NOTICE file distributed with
@@ -15,7 +14,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<document>
+<document xmlns="http://maven.apache.org/changes/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/changes/2.0.0 https://maven.apache.org/xsd/changes-2.0.0.xsd">
   <properties>
     <title>Orekit Changes</title>
   </properties>
@@ -29,6 +28,9 @@
         </action>
     </release>
     <release version="13.1" date="TBD" description="TBD">
+        <action dev="guillaumefiorello" type="fix" issue="1773">
+            Fixed regression on TLE date parsing.
+        </action>
         <action dev="luc" type="fix" issue="1771">
             Fixed failing tests on Windows.
         </action>
@@ -49,6 +51,9 @@
         </action>
         <action dev="serrof" type="fix" issue="1761">
             Remove some calls to deprecated methods.
+        </action>
+        <action dev="luc" type="fix" issue="1760">
+            Revamped release process, using fully automated scripts and continuous integration.
         </action>
         <action dev="serrof" type="fix" issue="1759">
             Fix equals in FieldAbsoluteDate.
@@ -156,8 +161,7 @@
             Fixed OrbitRelativeFrame definition of ambiguous local orbital frames (CCSDS).
         </action>
     </release>
-    <release version="13.0.3" date="2025-06-07" description="Orekit 13.0.3 is a patch release.
-        It fixes several issues related to performances, data loading, and some wrong computation.">
+    <release version="13.0.3" date="2025-06-07" description="Orekit 13.0.3 is a patch release.         It fixes several issues related to performances, data loading, and some wrong computation.">
         <action dev="evan" type="fix" issue="1070" due-to="Brianna Aubin">
             Update EGM default supported names for EGM 2008 .
         </action>
@@ -210,8 +214,7 @@
           Fixed initial spacecraft state type when DSST Jacobian is activated.
         </action>
     </release>
-    <release version="13.0.2" date="2025-04-30" description="Orekit 13.0.2 is a patch release.
-        It fixes several issues related to GNSS, data loading and indirect shooting.">
+    <release version="13.0.2" date="2025-04-30" description="Orekit 13.0.2 is a patch release.         It fixes several issues related to GNSS, data loading and indirect shooting.">
         <action dev="luc" type="fix" issue="1713">
             Decompose path from file name when building a DataSource from a String.
         </action>
@@ -231,41 +234,12 @@
             Wrong treatment of adjoint singularity in indirect shooting.
         </action>
     </release>
-    <release version="13.0.1" date="2025-04-23" description="Orekit 13.0.1 is a patch release.
-        It fixes a huge performance bottleneck in NeQuick ionospheric models.">
+    <release version="13.0.1" date="2025-04-23" description="Orekit 13.0.1 is a patch release.         It fixes a huge performance bottleneck in NeQuick ionospheric models.">
         <action dev="luc" type="add" issue="1704">
             Vastly improved NeQuick models performances.
         </action>
     </release>
-    <release version="13.0" date="2025-04-14" description="Orekit 13.0 is a major new release.
-           It includes both new features, accuracy and performances improvements, and bug fixes.
-           The main new features introduced in 13.0 are: revamp of tropospheric models, revamp
-           of {Field}ImpulseManeuver, revamp of absolute dates with attoseconds precision,
-           revamp of numerical integration tolerances, many improvements in optimal control
-           (min time Hamiltonian, cost evaluation, differential information at control switches,
-           linear system tuning, logarithmic barrier for fuel cost, cost/penalty barrier for
-           indirect fuel optimization, scales in Newton updates), new Kalman/unscented smoother,
-           many improvements in GNSS (Rinex files, Sinex files, partial derivatives in GNSS
-           propagators, handling of ambiguities, non-standard signals and systems), new ITU models
-           (ITU-R P.531 NeQuick 2 ionospheric model, ITU-R P.834 tropospheric model), replacement
-           of AdditionalStateProvider by AdditionalDataProvider, builders for
-           {Field}SpacecraftState, moved position angles conversions methods, IIRV messages
-           reader/writer, sexagesimal angles, moving transition dates in TimeSpanMap, new
-           East-North-Up (ENU) and North-East-Down (NED) local orbital frames,
-           {Field}EventDetectionSettings, Walker constellation for star pattern, magnetic field
-           loading from DataSource, removed orbit-related chained getters in (Field)SpacecraftState,
-           a posteriori filtering feature for generated measurements, switched default
-           PositionAngleType in (Field)NumericalPropagator to ECCENTRIC, improvement in the conversion
-           of osculating elements into mean elements for analytical theories: Brouwer-Lyddane,
-           Eckstein-Hechler, DSST, SGP4/SDP4 (i.e. forTLE), generalized ProfileThrustPropulsionModel,
-           all ForceModel and AttitudeProvider working with AbsolutePVCoordinates, alternative to
-           AttitudesSequence with instantaneous switches, AttitudeProvider now inheriting from
-           EventDetectorsProvider and ParameterDriverProvider, {Field}Orbit always containing rates
-           (possibly Keplerian), ThirdBodyAttraction can be defined without CelestialBody,
-           AdaptableInterval now taking boolean argument on direction of propagation,
-           native AdaptableInterval for date detection, changed production branch name in the git
-           repository from master to main.
-           See the list below for a full description of the changes.">
+    <release version="13.0" date="2025-04-14" description="Orekit 13.0 is a major new release.            It includes both new features, accuracy and performances improvements, and bug fixes.            The main new features introduced in 13.0 are: revamp of tropospheric models, revamp            of {Field}ImpulseManeuver, revamp of absolute dates with attoseconds precision,            revamp of numerical integration tolerances, many improvements in optimal control            (min time Hamiltonian, cost evaluation, differential information at control switches,            linear system tuning, logarithmic barrier for fuel cost, cost/penalty barrier for            indirect fuel optimization, scales in Newton updates), new Kalman/unscented smoother,            many improvements in GNSS (Rinex files, Sinex files, partial derivatives in GNSS            propagators, handling of ambiguities, non-standard signals and systems), new ITU models            (ITU-R P.531 NeQuick 2 ionospheric model, ITU-R P.834 tropospheric model), replacement            of AdditionalStateProvider by AdditionalDataProvider, builders for            {Field}SpacecraftState, moved position angles conversions methods, IIRV messages            reader/writer, sexagesimal angles, moving transition dates in TimeSpanMap, new            East-North-Up (ENU) and North-East-Down (NED) local orbital frames,            {Field}EventDetectionSettings, Walker constellation for star pattern, magnetic field            loading from DataSource, removed orbit-related chained getters in (Field)SpacecraftState,            a posteriori filtering feature for generated measurements, switched default            PositionAngleType in (Field)NumericalPropagator to ECCENTRIC, improvement in the conversion            of osculating elements into mean elements for analytical theories: Brouwer-Lyddane,            Eckstein-Hechler, DSST, SGP4/SDP4 (i.e. forTLE), generalized ProfileThrustPropulsionModel,            all ForceModel and AttitudeProvider working with AbsolutePVCoordinates, alternative to            AttitudesSequence with instantaneous switches, AttitudeProvider now inheriting from            EventDetectorsProvider and ParameterDriverProvider, {Field}Orbit always containing rates            (possibly Keplerian), ThirdBodyAttraction can be defined without CelestialBody,            AdaptableInterval now taking boolean argument on direction of propagation,            native AdaptableInterval for date detection, changed production branch name in the git            repository from master to main.            See the list below for a full description of the changes.">
         <action dev="luc" type="add" issue="1700">
             Removed dependency to default data context in RtcmMessageType.
         </action>
@@ -657,7 +631,7 @@
         <action dev="luc" type="add" issue="1443">
             Added support for sexagesimal angles.
         </action>
-        <action dev="luc" type="update" >
+        <action dev="luc" type="update">
             Removed all classes and methods that were deprecated in 12.X.
         </action>
         <action dev="luc" type="update" issue="1439">
@@ -696,11 +670,7 @@
             Added clearing method for ephemeris generators in integrator-based propagators.
         </action>
     </release>
-    <release version="12.2.1" date="18/12/2024"
-             description="Version 12.2.1 is a patch release of Orekit.
-             It fixes bugs related to performance in TLEPropagator, mass update between measurements in Kalman models,
-             longitude normalization in DSST, missing use of clock offsets in bi-static measurements, and wrong use
-             of Kalman models in case of propagation parameters estimated together with 1 to 5 orbital parameters.">
+    <release version="12.2.1" date="18/12/2024" description="Version 12.2.1 is a patch release of Orekit.              It fixes bugs related to performance in TLEPropagator, mass update between measurements in Kalman models,              longitude normalization in DSST, missing use of clock offsets in bi-static measurements, and wrong use              of Kalman models in case of propagation parameters estimated together with 1 to 5 orbital parameters.">
         <action dev="gegout" type="fix" issue="1624">
             Fix deprecated abstract method in 12.2
         </action>
@@ -729,12 +699,7 @@
             Fixed ClockOffsetDriver not modifying the value of BistaticRange.
         </action>
     </release>
-    <release version="12.2" date="18/10/2024" description="Version 12.2 is a minor release of Orekit.
-             It includes both fixes and new features. Version 12.2 specifically introduces a new package dedicated to
-             optimal control (indirect). It implements several methods that were missing in field
-             equivalent classes. Also, new quality of life methods are introduced to improve code conciseness and
-             readability. It is worth mentioning that a long standing bug regarding the Brouwer-Lyddane analytical
-             propagator has been fixed. See the list below for a full description of the changes.">
+    <release version="12.2" date="18/10/2024" description="Version 12.2 is a minor release of Orekit.              It includes both fixes and new features. Version 12.2 specifically introduces a new package dedicated to              optimal control (indirect). It implements several methods that were missing in field              equivalent classes. Also, new quality of life methods are introduced to improve code conciseness and              readability. It is worth mentioning that a long standing bug regarding the Brouwer-Lyddane analytical              propagator has been fixed. See the list below for a full description of the changes.">
       <action dev="serrof" type="add" issue="1555">
         Add init methods in LightFluxModel.
       </action>
@@ -881,12 +846,7 @@
         Fix negative eccentricity issue with Brouwer-Lyddane propagator.
       </action>
     </release>
-    <release version="12.1.3" date="04/09/2024"
-             description="Version 12.1.3 is a patch release of Orekit.
-             It fixes bugs related to thread-safety, measurements status in UKF, inter-satellite measurements
-             and GNSS ambiguity solver, DSST osculating propagation, NeQuick ionospheric model,
-             numerical noises in covariance transformation and parsing of RINEX and CCSDS files.
-             Version 12.1.3 also include Checkstyle fixes.">
+    <release version="12.1.3" date="04/09/2024" description="Version 12.1.3 is a patch release of Orekit.              It fixes bugs related to thread-safety, measurements status in UKF, inter-satellite measurements              and GNSS ambiguity solver, DSST osculating propagation, NeQuick ionospheric model,              numerical noises in covariance transformation and parsing of RINEX and CCSDS files.              Version 12.1.3 also include Checkstyle fixes.">
       <action dev="luc" type="fix" issue="643">
         Removed non thread-safe use of DecimalFormat.
       </action>
@@ -924,12 +884,7 @@
         Fixed update of initial state's prop type after a propagation in DSST.
       </action>
     </release>
-    <release version="12.1.2" date="13/07/2024"
-             description="Version 12.1.2 is a patch release of Orekit.
-             It fixes multiple issues related to the parsing of CCSDS CDM, the generation of
-             IntelsatElevenElements, the initialization of the IntervalEventTrigger, and the
-             parsing of IGS related files.
-             Version 12.1.2 also include multiple JavaDoc fixes.">
+    <release version="12.1.2" date="13/07/2024" description="Version 12.1.2 is a patch release of Orekit.              It fixes multiple issues related to the parsing of CCSDS CDM, the generation of              IntelsatElevenElements, the initialization of the IntervalEventTrigger, and the              parsing of IGS related files.              Version 12.1.2 also include multiple JavaDoc fixes.">
       <action dev="bryan" type="fix" issue="1459">
         Fixed JavaDoc typo in WalkerConstellationSlot.
       </action>
@@ -967,27 +922,12 @@
         Add finish method in (Field)EventDetector and call it in propagators.
       </action>
     </release>
-    <release version="12.1.1" date="25/06/2024"
-             description="Version 12.1.1 is a patch release of Orekit.
-             It fixes one incompatible change introduced in 12.1 on ModifiedSaastamoinenModel.">
+    <release version="12.1.1" date="25/06/2024" description="Version 12.1.1 is a patch release of Orekit.              It fixes one incompatible change introduced in 12.1 on ModifiedSaastamoinenModel.">
       <action dev="luc" type="fix" issue="1446">
         Fixed API incompatible change introduced in 12.1.
       </action>
     </release>
-    <release version="12.1" date="24/06/2024"
-             description="Version 12.1 is a minor release of Orekit.
-             It includes both fixes and new features. Version 12.1 also includes major
-             performance improvements in Orekit features related to orbit propagation,
-             orbit determination, frame transformations, etc. New features introduced
-             in 12.1 are new implementations of AdaptableInterval for elevation detector
-             and apside detector, support for post-seismic deformation available in
-             Sinex files, splicing of Rinex clock files, major improvements in GNSS clock
-             modelling, new detectors for the relative distance between two objects
-             and the beta angle, support for Walker constellations handling, a new
-             propagation model for Intelsat 11 elements, a new solar radiation pressure
-             model with cylindrical shadow model, a new architecture for tropospheric
-             models etc. Finally, since version 12.1 support for Ant has been removed.
-             See the list below for a full description of the changes.">
+    <release version="12.1" date="24/06/2024" description="Version 12.1 is a minor release of Orekit.              It includes both fixes and new features. Version 12.1 also includes major              performance improvements in Orekit features related to orbit propagation,              orbit determination, frame transformations, etc. New features introduced              in 12.1 are new implementations of AdaptableInterval for elevation detector              and apside detector, support for post-seismic deformation available in              Sinex files, splicing of Rinex clock files, major improvements in GNSS clock              modelling, new detectors for the relative distance between two objects              and the beta angle, support for Walker constellations handling, a new              propagation model for Intelsat 11 elements, a new solar radiation pressure              model with cylindrical shadow model, a new architecture for tropospheric              models etc. Finally, since version 12.1 support for Ant has been removed.              See the list below for a full description of the changes.">
       <action dev="serrof" type="update" issue="1441">
         Use automatic differentiation when possible in nadir pointing.
       </action>
@@ -1204,7 +1144,7 @@
       <action dev="luc" type="fix" issue="1354">
         Fixed parsing of SP3 files with missing agency in header.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added IGSUtils.guessFrame() to retrieve Earth frames with proper
         year and associated IERS conventions.
       </action>
@@ -1217,7 +1157,7 @@
       <action dev="luc" type="add" issue="1352">
         Added SampledClockModel.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added {Field}ClockOffset.
       </action>
       <action dev="serrof" type="add" issue="1345">
@@ -1230,7 +1170,7 @@
         Deprecated InterSatellitesPhaseAmbiguityModifier, OneWayGNSSPhaseAmbiguityModifier
         and PhaseAmbiguityModifier.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added AmbiguityDriver and AmbiguityCache.
       </action>
       <action dev="luc" type="update" issue="1343">
@@ -1257,7 +1197,7 @@
       <action dev="luc" type="add" issue="1332">
         Added InterSatellitesOneWayRangeRate measurements.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added constant and quadratic clock models for GNSS measurements.
       </action>
       <action dev="serrof" type="update" issue="1198">
@@ -1414,10 +1354,7 @@
         Added EventDetector implementations for detecting beta angle crossing events.
       </action>
     </release>
-    <release version="12.0.2" date="15/03/2024"
-             description="Version 12.0.2 is a patch release of Orekit.
-           It fixes issues related to SP3 files, interpolation, measurements, multi-threading
-           and DSST jacobian setup. Copyright year has been updated.">
+    <release version="12.0.2" date="15/03/2024" description="Version 12.0.2 is a patch release of Orekit.            It fixes issues related to SP3 files, interpolation, measurements, multi-threading            and DSST jacobian setup. Copyright year has been updated.">
       <action dev="luc" type="fix" issue="1347">
         Change visibility of InertiaAxis and Inertia constructors to public.
       </action>
@@ -1454,11 +1391,7 @@
         Fix DSST Jacobian setup.
       </action>
     </release>
-    <release version="12.0.1" date="31/12/2023"
-             description="Version 12.0.1 is a patch release of Orekit.
-           It fixes several issues related to the Ephemeris class, interpolation and caching behaviours.
-           Checkstyle configuration for IntelliJ is added and some javadocs have been updated. Finally, missing
-           contributions have been added to the changes.">
+    <release version="12.0.1" date="31/12/2023" description="Version 12.0.1 is a patch release of Orekit.            It fixes several issues related to the Ephemeris class, interpolation and caching behaviours.            Checkstyle configuration for IntelliJ is added and some javadocs have been updated. Finally, missing            contributions have been added to the changes.">
       <action dev="luc" type="add" issue="1286">
         Fixed parsing of SP3 files with partly missing standard deviations.
       </action>
@@ -1496,25 +1429,7 @@
         Fixed bad caching of the ocean tides model.
       </action>
     </release>
-    <release version="12.0" date="2023-11-08"
-             description="Orekit 12.0 is a major new release.
-           It includes both new features and bug fixes. The main new features
-           introduced in 12.0 are: the Zeis model for DSST J2-squared terms, RTCM orbit
-           and clock correction messages, new filtering capabilities for CCSDS parsing,
-           central body flatness is now taken into account for eclipse detector and solar
-           radiation pressure, the static transform for {Field} elements, measurements
-           can now be evaluated without derivatives, panel dependent coefficients in BoxAndSolarArraySpacecraft,
-           prediction of Earth Orientation Parameters, replacement of TimeInterpolable by
-           TimeInterpolator, Gauss Initial Orbit Determination algorithm, a {Field} version
-           of StateCovariance  and ImpulseManeuver, a new FDOA measurements model, a new
-           API for TLE generation including a new method based on a least squares fitting,
-           a writer for CCSDS OCM, a new ssa package containing probability of collision
-           computation methods (Laas, Alfano,  Alfriend, Patera, and Chan), blending algorithms
-           for orbit and covariance interpolation, a torque-free attitude mode for
-           general (non-symmetrical) body, a writer for SP3 files, and support for new
-           formats: EOP C04, STK ephemeris files, Rinex 3.05 and 4.0, Rinex 2 navigation
-           messages, CCSDS ADM v2, and Sinex Differential Code Bias (DCB).
-           See the list below for a full description of the changes.">
+    <release version="12.0" date="2023-11-08" description="Orekit 12.0 is a major new release.            It includes both new features and bug fixes. The main new features            introduced in 12.0 are: the Zeis model for DSST J2-squared terms, RTCM orbit            and clock correction messages, new filtering capabilities for CCSDS parsing,            central body flatness is now taken into account for eclipse detector and solar            radiation pressure, the static transform for {Field} elements, measurements            can now be evaluated without derivatives, panel dependent coefficients in BoxAndSolarArraySpacecraft,            prediction of Earth Orientation Parameters, replacement of TimeInterpolable by            TimeInterpolator, Gauss Initial Orbit Determination algorithm, a {Field} version            of StateCovariance  and ImpulseManeuver, a new FDOA measurements model, a new            API for TLE generation including a new method based on a least squares fitting,            a writer for CCSDS OCM, a new ssa package containing probability of collision            computation methods (Laas, Alfano,  Alfriend, Patera, and Chan), blending algorithms            for orbit and covariance interpolation, a torque-free attitude mode for            general (non-symmetrical) body, a writer for SP3 files, and support for new            formats: EOP C04, STK ephemeris files, Rinex 3.05 and 4.0, Rinex 2 navigation            messages, CCSDS ADM v2, and Sinex Differential Code Bias (DCB).            See the list below for a full description of the changes.">
       <action dev="theo611 " type="update" issue="1203">
         Added new method addSupportedParameters in AbstractPropagatorBuilder.
       </action>
@@ -1545,7 +1460,7 @@
       <action dev="luc" type="fix" issue="1212">
         Use Ionospĥere Pierce Point in Global Ionosphere Model.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added getCartesianPoint to TopocentricFrame.
       </action>
       <action dev="serrof" type="fix" issue="1173">
@@ -1560,13 +1475,13 @@
       <action dev="luc" type="add" issue="1238">
         Allow customization of interpolation degree in EOP.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added support for XML and csv versions of bulletin A, bulletin B and EOP C04.
       </action>
-      <action dev="alfe" type="fix"  issue="1233">
+      <action dev="alfe" type="fix" issue="1233">
         Set InterSatVisibilityDetector global constructor from private to protected.
       </action>
-      <action dev="alfe" type="fix"  issue="1231">
+      <action dev="alfe" type="fix" issue="1231">
         Fix bug on buildBox constructor coefficients order.
       </action>
       <action dev="alfe" type="add" issue="1225">
@@ -1641,10 +1556,10 @@
       <action dev="serrof" type="fix" issue="1197">
         Use of FieldOrbit in gradient converters only when applicable.
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         Improved (a lot) performance of GNSS attitude models.
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         Replaced {Field}DerivativeStructure by {Field}UnivariateDerivative2 in GNSS attitude context.
       </action>
       <action dev="serrof" type="add" issue="1194">
@@ -2099,12 +2014,7 @@
         Added ability to consider LOFType as pseudo-inertial frame.
       </action>
     </release>
-    <release version="11.3.3" date="2023-06-30"
-             description="Version 11.3.3 is a patch release of Orekit.
-             It fixes several issues related to the semi-analytical propagation using DSST model.
-             Specifically, it fixes the propagation using 3x3 geopotential terms. It also fixes
-             the osculating propagation using luni-solar perturbation. Finally, it fixes a performance
-             issue in tesseral terms when high order values are used.">
+    <release version="11.3.3" date="2023-06-30" description="Version 11.3.3 is a patch release of Orekit.              It fixes several issues related to the semi-analytical propagation using DSST model.              Specifically, it fixes the propagation using 3x3 geopotential terms. It also fixes              the osculating propagation using luni-solar perturbation. Finally, it fixes a performance              issue in tesseral terms when high order values are used.">
       <action dev="maxime" type="fix" issue="1106">
         Improved performances for (Field)DSSTPropagatorTest.
       </action>
@@ -2121,12 +2031,7 @@
         Fixed crash of DSST during propagation with osculating and 3rd body.
       </action>
     </release>
-    <release version="11.3.2" date="2023-02-17"
-             description="Version 11.3.2 is a patch release of Orekit.
-             It fixes issues related to the measurement covariance used by the Unscented Kalman Filter,
-             the theoritical evaluation of angulare Ra-Dec measurements, the epoch used for Glonass
-             navigation messages, and the numerical accuracy of the shiftedBy method of cartesian orbits.
-             Finally, it includes some improvements in the class documentation">
+    <release version="11.3.2" date="2023-02-17" description="Version 11.3.2 is a patch release of Orekit.              It fixes issues related to the measurement covariance used by the Unscented Kalman Filter,              the theoritical evaluation of angulare Ra-Dec measurements, the epoch used for Glonass              navigation messages, and the numerical accuracy of the shiftedBy method of cartesian orbits.              Finally, it includes some improvements in the class documentation">
       <action dev="Jonathan Hood" type="fix" issue="1033">
         Fixed GLONASS parser to set ToC and Date directly to ingested date instead of rounded GPS date.
       </action>
@@ -2158,11 +2063,7 @@
         Fixed HolmesFeatherstoneAttractionModel error with a degree 0 gravity field.
       </action>
     </release>
-    <release version="11.3.1" date="2022-12-24"
-             description="Version 11.3.1 is a patch release of Orekit.
-             It fixes an issue related to the parsing of dates in the Rinex navigation files.
-             It also fixes discontinuity issues in the Brouwer-Lyddane orbit propagator.
-             Finally, it includes some improvements in the class documentation">
+    <release version="11.3.1" date="2022-12-24" description="Version 11.3.1 is a patch release of Orekit.              It fixes an issue related to the parsing of dates in the Rinex navigation files.              It also fixes discontinuity issues in the Brouwer-Lyddane orbit propagator.              Finally, it includes some improvements in the class documentation">
       <action dev="luc" type="fix" issue="1012">
         Fixed JavaDoc in IsotropicRadiationClassicalConvention class.
       </action>
@@ -2176,23 +2077,7 @@
         Improved documentation of StateCovariance class.
       </action>
     </release>
-    <release version="11.3" date="2022-10-25"
-             description="Version 11.3 is a minor release of Orekit.
-             It includes both new features and bug fixes. New features introduced in 11.3 are:
-             the unscented Kalman filter (numerical version), the semi-analytical unscented Kalman filter (DSST version),
-             a new PVCoordinatesProvider modelling waypoints on an ellipsoid following a loxodrome (commonly, a rhumb line),
-             a new method to compute hyperbolic anomaly based on Gooding and Odell algorithm,
-             a new built-in additional state for covariance propagation (linear method based on the state transition matrix computation),
-             with a new state covariance object allowing covariance transformation between frames and orbit types,
-             the extrapolation of the state covariance matrix using a Keplerian model,
-             a new ExtremumApproachDetector for close encounter computation,
-             the migration of all JUnit tests from JUnit 4 to JUnit 5,
-             the ability to estimate measurement parameters (station position or clock biases) from an ephemeris,
-             new methods to convert from/to Orekit frames and CCSDS frames,
-             improvements of CCSDS CDM (Collision Data Message) parsers,
-             improvements in date handling and aggregate bounded propagators,
-             several bug fixes and documentation improvements.
-             See the list below for a full description of the changes.">
+    <release version="11.3" date="2022-10-25" description="Version 11.3 is a minor release of Orekit.              It includes both new features and bug fixes. New features introduced in 11.3 are:              the unscented Kalman filter (numerical version), the semi-analytical unscented Kalman filter (DSST version),              a new PVCoordinatesProvider modelling waypoints on an ellipsoid following a loxodrome (commonly, a rhumb line),              a new method to compute hyperbolic anomaly based on Gooding and Odell algorithm,              a new built-in additional state for covariance propagation (linear method based on the state transition matrix computation),              with a new state covariance object allowing covariance transformation between frames and orbit types,              the extrapolation of the state covariance matrix using a Keplerian model,              a new ExtremumApproachDetector for close encounter computation,              the migration of all JUnit tests from JUnit 4 to JUnit 5,              the ability to estimate measurement parameters (station position or clock biases) from an ephemeris,              new methods to convert from/to Orekit frames and CCSDS frames,              improvements of CCSDS CDM (Collision Data Message) parsers,              improvements in date handling and aggregate bounded propagators,              several bug fixes and documentation improvements.              See the list below for a full description of the changes.">
       <action dev="bryan" type="add" issue="972">
         Added shiftedBy method for covariance matrix.
       </action>
@@ -2261,11 +2146,7 @@
         Added method to round DateTimeComponents for custom formatting.
       </action>
     </release>
-    <release version="11.2.1" date="2022-08-01"
-             description="Version 11.2.1 is a patch release of Orekit.
-             It fixes issues related to the parsing and writing of CCSDS CDM files.
-             It also fixes issues related to date management.
-             Finally it includes some improvements in the class documentation">
+    <release version="11.2.1" date="2022-08-01" description="Version 11.2.1 is a patch release of Orekit.              It fixes issues related to the parsing and writing of CCSDS CDM files.              It also fixes issues related to date management.              Finally it includes some improvements in the class documentation">
       <action dev="gc" type="fix" issue="945">
         Fixed documentation issue, RTNCovariance constructor initializes the covariance matrix with NaN.
       </action>
@@ -2282,18 +2163,7 @@
         Fixed internal error on DateEvent capture events in v11.1.2.
       </action>
     </release>
-    <release version="11.2" date="2022-06-20"
-             description="Version 11.2 is a minor release of Orekit.
-             It includes both new features and bug fixes. New features introduced
-             in 11.2 are: the Hatch filter for GNSS measurements smoothing, the parsing
-             and writing of CCSDS CDM in both KVN and XML formats, the parsing of SOLFSMY
-             and DTC data for JB2008 atmospheric model, the parsing of EOP in Sinex
-             files, new measurements for orbit determination: TDOA, bi-static range and
-             range rate, support for ITRF 2020 version, the computation of mean orbital
-             parameters in the sense of Eckstein-Hechler or Brouwer-Lyddane models. It
-             also includes an update of the CCSDS ODM format to latest draft version and an
-             improvement of the frame transformation.
-             See the list below for a full description of the changes.">
+    <release version="11.2" date="2022-06-20" description="Version 11.2 is a minor release of Orekit.              It includes both new features and bug fixes. New features introduced              in 11.2 are: the Hatch filter for GNSS measurements smoothing, the parsing              and writing of CCSDS CDM in both KVN and XML formats, the parsing of SOLFSMY              and DTC data for JB2008 atmospheric model, the parsing of EOP in Sinex              files, new measurements for orbit determination: TDOA, bi-static range and              range rate, support for ITRF 2020 version, the computation of mean orbital              parameters in the sense of Eckstein-Hechler or Brouwer-Lyddane models. It              also includes an update of the CCSDS ODM format to latest draft version and an              improvement of the frame transformation.              See the list below for a full description of the changes.">
       <action dev="bryan" type="update">
         Added possibility to custom analytical mean parameters conversion.
       </action>
@@ -2371,12 +2241,7 @@
         performance.
       </action>
     </release>
-    <release version="11.1.2" date="2022-04-27"
-             description="Version 11.1.2 is a patch release of Orekit.
-             It fixes issues related to the parsing and writing of CCSDS and ILRS files.
-             It also fixes issues in ECOM2 solar radiation pressure model, event bracketing,
-             ephemeris generation, and NTW local orbital frame.
-             Finally it includes some improvements in the class documentation">
+    <release version="11.1.2" date="2022-04-27" description="Version 11.1.2 is a patch release of Orekit.              It fixes issues related to the parsing and writing of CCSDS and ILRS files.              It also fixes issues in ECOM2 solar radiation pressure model, event bracketing,              ephemeris generation, and NTW local orbital frame.              Finally it includes some improvements in the class documentation">
       <action dev="luc" type="fix" issue="917">
         Fixed missing tags in XML generation by EphemerisWriter.
       </action>
@@ -2419,11 +2284,7 @@
         of a step and another regular event happens in the first half of the same step
       </action>
     </release>
-    <release version="11.1.1" date="2022-03-17"
-             description="Version 11.1.1 is a patch release of Orekit.
-             It fixes issues related to the parsing of SP3 and Rinex files. It also takes
-             additional derivatives into account in {Field}SpacecraftState.shiftedBy method.
-             Finally it includes some improvements in the class documentation">
+    <release version="11.1.1" date="2022-03-17" description="Version 11.1.1 is a patch release of Orekit.              It fixes issues related to the parsing of SP3 and Rinex files. It also takes              additional derivatives into account in {Field}SpacecraftState.shiftedBy method.              Finally it includes some improvements in the class documentation">
       <action dev="lars" type="add" issue="896">
         Added Git configuration instructions in contributing guide.
       </action>
@@ -2446,17 +2307,7 @@
         Take additional derivatives into account in {Field}SpacecraftState.shiftedBy.
       </action>
     </release>
-    <release version="11.1" date="2022-02-14"
-             description="Version 11.1 is a minor release of Orekit.
-             It includes both new features and bug fixes. New features introduced
-             in 11.1 are: the estimation of maneuver start/stop time, the Brouwer-Lyddane
-             orbit propagation model with Warren Phipps’ correction for the critical
-             inclination of 63.4° and the perturbative acceleration due to atmospheric
-             drag, the Extended Semi-analytical Kalman Filter, a new API for
-             State Transition Matrix and Jacobian matrices computation, orbit
-             determination  using analytical propagation models, parsing of ICGEM V2.0 format.
-             This release includes important fixes in CCSDS files, TimeSpanMap, and
-             display of dates. See the list below for a full description of the changes.">
+    <release version="11.1" date="2022-02-14" description="Version 11.1 is a minor release of Orekit.              It includes both new features and bug fixes. New features introduced              in 11.1 are: the estimation of maneuver start/stop time, the Brouwer-Lyddane              orbit propagation model with Warren Phipps&#x2019; correction for the critical              inclination of 63.4&#xB0; and the perturbative acceleration due to atmospheric              drag, the Extended Semi-analytical Kalman Filter, a new API for              State Transition Matrix and Jacobian matrices computation, orbit              determination  using analytical propagation models, parsing of ICGEM V2.0 format.              This release includes important fixes in CCSDS files, TimeSpanMap, and              display of dates. See the list below for a full description of the changes.">
       <action dev="luc" type="fix" issue="722">
         Prefer values from Bulletin B rather than Bulletin A if both are present
         in rapid data column format. This handling of priority was already in
@@ -2543,31 +2394,31 @@
         Added derivatives with respect to maneuvers start/stop dates
         or median date/duration.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added observers for maneuvers triggers.
       </action>
       <action dev="luc" type="fix" issue="853">
         Added field-based init method in ForceModel and DSSTForceModel.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Added ParameterDrivenDateIntervalDetector and FieldParameterDrivenDateIntervalDetector.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added DateDriver to drive dates using a ParameterDriver.
       </action>
       <action dev="luc" type="fix" issue="848">
         Allow backward propagation in EventBasedManeuverTriggers.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added IntervalEventTrigger and StartStopEventsTrigger to streamline
         several ways to trigger maneuvers.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         When propagating with integrated additional equations, the generated
         spacecraft states now also contain both state and derivatives
         managed by the equations.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Replaced AdditionalEquations by AdditionalDerivativesProvider with
         support for dimension retrieval and yield feature between providers.
       </action>
@@ -2578,7 +2429,7 @@
         is expected to be generalized to analytical propagators as well when it is
         stabilized.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added DoubleArrayDictionary and FieldArrayDictionary as replacements
         for HashMap when the number of keys is very small (such as in spacecraft
         states).
@@ -2587,7 +2438,7 @@
         Manage dependencies between additional states in propagators using a yield
         feature between providers.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         SpacecraftState now handle derivatives of additional states.
       </action>
       <action dev="luc" type="add" issue="862">
@@ -2597,12 +2448,7 @@
         Get rid of StringBuffer for logging without unnecessary synchronization (bias-locking disabled at jdk18)
       </action>
     </release>
-    <release version="11.0.2" date="2021-11-24"
-             description="Version 11.0.2 is a patch release of Orekit.
-             It fixes an important issue related to the handling of indexes
-             when building the state transition matrix in multi satellites
-             orbit determination. It also fixes bugs in TLE and CRD files.
-             Finally it includes an update of the release guide.">
+    <release version="11.0.2" date="2021-11-24" description="Version 11.0.2 is a patch release of Orekit.              It fixes an important issue related to the handling of indexes              when building the state transition matrix in multi satellites              orbit determination. It also fixes bugs in TLE and CRD files.              Finally it includes an update of the release guide.">
       <action dev="bryan" type="fix" issue="859" due-to="Emmanuel Papanagiotou">
         Allowed custom setting of state to TLE conversion in propagator builder.
       </action>
@@ -2619,11 +2465,7 @@
         Updated the release guide to remove actions that are no longer required.
       </action>
     </release>
-    <release version="11.0.1" date="2021-10-22"
-             description="Version 11.0.1 is a patch release of Orekit.
-             It fixes an important issue related to the calculation of the relativistic
-             clock correction for GNSS measurements. It also fixes bugs in OEM and CPF
-             files writing. Finally it includes some improvements in the class documentation">
+    <release version="11.0.1" date="2021-10-22" description="Version 11.0.1 is a patch release of Orekit.              It fixes an important issue related to the calculation of the relativistic              clock correction for GNSS measurements. It also fixes bugs in OEM and CPF              files writing. Finally it includes some improvements in the class documentation">
       <action dev="bryan" type="fix" issue="846">
         Fixed wrong computation of relativistic clock correction for GNSS measurements.
       </action>
@@ -2647,21 +2489,7 @@
         Improved documentation of ImpulseManeuver class.
       </action>
     </release>
-    <release version="11.0" date="2021-09-20"
-             description="Orekit 11.0 is a major new release.
-             It includes both new features and bug fixes. New features introduced
-             in 11.0 are: orbit determination using SGP4/SDP4 models, a sequential
-             batch least squares estimator using initial covariance and state vector,
-             writer and parser for all CCSDS Navigation Data Messages in both KVN
-             and XML formats, version 2 of CCSDS Tracking Data Messages, version 3
-             of CCSDS Orbit Data Messages, support for Rinex navigation files,
-             support for IGS clock correction files, support for IGS real time
-             data including both SSR and RTCM messages, NTrip protocole, eclipses
-             by Moon in solar radiation pressure force, a new API for analytical
-             GNSS orbit propagators, removal of propagation modes, possibility
-             to add several step handlers for the same orbit propagation, a new
-             event detector for angular separation as seen from the spacecraft.
-             See the list below for a full description of the changes.">
+    <release version="11.0" date="2021-09-20" description="Orekit 11.0 is a major new release.              It includes both new features and bug fixes. New features introduced              in 11.0 are: orbit determination using SGP4/SDP4 models, a sequential              batch least squares estimator using initial covariance and state vector,              writer and parser for all CCSDS Navigation Data Messages in both KVN              and XML formats, version 2 of CCSDS Tracking Data Messages, version 3              of CCSDS Orbit Data Messages, support for Rinex navigation files,              support for IGS clock correction files, support for IGS real time              data including both SSR and RTCM messages, NTrip protocole, eclipses              by Moon in solar radiation pressure force, a new API for analytical              GNSS orbit propagators, removal of propagation modes, possibility              to add several step handlers for the same orbit propagation, a new              event detector for angular separation as seen from the spacecraft.              See the list below for a full description of the changes.">
       <action dev="bryan" type="update" issue="766" due-to="Gowtham Sivaraman">
         Allowed setting of AttitudeProvider to the BoundedPropagator
         generated via propagation.
@@ -2852,20 +2680,20 @@
         Fixed computation of velocity derivative in FieldNumericalPropagator.Main.addKeplerContribution()
         with superGetOrbitType() == null.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added AccurateFormatter to output double numbers and dates
         with adaptive number of digits, preserving one ULP accuracy.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added a units converter.
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         INCOMPATIBLE CHANGE! Now observations parsed from TDM files are in SI units.
       </action>
       <action dev="luc" type="update" issue="768">
         Allow parsing several variations of ITRF specifications (like itrf-97, ITRF2000, ITRF_2014…).
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added a time scale for drifting on-board clocks.
       </action>
       <action dev="bryan" type="add" issue="523">
@@ -2896,13 +2724,13 @@
       <action dev="luc" type="fix" issue="760">
         Fixed reference frame in tabulated attitude provider.
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         Renamed SINEXLoader into SinexLoader.
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         Use DataSource in RinexLoader and SinexLoader.
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         Renamed NamedData into DataSource.
       </action>
       <action dev="luc" type="add" issue="474">
@@ -2960,28 +2788,12 @@
         Updated JUnit version to 4.13.1.
       </action>
     </release>
-    <release version="10.3.1" date="2021-06-16"
-             description="Version 10.3.1 is a patch release of Orekit.
-             It fixes one critical bug that could cause potential infinite loops in tesselation
-             in very rare cases due to numerical noise.">
+    <release version="10.3.1" date="2021-06-16" description="Version 10.3.1 is a patch release of Orekit.              It fixes one critical bug that could cause potential infinite loops in tesselation              in very rare cases due to numerical noise.">
       <action dev="luc" type="fix" issue="792">
         Fixed potential infinite loops in tesselation in very rare cases due to numerical noise.
       </action>
     </release>
-    <release version="10.3" date="2020-12-21"
-             description="Version 10.3 is a minor release of Orekit.
-             It includes both new features and bug fixes. New features introduced
-             in 10.3 are: relativistic clock correction for range, phase, and range rate
-             measurements, piece wise models for empirical forces, one-way GNSS code
-             and phase measurements, support for laser ranging data (both CPF and
-             CRD formats), Lense-Thirring and De Sitter relativistic corrections to
-             satellite acceleration, support for AGI leap second files, new interfaces
-             for attitude ephemeris files, Knocke model for Earth's albedo and infrared,
-             as well as several other new features. This release includes an important
-             fix in DSST orbit determination allowing to used short period Jacobian
-             during state transition matrix calculation. It also fixes issues in Kalman
-             orbit determination and CCSDS ADM format. See the list below for a full
-             description of the changes.">
+    <release version="10.3" date="2020-12-21" description="Version 10.3 is a minor release of Orekit.              It includes both new features and bug fixes. New features introduced              in 10.3 are: relativistic clock correction for range, phase, and range rate              measurements, piece wise models for empirical forces, one-way GNSS code              and phase measurements, support for laser ranging data (both CPF and              CRD formats), Lense-Thirring and De Sitter relativistic corrections to              satellite acceleration, support for AGI leap second files, new interfaces              for attitude ephemeris files, Knocke model for Earth's albedo and infrared,              as well as several other new features. This release includes an important              fix in DSST orbit determination allowing to used short period Jacobian              during state transition matrix calculation. It also fixes issues in Kalman              orbit determination and CCSDS ADM format. See the list below for a full              description of the changes.">
       <action dev="bryan" type="update" issue="741">
         Updated Hipparchus version to 1.8 and updated code with new functionalities.
       </action>
@@ -3065,7 +2877,7 @@
       <action dev="bryan" type="add" issue="716">
         Added piecewise empirical force model.
       </action>
-      <action dev="bryan" type="add" >
+      <action dev="bryan" type="add">
         Considered a new implementation for empirical forces, to allow piecewise model.
       </action>
       <action dev="bryan" type="add" issue="703">
@@ -3102,22 +2914,11 @@
         context
       </action>
     </release>
-    <release version="10.2" date="2020-07-14"
-             description="Version 10.2 is a minor release of Orekit.
-             It includes both new features and bug fixes. New features introduced
-             in 10.2 are: support for CCSDS ADM files, modelling of trajectories
-             around Lagrangian points using CR3BP model, a piece wise drag force model,
-             a time span tropospheric estimated model, an estimated ionospheric model,
-             an improved modelling of the GNSS phase measurement, several bug fixes
-             for date functionnalities, a new organization of the maneuvers package,
-             a configurable low thrust maneuver model based on detectors,
-             support for CSSI space weather data, , as well as several other minor
-             features and bug fixes. See the list below for a full description
-             of the changes.">
+    <release version="10.2" date="2020-07-14" description="Version 10.2 is a minor release of Orekit.              It includes both new features and bug fixes. New features introduced              in 10.2 are: support for CCSDS ADM files, modelling of trajectories              around Lagrangian points using CR3BP model, a piece wise drag force model,              a time span tropospheric estimated model, an estimated ionospheric model,              an improved modelling of the GNSS phase measurement, several bug fixes              for date functionnalities, a new organization of the maneuvers package,              a configurable low thrust maneuver model based on detectors,              support for CSSI space weather data, , as well as several other minor              features and bug fixes. See the list below for a full description              of the changes.">
       <action dev="bryan" type="fix" issue="661">
         Fixed visibility of WindUpFactory.
       </action>
-      <action dev="bryan" type="update" >
+      <action dev="bryan" type="update">
         Increased visibility of setters in CCSDS ADM related classes.
       </action>
       <action dev="clement" type="add" issue="656">
@@ -3127,7 +2928,7 @@
       <action dev="maxime" type="update" issue="690">
         Increased visibility of setters in CCSDS OEM related classes.
       </action>
-      <action dev="bryan" type="update" >
+      <action dev="bryan" type="update">
         Improved Orekit performance by using new Hipparchus' differentiation classes.
       </action>
       <action dev="bryan" type="update" issue="682">
@@ -3195,7 +2996,7 @@
       <action dev="bryan" type="add" issue="645">
         Merged phase-measurement branch into develop.
       </action>
-      <action dev="bryan" type="add" >
+      <action dev="bryan" type="add">
         Added a time span tropospheric estimated model.
       </action>
       <action dev="bryan" type="add" issue="646">
@@ -3207,7 +3008,7 @@
       <action dev="bryan" type="add" issue="647">
         Improved package-info documentation.
       </action>
-      <action dev="nick" type="update" >
+      <action dev="nick" type="update">
         Upgrade maven-checkstyle-plugin to 3.1.1.
       </action>
       <action dev="bryan" type="add" issue="657">
@@ -3235,18 +3036,7 @@
         Allowed DSST propagation in osculating type with event detectors.
       </action>
     </release>
-    <release version="10.1" date="2020-02-19"
-             description="Version 10.1 is a minor release of Orekit.
-             It includes both new features and bug fixes. New features introduced
-             in 10.1 are: wind-up effect for phase measurement, NeQuick ionospheric model,
-             support for Hatanaka compact RINEX format, methods for the combination
-             of GNSS measurements, Laplace method for initial orbit determination,
-             a new Field Of View package, comparison methods for absolute dates,
-             a new multiplexed measurement, specialized propagators for GNSS constellation,
-             default constructors for DSST force models, covariance matrices in OEM writer,
-             a new data context implementation, connection with Gitlab CI, improved documentation,
-             the migration of the tutorials to a separate sister project, as well as several other minor
-             features and bug fixes. See the list below for a full description of the changes.">
+    <release version="10.1" date="2020-02-19" description="Version 10.1 is a minor release of Orekit.              It includes both new features and bug fixes. New features introduced              in 10.1 are: wind-up effect for phase measurement, NeQuick ionospheric model,              support for Hatanaka compact RINEX format, methods for the combination              of GNSS measurements, Laplace method for initial orbit determination,              a new Field Of View package, comparison methods for absolute dates,              a new multiplexed measurement, specialized propagators for GNSS constellation,              default constructors for DSST force models, covariance matrices in OEM writer,              a new data context implementation, connection with Gitlab CI, improved documentation,              the migration of the tutorials to a separate sister project, as well as several other minor              features and bug fixes. See the list below for a full description of the changes.">
       <action dev="ward" type="fix">
         Improve performance of loading CCSDS files.
       </action>
@@ -3266,7 +3056,7 @@
       <action dev="luc" type="fix" issue="635">
         Fixed inconsistency in constant thrust maneuver acceleration.
       </action>
-      <action dev="evan" type="add" >
+      <action dev="evan" type="add">
         Added an annotation and a compiler plugin that generates a warning
         when default context is used without being explicitly annotated.
       </action>
@@ -3453,23 +3243,11 @@
         Added getWavelength in GNSS Frequency.
       </action>
     </release>
-    <release version="10.0" date="2019-06-24"
-             description="Orekit 10.0 is a major new release. It includes DSST OD,
-             propagation in non-inertial frames, specialized propagators for GNSS
-             constellations, a new ionospheric model, modeling for phase measurements, the
-             LAMBDA method for phase ambiguity resolution, Shapiro effect for range
-             measurements, improved documentation, as well as several other new features
-             and bug fixes. This release fixes a security denial of service bug regarding
-             itrf-versions.conf present since Orekit 9.2. Some APIs have incompatibly
-             changed since the 9.X series including the format of itrf-versions.conf,
-             removal of deprecated methods, reorganization of the models package, as well
-             as updates to AbstractDetector, AbstractGNSSAttitudeProvider, DragSensitive,
-             RadiationSensitive, and ZipJarCrawler. See the list below for a full
-             description of the changes.">
+    <release version="10.0" date="2019-06-24" description="Orekit 10.0 is a major new release. It includes DSST OD,              propagation in non-inertial frames, specialized propagators for GNSS              constellations, a new ionospheric model, modeling for phase measurements, the              LAMBDA method for phase ambiguity resolution, Shapiro effect for range              measurements, improved documentation, as well as several other new features              and bug fixes. This release fixes a security denial of service bug regarding              itrf-versions.conf present since Orekit 9.2. Some APIs have incompatibly              changed since the 9.X series including the format of itrf-versions.conf,              removal of deprecated methods, reorganization of the models package, as well              as updates to AbstractDetector, AbstractGNSSAttitudeProvider, DragSensitive,              RadiationSensitive, and ZipJarCrawler. See the list below for a full              description of the changes.">
       <action dev="evan" type="fix">
         Fix  name of GLONASS G2 frequency.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed accuracy of dates conversions from java dates.
       </action>
       <action dev="evan" type="fix" issue="566">
@@ -3487,7 +3265,7 @@
         cover the pole as the pole is singular for classical aiming directions (constant
         azimuth or along track).
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         Removed latitude limitation in AlongTrackAiming. If latitude is above (resp. below)
         the maximum (resp. minimum) latitude reached by the defining orbit, then aiming
         will be towards East for prograde orbits and towards West for retrograde orbits.
@@ -3553,7 +3331,7 @@
       <action dev="bryan" type="add" issue="519">
         Added numerical and analytical GLONASS propagators.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added ambiguity resolution for phase measurements.
         This feature is not complete yet and is considered experimental.
       </action>
@@ -3651,23 +3429,12 @@
         Fixed parsing of clock in SP3 files.
       </action>
     </release>
-    <release version="9.3.1" date="2019-03-16" description="Version 9.3.1 is a minor version of Orekit.
-    It fixes an issue with GPS week rollover.">
+    <release version="9.3.1" date="2019-03-16" description="Version 9.3.1 is a minor version of Orekit.     It fixes an issue with GPS week rollover.">
       <action dev="luc" type="add" issue="534">
         Handle GPS week rollover in GPSDate.
       </action>
     </release>
-    <release version="9.3" date="2019-01-25" description="Version 9.3 is a minor version of Orekit.
-    It includes both new features and bug fixes. New features introduced in 9.3 are: a new GPSDate class,
-    changed OrekitException from checked to unchecked exceptions, parameter drivers scales and reference
-    value can be changed, access to Kalman filter internal matrices, position-only measurements in orbit determination,
-    support for unofficial versions 2.12 and 2.20 of Rinex files (mainly for spaceborne receivers),
-    direct building of appropriate attitude law with eclipses for all GNSS satellite types, inter-satellites
-    view detector, measurement generation feature, possibility to use Marshall Solar Activity Future Estimation
-    to feed NRL MSISE 2000 atmosphere model, new tropospheric models: Mendes-Pavlis, Vienna 1, Vienna 3, estimated model,
-    new mapping functions for tropospheric effect: Global Mapping Function, Niell Mapping Function, Global
-    Pression Temperature Models GPT and GPT2, possibility to estimate tropospheric zenith delay,
-    clock offset that can be estimated (both for ground station and satellite clocks).">
+    <release version="9.3" date="2019-01-25" description="Version 9.3 is a minor version of Orekit.     It includes both new features and bug fixes. New features introduced in 9.3 are: a new GPSDate class,     changed OrekitException from checked to unchecked exceptions, parameter drivers scales and reference     value can be changed, access to Kalman filter internal matrices, position-only measurements in orbit determination,     support for unofficial versions 2.12 and 2.20 of Rinex files (mainly for spaceborne receivers),     direct building of appropriate attitude law with eclipses for all GNSS satellite types, inter-satellites     view detector, measurement generation feature, possibility to use Marshall Solar Activity Future Estimation     to feed NRL MSISE 2000 atmosphere model, new tropospheric models: Mendes-Pavlis, Vienna 1, Vienna 3, estimated model,     new mapping functions for tropospheric effect: Global Mapping Function, Niell Mapping Function, Global     Pression Temperature Models GPT and GPT2, possibility to estimate tropospheric zenith delay,     clock offset that can be estimated (both for ground station and satellite clocks).">
       <action dev="luc" type="add" issue="516">
         Added a way to manage clock corrections from GPSPropagator.
       </action>
@@ -3809,19 +3576,7 @@
         some remnants of former computation remained and have now been removed.
       </action>
     </release>
-    <release version="9.2" date="2018-05-26" description="Version 9.2 is a minor release of Orekit.
-    It introduces several new features and bug fixes. New features introduced in version 9.2 are
-    Kalman filter for orbit determination, loading of RINEX files, loading of ANTEX files, loading
-    of version d of SP3 files (version a to c were already supported), on-the-fly decompression of .Z
-    files, code measurements, phase measurements (but only a very basic implementation for now),
-    specific attitude laws (GPS, GLONASS, GALILEO, BEIDOU) with midnight/noon turns, possibility to
-    use backward propagation in LS orbit determination, support for any ITRF version, even if EOP
-    files do not match the desired version, attitude overriding in constant thrust maneuvers,
-    FunctionalDetector, filtering mechanism to insert specific decompression or deciphering algorithms
-    during data loading, frames for Lagrange L1 and L2 point for any two related celestial bodies.
-    WARNING: phase measurements, GNSS attitude and time-dependent process noise are considered
-    experimental features for now, they should not be used yet for operational systems.
-    Several bugs have been fixed.">
+    <release version="9.2" date="2018-05-26" description="Version 9.2 is a minor release of Orekit.     It introduces several new features and bug fixes. New features introduced in version 9.2 are     Kalman filter for orbit determination, loading of RINEX files, loading of ANTEX files, loading     of version d of SP3 files (version a to c were already supported), on-the-fly decompression of .Z     files, code measurements, phase measurements (but only a very basic implementation for now),     specific attitude laws (GPS, GLONASS, GALILEO, BEIDOU) with midnight/noon turns, possibility to     use backward propagation in LS orbit determination, support for any ITRF version, even if EOP     files do not match the desired version, attitude overriding in constant thrust maneuvers,     FunctionalDetector, filtering mechanism to insert specific decompression or deciphering algorithms     during data loading, frames for Lagrange L1 and L2 point for any two related celestial bodies.     WARNING: phase measurements, GNSS attitude and time-dependent process noise are considered     experimental features for now, they should not be used yet for operational systems.     Several bugs have been fixed.">
       <action dev="luc" type="fix">
         Fixed missing eclipse detectors in field version of Solar radiation pressure.
         Fixes issue #366.
@@ -3846,25 +3601,25 @@
         Fixed compilation problems with JDK 1.8
         Fixes issue #462.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added specific attitude mode for GNSS satellites: GPS (block IIA, block IIF, block IIF),
         GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO). This is still considered experimental as there
         are some problems when Sun crosses the orbital plane during a midnight/noon turn maneuver
         (which is a rare event but nevertheless occurs)
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added natural order for observed measurements primarily based on
         chronological order, but with also value comparisons if measurements
         are simultaneous (which occurs a lot in GNSS), and ensuring no
         measurements are lost if stored in SortedSet
       </action>
-      <action dev="luc" type="add" due-to="Albert Alcarraz García">
+      <action dev="luc" type="add" due-to="Albert Alcarraz Garc&#xED;a">
         Added GNSS code measurements
       </action>
-      <action dev="luc" type="add" due-to="Albert Alcarraz García">
+      <action dev="luc" type="add" due-to="Albert Alcarraz Garc&#xED;a">
         Added GNSS phase measurements (very basic implementation for now, not usable as is)
       </action>
-      <action dev="luc" type="add" due-to="Albert Alcarraz García">
+      <action dev="luc" type="add" due-to="Albert Alcarraz Garc&#xED;a">
         Added loading of RINEX observation files (versions 2 and 3)
       </action>
       <action dev="luc" type="fix">
@@ -3986,7 +3741,7 @@
         Fixed issue when converting very far points (such as Sun center) to geodetic coordinates.
         Fixes issue #373.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added more conversions between PV coordinates and DerivativeStructure.
         This simplifies for example getting the time derivative of the momentum.
       </action>
@@ -3999,13 +3754,7 @@
         Added frames for L1 and L2 Lagrange points, for any pair of celestial bodies.
       </action>
     </release>
-    <release version="9.1" date="2017-11-26"
-             description="Version 9.1 is a minor release of Orekit. It introduces a few new
-             features and bug fixes. New features introduced in version 9.1 are some
-             frames in OEM parser, retrieval of EOP from frames and ground station displacements
-             modelling (both displacements due to tides and displacements due to ocean loading),
-             and retrieval of covariance matrix in orbit determination. Several bugs have been fixed.
-             Version 9.1 depends on Hipparchus 1.2.">
+    <release version="9.1" date="2017-11-26" description="Version 9.1 is a minor release of Orekit. It introduces a few new              features and bug fixes. New features introduced in version 9.1 are some              frames in OEM parser, retrieval of EOP from frames and ground station displacements              modelling (both displacements due to tides and displacements due to ocean loading),              and retrieval of covariance matrix in orbit determination. Several bugs have been fixed.              Version 9.1 depends on Hipparchus 1.2.">
       <action dev="evan" type="add">
         Added ITRF2005 and ITRF2008 to the frames recognized by OEMParser.
         Fixes issue #361.
@@ -4034,7 +3783,7 @@
         Fixed a singularity error in derivatives for perfectly circular orbits in DSST third body force model.
         Fixes issue #364.
       </action>
-      <action dev="luc" type="fix" due-to="Lucian Bărbulescu">
+      <action dev="luc" type="fix" due-to="Lucian B&#x103;rbulescu">
         Fixed an error in array size computation for Hansen coefficients.
         Fixes issue #363.
       </action>
@@ -4104,9 +3853,7 @@
         development, and master branch for stable published versions.
       </action>
     </release>
-    <release version="9.0.1" date="2017-11-01"
-             description="Version 9.0.1 is a patch release of Orekit.
-            It fixes security issus 368.">
+    <release version="9.0.1" date="2017-11-01" description="Version 9.0.1 is a patch release of Orekit.             It fixes security issus 368.">
       <action dev="evan" type="fix">
         Disabled XML external resources when parsing rapid XML TDM files.
         Part of issue #368.
@@ -4116,20 +3863,7 @@
         Part of issue #368.
       </action>
     </release>
-    <release version="9.0" date="2017-07-26"
-             description="Version 9.0 is a major release of Orekit. It introduces several new
-             features and bug fixes. New features introduced in version 9.0 are Taylor algebra
-             propagation (for high order uncertainties propagation or very fast Monte-Carlo
-             studies), multi-satellites orbit determination, parallel multi-satellites propagation,
-             parametric accelerations (polynomial and harmonic), turn-around measurements,
-             inter-satellite range measurements, rigth ascension/declination measurements,
-             Antenna Phase Center measurements modifiers, EOP estimation in precise orbit
-             determination, orbit to attitude coupling in partial derivatives, parsing of CCSDS
-             Tracking Data Messages, parsing of university of Bern Astronomical Institute files
-             for Klobuchar coefficients, ITRF 2014, preservation of non-Keplerian orbits derivatives,
-             JB2008 atmosphere model, NRL MSISE 2000 atmosphere model, boolean combination of events
-             detectors, ephemeris writer, speed improvements when tens of thousands of measurements
-             are used in orbit determination, Danish translations. Several bugs have been fixed.">
+    <release version="9.0" date="2017-07-26" description="Version 9.0 is a major release of Orekit. It introduces several new              features and bug fixes. New features introduced in version 9.0 are Taylor algebra              propagation (for high order uncertainties propagation or very fast Monte-Carlo              studies), multi-satellites orbit determination, parallel multi-satellites propagation,              parametric accelerations (polynomial and harmonic), turn-around measurements,              inter-satellite range measurements, rigth ascension/declination measurements,              Antenna Phase Center measurements modifiers, EOP estimation in precise orbit              determination, orbit to attitude coupling in partial derivatives, parsing of CCSDS              Tracking Data Messages, parsing of university of Bern Astronomical Institute files              for Klobuchar coefficients, ITRF 2014, preservation of non-Keplerian orbits derivatives,              JB2008 atmosphere model, NRL MSISE 2000 atmosphere model, boolean combination of events              detectors, ephemeris writer, speed improvements when tens of thousands of measurements              are used in orbit determination, Danish translations. Several bugs have been fixed.">
       <action dev="luc" type="add">
         Added on-board antenna phase center effect on inter-satellites range measurements.
       </action>
@@ -4226,11 +3960,11 @@
         Fixed infinite recursion when attempting two orbit determinations in row.
         Fixes issue #347.
       </action>
-      <action dev="luc" type="add" due-to="Lars Næsbye Christensen">
+      <action dev="luc" type="add" due-to="Lars N&#xE6;sbye Christensen">
         Added Danish translations.
         Fixes issue #346.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Allow estimation of polar motion (offset plus linear drift) and prime meridian
         correction (offset plus linear drift) in orbit determination. This is essentially
         equivalent to add correction to the xp, yp, dtu1 and lod Earth Orientation Parameters.
@@ -4247,7 +3981,7 @@
         Improved computation ground station parameters derivatives
         in orbit determination.
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         Use automatic differentiation for all orbit determination measurements types.
         This allows simpler evolutions to estimate parameters for which derivatives
         are not straightforward to compute; some of these parameters are needed for
@@ -4419,11 +4153,11 @@
         Fixed outliers configuration parsing in orbit determination tutorial and test.
         Fixes issue #249
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Greatly improved orbit determination speed when a lot of measurements are used
         (several thousands).
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed ant build script to run Junit tests.
         Fixes issue #246.
       </action>
@@ -4435,27 +4169,18 @@
         is during a leap second.
         Fixes issue #247
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed ant build script to retrieve Hipparchus dependencies correctly.
         Fixes issue #244.
       </action>
     </release>
-    <release version="8.0.1" date="2017-11-01"
-             description="Version 8.0.1 is a patch release of Orekit.
-            It fixes security issus 368.">
+    <release version="8.0.1" date="2017-11-01" description="Version 8.0.1 is a patch release of Orekit.             It fixes security issus 368.">
       <action dev="evan" type="fix">
         Disabled XML external resources when parsing rapid XML EOP files.
         Part of issue #368.
       </action>
     </release>
-    <release version="8.0" date="2016-06-30"
-             description="Version 8.0 is a major release of Orekit. It introduces several new
-             features and bug fixes as well as a major dependency change. New features introduced
-             in version 8.0 are orbit determination, specialized propagator for GPS satellites
-             based on SEM or YUMA files, computation of Dilution Of Precision and a new angular
-             separation event detector. Several bugs have been fixed. A major change introduced
-             with version 8.0 is the switch from Apache Commons Math to Hipparchus as the
-             mathematical library, which also implied switching from Java 6 to Java 8.">
+    <release version="8.0" date="2016-06-30" description="Version 8.0 is a major release of Orekit. It introduces several new              features and bug fixes as well as a major dependency change. New features introduced              in version 8.0 are orbit determination, specialized propagator for GPS satellites              based on SEM or YUMA files, computation of Dilution Of Precision and a new angular              separation event detector. Several bugs have been fixed. A major change introduced              with version 8.0 is the switch from Apache Commons Math to Hipparchus as the              mathematical library, which also implied switching from Java 6 to Java 8.">
       <action dev="luc" type="fix" due-to="Andrea Antolino">
         Improved accuracy of orbits Jacobians.
         Fixes issue #243.
@@ -4531,21 +4256,13 @@
         Fixes issue #238
       </action>
     </release>
-    <release version="7.2.1" date="2017-11-01"
-             description="Version 7.2.1 is a patch release of Orekit.
-            It fixes security issus 368.">
+    <release version="7.2.1" date="2017-11-01" description="Version 7.2.1 is a patch release of Orekit.             It fixes security issus 368.">
       <action dev="evan" type="fix">
         Disabled XML external resources when parsing rapid XML EOP files.
         Part of issue #368.
       </action>
     </release>
-    <release version="7.2" date="2016-04-05"
-             description="Version 7.2 is a minor release of Orekit. It introduces several new
-             features and bug fixes. The most important features introduced in version 7.2
-             are handling of GLONASS and QZSS time scales, support for local time zones
-             according to ISO-8601 standard, and finer tuning of short period terms in
-             DSST propagator. Version 7.2 depends on version 3.6.1 of Apache Commons Math,
-             which also fixes a bug related to close events detection.">
+    <release version="7.2" date="2016-04-05" description="Version 7.2 is a minor release of Orekit. It introduces several new              features and bug fixes. The most important features introduced in version 7.2              are handling of GLONASS and QZSS time scales, support for local time zones              according to ISO-8601 standard, and finer tuning of short period terms in              DSST propagator. Version 7.2 depends on version 3.6.1 of Apache Commons Math,              which also fixes a bug related to close events detection.">
       <action dev="luc" type="add">
         Added GLONASS and QZSS time scales. These time scales my be used in SP3-c files.
       </action>
@@ -4574,30 +4291,7 @@
         Fixes issue #236
       </action>
     </release>
-    <release version="7.1" date="2016-02-07"
-             description="Version 7.1 is a minor release of Orekit. It introduces several new
-             features and bug fixes. The most important features introduced in version 7.1
-             are a lot of new event detectors (field of view based detectors supporting any FoV
-             shape, either on ground targetting spacecraft or on spacecraft and targetting
-             ground defined zones with any shape, extremum elevation detector, anomaly,
-             latitude argument, or longitude argument crossing detectors, either true, mean
-             or eccentric, latitude and longitude extremum detectors, latitude and longitude
-             crossing detectors), new event filtering capability based on user-provided
-             predicate function, ability to customize DSST interpolation grid for short period
-             elements, ability to retrieve DSS short periodic coefficients, removed some arbitrary
-             limitations in DSST tesseral and zonal contribution, ability to set short period
-             degree/order to smaller values than mean elements in DSST, vastly improved
-             frames transforms efficiency for various Earth frames, three different types of
-             solar radiation pressure coefficients, new tabulated attitudes related to Local
-             Orbital Frame, smooth attitude transitions in attitudes sequences, with derivatives
-             continuity at both endpoint, ground zone sampling either in tiles or grid with fixed
-             or track-based orientation, derivatives handling in geodetic points, parsing of TLE
-             with non-unclassified modifiers, support for officiel WMM coefficients from NOAA,
-             support for tai-utc.dat file from USNO, tropospheric refraction model following
-             Recommendation ITU-R P.834-7, geoid model based on gravity field, and use of the new
-             Apache Commons Math rotation API with either Frame transform convention or vector
-             operator convention. Numerous bugs were also fixed.
-             Version 7.1 depends on version 3.6 of Apache Commons Math.">
+    <release version="7.1" date="2016-02-07" description="Version 7.1 is a minor release of Orekit. It introduces several new              features and bug fixes. The most important features introduced in version 7.1              are a lot of new event detectors (field of view based detectors supporting any FoV              shape, either on ground targetting spacecraft or on spacecraft and targetting              ground defined zones with any shape, extremum elevation detector, anomaly,              latitude argument, or longitude argument crossing detectors, either true, mean              or eccentric, latitude and longitude extremum detectors, latitude and longitude              crossing detectors), new event filtering capability based on user-provided              predicate function, ability to customize DSST interpolation grid for short period              elements, ability to retrieve DSS short periodic coefficients, removed some arbitrary              limitations in DSST tesseral and zonal contribution, ability to set short period              degree/order to smaller values than mean elements in DSST, vastly improved              frames transforms efficiency for various Earth frames, three different types of              solar radiation pressure coefficients, new tabulated attitudes related to Local              Orbital Frame, smooth attitude transitions in attitudes sequences, with derivatives              continuity at both endpoint, ground zone sampling either in tiles or grid with fixed              or track-based orientation, derivatives handling in geodetic points, parsing of TLE              with non-unclassified modifiers, support for officiel WMM coefficients from NOAA,              support for tai-utc.dat file from USNO, tropospheric refraction model following              Recommendation ITU-R P.834-7, geoid model based on gravity field, and use of the new              Apache Commons Math rotation API with either Frame transform convention or vector              operator convention. Numerous bugs were also fixed.              Version 7.1 depends on version 3.6 of Apache Commons Math.">
       <action dev="thierry" type="add">
         Added tropospheric refraction correction angle following Recommendation ITU-R P.834-7.
       </action>
@@ -4672,7 +4366,7 @@
         Added a protection against low altitudes in JB2006 model.
         Fixes issue #214
       </action>
-      <action dev="luc" type="fix" due-to="Petrus Hyvönen">
+      <action dev="luc" type="fix" due-to="Petrus Hyv&#xF6;nen">
         Enlarged access to SGP4 and DeepSDP4 propagators.
         Fixes issue #207
       </action>
@@ -4709,126 +4403,126 @@
         Added capability to use a single EventHandler with multiple types of
         EventDetectors.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added a way to customize interpolation grid in DSST, either using a fixed number
         of points or a maximum time gap between points, for each mean elements integration
         step.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added TabulatedLofOffset for attitudes defined by tabulating rotations between Local Orbital Frame
         and spacecraft frame.
         Fixes issue #227
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed wrong ephemeris generation for analytical propagators with maneuvers.
         Fixes issue #224.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed date offset by one second for TLE built from their components,
         if a leap second was introduced earlier in the same year.
         Fixes issue #225.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Allow parsing TLE with non-unclassified modifier.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         As a side effect of fixing issue #223, KeplerianPropagator and
         Eckstein-Hechler propagator are now serializable.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed missing additional states handling in ephemeris propagators
         created from analytical propagators.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed NPE and serialization issues in ephemeris propagators created
         from analytical propagators.
         Fixes issue #223.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed time scale issues in JPL ephemerides and IAU pole models.
         The time used for internal computation should be TDB, not TT.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed an issue with backward propagation on analytical propagator.
         During first step, the analytical interpolator wrongly considered the
         propagation was forward.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added a way to retrieve short period coefficients from DSST as
         spacecraft state additional parameters. This is mainly intended
         for test and validation purposes.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Prevent small overshoots of step limits in event detection.
         Fixes issue #218.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Handle string conversion of dates properly for dates less than 1 millisecond
         before midnight (they should not appear as second 60.0 of previous minute but
         should rather wrap around to next minute).
         Partly fixes issue #218.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Enforce Lexicographical order in DirectoryCrawler, to ensure reproducible
         loading. Before this changes, some tests could fail in one computer while
         succeeding in another computer as we use a mix of DE-4xx files, some having
         a different EMRAT (81.30056907419062 for DE-431, 81.30056 for DE-405 and DE-406).
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added EventEnablingPredicateFilter to filter event based on an user-provided
         enabling predicate function. This allow for example to dynamically turn some
         events on and off during propagation or to set up some elaborate logic like
         triggering on elevation first time derivative (i.e. one elevation maximum)
         but only when elevation itself is above some threshold.
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         Renamed EventFilter into EventSlopeFilter.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added elevation extremum event detector.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed ellipsoid tessellation with large tolerances.
         Fixes issue #215.
       </action>
-      <action dev="evan" type="fix" >
+      <action dev="evan" type="fix">
         Fixed numerical precision issues for start/end dates of generated
         ephemerides.
         Fixes issues #210
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added anomaly, latitude argument, or longitude argument crossings detector,
         either true, mean or eccentric.
         Fixes issue #213.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added latitude and longitude extremum detector.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added latitude and longitude crossing detector.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added a way to convert between PVA and geodetic points with time derivatives.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Allow truncation of tiles in ellipsoid tessellation.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Propagator builders can now be configured to accept any orbit types
         and any position angle types in the input flat array.
         Fixes issue #208.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added smooth attitude transitions in attitudes sequences, with derivatives
         continuity at both endpoints of the transition that can be forced to match
         rotation, rotation rate and rotation acceleration.
         Fixes issue #6.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed attitudes sequence behavior in backward propagation.
         Fixes issue #206.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added factory methods to create AbsoluteDate instances from MJD or JD.
         Fixes issue #193.
       </action>
@@ -4837,22 +4531,22 @@
         is not the one it relates to.
         Fixes issue #190.
       </action>
-      <action dev="luc" type="add"  due-to="Joris Olympio">
+      <action dev="luc" type="add" due-to="Joris Olympio">
         Added a way to be notified when attitude switches occur.
         Fixes issue #190.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Ensure Keplerian propagator uses the specified mu and not only the one from the initial orbit.
         Fixes issue #184.
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         Improved frames transforms efficiency for various Earth frames.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Specify inertial frame to compute orbital velocity for ground pointing laws.
         Fixes issue #115.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Activated two commented-out tests for DTM2000, after ensuring we
         get the same results as the original fortran implementation.
         Fixes issue #204.
@@ -4932,18 +4626,7 @@
         Fixes issue #100.
       </action>
     </release>
-    <release version="7.0" date="2015-01-11"
-             description="Version 7.0 is a major release of Orekit. It introduces several new
-             features and bug fixes. New features introduced in version 7.0 are the complete
-             DSST semi-analytical propagator with short-periodics terms (only mean elements
-             were available in previous version), extension to second order derivatives for
-             many models (Cartesian coordinates, angular coordinates, attitude modes, ...),
-             bilinear interpolator in Saastamoinen model, attitude overriding during impulsive
-             maneuvers, general relativity force model, geographic zone detector, and ecliptic
-             frame.
-             Several bugs have been fixed. One noteworthy fix concerns an inconsistency in
-             Eckstein-Hechler propagator velocity, which leads to a change of the generated
-             orbit type.">
+    <release version="7.0" date="2015-01-11" description="Version 7.0 is a major release of Orekit. It introduces several new              features and bug fixes. New features introduced in version 7.0 are the complete              DSST semi-analytical propagator with short-periodics terms (only mean elements              were available in previous version), extension to second order derivatives for              many models (Cartesian coordinates, angular coordinates, attitude modes, ...),              bilinear interpolator in Saastamoinen model, attitude overriding during impulsive              maneuvers, general relativity force model, geographic zone detector, and ecliptic              frame.              Several bugs have been fixed. One noteworthy fix concerns an inconsistency in              Eckstein-Hechler propagator velocity, which leads to a change of the generated              orbit type.">
       <action dev="hankg" type="add">
         Added bilinear interpolator and use it on Saastamoinen model.
         Implements feature #182.
@@ -5015,30 +4698,30 @@
         Fixed incorrect parameters set in NumericalPropagatorBuilder.
         Fixes #175.
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         Significantly reduced size of various serialized objects.
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         PVCoordinatesProvider now produces time-stamped position-velocities.
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         Tabulated attitude provider can be built directly from time-stamped angular coordinates
         lists, in addition to attitudes lists.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added time-stamped versions of position-velocity and angular coordinates.
       </action>
       <action dev="luc" type="fix" due-to="Daniel Aguilar Taboada">
         Fixed wrong rotation interpolation for rotations near π.
         Fixes issue #173.
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         Updated dependency to Apache Commons Math 3.3.
       </action>
       <action dev="luc" type="update" due-to="Lucian Barbulescu, Nicolas Bernard">
         Added short periodics for DSST propagation.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added a GeographicZoneDetector event detector for complex geographic zones traversal.
         Fixes issue #163.
       </action>
@@ -5062,7 +4745,7 @@
       <action dev="evan" type="fix">
         Fixed SpacecraftState date mismatch exception with some attitude providers.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed wrong scaling in JPL ephemeris when retrieving coordinates in a frame
         that is not the defining frame of the celestial body.
         Fixes issue #165.
@@ -5081,65 +4764,45 @@
       <action dev="luc" type="update" due-to="Petre Bazavan">
         Compute Hansen coefficients using linear transformation.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed a non-bracketing exception in event detection, in some rare cases of noisy g function.
         Fixes issue #160.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed a missing reset of resonant tesseral terms in DSST propagation.
         Fixes issue #159.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Improved default max check interval for NodeDetector, so it handles correctly
         highly eccentric orbits.
         Fixes issue #158.
       </action>
     </release>
-    <release version="6.1" date="2013-12-13"
-             description="Version 6.1 is a minor release of Orekit. It introduces several new
-             features and bug fixes. The most important features introduced in version 6.1
-             are solid tides force model, including pole tide at user choice, and following
-             either IERS 1996, IERS 2003 or IERS 2010 conventions ; ocean tides force model,
-             including pole tide at user choice, loading a user provided model ; simultaneous
-             support for IERS 1996, 2003 and 2010 for frames definition, which is very
-             important to support legacy systems and to convert coordinates between older and
-             newer reference systems ; greatly improved accuracy of celestial/terrestrial
-             frames transforms (we are now at sub-micro arcsecond level for IERS 2003/2010,
-             both with equinox based and Non-Rotating Origin, at a sub-milli arcseconds for
-             IERS 1996, both with equinox based and Non-Rotating Origin) ; classical
-             equinox-based paradigm and new non-rotating origin paradigm for inertial and
-             terrestrial frames are now supported with all IERS conventions ; automatic
-             conversion of IERS Earth Orientation Paramters from equinoxial to non-rotating
-             paradigm ; support for CCSDS Orbit Data Message ; improved API for events,
-             allowing separation of event detection and event handling (the older API is still
-             available for compatibility) ; merged all the elevation related events, allowing
-             to use both refraction model and antenna mask at the same time if desired ;
-             new attitude mode based on interpolation on a table. Numerous bugs were also fixed.
-             Version 6.1 depends on version 3.2 of Apache commons math.">
-      <action dev="luc" type="fix" >
+    <release version="6.1" date="2013-12-13" description="Version 6.1 is a minor release of Orekit. It introduces several new              features and bug fixes. The most important features introduced in version 6.1              are solid tides force model, including pole tide at user choice, and following              either IERS 1996, IERS 2003 or IERS 2010 conventions ; ocean tides force model,              including pole tide at user choice, loading a user provided model ; simultaneous              support for IERS 1996, 2003 and 2010 for frames definition, which is very              important to support legacy systems and to convert coordinates between older and              newer reference systems ; greatly improved accuracy of celestial/terrestrial              frames transforms (we are now at sub-micro arcsecond level for IERS 2003/2010,              both with equinox based and Non-Rotating Origin, at a sub-milli arcseconds for              IERS 1996, both with equinox based and Non-Rotating Origin) ; classical              equinox-based paradigm and new non-rotating origin paradigm for inertial and              terrestrial frames are now supported with all IERS conventions ; automatic              conversion of IERS Earth Orientation Paramters from equinoxial to non-rotating              paradigm ; support for CCSDS Orbit Data Message ; improved API for events,              allowing separation of event detection and event handling (the older API is still              available for compatibility) ; merged all the elevation related events, allowing              to use both refraction model and antenna mask at the same time if desired ;              new attitude mode based on interpolation on a table. Numerous bugs were also fixed.              Version 6.1 depends on version 3.2 of Apache commons math.">
+      <action dev="luc" type="fix">
         Reduced number of calls to the g function in event detectors.
         Fixes issue #108.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed a spurious backward propagation.
         Fixes issue #107.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Improved error detection for numerical and DSST propagation for cases
         where user attempts to compute integrator tolerances with an orbit for
         which Jacobian is singular (for example equatorial orbit while using
         Keplerian representation).
         Fixes issue #157.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added a method to get the number or calls to getNeighbors in the generic time stamped cache,
         to allow performing measurements while tuning the cache.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added high degree ocean load deformation coefficients computed by Pascal
         Gégout (CNRS / UMR5563 - GET).
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Time scales are now serializable.
       </action>
       <action dev="luc" type="add" due-to="Nicolas Bernard">
@@ -5149,7 +4812,7 @@
         Fixed yaw steering attitude law, which didn't project spacecraft velocity correctly.
         Fixes issue #156.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added a way to set the maximum number of iterations for events detection.
         Fixes issue #155.
       </action>
@@ -5239,12 +4902,12 @@
         Fixed azimuth parameter in the TopocentricFrame.pointAtDistance method.
         Fixes issue #145.
       </action>
-      <action dev="luc" type="fix"  due-to="Matt Edwards">
+      <action dev="luc" type="fix" due-to="Matt Edwards">
         Fixed location of JAVA_EPOCH. As we now take the linear models between UTC and TAI
         that were used between 1961 and 1972, we have to consider the offset that was in
         effect on 1970-01-01 and which was precisely 8.000082s. Fixes issue #142.
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         Vastly improved performances for Poisson series computations. Poisson series are often
         evaluated several components together (x/y/s in new non-rotating paradigm, ∆ψ/∆ε in old
         equinox paradigm for example). As the components are built from a common model, they
@@ -5257,16 +4920,16 @@
         in mean computation time. At the same time, accuracy was also improved thanks to the
         Møller-Knuth TwoSum algorithm without branching now used for summing all series terms.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         When UT1 time scale is used, it is now possible to choose which Earth Orientation
         Parameters history to use (formerly, only EOP compatible with IAU-2000/2006 was
         used, even for systems relying only on older conventions).
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added Greenwich Mean Sidereal Time and Greenwich Apparent Sidereal Time
         to all supported IERS conventions (i.e. IERS 1996, IERS 2003 and IERS 2010).
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Classical equinox-based paradigm and new non-rotating origin paradigm for
         inertial and terrestrial frames are now supported with all IERS conventions.
         This means it is now possible to use MOD/TOD/GTOD with the recent precession/nutation
@@ -5276,110 +4939,92 @@
         support legacy systems and to convert coordinates between older and newer reference
         systems.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added IERS 1996 in the list of supported IERS conventions.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added factory methods to compute arbitrary Julian Epochs (J1900.0, J2000.0 ...)
         and Besselian Epochs (B1900.0, B1950.0 ...) that are used as reference dates
         in some models and frames.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed non-bracketing exception while converting Cartesian points very close to equator into geodetic
         coordinates. Fixes issue #141.
       </action>
-      <action dev="evan" type="add" >
+      <action dev="evan" type="add">
         Added getAngularVelocity() to PVCoordinates.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added back serialization for some ephemerides produced by integration-based propagators.
         The ephemerides produced by NumericalPropagator are always serializable, and the ones
         produced by DSSTPropagator may be serializable or not depending on the force models used.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed missing events detection when two events occurred at exactly the same time using an analytical
         propagator (like generated ephemerides for example). Fixes issue #138.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed data loading from zip/jar. A more streamlined architecture has been set up, and each zip entry
         now uses its own input stream. Closing the stream triggers the switch to the next entry, and duplicate
         close are handled gracefully. Fixes issue #139.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Improved event bracketing by backporting changes made in Apache Commons Math (may fix issues #110
         and #136, but we cannot be sure as neither issues were reproducible even before this change...).
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed GTOD and Veis frame that did apply UT1-UTC correction when they should not (fixes issue #131).
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Completely rewrote conversion from Cartesian to geodetic coordinates to improve
         numerical stability for very far points (typically when computing coordinates
         of Sun). Fixes issue #137.
       </action>
     </release>
-    <release version="6.0" date="2013-04-23"
-             description="Version 6.0 is a major release of Orekit. It introduces several new
-             features and bug fixes. Several incompatibilities with respect to previous
-             versions 5.x have been introduced. Users are strongly advised to upgrade to this
-             version. The major features introduced in version 6.0 are the inclusion of the DSST
-             semi-analytical propagator, an improved propagator architecture where all propagators
-             can use events and step handlers, much better and faster gravity field force model,
-             Jacobians availability for all force models, converters between different propagation
-             models (which can be used to convert between mean and osculating elements), thread
-             safety for many parts (mainly frames, but still excluding propagators) while still
-             preserving caching for performances even in multi-threaded environments, time-dependent
-             gravity fields, support for IERS 2010 conventions, support for INPOP and all DExxx
-             ephemerides, new frames, new time scales, support for user-defined states in spacecraft
-             state, availability of additional states in events, interpolators for many components
-             like position-velocity, spacecraft state and attitude allowing to compute high order
-             derivatives if desired, filtering of events, orphan frames, magnetic fields models,
-             SP3 files support, visibility circles, support for Marshall Solar Activity Future
-             Estimation of solar activity. Numerous bugs were also fixed. Version 6.0 now depends
-             on version 3.2 of Apache commons math.">
-      <action dev="pascal" type="fix" >
+    <release version="6.0" date="2013-04-23" description="Version 6.0 is a major release of Orekit. It introduces several new              features and bug fixes. Several incompatibilities with respect to previous              versions 5.x have been introduced. Users are strongly advised to upgrade to this              version. The major features introduced in version 6.0 are the inclusion of the DSST              semi-analytical propagator, an improved propagator architecture where all propagators              can use events and step handlers, much better and faster gravity field force model,              Jacobians availability for all force models, converters between different propagation              models (which can be used to convert between mean and osculating elements), thread              safety for many parts (mainly frames, but still excluding propagators) while still              preserving caching for performances even in multi-threaded environments, time-dependent              gravity fields, support for IERS 2010 conventions, support for INPOP and all DExxx              ephemerides, new frames, new time scales, support for user-defined states in spacecraft              state, availability of additional states in events, interpolators for many components              like position-velocity, spacecraft state and attitude allowing to compute high order              derivatives if desired, filtering of events, orphan frames, magnetic fields models,              SP3 files support, visibility circles, support for Marshall Solar Activity Future              Estimation of solar activity. Numerous bugs were also fixed. Version 6.0 now depends              on version 3.2 of Apache commons math.">
+      <action dev="pascal" type="fix">
         Fixed conversion of mean anomaly to hyperbolic eccentric anomaly (fixes issue #135).
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Extracted fundamental nutation arguments from CIRF frame. This allows both reuse of
         the arguments for other computations (typically tides), and also allows to use
         convention-dependent arguments (they are similar for IERS conventions 2003 and 2010,
         but have changed before and may change in the future).
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed event g function correction when starting exactly at 0 with a backward
         propagation (fixes issue #125).
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         Error messages properties are now loaded directly in UTF-8.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added a way to know which tide system is used in gravity fields (zero-tide,
         tide-free or unknown).
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added orphan frame, i.e. trees that are not yet connected to the main
         frame tree but attached later on. This allows building frame trees
         from leaf to root. This change fixes feature request #98.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added a way to filter only increasing or decreasing events. The filtering
         occurs a priori, i.e. the filtered out events do not trigger a search.
         Only the interesting events are searched for and contribute to computation
         time. This change fixes feature request #104.
       </action>
-      <action dev="pascal" type="add" >
+      <action dev="pascal" type="add">
         Added a semianalytical propagator based on the Draper Semianalytic
         Satellite Theory. The DSST accounts for all significant perturbations
         (central body including tesseral harmonics, third-body, drag, solar
         radiation pressure) and is applicable to all orbit classes.
         To begin with, only mean elements propagation is available.
       </action>
-      <action dev="evan" type="update" >
+      <action dev="evan" type="update">
         Greatly improved performance of time-stamped caches for data that is
         read only once (like UTC leap seconds history or EOP).
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Additional states can now be used in events. Note that waiting for the
         fix for issue MATH-965 in Apache Commons Math to be been officially
         published, a workaround has been used in Orekit. This workaround
@@ -5391,7 +5036,7 @@
         that includes the fix, which has been added to the development version as
         of r1465654). This change fixes feature request #134.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         AdditionalStateProviders can now be used for all propagators, not
         only analytical ones. Note that when both state providers and
         additional differential equations are used in an integration-based
@@ -5399,23 +5044,23 @@
         be handled by one type at a time, either already integrated or
         integrated by the propagator (fixes feature request #133).
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added a way to store user data into SpacecraftState. User data are
         simply double arrays associated to a name. They are handled properly
         by interpolation, event handlers, ephemerides and adapter propagators.
         Note that since SpacecraftState instances are immutable, adding states
         generates a new instance, using a fluent API principle (fixes feature request #132).
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added a way to retrieve all additional states at once from a step interpolator.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed wrong orientation for ICRF and all IAU pole and prime meridians
         (a few tens milli-arcseconds). This error mainly induced an error in
         celestial bodies directions, including the Sun which is used in many
         places in Orekit (fixes bug #130).
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added support for IERS conventions 2010. Note that Orekit still also
         support conventions 2003 in addition to conventions 2010. However, as
         IERS does not provide anymore data to link TIRF 2003 with ITRF, ITRF
@@ -5423,10 +5068,10 @@
         either 2010 conventions for CIO-based paradigm or on 1996 conventions
         for equinox-based paradigm.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Atmosphere models now provide their central body frame.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added versions of angular coordinates and position-velocity that use
         any field instead of double (classes FieldAngularCoordinates and
         FieldPVCoordinates). This allows to compute derivatives of these quantities
@@ -5435,7 +5080,7 @@
         the field elements). Regular transforms as produced by frames
         handle these objects properly and compute partial derivatives for them.
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         Converted Cunningham and Droziner force models to use the API of the new
         partial derivatives framework, despite they STILL USE finite differences.
         These two force models are now considered obsolete, they have been
@@ -5449,33 +5094,33 @@
         requested. So users are strongly recommended to avoid these models when
         partial derivatives are desired...
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added analytical computation of partial derivatives for third-body
         attraction.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added analytical computation of partial derivatives for constant
         thrust maneuvers.
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         Converted Newtonian force model to use the new partial derivatives
         framework.
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         Converted Holmes-Featherstone force model to use the new partial derivatives
         framework.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added analytical computation of partial derivatives for surface forces
         (drag and radiation pressure) for all supported spacecraft body shapes.
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         Streamlined the force models partial derivatives computation for numerical
         propagation. It is now far simpler to compute analytically the derivatives
         with respect to state and with respect to force models specific parameters,
         thanks to the new Apache Commons Math differentiation framework.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added a new force model for central body gravity field, based on Holmes and Featherstone
         algorithms. This model is a great improvement over Cunningham and Droziner models. It
         allows much higher degrees (it uses normalized coefficients and carefully crafted
@@ -5485,7 +5130,7 @@
         orbit with a 1cm tolerance setting and a 69x69 gravity field was about 45% faster with
         Holmes and Featherstone than with Cunningham).
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Improved gravity field un-normalization to allow higher degrees/order with Cunningham and
         Droziner models. Formerly, the coefficients computation underflowed for square fields
         degree = order = 85, and for non-square fields at degree = 130 for order = 40. Now square
@@ -5493,26 +5138,26 @@
         higher (degree = 393 for order = 63 for example). Attempts to use un-normalization past
         the underflow limit now raises an exception.
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         Updated Orekit to version 3.1.1 of Apache Commons Math.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added support for time-dependent gravity fields. All recent gravity
         fields include time-dependent coefficients (linear trends and pulsations
         at several different periods). They are now properly handled by Orekit.
         For comparison purposes, it is still possible to retrieve only the constant
         part of a field even if the file contains time-dependent coefficients too.
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         Added a way to speed up parsing and reduce memory consumption when
         loading gravity fields. Now the user can specify the maximal degree
         and order before reading the file.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         The EGM gravity field reader did not complain when files with missing
         coefficients were provided, even when asked to complain.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed serialization of all predefined frames. This fix implied
         also fixing serialization of celestial bodies as the predefined
         ICRF frame relies on them. Note for both types of objects, only
@@ -5565,38 +5210,38 @@
         Convert position entries contained in SP3 files to meters instead of km
         (fixes bug #112).
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added support for version 2011 of ICGEM gravity field format. Orekit
         still ignore the time-dependent part of these fields, though.
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         Greatly simplified CelestialBodyLoader interface, now it is not related
         to DataLoader anymore (which implies users can more easily provide
         analytical models instead of the JPL/IMCCE ephemerides if they want)
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Use the new thread-safe caches and the new Hermite interpolation feature on
         Transform, Earth Orientation Parameters, JPL/IMCCE ephemerides, UTC-TAI
         history and Ephemeris to remove thread-safety issues in all classes using
         cache (fixes #3).
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added Hermite interpolation features for position-velocity coordinates,
         angular coordinates, orbits, attitudes, spacecraft states and transforms.
         Hermite interpolation matches sample points value and optionally first derivative.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added an AngularCoordinates as an angular counterpart to PVCoordinates.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Transform now implements both TimeStamped and TimeShiftable. Note that this change
         implied adding an AbsoluteDate parameter to all transform constructors, so this
         is a backward incompatible change.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed wrong transform for 3D lines (fixes bug #101).
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Upgraded support of CCSDS Unsegmented Time Code (CUC) to version 4 of the
         standard published in November 2010 (fixes bug #91), this includes support for
         an extended preamble field and longer time codes.
@@ -5604,7 +5249,7 @@
       <action dev="luc" type="add" due-to="Francesco Rocca">
         Added a way to build TLE propagators with attitude providers and mass (fixes bug #84).
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed numerical stability errors for high order gravity field in Cunningham model (fixes bug #97).
       </action>
       <action dev="luc" type="fix" due-to="Yannick Tanguy">
@@ -5766,59 +5411,59 @@
         Fixed a performance bug implying that some frames reloaded all EOP history files
         each time a transform was computed (fixes bug #26).
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added support for columns-based IERS Rapid Data and Prediction files (finals.daily, finals.data
         and finals.all), the XML version was already supported since a few months
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed numerical issue in eccentricity computation (fixes bug #25)
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         Changed step handling of abstract propagators, now they use a single step
         equal to the duration of the propagation in all cases except when a fixed step
         is requested in master mode. Previously, they arbitrarily used on hundredth of
         the Keplerian period as the step size, hence performing many steps even if not
         strictly required
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added propagation of Jacobians matrices in circular, Keplerian and equinoctial
         parameters, using either true, eccentric or mean position angles. Formerly,
         propagation of Jacobians matrices was possible only in Cartesian parameters
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added a way to propagate additional state along with orbit in abstract
         propagators, as an analytical counterpart to the additional equations that
         can be integrated by numerical propagators
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed missing partial derivatives data in ephemerides produced by a numerical
         propagator despite it was set up to computed them (fixes bug #16)
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Added a new much simpler way to log events occurrences all at once (or
         only a subset of the events if desired)
       </action>
-      <action dev="pascal" type="add" >
+      <action dev="pascal" type="add">
         Added alternative default name for ICGEM files
       </action>
-      <action dev="pascal" type="fix" >
+      <action dev="pascal" type="fix">
         Fixed EventState reset on propagation direction change (fixes bug #19)
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed Jacobianizer so it can handle force models that do change the spacecraft mass,
         like ConstantThrustManeuver (fixes bug #18)
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added Jacobians between orbital parameters and Cartesian parameters for all orbits
         types (including hyperbolic orbits), all angles types (mean, eccentric, true) and in
         both directions
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         Replaced the integers parameters used in orbit constructors (MEAN_ANOMALY, ECCENTRIC_ANOMALY ...)
         by a new PositionAngle enumerate for better value safety. The old public constants and the
         corresponding constructors are still available but are deprecated
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         Fixed ephemeris generation in numerical propagation. After getEphemeris has been
         called,  later calls to the numerical propagator did reset the already computed
         and returned ephemeris (fixes bug #14)
@@ -5838,15 +5483,15 @@
         cases reducing local precision at event occurrence, reducing max step size is often
         sufficient to compensate for this drawback
       </action>
-      <action dev="v&#233;ronique" type="add" >
+      <action dev="v&#xE9;ronique" type="add">
         all propagators, including analytical ones or tabulated ones can now be used for
         event detection. Of course for tabulated propagators, setting up an event that
         would try to reset the state triggers an error when the event occurs
       </action>
-      <action dev="v&#233;ronique" type="add" >
+      <action dev="v&#xE9;ronique" type="add">
         propagation can now be done between two dates, regardless of the date of the initial state
       </action>
-      <action dev="v&#233;ronique" type="add" >
+      <action dev="v&#xE9;ronique" type="add">
         attitude can be specified either using a date only thanks to a new AttitudeLaw interface
         or using a date, a position-velocity provider and a frame (which can be any frame) thanks
         to a new AttitudeProvider interface, wrappers have been added to convert between the two
@@ -5993,13 +5638,13 @@
         fixed an error in FramesFactory when getting ITRF2005 and TIRF2000 frames:
         ignoreTidalEffects was handled wrong.
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         removed serialization of some cached data in frames
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         fixed deserialization problems of frame singletons, they were not unique any more
       </action>
-      <action dev="v&#233;ronique" type="add" >
+      <action dev="v&#xE9;ronique" type="add">
         numerical propagation can now be done either using Cartesian parameters, circular
         parameters, equinoctial parameters, or Keplerian parameters (elliptical or hyperbolic)
         and using mean, eccentric or true position angles for the parameters where it is relevant.
@@ -6007,11 +5652,11 @@
         of any kind of trajectories, including hyperbolic orbits used for interplanetary missions,
         or atmospheric re-entry trajectories
       </action>
-      <action dev="v&#233;ronique" type="update" >
+      <action dev="v&#xE9;ronique" type="update">
         completely revamped the partial derivatives matrices computation using the additional
         equations mechanism
       </action>
-      <action dev="v&#233;ronique" type="add" >
+      <action dev="v&#xE9;ronique" type="add">
         added a mechanism to integrate user-supplied additional equations alongside with
         orbital parameters during numerical propagation
       </action>
@@ -6038,8 +5683,7 @@
         This might lead to select an inappropriate data provider.
       </action>
     </release>
-    <release version="5.0.3" date="2011-07-12"
-             description="version 5.0.3 is a bug-fix release.">
+    <release version="5.0.3" date="2011-07-12" description="version 5.0.3 is a bug-fix release.">
       <action dev="luc" type="fix">
         Fixed a performance bug implying that some frames reloaded all EOP history files
         each time a transform was computed  (fixes bug #26).
@@ -6048,34 +5692,18 @@
         Fixed a parsing bug in IERS Rapid Data and Prediction files for dates between 2000 and 2009.
       </action>
     </release>
-    <release version="5.0.2" date="2011-07-11"
-             description="version 5.0.2 is an interim release of Orekit with support for IERS
-                          Rapid Data and Prediction files.">
+    <release version="5.0.2" date="2011-07-11" description="version 5.0.2 is an interim release of Orekit with support for IERS                           Rapid Data and Prediction files.">
       <action dev="luc" type="update">
         Added support for IERS Rapid Data and Prediction files finals.all, finals.data and finals.daily,
         for both IAU-1980 and IAU-2000 and with both columns and XML formats.
       </action>
     </release>
-    <release version="5.0.1" date="2011-04-15"
-             description="version 5.0.1 is a minor release of Orekit without any functional changes.
-             The differences with respect to 5.0 are only related to packaging and deployement to
-             maven central. There are NO bug fixes and NO evolutions.">
+    <release version="5.0.1" date="2011-04-15" description="version 5.0.1 is a minor release of Orekit without any functional changes.              The differences with respect to 5.0 are only related to packaging and deployement to              maven central. There are NO bug fixes and NO evolutions.">
       <action dev="luc" type="update">
         updated packaging to allow deployment to maven central.
       </action>
     </release>
-    <release version="5.0" date="2010-05-06"
-             description="version 5.0 is a major release of Orekit. It introduces several new
-             features and bug fixes. Some slight incompatibilities with respect to previous
-             versions have been introduced, but they should be easy to overcome to users. Users
-             are strongly advised to upgrade to this version. The major points introduced in version
-             5.0 are a very general PVCoordinatesProvider interface, a new shiftedBy method allowing
-             many time-dependent instances (AbsoluteDate, Orbit, PVCoordinates, Attitude and SpacecraftState)
-             to be slightly shifted in time using simple evolution models (keplerian for orbit, fixed
-             angular rate for attitude, fixed translation for position/velocity), a redesign of the
-             attitude interfaces and an experimental (read subject to change) numerical propagator
-             able to compute jacobians of the state with respect to both initial state and force
-             models parameters. Version 5.0 now depends on version 2.1 of Apache commons math.">
+    <release version="5.0" date="2010-05-06" description="version 5.0 is a major release of Orekit. It introduces several new              features and bug fixes. Some slight incompatibilities with respect to previous              versions have been introduced, but they should be easy to overcome to users. Users              are strongly advised to upgrade to this version. The major points introduced in version              5.0 are a very general PVCoordinatesProvider interface, a new shiftedBy method allowing              many time-dependent instances (AbsoluteDate, Orbit, PVCoordinates, Attitude and SpacecraftState)              to be slightly shifted in time using simple evolution models (keplerian for orbit, fixed              angular rate for attitude, fixed translation for position/velocity), a redesign of the              attitude interfaces and an experimental (read subject to change) numerical propagator              able to compute jacobians of the state with respect to both initial state and force              models parameters. Version 5.0 now depends on version 2.1 of Apache commons math.">
       <action dev="pascal" type="add">
         a new experimental numerical propagator has been added, in addition to computing
         the spacecraft state at target time, it also computes the partial derivatives of
@@ -6110,7 +5738,7 @@
         The error could introduce up to a few meters error in position during transformations
         between TEME and MEME
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         factories have been introduced for handling all data formats. Their default configuration
         correspond to the legacy formats used in previous versions (IERS format for UTC-TAI, EOPC04
         and bulletins B for Earth Orientation Parameters, JPL format for celestial bodies ...).
@@ -6121,64 +5749,64 @@
         GravityFieldFactory) and that TimeScalesFactory and FramesFactory have been extended. All these
         factories follow the same generic pattern.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         improved thread safety (however, Orekit is still NOT completely thread-safe).
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         the loaders for gravity fields now can optionally allow missing coefficients (they will be
         replaced by 0.0 except c[0][0] which will be replaced by 1.0).
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         the loader for gravity fields in the ICGEM format now support empty lines in the file
         (there is for example one blank line at the end of the file in the orekit-data zip archive).
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         added support for the GRGS gravity field files formats.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         added a way to list the available satellite numbers in TLE files.
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         improved TLE elements loading. Now TLE lines are loaded using the standard data loading
         mechanism (thus allowing loading from disk files, network, classpath ...), they can
         contain TLE for several objects in one file, and they may contain some non-TLE lines
         if desired.
       </action>
-      <action dev="v&#233;ronique" type="add" >
+      <action dev="v&#xE9;ronique" type="add">
         a new PVCoordinatesProvider interface has been created on top of several existing classes
         and interfaces (orbit propagator, celestial bodies, some moving frames ...). This is a
         major generalization that allows to use either satellites or celestial bodies in many
         algorithms (attitude pointing target, eclipses and field of view events ...)
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         improved numerical propagator efficiency when used from an outside loop: the initial
         state is automatically set to the last state at propagation end, thus allowing to
         restart from here without recomputing everything
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         added a reset feature in all propagators, allowing to reuse an already configured
         propagator for several different orbits
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         fixed a mode handling error in NumericalPropagator: when a propagator was reused
         with a new mode setting, the previous step handlers were still used in addition to
         the new ones instead of replacing them
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         fixed an interpolation error for orbits crossing the -PI/+PI singularity between
         entries in the Ephemeris class
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         KeplerianPropagator now preserve orbits types
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         AbsoluteDate, Orbit, PVCoordinates, Attitude and SpacecraftState instances can now all
         be slightly shifted in time using simple evolution models (keplerian for orbit, fixed
         angular rate for attitude, fixed translation for position/velocity). This is not a
         replacement for proper propagation but is useful for known simple motions or small
         time shifts or when coarse accuracy is sufficient
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         changed AttitudeLaw.getState signature to use complete orbit. This is an incompatible
         change introduced to fix a major bug in spin computation for some attitude laws. The laws
         for which orientation depends on satellite velocity have a spin vector that depends on
@@ -6187,22 +5815,22 @@
         has the orbit available and attitude laws implementations can retrieve all the former
         parameters (date, position/velocity, frame) directly from orbit.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         fixed spin rate computation errors in almost all attitude modes
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         added a new simple linear attitude mode: FixedRate
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         fixed an error in event detection: when two events were very close (for example a very
         short ground station visibility), the second one may be ignored despite the first one
         was detected.
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         fixed corner cases in event detection during orbit propagation, sometimes
         an already detected and handled event prevented the propagator to go further in time.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         added an EventShifter wrapper allowing to slightly shift raw events in time. This is useful
         for example to switch an attitude mode from solar pointing to something else a few minutes
         before eclipse entry and going back to solar pointing mode a few minutes after eclipse exit.
@@ -6210,20 +5838,20 @@
       <action dev="pascal" type="add">
         added a new AlignmentDetector.
       </action>
-      <action dev="pascal" type="add" >
+      <action dev="pascal" type="add">
         added a new EclipseDetector handling either umbra or penumbra entry and exit events.
       </action>
-      <action dev="v&#233;ronique" type="add" >
+      <action dev="v&#xE9;ronique" type="add">
         added new CircularFieldOfViewDetector and DihedralFieldOfViewDetector handling
         field of view entry and exit events for any type of target.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         added an experimental implementation of a BoxAndSolarArray spacecraft model considering a convex
         body (either parallelepipedic or defined by a set of facets) and a rotating solar array, for
         accurate modeling of surface forces with attitude. Beware that this class is still considered
         experimental, so use it with care!
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         completely changed the RadiationSensitive and DragSensitive interfaces to be more comprehensive
         and handle properly lift and side force effects when used with non-symmetric spacecrafts/flux geometry
       </action>
@@ -6231,7 +5859,7 @@
         fixed denormalization of gravity field coefficients, the last coefficient
         was not initialized
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         added a relative constructor and a getMomentum method to PVCoordinates
       </action>
       <action dev="luc" type="add">
@@ -6256,7 +5884,7 @@
       <action dev="pascal" type="add">
         added some pieces of an UML model for the library (available in the source distribution)
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         updated error message localization to be more consistent with Java exception. Now getMessage
         returns a non-localized message and only getLocalizedMessage returns a message localized for
         the platform default locale. A new getMessage(Locale) method has also been added to
@@ -6265,23 +5893,11 @@
         never displayed, the message will never be built.
       </action>
     </release>
-    <release version="4.1" date="2009-08-18"
-             description="version 4.1 is an upgrade bringing some new features and fixing a
-             few bugs. The equinox-based frames family with IAU1980 precession-nutation
-             models that are still used by many legacy systems are now supported. This
-             simplifies interoperability with legacy systems and helps migrating from this
-             old frames family to the new CIO-based ones that is supported by orekit since its
-             first versions. The data loading mechanism used to retrieve IERS data (Earth
-             Orientation Parameters, UTC-TAI history) and JPL ephemerides is now also used
-             to retrieve gravity potential files. This mechanism has also been vastly improved
-             to support new use cases (loading from disk, from classpath, from network delegating
-             loading to an external library ...). Another change is the addition of the TDB
-             time scale. Some minor incompatibilities have been introduced but they are easy
-             to solve for users, the explanations are provided in detailed changes report.">
-      <action dev="aude" type="add" >
+    <release version="4.1" date="2009-08-18" description="version 4.1 is an upgrade bringing some new features and fixing a              few bugs. The equinox-based frames family with IAU1980 precession-nutation              models that are still used by many legacy systems are now supported. This              simplifies interoperability with legacy systems and helps migrating from this              old frames family to the new CIO-based ones that is supported by orekit since its              first versions. The data loading mechanism used to retrieve IERS data (Earth              Orientation Parameters, UTC-TAI history) and JPL ephemerides is now also used              to retrieve gravity potential files. This mechanism has also been vastly improved              to support new use cases (loading from disk, from classpath, from network delegating              loading to an external library ...). Another change is the addition of the TDB              time scale. Some minor incompatibilities have been introduced but they are easy              to solve for users, the explanations are provided in detailed changes report.">
+      <action dev="aude" type="add">
         added TDB time scale
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         the RadiationSensitive and DragForce interfaces now have an
         additional SpacecraftState parameter in all their get methods.
         This allows to implement models that take into account solar
@@ -6312,49 +5928,49 @@
       <action dev="luc" type="fix" due-to="Aude Privat">
         fixed configuration problems on Windows systems
       </action>
-      <action dev="luc" type="fix" due-to="Sébastien Herbinière">
+      <action dev="luc" type="fix" due-to="S&#xE9;bastien Herbini&#xE8;re">
         fixed a reversed sign in solar radiation pressure
       </action>
-      <action dev="pascal" type="update" >
+      <action dev="pascal" type="update">
         Orekit supports the two different naming patterns for bulletins B provided by IERS
         on http://www.iers.org/ and http://hpiers.obspm.fr/eop-pc/.
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         the predefined times scales (TAI, UTC ...) are now built using a factory. The various
         XXXScale.getInstance() methods defined in each predefined time scales classes
         are still available, but have been deprecated and will be removed in the future,
         they are replaced by TimeScalesFactory.getXXX().
       </action>
-      <action dev="pascal" type="update" >
+      <action dev="pascal" type="update">
         the Frame class was split into a FramesFactory class, dealing with the predefined
         reference frames, and a Frame class for the creation of new frames and the navigation
         through any frames tree. The Frame.getXXX() methods for the predefined reference
         frames are still available, but have been deprecated and will be removed in the future,
         they are replaced by FramesFactory.getXXX().
       </action>
-      <action dev="pascal" type="add" >
+      <action dev="pascal" type="add">
         3 new predefined reference frames have been added in Orekit : MEME, TEME and PEF. They
         implement the classical paradigm of equinox-based transformations including the IAU-76
         precession model, the IAU-80 nutation model and the IAU-82 sidereal time model, with
         the capability to apply the nutation corrections provided by IERS through the EOP data
         files for better agreement with the IAU 2000 precession-nutation model.
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         the ChronologicalComparator class is not a singleton anymore, this didn't really make sense
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         fixed a state reset error: orbital state changed by event detectors like
         ImpulseManeuver were overwritten by other event detectors
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         fixed stop date of abstract propagators (Keplerian and Eckstein-Heschler). They used to
         stop at the first event after target date when an event detector was set up, instead of
         stopping at the target date
       </action>
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix">
         the gravity coefficients for solar system bodies are now extracted from JPL files headers
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         the eventOccurred method in EventDetector interface and its various implementations
         has an additional parameter specifying if the switching function increases or
         decreases at event time. This allows simpler events identification has many switching
@@ -6366,7 +5982,7 @@
       <action dev="luc" type="fix" due-to="Christophe Pipo">
         fixed an error occurring when DE406 JPL ephemerides were loaded before DE405 ones
       </action>
-      <action dev="luc" type="fix" due-to="Sébastien Herbinière">
+      <action dev="luc" type="fix" due-to="S&#xE9;bastien Herbini&#xE8;re">
         fixed an error in EGM potential file loader
       </action>
       <action dev="luc" type="update">
@@ -6377,10 +5993,10 @@
         parts of the library do need configuration data (solar system bodies) and
         since data configuration has been vastly improved
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         added support for the ICGEM format for gravity fields
       </action>
-      <action dev="luc" type="update" >
+      <action dev="luc" type="update">
         load gravity potential data using the same mechanism already used for Earth
         Orientation Parameters, UTC-TAI history and JPL ephemerides files
       </action>
@@ -6400,7 +6016,7 @@
       <action dev="luc" type="update">
         updated to latest version of commons-math.
       </action>
-      <action dev="luc" type="add" due-to="Silvia Ríos Bergantiños">
+      <action dev="luc" type="add" due-to="Silvia R&#xED;os Berganti&#xF1;os">
         added galician localization for error messages.
       </action>
       <action dev="luc" type="fix" due-to="Guylaine Prat">
@@ -6417,12 +6033,7 @@
         computed independently.
       </action>
     </release>
-    <release version="4.0" date="2008-10-13"
-             description="major upgrade with new features (GCRF and ITRF2005 frames, DE 405
-             and DE 406 ephemerides support, improved and greatly simplified date/time support,
-             vastly improved data configuration with zip files support, new tutorials, improved
-             performances, more tests and all identified bugs fixed, new translation files for
-             italian, spanish and norse.">
+    <release version="4.0" date="2008-10-13" description="major upgrade with new features (GCRF and ITRF2005 frames, DE 405              and DE 406 ephemerides support, improved and greatly simplified date/time support,              vastly improved data configuration with zip files support, new tutorials, improved              performances, more tests and all identified bugs fixed, new translation files for              italian, spanish and norse.">
       <action dev="pascal" type="fix">
         The ephemeris produced by numerical propagator now checks date validity in
         propagate method.
@@ -6513,10 +6124,10 @@
         Added methods to get zenith, nadir, north, south, east and west direction for
         any GeodeticPoint.
       </action>
-      <action dev="luc" type="add" due-to="Silvia Ríos Bergantiños">
+      <action dev="luc" type="add" due-to="Silvia R&#xED;os Berganti&#xF1;os">
         Added spanish localization for error messages.
       </action>
-      <action dev="luc" type="add" due-to="Espen Bjørntvedt">
+      <action dev="luc" type="add" due-to="Espen Bj&#xF8;rntvedt">
         Added norse localization for error messages.
       </action>
       <action dev="luc" type="add" due-to="Francesco Coccoluto">
@@ -6525,7 +6136,7 @@
       <action dev="luc" type="add" due-to="Derek Surka">
         Added support for mean motion first and second derivatives fields in TLE.
       </action>
-      <action dev="luc" type="add" >
+      <action dev="luc" type="add">
         Added a way to rebuild the two lines of TLE instances.
       </action>
       <action dev="luc" type="add" due-to="Derek Surka">
@@ -6592,7 +6203,6 @@
         Added the changes page to the generated site.
       </action>
     </release>
-    <release version="3.1" date="2008-07-16"
-             description="This release is the first public release of Orekit."/>
+    <release version="3.1" date="2008-07-16" description="This release is the first public release of Orekit."/>
   </body>
 </document>

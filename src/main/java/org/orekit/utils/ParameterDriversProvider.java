@@ -92,7 +92,7 @@ public interface ParameterDriversProvider {
      * @return model parameters
      * @since 12.0
      */
-    default double[] getParameters(AbsoluteDate date) {
+    default double[] getParameters(final AbsoluteDate date) {
 
         final List<ParameterDriver> drivers = getParametersDrivers();
         final double[] parameters = new double[drivers.size()];
@@ -199,7 +199,7 @@ public interface ParameterDriversProvider {
      * @see #getParametersDrivers()
      * @since 8.0
      */
-    default boolean isSupported(String name) {
+    default boolean isSupported(final String name) {
         for (final ParameterDriver driver : getParametersDrivers()) {
             if (name.equals(driver.getName())) {
                 // we have found a parameter with that name
