@@ -147,4 +147,76 @@ public interface FieldOfView {
                                            OneAxisEllipsoid body,
                                            double angularStep);
 
+    /** Get the footprint of the Field Of View on ground.
+     * <p>
+     * This method assumes the Field Of View is centered on some carrier,
+     * which will typically be a spacecraft or a ground station antenna.
+     * The points in the footprint boundary loops are all at altitude zero
+     * with respect to the ellipsoid, they correspond either to projection
+     * on ground of the edges of the Field Of View, or to points on the body
+     * limb if the Field Of View goes past horizon. The points on the limb
+     * see the carrier origin at zero elevation. If the Field Of View is so
+     * large it contains entirely the body, all points will correspond to
+     * points at limb. If the Field Of View looks away from body, the
+     * boundary loops will be an empty list. The points within footprint
+     * loops are sorted in trigonometric order as seen from the carrier.
+     * This implies that someone traveling on ground from one point to the
+     * next one will have the points visible from the carrier on his left
+     * hand side, and the points not visible from the carrier on his right
+     * hand side.
+     * </p>
+     * <p>
+     * The truncation of Field Of View at limb can induce strange results
+     * for complex Fields Of View. If for example a Field Of View is a
+     * ring with a hole and part of the ring goes past horizon, then instead
+     * of having a single loop with a C-shaped boundary, the method will
+     * still return two loops truncated at the limb, one clockwise and one
+     * counterclockwise, hence "closing" the C-shape twice. This behavior
+     * is considered acceptable.
+     * </p>
+     * <p>
+     * If the carrier is a spacecraft, then the {@code fovToBody} transform
+     * can be computed from a {@link org.orekit.propagation.SpacecraftState}
+     * as follows:
+     * </p>
+     * <pre>
+     * Transform inertToBody = state.getFrame().getTransformTo(body.getBodyFrame(), state.getDate());
+     * Transform fovToBody   = new Transform(state.getDate(),
+     *                                       state.toTransform().getInverse(),
+     *                                       inertToBody);
+     * </pre>
+     * <p>
+     * If the carrier is a ground station, located using a topocentric frame
+     * and managing its pointing direction using a transform between the
+     * dish frame and the topocentric frame, then the {@code fovToBody} transform
+     * can be computed as follows:
+     * </p>
+     * <pre>
+     * Transform topoToBody = topocentricFrame.getTransformTo(body.getBodyFrame(), date);
+     * Transform topoToDish = ...
+     * Transform fovToBody  = new Transform(date,
+     *                                      topoToDish.getInverse(),
+     *                                      topoToBody);
+     * </pre>
+     * <p>
+     * Only the raw zone is used, the angular margin is ignored here.
+     * </p>
+     * @param fovToBody transform between the frame in which the Field Of View
+     * is defined and body frame.
+     * @param body body surface the Field Of View will be projected on
+     * @param angularStep step used for boundary loops sampling (radians),
+     * beware this is generally <em>not</em> an angle on the unit sphere, but rather a
+     * phase angle used by the underlying Field Of View boundary model
+     * @param extendedFootprint bool to tell the getFootprints method whether
+     * to have lines that go off the body go to the limb (false) or be projected
+     * a certain distance into space, preserving the 'cone' of view (true).
+     * @return list footprint boundary loops (there may be several independent
+     * loops if the Field Of View shape is complex)
+     */
+    List<List<GeodeticPoint>> getFootprint(Transform fovToBody,
+                                           OneAxisEllipsoid body,
+                                           double angularStep,
+                                           boolean extendedFootprint,
+                                           double maxDistance);
+
 }

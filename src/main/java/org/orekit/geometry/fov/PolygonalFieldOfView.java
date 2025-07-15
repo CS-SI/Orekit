@@ -56,6 +56,18 @@ public class PolygonalFieldOfView extends AbstractFieldOfView {
     /** Spherical cap surrounding the zone. */
     private final EnclosingBall<Sphere2D, S2Point> cap;
 
+    /**
+     * The default setting for if the footprint should be projected 
+     * off the body onto a spatial point when there is no intersection point.
+     */
+    public static final boolean DEFAULT_EXT_FPT = false;
+
+    /**
+     * The default length of line segments of extended footprints that
+     * project directly into space. 
+     */
+    public static final double DEFAULT_MAX_DIST = 1e7;
+
     /** Build a new instance.
      * @param zone interior of the Field Of View, in spacecraft frame
      * @param margin angular margin to apply to the zone (if positive,
@@ -148,6 +160,18 @@ public class PolygonalFieldOfView extends AbstractFieldOfView {
                                                   final OneAxisEllipsoid body,
                                                   final double angularStep) {
 
+        return getFootprint(fovToBody, body, angularStep, DEFAULT_EXT_FPT, DEFAULT_MAX_DIST);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<List<GeodeticPoint>> getFootprint(final Transform fovToBody,
+                                                  final OneAxisEllipsoid body,
+                                                  final double angularStep,
+                                                  final boolean extendedFootprint,
+                                                  final double maxDistance) {
+
         final Frame     bodyFrame = body.getBodyFrame();
         final Vector3D  position  = fovToBody.transformPosition(Vector3D.ZERO);
         final double    r         = position.getNorm();
@@ -187,8 +211,17 @@ public class PolygonalFieldOfView extends AbstractFieldOfView {
                         intersectionsFound = true;
                     } else {
                         // the line of sight does not intersect body
-                        // we use a point on the limb
-                        gp = body.transform(body.pointOnLimb(position, awayBody), bodyFrame, null);
+                        if (!extendedFootprint) {
+                            // we use a point on the limb
+                            gp = body.transform(body.pointOnLimb(position, awayBody), bodyFrame, null);
+                        } else {
+                            // we project in the proper direction (to a point in space) 
+                            // such that the line's length is the requested value (maxDistance)
+                            double temp_norm = awaySC.getNorm();
+                            Vector3D temp_vec = awaySC.scalarMultiply(1/temp_norm).scalarMultiply(maxDistance);
+                            temp_vec = fovToBody.transformPosition(temp_vec);
+                            gp = body.transform(temp_vec, bodyFrame, null);
+                        }
                     }
 
                     // add the point in front of the list
@@ -198,37 +231,44 @@ public class PolygonalFieldOfView extends AbstractFieldOfView {
                 }
             }
 
-            if (intersectionsFound) {
-                // at least some of the points did intersect the body,
-                // this loop contributes to the footprint
+            if (!extendedFootprint) {
+                if (intersectionsFound) {
+                    // at least some of the points did intersect the body,
+                    // this loop contributes to the footprint
+                    footprint.add(loop);
+                }
+            } else {
+                // we don't care about intersection details
                 footprint.add(loop);
             }
 
         }
 
-        if (footprint.isEmpty()) {
-            // none of the Field Of View loops cross the body
-            // either the body is outside of Field Of View, or it is fully contained
-            // we check the center
-            final Vector3D bodyCenter = fovToBody.getStaticInverse().transformPosition(Vector3D.ZERO);
-            if (zone.checkPoint(new S2Point(bodyCenter)) != Region.Location.OUTSIDE) {
-                // the body is fully contained in the Field Of View
-                // we use the full limb as the footprint
-                final Vector3D x        = bodyCenter.orthogonal();
-                final Vector3D y        = Vector3D.crossProduct(bodyCenter, x).normalize();
-                final double   sinEta   = body.getEquatorialRadius() / r;
-                final double   sinEta2  = sinEta * sinEta;
-                final double   cosAlpha = (FastMath.cos(angularStep) + sinEta2 - 1) / sinEta2;
-                final int      n        = (int) FastMath.ceil(MathUtils.TWO_PI / FastMath.acos(cosAlpha));
-                final double   delta    = MathUtils.TWO_PI / n;
-                final List<GeodeticPoint> loop = new ArrayList<>(n);
-                for (int i = 0; i < n; ++i) {
-                    final SinCos sc = FastMath.sinCos(i * delta);
-                    final Vector3D outside = new Vector3D(r * sc.cos(), x,
-                                                          r * sc.sin(), y);
-                    loop.add(body.transform(body.pointOnLimb(position, outside), bodyFrame, null));
+        if (!extendedFootprint) { // only need to check if we care about non-intersection
+            if (footprint.isEmpty()) {
+                // none of the Field Of View loops cross the body
+                // either the body is outside of Field Of View, or it is fully contained
+                // we check the center
+                final Vector3D bodyCenter = fovToBody.getStaticInverse().transformPosition(Vector3D.ZERO);
+                if (zone.checkPoint(new S2Point(bodyCenter)) != Region.Location.OUTSIDE) {
+                    // the body is fully contained in the Field Of View
+                    // we use the full limb as the footprint
+                    final Vector3D x        = bodyCenter.orthogonal();
+                    final Vector3D y        = Vector3D.crossProduct(bodyCenter, x).normalize();
+                    final double   sinEta   = body.getEquatorialRadius() / r;
+                    final double   sinEta2  = sinEta * sinEta;
+                    final double   cosAlpha = (FastMath.cos(angularStep) + sinEta2 - 1) / sinEta2;
+                    final int      n        = (int) FastMath.ceil(MathUtils.TWO_PI / FastMath.acos(cosAlpha));
+                    final double   delta    = MathUtils.TWO_PI / n;
+                    final List<GeodeticPoint> loop = new ArrayList<>(n);
+                    for (int i = 0; i < n; ++i) {
+                        final SinCos sc = FastMath.sinCos(i * delta);
+                        final Vector3D outside = new Vector3D(r * sc.cos(), x,
+                                                            r * sc.sin(), y);
+                        loop.add(body.transform(body.pointOnLimb(position, outside), bodyFrame, null));
+                    }
+                    footprint.add(loop);
                 }
-                footprint.add(loop);
             }
         }
 

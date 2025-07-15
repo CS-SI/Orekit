@@ -49,6 +49,18 @@ public abstract class SmoothFieldOfView extends AbstractFieldOfView {
     /** Z axis defining FoV boundary. */
     private final Vector3D zAxis;
 
+    /**
+     * The default setting for if the footprint should be projected 
+     * off the body onto a spatial point when there is no intersection point.
+     */
+    public static final boolean DEFAULT_EXT_FPT = false;
+
+    /**
+     * The default length of line segments of extended footprints that
+     * project directly into space. 
+     */
+    public static final double DEFAULT_MAX_DIST = 1e7;
+
     /** Build a new instance.
      * @param center direction of the FOV center (Z<sub>smooth</sub>), in spacecraft frame
      * @param primaryMeridian vector defining the (+X<sub>smooth</sub>, Z<sub>smooth</sub>)
@@ -98,12 +110,23 @@ public abstract class SmoothFieldOfView extends AbstractFieldOfView {
         return zAxis;
     }
 
-
     /** {@inheritDoc} */
     @Override
     public List<List<GeodeticPoint>> getFootprint(final Transform fovToBody,
                                                   final OneAxisEllipsoid body,
                                                   final double angularStep) {
+
+        return getFootprint(fovToBody, body, angularStep, DEFAULT_EXT_FPT, DEFAULT_MAX_DIST);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<List<GeodeticPoint>> getFootprint(final Transform fovToBody,
+                                                  final OneAxisEllipsoid body,
+                                                  final double angularStep,
+                                                  final boolean extendedFootprint,
+                                                  final double maxDistance) {
 
         final Frame     bodyFrame = body.getBodyFrame();
         final Vector3D  position  = fovToBody.transformPosition(Vector3D.ZERO);
@@ -137,8 +160,17 @@ public abstract class SmoothFieldOfView extends AbstractFieldOfView {
                 intersectionsFound = true;
             } else {
                 // the line of sight does not intersect body
-                // we use a point on the limb
-                gp = body.transform(body.pointOnLimb(position, awayBody), bodyFrame, null);
+                if (!extendedFootprint) {
+                    // we use a point on the limb
+                    gp = body.transform(body.pointOnLimb(position, awayBody), bodyFrame, null);
+                } else {
+                    // we project in the proper direction (to a point in space) 
+                    // such that the line's length is the requested value (maxDistance)
+                    double temp_norm = awaySC.getNorm();
+                    Vector3D temp_vec = awaySC.scalarMultiply(1/temp_norm).scalarMultiply(maxDistance);
+                    temp_vec = fovToBody.transformPosition(temp_vec);
+                    gp = body.transform(temp_vec, bodyFrame, null);
+                }
             }
 
             // add the point
@@ -147,19 +179,23 @@ public abstract class SmoothFieldOfView extends AbstractFieldOfView {
         }
 
         final List<List<GeodeticPoint>> footprint = new ArrayList<>();
-        if (intersectionsFound) {
-            // at least some of the points did intersect the body, there is a footprint
-            footprint.add(loop);
-        } else {
-            // the Field Of View loop does not cross the body
-            // either the body is outside of Field Of View, or it is fully contained
-            // we check the center
-            final Vector3D bodyCenter = fovToBody.getStaticInverse().transformPosition(Vector3D.ZERO);
-            if (offsetFromBoundary(bodyCenter, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV) < 0.0) {
-                // the body is fully contained in the Field Of View
-                // the previous loop did compute the full limb as the footprint
+        if (!extendedFootprint) { //if we care about non-intersection
+            if (intersectionsFound) {
+                // at least some of the points did intersect the body, there is a footprint
                 footprint.add(loop);
+            } else {
+                // the Field Of View loop does not cross the body
+                // either the body is outside of Field Of View, or it is fully contained
+                // we check the center
+                final Vector3D bodyCenter = fovToBody.getStaticInverse().transformPosition(Vector3D.ZERO);
+                if (offsetFromBoundary(bodyCenter, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV) < 0.0) {
+                    // the body is fully contained in the Field Of View
+                    // the previous loop did compute the full limb as the footprint
+                    footprint.add(loop);
+                }
             }
+        } else { // if we don't care
+            footprint.add(loop);
         }
 
         return footprint;
