@@ -291,6 +291,11 @@ public class RinexNavigationParser {
             this.isIonosphereAlphaInitialized = false;
             this.file                         = new RinexNavigation();
 
+            // reset the default values set by header constructor
+            this.file.getHeader().setProgramName(null);
+            this.file.getHeader().setRunByName(null);
+            this.file.getHeader().setCreationDateComponents(null);
+
         }
 
         /** Ensure navigation message has been closed.
@@ -483,7 +488,7 @@ public class RinexNavigationParser {
 
         /** Parser for leap seconds. */
         HEADER_LEAP_SECONDS((header, line) -> header.matchFound(CommonLabel.LEAP_SECONDS, line),
-                            (line, pi) -> pi.file.getHeader().setNumberOfLeapSeconds(ParsingUtils.parseInt(line, 0, 6)),
+                            (line, pi) -> pi.file.getHeader().setLeapSecondsGNSS(ParsingUtils.parseInt(line, 0, 6)),
                             LineParser::headerNext),
 
         /** Parser for DOI.
@@ -526,7 +531,7 @@ public class RinexNavigationParser {
 
                        // check mandatory header fields
                        if (header.getRunByName() == null ||
-                           version >= 4 && header.getNumberOfLeapSeconds() < 0) {
+                           version >= 4 && header.getLeapSecondsGNSS() < 0) {
                            throw new OrekitException(OrekitMessages.INCOMPLETE_HEADER, pi.name);
                        }
 

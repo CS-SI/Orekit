@@ -55,6 +55,9 @@ public class RinexClockHeader extends RinexClockObsBaseHeader {
     /** System time scale. */
     private TimeScale timeScale;
 
+    /** Number of leap seconds separating UTC and TAI. */
+    private int leapSecondsTAI;
+
     /** Earth centered frame. */
     private Frame frame;
 
@@ -88,9 +91,6 @@ public class RinexClockHeader extends RinexClockObsBaseHeader {
     /** List of the data types in the file. */
     private final List<ClockDataType> clockDataTypes;
 
-    /** Number of leap seconds separating UTC and GNSS time systems. */
-    private int leapSecondsGNSS;
-
     /** List of the receivers in the file. */
     private final List<Receiver> receivers;
 
@@ -104,17 +104,16 @@ public class RinexClockHeader extends RinexClockObsBaseHeader {
      */
     public RinexClockHeader() {
         super(RinexFileType.CLOCK);
-        this.frameName               = "";
+        this.frameName              = "";
         this.systemObservationTypes = new HashMap<>();
         this.clockDataTypes         = new ArrayList<>();
-        this.timeSystem              = null;
-        this.stationIdentifier       = "";
-        this.stationName             = "";
-        this.externalClockReference  = "";
-        this.analysisCenterID        = "";
-        this.analysisCenterName      = "";
+        this.timeSystem             = null;
+        this.stationIdentifier      = "";
+        this.stationName            = "";
+        this.externalClockReference = "";
+        this.analysisCenterID       = "";
+        this.analysisCenterName     = "";
         this.referenceClocks        = new TimeSpanMap<>(null);
-        this.leapSecondsGNSS        = 0;
         this.receivers              = new ArrayList<>();
         this.satellites             = new ArrayList<>();
     }
@@ -325,18 +324,18 @@ public class RinexClockHeader extends RinexClockObsBaseHeader {
         return clockDataTypes.size();
     }
 
-    /** Getter for the number of leap second for GNSS time scales.
-     * @return the number of leap seconds for GNSS time scales
+    /** Set the Number of leap seconds separating UTC and TAI.
+     * @param leapSecondsTAI Number of leap seconds separating UTC and TAI
      */
-    public int getLeapSecondsGNSS() {
-        return leapSecondsGNSS;
+    public void setLeapSecondsTAI(final int leapSecondsTAI) {
+        this.leapSecondsTAI = leapSecondsTAI;
     }
 
-    /** Setter for the number of leap seconds for GNSS time scales.
-     * @param leapSecondsGNSS the number of leap seconds for GNSS time scales to set
+    /** Get the Number of leap seconds separating UTC and TAI.
+     * @return Number of leap seconds separating UTC and TAI
      */
-    public void setLeapSecondsGNSS(final int leapSecondsGNSS) {
-        this.leapSecondsGNSS = leapSecondsGNSS;
+    public int getLeapSecondsTAI() {
+        return leapSecondsTAI;
     }
 
     /** Get the reference frame for the station positions.

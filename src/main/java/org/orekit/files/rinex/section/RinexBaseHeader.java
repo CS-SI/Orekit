@@ -61,6 +61,16 @@ public abstract class RinexBaseHeader {
     /** Pattern for time. */
     private static final Pattern TIME_PATTERN = Pattern.compile("([0-9]{2}):?([0-9]{2})(?::?([0-9]{2}))?");
 
+    /** Orekit program name.
+     * @since 14.0
+     */
+    private static final String OREKIT = "Orekit";
+
+    /** User name property.
+     * @since 14.0
+     */
+    private static final String USER_NAME = "user.name";
+
     /** File type . */
     private final RinexFileType fileType;
 
@@ -84,6 +94,15 @@ public abstract class RinexBaseHeader {
 
     /** Creation date as absolute date. */
     private AbsoluteDate creationDate;
+
+    /** Number of leap seconds separating UTC and GNSS time systems.
+     * <p>
+     * This is really the number of leap seconds since GPS epoch
+     * on 1980-01-06.
+     * </p>
+     * @since 14.0
+     */
+    private int leapSecondsGNSS;
 
     /** Digital Object Identifier.
      * @since 12.0
@@ -116,6 +135,12 @@ public abstract class RinexBaseHeader {
                                                          new TimeComponents(now.getHour(),
                                                                             now.getMinute(),
                                                                             now.getSecond())));
+
+        // set default program name to Orekit
+        setProgramName(OREKIT);
+
+        // set default run-by name to user
+        setRunByName(System.getProperty(USER_NAME));
 
     }
 
@@ -255,6 +280,22 @@ public abstract class RinexBaseHeader {
      */
     public void setCreationDate(final AbsoluteDate creationDate) {
         this.creationDate = creationDate;
+    }
+
+    /** Getter for the number of leap second for GNSS time scales.
+     * @return the number of leap seconds for GNSS time scales
+     * @since 14.0
+     */
+    public int getLeapSecondsGNSS() {
+        return leapSecondsGNSS;
+    }
+
+    /** Setter for the number of leap seconds for GNSS time scales.
+     * @param leapSecondsGNSS the number of leap seconds for GNSS time scales to set
+     * @since 14.0
+     */
+    public void setLeapSecondsGNSS(final int leapSecondsGNSS) {
+        this.leapSecondsGNSS = leapSecondsGNSS;
     }
 
     /**

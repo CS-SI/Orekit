@@ -259,6 +259,12 @@ public class RinexClockParser {
             this.lineNumber             = 0;
             this.pendingReferenceClocks = new ArrayList<>();
             this.values                 = new double[6];
+
+            // reset the default values set by header constructor
+            this.file.getHeader().setProgramName(null);
+            this.file.getHeader().setRunByName(null);
+            this.file.getHeader().setCreationDateComponents(null);
+
         }
 
     }
@@ -328,13 +334,13 @@ public class RinexClockParser {
                        },
                        LineParser::headerNext),
 
-        /** Parser for leap seconds. */
+        /** Parser for leap seconds separating UTC and TAI. */
         LEAP_SECONDS((header, line) -> header.matchFound(CommonLabel.LEAP_SECONDS, line),
                      (line, parseInfo) -> parseInfo.file.getHeader().
-                                          setLeapSeconds(ParsingUtils.parseInt(line, 0, 6)),
+                                          setLeapSecondsTAI(ParsingUtils.parseInt(line, 0, 6)),
                      LineParser::headerNext),
 
-        /** Parser for leap seconds GNSS. */
+        /** Parser for leap seconds separating UTC and GNSS. */
         LEAP_SECONDS_GNSS((header, line) -> header.matchFound(ClockLabel.LEAP_SECONDS_GNSS, line),
                           (line, parseInfo) -> parseInfo.file.getHeader().
                                                setLeapSecondsGNSS(ParsingUtils.parseInt(line, 0, 6)),

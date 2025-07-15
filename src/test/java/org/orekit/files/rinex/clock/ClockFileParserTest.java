@@ -1101,7 +1101,7 @@ public class ClockFileParserTest {
         if (creationDate != null) {
             Assertions.assertEquals(file.getHeader().getCreationDate(), creationDate);
         }
-        Assertions.assertEquals(numberOfLeapSeconds, file.getHeader().getLeapSeconds());
+        Assertions.assertEquals(numberOfLeapSeconds, file.getHeader().getLeapSecondsTAI());
         Assertions.assertEquals(numberOfLeapSecondsGPS, file.getHeader().getLeapSecondsGNSS());
         Assertions.assertEquals(numberOfDBCS, file.getHeader().getListAppliedDCBS().size());
         Assertions.assertEquals(numberOfPCVS, file.getHeader().getListAppliedPCVS().size());

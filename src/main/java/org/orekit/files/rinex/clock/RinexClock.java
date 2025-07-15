@@ -209,7 +209,7 @@ public class RinexClock extends RinexFile<RinexClockHeader> {
             forEach((s, l) -> l.forEach(o -> spliced.getHeader().addSystemObservationType(s, o)));
         spliced.getHeader().setTimeSystem(first.getHeader().getTimeSystem());
         spliced.getHeader().setTimeScale(first.getHeader().getTimeScale());
-        spliced.getHeader().setLeapSeconds(first.getHeader().getLeapSeconds());
+        spliced.getHeader().setLeapSecondsTAI(first.getHeader().getLeapSecondsTAI());
         spliced.getHeader().setLeapSecondsGNSS(first.getHeader().getLeapSecondsGNSS());
         first.getHeader().getListAppliedDCBS().forEach(dcbs -> spliced.getHeader().addAppliedDCBS(dcbs));
         first.getHeader().getListAppliedPCVS().forEach(pcvs -> spliced.getHeader().addAppliedPCVS(pcvs));

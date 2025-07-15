@@ -306,6 +306,12 @@ public class RinexObservationParser {
             this.satPhaseShift          = new ArrayList<>();
             this.typesObsScaleFactor    = new ArrayList<>();
             this.satObs                 = new ArrayList<>();
+
+            // reset the default values set by header constructor
+            this.file.getHeader().setProgramName(null);
+            this.file.getHeader().setRunByName(null);
+            this.file.getHeader().setCreationDateComponents(null);
+
         }
 
         /** Set observation date, taking care of receiver/absolute time scales.
@@ -775,7 +781,7 @@ public class RinexObservationParser {
         /** Parser for leap seconds. */
         LEAP_SECONDS((header, line) -> header.matchFound(CommonLabel.LEAP_SECONDS, line),
                      (line, parseInfo) -> {
-                         parseInfo.file.getHeader().setLeapSeconds(ParsingUtils.parseInt(line, 0, 6));
+                         parseInfo.file.getHeader().setLeapSecondsGNSS(ParsingUtils.parseInt(line, 0, 6));
                          if (parseInfo.file.getHeader().getFormatVersion() >= 3.0) {
                              parseInfo.file.getHeader().setLeapSecondsFuture(ParsingUtils.parseInt(line, 6, 6));
                              parseInfo.file.getHeader().setLeapSecondsWeekNum(ParsingUtils.parseInt(line, 12, 6));

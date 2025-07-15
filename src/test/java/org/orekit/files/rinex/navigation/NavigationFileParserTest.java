@@ -140,7 +140,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(552960,                        date.getSecondsInWeek());
         Assertions.assertEquals(1025,                          date.getWeekNumber());
         Assertions.assertEquals("EXAMPLE OF VERSION 3.00 FORMAT", file.getComments().get(0).getText());
-        Assertions.assertEquals(13, file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(13, file.getHeader().getLeapSecondsGNSS());
 
         // Verify data
         checkFieldConversion(file);
@@ -216,7 +216,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals("https://doi.org/10.xxxx",            file.getHeader().getDoi());
         Assertions.assertEquals("Apache V2",                          file.getHeader().getLicense());
         Assertions.assertEquals("not really a station",               file.getHeader().getStationInformation());
-        Assertions.assertEquals(18,                                   file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(18,                                   file.getHeader().getLeapSecondsGNSS());
         Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
 
         // Verify data
@@ -342,7 +342,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals("IGN",                    file.getHeader().getRunByName());
         Assertions.assertEquals("2021-02-24T01:20:52.0",  file.getHeader().getCreationDateComponents().toStringWithoutUtcOffset(60, 1));
         Assertions.assertEquals("UTC",                    file.getHeader().getCreationTimeZone());
-        Assertions.assertEquals(4,                        file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(4,                        file.getHeader().getLeapSecondsGNSS());
 
         // Verify data
         checkFieldConversion(file);
@@ -417,7 +417,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals("https://doi.org/10.57677/BRD400DLR", file.getHeader().getDoi());
         Assertions.assertNull(file.getHeader().getLicense());
         Assertions.assertNull(file.getHeader().getStationInformation());
-        Assertions.assertEquals(18,                                   file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(18,                                   file.getHeader().getLeapSecondsGNSS());
         Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
 
         // Verify data
@@ -520,7 +520,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(1920,                          date.getWeekNumber());
 
         Assertions.assertTrue(file.getComments().isEmpty());
-        Assertions.assertEquals(17, file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(17, file.getHeader().getLeapSecondsGNSS());
 
         // Verify data
         checkFieldConversion(file);
@@ -597,7 +597,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals("https://doi.org/10.57677/BRD400DLR", file.getHeader().getDoi());
         Assertions.assertNull(file.getHeader().getLicense());
         Assertions.assertNull(file.getHeader().getStationInformation());
-        Assertions.assertEquals(18,                                   file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(18,                                   file.getHeader().getLeapSecondsGNSS());
         Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
 
         // Verify data
@@ -650,7 +650,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(356352,                        date.getSecondsInWeek());
         Assertions.assertEquals(2109,                          date.getWeekNumber());
         Assertions.assertEquals(0,                             file.getComments().size());
-        Assertions.assertEquals(18,                            file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(18,                            file.getHeader().getLeapSecondsGNSS());
 
         // Verify data
         checkFieldConversion(file);
@@ -729,7 +729,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals("https://doi.org/10.57677/BRD400DLR", file.getHeader().getDoi());
         Assertions.assertNull(file.getHeader().getLicense());
         Assertions.assertNull(file.getHeader().getStationInformation());
-        Assertions.assertEquals(18,                                   file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(18,                                   file.getHeader().getLeapSecondsGNSS());
         Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
 
         // Verify data
@@ -788,7 +788,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.000000000e+00,         file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionA1(), Double.MIN_VALUE);
         Assertions.assertNull(file.getHeader().getTimeSystemCorrections().get(0).getReferenceDate());
         Assertions.assertEquals(0,                       file.getComments().size());
-        Assertions.assertEquals(18,                      file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(18,                      file.getHeader().getLeapSecondsGNSS());
 
         // Verify data
         checkFieldConversion(file);
@@ -847,7 +847,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals("JAVAD GNSS",            file.getHeader().getRunByName());
         Assertions.assertEquals("2019-10-28T00:56:48.0", file.getHeader().getCreationDateComponents().toStringWithoutUtcOffset(60, 1));
         Assertions.assertEquals("UTC",                   file.getHeader().getCreationTimeZone());
-        Assertions.assertEquals(18,                      file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(18,                      file.getHeader().getLeapSecondsGNSS());
 
         // Verify data
         checkFieldConversion(file);
@@ -923,7 +923,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals("https://doi.org/10.57677/BRD400DLR", file.getHeader().getDoi());
         Assertions.assertNull(file.getHeader().getLicense());
         Assertions.assertNull(file.getHeader().getStationInformation());
-        Assertions.assertEquals(18,                                   file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(18,                                   file.getHeader().getLeapSecondsGNSS());
         Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
 
         // Verify data
@@ -1048,7 +1048,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals("GPUT", file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionType());
         Assertions.assertEquals("GAUT", file.getHeader().getTimeSystemCorrections().get(1).getTimeSystemCorrectionType());
         Assertions.assertEquals("GPGA", file.getHeader().getTimeSystemCorrections().get(2).getTimeSystemCorrectionType());
-        Assertions.assertEquals(18,                      file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(18,                      file.getHeader().getLeapSecondsGNSS());
 
         // Verify data
         checkFieldConversion(file);
@@ -1108,7 +1108,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(-0.6554E+05,             file.getKlobucharBeta()[3],  Double.MIN_VALUE);
         Assertions.assertEquals("GPUT", file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionType());
         Assertions.assertEquals("GLUT", file.getHeader().getTimeSystemCorrections().get(1).getTimeSystemCorrectionType());
-        Assertions.assertEquals(14,                      file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(14,                      file.getHeader().getLeapSecondsGNSS());
 
         // Verify data
         checkFieldConversion(file);
@@ -1161,7 +1161,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals("JAVAD GNSS",            file.getHeader().getRunByName());
         Assertions.assertEquals("2020-06-10T00:32:46.0", file.getHeader().getCreationDateComponents().toStringWithoutUtcOffset(60, 1));
         Assertions.assertEquals("UTC",                   file.getHeader().getCreationTimeZone());
-        Assertions.assertEquals(18,                      file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(18,                      file.getHeader().getLeapSecondsGNSS());
 
         // Verify data
         checkFieldConversion(file);
@@ -1253,7 +1253,7 @@ public class NavigationFileParserTest {
         GNSSDate date = new GNSSDate(file.getHeader().getTimeSystemCorrections().get(0).getReferenceDate(), SatelliteSystem.GPS);
         Assertions.assertEquals(233472,                        date.getSecondsInWeek());
         Assertions.assertEquals(2148,                          date.getWeekNumber());
-        Assertions.assertEquals(18,                            file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(18,                            file.getHeader().getLeapSecondsGNSS());
 
         // Verify data
         checkFieldConversion(file);
@@ -1336,7 +1336,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(2.7344E-02,                    file.getNeQuickAlpha()[1], Double.MIN_VALUE);
         Assertions.assertEquals(-1.5869E-03,                   file.getNeQuickAlpha()[2], Double.MIN_VALUE);
         Assertions.assertEquals(0.0000E+00,                    file.getNeQuickAlpha()[3], Double.MIN_VALUE);
-        Assertions.assertEquals(18,                            file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(18,                            file.getHeader().getLeapSecondsGNSS());
 
         // Verify data
         checkFieldConversion(file);
@@ -1486,7 +1486,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals("https://doi.org/10.57677/BRD400DLR", file.getHeader().getDoi());
         Assertions.assertNull(file.getHeader().getLicense());
         Assertions.assertNull(file.getHeader().getStationInformation());
-        Assertions.assertEquals(18,                                   file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(18,                                   file.getHeader().getLeapSecondsGNSS());
         Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
 
         // Verify data
@@ -1522,7 +1522,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals("JAVAD GNSS",            file.getHeader().getRunByName());
         Assertions.assertEquals("2021-03-08T00:03:04.0", file.getHeader().getCreationDateComponents().toStringWithoutUtcOffset(60, 1));
         Assertions.assertEquals("UTC",                   file.getHeader().getCreationTimeZone());
-        Assertions.assertEquals(18,                      file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(18,                      file.getHeader().getLeapSecondsGNSS());
 
         // Verify data
         checkFieldConversion(file);
@@ -1596,7 +1596,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals("JAVAD GNSS",            file.getHeader().getRunByName());
         Assertions.assertEquals("2021-02-24T00:07:15.0", file.getHeader().getCreationDateComponents().toStringWithoutUtcOffset(60, 1));
         Assertions.assertEquals("UTC",                   file.getHeader().getCreationTimeZone());
-        Assertions.assertEquals(18,                      file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(18,                      file.getHeader().getLeapSecondsGNSS());
 
         // Verify data
         checkFieldConversion(file);
@@ -1672,7 +1672,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals("https://doi.org/10.57677/BRD400DLR", file.getHeader().getDoi());
         Assertions.assertNull(file.getHeader().getLicense());
         Assertions.assertNull(file.getHeader().getStationInformation());
-        Assertions.assertEquals(18,                                   file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(18,                                   file.getHeader().getLeapSecondsGNSS());
         Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
 
         // Verify data
@@ -1774,7 +1774,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals("https://doi.org/10.57677/BRD400DLR", file.getHeader().getDoi());
         Assertions.assertNull(file.getHeader().getLicense());
         Assertions.assertNull(file.getHeader().getStationInformation());
-        Assertions.assertEquals(18,                                   file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(18,                                   file.getHeader().getLeapSecondsGNSS());
         Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
 
         // Verify data
@@ -1867,7 +1867,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals("https://doi.org/10.57677/BRD400DLR", file.getHeader().getDoi());
         Assertions.assertNull(file.getHeader().getLicense());
         Assertions.assertNull(file.getHeader().getStationInformation());
-        Assertions.assertEquals(18,                                   file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(18,                                   file.getHeader().getLeapSecondsGNSS());
         Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
 
         // Verify data
@@ -1965,7 +1965,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(SatelliteSystem.GPS,                  file.getHeader().getSatelliteSystem());
         Assertions.assertEquals("CCRINEXN V1.6.0 UX",                 file.getHeader().getProgramName());
         Assertions.assertEquals("CDDIS",                              file.getHeader().getRunByName());
-        Assertions.assertEquals(18,                                   file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(18,                                   file.getHeader().getLeapSecondsGNSS());
 
         // Verify data
         checkFieldConversion(file);
@@ -2024,7 +2024,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(SatelliteSystem.GLONASS,              file.getHeader().getSatelliteSystem());
         Assertions.assertEquals("CCRINEXG V1.4 UX",                   file.getHeader().getProgramName());
         Assertions.assertEquals("CDDIS",                              file.getHeader().getRunByName());
-        Assertions.assertEquals(18,                                   file.getHeader().getNumberOfLeapSeconds());
+        Assertions.assertEquals(18,                                   file.getHeader().getLeapSecondsGNSS());
 
         // Verify data
         checkFieldConversion(file);

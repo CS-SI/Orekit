@@ -268,7 +268,7 @@ public class RinexObservationWriterTest {
         Assertions.assertEquals(first.getStationInformation(),     second.getStationInformation());
 
         // clock-obs header
-        Assertions.assertEquals(first.getLeapSeconds(),            second.getLeapSeconds());
+        Assertions.assertEquals(first.getLeapSecondsGNSS(),        second.getLeapSecondsGNSS());
         Assertions.assertEquals(first.getListAppliedDCBS().size(), second.getListAppliedDCBS().size());
         for (int i = 0; i < first.getListAppliedDCBS().size(); ++i) {
             checkDCB(first.getListAppliedDCBS().get(i), second.getListAppliedDCBS().get(i));

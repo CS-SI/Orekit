@@ -42,9 +42,6 @@ public abstract class RinexClockObsBaseHeader extends RinexBaseHeader {
     /** List of antenna center variation corrections. */
     private final List<AppliedPCVS> listAppliedPCVS;
 
-    /** Number of leap seconds since 6-Jan-1980. */
-    private int leapSeconds;
-
     /** Simple constructor.
      * @param fileType file type
      */
@@ -53,7 +50,6 @@ public abstract class RinexClockObsBaseHeader extends RinexBaseHeader {
         mapTypeObs      = new HashMap<>();
         listAppliedDCBS = new ArrayList<>();
         listAppliedPCVS = new ArrayList<>();
-        leapSeconds     = 0;
     }
 
     /** Set the number of observations for a satellite.
@@ -97,20 +93,6 @@ public abstract class RinexClockObsBaseHeader extends RinexBaseHeader {
      */
     public List<AppliedPCVS> getListAppliedPCVS() {
         return Collections.unmodifiableList(listAppliedPCVS);
-    }
-
-    /** Set the Number of leap seconds since 6-Jan-1980.
-     * @param leapSeconds Number of leap seconds since 6-Jan-1980
-     */
-    public void setLeapSeconds(final int leapSeconds) {
-        this.leapSeconds = leapSeconds;
-    }
-
-    /** Get the Number of leap seconds since 6-Jan-1980.
-     * @return Number of leap seconds since 6-Jan-1980
-     */
-    public int getLeapSeconds() {
-        return leapSeconds;
     }
 
 }

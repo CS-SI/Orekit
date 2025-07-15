@@ -211,8 +211,8 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
         }
 
         // LEAP SECONDS
-        if (header.getLeapSeconds() > 0) {
-            outputField(SIX_DIGITS_INTEGER, header.getLeapSeconds(), 6);
+        if (header.getLeapSecondsTAI() > 0) {
+            outputField(SIX_DIGITS_INTEGER, header.getLeapSecondsTAI(), 6);
             finishHeaderLine(CommonLabel.LEAP_SECONDS);
         }
 

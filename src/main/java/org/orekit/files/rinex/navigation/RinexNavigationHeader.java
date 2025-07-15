@@ -44,16 +44,12 @@ public class RinexNavigationHeader extends RinexBaseHeader {
     /** Number of merged files. */
     private int mergedFiles;
 
-    /** Current number of leap seconds. */
-    private int numberOfLeapSeconds;
-
     /** Simple constructor.
      */
     public RinexNavigationHeader() {
         super(RinexFileType.NAVIGATION);
         this.timeSystemCorrections = new ArrayList<>();
         this.mergedFiles           = -1;
-        this.numberOfLeapSeconds   = -1;
     }
 
     /** {@inheritDoc} */
@@ -138,22 +134,6 @@ public class RinexNavigationHeader extends RinexBaseHeader {
      */
     public void setMergedFiles(final int mergedFiles) {
         this.mergedFiles = mergedFiles;
-    }
-
-    /**
-     * Getter for the current number of leap seconds.
-     * @return the current number of leap seconds
-     */
-    public int getNumberOfLeapSeconds() {
-        return numberOfLeapSeconds;
-    }
-
-    /**
-     * Setter for the current number of leap seconds.
-     * @param numberOfLeapSeconds the number of leap seconds to set
-     */
-    public void setNumberOfLeapSeconds(final int numberOfLeapSeconds) {
-        this.numberOfLeapSeconds = numberOfLeapSeconds;
     }
 
     /** {@inheritDoc} */

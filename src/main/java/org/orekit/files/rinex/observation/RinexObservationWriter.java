@@ -528,8 +528,8 @@ public class RinexObservationWriter extends BaseRinexWriter<RinexObservationHead
         }
 
         // LEAP SECONDS
-        if (header.getLeapSeconds() > 0) {
-            outputField(SIX_DIGITS_INTEGER, header.getLeapSeconds(), 6);
+        if (header.getLeapSecondsGNSS() > 0) {
+            outputField(SIX_DIGITS_INTEGER, header.getLeapSecondsGNSS(), 6);
             if (header.getFormatVersion() >= 3.0) {
                 outputField(SIX_DIGITS_INTEGER, header.getLeapSecondsFuture(),  12);
                 outputField(SIX_DIGITS_INTEGER, header.getLeapSecondsWeekNum(), 18);

@@ -259,7 +259,7 @@ public class RinexObservationParserTest {
         Assertions.assertEquals(0.0,                    header.getEccentricities().getY(), 1.0e-4);
         Assertions.assertEquals(30.0,                   header.getInterval(), 1.0e-15);
         Assertions.assertFalse(header.getClockOffsetApplied());
-        Assertions.assertEquals(18,                     header.getLeapSeconds());
+        Assertions.assertEquals(18,                     header.getLeapSecondsGNSS());
         Assertions.assertEquals(loaded.getObservationDataSets().get(0).getRcvrClkOffset(),
                                 new AbsoluteDate(2017, 1, 11, TimeScalesFactory.getGPS()).durationFrom(header.getTFirstObs()),
                                 1.0e-15);
@@ -314,7 +314,7 @@ public class RinexObservationParserTest {
         Assertions.assertEquals(SatelliteSystem.GLONASS, header.getPhaseShiftCorrections().get(2).getSatelliteSystem());
         Assertions.assertEquals(PredefinedObservationType.L2C,      header.getPhaseShiftCorrections().get(2).getTypeObs());
         Assertions.assertEquals(-0.25000,                header.getPhaseShiftCorrections().get(2).getCorrection(), 1.0e-5);
-        Assertions.assertEquals( 0,                      header.getLeapSeconds());
+        Assertions.assertEquals( 0,                      header.getLeapSecondsGNSS());
         Assertions.assertEquals( 0,                      header.getLeapSecondsFuture());
         Assertions.assertEquals( 0,                      header.getLeapSecondsWeekNum());
         Assertions.assertEquals( 0,                      header.getLeapSecondsDayNum());
