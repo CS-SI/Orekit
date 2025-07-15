@@ -24,6 +24,7 @@ import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
+import org.hipparchus.util.Precision;
 import org.hipparchus.util.SinCos;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
@@ -218,13 +219,19 @@ public class KeplerianMotionCartesianUtility {
         final FieldVector3D<T>      pvM = position.crossProduct(velocity);
         final T muA                     = mu.multiply(a);
 
-        // compute mean anomaly
+        // check for circular case
         final T eSE              = position.dotProduct(velocity).divide(muA.sqrt());
         final T eCE              = r.divide(a).negate().add(1);
+        final T e = eCE.square().add(eSE.square()).sqrt();
+        if (e.getReal() < Precision.SAFE_MIN) {
+            final T meanMotion = mu.divide(a.square().multiply(a)).sqrt();
+            final T angle = meanMotion.multiply(dt);
+            final FieldRotation<T> rotation = new FieldRotation<>(pvM, angle, RotationConvention.VECTOR_OPERATOR);
+            return new FieldPVCoordinates<>(rotation.applyTo(position), rotation.applyTo(velocity));
+        }
+
         final T E0               = FastMath.atan2(eSE, eCE);
         final T M0               = E0.subtract(eSE);
-
-        final T e                       = eCE.square().add(eSE.square()).sqrt();
         final T ePlusOne = e.add(1);
         final T oneMinusE = e.negate().add(1);
         final T sqrt                    = ePlusOne.divide(oneMinusE).sqrt();
