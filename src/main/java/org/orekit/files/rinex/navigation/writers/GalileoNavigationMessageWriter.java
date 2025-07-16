@@ -30,7 +30,8 @@ public class GalileoNavigationMessageWriter
 
     /** {@inheritDoc} */
     @Override
-    public void writeMessage(final GalileoNavigationMessage message, RinexNavigationWriter writer)
+    public void writeMessage(final String identifier, final GalileoNavigationMessage message,
+                             final RinexNavigationWriter writer)
         throws IOException {
         // TODO
     }

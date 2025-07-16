@@ -21,6 +21,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScales;
+import org.orekit.time.TimeStamped;
 
 /**
  * Base class for GNSS navigation messages.
@@ -36,7 +37,7 @@ import org.orekit.time.TimeScales;
  */
 public abstract class AbstractNavigationMessage<O extends AbstractNavigationMessage<O>>
     extends AbstractAlmanac<O>
-    implements GnssMessage {
+    implements TimeStamped {
 
     /** Mean Motion Difference from Computed Value. */
     private double deltaN0;
@@ -110,14 +111,18 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
         this.deltaN0 = deltaN0;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Getter for the time of clock epoch.
+     * @return the time of clock epoch
+     */
     public AbsoluteDate getEpochToc() {
         return epochToc;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Setter for the time of clock epoch.
+     * @param epochToc the epoch to set
+     */
     public void setEpochToc(final AbsoluteDate epochToc) {
         this.epochToc = epochToc;
     }

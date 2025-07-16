@@ -21,7 +21,7 @@ import org.orekit.propagation.analytical.gnss.data.NavICL1NVNavigationMessage;
 
 import java.io.IOException;
 
-/** Write for GPS civilian messages.
+/** Write for NavIC L1NV messages.
  * @author Luc Maisonobe
  * @since 14.0
  */
@@ -30,7 +30,8 @@ public class NavICL1NVNavigationMessageWriter
 
     /** {@inheritDoc} */
     @Override
-    public void writeMessage(final NavICL1NVNavigationMessage message, RinexNavigationWriter writer)
+    public void writeMessage(final String identifier, final NavICL1NVNavigationMessage message,
+                             final RinexNavigationWriter writer)
         throws IOException {
         // TODO
     }

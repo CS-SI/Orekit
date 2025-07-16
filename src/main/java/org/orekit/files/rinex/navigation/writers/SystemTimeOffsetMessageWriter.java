@@ -17,20 +17,20 @@
 package org.orekit.files.rinex.navigation.writers;
 
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
-import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
+import org.orekit.files.rinex.navigation.SystemTimeOffsetMessage;
 
 import java.io.IOException;
 
-/** Write for Beidou legacy messages.
+/** Write for System time offset messages.
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class BeidouLegacyNavigationMessageWriter
-    implements NavigationMessageWriter<BeidouLegacyNavigationMessage> {
+public class SystemTimeOffsetMessageWriter
+    implements NavigationMessageWriter<SystemTimeOffsetMessage> {
 
     /** {@inheritDoc} */
     @Override
-    public void writeMessage(final String identifier, final BeidouLegacyNavigationMessage message,
+    public void writeMessage(final String identifier, final SystemTimeOffsetMessage message,
                              final RinexNavigationWriter writer)
         throws IOException {
         // TODO

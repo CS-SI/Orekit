@@ -30,7 +30,8 @@ public class QZSSCivilianNavigationMessageWriter
 
     /** {@inheritDoc} */
     @Override
-    public void writeMessage(final QZSSCivilianNavigationMessage message, RinexNavigationWriter writer)
+    public void writeMessage(final String identifier, final QZSSCivilianNavigationMessage message,
+                             final RinexNavigationWriter writer)
         throws IOException {
         // TODO
     }

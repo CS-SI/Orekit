@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStamped;
 
 /**
  * Base class for ephemeris-based navigation messages.
@@ -26,7 +27,7 @@ import org.orekit.time.AbsoluteDate;
  * @see GLONASSNavigationMessage
  * @see SBASNavigationMessage
  */
-public abstract class AbstractEphemerisMessage implements GnssMessage{
+public abstract class AbstractEphemerisMessage implements TimeStamped {
 
     /** Ephemeris reference epoch. */
     private AbsoluteDate date;
@@ -88,14 +89,18 @@ public abstract class AbstractEphemerisMessage implements GnssMessage{
         this.date = date;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Getter for the time of clock epoch.
+     * @return the time of clock epoch
+     */
     public AbsoluteDate getEpochToc() {
         return epochToc;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Setter for the time of clock epoch.
+     * @param epochToc the epoch to set
+     */
     public void setEpochToc(final AbsoluteDate epochToc) {
         this.epochToc = epochToc;
     }

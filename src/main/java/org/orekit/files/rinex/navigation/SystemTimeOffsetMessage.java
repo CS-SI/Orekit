@@ -19,13 +19,14 @@ package org.orekit.files.rinex.navigation;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStamped;
 
 /**
  * Container for data contained in a System Time Offset navigation message.
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class SystemTimeOffsetMessage extends TypeSvMessage {
+public class SystemTimeOffsetMessage extends TypeSvMessage implements TimeStamped {
 
     /** Reference epoch. */
     private AbsoluteDate referenceEpoch;
@@ -61,6 +62,12 @@ public class SystemTimeOffsetMessage extends TypeSvMessage {
      */
     public SystemTimeOffsetMessage(final SatelliteSystem system, final int prn, final String navigationMessageType) {
         super(system, prn, navigationMessageType);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AbsoluteDate getDate() {
+        return referenceEpoch;
     }
 
     /** Get the reference epoch.

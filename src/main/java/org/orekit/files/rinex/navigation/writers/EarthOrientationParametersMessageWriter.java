@@ -16,21 +16,21 @@
  */
 package org.orekit.files.rinex.navigation.writers;
 
+import org.orekit.files.rinex.navigation.EarthOrientationParameterMessage;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
-import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
 
 import java.io.IOException;
 
-/** Write for Beidou legacy messages.
+/** Write for Earth Orientation Parameters messages.
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class BeidouLegacyNavigationMessageWriter
-    implements NavigationMessageWriter<BeidouLegacyNavigationMessage> {
+public class EarthOrientationParametersMessageWriter
+    implements NavigationMessageWriter<EarthOrientationParameterMessage> {
 
     /** {@inheritDoc} */
     @Override
-    public void writeMessage(final String identifier, final BeidouLegacyNavigationMessage message,
+    public void writeMessage(final String identifier, final EarthOrientationParameterMessage message,
                              final RinexNavigationWriter writer)
         throws IOException {
         // TODO

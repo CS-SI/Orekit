@@ -17,7 +17,7 @@
 package org.orekit.files.rinex.navigation.writers;
 
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
-import org.orekit.propagation.analytical.gnss.data.GnssMessage;
+import org.orekit.time.TimeStamped;
 
 import java.io.IOException;
 
@@ -26,13 +26,14 @@ import java.io.IOException;
  * @author Luc Maisonobe
  * @since 14.0
  */
-public interface NavigationMessageWriter<T extends GnssMessage> {
+public interface NavigationMessageWriter<T extends TimeStamped> {
 
     /** Write a navigation message.
+     * @param identifier identifier
      * @param message navigation message to write
      * @param writer global file writer
      * @throws IOException if an I/O error occurs.
      */
-    void writeMessage(final T message, RinexNavigationWriter writer) throws IOException;
+    void writeMessage(final String identifier, final T message, RinexNavigationWriter writer) throws IOException;
 
 }

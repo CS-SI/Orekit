@@ -14,27 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.analytical.gnss.data;
+package org.orekit.files.rinex.navigation.writers;
 
-import org.orekit.time.AbsoluteDate;
+import org.orekit.files.rinex.navigation.IonosphereBDGIMMessage;
+import org.orekit.files.rinex.navigation.RinexNavigationWriter;
 
-/**
- * Interface for navigation messages.
+import java.io.IOException;
+
+/** Write for BDGIM model ionospheric messages.
  * @author Luc Maisonobe
  * @since 14.0
  */
-public interface GnssMessage {
+public class BDGIMMessageWriter
+    implements NavigationMessageWriter<IonosphereBDGIMMessage> {
 
-    /**
-     * Getter for the time of clock epoch.
-     * @return the time of clock epoch
-     */
-    AbsoluteDate getEpochToc();
-
-    /**
-     * Setter for the time of clock epoch.
-     * @param epochToc the epoch to set
-     */
-    void setEpochToc(final AbsoluteDate epochToc);
+    /** {@inheritDoc} */
+    @Override
+    public void writeMessage(final String identifier, final IonosphereBDGIMMessage message,
+                             final RinexNavigationWriter writer)
+        throws IOException {
+        // TODO
+    }
 
 }

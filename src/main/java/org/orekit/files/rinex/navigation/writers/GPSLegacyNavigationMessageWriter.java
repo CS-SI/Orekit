@@ -29,7 +29,8 @@ public class GPSLegacyNavigationMessageWriter implements NavigationMessageWriter
 
     /** {@inheritDoc} */
     @Override
-    public void writeMessage(final GPSLegacyNavigationMessage message, RinexNavigationWriter writer)
+    public void writeMessage(final String identifier, final GPSLegacyNavigationMessage message,
+                             final RinexNavigationWriter writer)
         throws IOException {
         // TODO
     }

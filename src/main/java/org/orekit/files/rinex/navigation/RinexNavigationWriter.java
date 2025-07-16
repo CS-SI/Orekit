@@ -19,27 +19,32 @@ package org.orekit.files.rinex.navigation;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
+import org.orekit.files.rinex.navigation.writers.BDGIMMessageWriter;
 import org.orekit.files.rinex.navigation.writers.BeidouCivilianNavigationMessageWriter;
 import org.orekit.files.rinex.navigation.writers.BeidouLegacyNavigationMessageWriter;
+import org.orekit.files.rinex.navigation.writers.EarthOrientationParametersMessageWriter;
 import org.orekit.files.rinex.navigation.writers.GPSCivilianNavigationMessageWriter;
 import org.orekit.files.rinex.navigation.writers.GPSLegacyNavigationMessageWriter;
 import org.orekit.files.rinex.navigation.writers.GalileoNavigationMessageWriter;
 import org.orekit.files.rinex.navigation.writers.GlonassNavigationMessageWriter;
+import org.orekit.files.rinex.navigation.writers.KlobucharMessageWriter;
 import org.orekit.files.rinex.navigation.writers.NavICL1NVNavigationMessageWriter;
 import org.orekit.files.rinex.navigation.writers.NavICLegacyNavigationMessageWriter;
 import org.orekit.files.rinex.navigation.writers.NavigationMessageWriter;
+import org.orekit.files.rinex.navigation.writers.NequickGMessageWriter;
 import org.orekit.files.rinex.navigation.writers.QZSSCivilianNavigationMessageWriter;
 import org.orekit.files.rinex.navigation.writers.QZSSLegacyNavigationMessageWriter;
 import org.orekit.files.rinex.navigation.writers.SBASNavigationMessageWriter;
+import org.orekit.files.rinex.navigation.writers.SystemTimeOffsetMessageWriter;
 import org.orekit.files.rinex.observation.ObservationLabel;
 import org.orekit.files.rinex.section.CommonLabel;
 import org.orekit.files.rinex.utils.BaseRinexWriter;
 import org.orekit.gnss.PredefinedObservationType;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.propagation.analytical.gnss.data.GnssMessage;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
+import org.orekit.time.TimeStamped;
 import org.orekit.utils.formatting.FastLongFormatter;
 
 import java.io.IOException;
@@ -54,6 +59,46 @@ import java.util.function.BiFunction;
  * @since 14.0
  */
 public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader> {
+
+    /** Identifier for system time offset messages.
+     * <p>
+     * The identifier is prefixed with "00_" so all messages that are not related
+     * to any satellites are grouped together before satellite messages
+     * </p>
+     */
+    private static final String STO_IDENTIFIER = "00_STO";
+
+    /** Identifier for Earth Orientation Parameters messages.
+     * <p>
+     * The identifier is prefixed with "00_" so all messages that are not related
+     * to any satellites are grouped together before satellite messages
+     * </p>
+     */
+    private static final String EOP_IDENTIFIER = "00_EOP";
+
+    /** Identifier for Klobuchar model ionospheric messages.
+     * <p>
+     * The identifier is prefixed with "00_" so all messages that are not related
+     * to any satellites are grouped together before satellite messages
+     * </p>
+     */
+    private static final String KLOBUCHAR_IDENTIFIER = "00_IONO_KLOBUCHAR";
+
+    /** Identifier for NeQuick G ionospheric messages.
+     * <p>
+     * The identifier is prefixed with "00_" so all messages that are not related
+     * to any satellites are grouped together before satellite messages
+     * </p>
+     */
+    private static final String NEQUICK_IDENTIFIER = "00_IONO_NEQUICK";
+
+    /** Identifier for BDGIM ionospheric messages.
+     * <p>
+     * The identifier is prefixed with "00_" so all messages that are not related
+     * to any satellites are grouped together before satellite messages
+     * </p>
+     */
+    private static final String BDGIM_IDENTIFIER = "00_IONO_BDGIM";
 
     /** Format for one 9 digits integer field. */
     protected static final FastLongFormatter NINE_DIGITS_INTEGER = new FastLongFormatter(9, false);
@@ -113,6 +158,8 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
 
         // prepare chronological iteration
         final List<PendingMessages<?>> pending = new ArrayList<>();
+
+        // messages associated to satellites
         pending.addAll(createHandlers(rinexNavigation.getGPSLegacyNavigationMessages(),
                                       new GPSLegacyNavigationMessageWriter()));
         pending.addAll(createHandlers(rinexNavigation.getGPSCivilianNavigationMessages(),
@@ -135,7 +182,20 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
                                       new GlonassNavigationMessageWriter()));
         pending.addAll(createHandlers(rinexNavigation.getSBASNavigationMessages(),
                                       new SBASNavigationMessageWriter()));
-        pending.sort(Comparator.comparing(pl -> pl.satId));
+
+        // messages independent of satellites
+        pending.add(new PendingMessages<>(STO_IDENTIFIER, new SystemTimeOffsetMessageWriter(),
+                                          rinexNavigation.getSystemTimeOffsets()));
+        pending.add(new PendingMessages<>(EOP_IDENTIFIER, new EarthOrientationParametersMessageWriter(),
+                                          rinexNavigation.getEarthOrientationParameters()));
+        pending.add(new PendingMessages<>(KLOBUCHAR_IDENTIFIER, new KlobucharMessageWriter(),
+                                          rinexNavigation.getKlobucharMessages()));
+        pending.add(new PendingMessages<>(NEQUICK_IDENTIFIER, new NequickGMessageWriter(),
+                                          rinexNavigation.getNequickGMessages()));
+        pending.add(new PendingMessages<>(BDGIM_IDENTIFIER, new BDGIMMessageWriter(),
+                                          rinexNavigation.getBDGIMMessages()));
+
+        pending.sort(Comparator.comparing(pl -> pl.identifier));
 
         // write messages in chronological order
         for (AbsoluteDate date = earliest(pending); date.isFinite(); date = earliest(pending)) {
@@ -152,7 +212,7 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
      * @param messageWriter writer for the current message type
      * @return list of handlers for one message type
      */
-    private <T extends GnssMessage> List<PendingMessages<T>> createHandlers(final Map<String, List<T>> map,
+    private <T extends TimeStamped> List<PendingMessages<T>> createHandlers(final Map<String, List<T>> map,
                                                                             final NavigationMessageWriter<T> messageWriter) {
         final List<PendingMessages<T>> handlers = new ArrayList<>();
         for (final Map.Entry<String, List<T>> entry : map.entrySet()) {
@@ -188,14 +248,11 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
 
         super.writeHeader(header, RinexNavigationHeader.LABEL_INDEX);
 
-        final String timeScaleName;
         final TimeScale built = timeScaleBuilder.apply(header.getSatelliteSystem(), timeScales);
         if (built != null) {
-            timeScale     = built;
-            timeScaleName = "   ";
+            timeScale = built;
         } else {
-            timeScale     = timeScaleBuilder.apply(SatelliteSystem.GPS, timeScales);
-            timeScaleName = timeScale.getName();
+            timeScale = timeScaleBuilder.apply(SatelliteSystem.GPS, timeScales);
         }
 
         // RINEX VERSION / TYPE
@@ -249,13 +306,13 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
     /** Container for navigation messages iterator.
      * @param <T> type of the navigation message
      */
-    private class PendingMessages<T extends GnssMessage> {
+    private class PendingMessages<T extends TimeStamped> {
 
         /** Threshold to consider dates are equal. */
         private static final double EPS = 1.0e-9;
 
-        /** Satellite id. */
-        private final String satId;
+        /** Identifier. */
+        private final String identifier;
 
         /** Writer for the current message type. */
         private final NavigationMessageWriter<T> messageWriter;
@@ -267,12 +324,13 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
         private int index;
 
         /** Simple constructor.
-         * @param satId satellite ID
+         * @param identifier identifier
          * @param messageWriter writer for the current message type
          * @param messages navigation messages
          */
-        PendingMessages(final String satId, final NavigationMessageWriter<T> messageWriter, final List<T> messages) {
-            this.satId         = satId;
+        PendingMessages(final String identifier, final NavigationMessageWriter<T> messageWriter,
+                        final List<T> messages) {
+            this.identifier    = identifier;
             this.messageWriter = messageWriter;
             this.messages      = messages;
             this.index         = 0;
@@ -284,9 +342,9 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
          * @exception IOException if an I/O error occurs.
          */
         void writeMessageAtDate(final AbsoluteDate date) throws IOException {
-            if (index < messages.size() && FastMath.abs(date.durationFrom(messages.get(index).getEpochToc())) <= EPS) {
+            if (index < messages.size() && FastMath.abs(date.durationFrom(messages.get(index))) <= EPS) {
                 // write next entry and advance
-                messageWriter.writeMessage(messages.get(index++), RinexNavigationWriter.this);
+                messageWriter.writeMessage(identifier, messages.get(index++), RinexNavigationWriter.this);
             }
         }
 
@@ -294,7 +352,7 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
          * @return date of next entry
          */
         AbsoluteDate nextDate() {
-            return index <  messages.size() ? messages.get(index).getEpochToc() : AbsoluteDate.FUTURE_INFINITY;
+            return index <  messages.size() ? messages.get(index).getDate() : AbsoluteDate.FUTURE_INFINITY;
         }
 
     }

@@ -30,7 +30,8 @@ public class BeidouCivilianNavigationMessageWriter
 
     /** {@inheritDoc} */
     @Override
-    public void writeMessage(final BeidouCivilianNavigationMessage message, RinexNavigationWriter writer)
+    public void writeMessage(final String identifier, final BeidouCivilianNavigationMessage message,
+                             final RinexNavigationWriter writer)
         throws IOException {
         // TODO
     }

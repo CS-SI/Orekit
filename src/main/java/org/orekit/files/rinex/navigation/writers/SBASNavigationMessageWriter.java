@@ -30,7 +30,8 @@ public class SBASNavigationMessageWriter
 
     /** {@inheritDoc} */
     @Override
-    public void writeMessage(final SBASNavigationMessage message, RinexNavigationWriter writer)
+    public void writeMessage(final String identifier, final SBASNavigationMessage message,
+                             final RinexNavigationWriter writer)
         throws IOException {
         // TODO
     }

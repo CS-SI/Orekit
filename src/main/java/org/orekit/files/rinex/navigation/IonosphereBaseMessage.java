@@ -18,12 +18,13 @@ package org.orekit.files.rinex.navigation;
 
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStamped;
 
 /** Base container for data contained in a ionosphere message.
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class IonosphereBaseMessage extends TypeSvMessage {
+public class IonosphereBaseMessage extends TypeSvMessage implements TimeStamped {
 
     /** Transmit time. */
     private AbsoluteDate transmitTime;
@@ -35,6 +36,12 @@ public class IonosphereBaseMessage extends TypeSvMessage {
      */
     public IonosphereBaseMessage(final SatelliteSystem system, final int prn, final String navigationMessageType) {
         super(system, prn, navigationMessageType);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AbsoluteDate getDate() {
+        return transmitTime;
     }
 
     /** Get the transmit time.

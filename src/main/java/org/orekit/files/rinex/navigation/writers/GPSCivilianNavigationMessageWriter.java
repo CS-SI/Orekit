@@ -30,7 +30,8 @@ public class GPSCivilianNavigationMessageWriter
 
     /** {@inheritDoc} */
     @Override
-    public void writeMessage(final GPSCivilianNavigationMessage message, RinexNavigationWriter writer)
+    public void writeMessage(final String identifier, final GPSCivilianNavigationMessage message,
+                             final RinexNavigationWriter writer)
         throws IOException {
         // TODO
     }

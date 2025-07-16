@@ -18,12 +18,13 @@ package org.orekit.files.rinex.navigation;
 
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStamped;
 
 /** Container for data contained in a Earth Orientation Parameter navigation message.
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class EarthOrientationParameterMessage extends TypeSvMessage {
+public class EarthOrientationParameterMessage extends TypeSvMessage implements TimeStamped {
 
     /** Reference epoch. */
     private AbsoluteDate referenceEpoch;
@@ -68,6 +69,12 @@ public class EarthOrientationParameterMessage extends TypeSvMessage {
      */
     public EarthOrientationParameterMessage(final SatelliteSystem system, final int prn, final String navigationMessageType) {
         super(system, prn, navigationMessageType);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AbsoluteDate getDate() {
+        return referenceEpoch;
     }
 
     /** Get the reference epoch.

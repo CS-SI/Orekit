@@ -21,7 +21,7 @@ import org.orekit.propagation.analytical.gnss.data.NavICLegacyNavigationMessage;
 
 import java.io.IOException;
 
-/** Write for GPS legacy messages.
+/** Write for NavIC legacy messages.
  * @author Luc Maisonobe
  * @since 14.0
  */
@@ -30,7 +30,8 @@ public class NavICLegacyNavigationMessageWriter
 
     /** {@inheritDoc} */
     @Override
-    public void writeMessage(final NavICLegacyNavigationMessage message, RinexNavigationWriter writer)
+    public void writeMessage(final String identifier, final NavICLegacyNavigationMessage message,
+                             final RinexNavigationWriter writer)
         throws IOException {
         // TODO
     }

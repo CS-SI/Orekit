@@ -30,7 +30,8 @@ public class GlonassNavigationMessageWriter
 
     /** {@inheritDoc} */
     @Override
-    public void writeMessage(final GLONASSNavigationMessage message, RinexNavigationWriter writer)
+    public void writeMessage(final String identifier, final GLONASSNavigationMessage message,
+                             final RinexNavigationWriter writer)
         throws IOException {
         // TODO
     }
