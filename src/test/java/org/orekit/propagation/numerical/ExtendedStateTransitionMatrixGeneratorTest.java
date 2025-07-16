@@ -24,8 +24,8 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.ode.ODEIntegrator;
-import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -445,6 +445,10 @@ class ExtendedStateTransitionMatrixGeneratorTest {
         // THEN
         compareRadiationCoefficientGradientWithFiniteDifferences(shadowModel, crossSection, coefficientValue,
                 targetDate, jacobianMatrix);
+        final RealMatrix stm = harvester.getStateTransitionMatrix(state);
+        for (int i = 0; i < 6; i++) {
+            Assertions.assertNotEquals(0., stm.getEntry(i, 6));
+        }
     }
 
     private static void compareRadiationCoefficientGradientWithFiniteDifferences(
