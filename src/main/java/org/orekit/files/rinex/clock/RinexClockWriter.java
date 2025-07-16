@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /** Writer for Rinex clock file.
@@ -357,7 +356,7 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
                         outputField(' ', 45);
                     }
                     if (clock.getClockConstraint() != 0.0) {
-                        write1912(clock.getClockConstraint());
+                        outputFieldE1912(clock.getClockConstraint());
                     }
                     finishHeaderLine(ClockLabel.ANALYSIS_CLK_REF);
                 }
@@ -423,14 +422,6 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
 
     }
 
-    /** Append a number with e12.12 format.
-     * @param x number to write
-     * @exception IOException if an I/O error occurs.
-     */
-    private void write1912(final double x) throws IOException {
-        outputField(String.format(Locale.US, "%19.12e", x), getColumn() + 19, true);
-    }
-
     /** Write a clock data line.
      * @param clockDataLine clock data line to write
      * @exception IOException if an I/O error occurs.
@@ -455,22 +446,22 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
             outputField(TEN_SIX_DIGITS_FLOAT, epoch.getTime().getSecond(), 34);
             outputField(THREE_DIGITS_INTEGER, clockDataLine.getNumberOfValues(), 37);
             outputField(' ', 40);
-            write1912(clockDataLine.getClockBias());
+            outputFieldE1912(clockDataLine.getClockBias());
             if (clockDataLine.getNumberOfValues() > 1) {
                 outputField(' ', 60);
-                write1912(clockDataLine.getClockBiasSigma());
+                outputFieldE1912(clockDataLine.getClockBiasSigma());
                 if (clockDataLine.getNumberOfValues() > 2) {
                     finishLine();
-                    write1912(clockDataLine.getClockRate());
+                    outputFieldE1912(clockDataLine.getClockRate());
                     if (clockDataLine.getNumberOfValues() > 3) {
                         outputField(' ', 20);
-                        write1912(clockDataLine.getClockRateSigma());
+                        outputFieldE1912(clockDataLine.getClockRateSigma());
                         if (clockDataLine.getNumberOfValues() > 4) {
                             outputField(' ', 40);
-                            write1912(clockDataLine.getClockAcceleration());
+                            outputFieldE1912(clockDataLine.getClockAcceleration());
                             if (clockDataLine.getNumberOfValues() > 5) {
                                 outputField(' ', 60);
-                                write1912(clockDataLine.getClockAccelerationSigma());
+                                outputFieldE1912(clockDataLine.getClockAccelerationSigma());
                             }
                         }
                     }
@@ -496,23 +487,23 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
             outputField(' ', 40);
             outputField(TWO_DIGITS_INTEGER, clockDataLine.getNumberOfValues(), 42);
             outputField(' ', 45);
-            write1912(clockDataLine.getClockBias());
+            outputFieldE1912(clockDataLine.getClockBias());
             if (clockDataLine.getNumberOfValues() > 1) {
                 outputField(' ', 66);
-                write1912(clockDataLine.getClockBiasSigma());
+                outputFieldE1912(clockDataLine.getClockBiasSigma());
                 if (clockDataLine.getNumberOfValues() > 2) {
                     finishLine();
                     outputField(' ', 3);
-                    write1912(clockDataLine.getClockRate());
+                    outputFieldE1912(clockDataLine.getClockRate());
                     if (clockDataLine.getNumberOfValues() > 3) {
                         outputField(' ', 24);
-                        write1912(clockDataLine.getClockRateSigma());
+                        outputFieldE1912(clockDataLine.getClockRateSigma());
                         if (clockDataLine.getNumberOfValues() > 4) {
                             outputField(' ', 45);
-                            write1912(clockDataLine.getClockAcceleration());
+                            outputFieldE1912(clockDataLine.getClockAcceleration());
                             if (clockDataLine.getNumberOfValues() > 5) {
                                 outputField(' ', 66);
-                                write1912(clockDataLine.getClockAccelerationSigma());
+                                outputFieldE1912(clockDataLine.getClockAccelerationSigma());
                             }
                         }
                     }

@@ -41,6 +41,7 @@ import org.orekit.files.rinex.section.CommonLabel;
 import org.orekit.files.rinex.utils.BaseRinexWriter;
 import org.orekit.gnss.PredefinedObservationType;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
@@ -248,12 +249,8 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
 
         super.writeHeader(header, RinexNavigationHeader.LABEL_INDEX);
 
-        final TimeScale built = timeScaleBuilder.apply(header.getSatelliteSystem(), timeScales);
-        if (built != null) {
-            timeScale = built;
-        } else {
-            timeScale = timeScaleBuilder.apply(SatelliteSystem.GPS, timeScales);
-        }
+        final TimeScale built = getTimeScale(header.getSatelliteSystem());
+        timeScale = built != null ? built : getTimeScale(SatelliteSystem.GPS);
 
         // RINEX VERSION / TYPE
         outputField(NINE_TWO_DIGITS_FLOAT, header.getFormatVersion(), 9);
@@ -301,6 +298,22 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
         // END OF HEADER
         writeHeaderLine("", CommonLabel.END);
 
+    }
+
+    /** Get time scale for a time system.
+     * @param system satellite system
+     * @return time scale for the specified system
+     */
+    public TimeScale getTimeScale(final TimeSystem system) {
+        return system.getTimeScale(timeScales);
+    }
+
+    /** Get time scale for a satellite system.
+     * @param system satellite system
+     * @return time scale for the specified system
+     */
+    public TimeScale getTimeScale(final SatelliteSystem system) {
+        return timeScaleBuilder.apply(system, timeScales);
     }
 
     /** Container for navigation messages iterator.

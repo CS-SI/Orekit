@@ -30,6 +30,7 @@ import org.orekit.utils.formatting.FastLongFormatter;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 /** Base write for Rinex files.
  * @param <T> type of the header
@@ -39,25 +40,25 @@ import java.util.List;
 public abstract class BaseRinexWriter<T extends RinexBaseHeader> {
 
     /** Format for one 2 digits integer field. */
-    protected static final FastLongFormatter TWO_DIGITS_INTEGER = new FastLongFormatter(2, false);
+    public static final FastLongFormatter TWO_DIGITS_INTEGER = new FastLongFormatter(2, false);
 
     /** Format for one 2 digits integer field. */
-    protected static final FastLongFormatter PADDED_TWO_DIGITS_INTEGER = new FastLongFormatter(2, true);
+    public static final FastLongFormatter PADDED_TWO_DIGITS_INTEGER = new FastLongFormatter(2, true);
 
     /** Format for one 3 digits integer field. */
-    protected static final FastLongFormatter THREE_DIGITS_INTEGER = new FastLongFormatter(3, false);
+    public static final FastLongFormatter THREE_DIGITS_INTEGER = new FastLongFormatter(3, false);
 
     /** Format for one 4 digits integer field. */
-    protected static final FastLongFormatter FOUR_DIGITS_INTEGER = new FastLongFormatter(4, false);
+    public static final FastLongFormatter FOUR_DIGITS_INTEGER = new FastLongFormatter(4, false);
 
     /** Format for one 4 digits integer field. */
-    protected static final FastLongFormatter PADDED_FOUR_DIGITS_INTEGER = new FastLongFormatter(4, true);
+    public static final FastLongFormatter PADDED_FOUR_DIGITS_INTEGER = new FastLongFormatter(4, true);
 
     /** Format for one 6 digits integer field. */
-    protected static final FastLongFormatter SIX_DIGITS_INTEGER = new FastLongFormatter(6, false);
+    public static final FastLongFormatter SIX_DIGITS_INTEGER = new FastLongFormatter(6, false);
 
     /** Format for one 9.2 digits float field. */
-    protected static final FastDoubleFormatter NINE_TWO_DIGITS_FLOAT = new FastDoubleFormatter(9, 2);
+    public static final FastDoubleFormatter NINE_TWO_DIGITS_FLOAT = new FastDoubleFormatter(9, 2);
 
     /** Destination of generated output. */
     private final Appendable output;
@@ -143,7 +144,7 @@ public abstract class BaseRinexWriter<T extends RinexBaseHeader> {
     /** Finish one line.
      * @throws IOException if an I/O error occurs.
      */
-    protected void finishLine() throws IOException {
+    public void finishLine() throws IOException {
 
         // pending line
         output.append(System.lineSeparator());
@@ -229,7 +230,7 @@ public abstract class BaseRinexWriter<T extends RinexBaseHeader> {
      * @param next target column for next field
      * @throws IOException if an I/O error occurs.
      */
-    protected void outputField(final char c, final int next) throws IOException {
+    public void outputField(final char c, final int next) throws IOException {
         outputField(Character.toString(c), next, false);
     }
 
@@ -239,7 +240,7 @@ public abstract class BaseRinexWriter<T extends RinexBaseHeader> {
      * @param next target column for next field
      * @throws IOException if an I/O error occurs.
      */
-    protected void outputField(final FastLongFormatter formatter, final int value, final int next) throws IOException {
+    public void outputField(final FastLongFormatter formatter, final int value, final int next) throws IOException {
         outputField(formatter.toString(value), next, false);
     }
 
@@ -249,7 +250,7 @@ public abstract class BaseRinexWriter<T extends RinexBaseHeader> {
      * @param next target column for next field
      * @throws IOException if an I/O error occurs.
      */
-    protected void outputField(final FastLongFormatter formatter, final long value, final int next) throws IOException {
+    public void outputField(final FastLongFormatter formatter, final long value, final int next) throws IOException {
         outputField(formatter.toString(value), next, false);
     }
 
@@ -259,7 +260,7 @@ public abstract class BaseRinexWriter<T extends RinexBaseHeader> {
      * @param next target column for next field
      * @throws IOException if an I/O error occurs.
      */
-    protected void outputField(final FastDoubleFormatter formatter, final double value, final int next) throws IOException {
+    public void outputField(final FastDoubleFormatter formatter, final double value, final int next) throws IOException {
         if (Double.isNaN(value)) {
             // NaN values are replaced by blank fields
             outputField("", next, true);
@@ -268,13 +269,21 @@ public abstract class BaseRinexWriter<T extends RinexBaseHeader> {
         }
     }
 
+    /** Append a number with e19.12 format.
+     * @param x number to write
+     * @exception IOException if an I/O error occurs.
+     */
+    public void outputFieldE1912(final double x) throws IOException {
+        outputField(String.format(Locale.US, "%19.12e", x), getColumn() + 19, true);
+    }
+
     /** Output one field.
      * @param field field to output
      * @param next target column for next field
      * @param leftJustified if true, field is left-justified
      * @throws IOException if an I/O error occurs.
      */
-    protected void outputField(final String field, final int next, final boolean leftJustified) throws IOException {
+    public void outputField(final String field, final int next, final boolean leftJustified) throws IOException {
         final int padding = next - (field == null ? 0 : field.length()) - column;
         if (padding < 0) {
             throw new OrekitException(OrekitMessages.FIELD_TOO_LONG, field, next - column);

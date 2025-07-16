@@ -16,8 +16,12 @@
  */
 package org.orekit.files.rinex.navigation.writers;
 
+import org.hipparchus.util.FastMath;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
 import org.orekit.files.rinex.navigation.SystemTimeOffsetMessage;
+import org.orekit.files.rinex.utils.BaseRinexWriter;
+import org.orekit.time.DateTimeComponents;
+import org.orekit.time.TimeScale;
 
 import java.io.IOException;
 
@@ -33,7 +37,46 @@ public class SystemTimeOffsetMessageWriter
     public void writeMessage(final String identifier, final SystemTimeOffsetMessage message,
                              final RinexNavigationWriter writer)
         throws IOException {
-        // TODO
+
+        // TYPE / SV / MSG
+        writer.outputField("> STO", 6, true);
+        writer.outputField(identifier, 10, true);
+        writer.outputField(message.getNavigationMessageType(), 11, true);
+        writer.finishLine();
+
+        // EPOCH / SYSTEM CORR TYPE / SBAS ID / UTC ID
+        final TimeScale timeScale = writer.getTimeScale(message.getSystem());
+        final DateTimeComponents dtc = message.getReferenceEpoch().getComponents(timeScale).roundIfNeeded(60, 0);
+        writer.outputField(' ', 4);
+        writer.outputField(BaseRinexWriter.FOUR_DIGITS_INTEGER, dtc.getDate().getYear(), 8);
+        writer.outputField(' ', 9);
+        writer.outputField(BaseRinexWriter.PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getMonth(), 11);
+        writer.outputField(' ', 12);
+        writer.outputField(BaseRinexWriter.PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getDay(), 14);
+        writer.outputField(' ', 15);
+        writer.outputField(BaseRinexWriter.PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getHour(), 17);
+        writer.outputField(' ', 18);
+        writer.outputField(BaseRinexWriter.PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getMinute(), 20);
+        writer.outputField(' ', 21);
+        writer.outputField(BaseRinexWriter.PADDED_TWO_DIGITS_INTEGER,
+                           (int) FastMath.round(dtc.getTime().getSecond()), 23);
+        writer.outputField(' ', 24);
+        writer.outputField(message.getReferenceTimeSystem().getTwoLettersCode(), 26, true);
+        writer.outputField(message.getDefinedTimeSystem().getTwoLettersCode(),   43, true);
+        writer.outputField(message.getSbasId() == null ? "" : message.getSbasId().name(), 62, true);
+        writer.outputField(message.getUtcId() == null ? "" : message.getUtcId().getId(), 80, true);
+        writer.finishLine();
+
+        // STO MESSAGE LINE - 1
+        writer.outputField(' ', 1);
+        writer.outputFieldE1912(message.getTransmissionTime());
+        writer.outputField(' ', 20);
+        writer.outputFieldE1912(message.getA0());
+        writer.outputField(' ', 40);
+        writer.outputFieldE1912(message.getA1());
+        writer.outputField(' ', 60);
+        writer.outputFieldE1912(message.getA2());
+
     }
 
 }
