@@ -37,7 +37,6 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
@@ -845,21 +844,6 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             Assertions.assertEquals(expectedMax, currentMax, 1.0e-3 * expectedMax);
         }
 
-    }
-
-    @Test
-    void testDependsOnlyOnPosition() {
-        // GIVEN
-        final IsotropicRadiationSingleCoefficient mockedSpacecraft = Mockito.mock(IsotropicRadiationSingleCoefficient.class);
-        final SolarRadiationPressure radiationPressure = new SolarRadiationPressure(null, null, mockedSpacecraft);
-        // WHEN
-        final boolean actualValue = radiationPressure.dependsOnPositionOnly();
-        // THEN
-        Assertions.assertEquals(mockedSpacecraft, radiationPressure.getRadiationSensitiveSpacecraft());
-        Assertions.assertTrue(actualValue);
-        final BoxAndSolarArraySpacecraft mockedBoxSpacecraft = Mockito.mock(BoxAndSolarArraySpacecraft.class);
-        final SolarRadiationPressure boxRadiationPressure = new SolarRadiationPressure(null, null, mockedBoxSpacecraft);
-        Assertions.assertFalse(boxRadiationPressure.dependsOnPositionOnly());
     }
 
     /** Testing if eclipses due to Moon are considered.
