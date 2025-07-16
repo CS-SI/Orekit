@@ -26,7 +26,7 @@ import org.orekit.time.AbsoluteDate;
  * @see GLONASSNavigationMessage
  * @see SBASNavigationMessage
  */
-public abstract class AbstractEphemerisMessage {
+public abstract class AbstractEphemerisMessage implements GnssMessage{
 
     /** Ephemeris reference epoch. */
     private AbsoluteDate date;
@@ -88,18 +88,14 @@ public abstract class AbstractEphemerisMessage {
         this.date = date;
     }
 
-    /**
-     * Getter for the time of clock epoch.
-     * @return the time of clock epoch
-     */
+    /** {@inheritDoc} */
+    @Override
     public AbsoluteDate getEpochToc() {
         return epochToc;
     }
 
-    /**
-     * Setter for the time of clock epoch.
-     * @param epochToc the epoch to set
-     */
+    /** {@inheritDoc} */
+    @Override
     public void setEpochToc(final AbsoluteDate epochToc) {
         this.epochToc = epochToc;
     }

@@ -221,29 +221,7 @@ public class RinexObservationWriter extends BaseRinexWriter<RinexObservationHead
         finishHeaderLine(CommonLabel.VERSION);
 
         // PGM / RUN BY / DATE
-        outputField(header.getProgramName(), 20, true);
-        outputField(header.getRunByName(),   40, true);
-        final DateTimeComponents dtc = header.getCreationDateComponents();
-        if (header.getFormatVersion() < 3.0 && dtc.getTime().getSecond() < 0.5) {
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getDay(), 42);
-            outputField('-', 43);
-            outputField(dtc.getDate().getMonthEnum().getUpperCaseAbbreviation(), 46,  true);
-            outputField('-', 47);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getYear() % 100, 49);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getHour(), 52);
-            outputField(':', 53);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getMinute(), 55);
-            outputField(header.getCreationTimeZone(), 58, true);
-        } else {
-            outputField(PADDED_FOUR_DIGITS_INTEGER, dtc.getDate().getYear(), 44);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getMonth(), 46);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getDay(), 48);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getHour(), 51);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getMinute(), 53);
-            outputField(PADDED_TWO_DIGITS_INTEGER, (int) FastMath.rint(dtc.getTime().getSecond()), 55);
-            outputField(header.getCreationTimeZone(), 59, false);
-        }
-        finishHeaderLine(CommonLabel.PROGRAM);
+        writeProgramRunByDate(header);
 
         // MARKER NAME
         outputField(header.getMarkerName(), 60, true);
@@ -530,7 +508,8 @@ public class RinexObservationWriter extends BaseRinexWriter<RinexObservationHead
         // LEAP SECONDS
         if (header.getLeapSecondsGNSS() > 0) {
             outputField(SIX_DIGITS_INTEGER, header.getLeapSecondsGNSS(), 6);
-            if (header.getFormatVersion() >= 3.0) {
+            if (header.getFormatVersion() > 3.0) {
+                // extra fields introduced in 3.01
                 outputField(SIX_DIGITS_INTEGER, header.getLeapSecondsFuture(),  12);
                 outputField(SIX_DIGITS_INTEGER, header.getLeapSecondsWeekNum(), 18);
                 outputField(SIX_DIGITS_INTEGER, header.getLeapSecondsDayNum(),  24);

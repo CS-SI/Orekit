@@ -57,15 +57,6 @@ public class RinexObservationHeader extends RinexClockObsBaseHeader {
     /** Name of Agency. */
     private String agencyName;
 
-    /** Receiver Number. */
-    private String receiverNumber;
-
-    /** Receiver Type. */
-    private String receiverType;
-
-    /** Receiver version. */
-    private String receiverVersion;
-
     /** Antenna Number. */
     private String antennaNumber;
 
@@ -146,20 +137,6 @@ public class RinexObservationHeader extends RinexClockObsBaseHeader {
      * @since 12.0
      */
     private final Map<SatInSystem, Map<ObservationType, Integer>> nbObsPerSat;
-
-    /** Future or past leap seconds ΔtLSF (BNK).
-     * i.e. future leap second if the week and day number are in the future.
-     */
-    private int leapSecondsFuture;
-
-    /** Respective leap second week number.
-     * For GPS, GAL, QZS and IRN, weeks since 6-Jan-1980.
-     * When BDS only file leap seconds specified, weeks since 1-Jan-2006
-     */
-    private int leapSecondsWeekNum;
-
-    /** Respective leap second day number. */
-    private int leapSecondsDayNum;
 
     /** Code phase bias correction for GLONASS C1C signal.
      * @since 12.0
@@ -273,48 +250,6 @@ public class RinexObservationHeader extends RinexClockObsBaseHeader {
      */
     public String getAgencyName() {
         return agencyName;
-    }
-
-    /** Set the number of the receiver.
-     * @param receiverNumber number of the receiver
-     */
-    public void setReceiverNumber(final String receiverNumber) {
-        this.receiverNumber = receiverNumber;
-    }
-
-    /** Get the number of the receiver.
-     * @return number of the receiver
-     */
-    public String getReceiverNumber() {
-        return receiverNumber;
-    }
-
-    /** Set the type of the receiver.
-     * @param receiverType type of the receiver
-     */
-    public void setReceiverType(final String receiverType) {
-        this.receiverType = receiverType;
-    }
-
-    /** Get the type of the receiver.
-     * @return type of the receiver
-     */
-    public String getReceiverType() {
-        return receiverType;
-    }
-
-    /** Set the version of the receiver.
-     * @param receiverVersion version of the receiver
-     */
-    public void setReceiverVersion(final String receiverVersion) {
-        this.receiverVersion = receiverVersion;
-    }
-
-    /** Get the version of the receiver.
-     * @return version of the receiver
-     */
-    public String getReceiverVersion() {
-        return receiverVersion;
     }
 
     /** Set the number of the antenna.
@@ -585,48 +520,6 @@ public class RinexObservationHeader extends RinexClockObsBaseHeader {
      */
     public String getSignalStrengthUnit() {
         return signalStrengthUnit;
-    }
-
-    /** Set the future or past leap seconds.
-     * @param leapSecondsFuture Future or past leap seconds
-     */
-    public void setLeapSecondsFuture(final int leapSecondsFuture) {
-        this.leapSecondsFuture = leapSecondsFuture;
-    }
-
-    /** Get the future or past leap seconds.
-     * @return Future or past leap seconds
-     */
-    public int getLeapSecondsFuture() {
-        return leapSecondsFuture;
-    }
-
-    /** Set the respective leap second week number.
-     * @param leapSecondsWeekNum Respective leap second week number
-     */
-    public void setLeapSecondsWeekNum(final int leapSecondsWeekNum) {
-        this.leapSecondsWeekNum = leapSecondsWeekNum;
-    }
-
-    /** Get the respective leap second week number.
-     * @return Respective leap second week number
-     */
-    public int getLeapSecondsWeekNum() {
-        return leapSecondsWeekNum;
-    }
-
-    /** Set the respective leap second day number.
-     * @param leapSecondsDayNum Respective leap second day number
-     */
-    public void setLeapSecondsDayNum(final int leapSecondsDayNum) {
-        this.leapSecondsDayNum = leapSecondsDayNum;
-    }
-
-    /** Get the respective leap second day number.
-     * @return Respective leap second day number
-     */
-    public int getLeapSecondsDayNum() {
-        return leapSecondsDayNum;
     }
 
     /** Add phase shift correction used to generate phases consistent w/r to cycle shifts.

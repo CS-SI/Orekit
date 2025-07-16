@@ -19,17 +19,34 @@ package org.orekit.files.rinex.navigation;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
-import org.orekit.files.rinex.observation.ObservationDataSet;
+import org.orekit.files.rinex.navigation.writers.BeidouCivilianNavigationMessageWriter;
+import org.orekit.files.rinex.navigation.writers.BeidouLegacyNavigationMessageWriter;
+import org.orekit.files.rinex.navigation.writers.GPSCivilianNavigationMessageWriter;
+import org.orekit.files.rinex.navigation.writers.GPSLegacyNavigationMessageWriter;
+import org.orekit.files.rinex.navigation.writers.GalileoNavigationMessageWriter;
+import org.orekit.files.rinex.navigation.writers.GlonassNavigationMessageWriter;
+import org.orekit.files.rinex.navigation.writers.NavICL1NVNavigationMessageWriter;
+import org.orekit.files.rinex.navigation.writers.NavICLegacyNavigationMessageWriter;
+import org.orekit.files.rinex.navigation.writers.NavigationMessageWriter;
+import org.orekit.files.rinex.navigation.writers.QZSSCivilianNavigationMessageWriter;
+import org.orekit.files.rinex.navigation.writers.QZSSLegacyNavigationMessageWriter;
+import org.orekit.files.rinex.navigation.writers.SBASNavigationMessageWriter;
+import org.orekit.files.rinex.observation.ObservationLabel;
 import org.orekit.files.rinex.section.CommonLabel;
 import org.orekit.files.rinex.utils.BaseRinexWriter;
 import org.orekit.gnss.PredefinedObservationType;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.DateTimeComponents;
+import org.orekit.propagation.analytical.gnss.data.GnssMessage;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
+import org.orekit.utils.formatting.FastLongFormatter;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 
 /** Writer for Rinex navigation file.
@@ -37,6 +54,9 @@ import java.util.function.BiFunction;
  * @since 14.0
  */
 public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader> {
+
+    /** Format for one 9 digits integer field. */
+    protected static final FastLongFormatter NINE_DIGITS_INTEGER = new FastLongFormatter(9, false);
 
     /** Mapper from satellite system to time scales. */
     private final BiFunction<SatelliteSystem, TimeScales, ? extends TimeScale> timeScaleBuilder;
@@ -81,25 +101,78 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
         this.timeScales       = timeScales;
     }
 
-    /** Write a complete observation file.
-     * <p>
-     * This method calls {@link #prepareComments(List)} and
-     * {@link #writeHeader(RinexNavigationHeader)} once and then loops on
-     * calling {@link #writeObservationDataSet(ObservationDataSet)}
-     * for all observation data sets in the file
-     * </p>
+    /** Write a complete navigation file.
      * @param rinexNavigation Rinex navigation file to write
-     * @see #writeHeader(RinexNavigationHeader)
-     * @see #writeObservationDataSet(ObservationDataSet)
      * @exception IOException if an I/O error occurs.
      */
     @DefaultDataContext
     public void writeCompleteFile(final RinexNavigation rinexNavigation) throws IOException {
+
         prepareComments(rinexNavigation.getComments());
         writeHeader(rinexNavigation.getHeader());
-//        for (final ObservationDataSet observationDataSet : rinexNavigation.getObservationDataSets()) {
-//            writeObservationDataSet(observationDataSet);
-//        }
+
+        // prepare chronological iteration
+        final List<PendingMessages<?>> pending = new ArrayList<>();
+        pending.addAll(createHandlers(rinexNavigation.getGPSLegacyNavigationMessages(),
+                                      new GPSLegacyNavigationMessageWriter()));
+        pending.addAll(createHandlers(rinexNavigation.getGPSCivilianNavigationMessages(),
+                                      new GPSCivilianNavigationMessageWriter()));
+        pending.addAll(createHandlers(rinexNavigation.getGalileoNavigationMessages(),
+                                      new GalileoNavigationMessageWriter()));
+        pending.addAll(createHandlers(rinexNavigation.getBeidouLegacyNavigationMessages(),
+                                      new BeidouLegacyNavigationMessageWriter()));
+        pending.addAll(createHandlers(rinexNavigation.getBeidouCivilianNavigationMessages(),
+                                      new BeidouCivilianNavigationMessageWriter()));
+        pending.addAll(createHandlers(rinexNavigation.getQZSSLegacyNavigationMessages(),
+                                      new QZSSLegacyNavigationMessageWriter()));
+        pending.addAll(createHandlers(rinexNavigation.getQZSSCivilianNavigationMessages(),
+                                      new QZSSCivilianNavigationMessageWriter()));
+        pending.addAll(createHandlers(rinexNavigation.getNavICLegacyNavigationMessages(),
+                                      new NavICLegacyNavigationMessageWriter()));
+        pending.addAll(createHandlers(rinexNavigation.getNavICL1NVNavigationMessages(),
+                                      new NavICL1NVNavigationMessageWriter()));
+        pending.addAll(createHandlers(rinexNavigation.getGlonassNavigationMessages(),
+                                      new GlonassNavigationMessageWriter()));
+        pending.addAll(createHandlers(rinexNavigation.getSBASNavigationMessages(),
+                                      new SBASNavigationMessageWriter()));
+        pending.sort(Comparator.comparing(pl -> pl.satId));
+
+        // write messages in chronological order
+        for (AbsoluteDate date = earliest(pending); date.isFinite(); date = earliest(pending)) {
+            // write all messages that correspond to this date
+            for (final PendingMessages<?> pm : pending) {
+                pm.writeMessageAtDate(date);
+            }
+        }
+
+    }
+
+    /** Create messages handler for one message type.
+     * @param map messages map
+     * @param messageWriter writer for the current message type
+     * @return list of handlers for one message type
+     */
+    private <T extends GnssMessage> List<PendingMessages<T>> createHandlers(final Map<String, List<T>> map,
+                                                                            final NavigationMessageWriter<T> messageWriter) {
+        final List<PendingMessages<T>> handlers = new ArrayList<>();
+        for (final Map.Entry<String, List<T>> entry : map.entrySet()) {
+            handlers.add(new PendingMessages<>(entry.getKey(), messageWriter, entry.getValue()));
+        }
+        return handlers;
+    }
+
+    /** Find the earliest pending date.
+     * @param pending pending messages
+     * @return earliest pending date
+     */
+    private AbsoluteDate earliest(final List<PendingMessages<?>> pending) {
+        AbsoluteDate earliest = AbsoluteDate.FUTURE_INFINITY;
+        for (final PendingMessages<?> pm : pending) {
+            if (pm.nextDate().isBefore(earliest)) {
+                earliest = pm.nextDate();
+            }
+        }
+        return earliest;
     }
 
     /** Write header.
@@ -133,29 +206,19 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
         finishHeaderLine(CommonLabel.VERSION);
 
         // PGM / RUN BY / DATE
-        outputField(header.getProgramName(), 20, true);
-        outputField(header.getRunByName(),   40, true);
-        final DateTimeComponents dtc = header.getCreationDateComponents();
-        if (header.getFormatVersion() < 3.0 && dtc.getTime().getSecond() < 0.5) {
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getDay(), 42);
-            outputField('-', 43);
-            outputField(dtc.getDate().getMonthEnum().getUpperCaseAbbreviation(), 46,  true);
-            outputField('-', 47);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getYear() % 100, 49);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getHour(), 52);
-            outputField(':', 53);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getMinute(), 55);
-            outputField(header.getCreationTimeZone(), 58, true);
-        } else {
-            outputField(PADDED_FOUR_DIGITS_INTEGER, dtc.getDate().getYear(), 44);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getMonth(), 46);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getDay(), 48);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getHour(), 51);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getMinute(), 53);
-            outputField(PADDED_TWO_DIGITS_INTEGER, (int) FastMath.rint(dtc.getTime().getSecond()), 55);
-            outputField(header.getCreationTimeZone(), 59, false);
+        writeProgramRunByDate(header);
+
+        // REC # / TYPE / VERS
+        outputField(header.getReceiverNumber(),  20, true);
+        outputField(header.getReceiverType(),    40, true);
+        outputField(header.getReceiverVersion(), 60, true);
+        finishHeaderLine(ObservationLabel.REC_NB_TYPE_VERS);
+
+        // MERGED FILE
+        if (header.getMergedFiles() > 0) {
+            outputField(NINE_DIGITS_INTEGER, header.getMergedFiles(), 9);
+            finishHeaderLine(NavigationLabel.MERGED_FILE);
         }
-        finishHeaderLine(CommonLabel.PROGRAM);
 
         // DOI
         writeHeaderLine(header.getDoi(), CommonLabel.DOI);
@@ -166,33 +229,74 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
         // STATION INFORMATION
         writeHeaderLine(header.getStationInformation(), CommonLabel.STATION_INFORMATION);
 
+        // LEAP SECONDS
+        if (header.getLeapSecondsGNSS() > 0) {
+            outputField(SIX_DIGITS_INTEGER, header.getLeapSecondsGNSS(), 6);
+            if (header.getFormatVersion() > 3.0) {
+                // extra fields introduced in 3.01
+                outputField(SIX_DIGITS_INTEGER, header.getLeapSecondsFuture(),  12);
+                outputField(SIX_DIGITS_INTEGER, header.getLeapSecondsWeekNum(), 18);
+                outputField(SIX_DIGITS_INTEGER, header.getLeapSecondsDayNum(),  24);
+            }
+            finishHeaderLine(CommonLabel.LEAP_SECONDS);
+        }
+
         // END OF HEADER
         writeHeaderLine("", CommonLabel.END);
 
     }
 
-//    /** Write one observation data set.
-//     * <p>
-//     * Note that this writer outputs only regular observations, so
-//     * the event flag is always set to 0
-//     * </p>
-//     * @param observationDataSet observation data set to write
-//     * @exception IOException if an I/O error occurs.
-//     */
-//    public void writeObservationDataSet(final ObservationDataSet observationDataSet) throws IOException {
-//
-//        // check header has already been written
-//        checkHeaderWritten();
-//
-//        if (!pending.isEmpty() && observationDataSet.durationFrom(pending.get(0).getDate()) > EPS_DATE) {
-//            // the specified observation belongs to the next batch
-//            // we must process the current batch of pending observations
-//            processPending();
-//        }
-//
-//        // add the observation to the pending list, so it is written later on
-//        pending.add(observationDataSet);
-//
-//    }
+    /** Container for navigation messages iterator.
+     * @param <T> type of the navigation message
+     */
+    private class PendingMessages<T extends GnssMessage> {
+
+        /** Threshold to consider dates are equal. */
+        private static final double EPS = 1.0e-9;
+
+        /** Satellite id. */
+        private final String satId;
+
+        /** Writer for the current message type. */
+        private final NavigationMessageWriter<T> messageWriter;
+
+        /** Navigation messages. */
+        private final List<T> messages;
+
+        /** Next entry to process. */
+        private int index;
+
+        /** Simple constructor.
+         * @param satId satellite ID
+         * @param messageWriter writer for the current message type
+         * @param messages navigation messages
+         */
+        PendingMessages(final String satId, final NavigationMessageWriter<T> messageWriter, final List<T> messages) {
+            this.satId         = satId;
+            this.messageWriter = messageWriter;
+            this.messages      = messages;
+            this.index         = 0;
+        }
+
+        /** Write next entry if close to processing date.
+         * @param date processing date
+         * @return next entry if close to processing date, null otherwise
+         * @exception IOException if an I/O error occurs.
+         */
+        void writeMessageAtDate(final AbsoluteDate date) throws IOException {
+            if (index < messages.size() && FastMath.abs(date.durationFrom(messages.get(index).getEpochToc())) <= EPS) {
+                // write next entry and advance
+                messageWriter.writeMessage(messages.get(index++), RinexNavigationWriter.this);
+            }
+        }
+
+        /** Get date of next entry.
+         * @return date of next entry
+         */
+        AbsoluteDate nextDate() {
+            return index <  messages.size() ? messages.get(index).getEpochToc() : AbsoluteDate.FUTURE_INFINITY;
+        }
+
+    }
 
 }

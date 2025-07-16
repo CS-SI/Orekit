@@ -95,6 +95,21 @@ public abstract class RinexBaseHeader {
     /** Creation date as absolute date. */
     private AbsoluteDate creationDate;
 
+    /** Receiver Number.
+     * @since 14.0
+     */
+    private String receiverNumber;
+
+    /** Receiver Type.
+     * @since 14.0
+     */
+    private String receiverType;
+
+    /** Receiver version.
+     * @since 14.0
+     */
+    private String receiverVersion;
+
     /** Number of leap seconds separating UTC and GNSS time systems.
      * <p>
      * This is really the number of leap seconds since GPS epoch
@@ -103,6 +118,24 @@ public abstract class RinexBaseHeader {
      * @since 14.0
      */
     private int leapSecondsGNSS;
+
+    /** Future or past leap seconds ΔtLSF (BNK).
+     * i.e. future leap second if the week and day number are in the future.
+     * @since 14.0
+     */
+    private int leapSecondsFuture;
+
+    /** Respective leap second week number.
+     * For GPS, GAL, QZS and IRN, weeks since 6-Jan-1980.
+     * When BDS only file leap seconds specified, weeks since 1-Jan-2006
+     * @since 14.0
+     */
+    private int leapSecondsWeekNum;
+
+    /** Respective leap second day number.
+     * @since 14.0
+     */
+    private int leapSecondsDayNum;
 
     /** Digital Object Identifier.
      * @since 12.0
@@ -282,6 +315,48 @@ public abstract class RinexBaseHeader {
         this.creationDate = creationDate;
     }
 
+    /** Set the number of the receiver.
+     * @param receiverNumber number of the receiver
+     */
+    public void setReceiverNumber(final String receiverNumber) {
+        this.receiverNumber = receiverNumber;
+    }
+
+    /** Get the number of the receiver.
+     * @return number of the receiver
+     */
+    public String getReceiverNumber() {
+        return receiverNumber;
+    }
+
+    /** Set the type of the receiver.
+     * @param receiverType type of the receiver
+     */
+    public void setReceiverType(final String receiverType) {
+        this.receiverType = receiverType;
+    }
+
+    /** Get the type of the receiver.
+     * @return type of the receiver
+     */
+    public String getReceiverType() {
+        return receiverType;
+    }
+
+    /** Set the version of the receiver.
+     * @param receiverVersion version of the receiver
+     */
+    public void setReceiverVersion(final String receiverVersion) {
+        this.receiverVersion = receiverVersion;
+    }
+
+    /** Get the version of the receiver.
+     * @return version of the receiver
+     */
+    public String getReceiverVersion() {
+        return receiverVersion;
+    }
+
     /** Getter for the number of leap second for GNSS time scales.
      * @return the number of leap seconds for GNSS time scales
      * @since 14.0
@@ -296,6 +371,54 @@ public abstract class RinexBaseHeader {
      */
     public void setLeapSecondsGNSS(final int leapSecondsGNSS) {
         this.leapSecondsGNSS = leapSecondsGNSS;
+    }
+
+    /** Set the future or past leap seconds.
+     * @param leapSecondsFuture Future or past leap seconds
+     * @since 14.0
+     */
+    public void setLeapSecondsFuture(final int leapSecondsFuture) {
+        this.leapSecondsFuture = leapSecondsFuture;
+    }
+
+    /** Get the future or past leap seconds.
+     * @return Future or past leap seconds
+     * @since 14.0
+     */
+    public int getLeapSecondsFuture() {
+        return leapSecondsFuture;
+    }
+
+    /** Set the respective leap second week number.
+     * @param leapSecondsWeekNum Respective leap second week number
+     * @since 14.0
+     */
+    public void setLeapSecondsWeekNum(final int leapSecondsWeekNum) {
+        this.leapSecondsWeekNum = leapSecondsWeekNum;
+    }
+
+    /** Get the respective leap second week number.
+     * @return Respective leap second week number
+     * @since 14.0
+     */
+    public int getLeapSecondsWeekNum() {
+        return leapSecondsWeekNum;
+    }
+
+    /** Set the respective leap second day number.
+     * @param leapSecondsDayNum Respective leap second day number
+     * @since 14.0
+     */
+    public void setLeapSecondsDayNum(final int leapSecondsDayNum) {
+        this.leapSecondsDayNum = leapSecondsDayNum;
+    }
+
+    /** Get the respective leap second day number.
+     * @return Respective leap second day number
+     * @since 14.0
+     */
+    public int getLeapSecondsDayNum() {
+        return leapSecondsDayNum;
     }
 
     /**

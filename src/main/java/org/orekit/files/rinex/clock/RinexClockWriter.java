@@ -152,28 +152,31 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
         finishHeaderLine(CommonLabel.VERSION);
 
         // PGM / RUN BY / DATE
+        final DateTimeComponents dtc = header.getCreationDateComponents();
         if (header.isBefore304()) {
             outputField(header.getProgramName(), 20, true);
             outputField(header.getRunByName(), 40, true);
-            final DateTimeComponents dtc = header.getCreationDateComponents();
-            outputField(PADDED_FOUR_DIGITS_INTEGER, dtc.getDate().getYear(), 44);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getMonth(), 46);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getDay(), 48);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getHour(), 51);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getMinute(), 53);
-            outputField(PADDED_TWO_DIGITS_INTEGER, (int) FastMath.rint(dtc.getTime().getSecond()), 55);
-            outputField(header.getCreationTimeZone(), 59, true);
+            if (dtc != null) {
+                outputField(PADDED_FOUR_DIGITS_INTEGER, dtc.getDate().getYear(), 44);
+                outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getMonth(), 46);
+                outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getDay(), 48);
+                outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getHour(), 51);
+                outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getMinute(), 53);
+                outputField(PADDED_TWO_DIGITS_INTEGER, (int) FastMath.rint(dtc.getTime().getSecond()), 55);
+                outputField(header.getCreationTimeZone(), 59, true);
+            }
         } else {
             outputField(header.getProgramName(), 21, true);
             outputField(header.getRunByName(), 42, true);
-            final DateTimeComponents dtc = header.getCreationDateComponents();
-            outputField(PADDED_FOUR_DIGITS_INTEGER, dtc.getDate().getYear(), 46);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getMonth(), 48);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getDay(), 50);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getHour(), 54);
-            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getMinute(), 56);
-            outputField(PADDED_TWO_DIGITS_INTEGER, (int) FastMath.rint(dtc.getTime().getSecond()), 58);
-            outputField(header.getCreationTimeZone(), 63, true);
+            if (dtc != null) {
+                outputField(PADDED_FOUR_DIGITS_INTEGER, dtc.getDate().getYear(), 46);
+                outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getMonth(), 48);
+                outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getDay(), 50);
+                outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getHour(), 54);
+                outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getMinute(), 56);
+                outputField(PADDED_TWO_DIGITS_INTEGER, (int) FastMath.rint(dtc.getTime().getSecond()), 58);
+                outputField(header.getCreationTimeZone(), 63, true);
+            }
         }
         finishHeaderLine(CommonLabel.PROGRAM);
 

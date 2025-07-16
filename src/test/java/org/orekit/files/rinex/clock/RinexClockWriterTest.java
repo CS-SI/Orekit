@@ -218,19 +218,13 @@ public class RinexClockWriterTest {
         Assertions.assertEquals(first.getSatelliteSystem(),        second.getSatelliteSystem());
         Assertions.assertEquals(first.getProgramName(),            second.getProgramName());
         Assertions.assertEquals(first.getRunByName(),              second.getRunByName());
-        // we allow for large gaps  here (one minute) because some test files
-        // have a null creation date (which is probably not really standard-compliant)
-        // so we will end up with the default date set up by Orekit, and it will be
-        // slightly different as the two files will have been created at different times
-        Assertions.assertEquals(0,
-                                first.getCreationDateComponents().offsetFrom(second.getCreationDateComponents()),
-                                60.0);
+        if (first.getCreationDateComponents() != null) {
+            Assertions.assertEquals(first.getCreationDateComponents(), second.getCreationDateComponents());
+        }
         Assertions.assertEquals(first.getCreationTimeZone(),       second.getCreationTimeZone());
         if (first.getCreationDate() != null) {
             // some reference files have a null creation date (which is probably not really standard-compliant)
-            // but in order to avoid null pointer exceptions while writing the file
-            // Orekit set up a default creation date at run time
-            // se we check the date only if it was non-null in the reference file
+            // we check the date only if it was non-null in the reference file
             checkDate(first.getCreationDate(), second.getCreationDate());
         }
         Assertions.assertEquals(first.getDoi(),                    second.getDoi());

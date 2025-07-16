@@ -16,12 +16,14 @@
  */
 package org.orekit.files.rinex.utils;
 
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.section.CommonLabel;
 import org.orekit.files.rinex.section.Label;
 import org.orekit.files.rinex.section.RinexBaseHeader;
 import org.orekit.files.rinex.section.RinexComment;
+import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.formatting.FastDoubleFormatter;
 import org.orekit.utils.formatting.FastLongFormatter;
 
@@ -189,6 +191,37 @@ public abstract class BaseRinexWriter<T extends RinexBaseHeader> {
      */
     protected boolean exceedsHeaderLength(final int tentative) {
         return tentative > savedLabelIndex;
+    }
+
+    /** Write the PGM / RUN BY / DATE header line.
+     * @param header header to write
+     * @throws IOException if an I/O error occurs.
+     */
+    protected void writeProgramRunByDate(final RinexBaseHeader header)
+        throws IOException{
+        outputField(header.getProgramName(), 20, true);
+        outputField(header.getRunByName(),   40, true);
+        final DateTimeComponents dtc = header.getCreationDateComponents();
+        if (header.getFormatVersion() < 3.0 && dtc.getTime().getSecond() < 0.5) {
+            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getDay(), 42);
+            outputField('-', 43);
+            outputField(dtc.getDate().getMonthEnum().getUpperCaseAbbreviation(), 46,  true);
+            outputField('-', 47);
+            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getYear() % 100, 49);
+            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getHour(), 52);
+            outputField(':', 53);
+            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getMinute(), 55);
+            outputField(header.getCreationTimeZone(), 58, true);
+        } else {
+            outputField(PADDED_FOUR_DIGITS_INTEGER, dtc.getDate().getYear(), 44);
+            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getMonth(), 46);
+            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getDay(), 48);
+            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getHour(), 51);
+            outputField(PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getMinute(), 53);
+            outputField(PADDED_TWO_DIGITS_INTEGER, (int) FastMath.rint(dtc.getTime().getSecond()), 55);
+            outputField(header.getCreationTimeZone(), 59, false);
+        }
+        finishHeaderLine(CommonLabel.PROGRAM);
     }
 
     /** Output one single character field.

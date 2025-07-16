@@ -782,7 +782,8 @@ public class RinexObservationParser {
         LEAP_SECONDS((header, line) -> header.matchFound(CommonLabel.LEAP_SECONDS, line),
                      (line, parseInfo) -> {
                          parseInfo.file.getHeader().setLeapSecondsGNSS(ParsingUtils.parseInt(line, 0, 6));
-                         if (parseInfo.file.getHeader().getFormatVersion() >= 3.0) {
+                         if (parseInfo.file.getHeader().getFormatVersion() > 3.0) {
+                             // extra fields introduced in 3.01
                              parseInfo.file.getHeader().setLeapSecondsFuture(ParsingUtils.parseInt(line, 6, 6));
                              parseInfo.file.getHeader().setLeapSecondsWeekNum(ParsingUtils.parseInt(line, 12, 6));
                              parseInfo.file.getHeader().setLeapSecondsDayNum(ParsingUtils.parseInt(line, 18, 6));
