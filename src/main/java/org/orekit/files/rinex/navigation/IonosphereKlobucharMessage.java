@@ -27,7 +27,7 @@ import org.orekit.utils.units.Unit;
 public class IonosphereKlobucharMessage extends IonosphereBaseMessage {
 
     /** Converters for Klobuchar parameters. */
-    static final Unit[] S_PER_SC_N;
+    public static final Unit[] S_PER_SC_N;
     static {
         final Unit sc = Unit.RADIAN.scale("sc", GNSSConstants.GNSS_PI);
         S_PER_SC_N = new Unit[4];
