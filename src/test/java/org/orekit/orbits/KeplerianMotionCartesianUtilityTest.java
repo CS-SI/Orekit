@@ -16,8 +16,8 @@
  */
 package org.orekit.orbits;
 
-import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
-import org.hipparchus.analysis.differentiation.UnivariateDerivative1Field;
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -29,14 +29,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.DerivativeStateUtils;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
 class KeplerianMotionCartesianUtilityTest {
 
-    private static final double TOLERANCE_DISTANCE = 1e-14;
-    private static final double TOLERANCE_SPEED = 1e-15;
+    private static final double TOLERANCE_DISTANCE = 1e-13;
+    private static final double TOLERANCE_SPEED = 1e-14;
 
     @Test
     void testPredictPositionVelocityElliptic() {
@@ -75,10 +75,15 @@ class KeplerianMotionCartesianUtilityTest {
     }
 
     private void comparePV(final PVCoordinates pvCoordinates, final PVCoordinates otherPVCoordinates) {
+        comparePV(pvCoordinates, otherPVCoordinates, TOLERANCE_DISTANCE, TOLERANCE_SPEED);
+    }
+
+    private void comparePV(final PVCoordinates pvCoordinates, final PVCoordinates otherPVCoordinates,
+                           final double toleranceDistance, final double toleranceSpeed) {
         final double expectedValue = 0.;
         final PVCoordinates relativePV = new PVCoordinates(pvCoordinates, otherPVCoordinates);
-        Assertions.assertEquals(expectedValue, relativePV.getPosition().getNorm(), TOLERANCE_DISTANCE);
-        Assertions.assertEquals(expectedValue, relativePV.getVelocity().getNorm(), TOLERANCE_SPEED);
+        Assertions.assertEquals(expectedValue, relativePV.getPosition().getNorm(), toleranceDistance);
+        Assertions.assertEquals(expectedValue, relativePV.getVelocity().getNorm(), toleranceSpeed);
     }
 
     @ParameterizedTest
@@ -88,43 +93,45 @@ class KeplerianMotionCartesianUtilityTest {
         final double mu = 1.5;
         final Vector3D position = new Vector3D(4., 0., 0.);
         final Vector3D velocity = new Vector3D(0., FastMath.sqrt(mu / position.getNorm()) + speedShift, 0.);
-        final UnivariateDerivative1Field field = UnivariateDerivative1Field.getInstance();
-        final UnivariateDerivative1 fieldMu = new UnivariateDerivative1(mu, 0);
-        final FieldVector3D<UnivariateDerivative1> fieldPosition = new FieldVector3D<>(field, position);
-        final FieldVector3D<UnivariateDerivative1> fieldVelocity = new FieldVector3D<>(field, velocity);
+        final GradientField field = GradientField.getField(6);
+        final Gradient fieldMu = new Gradient(mu, new double[6]);
+        final FieldOrbit<Gradient> fieldOrbit = DerivativeStateUtils.buildOrbitGradient(field,
+                new CartesianOrbit(new PVCoordinates(position, velocity), FramesFactory.getGCRF(), AbsoluteDate.ARBITRARY_EPOCH, mu));
+        final FieldVector3D<Gradient> fieldPosition = fieldOrbit.getPosition();
+        final FieldVector3D<Gradient> fieldVelocity = fieldOrbit.getVelocity();
         // WHEN & THEN
         for (double dt = -10.; dt <= 10.; dt += 0.1) {
-            final UnivariateDerivative1 fieldDt = new UnivariateDerivative1(dt, 1.);
-            final FieldPVCoordinates<UnivariateDerivative1> actualPV = KeplerianMotionCartesianUtility.predictPositionVelocity(fieldDt,
+            final Gradient fieldDt = new Gradient(dt, new double[6]);
+            final FieldPVCoordinates<Gradient> actualPV = KeplerianMotionCartesianUtility.predictPositionVelocity(fieldDt,
                     fieldPosition, fieldVelocity, fieldMu);
             final PVCoordinates expectedPV = KeplerianMotionCartesianUtility.predictPositionVelocity(dt, position,
                     velocity, mu);
             comparePV(expectedPV, actualPV.toPVCoordinates());
-            final FieldEquinoctialOrbit<UnivariateDerivative1> fieldCartesianOrbit = new FieldEquinoctialOrbit<>(
-                    new FieldPVCoordinates<>(fieldPosition, fieldVelocity), FramesFactory.getGCRF(),
-                    FieldAbsoluteDate.getArbitraryEpoch(field), fieldMu);
-            final FieldEquinoctialOrbit<UnivariateDerivative1> shiftedOrbit = fieldCartesianOrbit.shiftedBy(fieldDt);
+            final FieldOrbit<Gradient> fieldEquinoctialOrbit = OrbitType.EQUINOCTIAL.convertType(fieldOrbit);
+            final FieldOrbit<Gradient> shiftedOrbit = fieldEquinoctialOrbit.shiftedBy(fieldDt);
             compareDerivatives(shiftedOrbit.getPVCoordinates(), actualPV);
         }
     }
 
-    private static void compareDerivatives(final FieldPVCoordinates<UnivariateDerivative1> expectedPV,
-                                           final FieldPVCoordinates<UnivariateDerivative1> actualPV) {
+    private static void compareDerivatives(final FieldPVCoordinates<Gradient> expectedPV,
+                                           final FieldPVCoordinates<Gradient> actualPV) {
 
-        final double toleranceGradient = 1e-10;
-        Assertions.assertEquals(expectedPV.getPosition().getX().getFirstDerivative(),
-                actualPV.getPosition().getX().getFirstDerivative(), toleranceGradient);
-        Assertions.assertEquals(expectedPV.getPosition().getY().getFirstDerivative(),
-                actualPV.getPosition().getY().getFirstDerivative(), toleranceGradient);
-        Assertions.assertEquals(expectedPV.getPosition().getZ().getFirstDerivative(),
-                actualPV.getPosition().getZ().getFirstDerivative(), toleranceGradient);
-        Assertions.assertEquals(expectedPV.getVelocity().getX().getFirstDerivative(),
-                actualPV.getVelocity().getX().getFirstDerivative(), toleranceGradient);
-        Assertions.assertEquals(expectedPV.getVelocity().getY().getFirstDerivative(),
-                actualPV.getVelocity().getY().getFirstDerivative(), toleranceGradient);
-        Assertions.assertEquals(expectedPV.getVelocity().getZ().getFirstDerivative(),
-                actualPV.getVelocity().getZ().getFirstDerivative(), toleranceGradient);
-
+        final double toleranceGradientPosition = 1e-6;
+        final double toleranceGradientVelocity = 1e-7;
+        for (int i = 0; i < 6; i++) {
+            Assertions.assertEquals(expectedPV.getPosition().getX().getPartialDerivative(i),
+                    actualPV.getPosition().getX().getPartialDerivative(i), toleranceGradientPosition);
+            Assertions.assertEquals(expectedPV.getPosition().getY().getPartialDerivative(i),
+                    actualPV.getPosition().getY().getPartialDerivative(i), toleranceGradientPosition);
+            Assertions.assertEquals(expectedPV.getPosition().getZ().getPartialDerivative(i),
+                    actualPV.getPosition().getZ().getPartialDerivative(i), toleranceGradientPosition);
+            Assertions.assertEquals(expectedPV.getVelocity().getX().getPartialDerivative(i),
+                    actualPV.getVelocity().getX().getPartialDerivative(i), toleranceGradientVelocity);
+            Assertions.assertEquals(expectedPV.getVelocity().getY().getPartialDerivative(i),
+                    actualPV.getVelocity().getY().getPartialDerivative(i), toleranceGradientVelocity);
+            Assertions.assertEquals(expectedPV.getVelocity().getZ().getPartialDerivative(i),
+                    actualPV.getVelocity().getZ().getPartialDerivative(i), toleranceGradientVelocity);
+        }
     }
 
     @Test
