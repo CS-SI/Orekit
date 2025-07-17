@@ -210,9 +210,9 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
         pending.add(new PendingMessages<>(BDGIM_IDENTIFIER, new BDGIMMessageWriter(),
                                           rinexNavigation.getBDGIMMessages()));
         pending.add(new PendingMessages<>(NAVIC_KLOBUCHAR_IDENTIFIER, new NavICKlobucharNavigationMessageWriter(),
-                                          rinexNavigation.getNavICKlobucharNavigationMessages()));
+                                          rinexNavigation.getNavICKlobucharMessages()));
         pending.add(new PendingMessages<>(NAVIC_NEQUICK_N_IDENTIFIER, new NavICNeQuickNNavigationMessageWriter(),
-                                          rinexNavigation.getNavICNeQuickNNavigationMessages()));
+                                          rinexNavigation.getNavICNeQuickNMessages()));
 
         pending.sort(Comparator.comparing(pl -> pl.identifier));
 

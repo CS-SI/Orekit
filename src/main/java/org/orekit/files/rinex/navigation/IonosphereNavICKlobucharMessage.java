@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,9 +20,12 @@ import org.orekit.gnss.SatelliteSystem;
 
 /** Container for data contained in a ionosphere Klobuchar message.
  * @author Luc Maisonobe
- * @since 12.0
+ * @since 14.0
  */
-public class IonosphereKlobucharMessage extends IonosphereBaseMessage {
+public class IonosphereNavICKlobucharMessage extends IonosphereBaseMessage {
+
+    /** Issue Of Data. */
+    private int iod;
 
     /** α (s/radⁿ). */
     private final double[] alpha;
@@ -30,8 +33,17 @@ public class IonosphereKlobucharMessage extends IonosphereBaseMessage {
     /** β (s/radⁿ). */
     private final double[] beta;
 
-    /** Region code. */
-    private RegionCode regionCode;
+    /** Longitude min. */
+    private double lonMin;
+
+    /** Longitude max. */
+    private double lonMax;
+
+    /** MODIP min. */
+    private double modipMin;
+
+    /** MODIP max. */
+    private double modipMax;
 
     /** Simple constructor.
      * @param system satellite system
@@ -39,11 +51,26 @@ public class IonosphereKlobucharMessage extends IonosphereBaseMessage {
      * @param navigationMessageType navigation message type
      * @param subType message subtype
      */
-    public IonosphereKlobucharMessage(final SatelliteSystem system, final int prn,
-                                      final String navigationMessageType, final String subType) {
+    public IonosphereNavICKlobucharMessage(final SatelliteSystem system, final int prn,
+                                           final String navigationMessageType, final String subType) {
         super(system, prn, navigationMessageType, subType);
         alpha = new double[4];
         beta  = new double[4];
+    }
+
+    /** Get Issue Of Data (IOD).
+     * @return  Issue Of Data
+     */
+    public int getIOD() {
+        return iod;
+    }
+
+    /** Set Issue Of Data.
+     * @param iod Issue Of Data
+     */
+    public void setIOD(final double iod) {
+        // The value is given as a floating number in the navigation message
+        this.iod = (int) iod;
     }
 
     /** Get the α coefficients.
@@ -100,18 +127,60 @@ public class IonosphereKlobucharMessage extends IonosphereBaseMessage {
         beta[i] = betaI;
     }
 
-    /** Get the region code.
-     * @return region code
+    /** Get longitude min.
+     * @return longitude min
      */
-    public RegionCode getRegionCode() {
-        return regionCode;
+    public double getLonMin() {
+        return lonMin;
     }
 
-    /** Set the region code.
-     * @param regionCode region code
+    /** Set longitude min.
+     * @param lonMin longitude min
      */
-    public void setRegionCode(final RegionCode regionCode) {
-        this.regionCode = regionCode;
+    public void setLonMin(double lonMin) {
+        this.lonMin = lonMin;
+    }
+
+    /** Get longitude max.
+     * @return longitude max
+     */
+    public double getLonMax() {
+        return lonMax;
+    }
+
+    /** Set longitude max.
+     * @param lonMax longitude max
+     */
+    public void setLonMax(double lonMax) {
+        this.lonMax = lonMax;
+    }
+
+    /** Get MODIP min.
+     * @return MODIP min
+     */
+    public double getModipMin() {
+        return modipMin;
+    }
+
+    /** Set MODIP min.
+     * @param modipMin MODIP min
+     */
+    public void setModipMin(double modipMin) {
+        this.modipMin = modipMin;
+    }
+
+    /** Get MODIP max.
+     * @return MODIP max
+     */
+    public double getModipMax() {
+        return modipMax;
+    }
+
+    /** Set MODIP max.
+     * @param modipMax MODIP max
+     */
+    public void setModipMax(double modipMax) {
+        this.modipMax = modipMax;
     }
 
 }

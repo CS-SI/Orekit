@@ -279,7 +279,14 @@ public class RinexNavigationParser {
         /** Container for ionosphere Klobuchar message. */
         private IonosphereKlobucharMessage klobuchar;
 
-        /** Container for NacIV NeQuick N message. */
+        /** Container for NacIV Klobuchar message.
+         * @since 14.0
+         */
+        private IonosphereNavICKlobucharMessage navICKlobuchar;
+
+        /** Container for NacIV NeQuick N message.
+         * @since 14.0
+         */
         private IonosphereNavICNeQuickNMessage navICNeQuickN;
 
         /** Container for ionosphere Nequick-G message. */
@@ -822,6 +829,52 @@ public class RinexNavigationParser {
                          },
                          pi -> Collections.singleton(KLOBUCHAR_LINE_1)),
 
+        /** Parser for NacIV Klobuchar message model.
+         * @since 14.0
+         */
+        NAVIC_KLOBUCHAR_LINE_3((header, line) -> true,
+                         (line, pi) -> {
+                             pi.navICKlobuchar.setLonMin(pi.parseField1(line, Unit.DEGREE));
+                             pi.navICKlobuchar.setLonMax(pi.parseField2(line, Unit.DEGREE));
+                             pi.navICKlobuchar.setModipMin(pi.parseField3(line, Unit.DEGREE));
+                             pi.navICKlobuchar.setModipMax(pi.parseField4(line, Unit.DEGREE));
+                             pi.file.addNavICKlobucharMessage(pi.navICKlobuchar);
+                             pi.navICKlobuchar = null;
+                         },
+                         LineParser::navigationNext),
+
+        /** Parser for NavIC Klobuchar message model.
+         * @since 14.0
+         */
+        NAVIC_KLOBUCHAR_LINE_2((header, line) -> true,
+                         (line, pi) -> {
+                             pi.navICKlobuchar.setBetaI(0, pi.parseField1(line, IonosphereBaseMessage.S_PER_SC_N[0]));
+                             pi.navICKlobuchar.setBetaI(1, pi.parseField2(line, IonosphereBaseMessage.S_PER_SC_N[1]));
+                             pi.navICKlobuchar.setBetaI(2, pi.parseField3(line, IonosphereBaseMessage.S_PER_SC_N[2]));
+                             pi.navICKlobuchar.setBetaI(3, pi.parseField4(line, IonosphereBaseMessage.S_PER_SC_N[3]));
+                         },
+                         pi -> Collections.singleton(NAVIC_KLOBUCHAR_LINE_3)),
+
+        /** Parser for NavIC Klobuchar message model.
+         * @since 14.0
+         */
+        NAVIC_KLOBUCHAR_LINE_1((header, line) -> true,
+                         (line, pi) -> {
+                             pi.navICKlobuchar.setAlphaI(0, pi.parseField1(line, IonosphereBaseMessage.S_PER_SC_N[0]));
+                             pi.navICKlobuchar.setAlphaI(1, pi.parseField2(line, IonosphereBaseMessage.S_PER_SC_N[1]));
+                             pi.navICKlobuchar.setAlphaI(2, pi.parseField3(line, IonosphereBaseMessage.S_PER_SC_N[2]));
+                             pi.navICKlobuchar.setAlphaI(3, pi.parseField4(line, IonosphereBaseMessage.S_PER_SC_N[3]));
+                         },
+                         pi -> Collections.singleton(NAVIC_KLOBUCHAR_LINE_2)),
+
+        /** Parser for NavIC Klobuchar message model. */
+        NAVIC_KLOBUCHAR_LINE_0((header, line) -> true,
+                         (line, pi) -> {
+                             pi.parseDate(line, pi.navICKlobuchar::setTransmitTime, pi.navICKlobuchar.getSystem());
+                             pi.navICKlobuchar.setIOD(pi.parseField2(line, Unit.ONE));
+                         },
+                         pi -> Collections.singleton(NAVIC_KLOBUCHAR_LINE_1)),
+
         /** Parser for NacIV NeQuick N message model.
          * @since 14.0
          */
@@ -972,6 +1025,8 @@ public class RinexNavigationParser {
                           // proper model in this case
                           pi.bdgim = new IonosphereBDGIMMessage(system, prn, type, subtype);
                       } else if (system == SatelliteSystem.NAVIC && "L1NV".equals(type) && "KLOB".equals(subtype)) {
+                          pi.navICKlobuchar = new IonosphereNavICKlobucharMessage(system, prn, type, subtype);
+                      } else if (system == SatelliteSystem.NAVIC && "L1NV".equals(type) && "NEQN".equals(subtype)) {
                           pi.navICNeQuickN = new IonosphereNavICNeQuickNMessage(system, prn, type, subtype);
                       } else if (system == SatelliteSystem.GPS || (system == SatelliteSystem.NAVIC && "KLOB".equals(
                           subtype))) {
@@ -1074,6 +1129,8 @@ public class RinexNavigationParser {
                 return Collections.singleton(BDGIM_LINE_0);
             } else if (parseInfo.klobuchar != null) {
                 return Collections.singleton(KLOBUCHAR_LINE_0);
+            } else if (parseInfo.navICKlobuchar != null) {
+                return Collections.singleton(NAVIC_KLOBUCHAR_LINE_0);
             } else if (parseInfo.navICNeQuickN != null) {
                 return Collections.singleton(NAVIC_NEQUICK_N_LINE_0);
             } else {

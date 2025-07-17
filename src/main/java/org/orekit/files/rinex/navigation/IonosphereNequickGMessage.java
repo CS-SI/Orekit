@@ -17,7 +17,6 @@
 package org.orekit.files.rinex.navigation;
 
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.utils.units.Unit;
 
 /** Container for data contained in a ionosphere Nequick G message.
  * @author Luc Maisonobe
