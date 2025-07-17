@@ -1928,9 +1928,9 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.0,
                                 new AbsoluteDate(2022, 10, 5, 6, 21, 4.0, TimeScalesFactory.getGPS()).durationFrom(listN.get(0).getTransmitTime()),
                                 1.0e-15);
-        Assertions.assertEquals( 1.207500000000e+02, IonosphereNequickGMessage.SFU.fromSI(listN.get(0).getAi0()),          1.0e-16);
-        Assertions.assertEquals( -1.953125000000e-01, IonosphereNequickGMessage.SFU_PER_DEG.fromSI(listN.get(0).getAi1()), 1.0e-16);
-        Assertions.assertEquals(-7.629394531250e-04, IonosphereNequickGMessage.SFU_PER_DEG2.fromSI(listN.get(0).getAi2()), 1.0e-16);
+        Assertions.assertEquals( 1.207500000000e+02, IonosphereAij.SFU.fromSI(listN.get(0).getAij().getAi0()),          1.0e-16);
+        Assertions.assertEquals( -1.953125000000e-01, IonosphereAij.SFU_PER_DEG.fromSI(listN.get(0).getAij().getAi1()), 1.0e-16);
+        Assertions.assertEquals(-7.629394531250e-04, IonosphereAij.SFU_PER_DEG2.fromSI(listN.get(0).getAij().getAi2()), 1.0e-16);
         Assertions.assertEquals(0, listN.get(0).getFlags());
 
         Assertions.assertEquals(SatelliteSystem.BEIDOU, listB.get(0).getSystem());
