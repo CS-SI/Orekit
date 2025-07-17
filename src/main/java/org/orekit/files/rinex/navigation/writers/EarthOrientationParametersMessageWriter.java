@@ -16,12 +16,9 @@
  */
 package org.orekit.files.rinex.navigation.writers;
 
-import org.hipparchus.util.FastMath;
 import org.orekit.files.rinex.navigation.EarthOrientationParameterMessage;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
 import org.orekit.files.rinex.utils.BaseRinexWriter;
-import org.orekit.time.DateTimeComponents;
-import org.orekit.time.TimeScale;
 
 import java.io.IOException;
 
@@ -45,21 +42,7 @@ public class EarthOrientationParametersMessageWriter
         writer.finishLine();
 
         // EOP MESSAGE LINE - 0
-        final TimeScale timeScale = writer.getTimeScale(message.getSystem());
-        final DateTimeComponents dtc = message.getReferenceEpoch().getComponents(timeScale).roundIfNeeded(60, 0);
-        writer.outputField(' ', 4);
-        writer.outputField(BaseRinexWriter.FOUR_DIGITS_INTEGER, dtc.getDate().getYear(), 8);
-        writer.outputField(' ', 9);
-        writer.outputField(BaseRinexWriter.PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getMonth(), 11);
-        writer.outputField(' ', 12);
-        writer.outputField(BaseRinexWriter.PADDED_TWO_DIGITS_INTEGER, dtc.getDate().getDay(), 14);
-        writer.outputField(' ', 15);
-        writer.outputField(BaseRinexWriter.PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getHour(), 17);
-        writer.outputField(' ', 18);
-        writer.outputField(BaseRinexWriter.PADDED_TWO_DIGITS_INTEGER, dtc.getTime().getMinute(), 20);
-        writer.outputField(' ', 21);
-        writer.outputField(BaseRinexWriter.PADDED_TWO_DIGITS_INTEGER,
-                           (int) FastMath.round(dtc.getTime().getSecond()), 23);
+        writer.writeDate(message.getReferenceEpoch(), message.getSystem());
         writer.outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, message.getXp(),       42);
         writer.outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, message.getXpDot(),    61);
         writer.outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, message.getXpDotDot(), 80);

@@ -41,8 +41,8 @@ import org.orekit.files.rinex.section.CommonLabel;
 import org.orekit.files.rinex.utils.BaseRinexWriter;
 import org.orekit.gnss.PredefinedObservationType;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
 import org.orekit.time.TimeStamped;
@@ -293,20 +293,38 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
 
     }
 
-    /** Get time scale for a time system.
+    /** Write a date.
+     * @param date date to write
      * @param system satellite system
-     * @return time scale for the specified system
+    * @exception IOException if an I/O error occurs.
      */
-    public TimeScale getTimeScale(final TimeSystem system) {
-        return system.getTimeScale(timeScales);
+    public void writeDate(final AbsoluteDate date, final SatelliteSystem system) throws IOException {
+        writeDate(date.getComponents(timeScaleBuilder.apply(system, timeScales)));
     }
 
-    /** Get time scale for a satellite system.
-     * @param system satellite system
-     * @return time scale for the specified system
+    /** Write a date.
+     * <p>
+     * The date will span over 23 characters.
+     * </p>
+     * @param dtc date to write
+     * @exception IOException if an I/O error occurs.
      */
-    public TimeScale getTimeScale(final SatelliteSystem system) {
-        return timeScaleBuilder.apply(system, timeScales);
+    private void writeDate(final DateTimeComponents dtc) throws IOException {
+        final DateTimeComponents rounded = dtc.roundIfNeeded(60, 0);
+        final int start = getColumn();
+        outputField(' ', start + 4);
+        outputField(BaseRinexWriter.FOUR_DIGITS_INTEGER, rounded.getDate().getYear(), start + 8);
+        outputField(' ', start + 9);
+        outputField(BaseRinexWriter.PADDED_TWO_DIGITS_INTEGER, rounded.getDate().getMonth(), start + 11);
+        outputField(' ', start + 12);
+        outputField(BaseRinexWriter.PADDED_TWO_DIGITS_INTEGER, rounded.getDate().getDay(), start + 14);
+        outputField(' ', start + 15);
+        outputField(BaseRinexWriter.PADDED_TWO_DIGITS_INTEGER, rounded.getTime().getHour(), start + 17);
+        outputField(' ', start + 18);
+        outputField(BaseRinexWriter.PADDED_TWO_DIGITS_INTEGER, rounded.getTime().getMinute(), start + 20);
+        outputField(' ', start + 21);
+        outputField(BaseRinexWriter.PADDED_TWO_DIGITS_INTEGER,
+                    (int) FastMath.round(rounded.getTime().getSecond()), start + 23);
     }
 
     /** Container for navigation messages iterator.
