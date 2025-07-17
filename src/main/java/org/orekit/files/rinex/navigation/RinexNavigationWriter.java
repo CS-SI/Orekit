@@ -110,9 +110,6 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
     /** Set of time scales. */
     private final TimeScales timeScales;
 
-    /** Time scale for writing dates. */
-    private TimeScale timeScale;
-
     /** Simple constructor.
      * <p>
      * This constructor uses the {@link DataContext#getDefault() default data context}
@@ -151,7 +148,6 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
      * @param rinexNavigation Rinex navigation file to write
      * @exception IOException if an I/O error occurs.
      */
-    @DefaultDataContext
     public void writeCompleteFile(final RinexNavigation rinexNavigation) throws IOException {
 
         prepareComments(rinexNavigation.getComments());
@@ -245,13 +241,9 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
      * @param header header to write
      * @exception IOException if an I/O error occurs.
      */
-    @DefaultDataContext
     public void writeHeader(final RinexNavigationHeader header) throws IOException {
 
         super.writeHeader(header, RinexNavigationHeader.LABEL_INDEX);
-
-        final TimeScale built = getTimeScale(header.getSatelliteSystem());
-        timeScale = built != null ? built : getTimeScale(SatelliteSystem.GPS);
 
         // RINEX VERSION / TYPE
         outputField(NINE_TWO_DIGITS_FLOAT, header.getFormatVersion(), 9);
