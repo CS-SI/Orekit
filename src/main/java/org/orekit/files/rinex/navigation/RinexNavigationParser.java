@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.InputMismatchException;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.hipparchus.util.FastMath;
@@ -120,6 +121,9 @@ public class RinexNavigationParser {
 
     /** Converter for accelerations of small angles. */
     private static final Unit AS_PER_DAY2 = Unit.parse("as/d²");
+
+    /** Total Electron Content. */
+    private static final Unit TEC = Unit.TOTAL_ELECTRON_CONTENT_UNIT;
 
     /** System initials. */
     private static final String INITIALS = "GRECIJS";
@@ -275,6 +279,9 @@ public class RinexNavigationParser {
         /** Container for ionosphere Klobuchar message. */
         private IonosphereKlobucharMessage klobuchar;
 
+        /** Container for NacIV NeQuick N message. */
+        private IonosphereNavICNeQuickNMessage navICNeQuickN;
+
         /** Container for ionosphere Nequick-G message. */
         private IonosphereNequickGMessage nequickG;
 
@@ -298,6 +305,84 @@ public class RinexNavigationParser {
 
         }
 
+        /** Parse a date.
+         * @param line line to parse
+         * @param dateSetter sett for the date
+         * @param system satellite system
+         * @since 14.0
+         */
+        private void parseDate(final String line, final Consumer<AbsoluteDate> dateSetter,
+                               final SatelliteSystem system) {
+            parseDate(line, dateSetter, system.getObservationTimeScale().getTimeScale(timeScales));
+        }
+
+        /** Parse a date.
+         * @param line line to parse
+         * @param dateSetter sett for the date
+         * @param timeScale time scale
+         * @since 14.0
+         */
+        private void parseDate(final String line, final Consumer<AbsoluteDate> dateSetter,
+                               final TimeScale timeScale) {
+            final int year  = ParsingUtils.parseInt(line, 4, 4);
+            final int month = ParsingUtils.parseInt(line, 9, 2);
+            final int day   = ParsingUtils.parseInt(line, 12, 2);
+            final int hours = ParsingUtils.parseInt(line, 15, 2);
+            final int min   = ParsingUtils.parseInt(line, 18, 2);
+            final int sec   = ParsingUtils.parseInt(line, 21, 2);
+            dateSetter.accept(new AbsoluteDate(year, month, day, hours, min, sec, timeScale));
+        }
+
+        /** Parse field 1 of a message line.
+         * @param line line to parse
+         * @param unit unit to apply
+         * @return parsed field
+         * @since 14.0
+         */
+        private double parseField1(final String line, final Unit unit) {
+            return parseField(line, unit, 4);
+        }
+
+        /** Parse field 1 of a message line.
+         * @param line line to parse
+         * @param unit unit to apply
+         * @return parsed field
+         * @since 14.0
+         */
+        private double parseField2(final String line, final Unit unit) {
+            return parseField(line, unit, 23);
+        }
+
+        /** Parse field 1 of a message line.
+         * @param line line to parse
+         * @param unit unit to apply
+         * @return parsed field
+         * @since 14.0
+         */
+        private double parseField3(final String line, final Unit unit) {
+            return parseField(line, unit, 42);
+        }
+
+        /** Parse field 1 of a message line.
+         * @param line line to parse
+         * @param unit unit to apply
+         * @return parsed field
+         * @since 14.0
+         */
+        private double parseField4(final String line, final Unit unit) {
+            return parseField(line, unit, 61);
+        }
+
+        /** Parse field 1 of a message line.
+         * @param line line to parse
+         * @param unit unit to apply
+         * @param index index of first field character
+         * @return parsed field
+         */
+        private double parseField(final String line, final Unit unit, final int index) {
+            return unit.toSI(ParsingUtils.parseDouble(line, index, 19));
+        }
+
         /** Ensure navigation message has been closed.
          */
         void closePendingMessage() {
@@ -305,7 +390,6 @@ public class RinexNavigationParser {
                 systemLineParser.closeMessage(this);
                 systemLineParser = null;
             }
-
         }
 
     }
@@ -625,10 +709,10 @@ public class RinexNavigationParser {
         /** Parser for system time offset message model. */
         STO_LINE_1((header, line) -> true,
                    (line, pi) -> {
-                       pi.sto.setTransmissionTime(Unit.SECOND.toSI(ParsingUtils.parseDouble(line, 4, 19)));
-                       pi.sto.setA0(Unit.SECOND.toSI(ParsingUtils.parseDouble(line, 23, 19)));
-                       pi.sto.setA1(S_PER_S.toSI(ParsingUtils.parseDouble(line, 42, 19)));
-                       pi.sto.setA2(S_PER_S2.toSI(ParsingUtils.parseDouble(line, 61, 19)));
+                       pi.sto.setTransmissionTime(pi.parseField1(line, Unit.SECOND));
+                       pi.sto.setA0(pi.parseField2(line, Unit.SECOND));
+                       pi.sto.setA1(pi.parseField3(line, S_PER_S));
+                       pi.sto.setA2(pi.parseField4(line, S_PER_S2));
                        pi.file.addSystemTimeOffset(pi.sto);
                        pi.sto = null;
                    },
@@ -648,14 +732,7 @@ public class RinexNavigationParser {
                                pi.sto.setUtcId(!utc.isEmpty() ? UtcId.parseUtcId(utc) : null);
 
                                // TODO is the reference date relative to one or the other time scale?
-                               final int year  = ParsingUtils.parseInt(line, 4, 4);
-                               final int month = ParsingUtils.parseInt(line, 9, 2);
-                               final int day   = ParsingUtils.parseInt(line, 12, 2);
-                               final int hours = ParsingUtils.parseInt(line, 15, 2);
-                               final int min   = ParsingUtils.parseInt(line, 18, 2);
-                               final int sec   = ParsingUtils.parseInt(line, 21, 2);
-                               pi.sto.setReferenceEpoch(new AbsoluteDate(year, month, day, hours, min, sec,
-                                                                         pi.sto.getDefinedTimeSystem().getTimeScale(pi.timeScales)));
+                               pi.parseDate(line, pi.sto::setReferenceEpoch, pi.sto.getSystem());
 
                            },
                            pi -> Collections.singleton(STO_LINE_1)),
@@ -674,10 +751,10 @@ public class RinexNavigationParser {
         /** Parser for Earth orientation parameter message model. */
         EOP_LINE_2((header, line) -> true,
                    (line, pi) -> {
-                       pi.eop.setTransmissionTime(Unit.SECOND.toSI(ParsingUtils.parseDouble(line, 4, 19)));
-                       pi.eop.setDut1(Unit.SECOND.toSI(ParsingUtils.parseDouble(line, 23, 19)));
-                       pi.eop.setDut1Dot(S_PER_DAY.toSI(ParsingUtils.parseDouble(line, 42, 19)));
-                       pi.eop.setDut1DotDot(S_PER_DAY2.toSI(ParsingUtils.parseDouble(line, 61, 19)));
+                       pi.eop.setTransmissionTime(pi.parseField1(line, Unit.SECOND));
+                       pi.eop.setDut1(pi.parseField2(line, Unit.SECOND));
+                       pi.eop.setDut1Dot(pi.parseField3(line, S_PER_DAY));
+                       pi.eop.setDut1DotDot(pi.parseField4(line, S_PER_DAY2));
                        pi.file.addEarthOrientationParameter(pi.eop);
                        pi.eop = null;
                    },
@@ -686,26 +763,19 @@ public class RinexNavigationParser {
         /** Parser for Earth orientation parameter message model. */
         EOP_LINE_1((header, line) -> true,
                    (line, pi) -> {
-                       pi.eop.setYp(Unit.ARC_SECOND.toSI(ParsingUtils.parseDouble(line, 23, 19)));
-                       pi.eop.setYpDot(AS_PER_DAY.toSI(ParsingUtils.parseDouble(line, 42, 19)));
-                       pi.eop.setYpDotDot(AS_PER_DAY2.toSI(ParsingUtils.parseDouble(line, 61, 19)));
+                       pi.eop.setYp(pi.parseField2(line, Unit.ARC_SECOND));
+                       pi.eop.setYpDot(pi.parseField3(line, AS_PER_DAY));
+                       pi.eop.setYpDotDot(pi.parseField4(line, AS_PER_DAY2));
                    },
                    pi -> Collections.singleton(EOP_LINE_2)),
 
         /** Parser for Earth orientation parameter message model. */
         EOP_LINE_0((header, line) -> true,
                    (line, pi) -> {
-                       final int year  = ParsingUtils.parseInt(line, 4, 4);
-                       final int month = ParsingUtils.parseInt(line, 9, 2);
-                       final int day   = ParsingUtils.parseInt(line, 12, 2);
-                       final int hours = ParsingUtils.parseInt(line, 15, 2);
-                       final int min   = ParsingUtils.parseInt(line, 18, 2);
-                       final int sec   = ParsingUtils.parseInt(line, 21, 2);
-                       pi.eop.setReferenceEpoch(new AbsoluteDate(year, month, day, hours, min, sec,
-                                                                 pi.eop.getSystem().getObservationTimeScale().getTimeScale(pi.timeScales)));
-                       pi.eop.setXp(Unit.ARC_SECOND.toSI(ParsingUtils.parseDouble(line, 23, 19)));
-                       pi.eop.setXpDot(AS_PER_DAY.toSI(ParsingUtils.parseDouble(line, 42, 19)));
-                       pi.eop.setXpDotDot(AS_PER_DAY2.toSI(ParsingUtils.parseDouble(line, 61, 19)));
+                       pi.parseDate(line, pi.eop::setReferenceEpoch, pi.eop.getSystem());
+                       pi.eop.setXp(pi.parseField2(line, Unit.ARC_SECOND));
+                       pi.eop.setXpDot(pi.parseField3(line, AS_PER_DAY));
+                       pi.eop.setXpDotDot(pi.parseField4(line, AS_PER_DAY2));
                    },
                    pi -> Collections.singleton(EOP_LINE_1)),
 
@@ -713,18 +783,18 @@ public class RinexNavigationParser {
         EOP_TYPE((header, line) -> line.startsWith("> EOP"),
                  (line, pi) -> {
                      pi.closePendingMessage();
-                     pi.eop = new EarthOrientationParameterMessage(SatelliteSystem.parseSatelliteSystem(
-                         ParsingUtils.parseString(line, 6, 1)),
-                                                                   ParsingUtils.parseInt(line, 7, 2),
-                                                                   ParsingUtils.parseString(line, 10, 4));
+                     pi.eop =
+                         new EarthOrientationParameterMessage(SatelliteSystem.
+                                                              parseSatelliteSystem(ParsingUtils.parseString(line, 6, 1)),
+                                                              ParsingUtils.parseInt(line, 7, 2),
+                                                              ParsingUtils.parseString(line, 10, 4));
                  },
                  pi -> Collections.singleton(EOP_LINE_0)),
 
         /** Parser for ionosphere Klobuchar message model. */
         KLOBUCHAR_LINE_2((header, line) -> true,
                          (line, pi) -> {
-                             pi.klobuchar.setBetaI(3, IonosphereKlobucharMessage.S_PER_SC_N[3].toSI(
-                                 ParsingUtils.parseDouble(line, 4, 19)));
+                             pi.klobuchar.setBetaI(3, pi.parseField1(line, IonosphereBaseMessage.S_PER_SC_N[3]));
                              pi.klobuchar.setRegionCode(ParsingUtils.parseDouble(line, 23, 19) < 0.5 ?
                                                         RegionCode.WIDE_AREA : RegionCode.JAPAN);
                              pi.file.addKlobucharMessage(pi.klobuchar);
@@ -735,72 +805,131 @@ public class RinexNavigationParser {
         /** Parser for ionosphere Klobuchar message model. */
         KLOBUCHAR_LINE_1((header, line) -> true,
                          (line, pi) -> {
-                             pi.klobuchar.setAlphaI(3, IonosphereKlobucharMessage.S_PER_SC_N[3].toSI(
-                                 ParsingUtils.parseDouble(line, 4, 19)));
-                             pi.klobuchar.setBetaI(0, IonosphereKlobucharMessage.S_PER_SC_N[0].toSI(
-                                 ParsingUtils.parseDouble(line, 23, 19)));
-                             pi.klobuchar.setBetaI(1, IonosphereKlobucharMessage.S_PER_SC_N[1].toSI(
-                                 ParsingUtils.parseDouble(line, 42, 19)));
-                             pi.klobuchar.setBetaI(2, IonosphereKlobucharMessage.S_PER_SC_N[2].toSI(
-                                 ParsingUtils.parseDouble(line, 61, 19)));
+                             pi.klobuchar.setAlphaI(3, pi.parseField1(line, IonosphereBaseMessage.S_PER_SC_N[3]));
+                             pi.klobuchar.setBetaI(0, pi.parseField2(line, IonosphereBaseMessage.S_PER_SC_N[0]));
+                             pi.klobuchar.setBetaI(1, pi.parseField3(line, IonosphereBaseMessage.S_PER_SC_N[1]));
+                             pi.klobuchar.setBetaI(2, pi.parseField4(line, IonosphereBaseMessage.S_PER_SC_N[2]));
                          },
                          pi -> Collections.singleton(KLOBUCHAR_LINE_2)),
 
         /** Parser for ionosphere Klobuchar message model. */
         KLOBUCHAR_LINE_0((header, line) -> true,
                          (line, pi) -> {
-                             final int year  = ParsingUtils.parseInt(line, 4, 4);
-                             final int month = ParsingUtils.parseInt(line, 9, 2);
-                             final int day   = ParsingUtils.parseInt(line, 12, 2);
-                             final int hours = ParsingUtils.parseInt(line, 15, 2);
-                             final int min   = ParsingUtils.parseInt(line, 18, 2);
-                             final int sec   = ParsingUtils.parseInt(line, 21, 2);
-                             pi.klobuchar.setTransmitTime(new AbsoluteDate(year, month, day, hours, min, sec,
-                                                                           pi.klobuchar.getSystem().getObservationTimeScale().getTimeScale(pi.timeScales)));
-                             pi.klobuchar.setAlphaI(0, IonosphereKlobucharMessage.S_PER_SC_N[0].toSI(
-                                 ParsingUtils.parseDouble(line, 23, 19)));
-                             pi.klobuchar.setAlphaI(1, IonosphereKlobucharMessage.S_PER_SC_N[1].toSI(
-                                 ParsingUtils.parseDouble(line, 42, 19)));
-                             pi.klobuchar.setAlphaI(2, IonosphereKlobucharMessage.S_PER_SC_N[2].toSI(
-                                 ParsingUtils.parseDouble(line, 61, 19)));
+                             pi.parseDate(line, pi.klobuchar::setTransmitTime, pi.klobuchar.getSystem());
+                             pi.klobuchar.setAlphaI(0, pi.parseField2(line, IonosphereBaseMessage.S_PER_SC_N[0]));
+                             pi.klobuchar.setAlphaI(1, pi.parseField3(line, IonosphereBaseMessage.S_PER_SC_N[1]));
+                             pi.klobuchar.setAlphaI(2, pi.parseField3(line, IonosphereBaseMessage.S_PER_SC_N[2]));
                          },
                          pi -> Collections.singleton(KLOBUCHAR_LINE_1)),
 
-        /** Parser for ionosphere Nequick-G message model. */
-        NEQUICK_LINE_1((header, line) -> true,
-                       (line, pi) -> {
-                           pi.nequickG.setFlags((int) FastMath.rint(ParsingUtils.parseDouble(line, 4, 19)));
-                           pi.file.addNequickGMessage(pi.nequickG);
-                           pi.nequickG = null;
-                       },
-                       LineParser::navigationNext),
+        /** Parser for NacIV NeQuick N message model.
+         * @since 14.0
+         */
+        NAVIC_NEQUICK_N_LINE_6((header, line) -> true,
+                         (line, pi) -> {
+                             pi.navICNeQuickN.getRegion3().setLonMin(pi.parseField1(line, Unit.DEGREE));
+                             pi.navICNeQuickN.getRegion3().setLonMax(pi.parseField2(line, Unit.DEGREE));
+                             pi.navICNeQuickN.getRegion3().setModipMin(pi.parseField3(line, Unit.DEGREE));
+                             pi.navICNeQuickN.getRegion3().setModipMax(pi.parseField4(line, Unit.DEGREE));
+                             pi.file.addNavICNeQuickNMessage(pi.navICNeQuickN);
+                             pi.navICNeQuickN = null;
+                         },
+                         LineParser::navigationNext),
+
+        /** Parser for NacIV NeQuick N message model.
+         * @since 14.0
+         */
+        NAVIC_NEQUICK_N_LINE_5((header, line) -> true,
+                         (line, pi) -> {
+                             pi.navICNeQuickN.getRegion3().setAi0(pi.parseField1(line, IonosphereAij.SFU));
+                             pi.navICNeQuickN.getRegion3().setAi1(pi.parseField2(line, IonosphereAij.SFU_PER_DEG));
+                             pi.navICNeQuickN.getRegion3().setAi2(pi.parseField3(line, IonosphereAij.SFU_PER_DEG2));
+                             pi.navICNeQuickN.getRegion3().setIDF(pi.parseField4(line, Unit.ONE));
+                         },
+                         pi -> Collections.singleton(NAVIC_NEQUICK_N_LINE_6)),
+
+        /** Parser for NacIV NeQuick N message model.
+         * @since 14.0
+         */
+        NAVIC_NEQUICK_N_LINE_4((header, line) -> true,
+                         (line, pi) -> {
+                             pi.navICNeQuickN.getRegion2().setLonMin(pi.parseField1(line, Unit.DEGREE));
+                             pi.navICNeQuickN.getRegion2().setLonMax(pi.parseField2(line, Unit.DEGREE));
+                             pi.navICNeQuickN.getRegion2().setModipMin(pi.parseField3(line, Unit.DEGREE));
+                             pi.navICNeQuickN.getRegion2().setModipMax(pi.parseField4(line, Unit.DEGREE));
+                         },
+                         pi -> Collections.singleton(NAVIC_NEQUICK_N_LINE_5)),
+
+        /** Parser for NacIV NeQuick N message model.
+         * @since 14.0
+         */
+        NAVIC_NEQUICK_N_LINE_3((header, line) -> true,
+                         (line, pi) -> {
+                             pi.navICNeQuickN.getRegion2().setAi0(pi.parseField1(line, IonosphereAij.SFU));
+                             pi.navICNeQuickN.getRegion2().setAi1(pi.parseField2(line, IonosphereAij.SFU_PER_DEG));
+                             pi.navICNeQuickN.getRegion2().setAi2(pi.parseField3(line, IonosphereAij.SFU_PER_DEG2));
+                             pi.navICNeQuickN.getRegion2().setIDF(pi.parseField4(line, Unit.ONE));
+                         },
+                         pi -> Collections.singleton(NAVIC_NEQUICK_N_LINE_4)),
+
+        /** Parser for NacIV NeQuick N message model.
+         * @since 14.0
+         */
+        NAVIC_NEQUICK_N_LINE_2((header, line) -> true,
+                         (line, pi) -> {
+                             pi.navICNeQuickN.getRegion1().setLonMin(pi.parseField1(line, Unit.DEGREE));
+                             pi.navICNeQuickN.getRegion1().setLonMax(pi.parseField2(line, Unit.DEGREE));
+                             pi.navICNeQuickN.getRegion1().setModipMin(pi.parseField3(line, Unit.DEGREE));
+                             pi.navICNeQuickN.getRegion1().setModipMax(pi.parseField4(line, Unit.DEGREE));
+                         },
+                         pi -> Collections.singleton(NAVIC_NEQUICK_N_LINE_3)),
+
+        /** Parser for NacIV NeQuick N message model.
+         * @since 14.0
+         */
+        NAVIC_NEQUICK_N_LINE_1((header, line) -> true,
+                         (line, pi) -> {
+                             pi.navICNeQuickN.getRegion1().setAi0(pi.parseField1(line, IonosphereAij.SFU));
+                             pi.navICNeQuickN.getRegion1().setAi1(pi.parseField2(line, IonosphereAij.SFU_PER_DEG));
+                             pi.navICNeQuickN.getRegion1().setAi2(pi.parseField3(line, IonosphereAij.SFU_PER_DEG2));
+                             pi.navICNeQuickN.getRegion1().setIDF(pi.parseField4(line, Unit.ONE));
+                         },
+                         pi -> Collections.singleton(NAVIC_NEQUICK_N_LINE_2)),
+
+        /** Parser for NacIV NeQuick N message model.
+         * @since 14.0
+         */
+        NAVIC_NEQUICK_N_LINE_0((header, line) -> true,
+                               (line, pi) -> {
+                             pi.parseDate(line, pi.navICNeQuickN::setTransmitTime, pi.navICNeQuickN.getSystem());
+                             pi.navICNeQuickN.setIOD(pi.parseField2(line, Unit.ONE));
+                         },
+                         pi -> Collections.singleton(NAVIC_NEQUICK_N_LINE_1)),
 
         /** Parser for ionosphere Nequick-G message model. */
-        NEQUICK_LINE_0((header, line) -> true,
-                       (line, pi) -> {
-                           final int year  = ParsingUtils.parseInt(line, 4, 4);
-                           final int month = ParsingUtils.parseInt(line, 9, 2);
-                           final int day   = ParsingUtils.parseInt(line, 12, 2);
-                           final int hours = ParsingUtils.parseInt(line, 15, 2);
-                           final int min   = ParsingUtils.parseInt(line, 18, 2);
-                           final int sec   = ParsingUtils.parseInt(line, 21, 2);
-                           pi.nequickG.setTransmitTime(new AbsoluteDate(year, month, day, hours, min, sec,
-                                                                        pi.nequickG.getSystem().getObservationTimeScale().getTimeScale(pi.timeScales)));
-                           pi.nequickG.setAi0(IonosphereNequickGMessage.SFU.toSI(ParsingUtils.parseDouble(line, 23, 19)));
-                           pi.nequickG.setAi1(IonosphereNequickGMessage.SFU_PER_DEG.toSI(
-                               ParsingUtils.parseDouble(line, 42, 19)));
-                           pi.nequickG.setAi2(IonosphereNequickGMessage.SFU_PER_DEG2.toSI(
-                               ParsingUtils.parseDouble(line, 61, 19)));
-                       },
-                       pi -> Collections.singleton(NEQUICK_LINE_1)),
+        NEQUICK_G_LINE_1((header, line) -> true,
+                         (line, pi) -> {
+                             pi.nequickG.setFlags((int) FastMath.rint(ParsingUtils.parseDouble(line, 4, 19)));
+                             pi.file.addNequickGMessage(pi.nequickG);
+                             pi.nequickG = null;
+                         },
+                         LineParser::navigationNext),
+
+        /** Parser for ionosphere Nequick-G message model. */
+        NEQUICK_G_LINE_0((header, line) -> true,
+                         (line, pi) -> {
+                           pi.parseDate(line, pi.nequickG::setTransmitTime, pi.nequickG.getSystem());
+                           pi.nequickG.getAij().setAi0(IonosphereAij.SFU.toSI(ParsingUtils.parseDouble(line, 23, 19)));
+                           pi.nequickG.getAij().setAi1(IonosphereAij.SFU_PER_DEG.toSI(ParsingUtils.parseDouble(line, 42, 19)));
+                           pi.nequickG.getAij().setAi2(IonosphereAij.SFU_PER_DEG2.toSI(ParsingUtils.parseDouble(line, 61, 19)));
+                         },
+                         pi -> Collections.singleton(NEQUICK_G_LINE_1)),
 
         /** Parser for ionosphere BDGIM message model. */
         BDGIM_LINE_2((header, line) -> true,
                      (line, pi) -> {
-                         pi.bdgim.setAlphaI(7, Unit.TOTAL_ELECTRON_CONTENT_UNIT.toSI(
-                             ParsingUtils.parseDouble(line, 4, 19)));
-                         pi.bdgim.setAlphaI(8, Unit.TOTAL_ELECTRON_CONTENT_UNIT.toSI(
-                             ParsingUtils.parseDouble(line, 23, 19)));
+                         pi.bdgim.setAlphaI(7, TEC.toSI(ParsingUtils.parseDouble(line, 4, 19)));
+                         pi.bdgim.setAlphaI(8, TEC.toSI(ParsingUtils.parseDouble(line, 23, 19)));
                          pi.file.addBDGIMMessage(pi.bdgim);
                          pi.bdgim = null;
                      },
@@ -809,34 +938,20 @@ public class RinexNavigationParser {
         /** Parser for ionosphere BDGIM message model. */
         BDGIM_LINE_1((header, line) -> true,
                      (line, pi) -> {
-                         pi.bdgim.setAlphaI(3, Unit.TOTAL_ELECTRON_CONTENT_UNIT.toSI(
-                             ParsingUtils.parseDouble(line, 4, 19)));
-                         pi.bdgim.setAlphaI(4, Unit.TOTAL_ELECTRON_CONTENT_UNIT.toSI(
-                             ParsingUtils.parseDouble(line, 23, 19)));
-                         pi.bdgim.setAlphaI(5, Unit.TOTAL_ELECTRON_CONTENT_UNIT.toSI(
-                             ParsingUtils.parseDouble(line, 42, 19)));
-                         pi.bdgim.setAlphaI(6, Unit.TOTAL_ELECTRON_CONTENT_UNIT.toSI(
-                             ParsingUtils.parseDouble(line, 61, 19)));
+                         pi.bdgim.setAlphaI(3, TEC.toSI(ParsingUtils.parseDouble(line, 4, 19)));
+                         pi.bdgim.setAlphaI(4, TEC.toSI(ParsingUtils.parseDouble(line, 23, 19)));
+                         pi.bdgim.setAlphaI(5, TEC.toSI(ParsingUtils.parseDouble(line, 42, 19)));
+                         pi.bdgim.setAlphaI(6, TEC.toSI(ParsingUtils.parseDouble(line, 61, 19)));
                      },
                      pi -> Collections.singleton(BDGIM_LINE_2)),
 
         /** Parser for ionosphere BDGIM message model. */
         BDGIM_LINE_0((header, line) -> true,
                      (line, pi) -> {
-                         final int year  = ParsingUtils.parseInt(line, 4, 4);
-                         final int month = ParsingUtils.parseInt(line, 9, 2);
-                         final int day   = ParsingUtils.parseInt(line, 12, 2);
-                         final int hours = ParsingUtils.parseInt(line, 15, 2);
-                         final int min   = ParsingUtils.parseInt(line, 18, 2);
-                         final int sec   = ParsingUtils.parseInt(line, 21, 2);
-                         pi.bdgim.setTransmitTime(new AbsoluteDate(year, month, day, hours, min, sec,
-                                                                   pi.bdgim.getSystem().getObservationTimeScale().getTimeScale(pi.timeScales)));
-                         pi.bdgim.setAlphaI(0, Unit.TOTAL_ELECTRON_CONTENT_UNIT.toSI(
-                             ParsingUtils.parseDouble(line, 23, 19)));
-                         pi.bdgim.setAlphaI(1, Unit.TOTAL_ELECTRON_CONTENT_UNIT.toSI(
-                             ParsingUtils.parseDouble(line, 42, 19)));
-                         pi.bdgim.setAlphaI(2, Unit.TOTAL_ELECTRON_CONTENT_UNIT.toSI(
-                             ParsingUtils.parseDouble(line, 61, 19)));
+                         pi.parseDate(line, pi.bdgim::setTransmitTime, pi.bdgim.getSystem());
+                         pi.bdgim.setAlphaI(0, TEC.toSI(ParsingUtils.parseDouble(line, 23, 19)));
+                         pi.bdgim.setAlphaI(1, TEC.toSI(ParsingUtils.parseDouble(line, 42, 19)));
+                         pi.bdgim.setAlphaI(2, TEC.toSI(ParsingUtils.parseDouble(line, 61, 19)));
                      },
                      pi -> Collections.singleton(BDGIM_LINE_1)),
 
@@ -851,17 +966,21 @@ public class RinexNavigationParser {
                       final String          subtype = ParsingUtils.parseString(line, 15, 4);
                       if (system == SatelliteSystem.GALILEO) {
                           pi.nequickG = new IonosphereNequickGMessage(system, prn, type, subtype);
+                      } else if (system == SatelliteSystem.BEIDOU && "CNVX".equals(type)) {
+                          // in Rinex 4.00, tables A32 and A34 (A35 and A37 in Rinex 4.02) are ambiguous
+                          // as both seem to apply to Beidou CNVX messages; we consider BDGIM is the
+                          // proper model in this case
+                          pi.bdgim = new IonosphereBDGIMMessage(system, prn, type, subtype);
+                      } else if (system == SatelliteSystem.NAVIC && "L1NV".equals(type) && "KLOB".equals(subtype)) {
+                          pi.navICNeQuickN = new IonosphereNavICNeQuickNMessage(system, prn, type, subtype);
+                      } else if (system == SatelliteSystem.GPS || (system == SatelliteSystem.NAVIC && "KLOB".equals(
+                          subtype))) {
+                          pi.klobuchar = new IonosphereKlobucharMessage(system, prn, type, subtype);
                       } else {
-                          // in Rinex 4.00, tables A32 and A34 are ambiguous as both seem to apply
-                          // to Beidou CNVX messages, we consider BDGIM is the proper model in this case
-                          if (system == SatelliteSystem.BEIDOU && "CNVX".equals(type)) {
-                              pi.bdgim = new IonosphereBDGIMMessage(system, prn, type, subtype);
-                          } else {
-                              pi.klobuchar = new IonosphereKlobucharMessage(system, prn, type, subtype);
-                          }
+                          // TODO
                       }
                   },
-                  pi -> Collections.singleton(pi.nequickG != null ? NEQUICK_LINE_0 : (pi.bdgim != null ? BDGIM_LINE_0 : KLOBUCHAR_LINE_0)));
+                  LineParser::ionosphereNext);
 
         /** Predicate for identifying lines that can be parsed. */
         private final BiFunction<RinexNavigationHeader, String, Boolean> canHandle;
@@ -944,6 +1063,24 @@ public class RinexNavigationParser {
             }
         }
 
+        /** Get the allowed parsers for next lines while parsing ionospheric model date.
+         * @param parseInfo holder for transient data
+         * @return allowed parsers for next line
+         */
+        private static Iterable<LineParser> ionosphereNext(final ParseInfo parseInfo) {
+            if (parseInfo.nequickG != null) {
+                return Collections.singleton(NEQUICK_G_LINE_0);
+            } else if (parseInfo.bdgim != null) {
+                return Collections.singleton(BDGIM_LINE_0);
+            } else if (parseInfo.klobuchar != null) {
+                return Collections.singleton(KLOBUCHAR_LINE_0);
+            } else if (parseInfo.navICNeQuickN != null) {
+                return Collections.singleton(NAVIC_NEQUICK_N_LINE_0);
+            } else {
+                // TODO
+            }
+        }
+
     }
 
     /** Parsers for satellite system specific lines. */
@@ -958,7 +1095,7 @@ public class RinexNavigationParser {
                 if (pi.file.getHeader().getFormatVersion() < 3.0) {
                     parseSvEpochSvClockLineRinex2(line, pi.timeScales.getGPS(), pi.gpsLNav);
                 } else {
-                    parseSvEpochSvClockLine(line, pi.timeScales.getGPS(), pi.gpsLNav);
+                    parseSvEpochSvClockLine(line, pi.timeScales.getGPS(), pi, pi.gpsLNav);
                 }
             }
 
@@ -1043,7 +1180,7 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void parseSvEpochSvClockLine(final String line, final ParseInfo pi) {
-                parseSvEpochSvClockLine(line, pi.timeScales.getGPS(), pi.gpsCNav);
+                parseSvEpochSvClockLine(line, pi.timeScales.getGPS(), pi, pi.gpsCNav);
             }
 
             /** {@inheritDoc} */
@@ -1152,7 +1289,7 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void parseSvEpochSvClockLine(final String line, final ParseInfo pi) {
-                parseSvEpochSvClockLine(line, pi.timeScales.getGPS(), pi.galileoNav);
+                parseSvEpochSvClockLine(line, pi.timeScales.getGPS(), pi, pi.galileoNav);
             }
 
             /** {@inheritDoc} */
@@ -1259,7 +1396,7 @@ public class RinexNavigationParser {
                     pi.glonassNav.setPRN(ParsingUtils.parseInt(line, 1, 2));
 
                     // Toc
-                    pi.glonassNav.setEpochToc(parsePrnSvEpochClock(line, pi.timeScales.getUTC()));
+                    pi.parseDate(line, pi.glonassNav::setEpochToc, pi.timeScales.getUTC());
 
                     // clock
                     pi.glonassNav.setTauN(-ParsingUtils.parseDouble(line, 23, 19));
@@ -1326,7 +1463,7 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void parseSvEpochSvClockLine(final String line, final ParseInfo pi) {
-                parseSvEpochSvClockLine(line, pi.timeScales.getGPS(), pi.qzssLNav);
+                parseSvEpochSvClockLine(line, pi.timeScales.getGPS(), pi, pi.qzssLNav);
             }
 
             /** {@inheritDoc} */
@@ -1410,7 +1547,7 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void parseSvEpochSvClockLine(final String line, final ParseInfo pi) {
-                parseSvEpochSvClockLine(line, pi.timeScales.getGPS(), pi.qzssCNav);
+                parseSvEpochSvClockLine(line, pi.timeScales.getGPS(), pi, pi.qzssCNav);
             }
 
             /** {@inheritDoc} */
@@ -1519,7 +1656,7 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void parseSvEpochSvClockLine(final String line, final ParseInfo pi) {
-                parseSvEpochSvClockLine(line, pi.timeScales.getBDT(), pi.beidouLNav);
+                parseSvEpochSvClockLine(line, pi.timeScales.getBDT(), pi, pi.beidouLNav);
             }
 
             /** {@inheritDoc} */
@@ -1599,7 +1736,7 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void parseSvEpochSvClockLine(final String line, final ParseInfo pi) {
-                parseSvEpochSvClockLine(line, pi.timeScales.getBDT(), pi.beidouCNav);
+                parseSvEpochSvClockLine(line, pi.timeScales.getBDT(), pi, pi.beidouCNav);
             }
 
             /** {@inheritDoc} */
@@ -1746,7 +1883,7 @@ public class RinexNavigationParser {
                 final int       version100 = (int) FastMath.rint(pi.file.getHeader().getFormatVersion() * 100);
                 final TimeScale timeScale  = (version100 == 301) ? pi.timeScales.getUTC() : pi.timeScales.getGPS();
 
-                pi.sbasNav.setEpochToc(parsePrnSvEpochClock(line, timeScale));
+                pi.parseDate(line, pi.sbasNav::setEpochToc, timeScale);
                 pi.sbasNav.setAGf0(parseBroadcastDouble2(line, pi.initialSpaces, Unit.SECOND));
                 pi.sbasNav.setAGf1(parseBroadcastDouble3(line, pi.initialSpaces, S_PER_S));
                 pi.sbasNav.setTime(parseBroadcastDouble4(line, pi.initialSpaces, Unit.SECOND));
@@ -1799,7 +1936,7 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void parseSvEpochSvClockLine(final String line, final ParseInfo pi) {
-                parseSvEpochSvClockLine(line, pi.timeScales.getNavIC(), pi.navicLNav);
+                parseSvEpochSvClockLine(line, pi.timeScales.getNavIC(), pi, pi.navicLNav);
             }
 
             /** {@inheritDoc} */
@@ -1880,7 +2017,7 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void parseSvEpochSvClockLine(final String line, final ParseInfo pi) {
-                parseSvEpochSvClockLine(line, pi.timeScales.getGPS(), pi.navicL1NV);
+                parseSvEpochSvClockLine(line, pi.timeScales.getGPS(), pi, pi.navicL1NV);
             }
 
             /** {@inheritDoc} */
@@ -2112,36 +2249,22 @@ public class RinexNavigationParser {
          * Parse the SV/Epoch/Sv clock of the navigation message.
          * @param line line to read
          * @param timeScale time scale to use
+         * @param parseInfo container for parsing info
          * @param message navigation message
          */
         protected void parseSvEpochSvClockLine(final String line, final TimeScale timeScale,
-                                               final AbstractNavigationMessage<?> message) {
+                                               final ParseInfo parseInfo, final AbstractNavigationMessage<?> message) {
             // PRN
             message.setPRN(ParsingUtils.parseInt(line, 1, 2));
 
             // Toc
-            message.setEpochToc(parsePrnSvEpochClock(line, timeScale));
+            parseInfo.parseDate(line, message::setEpochToc, timeScale);
 
             // clock
             message.setAf0(ParsingUtils.parseDouble(line, 23, 19));
             message.setAf1(ParsingUtils.parseDouble(line, 42, 19));
             message.setAf2(ParsingUtils.parseDouble(line, 61, 19));
 
-        }
-
-        /** Parse epoch field of a Sv/epoch/clock line.
-         * @param line line to parse
-         * @param timeScale time scale to use
-         * @return parsed field
-         */
-        protected AbsoluteDate parsePrnSvEpochClock(final String line, final TimeScale timeScale) {
-            final int year  = ParsingUtils.parseInt(line, 4, 4);
-            final int month = ParsingUtils.parseInt(line, 9, 2);
-            final int day   = ParsingUtils.parseInt(line, 12, 2);
-            final int hours = ParsingUtils.parseInt(line, 15, 2);
-            final int min   = ParsingUtils.parseInt(line, 18, 2);
-            final int sec   = ParsingUtils.parseInt(line, 21, 2);
-            return new AbsoluteDate(year, month, day, hours, min, sec, timeScale);
         }
 
         /** Parse double field 1 of a broadcast orbit line.

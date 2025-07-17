@@ -115,25 +115,37 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      */
     private final List<IonosphereBDGIMMessage> bdgimMessages;
 
+    /** Ionosphere NavIC Klobuchar messages.
+     * @since 14.0
+     */
+    private final List<IonosphereNavICKlobucharMessage> navICKlobucharMessages;
+
+    /** Ionosphere NavIC NeQuick N messages.
+     * @since 14.0
+     */
+    private final List<IonosphereNavICNeQuickNMessage> navICNeQuickNMessages;
+
     /** Constructor. */
     public RinexNavigation() {
         super(new RinexNavigationHeader());
-        this.gpsLegacyData      = new HashMap<>();
-        this.gpsCivilianData    = new HashMap<>();
-        this.galileoData        = new HashMap<>();
-        this.beidouLegacyData   = new HashMap<>();
-        this.beidouCivilianData = new HashMap<>();
-        this.qzssLegacyData     = new HashMap<>();
-        this.qzssCivilianData   = new HashMap<>();
-        this.navicLegacyData    = new HashMap<>();
-        this.navicL1NVData = new HashMap<>();
-        this.glonassData        = new HashMap<>();
-        this.sbasData           = new HashMap<>();
-        this.systemTimeOffsets  = new ArrayList<>();
-        this.eops               = new ArrayList<>();
-        this.klobucharMessages  = new ArrayList<>();
-        this.nequickGMessages   = new ArrayList<>();
-        this.bdgimMessages      = new ArrayList<>();
+        this.gpsLegacyData          = new HashMap<>();
+        this.gpsCivilianData        = new HashMap<>();
+        this.galileoData            = new HashMap<>();
+        this.beidouLegacyData       = new HashMap<>();
+        this.beidouCivilianData     = new HashMap<>();
+        this.qzssLegacyData         = new HashMap<>();
+        this.qzssCivilianData       = new HashMap<>();
+        this.navicLegacyData        = new HashMap<>();
+        this.navicL1NVData          = new HashMap<>();
+        this.glonassData            = new HashMap<>();
+        this.sbasData               = new HashMap<>();
+        this.systemTimeOffsets      = new ArrayList<>();
+        this.eops                   = new ArrayList<>();
+        this.klobucharMessages      = new ArrayList<>();
+        this.nequickGMessages       = new ArrayList<>();
+        this.bdgimMessages          = new ArrayList<>();
+        this.navICKlobucharMessages = new ArrayList<>();
+        this.navICNeQuickNMessages  = new ArrayList<>();
     }
 
     /**
@@ -618,6 +630,42 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      */
     public void addBDGIMMessage(final IonosphereBDGIMMessage bdgim) {
         bdgimMessages.add(bdgim);
+    }
+
+    /**
+     * Get the ionosphere NavIC Klobuchar messages.
+     * @return an unmodifiable list of ionosphere NavIC Klobuchar messages
+     * @since 14.0
+     */
+    public List<IonosphereNavICKlobucharMessage> getNavICKlobucharMessages() {
+        return Collections.unmodifiableList(navICKlobucharMessages);
+    }
+
+    /**
+     * Add an ionosphere NavIC Klobuchar message.
+     * @param navIcKlobuchar ionosphere NavIC Klobuchar message
+     * @since 14.0
+     */
+    public void addNavICKlobucharMessage(final IonosphereNavICKlobucharMessage navIcKlobuchar) {
+        navICKlobucharMessages.add(navIcKlobuchar);
+    }
+
+    /**
+     * Get the ionosphere NavIC NeQuick N messages.
+     * @return an unmodifiable list of ionosphere NavIC NeQuick N messages
+     * @since 14.0
+     */
+    public List<IonosphereNavICNeQuickNMessage> getNavICNeQuickNMessages() {
+        return Collections.unmodifiableList(navICNeQuickNMessages);
+    }
+
+    /**
+     * Add an ionosphere NavIC NeQuick N message.
+     * @param navIcNeQuickN ionosphere NavIC NeQuick N message
+     * @since 14.0
+     */
+    public void addNavICNeQuickNMessage(final IonosphereNavICNeQuickNMessage navIcNeQuickN) {
+        navICNeQuickNMessages.add(navIcNeQuickN);
     }
 
 }

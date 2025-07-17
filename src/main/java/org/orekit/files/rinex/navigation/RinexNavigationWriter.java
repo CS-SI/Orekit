@@ -28,8 +28,10 @@ import org.orekit.files.rinex.navigation.writers.GPSLegacyNavigationMessageWrite
 import org.orekit.files.rinex.navigation.writers.GalileoNavigationMessageWriter;
 import org.orekit.files.rinex.navigation.writers.GlonassNavigationMessageWriter;
 import org.orekit.files.rinex.navigation.writers.KlobucharMessageWriter;
+import org.orekit.files.rinex.navigation.writers.NavICKlobucharNavigationMessageWriter;
 import org.orekit.files.rinex.navigation.writers.NavICL1NVNavigationMessageWriter;
 import org.orekit.files.rinex.navigation.writers.NavICLegacyNavigationMessageWriter;
+import org.orekit.files.rinex.navigation.writers.NavICNeQuickNNavigationMessageWriter;
 import org.orekit.files.rinex.navigation.writers.NavigationMessageWriter;
 import org.orekit.files.rinex.navigation.writers.NequickGMessageWriter;
 import org.orekit.files.rinex.navigation.writers.QZSSCivilianNavigationMessageWriter;
@@ -103,6 +105,22 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
      * </p>
      */
     private static final String BDGIM_IDENTIFIER = "00_IONO_BDGIM";
+
+    /** Identifier for NavIC Klobuchar ionospheric messages.
+     * <p>
+     * The identifier is prefixed with "00_" so all messages that are not related
+     * to any satellites are grouped together before satellite messages
+     * </p>
+     */
+    private static final String NAVIC_KLOBUCHAR_IDENTIFIER = "00_IONO_NAVIC_KLOBUCHAR";
+
+    /** Identifier for NavIC NeQuick N ionospheric messages.
+     * <p>
+     * The identifier is prefixed with "00_" so all messages that are not related
+     * to any satellites are grouped together before satellite messages
+     * </p>
+     */
+    private static final String NAVIC_NEQUICK_N_IDENTIFIER = "00_IONO_NAVIC_NEQUICK_N";
 
     /** Mapper from satellite system to time scales. */
     private final BiFunction<SatelliteSystem, TimeScales, ? extends TimeScale> timeScaleBuilder;
@@ -191,6 +209,10 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
                                           rinexNavigation.getNequickGMessages()));
         pending.add(new PendingMessages<>(BDGIM_IDENTIFIER, new BDGIMMessageWriter(),
                                           rinexNavigation.getBDGIMMessages()));
+        pending.add(new PendingMessages<>(NAVIC_KLOBUCHAR_IDENTIFIER, new NavICKlobucharNavigationMessageWriter(),
+                                          rinexNavigation.getNavICKlobucharNavigationMessages()));
+        pending.add(new PendingMessages<>(NAVIC_NEQUICK_N_IDENTIFIER, new NavICNeQuickNNavigationMessageWriter(),
+                                          rinexNavigation.getNavICNeQuickNNavigationMessages()));
 
         pending.sort(Comparator.comparing(pl -> pl.identifier));
 

@@ -157,7 +157,6 @@ public class SBASNavigationMessage extends AbstractEphemerisMessage implements S
         this.iodn = (int) iod;
     }
 
-
     /** {@inheritDoc} */
     @Override
     public double getAGf0() {
