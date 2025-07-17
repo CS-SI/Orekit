@@ -160,7 +160,7 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
         // prepare chronological iteration
         final List<PendingMessages<?>> pending = new ArrayList<>();
 
-        // messages associated to satellites
+        // messages associated with satellites
         pending.addAll(createHandlers(rinexNavigation.getGPSLegacyNavigationMessages(),
                                       new GPSLegacyNavigationMessageWriter()));
         pending.addAll(createHandlers(rinexNavigation.getGPSCivilianNavigationMessages(),
