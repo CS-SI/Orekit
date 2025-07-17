@@ -16,6 +16,7 @@
  */
 package org.orekit.files.rinex.navigation.writers;
 
+import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
 import org.orekit.time.TimeStamped;
 
@@ -31,9 +32,11 @@ public interface NavigationMessageWriter<T extends TimeStamped> {
     /** Write a navigation message.
      * @param identifier identifier
      * @param message navigation message to write
+     * @param header file header
      * @param writer global file writer
      * @throws IOException if an I/O error occurs.
      */
-    void writeMessage(String identifier, T message, RinexNavigationWriter writer) throws IOException;
+    void writeMessage(String identifier, T message,
+                      RinexNavigationHeader header, RinexNavigationWriter writer) throws IOException;
 
 }

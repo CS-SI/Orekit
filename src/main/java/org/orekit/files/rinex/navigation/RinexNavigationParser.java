@@ -846,17 +846,18 @@ public class RinexNavigationParser {
                       pi.closePendingMessage();
                       final SatelliteSystem system = SatelliteSystem.parseSatelliteSystem(
                           ParsingUtils.parseString(line, 6, 1));
-                      final int             prn    = ParsingUtils.parseInt(line, 7, 2);
-                      final String          type   = ParsingUtils.parseString(line, 10, 4);
+                      final int             prn     = ParsingUtils.parseInt(line, 7, 2);
+                      final String          type    = ParsingUtils.parseString(line, 10, 4);
+                      final String          subtype = ParsingUtils.parseString(line, 15, 4);
                       if (system == SatelliteSystem.GALILEO) {
-                          pi.nequickG = new IonosphereNequickGMessage(system, prn, type);
+                          pi.nequickG = new IonosphereNequickGMessage(system, prn, type, subtype);
                       } else {
                           // in Rinex 4.00, tables A32 and A34 are ambiguous as both seem to apply
                           // to Beidou CNVX messages, we consider BDGIM is the proper model in this case
                           if (system == SatelliteSystem.BEIDOU && "CNVX".equals(type)) {
-                              pi.bdgim = new IonosphereBDGIMMessage(system, prn, type);
+                              pi.bdgim = new IonosphereBDGIMMessage(system, prn, type, subtype);
                           } else {
-                              pi.klobuchar = new IonosphereKlobucharMessage(system, prn, type);
+                              pi.klobuchar = new IonosphereKlobucharMessage(system, prn, type, subtype);
                           }
                       }
                   },

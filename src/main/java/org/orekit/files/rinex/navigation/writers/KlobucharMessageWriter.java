@@ -17,6 +17,7 @@
 package org.orekit.files.rinex.navigation.writers;
 
 import org.orekit.files.rinex.navigation.IonosphereKlobucharMessage;
+import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
 
 import java.io.IOException;
@@ -31,7 +32,7 @@ public class KlobucharMessageWriter
     /** {@inheritDoc} */
     @Override
     public void writeMessage(final String identifier, final IonosphereKlobucharMessage message,
-                             final RinexNavigationWriter writer)
+                             final RinexNavigationHeader header, final RinexNavigationWriter writer)
         throws IOException {
         // TODO
     }

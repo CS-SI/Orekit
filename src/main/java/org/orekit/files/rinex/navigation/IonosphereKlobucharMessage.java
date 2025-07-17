@@ -50,9 +50,11 @@ public class IonosphereKlobucharMessage extends IonosphereBaseMessage {
      * @param system satellite system
      * @param prn satellite number
      * @param navigationMessageType navigation message type
+     * @param subType message subtype
      */
-    public IonosphereKlobucharMessage(final SatelliteSystem system, final int prn, final String navigationMessageType) {
-        super(system, prn, navigationMessageType);
+    public IonosphereKlobucharMessage(final SatelliteSystem system, final int prn,
+                                      final String navigationMessageType, final String subType) {
+        super(system, prn, navigationMessageType, subType);
         alpha = new double[4];
         beta  = new double[4];
     }

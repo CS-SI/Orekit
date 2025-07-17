@@ -31,9 +31,11 @@ public class IonosphereBDGIMMessage extends IonosphereBaseMessage {
      * @param system satellite system
      * @param prn satellite number
      * @param navigationMessageType navigation message type
+     * @param subType message subtype
      */
-    public IonosphereBDGIMMessage(final SatelliteSystem system, final int prn, final String navigationMessageType) {
-        super(system, prn, navigationMessageType);
+    public IonosphereBDGIMMessage(final SatelliteSystem system, final int prn,
+                                  final String navigationMessageType, final String subType) {
+        super(system, prn, navigationMessageType, subType);
         alpha = new double[9];
     }
 

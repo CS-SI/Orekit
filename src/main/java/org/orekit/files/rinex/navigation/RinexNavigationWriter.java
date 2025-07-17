@@ -198,7 +198,7 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
         for (AbsoluteDate date = earliest(pending); date.isFinite(); date = earliest(pending)) {
             // write all messages that correspond to this date
             for (final PendingMessages<?> pm : pending) {
-                pm.writeMessageAtDate(date);
+                pm.writeMessageAtDate(date, getHeader());
             }
         }
 
@@ -362,12 +362,13 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
 
         /** Write next entry if close to processing date.
          * @param date processing date
+         * @param header file header
          * @exception IOException if an I/O error occurs.
          */
-        void writeMessageAtDate(final AbsoluteDate date) throws IOException {
+        void writeMessageAtDate(final AbsoluteDate date, final RinexNavigationHeader header) throws IOException {
             if (index < messages.size() && FastMath.abs(date.durationFrom(messages.get(index))) <= EPS) {
                 // write next entry and advance
-                messageWriter.writeMessage(identifier, messages.get(index++), RinexNavigationWriter.this);
+                messageWriter.writeMessage(identifier, messages.get(index++), header, RinexNavigationWriter.this);
             }
         }
 

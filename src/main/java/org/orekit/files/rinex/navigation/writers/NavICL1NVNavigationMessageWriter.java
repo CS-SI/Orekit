@@ -16,6 +16,7 @@
  */
 package org.orekit.files.rinex.navigation.writers;
 
+import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
 import org.orekit.propagation.analytical.gnss.data.NavICL1NVNavigationMessage;
 
@@ -31,7 +32,7 @@ public class NavICL1NVNavigationMessageWriter
     /** {@inheritDoc} */
     @Override
     public void writeMessage(final String identifier, final NavICL1NVNavigationMessage message,
-                             final RinexNavigationWriter writer)
+                             final RinexNavigationHeader header, final RinexNavigationWriter writer)
         throws IOException {
         // TODO
     }
