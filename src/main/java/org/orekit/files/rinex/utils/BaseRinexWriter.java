@@ -24,13 +24,14 @@ import org.orekit.files.rinex.section.Label;
 import org.orekit.files.rinex.section.RinexBaseHeader;
 import org.orekit.files.rinex.section.RinexComment;
 import org.orekit.time.DateTimeComponents;
+import org.orekit.utils.formatting.FastDecimalFormatter;
 import org.orekit.utils.formatting.FastDoubleFormatter;
 import org.orekit.utils.formatting.FastLongFormatter;
+import org.orekit.utils.formatting.FastScientificFormatter;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 /** Base write for Rinex files.
  * @param <T> type of the header
@@ -58,7 +59,10 @@ public abstract class BaseRinexWriter<T extends RinexBaseHeader> {
     public static final FastLongFormatter SIX_DIGITS_INTEGER = new FastLongFormatter(6, false);
 
     /** Format for one 9.2 digits float field. */
-    public static final FastDoubleFormatter NINE_TWO_DIGITS_FLOAT = new FastDoubleFormatter(9, 2);
+    public static final FastDoubleFormatter NINE_TWO_DIGITS_FLOAT = new FastDecimalFormatter(9, 2);
+
+    /** Format for one 19 characters wide field in scientific notation. */
+    public static final FastDoubleFormatter NINETEEN_SCIENTIFIC_FLOAT = new FastScientificFormatter(19);
 
     /** Destination of generated output. */
     private final Appendable output;
@@ -267,14 +271,6 @@ public abstract class BaseRinexWriter<T extends RinexBaseHeader> {
         } else {
             outputField(formatter.toString(value), next, false);
         }
-    }
-
-    /** Append a number with e19.12 format.
-     * @param x number to write
-     * @exception IOException if an I/O error occurs.
-     */
-    public void outputFieldE1912(final double x) throws IOException {
-        outputField(String.format(Locale.US, "%19.12e", x), getColumn() + 19, true);
     }
 
     /** Output one field.

@@ -30,6 +30,7 @@ import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.CartesianDerivativesFilter;
+import org.orekit.utils.formatting.FastDecimalFormatter;
 import org.orekit.utils.formatting.FastDoubleFormatter;
 import org.orekit.utils.formatting.FastLongFormatter;
 
@@ -61,7 +62,7 @@ public class SP3Writer {
     private static final FastLongFormatter THREE_DIGITS_INTEGER = new FastLongFormatter(3, false);
 
     /** Format for one 14.6 digits float field. */
-    private static final FastDoubleFormatter FOURTEEN_SIX_DIGITS_FLOAT = new FastDoubleFormatter(14, 6);
+    private static final FastDoubleFormatter FOURTEEN_SIX_DIGITS_FLOAT = new FastDecimalFormatter(14, 6);
 
     /** Format for three blanks field. */
     private static final String THREE_BLANKS = "   ";

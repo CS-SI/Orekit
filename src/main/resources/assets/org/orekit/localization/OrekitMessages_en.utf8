@@ -953,3 +953,6 @@ WRONG_STATIONS_NUMBER=wrong stations numbers in file {0}, expected {1}, got {2}
 
 # wrong satellites numbers in file {0}, expected {1}, got {2}
 WRONG_SATELLITES_NUMBER=wrong satellites numbers in file {0}, expected {1}, got {2}
+
+# invalid format: width = {0}, precision = {1}
+INVALID_FORMAT=invalid format: width = {0}, precision = {1}

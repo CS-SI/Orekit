@@ -20,6 +20,9 @@
   </properties>
   <body>
     <release version="14.0" date="TBD" description="TBD">
+        <action dev="luc" type="add" issue="1780">
+            Added FastScientificFormatter.
+        </action>
         <action dev="luc" type="add" issue="1776">
             Revamped RinexClock and added a RinexClockWriter.
         </action>

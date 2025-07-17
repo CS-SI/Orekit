@@ -69,13 +69,13 @@ public class SystemTimeOffsetMessageWriter
 
         // STO MESSAGE LINE - 1
         writer.outputField(' ', 1);
-        writer.outputFieldE1912(message.getTransmissionTime());
-        writer.outputField(' ', 20);
-        writer.outputFieldE1912(message.getA0());
-        writer.outputField(' ', 40);
-        writer.outputFieldE1912(message.getA1());
-        writer.outputField(' ', 60);
-        writer.outputFieldE1912(message.getA2());
+        writer.outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, message.getTransmissionTime(), 20);
+        writer.outputField(' ', 21);
+        writer.outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, message.getA0(), 40);
+        writer.outputField(' ', 41);
+        writer.outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, message.getA1(), 60);
+        writer.outputField(' ', 61);
+        writer.outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, message.getA2(), 80);
 
     }
 

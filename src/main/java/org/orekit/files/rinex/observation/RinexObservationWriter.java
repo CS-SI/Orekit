@@ -41,6 +41,7 @@ import org.orekit.time.ClockTimeScale;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
+import org.orekit.utils.formatting.FastDecimalFormatter;
 import org.orekit.utils.formatting.FastDoubleFormatter;
 import org.orekit.utils.formatting.FastLongFormatter;
 
@@ -64,34 +65,34 @@ public class RinexObservationWriter extends BaseRinexWriter<RinexObservationHead
     private static final FastLongFormatter ONE_DIGIT_INTEGER = new FastLongFormatter(1, false);
 
     /** Format for one 8.3 digits float field. */
-    private static final FastDoubleFormatter EIGHT_THREE_DIGITS_FLOAT = new FastDoubleFormatter(8, 3);
+    private static final FastDoubleFormatter EIGHT_THREE_DIGITS_FLOAT = new FastDecimalFormatter(8, 3);
 
     /** Format for one 8.5 digits float field. */
-    private static final FastDoubleFormatter EIGHT_FIVE_DIGITS_FLOAT = new FastDoubleFormatter(8, 5);
+    private static final FastDoubleFormatter EIGHT_FIVE_DIGITS_FLOAT = new FastDecimalFormatter(8, 5);
 
     /** Format for one 9.4 digits float field. */
-    private static final FastDoubleFormatter NINE_FOUR_DIGITS_FLOAT = new FastDoubleFormatter(9, 4);
+    private static final FastDoubleFormatter NINE_FOUR_DIGITS_FLOAT = new FastDecimalFormatter(9, 4);
 
     /** Format for one 10.3 digits float field. */
-    private static final FastDoubleFormatter TEN_THREE_DIGITS_FLOAT = new FastDoubleFormatter(10, 3);
+    private static final FastDoubleFormatter TEN_THREE_DIGITS_FLOAT = new FastDecimalFormatter(10, 3);
 
     /** Format for one 11.7 digits float field. */
-    private static final FastDoubleFormatter ELEVEN_SEVEN_DIGITS_FLOAT = new FastDoubleFormatter(11, 7);
+    private static final FastDoubleFormatter ELEVEN_SEVEN_DIGITS_FLOAT = new FastDecimalFormatter(11, 7);
 
     /** Format for one 12.9 digits float field. */
-    private static final FastDoubleFormatter TWELVE_NINE_DIGITS_FLOAT = new FastDoubleFormatter(12, 9);
+    private static final FastDoubleFormatter TWELVE_NINE_DIGITS_FLOAT = new FastDecimalFormatter(12, 9);
 
     /** Format for one 13.7 digits float field. */
-    private static final FastDoubleFormatter THIRTEEN_SEVEN_DIGITS_FLOAT = new FastDoubleFormatter(13, 7);
+    private static final FastDoubleFormatter THIRTEEN_SEVEN_DIGITS_FLOAT = new FastDecimalFormatter(13, 7);
 
     /** Format for one 14.3 digits float field. */
-    private static final FastDoubleFormatter FOURTEEN_THREE_DIGITS_FLOAT = new FastDoubleFormatter(14, 3);
+    private static final FastDoubleFormatter FOURTEEN_THREE_DIGITS_FLOAT = new FastDecimalFormatter(14, 3);
 
     /** Format for one 14.4 digits float field. */
-    private static final FastDoubleFormatter FOURTEEN_FOUR_DIGITS_FLOAT = new FastDoubleFormatter(14, 4);
+    private static final FastDoubleFormatter FOURTEEN_FOUR_DIGITS_FLOAT = new FastDecimalFormatter(14, 4);
 
     /** Format for one 15.12 digits float field. */
-    private static final FastDoubleFormatter FIFTEEN_TWELVE_DIGITS_FLOAT = new FastDoubleFormatter(15, 12);
+    private static final FastDoubleFormatter FIFTEEN_TWELVE_DIGITS_FLOAT = new FastDecimalFormatter(15, 12);
 
     /** Threshold for considering measurements that occur at the same time.
      * (we know the RINEX files encode dates with a resolution of 0.1µs)

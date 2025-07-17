@@ -38,34 +38,12 @@ import java.io.IOException;
  * Instances of this class are immutable
  * </p>
  * @author Luc Maisonobe
- * @since 13.0.3
+ * @since 14.0
  */
-public class FastDoubleFormatter {
-
-    /** Scaling array for fractional part. */
-    private static final long[] SCALING = new long[19];
-
-    static {
-        SCALING[0] = 1L;
-        for (int i = 1; i < SCALING.length; ++i) {
-            SCALING[i] = 10L * SCALING[i - 1];
-        }
-    }
+public abstract class FastDoubleFormatter {
 
     /** Number of characters to output. */
     private final int width;
-
-    /** Precision. */
-    private final int precision;
-
-    /** Scaling. */
-    private final long scaling;
-
-    /** Formatter for integer part. */
-    private final FastLongFormatter beforeFormatter;
-
-    /** Formatter for fractional part. */
-    private final FastLongFormatter afterFormatter;
 
     /** Simple constructor.
      * <p>
@@ -73,16 +51,9 @@ public class FastDoubleFormatter {
      * float format {@code %{width}.{precision}f}
      * </p>
      * @param width number of characters to output
-     * @param precision number of decimal precision
      */
-    public FastDoubleFormatter(final int width, final int precision) {
-        this.width           = width;
-        this.precision       = precision;
-        this.scaling         = SCALING[precision];
-        this.beforeFormatter = precision == 0 ?
-                               new FastLongFormatter(width, false) :
-                               new FastLongFormatter(width - precision - 1, false);
-        this.afterFormatter  = new FastLongFormatter(precision, true);
+    public FastDoubleFormatter(final int width) {
+        this.width = width;
     }
 
     /** Get the width.
@@ -90,13 +61,6 @@ public class FastDoubleFormatter {
      */
     public int getWidth() {
         return width;
-    }
-
-    /** Get the precision.
-     * @return precision
-     */
-    public int getPrecision() {
-        return precision;
     }
 
     /** Append one formatted value to an {@code Appendable}.
@@ -128,41 +92,19 @@ public class FastDoubleFormatter {
                     appendable.append("Infinity");
                 }
             } else {
-
                 // regular number
-                final double abs    = FastMath.abs(value);
-                double       before = FastMath.floor(abs);
-                long         after  = FastMath.round((abs - before) * scaling);
-
-                if (after >= scaling) {
-                    // we have to round up to the next integer
-                    before += 1;
-                    after   = 0L;
-                }
-
-                // convert to string
-                final double sign = FastMath.copySign(1.0, value);
-                if (sign < 0 && before == 0.0) {
-                    // special case for negative values between -0.0 and -1.0
-                    for (int i = 0; i < beforeFormatter.getWidth() - 2; ++i) {
-                        appendable.append(' ');
-                    }
-                    appendable.append("-0");
-                } else {
-                    // regular case
-                    beforeFormatter.appendTo(appendable, FastMath.round(sign * before));
-                }
-
-                // fractional part
-                if (scaling > 1) {
-                    appendable.append('.');
-                    afterFormatter.appendTo(appendable, after);
-                }
-
+                appendRegularValueTo(appendable, value);
             }
         }
 
     }
+
+    /** Append one formatted value to an {@code Appendable}.
+     * @param appendable to append value to
+     * @param value value to format
+     * @exception IOException if an I/O error occurs
+     */
+    protected abstract void appendRegularValueTo(final Appendable appendable, final double value) throws IOException;
 
     /** Format one value.
      * @param value value to format

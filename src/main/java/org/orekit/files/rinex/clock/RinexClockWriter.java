@@ -28,6 +28,7 @@ import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.formatting.FastDecimalFormatter;
 import org.orekit.utils.formatting.FastDoubleFormatter;
 import org.orekit.utils.formatting.FastLongFormatter;
 import org.orekit.utils.units.Unit;
@@ -51,13 +52,13 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
     private static final FastLongFormatter ELEVEN_DIGITS_INTEGER = new FastLongFormatter(11, false);
 
     /** Format for one 4.2 digits float field. */
-    private static final FastDoubleFormatter FOUR_TWO_DIGITS_FLOAT = new FastDoubleFormatter(4, 2);
+    private static final FastDoubleFormatter FOUR_TWO_DIGITS_FLOAT = new FastDecimalFormatter(4, 2);
 
     /** Format for one 9.6 digits float field. */
-    private static final FastDoubleFormatter NINE_SIX_DIGITS_FLOAT = new FastDoubleFormatter(9, 6);
+    private static final FastDoubleFormatter NINE_SIX_DIGITS_FLOAT = new FastDecimalFormatter(9, 6);
 
     /** Format for one 10.6 digits float field. */
-    private static final FastDoubleFormatter TEN_SIX_DIGITS_FLOAT = new FastDoubleFormatter(10, 6);
+    private static final FastDoubleFormatter TEN_SIX_DIGITS_FLOAT = new FastDecimalFormatter(10, 6);
 
     /** Simple constructor.
      * <p>
@@ -356,7 +357,7 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
                         outputField(' ', 45);
                     }
                     if (clock.getClockConstraint() != 0.0) {
-                        outputFieldE1912(clock.getClockConstraint());
+                        outputField(NINETEEN_SCIENTIFIC_FLOAT, clock.getClockConstraint(), getColumn() + 19);
                     }
                     finishHeaderLine(ClockLabel.ANALYSIS_CLK_REF);
                 }
@@ -446,22 +447,22 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
             outputField(TEN_SIX_DIGITS_FLOAT, epoch.getTime().getSecond(), 34);
             outputField(THREE_DIGITS_INTEGER, clockDataLine.getNumberOfValues(), 37);
             outputField(' ', 40);
-            outputFieldE1912(clockDataLine.getClockBias());
+            outputField(NINETEEN_SCIENTIFIC_FLOAT, clockDataLine.getClockBias(), 59);
             if (clockDataLine.getNumberOfValues() > 1) {
                 outputField(' ', 60);
-                outputFieldE1912(clockDataLine.getClockBiasSigma());
+                outputField(NINETEEN_SCIENTIFIC_FLOAT, clockDataLine.getClockBiasSigma(), 79);
                 if (clockDataLine.getNumberOfValues() > 2) {
                     finishLine();
-                    outputFieldE1912(clockDataLine.getClockRate());
+                    outputField(NINETEEN_SCIENTIFIC_FLOAT, clockDataLine.getClockRate(), 19);
                     if (clockDataLine.getNumberOfValues() > 3) {
                         outputField(' ', 20);
-                        outputFieldE1912(clockDataLine.getClockRateSigma());
+                        outputField(NINETEEN_SCIENTIFIC_FLOAT, clockDataLine.getClockRateSigma(), 39);
                         if (clockDataLine.getNumberOfValues() > 4) {
                             outputField(' ', 40);
-                            outputFieldE1912(clockDataLine.getClockAcceleration());
+                            outputField(NINETEEN_SCIENTIFIC_FLOAT, clockDataLine.getClockAcceleration(), 59);
                             if (clockDataLine.getNumberOfValues() > 5) {
                                 outputField(' ', 60);
-                                outputFieldE1912(clockDataLine.getClockAccelerationSigma());
+                                outputField(NINETEEN_SCIENTIFIC_FLOAT, clockDataLine.getClockAccelerationSigma(), 79);
                             }
                         }
                     }
@@ -487,23 +488,23 @@ public class RinexClockWriter extends BaseRinexWriter<RinexClockHeader> {
             outputField(' ', 40);
             outputField(TWO_DIGITS_INTEGER, clockDataLine.getNumberOfValues(), 42);
             outputField(' ', 45);
-            outputFieldE1912(clockDataLine.getClockBias());
+            outputField(NINETEEN_SCIENTIFIC_FLOAT, clockDataLine.getClockBias(), 64);
             if (clockDataLine.getNumberOfValues() > 1) {
                 outputField(' ', 66);
-                outputFieldE1912(clockDataLine.getClockBiasSigma());
+                outputField(NINETEEN_SCIENTIFIC_FLOAT, clockDataLine.getClockBiasSigma(), 85);
                 if (clockDataLine.getNumberOfValues() > 2) {
                     finishLine();
                     outputField(' ', 3);
-                    outputFieldE1912(clockDataLine.getClockRate());
+                    outputField(NINETEEN_SCIENTIFIC_FLOAT, clockDataLine.getClockRate(), 22);
                     if (clockDataLine.getNumberOfValues() > 3) {
                         outputField(' ', 24);
-                        outputFieldE1912(clockDataLine.getClockRateSigma());
+                        outputField(NINETEEN_SCIENTIFIC_FLOAT, clockDataLine.getClockRateSigma(), 43);
                         if (clockDataLine.getNumberOfValues() > 4) {
                             outputField(' ', 45);
-                            outputFieldE1912(clockDataLine.getClockAcceleration());
+                            outputField(NINETEEN_SCIENTIFIC_FLOAT, clockDataLine.getClockAcceleration(), 64);
                             if (clockDataLine.getNumberOfValues() > 5) {
                                 outputField(' ', 66);
-                                outputFieldE1912(clockDataLine.getClockAccelerationSigma());
+                                outputField(NINETEEN_SCIENTIFIC_FLOAT, clockDataLine.getClockAccelerationSigma(), 85);
                             }
                         }
                     }
