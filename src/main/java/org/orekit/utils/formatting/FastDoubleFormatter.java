@@ -104,7 +104,7 @@ public abstract class FastDoubleFormatter {
      * @param value value to format
      * @exception IOException if an I/O error occurs
      */
-    protected abstract void appendRegularValueTo(final Appendable appendable, final double value) throws IOException;
+    protected abstract void appendRegularValueTo(Appendable appendable, double value) throws IOException;
 
     /** Format one value.
      * @param value value to format

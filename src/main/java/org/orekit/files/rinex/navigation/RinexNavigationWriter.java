@@ -61,6 +61,9 @@ import java.util.function.BiFunction;
  */
 public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader> {
 
+    /** Format for one 9 digits integer field. */
+    protected static final FastLongFormatter NINE_DIGITS_INTEGER = new FastLongFormatter(9, false);
+
     /** Identifier for system time offset messages.
      * <p>
      * The identifier is prefixed with "00_" so all messages that are not related
@@ -100,9 +103,6 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
      * </p>
      */
     private static final String BDGIM_IDENTIFIER = "00_IONO_BDGIM";
-
-    /** Format for one 9 digits integer field. */
-    protected static final FastLongFormatter NINE_DIGITS_INTEGER = new FastLongFormatter(9, false);
 
     /** Mapper from satellite system to time scales. */
     private final BiFunction<SatelliteSystem, TimeScales, ? extends TimeScale> timeScaleBuilder;
@@ -209,6 +209,7 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
     }
 
     /** Create messages handler for one message type.
+     * @param <T> type of the navigation message
      * @param map messages map
      * @param messageWriter writer for the current message type
      * @return list of handlers for one message type
@@ -351,7 +352,6 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
 
         /** Write next entry if close to processing date.
          * @param date processing date
-         * @return next entry if close to processing date, null otherwise
          * @exception IOException if an I/O error occurs.
          */
         void writeMessageAtDate(final AbsoluteDate date) throws IOException {

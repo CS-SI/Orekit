@@ -34,6 +34,6 @@ public interface NavigationMessageWriter<T extends TimeStamped> {
      * @param writer global file writer
      * @throws IOException if an I/O error occurs.
      */
-    void writeMessage(final String identifier, final T message, RinexNavigationWriter writer) throws IOException;
+    void writeMessage(String identifier, T message, RinexNavigationWriter writer) throws IOException;
 
 }

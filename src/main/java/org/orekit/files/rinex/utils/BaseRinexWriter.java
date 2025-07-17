@@ -203,7 +203,7 @@ public abstract class BaseRinexWriter<T extends RinexBaseHeader> {
      * @throws IOException if an I/O error occurs.
      */
     protected void writeProgramRunByDate(final RinexBaseHeader header)
-        throws IOException{
+        throws IOException {
         outputField(header.getProgramName(), 20, true);
         outputField(header.getRunByName(),   40, true);
         final DateTimeComponents dtc = header.getCreationDateComponents();

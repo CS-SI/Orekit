@@ -109,8 +109,8 @@ public class FastScientificFormatter extends FastDoubleFormatter {
          * @param scFormatter calling scientific formatter
          * @exception IOException if an I/O error occurs
          */
-         void appendTo(Appendable appendable, double value, FastScientificFormatter scFormatter)
-             throws IOException;
+        void appendTo(Appendable appendable, double value, FastScientificFormatter scFormatter)
+            throws IOException;
 
     }
 
