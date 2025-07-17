@@ -27,9 +27,12 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
+import org.orekit.orbits.FieldCartesianOrbit;
+import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap.Span;
@@ -217,7 +220,17 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
         final Gradient        delta        = downlinkDate.durationFrom(state.getDate());
         final Gradient        deltaMTauD   = tauD.negate().add(delta);
         final SpacecraftState transitState = state.shiftedBy(deltaMTauD.getValue());
-        final TimeStampedFieldPVCoordinates<Gradient> transitPV = pva.shiftedBy(deltaMTauD);
+        final TimeStampedFieldPVCoordinates<Gradient> transitPV;
+        if (state.isOrbitDefined()) {
+            final FieldCartesianOrbit<Gradient> cartesianOrbit = new FieldCartesianOrbit<>(pva, state.getFrame(),
+                    new FieldAbsoluteDate<>(delta.getField(), state.getDate()), delta.newInstance(state.getOrbit().getMu()));
+            final FieldOrbit<Gradient> orbit = state.getOrbit().getType().convertType(cartesianOrbit);
+            transitPV = orbit.shiftedBy(deltaMTauD).getPVCoordinates();
+        } else {
+            final FieldAbsolutePVCoordinates<Gradient> absolutePVCoordinates = new FieldAbsolutePVCoordinates<>(state.getFrame(),
+                    new FieldAbsoluteDate<>(delta.getField(), state.getDate()), pva);
+            transitPV = absolutePVCoordinates.shiftedBy(deltaMTauD);
+        }
 
         return new GroundReceiverCommonParametersWithDerivatives(state,
                                                                  indices,

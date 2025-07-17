@@ -23,6 +23,9 @@
         <action dev="serrof" type="update" issue="1778">
             Take into account mass in dependsOnPositionOnly.
         </action>
+        <action dev="serrof" type="fix" issue="1774">
+            Use correct shiftedBy in theoretical measurement with derivatives.
+        </action>
         <action dev="guillaumefiorello" type="fix" issue="1773">
             Fixed regression on TLE date parsing.
         </action>
