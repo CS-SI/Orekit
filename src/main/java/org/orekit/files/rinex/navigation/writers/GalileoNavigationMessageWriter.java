@@ -21,7 +21,7 @@ import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
 
 import java.io.IOException;
 
-/** Write for Galileo messages.
+/** Writer for Galileo messages.
  * @author Luc Maisonobe
  * @since 14.0
  */

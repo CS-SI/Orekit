@@ -25,7 +25,7 @@ import org.orekit.time.TimeScale;
 
 import java.io.IOException;
 
-/** Write for System time offset messages.
+/** Writer for System time offset messages.
  * @author Luc Maisonobe
  * @since 14.0
  */

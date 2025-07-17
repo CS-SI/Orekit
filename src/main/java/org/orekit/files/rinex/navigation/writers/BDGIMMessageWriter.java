@@ -21,7 +21,7 @@ import org.orekit.files.rinex.navigation.RinexNavigationWriter;
 
 import java.io.IOException;
 
-/** Write for BDGIM model ionospheric messages.
+/** Writer for BDGIM model ionospheric messages.
  * @author Luc Maisonobe
  * @since 14.0
  */

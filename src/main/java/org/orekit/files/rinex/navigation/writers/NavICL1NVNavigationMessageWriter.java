@@ -21,7 +21,7 @@ import org.orekit.propagation.analytical.gnss.data.NavICL1NVNavigationMessage;
 
 import java.io.IOException;
 
-/** Write for NavIC L1NV messages.
+/** Writer for NavIC L1NV messages.
  * @author Luc Maisonobe
  * @since 14.0
  */

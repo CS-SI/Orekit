@@ -21,7 +21,7 @@ import org.orekit.propagation.analytical.gnss.data.GPSCivilianNavigationMessage;
 
 import java.io.IOException;
 
-/** Write for GPS civilian messages.
+/** Writer for GPS civilian messages.
  * @author Luc Maisonobe
  * @since 14.0
  */

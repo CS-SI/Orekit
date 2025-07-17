@@ -21,7 +21,7 @@ import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
 
 import java.io.IOException;
 
-/** Write for GPS legacy messages.
+/** Writer for GPS legacy messages.
  * @author Luc Maisonobe
  * @since 14.0
  */

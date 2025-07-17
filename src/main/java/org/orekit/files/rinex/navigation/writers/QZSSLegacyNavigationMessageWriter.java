@@ -21,7 +21,7 @@ import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
 
 import java.io.IOException;
 
-/** Write for QZSS legacy messages.
+/** Writer for QZSS legacy messages.
  * @author Luc Maisonobe
  * @since 14.0
  */

@@ -25,7 +25,7 @@ import org.orekit.time.TimeScale;
 
 import java.io.IOException;
 
-/** Write for Earth Orientation Parameters messages.
+/** Writer for Earth Orientation Parameters messages.
  * @author Luc Maisonobe
  * @since 14.0
  */

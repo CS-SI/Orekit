@@ -21,7 +21,7 @@ import org.orekit.files.rinex.navigation.RinexNavigationWriter;
 
 import java.io.IOException;
 
-/** Write for Klobuchar model ionospheric messages.
+/** Writer for Klobuchar model ionospheric messages.
  * @author Luc Maisonobe
  * @since 14.0
  */

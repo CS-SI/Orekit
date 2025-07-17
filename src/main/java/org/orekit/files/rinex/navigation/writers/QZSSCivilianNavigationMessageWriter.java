@@ -21,7 +21,7 @@ import org.orekit.propagation.analytical.gnss.data.QZSSCivilianNavigationMessage
 
 import java.io.IOException;
 
-/** Write for QZSS civilian messages.
+/** Writer for QZSS civilian messages.
  * @author Luc Maisonobe
  * @since 14.0
  */

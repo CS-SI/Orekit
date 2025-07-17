@@ -21,7 +21,7 @@ import org.orekit.files.rinex.navigation.RinexNavigationWriter;
 
 import java.io.IOException;
 
-/** Write for NeQuick G model ionospheric messages.
+/** Writer for NeQuick G model ionospheric messages.
  * @author Luc Maisonobe
  * @since 14.0
  */

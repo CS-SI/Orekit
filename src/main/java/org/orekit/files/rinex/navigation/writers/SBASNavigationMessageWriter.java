@@ -21,7 +21,7 @@ import org.orekit.propagation.analytical.gnss.data.SBASNavigationMessage;
 
 import java.io.IOException;
 
-/** Write for SBAS messages.
+/** Writer for SBAS messages.
  * @author Luc Maisonobe
  * @since 14.0
  */

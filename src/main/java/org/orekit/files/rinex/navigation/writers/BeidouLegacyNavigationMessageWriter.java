@@ -21,7 +21,7 @@ import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage
 
 import java.io.IOException;
 
-/** Write for Beidou legacy messages.
+/** Writer for Beidou legacy messages.
  * @author Luc Maisonobe
  * @since 14.0
  */

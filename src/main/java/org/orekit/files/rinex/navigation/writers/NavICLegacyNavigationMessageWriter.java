@@ -21,7 +21,7 @@ import org.orekit.propagation.analytical.gnss.data.NavICLegacyNavigationMessage;
 
 import java.io.IOException;
 
-/** Write for NavIC legacy messages.
+/** Writer for NavIC legacy messages.
  * @author Luc Maisonobe
  * @since 14.0
  */

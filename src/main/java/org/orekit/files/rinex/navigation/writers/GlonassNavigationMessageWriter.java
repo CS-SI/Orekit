@@ -21,7 +21,7 @@ import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
 
 import java.io.IOException;
 
-/** Write for GLONASS messages.
+/** Writer for GLONASS messages.
  * @author Luc Maisonobe
  * @since 14.0
  */

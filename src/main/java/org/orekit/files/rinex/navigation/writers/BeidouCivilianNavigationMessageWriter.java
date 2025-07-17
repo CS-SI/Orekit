@@ -21,7 +21,7 @@ import org.orekit.propagation.analytical.gnss.data.BeidouCivilianNavigationMessa
 
 import java.io.IOException;
 
-/** Write for Beidou civilian messages.
+/** Writer for Beidou civilian messages.
  * @author Luc Maisonobe
  * @since 14.0
  */
