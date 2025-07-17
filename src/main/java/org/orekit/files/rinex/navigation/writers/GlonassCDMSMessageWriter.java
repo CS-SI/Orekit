@@ -16,22 +16,22 @@
  */
 package org.orekit.files.rinex.navigation.writers;
 
-import org.orekit.files.rinex.navigation.IonosphereNavICKlobucharMessage;
+import org.orekit.files.rinex.navigation.IonosphereGlonassCDMSMessage;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
 
 import java.io.IOException;
 
-/** Writer for NavIC Klobuchar messages.
+/** Writer for GLONASS ionosphere messages.
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class NavICKlobucharNavigationMessageWriter
-    implements NavigationMessageWriter<IonosphereNavICKlobucharMessage> {
+public class GlonassCDMSMessageWriter
+    implements NavigationMessageWriter<IonosphereGlonassCDMSMessage> {
 
     /** {@inheritDoc} */
     @Override
-    public void writeMessage(final String identifier, final IonosphereNavICKlobucharMessage message,
+    public void writeMessage(final String identifier, final IonosphereGlonassCDMSMessage message,
                              final RinexNavigationHeader header, final RinexNavigationWriter writer)
         throws IOException {
         // TODO

@@ -16,22 +16,22 @@
  */
 package org.orekit.files.rinex.navigation.writers;
 
-import org.orekit.files.rinex.navigation.IonosphereNavICNeQuickNMessage;
+import org.orekit.files.rinex.navigation.IonosphereNavICKlobucharMessage;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
 
 import java.io.IOException;
 
-/** Writer for NavIC NeQuick N messages.
+/** Writer for NavIC Klobuchar messages.
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class NavICNeQuickNNavigationMessageWriter
-    implements NavigationMessageWriter<IonosphereNavICNeQuickNMessage> {
+public class NavICKlobucharMessageWriter
+    implements NavigationMessageWriter<IonosphereNavICKlobucharMessage> {
 
     /** {@inheritDoc} */
     @Override
-    public void writeMessage(final String identifier, final IonosphereNavICNeQuickNMessage message,
+    public void writeMessage(final String identifier, final IonosphereNavICKlobucharMessage message,
                              final RinexNavigationHeader header, final RinexNavigationWriter writer)
         throws IOException {
         // TODO

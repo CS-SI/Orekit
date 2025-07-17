@@ -26,12 +26,13 @@ import org.orekit.files.rinex.navigation.writers.EarthOrientationParametersMessa
 import org.orekit.files.rinex.navigation.writers.GPSCivilianNavigationMessageWriter;
 import org.orekit.files.rinex.navigation.writers.GPSLegacyNavigationMessageWriter;
 import org.orekit.files.rinex.navigation.writers.GalileoNavigationMessageWriter;
+import org.orekit.files.rinex.navigation.writers.GlonassCDMSMessageWriter;
 import org.orekit.files.rinex.navigation.writers.GlonassNavigationMessageWriter;
 import org.orekit.files.rinex.navigation.writers.KlobucharMessageWriter;
-import org.orekit.files.rinex.navigation.writers.NavICKlobucharNavigationMessageWriter;
+import org.orekit.files.rinex.navigation.writers.NavICKlobucharMessageWriter;
 import org.orekit.files.rinex.navigation.writers.NavICL1NVNavigationMessageWriter;
 import org.orekit.files.rinex.navigation.writers.NavICLegacyNavigationMessageWriter;
-import org.orekit.files.rinex.navigation.writers.NavICNeQuickNNavigationMessageWriter;
+import org.orekit.files.rinex.navigation.writers.NavICNeQuickNMessageWriter;
 import org.orekit.files.rinex.navigation.writers.NavigationMessageWriter;
 import org.orekit.files.rinex.navigation.writers.NequickGMessageWriter;
 import org.orekit.files.rinex.navigation.writers.QZSSCivilianNavigationMessageWriter;
@@ -122,6 +123,14 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
      */
     private static final String NAVIC_NEQUICK_N_IDENTIFIER = "00_IONO_NAVIC_NEQUICK_N";
 
+    /** Identifier for GLONASS CDMS ionospheric messages.
+     * <p>
+     * The identifier is prefixed with "00_" so all messages that are not related
+     * to any satellites are grouped together before satellite messages
+     * </p>
+     */
+    private static final String GLONASS_CDMS_IDENTIFIER = "00_IONO_GLONASS_CDMS_N";
+
     /** Mapper from satellite system to time scales. */
     private final BiFunction<SatelliteSystem, TimeScales, ? extends TimeScale> timeScaleBuilder;
 
@@ -209,10 +218,12 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
                                           rinexNavigation.getNequickGMessages()));
         pending.add(new PendingMessages<>(BDGIM_IDENTIFIER, new BDGIMMessageWriter(),
                                           rinexNavigation.getBDGIMMessages()));
-        pending.add(new PendingMessages<>(NAVIC_KLOBUCHAR_IDENTIFIER, new NavICKlobucharNavigationMessageWriter(),
+        pending.add(new PendingMessages<>(NAVIC_KLOBUCHAR_IDENTIFIER, new NavICKlobucharMessageWriter(),
                                           rinexNavigation.getNavICKlobucharMessages()));
-        pending.add(new PendingMessages<>(NAVIC_NEQUICK_N_IDENTIFIER, new NavICNeQuickNNavigationMessageWriter(),
+        pending.add(new PendingMessages<>(NAVIC_NEQUICK_N_IDENTIFIER, new NavICNeQuickNMessageWriter(),
                                           rinexNavigation.getNavICNeQuickNMessages()));
+        pending.add(new PendingMessages<>(GLONASS_CDMS_IDENTIFIER, new GlonassCDMSMessageWriter(),
+                                          rinexNavigation.getGlonassCDMSMessages()));
 
         pending.sort(Comparator.comparing(pl -> pl.identifier));
 

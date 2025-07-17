@@ -289,6 +289,11 @@ public class RinexNavigationParser {
          */
         private IonosphereNavICNeQuickNMessage navICNeQuickN;
 
+        /** Container for GLONASS CDMS message.
+         * @since 14.0
+         */
+        private IonosphereGlonassCDMSMessage glonassCDMS;
+
         /** Container for ionosphere Nequick-G message. */
         private IonosphereNequickGMessage nequickG;
 
@@ -959,6 +964,20 @@ public class RinexNavigationParser {
                          },
                          pi -> Collections.singleton(NAVIC_NEQUICK_N_LINE_1)),
 
+        /** Parser for GLONASS CDMS message model.
+         * @since 14.0
+         */
+        GLONASS_CDMS_LINE_0((header, line) -> true,
+                               (line, pi) -> {
+                             pi.parseDate(line, pi.glonassCDMS::setTransmitTime, pi.navICNeQuickN.getSystem());
+                             pi.glonassCDMS.setCA(pi.parseField2(line,    Unit.ONE));
+                             pi.glonassCDMS.setCF107(pi.parseField2(line, Unit.ONE));
+                             pi.glonassCDMS.setCAP(pi.parseField2(line,   Unit.ONE));
+                             pi.file.addGlonassCDMSMessage(pi.glonassCDMS);
+                             pi.glonassCDMS = null;
+                         },
+                         LineParser::navigationNext),
+
         /** Parser for ionosphere Nequick-G message model. */
         NEQUICK_G_LINE_1((header, line) -> true,
                          (line, pi) -> {
@@ -1028,11 +1047,10 @@ public class RinexNavigationParser {
                           pi.navICKlobuchar = new IonosphereNavICKlobucharMessage(system, prn, type, subtype);
                       } else if (system == SatelliteSystem.NAVIC && "L1NV".equals(type) && "NEQN".equals(subtype)) {
                           pi.navICNeQuickN = new IonosphereNavICNeQuickNMessage(system, prn, type, subtype);
-                      } else if (system == SatelliteSystem.GPS || (system == SatelliteSystem.NAVIC && "KLOB".equals(
-                          subtype))) {
+                      } else if (system == SatelliteSystem.GLONASS) {
+                          pi.glonassCDMS = new IonosphereGlonassCDMSMessage(system, prn, type, subtype);
+                      } else  {
                           pi.klobuchar = new IonosphereKlobucharMessage(system, prn, type, subtype);
-                      } else {
-                          // TODO
                       }
                   },
                   LineParser::ionosphereNext);
@@ -1133,8 +1151,10 @@ public class RinexNavigationParser {
                 return Collections.singleton(NAVIC_KLOBUCHAR_LINE_0);
             } else if (parseInfo.navICNeQuickN != null) {
                 return Collections.singleton(NAVIC_NEQUICK_N_LINE_0);
+            } else if (parseInfo.glonassCDMS != null) {
+                return Collections.singleton(GLONASS_CDMS_LINE_0);
             } else {
-                // TODO
+                return Collections.emptyList();
             }
         }
 

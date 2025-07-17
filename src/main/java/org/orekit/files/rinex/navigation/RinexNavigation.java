@@ -125,6 +125,11 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      */
     private final List<IonosphereNavICNeQuickNMessage> navICNeQuickNMessages;
 
+    /** Ionosphere GLONASS CDMS messages.
+     * @since 14.0
+     */
+    private final List<IonosphereGlonassCDMSMessage> glonassCDMSMessages;
+
     /** Constructor. */
     public RinexNavigation() {
         super(new RinexNavigationHeader());
@@ -146,6 +151,7 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
         this.bdgimMessages          = new ArrayList<>();
         this.navICKlobucharMessages = new ArrayList<>();
         this.navICNeQuickNMessages  = new ArrayList<>();
+        this.glonassCDMSMessages    = new ArrayList<>();
     }
 
     /**
@@ -666,6 +672,24 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      */
     public void addNavICNeQuickNMessage(final IonosphereNavICNeQuickNMessage navIcNeQuickN) {
         navICNeQuickNMessages.add(navIcNeQuickN);
+    }
+
+    /**
+     * Get the ionosphere GLONASS CDMS messages.
+     * @return an unmodifiable list of ionosphere GLONASS CDMS messages
+     * @since 14.0
+     */
+    public List<IonosphereGlonassCDMSMessage> getGlonassCDMSMessages() {
+        return Collections.unmodifiableList(glonassCDMSMessages);
+    }
+
+    /**
+     * Add an ionosphere GLONASS CDMS message.
+     * @param glonassCDMS ionosphere GLONASS CDMS message
+     * @since 14.0
+     */
+    public void addGlonassCDMSMessage(final IonosphereGlonassCDMSMessage glonassCDMS) {
+        glonassCDMSMessages.add(glonassCDMS);
     }
 
 }
