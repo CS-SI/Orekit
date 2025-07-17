@@ -830,7 +830,7 @@ public class RinexNavigationParser {
                              pi.parseDate(line, pi.klobuchar::setTransmitTime, pi.klobuchar.getSystem());
                              pi.klobuchar.setAlphaI(0, pi.parseField2(line, IonosphereBaseMessage.S_PER_SC_N[0]));
                              pi.klobuchar.setAlphaI(1, pi.parseField3(line, IonosphereBaseMessage.S_PER_SC_N[1]));
-                             pi.klobuchar.setAlphaI(2, pi.parseField3(line, IonosphereBaseMessage.S_PER_SC_N[2]));
+                             pi.klobuchar.setAlphaI(2, pi.parseField4(line, IonosphereBaseMessage.S_PER_SC_N[2]));
                          },
                          pi -> Collections.singleton(KLOBUCHAR_LINE_1)),
 
