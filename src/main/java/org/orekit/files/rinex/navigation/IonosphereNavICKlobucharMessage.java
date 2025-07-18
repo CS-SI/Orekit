@@ -66,11 +66,11 @@ public class IonosphereNavICKlobucharMessage extends IonosphereBaseMessage {
     }
 
     /** Set Issue Of Data.
-     * @param iod Issue Of Data
+     * @param issueOfData Issue Of Data
      */
-    public void setIOD(final double iod) {
+    public void setIOD(final double issueOfData) {
         // The value is given as a floating number in the navigation message
-        this.iod = (int) iod;
+        this.iod = (int) issueOfData;
     }
 
     /** Get the α coefficients.

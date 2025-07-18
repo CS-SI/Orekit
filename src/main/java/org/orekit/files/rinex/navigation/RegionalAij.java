@@ -45,10 +45,10 @@ public class RegionalAij extends IonosphereAij {
     }
 
     /** Set IDF.
-     * @param idf IDF
+     * @param newIdf IDF
      */
-    public void setIDF(final double idf) {
-        this.idf = idf;
+    public void setIDF(final double newIdf) {
+        this.idf = newIdf;
     }
 
     /** Get longitude min.
