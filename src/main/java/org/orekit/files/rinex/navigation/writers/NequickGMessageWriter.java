@@ -16,9 +16,13 @@
  */
 package org.orekit.files.rinex.navigation.writers;
 
+import org.orekit.files.rinex.navigation.IonosphereAij;
+import org.orekit.files.rinex.navigation.IonosphereKlobucharMessage;
 import org.orekit.files.rinex.navigation.IonosphereNequickGMessage;
+import org.orekit.files.rinex.navigation.MessageType;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
+import org.orekit.utils.units.Unit;
 
 import java.io.IOException;
 
@@ -26,15 +30,29 @@ import java.io.IOException;
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class NequickGMessageWriter
-    extends NavigationMessageWriter<IonosphereNequickGMessage> {
+public class NequickGMessageWriter extends NavigationMessageWriter<IonosphereNequickGMessage> {
 
     /** {@inheritDoc} */
     @Override
     public void writeMessage(final String identifier, final IonosphereNequickGMessage message,
                              final RinexNavigationHeader header, final RinexNavigationWriter writer)
         throws IOException {
-        // TODO
+
+        // TYPE / SV / MSG
+        writeTypeSvMsg(MessageType.ION, identifier, message, header, writer);
+
+        // ION MESSAGE LINE - 0
+        writer.writeDate(message.getTransmitTime(), message.getSystem());
+        writer.writeField(message.getAij().getAi0(), IonosphereAij.SFU);
+        writer.writeField(message.getAij().getAi1(), IonosphereAij.SFU_PER_DEG);
+        writer.writeField(message.getAij().getAi2(), IonosphereAij.SFU_PER_DEG2);
+        writer.finishLine();
+
+        // ION MESSAGE LINE - 1
+        writer.startLine();
+        writer.writeField(message.getFlags(), Unit.ONE);
+        writer.finishLine();
+
     }
 
 }
