@@ -49,6 +49,11 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
     /** Transmission time. */
     private T transmissionTime;
 
+    /** Message type.
+     * @since 14.0
+     */
+    private final String type;
+
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
      * @param original regular non-field instance
@@ -58,6 +63,7 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
         setDeltaN0(field.getZero().newInstance(original.getDeltaN0()));
         setEpochToc(new FieldAbsoluteDate<>(field, original.getEpochToc()));
         setTransmissionTime(field.getZero().newInstance(original.getTransmissionTime()));
+        this.type = original.getNavigationMessageType();
     }
 
     /** Constructor from different field instance.
@@ -71,6 +77,15 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
         setDeltaN0(converter.apply(original.getDeltaN0()));
         setEpochToc(new FieldAbsoluteDate<>(getMu().getField(), original.getEpochToc().toAbsoluteDate()));
         setTransmissionTime(converter.apply(original.getTransmissionTime()));
+        this.type = original.getNavigationMessageType();
+    }
+
+    /** Get navigation message type.
+     * @return the navigation message type
+     * @since 14.0
+     */
+    public String getNavigationMessageType() {
+        return type;
     }
 
     /**

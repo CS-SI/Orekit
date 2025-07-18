@@ -344,7 +344,8 @@ class GPSPropagatorTest {
     void testPosition() {
         // Initial GPS orbital elements (Ref: IGS)
         final GPSLegacyNavigationMessage goe = new GPSLegacyNavigationMessage(DataContext.getDefault().getTimeScales(),
-                                                                              SatelliteSystem.GPS);
+                                                                              SatelliteSystem.GPS,
+                                                                              GPSLegacyNavigationMessage.LNAV);
         goe.setPRN(7);
         goe.setWeek(0);
         goe.setTime(288000);
@@ -382,7 +383,8 @@ class GPSPropagatorTest {
     void testStmAndJacobian() {
         // Initial GPS orbital elements (Ref: IGS)
         final GPSLegacyNavigationMessage goe = new GPSLegacyNavigationMessage(DataContext.getDefault().getTimeScales(),
-                                                                              SatelliteSystem.GPS);
+                                                                              SatelliteSystem.GPS,
+                                                                              GPSLegacyNavigationMessage.LNAV);
         goe.setPRN(7);
         goe.setWeek(0);
         goe.setTime(288000);
@@ -445,7 +447,8 @@ class GPSPropagatorTest {
 
         // Initial GPS orbital elements (Ref: IGS)
         final GPSLegacyNavigationMessage goe = new GPSLegacyNavigationMessage(DataContext.getDefault().getTimeScales(),
-                                                                              SatelliteSystem.GPS);
+                                                                              SatelliteSystem.GPS,
+                                                                              GPSLegacyNavigationMessage.LNAV);
         goe.setPRN(7);
         goe.setWeek(0);
         goe.setTime(288000);

@@ -159,7 +159,8 @@ public class QZSSPropagatorTest {
     public void testPosition() {
         // Initial QZSS orbital elements (Ref: IGS)
         final QZSSLegacyNavigationMessage qoe =
-            new QZSSLegacyNavigationMessage(DataContext.getDefault().getTimeScales(), SatelliteSystem.QZSS);
+            new QZSSLegacyNavigationMessage(DataContext.getDefault().getTimeScales(),
+                                            SatelliteSystem.QZSS, QZSSLegacyNavigationMessage.LNAV);
         qoe.setPRN(195);
         qoe.setWeek(21);
         qoe.setTime(226800.0);

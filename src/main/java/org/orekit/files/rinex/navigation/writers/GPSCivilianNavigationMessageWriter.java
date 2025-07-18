@@ -27,7 +27,7 @@ import java.io.IOException;
  * @since 14.0
  */
 public class GPSCivilianNavigationMessageWriter
-    implements NavigationMessageWriter<GPSCivilianNavigationMessage> {
+    extends NavigationMessageWriter<GPSCivilianNavigationMessage> {
 
     /** {@inheritDoc} */
     @Override

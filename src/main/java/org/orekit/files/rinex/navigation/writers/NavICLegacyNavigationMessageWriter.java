@@ -27,7 +27,7 @@ import java.io.IOException;
  * @since 14.0
  */
 public class NavICLegacyNavigationMessageWriter
-    implements NavigationMessageWriter<NavICLegacyNavigationMessage> {
+    extends NavigationMessageWriter<NavICLegacyNavigationMessage> {
 
     /** {@inheritDoc} */
     @Override

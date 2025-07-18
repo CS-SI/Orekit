@@ -17,12 +17,13 @@
 package org.orekit.files.rinex.navigation;
 
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.propagation.analytical.gnss.data.NavigationMessage;
 
 /** Container for data shared by several navigation messages.
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class TypeSvMessage {
+public abstract class TypeSvMessage implements NavigationMessage {
 
     /** Satellite system. */
     private final SatelliteSystem system;

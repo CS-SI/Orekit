@@ -57,7 +57,7 @@ public class GalileoPropagatorTest {
     @BeforeEach
     public void setUp() {
         goe = new GalileoNavigationMessage(DataContext.getDefault().getTimeScales(),
-                                           SatelliteSystem.GALILEO);
+                                           SatelliteSystem.GALILEO, GalileoNavigationMessage.FNAV);
         goe.setPRN(4);
         goe.setWeek(1024);
         goe.setTime(293400.0);

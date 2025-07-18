@@ -53,7 +53,9 @@ class GnssGradientConverterTest {
     @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
-        final GalileoNavigationMessage goe = new GalileoNavigationMessage(DataContext.getDefault().getTimeScales(), SatelliteSystem.GALILEO);
+        final GalileoNavigationMessage goe = new GalileoNavigationMessage(DataContext.getDefault().getTimeScales(),
+                                                                          SatelliteSystem.GALILEO,
+                                                                          GalileoNavigationMessage.FNAV);
         goe.setPRN(4);
         goe.setWeek(1024);
         goe.setTime(293400.0);
@@ -98,7 +100,8 @@ class GnssGradientConverterTest {
     void testStmAndJacobian() {
         // Initial GPS orbital elements (Ref: IGS)
         final GPSLegacyNavigationMessage goe = new GPSLegacyNavigationMessage(DataContext.getDefault().getTimeScales(),
-                                                                              SatelliteSystem.GPS);
+                                                                              SatelliteSystem.GPS,
+                                                                              GPSLegacyNavigationMessage.LNAV);
         goe.setPRN(7);
         goe.setWeek(0);
         goe.setTime(288000);

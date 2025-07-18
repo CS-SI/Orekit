@@ -14,27 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.rinex.navigation.writers;
+package org.orekit.propagation.analytical.gnss.data;
 
-import org.orekit.files.rinex.navigation.IonosphereBDGIMMessage;
-import org.orekit.files.rinex.navigation.RinexNavigationHeader;
-import org.orekit.files.rinex.navigation.RinexNavigationWriter;
+import org.orekit.time.TimeStamped;
 
-import java.io.IOException;
-
-/** Writer for BDGIM model ionospheric messages.
+/** Interface for navigation messages.
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class BDGIMMessageWriter
-    extends NavigationMessageWriter<IonosphereBDGIMMessage> {
+public interface NavigationMessage extends TimeStamped {
 
-    /** {@inheritDoc} */
-    @Override
-    public void writeMessage(final String identifier, final IonosphereBDGIMMessage message,
-                             final RinexNavigationHeader header, final RinexNavigationWriter writer)
-        throws IOException {
-        // TODO
-    }
+    /** Get navigation message type.
+     * @return the navigation message type
+     */
+    String getNavigationMessageType();
 
 }

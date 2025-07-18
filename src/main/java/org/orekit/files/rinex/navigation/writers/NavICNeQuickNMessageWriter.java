@@ -27,7 +27,7 @@ import java.io.IOException;
  * @since 14.0
  */
 public class NavICNeQuickNMessageWriter
-    implements NavigationMessageWriter<IonosphereNavICNeQuickNMessage> {
+    extends NavigationMessageWriter<IonosphereNavICNeQuickNMessage> {
 
     /** {@inheritDoc} */
     @Override

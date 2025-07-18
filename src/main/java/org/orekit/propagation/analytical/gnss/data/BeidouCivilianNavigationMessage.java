@@ -102,11 +102,13 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
      * @param system     satellite system to consider for interpreting week number
      *                   (may be different from real system, for example in Rinex nav, weeks
      *                   are always according to GPS)
+     * @param type       message type
      */
     public BeidouCivilianNavigationMessage(final RadioWave radioWave,
-                                           final TimeScales timeScales, final SatelliteSystem system) {
+                                           final TimeScales timeScales, final SatelliteSystem system,
+                                           final String type) {
         super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB,
-              timeScales, system);
+              timeScales, system, type);
         this.radioWave = radioWave;
     }
 

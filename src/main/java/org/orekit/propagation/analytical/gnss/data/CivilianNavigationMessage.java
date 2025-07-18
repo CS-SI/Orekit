@@ -28,17 +28,6 @@ import org.orekit.time.TimeScales;
  */
 public abstract class CivilianNavigationMessage<O extends CivilianNavigationMessage<O>> extends AbstractNavigationMessage<O> implements GNSSClockElements {
 
-    /** Identifier for message type. */
-    public static final String CNAV = "CNAV";
-
-    /** Identifier for message type. */
-    public static final String CNV2 = "CNV2";
-
-    /** Identifier for message type.
-     * @since 13.0
-     */
-    public static final String L1NV = "L1NV";
-
     /** Indicator for CNV 2 messages. */
     private final boolean cnv2;
 
@@ -94,11 +83,13 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
      * @param system          satellite system to consider for interpreting week number
      *                        (may be different from real system, for example in Rinex nav, weeks
      *                        are always according to GPS)
+     * @param type            message type
      */
     protected CivilianNavigationMessage(final boolean cnv2,
                                         final double mu, final double angularVelocity, final int weeksInCycle,
-                                        final TimeScales timeScales, final SatelliteSystem system) {
-        super(mu, angularVelocity, weeksInCycle, timeScales, system);
+                                        final TimeScales timeScales, final SatelliteSystem system,
+                                        final String type) {
+        super(mu, angularVelocity, weeksInCycle, timeScales, system, type);
         this.cnv2 = cnv2;
     }
 

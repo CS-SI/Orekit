@@ -16,18 +16,38 @@
  */
 package org.orekit.files.rinex.navigation.writers;
 
+import org.orekit.files.rinex.navigation.MessageType;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
-import org.orekit.time.TimeStamped;
+import org.orekit.propagation.analytical.gnss.data.NavigationMessage;
 
 import java.io.IOException;
 
-/** Interface for navigation messages writers.
+/** Base class for navigation messages writers.
  * @param <T> type of the navigation messages this writer handles
  * @author Luc Maisonobe
  * @since 14.0
  */
-public interface NavigationMessageWriter<T extends TimeStamped> {
+public abstract class NavigationMessageWriter<T extends NavigationMessage> {
+
+    /** Write the TYPE / SV / MSG line.
+     * @param type message type
+     * @param identifier identifier
+     * @param message navigation message to write
+     * @param writer global file writer
+     * @throws IOException if an I/O error occurs.
+     */
+    public void writeTypeSvMsg(final MessageType type, final String identifier,
+                               final T message, final RinexNavigationWriter writer)
+        throws IOException {
+
+        // TYPE / SV / MSG
+        writer.outputField(type.getPrefix(), 6, true);
+        writer.outputField(identifier, 10, true);
+        writer.outputField(message.getNavigationMessageType(), 15, true);
+        writer.finishLine();
+
+    }
 
     /** Write a navigation message.
      * @param identifier identifier
@@ -36,7 +56,7 @@ public interface NavigationMessageWriter<T extends TimeStamped> {
      * @param writer global file writer
      * @throws IOException if an I/O error occurs.
      */
-    void writeMessage(String identifier, T message,
-                      RinexNavigationHeader header, RinexNavigationWriter writer) throws IOException;
+    public abstract void writeMessage(String identifier, T message,
+                                      RinexNavigationHeader header, RinexNavigationWriter writer) throws IOException;
 
 }

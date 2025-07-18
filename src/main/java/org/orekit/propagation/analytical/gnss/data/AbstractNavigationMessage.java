@@ -21,7 +21,6 @@ import org.hipparchus.util.FastMath;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScales;
-import org.orekit.time.TimeStamped;
 
 /**
  * Base class for GNSS navigation messages.
@@ -36,8 +35,7 @@ import org.orekit.time.TimeStamped;
  * @see NavICLegacyNavigationMessage
  */
 public abstract class AbstractNavigationMessage<O extends AbstractNavigationMessage<O>>
-    extends AbstractAlmanac<O>
-    implements TimeStamped {
+    extends AbstractAlmanac<O> implements NavigationMessage {
 
     /** Mean Motion Difference from Computed Value. */
     private double deltaN0;
@@ -50,19 +48,33 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
      */
     private double transmissionTime;
 
+    /** Message type.
+     * @since 14.0
+     */
+    private final String type;
+
     /**
      * Constructor.
-     * @param mu Earth's universal gravitational parameter
+     * @param mu              Earth's universal gravitational parameter
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
-     * @param weeksInCycle number of weeks in the GNSS cycle
+     * @param weeksInCycle    number of weeks in the GNSS cycle
      * @param timeScales      known time scales
      * @param system          satellite system to consider for interpreting week number
      *                        (may be different from real system, for example in Rinex nav, weeks
      *                        are always according to GPS)
+     * @param type            message type
      */
     protected AbstractNavigationMessage(final double mu, final double angularVelocity, final int weeksInCycle,
-                                        final TimeScales timeScales, final SatelliteSystem system) {
+                                        final TimeScales timeScales, final SatelliteSystem system,
+                                        final String type) {
         super(mu, angularVelocity, weeksInCycle, timeScales, system);
+        this.type = type;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getNavigationMessageType() {
+        return type;
     }
 
     /** Constructor from field instance.
@@ -76,6 +88,7 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
         setDeltaN0(original.getDeltaN0().getReal());
         setEpochToc(original.getEpochToc().toAbsoluteDate());
         setTransmissionTime(original.getTransmissionTime().getReal());
+        this.type = original.getNavigationMessageType();
     }
 
     /**

@@ -19,14 +19,13 @@ package org.orekit.files.rinex.navigation;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeStamped;
 import org.orekit.utils.units.Unit;
 
 /** Base container for data contained in a ionosphere message.
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class IonosphereBaseMessage extends TypeSvMessage implements TimeStamped {
+public class IonosphereBaseMessage extends TypeSvMessage {
 
     /** Converters for Klobuchar parameters. */
     public static final Unit[] S_PER_SC_N;

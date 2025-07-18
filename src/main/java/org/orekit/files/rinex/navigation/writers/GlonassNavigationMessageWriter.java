@@ -27,7 +27,7 @@ import java.io.IOException;
  * @since 14.0
  */
 public class GlonassNavigationMessageWriter
-    implements NavigationMessageWriter<GLONASSFdmaNavigationMessage> {
+    extends NavigationMessageWriter<GLONASSFdmaNavigationMessage> {
 
     /** {@inheritDoc} */
     @Override

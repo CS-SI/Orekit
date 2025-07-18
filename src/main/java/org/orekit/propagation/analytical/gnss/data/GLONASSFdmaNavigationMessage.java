@@ -31,7 +31,12 @@ import org.orekit.propagation.numerical.GLONASSNumericalPropagatorBuilder;
  * @since 11.0
  */
 public class GLONASSFdmaNavigationMessage
-    extends AbstractEphemerisMessage implements GLONASSOrbitalElements {
+    extends AbstractEphemerisMessage implements GLONASSOrbitalElements, NavigationMessage {
+
+    /** Message type.
+     * @since 14.0
+     */
+    public static final String FDMA = "FDMA";
 
     /** Message frame time. */
     private double time;
@@ -68,6 +73,12 @@ public class GLONASSFdmaNavigationMessage
     /** Constructor. */
     public GLONASSFdmaNavigationMessage() {
         // Nothing to do ...
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getNavigationMessageType() {
+        return FDMA;
     }
 
     /**

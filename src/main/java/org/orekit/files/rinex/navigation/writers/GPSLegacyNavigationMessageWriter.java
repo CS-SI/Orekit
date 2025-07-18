@@ -26,7 +26,7 @@ import java.io.IOException;
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class GPSLegacyNavigationMessageWriter implements NavigationMessageWriter<GPSLegacyNavigationMessage> {
+public class GPSLegacyNavigationMessageWriter extends NavigationMessageWriter<GPSLegacyNavigationMessage> {
 
     /** {@inheritDoc} */
     @Override

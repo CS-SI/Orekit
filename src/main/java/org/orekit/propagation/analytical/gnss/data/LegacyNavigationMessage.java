@@ -30,9 +30,6 @@ public abstract class LegacyNavigationMessage<O extends LegacyNavigationMessage<
     extends AbstractNavigationMessage<O>
     implements GNSSClockElements {
 
-    /** Identifier for message type. */
-    public static final String LNAV = "LNAV";
-
     /** Issue of Data, Ephemeris. */
     private int iode;
 
@@ -52,17 +49,19 @@ public abstract class LegacyNavigationMessage<O extends LegacyNavigationMessage<
 
     /**
      * Constructor.
-     * @param mu Earth's universal gravitational parameter
+     * @param mu              Earth's universal gravitational parameter
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
-     * @param weeksInCycle number of weeks in the GNSS cycle
-     * @param timeScales known time scales
+     * @param weeksInCycle    number of weeks in the GNSS cycle
+     * @param timeScales      known time scales
      * @param system          satellite system to consider for interpreting week number
      *                        (may be different from real system, for example in Rinex nav, weeks
      *                        are always according to GPS)
+     * @param type            message type
      */
     protected LegacyNavigationMessage(final double mu, final double angularVelocity, final int weeksInCycle,
-                                      final TimeScales timeScales, final SatelliteSystem system) {
-        super(mu, angularVelocity, weeksInCycle, timeScales, system);
+                                      final TimeScales timeScales, final SatelliteSystem system,
+                                      final String type) {
+        super(mu, angularVelocity, weeksInCycle, timeScales, system, type);
     }
 
     /** Constructor from field instance.

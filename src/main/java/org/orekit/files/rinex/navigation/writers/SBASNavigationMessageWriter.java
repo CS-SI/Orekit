@@ -27,7 +27,7 @@ import java.io.IOException;
  * @since 14.0
  */
 public class SBASNavigationMessageWriter
-    implements NavigationMessageWriter<SBASNavigationMessage> {
+    extends NavigationMessageWriter<SBASNavigationMessage> {
 
     /** {@inheritDoc} */
     @Override

@@ -16,6 +16,7 @@
  */
 package org.orekit.files.rinex.navigation.writers;
 
+import org.orekit.files.rinex.navigation.MessageType;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
 import org.orekit.files.rinex.navigation.SystemTimeOffsetMessage;
@@ -28,7 +29,7 @@ import java.io.IOException;
  * @since 14.0
  */
 public class SystemTimeOffsetMessageWriter
-    implements NavigationMessageWriter<SystemTimeOffsetMessage> {
+    extends NavigationMessageWriter<SystemTimeOffsetMessage> {
 
     /** {@inheritDoc} */
     @Override
@@ -37,10 +38,7 @@ public class SystemTimeOffsetMessageWriter
         throws IOException {
 
         // TYPE / SV / MSG
-        writer.outputField("> STO", 6, true);
-        writer.outputField(identifier, 10, true);
-        writer.outputField(message.getNavigationMessageType(), 11, true);
-        writer.finishLine();
+        writeTypeSvMsg(MessageType.STO, identifier, message, writer);
 
         // EPOCH / SYSTEM CORR TYPE / SBAS ID / UTC ID
         writer.writeDate(message.getReferenceEpoch(), message.getSystem());

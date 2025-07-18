@@ -27,7 +27,7 @@ import java.io.IOException;
  * @since 14.0
  */
 public class NequickGMessageWriter
-    implements NavigationMessageWriter<IonosphereNequickGMessage> {
+    extends NavigationMessageWriter<IonosphereNequickGMessage> {
 
     /** {@inheritDoc} */
     @Override

@@ -28,17 +28,28 @@ import org.orekit.time.TimeScales;
  */
 public class QZSSCivilianNavigationMessage extends CivilianNavigationMessage<QZSSCivilianNavigationMessage> {
 
+    /** Message type.
+     * @since 14.0
+     */
+    public static final String CNAV = "CNAV";
+
+    /** Message type.
+     * @since 14.0
+     */
+    public static final String CNV2 = "CNV2";
+
     /** Constructor.
-     * @param cnv2       indicator for CNV2 messages
      * @param timeScales known time scales
      * @param system     satellite system to consider for interpreting week number
      *                   (may be different from real system, for example in Rinex nav, weeks
      *                   are always according to GPS)
+     * @param type       message type
      */
     public QZSSCivilianNavigationMessage(final boolean cnv2,
-                                         final TimeScales timeScales, final SatelliteSystem system) {
+                                         final TimeScales timeScales, final SatelliteSystem system,
+                                         final String type) {
         super(cnv2, GNSSConstants.QZSS_MU, GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB,
-              timeScales, system);
+              timeScales, system, type);
     }
 
     /** Constructor from field instance.

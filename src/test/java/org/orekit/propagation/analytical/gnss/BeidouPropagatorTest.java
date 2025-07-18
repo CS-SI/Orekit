@@ -165,7 +165,8 @@ public class BeidouPropagatorTest {
         // Initial BeiDou orbital elements (Ref: IGS)
         final BeidouLegacyNavigationMessage boe =
             new BeidouLegacyNavigationMessage(DataContext.getDefault().getTimeScales(),
-                                              SatelliteSystem.BEIDOU);
+                                              SatelliteSystem.BEIDOU,
+                                              BeidouLegacyNavigationMessage.D1);
         boe.setPRN(7);
         boe.setWeek(713);
         boe.setTime(284400.0);

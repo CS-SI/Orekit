@@ -29,15 +29,22 @@ import org.orekit.time.TimeScales;
 public class NavICLegacyNavigationMessage
     extends LegacyNavigationMessage<NavICLegacyNavigationMessage>  {
 
-    /** Constructor.
+    /** Message type.
+     * @since 14.0
+     */
+    public static final String LNAV = "LNAV";
+
+        /** Constructor.
      * @param timeScales known time scales
      * @param system     satellite system to consider for interpreting week number
      *                   (may be different from real system, for example in Rinex nav, weeks
      *                   are always according to GPS)
+     * @param type       message type
      */
-    public NavICLegacyNavigationMessage(final TimeScales timeScales, final SatelliteSystem system) {
+    public NavICLegacyNavigationMessage(final TimeScales timeScales, final SatelliteSystem system,
+                                        final String type) {
         super(GNSSConstants.NAVIC_MU, GNSSConstants.NAVIC_AV, GNSSConstants.NAVIC_WEEK_NB,
-              timeScales, system);
+              timeScales, system, type);
     }
 
     /** Constructor from field instance.

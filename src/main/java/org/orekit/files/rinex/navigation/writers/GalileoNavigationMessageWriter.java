@@ -27,7 +27,7 @@ import java.io.IOException;
  * @since 14.0
  */
 public class GalileoNavigationMessageWriter
-    implements NavigationMessageWriter<GalileoNavigationMessage> {
+    extends NavigationMessageWriter<GalileoNavigationMessage> {
 
     /** {@inheritDoc} */
     @Override

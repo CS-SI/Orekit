@@ -27,7 +27,7 @@ import java.io.IOException;
  * @since 14.0
  */
 public class NavICKlobucharMessageWriter
-    implements NavigationMessageWriter<IonosphereNavICKlobucharMessage> {
+    extends NavigationMessageWriter<IonosphereNavICKlobucharMessage> {
 
     /** {@inheritDoc} */
     @Override

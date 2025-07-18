@@ -29,7 +29,14 @@ import org.orekit.propagation.analytical.gnss.SBASPropagatorBuilder;
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class SBASNavigationMessage extends AbstractEphemerisMessage implements SBASOrbitalElements {
+public class SBASNavigationMessage
+    extends AbstractEphemerisMessage
+    implements SBASOrbitalElements, NavigationMessage {
+
+    /** Message type.
+     * @since 14.0
+     */
+    public static final String SBAS = "SBAS";
 
     /** Transmission time  of  message  (start  of  the message) in GPS seconds of the week. */
     private double time;
@@ -49,6 +56,12 @@ public class SBASNavigationMessage extends AbstractEphemerisMessage implements S
     /** Constructor. */
     public SBASNavigationMessage() {
         // Nothing to do ...
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getNavigationMessageType() {
+        return SBAS;
     }
 
     /**

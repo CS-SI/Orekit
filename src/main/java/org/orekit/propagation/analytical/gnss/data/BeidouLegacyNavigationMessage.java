@@ -54,11 +54,13 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
      * @param system     satellite system to consider for interpreting week number
      *                   (may be different from real system, for example in Rinex nav, weeks
      *                   are always according to GPS)
+     * @param type       message type
      */
     public BeidouLegacyNavigationMessage(final TimeScales timeScales,
-                                         final SatelliteSystem system) {
+                                         final SatelliteSystem system,
+                                         final String type) {
         super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB,
-              timeScales, system);
+              timeScales, system, type);
     }
 
     /** Constructor from field instance.

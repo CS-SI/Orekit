@@ -27,7 +27,7 @@ import java.io.IOException;
  * @since 14.0
  */
 public class QZSSLegacyNavigationMessageWriter
-    implements NavigationMessageWriter<QZSSLegacyNavigationMessage> {
+    extends NavigationMessageWriter<QZSSLegacyNavigationMessage> {
 
     /** {@inheritDoc} */
     @Override

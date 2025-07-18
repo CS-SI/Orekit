@@ -28,15 +28,22 @@ import org.orekit.time.TimeScales;
  */
 public class QZSSLegacyNavigationMessage extends LegacyNavigationMessage<QZSSLegacyNavigationMessage> {
 
+    /** Message type.
+     * @since 14.0
+     */
+    public static final String LNAV = "LNAV";
+
     /** Constructor.
      * @param timeScales known time scales
      * @param system     satellite system to consider for interpreting week number
      *                   (may be different from real system, for example in Rinex nav, weeks
      *                   are always according to GPS)
+     * @param type       message type
      */
-    public QZSSLegacyNavigationMessage(final TimeScales timeScales, final SatelliteSystem system) {
+    public QZSSLegacyNavigationMessage(final TimeScales timeScales, final SatelliteSystem system,
+                                       final String type) {
         super(GNSSConstants.QZSS_MU, GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB,
-              timeScales, system);
+              timeScales, system, type);
     }
 
     /** Constructor from field instance.

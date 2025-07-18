@@ -29,6 +29,11 @@ import org.orekit.time.TimeScales;
 public class NavICL1NVNavigationMessage
     extends CivilianNavigationMessage<NavICL1NVNavigationMessage> {
 
+    /** Message type.
+     * @since 14.0
+     */
+    public static final String L1NV = "L1NV";
+
     /** Reference signal flag. */
     private int referenceSignalFlag;
 
@@ -52,10 +57,12 @@ public class NavICL1NVNavigationMessage
      * @param system     satellite system to consider for interpreting week number
      *                   (may be different from real system, for example in Rinex nav, weeks
      *                   are always according to GPS)
+     * @param type       message type
      */
-    public NavICL1NVNavigationMessage(final TimeScales timeScales, final SatelliteSystem system) {
+    public NavICL1NVNavigationMessage(final TimeScales timeScales, final SatelliteSystem system,
+                                      final String type) {
         super(true, GNSSConstants.NAVIC_MU, GNSSConstants.NAVIC_AV, GNSSConstants.NAVIC_WEEK_NB,
-              timeScales, system);
+              timeScales, system, type);
     }
 
     /** Constructor from field instance.

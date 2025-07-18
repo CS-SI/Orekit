@@ -17,8 +17,10 @@
 package org.orekit.files.rinex.navigation.writers;
 
 import org.orekit.files.rinex.navigation.IonosphereGlonassCdmsMessage;
+import org.orekit.files.rinex.navigation.MessageType;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
+import org.orekit.files.rinex.utils.BaseRinexWriter;
 
 import java.io.IOException;
 
@@ -27,14 +29,24 @@ import java.io.IOException;
  * @since 14.0
  */
 public class GlonassCDMSMessageWriter
-    implements NavigationMessageWriter<IonosphereGlonassCdmsMessage> {
+    extends NavigationMessageWriter<IonosphereGlonassCdmsMessage> {
 
     /** {@inheritDoc} */
     @Override
     public void writeMessage(final String identifier, final IonosphereGlonassCdmsMessage message,
                              final RinexNavigationHeader header, final RinexNavigationWriter writer)
         throws IOException {
-        // TODO
+
+        // TYPE / SV / MSG
+        writeTypeSvMsg(MessageType.ION, identifier, message, writer);
+
+        // MESSAGE LINE - 0
+        writer.writeDate(message.getTransmitTime(), message.getSystem());
+        writer.outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, message.getCA(),    42);
+        writer.outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, message.getCF107(), 61);
+        writer.outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, message.getCAP(),   80);
+        writer.finishLine();
+
     }
 
 }

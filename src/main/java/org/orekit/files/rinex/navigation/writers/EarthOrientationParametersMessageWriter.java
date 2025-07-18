@@ -17,6 +17,7 @@
 package org.orekit.files.rinex.navigation.writers;
 
 import org.orekit.files.rinex.navigation.EarthOrientationParameterMessage;
+import org.orekit.files.rinex.navigation.MessageType;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
 import org.orekit.files.rinex.utils.BaseRinexWriter;
@@ -28,7 +29,7 @@ import java.io.IOException;
  * @since 14.0
  */
 public class EarthOrientationParametersMessageWriter
-    implements NavigationMessageWriter<EarthOrientationParameterMessage> {
+    extends NavigationMessageWriter<EarthOrientationParameterMessage> {
 
     /** {@inheritDoc} */
     @Override
@@ -37,10 +38,7 @@ public class EarthOrientationParametersMessageWriter
         throws IOException {
 
         // TYPE / SV / MSG
-        writer.outputField("> EOP", 6, true);
-        writer.outputField(identifier, 10, true);
-        writer.outputField(message.getNavigationMessageType(), 11, true);
-        writer.finishLine();
+        writeTypeSvMsg(MessageType.EOP, identifier, message, writer);
 
         // EOP MESSAGE LINE - 0
         writer.writeDate(message.getReferenceEpoch(), message.getSystem());

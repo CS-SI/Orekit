@@ -44,11 +44,11 @@ import org.orekit.files.rinex.section.CommonLabel;
 import org.orekit.files.rinex.utils.BaseRinexWriter;
 import org.orekit.gnss.PredefinedObservationType;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.propagation.analytical.gnss.data.NavigationMessage;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
-import org.orekit.time.TimeStamped;
 import org.orekit.utils.formatting.FastLongFormatter;
 
 import java.io.IOException;
@@ -243,8 +243,8 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
      * @param messageWriter writer for the current message type
      * @return list of handlers for one message type
      */
-    private <T extends TimeStamped> List<PendingMessages<T>> createHandlers(final Map<String, List<T>> map,
-                                                                            final NavigationMessageWriter<T> messageWriter) {
+    private <T extends NavigationMessage> List<PendingMessages<T>> createHandlers(final Map<String, List<T>> map,
+                                                                                  final NavigationMessageWriter<T> messageWriter) {
         final List<PendingMessages<T>> handlers = new ArrayList<>();
         for (final Map.Entry<String, List<T>> entry : map.entrySet()) {
             handlers.add(new PendingMessages<>(entry.getKey(), messageWriter, entry.getValue()));
@@ -363,7 +363,7 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
     /** Container for navigation messages iterator.
      * @param <T> type of the navigation message
      */
-    private class PendingMessages<T extends TimeStamped> {
+    private class PendingMessages<T extends NavigationMessage> {
 
         /** Threshold to consider dates are equal. */
         private static final double EPS = 1.0e-9;

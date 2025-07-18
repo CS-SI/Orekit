@@ -27,7 +27,7 @@ import java.io.IOException;
  * @since 14.0
  */
 public class BeidouCivilianNavigationMessageWriter
-    implements NavigationMessageWriter<BeidouCivilianNavigationMessage> {
+    extends NavigationMessageWriter<BeidouCivilianNavigationMessage> {
 
     /** {@inheritDoc} */
     @Override
