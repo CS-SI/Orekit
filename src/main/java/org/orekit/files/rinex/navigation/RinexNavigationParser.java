@@ -584,7 +584,12 @@ public class RinexNavigationParser {
 
         /** Parser for leap seconds. */
         HEADER_LEAP_SECONDS((header, line) -> header.matchFound(CommonLabel.LEAP_SECONDS, line),
-                            (line, pi) -> pi.file.getHeader().setLeapSecondsGNSS(ParsingUtils.parseInt(line, 0, 6)),
+                            (line, pi) -> {
+                                pi.file.getHeader().setLeapSecondsGNSS(ParsingUtils.parseInt(line, 0, 6));
+                                pi.file.getHeader().setLeapSecondsFuture(ParsingUtils.parseInt(line, 6, 6));
+                                pi.file.getHeader().setLeapSecondsWeekNum(ParsingUtils.parseInt(line, 12, 6));
+                                pi.file.getHeader().setLeapSecondsDayNum(ParsingUtils.parseInt(line, 18, 6));
+                            },
                             LineParser::headerNext),
 
         /** Parser for DOI.
@@ -739,9 +744,9 @@ public class RinexNavigationParser {
                                pi.sto.setReferenceTimeSystem(PredefinedTimeSystem.
                                                              parseTwoLettersCode(ParsingUtils.parseString(line, 26, 2)));
                                final String sbas = ParsingUtils.parseString(line, 43, 18);
-                               pi.sto.setSbasId(!sbas.isEmpty() ? SbasId.valueOf(sbas) : null);
+                               pi.sto.setSbasId(sbas == null || sbas.isEmpty() ? null : SbasId.valueOf(sbas));
                                final String utc = ParsingUtils.parseString(line, 62, 18);
-                               pi.sto.setUtcId(!utc.isEmpty() ? UtcId.parseUtcId(utc) : null);
+                               pi.sto.setUtcId(utc == null || utc.isEmpty() ? null : UtcId.parseUtcId(utc));
 
                                // TODO is the reference date relative to one or the other time scale?
                                pi.parseDate(line, pi.sto::setReferenceEpoch, pi.sto.getSystem());
@@ -969,10 +974,10 @@ public class RinexNavigationParser {
          */
         GLONASS_CDMS_LINE_0((header, line) -> true,
                                (line, pi) -> {
-                             pi.parseDate(line, pi.glonassCdms::setTransmitTime, pi.navICNeQuickN.getSystem());
+                             pi.parseDate(line, pi.glonassCdms::setTransmitTime, pi.glonassCdms.getSystem());
                              pi.glonassCdms.setCA(pi.parseField2(line, Unit.ONE));
-                             pi.glonassCdms.setCF107(pi.parseField2(line, Unit.ONE));
-                             pi.glonassCdms.setCAP(pi.parseField2(line, Unit.ONE));
+                             pi.glonassCdms.setCF107(pi.parseField3(line, Unit.ONE));
+                             pi.glonassCdms.setCAP(pi.parseField4(line, Unit.ONE));
                              pi.file.addGlonassCDMSMessage(pi.glonassCdms);
                              pi.glonassCdms = null;
                          },
