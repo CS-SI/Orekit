@@ -30,6 +30,7 @@ public class IonosphereBaseMessage extends TypeSvMessage {
     /** Converter for Klobuchar parameters. */
     public static final Unit SC = Unit.RADIAN.scale("sc", GNSSConstants.GNSS_PI);
 
+    /** Converter for Klobuchar parameters. */
     public static final Unit S_PER_SC_N0 = Unit.SECOND;
 
     /** Converter for Klobuchar parameters. */
