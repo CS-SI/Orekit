@@ -756,10 +756,11 @@ public class RinexNavigationParser {
         STO_TYPE((header, line) -> MessageType.STO.matches(line),
                  (line, pi) -> {
                      pi.closePendingMessage();
-                     pi.sto = new SystemTimeOffsetMessage(SatelliteSystem.parseSatelliteSystem(
-                         ParsingUtils.parseString(line, 6, 1)),
+                     pi.sto = new SystemTimeOffsetMessage(SatelliteSystem.
+                                                          parseSatelliteSystem(ParsingUtils.parseString(line, 6, 1)),
                                                           ParsingUtils.parseInt(line, 7, 2),
-                                                          ParsingUtils.parseString(line, 10, 4));
+                                                          ParsingUtils.parseString(line, 10, 4),
+                                                          ParsingUtils.parseString(line, 15, 4));
                  },
                  pi -> Collections.singleton(STO_SV_EPOCH_CLOCK)),
 
@@ -802,7 +803,8 @@ public class RinexNavigationParser {
                          new EarthOrientationParameterMessage(SatelliteSystem.
                                                               parseSatelliteSystem(ParsingUtils.parseString(line, 6, 1)),
                                                               ParsingUtils.parseInt(line, 7, 2),
-                                                              ParsingUtils.parseString(line, 10, 4));
+                                                              ParsingUtils.parseString(line, 10, 4),
+                                                              ParsingUtils.parseString(line, 15, 4));
                  },
                  pi -> Collections.singleton(EOP_LINE_0)),
 
@@ -841,145 +843,145 @@ public class RinexNavigationParser {
          * @since 14.0
          */
         NAVIC_KLOBUCHAR_LINE_3((header, line) -> true,
-                         (line, pi) -> {
-                             pi.navICKlobuchar.setLonMin(pi.parseField1(line, Unit.DEGREE));
-                             pi.navICKlobuchar.setLonMax(pi.parseField2(line, Unit.DEGREE));
-                             pi.navICKlobuchar.setModipMin(pi.parseField3(line, Unit.DEGREE));
-                             pi.navICKlobuchar.setModipMax(pi.parseField4(line, Unit.DEGREE));
-                             pi.file.addNavICKlobucharMessage(pi.navICKlobuchar);
-                             pi.navICKlobuchar = null;
-                         },
-                         LineParser::navigationNext),
+                               (line, pi) -> {
+                                   pi.navICKlobuchar.setLonMin(pi.parseField1(line, Unit.DEGREE));
+                                   pi.navICKlobuchar.setLonMax(pi.parseField2(line, Unit.DEGREE));
+                                   pi.navICKlobuchar.setModipMin(pi.parseField3(line, Unit.DEGREE));
+                                   pi.navICKlobuchar.setModipMax(pi.parseField4(line, Unit.DEGREE));
+                                   pi.file.addNavICKlobucharMessage(pi.navICKlobuchar);
+                                   pi.navICKlobuchar = null;
+                               },
+                               LineParser::navigationNext),
 
         /** Parser for NavIC Klobuchar message model.
          * @since 14.0
          */
         NAVIC_KLOBUCHAR_LINE_2((header, line) -> true,
-                         (line, pi) -> {
-                             pi.navICKlobuchar.setBetaI(0, pi.parseField1(line, IonosphereBaseMessage.S_PER_SC_N[0]));
-                             pi.navICKlobuchar.setBetaI(1, pi.parseField2(line, IonosphereBaseMessage.S_PER_SC_N[1]));
-                             pi.navICKlobuchar.setBetaI(2, pi.parseField3(line, IonosphereBaseMessage.S_PER_SC_N[2]));
-                             pi.navICKlobuchar.setBetaI(3, pi.parseField4(line, IonosphereBaseMessage.S_PER_SC_N[3]));
-                         },
-                         pi -> Collections.singleton(NAVIC_KLOBUCHAR_LINE_3)),
+                               (line, pi) -> {
+                                   pi.navICKlobuchar.setBetaI(0, pi.parseField1(line, IonosphereBaseMessage.S_PER_SC_N[0]));
+                                   pi.navICKlobuchar.setBetaI(1, pi.parseField2(line, IonosphereBaseMessage.S_PER_SC_N[1]));
+                                   pi.navICKlobuchar.setBetaI(2, pi.parseField3(line, IonosphereBaseMessage.S_PER_SC_N[2]));
+                                   pi.navICKlobuchar.setBetaI(3, pi.parseField4(line, IonosphereBaseMessage.S_PER_SC_N[3]));
+                               },
+                               pi -> Collections.singleton(NAVIC_KLOBUCHAR_LINE_3)),
 
         /** Parser for NavIC Klobuchar message model.
          * @since 14.0
          */
         NAVIC_KLOBUCHAR_LINE_1((header, line) -> true,
-                         (line, pi) -> {
-                             pi.navICKlobuchar.setAlphaI(0, pi.parseField1(line, IonosphereBaseMessage.S_PER_SC_N[0]));
-                             pi.navICKlobuchar.setAlphaI(1, pi.parseField2(line, IonosphereBaseMessage.S_PER_SC_N[1]));
-                             pi.navICKlobuchar.setAlphaI(2, pi.parseField3(line, IonosphereBaseMessage.S_PER_SC_N[2]));
-                             pi.navICKlobuchar.setAlphaI(3, pi.parseField4(line, IonosphereBaseMessage.S_PER_SC_N[3]));
-                         },
-                         pi -> Collections.singleton(NAVIC_KLOBUCHAR_LINE_2)),
+                               (line, pi) -> {
+                                   pi.navICKlobuchar.setAlphaI(0, pi.parseField1(line, IonosphereBaseMessage.S_PER_SC_N[0]));
+                                   pi.navICKlobuchar.setAlphaI(1, pi.parseField2(line, IonosphereBaseMessage.S_PER_SC_N[1]));
+                                   pi.navICKlobuchar.setAlphaI(2, pi.parseField3(line, IonosphereBaseMessage.S_PER_SC_N[2]));
+                                   pi.navICKlobuchar.setAlphaI(3, pi.parseField4(line, IonosphereBaseMessage.S_PER_SC_N[3]));
+                               },
+                               pi -> Collections.singleton(NAVIC_KLOBUCHAR_LINE_2)),
 
         /** Parser for NavIC Klobuchar message model. */
         NAVIC_KLOBUCHAR_LINE_0((header, line) -> true,
-                         (line, pi) -> {
-                             pi.parseDate(line, pi.navICKlobuchar::setTransmitTime, pi.navICKlobuchar.getSystem());
-                             pi.navICKlobuchar.setIOD(pi.parseField2(line, Unit.ONE));
-                         },
-                         pi -> Collections.singleton(NAVIC_KLOBUCHAR_LINE_1)),
+                               (line, pi) -> {
+                                   pi.parseDate(line, pi.navICKlobuchar::setTransmitTime, pi.navICKlobuchar.getSystem());
+                                   pi.navICKlobuchar.setIOD(pi.parseField2(line, Unit.ONE));
+                               },
+                               pi -> Collections.singleton(NAVIC_KLOBUCHAR_LINE_1)),
 
         /** Parser for NacIV NeQuick N message model.
          * @since 14.0
          */
         NAVIC_NEQUICK_N_LINE_6((header, line) -> true,
-                         (line, pi) -> {
-                             pi.navICNeQuickN.getRegion3().setLonMin(pi.parseField1(line, Unit.DEGREE));
-                             pi.navICNeQuickN.getRegion3().setLonMax(pi.parseField2(line, Unit.DEGREE));
-                             pi.navICNeQuickN.getRegion3().setModipMin(pi.parseField3(line, Unit.DEGREE));
-                             pi.navICNeQuickN.getRegion3().setModipMax(pi.parseField4(line, Unit.DEGREE));
-                             pi.file.addNavICNeQuickNMessage(pi.navICNeQuickN);
-                             pi.navICNeQuickN = null;
-                         },
-                         LineParser::navigationNext),
+                               (line, pi) -> {
+                                   pi.navICNeQuickN.getRegion3().setLonMin(pi.parseField1(line, Unit.DEGREE));
+                                   pi.navICNeQuickN.getRegion3().setLonMax(pi.parseField2(line, Unit.DEGREE));
+                                   pi.navICNeQuickN.getRegion3().setModipMin(pi.parseField3(line, Unit.DEGREE));
+                                   pi.navICNeQuickN.getRegion3().setModipMax(pi.parseField4(line, Unit.DEGREE));
+                                   pi.file.addNavICNeQuickNMessage(pi.navICNeQuickN);
+                                   pi.navICNeQuickN = null;
+                               },
+                               LineParser::navigationNext),
 
         /** Parser for NacIV NeQuick N message model.
          * @since 14.0
          */
         NAVIC_NEQUICK_N_LINE_5((header, line) -> true,
-                         (line, pi) -> {
-                             pi.navICNeQuickN.getRegion3().setAi0(pi.parseField1(line, IonosphereAij.SFU));
-                             pi.navICNeQuickN.getRegion3().setAi1(pi.parseField2(line, IonosphereAij.SFU_PER_DEG));
-                             pi.navICNeQuickN.getRegion3().setAi2(pi.parseField3(line, IonosphereAij.SFU_PER_DEG2));
-                             pi.navICNeQuickN.getRegion3().setIDF(pi.parseField4(line, Unit.ONE));
-                         },
-                         pi -> Collections.singleton(NAVIC_NEQUICK_N_LINE_6)),
+                               (line, pi) -> {
+                                    pi.navICNeQuickN.getRegion3().setAi0(pi.parseField1(line, IonosphereAij.SFU));
+                                    pi.navICNeQuickN.getRegion3().setAi1(pi.parseField2(line, IonosphereAij.SFU_PER_DEG));
+                                    pi.navICNeQuickN.getRegion3().setAi2(pi.parseField3(line, IonosphereAij.SFU_PER_DEG2));
+                                    pi.navICNeQuickN.getRegion3().setIDF(pi.parseField4(line, Unit.ONE));
+                               },
+                               pi -> Collections.singleton(NAVIC_NEQUICK_N_LINE_6)),
 
         /** Parser for NacIV NeQuick N message model.
          * @since 14.0
          */
         NAVIC_NEQUICK_N_LINE_4((header, line) -> true,
-                         (line, pi) -> {
-                             pi.navICNeQuickN.getRegion2().setLonMin(pi.parseField1(line, Unit.DEGREE));
-                             pi.navICNeQuickN.getRegion2().setLonMax(pi.parseField2(line, Unit.DEGREE));
-                             pi.navICNeQuickN.getRegion2().setModipMin(pi.parseField3(line, Unit.DEGREE));
-                             pi.navICNeQuickN.getRegion2().setModipMax(pi.parseField4(line, Unit.DEGREE));
-                         },
-                         pi -> Collections.singleton(NAVIC_NEQUICK_N_LINE_5)),
+                               (line, pi) -> {
+                                   pi.navICNeQuickN.getRegion2().setLonMin(pi.parseField1(line, Unit.DEGREE));
+                                   pi.navICNeQuickN.getRegion2().setLonMax(pi.parseField2(line, Unit.DEGREE));
+                                   pi.navICNeQuickN.getRegion2().setModipMin(pi.parseField3(line, Unit.DEGREE));
+                                   pi.navICNeQuickN.getRegion2().setModipMax(pi.parseField4(line, Unit.DEGREE));
+                               },
+                               pi -> Collections.singleton(NAVIC_NEQUICK_N_LINE_5)),
 
         /** Parser for NacIV NeQuick N message model.
          * @since 14.0
          */
         NAVIC_NEQUICK_N_LINE_3((header, line) -> true,
-                         (line, pi) -> {
-                             pi.navICNeQuickN.getRegion2().setAi0(pi.parseField1(line, IonosphereAij.SFU));
-                             pi.navICNeQuickN.getRegion2().setAi1(pi.parseField2(line, IonosphereAij.SFU_PER_DEG));
-                             pi.navICNeQuickN.getRegion2().setAi2(pi.parseField3(line, IonosphereAij.SFU_PER_DEG2));
-                             pi.navICNeQuickN.getRegion2().setIDF(pi.parseField4(line, Unit.ONE));
-                         },
-                         pi -> Collections.singleton(NAVIC_NEQUICK_N_LINE_4)),
+                               (line, pi) -> {
+                                   pi.navICNeQuickN.getRegion2().setAi0(pi.parseField1(line, IonosphereAij.SFU));
+                                   pi.navICNeQuickN.getRegion2().setAi1(pi.parseField2(line, IonosphereAij.SFU_PER_DEG));
+                                   pi.navICNeQuickN.getRegion2().setAi2(pi.parseField3(line, IonosphereAij.SFU_PER_DEG2));
+                                   pi.navICNeQuickN.getRegion2().setIDF(pi.parseField4(line, Unit.ONE));
+                               },
+                               pi -> Collections.singleton(NAVIC_NEQUICK_N_LINE_4)),
 
         /** Parser for NacIV NeQuick N message model.
          * @since 14.0
          */
         NAVIC_NEQUICK_N_LINE_2((header, line) -> true,
-                         (line, pi) -> {
-                             pi.navICNeQuickN.getRegion1().setLonMin(pi.parseField1(line, Unit.DEGREE));
-                             pi.navICNeQuickN.getRegion1().setLonMax(pi.parseField2(line, Unit.DEGREE));
-                             pi.navICNeQuickN.getRegion1().setModipMin(pi.parseField3(line, Unit.DEGREE));
-                             pi.navICNeQuickN.getRegion1().setModipMax(pi.parseField4(line, Unit.DEGREE));
-                         },
-                         pi -> Collections.singleton(NAVIC_NEQUICK_N_LINE_3)),
+                               (line, pi) -> {
+                                   pi.navICNeQuickN.getRegion1().setLonMin(pi.parseField1(line, Unit.DEGREE));
+                                   pi.navICNeQuickN.getRegion1().setLonMax(pi.parseField2(line, Unit.DEGREE));
+                                   pi.navICNeQuickN.getRegion1().setModipMin(pi.parseField3(line, Unit.DEGREE));
+                                   pi.navICNeQuickN.getRegion1().setModipMax(pi.parseField4(line, Unit.DEGREE));
+                               },
+                               pi -> Collections.singleton(NAVIC_NEQUICK_N_LINE_3)),
 
         /** Parser for NacIV NeQuick N message model.
          * @since 14.0
          */
         NAVIC_NEQUICK_N_LINE_1((header, line) -> true,
-                         (line, pi) -> {
-                             pi.navICNeQuickN.getRegion1().setAi0(pi.parseField1(line, IonosphereAij.SFU));
-                             pi.navICNeQuickN.getRegion1().setAi1(pi.parseField2(line, IonosphereAij.SFU_PER_DEG));
-                             pi.navICNeQuickN.getRegion1().setAi2(pi.parseField3(line, IonosphereAij.SFU_PER_DEG2));
-                             pi.navICNeQuickN.getRegion1().setIDF(pi.parseField4(line, Unit.ONE));
-                         },
-                         pi -> Collections.singleton(NAVIC_NEQUICK_N_LINE_2)),
+                               (line, pi) -> {
+                                   pi.navICNeQuickN.getRegion1().setAi0(pi.parseField1(line, IonosphereAij.SFU));
+                                   pi.navICNeQuickN.getRegion1().setAi1(pi.parseField2(line, IonosphereAij.SFU_PER_DEG));
+                                   pi.navICNeQuickN.getRegion1().setAi2(pi.parseField3(line, IonosphereAij.SFU_PER_DEG2));
+                                   pi.navICNeQuickN.getRegion1().setIDF(pi.parseField4(line, Unit.ONE));
+                               },
+                               pi -> Collections.singleton(NAVIC_NEQUICK_N_LINE_2)),
 
         /** Parser for NacIV NeQuick N message model.
          * @since 14.0
          */
         NAVIC_NEQUICK_N_LINE_0((header, line) -> true,
                                (line, pi) -> {
-                             pi.parseDate(line, pi.navICNeQuickN::setTransmitTime, pi.navICNeQuickN.getSystem());
-                             pi.navICNeQuickN.setIOD(pi.parseField2(line, Unit.ONE));
-                         },
-                         pi -> Collections.singleton(NAVIC_NEQUICK_N_LINE_1)),
+                                   pi.parseDate(line, pi.navICNeQuickN::setTransmitTime, pi.navICNeQuickN.getSystem());
+                                   pi.navICNeQuickN.setIOD(pi.parseField2(line, Unit.ONE));
+                               },
+                               pi -> Collections.singleton(NAVIC_NEQUICK_N_LINE_1)),
 
         /** Parser for GLONASS CDMS message model.
          * @since 14.0
          */
         GLONASS_CDMS_LINE_0((header, line) -> true,
-                               (line, pi) -> {
-                             pi.parseDate(line, pi.glonassCdms::setTransmitTime, pi.glonassCdms.getSystem());
-                             pi.glonassCdms.setCA(pi.parseField2(line, Unit.ONE));
-                             pi.glonassCdms.setCF107(pi.parseField3(line, Unit.ONE));
-                             pi.glonassCdms.setCAP(pi.parseField4(line, Unit.ONE));
-                             pi.file.addGlonassCDMSMessage(pi.glonassCdms);
-                             pi.glonassCdms = null;
-                         },
-                         LineParser::navigationNext),
+                            (line, pi) -> {
+                                pi.parseDate(line, pi.glonassCdms::setTransmitTime, pi.glonassCdms.getSystem());
+                                pi.glonassCdms.setCA(pi.parseField2(line, Unit.ONE));
+                                pi.glonassCdms.setCF107(pi.parseField3(line, Unit.ONE));
+                                pi.glonassCdms.setCAP(pi.parseField4(line, Unit.ONE));
+                                pi.file.addGlonassCDMSMessage(pi.glonassCdms);
+                                pi.glonassCdms = null;
+                            },
+                            LineParser::navigationNext),
 
         /** Parser for ionosphere Nequick-G message model. */
         NEQUICK_G_LINE_1((header, line) -> true,

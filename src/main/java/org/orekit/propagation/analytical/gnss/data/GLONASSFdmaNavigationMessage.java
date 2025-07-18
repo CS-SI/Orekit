@@ -81,6 +81,12 @@ public class GLONASSFdmaNavigationMessage
         return FDMA;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getNavigationMessageSubType() {
+        return null;
+    }
+
     /**
      * Get the propagator corresponding to the navigation message.
      * <p>The attitude provider is set by default to EME2000 aligned in the

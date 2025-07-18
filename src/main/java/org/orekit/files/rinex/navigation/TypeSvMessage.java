@@ -32,17 +32,23 @@ public abstract class TypeSvMessage implements NavigationMessage {
     private final int prn;
 
     /** Navigation message type. */
-    private final String navigationMessageType;
+    private final String type;
+
+    /** Navigation message subtype. */
+    private final String subType;
 
     /** Simple constructor.
      * @param system satellite system
      * @param prn satellite number
-     * @param navigationMessageType navigation message type
+     * @param type navigation message type
+     * @param subType navigation message subtype
      */
-    protected TypeSvMessage(final SatelliteSystem system, final int prn, final String navigationMessageType) {
-        this.system                = system;
-        this.prn                   = prn;
-        this.navigationMessageType = navigationMessageType;
+    protected TypeSvMessage(final SatelliteSystem system, final int prn,
+                            final String type, final String subType) {
+        this.system  = system;
+        this.prn     = prn;
+        this.type    = type;
+        this.subType = subType;
     }
 
     /** Get satellite system.
@@ -59,11 +65,16 @@ public abstract class TypeSvMessage implements NavigationMessage {
         return prn;
     }
 
-    /** Get navigation message type.
-     * @return the navigation message type
-     */
+    /** {@inheritDoc} */
+    @Override
     public String getNavigationMessageType() {
-        return navigationMessageType;
+        return type;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getNavigationMessageSubType() {
+        return subType;
     }
 
 }

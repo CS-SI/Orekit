@@ -34,17 +34,21 @@ public abstract class NavigationMessageWriter<T extends NavigationMessage> {
      * @param type message type
      * @param identifier identifier
      * @param message navigation message to write
+     * @param header file header
      * @param writer global file writer
      * @throws IOException if an I/O error occurs.
      */
-    public void writeTypeSvMsg(final MessageType type, final String identifier,
-                               final T message, final RinexNavigationWriter writer)
+    public void writeTypeSvMsg(final MessageType type, final String identifier, final T message,
+                               final RinexNavigationHeader header, final RinexNavigationWriter writer)
         throws IOException {
 
         // TYPE / SV / MSG
         writer.outputField(type.getPrefix(), 6, true);
         writer.outputField(identifier, 10, true);
         writer.outputField(message.getNavigationMessageType(), 15, true);
+        if (header.getFormatVersion() >= 4.02 && message.getNavigationMessageSubType() != null) {
+            writer.outputField(message.getNavigationMessageSubType(), 19, true);
+        }
         writer.finishLine();
 
     }

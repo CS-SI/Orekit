@@ -42,21 +42,15 @@ public class IonosphereBaseMessage extends TypeSvMessage {
     /** Transmit time. */
     private AbsoluteDate transmitTime;
 
-    /** Message subtype.
-     * @since 14.0
-     */
-    private final String subType;
-
     /** Simple constructor.
      * @param system satellite system
      * @param prn satellite number
-     * @param navigationMessageType navigation message type
-     * @param subType message subtype
+     * @param type navigation message type
+     * @param subType navigation message subtype
      */
     public IonosphereBaseMessage(final SatelliteSystem system, final int prn,
-                                 final String navigationMessageType, final String subType) {
-        super(system, prn, navigationMessageType);
-        this.subType = subType;
+                                 final String type, final String subType) {
+        super(system, prn, type, subType);
     }
 
     /** {@inheritDoc} */
@@ -77,14 +71,6 @@ public class IonosphereBaseMessage extends TypeSvMessage {
      */
     public void setTransmitTime(final AbsoluteDate transmitTime) {
         this.transmitTime = transmitTime;
-    }
-
-    /** Get the message subtype.
-     * @return message subtype
-     * @since 14.0
-     */
-    public String getSubType() {
-        return subType;
     }
 
 }

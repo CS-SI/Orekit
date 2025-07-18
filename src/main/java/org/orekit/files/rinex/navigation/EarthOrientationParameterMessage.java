@@ -64,10 +64,12 @@ public class EarthOrientationParameterMessage extends TypeSvMessage {
     /** Simple constructor.
      * @param system satellite system
      * @param prn satellite number
-     * @param navigationMessageType navigation message type
+     * @param type navigation message type
+     * @param subType navigation message subtype
      */
-    public EarthOrientationParameterMessage(final SatelliteSystem system, final int prn, final String navigationMessageType) {
-        super(system, prn, navigationMessageType);
+    public EarthOrientationParameterMessage(final SatelliteSystem system, final int prn,
+                                            final String type, final String subType) {
+        super(system, prn, type, subType);
     }
 
     /** {@inheritDoc} */

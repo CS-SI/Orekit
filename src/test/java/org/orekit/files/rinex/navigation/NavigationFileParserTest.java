@@ -2019,7 +2019,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(SatelliteSystem.NAVIC, listNK.get(0).getSystem());
         Assertions.assertEquals(10, listNK.get(0).getPrn());
         Assertions.assertEquals("L1NV", listNK.get(0).getNavigationMessageType());
-        Assertions.assertEquals("KLOB", listNK.get(0).getSubType());
+        Assertions.assertEquals("KLOB", listNK.get(0).getNavigationMessageSubType());
         Assertions.assertEquals(0.0,
                                 new AbsoluteDate(2023, 6, 24, 0, 7, 30.0, TimeScalesFactory.getGPS()).durationFrom(listNK.get(0).getTransmitTime()),
                                 1.0e-15);
@@ -2040,7 +2040,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(SatelliteSystem.NAVIC, listNN.get(0).getSystem());
         Assertions.assertEquals(10, listNN.get(0).getPrn());
         Assertions.assertEquals("L1NV", listNN.get(0).getNavigationMessageType());
-        Assertions.assertEquals("NEQN", listNN.get(0).getSubType());
+        Assertions.assertEquals("NEQN", listNN.get(0).getNavigationMessageSubType());
         Assertions.assertEquals(0.0,
                                 new AbsoluteDate(2023, 6, 24, 0,17, 24.0, TimeScalesFactory.getNavIC()).durationFrom(listNN.get(0).getTransmitTime()),
                                 1.0e-15);

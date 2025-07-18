@@ -40,9 +40,6 @@ public class KlobucharMessageWriter
         writer.outputField("> ION", 6, true);
         writer.outputField(identifier, 10, true);
         writer.outputField(message.getNavigationMessageType(), 15, true);
-        if (header.getFormatVersion() >= 4.02 && message.getSubType() != null) {
-            writer.outputField(message.getSubType(), 19, true);
-        }
         writer.finishLine();
 
         // ION MESSAGE LINE - 0

@@ -38,7 +38,7 @@ public class GlonassCDMSMessageWriter
         throws IOException {
 
         // TYPE / SV / MSG
-        writeTypeSvMsg(MessageType.ION, identifier, message, writer);
+        writeTypeSvMsg(MessageType.ION, identifier, message, header, writer);
 
         // MESSAGE LINE - 0
         writer.writeDate(message.getTransmitTime(), message.getSystem());

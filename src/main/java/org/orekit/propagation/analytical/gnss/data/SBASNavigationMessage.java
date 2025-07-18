@@ -64,6 +64,12 @@ public class SBASNavigationMessage
         return SBAS;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getNavigationMessageSubType() {
+        return null;
+    }
+
     /**
      * Get the propagator corresponding to the navigation message.
      <p>The attitude provider is set by default be aligned with the EME2000 frame.<br>

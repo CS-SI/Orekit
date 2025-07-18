@@ -29,4 +29,9 @@ public interface NavigationMessage extends TimeStamped {
      */
     String getNavigationMessageType();
 
+    /** Get navigation message subtype.
+     * @return the navigation message type
+     */
+    String getNavigationMessageSubType();
+
 }
