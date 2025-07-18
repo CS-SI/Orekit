@@ -17,7 +17,9 @@
 package org.orekit.files.rinex.navigation.writers;
 
 import org.orekit.files.rinex.navigation.IonosphereBDGIMMessage;
+import org.orekit.files.rinex.navigation.MessageType;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
+import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
 
 import java.io.IOException;
@@ -34,7 +36,31 @@ public class BDGIMMessageWriter
     public void writeMessage(final String identifier, final IonosphereBDGIMMessage message,
                              final RinexNavigationHeader header, final RinexNavigationWriter writer)
         throws IOException {
-        // TODO
+
+        // TYPE / SV / MSG
+        writeTypeSvMsg(MessageType.ION, identifier, message, header, writer);
+
+        // ION MESSAGE LINE - 0
+        writer.writeDate(message.getTransmitTime(), message.getSystem());
+        writer.writeField(message.getAlpha()[0], RinexNavigationParser.TEC);
+        writer.writeField(message.getAlpha()[1], RinexNavigationParser.TEC);
+        writer.writeField(message.getAlpha()[2], RinexNavigationParser.TEC);
+        writer.finishLine();
+
+        // ION MESSAGE LINE - 1
+        writer.startLine();
+        writer.writeField(message.getAlpha()[3], RinexNavigationParser.TEC);
+        writer.writeField(message.getAlpha()[4], RinexNavigationParser.TEC);
+        writer.writeField(message.getAlpha()[5], RinexNavigationParser.TEC);
+        writer.writeField(message.getAlpha()[6], RinexNavigationParser.TEC);
+        writer.finishLine();
+
+        // ION MESSAGE LINE - 2
+        writer.startLine();
+        writer.writeField(message.getAlpha()[7], RinexNavigationParser.TEC);
+        writer.writeField(message.getAlpha()[8], RinexNavigationParser.TEC);
+        writer.finishLine();
+
     }
 
 }
