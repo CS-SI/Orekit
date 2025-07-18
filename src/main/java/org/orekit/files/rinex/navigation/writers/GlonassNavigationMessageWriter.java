@@ -18,7 +18,7 @@ package org.orekit.files.rinex.navigation.writers;
 
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
-import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GLONASSFdmaNavigationMessage;
 
 import java.io.IOException;
 
@@ -27,11 +27,11 @@ import java.io.IOException;
  * @since 14.0
  */
 public class GlonassNavigationMessageWriter
-    implements NavigationMessageWriter<GLONASSNavigationMessage> {
+    implements NavigationMessageWriter<GLONASSFdmaNavigationMessage> {
 
     /** {@inheritDoc} */
     @Override
-    public void writeMessage(final String identifier, final GLONASSNavigationMessage message,
+    public void writeMessage(final String identifier, final GLONASSFdmaNavigationMessage message,
                              final RinexNavigationHeader header, final RinexNavigationWriter writer)
         throws IOException {
         // TODO

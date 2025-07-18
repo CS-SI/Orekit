@@ -22,7 +22,8 @@ import org.orekit.gnss.SatelliteSystem;
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class IonosphereGlonassCDMSMessage extends IonosphereBaseMessage {
+public class IonosphereGlonassCdmsMessage
+    extends IonosphereBaseMessage {
 
     /** c_A. */
     private double cA;
@@ -39,7 +40,7 @@ public class IonosphereGlonassCDMSMessage extends IonosphereBaseMessage {
      * @param navigationMessageType navigation message type
      * @param subType message subtype
      */
-    public IonosphereGlonassCDMSMessage(final SatelliteSystem system, final int prn,
+    public IonosphereGlonassCdmsMessage(final SatelliteSystem system, final int prn,
                                         final String navigationMessageType, final String subType) {
         super(system, prn, navigationMessageType, subType);
     }

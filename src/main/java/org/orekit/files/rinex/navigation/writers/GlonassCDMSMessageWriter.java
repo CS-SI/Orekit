@@ -16,7 +16,7 @@
  */
 package org.orekit.files.rinex.navigation.writers;
 
-import org.orekit.files.rinex.navigation.IonosphereGlonassCDMSMessage;
+import org.orekit.files.rinex.navigation.IonosphereGlonassCdmsMessage;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
 
@@ -27,11 +27,11 @@ import java.io.IOException;
  * @since 14.0
  */
 public class GlonassCDMSMessageWriter
-    implements NavigationMessageWriter<IonosphereGlonassCDMSMessage> {
+    implements NavigationMessageWriter<IonosphereGlonassCdmsMessage> {
 
     /** {@inheritDoc} */
     @Override
-    public void writeMessage(final String identifier, final IonosphereGlonassCDMSMessage message,
+    public void writeMessage(final String identifier, final IonosphereGlonassCdmsMessage message,
                              final RinexNavigationHeader header, final RinexNavigationWriter writer)
         throws IOException {
         // TODO

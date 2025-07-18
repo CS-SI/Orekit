@@ -35,7 +35,7 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.data.GLONASSAlmanac;
-import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GLONASSFdmaNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GLONASSOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
@@ -70,7 +70,7 @@ import java.util.Arrays;
  * available into the navigation message, these accelerations are computed.
  * </p>
  * <p>
- * <b>Caution:</b> The Glonass numerical propagator can only be used with {@link GLONASSNavigationMessage}.
+ * <b>Caution:</b> The Glonass numerical propagator can only be used with {@link GLONASSFdmaNavigationMessage}.
  * Using this propagator with a {@link GLONASSAlmanac} is prone to error.
  * </p>
  *

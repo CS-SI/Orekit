@@ -50,7 +50,7 @@ import org.orekit.propagation.analytical.gnss.SBASPropagator;
 import org.orekit.propagation.analytical.gnss.data.BeidouCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.BeidouSatelliteType;
-import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GLONASSFdmaNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
 import org.orekit.propagation.analytical.gnss.data.GPSCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
@@ -803,7 +803,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
 
-        final GLONASSNavigationMessage glo = file.getGlonassNavigationMessages("R02").get(0);
+        final GLONASSFdmaNavigationMessage glo = file.getGlonassNavigationMessages("R02").get(0);
         Assertions.assertEquals(0.0, glo.getEpochToc().durationFrom(new AbsoluteDate(2021, 2, 17, 23, 45, 0.0, TimeScalesFactory.getUTC())), Double.MIN_VALUE);
         Assertions.assertEquals(-4.674419760704e-04, glo.getTN(), 1.0e-10);
         Assertions.assertEquals(9.094947017729e-13,  glo.getGammaN(), 1.0e-10);
@@ -1063,7 +1063,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(2, file.getGPSLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
 
-        final GLONASSNavigationMessage glo = file.getGlonassNavigationMessages("R05").get(0);
+        final GLONASSFdmaNavigationMessage glo = file.getGlonassNavigationMessages("R05").get(0);
         Assertions.assertEquals(0.0, glo.getEpochToc().durationFrom(new AbsoluteDate(2020, 2, 10, 23, 45, 0.0, TimeScalesFactory.getUTC())), Double.MIN_VALUE);
         Assertions.assertEquals(-0.447863712907e-04, glo.getTN(), 1.0e-10);
         Assertions.assertEquals(0.909494701773e-12,  glo.getGammaN(), 1.0e-10);
@@ -1123,7 +1123,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(2, file.getGPSLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
 
-        final GLONASSNavigationMessage glo = file.getGlonassNavigationMessages("R01").get(0);
+        final GLONASSFdmaNavigationMessage glo = file.getGlonassNavigationMessages("R01").get(0);
         Assertions.assertEquals(0.0, glo.getEpochToc().durationFrom(new AbsoluteDate(2006, 10, 1, 0, 15, 0.0, TimeScalesFactory.getUTC())), Double.MIN_VALUE);
         Assertions.assertEquals( 0.137668102980E-04,  glo.getTN(),      1.0e-10);
         Assertions.assertEquals(-0.454747350886E-11,  glo.getGammaN(),  1.0e-10);
@@ -2048,7 +2048,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getNequickGMessages().size());
         Assertions.assertEquals(0, file.getBDGIMMessages().size());
 
-        List<GLONASSNavigationMessage> list04 = file.getGlonassNavigationMessages("R04");
+        List<GLONASSFdmaNavigationMessage> list04 = file.getGlonassNavigationMessages("R04");
         Assertions.assertEquals(48, list04.size());
 
         Assertions.assertEquals(0.0,

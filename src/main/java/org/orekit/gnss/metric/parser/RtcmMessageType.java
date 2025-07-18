@@ -59,7 +59,7 @@ import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1044Data;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1045;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1045Data;
 import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
-import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GLONASSFdmaNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
@@ -158,7 +158,7 @@ public enum RtcmMessageType implements MessageType {
 
             // Initialize data container and navigation message
             final Rtcm1020Data             rtcm1020Data      = new Rtcm1020Data();
-            final GLONASSNavigationMessage glonassNavMessage = new GLONASSNavigationMessage();
+            final GLONASSFdmaNavigationMessage glonassNavMessage = new GLONASSFdmaNavigationMessage();
 
             // Set the satellite ID
             final int glonassId = RtcmDataField.DF038.intValue(encodedMessage);

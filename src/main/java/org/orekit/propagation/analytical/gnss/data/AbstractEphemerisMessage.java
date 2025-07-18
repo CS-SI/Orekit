@@ -24,7 +24,7 @@ import org.orekit.time.TimeStamped;
  * @author Bryan Cazabonne
  * @since 11.0
  *
- * @see GLONASSNavigationMessage
+ * @see GLONASSFdmaNavigationMessage
  * @see SBASNavigationMessage
  */
 public abstract class AbstractEphemerisMessage implements TimeStamped {

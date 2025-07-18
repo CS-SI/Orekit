@@ -18,7 +18,7 @@ package org.orekit.gnss.metric.messages.rtcm.ephemeris;
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
-import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GLONASSFdmaNavigationMessage;
 import org.orekit.propagation.numerical.GLONASSNumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GLONASSDate;
@@ -35,7 +35,7 @@ import org.orekit.time.TimeScales;
 public class Rtcm1020Data extends RtcmEphemerisData {
 
     /** Glonass navigation message. */
-    private GLONASSNavigationMessage glonassNavigationMessage;
+    private GLONASSFdmaNavigationMessage glonassNavigationMessage;
 
     /** Number of the current four year interval. */
     private int n4;
@@ -117,7 +117,7 @@ public class Rtcm1020Data extends RtcmEphemerisData {
      * @return the Glonass navigation message
      */
     @DefaultDataContext
-    public GLONASSNavigationMessage getGlonassNavigationMessage() {
+    public GLONASSFdmaNavigationMessage getGlonassNavigationMessage() {
         return getGlonassNavigationMessage(DataContext.getDefault().getTimeScales());
     }
 
@@ -132,7 +132,7 @@ public class Rtcm1020Data extends RtcmEphemerisData {
      * @param timeScales time scales to use for initializing epochs
      * @return the Glonass navigation message
      */
-    public GLONASSNavigationMessage getGlonassNavigationMessage(final TimeScales timeScales) {
+    public GLONASSFdmaNavigationMessage getGlonassNavigationMessage(final TimeScales timeScales) {
 
         final double tb = glonassNavigationMessage.getTime();
 
@@ -150,7 +150,7 @@ public class Rtcm1020Data extends RtcmEphemerisData {
      * Set the Glonass navigation message.
      * @param glonassNavigationMessage the Glonass navigation message to set
      */
-    public void setGlonassNavigationMessage(final GLONASSNavigationMessage glonassNavigationMessage) {
+    public void setGlonassNavigationMessage(final GLONASSFdmaNavigationMessage glonassNavigationMessage) {
         this.glonassNavigationMessage = glonassNavigationMessage;
     }
 
@@ -210,7 +210,7 @@ public class Rtcm1020Data extends RtcmEphemerisData {
      * Get the GLONASS P1 Word.
      * <p>
      * Word P1 is a flag of the immediate data updating. It indicates a time interval
-     * between two adjacent values of {@link GLONASSNavigationMessage#getTime() tb}
+     * between two adjacent values of {@link GLONASSFdmaNavigationMessage#getTime() tb}
      * parameter (in seconds).
      * </p>
      * @return the GLONASS P1 Word
@@ -266,7 +266,7 @@ public class Rtcm1020Data extends RtcmEphemerisData {
      * Get the GLONASS P2 Word.
      * <p>
      * Word P2 is flag of oddness ("1") or evenness ("0") of the value of
-     * {@link GLONASSNavigationMessage#getTime() tb}.
+     * {@link GLONASSFdmaNavigationMessage#getTime() tb}.
      * </p>
      * @return the GLONASS P2 Word
      */
@@ -403,7 +403,7 @@ public class Rtcm1020Data extends RtcmEphemerisData {
      * Get the GLONASS F<sub>T</sub> Word.
      * <p>
      * It is a parameter that provides the predicted satellite user range accuracy
-     * at time {@link GLONASSNavigationMessage#getTime() tb}.
+     * at time {@link GLONASSFdmaNavigationMessage#getTime() tb}.
      * </p>
      * @return the GLONASS F<sub>T</sub> Word
      */

@@ -26,11 +26,12 @@ import org.orekit.propagation.numerical.GLONASSNumericalPropagator;
 import org.orekit.propagation.numerical.GLONASSNumericalPropagatorBuilder;
 
 /**
- * Container for data contained in a Glonass navigation message.
+ * Container for data contained in a Glonass FDMA navigation message.
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class GLONASSNavigationMessage extends AbstractEphemerisMessage implements GLONASSOrbitalElements {
+public class GLONASSFdmaNavigationMessage
+    extends AbstractEphemerisMessage implements GLONASSOrbitalElements {
 
     /** Message frame time. */
     private double time;
@@ -65,7 +66,7 @@ public class GLONASSNavigationMessage extends AbstractEphemerisMessage implement
     private double ura;
 
     /** Constructor. */
-    public GLONASSNavigationMessage() {
+    public GLONASSFdmaNavigationMessage() {
         // Nothing to do ...
     }
 

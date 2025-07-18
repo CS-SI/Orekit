@@ -43,7 +43,7 @@ import org.orekit.propagation.analytical.gnss.data.BeidouCivilianNavigationMessa
 import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.BeidouSatelliteType;
 import org.orekit.propagation.analytical.gnss.data.CivilianNavigationMessage;
-import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GLONASSFdmaNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
@@ -265,7 +265,7 @@ public class RinexNavigationParser {
         private NavICL1NVNavigationMessage navicL1NV;
 
         /** Container for GLONASS navigation message. */
-        private GLONASSNavigationMessage glonassNav;
+        private GLONASSFdmaNavigationMessage glonassFdmaNav;
 
         /** Container for SBAS navigation message. */
         private SBASNavigationMessage sbasNav;
@@ -292,7 +292,7 @@ public class RinexNavigationParser {
         /** Container for GLONASS CDMS message.
          * @since 14.0
          */
-        private IonosphereGlonassCDMSMessage glonassCDMS;
+        private IonosphereGlonassCdmsMessage glonassCdms;
 
         /** Container for ionosphere Nequick-G message. */
         private IonosphereNequickGMessage nequickG;
@@ -679,8 +679,8 @@ public class RinexNavigationParser {
         /** Parser for navigation message type. */
         EPH_TYPE((header, line) -> line.startsWith("> EPH"),
                  (line, pi) -> {
-                     final SatelliteSystem system = SatelliteSystem.parseSatelliteSystem(
-                         ParsingUtils.parseString(line, 6, 1));
+                     final SatelliteSystem system =
+                         SatelliteSystem.parseSatelliteSystem(ParsingUtils.parseString(line, 6, 1));
                      final String          type   = ParsingUtils.parseString(line, 10, 4);
                      pi.closePendingMessage();
                      pi.systemLineParser = SatelliteSystemLineParser.getParser(system, type, pi, line);
@@ -969,12 +969,12 @@ public class RinexNavigationParser {
          */
         GLONASS_CDMS_LINE_0((header, line) -> true,
                                (line, pi) -> {
-                             pi.parseDate(line, pi.glonassCDMS::setTransmitTime, pi.navICNeQuickN.getSystem());
-                             pi.glonassCDMS.setCA(pi.parseField2(line,    Unit.ONE));
-                             pi.glonassCDMS.setCF107(pi.parseField2(line, Unit.ONE));
-                             pi.glonassCDMS.setCAP(pi.parseField2(line,   Unit.ONE));
-                             pi.file.addGlonassCDMSMessage(pi.glonassCDMS);
-                             pi.glonassCDMS = null;
+                             pi.parseDate(line, pi.glonassCdms::setTransmitTime, pi.navICNeQuickN.getSystem());
+                             pi.glonassCdms.setCA(pi.parseField2(line, Unit.ONE));
+                             pi.glonassCdms.setCF107(pi.parseField2(line, Unit.ONE));
+                             pi.glonassCdms.setCAP(pi.parseField2(line, Unit.ONE));
+                             pi.file.addGlonassCDMSMessage(pi.glonassCdms);
+                             pi.glonassCdms = null;
                          },
                          LineParser::navigationNext),
 
@@ -1048,7 +1048,7 @@ public class RinexNavigationParser {
                       } else if (system == SatelliteSystem.NAVIC && "L1NV".equals(type) && "NEQN".equals(subtype)) {
                           pi.navICNeQuickN = new IonosphereNavICNeQuickNMessage(system, prn, type, subtype);
                       } else if (system == SatelliteSystem.GLONASS) {
-                          pi.glonassCDMS = new IonosphereGlonassCDMSMessage(system, prn, type, subtype);
+                          pi.glonassCdms = new IonosphereGlonassCdmsMessage(system, prn, type, subtype);
                       } else  {
                           pi.klobuchar = new IonosphereKlobucharMessage(system, prn, type, subtype);
                       }
@@ -1111,7 +1111,7 @@ public class RinexNavigationParser {
                 parseInfo.qzssCNav   != null || parseInfo.navicLNav  != null || parseInfo.navicL1NV  != null ||
                 parseInfo.sbasNav    != null) {
                 return Collections.singleton(BROADCAST_ORBIT);
-            } else if (parseInfo.glonassNav != null) {
+            } else if (parseInfo.glonassFdmaNav != null) {
                 if (parseInfo.messageLineNumber < 3) {
                     return Collections.singleton(BROADCAST_ORBIT);
                 } else {
@@ -1151,7 +1151,7 @@ public class RinexNavigationParser {
                 return Collections.singleton(NAVIC_KLOBUCHAR_LINE_0);
             } else if (parseInfo.navICNeQuickN != null) {
                 return Collections.singleton(NAVIC_NEQUICK_N_LINE_0);
-            } else if (parseInfo.glonassCDMS != null) {
+            } else if (parseInfo.glonassCdms != null) {
                 return Collections.singleton(GLONASS_CDMS_LINE_0);
             } else {
                 return Collections.emptyList();
@@ -1440,8 +1440,8 @@ public class RinexNavigationParser {
 
         },
 
-        /** Glonass. */
-        GLONASS() {
+        /** Glonass FDMA. */
+        GLONASS_FDMA() {
 
             /** {@inheritDoc} */
             @Override
@@ -1449,7 +1449,7 @@ public class RinexNavigationParser {
 
                 if (pi.file.getHeader().getFormatVersion() < 3.0) {
 
-                    pi.glonassNav.setPRN(ParsingUtils.parseInt(line, 0, 2));
+                    pi.glonassFdmaNav.setPRN(ParsingUtils.parseInt(line, 0, 2));
 
                     // Toc
                     final int    year  = ParsingUtils.convert2DigitsYear(ParsingUtils.parseInt(line, 3, 2));
@@ -1458,30 +1458,30 @@ public class RinexNavigationParser {
                     final int    hours = ParsingUtils.parseInt(line, 12, 2);
                     final int    min   = ParsingUtils.parseInt(line, 15, 2);
                     final double sec   = ParsingUtils.parseDouble(line, 17, 5);
-                    pi.glonassNav.setEpochToc(new AbsoluteDate(year, month, day, hours, min, sec,
-                                                               pi.timeScales.getUTC()));
+                    pi.glonassFdmaNav.setEpochToc(new AbsoluteDate(year, month, day, hours, min, sec,
+                                                                   pi.timeScales.getUTC()));
 
                     // clock
-                    pi.glonassNav.setTauN(-ParsingUtils.parseDouble(line, 22, 19));
-                    pi.glonassNav.setGammaN(ParsingUtils.parseDouble(line, 41, 19));
-                    pi.glonassNav.setTime(fmod(ParsingUtils.parseDouble(line, 60, 19), Constants.JULIAN_DAY));
+                    pi.glonassFdmaNav.setTauN(-ParsingUtils.parseDouble(line, 22, 19));
+                    pi.glonassFdmaNav.setGammaN(ParsingUtils.parseDouble(line, 41, 19));
+                    pi.glonassFdmaNav.setTime(fmod(ParsingUtils.parseDouble(line, 60, 19), Constants.JULIAN_DAY));
 
                     // Set the ephemeris epoch (same as time of clock epoch)
-                    pi.glonassNav.setDate(pi.glonassNav.getEpochToc());
+                    pi.glonassFdmaNav.setDate(pi.glonassFdmaNav.getEpochToc());
 
                 } else {
-                    pi.glonassNav.setPRN(ParsingUtils.parseInt(line, 1, 2));
+                    pi.glonassFdmaNav.setPRN(ParsingUtils.parseInt(line, 1, 2));
 
                     // Toc
-                    pi.parseDate(line, pi.glonassNav::setEpochToc, pi.timeScales.getUTC());
+                    pi.parseDate(line, pi.glonassFdmaNav::setEpochToc, pi.timeScales.getUTC());
 
                     // clock
-                    pi.glonassNav.setTauN(-ParsingUtils.parseDouble(line, 23, 19));
-                    pi.glonassNav.setGammaN(ParsingUtils.parseDouble(line, 42, 19));
-                    pi.glonassNav.setTime(fmod(ParsingUtils.parseDouble(line, 61, 19), Constants.JULIAN_DAY));
+                    pi.glonassFdmaNav.setTauN(-ParsingUtils.parseDouble(line, 23, 19));
+                    pi.glonassFdmaNav.setGammaN(ParsingUtils.parseDouble(line, 42, 19));
+                    pi.glonassFdmaNav.setTime(fmod(ParsingUtils.parseDouble(line, 61, 19), Constants.JULIAN_DAY));
 
                     // Set the ephemeris epoch (same as time of clock epoch)
-                    pi.glonassNav.setDate(pi.glonassNav.getEpochToc());
+                    pi.glonassFdmaNav.setDate(pi.glonassFdmaNav.getEpochToc());
                 }
 
             }
@@ -1489,27 +1489,27 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void parseFirstBroadcastOrbit(final String line, final ParseInfo pi) {
-                pi.glonassNav.setX(parseBroadcastDouble1(line, pi.initialSpaces, KM));
-                pi.glonassNav.setXDot(parseBroadcastDouble2(line,    pi.initialSpaces, KM_PER_S));
-                pi.glonassNav.setXDotDot(parseBroadcastDouble3(line, pi.initialSpaces, KM_PER_S2));
-                pi.glonassNav.setHealth(parseBroadcastDouble4(line,  pi.initialSpaces, Unit.NONE));
+                pi.glonassFdmaNav.setX(parseBroadcastDouble1(line, pi.initialSpaces, KM));
+                pi.glonassFdmaNav.setXDot(parseBroadcastDouble2(line, pi.initialSpaces, KM_PER_S));
+                pi.glonassFdmaNav.setXDotDot(parseBroadcastDouble3(line, pi.initialSpaces, KM_PER_S2));
+                pi.glonassFdmaNav.setHealth(parseBroadcastDouble4(line, pi.initialSpaces, Unit.NONE));
             }
 
             /** {@inheritDoc} */
             @Override
             public void parseSecondBroadcastOrbit(final String line, final ParseInfo pi) {
-                pi.glonassNav.setY(parseBroadcastDouble1(line, pi.initialSpaces, KM));
-                pi.glonassNav.setYDot(parseBroadcastDouble2(line,            pi.initialSpaces, KM_PER_S));
-                pi.glonassNav.setYDotDot(parseBroadcastDouble3(line,         pi.initialSpaces, KM_PER_S2));
-                pi.glonassNav.setFrequencyNumber(parseBroadcastDouble4(line, pi.initialSpaces, Unit.NONE));
+                pi.glonassFdmaNav.setY(parseBroadcastDouble1(line, pi.initialSpaces, KM));
+                pi.glonassFdmaNav.setYDot(parseBroadcastDouble2(line, pi.initialSpaces, KM_PER_S));
+                pi.glonassFdmaNav.setYDotDot(parseBroadcastDouble3(line, pi.initialSpaces, KM_PER_S2));
+                pi.glonassFdmaNav.setFrequencyNumber(parseBroadcastDouble4(line, pi.initialSpaces, Unit.NONE));
             }
 
             /** {@inheritDoc} */
             @Override
             public void parseThirdBroadcastOrbit(final String line, final ParseInfo pi) {
-                pi.glonassNav.setZ(parseBroadcastDouble1(line, pi.initialSpaces, KM));
-                pi.glonassNav.setZDot(parseBroadcastDouble2(line,    pi.initialSpaces, KM_PER_S));
-                pi.glonassNav.setZDotDot(parseBroadcastDouble3(line, pi.initialSpaces, KM_PER_S2));
+                pi.glonassFdmaNav.setZ(parseBroadcastDouble1(line, pi.initialSpaces, KM));
+                pi.glonassFdmaNav.setZDot(parseBroadcastDouble2(line, pi.initialSpaces, KM_PER_S));
+                pi.glonassFdmaNav.setZDotDot(parseBroadcastDouble3(line, pi.initialSpaces, KM_PER_S2));
                 if (pi.file.getHeader().getFormatVersion() < 3.045) {
                     pi.closePendingMessage();
                 }
@@ -1518,18 +1518,74 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void parseFourthBroadcastOrbit(final String line, final ParseInfo pi) {
-                pi.glonassNav.setStatusFlags(parseBroadcastDouble1(line, pi.initialSpaces, Unit.NONE));
-                pi.glonassNav.setGroupDelayDifference(parseBroadcastDouble2(line, pi.initialSpaces, Unit.NONE));
-                pi.glonassNav.setURA(parseBroadcastDouble3(line,                  pi.initialSpaces, Unit.NONE));
-                pi.glonassNav.setHealthFlags(parseBroadcastDouble4(line,          pi.initialSpaces, Unit.NONE));
+                pi.glonassFdmaNav.setStatusFlags(parseBroadcastDouble1(line, pi.initialSpaces, Unit.NONE));
+                pi.glonassFdmaNav.setGroupDelayDifference(parseBroadcastDouble2(line, pi.initialSpaces, Unit.NONE));
+                pi.glonassFdmaNav.setURA(parseBroadcastDouble3(line, pi.initialSpaces, Unit.NONE));
+                pi.glonassFdmaNav.setHealthFlags(parseBroadcastDouble4(line, pi.initialSpaces, Unit.NONE));
                 pi.closePendingMessage();
             }
 
             /** {@inheritDoc} */
             @Override
             public void closeMessage(final ParseInfo pi) {
-                pi.file.addGlonassNavigationMessage(pi.glonassNav);
-                pi.glonassNav = null;
+                pi.file.addGlonassNavigationMessage(pi.glonassFdmaNav);
+                pi.glonassFdmaNav = null;
+            }
+
+        },
+
+        /** Glonass CDMA. */
+        GLONASS_CDMA_CURRENTLY_IGNORED() {
+
+            /** {@inheritDoc} */
+            @Override
+            public void parseSvEpochSvClockLine(final String line, final ParseInfo pi) {
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void parseFirstBroadcastOrbit(final String line, final ParseInfo pi) {
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void parseSecondBroadcastOrbit(final String line, final ParseInfo pi) {
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void parseThirdBroadcastOrbit(final String line, final ParseInfo pi) {
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void parseFourthBroadcastOrbit(final String line, final ParseInfo pi) {
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void parseFifthBroadcastOrbit(final String line, final ParseInfo pi) {
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void parseSixthBroadcastOrbit(final String line, final ParseInfo pi) {
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void parseSeventhBroadcastOrbit(final String line, final ParseInfo pi) {
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void parseEighthBroadcastOrbit(final String line, final ParseInfo pi) {
+                pi.closePendingMessage();
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void closeMessage(final ParseInfo pi) {
             }
 
         },
@@ -2217,8 +2273,10 @@ public class RinexNavigationParser {
                     break;
                 case GLONASS :
                     if (type == null || type.equals("FDMA")) {
-                        parseInfo.glonassNav = new GLONASSNavigationMessage();
-                        return GLONASS;
+                        parseInfo.glonassFdmaNav = new GLONASSFdmaNavigationMessage();
+                        return GLONASS_FDMA;
+                    } else if (type.equals("L1OC") || type.equals("L3OC")) {
+                        return GLONASS_CDMA_CURRENTLY_IGNORED;
                     }
                     break;
                 case QZSS :

@@ -36,7 +36,7 @@ import org.orekit.frames.ITRFVersion;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.data.GLONASSEphemeris;
-import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GLONASSFdmaNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GLONASSOrbitalElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -166,7 +166,7 @@ public class GLONASSNumericalPropagatorTest {
         final Frame pz90 = FramesFactory.getPZ9011(IERSConventions.IERS_2010, true);
         final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         // Initial GLONASS orbital elements (Ref: IGS)
-        final GLONASSNavigationMessage ge = new GLONASSNavigationMessage();
+        final GLONASSFdmaNavigationMessage ge = new GLONASSFdmaNavigationMessage();
         ge.setDate(new GLONASSDate(1342, 4, 45900).getDate());
         ge.setX(-1.0705924E7);
         ge.setXDot(2052.252685546875);

@@ -28,7 +28,7 @@ import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
 import org.orekit.models.earth.ionosphere.nequick.NeQuickModel;
 import org.orekit.propagation.analytical.gnss.data.BeidouCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
-import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GLONASSFdmaNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
@@ -85,7 +85,7 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
     private final Map<String, List<NavICL1NVNavigationMessage>> navicL1NVData;
 
     /** A map containing the GLONASS navigation messages. */
-    private final Map<String, List<GLONASSNavigationMessage>> glonassData;
+    private final Map<String, List<GLONASSFdmaNavigationMessage>> glonassData;
 
     /** A map containing the SBAS navigation messages. */
     private final Map<String, List<SBASNavigationMessage>> sbasData;
@@ -128,7 +128,7 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
     /** Ionosphere GLONASS CDMS messages.
      * @since 14.0
      */
-    private final List<IonosphereGlonassCDMSMessage> glonassCDMSMessages;
+    private final List<IonosphereGlonassCdmsMessage> glonassCDMSMessages;
 
     /** Constructor. */
     public RinexNavigation() {
@@ -494,7 +494,7 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      * Get all the Glonass navigation messages contained in the file.
      * @return an unmodifiable list of Glonass navigation messages
      */
-    public Map<String, List<GLONASSNavigationMessage>> getGlonassNavigationMessages() {
+    public Map<String, List<GLONASSFdmaNavigationMessage>> getGlonassNavigationMessages() {
         return Collections.unmodifiableMap(glonassData);
     }
 
@@ -503,7 +503,7 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      * @param satId satellite Id (i.e. Satellite System (e.g. R) + satellite number)
      * @return an unmodifiable list of Glonass navigation messages
      */
-    public List<GLONASSNavigationMessage> getGlonassNavigationMessages(final String satId) {
+    public List<GLONASSFdmaNavigationMessage> getGlonassNavigationMessages(final String satId) {
         return Collections.unmodifiableList(glonassData.get(satId));
     }
 
@@ -511,7 +511,7 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      * Add a Glonass navigation message to the list.
      * @param message message to add
      */
-    public void addGlonassNavigationMessage(final GLONASSNavigationMessage message) {
+    public void addGlonassNavigationMessage(final GLONASSFdmaNavigationMessage message) {
         final int    gloPRN = message.getPRN();
         final String prnString = gloPRN < 10 ? "0" + gloPRN : String.valueOf(gloPRN);
         final String satId = SatelliteSystem.GLONASS.getKey() + prnString;
@@ -679,7 +679,7 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      * @return an unmodifiable list of ionosphere GLONASS CDMS messages
      * @since 14.0
      */
-    public List<IonosphereGlonassCDMSMessage> getGlonassCDMSMessages() {
+    public List<IonosphereGlonassCdmsMessage> getGlonassCDMSMessages() {
         return Collections.unmodifiableList(glonassCDMSMessages);
     }
 
@@ -688,7 +688,7 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      * @param glonassCDMS ionosphere GLONASS CDMS message
      * @since 14.0
      */
-    public void addGlonassCDMSMessage(final IonosphereGlonassCDMSMessage glonassCDMS) {
+    public void addGlonassCDMSMessage(final IonosphereGlonassCdmsMessage glonassCDMS) {
         glonassCDMSMessages.add(glonassCDMS);
     }
 

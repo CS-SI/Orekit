@@ -24,7 +24,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.gnss.data.GLONASSAlmanac;
-import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GLONASSFdmaNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GLONASSOrbitalElements;
 import org.orekit.utils.IERSConventions;
 
@@ -33,7 +33,7 @@ import org.orekit.utils.IERSConventions;
  * <p>It implements the classical builder pattern.</p>
  * <p>
  * <b>Caution:</b> The Glonass analytical propagator can only be used with {@link GLONASSAlmanac}.
- * Using this propagator with a {@link GLONASSNavigationMessage} is prone to error.
+ * Using this propagator with a {@link GLONASSFdmaNavigationMessage} is prone to error.
  * </p>
  * @author Bryan Cazabonne
  * @since 11.0
