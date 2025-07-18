@@ -43,6 +43,7 @@ public class IonosphereNequickGMessage extends IonosphereBaseMessage {
     }
 
     /** Get aᵢⱼ coefficients.
+     * @return aᵢⱼ coefficients
      */
     public IonosphereAij getAij() {
         return aij;

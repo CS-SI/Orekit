@@ -53,10 +53,10 @@ public class IonosphereGlonassCdmsMessage
     }
 
     /** Set the c_A coefficient.
-     * @param cA c_A
+     * @param newCa c_A
      */
-    public void setCA(final double cA) {
-        this.cA =  cA;
+    public void setCA(final double newCa) {
+        this.cA =  newCa;
     }
 
     /** Get the c_F10.7 coefficient.
@@ -67,10 +67,10 @@ public class IonosphereGlonassCdmsMessage
     }
 
     /** Set the c_F10.7 coefficient.
-     * @param cF107 c_F10.7
+     * @param newCf107 c_F10.7
      */
-    public void setCF107(final double cF107) {
-        this.cF107 =  cF107;
+    public void setCF107(final double newCf107) {
+        this.cF107 =  newCf107;
     }
 
     /** Get the c_Ap coefficient.
@@ -81,10 +81,10 @@ public class IonosphereGlonassCdmsMessage
     }
 
     /** Set the c_AP coefficient.
-     * @param cAp c_Ap
+     * @param newCAP c_Ap
      */
-    public void setCAP(final double cAp) {
-        this.cAp =  cAp;
+    public void setCAP(final double newCAP) {
+        this.cAp =  newCAP;
     }
 
 }

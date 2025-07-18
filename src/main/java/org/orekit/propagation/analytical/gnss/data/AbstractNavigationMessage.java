@@ -71,18 +71,6 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
         this.type = type;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public String getNavigationMessageType() {
-        return type;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public String getNavigationMessageSubType() {
-        return null;
-    }
-
     /** Constructor from field instance.
      * @param <T> type of the field elements
      * @param <A> type of the orbital elements (non-field version)
@@ -95,6 +83,18 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
         setEpochToc(original.getEpochToc().toAbsoluteDate());
         setTransmissionTime(original.getTransmissionTime().getReal());
         this.type = original.getNavigationMessageType();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getNavigationMessageType() {
+        return type;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getNavigationMessageSubType() {
+        return null;
     }
 
     /**

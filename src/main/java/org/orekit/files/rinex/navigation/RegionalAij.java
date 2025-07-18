@@ -20,7 +20,7 @@ package org.orekit.files.rinex.navigation;
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class RegionalAij extends IonosphereAij{
+public class RegionalAij extends IonosphereAij {
 
     /** IDF. */
     private double idf;
@@ -47,7 +47,7 @@ public class RegionalAij extends IonosphereAij{
     /** Set IDF.
      * @param idf IDF
      */
-    public void setIDF(double idf) {
+    public void setIDF(final double idf) {
         this.idf = idf;
     }
 
@@ -61,7 +61,7 @@ public class RegionalAij extends IonosphereAij{
     /** Set longitude min.
      * @param lonMin longitude min
      */
-    public void setLonMin(double lonMin) {
+    public void setLonMin(final double lonMin) {
         this.lonMin = lonMin;
     }
 
@@ -75,7 +75,7 @@ public class RegionalAij extends IonosphereAij{
     /** Set longitude max.
      * @param lonMax longitude max
      */
-    public void setLonMax(double lonMax) {
+    public void setLonMax(final double lonMax) {
         this.lonMax = lonMax;
     }
 
@@ -89,7 +89,7 @@ public class RegionalAij extends IonosphereAij{
     /** Set MODIP min.
      * @param modipMin MODIP min
      */
-    public void setModipMin(double modipMin) {
+    public void setModipMin(final double modipMin) {
         this.modipMin = modipMin;
     }
 
@@ -103,7 +103,7 @@ public class RegionalAij extends IonosphereAij{
     /** Set MODIP max.
      * @param modipMax MODIP max
      */
-    public void setModipMax(double modipMax) {
+    public void setModipMax(final double modipMax) {
         this.modipMax = modipMax;
     }
 

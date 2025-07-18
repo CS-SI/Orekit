@@ -904,10 +904,10 @@ public class RinexNavigationParser {
          */
         NAVIC_NEQUICK_N_LINE_5((header, line) -> true,
                                (line, pi) -> {
-                                    pi.navICNeQuickN.getRegion3().setAi0(pi.parseField1(line, IonosphereAij.SFU));
-                                    pi.navICNeQuickN.getRegion3().setAi1(pi.parseField2(line, IonosphereAij.SFU_PER_DEG));
-                                    pi.navICNeQuickN.getRegion3().setAi2(pi.parseField3(line, IonosphereAij.SFU_PER_DEG2));
-                                    pi.navICNeQuickN.getRegion3().setIDF(pi.parseField4(line, Unit.ONE));
+                                   pi.navICNeQuickN.getRegion3().setAi0(pi.parseField1(line, IonosphereAij.SFU));
+                                   pi.navICNeQuickN.getRegion3().setAi1(pi.parseField2(line, IonosphereAij.SFU_PER_DEG));
+                                   pi.navICNeQuickN.getRegion3().setAi2(pi.parseField3(line, IonosphereAij.SFU_PER_DEG2));
+                                   pi.navICNeQuickN.getRegion3().setIDF(pi.parseField4(line, Unit.ONE));
                                },
                                pi -> Collections.singleton(NAVIC_NEQUICK_N_LINE_6)),
 
@@ -995,10 +995,10 @@ public class RinexNavigationParser {
         /** Parser for ionosphere Nequick-G message model. */
         NEQUICK_G_LINE_0((header, line) -> true,
                          (line, pi) -> {
-                           pi.parseDate(line, pi.nequickG::setTransmitTime, pi.nequickG.getSystem());
-                           pi.nequickG.getAij().setAi0(IonosphereAij.SFU.toSI(ParsingUtils.parseDouble(line, 23, 19)));
-                           pi.nequickG.getAij().setAi1(IonosphereAij.SFU_PER_DEG.toSI(ParsingUtils.parseDouble(line, 42, 19)));
-                           pi.nequickG.getAij().setAi2(IonosphereAij.SFU_PER_DEG2.toSI(ParsingUtils.parseDouble(line, 61, 19)));
+                             pi.parseDate(line, pi.nequickG::setTransmitTime, pi.nequickG.getSystem());
+                             pi.nequickG.getAij().setAi0(IonosphereAij.SFU.toSI(ParsingUtils.parseDouble(line, 23, 19)));
+                             pi.nequickG.getAij().setAi1(IonosphereAij.SFU_PER_DEG.toSI(ParsingUtils.parseDouble(line, 42, 19)));
+                             pi.nequickG.getAij().setAi2(IonosphereAij.SFU_PER_DEG2.toSI(ParsingUtils.parseDouble(line, 61, 19)));
                          },
                          pi -> Collections.singleton(NEQUICK_G_LINE_1)),
 
@@ -1048,9 +1048,13 @@ public class RinexNavigationParser {
                           // as both seem to apply to Beidou CNVX messages; we consider BDGIM is the
                           // proper model in this case
                           pi.bdgim = new IonosphereBDGIMMessage(system, prn, type, subtype);
-                      } else if (system == SatelliteSystem.NAVIC && "L1NV".equals(type) && "KLOB".equals(subtype)) {
+                      } else if (system == SatelliteSystem.NAVIC &&
+                                 NavICL1NVNavigationMessage.L1NV.equals(type) &&
+                                 "KLOB".equals(subtype)) {
                           pi.navICKlobuchar = new IonosphereNavICKlobucharMessage(system, prn, type, subtype);
-                      } else if (system == SatelliteSystem.NAVIC && "L1NV".equals(type) && "NEQN".equals(subtype)) {
+                      } else if (system == SatelliteSystem.NAVIC &&
+                                 NavICL1NVNavigationMessage.L1NV.equals(type) &&
+                                 "NEQN".equals(subtype)) {
                           pi.navICNeQuickN = new IonosphereNavICNeQuickNMessage(system, prn, type, subtype);
                       } else if (system == SatelliteSystem.GLONASS) {
                           pi.glonassCdms = new IonosphereGlonassCdmsMessage(system, prn, type, subtype);

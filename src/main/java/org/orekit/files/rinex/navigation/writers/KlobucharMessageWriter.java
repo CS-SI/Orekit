@@ -20,7 +20,6 @@ import org.orekit.files.rinex.navigation.IonosphereKlobucharMessage;
 import org.orekit.files.rinex.navigation.MessageType;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
-import org.orekit.files.rinex.utils.BaseRinexWriter;
 
 import java.io.IOException;
 

@@ -17,7 +17,6 @@
 package org.orekit.files.rinex.navigation.writers;
 
 import org.orekit.files.rinex.navigation.IonosphereAij;
-import org.orekit.files.rinex.navigation.IonosphereKlobucharMessage;
 import org.orekit.files.rinex.navigation.IonosphereNequickGMessage;
 import org.orekit.files.rinex.navigation.MessageType;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;

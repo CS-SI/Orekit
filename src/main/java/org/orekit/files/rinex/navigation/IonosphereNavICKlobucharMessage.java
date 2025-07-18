@@ -137,7 +137,7 @@ public class IonosphereNavICKlobucharMessage extends IonosphereBaseMessage {
     /** Set longitude min.
      * @param lonMin longitude min
      */
-    public void setLonMin(double lonMin) {
+    public void setLonMin(final double lonMin) {
         this.lonMin = lonMin;
     }
 
@@ -151,7 +151,7 @@ public class IonosphereNavICKlobucharMessage extends IonosphereBaseMessage {
     /** Set longitude max.
      * @param lonMax longitude max
      */
-    public void setLonMax(double lonMax) {
+    public void setLonMax(final double lonMax) {
         this.lonMax = lonMax;
     }
 
@@ -165,7 +165,7 @@ public class IonosphereNavICKlobucharMessage extends IonosphereBaseMessage {
     /** Set MODIP min.
      * @param modipMin MODIP min
      */
-    public void setModipMin(double modipMin) {
+    public void setModipMin(final double modipMin) {
         this.modipMin = modipMin;
     }
 
@@ -179,7 +179,7 @@ public class IonosphereNavICKlobucharMessage extends IonosphereBaseMessage {
     /** Set MODIP max.
      * @param modipMax MODIP max
      */
-    public void setModipMax(double modipMax) {
+    public void setModipMax(final double modipMax) {
         this.modipMax = modipMax;
     }
 
