@@ -16,9 +16,12 @@
  */
 package org.orekit.files.rinex.navigation.writers;
 
+import org.orekit.files.rinex.navigation.IonosphereKlobucharMessage;
 import org.orekit.files.rinex.navigation.IonosphereNavICKlobucharMessage;
+import org.orekit.files.rinex.navigation.MessageType;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
+import org.orekit.utils.units.Unit;
 
 import java.io.IOException;
 
@@ -34,7 +37,36 @@ public class NavICKlobucharMessageWriter
     public void writeMessage(final String identifier, final IonosphereNavICKlobucharMessage message,
                              final RinexNavigationHeader header, final RinexNavigationWriter writer)
         throws IOException {
-        // TODO
+
+        // TYPE / SV / MSG
+        writeTypeSvMsg(MessageType.ION, identifier, message, header, writer);
+
+        // ION MESSAGE LINE - 0
+        writer.writeDate(message.getTransmitTime(), message.getSystem());
+        writer.writeField(message.getIOD(), Unit.ONE);
+        writer.finishLine();
+
+        // ION MESSAGE LINE - 1
+        writer.startLine();
+        writer.writeField(message.getAlpha()[0], IonosphereKlobucharMessage.S_PER_SC_N[0]);
+        writer.writeField(message.getAlpha()[1], IonosphereKlobucharMessage.S_PER_SC_N[1]);
+        writer.writeField(message.getAlpha()[2], IonosphereKlobucharMessage.S_PER_SC_N[2]);
+        writer.writeField(message.getAlpha()[3], IonosphereKlobucharMessage.S_PER_SC_N[3]);
+        writer.finishLine();
+        writer.writeField(message.getBeta()[0],  IonosphereKlobucharMessage.S_PER_SC_N[0]);
+        writer.writeField(message.getBeta()[1],  IonosphereKlobucharMessage.S_PER_SC_N[1]);
+        writer.writeField(message.getBeta()[2],  IonosphereKlobucharMessage.S_PER_SC_N[2]);
+        writer.writeField(message.getBeta()[3],  IonosphereKlobucharMessage.S_PER_SC_N[3]);
+        writer.finishLine();
+
+        // ION MESSAGE LINE - 2
+        writer.startLine();
+        writer.writeField(message.getLonMin(),   Unit.DEGREE);
+        writer.writeField(message.getLonMax(),   Unit.DEGREE);
+        writer.writeField(message.getModipMin(), Unit.DEGREE);
+        writer.writeField(message.getModipMax(), Unit.DEGREE);
+        writer.finishLine();
+
     }
 
 }
