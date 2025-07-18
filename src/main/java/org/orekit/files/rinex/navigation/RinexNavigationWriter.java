@@ -50,6 +50,7 @@ import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.formatting.FastLongFormatter;
+import org.orekit.utils.units.Unit;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -358,6 +359,25 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
         outputField(' ', start + 21);
         outputField(BaseRinexWriter.PADDED_TWO_DIGITS_INTEGER,
                     (int) FastMath.round(rounded.getTime().getSecond()), start + 23);
+    }
+
+    /** Write a numeric field.
+     * <p>
+     * The field will span over 19 characters.
+     * </p>
+     * @param value field value to write, in SI units
+     * @param unit unit to use
+     * @exception IOException if an I/O error occurs.
+     */
+    public void writeField(final double value, final Unit unit) throws IOException {
+        outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, unit.fromSI(value), getColumn() + 19);
+    }
+
+    /** Start (indent) a new line.
+     * @exception IOException if an I/O error occurs.
+     */
+    public void startLine() throws IOException {
+        outputField("    ", 4, true);
     }
 
     /** Container for navigation messages iterator.

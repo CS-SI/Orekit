@@ -82,46 +82,46 @@ import org.orekit.utils.units.Unit;
 public class RinexNavigationParser {
 
     /** Converter for positions. */
-    private static final Unit KM = Unit.KILOMETRE;
+    public static final Unit KM = Unit.KILOMETRE;
 
     /** Converter for velocities. */
-    private static final Unit KM_PER_S = Unit.parse("km/s");
+    public static final Unit KM_PER_S = Unit.parse("km/s");
 
     /** Converter for accelerations. */
-    private static final Unit KM_PER_S2 = Unit.parse("km/s²");
+    public static final Unit KM_PER_S2 = Unit.parse("km/s²");
 
     /** Converter for velocities. */
-    private static final Unit M_PER_S = Unit.parse("m/s");
+    public static final Unit M_PER_S = Unit.parse("m/s");
 
     /** Converter for clock drift. */
-    private static final Unit S_PER_S = Unit.parse("s/s");
+    public static final Unit S_PER_S = Unit.parse("s/s");
 
     /** Converter for clock drift rate. */
-    private static final Unit S_PER_S2 = Unit.parse("s/s²");
+    public static final Unit S_PER_S2 = Unit.parse("s/s²");
 
     /** Converter for ΔUT₁ first derivative. */
-    private static final Unit S_PER_DAY = Unit.parse("s/d");
+    public static final Unit S_PER_DAY = Unit.parse("s/d");
 
     /** Converter for ΔUT₁ second derivative. */
-    private static final Unit S_PER_DAY2 = Unit.parse("s/d²");
+    public static final Unit S_PER_DAY2 = Unit.parse("s/d²");
 
     /** Converter for square root of semi-major axis. */
-    private static final Unit SQRT_M = Unit.parse("√m");
+    public static final Unit SQRT_M = Unit.parse("√m");
 
     /** Converter for angular rates. */
-    private static final Unit RAD_PER_S = Unit.parse("rad/s");
+    public static final Unit RAD_PER_S = Unit.parse("rad/s");
 
     /** Converter for angular accelerations. */
-    private static final Unit RAD_PER_S2 = Unit.parse("rad/s²");
+    public static final Unit RAD_PER_S2 = Unit.parse("rad/s²");
 
     /** Converter for rates of small angle. */
-    private static final Unit AS_PER_DAY = Unit.parse("as/d");
+    public static final Unit AS_PER_DAY = Unit.parse("as/d");
 
     /** Converter for accelerations of small angles. */
-    private static final Unit AS_PER_DAY2 = Unit.parse("as/d²");
+    public static final Unit AS_PER_DAY2 = Unit.parse("as/d²");
 
     /** Total Electron Content. */
-    private static final Unit TEC = Unit.TOTAL_ELECTRON_CONTENT_UNIT;
+    public static final Unit TEC = Unit.TOTAL_ELECTRON_CONTENT_UNIT;
 
     /** System initials. */
     private static final String INITIALS = "GRECIJS";

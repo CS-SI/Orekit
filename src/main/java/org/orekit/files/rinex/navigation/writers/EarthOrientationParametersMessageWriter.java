@@ -19,8 +19,9 @@ package org.orekit.files.rinex.navigation.writers;
 import org.orekit.files.rinex.navigation.EarthOrientationParameterMessage;
 import org.orekit.files.rinex.navigation.MessageType;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
+import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
-import org.orekit.files.rinex.utils.BaseRinexWriter;
+import org.orekit.utils.units.Unit;
 
 import java.io.IOException;
 
@@ -42,26 +43,26 @@ public class EarthOrientationParametersMessageWriter
 
         // EOP MESSAGE LINE - 0
         writer.writeDate(message.getReferenceEpoch(), message.getSystem());
-        writer.outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, message.getXp(),       42);
-        writer.outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, message.getXpDot(),    61);
-        writer.outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, message.getXpDotDot(), 80);
+        writer.writeField(message.getXp(),       Unit.ARC_SECOND);
+        writer.writeField(message.getXpDot(),    RinexNavigationParser.AS_PER_DAY);
+        writer.writeField(message.getXpDotDot(), RinexNavigationParser.AS_PER_DAY2);
         writer.finishLine();
 
         // EOP MESSAGE LINE - 1
+        writer.startLine();
         writer.outputField(' ', 23);
-        writer.outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, message.getYp(),       42);
-        writer.outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, message.getYpDot(),    61);
-        writer.outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, message.getYpDotDot(), 80);
+        writer.writeField(message.getYp(),       Unit.ARC_SECOND);
+        writer.writeField(message.getYpDot(),    RinexNavigationParser.AS_PER_DAY);
+        writer.writeField(message.getYpDotDot(), RinexNavigationParser.AS_PER_DAY2);
+        writer.finishLine();
 
         // EOP MESSAGE LINE - 2
-        writer.outputField(' ', 1);
-        writer.outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, message.getTransmissionTime(), 20);
-        writer.outputField(' ', 21);
-        writer.outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, message.getDut1(), 40);
-        writer.outputField(' ', 41);
-        writer.outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, message.getDut1Dot(), 60);
-        writer.outputField(' ', 61);
-        writer.outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, message.getDut1DotDot(), 80);
+        writer.startLine();
+        writer.writeField(message.getTransmissionTime(), Unit.SECOND);
+        writer.writeField(message.getDut1(),             Unit.SECOND);
+        writer.writeField(message.getDut1Dot(),          RinexNavigationParser.S_PER_S);
+        writer.writeField(message.getDut1DotDot(),       RinexNavigationParser.S_PER_S2);
+        writer.finishLine();
 
     }
 

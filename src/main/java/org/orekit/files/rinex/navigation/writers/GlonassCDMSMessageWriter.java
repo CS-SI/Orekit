@@ -20,7 +20,7 @@ import org.orekit.files.rinex.navigation.IonosphereGlonassCdmsMessage;
 import org.orekit.files.rinex.navigation.MessageType;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
-import org.orekit.files.rinex.utils.BaseRinexWriter;
+import org.orekit.utils.units.Unit;
 
 import java.io.IOException;
 
@@ -42,9 +42,9 @@ public class GlonassCDMSMessageWriter
 
         // MESSAGE LINE - 0
         writer.writeDate(message.getTransmitTime(), message.getSystem());
-        writer.outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, message.getCA(),    42);
-        writer.outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, message.getCF107(), 61);
-        writer.outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, message.getCAP(),   80);
+        writer.writeField(message.getCA(),    Unit.ONE);
+        writer.writeField(message.getCF107(), Unit.ONE);
+        writer.writeField(message.getCAP(),   Unit.ONE);
         writer.finishLine();
 
     }

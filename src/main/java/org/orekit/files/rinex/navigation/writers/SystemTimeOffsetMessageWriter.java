@@ -18,9 +18,10 @@ package org.orekit.files.rinex.navigation.writers;
 
 import org.orekit.files.rinex.navigation.MessageType;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
+import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
 import org.orekit.files.rinex.navigation.SystemTimeOffsetMessage;
-import org.orekit.files.rinex.utils.BaseRinexWriter;
+import org.orekit.utils.units.Unit;
 
 import java.io.IOException;
 
@@ -50,14 +51,12 @@ public class SystemTimeOffsetMessageWriter
         writer.finishLine();
 
         // STO MESSAGE LINE - 1
-        writer.outputField(' ', 1);
-        writer.outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, message.getTransmissionTime(), 20);
-        writer.outputField(' ', 21);
-        writer.outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, message.getA0(), 40);
-        writer.outputField(' ', 41);
-        writer.outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, message.getA1(), 60);
-        writer.outputField(' ', 61);
-        writer.outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, message.getA2(), 80);
+        writer.startLine();
+        writer.writeField(message.getTransmissionTime(), Unit.SECOND);
+        writer.writeField(message.getA0(),               Unit.SECOND);
+        writer.writeField(message.getA1(),               RinexNavigationParser.S_PER_S);
+        writer.writeField(message.getA2(),               RinexNavigationParser.S_PER_S2);
+        writer.finishLine();
 
     }
 
