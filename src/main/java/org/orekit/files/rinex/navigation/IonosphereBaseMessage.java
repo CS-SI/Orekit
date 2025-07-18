@@ -27,17 +27,19 @@ import org.orekit.utils.units.Unit;
  */
 public class IonosphereBaseMessage extends TypeSvMessage {
 
-    /** Converters for Klobuchar parameters. */
-    public static final Unit[] S_PER_SC_N;
+    /** Converter for Klobuchar parameters. */
+    public static final Unit SC = Unit.RADIAN.scale("sc", GNSSConstants.GNSS_PI);
 
-    static {
-        final Unit sc = Unit.RADIAN.scale("sc", GNSSConstants.GNSS_PI);
-        S_PER_SC_N = new Unit[4];
-        S_PER_SC_N[0] = Unit.SECOND;
-        S_PER_SC_N[1] = S_PER_SC_N[0].divide("s/sc",  sc);
-        S_PER_SC_N[2] = S_PER_SC_N[1].divide("s/sc²", sc);
-        S_PER_SC_N[3] = S_PER_SC_N[2].divide("s/sc³", sc);
-    }
+    public static final Unit S_PER_SC_N0 = Unit.SECOND;
+
+    /** Converter for Klobuchar parameters. */
+    public static final Unit S_PER_SC_N1 = S_PER_SC_N0.divide("s/sc",  SC);
+
+    /** Converter for Klobuchar parameters. */
+    public static final Unit S_PER_SC_N2 = S_PER_SC_N1.divide("s/sc²", SC);
+
+    /** Converter for Klobuchar parameters. */
+    public static final Unit S_PER_SC_N3 = S_PER_SC_N2.divide("s/sc³", SC);
 
     /** Transmit time. */
     private AbsoluteDate transmitTime;

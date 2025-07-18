@@ -1898,14 +1898,14 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.0,
                                 new AbsoluteDate(2022, 10, 5, 23, 33, 54.0, TimeScalesFactory.getGPS()).durationFrom(listK.get(0).getTransmitTime()),
                                 1.0e-15);
-        Assertions.assertEquals( 2.514570951462e-08, IonosphereKlobucharMessage.S_PER_SC_N[0].fromSI(listK.get(0).getAlpha()[0]), 1.0e-16);
-        Assertions.assertEquals( 1.490116119385e-08, IonosphereKlobucharMessage.S_PER_SC_N[1].fromSI(listK.get(0).getAlpha()[1]), 1.0e-16);
-        Assertions.assertEquals(-1.192092895508e-07, IonosphereKlobucharMessage.S_PER_SC_N[2].fromSI(listK.get(0).getAlpha()[2]), 1.0e-16);
-        Assertions.assertEquals(-5.960464477539e-08, IonosphereKlobucharMessage.S_PER_SC_N[3].fromSI(listK.get(0).getAlpha()[3]), 1.0e-16);
-        Assertions.assertEquals( 1.331200000000e+05, IonosphereKlobucharMessage.S_PER_SC_N[0].fromSI(listK.get(0).getBeta()[0]),  1.0e-10);
-        Assertions.assertEquals(-1.638400000000e+04, IonosphereKlobucharMessage.S_PER_SC_N[1].fromSI(listK.get(0).getBeta()[1]),  1.0e-10);
-        Assertions.assertEquals(-2.621440000000e+05, IonosphereKlobucharMessage.S_PER_SC_N[2].fromSI(listK.get(0).getBeta()[2]),  1.0e-10);
-        Assertions.assertEquals( 1.966080000000e+05, IonosphereKlobucharMessage.S_PER_SC_N[3].fromSI(listK.get(0).getBeta()[3]),  1.0e-10);
+        Assertions.assertEquals( 2.514570951462e-08, IonosphereKlobucharMessage.S_PER_SC_N0.fromSI(listK.get(0).getAlpha()[0]), 1.0e-16);
+        Assertions.assertEquals( 1.490116119385e-08, IonosphereKlobucharMessage.S_PER_SC_N1.fromSI(listK.get(0).getAlpha()[1]), 1.0e-16);
+        Assertions.assertEquals(-1.192092895508e-07, IonosphereKlobucharMessage.S_PER_SC_N2.fromSI(listK.get(0).getAlpha()[2]), 1.0e-16);
+        Assertions.assertEquals(-5.960464477539e-08, IonosphereKlobucharMessage.S_PER_SC_N3.fromSI(listK.get(0).getAlpha()[3]), 1.0e-16);
+        Assertions.assertEquals( 1.331200000000e+05, IonosphereKlobucharMessage.S_PER_SC_N0.fromSI(listK.get(0).getBeta()[0]),  1.0e-10);
+        Assertions.assertEquals(-1.638400000000e+04, IonosphereKlobucharMessage.S_PER_SC_N1.fromSI(listK.get(0).getBeta()[1]),  1.0e-10);
+        Assertions.assertEquals(-2.621440000000e+05, IonosphereKlobucharMessage.S_PER_SC_N2.fromSI(listK.get(0).getBeta()[2]),  1.0e-10);
+        Assertions.assertEquals( 1.966080000000e+05, IonosphereKlobucharMessage.S_PER_SC_N3.fromSI(listK.get(0).getBeta()[3]),  1.0e-10);
 
         Assertions.assertEquals(SatelliteSystem.GPS, listK.get(1).getSystem());
         Assertions.assertEquals(25, listK.get(1).getPrn());
@@ -1913,14 +1913,14 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.0,
                                 new AbsoluteDate(2022, 10, 5, 23, 30, 42.0, TimeScalesFactory.getGPS()).durationFrom(listK.get(1).getTransmitTime()),
                                 1.0e-15);
-        Assertions.assertEquals( 2.514570951462e-08, IonosphereKlobucharMessage.S_PER_SC_N[0].fromSI(listK.get(1).getAlpha()[0]), 1.0e-16);
-        Assertions.assertEquals( 1.490116119385e-08, IonosphereKlobucharMessage.S_PER_SC_N[1].fromSI(listK.get(1).getAlpha()[1]), 1.0e-16);
-        Assertions.assertEquals(-1.192092895508e-07, IonosphereKlobucharMessage.S_PER_SC_N[2].fromSI(listK.get(1).getAlpha()[2]), 1.0e-16);
-        Assertions.assertEquals(-5.960464477539e-08, IonosphereKlobucharMessage.S_PER_SC_N[3].fromSI(listK.get(1).getAlpha()[3]), 1.0e-16);
-        Assertions.assertEquals( 1.331200000000e+05, IonosphereKlobucharMessage.S_PER_SC_N[0].fromSI(listK.get(1).getBeta()[0]),  1.0e-10);
-        Assertions.assertEquals(-1.638400000000e+04, IonosphereKlobucharMessage.S_PER_SC_N[1].fromSI(listK.get(1).getBeta()[1]),  1.0e-10);
-        Assertions.assertEquals(-2.621440000000e+05, IonosphereKlobucharMessage.S_PER_SC_N[2].fromSI(listK.get(1).getBeta()[2]),  1.0e-10);
-        Assertions.assertEquals( 1.966080000000e+05, IonosphereKlobucharMessage.S_PER_SC_N[3].fromSI(listK.get(1).getBeta()[3]),  1.0e-10);
+        Assertions.assertEquals( 2.514570951462e-08, IonosphereKlobucharMessage.S_PER_SC_N0.fromSI(listK.get(1).getAlpha()[0]), 1.0e-16);
+        Assertions.assertEquals( 1.490116119385e-08, IonosphereKlobucharMessage.S_PER_SC_N1.fromSI(listK.get(1).getAlpha()[1]), 1.0e-16);
+        Assertions.assertEquals(-1.192092895508e-07, IonosphereKlobucharMessage.S_PER_SC_N2.fromSI(listK.get(1).getAlpha()[2]), 1.0e-16);
+        Assertions.assertEquals(-5.960464477539e-08, IonosphereKlobucharMessage.S_PER_SC_N3.fromSI(listK.get(1).getAlpha()[3]), 1.0e-16);
+        Assertions.assertEquals( 1.331200000000e+05, IonosphereKlobucharMessage.S_PER_SC_N0.fromSI(listK.get(1).getBeta()[0]),  1.0e-10);
+        Assertions.assertEquals(-1.638400000000e+04, IonosphereKlobucharMessage.S_PER_SC_N1.fromSI(listK.get(1).getBeta()[1]),  1.0e-10);
+        Assertions.assertEquals(-2.621440000000e+05, IonosphereKlobucharMessage.S_PER_SC_N2.fromSI(listK.get(1).getBeta()[2]),  1.0e-10);
+        Assertions.assertEquals( 1.966080000000e+05, IonosphereKlobucharMessage.S_PER_SC_N3.fromSI(listK.get(1).getBeta()[3]),  1.0e-10);
 
         Assertions.assertEquals(SatelliteSystem.GALILEO, listN.get(0).getSystem());
         Assertions.assertEquals(2, listN.get(0).getPrn());
@@ -2007,14 +2007,14 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.0,
                                 new AbsoluteDate(2021, 7, 5, 0, 9, 0.0, TimeScalesFactory.getBDT()).durationFrom(listK.get(1).getTransmitTime()),
                                 1.0e-15);
-        Assertions.assertEquals( 7.450580596924e-09, IonosphereKlobucharMessage.S_PER_SC_N[0].fromSI(listK.get(1).getAlpha()[0]), 1.0e-16);
-        Assertions.assertEquals( 4.470348358154e-08, IonosphereKlobucharMessage.S_PER_SC_N[1].fromSI(listK.get(1).getAlpha()[1]), 1.0e-16);
-        Assertions.assertEquals(-4.172325134277e-07, IonosphereKlobucharMessage.S_PER_SC_N[2].fromSI(listK.get(1).getAlpha()[2]), 1.0e-16);
-        Assertions.assertEquals( 5.960464477539e-07, IonosphereKlobucharMessage.S_PER_SC_N[3].fromSI(listK.get(1).getAlpha()[3]), 1.0e-16);
-        Assertions.assertEquals( 1.187840000000e+05, IonosphereKlobucharMessage.S_PER_SC_N[0].fromSI(listK.get(1).getBeta()[0]),  1.0e-10);
-        Assertions.assertEquals( 1.802240000000e+05, IonosphereKlobucharMessage.S_PER_SC_N[1].fromSI(listK.get(1).getBeta()[1]),  1.0e-10);
-        Assertions.assertEquals(-6.553600000000e+05, IonosphereKlobucharMessage.S_PER_SC_N[2].fromSI(listK.get(1).getBeta()[2]),  1.0e-10);
-        Assertions.assertEquals( 5.242880000000e+05, IonosphereKlobucharMessage.S_PER_SC_N[3].fromSI(listK.get(1).getBeta()[3]),  1.0e-10);
+        Assertions.assertEquals( 7.450580596924e-09, IonosphereKlobucharMessage.S_PER_SC_N0.fromSI(listK.get(1).getAlpha()[0]), 1.0e-16);
+        Assertions.assertEquals( 4.470348358154e-08, IonosphereKlobucharMessage.S_PER_SC_N1.fromSI(listK.get(1).getAlpha()[1]), 1.0e-16);
+        Assertions.assertEquals(-4.172325134277e-07, IonosphereKlobucharMessage.S_PER_SC_N2.fromSI(listK.get(1).getAlpha()[2]), 1.0e-16);
+        Assertions.assertEquals( 5.960464477539e-07, IonosphereKlobucharMessage.S_PER_SC_N3.fromSI(listK.get(1).getAlpha()[3]), 1.0e-16);
+        Assertions.assertEquals( 1.187840000000e+05, IonosphereKlobucharMessage.S_PER_SC_N0.fromSI(listK.get(1).getBeta()[0]),  1.0e-10);
+        Assertions.assertEquals( 1.802240000000e+05, IonosphereKlobucharMessage.S_PER_SC_N1.fromSI(listK.get(1).getBeta()[1]),  1.0e-10);
+        Assertions.assertEquals(-6.553600000000e+05, IonosphereKlobucharMessage.S_PER_SC_N2.fromSI(listK.get(1).getBeta()[2]),  1.0e-10);
+        Assertions.assertEquals( 5.242880000000e+05, IonosphereKlobucharMessage.S_PER_SC_N3.fromSI(listK.get(1).getBeta()[3]),  1.0e-10);
 
         Assertions.assertEquals(SatelliteSystem.NAVIC, listNK.get(0).getSystem());
         Assertions.assertEquals(10, listNK.get(0).getPrn());
@@ -2024,14 +2024,14 @@ public class NavigationFileParserTest {
                                 new AbsoluteDate(2023, 6, 24, 0, 7, 30.0, TimeScalesFactory.getGPS()).durationFrom(listNK.get(0).getTransmitTime()),
                                 1.0e-15);
         Assertions.assertEquals(1, listNK.get(0).getIOD());
-        Assertions.assertEquals( 5.867332220078e-08, IonosphereKlobucharMessage.S_PER_SC_N[0].fromSI(listNK.get(0).getAlpha()[0]), 1.0e-16);
-        Assertions.assertEquals( 2.533197402954e-07, IonosphereKlobucharMessage.S_PER_SC_N[1].fromSI(listNK.get(0).getAlpha()[1]), 1.0e-16);
-        Assertions.assertEquals(-1.430511474609e-06, IonosphereKlobucharMessage.S_PER_SC_N[2].fromSI(listNK.get(0).getAlpha()[2]), 1.0e-16);
-        Assertions.assertEquals(-7.510185241699e-06, IonosphereKlobucharMessage.S_PER_SC_N[3].fromSI(listNK.get(0).getAlpha()[3]), 1.0e-16);
-        Assertions.assertEquals( 1.495040000000e+05, IonosphereKlobucharMessage.S_PER_SC_N[0].fromSI(listNK.get(0).getBeta()[0]), 1.0e-10);
-        Assertions.assertEquals(-5.406720000000e+05, IonosphereKlobucharMessage.S_PER_SC_N[1].fromSI(listNK.get(0).getBeta()[1]), 1.0e-10);
-        Assertions.assertEquals( 2.883584000000e+06, IonosphereKlobucharMessage.S_PER_SC_N[2].fromSI(listNK.get(0).getBeta()[2]), 1.0e-10);
-        Assertions.assertEquals( 8.323072000000e+06, IonosphereKlobucharMessage.S_PER_SC_N[3].fromSI(listNK.get(0).getBeta()[3]), 1.0e-10);
+        Assertions.assertEquals( 5.867332220078e-08, IonosphereKlobucharMessage.S_PER_SC_N0.fromSI(listNK.get(0).getAlpha()[0]), 1.0e-16);
+        Assertions.assertEquals( 2.533197402954e-07, IonosphereKlobucharMessage.S_PER_SC_N1.fromSI(listNK.get(0).getAlpha()[1]), 1.0e-16);
+        Assertions.assertEquals(-1.430511474609e-06, IonosphereKlobucharMessage.S_PER_SC_N2.fromSI(listNK.get(0).getAlpha()[2]), 1.0e-16);
+        Assertions.assertEquals(-7.510185241699e-06, IonosphereKlobucharMessage.S_PER_SC_N3.fromSI(listNK.get(0).getAlpha()[3]), 1.0e-16);
+        Assertions.assertEquals( 1.495040000000e+05, IonosphereKlobucharMessage.S_PER_SC_N0.fromSI(listNK.get(0).getBeta()[0]), 1.0e-10);
+        Assertions.assertEquals(-5.406720000000e+05, IonosphereKlobucharMessage.S_PER_SC_N1.fromSI(listNK.get(0).getBeta()[1]), 1.0e-10);
+        Assertions.assertEquals( 2.883584000000e+06, IonosphereKlobucharMessage.S_PER_SC_N2.fromSI(listNK.get(0).getBeta()[2]), 1.0e-10);
+        Assertions.assertEquals( 8.323072000000e+06, IonosphereKlobucharMessage.S_PER_SC_N3.fromSI(listNK.get(0).getBeta()[3]), 1.0e-10);
         Assertions.assertEquals(               50.0, Unit.DEGREE.fromSI(listNK.get(0).getLonMin()),   1.0e-10);
         Assertions.assertEquals(              110.0, Unit.DEGREE.fromSI(listNK.get(0).getLonMax()),   1.0e-10);
         Assertions.assertEquals(                0.0, Unit.DEGREE.fromSI(listNK.get(0).getModipMin()), 1.0e-10);

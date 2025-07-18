@@ -811,7 +811,7 @@ public class RinexNavigationParser {
         /** Parser for ionosphere Klobuchar message model. */
         KLOBUCHAR_LINE_2((header, line) -> true,
                          (line, pi) -> {
-                             pi.klobuchar.setBetaI(3, pi.parseField1(line, IonosphereBaseMessage.S_PER_SC_N[3]));
+                             pi.klobuchar.setBetaI(3, pi.parseField1(line, IonosphereBaseMessage.S_PER_SC_N3));
                              pi.klobuchar.setRegionCode(ParsingUtils.parseDouble(line, 23, 19) < 0.5 ?
                                                         RegionCode.WIDE_AREA : RegionCode.JAPAN);
                              pi.file.addKlobucharMessage(pi.klobuchar);
@@ -822,10 +822,10 @@ public class RinexNavigationParser {
         /** Parser for ionosphere Klobuchar message model. */
         KLOBUCHAR_LINE_1((header, line) -> true,
                          (line, pi) -> {
-                             pi.klobuchar.setAlphaI(3, pi.parseField1(line, IonosphereBaseMessage.S_PER_SC_N[3]));
-                             pi.klobuchar.setBetaI(0, pi.parseField2(line, IonosphereBaseMessage.S_PER_SC_N[0]));
-                             pi.klobuchar.setBetaI(1, pi.parseField3(line, IonosphereBaseMessage.S_PER_SC_N[1]));
-                             pi.klobuchar.setBetaI(2, pi.parseField4(line, IonosphereBaseMessage.S_PER_SC_N[2]));
+                             pi.klobuchar.setAlphaI(3, pi.parseField1(line, IonosphereBaseMessage.S_PER_SC_N3));
+                             pi.klobuchar.setBetaI(0, pi.parseField2(line, IonosphereBaseMessage.S_PER_SC_N0));
+                             pi.klobuchar.setBetaI(1, pi.parseField3(line, IonosphereBaseMessage.S_PER_SC_N1));
+                             pi.klobuchar.setBetaI(2, pi.parseField4(line, IonosphereBaseMessage.S_PER_SC_N2));
                          },
                          pi -> Collections.singleton(KLOBUCHAR_LINE_2)),
 
@@ -833,9 +833,9 @@ public class RinexNavigationParser {
         KLOBUCHAR_LINE_0((header, line) -> true,
                          (line, pi) -> {
                              pi.parseDate(line, pi.klobuchar::setTransmitTime, pi.klobuchar.getSystem());
-                             pi.klobuchar.setAlphaI(0, pi.parseField2(line, IonosphereBaseMessage.S_PER_SC_N[0]));
-                             pi.klobuchar.setAlphaI(1, pi.parseField3(line, IonosphereBaseMessage.S_PER_SC_N[1]));
-                             pi.klobuchar.setAlphaI(2, pi.parseField4(line, IonosphereBaseMessage.S_PER_SC_N[2]));
+                             pi.klobuchar.setAlphaI(0, pi.parseField2(line, IonosphereBaseMessage.S_PER_SC_N0));
+                             pi.klobuchar.setAlphaI(1, pi.parseField3(line, IonosphereBaseMessage.S_PER_SC_N1));
+                             pi.klobuchar.setAlphaI(2, pi.parseField4(line, IonosphereBaseMessage.S_PER_SC_N2));
                          },
                          pi -> Collections.singleton(KLOBUCHAR_LINE_1)),
 
@@ -858,10 +858,10 @@ public class RinexNavigationParser {
          */
         NAVIC_KLOBUCHAR_LINE_2((header, line) -> true,
                                (line, pi) -> {
-                                   pi.navICKlobuchar.setBetaI(0, pi.parseField1(line, IonosphereBaseMessage.S_PER_SC_N[0]));
-                                   pi.navICKlobuchar.setBetaI(1, pi.parseField2(line, IonosphereBaseMessage.S_PER_SC_N[1]));
-                                   pi.navICKlobuchar.setBetaI(2, pi.parseField3(line, IonosphereBaseMessage.S_PER_SC_N[2]));
-                                   pi.navICKlobuchar.setBetaI(3, pi.parseField4(line, IonosphereBaseMessage.S_PER_SC_N[3]));
+                                   pi.navICKlobuchar.setBetaI(0, pi.parseField1(line, IonosphereBaseMessage.S_PER_SC_N0));
+                                   pi.navICKlobuchar.setBetaI(1, pi.parseField2(line, IonosphereBaseMessage.S_PER_SC_N1));
+                                   pi.navICKlobuchar.setBetaI(2, pi.parseField3(line, IonosphereBaseMessage.S_PER_SC_N2));
+                                   pi.navICKlobuchar.setBetaI(3, pi.parseField4(line, IonosphereBaseMessage.S_PER_SC_N3));
                                },
                                pi -> Collections.singleton(NAVIC_KLOBUCHAR_LINE_3)),
 
@@ -870,10 +870,10 @@ public class RinexNavigationParser {
          */
         NAVIC_KLOBUCHAR_LINE_1((header, line) -> true,
                                (line, pi) -> {
-                                   pi.navICKlobuchar.setAlphaI(0, pi.parseField1(line, IonosphereBaseMessage.S_PER_SC_N[0]));
-                                   pi.navICKlobuchar.setAlphaI(1, pi.parseField2(line, IonosphereBaseMessage.S_PER_SC_N[1]));
-                                   pi.navICKlobuchar.setAlphaI(2, pi.parseField3(line, IonosphereBaseMessage.S_PER_SC_N[2]));
-                                   pi.navICKlobuchar.setAlphaI(3, pi.parseField4(line, IonosphereBaseMessage.S_PER_SC_N[3]));
+                                   pi.navICKlobuchar.setAlphaI(0, pi.parseField1(line, IonosphereBaseMessage.S_PER_SC_N0));
+                                   pi.navICKlobuchar.setAlphaI(1, pi.parseField2(line, IonosphereBaseMessage.S_PER_SC_N1));
+                                   pi.navICKlobuchar.setAlphaI(2, pi.parseField3(line, IonosphereBaseMessage.S_PER_SC_N2));
+                                   pi.navICKlobuchar.setAlphaI(3, pi.parseField4(line, IonosphereBaseMessage.S_PER_SC_N3));
                                },
                                pi -> Collections.singleton(NAVIC_KLOBUCHAR_LINE_2)),
 

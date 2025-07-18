@@ -48,15 +48,15 @@ public class NavICKlobucharMessageWriter
 
         // ION MESSAGE LINE - 1
         writer.startLine();
-        writer.writeField(message.getAlpha()[0], IonosphereKlobucharMessage.S_PER_SC_N[0]);
-        writer.writeField(message.getAlpha()[1], IonosphereKlobucharMessage.S_PER_SC_N[1]);
-        writer.writeField(message.getAlpha()[2], IonosphereKlobucharMessage.S_PER_SC_N[2]);
-        writer.writeField(message.getAlpha()[3], IonosphereKlobucharMessage.S_PER_SC_N[3]);
+        writer.writeField(message.getAlpha()[0], IonosphereKlobucharMessage.S_PER_SC_N0);
+        writer.writeField(message.getAlpha()[1], IonosphereKlobucharMessage.S_PER_SC_N1);
+        writer.writeField(message.getAlpha()[2], IonosphereKlobucharMessage.S_PER_SC_N2);
+        writer.writeField(message.getAlpha()[3], IonosphereKlobucharMessage.S_PER_SC_N3);
         writer.finishLine();
-        writer.writeField(message.getBeta()[0],  IonosphereKlobucharMessage.S_PER_SC_N[0]);
-        writer.writeField(message.getBeta()[1],  IonosphereKlobucharMessage.S_PER_SC_N[1]);
-        writer.writeField(message.getBeta()[2],  IonosphereKlobucharMessage.S_PER_SC_N[2]);
-        writer.writeField(message.getBeta()[3],  IonosphereKlobucharMessage.S_PER_SC_N[3]);
+        writer.writeField(message.getBeta()[0],  IonosphereKlobucharMessage.S_PER_SC_N0);
+        writer.writeField(message.getBeta()[1],  IonosphereKlobucharMessage.S_PER_SC_N1);
+        writer.writeField(message.getBeta()[2],  IonosphereKlobucharMessage.S_PER_SC_N2);
+        writer.writeField(message.getBeta()[3],  IonosphereKlobucharMessage.S_PER_SC_N3);
         writer.finishLine();
 
         // ION MESSAGE LINE - 2
