@@ -317,30 +317,28 @@ public class RinexNavigationParser {
 
         /** Parse a date.
          * @param line line to parse
-         * @param dateSetter sett for the date
          * @param system satellite system
+         * @return parsed date
          * @since 14.0
          */
-        private void parseDate(final String line, final Consumer<AbsoluteDate> dateSetter,
-                               final SatelliteSystem system) {
-            parseDate(line, dateSetter, system.getObservationTimeScale().getTimeScale(timeScales));
+        private AbsoluteDate parseDate(final String line, final SatelliteSystem system) {
+            return parseDate(line, system.getObservationTimeScale().getTimeScale(timeScales));
         }
 
         /** Parse a date.
          * @param line line to parse
-         * @param dateSetter sett for the date
          * @param timeScale time scale
+         * @return parsed date
          * @since 14.0
          */
-        private void parseDate(final String line, final Consumer<AbsoluteDate> dateSetter,
-                               final TimeScale timeScale) {
+        private AbsoluteDate parseDate(final String line, final TimeScale timeScale) {
             final int year  = ParsingUtils.parseInt(line, 4, 4);
             final int month = ParsingUtils.parseInt(line, 9, 2);
             final int day   = ParsingUtils.parseInt(line, 12, 2);
             final int hours = ParsingUtils.parseInt(line, 15, 2);
             final int min   = ParsingUtils.parseInt(line, 18, 2);
             final int sec   = ParsingUtils.parseInt(line, 21, 2);
-            dateSetter.accept(new AbsoluteDate(year, month, day, hours, min, sec, timeScale));
+            return new AbsoluteDate(year, month, day, hours, min, sec, timeScale);
         }
 
         /** Parse field 1 of a message line.
@@ -747,7 +745,7 @@ public class RinexNavigationParser {
                                pi.sto.setUtcId(utc == null || utc.isEmpty() ? null : UtcId.parseUtcId(utc));
 
                                // TODO is the reference date relative to one or the other time scale?
-                               pi.parseDate(line, pi.sto::setReferenceEpoch, pi.sto.getSystem());
+                               pi.sto.setReferenceEpoch(pi.parseDate(line, pi.sto.getSystem()));
 
                            },
                            pi -> Collections.singleton(STO_LINE_1)),
@@ -788,7 +786,7 @@ public class RinexNavigationParser {
         /** Parser for Earth orientation parameter message model. */
         EOP_LINE_0((header, line) -> true,
                    (line, pi) -> {
-                       pi.parseDate(line, pi.eop::setReferenceEpoch, pi.eop.getSystem());
+                       pi.eop.setReferenceEpoch(pi.parseDate(line, pi.eop.getSystem()));
                        pi.eop.setXp(pi.parseField2(line, Unit.ARC_SECOND));
                        pi.eop.setXpDot(pi.parseField3(line, AS_PER_DAY));
                        pi.eop.setXpDotDot(pi.parseField4(line, AS_PER_DAY2));
@@ -832,7 +830,7 @@ public class RinexNavigationParser {
         /** Parser for ionosphere Klobuchar message model. */
         KLOBUCHAR_LINE_0((header, line) -> true,
                          (line, pi) -> {
-                             pi.parseDate(line, pi.klobuchar::setTransmitTime, pi.klobuchar.getSystem());
+                             pi.klobuchar.setTransmitTime(pi.parseDate(line, pi.klobuchar.getSystem()));
                              pi.klobuchar.setAlphaI(0, pi.parseField2(line, IonosphereBaseMessage.S_PER_SC_N0));
                              pi.klobuchar.setAlphaI(1, pi.parseField3(line, IonosphereBaseMessage.S_PER_SC_N1));
                              pi.klobuchar.setAlphaI(2, pi.parseField4(line, IonosphereBaseMessage.S_PER_SC_N2));
@@ -880,7 +878,7 @@ public class RinexNavigationParser {
         /** Parser for NavIC Klobuchar message model. */
         NAVIC_KLOBUCHAR_LINE_0((header, line) -> true,
                                (line, pi) -> {
-                                   pi.parseDate(line, pi.navICKlobuchar::setTransmitTime, pi.navICKlobuchar.getSystem());
+                                   pi.navICKlobuchar.setTransmitTime(pi.parseDate(line, pi.navICKlobuchar.getSystem()));
                                    pi.navICKlobuchar.setIOD(pi.parseField2(line, Unit.ONE));
                                },
                                pi -> Collections.singleton(NAVIC_KLOBUCHAR_LINE_1)),
@@ -964,7 +962,7 @@ public class RinexNavigationParser {
          */
         NAVIC_NEQUICK_N_LINE_0((header, line) -> true,
                                (line, pi) -> {
-                                   pi.parseDate(line, pi.navICNeQuickN::setTransmitTime, pi.navICNeQuickN.getSystem());
+                                   pi.navICNeQuickN.setTransmitTime(pi.parseDate(line, pi.navICNeQuickN.getSystem()));
                                    pi.navICNeQuickN.setIOD(pi.parseField2(line, Unit.ONE));
                                },
                                pi -> Collections.singleton(NAVIC_NEQUICK_N_LINE_1)),
@@ -974,7 +972,7 @@ public class RinexNavigationParser {
          */
         GLONASS_CDMS_LINE_0((header, line) -> true,
                             (line, pi) -> {
-                                pi.parseDate(line, pi.glonassCdms::setTransmitTime, pi.glonassCdms.getSystem());
+                                pi.glonassCdms.setTransmitTime(pi.parseDate(line, pi.glonassCdms.getSystem()));
                                 pi.glonassCdms.setCA(pi.parseField2(line, Unit.ONE));
                                 pi.glonassCdms.setCF107(pi.parseField3(line, Unit.ONE));
                                 pi.glonassCdms.setCAP(pi.parseField4(line, Unit.ONE));
@@ -995,7 +993,7 @@ public class RinexNavigationParser {
         /** Parser for ionosphere Nequick-G message model. */
         NEQUICK_G_LINE_0((header, line) -> true,
                          (line, pi) -> {
-                             pi.parseDate(line, pi.nequickG::setTransmitTime, pi.nequickG.getSystem());
+                             pi.nequickG.setTransmitTime(pi.parseDate(line, pi.nequickG.getSystem()));
                              pi.nequickG.getAij().setAi0(IonosphereAij.SFU.toSI(ParsingUtils.parseDouble(line, 23, 19)));
                              pi.nequickG.getAij().setAi1(IonosphereAij.SFU_PER_DEG.toSI(ParsingUtils.parseDouble(line, 42, 19)));
                              pi.nequickG.getAij().setAi2(IonosphereAij.SFU_PER_DEG2.toSI(ParsingUtils.parseDouble(line, 61, 19)));
@@ -1025,7 +1023,7 @@ public class RinexNavigationParser {
         /** Parser for ionosphere BDGIM message model. */
         BDGIM_LINE_0((header, line) -> true,
                      (line, pi) -> {
-                         pi.parseDate(line, pi.bdgim::setTransmitTime, pi.bdgim.getSystem());
+                         pi.bdgim.setTransmitTime(pi.parseDate(line, pi.bdgim.getSystem()));
                          pi.bdgim.setAlphaI(0, TEC.toSI(ParsingUtils.parseDouble(line, 23, 19)));
                          pi.bdgim.setAlphaI(1, TEC.toSI(ParsingUtils.parseDouble(line, 42, 19)));
                          pi.bdgim.setAlphaI(2, TEC.toSI(ParsingUtils.parseDouble(line, 61, 19)));
@@ -1482,7 +1480,7 @@ public class RinexNavigationParser {
                     pi.glonassFdmaNav.setPRN(ParsingUtils.parseInt(line, 1, 2));
 
                     // Toc
-                    pi.parseDate(line, pi.glonassFdmaNav::setEpochToc, pi.timeScales.getUTC());
+                    pi.glonassFdmaNav.setEpochToc(pi.parseDate(line, pi.timeScales.getUTC()));
 
                     // clock
                     pi.glonassFdmaNav.setTauN(-ParsingUtils.parseDouble(line, 23, 19));
@@ -2025,7 +2023,7 @@ public class RinexNavigationParser {
                 final int       version100 = (int) FastMath.rint(pi.file.getHeader().getFormatVersion() * 100);
                 final TimeScale timeScale  = (version100 == 301) ? pi.timeScales.getUTC() : pi.timeScales.getGPS();
 
-                pi.parseDate(line, pi.sbasNav::setEpochToc, timeScale);
+                pi.sbasNav.setEpochToc(pi.parseDate(line, timeScale));
                 pi.sbasNav.setAGf0(parseBroadcastDouble2(line, pi.initialSpaces, Unit.SECOND));
                 pi.sbasNav.setAGf1(parseBroadcastDouble3(line, pi.initialSpaces, S_PER_S));
                 pi.sbasNav.setTime(parseBroadcastDouble4(line, pi.initialSpaces, Unit.SECOND));
@@ -2417,7 +2415,7 @@ public class RinexNavigationParser {
             message.setPRN(ParsingUtils.parseInt(line, 1, 2));
 
             // Toc
-            parseInfo.parseDate(line, message::setEpochToc, timeScale);
+            message.setEpochToc(parseInfo.parseDate(line, timeScale));
 
             // clock
             message.setAf0(ParsingUtils.parseDouble(line, 23, 19));
