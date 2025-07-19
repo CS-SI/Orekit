@@ -48,6 +48,16 @@ public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElemen
     /** Fit interval. */
     private int fitInterval;
 
+    /** Codes on L2 channel.
+     * @since 14.0
+     */
+    private int l2Codes;
+
+    /** L2 P data flags.
+     * @since 14.0
+     */
+    private int l2PFlags;
+
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
      * @param original regular non-field instance
@@ -59,6 +69,8 @@ public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElemen
         setSvAccuracy(field.getZero().newInstance(original.getSvAccuracy()));
         setSvHealth(original.getSvHealth());
         setFitInterval(original.getFitInterval());
+        setL2Codes(original.getL2Codes());
+        setL2PFlags(original.getL2PFlags());
     }
 
     /** Constructor from different field instance.
@@ -74,6 +86,8 @@ public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElemen
         setSvAccuracy(converter.apply(original.getSvAccuracy()));
         setSvHealth(original.getSvHealth());
         setFitInterval(original.getFitInterval());
+        setL2Codes(original.getL2Codes());
+        setL2PFlags(original.getL2PFlags());
     }
 
     /**
@@ -155,6 +169,38 @@ public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElemen
      */
     public void setFitInterval(final int fitInterval) {
         this.fitInterval = fitInterval;
+    }
+
+    /** Get the codes on L2 channel.
+     * @return codes on L2 channel
+     * @since 14.0
+     */
+    public int getL2Codes() {
+        return l2Codes;
+    }
+
+    /** Set the codes on L2 channel.
+     * @param l2Codes codes on L2 channel
+     * @since 14.0
+     */
+    public void setL2Codes(final int l2Codes) {
+        this.l2Codes = l2Codes;
+    }
+
+    /** Get the L2 P data flags.
+     * @return L2 P data flags
+     * @since 14.0
+     */
+    public int getL2PFlags() {
+        return l2PFlags;
+    }
+
+    /** Set the L2 P data flags.
+     * @param l2PFlags L2 P data flags
+     * @since 14.0
+     */
+    public void setL2PFlags(final int l2PFlags) {
+        this.l2PFlags = l2PFlags;
     }
 
 }

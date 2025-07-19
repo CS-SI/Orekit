@@ -47,6 +47,16 @@ public abstract class LegacyNavigationMessage<O extends LegacyNavigationMessage<
      */
     private int fitInterval;
 
+    /** Codes on L2 channel.
+     * @since 14.0
+     */
+    private int l2Codes;
+
+    /** L2 P data flags.
+     * @since 14.0
+     */
+    private int l2PFlags;
+
     /**
      * Constructor.
      * @param mu              Earth's universal gravitational parameter
@@ -77,6 +87,8 @@ public abstract class LegacyNavigationMessage<O extends LegacyNavigationMessage<
         setSvAccuracy(original.getSvAccuracy().getReal());
         setSvHealth(original.getSvHealth());
         setFitInterval(original.getFitInterval());
+        setL2Codes(original.getL2Codes());
+        setL2PFlags(original.getL2PFlags());
     }
 
     /**
@@ -160,6 +172,38 @@ public abstract class LegacyNavigationMessage<O extends LegacyNavigationMessage<
      */
     public void setFitInterval(final int fitInterval) {
         this.fitInterval = fitInterval;
+    }
+
+    /** Get the codes on L2 channel.
+     * @return codes on L2 channel
+     * @since 14.0
+     */
+    public int getL2Codes() {
+        return l2Codes;
+    }
+
+    /** Set the codes on L2 channel.
+     * @param l2Codes codes on L2 channel
+     * @since 14.0
+     */
+    public void setL2Codes(final int l2Codes) {
+        this.l2Codes = l2Codes;
+    }
+
+    /** Get the L2 P data flags.
+     * @return L2 P data flags
+     * @since 14.0
+     */
+    public int getL2PFlags() {
+        return l2PFlags;
+    }
+
+    /** Set the L2 P data flags.
+     * @param l2PFlags L2 P data flags
+     * @since 14.0
+     */
+    public void setL2PFlags(final int l2PFlags) {
+        this.l2PFlags = l2PFlags;
     }
 
 }

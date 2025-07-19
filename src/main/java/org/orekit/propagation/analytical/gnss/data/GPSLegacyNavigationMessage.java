@@ -33,16 +33,6 @@ public class GPSLegacyNavigationMessage extends LegacyNavigationMessage<GPSLegac
      */
     public static final String LNAV = "LNAV";
 
-    /** Codes on L2 channel.
-     * @since 14.0
-     */
-    private int l2Codes;
-
-    /** L2 P data flags.
-     * @since 14.0
-     */
-    private int l2PFlags;
-
     /** Constructor.
      * @param timeScales known time scales
      * @param system     satellite system to consider for interpreting week number
@@ -62,8 +52,6 @@ public class GPSLegacyNavigationMessage extends LegacyNavigationMessage<GPSLegac
      */
     public <T extends CalculusFieldElement<T>> GPSLegacyNavigationMessage(final FieldGPSLegacyNavigationMessage<T> original) {
         super(original);
-        this.l2Codes  = original.getL2Codes();
-        this.l2PFlags = original.getL2PFlags();
     }
 
     /** {@inheritDoc} */
@@ -72,38 +60,6 @@ public class GPSLegacyNavigationMessage extends LegacyNavigationMessage<GPSLegac
     public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, GPSLegacyNavigationMessage>>
         F toField(final Field<T> field) {
         return (F) new FieldGPSLegacyNavigationMessage<>(field, this);
-    }
-
-    /** Get the codes on L2 channel.
-     * @return codes on L2 channel
-     * @since 14.0
-     */
-    public int getL2Codes() {
-        return l2Codes;
-    }
-
-    /** Set the codes on L2 channel.
-     * @param l2Codes codes on L2 channel
-     * @since 14.0
-     */
-    public void setL2Codes(final int l2Codes) {
-        this.l2Codes = l2Codes;
-    }
-
-    /** Get the L2 P data flags.
-     * @return L2 P data flags
-     * @since 14.0
-     */
-    public int getL2PFlags() {
-        return l2PFlags;
-    }
-
-    /** Set the L2 P data flags.
-     * @param l2PFlags L2 P data flags
-     * @since 14.0
-     */
-    public void setL2PFlags(final int l2PFlags) {
-        this.l2PFlags = l2PFlags;
     }
 
 }

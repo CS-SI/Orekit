@@ -16,9 +16,9 @@
  */
 package org.orekit.files.rinex.navigation.writers;
 
-import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
+import org.orekit.utils.units.Unit;
 
 import java.io.IOException;
 
@@ -27,14 +27,14 @@ import java.io.IOException;
  * @since 14.0
  */
 public class QZSSLegacyNavigationMessageWriter
-    extends NavigationMessageWriter<QZSSLegacyNavigationMessage> {
+    extends LegacyNavigationMessageWriter<QZSSLegacyNavigationMessage> {
 
     /** {@inheritDoc} */
     @Override
-    public void writeMessage(final String identifier, final QZSSLegacyNavigationMessage message,
-                             final RinexNavigationHeader header, final RinexNavigationWriter writer)
-        throws IOException {
-        // TODO
+    protected void writeURA(final QZSSLegacyNavigationMessage message, final RinexNavigationWriter writer)
+        throws
+        IOException {
+        writer.writeDouble(message.getSvAccuracy(), Unit.METRE);
     }
 
 }

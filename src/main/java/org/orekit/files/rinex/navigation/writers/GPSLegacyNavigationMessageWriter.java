@@ -16,9 +16,6 @@
  */
 package org.orekit.files.rinex.navigation.writers;
 
-import org.orekit.files.rinex.navigation.MessageType;
-import org.orekit.files.rinex.navigation.RinexNavigationHeader;
-import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
 import org.orekit.utils.units.Unit;
@@ -29,68 +26,13 @@ import java.io.IOException;
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class GPSLegacyNavigationMessageWriter extends NavigationMessageWriter<GPSLegacyNavigationMessage> {
+public class GPSLegacyNavigationMessageWriter extends LegacyNavigationMessageWriter<GPSLegacyNavigationMessage> {
 
     /** {@inheritDoc} */
     @Override
-    public void writeMessage(final String identifier, final GPSLegacyNavigationMessage message,
-                             final RinexNavigationHeader header, final RinexNavigationWriter writer)
+    protected void writeURA(final GPSLegacyNavigationMessage message, final RinexNavigationWriter writer)
         throws IOException {
-
-        // TYPE / SV / MSG
-        writeTypeSvMsg(MessageType.EPH, identifier, message, header, writer);
-
-        // EPH MESSAGE LINE - 0
-        writeEphLine0( message, writer);
-
-        // EPH MESSAGE LINE - 1
-        writer.startLine();
-        writer.writeDouble(message.getIODE(), Unit.SECOND);
-        writer.writeDouble(message.getCrs(), Unit.METRE);
-        writer.writeDouble(message.getDeltaN0(), RinexNavigationParser.RAD_PER_S);
-        writer.writeDouble(message.getM0(), Unit.RADIAN);
-        writer.finishLine();
-
-        // EPH MESSAGE LINE - 2
-        writer.startLine();
-        writer.writeDouble(message.getCuc(), Unit.RADIAN);
-        writer.writeDouble(message.getE(), Unit.NONE);
-        writer.writeDouble(message.getCus(), Unit.RADIAN);
-        writer.writeDouble(message.getSqrtA(), RinexNavigationParser.SQRT_M);
-        writer.finishLine();
-
-        // EPH MESSAGE LINE - 3
-        writer.startLine();
-        writer.writeDouble(message.getTime(), Unit.SECOND);
-        writer.writeDouble(message.getCic(), Unit.RADIAN);
-        writer.writeDouble(message.getOmega0(), Unit.RADIAN);
-        writer.writeDouble(message.getCis(), Unit.RADIAN);
-        writer.finishLine();
-
-        // EPH MESSAGE LINE - 4
-        writer.startLine();
-        writer.writeDouble(message.getI0(), Unit.RADIAN);
-        writer.writeDouble(message.getCrc(), Unit.METRE);
-        writer.writeDouble(message.getPa(), Unit.RADIAN);
-        writer.writeDouble(message.getOmegaDot(), RinexNavigationParser.RAD_PER_S);
-        writer.finishLine();
-
-        // EPH MESSAGE LINE - 5
-        writer.startLine();
-        writer.writeDouble(message.getIDot(), RinexNavigationParser.RAD_PER_S);
-        writer.writeInt(message.getL2Codes());
-        writer.writeInt(message.getWeek());
-        writer.writeInt(message.getL2PFlags());
-        writer.finishLine();
-
-        // EPH MESSAGE LINE - 6
-        writer.startLine();
         writer.writeDouble(message.getSvAccuracy(), Unit.METRE);
-        writer.writeInt(message.getSvHealth());
-        writer.writeDouble(message.getTGD(), Unit.SECOND);
-        writer.writeInt(message.getIODC());
-        writer.finishLine();
-
     }
 
 }

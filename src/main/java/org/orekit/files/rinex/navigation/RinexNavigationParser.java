@@ -1688,10 +1688,9 @@ public class RinexNavigationParser {
             public void parseFifthBroadcastOrbit(final String line, final ParseInfo pi) {
                 // iDot
                 pi.qzssLNav.setIDot(pi.parseDouble1(line, RAD_PER_S));
-                // Codes on L2 channel (ignored)
-                // pi.parseField2(line, Unit.ONE)
-                // GPS week (to go with Toe)
+                pi.qzssLNav.setL2Codes(pi.parseInt2(line));
                 pi.qzssLNav.setWeek(pi.parseInt3(line));
+                pi.qzssLNav.setL2PFlags(pi.parseInt4(line));
             }
 
             /** {@inheritDoc} */
@@ -2123,7 +2122,8 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void parseFirstBroadcastOrbit(final String line, final ParseInfo pi) {
-                pi.navicLNav.setIODC(pi.parseInt1(line));
+                pi.navicLNav.setIODE(pi.parseInt1(line));
+                pi.navicLNav.setIODC(pi.navicLNav.getIODE());
                 pi.navicLNav.setCrs(pi.parseDouble2(line, Unit.METRE));
                 pi.navicLNav.setDeltaN0(pi.parseDouble3(line, RAD_PER_S));
                 pi.navicLNav.setM0(pi.parseDouble4(line, Unit.RADIAN));
@@ -2159,10 +2159,10 @@ public class RinexNavigationParser {
             /** {@inheritDoc} */
             @Override
             public void parseFifthBroadcastOrbit(final String line, final ParseInfo pi) {
-                // iDot
                 pi.navicLNav.setIDot(pi.parseDouble1(line, RAD_PER_S));
-                // NavIC week (to go with Toe)
+                pi.navicLNav.setL2Codes(pi.parseInt2(line));
                 pi.navicLNav.setWeek(pi.parseInt3(line));
+                pi.navicLNav.setL2PFlags(pi.parseInt4(line));
             }
 
             /** {@inheritDoc} */
