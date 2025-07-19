@@ -27,7 +27,7 @@ import org.orekit.files.rinex.navigation.writers.GPSCivilianNavigationMessageWri
 import org.orekit.files.rinex.navigation.writers.GPSLegacyNavigationMessageWriter;
 import org.orekit.files.rinex.navigation.writers.GalileoNavigationMessageWriter;
 import org.orekit.files.rinex.navigation.writers.GlonassCDMSMessageWriter;
-import org.orekit.files.rinex.navigation.writers.GlonassNavigationMessageWriter;
+import org.orekit.files.rinex.navigation.writers.GlonassFdmaNavigationMessageWriter;
 import org.orekit.files.rinex.navigation.writers.KlobucharMessageWriter;
 import org.orekit.files.rinex.navigation.writers.NavICKlobucharMessageWriter;
 import org.orekit.files.rinex.navigation.writers.NavICL1NVNavigationMessageWriter;
@@ -172,6 +172,13 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
         this.timeScales       = timeScales;
     }
 
+    /** Get the known time scales.
+     * @return known time scales
+     */
+    public TimeScales getTimeScales() {
+        return timeScales;
+    }
+
     /** Write a complete navigation file.
      * @param rinexNavigation Rinex navigation file to write
      * @exception IOException if an I/O error occurs.
@@ -204,7 +211,7 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
         pending.addAll(createHandlers(rinexNavigation.getNavICL1NVNavigationMessages(),
                                       new NavICL1NVNavigationMessageWriter()));
         pending.addAll(createHandlers(rinexNavigation.getGlonassNavigationMessages(),
-                                      new GlonassNavigationMessageWriter()));
+                                      new GlonassFdmaNavigationMessageWriter()));
         pending.addAll(createHandlers(rinexNavigation.getSBASNavigationMessages(),
                                       new SBASNavigationMessageWriter()));
 
@@ -347,7 +354,7 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
      * @param dtc date to write
      * @exception IOException if an I/O error occurs.
      */
-    private void writeDate(final DateTimeComponents dtc) throws IOException {
+    public void writeDate(final DateTimeComponents dtc) throws IOException {
         final DateTimeComponents rounded = dtc.roundIfNeeded(60, 0);
         final int start = getColumn();
         outputField(' ', start + 4);

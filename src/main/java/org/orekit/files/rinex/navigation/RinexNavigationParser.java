@@ -1511,9 +1511,8 @@ public class RinexNavigationParser {
                                                                    pi.timeScales.getUTC()));
 
                     // clock
-                    pi.glonassFdmaNav.setTauN(-ParsingUtils.parseDouble(line, 22, 19));
-                    pi.glonassFdmaNav.setGammaN(ParsingUtils.parseDouble(line, 41, 19));
-                    pi.glonassFdmaNav.setTime(fmod(ParsingUtils.parseDouble(line, 60, 19), Constants.JULIAN_DAY));
+                    pi.glonassFdmaNav.setTauN(Unit.SECOND.toSI(-ParsingUtils.parseDouble(line, 22, 19)));
+                    pi.glonassFdmaNav.setGammaN(Unit.NONE.toSI(ParsingUtils.parseDouble(line, 41, 19)));
 
                     // Set the ephemeris epoch (same as time of clock epoch)
                     pi.glonassFdmaNav.setDate(pi.glonassFdmaNav.getEpochToc());
