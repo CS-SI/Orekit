@@ -40,6 +40,11 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
     /** Age of Data, Clock. */
     private int aodc;
 
+    /** Health identifier.
+     * @since 14.0
+     */
+    private int satH1;
+
     /** B1/B3 Group Delay Differential (s). */
     private double tgd1;
 
@@ -74,6 +79,7 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
         setTGD1(original.getTGD1().getReal());
         setTGD2(original.getTGD2().getReal());
         setSvAccuracy(original.getSvAccuracy().getReal());
+        setSatH1(original.getSatH1());
     }
 
     /** {@inheritDoc} */
@@ -164,6 +170,22 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
      */
     public void setSvAccuracy(final double svAccuracy) {
         this.svAccuracy = svAccuracy;
+    }
+
+    /** Get the health identifier.
+     * @return health identifier
+     * @since 14.0
+     */
+    public int getSatH1() {
+        return satH1;
+    }
+
+    /** Set the health identifier.
+     * @param satH1 health identifier
+     * @since 14.0
+     */
+    public void setSatH1(final int satH1) {
+        this.satH1 = satH1;
     }
 
 }

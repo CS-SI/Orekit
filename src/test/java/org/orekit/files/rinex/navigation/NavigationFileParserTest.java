@@ -380,6 +380,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(-4.628764235181e-10, bdt.getIDot(), 1.0e-15);
         Assertions.assertEquals(790,                 bdt.getWeek());
         Assertions.assertEquals(2.000000000000e+00,  bdt.getSvAccuracy(), 1.0e-15);
+        Assertions.assertEquals(0,                   bdt.getSatH1());
         Assertions.assertEquals(1.500000000000e-09,  bdt.getTGD1(), 1.0e-15);
         Assertions.assertEquals(-1.370000000000e-08, bdt.getTGD2(), 1.0e-15);
 

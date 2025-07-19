@@ -36,6 +36,11 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
     /** Age of Data, Clock. */
     private int aodc;
 
+    /** Health identifier.
+     * @since 14.0
+     */
+    private int satH1;
+
     /** B1/B3 Group Delay Differential (s). */
     private T tgd1;
 
@@ -56,6 +61,7 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
         setTGD1(field.getZero().newInstance(original.getTGD1()));
         setTGD2(field.getZero().newInstance(original.getTGD2()));
         setSvAccuracy(field.getZero().newInstance(original.getSvAccuracy()));
+        setSatH1(original.getSatH1());
     }
 
     /** Constructor from different field instance.
@@ -71,6 +77,7 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
         setTGD1(converter.apply(original.getTGD1()));
         setTGD2(converter.apply(original.getTGD2()));
         setSvAccuracy(converter.apply(original.getSvAccuracy()));
+        setSatH1(original.getSatH1());
     }
 
     /** {@inheritDoc} */
@@ -167,6 +174,22 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
      */
     public void setSvAccuracy(final T svAccuracy) {
         this.svAccuracy = svAccuracy;
+    }
+
+    /** Get the health identifier.
+     * @return health identifier
+     * @since 14.0
+     */
+    public int getSatH1() {
+        return satH1;
+    }
+
+    /** Set the health identifier.
+     * @param satH1 health identifier
+     * @since 14.0
+     */
+    public void setSatH1(final int satH1) {
+        this.satH1 = satH1;
     }
 
 }

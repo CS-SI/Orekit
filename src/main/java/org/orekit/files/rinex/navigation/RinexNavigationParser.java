@@ -1891,7 +1891,7 @@ public class RinexNavigationParser {
             @Override
             public void parseSixthBroadcastOrbit(final String line, final ParseInfo pi) {
                 pi.beidouLNav.setSvAccuracy(pi.parseDouble1(line, Unit.METRE));
-                // TODO SatH1
+                pi.beidouLNav.setSatH1(pi.parseInt2(line));
                 pi.beidouLNav.setTGD1(pi.parseDouble3(line, Unit.SECOND));
                 pi.beidouLNav.setTGD2(pi.parseDouble4(line, Unit.SECOND));
             }
