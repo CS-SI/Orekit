@@ -30,12 +30,18 @@ import java.util.function.Function;
 public class FieldGPSCivilianNavigationMessage<T extends CalculusFieldElement<T>>
     extends FieldCivilianNavigationMessage<T, GPSCivilianNavigationMessage> {
 
+    /** Flags.
+     * @since 14.0
+     */
+    private int flags;
+
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
      * @param original regular non-field instance
      */
     public FieldGPSCivilianNavigationMessage(final Field<T> field, final GPSCivilianNavigationMessage original) {
         super(field, original);
+        setFlags(original.getFlags());
     }
 
     /** Constructor from different field instance.
@@ -46,6 +52,7 @@ public class FieldGPSCivilianNavigationMessage<T extends CalculusFieldElement<T>
     public <V extends CalculusFieldElement<V>> FieldGPSCivilianNavigationMessage(final Function<V, T> converter,
                                                                                  final FieldGPSCivilianNavigationMessage<V> original) {
         super(converter, original);
+        setFlags(original.getFlags());
     }
 
     /** {@inheritDoc} */
@@ -60,6 +67,22 @@ public class FieldGPSCivilianNavigationMessage<T extends CalculusFieldElement<T>
     public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, GPSCivilianNavigationMessage>>
         G changeField(final Function<T, U> converter) {
         return (G) new FieldGPSCivilianNavigationMessage<>(converter, this);
+    }
+
+    /** Get the flags.
+     * @return flags
+     * @since 14.0
+     */
+    public int getFlags() {
+        return flags;
+    }
+
+    /** Set the flags.
+     * @param flags flags
+     * @since 14.0
+     */
+    public void setFlags(final int flags) {
+        this.flags = flags;
     }
 
 }

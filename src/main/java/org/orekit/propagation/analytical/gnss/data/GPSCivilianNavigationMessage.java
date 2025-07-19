@@ -38,6 +38,11 @@ public class GPSCivilianNavigationMessage extends CivilianNavigationMessage<GPSC
      */
     public static final String CNV2 = "CNV2";
 
+    /** Flags.
+     * @since 14.0
+     */
+    private int flags;
+
     /** Constructor.
      * @param cnv2       indicator for CNV2 messages
      * @param timeScales known time scales
@@ -59,6 +64,7 @@ public class GPSCivilianNavigationMessage extends CivilianNavigationMessage<GPSC
      */
     public <T extends CalculusFieldElement<T>> GPSCivilianNavigationMessage(final FieldGPSCivilianNavigationMessage<T> original) {
         super(original);
+        setFlags(original.getFlags());
     }
 
     /** {@inheritDoc} */
@@ -67,6 +73,22 @@ public class GPSCivilianNavigationMessage extends CivilianNavigationMessage<GPSC
     public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, GPSCivilianNavigationMessage>>
         F toField(final Field<T> field) {
         return (F) new FieldGPSCivilianNavigationMessage<>(field, this);
+    }
+
+    /** Get the flags.
+     * @return flags
+     * @since 14.0
+     */
+    public int getFlags() {
+        return flags;
+    }
+
+    /** Set the flags.
+     * @param flags flags
+     * @since 14.0
+     */
+    public void setFlags(final int flags) {
+        this.flags = flags;
     }
 
 }

@@ -787,8 +787,6 @@ public class RinexNavigationParser {
                                pi.sto.setSbasId(sbas == null || sbas.isEmpty() ? null : SbasId.valueOf(sbas));
                                final String utc = ParsingUtils.parseString(line, 62, 18);
                                pi.sto.setUtcId(utc == null || utc.isEmpty() ? null : UtcId.parseUtcId(utc));
-
-                               // TODO is the reference date relative to one or the other time scale?
                                pi.sto.setReferenceEpoch(pi.parseDate(line, pi.sto.getSystem()));
 
                            },
@@ -1398,6 +1396,7 @@ public class RinexNavigationParser {
             private void parseTransmissionTimeLine(final String line, final ParseInfo pi) {
                 pi.gpsCNav.setTransmissionTime(pi.parseDouble1(line, Unit.SECOND));
                 pi.gpsCNav.setWeek(pi.parseInt2(line));
+                pi.gpsCNav.setFlags(pi.parseInt3(line));
                 pi.closePendingMessage();
             }
 
