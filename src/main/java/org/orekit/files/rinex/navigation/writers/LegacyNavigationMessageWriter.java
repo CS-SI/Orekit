@@ -42,7 +42,7 @@ public abstract class LegacyNavigationMessageWriter<O extends LegacyNavigationMe
         writeTypeSvMsg(MessageType.EPH, identifier, message, header, writer);
 
         // EPH MESSAGE LINE - 0
-        writeEphLine0( message, writer);
+        writeEphLine0(message, writer);
 
         // EPH MESSAGE LINE - 1
         writer.startLine();

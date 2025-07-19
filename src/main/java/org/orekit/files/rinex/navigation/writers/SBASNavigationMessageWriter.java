@@ -16,9 +16,15 @@
  */
 package org.orekit.files.rinex.navigation.writers;
 
+import org.orekit.files.rinex.navigation.MessageType;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
+import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
+import org.orekit.files.rinex.utils.BaseRinexWriter;
+import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.analytical.gnss.data.SBASNavigationMessage;
+import org.orekit.time.DateTimeComponents;
+import org.orekit.utils.units.Unit;
 
 import java.io.IOException;
 
@@ -34,7 +40,43 @@ public class SBASNavigationMessageWriter
     public void writeMessage(final String identifier, final SBASNavigationMessage message,
                              final RinexNavigationHeader header, final RinexNavigationWriter writer)
         throws IOException {
-        // TODO
+
+        // TYPE / SV / MSG
+        writeTypeSvMsg(MessageType.EPH, identifier, message, header, writer);
+
+        // EPH MESSAGE LINE - 0
+        writer.startLine();
+        writer.writeDate(message.getEpochToc(), SatelliteSystem.SBAS);
+        writer.writeDouble(message.getAGf0(), Unit.SECOND);
+        writer.writeDouble(message.getAGf1(), RinexNavigationParser.S_PER_S);
+        writer.writeDouble(message.getTime(), Unit.SECOND);
+        writer.finishLine();
+
+
+        // EPH MESSAGE LINE - 1
+        writer.startLine();
+        writer.writeDouble(message.getX(),       Unit.KILOMETRE);
+        writer.writeDouble(message.getXDot(),    RinexNavigationParser.KM_PER_S);
+        writer.writeDouble(message.getXDotDot(), RinexNavigationParser.KM_PER_S2);
+        writer.writeDouble(message.getHealth(),  Unit.NONE);
+        writer.finishLine();
+
+        // EPH MESSAGE LINE - 2
+        writer.startLine();
+        writer.writeDouble(message.getY(),       Unit.KILOMETRE);
+        writer.writeDouble(message.getYDot(),    RinexNavigationParser.KM_PER_S);
+        writer.writeDouble(message.getYDotDot(), RinexNavigationParser.KM_PER_S2);
+        writer.writeDouble(message.getURA(),     Unit.NONE);
+        writer.finishLine();
+
+        // EPH MESSAGE LINE - 3
+        writer.startLine();
+        writer.writeDouble(message.getZ(),       Unit.KILOMETRE);
+        writer.writeDouble(message.getZDot(),    RinexNavigationParser.KM_PER_S);
+        writer.writeDouble(message.getZDotDot(), RinexNavigationParser.KM_PER_S2);
+        writer.writeDouble(message.getIODN(),    Unit.NONE);
+        writer.finishLine();
+
     }
 
 }
