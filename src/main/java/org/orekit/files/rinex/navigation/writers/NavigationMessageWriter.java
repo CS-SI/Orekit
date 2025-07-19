@@ -61,7 +61,7 @@ public abstract class NavigationMessageWriter<T extends NavigationMessage> {
      * @param writer global file writer
      * @throws IOException if an I/O error occurs.
      */
-    public void writeEphLine0(final AbstractNavigationMessage message, final RinexNavigationWriter writer)
+    public void writeEphLine0(final AbstractNavigationMessage<?> message, final RinexNavigationWriter writer)
         throws IOException {
         writer.startLine();
         writer.writeDate(message.getEpochToc(), message.getSystem());

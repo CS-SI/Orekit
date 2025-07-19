@@ -46,8 +46,8 @@ public class FieldGPSLegacyNavigationMessage<T extends CalculusFieldElement<T>>
      */
     public FieldGPSLegacyNavigationMessage(final Field<T> field, final GPSLegacyNavigationMessage original) {
         super(field, original);
-        this.l2Codes  = original.getL2Codes();
-        this.l2PFlags = original.getL2PFlags();
+        setL2Codes(original.getL2Codes());
+        setL2PFlags(original.getL2PFlags());
     }
 
     /** Constructor from different field instance.
@@ -58,8 +58,8 @@ public class FieldGPSLegacyNavigationMessage<T extends CalculusFieldElement<T>>
     public <V extends CalculusFieldElement<V>> FieldGPSLegacyNavigationMessage(final Function<V, T> converter,
                                                                                final FieldGPSLegacyNavigationMessage<V> original) {
         super(converter, original);
-        this.l2Codes  = original.getL2Codes();
-        this.l2PFlags = original.getL2PFlags();
+        setL2Codes(original.getL2Codes());
+        setL2PFlags(original.getL2PFlags());
     }
 
     /** {@inheritDoc} */
