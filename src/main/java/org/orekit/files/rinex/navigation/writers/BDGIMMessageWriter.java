@@ -42,23 +42,23 @@ public class BDGIMMessageWriter
 
         // ION MESSAGE LINE - 0
         writer.writeDate(message.getTransmitTime(), message.getSystem());
-        writer.writeField(message.getAlpha()[0], RinexNavigationParser.TEC);
-        writer.writeField(message.getAlpha()[1], RinexNavigationParser.TEC);
-        writer.writeField(message.getAlpha()[2], RinexNavigationParser.TEC);
+        writer.writeDouble(message.getAlpha()[0], RinexNavigationParser.TEC);
+        writer.writeDouble(message.getAlpha()[1], RinexNavigationParser.TEC);
+        writer.writeDouble(message.getAlpha()[2], RinexNavigationParser.TEC);
         writer.finishLine();
 
         // ION MESSAGE LINE - 1
         writer.startLine();
-        writer.writeField(message.getAlpha()[3], RinexNavigationParser.TEC);
-        writer.writeField(message.getAlpha()[4], RinexNavigationParser.TEC);
-        writer.writeField(message.getAlpha()[5], RinexNavigationParser.TEC);
-        writer.writeField(message.getAlpha()[6], RinexNavigationParser.TEC);
+        writer.writeDouble(message.getAlpha()[3], RinexNavigationParser.TEC);
+        writer.writeDouble(message.getAlpha()[4], RinexNavigationParser.TEC);
+        writer.writeDouble(message.getAlpha()[5], RinexNavigationParser.TEC);
+        writer.writeDouble(message.getAlpha()[6], RinexNavigationParser.TEC);
         writer.finishLine();
 
         // ION MESSAGE LINE - 2
         writer.startLine();
-        writer.writeField(message.getAlpha()[7], RinexNavigationParser.TEC);
-        writer.writeField(message.getAlpha()[8], RinexNavigationParser.TEC);
+        writer.writeDouble(message.getAlpha()[7], RinexNavigationParser.TEC);
+        writer.writeDouble(message.getAlpha()[8], RinexNavigationParser.TEC);
         writer.finishLine();
 
     }

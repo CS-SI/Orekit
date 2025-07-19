@@ -43,55 +43,55 @@ public class NavICNeQuickNMessageWriter
 
         // ION MESSAGE LINE - 0
         writer.writeDate(message.getTransmitTime(), message.getSystem());
-        writer.writeField(message.getIOD(), Unit.ONE);
+        writer.writeDouble(message.getIOD(), Unit.ONE);
         writer.finishLine();
 
         // ION MESSAGE LINE - 1
         writer.startLine();
-        writer.writeField(message.getRegion1().getAi0(), IonosphereAij.SFU);
-        writer.writeField(message.getRegion1().getAi1(), IonosphereAij.SFU_PER_DEG);
-        writer.writeField(message.getRegion1().getAi2(), IonosphereAij.SFU_PER_DEG2);
-        writer.writeField(message.getRegion1().getIDF(), Unit.ONE);
+        writer.writeDouble(message.getRegion1().getAi0(), IonosphereAij.SFU);
+        writer.writeDouble(message.getRegion1().getAi1(), IonosphereAij.SFU_PER_DEG);
+        writer.writeDouble(message.getRegion1().getAi2(), IonosphereAij.SFU_PER_DEG2);
+        writer.writeDouble(message.getRegion1().getIDF(), Unit.ONE);
         writer.finishLine();
 
         // ION MESSAGE LINE - 2
         writer.startLine();
-        writer.writeField(message.getRegion1().getLonMin(),   Unit.DEGREE);
-        writer.writeField(message.getRegion1().getLonMax(),   Unit.DEGREE);
-        writer.writeField(message.getRegion1().getModipMin(), Unit.DEGREE);
-        writer.writeField(message.getRegion1().getModipMax(), Unit.DEGREE);
+        writer.writeDouble(message.getRegion1().getLonMin(), Unit.DEGREE);
+        writer.writeDouble(message.getRegion1().getLonMax(), Unit.DEGREE);
+        writer.writeDouble(message.getRegion1().getModipMin(), Unit.DEGREE);
+        writer.writeDouble(message.getRegion1().getModipMax(), Unit.DEGREE);
         writer.finishLine();
 
         // ION MESSAGE LINE - 3
         writer.startLine();
-        writer.writeField(message.getRegion2().getAi0(), IonosphereAij.SFU);
-        writer.writeField(message.getRegion2().getAi1(), IonosphereAij.SFU_PER_DEG);
-        writer.writeField(message.getRegion2().getAi2(), IonosphereAij.SFU_PER_DEG2);
-        writer.writeField(message.getRegion2().getIDF(), Unit.ONE);
+        writer.writeDouble(message.getRegion2().getAi0(), IonosphereAij.SFU);
+        writer.writeDouble(message.getRegion2().getAi1(), IonosphereAij.SFU_PER_DEG);
+        writer.writeDouble(message.getRegion2().getAi2(), IonosphereAij.SFU_PER_DEG2);
+        writer.writeDouble(message.getRegion2().getIDF(), Unit.ONE);
         writer.finishLine();
 
         // ION MESSAGE LINE - 4
         writer.startLine();
-        writer.writeField(message.getRegion2().getLonMin(),   Unit.DEGREE);
-        writer.writeField(message.getRegion2().getLonMax(),   Unit.DEGREE);
-        writer.writeField(message.getRegion2().getModipMin(), Unit.DEGREE);
-        writer.writeField(message.getRegion2().getModipMax(), Unit.DEGREE);
+        writer.writeDouble(message.getRegion2().getLonMin(), Unit.DEGREE);
+        writer.writeDouble(message.getRegion2().getLonMax(), Unit.DEGREE);
+        writer.writeDouble(message.getRegion2().getModipMin(), Unit.DEGREE);
+        writer.writeDouble(message.getRegion2().getModipMax(), Unit.DEGREE);
         writer.finishLine();
 
         // ION MESSAGE LINE - 5
         writer.startLine();
-        writer.writeField(message.getRegion3().getAi0(), IonosphereAij.SFU);
-        writer.writeField(message.getRegion3().getAi1(), IonosphereAij.SFU_PER_DEG);
-        writer.writeField(message.getRegion3().getAi2(), IonosphereAij.SFU_PER_DEG2);
-        writer.writeField(message.getRegion3().getIDF(), Unit.ONE);
+        writer.writeDouble(message.getRegion3().getAi0(), IonosphereAij.SFU);
+        writer.writeDouble(message.getRegion3().getAi1(), IonosphereAij.SFU_PER_DEG);
+        writer.writeDouble(message.getRegion3().getAi2(), IonosphereAij.SFU_PER_DEG2);
+        writer.writeDouble(message.getRegion3().getIDF(), Unit.ONE);
         writer.finishLine();
 
         // ION MESSAGE LINE - 6
         writer.startLine();
-        writer.writeField(message.getRegion3().getLonMin(),   Unit.DEGREE);
-        writer.writeField(message.getRegion3().getLonMax(),   Unit.DEGREE);
-        writer.writeField(message.getRegion3().getModipMin(), Unit.DEGREE);
-        writer.writeField(message.getRegion3().getModipMax(), Unit.DEGREE);
+        writer.writeDouble(message.getRegion3().getLonMin(), Unit.DEGREE);
+        writer.writeDouble(message.getRegion3().getLonMax(), Unit.DEGREE);
+        writer.writeDouble(message.getRegion3().getModipMin(), Unit.DEGREE);
+        writer.writeDouble(message.getRegion3().getModipMax(), Unit.DEGREE);
         writer.finishLine();
 
     }

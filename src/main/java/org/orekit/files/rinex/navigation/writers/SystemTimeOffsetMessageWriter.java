@@ -52,10 +52,10 @@ public class SystemTimeOffsetMessageWriter
 
         // STO MESSAGE LINE - 1
         writer.startLine();
-        writer.writeField(message.getTransmissionTime(), Unit.SECOND);
-        writer.writeField(message.getA0(),               Unit.SECOND);
-        writer.writeField(message.getA1(),               RinexNavigationParser.S_PER_S);
-        writer.writeField(message.getA2(),               RinexNavigationParser.S_PER_S2);
+        writer.writeDouble(message.getTransmissionTime(), Unit.SECOND);
+        writer.writeDouble(message.getA0(), Unit.SECOND);
+        writer.writeDouble(message.getA1(), RinexNavigationParser.S_PER_S);
+        writer.writeDouble(message.getA2(), RinexNavigationParser.S_PER_S2);
         writer.finishLine();
 
     }

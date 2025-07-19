@@ -43,28 +43,28 @@ public class NavICKlobucharMessageWriter
 
         // ION MESSAGE LINE - 0
         writer.writeDate(message.getTransmitTime(), message.getSystem());
-        writer.writeField(message.getIOD(), Unit.ONE);
+        writer.writeDouble(message.getIOD(), Unit.ONE);
         writer.finishLine();
 
         // ION MESSAGE LINE - 1
         writer.startLine();
-        writer.writeField(message.getAlpha()[0], IonosphereKlobucharMessage.S_PER_SC_N0);
-        writer.writeField(message.getAlpha()[1], IonosphereKlobucharMessage.S_PER_SC_N1);
-        writer.writeField(message.getAlpha()[2], IonosphereKlobucharMessage.S_PER_SC_N2);
-        writer.writeField(message.getAlpha()[3], IonosphereKlobucharMessage.S_PER_SC_N3);
+        writer.writeDouble(message.getAlpha()[0], IonosphereKlobucharMessage.S_PER_SC_N0);
+        writer.writeDouble(message.getAlpha()[1], IonosphereKlobucharMessage.S_PER_SC_N1);
+        writer.writeDouble(message.getAlpha()[2], IonosphereKlobucharMessage.S_PER_SC_N2);
+        writer.writeDouble(message.getAlpha()[3], IonosphereKlobucharMessage.S_PER_SC_N3);
         writer.finishLine();
-        writer.writeField(message.getBeta()[0],  IonosphereKlobucharMessage.S_PER_SC_N0);
-        writer.writeField(message.getBeta()[1],  IonosphereKlobucharMessage.S_PER_SC_N1);
-        writer.writeField(message.getBeta()[2],  IonosphereKlobucharMessage.S_PER_SC_N2);
-        writer.writeField(message.getBeta()[3],  IonosphereKlobucharMessage.S_PER_SC_N3);
+        writer.writeDouble(message.getBeta()[0], IonosphereKlobucharMessage.S_PER_SC_N0);
+        writer.writeDouble(message.getBeta()[1], IonosphereKlobucharMessage.S_PER_SC_N1);
+        writer.writeDouble(message.getBeta()[2], IonosphereKlobucharMessage.S_PER_SC_N2);
+        writer.writeDouble(message.getBeta()[3], IonosphereKlobucharMessage.S_PER_SC_N3);
         writer.finishLine();
 
         // ION MESSAGE LINE - 2
         writer.startLine();
-        writer.writeField(message.getLonMin(),   Unit.DEGREE);
-        writer.writeField(message.getLonMax(),   Unit.DEGREE);
-        writer.writeField(message.getModipMin(), Unit.DEGREE);
-        writer.writeField(message.getModipMax(), Unit.DEGREE);
+        writer.writeDouble(message.getLonMin(), Unit.DEGREE);
+        writer.writeDouble(message.getLonMax(), Unit.DEGREE);
+        writer.writeDouble(message.getModipMin(), Unit.DEGREE);
+        writer.writeDouble(message.getModipMax(), Unit.DEGREE);
         writer.finishLine();
 
     }

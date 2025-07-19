@@ -42,9 +42,9 @@ public class GlonassCDMSMessageWriter
 
         // MESSAGE LINE - 0
         writer.writeDate(message.getTransmitTime(), message.getSystem());
-        writer.writeField(message.getCA(),    Unit.ONE);
-        writer.writeField(message.getCF107(), Unit.ONE);
-        writer.writeField(message.getCAP(),   Unit.ONE);
+        writer.writeDouble(message.getCA(), Unit.ONE);
+        writer.writeDouble(message.getCF107(), Unit.ONE);
+        writer.writeDouble(message.getCAP(), Unit.ONE);
         writer.finishLine();
 
     }

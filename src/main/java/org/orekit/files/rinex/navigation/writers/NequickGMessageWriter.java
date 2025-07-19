@@ -42,14 +42,14 @@ public class NequickGMessageWriter extends NavigationMessageWriter<IonosphereNeq
 
         // ION MESSAGE LINE - 0
         writer.writeDate(message.getTransmitTime(), message.getSystem());
-        writer.writeField(message.getAij().getAi0(), IonosphereAij.SFU);
-        writer.writeField(message.getAij().getAi1(), IonosphereAij.SFU_PER_DEG);
-        writer.writeField(message.getAij().getAi2(), IonosphereAij.SFU_PER_DEG2);
+        writer.writeDouble(message.getAij().getAi0(), IonosphereAij.SFU);
+        writer.writeDouble(message.getAij().getAi1(), IonosphereAij.SFU_PER_DEG);
+        writer.writeDouble(message.getAij().getAi2(), IonosphereAij.SFU_PER_DEG2);
         writer.finishLine();
 
         // ION MESSAGE LINE - 1
         writer.startLine();
-        writer.writeField(message.getFlags(), Unit.ONE);
+        writer.writeDouble(message.getFlags(), Unit.ONE);
         writer.finishLine();
 
     }

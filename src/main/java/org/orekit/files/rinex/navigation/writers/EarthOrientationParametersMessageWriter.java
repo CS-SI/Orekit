@@ -43,25 +43,25 @@ public class EarthOrientationParametersMessageWriter
 
         // EOP MESSAGE LINE - 0
         writer.writeDate(message.getReferenceEpoch(), message.getSystem());
-        writer.writeField(message.getXp(),       Unit.ARC_SECOND);
-        writer.writeField(message.getXpDot(),    RinexNavigationParser.AS_PER_DAY);
-        writer.writeField(message.getXpDotDot(), RinexNavigationParser.AS_PER_DAY2);
+        writer.writeDouble(message.getXp(), Unit.ARC_SECOND);
+        writer.writeDouble(message.getXpDot(), RinexNavigationParser.AS_PER_DAY);
+        writer.writeDouble(message.getXpDotDot(), RinexNavigationParser.AS_PER_DAY2);
         writer.finishLine();
 
         // EOP MESSAGE LINE - 1
         writer.startLine();
         writer.outputField(' ', 23);
-        writer.writeField(message.getYp(),       Unit.ARC_SECOND);
-        writer.writeField(message.getYpDot(),    RinexNavigationParser.AS_PER_DAY);
-        writer.writeField(message.getYpDotDot(), RinexNavigationParser.AS_PER_DAY2);
+        writer.writeDouble(message.getYp(), Unit.ARC_SECOND);
+        writer.writeDouble(message.getYpDot(), RinexNavigationParser.AS_PER_DAY);
+        writer.writeDouble(message.getYpDotDot(), RinexNavigationParser.AS_PER_DAY2);
         writer.finishLine();
 
         // EOP MESSAGE LINE - 2
         writer.startLine();
-        writer.writeField(message.getTransmissionTime(), Unit.SECOND);
-        writer.writeField(message.getDut1(),             Unit.SECOND);
-        writer.writeField(message.getDut1Dot(),          RinexNavigationParser.S_PER_S);
-        writer.writeField(message.getDut1DotDot(),       RinexNavigationParser.S_PER_S2);
+        writer.writeDouble(message.getTransmissionTime(), Unit.SECOND);
+        writer.writeDouble(message.getDut1(), Unit.SECOND);
+        writer.writeDouble(message.getDut1Dot(), RinexNavigationParser.S_PER_S);
+        writer.writeDouble(message.getDut1DotDot(), RinexNavigationParser.S_PER_S2);
         writer.finishLine();
 
     }

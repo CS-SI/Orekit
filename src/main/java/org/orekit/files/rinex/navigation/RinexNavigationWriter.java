@@ -184,7 +184,7 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
         // prepare chronological iteration
         final List<PendingMessages<?>> pending = new ArrayList<>();
 
-        // messages associated with satellites
+        // ephemeris messages
         pending.addAll(createHandlers(rinexNavigation.getGPSLegacyNavigationMessages(),
                                       new GPSLegacyNavigationMessageWriter()));
         pending.addAll(createHandlers(rinexNavigation.getGPSCivilianNavigationMessages(),
@@ -208,11 +208,15 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
         pending.addAll(createHandlers(rinexNavigation.getSBASNavigationMessages(),
                                       new SBASNavigationMessageWriter()));
 
-        // messages independent of satellites
+        // STO messages
         pending.add(new PendingMessages<>(STO_IDENTIFIER, new SystemTimeOffsetMessageWriter(),
                                           rinexNavigation.getSystemTimeOffsets()));
+
+        // EOP messages
         pending.add(new PendingMessages<>(EOP_IDENTIFIER, new EarthOrientationParametersMessageWriter(),
                                           rinexNavigation.getEarthOrientationParameters()));
+
+        // ION messages
         pending.add(new PendingMessages<>(KLOBUCHAR_IDENTIFIER, new KlobucharMessageWriter(),
                                           rinexNavigation.getKlobucharMessages()));
         pending.add(new PendingMessages<>(NEQUICK_IDENTIFIER, new NequickGMessageWriter(),
@@ -361,7 +365,7 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
                     (int) FastMath.round(rounded.getTime().getSecond()), start + 23);
     }
 
-    /** Write a numeric field.
+    /** Write a double field.
      * <p>
      * The field will span over 19 characters.
      * </p>
@@ -369,8 +373,19 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
      * @param unit unit to use
      * @exception IOException if an I/O error occurs.
      */
-    public void writeField(final double value, final Unit unit) throws IOException {
+    public void writeDouble(final double value, final Unit unit) throws IOException {
         outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, unit.fromSI(value), getColumn() + 19);
+    }
+
+    /** Write an integer field.
+     * <p>
+     * The field will span over 19 characters.
+     * </p>
+     * @param value field value to write, in SI units
+     * @exception IOException if an I/O error occurs.
+     */
+    public void writeInt(final int value) throws IOException {
+        outputField(BaseRinexWriter.NINETEEN_SCIENTIFIC_FLOAT, value, getColumn() + 19);
     }
 
     /** Start (indent) a new line.
