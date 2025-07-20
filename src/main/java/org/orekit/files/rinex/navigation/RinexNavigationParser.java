@@ -474,13 +474,11 @@ public class RinexNavigationParser {
 
         /** Parser for system time offset message type. */
         STO_TYPE((header, line) -> MessageType.STO.matches(line),
-                 pi -> {
-                     pi.setSto(new SystemTimeOffsetMessage(SatelliteSystem.
-                                                           parseSatelliteSystem(ParsingUtils.parseString(pi.getLine(), 6, 1)),
-                                                           ParsingUtils.parseInt(pi.getLine(), 7, 2),
-                                                           ParsingUtils.parseString(pi.getLine(), 10, 4),
-                                                           ParsingUtils.parseString(pi.getLine(), 15, 4)));
-                 },
+                 pi -> pi.setSto(new SystemTimeOffsetMessage(SatelliteSystem.
+                                                             parseSatelliteSystem(ParsingUtils.parseString(pi.getLine(), 6, 1)),
+                                                             ParsingUtils.parseInt(pi.getLine(), 7, 2),
+                                                             ParsingUtils.parseString(pi.getLine(), 10, 4),
+                                                             ParsingUtils.parseString(pi.getLine(), 15, 4))),
                  pi -> Collections.singleton(STO_SV_EPOCH_CLOCK)),
 
         /** Parser for Earth orientation parameter message model. */
@@ -515,13 +513,11 @@ public class RinexNavigationParser {
 
         /** Parser for Earth orientation parameter message type. */
         EOP_TYPE((header, line) -> MessageType.EOP.matches(line),
-                 pi -> {
-                     pi.setEop(new EarthOrientationParameterMessage(SatelliteSystem.
-                                                                    parseSatelliteSystem(ParsingUtils.parseString(pi.getLine(), 6, 1)),
-                                                                    ParsingUtils.parseInt(pi.getLine(), 7, 2),
-                                                                    ParsingUtils.parseString(pi.getLine(), 10, 4),
-                                                                    ParsingUtils.parseString(pi.getLine(), 15, 4)));
-                 },
+                 pi -> pi.setEop(new EarthOrientationParameterMessage(SatelliteSystem.
+                                                                      parseSatelliteSystem(ParsingUtils.parseString(pi.getLine(), 6, 1)),
+                                                                      ParsingUtils.parseInt(pi.getLine(), 7, 2),
+                                                                      ParsingUtils.parseString(pi.getLine(), 10, 4),
+                                                                      ParsingUtils.parseString(pi.getLine(), 15, 4))),
                  pi -> Collections.singleton(EOP_LINE_0)),
 
         /** Parser for ionosphere Klobuchar message model. */
