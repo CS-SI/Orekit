@@ -141,7 +141,7 @@ public class BeidouCnv123Parser extends MessageLineParser {
                 message.setTgdB1Cp(parseInfo.parseDouble3(Unit.SECOND));
                 message.setTgdB2ap(parseInfo.parseDouble4(Unit.SECOND));
         } else {
-            parseSismaiHealthIntegrity(parseInfo.getLine(), parseInfo);
+            parseSismaiHealthIntegrity();
         }
     }
 
@@ -152,7 +152,7 @@ public class BeidouCnv123Parser extends MessageLineParser {
                 message.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
             parseInfo.closePendingMessage();
         } else {
-            parseSismaiHealthIntegrity(parseInfo.getLine(), parseInfo);
+            parseSismaiHealthIntegrity();
         }
     }
 
@@ -174,10 +174,8 @@ public class BeidouCnv123Parser extends MessageLineParser {
 
     /**
      * Parse the SISMAI/Health/integrity line.
-     * @param line line to read
-     * @param pi holder for transient data
      */
-    private void parseSismaiHealthIntegrity(final String line, final ParseInfo pi) {
+    private void parseSismaiHealthIntegrity() {
             message.setSismai(parseInfo.parseInt1());
             message.setHealth(parseInfo.parseInt2());
             message.setIntegrityFlags(parseInfo.parseInt3());
