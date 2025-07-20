@@ -17,6 +17,7 @@
 package org.orekit.files.rinex.navigation.parsers;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.files.rinex.navigation.MessageType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.propagation.analytical.gnss.data.NavICLegacyNavigationMessage;
@@ -27,7 +28,7 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class NavICLnavParser extends SatelliteSystemLineParser {
+public class NavICLnavParser extends MessageLineParser {
 
     /** URA index to URA mapping (table 23 of NavIC ICD). */
     // CHECKSTYLE: stop Indentation check
@@ -50,20 +51,21 @@ public class NavICLnavParser extends SatelliteSystemLineParser {
      * @param message container for navigation message
      */
     NavICLnavParser(final ParseInfo parseInfo, final NavICLegacyNavigationMessage message) {
+        super(MessageType.ORBIT);
         this.parseInfo = parseInfo;
         this.message   = message;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void parseSvEpochSvClockLine() {
+    public void parseLine00() {
         parseSvEpochSvClockLine(parseInfo.getLine(), parseInfo.getTimeScales().getNavIC(),
                                 parseInfo, message);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void parseFirstBroadcastOrbit() {
+    public void parseLine01() {
         message.setIODE(parseInfo.parseInt1());
         message.setIODC(message.getIODE());
         message.setCrs(parseInfo.parseDouble2(Unit.METRE));
@@ -73,7 +75,7 @@ public class NavICLnavParser extends SatelliteSystemLineParser {
 
     /** {@inheritDoc} */
     @Override
-    public void parseSecondBroadcastOrbit() {
+    public void parseLine02() {
         message.setCuc(parseInfo.parseDouble1(Unit.RADIAN));
         message.setE(parseInfo.parseDouble2(Unit.NONE));
         message.setCus(parseInfo.parseDouble3(Unit.RADIAN));
@@ -82,7 +84,7 @@ public class NavICLnavParser extends SatelliteSystemLineParser {
 
     /** {@inheritDoc} */
     @Override
-    public void parseThirdBroadcastOrbit() {
+    public void parseLine03() {
         message.setTime(parseInfo.parseDouble1(Unit.SECOND));
         message.setCic(parseInfo.parseDouble2(Unit.RADIAN));
         message.setOmega0(parseInfo.parseDouble3(Unit.RADIAN));
@@ -91,7 +93,7 @@ public class NavICLnavParser extends SatelliteSystemLineParser {
 
     /** {@inheritDoc} */
     @Override
-    public void parseFourthBroadcastOrbit() {
+    public void parseLine04() {
         message.setI0(parseInfo.parseDouble1(Unit.RADIAN));
         message.setCrc(parseInfo.parseDouble2(Unit.METRE));
         message.setPa(parseInfo.parseDouble3(Unit.RADIAN));
@@ -100,7 +102,7 @@ public class NavICLnavParser extends SatelliteSystemLineParser {
 
     /** {@inheritDoc} */
     @Override
-    public void parseFifthBroadcastOrbit() {
+    public void parseLine05() {
         message.setIDot(parseInfo.parseDouble1(RinexNavigationParser.RAD_PER_S));
         message.setL2Codes(parseInfo.parseInt2());
         message.setWeek(parseInfo.parseInt3());
@@ -109,7 +111,7 @@ public class NavICLnavParser extends SatelliteSystemLineParser {
 
     /** {@inheritDoc} */
     @Override
-    public void parseSixthBroadcastOrbit() {
+    public void parseLine06() {
         final int uraIndex = parseInfo.parseInt1();
         message.setSvAccuracy(NAVIC_URA[FastMath.min(uraIndex, NAVIC_URA.length - 1)]);
         message.setSvHealth(parseInfo.parseInt2());
@@ -118,7 +120,7 @@ public class NavICLnavParser extends SatelliteSystemLineParser {
 
     /** {@inheritDoc} */
     @Override
-    public void parseSeventhBroadcastOrbit() {
+    public void parseLine07() {
         message.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
         parseInfo.closePendingMessage();
     }

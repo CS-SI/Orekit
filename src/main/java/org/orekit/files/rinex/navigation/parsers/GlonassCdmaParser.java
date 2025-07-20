@@ -16,14 +16,19 @@
  */
 package org.orekit.files.rinex.navigation.parsers;
 
+import org.orekit.files.rinex.navigation.MessageType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 
 /** Parser for Glonass CDMA.
+ * <p>
+ * This parser is not implemented yet!
+ * It just ignores all lines
+ * </p>
  * @author Bryan Cazabonne
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class GlonassCdmaParser extends SatelliteSystemLineParser {
+public class GlonassCdmaParser extends MessageLineParser {
 
     /** Container for parsing data. */
     private final ParseInfo parseInfo;
@@ -32,52 +37,53 @@ public class GlonassCdmaParser extends SatelliteSystemLineParser {
      * @param parseInfo container for parsing data
      */
     GlonassCdmaParser(final ParseInfo parseInfo) {
+        super(MessageType.ORBIT);
         this.parseInfo = parseInfo;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void parseSvEpochSvClockLine() {
+    public void parseLine00() {
     }
 
     /** {@inheritDoc} */
     @Override
-    public void parseFirstBroadcastOrbit() {
+    public void parseLine01() {
     }
 
     /** {@inheritDoc} */
     @Override
-    public void parseSecondBroadcastOrbit() {
+    public void parseLine02() {
     }
 
     /** {@inheritDoc} */
     @Override
-    public void parseThirdBroadcastOrbit() {
+    public void parseLine03() {
     }
 
     /** {@inheritDoc} */
     @Override
-    public void parseFourthBroadcastOrbit() {
+    public void parseLine04() {
     }
 
     /** {@inheritDoc} */
     @Override
-    public void parseFifthBroadcastOrbit() {
+    public void parseLine05() {
     }
 
     /** {@inheritDoc} */
     @Override
-    public void parseSixthBroadcastOrbit() {
+    public void parseLine06() {
     }
 
     /** {@inheritDoc} */
     @Override
-    public void parseSeventhBroadcastOrbit() {
+    public void parseLine07() {
     }
 
     /** {@inheritDoc} */
     @Override
-    public void parseEighthBroadcastOrbit() {
+    public void parseLine08() {
         parseInfo.closePendingMessage();
     }
 

@@ -17,6 +17,7 @@
 package org.orekit.files.rinex.navigation.parsers;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.files.rinex.navigation.MessageType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.utils.ParsingUtils;
@@ -29,7 +30,7 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class SbasParser extends SatelliteSystemLineParser  {
+public class SbasParser extends MessageLineParser {
 
     /** Container for parsing data. */
     private final ParseInfo parseInfo;
@@ -42,13 +43,14 @@ public class SbasParser extends SatelliteSystemLineParser  {
      * @param message container for navigation message
      */
     SbasParser(final ParseInfo parseInfo, final SBASNavigationMessage message) {
+        super(MessageType.ORBIT);
         this.parseInfo = parseInfo;
         this.message   = message;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void parseSvEpochSvClockLine() {
+    public void parseLine00() {
 
         // parse PRN
         message.setPRN(ParsingUtils.parseInt(parseInfo.getLine(), 1, 2));
@@ -71,7 +73,7 @@ public class SbasParser extends SatelliteSystemLineParser  {
 
     /** {@inheritDoc} */
     @Override
-    public void parseFirstBroadcastOrbit() {
+    public void parseLine01() {
         message.setX(parseInfo.parseDouble1(RinexNavigationParser.KM));
         message.setXDot(parseInfo.parseDouble2(RinexNavigationParser.KM_PER_S));
         message.setXDotDot(parseInfo.parseDouble3(RinexNavigationParser.KM_PER_S2));
@@ -80,7 +82,7 @@ public class SbasParser extends SatelliteSystemLineParser  {
 
     /** {@inheritDoc} */
     @Override
-    public void parseSecondBroadcastOrbit() {
+    public void parseLine02() {
         message.setY(parseInfo.parseDouble1(RinexNavigationParser.KM));
         message.setYDot(parseInfo.parseDouble2(RinexNavigationParser.KM_PER_S));
         message.setYDotDot(parseInfo.parseDouble3(RinexNavigationParser.KM_PER_S2));
@@ -89,7 +91,7 @@ public class SbasParser extends SatelliteSystemLineParser  {
 
     /** {@inheritDoc} */
     @Override
-    public void parseThirdBroadcastOrbit() {
+    public void parseLine03() {
         message.setZ(parseInfo.parseDouble1(RinexNavigationParser.KM));
         message.setZDot(parseInfo.parseDouble2(RinexNavigationParser.KM_PER_S));
         message.setZDotDot(parseInfo.parseDouble3(RinexNavigationParser.KM_PER_S2));

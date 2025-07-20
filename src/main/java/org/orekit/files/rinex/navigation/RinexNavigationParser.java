@@ -33,6 +33,7 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.navigation.parsers.GlonassFdmaParser;
+import org.orekit.files.rinex.navigation.parsers.MessageLineParser;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.files.rinex.section.CommonLabel;
 import org.orekit.files.rinex.utils.ParsingUtils;
@@ -409,7 +410,7 @@ public class RinexNavigationParser {
         NAVIGATION_SV_EPOCH_CLOCK_RINEX_2((header, line) -> true,
                                           pi -> {
                                               pi.setSystemLineParser(pi.getHeader().getSatelliteSystem(), null);
-                                              pi.getSystemLineParser().parseSvEpochSvClockLine();
+                                              pi.getMessageLineParser().parseLine00();
                                           },
                                           LineParser::navigationNext),
 
@@ -423,7 +424,7 @@ public class RinexNavigationParser {
                                       }
 
                                       // Read first line
-                                      pi.getSystemLineParser().parseSvEpochSvClockLine();
+                                      pi.getMessageLineParser().parseLine00();
 
                                   },
                                   LineParser::navigationNext),
@@ -438,10 +439,10 @@ public class RinexNavigationParser {
                  },
                  pi -> Collections.singleton(NAVIGATION_SV_EPOCH_CLOCK)),
 
-        /** Parser for broadcast orbit. */
-        BROADCAST_ORBIT((header, line) -> MessageType.ORBIT.matches(line),
-                        ParseInfo::parseMessageLine,
-                        LineParser::navigationNext),
+        /** Parser for message lines. */
+        MESSAGE_LINE((header, line) -> MessageType.ORBIT.matches(line),
+                     ParseInfo::parseMessageLine,
+                     LineParser::navigationNext),
 
         /** Parser for system time offset message model. */
         STO_LINE_1((header, line) -> true,
@@ -823,8 +824,9 @@ public class RinexNavigationParser {
          * @return allowed parsers for next line
          */
         private static Iterable<LineParser> navigationNext(final ParseInfo parseInfo) {
-            if (parseInfo.getSystemLineParser() != null) {
-                if (parseInfo.getSystemLineParser() instanceof GlonassFdmaParser) {
+            final MessageLineParser mlp = parseInfo.getMessageLineParser();
+            if (mlp != null && mlp.getType() == MessageType.ORBIT) {
+                if (mlp instanceof GlonassFdmaParser) {
                     // workaround for some invalid files that should nevertheless be parsed
                     // we have encountered in the wild merged files that claimed to be in 3.05 version
                     // and hence needed at least 4 broadcast GLONASS orbit lines (the fourth line was
@@ -832,16 +834,16 @@ public class RinexNavigationParser {
                     // merged from files in 3.04 or earlier format. In order to parse these files,
                     // we accept after the third line either another broadcast orbit line or a new message
                     if (parseInfo.getMessageLineNumber() < 3) {
-                        return Collections.singleton(BROADCAST_ORBIT);
+                        return Collections.singleton(MESSAGE_LINE);
                     } else {
                         if (parseInfo.getHeader().getFormatVersion() < 4) {
-                            return Arrays.asList(BROADCAST_ORBIT, NAVIGATION_SV_EPOCH_CLOCK);
+                            return Arrays.asList(MESSAGE_LINE, NAVIGATION_SV_EPOCH_CLOCK);
                         } else {
-                            return Arrays.asList(BROADCAST_ORBIT, EPH_TYPE, STO_TYPE, EOP_TYPE, IONO_TYPE);
+                            return Arrays.asList(MESSAGE_LINE, EPH_TYPE, STO_TYPE, EOP_TYPE, IONO_TYPE);
                         }
                     }
                 } else {
-                    return Collections.singleton(BROADCAST_ORBIT);
+                    return Collections.singleton(MESSAGE_LINE);
                 }
             } else if (parseInfo.getHeader().getFormatVersion() < 3) {
                 return Collections.singleton(NAVIGATION_SV_EPOCH_CLOCK_RINEX_2);

@@ -18,6 +18,7 @@ package org.orekit.files.rinex.navigation.parsers;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.rinex.navigation.MessageType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.gnss.PredefinedGnssSignal;
@@ -30,7 +31,7 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class BeidouCnv123Parser extends SatelliteSystemLineParser {
+public class BeidouCnv123Parser extends MessageLineParser {
 
     /** Container for parsing data. */
     private final ParseInfo parseInfo;
@@ -43,20 +44,21 @@ public class BeidouCnv123Parser extends SatelliteSystemLineParser {
      * @param message container for navigation message
      */
     BeidouCnv123Parser(final ParseInfo parseInfo, BeidouCivilianNavigationMessage message) {
+        super(MessageType.ORBIT);
         this.parseInfo = parseInfo;
         this.message   = message;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void parseSvEpochSvClockLine() {
+    public void parseLine00() {
         parseSvEpochSvClockLine(parseInfo.getLine(), parseInfo.getTimeScales().getBDT(),
                                 parseInfo,     message);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void parseFirstBroadcastOrbit() {
+    public void parseLine01() {
             message.setADot(parseInfo.parseDouble1(RinexNavigationParser.M_PER_S));
             message.setCrs(parseInfo.parseDouble2(Unit.METRE));
             message.setDeltaN0(parseInfo.parseDouble3(RinexNavigationParser.RAD_PER_S));
@@ -65,7 +67,7 @@ public class BeidouCnv123Parser extends SatelliteSystemLineParser {
 
     /** {@inheritDoc} */
     @Override
-    public void parseSecondBroadcastOrbit() {
+    public void parseLine02() {
             message.setCuc(parseInfo.parseDouble1(Unit.RADIAN));
             message.setE(parseInfo.parseDouble2(Unit.NONE));
             message.setCus(parseInfo.parseDouble3(Unit.RADIAN));
@@ -74,7 +76,7 @@ public class BeidouCnv123Parser extends SatelliteSystemLineParser {
 
     /** {@inheritDoc} */
     @Override
-    public void parseThirdBroadcastOrbit() {
+    public void parseLine03() {
             message.setTime(parseInfo.parseDouble1(Unit.SECOND));
             message.setCic(parseInfo.parseDouble2(Unit.RADIAN));
             message.setOmega0(parseInfo.parseDouble3(Unit.RADIAN));
@@ -83,7 +85,7 @@ public class BeidouCnv123Parser extends SatelliteSystemLineParser {
 
     /** {@inheritDoc} */
     @Override
-    public void parseFourthBroadcastOrbit() {
+    public void parseLine04() {
             message.setI0(parseInfo.parseDouble1(Unit.RADIAN));
             message.setCrc(parseInfo.parseDouble2(Unit.METRE));
             message.setPa(parseInfo.parseDouble3(Unit.RADIAN));
@@ -92,7 +94,7 @@ public class BeidouCnv123Parser extends SatelliteSystemLineParser {
 
     /** {@inheritDoc} */
     @Override
-    public void parseFifthBroadcastOrbit() {
+    public void parseLine05() {
             message.setIDot(parseInfo.parseDouble1(RinexNavigationParser.RAD_PER_S));
             message.setDeltaN0Dot(parseInfo.parseDouble2(RinexNavigationParser.RAD_PER_S2));
         switch (parseInfo.parseInt3()) {
@@ -118,7 +120,7 @@ public class BeidouCnv123Parser extends SatelliteSystemLineParser {
 
     /** {@inheritDoc} */
     @Override
-    public void parseSixthBroadcastOrbit() {
+    public void parseLine06() {
             message.setSisaiOe(parseInfo.parseInt1());
             message.setSisaiOcb(parseInfo.parseInt2());
             message.setSisaiOc1(parseInfo.parseInt3());
@@ -127,7 +129,7 @@ public class BeidouCnv123Parser extends SatelliteSystemLineParser {
 
     /** {@inheritDoc} */
     @Override
-    public void parseSeventhBroadcastOrbit() {
+    public void parseLine07() {
         if (    message.getRadioWave().closeTo(PredefinedGnssSignal.B1C)) {
                 message.setIscB1CD(parseInfo.parseDouble1(Unit.SECOND));
             // field 2 is spare
@@ -145,7 +147,7 @@ public class BeidouCnv123Parser extends SatelliteSystemLineParser {
 
     /** {@inheritDoc} */
     @Override
-    public void parseEighthBroadcastOrbit() {
+    public void parseLine08() {
         if (    message.getRadioWave().closeTo(PredefinedGnssSignal.B2B)) {
                 message.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
             parseInfo.closePendingMessage();
@@ -156,7 +158,7 @@ public class BeidouCnv123Parser extends SatelliteSystemLineParser {
 
     /** {@inheritDoc} */
     @Override
-    public void parseNinthBroadcastOrbit() {
+    public void parseLine09() {
             message.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
         // field 2 is spare
         // field 3 is spare

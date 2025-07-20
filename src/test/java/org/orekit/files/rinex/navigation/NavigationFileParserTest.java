@@ -17,11 +17,6 @@
 package org.orekit.files.rinex.navigation;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -38,7 +33,7 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
-import org.orekit.files.rinex.navigation.parsers.SatelliteSystemLineParser;
+import org.orekit.files.rinex.navigation.parsers.MessageLineParser;
 import org.orekit.files.rinex.utils.RinexFileType;
 import org.orekit.frames.Frames;
 import org.orekit.frames.FramesFactory;
@@ -2273,39 +2268,39 @@ public class NavigationFileParserTest {
         // create ParseInfo
         final ParseInfo parseInfo = new ParseInfo("", TimeScalesFactory.getTimeScales());
         parseInfo.setSystemLineParser(SatelliteSystem.SBAS, null);
-        SatelliteSystemLineParser lineParser = parseInfo.getSystemLineParser();
+        MessageLineParser lineParser = parseInfo.getMessageLineParser();
         try {
-            lineParser.parseFourthBroadcastOrbit();
+            lineParser.parseLine04();
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitInternalError oe) {
             // expected
         }
         try {
-            lineParser.parseFifthBroadcastOrbit();
+            lineParser.parseLine05();
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitInternalError oe) {
             // expected
         }
         try {
-            lineParser.parseSixthBroadcastOrbit();
+            lineParser.parseLine06();
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitInternalError oe) {
             // expected
         }
         try {
-            lineParser.parseSeventhBroadcastOrbit();
+            lineParser.parseLine07();
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitInternalError oe) {
             // expected
         }
         try {
-            lineParser.parseEighthBroadcastOrbit();
+            lineParser.parseLine08();
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitInternalError oe) {
             // expected
         }
         try {
-            lineParser.parseNinthBroadcastOrbit();
+            lineParser.parseLine09();
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitInternalError oe) {
             // expected

@@ -17,6 +17,7 @@
 package org.orekit.files.rinex.navigation.parsers;
 
 import org.orekit.errors.OrekitInternalError;
+import org.orekit.files.rinex.navigation.MessageType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.utils.ParsingUtils;
@@ -29,7 +30,24 @@ import org.orekit.utils.units.Unit;
  * @author Bryan Cazabonne
  * @author Luc Maisonobe
  */
-public abstract class SatelliteSystemLineParser {
+public abstract class MessageLineParser {
+
+    /** Type of the message being parsed. */
+    private final MessageType type;
+
+    /** Simple constructor.
+     * @param type type of the message being parsed
+     */
+    protected MessageLineParser(final MessageType type) {
+        this.type = type;
+    }
+
+    /** Get the type of the message being parsed.
+     * @return type of the message being parsed
+     */
+    public MessageType getType() {
+        return type;
+    }
 
     /** Parse the SV/Epoch/Sv clock of the navigation message.
      * @param line      line to read
@@ -78,61 +96,61 @@ public abstract class SatelliteSystemLineParser {
 
     }
 
-    /** Parse the SV/Epoch/Sv clock of the navigation message.
+    /** Parse line 0 of the navigation message.
      */
-    public abstract void parseSvEpochSvClockLine();
+    public abstract void parseLine00();
 
-    /** Parse the "BROADCASTORBIT - 1" line.
+    /** Parse line 1 of the navigation message.
      */
-    public abstract void parseFirstBroadcastOrbit();
+    public abstract void parseLine01();
 
-    /** Parse the "BROADCASTORBIT - 2" line.
+    /** Parse line 2 of the navigation message.
      */
-    public abstract void parseSecondBroadcastOrbit();
+    public abstract void parseLine02();
 
-    /** Parse the "BROADCASTORBIT - 3" line.
+    /** Parse line 3 of the navigation message.
      */
-    public abstract void parseThirdBroadcastOrbit();
+    public abstract void parseLine03();
 
-    /** Parse the "BROADCASTORBIT - 4" line.
+    /** Parse line 4 of the navigation messagee.
      */
-    public void parseFourthBroadcastOrbit() {
-        // this should never be called (except by some tests that use reflection)
+    public void parseLine04() {
+        // this should never be called (except by some tests)
         throw new OrekitInternalError(null);
     }
 
-    /** Parse the "BROADCASTORBIT - 5" line.
+    /** Parse line 5 of the navigation message.
      */
-    public void parseFifthBroadcastOrbit() {
-        // this should never be called (except by some tests that use reflection)
+    public void parseLine05() {
+        // this should never be called (except by some tests)
         throw new OrekitInternalError(null);
     }
 
-    /** Parse the "BROADCASTORBIT - 6" line.
+    /** Parse line 6 of the navigation message.
      */
-    public void parseSixthBroadcastOrbit() {
-        // this should never be called (except by some tests that use reflection)
+    public void parseLine06() {
+        // this should never be called (except by some tests)
         throw new OrekitInternalError(null);
     }
 
-    /** Parse the "BROADCASTORBIT - 7" line.
+    /** Parse line 7 of the navigation message.
      */
-    public void parseSeventhBroadcastOrbit() {
-        // this should never be called (except by some tests that use reflection)
+    public void parseLine07() {
+        // this should never be called (except by some tests)
         throw new OrekitInternalError(null);
     }
 
-    /** Parse the "BROADCASTORBIT - 8" line.
+    /** Parse line 8 of the navigation message.
      */
-    public void parseEighthBroadcastOrbit() {
-        // this should never be called (except by some tests that use reflection)
+    public void parseLine08() {
+        // this should never be called (except by some tests)
         throw new OrekitInternalError(null);
     }
 
-    /** Parse the "BROADCASTORBIT - 9" line.
+    /** Parse line 9 of the navigation message.
      */
-    public void parseNinthBroadcastOrbit() {
-        // this should never be called (except by some tests that use reflection)
+    public void parseLine09() {
+        // this should never be called (except by some tests)
         throw new OrekitInternalError(null);
     }
 

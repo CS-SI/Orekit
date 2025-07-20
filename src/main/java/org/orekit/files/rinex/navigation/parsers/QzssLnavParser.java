@@ -16,6 +16,7 @@
  */
 package org.orekit.files.rinex.navigation.parsers;
 
+import org.orekit.files.rinex.navigation.MessageType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
@@ -26,7 +27,7 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class QzssLnavParser extends SatelliteSystemLineParser  {
+public class QzssLnavParser extends MessageLineParser {
 
     /** Container for parsing data. */
     private final ParseInfo parseInfo;
@@ -39,20 +40,21 @@ public class QzssLnavParser extends SatelliteSystemLineParser  {
      * @param message container for navigation message
      */
     QzssLnavParser(final ParseInfo parseInfo, final QZSSLegacyNavigationMessage message) {
+        super(MessageType.ORBIT);
         this.parseInfo = parseInfo;
         this.message   = message;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void parseSvEpochSvClockLine() {
+    public void parseLine00() {
         parseSvEpochSvClockLine(parseInfo.getLine(), parseInfo.getTimeScales().getGPS(),
                                 parseInfo, message);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void parseFirstBroadcastOrbit() {
+    public void parseLine01() {
         message.setIODE(parseInfo.parseDouble1(Unit.SECOND));
         message.setCrs(parseInfo.parseDouble2(Unit.METRE));
         message.setDeltaN0(parseInfo.parseDouble3(RinexNavigationParser.RAD_PER_S));
@@ -61,7 +63,7 @@ public class QzssLnavParser extends SatelliteSystemLineParser  {
 
     /** {@inheritDoc} */
     @Override
-    public void parseSecondBroadcastOrbit() {
+    public void parseLine02() {
         message.setCuc(parseInfo.parseDouble1(Unit.RADIAN));
         message.setE(parseInfo.parseDouble2(Unit.NONE));
         message.setCus(parseInfo.parseDouble3(Unit.RADIAN));
@@ -70,7 +72,7 @@ public class QzssLnavParser extends SatelliteSystemLineParser  {
 
     /** {@inheritDoc} */
     @Override
-    public void parseThirdBroadcastOrbit() {
+    public void parseLine03() {
         message.setTime(parseInfo.parseDouble1(Unit.SECOND));
         message.setCic(parseInfo.parseDouble2(Unit.RADIAN));
         message.setOmega0(parseInfo.parseDouble3(Unit.RADIAN));
@@ -79,7 +81,7 @@ public class QzssLnavParser extends SatelliteSystemLineParser  {
 
     /** {@inheritDoc} */
     @Override
-    public void parseFourthBroadcastOrbit() {
+    public void parseLine04() {
         message.setI0(parseInfo.parseDouble1(Unit.RADIAN));
         message.setCrc(parseInfo.parseDouble2(Unit.METRE));
         message.setPa(parseInfo.parseDouble3(Unit.RADIAN));
@@ -88,7 +90,7 @@ public class QzssLnavParser extends SatelliteSystemLineParser  {
 
     /** {@inheritDoc} */
     @Override
-    public void parseFifthBroadcastOrbit() {
+    public void parseLine05() {
         // iDot
         message.setIDot(parseInfo.parseDouble1(RinexNavigationParser.RAD_PER_S));
         message.setL2Codes(parseInfo.parseInt2());
@@ -98,7 +100,7 @@ public class QzssLnavParser extends SatelliteSystemLineParser  {
 
     /** {@inheritDoc} */
     @Override
-    public void parseSixthBroadcastOrbit() {
+    public void parseLine06() {
         message.setSvAccuracy(parseInfo.parseDouble1(Unit.METRE));
         message.setSvHealth(parseInfo.parseInt2());
         message.setTGD(parseInfo.parseDouble3(Unit.SECOND));
@@ -107,7 +109,7 @@ public class QzssLnavParser extends SatelliteSystemLineParser  {
 
     /** {@inheritDoc} */
     @Override
-    public void parseSeventhBroadcastOrbit() {
+    public void parseLine07() {
         message.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
         message.setFitInterval(parseInfo.parseInt2());
         parseInfo.closePendingMessage();

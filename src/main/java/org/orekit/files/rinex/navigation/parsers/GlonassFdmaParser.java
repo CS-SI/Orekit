@@ -16,6 +16,7 @@
  */
 package org.orekit.files.rinex.navigation.parsers;
 
+import org.orekit.files.rinex.navigation.MessageType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.utils.ParsingUtils;
@@ -29,7 +30,7 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class GlonassFdmaParser extends SatelliteSystemLineParser  {
+public class GlonassFdmaParser extends MessageLineParser {
 
     /** Container for parsing data. */
     private final ParseInfo parseInfo;
@@ -42,13 +43,14 @@ public class GlonassFdmaParser extends SatelliteSystemLineParser  {
      * @param message container for navigation message
      */
     GlonassFdmaParser(final ParseInfo parseInfo, final GLONASSFdmaNavigationMessage message) {
+        super(MessageType.ORBIT);
         this.parseInfo = parseInfo;
         this.message   = message;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void parseSvEpochSvClockLine() {
+    public void parseLine00() {
 
         if (parseInfo.getHeader().getFormatVersion() < 3.0) {
 
@@ -90,7 +92,7 @@ public class GlonassFdmaParser extends SatelliteSystemLineParser  {
 
     /** {@inheritDoc} */
     @Override
-    public void parseFirstBroadcastOrbit() {
+    public void parseLine01() {
         message.setX(parseInfo.parseDouble1(RinexNavigationParser.KM));
         message.setXDot(parseInfo.parseDouble2(RinexNavigationParser.KM_PER_S));
         message.setXDotDot(parseInfo.parseDouble3(RinexNavigationParser.KM_PER_S2));
@@ -99,7 +101,7 @@ public class GlonassFdmaParser extends SatelliteSystemLineParser  {
 
     /** {@inheritDoc} */
     @Override
-    public void parseSecondBroadcastOrbit() {
+    public void parseLine02() {
         message.setY(parseInfo.parseDouble1(RinexNavigationParser.KM));
         message.setYDot(parseInfo.parseDouble2(RinexNavigationParser.KM_PER_S));
         message.setYDotDot(parseInfo.parseDouble3(RinexNavigationParser.KM_PER_S2));
@@ -108,7 +110,7 @@ public class GlonassFdmaParser extends SatelliteSystemLineParser  {
 
     /** {@inheritDoc} */
     @Override
-    public void parseThirdBroadcastOrbit() {
+    public void parseLine03() {
         message.setZ(parseInfo.parseDouble1(RinexNavigationParser.KM));
         message.setZDot(parseInfo.parseDouble2(RinexNavigationParser.KM_PER_S));
         message.setZDotDot(parseInfo.parseDouble3(RinexNavigationParser.KM_PER_S2));
@@ -119,7 +121,7 @@ public class GlonassFdmaParser extends SatelliteSystemLineParser  {
 
     /** {@inheritDoc} */
     @Override
-    public void parseFourthBroadcastOrbit() {
+    public void parseLine04() {
         message.setStatusFlags(parseInfo.parseDouble1(Unit.NONE));
         message.setGroupDelayDifference(parseInfo.parseDouble2(Unit.NONE));
         message.setURA(parseInfo.parseDouble3(Unit.NONE));

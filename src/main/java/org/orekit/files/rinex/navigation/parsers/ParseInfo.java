@@ -73,8 +73,8 @@ public class ParseInfo {
     /** Flag indicating the distinction between "alpha" and "beta" ionospheric coefficients. */
     private boolean isIonosphereAlphaInitialized;
 
-    /** Satellite system line parser. */
-    private SatelliteSystemLineParser systemLineParser;
+    /** Message line parser. */
+    private MessageLineParser messageLineParser;
 
     /** Current line. */
     private String line;
@@ -253,9 +253,9 @@ public class ParseInfo {
     /** Ensure navigation message has been closed.
      */
     public void closePendingMessage() {
-        if (systemLineParser != null) {
-            systemLineParser.closeMessage(file);
-            systemLineParser = null;
+        if (messageLineParser != null) {
+            messageLineParser.closeMessage(file);
+            messageLineParser = null;
         }
     }
 
@@ -355,21 +355,21 @@ public class ParseInfo {
             case GPS:
                 if (type == null || type.equals(GPSLegacyNavigationMessage.LNAV)) {
                     // in Rinex, week number is aligned to GPS week!
-                    systemLineParser = new GPSLnavParser(this,
-                                                         new GPSLegacyNavigationMessage(timeScales,
+                    messageLineParser = new GPSLnavParser(this,
+                                                          new GPSLegacyNavigationMessage(timeScales,
                                                                                         SatelliteSystem.GPS,
                                                                                         GPSLegacyNavigationMessage.LNAV));
                 } else if (type.equals(GPSCivilianNavigationMessage.CNAV)) {
                     // in Rinex, week number is aligned to GPS week!
-                    systemLineParser = new GPSCnavParser(this,
-                                                         new GPSCivilianNavigationMessage(false,
+                    messageLineParser = new GPSCnavParser(this,
+                                                          new GPSCivilianNavigationMessage(false,
                                                                                           timeScales,
                                                                                           SatelliteSystem.GPS,
                                                                                           GPSCivilianNavigationMessage.CNAV));
                 } else if (type.equals(GPSCivilianNavigationMessage.CNV2)) {
                     // in Rinex, week number is aligned to GPS week!
-                    systemLineParser = new GPSCnavParser(this,
-                                                         new GPSCivilianNavigationMessage(true,
+                    messageLineParser = new GPSCnavParser(this,
+                                                          new GPSCivilianNavigationMessage(true,
                                                                                           timeScales,
                                                                                           SatelliteSystem.GPS,
                                                                                           GPSCivilianNavigationMessage.CNV2));
@@ -379,36 +379,36 @@ public class ParseInfo {
                 if (type == null || type.equals(GalileoNavigationMessage.INAV) || type.equals(
                     GalileoNavigationMessage.FNAV)) {
                     // in Rinex, week number is aligned to GPS week!
-                    systemLineParser = new GalileoParser(this, new GalileoNavigationMessage(timeScales,
-                                                                                            SatelliteSystem.GPS,
-                                                                                            type));
+                    messageLineParser = new GalileoParser(this, new GalileoNavigationMessage(timeScales,
+                                                                                             SatelliteSystem.GPS,
+                                                                                             type));
                 }
                 break;
             case GLONASS:
                 if (type == null || type.equals("FDMA")) {
-                    systemLineParser = new GlonassFdmaParser(this, new GLONASSFdmaNavigationMessage());
+                    messageLineParser = new GlonassFdmaParser(this, new GLONASSFdmaNavigationMessage());
                 } else if (type.equals("L1OC") || type.equals("L3OC")) {
-                    systemLineParser = new GlonassCdmaParser(this);
+                    messageLineParser = new GlonassCdmaParser(this);
                 }
                 break;
             case QZSS:
                 if (type == null || type.equals(QZSSLegacyNavigationMessage.LNAV)) {
                     // in Rinex, week number is aligned to GPS week!
-                    systemLineParser = new QzssLnavParser(this,
-                                                          new QZSSLegacyNavigationMessage(timeScales,
+                    messageLineParser = new QzssLnavParser(this,
+                                                           new QZSSLegacyNavigationMessage(timeScales,
                                                                                           SatelliteSystem.GPS,
                                                                                           QZSSLegacyNavigationMessage.LNAV));
                 } else if (type.equals(QZSSCivilianNavigationMessage.CNAV)) {
                     // in Rinex, week number is aligned to GPS week!
-                    systemLineParser = new QzssCnavParser(this,
-                                                          new QZSSCivilianNavigationMessage(false,
+                    messageLineParser = new QzssCnavParser(this,
+                                                           new QZSSCivilianNavigationMessage(false,
                                                                                             timeScales,
                                                                                             SatelliteSystem.GPS,
                                                                                             QZSSCivilianNavigationMessage.CNAV));
                 } else if (type.equals(QZSSCivilianNavigationMessage.CNV2)) {
                     // in Rinex, week number is aligned to GPS week!
-                    systemLineParser = new QzssCnavParser(this,
-                                                          new QZSSCivilianNavigationMessage(true,
+                    messageLineParser = new QzssCnavParser(this,
+                                                           new QZSSCivilianNavigationMessage(true,
                                                                                             timeScales,
                                                                                             SatelliteSystem.GPS,
                                                                                             QZSSCivilianNavigationMessage.CNV2));
@@ -418,28 +418,28 @@ public class ParseInfo {
                 if (type == null || type.equals(BeidouLegacyNavigationMessage.D1) || type.equals(
                     BeidouLegacyNavigationMessage.D2)) {
                     // in Rinex, week number for Beidou is really aligned to Beidou week!
-                    systemLineParser = new BeidouD1D2Parser(this,
-                                                            new BeidouLegacyNavigationMessage(timeScales,
+                    messageLineParser = new BeidouD1D2Parser(this,
+                                                             new BeidouLegacyNavigationMessage(timeScales,
                                                                                               SatelliteSystem.BEIDOU,
                                                                                               type));
                 } else if (type.equals(BeidouCivilianNavigationMessage.CNV1)) {
                     // in Rinex, week number for Beidou is really aligned to Beidou week!
-                    systemLineParser = new BeidouCnv123Parser(this,
-                                                              new BeidouCivilianNavigationMessage(PredefinedGnssSignal.B1C,
+                    messageLineParser = new BeidouCnv123Parser(this,
+                                                               new BeidouCivilianNavigationMessage(PredefinedGnssSignal.B1C,
                                                                                                   timeScales,
                                                                                                   SatelliteSystem.BEIDOU,
                                                                                                   BeidouCivilianNavigationMessage.CNV1));
                 } else if (type.equals(BeidouCivilianNavigationMessage.CNV2)) {
                     // in Rinex, week number for Beidou is really aligned to Beidou week!
-                    systemLineParser = new BeidouCnv123Parser(this,
-                                                              new BeidouCivilianNavigationMessage(PredefinedGnssSignal.B2A,
+                    messageLineParser = new BeidouCnv123Parser(this,
+                                                               new BeidouCivilianNavigationMessage(PredefinedGnssSignal.B2A,
                                                                                                   timeScales,
                                                                                                   SatelliteSystem.BEIDOU,
                                                                                                   BeidouCivilianNavigationMessage.CNV2));
                 } else if (type.equals(BeidouCivilianNavigationMessage.CNV3)) {
                     // in Rinex, week number for Beidou is really aligned to Beidou week!
-                    systemLineParser = new BeidouCnv123Parser(this,
-                                                              new BeidouCivilianNavigationMessage(PredefinedGnssSignal.B2B,
+                    messageLineParser = new BeidouCnv123Parser(this,
+                                                               new BeidouCivilianNavigationMessage(PredefinedGnssSignal.B2B,
                                                                                                   timeScales,
                                                                                                   SatelliteSystem.BEIDOU,
                                                                                                   BeidouCivilianNavigationMessage.CNV3));
@@ -448,62 +448,62 @@ public class ParseInfo {
             case NAVIC:
                 if (type == null || type.equals(NavICLegacyNavigationMessage.LNAV)) {
                     // in Rinex, week number is aligned to GPS week!
-                    systemLineParser = new NavICLnavParser(this,
-                                                           new NavICLegacyNavigationMessage(timeScales,
+                    messageLineParser = new NavICLnavParser(this,
+                                                            new NavICLegacyNavigationMessage(timeScales,
                                                                                             SatelliteSystem.GPS,
                                                                                             NavICLegacyNavigationMessage.LNAV));
                 } else if (type.equals(NavICL1NvNavigationMessage.L1NV)) {
                     // in Rinex, week number is aligned to GPS week!
-                    systemLineParser = new NavICL1NvParser(this,
-                                                           new NavICL1NvNavigationMessage(timeScales,
+                    messageLineParser = new NavICL1NvParser(this,
+                                                            new NavICL1NvNavigationMessage(timeScales,
                                                                                           SatelliteSystem.GPS,
                                                                                           NavICL1NvNavigationMessage.L1NV));
                 }
                 break;
             case SBAS:
                 if (type == null || type.equals("SBAS")) {
-                    systemLineParser = new SbasParser(this, new SBASNavigationMessage());
+                    messageLineParser = new SbasParser(this, new SBASNavigationMessage());
                 }
                 break;
             default:
                 // do nothing, handle error after the switch
         }
 
-        if (systemLineParser == null) {
+        if (messageLineParser == null) {
             throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                       lineNumber, name, line);
         }
 
     }
 
-    /** Get the system line parser.
-     * @return system line parser
+    /** Get the message line parser.
+     * @return message line parser
      */
-    public SatelliteSystemLineParser getSystemLineParser() {
-        return systemLineParser;
+    public MessageLineParser getMessageLineParser() {
+        return messageLineParser;
     }
 
     /** Parse next message line.
      */
     public void parseMessageLine() {
         switch (++messageLineNumber) {
-            case 1: systemLineParser.parseFirstBroadcastOrbit();
+            case 1: messageLineParser.parseLine01();
             break;
-            case 2: systemLineParser.parseSecondBroadcastOrbit();
+            case 2: messageLineParser.parseLine02();
             break;
-            case 3: systemLineParser.parseThirdBroadcastOrbit();
+            case 3: messageLineParser.parseLine03();
             break;
-            case 4: systemLineParser.parseFourthBroadcastOrbit();
+            case 4: messageLineParser.parseLine04();
             break;
-            case 5: systemLineParser.parseFifthBroadcastOrbit();
+            case 5: messageLineParser.parseLine05();
             break;
-            case 6: systemLineParser.parseSixthBroadcastOrbit();
+            case 6: messageLineParser.parseLine06();
             break;
-            case 7: systemLineParser.parseSeventhBroadcastOrbit();
+            case 7: messageLineParser.parseLine07();
             break;
-            case 8: systemLineParser.parseEighthBroadcastOrbit();
+            case 8: messageLineParser.parseLine08();
             break;
-            case 9: systemLineParser.parseNinthBroadcastOrbit();
+            case 9: messageLineParser.parseLine09();
             break;
             default:
                 // this should never happen
