@@ -59,44 +59,44 @@ public class BeidouCnv123Parser extends MessageLineParser {
     /** {@inheritDoc} */
     @Override
     public void parseLine01() {
-            message.setADot(parseInfo.parseDouble1(RinexNavigationParser.M_PER_S));
-            message.setCrs(parseInfo.parseDouble2(Unit.METRE));
-            message.setDeltaN0(parseInfo.parseDouble3(RinexNavigationParser.RAD_PER_S));
-            message.setM0(parseInfo.parseDouble4(Unit.RADIAN));
+        message.setADot(parseInfo.parseDouble1(RinexNavigationParser.M_PER_S));
+        message.setCrs(parseInfo.parseDouble2(Unit.METRE));
+        message.setDeltaN0(parseInfo.parseDouble3(RinexNavigationParser.RAD_PER_S));
+        message.setM0(parseInfo.parseDouble4(Unit.RADIAN));
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine02() {
-            message.setCuc(parseInfo.parseDouble1(Unit.RADIAN));
-            message.setE(parseInfo.parseDouble2(Unit.NONE));
-            message.setCus(parseInfo.parseDouble3(Unit.RADIAN));
-            message.setSqrtA(parseInfo.parseDouble4(RinexNavigationParser.SQRT_M));
+        message.setCuc(parseInfo.parseDouble1(Unit.RADIAN));
+        message.setE(parseInfo.parseDouble2(Unit.NONE));
+        message.setCus(parseInfo.parseDouble3(Unit.RADIAN));
+        message.setSqrtA(parseInfo.parseDouble4(RinexNavigationParser.SQRT_M));
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine03() {
-            message.setTime(parseInfo.parseDouble1(Unit.SECOND));
-            message.setCic(parseInfo.parseDouble2(Unit.RADIAN));
-            message.setOmega0(parseInfo.parseDouble3(Unit.RADIAN));
-            message.setCis(parseInfo.parseDouble4(Unit.RADIAN));
+        message.setTime(parseInfo.parseDouble1(Unit.SECOND));
+        message.setCic(parseInfo.parseDouble2(Unit.RADIAN));
+        message.setOmega0(parseInfo.parseDouble3(Unit.RADIAN));
+        message.setCis(parseInfo.parseDouble4(Unit.RADIAN));
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine04() {
-            message.setI0(parseInfo.parseDouble1(Unit.RADIAN));
-            message.setCrc(parseInfo.parseDouble2(Unit.METRE));
-            message.setPa(parseInfo.parseDouble3(Unit.RADIAN));
-            message.setOmegaDot(parseInfo.parseDouble4(RinexNavigationParser.RAD_PER_S));
+        message.setI0(parseInfo.parseDouble1(Unit.RADIAN));
+        message.setCrc(parseInfo.parseDouble2(Unit.METRE));
+        message.setPa(parseInfo.parseDouble3(Unit.RADIAN));
+        message.setOmegaDot(parseInfo.parseDouble4(RinexNavigationParser.RAD_PER_S));
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine05() {
-            message.setIDot(parseInfo.parseDouble1(RinexNavigationParser.RAD_PER_S));
-            message.setDeltaN0Dot(parseInfo.parseDouble2(RinexNavigationParser.RAD_PER_S2));
+        message.setIDot(parseInfo.parseDouble1(RinexNavigationParser.RAD_PER_S));
+        message.setDeltaN0Dot(parseInfo.parseDouble2(RinexNavigationParser.RAD_PER_S2));
         switch (parseInfo.parseInt3()) {
             case 0:
                     message.setSatelliteType(BeidouSatelliteType.RESERVED);
@@ -121,25 +121,25 @@ public class BeidouCnv123Parser extends MessageLineParser {
     /** {@inheritDoc} */
     @Override
     public void parseLine06() {
-            message.setSisaiOe(parseInfo.parseInt1());
-            message.setSisaiOcb(parseInfo.parseInt2());
-            message.setSisaiOc1(parseInfo.parseInt3());
-            message.setSisaiOc2(parseInfo.parseInt4());
+        message.setSisaiOe(parseInfo.parseInt1());
+        message.setSisaiOcb(parseInfo.parseInt2());
+        message.setSisaiOc1(parseInfo.parseInt3());
+        message.setSisaiOc2(parseInfo.parseInt4());
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine07() {
-        if (    message.getRadioWave().closeTo(PredefinedGnssSignal.B1C)) {
-                message.setIscB1CD(parseInfo.parseDouble1(Unit.SECOND));
+        if (message.getRadioWave().closeTo(PredefinedGnssSignal.B1C)) {
+            message.setIscB1CD(parseInfo.parseDouble1(Unit.SECOND));
             // field 2 is spare
-                message.setTgdB1Cp(parseInfo.parseDouble3(Unit.SECOND));
-                message.setTgdB2ap(parseInfo.parseDouble4(Unit.SECOND));
-        } else if (    message.getRadioWave().closeTo(PredefinedGnssSignal.B2A)) {
+            message.setTgdB1Cp(parseInfo.parseDouble3(Unit.SECOND));
+            message.setTgdB2ap(parseInfo.parseDouble4(Unit.SECOND));
+        } else if (message.getRadioWave().closeTo(PredefinedGnssSignal.B2A)) {
             // field 1 is spare
-                message.setIscB2AD(parseInfo.parseDouble2(Unit.SECOND));
-                message.setTgdB1Cp(parseInfo.parseDouble3(Unit.SECOND));
-                message.setTgdB2ap(parseInfo.parseDouble4(Unit.SECOND));
+            message.setIscB2AD(parseInfo.parseDouble2(Unit.SECOND));
+            message.setTgdB1Cp(parseInfo.parseDouble3(Unit.SECOND));
+            message.setTgdB2ap(parseInfo.parseDouble4(Unit.SECOND));
         } else {
             parseSismaiHealthIntegrity();
         }
@@ -148,8 +148,8 @@ public class BeidouCnv123Parser extends MessageLineParser {
     /** {@inheritDoc} */
     @Override
     public void parseLine08() {
-        if (    message.getRadioWave().closeTo(PredefinedGnssSignal.B2B)) {
-                message.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
+        if (message.getRadioWave().closeTo(PredefinedGnssSignal.B2B)) {
+            message.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
             parseInfo.closePendingMessage();
         } else {
             parseSismaiHealthIntegrity();
@@ -159,10 +159,10 @@ public class BeidouCnv123Parser extends MessageLineParser {
     /** {@inheritDoc} */
     @Override
     public void parseLine09() {
-            message.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
+        message.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
         // field 2 is spare
         // field 3 is spare
-            message.setIODE(parseInfo.parseInt4());
+        message.setIODE(parseInfo.parseInt4());
         parseInfo.closePendingMessage();
     }
 
@@ -176,10 +176,10 @@ public class BeidouCnv123Parser extends MessageLineParser {
      * Parse the SISMAI/Health/integrity line.
      */
     private void parseSismaiHealthIntegrity() {
-            message.setSismai(parseInfo.parseInt1());
-            message.setHealth(parseInfo.parseInt2());
-            message.setIntegrityFlags(parseInfo.parseInt3());
-            message.setIODC(parseInfo.parseInt4());
+        message.setSismai(parseInfo.parseInt1());
+        message.setHealth(parseInfo.parseInt2());
+        message.setIntegrityFlags(parseInfo.parseInt3());
+        message.setIODC(parseInfo.parseInt4());
     }
 
 }
