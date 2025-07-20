@@ -37,6 +37,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.rinex.navigation.parsers.ParseInfo;
+import org.orekit.files.rinex.navigation.parsers.SatelliteSystemLineParser;
 import org.orekit.files.rinex.utils.RinexFileType;
 import org.orekit.frames.Frames;
 import org.orekit.frames.FramesFactory;
@@ -55,7 +57,7 @@ import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
 import org.orekit.propagation.analytical.gnss.data.GPSCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
-import org.orekit.propagation.analytical.gnss.data.NavICL1NVNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.NavICL1NvNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.NavICLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
@@ -80,7 +82,7 @@ public class NavigationFileParserTest {
     public void testWorkAroundWrongFormatNumber() throws IOException {
         // the test file tells it is in 3.05 format, but in fact
         // its GLONASS navigation messages are in 3.04 format
-        // so there the 4th broadcast line expected in 3.05 is missing here
+        // so there the 4th broadcast line expected in 3.05 is missing
         // such a file has really been found in the wild
         final String ex = "/gnss/navigation/invalid-but-accepted.n";
         final RinexNavigation file = new RinexNavigationParser().
@@ -977,7 +979,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0, file.getGPSLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getGPSCivilianNavigationMessages().size());
 
-        final NavICL1NVNavigationMessage navICL1 = file.getNavICL1NVNavigationMessages("I10").get(0);
+        final NavICL1NvNavigationMessage navICL1 = file.getNavICL1NVNavigationMessages("I10").get(0);
         Assertions.assertEquals(0.0,
                                 navICL1.getEpochToc().durationFrom(new AbsoluteDate(2023, 6, 24, 0, 5, 0,
                                                                                     TimeScalesFactory.getNavIC())),
@@ -2268,53 +2270,45 @@ public class NavigationFileParserTest {
 
     @Test
     public void testDefensiveProgrammingExceptions() {
-        // this test is really only meant to increase coverage with some reflection black magic
-        // the methods tested here should not be called directly: they are overridden in concrete parsers
+        // create ParseInfo
+        final ParseInfo parseInfo = new ParseInfo("", TimeScalesFactory.getTimeScales());
+        parseInfo.setSystemLineParser(SatelliteSystem.SBAS, null);
+        SatelliteSystemLineParser lineParser = parseInfo.getSystemLineParser();
         try {
-
-            // create ParseInfo
-            final RinexNavigationParser rnp = new RinexNavigationParser();
-            Class<?> parseInfoClass = null;
-            for (Class<?> c : RinexNavigationParser.class.getDeclaredClasses()) {
-                if (c.getName().endsWith("ParseInfo")) {
-                    parseInfoClass = c;
-                }
-            }
-            Constructor<?> ctr = parseInfoClass.getDeclaredConstructor(RinexNavigationParser.class, String.class);
-            Object parseInfo = ctr.newInstance(rnp, "");
-
-            Class<?> parserClass = null;
-            for (Class<?> c : RinexNavigationParser.class.getDeclaredClasses()) {
-                if (c.getName().endsWith("SatelliteSystemLineParser")) {
-                    parserClass = c;
-                }
-            }
-
-            // we select SBAS because it implements only the first 3 methods
-            final Field sbasParserField = parserClass.getDeclaredField("SBAS");
-
-            // get the methods inherited from base class
-            for (String methodName : Arrays.asList("parseFourthBroadcastOrbit",
-                                                   "parseFifthBroadcastOrbit",
-                                                   "parseSixthBroadcastOrbit",
-                                                   "parseSeventhBroadcastOrbit",
-                                                   "parseEighthBroadcastOrbit",
-                                                   "parseNinthBroadcastOrbit")) {
-                Method m = parserClass.getMethod(methodName, String.class, parseInfoClass);
-                m.setAccessible(true);
-                try {
-                    // call the method, triggering the internal error exception
-                    m.invoke(sbasParserField.get(null), "", parseInfo);
-                    Assertions.fail("an exception should have been thrown");
-                } catch (InvocationTargetException e) {
-                    Assertions.assertInstanceOf(OrekitInternalError.class, e.getCause());
-                }
-            }
-
-        } catch (NoSuchFieldException | NoSuchMethodException | SecurityException |
-                 IllegalAccessException | IllegalArgumentException | InvocationTargetException |
-                 InstantiationException e) {
-            Assertions.fail(e.getLocalizedMessage());
+            lineParser.parseFourthBroadcastOrbit();
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitInternalError oe) {
+            // expected
+        }
+        try {
+            lineParser.parseFifthBroadcastOrbit();
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitInternalError oe) {
+            // expected
+        }
+        try {
+            lineParser.parseSixthBroadcastOrbit();
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitInternalError oe) {
+            // expected
+        }
+        try {
+            lineParser.parseSeventhBroadcastOrbit();
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitInternalError oe) {
+            // expected
+        }
+        try {
+            lineParser.parseEighthBroadcastOrbit();
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitInternalError oe) {
+            // expected
+        }
+        try {
+            lineParser.parseNinthBroadcastOrbit();
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitInternalError oe) {
+            // expected
         }
     }
 
@@ -2422,7 +2416,7 @@ public class NavigationFileParserTest {
         for (final List<NavICLegacyNavigationMessage> messages : file.getNavICLegacyNavigationMessages().values()) {
             messages.forEach(GnssTestUtils::checkFieldConversion);
         }
-        for (final List<NavICL1NVNavigationMessage> messages : file.getNavICL1NVNavigationMessages().values()) {
+        for (final List<NavICL1NvNavigationMessage> messages : file.getNavICL1NVNavigationMessages().values()) {
             messages.forEach(GnssTestUtils::checkFieldConversion);
         }
         for (final List<GPSLegacyNavigationMessage> messages : file.getGPSLegacyNavigationMessages().values()) {

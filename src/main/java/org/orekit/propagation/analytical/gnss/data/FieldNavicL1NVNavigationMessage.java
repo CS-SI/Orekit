@@ -28,7 +28,7 @@ import java.util.function.Function;
  * @since 13.0
  */
 public class FieldNavicL1NVNavigationMessage<T extends CalculusFieldElement<T>>
-    extends FieldCivilianNavigationMessage<T, NavICL1NVNavigationMessage> {
+    extends FieldCivilianNavigationMessage<T, NavICL1NvNavigationMessage> {
 
     /** Reference signal flag. */
     private int referenceSignalFlag;
@@ -52,7 +52,7 @@ public class FieldNavicL1NVNavigationMessage<T extends CalculusFieldElement<T>>
      * @param field    field to which elements belong
      * @param original regular non-field instance
      */
-    public FieldNavicL1NVNavigationMessage(final Field<T> field, final NavICL1NVNavigationMessage original) {
+    public FieldNavicL1NVNavigationMessage(final Field<T> field, final NavICL1NvNavigationMessage original) {
         super(field, original);
         setReferenceSignalFlag(original.getReferenceSignalFlag());
         setTGDSL5(field.getZero().newInstance(original.getTGDSL5()));
@@ -80,14 +80,14 @@ public class FieldNavicL1NVNavigationMessage<T extends CalculusFieldElement<T>>
 
     /** {@inheritDoc} */
     @Override
-    public NavICL1NVNavigationMessage toNonField() {
-        return new NavICL1NVNavigationMessage(this);
+    public NavICL1NvNavigationMessage toNonField() {
+        return new NavICL1NvNavigationMessage(this);
     }
 
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, NavICL1NVNavigationMessage>>
+    public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, NavICL1NvNavigationMessage>>
         G changeField(final Function<T, U> converter) {
         return (G) new FieldNavicL1NVNavigationMessage<>(converter, this);
     }

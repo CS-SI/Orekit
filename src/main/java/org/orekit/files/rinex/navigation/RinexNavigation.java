@@ -32,7 +32,7 @@ import org.orekit.propagation.analytical.gnss.data.GLONASSFdmaNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
-import org.orekit.propagation.analytical.gnss.data.NavICL1NVNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.NavICL1NvNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.NavICLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
@@ -82,7 +82,7 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
     /** A map containing the NavIC navigation messages.
      * @since 13.0
      */
-    private final Map<String, List<NavICL1NVNavigationMessage>> navicL1NVData;
+    private final Map<String, List<NavICL1NvNavigationMessage>> navicL1NVData;
 
     /** A map containing the GLONASS navigation messages. */
     private final Map<String, List<GLONASSFdmaNavigationMessage>> glonassData;
@@ -465,7 +465,7 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      * Get all the NavIC navigation messages contained in the file.
      * @return an unmodifiable list of NavIC navigation messages
      */
-    public Map<String, List<NavICL1NVNavigationMessage>> getNavICL1NVNavigationMessages() {
+    public Map<String, List<NavICL1NvNavigationMessage>> getNavICL1NVNavigationMessages() {
         return Collections.unmodifiableMap(navicL1NVData);
     }
 
@@ -474,7 +474,7 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      * @param satId satellite Id (i.e. Satellite System (e.g. I) + satellite number)
      * @return an unmodifiable list of NavIC navigation messages
      */
-    public List<NavICL1NVNavigationMessage> getNavICL1NVNavigationMessages(final String satId) {
+    public List<NavICL1NvNavigationMessage> getNavICL1NVNavigationMessages(final String satId) {
         return Collections.unmodifiableList(navicL1NVData.get(satId));
     }
 
@@ -482,7 +482,7 @@ public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
      * Add a NavIC navigation message to the list.
      * @param message message to add
      */
-    public void addNavICL1NVNavigationMessage(final NavICL1NVNavigationMessage message) {
+    public void addNavICL1NVNavigationMessage(final NavICL1NvNavigationMessage message) {
         final int    irsPRN = message.getPRN();
         final String prnString = irsPRN < 10 ? "0" + irsPRN : String.valueOf(irsPRN);
         final String satId = SatelliteSystem.NAVIC.getKey() + prnString;

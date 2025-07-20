@@ -26,8 +26,8 @@ import org.orekit.time.TimeScales;
  * @author Luc Maisonobe
  * @since 13.0
  */
-public class NavICL1NVNavigationMessage
-    extends CivilianNavigationMessage<NavICL1NVNavigationMessage> {
+public class NavICL1NvNavigationMessage
+    extends CivilianNavigationMessage<NavICL1NvNavigationMessage> {
 
     /** Message type.
      * @since 14.0
@@ -59,7 +59,7 @@ public class NavICL1NVNavigationMessage
      *                   are always according to GPS)
      * @param type       message type
      */
-    public NavICL1NVNavigationMessage(final TimeScales timeScales, final SatelliteSystem system,
+    public NavICL1NvNavigationMessage(final TimeScales timeScales, final SatelliteSystem system,
                                       final String type) {
         super(true, GNSSConstants.NAVIC_MU, GNSSConstants.NAVIC_AV, GNSSConstants.NAVIC_WEEK_NB,
               timeScales, system, type);
@@ -69,7 +69,7 @@ public class NavICL1NVNavigationMessage
      * @param <T> type of the field elements
      * @param original regular field instance
      */
-    public <T extends CalculusFieldElement<T>> NavICL1NVNavigationMessage(final FieldNavicL1NVNavigationMessage<T> original) {
+    public <T extends CalculusFieldElement<T>> NavICL1NvNavigationMessage(final FieldNavicL1NVNavigationMessage<T> original) {
         super(original);
         setReferenceSignalFlag(original.getReferenceSignalFlag());
         setTGDSL5(original.getTGDSL5().getReal());
@@ -82,7 +82,7 @@ public class NavICL1NVNavigationMessage
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, NavICL1NVNavigationMessage>>
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, NavICL1NvNavigationMessage>>
         F toField(final Field<T> field) {
         return (F) new FieldNavicL1NVNavigationMessage<>(field, this);
     }
