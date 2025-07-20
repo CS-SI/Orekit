@@ -18,7 +18,6 @@ package org.orekit.files.rinex.navigation.writers;
 
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
 import org.orekit.propagation.analytical.gnss.data.NavICLegacyNavigationMessage;
-import org.orekit.utils.units.Unit;
 
 import java.io.IOException;
 

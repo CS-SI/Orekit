@@ -61,8 +61,7 @@ public class NavICLnavParser extends RecordLineParser {
     /** {@inheritDoc} */
     @Override
     public void parseLine00() {
-        parseSvEpochSvClockLine(parseInfo.getLine(), parseInfo.getTimeScales().getNavIC(),
-                                parseInfo, message);
+        parseSvEpochSvClockLine(parseInfo.getTimeScales().getNavIC(), parseInfo, message);
     }
 
     /** {@inheritDoc} */

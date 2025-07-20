@@ -50,8 +50,7 @@ public class BeidouD1D2Parser extends RecordLineParser {
     /** {@inheritDoc} */
     @Override
     public void parseLine00() {
-        parseSvEpochSvClockLine(parseInfo.getLine(), parseInfo.getTimeScales().getBDT(),
-                                parseInfo, message);
+        parseSvEpochSvClockLine(parseInfo.getTimeScales().getBDT(), parseInfo, message);
     }
 
     /** {@inheritDoc} */

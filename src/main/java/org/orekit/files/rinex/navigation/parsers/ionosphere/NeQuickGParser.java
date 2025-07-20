@@ -41,7 +41,7 @@ public class NeQuickGParser extends RecordLineParser {
      * @param parseInfo container for parsing data
      * @param message container for navigation message
      */
-    public NeQuickGParser(final ParseInfo parseInfo, IonosphereNequickGMessage message) {
+    public NeQuickGParser(final ParseInfo parseInfo, final IonosphereNequickGMessage message) {
         super(RecordType.ION);
         this.parseInfo = parseInfo;
         this.message   = message;
@@ -50,7 +50,7 @@ public class NeQuickGParser extends RecordLineParser {
     /** {@inheritDoc} */
     @Override
     public void parseLine00() {
-        message.setTransmitTime(parseInfo.parseDate(parseInfo.getLine(), message.getSystem()));
+        message.setTransmitTime(parseInfo.parseDate(message.getSystem()));
         message.getAij().setAi0(parseInfo.parseDouble2(IonosphereAij.SFU));
         message.getAij().setAi1(parseInfo.parseDouble3(IonosphereAij.SFU_PER_DEG));
         message.getAij().setAi2(parseInfo.parseDouble4(IonosphereAij.SFU_PER_DEG2));

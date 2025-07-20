@@ -123,22 +123,20 @@ public class ParseInfo {
     }
 
     /** Parse a date.
-     * @param line line to parse
      * @param system satellite system
      * @return parsed date
      * @since 14.0
      */
-    public AbsoluteDate parseDate(final String line, final SatelliteSystem system) {
-        return parseDate(line, system.getObservationTimeScale().getTimeScale(timeScales));
+    public AbsoluteDate parseDate(final SatelliteSystem system) {
+        return parseDate(system.getObservationTimeScale().getTimeScale(timeScales));
     }
 
     /** Parse a date.
-     * @param line line to parse
      * @param timeScale time scale
      * @return parsed date
      * @since 14.0
      */
-    public AbsoluteDate parseDate(final String line, final TimeScale timeScale) {
+    public AbsoluteDate parseDate(final TimeScale timeScale) {
         final int year  = ParsingUtils.parseInt(line, 4, 4);
         final int month = ParsingUtils.parseInt(line, 9, 2);
         final int day   = ParsingUtils.parseInt(line, 12, 2);
@@ -386,6 +384,7 @@ public class ParseInfo {
      * @param prn satellite number
      * @param messageType message type
      * @param subType subtype
+     * @return built record container
      */
     private RecordLineParser buildStoRecordLineParser(final SatelliteSystem system, final int prn,
                                                       final String messageType, final String subType) {
@@ -398,6 +397,7 @@ public class ParseInfo {
      * @param prn satellite number
      * @param messageType message type
      * @param subType subtype
+     * @return built record container
      */
     private RecordLineParser buildEopRecordLineParser(final SatelliteSystem system, final int prn,
                                                       final String messageType, final String subType) {
@@ -410,6 +410,7 @@ public class ParseInfo {
      * @param prn satellite number
      * @param messageType message type
      * @param subType subtype
+     * @return built record container
      */
     private RecordLineParser buildIonRecordLineParser(final SatelliteSystem system, final int prn,
                                                       final String messageType, final String subType) {

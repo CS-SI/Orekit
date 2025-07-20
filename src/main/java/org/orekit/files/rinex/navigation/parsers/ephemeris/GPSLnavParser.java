@@ -53,7 +53,7 @@ public class GPSLnavParser extends RecordLineParser {
         if (parseInfo.getHeader().getFormatVersion() < 3.0) {
             parseSvEpochSvClockLineRinex2(parseInfo.getLine(), parseInfo.getTimeScales().getGPS(), message);
         } else {
-            parseSvEpochSvClockLine(parseInfo.getLine(), parseInfo.getTimeScales().getGPS(), parseInfo, message);
+            parseSvEpochSvClockLine(parseInfo.getTimeScales().getGPS(), parseInfo, message);
         }
     }
 

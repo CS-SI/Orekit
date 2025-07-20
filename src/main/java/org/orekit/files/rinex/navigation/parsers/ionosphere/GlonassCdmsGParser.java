@@ -39,7 +39,7 @@ public class GlonassCdmsGParser extends RecordLineParser {
      * @param parseInfo container for parsing data
      * @param message container for navigation message
      */
-    public GlonassCdmsGParser(final ParseInfo parseInfo, IonosphereGlonassCdmsMessage message) {
+    public GlonassCdmsGParser(final ParseInfo parseInfo, final IonosphereGlonassCdmsMessage message) {
         super(RecordType.ION);
         this.parseInfo = parseInfo;
         this.message   = message;
@@ -48,7 +48,7 @@ public class GlonassCdmsGParser extends RecordLineParser {
     /** {@inheritDoc} */
     @Override
     public void parseLine00() {
-        message.setTransmitTime(parseInfo.parseDate(parseInfo.getLine(), message.getSystem()));
+        message.setTransmitTime(parseInfo.parseDate(message.getSystem()));
         message.setCA(parseInfo.parseDouble2(Unit.ONE));
         message.setCF107(parseInfo.parseDouble3(Unit.ONE));
         message.setCAP(parseInfo.parseDouble4(  Unit.ONE));

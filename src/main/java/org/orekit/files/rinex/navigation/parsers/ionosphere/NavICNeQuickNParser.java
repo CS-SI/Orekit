@@ -42,7 +42,7 @@ public class NavICNeQuickNParser
      * @param parseInfo container for parsing data
      * @param message container for navigation message
      */
-    public NavICNeQuickNParser(final ParseInfo parseInfo, IonosphereNavICNeQuickNMessage message) {
+    public NavICNeQuickNParser(final ParseInfo parseInfo, final IonosphereNavICNeQuickNMessage message) {
         super(RecordType.ION);
         this.parseInfo = parseInfo;
         this.message   = message;
@@ -51,14 +51,14 @@ public class NavICNeQuickNParser
     /** {@inheritDoc} */
     @Override
     public void parseLine00() {
-        message.setTransmitTime(parseInfo.parseDate(parseInfo.getLine(), message.getSystem()));
+        message.setTransmitTime(parseInfo.parseDate(message.getSystem()));
         message.setIOD(parseInfo.parseDouble2(Unit.ONE));
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine01() {
-       parseAij(message.getRegion1());
+        parseAij(message.getRegion1());
     }
 
     /** {@inheritDoc} */
@@ -70,7 +70,7 @@ public class NavICNeQuickNParser
     /** {@inheritDoc} */
     @Override
     public void parseLine03() {
-       parseAij(message.getRegion2());
+        parseAij(message.getRegion2());
     }
 
     /** {@inheritDoc} */
@@ -82,7 +82,7 @@ public class NavICNeQuickNParser
     /** {@inheritDoc} */
     @Override
     public void parseLine05() {
-       parseAij(message.getRegion3());
+        parseAij(message.getRegion3());
     }
 
     /** {@inheritDoc} */

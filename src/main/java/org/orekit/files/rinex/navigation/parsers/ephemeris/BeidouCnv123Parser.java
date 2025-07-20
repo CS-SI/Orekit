@@ -45,7 +45,7 @@ public class BeidouCnv123Parser extends RecordLineParser {
      * @param parseInfo container for parsing data
      * @param message container for navigation message
      */
-    public BeidouCnv123Parser(final ParseInfo parseInfo, BeidouCivilianNavigationMessage message) {
+    public BeidouCnv123Parser(final ParseInfo parseInfo, final BeidouCivilianNavigationMessage message) {
         super(RecordType.ORBIT);
         this.parseInfo = parseInfo;
         this.message   = message;
@@ -54,8 +54,7 @@ public class BeidouCnv123Parser extends RecordLineParser {
     /** {@inheritDoc} */
     @Override
     public void parseLine00() {
-        parseSvEpochSvClockLine(parseInfo.getLine(), parseInfo.getTimeScales().getBDT(),
-                                parseInfo,     message);
+        parseSvEpochSvClockLine(parseInfo.getTimeScales().getBDT(), parseInfo, message);
     }
 
     /** {@inheritDoc} */
@@ -101,23 +100,23 @@ public class BeidouCnv123Parser extends RecordLineParser {
         message.setDeltaN0Dot(parseInfo.parseDouble2(RinexNavigationParser.RAD_PER_S2));
         switch (parseInfo.parseInt3()) {
             case 0:
-                    message.setSatelliteType(BeidouSatelliteType.RESERVED);
+                message.setSatelliteType(BeidouSatelliteType.RESERVED);
                 break;
             case 1:
-                    message.setSatelliteType(BeidouSatelliteType.GEO);
+                message.setSatelliteType(BeidouSatelliteType.GEO);
                 break;
             case 2:
-                    message.setSatelliteType(BeidouSatelliteType.IGSO);
+                message.setSatelliteType(BeidouSatelliteType.IGSO);
                 break;
             case 3:
-                    message.setSatelliteType(BeidouSatelliteType.MEO);
+                message.setSatelliteType(BeidouSatelliteType.MEO);
                 break;
             default:
                 throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                           parseInfo.getLineNumber(), parseInfo.getName(),
                                           parseInfo.getLine());
         }
-            message.setTime(parseInfo.parseDouble4(Unit.SECOND));
+        message.setTime(parseInfo.parseDouble4(Unit.SECOND));
     }
 
     /** {@inheritDoc} */

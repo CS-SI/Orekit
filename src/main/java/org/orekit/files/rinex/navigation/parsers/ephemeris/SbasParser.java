@@ -63,7 +63,7 @@ public class SbasParser extends RecordLineParser {
                                     parseInfo.getTimeScales().getUTC() :
                                     parseInfo.getTimeScales().getGPS();
 
-        message.setEpochToc(parseInfo.parseDate(parseInfo.getLine(), timeScale));
+        message.setEpochToc(parseInfo.parseDate(timeScale));
         message.setAGf0(parseInfo.parseDouble2(Unit.SECOND));
         message.setAGf1(parseInfo.parseDouble3(RinexNavigationParser.S_PER_S));
         message.setTime(parseInfo.parseDouble4(Unit.SECOND));

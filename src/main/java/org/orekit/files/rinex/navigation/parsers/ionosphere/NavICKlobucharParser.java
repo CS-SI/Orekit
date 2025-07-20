@@ -41,7 +41,7 @@ public class NavICKlobucharParser
      * @param parseInfo container for parsing data
      * @param message container for navigation message
      */
-    public NavICKlobucharParser(final ParseInfo parseInfo, IonosphereNavICKlobucharMessage message) {
+    public NavICKlobucharParser(final ParseInfo parseInfo, final IonosphereNavICKlobucharMessage message) {
         super(RecordType.ION);
         this.parseInfo = parseInfo;
         this.message   = message;
@@ -50,7 +50,7 @@ public class NavICKlobucharParser
     /** {@inheritDoc} */
     @Override
     public void parseLine00() {
-        message.setTransmitTime(parseInfo.parseDate(parseInfo.getLine(), message.getSystem()));
+        message.setTransmitTime(parseInfo.parseDate(message.getSystem()));
         message.setIOD(parseInfo.parseDouble2(Unit.ONE));
     }
 

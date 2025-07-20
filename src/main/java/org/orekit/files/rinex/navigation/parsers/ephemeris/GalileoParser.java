@@ -50,8 +50,7 @@ public class GalileoParser extends RecordLineParser {
     /** {@inheritDoc} */
     @Override
     public void parseLine00() {
-        parseSvEpochSvClockLine(parseInfo.getLine(), parseInfo.getTimeScales().getGPS(),
-                                parseInfo, message);
+        parseSvEpochSvClockLine(parseInfo.getTimeScales().getGPS(), parseInfo, message);
     }
 
     /** {@inheritDoc} */

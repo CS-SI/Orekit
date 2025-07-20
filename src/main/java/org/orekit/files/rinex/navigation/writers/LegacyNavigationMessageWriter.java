@@ -105,7 +105,7 @@ public abstract class LegacyNavigationMessageWriter<O extends LegacyNavigationMe
      * @param writer global file writer
      * @throws IOException if an I/O error occurs.
      */
-    protected abstract void writeURA(final O message, final RinexNavigationWriter writer)
+    protected abstract void writeURA(O message, RinexNavigationWriter writer)
         throws IOException;
 
 }

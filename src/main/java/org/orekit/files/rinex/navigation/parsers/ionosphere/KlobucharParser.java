@@ -41,7 +41,7 @@ public class KlobucharParser extends RecordLineParser {
      * @param parseInfo container for parsing data
      * @param message container for navigation message
      */
-    public KlobucharParser(final ParseInfo parseInfo, IonosphereKlobucharMessage message) {
+    public KlobucharParser(final ParseInfo parseInfo, final IonosphereKlobucharMessage message) {
         super(RecordType.ION);
         this.parseInfo = parseInfo;
         this.message   = message;
@@ -50,7 +50,7 @@ public class KlobucharParser extends RecordLineParser {
     /** {@inheritDoc} */
     @Override
     public void parseLine00() {
-        message.setTransmitTime(parseInfo.parseDate(parseInfo.getLine(), message.getSystem()));
+        message.setTransmitTime(parseInfo.parseDate(message.getSystem()));
         message.setAlphaI(0, parseInfo.parseDouble2(IonosphereBaseMessage.S_PER_SC_N0));
         message.setAlphaI(1, parseInfo.parseDouble3(IonosphereBaseMessage.S_PER_SC_N1));
         message.setAlphaI(2, parseInfo.parseDouble4(IonosphereBaseMessage.S_PER_SC_N2));

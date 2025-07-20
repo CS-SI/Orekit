@@ -79,7 +79,7 @@ public class GlonassFdmaParser extends RecordLineParser {
             message.setPRN(ParsingUtils.parseInt(parseInfo.getLine(), 1, 2));
 
             // Toc
-            message.setEpochToc(parseInfo.parseDate(parseInfo.getLine(), parseInfo.getTimeScales().getUTC()));
+            message.setEpochToc(parseInfo.parseDate(parseInfo.getTimeScales().getUTC()));
 
             // clock
             message.setTauN(-parseInfo.parseDouble2(Unit.ONE));

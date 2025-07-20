@@ -39,7 +39,7 @@ public class BdgimParser extends RecordLineParser {
      * @param parseInfo container for parsing data
      * @param message container for navigation message
      */
-    public BdgimParser(final ParseInfo parseInfo, IonosphereBDGIMMessage message) {
+    public BdgimParser(final ParseInfo parseInfo, final IonosphereBDGIMMessage message) {
         super(RecordType.ION);
         this.parseInfo = parseInfo;
         this.message   = message;
@@ -48,7 +48,7 @@ public class BdgimParser extends RecordLineParser {
     /** {@inheritDoc} */
     @Override
     public void parseLine00() {
-        message.setTransmitTime(parseInfo.parseDate(parseInfo.getLine(), message.getSystem()));
+        message.setTransmitTime(parseInfo.parseDate(message.getSystem()));
         message.setAlphaI(0, parseInfo.parseDouble2(RinexNavigationParser.TEC));
         message.setAlphaI(1, parseInfo.parseDouble3(RinexNavigationParser.TEC));
         message.setAlphaI(2, parseInfo.parseDouble4(RinexNavigationParser.TEC));

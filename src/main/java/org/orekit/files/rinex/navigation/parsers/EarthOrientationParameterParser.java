@@ -39,7 +39,7 @@ public class EarthOrientationParameterParser
      * @param parseInfo container for parsing data
      * @param message container for navigation message
      */
-    public EarthOrientationParameterParser(final ParseInfo parseInfo, EarthOrientationParameterMessage message) {
+    public EarthOrientationParameterParser(final ParseInfo parseInfo, final EarthOrientationParameterMessage message) {
         super(RecordType.ION);
         this.parseInfo = parseInfo;
         this.message   = message;
@@ -48,7 +48,7 @@ public class EarthOrientationParameterParser
     /** {@inheritDoc} */
     @Override
     public void parseLine00() {
-        message.setReferenceEpoch(parseInfo.parseDate(parseInfo.getLine(), message.getSystem()));
+        message.setReferenceEpoch(parseInfo.parseDate(message.getSystem()));
         message.setXp(parseInfo.parseDouble2(Unit.ARC_SECOND));
         message.setXpDot(parseInfo.parseDouble3(RinexNavigationParser.AS_PER_DAY));
         message.setXpDotDot(parseInfo.parseDouble4(RinexNavigationParser.AS_PER_DAY2));

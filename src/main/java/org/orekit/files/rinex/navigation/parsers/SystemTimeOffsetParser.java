@@ -42,7 +42,7 @@ public class SystemTimeOffsetParser extends RecordLineParser {
      * @param parseInfo container for parsing data
      * @param message container for navigation message
      */
-    public SystemTimeOffsetParser(final ParseInfo parseInfo, SystemTimeOffsetMessage message) {
+    public SystemTimeOffsetParser(final ParseInfo parseInfo, final SystemTimeOffsetMessage message) {
         super(RecordType.ION);
         this.parseInfo = parseInfo;
         this.message   = message;
@@ -61,7 +61,7 @@ public class SystemTimeOffsetParser extends RecordLineParser {
         message.setReferenceTimeSystem(PredefinedTimeSystem.parseTwoLettersCode(refTS));
         message.setSbasId(sbas == null || sbas.isEmpty() ? null : SbasId.valueOf(sbas));
         message.setUtcId(utc == null || utc.isEmpty() ? null : UtcId.parseUtcId(utc));
-        message.setReferenceEpoch(parseInfo.parseDate(parseInfo.getLine(), message.getSystem()));
+        message.setReferenceEpoch(parseInfo.parseDate(message.getSystem()));
 
     }
 

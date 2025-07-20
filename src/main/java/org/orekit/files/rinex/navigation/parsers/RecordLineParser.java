@@ -75,19 +75,20 @@ public abstract class RecordLineParser {
 
     }
 
-    /** Parse the SV/Epoch/Sv clock of the navigation message.
-     * @param line      line to read
+    /**
+     * Parse the SV/Epoch/Sv clock of the navigation message.
+     *
      * @param timeScale time scale to use
      * @param parseInfo container for parsing info
      * @param message   navigation message
      */
-    protected void parseSvEpochSvClockLine(final String line, final TimeScale timeScale,
+    protected void parseSvEpochSvClockLine(final TimeScale timeScale,
                                            final ParseInfo parseInfo, final AbstractNavigationMessage<?> message) {
         // PRN
-        message.setPRN(ParsingUtils.parseInt(line, 1, 2));
+        message.setPRN(ParsingUtils.parseInt(parseInfo.getLine(), 1, 2));
 
         // Toc
-        message.setEpochToc(parseInfo.parseDate(line, timeScale));
+        message.setEpochToc(parseInfo.parseDate(timeScale));
 
         // clock
         message.setAf0(parseInfo.parseDouble2(Unit.SECOND));
