@@ -16,7 +16,7 @@
  */
 package org.orekit.files.rinex.navigation.writers;
 
-import org.orekit.files.rinex.navigation.MessageType;
+import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
@@ -47,7 +47,7 @@ public class GlonassFdmaNavigationMessageWriter
         throws IOException {
 
         // TYPE / SV / MSG
-        writeTypeSvMsg(MessageType.EPH, identifier, message, header, writer);
+        writeTypeSvMsg(RecordType.EPH, identifier, message, header, writer);
 
         // EPH MESSAGE LINE - 0
         final DateTimeComponents dtc = message.getEpochToc().getComponents(writer.getTimeScales().getUTC());

@@ -14,33 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.rinex.navigation.parsers;
+package org.orekit.files.rinex.navigation.parsers.ephemeris;
 
-import org.orekit.files.rinex.navigation.MessageType;
+import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
-import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
+import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
+import org.orekit.files.rinex.navigation.parsers.ParseInfo;
+import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
 import org.orekit.utils.units.Unit;
 
-/** Parser for Galileo.
+/** Parser for GPS legacy.
  * @author Bryan Cazabonne
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class GalileoParser extends MessageLineParser {
+public class GPSLnavParser extends RecordLineParser {
 
     /** Container for parsing data. */
     private final ParseInfo parseInfo;
 
     /** Container for navigation message. */
-    private final GalileoNavigationMessage message;
+    private final GPSLegacyNavigationMessage message;
 
     /** Simple constructor.
      * @param parseInfo container for parsing data
      * @param message container for navigation message
      */
-    GalileoParser(final ParseInfo parseInfo, final GalileoNavigationMessage message) {
-        super(MessageType.ORBIT);
+    public GPSLnavParser(final ParseInfo parseInfo, final GPSLegacyNavigationMessage message) {
+        super(RecordType.ORBIT);
         this.parseInfo = parseInfo;
         this.message   = message;
     }
@@ -48,14 +50,17 @@ public class GalileoParser extends MessageLineParser {
     /** {@inheritDoc} */
     @Override
     public void parseLine00() {
-        parseSvEpochSvClockLine(parseInfo.getLine(), parseInfo.getTimeScales().getGPS(),
-                                parseInfo, message);
+        if (parseInfo.getHeader().getFormatVersion() < 3.0) {
+            parseSvEpochSvClockLineRinex2(parseInfo.getLine(), parseInfo.getTimeScales().getGPS(), message);
+        } else {
+            parseSvEpochSvClockLine(parseInfo.getLine(), parseInfo.getTimeScales().getGPS(), parseInfo, message);
+        }
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine01() {
-        message.setIODNav(parseInfo.parseInt1());
+        message.setIODE(parseInfo.parseDouble1(Unit.SECOND));
         message.setCrs(parseInfo.parseDouble2(Unit.METRE));
         message.setDeltaN0(parseInfo.parseDouble3(RinexNavigationParser.RAD_PER_S));
         message.setM0(parseInfo.parseDouble4(Unit.RADIAN));
@@ -93,31 +98,32 @@ public class GalileoParser extends MessageLineParser {
     public void parseLine05() {
         // iDot
         message.setIDot(parseInfo.parseDouble1(RinexNavigationParser.RAD_PER_S));
-        message.setDataSource(parseInfo.parseInt2());
-        // GAL week (to go with Toe)
+        message.setL2Codes(parseInfo.parseInt2());
         message.setWeek(parseInfo.parseInt3());
+        message.setL2PFlags(parseInfo.parseInt4());
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine06() {
-        message.setSisa(parseInfo.parseDouble1(Unit.METRE));
-        message.setSvHealth(parseInfo.parseDouble2(Unit.NONE));
-        message.setBGDE1E5a(parseInfo.parseDouble3(Unit.SECOND));
-        message.setBGDE5bE1(parseInfo.parseDouble4(Unit.SECOND));
+        message.setSvAccuracy(parseInfo.parseDouble1(Unit.METRE));
+        message.setSvHealth(parseInfo.parseInt2());
+        message.setTGD(parseInfo.parseDouble3(Unit.SECOND));
+        message.setIODC(parseInfo.parseInt4());
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine07() {
         message.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
-        parseInfo.closePendingMessage();
+        message.setFitInterval(parseInfo.parseInt2());
+        parseInfo.closePendingRecord();
     }
 
     /** {@inheritDoc} */
     @Override
-    public void closeMessage(final RinexNavigation file) {
-        file.addGalileoNavigationMessage(message);
+    public void closeRecord(final RinexNavigation file) {
+        file.addGPSLegacyNavigationMessage(message);
     }
 
 }

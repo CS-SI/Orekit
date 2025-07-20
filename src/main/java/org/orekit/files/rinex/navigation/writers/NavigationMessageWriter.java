@@ -16,7 +16,7 @@
  */
 package org.orekit.files.rinex.navigation.writers;
 
-import org.orekit.files.rinex.navigation.MessageType;
+import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
@@ -41,7 +41,7 @@ public abstract class NavigationMessageWriter<T extends NavigationMessage> {
      * @param writer global file writer
      * @throws IOException if an I/O error occurs.
      */
-    public void writeTypeSvMsg(final MessageType type, final String identifier, final T message,
+    public void writeTypeSvMsg(final RecordType type, final String identifier, final T message,
                                final RinexNavigationHeader header, final RinexNavigationWriter writer)
         throws IOException {
 

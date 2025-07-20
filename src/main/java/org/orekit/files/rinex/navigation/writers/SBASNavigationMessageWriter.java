@@ -16,14 +16,12 @@
  */
 package org.orekit.files.rinex.navigation.writers;
 
-import org.orekit.files.rinex.navigation.MessageType;
+import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
-import org.orekit.files.rinex.utils.BaseRinexWriter;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.analytical.gnss.data.SBASNavigationMessage;
-import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.units.Unit;
 
 import java.io.IOException;
@@ -42,7 +40,7 @@ public class SBASNavigationMessageWriter
         throws IOException {
 
         // TYPE / SV / MSG
-        writeTypeSvMsg(MessageType.EPH, identifier, message, header, writer);
+        writeTypeSvMsg(RecordType.EPH, identifier, message, header, writer);
 
         // EPH MESSAGE LINE - 0
         writer.startLine();

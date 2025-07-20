@@ -14,11 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.rinex.navigation.parsers;
+package org.orekit.files.rinex.navigation.parsers.ephemeris;
 
-import org.orekit.files.rinex.navigation.MessageType;
+import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
+import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
+import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.files.rinex.utils.ParsingUtils;
 import org.orekit.propagation.analytical.gnss.data.GLONASSFdmaNavigationMessage;
 import org.orekit.time.AbsoluteDate;
@@ -30,7 +32,7 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class GlonassFdmaParser extends MessageLineParser {
+public class GlonassFdmaParser extends RecordLineParser {
 
     /** Container for parsing data. */
     private final ParseInfo parseInfo;
@@ -42,8 +44,8 @@ public class GlonassFdmaParser extends MessageLineParser {
      * @param parseInfo container for parsing data
      * @param message container for navigation message
      */
-    GlonassFdmaParser(final ParseInfo parseInfo, final GLONASSFdmaNavigationMessage message) {
-        super(MessageType.ORBIT);
+    public GlonassFdmaParser(final ParseInfo parseInfo, final GLONASSFdmaNavigationMessage message) {
+        super(RecordType.ORBIT);
         this.parseInfo = parseInfo;
         this.message   = message;
     }
@@ -115,7 +117,7 @@ public class GlonassFdmaParser extends MessageLineParser {
         message.setZDot(parseInfo.parseDouble2(RinexNavigationParser.KM_PER_S));
         message.setZDotDot(parseInfo.parseDouble3(RinexNavigationParser.KM_PER_S2));
         if (parseInfo.getHeader().getFormatVersion() < 3.045) {
-            parseInfo.closePendingMessage();
+            parseInfo.closePendingRecord();
         }
     }
 
@@ -126,12 +128,12 @@ public class GlonassFdmaParser extends MessageLineParser {
         message.setGroupDelayDifference(parseInfo.parseDouble2(Unit.NONE));
         message.setURA(parseInfo.parseDouble3(Unit.NONE));
         message.setHealthFlags(parseInfo.parseDouble4(Unit.NONE));
-        parseInfo.closePendingMessage();
+        parseInfo.closePendingRecord();
     }
 
     /** {@inheritDoc} */
     @Override
-    public void closeMessage(final RinexNavigation file) {
+    public void closeRecord(final RinexNavigation file) {
         file.addGlonassNavigationMessage(message);
     }
 

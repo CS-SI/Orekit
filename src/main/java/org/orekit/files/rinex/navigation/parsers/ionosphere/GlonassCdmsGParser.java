@@ -14,82 +14,51 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.rinex.navigation.parsers;
+package org.orekit.files.rinex.navigation.parsers.ionosphere;
 
-import org.orekit.files.rinex.navigation.MessageType;
+import org.orekit.files.rinex.navigation.IonosphereGlonassCdmsMessage;
+import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
+import org.orekit.files.rinex.navigation.parsers.ParseInfo;
+import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
+import org.orekit.utils.units.Unit;
 
-/** Parser for Glonass CDMA.
- * <p>
- * This parser is not implemented yet!
- * It just ignores all lines
- * </p>
- * @author Bryan Cazabonne
+/** Parser for GLONASS CDMS ionosphere.
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class GlonassCdmaParser extends MessageLineParser {
+public class GlonassCdmsGParser extends RecordLineParser {
 
     /** Container for parsing data. */
     private final ParseInfo parseInfo;
 
+    /** Container for GLONASS CDMS message. */
+    private final IonosphereGlonassCdmsMessage message;
+
     /** Simple constructor.
      * @param parseInfo container for parsing data
+     * @param message container for navigation message
      */
-    GlonassCdmaParser(final ParseInfo parseInfo) {
-        super(MessageType.ORBIT);
+    public GlonassCdmsGParser(final ParseInfo parseInfo, IonosphereGlonassCdmsMessage message) {
+        super(RecordType.ION);
         this.parseInfo = parseInfo;
+        this.message   = message;
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine00() {
+        message.setTransmitTime(parseInfo.parseDate(parseInfo.getLine(), message.getSystem()));
+        message.setCA(parseInfo.parseDouble2(Unit.ONE));
+        message.setCF107(parseInfo.parseDouble3(Unit.ONE));
+        message.setCAP(parseInfo.parseDouble4(  Unit.ONE));
+        parseInfo.closePendingRecord();
     }
 
     /** {@inheritDoc} */
     @Override
-    public void parseLine01() {
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void parseLine02() {
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void parseLine03() {
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void parseLine04() {
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void parseLine05() {
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void parseLine06() {
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void parseLine07() {
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void parseLine08() {
-        parseInfo.closePendingMessage();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void closeMessage(final RinexNavigation file) {
+    public void closeRecord(final RinexNavigation file) {
+        file.addGlonassCDMSMessage(message);
     }
 
 }

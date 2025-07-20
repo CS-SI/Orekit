@@ -14,12 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.rinex.navigation.parsers;
+package org.orekit.files.rinex.navigation.parsers.ephemeris;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.files.rinex.navigation.MessageType;
+import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
+import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
+import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.propagation.analytical.gnss.data.NavICL1NvNavigationMessage;
 import org.orekit.utils.units.Unit;
 
@@ -28,7 +30,7 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class NavICL1NvParser extends MessageLineParser {
+public class NavICL1NvParser extends RecordLineParser {
 
     /** Container for parsing data. */
     private final ParseInfo parseInfo;
@@ -40,8 +42,8 @@ public class NavICL1NvParser extends MessageLineParser {
      * @param parseInfo container for parsing data
      * @param message container for navigation message
      */
-    NavICL1NvParser(final ParseInfo parseInfo, final NavICL1NvNavigationMessage message) {
-        super(MessageType.ORBIT);
+    public NavICL1NvParser(final ParseInfo parseInfo, final NavICL1NvNavigationMessage message) {
+        super(RecordType.ORBIT);
         this.parseInfo = parseInfo;
         this.message   = message;
     }
@@ -121,12 +123,12 @@ public class NavICL1NvParser extends MessageLineParser {
     public void parseLine08() {
         message.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
         message.setWeek(parseInfo.parseInt2());
-        parseInfo.closePendingMessage();
+        parseInfo.closePendingRecord();
     }
 
     /** {@inheritDoc} */
     @Override
-    public void closeMessage(final RinexNavigation file) {
+    public void closeRecord(final RinexNavigation file) {
         file.addNavICL1NVNavigationMessage(message);
     }
 

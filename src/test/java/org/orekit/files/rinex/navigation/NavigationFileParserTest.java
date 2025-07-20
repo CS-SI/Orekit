@@ -33,7 +33,7 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
-import org.orekit.files.rinex.navigation.parsers.MessageLineParser;
+import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
 import org.orekit.files.rinex.utils.RinexFileType;
 import org.orekit.frames.Frames;
 import org.orekit.frames.FramesFactory;
@@ -2265,10 +2265,27 @@ public class NavigationFileParserTest {
 
     @Test
     public void testDefensiveProgrammingExceptions() {
-        // create ParseInfo
         final ParseInfo parseInfo = new ParseInfo("", TimeScalesFactory.getTimeScales());
-        parseInfo.setSystemLineParser(SatelliteSystem.SBAS, null);
-        MessageLineParser lineParser = parseInfo.getMessageLineParser();
+        parseInfo.setRecordLineParser(RecordType.ION, SatelliteSystem.GLONASS, 22, "LXOC", null);
+        RecordLineParser lineParser = parseInfo.getRecordLineParser();
+        try {
+            lineParser.parseLine01();
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitInternalError oe) {
+            // expected
+        }
+        try {
+            lineParser.parseLine02();
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitInternalError oe) {
+            // expected
+        }
+        try {
+            lineParser.parseLine03();
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitInternalError oe) {
+            // expected
+        }
         try {
             lineParser.parseLine04();
             Assertions.fail("an exception should have been thrown");

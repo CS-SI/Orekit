@@ -14,13 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.rinex.navigation.parsers;
+package org.orekit.files.rinex.navigation.parsers.ephemeris;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.rinex.navigation.MessageType;
+import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
+import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
+import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.propagation.analytical.gnss.data.BeidouCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.BeidouSatelliteType;
@@ -31,7 +33,7 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class BeidouCnv123Parser extends MessageLineParser {
+public class BeidouCnv123Parser extends RecordLineParser {
 
     /** Container for parsing data. */
     private final ParseInfo parseInfo;
@@ -43,8 +45,8 @@ public class BeidouCnv123Parser extends MessageLineParser {
      * @param parseInfo container for parsing data
      * @param message container for navigation message
      */
-    BeidouCnv123Parser(final ParseInfo parseInfo, BeidouCivilianNavigationMessage message) {
-        super(MessageType.ORBIT);
+    public BeidouCnv123Parser(final ParseInfo parseInfo, BeidouCivilianNavigationMessage message) {
+        super(RecordType.ORBIT);
         this.parseInfo = parseInfo;
         this.message   = message;
     }
@@ -150,7 +152,7 @@ public class BeidouCnv123Parser extends MessageLineParser {
     public void parseLine08() {
         if (message.getRadioWave().closeTo(PredefinedGnssSignal.B2B)) {
             message.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
-            parseInfo.closePendingMessage();
+            parseInfo.closePendingRecord();
         } else {
             parseSismaiHealthIntegrity();
         }
@@ -163,12 +165,12 @@ public class BeidouCnv123Parser extends MessageLineParser {
         // field 2 is spare
         // field 3 is spare
         message.setIODE(parseInfo.parseInt4());
-        parseInfo.closePendingMessage();
+        parseInfo.closePendingRecord();
     }
 
     /** {@inheritDoc} */
     @Override
-    public void closeMessage(final RinexNavigation file) {
+    public void closeRecord(final RinexNavigation file) {
         file.addBeidouCivilianNavigationMessage(message);
     }
 

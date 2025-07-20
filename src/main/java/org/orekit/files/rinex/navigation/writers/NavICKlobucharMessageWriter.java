@@ -18,7 +18,7 @@ package org.orekit.files.rinex.navigation.writers;
 
 import org.orekit.files.rinex.navigation.IonosphereKlobucharMessage;
 import org.orekit.files.rinex.navigation.IonosphereNavICKlobucharMessage;
-import org.orekit.files.rinex.navigation.MessageType;
+import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
 import org.orekit.utils.units.Unit;
@@ -39,7 +39,7 @@ public class NavICKlobucharMessageWriter
         throws IOException {
 
         // TYPE / SV / MSG
-        writeTypeSvMsg(MessageType.ION, identifier, message, header, writer);
+        writeTypeSvMsg(RecordType.ION, identifier, message, header, writer);
 
         // ION MESSAGE LINE - 0
         writer.writeDate(message.getTransmitTime(), message.getSystem());

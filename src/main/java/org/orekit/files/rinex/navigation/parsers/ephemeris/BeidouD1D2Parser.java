@@ -14,33 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.rinex.navigation.parsers;
+package org.orekit.files.rinex.navigation.parsers.ephemeris;
 
-import org.orekit.files.rinex.navigation.MessageType;
+import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
-import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
+import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
+import org.orekit.files.rinex.navigation.parsers.ParseInfo;
+import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
 import org.orekit.utils.units.Unit;
 
-/** Parser for GPS legacy.
+/** Parser for Beidou legacy.
  * @author Bryan Cazabonne
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class GPSLnavParser extends MessageLineParser {
+public class BeidouD1D2Parser extends RecordLineParser {
 
     /** Container for parsing data. */
     private final ParseInfo parseInfo;
 
     /** Container for navigation message. */
-    private final GPSLegacyNavigationMessage message;
+    private final BeidouLegacyNavigationMessage message;
 
     /** Simple constructor.
      * @param parseInfo container for parsing data
      * @param message container for navigation message
      */
-    GPSLnavParser(final ParseInfo parseInfo, final GPSLegacyNavigationMessage message) {
-        super(MessageType.ORBIT);
+    public BeidouD1D2Parser(final ParseInfo parseInfo, final BeidouLegacyNavigationMessage message) {
+        super(RecordType.ORBIT);
         this.parseInfo = parseInfo;
         this.message   = message;
     }
@@ -48,17 +50,14 @@ public class GPSLnavParser extends MessageLineParser {
     /** {@inheritDoc} */
     @Override
     public void parseLine00() {
-        if (parseInfo.getHeader().getFormatVersion() < 3.0) {
-            parseSvEpochSvClockLineRinex2(parseInfo.getLine(), parseInfo.getTimeScales().getGPS(), message);
-        } else {
-            parseSvEpochSvClockLine(parseInfo.getLine(), parseInfo.getTimeScales().getGPS(), parseInfo, message);
-        }
+        parseSvEpochSvClockLine(parseInfo.getLine(), parseInfo.getTimeScales().getBDT(),
+                                parseInfo, message);
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine01() {
-        message.setIODE(parseInfo.parseDouble1(Unit.SECOND));
+        message.setAODE(parseInfo.parseDouble1(Unit.SECOND));
         message.setCrs(parseInfo.parseDouble2(Unit.METRE));
         message.setDeltaN0(parseInfo.parseDouble3(RinexNavigationParser.RAD_PER_S));
         message.setM0(parseInfo.parseDouble4(Unit.RADIAN));
@@ -96,32 +95,31 @@ public class GPSLnavParser extends MessageLineParser {
     public void parseLine05() {
         // iDot
         message.setIDot(parseInfo.parseDouble1(RinexNavigationParser.RAD_PER_S));
-        message.setL2Codes(parseInfo.parseInt2());
+        // BDT week (to go with Toe)
         message.setWeek(parseInfo.parseInt3());
-        message.setL2PFlags(parseInfo.parseInt4());
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine06() {
         message.setSvAccuracy(parseInfo.parseDouble1(Unit.METRE));
-        message.setSvHealth(parseInfo.parseInt2());
-        message.setTGD(parseInfo.parseDouble3(Unit.SECOND));
-        message.setIODC(parseInfo.parseInt4());
+        message.setSatH1(parseInfo.parseInt2());
+        message.setTGD1(parseInfo.parseDouble3(Unit.SECOND));
+        message.setTGD2(parseInfo.parseDouble4(Unit.SECOND));
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine07() {
         message.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
-        message.setFitInterval(parseInfo.parseInt2());
-        parseInfo.closePendingMessage();
+        message.setAODC(parseInfo.parseDouble2(Unit.SECOND));
+        parseInfo.closePendingRecord();
     }
 
     /** {@inheritDoc} */
     @Override
-    public void closeMessage(final RinexNavigation file) {
-        file.addGPSLegacyNavigationMessage(message);
+    public void closeRecord(final RinexNavigation file) {
+        file.addBeidouLegacyNavigationMessage(message);
     }
 
 }

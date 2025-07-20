@@ -17,7 +17,7 @@
 package org.orekit.files.rinex.navigation.writers;
 
 import org.orekit.files.rinex.navigation.IonosphereGlonassCdmsMessage;
-import org.orekit.files.rinex.navigation.MessageType;
+import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
 import org.orekit.utils.units.Unit;
@@ -38,7 +38,7 @@ public class GlonassCDMSMessageWriter
         throws IOException {
 
         // TYPE / SV / MSG
-        writeTypeSvMsg(MessageType.ION, identifier, message, header, writer);
+        writeTypeSvMsg(RecordType.ION, identifier, message, header, writer);
 
         // MESSAGE LINE - 0
         writer.writeDate(message.getTransmitTime(), message.getSystem());

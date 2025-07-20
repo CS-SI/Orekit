@@ -17,7 +17,7 @@
 package org.orekit.files.rinex.navigation.parsers;
 
 import org.orekit.errors.OrekitInternalError;
-import org.orekit.files.rinex.navigation.MessageType;
+import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.utils.ParsingUtils;
@@ -26,26 +26,26 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.units.Unit;
 
-/** Base class for satellite system specific lines parsers.
+/** Base class for record parsers.
  * @author Bryan Cazabonne
  * @author Luc Maisonobe
  */
-public abstract class MessageLineParser {
+public abstract class RecordLineParser {
 
-    /** Type of the message being parsed. */
-    private final MessageType type;
+    /** Type of the record being parsed. */
+    private final RecordType type;
 
     /** Simple constructor.
-     * @param type type of the message being parsed
+     * @param type type of the record being parsed
      */
-    protected MessageLineParser(final MessageType type) {
+    protected RecordLineParser(final RecordType type) {
         this.type = type;
     }
 
-    /** Get the type of the message being parsed.
-     * @return type of the message being parsed
+    /** Get the type of the record being parsed.
+     * @return type of the record being parsed
      */
-    public MessageType getType() {
+    public RecordType getType() {
         return type;
     }
 
@@ -96,68 +96,77 @@ public abstract class MessageLineParser {
 
     }
 
-    /** Parse line 0 of the navigation message.
+    /** Parse line 0 of the navigation record.
      */
     public abstract void parseLine00();
 
-    /** Parse line 1 of the navigation message.
+    /** Parse line 1 of the navigation record.
      */
-    public abstract void parseLine01();
+    public void parseLine01() {
+        // this should never be called (except by some tests)
+        throw new OrekitInternalError(null);
+    }
 
-    /** Parse line 2 of the navigation message.
+    /** Parse line 2 of the navigation record.
      */
-    public abstract void parseLine02();
+    public void parseLine02() {
+        // this should never be called (except by some tests)
+        throw new OrekitInternalError(null);
+    }
 
-    /** Parse line 3 of the navigation message.
+    /** Parse line 3 of the navigation record.
      */
-    public abstract void parseLine03();
+    public void parseLine03() {
+        // this should never be called (except by some tests)
+        throw new OrekitInternalError(null);
+    }
 
-    /** Parse line 4 of the navigation messagee.
+    /** Parse line 4 of the navigation record.
      */
     public void parseLine04() {
         // this should never be called (except by some tests)
         throw new OrekitInternalError(null);
     }
 
-    /** Parse line 5 of the navigation message.
+    /** Parse line 5 of the navigation record.
      */
     public void parseLine05() {
         // this should never be called (except by some tests)
         throw new OrekitInternalError(null);
     }
 
-    /** Parse line 6 of the navigation message.
+    /** Parse line 6 of the navigation record.
      */
     public void parseLine06() {
         // this should never be called (except by some tests)
         throw new OrekitInternalError(null);
     }
 
-    /** Parse line 7 of the navigation message.
+    /** Parse line 7 of the navigation record.
      */
     public void parseLine07() {
         // this should never be called (except by some tests)
         throw new OrekitInternalError(null);
     }
 
-    /** Parse line 8 of the navigation message.
+    /** Parse line 8 of the navigation record.
      */
     public void parseLine08() {
         // this should never be called (except by some tests)
         throw new OrekitInternalError(null);
     }
 
-    /** Parse line 9 of the navigation message.
+    /** Parse line 9 of the navigation record.
      */
     public void parseLine09() {
         // this should never be called (except by some tests)
         throw new OrekitInternalError(null);
     }
 
-    /** Close a message as the last line was parsed.
-     * @param file navigation file where to put the completed message
+    /** Close a record as the last line was parsed.
+     * @param file navigation file where to put the completed record
      */
-    public abstract void closeMessage(RinexNavigation file);
+    public abstract void closeRecord(RinexNavigation file);
 
     /** Calculates the floating-point remainder of a / b.
      * <p>

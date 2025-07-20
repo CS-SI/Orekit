@@ -14,33 +14,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.rinex.navigation.parsers;
+package org.orekit.files.rinex.navigation.parsers.ephemeris;
 
-import org.orekit.files.rinex.navigation.MessageType;
+import org.hipparchus.util.FastMath;
+import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
-import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
+import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
+import org.orekit.files.rinex.navigation.parsers.ParseInfo;
+import org.orekit.propagation.analytical.gnss.data.NavICLegacyNavigationMessage;
 import org.orekit.utils.units.Unit;
 
-/** Parser for Beidou legacy.
+/** Parser for NavIC legacy.
  * @author Bryan Cazabonne
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class BeidouD1D2Parser extends MessageLineParser {
+public class NavICLnavParser extends RecordLineParser {
+
+    /** URA index to URA mapping (table 23 of NavIC ICD). */
+    // CHECKSTYLE: stop Indentation check
+    static final double[] NAVIC_URA = {
+           2.40,    3.40,    4.85,   6.85,
+           9.65,   13.65,   24.00,  48.00,
+          96.00,  192.00,  384.00, 768.00,
+        1536.00, 3072.00, 6144.00, Double.NaN
+    };
+    // CHECKSTYLE: resume Indentation check
 
     /** Container for parsing data. */
     private final ParseInfo parseInfo;
 
     /** Container for navigation message. */
-    private final BeidouLegacyNavigationMessage message;
+    private final NavICLegacyNavigationMessage message;
 
     /** Simple constructor.
      * @param parseInfo container for parsing data
      * @param message container for navigation message
      */
-    BeidouD1D2Parser(final ParseInfo parseInfo, final BeidouLegacyNavigationMessage message) {
-        super(MessageType.ORBIT);
+    public NavICLnavParser(final ParseInfo parseInfo, final NavICLegacyNavigationMessage message) {
+        super(RecordType.ORBIT);
         this.parseInfo = parseInfo;
         this.message   = message;
     }
@@ -48,14 +61,15 @@ public class BeidouD1D2Parser extends MessageLineParser {
     /** {@inheritDoc} */
     @Override
     public void parseLine00() {
-        parseSvEpochSvClockLine(parseInfo.getLine(), parseInfo.getTimeScales().getBDT(),
+        parseSvEpochSvClockLine(parseInfo.getLine(), parseInfo.getTimeScales().getNavIC(),
                                 parseInfo, message);
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine01() {
-        message.setAODE(parseInfo.parseDouble1(Unit.SECOND));
+        message.setIODE(parseInfo.parseInt1());
+        message.setIODC(message.getIODE());
         message.setCrs(parseInfo.parseDouble2(Unit.METRE));
         message.setDeltaN0(parseInfo.parseDouble3(RinexNavigationParser.RAD_PER_S));
         message.setM0(parseInfo.parseDouble4(Unit.RADIAN));
@@ -91,33 +105,32 @@ public class BeidouD1D2Parser extends MessageLineParser {
     /** {@inheritDoc} */
     @Override
     public void parseLine05() {
-        // iDot
         message.setIDot(parseInfo.parseDouble1(RinexNavigationParser.RAD_PER_S));
-        // BDT week (to go with Toe)
+        message.setL2Codes(parseInfo.parseInt2());
         message.setWeek(parseInfo.parseInt3());
+        message.setL2PFlags(parseInfo.parseInt4());
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine06() {
-        message.setSvAccuracy(parseInfo.parseDouble1(Unit.METRE));
-        message.setSatH1(parseInfo.parseInt2());
-        message.setTGD1(parseInfo.parseDouble3(Unit.SECOND));
-        message.setTGD2(parseInfo.parseDouble4(Unit.SECOND));
+        final int uraIndex = parseInfo.parseInt1();
+        message.setSvAccuracy(NAVIC_URA[FastMath.min(uraIndex, NAVIC_URA.length - 1)]);
+        message.setSvHealth(parseInfo.parseInt2());
+        message.setTGD(parseInfo.parseDouble3(Unit.SECOND));
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine07() {
         message.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
-        message.setAODC(parseInfo.parseDouble2(Unit.SECOND));
-        parseInfo.closePendingMessage();
+        parseInfo.closePendingRecord();
     }
 
     /** {@inheritDoc} */
     @Override
-    public void closeMessage(final RinexNavigation file) {
-        file.addBeidouLegacyNavigationMessage(message);
+    public void closeRecord(final RinexNavigation file) {
+        file.addNavICLegacyNavigationMessage(message);
     }
 
 }

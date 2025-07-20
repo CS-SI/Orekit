@@ -14,12 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.rinex.navigation.parsers;
+package org.orekit.files.rinex.navigation.parsers.ephemeris;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.files.rinex.navigation.MessageType;
+import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
+import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
+import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.files.rinex.utils.ParsingUtils;
 import org.orekit.propagation.analytical.gnss.data.SBASNavigationMessage;
 import org.orekit.time.TimeScale;
@@ -30,7 +32,7 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class SbasParser extends MessageLineParser {
+public class SbasParser extends RecordLineParser {
 
     /** Container for parsing data. */
     private final ParseInfo parseInfo;
@@ -42,8 +44,8 @@ public class SbasParser extends MessageLineParser {
      * @param parseInfo container for parsing data
      * @param message container for navigation message
      */
-    SbasParser(final ParseInfo parseInfo, final SBASNavigationMessage message) {
-        super(MessageType.ORBIT);
+    public SbasParser(final ParseInfo parseInfo, final SBASNavigationMessage message) {
+        super(RecordType.ORBIT);
         this.parseInfo = parseInfo;
         this.message   = message;
     }
@@ -96,12 +98,12 @@ public class SbasParser extends MessageLineParser {
         message.setZDot(parseInfo.parseDouble2(RinexNavigationParser.KM_PER_S));
         message.setZDotDot(parseInfo.parseDouble3(RinexNavigationParser.KM_PER_S2));
         message.setIODN(parseInfo.parseDouble4(Unit.NONE));
-        parseInfo.closePendingMessage();
+        parseInfo.closePendingRecord();
     }
 
     /** {@inheritDoc} */
     @Override
-    public void closeMessage(final RinexNavigation file) {
+    public void closeRecord(final RinexNavigation file) {
         file.addSBASNavigationMessage(message);
     }
 

@@ -16,11 +16,11 @@
  */
 package org.orekit.files.rinex.navigation;
 
-/** Enumerate for message type.
+/** Enumerate for record type.
  * @author Luc Maisonobe
  * @since 14.0
  */
-public enum MessageType {
+public enum RecordType {
 
     /** Ephemeris message. */
     EPH("> EPH"),
@@ -43,7 +43,7 @@ public enum MessageType {
     /** Simple constructor.
      * @param prefix line prefix
      */
-    MessageType(final String prefix) {
+    RecordType(final String prefix) {
         this.prefix = prefix;
     }
 

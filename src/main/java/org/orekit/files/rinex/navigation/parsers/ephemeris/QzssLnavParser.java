@@ -14,33 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.rinex.navigation.parsers;
+package org.orekit.files.rinex.navigation.parsers.ephemeris;
 
-import org.orekit.files.rinex.navigation.MessageType;
+import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
-import org.orekit.propagation.analytical.gnss.data.GPSCivilianNavigationMessage;
+import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
+import org.orekit.files.rinex.navigation.parsers.ParseInfo;
+import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
 import org.orekit.utils.units.Unit;
 
-/** Parser for GPS civilian.
+/** Parser for QZSS legacy.
  * @author Bryan Cazabonne
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class GPSCnavParser extends MessageLineParser {
+public class QzssLnavParser extends RecordLineParser {
 
     /** Container for parsing data. */
     private final ParseInfo parseInfo;
 
     /** Container for navigation message. */
-    private final GPSCivilianNavigationMessage message;
+    private final QZSSLegacyNavigationMessage message;
 
     /** Simple constructor.
      * @param parseInfo container for parsing data
      * @param message container for navigation message
      */
-    GPSCnavParser(final ParseInfo parseInfo, final GPSCivilianNavigationMessage message) {
-        super(MessageType.ORBIT);
+    public QzssLnavParser(final ParseInfo parseInfo, final QZSSLegacyNavigationMessage message) {
+        super(RecordType.ORBIT);
         this.parseInfo = parseInfo;
         this.message   = message;
     }
@@ -55,7 +57,7 @@ public class GPSCnavParser extends MessageLineParser {
     /** {@inheritDoc} */
     @Override
     public void parseLine01() {
-        message.setADot(parseInfo.parseDouble1(RinexNavigationParser.M_PER_S));
+        message.setIODE(parseInfo.parseDouble1(Unit.SECOND));
         message.setCrs(parseInfo.parseDouble2(Unit.METRE));
         message.setDeltaN0(parseInfo.parseDouble3(RinexNavigationParser.RAD_PER_S));
         message.setM0(parseInfo.parseDouble4(Unit.RADIAN));
@@ -91,61 +93,34 @@ public class GPSCnavParser extends MessageLineParser {
     /** {@inheritDoc} */
     @Override
     public void parseLine05() {
+        // iDot
         message.setIDot(parseInfo.parseDouble1(RinexNavigationParser.RAD_PER_S));
-        message.setDeltaN0Dot(parseInfo.parseDouble2(RinexNavigationParser.RAD_PER_S2));
-        message.setUraiNed0(parseInfo.parseInt3());
-        message.setUraiNed1(parseInfo.parseInt4());
+        message.setL2Codes(parseInfo.parseInt2());
+        message.setWeek(parseInfo.parseInt3());
+        message.setL2PFlags(parseInfo.parseInt4());
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine06() {
-        message.setUraiEd(parseInfo.parseInt1());
+        message.setSvAccuracy(parseInfo.parseDouble1(Unit.METRE));
         message.setSvHealth(parseInfo.parseInt2());
         message.setTGD(parseInfo.parseDouble3(Unit.SECOND));
-        message.setUraiNed2(parseInfo.parseInt4());
+        message.setIODC(parseInfo.parseInt4());
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine07() {
-        message.setIscL1CA(parseInfo.parseDouble1(Unit.SECOND));
-        message.setIscL2C(parseInfo.parseDouble2(Unit.SECOND));
-        message.setIscL5I5(parseInfo.parseDouble3(Unit.SECOND));
-        message.setIscL5Q5(parseInfo.parseDouble4(Unit.SECOND));
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void parseLine08() {
-        if (message.isCnv2()) {
-            // in CNAV2 messages, there is an additional line for L1 CD and L1 CP inter signal delay
-            message.setIscL1CD(parseInfo.parseDouble1(Unit.SECOND));
-            message.setIscL1CP(parseInfo.parseDouble2(Unit.SECOND));
-        } else {
-            parseTransmissionTimeLine();
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void parseLine09() {
-        parseTransmissionTimeLine();
-    }
-
-    /** Parse transmission time line.
-     */
-    private void parseTransmissionTimeLine() {
         message.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
-        message.setWeek(parseInfo.parseInt2());
-        message.setFlags(parseInfo.parseInt3());
-        parseInfo.closePendingMessage();
+        message.setFitInterval(parseInfo.parseInt2());
+        parseInfo.closePendingRecord();
     }
 
     /** {@inheritDoc} */
     @Override
-    public void closeMessage(final RinexNavigation file) {
-        file.addGPSCivilianNavigationMessage(message);
+    public void closeRecord(final RinexNavigation file) {
+        file.addQZSSLegacyNavigationMessage(message);
     }
 
 }
