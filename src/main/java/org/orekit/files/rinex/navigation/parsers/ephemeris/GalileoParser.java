@@ -17,8 +17,6 @@
 package org.orekit.files.rinex.navigation.parsers.ephemeris;
 
 import org.orekit.files.rinex.navigation.RinexNavigation;
-import org.orekit.files.rinex.navigation.RinexNavigationParser;
-import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
 import org.orekit.utils.units.Unit;
@@ -28,78 +26,43 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class GalileoParser extends RecordLineParser {
-
-    /** Container for parsing data. */
-    private final ParseInfo parseInfo;
-
-    /** Container for navigation message. */
-    private final GalileoNavigationMessage message;
+public class GalileoParser extends AbstractNavigationParser<GalileoNavigationMessage> {
 
     /** Simple constructor.
      * @param parseInfo container for parsing data
      * @param message container for navigation message
      */
     public GalileoParser(final ParseInfo parseInfo, final GalileoNavigationMessage message) {
-        this.parseInfo = parseInfo;
-        this.message   = message;
+        super(parseInfo, message);
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine00() {
+        final ParseInfo parseInfo = getParseInfo();
+        final GalileoNavigationMessage message = getMessage();
         parseSvEpochSvClockLine(parseInfo.getTimeScales().getGPS(), parseInfo, message);
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine01() {
-        message.setIODNav(parseInfo.parseInt1());
-        message.setCrs(parseInfo.parseDouble2(Unit.METRE));
-        message.setDeltaN0(parseInfo.parseDouble3(RinexNavigationParser.RAD_PER_S));
-        message.setM0(parseInfo.parseDouble4(Unit.RADIAN));
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void parseLine02() {
-        message.setCuc(parseInfo.parseDouble1(Unit.RADIAN));
-        message.setE(parseInfo.parseDouble2(Unit.NONE));
-        message.setCus(parseInfo.parseDouble3(Unit.RADIAN));
-        message.setSqrtA(parseInfo.parseDouble4(RinexNavigationParser.SQRT_M));
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void parseLine03() {
-        message.setTime(parseInfo.parseDouble1(Unit.SECOND));
-        message.setCic(parseInfo.parseDouble2(Unit.RADIAN));
-        message.setOmega0(parseInfo.parseDouble3(Unit.RADIAN));
-        message.setCis(parseInfo.parseDouble4(Unit.RADIAN));
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void parseLine04() {
-        message.setI0(parseInfo.parseDouble1(Unit.RADIAN));
-        message.setCrc(parseInfo.parseDouble2(Unit.METRE));
-        message.setPa(parseInfo.parseDouble3(Unit.RADIAN));
-        message.setOmegaDot(parseInfo.parseDouble4(RinexNavigationParser.RAD_PER_S));
+        super.parseLine01();
+        getMessage().setIODNav(getParseInfo().parseInt1());
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine05() {
-        // iDot
-        message.setIDot(parseInfo.parseDouble1(RinexNavigationParser.RAD_PER_S));
-        message.setDataSource(parseInfo.parseInt2());
-        // GAL week (to go with Toe)
-        message.setWeek(parseInfo.parseInt3());
+        super.parseLine05();
+        getMessage().setDataSource(getParseInfo().parseInt2());
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine06() {
+        final ParseInfo parseInfo = getParseInfo();
+        final GalileoNavigationMessage message = getMessage();
         message.setSisa(parseInfo.parseDouble1(Unit.METRE));
         message.setSvHealth(parseInfo.parseDouble2(Unit.NONE));
         message.setBGDE1E5a(parseInfo.parseDouble3(Unit.SECOND));
@@ -109,6 +72,8 @@ public class GalileoParser extends RecordLineParser {
     /** {@inheritDoc} */
     @Override
     public void parseLine07() {
+        final ParseInfo parseInfo = getParseInfo();
+        final GalileoNavigationMessage message = getMessage();
         message.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
         parseInfo.closePendingRecord();
     }
@@ -116,7 +81,7 @@ public class GalileoParser extends RecordLineParser {
     /** {@inheritDoc} */
     @Override
     public void closeRecord(final RinexNavigation file) {
-        file.addGalileoNavigationMessage(message);
+        file.addGalileoNavigationMessage(getMessage());
     }
 
 }

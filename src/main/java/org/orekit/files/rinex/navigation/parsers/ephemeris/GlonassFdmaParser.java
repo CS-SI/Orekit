@@ -17,8 +17,6 @@
 package org.orekit.files.rinex.navigation.parsers.ephemeris;
 
 import org.orekit.files.rinex.navigation.RinexNavigation;
-import org.orekit.files.rinex.navigation.RinexNavigationParser;
-import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.files.rinex.utils.ParsingUtils;
 import org.orekit.propagation.analytical.gnss.data.GLONASSFdmaNavigationMessage;
@@ -31,26 +29,22 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class GlonassFdmaParser extends RecordLineParser {
-
-    /** Container for parsing data. */
-    private final ParseInfo parseInfo;
-
-    /** Container for navigation message. */
-    private final GLONASSFdmaNavigationMessage message;
+public class GlonassFdmaParser extends AbstractEphemerisParser<GLONASSFdmaNavigationMessage> {
 
     /** Simple constructor.
      * @param parseInfo container for parsing data
      * @param message container for navigation message
      */
     public GlonassFdmaParser(final ParseInfo parseInfo, final GLONASSFdmaNavigationMessage message) {
-        this.parseInfo = parseInfo;
-        this.message   = message;
+        super(parseInfo, message);
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine00() {
+
+        final ParseInfo parseInfo = getParseInfo();
+        final GLONASSFdmaNavigationMessage message = getMessage();
 
         if (parseInfo.getHeader().getFormatVersion() < 3.0) {
 
@@ -93,27 +87,22 @@ public class GlonassFdmaParser extends RecordLineParser {
     /** {@inheritDoc} */
     @Override
     public void parseLine01() {
-        message.setX(parseInfo.parseDouble1(RinexNavigationParser.KM));
-        message.setXDot(parseInfo.parseDouble2(RinexNavigationParser.KM_PER_S));
-        message.setXDotDot(parseInfo.parseDouble3(RinexNavigationParser.KM_PER_S2));
-        message.setHealth(parseInfo.parseDouble4(Unit.NONE));
+        super.parseLine01();
+        getMessage().setHealth(getParseInfo().parseDouble4(Unit.NONE));
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine02() {
-        message.setY(parseInfo.parseDouble1(RinexNavigationParser.KM));
-        message.setYDot(parseInfo.parseDouble2(RinexNavigationParser.KM_PER_S));
-        message.setYDotDot(parseInfo.parseDouble3(RinexNavigationParser.KM_PER_S2));
-        message.setFrequencyNumber(parseInfo.parseDouble4(Unit.NONE));
+        super.parseLine02();
+        getMessage().setFrequencyNumber(getParseInfo().parseDouble4(Unit.NONE));
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine03() {
-        message.setZ(parseInfo.parseDouble1(RinexNavigationParser.KM));
-        message.setZDot(parseInfo.parseDouble2(RinexNavigationParser.KM_PER_S));
-        message.setZDotDot(parseInfo.parseDouble3(RinexNavigationParser.KM_PER_S2));
+        super.parseLine03();
+        final ParseInfo parseInfo = getParseInfo();
         if (parseInfo.getHeader().getFormatVersion() < 3.045) {
             parseInfo.closePendingRecord();
         }
@@ -122,6 +111,8 @@ public class GlonassFdmaParser extends RecordLineParser {
     /** {@inheritDoc} */
     @Override
     public void parseLine04() {
+        final ParseInfo parseInfo = getParseInfo();
+        final GLONASSFdmaNavigationMessage message = getMessage();
         message.setStatusFlags(parseInfo.parseDouble1(Unit.NONE));
         message.setGroupDelayDifference(parseInfo.parseDouble2(Unit.NONE));
         message.setURA(parseInfo.parseDouble3(Unit.NONE));
@@ -132,7 +123,7 @@ public class GlonassFdmaParser extends RecordLineParser {
     /** {@inheritDoc} */
     @Override
     public void closeRecord(final RinexNavigation file) {
-        file.addGlonassNavigationMessage(message);
+        file.addGlonassNavigationMessage(getMessage());
     }
 
 }
