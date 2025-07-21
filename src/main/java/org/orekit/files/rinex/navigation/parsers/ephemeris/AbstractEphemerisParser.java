@@ -45,14 +45,14 @@ public abstract class AbstractEphemerisParser<T extends AbstractEphemerisMessage
     }
 
     /** Get the container for parsing data.
-     * return container for parsing data
+     * @return container for parsing data
      */
     public ParseInfo getParseInfo() {
         return parseInfo;
     }
 
     /** Get the container for the navigation message.
-     * return container for the navigation message
+     * @return container for the navigation message
      */
     public T getMessage() {
         return message;

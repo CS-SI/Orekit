@@ -21,7 +21,7 @@ import org.orekit.propagation.analytical.gnss.data.LegacyNavigationMessage;
 import org.orekit.utils.units.Unit;
 
 /** Parser for legacy navigation messages.
-// * @param <T> type of the navigation message
+ * @param <T> type of the navigation message
  * @author Bryan Cazabonne
  * @author Luc Maisonobe
  * @since 14.0

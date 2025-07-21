@@ -23,7 +23,7 @@ import org.orekit.propagation.analytical.gnss.data.AbstractNavigationMessage;
 import org.orekit.utils.units.Unit;
 
 /** Parser for abstract navigation messages.
-// * @param <T> type of the navigation message
+ * @param <T> type of the navigation message
  * @author Bryan Cazabonne
  * @author Luc Maisonobe
  * @since 14.0
@@ -46,14 +46,14 @@ public abstract class AbstractNavigationParser<T extends AbstractNavigationMessa
     }
 
     /** Get the container for parsing data.
-     * return container for parsing data
+     * @return container for parsing data
      */
     public ParseInfo getParseInfo() {
         return parseInfo;
     }
 
     /** Get the container for the navigation message.
-     * return container for the navigation message
+     * @return container for the navigation message
      */
     public T getMessage() {
         return message;
