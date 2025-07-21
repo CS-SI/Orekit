@@ -17,10 +17,7 @@
 package org.orekit.files.rinex.navigation.parsers.ephemeris;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
-import org.orekit.files.rinex.navigation.RinexNavigationParser;
-import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.propagation.analytical.gnss.data.NavICLegacyNavigationMessage;
 import org.orekit.utils.units.Unit;
@@ -30,7 +27,7 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class NavICLnavParser extends RecordLineParser {
+public class NavICLnavParser extends LegacyNavigationParser<NavICLegacyNavigationMessage> {
 
     /** URA index to URA mapping (table 23 of NavIC ICD). */
     // CHECKSTYLE: stop Indentation check
@@ -42,94 +39,57 @@ public class NavICLnavParser extends RecordLineParser {
     };
     // CHECKSTYLE: resume Indentation check
 
-    /** Container for parsing data. */
-    private final ParseInfo parseInfo;
-
-    /** Container for navigation message. */
-    private final NavICLegacyNavigationMessage message;
-
     /** Simple constructor.
      * @param parseInfo container for parsing data
      * @param message container for navigation message
      */
     public NavICLnavParser(final ParseInfo parseInfo, final NavICLegacyNavigationMessage message) {
-        super(RecordType.ORBIT);
-        this.parseInfo = parseInfo;
-        this.message   = message;
+        super(parseInfo, message);
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine00() {
-        parseSvEpochSvClockLine(parseInfo.getTimeScales().getNavIC(), parseInfo, message);
+        final ParseInfo parseInfo = getParseInfo();
+        parseSvEpochSvClockLine(parseInfo.getTimeScales().getNavIC(), parseInfo, getMessage());
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine01() {
-        message.setIODE(parseInfo.parseInt1());
+        super.parseLine01();
+        // for NavIC legacy, Issue Of Data applies to both clock and ephemeris
+        final NavICLegacyNavigationMessage message = getMessage();
         message.setIODC(message.getIODE());
-        message.setCrs(parseInfo.parseDouble2(Unit.METRE));
-        message.setDeltaN0(parseInfo.parseDouble3(RinexNavigationParser.RAD_PER_S));
-        message.setM0(parseInfo.parseDouble4(Unit.RADIAN));
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void parseLine02() {
-        message.setCuc(parseInfo.parseDouble1(Unit.RADIAN));
-        message.setE(parseInfo.parseDouble2(Unit.NONE));
-        message.setCus(parseInfo.parseDouble3(Unit.RADIAN));
-        message.setSqrtA(parseInfo.parseDouble4(RinexNavigationParser.SQRT_M));
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void parseLine03() {
-        message.setTime(parseInfo.parseDouble1(Unit.SECOND));
-        message.setCic(parseInfo.parseDouble2(Unit.RADIAN));
-        message.setOmega0(parseInfo.parseDouble3(Unit.RADIAN));
-        message.setCis(parseInfo.parseDouble4(Unit.RADIAN));
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void parseLine04() {
-        message.setI0(parseInfo.parseDouble1(Unit.RADIAN));
-        message.setCrc(parseInfo.parseDouble2(Unit.METRE));
-        message.setPa(parseInfo.parseDouble3(Unit.RADIAN));
-        message.setOmegaDot(parseInfo.parseDouble4(RinexNavigationParser.RAD_PER_S));
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void parseLine05() {
-        message.setIDot(parseInfo.parseDouble1(RinexNavigationParser.RAD_PER_S));
-        message.setL2Codes(parseInfo.parseInt2());
-        message.setWeek(parseInfo.parseInt3());
-        message.setL2PFlags(parseInfo.parseInt4());
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine06() {
-        final int uraIndex = parseInfo.parseInt1();
-        message.setSvAccuracy(NAVIC_URA[FastMath.min(uraIndex, NAVIC_URA.length - 1)]);
-        message.setSvHealth(parseInfo.parseInt2());
-        message.setTGD(parseInfo.parseDouble3(Unit.SECOND));
+        super.parseLine06();
+
+        // for NavIC legacy, the User Range Accurary is provided as an index in a table
+        // the base class implementation just parsed it as a double, we need to fix it
+        final NavICLegacyNavigationMessage message = getMessage();
+        final int index = (int) FastMath.rint(message.getSvAccuracy());
+        message.setSvAccuracy(NAVIC_URA[FastMath.min(index, NAVIC_URA.length - 1)]);
+
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine07() {
+        final ParseInfo parseInfo = getParseInfo();
+        final NavICLegacyNavigationMessage message = getMessage();
         message.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
+        // there is no fit interval in NavIC L message
         parseInfo.closePendingRecord();
     }
 
     /** {@inheritDoc} */
     @Override
     public void closeRecord(final RinexNavigation file) {
-        file.addNavICLegacyNavigationMessage(message);
+        file.addNavICLegacyNavigationMessage(getMessage());
     }
 
 }
