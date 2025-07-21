@@ -16,7 +16,6 @@
  */
 package org.orekit.files.rinex.navigation.parsers.ephemeris;
 
-import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
@@ -39,7 +38,6 @@ public class GlonassCdmaParser extends RecordLineParser {
      * @param parseInfo container for parsing data
      */
     public GlonassCdmaParser(final ParseInfo parseInfo) {
-        super(RecordType.ORBIT);
         this.parseInfo = parseInfo;
     }
 

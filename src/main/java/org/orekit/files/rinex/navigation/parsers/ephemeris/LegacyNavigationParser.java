@@ -16,7 +16,6 @@
  */
 package org.orekit.files.rinex.navigation.parsers.ephemeris;
 
-import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
@@ -42,7 +41,6 @@ public abstract class LegacyNavigationParser<T extends LegacyNavigationMessage<T
      * @param message container for navigation message
      */
     protected LegacyNavigationParser(final ParseInfo parseInfo, final T message) {
-        super(RecordType.ORBIT);
         this.parseInfo = parseInfo;
         this.message   = message;
     }

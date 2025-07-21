@@ -17,7 +17,6 @@
 package org.orekit.files.rinex.navigation.parsers.ephemeris;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
@@ -45,7 +44,6 @@ public class SbasParser extends RecordLineParser {
      * @param message container for navigation message
      */
     public SbasParser(final ParseInfo parseInfo, final SBASNavigationMessage message) {
-        super(RecordType.ORBIT);
         this.parseInfo = parseInfo;
         this.message   = message;
     }

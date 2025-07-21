@@ -18,7 +18,6 @@ package org.orekit.files.rinex.navigation.parsers.ionosphere;
 
 import org.orekit.files.rinex.navigation.IonosphereAij;
 import org.orekit.files.rinex.navigation.IonosphereNavICNeQuickNMessage;
-import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RegionalAij;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
@@ -43,7 +42,6 @@ public class NavICNeQuickNParser
      * @param message container for navigation message
      */
     public NavICNeQuickNParser(final ParseInfo parseInfo, final IonosphereNavICNeQuickNMessage message) {
-        super(RecordType.ION);
         this.parseInfo = parseInfo;
         this.message   = message;
     }

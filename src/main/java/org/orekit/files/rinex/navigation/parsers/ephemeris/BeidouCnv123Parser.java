@@ -18,7 +18,6 @@ package org.orekit.files.rinex.navigation.parsers.ephemeris;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
@@ -46,7 +45,6 @@ public class BeidouCnv123Parser extends RecordLineParser {
      * @param message container for navigation message
      */
     public BeidouCnv123Parser(final ParseInfo parseInfo, final BeidouCivilianNavigationMessage message) {
-        super(RecordType.ORBIT);
         this.parseInfo = parseInfo;
         this.message   = message;
     }

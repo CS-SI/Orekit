@@ -16,7 +16,6 @@
  */
 package org.orekit.files.rinex.navigation.parsers.ephemeris;
 
-import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
@@ -45,7 +44,6 @@ public class GlonassFdmaParser extends RecordLineParser {
      * @param message container for navigation message
      */
     public GlonassFdmaParser(final ParseInfo parseInfo, final GLONASSFdmaNavigationMessage message) {
-        super(RecordType.ORBIT);
         this.parseInfo = parseInfo;
         this.message   = message;
     }

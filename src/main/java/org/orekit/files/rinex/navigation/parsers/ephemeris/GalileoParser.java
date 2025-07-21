@@ -16,7 +16,6 @@
  */
 package org.orekit.files.rinex.navigation.parsers.ephemeris;
 
-import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
@@ -42,7 +41,6 @@ public class GalileoParser extends RecordLineParser {
      * @param message container for navigation message
      */
     public GalileoParser(final ParseInfo parseInfo, final GalileoNavigationMessage message) {
-        super(RecordType.ORBIT);
         this.parseInfo = parseInfo;
         this.message   = message;
     }

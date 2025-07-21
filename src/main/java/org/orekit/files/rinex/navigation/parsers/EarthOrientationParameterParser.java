@@ -17,7 +17,6 @@
 package org.orekit.files.rinex.navigation.parsers;
 
 import org.orekit.files.rinex.navigation.EarthOrientationParameterMessage;
-import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.utils.units.Unit;
@@ -40,7 +39,6 @@ public class EarthOrientationParameterParser
      * @param message container for navigation message
      */
     public EarthOrientationParameterParser(final ParseInfo parseInfo, final EarthOrientationParameterMessage message) {
-        super(RecordType.ION);
         this.parseInfo = parseInfo;
         this.message   = message;
     }

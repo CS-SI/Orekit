@@ -18,7 +18,6 @@ package org.orekit.files.rinex.navigation.parsers.ionosphere;
 
 import org.orekit.files.rinex.navigation.IonosphereBaseMessage;
 import org.orekit.files.rinex.navigation.IonosphereKlobucharMessage;
-import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RegionCode;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
@@ -42,7 +41,6 @@ public class KlobucharParser extends RecordLineParser {
      * @param message container for navigation message
      */
     public KlobucharParser(final ParseInfo parseInfo, final IonosphereKlobucharMessage message) {
-        super(RecordType.ION);
         this.parseInfo = parseInfo;
         this.message   = message;
     }

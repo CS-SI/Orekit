@@ -17,7 +17,6 @@
 package org.orekit.files.rinex.navigation.parsers.ionosphere;
 
 import org.orekit.files.rinex.navigation.IonosphereBDGIMMessage;
-import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
@@ -40,7 +39,6 @@ public class BdgimParser extends RecordLineParser {
      * @param message container for navigation message
      */
     public BdgimParser(final ParseInfo parseInfo, final IonosphereBDGIMMessage message) {
-        super(RecordType.ION);
         this.parseInfo = parseInfo;
         this.message   = message;
     }

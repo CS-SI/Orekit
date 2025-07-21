@@ -16,7 +16,6 @@
  */
 package org.orekit.files.rinex.navigation.parsers;
 
-import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.SbasId;
@@ -43,7 +42,6 @@ public class SystemTimeOffsetParser extends RecordLineParser {
      * @param message container for navigation message
      */
     public SystemTimeOffsetParser(final ParseInfo parseInfo, final SystemTimeOffsetMessage message) {
-        super(RecordType.ION);
         this.parseInfo = parseInfo;
         this.message   = message;
     }
