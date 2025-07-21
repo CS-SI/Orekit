@@ -14,24 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.rinex.navigation.writers;
+package org.orekit.files.rinex.navigation.writers.ionosphere;
 
-import org.orekit.files.rinex.navigation.IonosphereKlobucharMessage;
+import org.orekit.files.rinex.navigation.IonosphereBDGIMMessage;
 import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
+import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
+import org.orekit.files.rinex.navigation.writers.NavigationMessageWriter;
 
 import java.io.IOException;
 
-/** Writer for Klobuchar model ionospheric messages.
+/** Writer for BDGIM model ionospheric messages.
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class KlobucharMessageWriter extends NavigationMessageWriter<IonosphereKlobucharMessage> {
+public class BDGIMMessageWriter
+    extends NavigationMessageWriter<IonosphereBDGIMMessage> {
 
     /** {@inheritDoc} */
     @Override
-    public void writeMessage(final String identifier, final IonosphereKlobucharMessage message,
+    public void writeMessage(final String identifier, final IonosphereBDGIMMessage message,
                              final RinexNavigationHeader header, final RinexNavigationWriter writer)
         throws IOException {
 
@@ -40,22 +43,23 @@ public class KlobucharMessageWriter extends NavigationMessageWriter<IonosphereKl
 
         // ION MESSAGE LINE - 0
         writer.writeDate(message.getTransmitTime(), message.getSystem());
-        writer.writeDouble(message.getAlpha()[0], IonosphereKlobucharMessage.S_PER_SC_N0);
-        writer.writeDouble(message.getAlpha()[1], IonosphereKlobucharMessage.S_PER_SC_N1);
-        writer.writeDouble(message.getAlpha()[2], IonosphereKlobucharMessage.S_PER_SC_N2);
+        writer.writeDouble(message.getAlpha()[0], RinexNavigationParser.TEC);
+        writer.writeDouble(message.getAlpha()[1], RinexNavigationParser.TEC);
+        writer.writeDouble(message.getAlpha()[2], RinexNavigationParser.TEC);
         writer.finishLine();
 
         // ION MESSAGE LINE - 1
         writer.startLine();
-        writer.writeDouble(message.getAlpha()[3], IonosphereKlobucharMessage.S_PER_SC_N3);
-        writer.writeDouble(message.getBeta()[0], IonosphereKlobucharMessage.S_PER_SC_N0);
-        writer.writeDouble(message.getBeta()[1], IonosphereKlobucharMessage.S_PER_SC_N1);
-        writer.writeDouble(message.getBeta()[2], IonosphereKlobucharMessage.S_PER_SC_N2);
+        writer.writeDouble(message.getAlpha()[3], RinexNavigationParser.TEC);
+        writer.writeDouble(message.getAlpha()[4], RinexNavigationParser.TEC);
+        writer.writeDouble(message.getAlpha()[5], RinexNavigationParser.TEC);
+        writer.writeDouble(message.getAlpha()[6], RinexNavigationParser.TEC);
         writer.finishLine();
 
         // ION MESSAGE LINE - 2
         writer.startLine();
-        writer.writeDouble(message.getBeta()[3], IonosphereKlobucharMessage.S_PER_SC_N3);
+        writer.writeDouble(message.getAlpha()[7], RinexNavigationParser.TEC);
+        writer.writeDouble(message.getAlpha()[8], RinexNavigationParser.TEC);
         writer.finishLine();
 
     }

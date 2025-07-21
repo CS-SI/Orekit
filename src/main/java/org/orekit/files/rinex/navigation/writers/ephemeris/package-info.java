@@ -14,25 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.rinex.navigation.writers;
-
-import org.orekit.files.rinex.navigation.RinexNavigationWriter;
-import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
-import org.orekit.utils.units.Unit;
-
-import java.io.IOException;
-
-/** Writer for GPS legacy messages.
+/**
+ *
+ * This package provides writers for the ephemeris messages.
+ *
  * @author Luc Maisonobe
  * @since 14.0
+ *
  */
-public class GPSLegacyNavigationMessageWriter extends LegacyNavigationMessageWriter<GPSLegacyNavigationMessage> {
-
-    /** {@inheritDoc} */
-    @Override
-    protected void writeURA(final GPSLegacyNavigationMessage message, final RinexNavigationWriter writer)
-        throws IOException {
-        writer.writeDouble(message.getSvAccuracy(), Unit.METRE);
-    }
-
-}
+package org.orekit.files.rinex.navigation.writers.ephemeris;

@@ -14,39 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.rinex.navigation.writers;
+package org.orekit.files.rinex.navigation.writers.ephemeris;
 
+import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
-import org.orekit.propagation.analytical.gnss.data.NavICLegacyNavigationMessage;
+import org.orekit.files.rinex.navigation.writers.NavigationMessageWriter;
+import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
 
 import java.io.IOException;
 
-/** Writer for NavIC legacy messages.
+/** Writer for Beidou legacy messages.
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class NavICLegacyNavigationMessageWriter
-    extends LegacyNavigationMessageWriter<NavICLegacyNavigationMessage> {
-
-    /** URA index to URA mapping (table 23 of NavIC ICD). */
-    // CHECKSTYLE: stop Indentation check
-    private static final double[] NAVIC_URA = {
-           2.40,    3.40,    4.85,   6.85,
-           9.65,   13.65,   24.00,  48.00,
-          96.00,  192.00,  384.00, 768.00,
-        1536.00, 3072.00, 6144.00, Double.NaN
-    };
-    // CHECKSTYLE: resume Indentation check
+public class BeidouLegacyNavigationMessageWriter
+    extends NavigationMessageWriter<BeidouLegacyNavigationMessage> {
 
     /** {@inheritDoc} */
     @Override
-    protected void writeURA(final NavICLegacyNavigationMessage message, final RinexNavigationWriter writer)
+    public void writeMessage(final String identifier, final BeidouLegacyNavigationMessage message,
+                             final RinexNavigationHeader header, final RinexNavigationWriter writer)
         throws IOException {
-        int index = 0;
-        while (index < NAVIC_URA.length - 1 && NAVIC_URA[index] < message.getSvAccuracy()) {
-            ++index;
-        }
-        writer.writeInt(index);
+        // TODO
     }
 
 }

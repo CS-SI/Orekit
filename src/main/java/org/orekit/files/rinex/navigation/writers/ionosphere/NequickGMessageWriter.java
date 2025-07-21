@@ -14,26 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.rinex.navigation.writers;
+package org.orekit.files.rinex.navigation.writers.ionosphere;
 
-import org.orekit.files.rinex.navigation.IonosphereBDGIMMessage;
+import org.orekit.files.rinex.navigation.IonosphereAij;
+import org.orekit.files.rinex.navigation.IonosphereNequickGMessage;
 import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
-import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
+import org.orekit.files.rinex.navigation.writers.NavigationMessageWriter;
+import org.orekit.utils.units.Unit;
 
 import java.io.IOException;
 
-/** Writer for BDGIM model ionospheric messages.
+/** Writer for NeQuick G model ionospheric messages.
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class BDGIMMessageWriter
-    extends NavigationMessageWriter<IonosphereBDGIMMessage> {
+public class NequickGMessageWriter extends NavigationMessageWriter<IonosphereNequickGMessage> {
 
     /** {@inheritDoc} */
     @Override
-    public void writeMessage(final String identifier, final IonosphereBDGIMMessage message,
+    public void writeMessage(final String identifier, final IonosphereNequickGMessage message,
                              final RinexNavigationHeader header, final RinexNavigationWriter writer)
         throws IOException {
 
@@ -42,23 +43,14 @@ public class BDGIMMessageWriter
 
         // ION MESSAGE LINE - 0
         writer.writeDate(message.getTransmitTime(), message.getSystem());
-        writer.writeDouble(message.getAlpha()[0], RinexNavigationParser.TEC);
-        writer.writeDouble(message.getAlpha()[1], RinexNavigationParser.TEC);
-        writer.writeDouble(message.getAlpha()[2], RinexNavigationParser.TEC);
+        writer.writeDouble(message.getAij().getAi0(), IonosphereAij.SFU);
+        writer.writeDouble(message.getAij().getAi1(), IonosphereAij.SFU_PER_DEG);
+        writer.writeDouble(message.getAij().getAi2(), IonosphereAij.SFU_PER_DEG2);
         writer.finishLine();
 
         // ION MESSAGE LINE - 1
         writer.startLine();
-        writer.writeDouble(message.getAlpha()[3], RinexNavigationParser.TEC);
-        writer.writeDouble(message.getAlpha()[4], RinexNavigationParser.TEC);
-        writer.writeDouble(message.getAlpha()[5], RinexNavigationParser.TEC);
-        writer.writeDouble(message.getAlpha()[6], RinexNavigationParser.TEC);
-        writer.finishLine();
-
-        // ION MESSAGE LINE - 2
-        writer.startLine();
-        writer.writeDouble(message.getAlpha()[7], RinexNavigationParser.TEC);
-        writer.writeDouble(message.getAlpha()[8], RinexNavigationParser.TEC);
+        writer.writeDouble(message.getFlags(), Unit.ONE);
         writer.finishLine();
 
     }

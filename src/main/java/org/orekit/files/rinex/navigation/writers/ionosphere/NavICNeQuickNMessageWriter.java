@@ -14,13 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.rinex.navigation.writers;
+package org.orekit.files.rinex.navigation.writers.ionosphere;
 
 import org.orekit.files.rinex.navigation.IonosphereAij;
 import org.orekit.files.rinex.navigation.IonosphereNavICNeQuickNMessage;
 import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
+import org.orekit.files.rinex.navigation.writers.NavigationMessageWriter;
 import org.orekit.utils.units.Unit;
 
 import java.io.IOException;

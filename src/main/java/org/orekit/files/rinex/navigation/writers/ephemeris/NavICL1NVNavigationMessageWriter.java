@@ -14,27 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.rinex.navigation.writers;
+package org.orekit.files.rinex.navigation.writers.ephemeris;
 
+import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
-import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
-import org.orekit.utils.units.Unit;
+import org.orekit.files.rinex.navigation.writers.NavigationMessageWriter;
+import org.orekit.propagation.analytical.gnss.data.NavICL1NvNavigationMessage;
 
 import java.io.IOException;
 
-/** Writer for QZSS legacy messages.
+/** Writer for NavIC L1NV messages.
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class QZSSLegacyNavigationMessageWriter
-    extends LegacyNavigationMessageWriter<QZSSLegacyNavigationMessage> {
+public class NavICL1NVNavigationMessageWriter
+    extends NavigationMessageWriter<NavICL1NvNavigationMessage> {
 
     /** {@inheritDoc} */
     @Override
-    protected void writeURA(final QZSSLegacyNavigationMessage message, final RinexNavigationWriter writer)
-        throws
-        IOException {
-        writer.writeDouble(message.getSvAccuracy(), Unit.METRE);
+    public void writeMessage(final String identifier, final NavICL1NvNavigationMessage message,
+                             final RinexNavigationHeader header, final RinexNavigationWriter writer)
+        throws IOException {
+        // TODO
     }
 
 }
