@@ -37,6 +37,7 @@ import org.orekit.forces.ForceModel;
 import org.orekit.forces.ForceModelModifier;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
@@ -166,7 +167,7 @@ class SwitchEventHandlerTest {
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
         final RealMatrix stm = buildStm();
         final NumericalPropagationHarvester harvester = mockHarvester();
-        final SpacecraftState stateAtSwitch = buildOrbitState(date, harvester.toArray(stm.getData()));
+        final SpacecraftState stateAtSwitch = buildOrbitState(date, OrbitType.CARTESIAN, harvester.toArray(stm.getData()));
         final ForceModel forceWithDetectors = getForceModelWithoutSwitch(stateAtSwitch.getPVCoordinates());
         final SwitchEventHandler switchEventHandler = buildSwitchEventHandler(forceWithDetectors, harvester,
                 new ResetDerivativesOnEvent());
@@ -190,15 +191,16 @@ class SwitchEventHandlerTest {
         return matrix;
     }
 
-    @Test
-    void testResetState() {
+    @ParameterizedTest
+    @EnumSource(OrbitType.class)
+    void testResetState(final OrbitType orbitType) {
         // GIVEN
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
         final Vector3D accelerationBefore = Vector3D.MINUS_I;
         final Vector3D accelerationAfter = new Vector3D(1, 2, 3);
         final RealMatrix originalStm = buildStm();
         final NumericalPropagationHarvester harvester = mockHarvester();
-        final SpacecraftState stateAtSwitch = buildAbsoluteState(date, harvester.toArray(originalStm.getData()));
+        final SpacecraftState stateAtSwitch = buildOrbitState(date, orbitType, harvester.toArray(originalStm.getData()));
         final ForceModel forceWithDetectors = getForceModel(accelerationBefore, accelerationAfter, stateAtSwitch.getPVCoordinates());
         final SwitchEventHandler switchEventHandler = buildSwitchEventHandler(forceWithDetectors, harvester,
                 new ResetDerivativesOnEvent());
@@ -208,17 +210,19 @@ class SwitchEventHandlerTest {
         final SpacecraftState resetState = switchEventHandler.resetState(eventDetector, stateAtSwitch);
         // THEN
         compareStatesWithoutAdditionalVariables(stateAtSwitch, resetState);
-        final GradientField field = GradientField.getField(8);
-        final RealMatrix actualStm = harvester.toSquareMatrix(resetState.getAdditionalState(STM_NAME));
-        final FieldPTimeStampedVDetector<Gradient> fieldDetector = new FieldPTimeStampedVDetector<>(field, stateAtSwitch.getPVCoordinates());
-        final double[] deltaDerivatives = new double[7];
-        deltaDerivatives[3] = accelerationBefore.getX() - accelerationAfter.getX();
-        deltaDerivatives[4] = accelerationBefore.getY() - accelerationAfter.getY();
-        deltaDerivatives[5] = accelerationBefore.getZ() - accelerationAfter.getZ();
-        final RealMatrix updateMatrix = computeUpdateMatrix(stateAtSwitch, deltaDerivatives, fieldDetector);
-        final RealMatrix expectedStm = updateMatrix.multiply(originalStm);
-        for (int i = 0; i < 7; i++) {
-            assertArrayEquals(expectedStm.getRow(i), actualStm.getRow(i), 1e-6);
+        if (orbitType == OrbitType.CARTESIAN) {
+            final GradientField field = GradientField.getField(8);
+            final RealMatrix actualStm = harvester.toSquareMatrix(resetState.getAdditionalState(STM_NAME));
+            final FieldPTimeStampedVDetector<Gradient> fieldDetector = new FieldPTimeStampedVDetector<>(field, stateAtSwitch.getPVCoordinates());
+            final double[] deltaDerivatives = new double[7];
+            deltaDerivatives[3] = accelerationBefore.getX() - accelerationAfter.getX();
+            deltaDerivatives[4] = accelerationBefore.getY() - accelerationAfter.getY();
+            deltaDerivatives[5] = accelerationBefore.getZ() - accelerationAfter.getZ();
+            final RealMatrix updateMatrix = computeUpdateMatrix(stateAtSwitch, deltaDerivatives, fieldDetector);
+            final RealMatrix expectedStm = updateMatrix.multiply(originalStm);
+            for (int i = 0; i < 7; i++) {
+                assertArrayEquals(expectedStm.getRow(i), actualStm.getRow(i), 1e-6);
+            }
         }
     }
 
@@ -304,17 +308,18 @@ class SwitchEventHandlerTest {
     }
 
     private static SpacecraftState buildAbsoluteState(final AbsoluteDate date, final double[] stmArray) {
-        final PVCoordinates pvCoordinates = buildOrbitState(date, stmArray).getPVCoordinates();
+        final PVCoordinates pvCoordinates = buildOrbitState(date, OrbitType.CARTESIAN, stmArray).getPVCoordinates();
         final AbsolutePVCoordinates absolutePVCoordinates = new AbsolutePVCoordinates(FramesFactory.getEME2000(), date,
                 pvCoordinates);
         return new SpacecraftState(absolutePVCoordinates).addAdditionalData(STM_NAME, stmArray);
     }
 
-    private static SpacecraftState buildOrbitState(final AbsoluteDate date, final double[] stmArray) {
+    private static SpacecraftState buildOrbitState(final AbsoluteDate date, final OrbitType orbitType,
+                                                   final double[] stmArray) {
         final PVCoordinates pvCoordinates = new PVCoordinates(new Vector3D(7e6, 3e3, -1e2), new Vector3D(-1e2, 7e3, 1e1));
         final CartesianOrbit cartesianOrbit = new CartesianOrbit(new TimeStampedPVCoordinates(date, pvCoordinates),
                 FramesFactory.getEME2000(), Constants.EGM96_EARTH_MU);
-        return new SpacecraftState(cartesianOrbit).addAdditionalData(STM_NAME, stmArray);
+        return new SpacecraftState(orbitType.convertType(cartesianOrbit)).addAdditionalData(STM_NAME, stmArray);
     }
 
     private static NumericalPropagationHarvester mockHarvester() {

@@ -205,7 +205,7 @@ class SwitchEventHandler implements EventHandler {
         for (int i = 3; i < 7; i++) {
             deltaDerivatives[i] = derivativesAfter[i] - derivativesBefore[i];
         }
-        final Gradient g = evaluateG(state, derivativesBefore[6]);
+        final Gradient g = evaluateG(buildCartesianState(state, state.getPVCoordinates()), derivativesBefore[6]);
         final double gLastDerivative = g.getPartialDerivative(7);
         final double gDot = isForward ? gLastDerivative : -gLastDerivative;
         final double[] gGradientState = Arrays.copyOfRange(g.getGradient(), 0, 7);
@@ -225,7 +225,7 @@ class SwitchEventHandler implements EventHandler {
         final AbsoluteDate shiftedDate = stateAtSwitch.getDate().shiftedBy(dt);
         final TimeStampedPVCoordinates shiftedPV = new TimeStampedPVCoordinates(shiftedDate,
                 pvCoordinates.getPosition().add(pvCoordinates.getVelocity().scalarMultiply(dt)), pvCoordinates.getVelocity());
-        return buildState(stateAtSwitch, shiftedPV);
+        return buildCartesianState(stateAtSwitch, shiftedPV);
     }
 
     /**
@@ -234,8 +234,8 @@ class SwitchEventHandler implements EventHandler {
      * @param pvCoordinates position-velocity vector
      * @return new state
      */
-    private SpacecraftState buildState(final SpacecraftState templateState,
-                                       final TimeStampedPVCoordinates pvCoordinates) {
+    private SpacecraftState buildCartesianState(final SpacecraftState templateState,
+                                                final TimeStampedPVCoordinates pvCoordinates) {
         final SpacecraftState state;
         final Frame frame = templateState.getFrame();
         if (templateState.isOrbitDefined()) {
