@@ -140,6 +140,8 @@ merge_date=$(TZ=UTC date +"%Y-%m-%dT%H:%M:%SZ")
 if test -z "$(cd $top ; git branch -a --list origin/${release_branch})" ; then
   # create the release branch on origin, so we can merge into it
   (cd $top ; glab api --silent --method POST "projects/orekit%2Forekit/repository/branches?branch=${release_branch}&ref=develop")
+  echo "waiting arbitrarily 10 seconds for branch to be available remotely"
+  sleep 10
 fi
 (cd $top ; glab mr create --fill --source-branch $rc_branch --target-branch $release_branch --yes)
 mr_id=$(cd $top ; glab mr list --source-branch $rc_branch | sed -n 's,^!\([0-9]*\).*,\1,p')
