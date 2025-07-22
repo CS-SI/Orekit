@@ -30,7 +30,7 @@ request_confirmation()
 top=$(cd $(dirname $0)/.. ; pwd)
 
 # safety checks
-for cmd in git sed xsltproc tee sort tail curl glab ; do
+for cmd in git sed xsltproc tee sort tail curl ; do
     which -s $cmd || complain "$cmd command not found"
 done
 git -C "$top" rev-parse 2>/dev/null        || complain "$top does not contain a git repository"
@@ -134,18 +134,44 @@ request_confirmation "create tag $rc_tag?"
 request_confirmation "push $rc_branch branch and $rc_tag tag to origin?"
 (cd $top ; git push origin $rc_branch ; git push origin $rc_tag)
 
+# get users credentials
+# get user credentials
+while test -z "gitlab_token" ; do
+    echo "enter your gitlab private token"
+    stty_orig=$(stty -g)
+    stty -echo
+    read gitlab_token
+    stty $stty_orig
+done
+
 # trigger merge request (this will trigger continuous integration pipelines)
 merge_date=$(TZ=UTC date +"%Y-%m-%dT%H:%M:%SZ")
-(cd $top ; glab auth login --hostname gitlab.orekit.org)
+gitlab_api=https://gitlab.orekit.org/api/v4/projects/orekit%2Forekit
 if test -z "$(cd $top ; git branch -a --list origin/${release_branch})" ; then
   # create the release branch on origin, so we can merge into it
-  (cd $top ; glab api --silent --method POST "projects/orekit%2Forekit/repository/branches?branch=${release_branch}&ref=develop")
-  echo "waiting arbitrarily 10 seconds for branch to be available remotely"
-  sleep 10
+  curl \
+      --silent \
+      --request POST \
+      --header "PRIVATE-TOKEN: $gitlab_token" \
+      --data "branch=${rc_branch}" \
+      --data "ref=develop" \
+      "${gitlab_api}/repository/branches"
 fi
-(cd $top ; glab mr create --fill --source-branch $rc_branch --target-branch $release_branch --yes)
-mr_id=$(cd $top ; glab mr list --source-branch $rc_branch | sed -n 's,^!\([0-9]*\).*,\1,p')
-(cd $top ; glab mr merge $mr_id --remove-source-branch --yes)
+mr_id=(curl \
+            --silent \
+            --request POST \
+            --header "PRIVATE-TOKEN: $gitlab_token" \
+            --data   "source_branch=${rc_branch}" \
+            --data   "target_branch=${release_branch}" \
+            --data   "remove_source_branch=true" \
+            --data   "title=preparing release ${release_version}" \
+            "${gitlab_api}/merge_requests" \
+       | jq .iid)
+curl \
+  --silent \
+  --request PUT \
+  --header "PRIVATE-TOKEN: $gitlab_token" \
+  "${gitlab_api}/merge_requests/${mr_id}/merge"
 
 # switch to release branch
 (cd $top ; git fetch ; git checkout $release_branch ; git branch --set-upstream-to origin/$release_branch; git pull)
@@ -154,20 +180,26 @@ mr_id=$(cd $top ; glab mr list --source-branch $rc_branch | sed -n 's,^!\([0-9]*
 request_confirmation "delete $rc_branch release candidate branch? (note that tag $rc_tag will be preserved)"
 (cd $top ; git branch -d $rc_branch)
 
-# monitor continuous integration
-job_status="pending"
+# monitor continuous integration (1 hour max)
+pipeline_id=$(curl
+                --silent \
+                --request GET \
+                --data "ref=${release_branch}"\
+                --data-urlencode "updated-after=$merge_date" \
+                "${gitlab_api}/pipelines" \
+              | jq .iid)
+pipeline_status="pending"
 count=0
-while test "${job_status}" != "running" ; do
+# the status is one of created, waiting_for_resource, preparing, pending, running, success, failed, canceled, skipped, manual, scheduled
+while test "${pipeline_status}" != "success" -a "${pipeline_status}" != "failed"  -a "${pipeline_status}" != "canceled" ; do
   count=$(expr $count + 1)
-  echo "waiting for pipeline job start ($count/100)"
-  sleep 6
-  job_status=$(cd $top ; glab ci list --updated-after "$merge_date" | sed -n "s,(\([a-z]*\)).*$release_branch.*,\1,p")
-  test $count -lt 100 || complain "job not started after 10 minutes, exiting"
+  pipeline_status=$(curl --silent --request GET "${gitlab_api}/pipelines/${pipeline_id}" | jq .iid)
+  current_date=$(TZ=UTC date +"%Y-%m-%dT%H:%M:%SZ")
+  echo "UTC: ${current_date} pipeline status: ${pipeline_status}"
+  sleep 10
+  test $count -lt 360 || complain "job not completed after 1 hour, exiting"
 done
-(cd $top ; glab ci status --live --branch=${release_branch})
-
-# glab auth logout is available only starting with glab version 1.55
-test $(glab version | sed 's,.*:.\([0-9]*\)\.\([0-9]*\).*,\1\2,') -ge 155 && (cd $top ; glab auth logout --hostname gitlab.orekit.org)
+test "${pipeline_status}" = "success" || complain "pipeline failed"
 
 if test "$release_type" = "patch" ; then
     # for patch release, there are no votes, we jump directly to the publish step
