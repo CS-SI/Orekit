@@ -184,7 +184,7 @@ merge_sha=$(cd $top ; git rev-parse --verify HEAD)
 pipeline_id=$(curl \
                 --silent \
                 --request GET \
-                --data "ref=${release_branch}" \
+                --header "PRIVATE-TOKEN: $gitlab_token" \
                 --data "sha=${merge_sha}" \
                 "${gitlab_api}/pipelines" | jq .[0].id)
 pipeline_status="pending"
@@ -192,7 +192,8 @@ count=0
 # the status is one of created, waiting_for_resource, preparing, pending, running, success, failed, canceled, skipped, manual, scheduled
 while test "${pipeline_status}" != "success" -a "${pipeline_status}" != "failed"  -a "${pipeline_status}" != "canceled" ; do
   count=$(expr $count + 1)
-  pipeline_status=$(curl --silent --request GET "${gitlab_api}/pipelines/${pipeline_id}" | jq .status | sed 's,"\(.*\)",\1,')
+  pipeline_status=$(curl --silent --request GET --header "PRIVATE-TOKEN: $gitlab_token" "${gitlab_api}/pipelines/${pipeline_id}" \
+                    | jq .status | sed 's,"\(.*\)",\1,')
   current_date=$(TZ=UTC date +"%Y-%m-%dT%H:%M:%SZ")
   echo "UTC: ${current_date} pipeline status: ${pipeline_status}"
   sleep 10
