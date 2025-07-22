@@ -145,7 +145,6 @@ while test -z "gitlab_token" ; do
 done
 
 # trigger merge request (this will trigger continuous integration pipelines)
-merge_date=$(TZ=UTC date +"%Y-%m-%dT%H:%M:%SZ")
 gitlab_api=https://gitlab.orekit.org/api/v4/projects/orekit%2Forekit
 if test -z "$(cd $top ; git branch -a --list origin/${release_branch})" ; then
   # create the release branch on origin, so we can merge into it
@@ -181,18 +180,19 @@ request_confirmation "delete $rc_branch release candidate branch? (note that tag
 (cd $top ; git branch -d $rc_branch)
 
 # monitor continuous integration (1 hour max)
+merge_sha=$(cd $top ; git rev-parse --verify HEAD)
 pipeline_id=$(curl \
                 --silent \
                 --request GET \
                 --data "ref=${release_branch}" \
-                --data-urlencode "updated-after=${merge_date}" \
-                "${gitlab_api}/pipelines" | jq .iid)
+                --data "sha=${merge_sha}" \
+                "${gitlab_api}/pipelines" | jq .[0].id)
 pipeline_status="pending"
 count=0
 # the status is one of created, waiting_for_resource, preparing, pending, running, success, failed, canceled, skipped, manual, scheduled
 while test "${pipeline_status}" != "success" -a "${pipeline_status}" != "failed"  -a "${pipeline_status}" != "canceled" ; do
   count=$(expr $count + 1)
-  pipeline_status=$(curl --silent --request GET "${gitlab_api}/pipelines/${pipeline_id}" | jq .status)
+  pipeline_status=$(curl --silent --request GET "${gitlab_api}/pipelines/${pipeline_id}" | jq .status | sed 's,"\(.*\)",\1,')
   current_date=$(TZ=UTC date +"%Y-%m-%dT%H:%M:%SZ")
   echo "UTC: ${current_date} pipeline status: ${pipeline_status}"
   sleep 10
