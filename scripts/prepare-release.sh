@@ -181,23 +181,22 @@ request_confirmation "delete $rc_branch release candidate branch? (note that tag
 (cd $top ; git branch -d $rc_branch)
 
 # monitor continuous integration (1 hour max)
-pipeline_id=$(curl
+pipeline_id=$(curl \
                 --silent \
                 --request GET \
-                --data "ref=${release_branch}"\
-                --data-urlencode "updated-after=$merge_date" \
-                "${gitlab_api}/pipelines" \
-              | jq .iid)
+                --data "ref=${release_branch}" \
+                --data-urlencode "updated-after=${merge_date}" \
+                "${gitlab_api}/pipelines" | jq .iid)
 pipeline_status="pending"
 count=0
 # the status is one of created, waiting_for_resource, preparing, pending, running, success, failed, canceled, skipped, manual, scheduled
 while test "${pipeline_status}" != "success" -a "${pipeline_status}" != "failed"  -a "${pipeline_status}" != "canceled" ; do
   count=$(expr $count + 1)
-  pipeline_status=$(curl --silent --request GET "${gitlab_api}/pipelines/${pipeline_id}" | jq .iid)
+  pipeline_status=$(curl --silent --request GET "${gitlab_api}/pipelines/${pipeline_id}" | jq .status)
   current_date=$(TZ=UTC date +"%Y-%m-%dT%H:%M:%SZ")
   echo "UTC: ${current_date} pipeline status: ${pipeline_status}"
   sleep 10
-  test $count -lt 360 || complain "job not completed after 1 hour, exiting"
+  test $count -lt 360 || complain "pipeline not completed after 1 hour, exiting"
 done
 test "${pipeline_status}" = "success" || complain "pipeline failed"
 
