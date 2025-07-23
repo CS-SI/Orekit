@@ -119,7 +119,7 @@ public class DifferentialSignalBias {
      * @param obs2 second observation type
      * @return the time span map for a given observation type pair
      */
-    private TimeSpanMap<Double> getTimeSpanMap(final ObservationType obs1, final ObservationType obs2) {
+    public TimeSpanMap<Double> getTimeSpanMap(final ObservationType obs1, final ObservationType obs2) {
         return biases.get(new Pair<>(obs1, obs2));
     }
 
