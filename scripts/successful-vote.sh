@@ -53,11 +53,11 @@ mkdir -p $bundle_dir
 base_url="https://packages.orekit.org/repository/maven-releases/org/orekit/orekit/${release_version}"
 for artifact in "-cyclonedx.json" "-cyclonedx.xml" "-javadoc.jar" "-sources.jar" ".jar" ".pom" ; do
     for suffix in "" ".asc" ".md5" ".sha1" ; do
-      curl --output ${bundle_dir}/orekit-${release_version}${artifact}${suffix} \
+      curl --silent --output ${bundle_dir}/orekit-${release_version}${artifact}${suffix} \
            $base_url/orekit-${release_version}${artifact}${suffix}
     done
 done
-(cd $tmpdir/bundle ; tar czf orekit-${release_version}.tar.gz ./org)
+(cd $tmpdir/bundle ; tar czf orekit-${release_version}.tar.gz org)
 
 # get user credentials
 read -p "enter your central portal user token name" central_username
@@ -72,28 +72,31 @@ central_bearer=$(echo ${central_username}:${central_password} | base64)
 
 # upload maven artifacts to central portal
 request_confirmation "upload maven artifacts to central portal?"
-deployment_id=$(cd $tmpdit/bundle ;
-                curl --request POST \
+deployment_id=$(cd $tmpdir/bundle ;
+                curl --silent \
+                     --request POST \
                      --header "Authorization: Bearer $central_bearer" \
                      --form bundle=@orekit-${release_version}.tar.gz \
-                      https://central.sonatype.com/api/v1/publisher/upload?name=${orekit-${release_version}&publishingType=USER_MANAGED})
+                      "https://central.sonatype.com/api/v1/publisher/upload?name=orekit-${release_version}&publishingType=USER_MANAGED")
 
 # wait for validation
 status=""
-while test "$status" != "VALIDATED" ; do
+while test "$status" != "\"VALIDATED\"" ; do
   sleep 2
-  status=$(curl --request POST \
+  status=$(curl --silent \
+                --request POST \
                 --header "Authorization: Bearer $central_bearer" \
-                https://central.sonatype.com/api/v1/publisher/deployment/status?id=${deployment_id} \
+                "https://central.sonatype.com/api/v1/publisher/status?id=${deployment_id}" \
            | jq .deploymentState)
   echo "deployment status is \"$status\", still waiting for validation…"
 done
 
 # publish maven artifacts to central portal
 request_confirmation "publish maven artifacts to central portal?"
-curl --request POST \
+curl --silent \
+     --request POST \
      --header "Authorization: Bearer $central_bearer" \
-     https://central.sonatype.com/api/v1/publisher/deployment/${deployment_id}
+     "https://central.sonatype.com/api/v1/publisher/deployment/${deployment_id}"
 
 request_confirmation "create tag $release_tag?"
 (cd $top ; git tag $release_tag -m "Version $release_version.")
