@@ -129,7 +129,7 @@ double ecc = 0.001; // Eccentricity [-]
 double inc = FastMath.toRadians(15); // Inclination [rad]
 double pa = FastMath.toRadians(30); // Perigee Argument [rad]
 double raan = FastMath.toRadians(45); // Right Ascension of the Ascending Node[rad]
-double anomaly = FastMath.toRadians(60); // Inclination [rad]
+double anomaly = FastMath.toRadians(60); // Anomaly [rad]
 
 PositionAngleType positionAngleType = PositionAngleType.MEAN; // Type of anomaly angle used (MEAN, TRUE, ECCENTRIC)
 Frame inertialFrame = FramesFactory.getGCRF(); // Earth-Centered Inertial frame
@@ -235,7 +235,7 @@ public static void main(String[] args) {
     double inc = FastMath.toRadians(15); // Inclination [rad]
     double pa = FastMath.toRadians(30); // Perigee Argument [rad]
     double raan = FastMath.toRadians(45); // Right Ascension of the Ascending Node[rad]
-    double anomaly = FastMath.toRadians(60); // Inclination [rad]
+    double anomaly = FastMath.toRadians(60); // Anomaly [rad]
   
     PositionAngleType positionAngleType = PositionAngleType.MEAN; // Type of anomaly angle used (MEAN, TRUE, ECCENTRIC)
     Frame inertialFrame = FramesFactory.getGCRF(); // Earth-Centered Inertial frame
