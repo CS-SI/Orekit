@@ -1571,7 +1571,7 @@ public class AbsoluteDate
      * @since 12.2
      */
     public double getJD(final TimeScale ts) {
-        return this.getComponents(ts).offsetFrom(DateTimeComponents.JULIAN_EPOCH) / Constants.JULIAN_DAY;
+        return this.accurateOffsetFrom(new AbsoluteDate(DateComponents.JULIAN_EPOCH, TimeComponents.H12, ts), ts).toDouble() / Constants.JULIAN_DAY;
     }
 
     /** Get day of year, preserving continuity as much as possible.
