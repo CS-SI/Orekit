@@ -159,7 +159,7 @@ public interface ForceModel extends ParameterDriversProvider, EventDetectorsProv
 
     /** Check if force model depends on position only at a given, fixed date.
      * @return true if force model depends on position only, false
-     * if it depends on velocity, either directly or due to a dependency
+     * if it depends on mass or velocity, either directly or due to a dependency
      * on attitude
      * @since 9.0
      */

@@ -31,6 +31,9 @@
         </action>
     </release>
     <release version="13.1" date="TBD" description="TBD">
+        <action dev="serrof" type="update" issue="1778">
+            Take into account mass in dependsOnPositionOnly.
+        </action>
         <action dev="guillaumefiorello" type="fix" issue="1773">
             Fixed regression on TLE date parsing.
         </action>
@@ -162,6 +165,9 @@
         </action>
         <action dev="vincent" type="fix" issue="1099">
             Fixed OrbitRelativeFrame definition of ambiguous local orbital frames (CCSDS).
+        </action>
+        <action dev="serrof" type="fix" issue="1086">
+            Fixed NaN with Gradient in Keplerian motion with circular orbit computed in Cartesian coordinates.
         </action>
     </release>
     <release version="13.0.3" date="2025-06-07" description="Orekit 13.0.3 is a patch release.         It fixes several issues related to performances, data loading, and some wrong computation.">
