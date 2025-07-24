@@ -148,14 +148,17 @@ done
 gitlab_api=https://gitlab.orekit.org/api/v4/projects/orekit%2Forekit
 if test -z "$(cd $top ; git branch -a --list origin/${release_branch})" ; then
   # create the release branch on origin, so we can merge into it
+  echo "creating remote branch origin/${release_branch}"  
   curl \
     --silent \
     --request POST \
     --header "PRIVATE-TOKEN: $gitlab_token" \
     --data "branch=${release_branch}" \
     --data "ref=develop" \
-    "${gitlab_api}/repository/branches"
+    "${gitlab_api}/repository/branches" \
+    > /dev/null
 fi
+echo "creating merge request from ${rc_branch} to ${release_branch}"
 mr_id=$(curl \
           --silent \
           --request POST \
@@ -166,6 +169,14 @@ mr_id=$(curl \
           --data   "title=preparing release ${release_version}" \
           "${gitlab_api}/merge_requests" \
        | jq .iid)
+echo "merge request ID is $mr_id"
+curl \
+  --silent \
+  --request GET \
+  --header "PRIVATE-TOKEN: $gitlab_token" \
+  "${gitlab_api}/merge_requests/${mr_id}" | jq
+
+echo "merging merge request $mr_id from ${rc_branch} to ${release_branch}"
 curl \
   --silent \
   --request PUT \
