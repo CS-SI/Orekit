@@ -201,7 +201,8 @@ echo "pipeline $pipeline_id triggered"
 # monitor continuous integration pipeline run (1 hour max)
 pipeline_status="pending"
 timeout=0
-# the status is one of created, waiting_for_resource, preparing, pending, running, success, failed, canceled, skipped, manual, scheduled
+# the status is one of
+# created, waiting_for_resource, preparing, pending, running, success, failed, canceling, canceled, skipped, manual, scheduled
 while test "${pipeline_status}" != "success" -a "${pipeline_status}" != "failed"  -a "${pipeline_status}" != "canceled" ; do
   pipeline_status=$(curl  \
                       --silent \
