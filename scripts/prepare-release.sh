@@ -170,12 +170,26 @@ mr_id=$(curl \
           "${gitlab_api}/merge_requests" \
        | jq .iid)
 echo "merge request ID is $mr_id"
-curl \
-  --silent \
-  --request GET \
-  --header "PRIVATE-TOKEN: $gitlab_token" \
-  "${gitlab_api}/merge_requests/${mr_id}" | jq
 
+# waiting for merge request to be mergeable
+merge_status="preparing"
+timeout=0
+while test "${merge_status}" != "mergeable"; do
+  merge_status=$(curl  \
+                   --silent \
+                   --request GET \
+                   --header "PRIVATE-TOKEN: $gitlab_token" \
+                   "${gitlab_api}/merge_requests/${mr_id}" \
+                 | jq ".detailed_merge_status" \
+                 | sed 's,"\(.*\)",\1,')
+  current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
+  echo "${current_date} merge request status: ${merge_status}"
+  sleep 10
+  timeout=$(expr $timeout + 10)
+  test $timeout -lt 600 || complain "merge request not mergeable after 10 minutes, exiting"
+done
+
+# merging
 echo "merging merge request $mr_id from ${rc_branch} to ${release_branch}"
 curl \
   --silent \
