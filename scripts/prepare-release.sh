@@ -191,7 +191,7 @@ while test -z "$pipeline_id" ; do
                     --request GET \
                     --header "PRIVATE-TOKEN: $gitlab_token" \
                     "${gitlab_api}/pipelines" | \
-                  jq ".[] | select(.sha==\"$merge_sha\") | select(.ref==\"$release_branch\") | .id")
+                  jq ".[] | select(.sha==\"$merge_sha\" and .ref==\"$release_branch\") | .id")
     test $timeout -lt 600 || complain "pipeline not started after 10 minutes, exiting"
     sleep 10
     timeout=$(expr $timeout + 10)
