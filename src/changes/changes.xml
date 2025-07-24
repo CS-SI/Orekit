@@ -20,6 +20,9 @@
   </properties>
   <body>
     <release version="13.1" date="TBD" description="TBD">
+        <action dev="serrof" type="fix" issue="1782">
+            Improve performance and accuracy of getJd.
+        </action>
         <action dev="serrof" type="update" issue="1778">
             Take into account mass in dependsOnPositionOnly.
         </action>
