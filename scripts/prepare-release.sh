@@ -146,16 +146,24 @@ done
 
 # trigger merge request (this will trigger continuous integration pipelines)
 gitlab_api=https://gitlab.orekit.org/api/v4/projects/orekit%2Forekit
-if test -z "$(cd $top ; git branch -a --list origin/${release_branch})" ; then
-  # create the release branch on origin, so we can merge into it
+if test $(curl \
+            --silent \
+            --output /dev/null \
+            --request GET \
+            ${gitlab_api}/repository/branches/${release_branch} \
+            --write-out "%{http_code}") -eq 404 ; then
+  # release branch does not exist on origin, create it so we can merge into it
+  echo "creating remote branch origin/${release_branch}"  
   curl \
     --silent \
+    --output /dev/null \
     --request POST \
     --header "PRIVATE-TOKEN: $gitlab_token" \
     --data "branch=${release_branch}" \
     --data "ref=develop" \
     "${gitlab_api}/repository/branches"
 fi
+echo "creating merge request from ${rc_branch} to ${release_branch}"
 mr_id=$(curl \
           --silent \
           --request POST \
@@ -166,6 +174,28 @@ mr_id=$(curl \
           --data   "title=preparing release ${release_version}" \
           "${gitlab_api}/merge_requests" \
        | jq .iid)
+echo "merge request ID is $mr_id"
+
+# waiting for merge request to be mergeable
+merge_status="preparing"
+timeout=0
+while test "${merge_status}" != "mergeable"; do
+  merge_status=$(curl  \
+                   --silent \
+                   --request GET \
+                   --header "PRIVATE-TOKEN: $gitlab_token" \
+                   "${gitlab_api}/merge_requests/${mr_id}" \
+                 | jq ".detailed_merge_status" \
+                 | sed 's,"\(.*\)",\1,')
+  current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
+  echo "${current_date} merge request ${mr_id} status: ${merge_status}"
+  sleep 10
+  timeout=$(expr $timeout + 10)
+  test $timeout -lt 600 || complain "merge request not mergeable after 10 minutes, exiting"
+done
+
+# merging
+echo "merging merge request $mr_id from ${rc_branch} to ${release_branch}"
 curl \
   --silent \
   --request PUT \
