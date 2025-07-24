@@ -135,8 +135,8 @@ request_confirmation "push $rc_branch branch and $rc_tag tag to origin?"
 (cd $top ; git push origin $rc_branch ; git push origin $rc_tag)
 
 # get users credentials
-# get user credentials
-while test -z "gitlab_token" ; do
+gitlab_token=""
+while test -z "$gitlab_token" ; do
     echo "enter your gitlab private token"
     stty_orig=$(stty -g)
     stty -echo
