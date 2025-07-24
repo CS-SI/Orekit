@@ -146,12 +146,12 @@ done
 
 # trigger merge request (this will trigger continuous integration pipelines)
 gitlab_api=https://gitlab.orekit.org/api/v4/projects/orekit%2Forekit
-if $(curl \
-       --silent \
-       --output /dev/null \
-       --request GET \
-       ${gitlab_api}/repository/branches/${release_branch} \
-       --write-out "%{http_code}") -eq 404 ; then
+if test $(curl \
+            --silent \
+            --output /dev/null \
+            --request GET \
+            ${gitlab_api}/repository/branches/${release_branch} \
+            --write-out "%{http_code}") -eq 404 ; then
   # release branch does not exist on origin, create it so we can merge into it
   echo "creating remote branch origin/${release_branch}"  
   curl \
