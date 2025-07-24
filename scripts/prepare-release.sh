@@ -208,7 +208,7 @@ while test "${pipeline_status}" != "success" -a "${pipeline_status}" != "failed"
                       --request GET \
                       --header "PRIVATE-TOKEN: $gitlab_token" \
                       "${gitlab_api}/pipelines" \
-                    | jq ".[] | select(.id==\"$pipeline_id\") | .status" \
+                    | jq ".[] | select(.id==$pipeline_id) | .status" \
                     | sed 's,"\(.*\)",\1,')
   current_date=$(TZ=UTC date +"%Y-%m-%dT%H:%M:%SZ")
   echo "UTC: ${current_date}, pipeline status: ${pipeline_status}"
