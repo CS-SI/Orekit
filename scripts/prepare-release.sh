@@ -152,7 +152,7 @@ if test -z "$(cd $top ; git branch -a --list origin/${release_branch})" ; then
     --silent \
     --request POST \
     --header "PRIVATE-TOKEN: $gitlab_token" \
-    --data "branch=${rc_branch}" \
+    --data "branch=${release_branch}" \
     --data "ref=develop" \
     "${gitlab_api}/repository/branches"
 fi
@@ -173,7 +173,7 @@ curl \
   "${gitlab_api}/merge_requests/${mr_id}/merge"
 
 # switch to release branch
-(cd $top ; git fetch ; git checkout $release_branch ; git branch --set-upstream-to origin/$release_branch; git pull)
+(cd $top ; git fetch ; git checkout $release_branch ; git branch --set-upstream-to origin/$release_branch $release_branch; git pull)
 
 # delete release candidate branch
 request_confirmation "delete $rc_branch release candidate branch? (note that tag $rc_tag will be preserved)"
