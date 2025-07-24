@@ -179,27 +179,44 @@ curl \
 request_confirmation "delete $rc_branch release candidate branch? (note that tag $rc_tag will be preserved)"
 (cd $top ; git branch -d $rc_branch)
 
-# monitor continuous integration (1 hour max)
+# monitor continuous integration pipeline triggering (10 minutes max)
 merge_sha=$(cd $top ; git rev-parse --verify HEAD)
-pipeline_id=$(curl \
-                --silent \
-                --request GET \
-                --header "PRIVATE-TOKEN: $gitlab_token" \
-                --data "sha=${merge_sha}" \
-                "${gitlab_api}/pipelines" | jq .[0].id)
+pipeline_id=""
+timeout=0
+while test -z "$pipeline_id" ; do
+    current_date=$(TZ=UTC date +"%Y-%m-%dT%H:%M:%SZ")
+    echo "UTC: ${current_date}, waiting for pipeline to be triggered"
+    pipeline_id=$(curl \
+                    --silent \
+                    --request GET \
+                    --header "PRIVATE-TOKEN: $gitlab_token" \
+                    "${gitlab_api}/pipelines" | \
+                  jq ".[] | select(.sha==\"$merge_sha\") | select(.ref==\"$release_branch\") | .id")
+    test $timeout -lt 600 || complain "pipeline not started after 10 minutes, exiting"
+    sleep 10
+    timeout=$(expr $timeout + 10)
+done
+echo "pipeline $pipeline_id triggered"
+
+# monitor continuous integration pipeline run (1 hour max)
 pipeline_status="pending"
-count=0
+timeout=0
 # the status is one of created, waiting_for_resource, preparing, pending, running, success, failed, canceled, skipped, manual, scheduled
 while test "${pipeline_status}" != "success" -a "${pipeline_status}" != "failed"  -a "${pipeline_status}" != "canceled" ; do
-  count=$(expr $count + 1)
-  pipeline_status=$(curl --silent --request GET --header "PRIVATE-TOKEN: $gitlab_token" "${gitlab_api}/pipelines/${pipeline_id}" \
-                    | jq .status | sed 's,"\(.*\)",\1,')
+  pipeline_status=$(curl  \
+                      --silent \
+                      --request GET \
+                      --header "PRIVATE-TOKEN: $gitlab_token" \
+                      "${gitlab_api}/pipelines" \
+                    | jq ".[] | select(.id==\"$pipeline_id\") | .status" \
+                    | sed 's,"\(.*\)",\1,')
   current_date=$(TZ=UTC date +"%Y-%m-%dT%H:%M:%SZ")
-  echo "UTC: ${current_date} pipeline status: ${pipeline_status}"
-  sleep 10
-  test $count -lt 360 || complain "pipeline not completed after 1 hour, exiting"
+  echo "UTC: ${current_date}, pipeline status: ${pipeline_status}"
+  sleep 30
+  timeout=$(expr $timeout + 30)
+  test $timeout -lt 3600 || complain "pipeline not completed after 1 hour, exiting"
 done
-test "${pipeline_status}" = "success" || complain "pipeline failed"
+test "${pipeline_status}" = "success" || complain "pipeline did not succeed"
 
 if test "$release_type" = "patch" ; then
     # for patch release, there are no votes, we jump directly to the publish step
