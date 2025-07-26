@@ -38,21 +38,8 @@ verify:
     # This is a heavy job, requiring all the CPUs available. VMs have 8 cores,
     # but we need to save some for the K8S core services.
     KUBERNETES_CPU_REQUEST: "7"
-    REASSIGNED_PIPELINE_SOURCE: "$CI_PIPELINE_SOURCE"
-    REASSIGNED_COMMIT_TAG: "$CI_COMMIT_TAG"
-    REASSIGNED_COMMIT_BRANCH: "$CI_COMMIT_BRANCH"
-    REASSIGNED_MERGE_REQUEST_SOURCE_BRANCH_NAME: "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
-    REASSIGNED_MERGE_REQUEST_TARGET_BRANCH_NAME: "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
-    REASSIGNED_MERGE_REQUEST_DESCRIPTION: "$CI_MERGE_REQUEST_DESCRIPTION"
   script:
     - mvn $MAVEN_CLI_OPTS checkstyle:check verify site
-    - "echo $REASSIGNED_PIPELINE_SOURCE"
-    - "echo $REASSIGNED_COMMIT_TAG"
-    - "echo $REASSIGNED_COMMIT_BRANCH"
-    - "echo $REASSIGNED_PROJECT_NAMESPACE"
-    - "echo $REASSIGNED_MERGE_REQUEST_SOURCE_BRANCH_NAME"
-    - "echo $REASSIGNED_MERGE_REQUEST_TARGET_BRANCH_NAME"
-    - "echo $REASSIGNED_MERGE_REQUEST_DESCRIPTION"
     - test -z "$SONAR_TOKEN" || mvn $MAVEN_CLI_OPTS sonar:sonar
           -Dsonar.host.url=${SONAR_HOST_URL}
           -Dsonar.login=${SONAR_TOKEN}
@@ -68,24 +55,17 @@ verify:
     reports:
       junit:
         - target/surefire-reports/*.xml
+  rules:
+    - if: $CI_COMMIT_TAG    =~ /^[.0-9]+-RC[0-9]+$/
+      when: never
+    - if: $CI_COMMIT_BRANCH =~ /^RC[0-9]+-[.0-9]+$/
+      when: never
+    - if: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^RC[0-9]+-[.0-9]+$/
+      when: never
 
 verify:warning:
   stage: verify
-  variables:
-    REASSIGNED_PIPELINE_SOURCE: "$CI_PIPELINE_SOURCE"
-    REASSIGNED_COMMIT_TAG: "$CI_COMMIT_TAG"
-    REASSIGNED_COMMIT_BRANCH: "$CI_COMMIT_BRANCH"
-    REASSIGNED_MERGE_REQUEST_SOURCE_BRANCH_NAME: "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
-    REASSIGNED_MERGE_REQUEST_TARGET_BRANCH_NAME: "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
-    REASSIGNED_MERGE_REQUEST_DESCRIPTION: "$CI_MERGE_REQUEST_DESCRIPTION"
   script:
-    - "echo $REASSIGNED_PIPELINE_SOURCE"
-    - "echo $REASSIGNED_COMMIT_TAG"
-    - "echo $REASSIGNED_COMMIT_BRANCH"
-    - "echo $REASSIGNED_PROJECT_NAMESPACE"
-    - "echo $REASSIGNED_MERGE_REQUEST_SOURCE_BRANCH_NAME"
-    - "echo $REASSIGNED_MERGE_REQUEST_TARGET_BRANCH_NAME"
-    - "echo $REASSIGNED_MERGE_REQUEST_DESCRIPTION"
     - echo "Please, configure SonarQube by following steps described in the contribution guide:"
     - echo "https://www.orekit.org/site-orekit-development/contributing.html"
     - exit 1
@@ -108,7 +88,8 @@ coverage-import:
     # attribute
     - 'python /opt/source2filename.py target/site/cobertura.xml'
   needs:
-    - verify
+    - job:      verify
+      optional: true
   dependencies:
     - verify
   artifacts:
@@ -117,11 +98,6 @@ coverage-import:
         coverage_format: cobertura
         path: target/site/cobertura.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
-  rules:
-    - if:   $CI_COMMIT_TAG    =~ /^[.0-9]+-RC[0-9]+$/
-      when: never
-    - if:   $CI_COMMIT_BRANCH =~ /^RC[0-9]+-[.0-9]+$/
-      when: never
 
 changelog:
   stage: verify
@@ -138,6 +114,8 @@ changelog:
       when: never
     - if:   $CI_COMMIT_BRANCH =~ /^RC[0-9]+-[.0-9]+$/
       when: never
+    - if: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^RC[0-9]+-[.0-9]+$/
+      when: never
 
 # On main branches (develop, release-*, main) the produced artifacts are
 # deployed on the Nexus of the project (https://packages.orekit.org/)
@@ -152,7 +130,6 @@ deploy:artifacts:
   rules:
     - if: $CI_PROJECT_NAMESPACE == "orekit" && $CI_COMMIT_BRANCH == "main"
     - if: $CI_PROJECT_NAMESPACE == "orekit" && $CI_COMMIT_BRANCH =~ /^release-[.0-9]+$/
-    - if: $CI_PROJECT_NAMESPACE == "orekit" && $CI_COMMIT_BRANCH == "develop"
 
 deploy:site:
   stage: deploy
