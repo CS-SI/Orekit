@@ -69,6 +69,11 @@ verify:warning:
     - exit 1
   allow_failure: true
   rules:
+  rules:
+    - if:   $CI_COMMIT_TAG    =~ /^[.0-9]+-RC[0-9]+$/
+      when: never
+    - if:   $CI_COMMIT_BRANCH =~ /^RC[0-9]+-[.0-9]+$/
+      when: never
     - if: $SONAR_TOKEN == null
 
 # Convert and import in GitLab coverage data.
@@ -111,6 +116,11 @@ changelog:
   artifacts:
     paths:
       - CHANGELOG.md
+  rules:
+    - if:   $CI_COMMIT_TAG    =~ /^[.0-9]+-RC[0-9]+$/
+      when: never
+    - if:   $CI_COMMIT_BRANCH =~ /^RC[0-9]+-[.0-9]+$/
+      when: never
 
 # On main branches (develop, release-*, main) the produced artifacts are
 # deployed on the Nexus of the project (https://packages.orekit.org/)
