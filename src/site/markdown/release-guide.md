@@ -215,35 +215,58 @@ Return to the start branch and merge the branch issue-YYY:
 
 ## 2. Run the prepare-release.sh script
 
-There is a `prepare-release.sh` shell script in the `scripts` directory that
-automatically performs all the release steps by itself. It asks questions and
-waits for confirmation at various stages. It creates branches, checks them out,
-performs some automated edition on several files, commits the changes, sets up
-tags that will be recognized by Orekit Continuous Integration setup, and pushes
+There is a `prepare-release.sh` shell script in the `scripts`
+directory that automatically performs all the release steps by
+itself. It asks questions and waits for confirmation at various
+stages. It creates branches, checks them out, performs some automated
+edition on several files, commits the changes, sets up tags that will
+be recognized by Orekit Continuous Integration setup, and pushes
 everything to Orekit GitLab forge.
 
-When releasing a major or minor version, the script automatically posts a vote topic
-on the Orekit forum so that community and PMC members can vote on the release.
-When releasing a patch version, the script skips the vote topic creation and continues
-up to promoting the release from staging to published.
+When releasing a major or minor version, the script automatically
+posts a vote topic on the Orekit forum so that community and PMC
+members can vote on the release. When releasing a patch version, the
+script skips the vote topic creation and continues up to promoting the
+release from staging to published.
 
-The shell script performs the release on a temporary branch that is merged only near
-the final step. It automatically removes all branches and tags it creates (both locally
-and on the origina GitLab server) if something goes wrong before this final step, hence
-ensuring everything remains clean.
+The shell script performs the release on a temporary branch that is
+merged to the release branch after the last automatic file edition.
 
-As the tag is pushed to Orekit GitLab forge, the Continuous Integration is
-automatically triggered. It performs a full build, signs the artifacts using the
-release key and puts them in a staging repository, where users will be able to
-review them during the voting period.
+When the temporary branch is remotely merged to the release branch on
+the Orekit GitLab forge, the Continuous Integration is automatically
+triggered. It performs a full build, signs the artifacts using the
+release key and puts them in a staging repository, where users will
+later be able to review them during the voting period.
 
-The script does not handle (yet) the final stages like updating the website
-or announcing the release on the GitHub mirror repository. These stages are
-described in the next section.
+Several steps (creating the release branch, merging the temporary
+branch into the release branch…) are performed remotely, from the
+release manager computer to the Orekit GitLab forge (this is the
+reason why release managers need a GitLab personal access token).
+Several of these steps take some time, for example when the merge
+request is created, it is not executed immediately. There are several
+waiting loops that monitor the progress of these steps, polling the
+forge regularly. These loops display a timestamped waiting message
+evey 10 seconds until the operation is performed, and stop the release
+process if the operation exceeds a timeout. Branch creation, merge
+request creation, and merge request completion have a 10 minutes
+timeout but should typically be completed in one or two minutes.
+Continuous Integration pipeline start has a 30 minutes timeout as
+runners may be busy with already running compilations. Once started,
+Continuous Integration pipeline run time has a 60 minutes timeout. The
+final step (creating the vote thread) is triggered only if the
+Continuous Integration pipeline succeeds.
 
-This script must be run from the command line on a computer with several Linux
-utilities (git, sed, xsltproc, curl…), with the git worktree
-already set to the start branch (i.e., develop or a patch branch):
+If something goes wrong or if the release manager answers "no" to one
+of the confirmation questions triggered by the script, it removes all
+the branches and tags it created (both locally and on the Orekit
+GitLab server) and stops. This ensures everything remains clean. The
+last chance to stop the release process corresponds to the question
+about posting the vote thread to the forum.
+
+This script must be run from the command line on a computer with
+several Linux utilities (git, sed, xsltproc, curl…), with the git
+worktree already set to the start branch (i.e., develop or a patch
+branch):
 
     sh scripts/prepare-release.sh
 
@@ -266,9 +289,9 @@ for user confirmation before any commit:
     - update downloads and faq pages and commit the changes
     - tag the RCn-X.Y branch with tag X.Y-RCn
     - push the tagged RCn-X.Y branch to origin
+    - if the release-X.Y branch does not exist on the Orekit GitLab forge, create it remotely
     - trigger a merge request from RCn-X.Y branch to release-X.Y branch
       (this will trigger full build, signing and deployment to Orekit Nexus instance)
-    - delete RCn-X.Y branch (but keep the X.Y-RCn tag)
     - switch to release-X.Y branch
     - pull merged branch from origin
     - monitor continuous integration run
@@ -278,26 +301,31 @@ for user confirmation before any commit:
 
 ## 3. Voting period
 
-For major and minor releases, the script generates the vote topic on the forum by itself.
-The voting period is 5 days, so release managers should wait until this time has elapsed before
-concluding. Of course, if one of the voters raises concerns that should be addressed, the
+For major and minor releases, the script generates the vote topic on
+the forum by itself.  The voting period is 5 days, so release managers
+should wait until this time has elapsed before concluding. Of course,
+if one of the voters raises concerns that should be addressed, the
 vote can be canceled before the 5-day duration.
 
 ### 3.1. Failed or canceled vote
 
-If the vote fails or is canceled, there is nothing to do. The failed release
-candidate can be kept, it will just not be published.
+If the vote fails or is canceled, there is nothing to do. The failed
+release candidate can be kept, it will just not be published.
 
-The release process should just be started again using the `prepare-release.sh` script.
-Note that the script keeps track of the release candidate number on its own as it looks
-for the tags in the git repository and as release candidate tags are never deleted.
+Once the problem has been addressed and a new release candidate can be
+created, the release process should just be started again using the
+`prepare-release.sh` script.  Note that the script keeps track of the
+release candidate number on its own as it looks for the tags in the
+git repository and as release candidate tags are never deleted.
 
 ### 3.2. Successful vote
 
-When the vote for a release candidate succeeds (or automatically when the release is a
-patch release), the maven artifacts must be published to the central portal. A final tag
-(without reference to release candidate number) must be created. This is done by running
-the `successful-vote.sh` script, taking care to be in the release-X.Y branch:
+When the vote for a release candidate succeeds (or automatically when
+the release is a patch release), the maven artifacts must be published
+to the central portal. A final tag (without reference to release
+candidate number) must be created. This is done by running the
+`successful-vote.sh` script, taking care to be in the release-X.Y
+branch:
 
     sh scripts/successful-vote.sh
 
@@ -349,12 +377,18 @@ Edit `overview.html`:
  - Update the `overview.png` image with the new version numbers.
  - (If needed) Update the *Features* section with the new features added by the new version of Orekit.
 
-Create a new post for the release in `_post/`, it will be visible in the `News` page (see section *Announce Release* for the content of the post).
+Create a new post for the release in `_post/`, it will be visible in
+the `News` page (see section *Announce Release* for the content of the
+post).
 
-Push the modifications on `develop` branch, wait until the pipeline on GitLab is finished, then the [test website](https://test.orekit.org/) will be updated.
+Push the modifications on `develop` branch, wait until the pipeline on
+GitLab is finished, then the [test website](https://test.orekit.org/)
+will be updated.
 
-Check that everything looks nice and then merge `develop` on `main` branch and push the modifications.  
-When the GitLab pipeline is finished, the [official website](https://orekit.org/) should be updated according to your changes.
+Check that everything looks nice and then merge `develop` on `main`
+branch and push the modifications.  When the GitLab pipeline is
+finished, the [official website](https://orekit.org/) should be
+updated according to your changes.
 
 ## 6. Close X.Y milestone
 
