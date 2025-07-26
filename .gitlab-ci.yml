@@ -38,24 +38,7 @@ verify:
     # This is a heavy job, requiring all the CPUs available. VMs have 8 cores,
     # but we need to save some for the K8S core services.
     KUBERNETES_CPU_REQUEST: "7"
-    REASSIGNED_PIPELINE_SOURCE: "$CI_PIPELINE_SOURCE"
-    REASSIGNED_COMMIT_TAG: "$CI_COMMIT_TAG"
-    REASSIGNED_COMMIT_BRANCH: "$CI_COMMIT_BRANCH"
-    REASSIGNED_COMMIT_REF_NAME: "$CI_COMMIT_REF_NAME"
-    REASSIGNED_MERGE_REQUEST_SOURCE_BRANCH_NAME: "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
-    REASSIGNED_MERGE_REQUEST_TARGET_BRANCH_NAME: "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
-    REASSIGNED_MERGE_REQUEST_DESCRIPTION: "$CI_MERGE_REQUEST_DESCRIPTION"
-    REASSIGNED_MERGE_REQUEST_TARGET_BRANCH_PROTECTED: "$CI_MERGE_REQUEST_TARGET_BRANCH_PROTECTED"
   script:
-    - "echo REASSIGNED_PIPELINE_SOURCE $REASSIGNED_PIPELINE_SOURCE"
-    - "echo REASSIGNED_COMMIT_TAG $REASSIGNED_COMMIT_TAG"
-    - "echo REASSIGNED_COMMIT_BRANCH $REASSIGNED_COMMIT_BRANCH"
-    - "echo REASSIGNED_COMMIT_REF_NAME $REASSIGNED_COMMIT_REF_NAME"
-    - "echo REASSIGNED_PROJECT_NAMESPACE $REASSIGNED_PROJECT_NAMESPACE"
-    - "echo REASSIGNED_MERGE_REQUEST_SOURCE_BRANCH_NAME $REASSIGNED_MERGE_REQUEST_SOURCE_BRANCH_NAME"
-    - "echo REASSIGNED_MERGE_REQUEST_TARGET_BRANCH_NAME $REASSIGNED_MERGE_REQUEST_TARGET_BRANCH_NAME"
-    - "echo REASSIGNED_MERGE_REQUEST_DESCRIPTION $REASSIGNED_MERGE_REQUEST_DESCRIPTION"
-    - "echo REASSIGNED_MERGE_REQUEST_TARGET_BRANCH_PROTECTED $REASSIGNED_MERGE_REQUEST_TARGET_BRANCH_PROTECTED"
     - mvn $MAVEN_CLI_OPTS checkstyle:check verify site
     - test -z "$SONAR_TOKEN" || mvn $MAVEN_CLI_OPTS sonar:sonar
           -Dsonar.host.url=${SONAR_HOST_URL}
@@ -73,6 +56,8 @@ verify:
       junit:
         - target/surefire-reports/*.xml
   rules:
+    - if: $CI_COMMIT_BEFORE_SHA =~ /^0+$/ && $CI_COMMIT_BRANCH =~ /^release-[.0-9]+$/
+      when: never
     - if: $CI_COMMIT_TAG    =~ /^[.0-9]+-RC[0-9]+$/
       when: never
     - if: $CI_COMMIT_BRANCH =~ /^RC[0-9]+-[.0-9]+$/
@@ -116,6 +101,8 @@ coverage-import:
         path: target/site/cobertura.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
   rules:
+    - if: $CI_COMMIT_BEFORE_SHA =~ /^0+$/ && $CI_COMMIT_BRANCH =~ /^release-[.0-9]+$/
+      when: never
     - if: $CI_COMMIT_TAG    =~ /^[.0-9]+-RC[0-9]+$/
       when: never
     - if: $CI_COMMIT_BRANCH =~ /^RC[0-9]+-[.0-9]+$/
@@ -135,6 +122,8 @@ changelog:
     paths:
       - CHANGELOG.md
   rules:
+    - if: $CI_COMMIT_BEFORE_SHA =~ /^0+$/ && $CI_COMMIT_BRANCH =~ /^release-[.0-9]+$/
+      when: never
     - if:   $CI_COMMIT_TAG    =~ /^[.0-9]+-RC[0-9]+$/
       when: never
     - if:   $CI_COMMIT_BRANCH =~ /^RC[0-9]+-[.0-9]+$/
