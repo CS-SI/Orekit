@@ -69,7 +69,6 @@ verify:warning:
     - exit 1
   allow_failure: true
   rules:
-  rules:
     - if: $SONAR_TOKEN == null
 
 # Convert and import in GitLab coverage data.
