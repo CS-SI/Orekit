@@ -291,8 +291,9 @@ echo ""
 (cd $top ; git fetch --prune ${origin} ; git checkout $release_branch ; git branch --set-upstream-to ${origin}/$release_branch $release_branch; git pull ${origin})
 (cd $top ; git branch -d $rc_branch)
 
+echo ""
 request_confirmation "create tag $rc_tag?"
-(cd $top ; git tag $rc_tag -m "Release Candidate $next_rc for version $release_version." ; git push --tag $rc_tag)
+(cd $top ; git tag $rc_tag -m "Release Candidate $next_rc for version $release_version." ; git push ${origin} $rc_tag)
 
 # monitor continuous integration pipeline triggering (10 minutes max)
 merge_sha=$(cd $top ; git rev-parse --verify HEAD)
