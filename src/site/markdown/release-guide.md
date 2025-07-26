@@ -287,13 +287,13 @@ for user confirmation before any commit:
     - compute candidate release date, allocating 5 days for the vote
     - update `changes.xml` with release date and release type and commit the change
     - update downloads and faq pages and commit the changes
-    - tag the RCn-X.Y branch with tag X.Y-RCn
-    - push the tagged RCn-X.Y branch to origin
+    - push the RCn-X.Y branch to origin
     - if the release-X.Y branch does not exist on the Orekit GitLab forge, create it remotely
     - trigger a merge request from RCn-X.Y branch to release-X.Y branch
       (this will trigger full build, signing and deployment to Orekit Nexus instance)
     - switch to release-X.Y branch
     - pull merged branch from origin
+    - tag the RCn-X.Y branch with tag X.Y-RCn and push the tag to origin
     - monitor continuous integration run
     - if the release is a patch release, call immediately the `successful-vote.sh` script
     - if the release is a major or minor release, create the vote topic automatically on the forum

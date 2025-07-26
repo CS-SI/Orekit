@@ -199,17 +199,16 @@ echo
 request_confirmation "commit downloads.md.vm and faq.md?"
 (cd $top ; git add src/site/markdown/downloads.md.vm src/site/markdown/faq.md ; git commit -m "Updated documentation for official release.")
 
-request_confirmation "create tag $rc_tag?"
-(cd $top ; git tag $rc_tag -m "Release Candidate $next_rc for version $release_version.")
-
 # push to origin
+echo
 test -z "$(search_in_repository branches ${rc_branch} .[].name)" || complain "branch ${rc_branch} already exists in ${origin}"
-request_confirmation "push $rc_branch branch and $rc_tag tag to ${origin}?"
-(cd $top ; git push ${origin} $rc_branch ; git push ${origin} $rc_tag)
+request_confirmation "push $rc_branch branch to ${origin}?"
+(cd $top ; git push ${origin} $rc_branch)
 
 # make sure we can merge in a release branch on the origin server
 if test -z "$(search_in_repository branches ${release_branch} .[].name)" ; then
   # release branch does not exist on origin yet, create it
+  echo
   echo "creating remote branch ${origin}/${release_branch}"  
   curl \
     --silent \
@@ -225,12 +224,12 @@ fi
 created_branch=""
 timeout=0
 while test -z "$created_branch" ; do
-  created_branch=$(search_in_repository branches ${release_branch} .[].name)
   current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
-  test ! -z "$created_branch" || echo "${current_date} branch ${release_branch} not yet available in ${origin}, waiting…"
+  echo "${current_date} branch ${release_branch} not yet available in ${origin}, waiting…"
   sleep 10
   timeout=$(expr $timeout + 10)
   test $timeout -lt 600 || complain "branch ${release_branch} not created in ${origin} after 10 minutes, exiting"
+  created_branch=$(search_in_repository branches ${release_branch} .[].name)
 done
 echo "branch ${release_branch} has been created"
 echo ""
@@ -254,13 +253,13 @@ echo ""
 # wait for merge request to be mergeable
 merge_status="preparing"
 timeout=0
-while test "${merge_status}" != "mergeable"; do
-  merge_status=$(get_mr ${mr_id} ".detailed_merge_status")
+while test "${merge_status}" != "mergeable" ; do
   current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
   echo "${current_date} merge request ${mr_id} status: ${merge_status}, waiting…"
   sleep 10
   timeout=$(expr $timeout + 10)
   test $timeout -lt 600 || complain "merge request ${mr_id} not mergeable after 10 minutes, exiting"
+  merge_status=$(get_mr ${mr_id} ".detailed_merge_status")
 done
 echo "merge request ${mr_id} is mergeable"
 echo ""
@@ -278,22 +277,22 @@ curl \
 merge_state="opened"
 timeout=0
 while test "${merge_state}" != "merged"; do
-  merge_state=$(get_mr ${mr_id} ".state")
   current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
   echo "${current_date} merge request ${mr_id} state: ${merge_state}, waiting…"
   sleep 10
   timeout=$(expr $timeout + 10)
   test $timeout -lt 600 || complain "merge request ${mr_id} not merged after 10 minutes, exiting"
+  merge_state=$(get_mr ${mr_id} ".state")
 done
 echo "merge request ${mr_id} has been merged"
 echo ""
 
 # switch to release branch
 (cd $top ; git fetch --prune ${origin} ; git checkout $release_branch ; git branch --set-upstream-to ${origin}/$release_branch $release_branch; git pull ${origin})
-
-# delete release candidate branch
-request_confirmation "delete $rc_branch release candidate branch? (note that tag $rc_tag will be preserved)"
 (cd $top ; git branch -d $rc_branch)
+
+request_confirmation "create tag $rc_tag?"
+(cd $top ; git tag $rc_tag -m "Release Candidate $next_rc for version $release_version." ; git push --tag $rc_tag)
 
 # monitor continuous integration pipeline triggering (10 minutes max)
 merge_sha=$(cd $top ; git rev-parse --verify HEAD)
@@ -302,15 +301,15 @@ timeout=0
 while test -z "$pipeline_id" ; do
     current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
     echo "${current_date} waiting for pipeline to be triggered…"
+    sleep 10
+    timeout=$(expr $timeout + 10)
+    test $timeout -lt 1800 || complain "pipeline not started after 30 minutes, exiting"
     pipeline_id=$(curl \
                     --silent \
                     --request GET \
                     --header "PRIVATE-TOKEN: $gitlab_token" \
                     "${gitlab_api}/pipelines" | \
                   jq ".[] | select(.sha==\"$merge_sha\" and .ref==\"$release_branch\") | .id")
-    test $timeout -lt 1800 || complain "pipeline not started after 30 minutes, exiting"
-    sleep 10
-    timeout=$(expr $timeout + 10)
 done
 echo "pipeline $pipeline_id triggered"
 
@@ -320,17 +319,17 @@ timeout=0
 # the status is one of
 # created, waiting_for_resource, preparing, pending, running, success, failed, canceling, canceled, skipped, manual, scheduled
 while test "${pipeline_status}" != "success" -a "${pipeline_status}" != "failed"  -a "${pipeline_status}" != "canceled" ; do
+  current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
+  echo "${current_date} pipeline status: ${pipeline_status}, waiting…"
+  sleep 30
+  timeout=$(expr $timeout + 30)
+  test $timeout -lt 3600 || complain "pipeline not completed after 1 hour, exiting"
   pipeline_status=$(curl  \
                       --silent \
                       --request GET \
                       --header "PRIVATE-TOKEN: $gitlab_token" \
                       "${gitlab_api}/pipelines" \
                     | jq --raw-output ".[] | select(.id==$pipeline_id) | .status")
-  current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
-  echo "${current_date} pipeline status: ${pipeline_status}, waiting…"
-  sleep 30
-  timeout=$(expr $timeout + 30)
-  test $timeout -lt 3600 || complain "pipeline not completed after 1 hour, exiting"
 done
 test "${pipeline_status}" = "success" || complain "pipeline did not succeed"
 
