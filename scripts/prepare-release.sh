@@ -19,7 +19,7 @@ rewind_git()
     if test ! -z "$start_branch" && test "$(cd $top ; git branch --show-current)" != "$start_branch" ; then
         # we need to clean up the branches and rewind everything
         (cd $top ; git reset -q --hard; git checkout $start_branch)
-        if test -z "$(cd $top ; git branch --list $rc_branch)" ; then
+        if test ! -z "$(cd $top ; git branch --list $rc_branch)" ; then
             (cd $top ; git branch -D $rc_branch)
             test -z "$(search_in_repository branches ${rc_branch} .[].name)" || delete_in_repository branches ${rc_branch}
         fi
