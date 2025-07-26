@@ -25,7 +25,7 @@ rewind_git()
         fi
         if test ! -z "$rc_tag" ; then
           if test ! -z "$(cd $top ; git tag --list $rc_tag)" ; then
-              (cd $top ; git tag -D $rc_tag)
+              (cd $top ; git tag -d $rc_tag)
               test -z "$(search_in_repository tags ${rc_tag} .[].name)" || delete_in_repository tags ${rc_tag}
           fi
         fi
@@ -226,8 +226,8 @@ timeout=0
 while test -z "$created_branch" ; do
   current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
   echo "${current_date} branch ${release_branch} not yet available in ${origin}, waiting…"
-  sleep 10
-  timeout=$(expr $timeout + 10)
+  sleep 5
+  timeout=$(expr $timeout + 5)
   test $timeout -lt 600 || complain "branch ${release_branch} not created in ${origin} after 10 minutes, exiting"
   created_branch=$(search_in_repository branches ${release_branch} .[].name)
 done
@@ -256,8 +256,8 @@ timeout=0
 while test "${merge_status}" != "mergeable" ; do
   current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
   echo "${current_date} merge request ${mr_id} status: ${merge_status}, waiting…"
-  sleep 10
-  timeout=$(expr $timeout + 10)
+  sleep 5
+  timeout=$(expr $timeout + 5)
   test $timeout -lt 600 || complain "merge request ${mr_id} not mergeable after 10 minutes, exiting"
   merge_status=$(get_mr ${mr_id} ".detailed_merge_status")
 done
@@ -279,8 +279,8 @@ timeout=0
 while test "${merge_state}" != "merged"; do
   current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
   echo "${current_date} merge request ${mr_id} state: ${merge_state}, waiting…"
-  sleep 10
-  timeout=$(expr $timeout + 10)
+  sleep 5
+  timeout=$(expr $timeout + 5)
   test $timeout -lt 600 || complain "merge request ${mr_id} not merged after 10 minutes, exiting"
   merge_state=$(get_mr ${mr_id} ".state")
 done
@@ -294,6 +294,7 @@ echo ""
 echo ""
 request_confirmation "create tag $rc_tag?"
 (cd $top ; git tag $rc_tag -m "Release Candidate $next_rc for version $release_version." ; git push ${origin} $rc_tag)
+echo ""
 
 # monitor continuous integration pipeline triggering (10 minutes max)
 merge_sha=$(cd $top ; git rev-parse --verify HEAD)
@@ -302,8 +303,8 @@ timeout=0
 while test -z "$pipeline_id" ; do
     current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
     echo "${current_date} waiting for pipeline to be triggered…"
-    sleep 10
-    timeout=$(expr $timeout + 10)
+    sleep 5
+    timeout=$(expr $timeout + 5)
     test $timeout -lt 1800 || complain "pipeline not started after 30 minutes, exiting"
     pipeline_id=$(curl \
                     --silent \

@@ -246,15 +246,16 @@ Several of these steps take some time, for example when the merge
 request is created, it is not executed immediately. There are several
 waiting loops that monitor the progress of these steps, polling the
 forge regularly. These loops display a timestamped waiting message
-evey 10 seconds until the operation is performed, and stop the release
-process if the operation exceeds a timeout. Branch creation, merge
-request creation, and merge request completion have a 10 minutes
-timeout but should typically be completed in one or two minutes.
-Continuous Integration pipeline start has a 30 minutes timeout as
-runners may be busy with already running compilations. Once started,
-Continuous Integration pipeline run time has a 60 minutes timeout. The
-final step (creating the vote thread) is triggered only if the
-Continuous Integration pipeline succeeds.
+evey 5 seconds (every 30 seconds for the long pipeline run loop) until
+the operation is performed, and stop the release process if the
+operation exceeds a timeout. Branch creation, merge request creation,
+and merge request completion have a 10 minutes timeout but should
+typically be completed in one or two minutes. Continuous Integration
+pipeline start has a 30 minutes timeout as runners may be busy with
+already running compilations. Once started, Continuous Integration
+pipeline run time has a 60 minutes timeout. The final step (creating
+the vote thread) is triggered only if the Continuous Integration
+pipeline succeeds.
 
 If something goes wrong or if the release manager answers "no" to one
 of the confirmation questions triggered by the script, it removes all
