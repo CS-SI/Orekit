@@ -277,7 +277,7 @@ curl \
 merge_state="opened"
 timeout=0
 while test "${merge_state}" != "merged"; do
-  merge_status=$(get_mr ${mr_id} ".state")
+  merge_state=$(get_mr ${mr_id} ".state")
   current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
   echo "${current_date} merge request ${mr_id} state: ${merge_state}, waiting…"
   sleep 10
