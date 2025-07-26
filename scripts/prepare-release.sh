@@ -4,8 +4,10 @@ tmpdir=$(mktemp -d /tmp/orekit-prepare-release.XXXXXX)
 trap "rm -fr $tmpdir" 0
 trap "exit 1" 1 2 15
 
-gitlab_api=https://gitlab.orekit.org/api/v4/projects/luc%2Forekit
-origin=luc
+gitlab_fqdn=gitlab.orekit.org
+gitlab_owner=orekit
+gitlab_project=orekit
+gitlab_api=https://${gitlab_fqdn}/api/v4/projects/${gitlab_owner}%2F${gitlab_project}
 
 complain()
 {
@@ -97,6 +99,7 @@ done
 git -C "$top" rev-parse 2>/dev/null        || complain "$top does not contain a git repository"
 test -f $top/pom.xml                       || complain "$top/pom.xml not found"
 test -d $top/src/main/java/org/orekit/time || complain "$top/src/main/java/org/orekit/time not found"
+origin="$(cd $top ; git remote -v | sed -n 's,\([^ \t]*\)\t*.*${gitlab_fqdn}:${gitlab_owner}/${gitlab_project}.git.*(push).*,\1,p')"
 
 # get users credentials
 gitlab_token=""
@@ -322,7 +325,7 @@ timeout=0
 # created, waiting_for_resource, preparing, pending, running, success, failed, canceling, canceled, skipped, manual, scheduled
 while test "${pipeline_status}" != "success" -a "${pipeline_status}" != "failed"  -a "${pipeline_status}" != "canceled" ; do
   current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
-  echo "${current_date} pipeline status: ${pipeline_status}, waiting…"
+  echo "${current_date} pipeline ${pipeline_id} status: ${pipeline_status}, waiting…"
   sleep 30
   timeout=$(expr $timeout + 30)
   test $timeout -lt 3600 || complain "pipeline not completed after 1 hour, exiting"
@@ -360,7 +363,9 @@ https://www.orekit.org/site-orekit-${release_version}/index.html
 
 The vote will be tallied on ${vote_date} (UTC time)"
 
+    echo ""
     echo "proposed vote topic for the forum:"
+    echo ""
     echo "$topic_raw"
     request_confirmation "OK to post vote topic on forum?"
 
