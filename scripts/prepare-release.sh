@@ -21,17 +21,17 @@ rewind_git()
         (cd $top ; git reset -q --hard; git checkout $start_branch)
         if test -z "$(cd $top ; git branch --list $rc_branch)" ; then
             (cd $top ; git branch -D $rc_branch)
-            test -z "$(get_in_gitlab branches ${rc_branch}) .[].name" || delete_in_gitlab branches ${rc_branch}
+            test -z "$(search_in_repository branches ${rc_branch} .[].name)" || delete_in_repository branches ${rc_branch}
         fi
         if test ! -z "$rc_tag" ; then
           if test -z "$(cd $top ; git tag --list $rc_tag)" ; then
               (cd $top ; git tag -D $rc_tag)
-              test -z "$(get_in_gitlab tags ${rc_tag}) .[].name" || delete_in_gitlab tags ${rc_tag}
+              test -z "$(search_in_repository tags ${rc_tag} .[].name)" || delete_in_repository tags ${rc_tag}
           fi
         fi
         if test "$delete_release_branch_on_cleanup" = "true" ; then
             (cd $top ; git branch -D $release_branch)
-            test -z "$(get_in_gitlab branches ${release_branch} .[].name)" || delete_in_gitlab branches ${release_branch}
+            test -z "$(search_in_repository branches ${release_branch} .[].name)" || delete_in_repository branches ${release_branch}
         fi
         (cd $top ; git fetch --prune ${origin})
         echo "everything has been cleaned, branch set back to $start_branch" 1>&2
@@ -47,7 +47,7 @@ request_confirmation()
     test $answer = "yes" || complain "release process stopped at user request"
 }
 
-get_in_gitlab()
+search_in_repository()
 {
     if test -z "$gitlab_token" ; then
         echo ""
@@ -62,7 +62,7 @@ get_in_gitlab()
     fi
 }
 
-delete_in_gitlab()
+delete_in_repository()
 {
     if test ! -z "$gitlab_token" ; then
       curl \
@@ -70,6 +70,20 @@ delete_in_gitlab()
         --request DELETE \
         --header "PRIVATE-TOKEN: $gitlab_token" \
         ${gitlab_api}/repository/$1/$2
+    fi
+}
+
+get_mr()
+{
+    if test -z "$gitlab_token" ; then
+        echo ""
+    else
+        curl \
+          --silent \
+          --request GET \
+          --header "PRIVATE-TOKEN: $gitlab_token" \
+          ${gitlab_api}/merge_requests/$1 \
+        | jq --raw-output "$2"
     fi
 }
 
@@ -189,12 +203,12 @@ request_confirmation "create tag $rc_tag?"
 (cd $top ; git tag $rc_tag -m "Release Candidate $next_rc for version $release_version.")
 
 # push to origin
-test -z "$(get_in_gitlab branches ${rc_branch} .[].name)" || complain "branch ${rc_branch} already exists in ${origin}"
+test -z "$(search_in_repository branches ${rc_branch} .[].name)" || complain "branch ${rc_branch} already exists in ${origin}"
 request_confirmation "push $rc_branch branch and $rc_tag tag to ${origin}?"
 (cd $top ; git push ${origin} $rc_branch ; git push ${origin} $rc_tag)
 
 # make sure we can merge in a release branch on the origin server
-if test -z "$(get_in_gitlab branches ${release_branch} .[].name)" ; then
+if test -z "$(search_in_repository branches ${release_branch} .[].name)" ; then
   # release branch does not exist on origin yet, create it
   echo "creating remote branch ${origin}/${release_branch}"  
   curl \
@@ -211,13 +225,15 @@ fi
 created_branch=""
 timeout=0
 while test -z "$created_branch" ; do
-  created_branch=$(get_in_gitlab branches ${release_branch} .[].name)
+  created_branch=$(search_in_repository branches ${release_branch} .[].name)
   current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
   test ! -z "$created_branch" || echo "${current_date} branch ${release_branch} not yet available in ${origin}"
   sleep 10
   timeout=$(expr $timeout + 10)
   test $timeout -lt 600 || complain "branch ${release_branch} not created in ${origin} after 10 minutes, exiting"
 done
+echo "branch ${release_branch} has been created"
+echo ""
 
 # trigger merge request (this will trigger continuous integration pipelines)
 echo "creating merge request from ${rc_branch} to ${release_branch}"
@@ -232,18 +248,21 @@ mr_id=$(curl \
           "${gitlab_api}/merge_requests" \
        | jq .iid)
 echo "merge request ID is $mr_id"
+echo ""
 
 # waiting for merge request to be mergeable
 merge_status="preparing"
 timeout=0
 while test "${merge_status}" != "mergeable"; do
-  merge_status=$(get_in_gitlab merge_requests/${mr_id} ".detailed_merge_status")
+  merge_status=$(get_mr ${mr_id} ".detailed_merge_status")
   current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
   echo "${current_date} merge request ${mr_id} status: ${merge_status}"
   sleep 10
   timeout=$(expr $timeout + 10)
-  test $timeout -lt 600 || complain "merge request not mergeable after 10 minutes, exiting"
+  test $timeout -lt 600 || complain "merge request ${mr_id} not mergeable after 10 minutes, exiting"
 done
+echo "merge request ${mr_id} is mergeable"
+echo ""
 
 # merging
 echo "merging merge request $mr_id from ${rc_branch} to ${release_branch}"
@@ -252,6 +271,20 @@ curl \
   --request PUT \
   --header "PRIVATE-TOKEN: $gitlab_token" \
   "${gitlab_api}/merge_requests/${mr_id}/merge"
+
+# waiting for merge request to be merged
+merge_state="opened"
+timeout=0
+while test "${merge_state}" != "merged"; do
+  merge_status=$(get_mr ${mr_id} ".state")
+  current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
+  echo "${current_date} merge request ${mr_id} state: ${merge_state}"
+  sleep 10
+  timeout=$(expr $timeout + 10)
+  test $timeout -lt 600 || complain "merge request ${mr_id} not merged after 10 minutes, exiting"
+done
+echo "merge request ${mr_id} has been merged"
+echo ""
 
 # switch to release branch
 (cd $top ; git fetch --prune ${origin} ; git checkout $release_branch ; git branch --set-upstream-to ${origin}/$release_branch $release_branch; git pull ${origin})
