@@ -33,7 +33,7 @@ rewind_git()
             (cd $top ; git branch -D $release_branch)
             test -z "$(get_in_gitlab branches ${release_branch} .[].name)" || delete_in_gitlab branches ${release_branch}
         fi
-        (cd $top ; git fetch --prune ${origin}
+        (cd $top ; git fetch --prune ${origin})
         echo "everything has been cleaned, branch set back to $start_branch" 1>&2
     fi
 }
