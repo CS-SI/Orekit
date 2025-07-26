@@ -133,7 +133,7 @@ rc_tag="${release_version}-RC$next_rc"
 
 # create release candidate branch
 rc_branch="RC${next_rc}-${release_version}"
-test -z "$(git branch --list $rc_branch)" || complain "branch $rc_branch already exists, stopping"
+test -z "$(cd $top ; git branch --list $rc_branch)" || complain "branch $rc_branch already exists, stopping"
 (cd $top ; git branch $rc_branch ; git checkout $rc_branch ; git merge --no-ff --no-commit $start_branch)
 if test ! -z "$(cd $top ; git status --porcelain)" ; then
     (cd $top ; git status)
@@ -206,7 +206,18 @@ if test -z "$(get_in_gitlab branches ${release_branch} .[].name)" ; then
     --data "ref=${start_sha}" \
     ${gitlab_api}/repository/branches
 fi
-test ! -z "$(get_in_gitlab branches ${release_branch} .[].name)" || complain "unable to create ${release_branch} remotely"
+
+# waiting for remote branch to be available
+created_branch=""
+timeout=0
+while test -z "$created_branch" ; do
+  created_branch=$(get_in_gitlab branches ${release_branch} .[].name)
+  current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
+  test ! -z "$created_branch" || echo "${current_date} branch ${release_branch} not yet available in ${origin}"
+  sleep 10
+  timeout=$(expr $timeout + 10)
+  test $timeout -lt 600 || complain "branch ${release_branch} not created in ${origin} after 10 minutes, exiting"
+done
 
 # trigger merge request (this will trigger continuous integration pipelines)
 echo "creating merge request from ${rc_branch} to ${release_branch}"
