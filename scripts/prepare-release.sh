@@ -227,7 +227,7 @@ timeout=0
 while test -z "$created_branch" ; do
   created_branch=$(search_in_repository branches ${release_branch} .[].name)
   current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
-  test ! -z "$created_branch" || echo "${current_date} branch ${release_branch} not yet available in ${origin}"
+  test ! -z "$created_branch" || echo "${current_date} branch ${release_branch} not yet available in ${origin}, waiting…"
   sleep 10
   timeout=$(expr $timeout + 10)
   test $timeout -lt 600 || complain "branch ${release_branch} not created in ${origin} after 10 minutes, exiting"
@@ -256,7 +256,7 @@ timeout=0
 while test "${merge_status}" != "mergeable"; do
   merge_status=$(get_mr ${mr_id} ".detailed_merge_status")
   current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
-  echo "${current_date} merge request ${mr_id} status: ${merge_status}"
+  echo "${current_date} merge request ${mr_id} status: ${merge_status}, waiting…"
   sleep 10
   timeout=$(expr $timeout + 10)
   test $timeout -lt 600 || complain "merge request ${mr_id} not mergeable after 10 minutes, exiting"
@@ -268,6 +268,7 @@ echo ""
 echo "merging merge request $mr_id from ${rc_branch} to ${release_branch}"
 curl \
   --silent \
+  --output /dev/null \
   --request PUT \
   --header "PRIVATE-TOKEN: $gitlab_token" \
   "${gitlab_api}/merge_requests/${mr_id}/merge"
@@ -278,7 +279,7 @@ timeout=0
 while test "${merge_state}" != "merged"; do
   merge_status=$(get_mr ${mr_id} ".state")
   current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
-  echo "${current_date} merge request ${mr_id} state: ${merge_state}"
+  echo "${current_date} merge request ${mr_id} state: ${merge_state}, waiting…"
   sleep 10
   timeout=$(expr $timeout + 10)
   test $timeout -lt 600 || complain "merge request ${mr_id} not merged after 10 minutes, exiting"
@@ -299,7 +300,7 @@ pipeline_id=""
 timeout=0
 while test -z "$pipeline_id" ; do
     current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
-    echo "${current_date} waiting for pipeline to be triggered"
+    echo "${current_date} waiting for pipeline to be triggered…"
     pipeline_id=$(curl \
                     --silent \
                     --request GET \
@@ -325,7 +326,7 @@ while test "${pipeline_status}" != "success" -a "${pipeline_status}" != "failed"
                       "${gitlab_api}/pipelines" \
                     | jq --raw-output ".[] | select(.id==$pipeline_id) | .status")
   current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
-  echo "${current_date} pipeline status: ${pipeline_status}"
+  echo "${current_date} pipeline status: ${pipeline_status}, waiting…"
   sleep 30
   timeout=$(expr $timeout + 30)
   test $timeout -lt 3600 || complain "pipeline not completed after 1 hour, exiting"
