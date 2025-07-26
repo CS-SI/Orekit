@@ -245,6 +245,7 @@ mr_id=$(curl \
           --data   "target_branch=${release_branch}" \
           --data   "remove_source_branch=true" \
           --data   "title=preparing release ${release_version}" \
+          --data   "labels=prepare-release-script" \
           "${gitlab_api}/merge_requests" \
        | jq .iid)
 echo "merge request ID is $mr_id"

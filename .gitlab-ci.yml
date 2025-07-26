@@ -40,6 +40,11 @@ verify:
     KUBERNETES_CPU_REQUEST: "7"
   script:
     - mvn $MAVEN_CLI_OPTS checkstyle:check verify site
+    - echo CI_PIPELINE_SOURCE   = $CI_PIPELINE_SOURCE
+    - echo CI_COMMIT_TAG        = $CI_COMMIT_TAG
+    - echo CI_COMMIT_BRANCH     = $CI_COMMIT_BRANCH
+    - echo CI_PROJECT_NAMESPACE = $CI_PROJECT_NAMESPACE
+    - echo CI_MERGE_REQUEST_LABELS = $CI_MERGE_REQUEST_LABELS
     - test -z "$SONAR_TOKEN" || mvn $MAVEN_CLI_OPTS sonar:sonar
           -Dsonar.host.url=${SONAR_HOST_URL}
           -Dsonar.login=${SONAR_TOKEN}
@@ -55,11 +60,6 @@ verify:
     reports:
       junit:
         - target/surefire-reports/*.xml
-  rules:
-    - if:   $CI_COMMIT_TAG    =~ /^[.0-9]+-RC[0-9]+$/
-      when: never
-    - if:   $CI_COMMIT_BRANCH =~ /^RC[0-9]+-[.0-9]+$/
-      when: never
 
 verify:warning:
   stage: verify
