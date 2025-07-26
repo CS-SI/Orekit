@@ -4,17 +4,37 @@ tmpdir=$(mktemp -d /tmp/orekit-prepare-release.XXXXXX)
 trap "rm -fr $tmpdir" 0
 trap "exit 1" 1 2 15
 
+gitlab_api=https://gitlab.orekit.org/api/v4/projects/luc%2Forekit
+origin=luc
+
 complain()
 {
     echo "$1" 1>&2
+    rewind_git
+    exit 1
+}
+
+rewind_git()
+{
     if test ! -z "$start_branch" && test "$(cd $top ; git branch --show-current)" != "$start_branch" ; then
         # we need to clean up the branches and rewind everything
         (cd $top ; git reset -q --hard; git checkout $start_branch)
-        test -z "$(git branch --list $rc_branch)"  || (cd $top ; git branch -D $rc_branch)
-        test "$delete_release_branch_on_cleanup" = "true" && (cd $top ; git branch -D $release_branch)
+        if test -z "$(cd $top ; git branch --list $rc_branch)" ; then
+            (cd $top ; git branch -D $rc_branch)
+            test -z "$(get_in_gitlab branches ${rc_branch}) .[].name" || delete_in_gitlab branches ${rc_branch}
+        fi
+        if test ! -z "$rc_tag" ; then
+          if test -z "$(cd $top ; git tag --list $rc_tag)" ; then
+              (cd $top ; git tag -D $rc_tag)
+              test -z "$(get_in_gitlab tags ${rc_tag}) .[].name" || delete_in_gitlab tags ${rc_tag}
+          fi
+        fi
+        if test "$delete_release_branch_on_cleanup" = "true" ; then
+            (cd $top ; git branch -D $release_branch)
+            test -z "$(get_in_gitlab branches ${release_branch} .[].name)" || delete_in_gitlab branches ${release_branch}
+        fi
         echo "everything has been cleaned, branch set back to $start_branch" 1>&2
     fi
-    exit 1
 }
 
 request_confirmation()
@@ -24,6 +44,32 @@ request_confirmation()
         read -p "$1 (enter yes to continue, no to stop the release process) " answer
     done
     test $answer = "yes" || complain "release process stopped at user request"
+}
+
+get_in_gitlab()
+{
+    if test -z "$gitlab_token" ; then
+        echo ""
+    else
+        curl \
+          --silent \
+          --request GET \
+          --header "PRIVATE-TOKEN: $gitlab_token" \
+          --data "search=^${2}$" \
+          ${gitlab_api}/repository/$1 \
+        | jq --raw-output "$3"
+    fi
+}
+
+delete_in_gitlab()
+{
+    if test ! -z "$gitlab_token" ; then
+      curl \
+        --silent \
+        --request DELETE \
+        --header "PRIVATE-TOKEN: $gitlab_token" \
+        ${gitlab_api}/repository/$1/$2
+    fi
 }
 
 # find top level directory
@@ -37,8 +83,19 @@ git -C "$top" rev-parse 2>/dev/null        || complain "$top does not contain a 
 test -f $top/pom.xml                       || complain "$top/pom.xml not found"
 test -d $top/src/main/java/org/orekit/time || complain "$top/src/main/java/org/orekit/time not found"
 
+# get users credentials
+gitlab_token=""
+while test -z "$gitlab_token" ; do
+    echo "enter your gitlab private token"
+    stty_orig=$(stty -g)
+    stty -echo
+    read gitlab_token
+    stty $stty_orig
+done
+
 start_branch=$(cd $top ; git branch --show-current)
-echo "start branch is $start_branch"
+start_sha=$(cd $top ; git rev-parse --verify HEAD)
+echo "start branch is ${start_branch}, commit ${start_sha}"
 test -z "$(cd $top ; git status --porcelain)" || complain "there are uncommitted changes in the branch"
 
 # extract version numbers
@@ -131,38 +188,26 @@ request_confirmation "create tag $rc_tag?"
 (cd $top ; git tag $rc_tag -m "Release Candidate $next_rc for version $release_version.")
 
 # push to origin
-request_confirmation "push $rc_branch branch and $rc_tag tag to origin?"
-(cd $top ; git push origin $rc_branch ; git push origin $rc_tag)
+test -z "$(get_in_gitlab branches ${rc_branch} .[].name)" || complain "branch ${rc_branch} already exists in ${origin}"
+request_confirmation "push $rc_branch branch and $rc_tag tag to ${origin}?"
+(cd $top ; git push ${origin} $rc_branch ; git push ${origin} $rc_tag)
 
-# get users credentials
-gitlab_token=""
-while test -z "$gitlab_token" ; do
-    echo "enter your gitlab private token"
-    stty_orig=$(stty -g)
-    stty -echo
-    read gitlab_token
-    stty $stty_orig
-done
-
-# trigger merge request (this will trigger continuous integration pipelines)
-gitlab_api=https://gitlab.orekit.org/api/v4/projects/orekit%2Forekit
-if test $(curl \
-            --silent \
-            --output /dev/null \
-            --request GET \
-            ${gitlab_api}/repository/branches/${release_branch} \
-            --write-out "%{http_code}") -eq 404 ; then
-  # release branch does not exist on origin, create it so we can merge into it
-  echo "creating remote branch origin/${release_branch}"  
+# make sure we can merge in a release branch on the origin server
+if test -z "$(get_in_gitlab branches ${release_branch} .[].name)" ; then
+  # release branch does not exist on origin yet, create it
+  echo "creating remote branch ${origin}/${release_branch}"  
   curl \
     --silent \
     --output /dev/null \
     --request POST \
     --header "PRIVATE-TOKEN: $gitlab_token" \
     --data "branch=${release_branch}" \
-    --data "ref=develop" \
-    "${gitlab_api}/repository/branches"
+    --data "ref=${start_sha}" \
+    ${gitlab_api}/repository/branches
 fi
+test ! -z "$(get_in_gitlab branches ${release_branch} .[].name)" || complain "unable to create ${release_branch} remotely"
+
+# trigger merge request (this will trigger continuous integration pipelines)
 echo "creating merge request from ${rc_branch} to ${release_branch}"
 mr_id=$(curl \
           --silent \
@@ -180,13 +225,7 @@ echo "merge request ID is $mr_id"
 merge_status="preparing"
 timeout=0
 while test "${merge_status}" != "mergeable"; do
-  merge_status=$(curl  \
-                   --silent \
-                   --request GET \
-                   --header "PRIVATE-TOKEN: $gitlab_token" \
-                   "${gitlab_api}/merge_requests/${mr_id}" \
-                 | jq ".detailed_merge_status" \
-                 | sed 's,"\(.*\)",\1,')
+  merge_status=$(get_in_gitlab merge_requests/${mr_id} ".detailed_merge_status")
   current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
   echo "${current_date} merge request ${mr_id} status: ${merge_status}"
   sleep 10
@@ -203,7 +242,7 @@ curl \
   "${gitlab_api}/merge_requests/${mr_id}/merge"
 
 # switch to release branch
-(cd $top ; git fetch ; git checkout $release_branch ; git branch --set-upstream-to origin/$release_branch $release_branch; git pull)
+(cd $top ; git fetch ${origin} ; git checkout $release_branch ; git branch --set-upstream-to ${origin}/$release_branch $release_branch; git pull ${origin})
 
 # delete release candidate branch
 request_confirmation "delete $rc_branch release candidate branch? (note that tag $rc_tag will be preserved)"
@@ -239,8 +278,7 @@ while test "${pipeline_status}" != "success" -a "${pipeline_status}" != "failed"
                       --request GET \
                       --header "PRIVATE-TOKEN: $gitlab_token" \
                       "${gitlab_api}/pipelines" \
-                    | jq ".[] | select(.id==$pipeline_id) | .status" \
-                    | sed 's,"\(.*\)",\1,')
+                    | jq --raw-output ".[] | select(.id==$pipeline_id) | .status")
   current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
   echo "${current_date} pipeline status: ${pipeline_status}"
   sleep 30

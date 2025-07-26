@@ -228,8 +228,9 @@ When releasing a patch version, the script skips the vote topic creation and con
 up to promoting the release from staging to published.
 
 The shell script performs the release on a temporary branch that is merged only near
-the final step, and it automatically removes it without merging if something goes
-wrong before this final step, hence ensuring everything remains clean.
+the final step. It automatically removes all branches and tags it creates (both locally
+and on the origina GitLab server) if something goes wrong before this final step, hence
+ensuring everything remains clean.
 
 As the tag is pushed to Orekit GitLab forge, the Continuous Integration is
 automatically triggered. It performs a full build, signs the artifacts using the
@@ -241,7 +242,7 @@ or announcing the release on the GitHub mirror repository. These stages are
 described in the next section.
 
 This script must be run from the command line on a computer with several Linux
-utilities (git, sed, xsltproc, curl, glab…), with the git worktree
+utilities (git, sed, xsltproc, curl…), with the git worktree
 already set to the start branch (i.e., develop or a patch branch):
 
     sh scripts/prepare-release.sh
@@ -250,6 +251,7 @@ Here are the steps the script performs on its own, asking
 for user confirmation before any commit:
 
     - perform safety checks (files and directories present, utilities available, java version)
+    - ask for GitLab personal access token
     - check if the release is a major, minor or patch release
       using the -SNAPSHOT version number from the current branch `pom.xml`
     - for major or minor release, create a release-X.Y branch from develop (reuse existing branch for patch release)
@@ -265,8 +267,7 @@ for user confirmation before any commit:
     - tag the RCn-X.Y branch with tag X.Y-RCn
     - push the tagged RCn-X.Y branch to origin
     - trigger a merge request from RCn-X.Y branch to release-X.Y branch
-      (the GitLab personal access token will be asked for at this point;
-       this will trigger full build, signing and deployment to Orekit Nexus instance)
+      (this will trigger full build, signing and deployment to Orekit Nexus instance)
     - delete RCn-X.Y branch (but keep the X.Y-RCn tag)
     - switch to release-X.Y branch
     - pull merged branch from origin
