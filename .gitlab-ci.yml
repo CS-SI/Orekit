@@ -56,7 +56,9 @@ verify:
       junit:
         - target/surefire-reports/*.xml
   rules:
-    - if:   $CI_COMMIT_BRANCH !~ /^RC[0-9]+-[.0-9]+$/
+    - if:   $CI_COMMIT_TAG    =~ /^[.0-9]+-RC[0-9]+$/
+      when: never
+    - if:   $CI_COMMIT_BRANCH =~ /^RC[0-9]+-[.0-9]+$/
       when: never
 
 verify:warning:
@@ -68,8 +70,6 @@ verify:warning:
   allow_failure: true
   rules:
     - if: $SONAR_TOKEN == null
-    - if:   $CI_COMMIT_BRANCH !~ /^RC[0-9]+-[.0-9]+$/
-      when: never
 
 # Convert and import in GitLab coverage data.
 # The information is then available directly in merge-request view.
@@ -95,9 +95,6 @@ coverage-import:
         coverage_format: cobertura
         path: target/site/cobertura.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
-  rules:
-    - if:   $CI_COMMIT_BRANCH !~ /^RC[0-9]+-[.0-9]+$/
-      when: never
 
 changelog:
   stage: verify
@@ -109,9 +106,6 @@ changelog:
   artifacts:
     paths:
       - CHANGELOG.md
-  rules:
-    - if:   $CI_COMMIT_BRANCH !~ /^RC[0-9]+-[.0-9]+$/
-      when: never
 
 # On main branches (develop, release-*, main) the produced artifacts are
 # deployed on the Nexus of the project (https://packages.orekit.org/)
