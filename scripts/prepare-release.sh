@@ -235,7 +235,7 @@ done
 echo "branch ${release_branch} has been created"
 echo ""
 
-# trigger merge request (this will trigger continuous integration pipelines)
+# create merge request
 echo "creating merge request from ${rc_branch} to ${release_branch}"
 mr_id=$(curl \
           --silent \
@@ -250,7 +250,7 @@ mr_id=$(curl \
 echo "merge request ID is $mr_id"
 echo ""
 
-# waiting for merge request to be mergeable
+# wait for merge request to be mergeable
 merge_status="preparing"
 timeout=0
 while test "${merge_status}" != "mergeable"; do
@@ -264,7 +264,7 @@ done
 echo "merge request ${mr_id} is mergeable"
 echo ""
 
-# merging
+# perform merging (this will trigger continuous integration pipelines)
 echo "merging merge request $mr_id from ${rc_branch} to ${release_branch}"
 curl \
   --silent \
@@ -307,7 +307,7 @@ while test -z "$pipeline_id" ; do
                     --header "PRIVATE-TOKEN: $gitlab_token" \
                     "${gitlab_api}/pipelines" | \
                   jq ".[] | select(.sha==\"$merge_sha\" and .ref==\"$release_branch\") | .id")
-    test $timeout -lt 600 || complain "pipeline not started after 10 minutes, exiting"
+    test $timeout -lt 1800 || complain "pipeline not started after 30 minutes, exiting"
     sleep 10
     timeout=$(expr $timeout + 10)
 done
@@ -356,7 +356,7 @@ https://packages.orekit.org/#browse/browse:maven-release:org%2Forekit%2Forekit%2
 The generated site is available at:
 https://www.orekit.org/site-orekit-${release_version}/index.html
 
-The vote will be tallied on ${vote_date}"
+The vote will be tallied on ${vote_date} (UTC time)"
 
     echo "proposed vote topic for the forum:"
     echo "$topic_raw"
