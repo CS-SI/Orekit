@@ -24,7 +24,7 @@ rewind_git()
             test -z "$(search_in_repository branches ${rc_branch} .[].name)" || delete_in_repository branches ${rc_branch}
         fi
         if test ! -z "$rc_tag" ; then
-          if test -z "$(cd $top ; git tag --list $rc_tag)" ; then
+          if test ! -z "$(cd $top ; git tag --list $rc_tag)" ; then
               (cd $top ; git tag -D $rc_tag)
               test -z "$(search_in_repository tags ${rc_tag} .[].name)" || delete_in_repository tags ${rc_tag}
           fi
