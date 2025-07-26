@@ -10,7 +10,7 @@ origin=luc
 complain()
 {
     echo "$1" 1>&2
-    rewind_git
+##    rewind_git
     exit 1
 }
 
