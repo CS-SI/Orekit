@@ -258,11 +258,12 @@ the vote thread) is triggered only if the Continuous Integration
 pipeline succeeds.
 
 If something goes wrong or if the release manager answers "no" to one
-of the confirmation questions triggered by the script, it removes all
-the branches and tags it created (both locally and on the Orekit
-GitLab server) and stops. This ensures everything remains clean. The
-last chance to stop the release process corresponds to the question
-about posting the vote thread to the forum.
+of the confirmation questions triggered by the script or interrupts
+the script by a signal like hitting ctrl-C, the script removes all the
+branches and tags it created (both locally and on the Orekit GitLab
+server) and stops. This ensures everything remains clean. The last
+chance to stop the release process corresponds to the question about
+posting the vote thread to the forum.
 
 This script must be run from the command line on a computer with
 several Linux utilities (git, sed, xsltproc, curl…), with the git

@@ -2,7 +2,7 @@
 
 tmpdir=$(mktemp -d /tmp/orekit-prepare-release.XXXXXX)
 trap "rm -fr $tmpdir" 0
-trap "exit 1" 1 2 15
+trap "rewind_git ; exit 1" 1 2 15
 
 gitlab_fqdn=gitlab.orekit.org
 gitlab_owner=orekit
