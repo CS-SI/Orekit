@@ -93,7 +93,7 @@ get_mr()
 top=$(cd $(dirname $0)/.. ; pwd)
 
 # safety checks
-for cmd in git sed xsltproc tee sort tail curl ; do
+for cmd in git sed xsltproc tee sort tail curl stty ; do
     which -s $cmd || complain "$cmd command not found"
 done
 git -C "$top" rev-parse 2>/dev/null        || complain "$top does not contain a git repository"
@@ -344,7 +344,6 @@ if test "$release_type" = "patch" ; then
 else
     # create vote topic
     vote_date=$(TZ=UTC date -d "+5 days" +"%Y-%m-%dT%H:%M:%SZ")
-    orekit_dev_category=5
     topic_title="[VOTE] Releasing Orekit ${release_version} from release candidate $next_rc"
     topic_raw="This is a vote in order to release version ${release_version} of the Orekit library.
 Version ${release_version} is a ${release_type} release.
@@ -369,8 +368,9 @@ The vote will be tallied on ${vote_date} (UTC time)"
     echo "$topic_raw"
     request_confirmation "OK to post vote topic on forum?"
 
-    read -p "enter your forum user name" forum_username
-    while test -z "forum_api_key" ; do
+    read -p "enter your forum user name " forum_username
+    forum_api_key=""
+    while test -z "$forum_api_key" ; do
         echo "enter your forum API key"
         stty_orig=$(stty -g)
         stty -echo
@@ -378,14 +378,26 @@ The vote will be tallied on ${vote_date} (UTC time)"
         stty $stty_orig
     done
 
-    post_url=$(curl -H "Content-Type: application/json" \
-                    -H "Accept: application/json" \
-                    -H "Api-Username: $forum_username"\
-                    -H "Api-Key: $forum_api_key" \
-                    -X POST https://forum.orekit.org/posts.json
-                    -d "{ \"title\": \"topic_title\", \"raw\": \"$topic_raw\", \"category\": \"$orekit_dev_category\" }" \
-            | jp .post_url | sed "s,\"\(.*\)\",https://forum.orekit.org\1,")
-    echo "post URLis : $post_url"
+    orekit_dev_category=$(curl --silent \
+                               --request GET \
+                               --header "Content-Type: application/json" \
+                               --header "Api-Username: $forum_username" \
+                               --header "Api-Key: $forum_api_key" \
+                               --header "Accept: application/json" \
+                               https://forum.orekit.org/categories \
+                          | jq ".category_list.categories[] | select(.name==\"Orekit development\") | .id")
+
+    post_url=$(curl --silent \
+                    --request POST \
+                    --header "Content-Type: application/json" \
+                    --header "Accept: application/json" \
+                    --header "Api-Username: $forum_username"\
+                    --header "Api-Key: $forum_api_key" \
+                    --data   "{ \"title\": \"$topic_title\", \"raw\": \"$topic_raw\", \"category\": \"$orekit_dev_category\" }" \
+                    https://forum.orekit.org/posts.json \
+                   | jq --raw-output .post_url)
+    echo ""
+    echo "vote topic posted at URL: https://forum.orekit.org/$post_url"
 
     echo ""
     echo "please ping PMC members so they are aware of the vote."

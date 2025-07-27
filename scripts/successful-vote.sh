@@ -4,6 +4,10 @@ tmpdir=$(mktemp -d /tmp/orekit-failed-vote.XXXXXX)
 trap "rm -fr $tmpdir" 0
 trap "exit 1" 1 2 15
 
+gitlab_fqdn=gitlab.orekit.org
+gitlab_owner=orekit
+gitlab_project=orekit
+
 complain()
 {
     echo "$1" 1>&2
@@ -23,12 +27,13 @@ request_confirmation()
 top=$(cd $(dirname $0)/.. ; pwd)
 
 # safety checks
-for cmd in git sed xsltproc sort tail curl base64 jq ; do
+for cmd in git sed xsltproc sort tail curl stty base64 jq ; do
     which -s $cmd || complain "$cmd command not found"
 done
 git -C "$top" rev-parse 2>/dev/null        || complain "$top does not contain a git repository"
 test -f $top/pom.xml                       || complain "$top/pom.xml not found"
 test -d $top/src/main/java/org/orekit/time || complain "$top/src/main/java/org/orekit/time not found"
+origin=$(cd $top ; git remote -v | sed -n "s,\([^ \t]*\)\t*.*${gitlab_fqdn}:${gitlab_owner}/${gitlab_project}.git.*(push).*,\1,p")
 
 start_branch=$(cd $top ; git branch --show-current)
 echo "start branch is $start_branch"
@@ -81,14 +86,18 @@ deployment_id=$(cd $tmpdir/bundle ;
 
 # wait for validation
 status=""
+timeout=0
 while test "$status" != "\"VALIDATED\"" ; do
-  sleep 2
+  current_date=$(date +"%Y-%m-%dT%H:%M:%S")
+  echo "${current_date} deployment status is \"$status\", waiting for validation…"
+  sleep 5
+  timeout=$(expr $timeout + 5)
+  test $timeout -lt 600 || complain "deployment not validated after 10 minutes, exiting"
   status=$(curl --silent \
                 --request POST \
                 --header "Authorization: Bearer $central_bearer" \
                 "https://central.sonatype.com/api/v1/publisher/status?id=${deployment_id}" \
            | jq .deploymentState)
-  echo "deployment status is \"$status\", still waiting for validation…"
 done
 
 # publish maven artifacts to central portal
@@ -102,16 +111,16 @@ request_confirmation "create tag $release_tag?"
 (cd $top ; git tag $release_tag -m "Version $release_version.")
 
 # push to origin
-request_confirmation "push $release_branch branch and $release_tag tag to origin?"
-(cd $top ; git push origin $release_branch $release_tag)
+request_confirmation "push $release_branch branch and $release_tag tag to ${origin}?"
+(cd $top ; git push ${origin} $release_branch $release_tag)
 
 # merge release branch to main branch
 request_confirmation "merge $release_branch to main?"
 (cd $top ; git checkout main ; git merge --no-ff $release_branch)
 
 # push main branch
-request_confirmation "push main branch to origin?"
-(cd $top ; git push origin main)
+request_confirmation "push main branch to ${origin}?"
+(cd $top ; git push ${origin} main)
 
 # merge main branch to develop branch
 request_confirmation "merge main to develop?"
@@ -140,8 +149,8 @@ request_confirmation "commit pom.xml and changes.xml?"
 (cd $top; git add pom.xml src/changes/changes.xml; git commit -m "Incremented version number for next-release.")
 
 # push develop branch
-request_confirmation "push develop branch to origin?"
-(cd $top ; git push origin develop)
+request_confirmation "push develop branch to ${origin}?"
+(cd $top ; git push ${origin} develop)
 
-echo "please navigate to https://gitlab.orekit.org/orekit/orekit/-/releases"
+echo "please navigate to https://${gitlab_fqdn}/${gitlab_owner}/${gitlab_project}/-/releases"
 echo "and check release notes are OK (it may take some time for the releases to show up there)"
