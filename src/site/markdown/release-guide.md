@@ -279,9 +279,10 @@ for user confirmation before any commit:
     - ask for GitLab personal access token
     - check if the release is a major, minor or patch release
       using the -SNAPSHOT version number from the current branch `pom.xml`
-    - for major or minor release, create a release-X.Y branch from develop (reuse existing branch for patch release)
-    - checkout the release-X.Y branch
     - set up a release candidate number, starting from 1 or incrementing existing RC tags
+    - for first release candidate of major or minor release, create a release-X.Y branch from develop
+      (reuse existing branch otherwise)
+    - checkout the release-X.Y branch
     - create a RCn-X.Y branch
     - checkout the RCn-X.Y branch
     - merge the start branch into the RCn-X.Y branch
@@ -311,7 +312,9 @@ vote can be canceled before the 5-day duration.
 
 ### 3.1. Failed or canceled vote
 
-If the vote fails or is canceled, there is nothing to do. The failed
+If the vote fails or is canceled, the only thing to do is edit the title
+of the vote thread on the forum to add a [CANCELED] or [FAILED] label.
+This is done manually directly on the forum web pages. The failed
 release candidate can be kept, it will just not be published.
 
 Once the problem has been addressed and a new release candidate can be
