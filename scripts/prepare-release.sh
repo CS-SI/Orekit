@@ -227,7 +227,7 @@ fi
 created_branch=""
 timeout=0
 while test -z "$created_branch" ; do
-  current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
+  current_date=$(date +"%Y-%m-%dT%H:%M:%S")
   echo "${current_date} branch ${release_branch} not yet available in ${origin}, waiting…"
   sleep 5
   timeout=$(expr $timeout + 5)
@@ -257,7 +257,7 @@ echo ""
 merge_status="preparing"
 timeout=0
 while test "${merge_status}" != "mergeable" ; do
-  current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
+  current_date=$(date +"%Y-%m-%dT%H:%M:%S")
   echo "${current_date} merge request ${mr_id} status: ${merge_status}, waiting…"
   sleep 5
   timeout=$(expr $timeout + 5)
@@ -280,7 +280,7 @@ curl \
 merge_state="opened"
 timeout=0
 while test "${merge_state}" != "merged"; do
-  current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
+  current_date=$(date +"%Y-%m-%dT%H:%M:%S")
   echo "${current_date} merge request ${mr_id} state: ${merge_state}, waiting…"
   sleep 5
   timeout=$(expr $timeout + 5)
@@ -304,7 +304,7 @@ merge_sha=$(cd $top ; git rev-parse --verify HEAD)
 pipeline_id=""
 timeout=0
 while test -z "$pipeline_id" ; do
-    current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
+    current_date=$(date +"%Y-%m-%dT%H:%M:%S")
     echo "${current_date} waiting for pipeline to be triggered…"
     sleep 5
     timeout=$(expr $timeout + 5)
@@ -324,7 +324,7 @@ timeout=0
 # the status is one of
 # created, waiting_for_resource, preparing, pending, running, success, failed, canceling, canceled, skipped, manual, scheduled
 while test "${pipeline_status}" != "success" -a "${pipeline_status}" != "failed"  -a "${pipeline_status}" != "canceled" ; do
-  current_date=$(date +"%Y-%m-%dT%H:%M:%SZ")
+  current_date=$(date +"%Y-%m-%dT%H:%M:%S")
   echo "${current_date} pipeline ${pipeline_id} status: ${pipeline_status}, waiting…"
   sleep 30
   timeout=$(expr $timeout + 30)
@@ -355,7 +355,7 @@ as tag $rc_tag in the ${release_branch} branch:
 https://gitlab.orekit.org/orekit/orekit/tree/${release_branch}
 
 The maven artifacts are available in the Orekit Nexus repository at:
-https://packages.orekit.org/#browse/browse:maven-release:org%2Forekit%2Forekit%2F${release_version}
+https://packages.orekit.org/#browse/browse:maven-releases:org%2Forekit%2Forekit%2F${release_version}
 
 The generated site is available at:
 https://www.orekit.org/site-orekit-${release_version}/index.html

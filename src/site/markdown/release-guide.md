@@ -311,7 +311,9 @@ vote can be canceled before the 5-day duration.
 
 ### 3.1. Failed or canceled vote
 
-If the vote fails or is canceled, there is nothing to do. The failed
+If the vote fails or is canceled, the only thing to do is edit the title
+of the vote thread on the forum to add a [CANCELED] or [FAILED] label.
+This is done manually directly on the forum web pages. The failed
 release candidate can be kept, it will just not be published.
 
 Once the problem has been addressed and a new release candidate can be
