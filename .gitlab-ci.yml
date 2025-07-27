@@ -143,6 +143,8 @@ deploy:artifacts:
       - target/*.jar
       - target/*.asc
   rules:
+    - if: $CI_COMMIT_BEFORE_SHA =~ /^0+$/ && $CI_COMMIT_BRANCH =~ /^release-[.0-9]+$/
+      when: never
     - if: $CI_PROJECT_NAMESPACE == "orekit" && $CI_COMMIT_BRANCH == "main"
     - if: $CI_PROJECT_NAMESPACE == "orekit" && $CI_COMMIT_BRANCH =~ /^release-[.0-9]+$/
     - if: $CI_PROJECT_NAMESPACE == "orekit" && $CI_COMMIT_BRANCH == "develop"
@@ -161,6 +163,8 @@ deploy:site:
     - rsync -rz --links --checksum --no-perms --chmod=u=rwX,go=rX --delete-after
             target/site/ ${TARGET_URL_PREFIX}-${PROJECT_VERSION}
   rules:
+    - if: $CI_COMMIT_BEFORE_SHA =~ /^0+$/ && $CI_COMMIT_BRANCH =~ /^release-[.0-9]+$/
+      when: never
     - if: $CI_PROJECT_NAMESPACE == "orekit" && $CI_COMMIT_BRANCH == "main"
     - if: $CI_PROJECT_NAMESPACE == "orekit" && $CI_COMMIT_BRANCH =~ /^release-[.0-9]+$/
     - if: $CI_PROJECT_NAMESPACE == "orekit" && $CI_COMMIT_BRANCH == "develop"
