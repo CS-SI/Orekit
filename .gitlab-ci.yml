@@ -176,7 +176,7 @@ performance:
       artifacts: false
   trigger: orekit/orekit-performance
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_PROJECT_NAMESPACE == "orekit" && $CI_COMMIT_BRANCH == "develop"
 
 release:
   stage: release
