@@ -139,7 +139,7 @@ rc_tag="${release_version}-RC$next_rc"
 # reuse existing release branch for patch release or new release candidate, create it otherwise
 release_branch=$(echo $release_version | sed 's,\([0-9]\+.[0-9]\+\)[.0-9]*,release-\1,')
 if test "$release_type" = patch -o $next_rc -ge 1 ; then
-    (cd $top ; test ! -z $(git branch --list $release_branch)) || complain "branch $release_branch doesn't exist, stopping"
+    (cd $top ; test ! -z $(git rev-parse --quiet --verify $release_branch)) || complain "branch $release_branch doesn't exist, stopping"
     delete_release_branch_on_cleanup="false"
 else
     (cd $top ; git branch $release_branch) || complain "branch $release_branch already exist, stopping"
