@@ -19,7 +19,7 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="13.1" date="TBD" description="TBD">
+    <release version="13.1" date="2025-08-01" description="13.1 is a minor release.">
         <action dev="serrof" type="fix" issue="1782">
             Improve performance and accuracy of getJd.
         </action>
