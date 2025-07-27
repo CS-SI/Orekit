@@ -279,9 +279,10 @@ for user confirmation before any commit:
     - ask for GitLab personal access token
     - check if the release is a major, minor or patch release
       using the -SNAPSHOT version number from the current branch `pom.xml`
-    - for major or minor release, create a release-X.Y branch from develop (reuse existing branch for patch release)
-    - checkout the release-X.Y branch
     - set up a release candidate number, starting from 1 or incrementing existing RC tags
+    - for first release candidate of major or minor release, create a release-X.Y branch from develop
+      (reuse existing branch otherwise)
+    - checkout the release-X.Y branch
     - create a RCn-X.Y branch
     - checkout the RCn-X.Y branch
     - merge the start branch into the RCn-X.Y branch
