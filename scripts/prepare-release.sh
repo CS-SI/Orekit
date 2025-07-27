@@ -189,8 +189,11 @@ request_confirmation "commit changes.xml?"
 (cd $top ; git add src/changes/changes.xml ; git commit -m "Updated changes.xml for official release.")
 
 # update downloads and faq pages
-# the weird pattern with a 13.0 in the middle is here to avoid modifying the second #set that manages old versions
-sed -i "s,^\(#set *( *\$versions *= *{\)\(.*\)\(13.0.*\),\1\"$release_version\": \"$release_date\"\, \2\3," \
+# the weird first pattern with a 13.0 in the middle avoids modifying the second #set that manages old versions
+# the second pattern deals with release candidate 2 or more (i.e. when version was already in the file)
+sed -i \
+    -e "s,^\(#set *( *\$versions *= *{\)\(.*\)\(13.0.*\),\1\"$release_version\": \"$release_date\"\, \2\3," \
+    -e "s,\(\"$release_version\": \"$release_date\"\,\) \"$release_version\": \"[-0-9]*\"\,,\1," \
     $top/src/site/markdown/downloads.md.vm
 justified_orekit=$(echo "$release_version      " | sed 's,\(......\).*,\1,')
 sed -i "$(sed -n '/^ *Orekit[0-9. ]*| *Hipparchus[0-9. ]*$/=' src/site/markdown/faq.md | tail -1)a\  Orekit $justified_orekit | Hipparchus          $hipparchus_version" \
