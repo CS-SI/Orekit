@@ -110,7 +110,7 @@ public class ObservableSpecificSignalBias {
      * @param obs observation type
      * @return the time span map for a given observation code pair
      */
-    private TimeSpanMap<Double> getTimeSpanMap(final ObservationType obs) {
+    public TimeSpanMap<Double> getTimeSpanMap(final ObservationType obs) {
         return biases.get(obs);
     }
 
