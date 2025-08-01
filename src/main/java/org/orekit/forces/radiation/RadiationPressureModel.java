@@ -85,12 +85,6 @@ public class RadiationPressureModel implements RadiationForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public boolean dependsOnPositionOnly() {
-        return radiationSensitive instanceof IsotropicRadiationClassicalConvention || radiationSensitive instanceof IsotropicRadiationCNES95Convention || radiationSensitive instanceof IsotropicRadiationSingleCoefficient;
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public void init(final SpacecraftState initialState, final AbsoluteDate target) {
         RadiationForceModel.super.init(initialState, target);
         lightFluxModel.init(initialState, target);

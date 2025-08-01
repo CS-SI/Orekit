@@ -218,13 +218,34 @@ public class KeplerianMotionCartesianUtility {
         final FieldVector3D<T>      pvM = position.crossProduct(velocity);
         final T muA                     = mu.multiply(a);
 
-        // compute mean anomaly
+        // check for near-circular case as automatic differentiation with arctan2 and sqrt does not work there
         final T eSE              = position.dotProduct(velocity).divide(muA.sqrt());
         final T eCE              = r.divide(a).negate().add(1);
+        final T e = eCE.square().add(eSE.square()).sqrt();
+        if (e.getReal() < 1e-8) {
+            // one iteration of fixed point algorithm to solve generalized Kepler equation (see Eq. 4.43 in Battin)
+            final T meanMotion = mu.divide(a.square().multiply(a)).sqrt();
+            final T deltaM = meanMotion.multiply(dt);
+            final T sqrtA = a.sqrt();
+            final T sigma = eSE.multiply(sqrtA);
+            final FieldSinCos<T> sinCosDeltaM = FastMath.sinCos(deltaM);
+            final T deltaE = deltaM.add((r.divide(a).negate().add(1)).multiply(sinCosDeltaM.sin())).add(sigma.divide(sqrtA).multiply(sinCosDeltaM.cos().subtract(1)));
+            // F and G Lagrange functions
+            final FieldSinCos<T> sinCosDeltaE = FastMath.sinCos(deltaE);
+            final T sqrtMu = mu.sqrt();
+            final T f = (a.divide(r)).multiply(sinCosDeltaE.cos().subtract(1)).add(1);
+            final T g = a.multiply(sigma).divide(sqrtMu).multiply(sinCosDeltaE.cos().negate().add(1)).add(r.multiply(sqrtA.divide(sqrtMu)).multiply(sinCosDeltaE.sin()));
+            final T shiftedR = a.add(r.subtract(a).multiply(sinCosDeltaE.cos())).add(sigma.multiply(sqrtA).multiply(sinCosDeltaE.sin()));
+            final T fDot = sqrtMu.multiply(sqrtA).divide(r.multiply(shiftedR)).multiply(sinCosDeltaE.sin()).negate();
+            final T gDot = (a.divide(shiftedR)).multiply(sinCosDeltaE.cos().subtract(1)).add(1);
+            // Transition
+            final FieldVector3D<T> shiftedPosition = new FieldVector3D<>(f, position, g, velocity);
+            final FieldVector3D<T> shiftedVelocity = new FieldVector3D<>(fDot, position, gDot, velocity);
+            return new FieldPVCoordinates<>(shiftedPosition, shiftedVelocity);
+        }
+
         final T E0               = FastMath.atan2(eSE, eCE);
         final T M0               = E0.subtract(eSE);
-
-        final T e                       = eCE.square().add(eSE.square()).sqrt();
         final T ePlusOne = e.add(1);
         final T oneMinusE = e.negate().add(1);
         final T sqrt                    = ePlusOne.divide(oneMinusE).sqrt();

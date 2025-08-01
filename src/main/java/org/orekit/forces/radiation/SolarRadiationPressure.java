@@ -152,12 +152,6 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public boolean dependsOnPositionOnly() {
-        return spacecraft instanceof IsotropicRadiationClassicalConvention || spacecraft instanceof IsotropicRadiationCNES95Convention || spacecraft instanceof IsotropicRadiationSingleCoefficient;
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
 
         final AbsoluteDate date         = s.getDate();

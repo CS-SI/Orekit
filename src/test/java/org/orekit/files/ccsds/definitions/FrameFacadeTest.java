@@ -170,16 +170,16 @@ public class FrameFacadeTest {
         final PVCoordinatesProvider pvProviderMock = Mockito.mock(Orbit.class);
 
         final FrameFacade inputCelestial =
-                new FrameFacade(null, Mockito.mock(CelestialBodyFrame.class),
+                new FrameFacade(null, CelestialBodyFrame.MCI,
                                 null, null, "Celestial body frame");
 
         final FrameFacade inputSpacecraftBody =
                 new FrameFacade(null, null,
-                                null, Mockito.mock(SpacecraftBodyFrame.class), "Celestial body frame");
+                                null, Mockito.mock(SpacecraftBodyFrame.class), "spacecraft frame");
 
         final FrameFacade output =
                 new FrameFacade(FramesFactory.getEME2000(), null,
-                                null, null, "Celestial body frame");
+                                null, null, "Earth inertial frame");
 
         // When & Then
         Assertions.assertThrows(OrekitException.class, () -> {
