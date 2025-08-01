@@ -74,6 +74,21 @@ import org.orekit.utils.units.Unit;
  */
 public class ParseInfo {
 
+    /** Index of field 1 (not counting variable initial spaces). */
+    private static  final int INDEX_1 = 0;
+
+    /** Index of field 2 (not counting variable initial spaces). */
+    private static  final int INDEX_2 = 19;
+
+    /** Index of field 3 (not counting variable initial spaces). */
+    private static  final int INDEX_3 = 38;
+
+    /** Index of field 4 (not counting variable initial spaces). */
+    private static  final int INDEX_4 = 57;
+
+    /** Field length. */
+    private static  final int LENGTH = 19;
+
     /** Name of the data source. */
     private final String name;
 
@@ -152,7 +167,7 @@ public class ParseInfo {
      * @since 14.0
      */
     public double parseDouble1(final Unit unit) {
-        return parseDouble(unit, initialSpaces);
+        return parseDouble(unit, initialSpaces + INDEX_1);
     }
 
     /** Parse field 1 of a message line.
@@ -160,7 +175,7 @@ public class ParseInfo {
      * @since 14.0
      */
     public int parseInt1() {
-        return parseInt(initialSpaces);
+        return parseInt(initialSpaces + INDEX_1);
     }
 
     /** Parse field 2 of a message line.
@@ -169,7 +184,7 @@ public class ParseInfo {
      * @since 14.0
      */
     public double parseDouble2(final Unit unit) {
-        return parseDouble(unit, initialSpaces + 19);
+        return parseDouble(unit, initialSpaces + INDEX_2);
     }
 
     /** Parse field 2 of a message line.
@@ -177,7 +192,7 @@ public class ParseInfo {
      * @since 14.0
      */
     public int parseInt2() {
-        return parseInt(initialSpaces + 19);
+        return parseInt(initialSpaces + INDEX_2);
     }
 
     /** Parse field 3 of a message line.
@@ -186,7 +201,7 @@ public class ParseInfo {
      * @since 14.0
      */
     public double parseDouble3(final Unit unit) {
-        return parseDouble(unit, initialSpaces + 38);
+        return parseDouble(unit, initialSpaces + INDEX_3);
     }
 
     /** Parse field 3 of a message line.
@@ -194,7 +209,7 @@ public class ParseInfo {
      * @since 14.0
      */
     public int parseInt3() {
-        return parseInt(initialSpaces + 38);
+        return parseInt(initialSpaces + INDEX_3);
     }
 
     /** Parse field 4 of a message line.
@@ -203,7 +218,7 @@ public class ParseInfo {
      * @since 14.0
      */
     public double parseDouble4(final Unit unit) {
-        return parseDouble(unit, initialSpaces + 57);
+        return parseDouble(unit, initialSpaces + INDEX_4);
     }
 
     /** Parse field 4 of a message line.
@@ -211,7 +226,15 @@ public class ParseInfo {
      * @since 14.0
      */
     public int parseInt4() {
-        return parseInt(initialSpaces + 57);
+        return parseInt(initialSpaces + INDEX_4);
+    }
+
+    /** Parse raw field n of a message line.
+     * @param index index of first field character
+     * @return parsed field
+     */
+    private double rawDouble(final int index) {
+        return ParsingUtils.parseDouble(line, index, LENGTH);
     }
 
     /** Parse field n of a message line.
@@ -220,7 +243,7 @@ public class ParseInfo {
      * @return parsed field
      */
     private double parseDouble(final Unit unit, final int index) {
-        return unit.toSI(ParsingUtils.parseDouble(line, index, 19));
+        return unit.toSI(rawDouble(index));
     }
 
     /** Parse field n of a message line.
@@ -228,7 +251,7 @@ public class ParseInfo {
      * @return parsed field
      */
     private int parseInt(final int index) {
-        return (int) FastMath.rint(ParsingUtils.parseDouble(line, index, 19));
+        return (int) FastMath.rint(rawDouble(index));
     }
 
     /** Parse a comment.

@@ -17,7 +17,6 @@
 package org.orekit.files.rinex.navigation.parsers.ionosphere;
 
 import org.orekit.files.rinex.navigation.IonosphereGlonassCdmsMessage;
-import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
@@ -40,7 +39,6 @@ public class GlonassCdmsGParser extends RecordLineParser {
      * @param message container for navigation message
      */
     public GlonassCdmsGParser(final ParseInfo parseInfo, final IonosphereGlonassCdmsMessage message) {
-        super(RecordType.ION);
         this.parseInfo = parseInfo;
         this.message   = message;
     }

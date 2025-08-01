@@ -17,10 +17,8 @@
 package org.orekit.files.rinex.navigation.parsers.ephemeris;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
-import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.files.rinex.utils.ParsingUtils;
 import org.orekit.propagation.analytical.gnss.data.SBASNavigationMessage;
@@ -32,27 +30,22 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class SbasParser extends RecordLineParser {
-
-    /** Container for parsing data. */
-    private final ParseInfo parseInfo;
-
-    /** Container for navigation message. */
-    private final SBASNavigationMessage message;
+public class SbasParser extends AbstractEphemerisParser<SBASNavigationMessage> {
 
     /** Simple constructor.
      * @param parseInfo container for parsing data
      * @param message container for navigation message
      */
     public SbasParser(final ParseInfo parseInfo, final SBASNavigationMessage message) {
-        super(RecordType.ORBIT);
-        this.parseInfo = parseInfo;
-        this.message   = message;
+        super(parseInfo, message);
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine00() {
+
+        final ParseInfo parseInfo = getParseInfo();
+        final SBASNavigationMessage message = getMessage();
 
         // parse PRN
         message.setPRN(ParsingUtils.parseInt(parseInfo.getLine(), 1, 2));
@@ -76,27 +69,23 @@ public class SbasParser extends RecordLineParser {
     /** {@inheritDoc} */
     @Override
     public void parseLine01() {
-        message.setX(parseInfo.parseDouble1(RinexNavigationParser.KM));
-        message.setXDot(parseInfo.parseDouble2(RinexNavigationParser.KM_PER_S));
-        message.setXDotDot(parseInfo.parseDouble3(RinexNavigationParser.KM_PER_S2));
-        message.setHealth(parseInfo.parseDouble4(Unit.NONE));
+        super.parseLine01();
+        getMessage().setHealth(getParseInfo().parseDouble4(Unit.NONE));
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine02() {
-        message.setY(parseInfo.parseDouble1(RinexNavigationParser.KM));
-        message.setYDot(parseInfo.parseDouble2(RinexNavigationParser.KM_PER_S));
-        message.setYDotDot(parseInfo.parseDouble3(RinexNavigationParser.KM_PER_S2));
-        message.setURA(parseInfo.parseDouble4(Unit.NONE));
+        super.parseLine02();
+        getMessage().setURA(getParseInfo().parseDouble4(Unit.NONE));
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine03() {
-        message.setZ(parseInfo.parseDouble1(RinexNavigationParser.KM));
-        message.setZDot(parseInfo.parseDouble2(RinexNavigationParser.KM_PER_S));
-        message.setZDotDot(parseInfo.parseDouble3(RinexNavigationParser.KM_PER_S2));
+        super.parseLine03();
+        final ParseInfo parseInfo = getParseInfo();
+        final SBASNavigationMessage message = getMessage();
         message.setIODN(parseInfo.parseDouble4(Unit.NONE));
         parseInfo.closePendingRecord();
     }
@@ -104,7 +93,7 @@ public class SbasParser extends RecordLineParser {
     /** {@inheritDoc} */
     @Override
     public void closeRecord(final RinexNavigation file) {
-        file.addSBASNavigationMessage(message);
+        file.addSBASNavigationMessage(getMessage());
     }
 
 }

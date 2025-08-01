@@ -16,72 +16,63 @@
  */
 package org.orekit.files.rinex.navigation.parsers.ephemeris;
 
-import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
-import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.LegacyNavigationMessage;
 import org.orekit.utils.units.Unit;
 
-/** Parser for Galileo.
+/** Parser for legacy navigation messages.
+ * @param <T> type of the navigation message
  * @author Bryan Cazabonne
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class GalileoParser extends AbstractNavigationParser<GalileoNavigationMessage> {
+public abstract class LegacyNavigationParser<T extends LegacyNavigationMessage<T>>
+    extends AbstractNavigationParser<T> {
 
     /** Simple constructor.
      * @param parseInfo container for parsing data
      * @param message container for navigation message
      */
-    public GalileoParser(final ParseInfo parseInfo, final GalileoNavigationMessage message) {
+    protected LegacyNavigationParser(final ParseInfo parseInfo, final T message) {
         super(parseInfo, message);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void parseLine00() {
-        final ParseInfo parseInfo = getParseInfo();
-        final GalileoNavigationMessage message = getMessage();
-        parseSvEpochSvClockLine(parseInfo.getTimeScales().getGPS(), parseInfo, message);
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine01() {
         super.parseLine01();
-        getMessage().setIODNav(getParseInfo().parseInt1());
+        getMessage().setIODE(getParseInfo().parseDouble1(Unit.SECOND));
     }
 
-    /** {@inheritDoc} */
+     /** {@inheritDoc} */
     @Override
     public void parseLine05() {
         super.parseLine05();
-        getMessage().setDataSource(getParseInfo().parseInt2());
+        final ParseInfo parseInfo = getParseInfo();
+        final T message = getMessage();
+        message.setL2Codes(parseInfo.parseInt2());
+        message.setL2PFlags(parseInfo.parseInt4());
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine06() {
         final ParseInfo parseInfo = getParseInfo();
-        final GalileoNavigationMessage message = getMessage();
-        message.setSisa(parseInfo.parseDouble1(Unit.METRE));
-        message.setSvHealth(parseInfo.parseDouble2(Unit.NONE));
-        message.setBGDE1E5a(parseInfo.parseDouble3(Unit.SECOND));
-        message.setBGDE5bE1(parseInfo.parseDouble4(Unit.SECOND));
+        final T message = getMessage();
+        message.setSvAccuracy(parseInfo.parseDouble1(Unit.METRE));
+        message.setSvHealth(parseInfo.parseInt2());
+        message.setTGD(parseInfo.parseDouble3(Unit.SECOND));
+        message.setIODC(parseInfo.parseInt4());
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine07() {
         final ParseInfo parseInfo = getParseInfo();
-        final GalileoNavigationMessage message = getMessage();
+        final T message = getMessage();
         message.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
+        message.setFitInterval(parseInfo.parseInt2());
         parseInfo.closePendingRecord();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void closeRecord(final RinexNavigation file) {
-        file.addGalileoNavigationMessage(getMessage());
     }
 
 }

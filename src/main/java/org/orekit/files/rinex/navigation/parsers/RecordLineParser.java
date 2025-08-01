@@ -17,7 +17,6 @@
 package org.orekit.files.rinex.navigation.parsers;
 
 import org.orekit.errors.OrekitInternalError;
-import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.utils.ParsingUtils;
@@ -31,23 +30,6 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  */
 public abstract class RecordLineParser {
-
-    /** Type of the record being parsed. */
-    private final RecordType type;
-
-    /** Simple constructor.
-     * @param type type of the record being parsed
-     */
-    protected RecordLineParser(final RecordType type) {
-        this.type = type;
-    }
-
-    /** Get the type of the record being parsed.
-     * @return type of the record being parsed
-     */
-    public RecordType getType() {
-        return type;
-    }
 
     /** Parse the SV/Epoch/Sv clock of the navigation message.
      * @param line      line to read

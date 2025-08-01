@@ -14,27 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.rinex.navigation.writers;
+package org.orekit.files.rinex.navigation.writers.ionosphere;
 
+import org.orekit.files.rinex.navigation.IonosphereGlonassCdmsMessage;
+import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
-import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
+import org.orekit.files.rinex.navigation.writers.NavigationMessageWriter;
+import org.orekit.utils.units.Unit;
 
 import java.io.IOException;
 
-/** Writer for Beidou legacy messages.
+/** Writer for GLONASS ionosphere messages.
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class BeidouLegacyNavigationMessageWriter
-    extends NavigationMessageWriter<BeidouLegacyNavigationMessage> {
+public class GlonassCDMSMessageWriter
+    extends NavigationMessageWriter<IonosphereGlonassCdmsMessage> {
 
     /** {@inheritDoc} */
     @Override
-    public void writeMessage(final String identifier, final BeidouLegacyNavigationMessage message,
+    public void writeMessage(final String identifier, final IonosphereGlonassCdmsMessage message,
                              final RinexNavigationHeader header, final RinexNavigationWriter writer)
         throws IOException {
-        // TODO
+
+        // TYPE / SV / MSG
+        writeTypeSvMsg(RecordType.ION, identifier, message, header, writer);
+
+        // MESSAGE LINE - 0
+        writer.writeDate(message.getTransmitTime(), message.getSystem());
+        writer.writeDouble(message.getCA(), Unit.ONE);
+        writer.writeDouble(message.getCF107(), Unit.ONE);
+        writer.writeDouble(message.getCAP(), Unit.ONE);
+        writer.finishLine();
+
     }
 
 }

@@ -18,7 +18,6 @@ package org.orekit.files.rinex.navigation.parsers.ionosphere;
 
 import org.orekit.files.rinex.navigation.IonosphereBaseMessage;
 import org.orekit.files.rinex.navigation.IonosphereNavICKlobucharMessage;
-import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
@@ -42,7 +41,6 @@ public class NavICKlobucharParser
      * @param message container for navigation message
      */
     public NavICKlobucharParser(final ParseInfo parseInfo, final IonosphereNavICKlobucharMessage message) {
-        super(RecordType.ION);
         this.parseInfo = parseInfo;
         this.message   = message;
     }

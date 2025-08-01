@@ -19,7 +19,6 @@ package org.orekit.files.rinex.navigation.parsers.ionosphere;
 import org.hipparchus.util.FastMath;
 import org.orekit.files.rinex.navigation.IonosphereAij;
 import org.orekit.files.rinex.navigation.IonosphereNequickGMessage;
-import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
@@ -42,7 +41,6 @@ public class NeQuickGParser extends RecordLineParser {
      * @param message container for navigation message
      */
     public NeQuickGParser(final ParseInfo parseInfo, final IonosphereNequickGMessage message) {
-        super(RecordType.ION);
         this.parseInfo = parseInfo;
         this.message   = message;
     }

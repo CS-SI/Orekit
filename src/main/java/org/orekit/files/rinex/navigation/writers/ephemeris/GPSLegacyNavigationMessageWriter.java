@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,31 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.rinex.navigation.parsers.ephemeris;
+package org.orekit.files.rinex.navigation.writers.ephemeris;
 
-import org.orekit.files.rinex.navigation.RinexNavigation;
-import org.orekit.files.rinex.navigation.parsers.ParseInfo;
+import org.orekit.files.rinex.navigation.RinexNavigationWriter;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
+import org.orekit.utils.units.Unit;
 
-/** Parser for GPS legacy.
- * @author Bryan Cazabonne
+import java.io.IOException;
+
+/** Writer for GPS legacy messages.
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class GPSLnavParser extends LegacyNavigationParser<GPSLegacyNavigationMessage> {
-
-    /** Simple constructor.
-     * @param parseInfo container for parsing data
-     * @param message container for navigation message
-     */
-    public GPSLnavParser(final ParseInfo parseInfo, final GPSLegacyNavigationMessage message) {
-        super(parseInfo, message);
-    }
+public class GPSLegacyNavigationMessageWriter extends LegacyNavigationMessageWriter<GPSLegacyNavigationMessage> {
 
     /** {@inheritDoc} */
     @Override
-    public void closeRecord(final RinexNavigation file) {
-        file.addGPSLegacyNavigationMessage(getMessage());
+    protected void writeURA(final GPSLegacyNavigationMessage message, final RinexNavigationWriter writer)
+        throws IOException {
+        writer.writeDouble(message.getSvAccuracy(), Unit.METRE);
     }
 
 }

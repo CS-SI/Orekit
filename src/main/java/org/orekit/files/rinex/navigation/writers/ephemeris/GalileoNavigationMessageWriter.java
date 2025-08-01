@@ -14,27 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.rinex.navigation.writers;
+package org.orekit.files.rinex.navigation.writers.ephemeris;
 
 import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
-import org.orekit.propagation.analytical.gnss.data.GPSCivilianNavigationMessage;
+import org.orekit.files.rinex.navigation.writers.NavigationMessageWriter;
+import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
 import org.orekit.utils.units.Unit;
 
 import java.io.IOException;
 
-/** Writer for GPS civilian messages.
+/** Writer for Galileo messages.
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class GPSCivilianNavigationMessageWriter
-    extends NavigationMessageWriter<GPSCivilianNavigationMessage> {
+public class GalileoNavigationMessageWriter
+    extends NavigationMessageWriter<GalileoNavigationMessage> {
 
     /** {@inheritDoc} */
     @Override
-    public void writeMessage(final String identifier, final GPSCivilianNavigationMessage message,
+    public void writeMessage(final String identifier, final GalileoNavigationMessage message,
                              final RinexNavigationHeader header, final RinexNavigationWriter writer)
         throws IOException {
 
@@ -46,7 +47,7 @@ public class GPSCivilianNavigationMessageWriter
 
         // EPH MESSAGE LINE - 1
         writer.startLine();
-        writer.writeDouble(message.getADot(), RinexNavigationParser.M_PER_S);
+        writer.writeInt(message.getIODNav());
         writer.writeDouble(message.getCrs(), Unit.METRE);
         writer.writeDouble(message.getDeltaN0(), RinexNavigationParser.RAD_PER_S);
         writer.writeDouble(message.getM0(), Unit.RADIAN);
@@ -79,38 +80,21 @@ public class GPSCivilianNavigationMessageWriter
         // EPH MESSAGE LINE - 5
         writer.startLine();
         writer.writeDouble(message.getIDot(), RinexNavigationParser.RAD_PER_S);
-        writer.writeDouble(message.getDeltaN0Dot(), RinexNavigationParser.RAD_PER_S2);
-        writer.writeInt(message.getUraiNed0());
-        writer.writeInt(message.getUraiNed1());
+        writer.writeInt(message.getDataSource());
+        writer.writeInt(message.getWeek());
         writer.finishLine();
 
         // EPH MESSAGE LINE - 6
         writer.startLine();
-        writer.writeInt(message.getUraiEd());
-        writer.writeInt(message.getSvHealth());
-        writer.writeDouble(message.getTGD(), Unit.SECOND);
-        writer.writeInt(message.getUraiNed2());
+        writer.writeDouble(message.getSisa(),     Unit.METRE);
+        writer.writeDouble(message.getSvHealth(), Unit.NONE);
+        writer.writeDouble(message.getBGDE1E5a(), Unit.SECOND);
+        writer.writeDouble(message.getBGDE5bE1(), Unit.SECOND);
         writer.finishLine();
 
         // EPH MESSAGE LINE - 7
         writer.startLine();
-        writer.writeDouble(message.getIscL1CA(), Unit.SECOND);
-        writer.writeDouble(message.getIscL2C(),  Unit.SECOND);
-        writer.writeDouble(message.getIscL5I5(), Unit.SECOND);
-        writer.writeDouble(message.getIscL5Q5(), Unit.SECOND);
-        writer.finishLine();
-
-        // EPH MESSAGE LINE - 8/9
-        if (message.isCnv2()) {
-            writer.startLine();
-            writer.writeDouble(message.getIscL1CD(), Unit.SECOND);
-            writer.writeDouble(message.getIscL1CP(), Unit.SECOND);
-            writer.finishLine();
-        }
-        writer.startLine();
         writer.writeDouble(message.getTransmissionTime(), Unit.SECOND);
-        writer.writeInt(message.getWeek());
-        writer.writeInt(message.getFlags());
         writer.finishLine();
 
     }
