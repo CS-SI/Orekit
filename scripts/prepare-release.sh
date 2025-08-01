@@ -122,22 +122,10 @@ changes_version=$(xsltproc $top/scripts/get-changes-version.xsl $top/src/changes
 release_version=$(echo $pom_version | sed 's,-SNAPSHOT,,')
 release_type=$(echo $release_version | sed -e "s,^[0-9]*\.0$,major," -e "s,^[0-9]*\.[1-9][0-9]*$,minor," -e "s,^[0-9]*\.[0-9]*\.[0-9]*$,patch,")
 hipparchus_version=$(xsltproc $top/scripts/get-hipparchus-version.xsl $top/pom.xml)
-test "$pom_version"     != "$release_version" || complain "$pom_version is not a -SNAPSHOT version"
 test "$release_version"  = "$changes_version" || complain "wrong version in changes.xml ($changes_version instead of $release_version)"
 echo "current version is $pom_version"
 echo "release version will be $release_version, a $release_type release, depending on Hipparchus $hipparchus_version"
 request_confirmation "do you agree with these version numbers?"
-
-# reuse existing release branch for patch release, create it otherwise
-release_branch=$(echo $release_version | sed 's,\([0-9]\+.[0-9]\+\)[.0-9]*,release-\1,')
-if test "$release_type" = patch ; then
-    (cd $top ; test ! -z $(git branch --list $release_branch)) || complain "branch $release_branch doesn't exist, stopping"
-    delete_release_branch_on_cleanup="false"
-else
-    (cd $top ; git branch $release_branch) || complain "branch $release_branch already exist, stopping"
-    delete_release_branch_on_cleanup="true"
-fi
-(cd $top ; git checkout $release_branch)
 
 # compute release candidate number
 last_rc=$(cd $top; git tag -l ${release_version}-RC* | sed 's,.*-RC,,' | sort -n | tail -1)
@@ -147,6 +135,17 @@ else
     next_rc=$(expr $last_rc + 1)
 fi
 rc_tag="${release_version}-RC$next_rc"
+
+# reuse existing release branch for patch release or new release candidate, create it otherwise
+release_branch=$(echo $release_version | sed 's,\([0-9]\+.[0-9]\+\)[.0-9]*,release-\1,')
+if test "$release_type" = patch -o $next_rc -ge 1 ; then
+    (cd $top ; test ! -z $(git rev-parse --quiet --verify $release_branch)) || complain "branch $release_branch doesn't exist, stopping"
+    delete_release_branch_on_cleanup="false"
+else
+    (cd $top ; git branch $release_branch) || complain "branch $release_branch already exist, stopping"
+    delete_release_branch_on_cleanup="true"
+fi
+(cd $top ; git checkout $release_branch)
 
 # create release candidate branch
 rc_branch="RC${next_rc}-${release_version}"
@@ -190,8 +189,11 @@ request_confirmation "commit changes.xml?"
 (cd $top ; git add src/changes/changes.xml ; git commit -m "Updated changes.xml for official release.")
 
 # update downloads and faq pages
-# the weird pattern with a 13.0 in the middle is here to avoid modifying the second #set that manages old versions
-sed -i "s,^\(#set *( *\$versions *= *{\)\(.*\)\(13.0.*\),\1\"$release_version\": \"$release_date\"\, \2\3," \
+# the weird first pattern with a 13.0 in the middle avoids modifying the second #set that manages old versions
+# the second pattern deals with release candidate 2 or more (i.e. when version was already in the file)
+sed -i \
+    -e "s,^\(#set *( *\$versions *= *{\)\(.*\)\(13.0.*\),\1\"$release_version\": \"$release_date\"\, \2\3," \
+    -e "s,\(\"$release_version\": \"$release_date\"\,\) \"$release_version\": \"[-0-9]*\"\,,\1," \
     $top/src/site/markdown/downloads.md.vm
 justified_orekit=$(echo "$release_version      " | sed 's,\(......\).*,\1,')
 sed -i "$(sed -n '/^ *Orekit[0-9. ]*| *Hipparchus[0-9. ]*$/=' src/site/markdown/faq.md | tail -1)a\  Orekit $justified_orekit | Hipparchus          $hipparchus_version" \
