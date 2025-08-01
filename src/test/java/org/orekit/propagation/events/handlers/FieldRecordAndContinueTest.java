@@ -74,9 +74,9 @@ public class FieldRecordAndContinueTest {
         Assertions.assertEquals(s1, events.get(0).getState());
         Assertions.assertEquals(s2, events.get(1).getState());
         Assertions.assertEquals(s3, events.get(2).getState());
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertEquals(true, events.get(1).isIncreasing());
-        Assertions.assertEquals(false, events.get(2).isIncreasing());
+        Assertions.assertTrue(events.get(0).isIncreasing());
+        Assertions.assertTrue(events.get(1).isIncreasing());
+        Assertions.assertFalse(events.get(2).isIncreasing());
         for (Event<Binary64> event : events) {
             Assertions.assertEquals(detector, event.getDetector());
         }
@@ -94,7 +94,7 @@ public class FieldRecordAndContinueTest {
         events = handler.getEvents();
         Assertions.assertEquals(1, events.size());
         Assertions.assertEquals(s4, events.get(0).getState());
-        Assertions.assertEquals(false, events.get(0).isIncreasing());
+        Assertions.assertFalse(events.get(0).isIncreasing());
         Assertions.assertEquals(detector, events.get(0).getDetector());
     }
 

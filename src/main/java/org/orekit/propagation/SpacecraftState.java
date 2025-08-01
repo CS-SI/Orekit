@@ -764,13 +764,22 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
         return StaticTransform.of(getDate(), getPosition().negate(), attitude.getRotation());
     }
 
-    /** Get the position in orbit definition frame.
-     * @return position in orbit definition frame
+    /** Get the position in state definition frame.
+     * @return position in state definition frame
      * @since 12.0
      * @see #getPVCoordinates()
      */
     public Vector3D getPosition() {
         return isOrbitDefined() ? orbit.getPosition() : absPva.getPosition();
+    }
+
+    /** Get the velocity in state definition frame.
+     * @return velocity in state definition frame
+     * @since 13.1
+     * @see #getPVCoordinates()
+     */
+    public Vector3D getVelocity() {
+        return isOrbitDefined() ? orbit.getVelocity() : absPva.getVelocity();
     }
 
     /** Get the {@link TimeStampedPVCoordinates} in orbit definition frame.

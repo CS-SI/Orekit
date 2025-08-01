@@ -148,7 +148,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                                FramesFactory.getEME2000(), initDate, mu);
         final AttitudeProvider law = new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS);
        final SpacecraftState initialState =
-            new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
+            new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame())).withMass(mass);
 
         final AbsoluteDate fireDate = new AbsoluteDate(new DateComponents(2004, 01, 02),
                                                        new TimeComponents(04, 15, 34.080),
@@ -190,7 +190,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                                FramesFactory.getEME2000(), initDate, mu);
         final AttitudeProvider law = new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS);
        final SpacecraftState initialState =
-            new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
+            new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame())).withMass(mass);
 
         final AbsoluteDate fireDate = new AbsoluteDate(new DateComponents(2004, 01, 02),
                                                        new TimeComponents(04, 15, 34.080),
@@ -289,7 +289,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
             new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
                                FramesFactory.getEME2000(), initDate, mu);
         final SpacecraftState initialState =
-            new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
+            new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame())).withMass(mass);
 
         final AbsoluteDate fireDate = new AbsoluteDate(new DateComponents(2004, 01, 02),
                                                        new TimeComponents(04, 15, 34.080),
@@ -536,7 +536,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
             new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
                                FramesFactory.getEME2000(), initDate, mu);
         final SpacecraftState initialState =
-            new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
+            new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame())).withMass(mass);
 
         final AbsoluteDate fireDate = new AbsoluteDate(new DateComponents(2004, 01, 02),
                                                        new TimeComponents(04, 15, 34.080),
@@ -657,7 +657,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         final AttitudeProvider lofLaw = new LofOffset(orbit.getFrame(), LOFType.VNC);
 
         final SpacecraftState initialState =
-            new SpacecraftState(orbit, inertialLaw.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
+            new SpacecraftState(orbit, inertialLaw.getAttitude(orbit, orbit.getDate(), orbit.getFrame())).withMass(mass);
 
         final AbsoluteDate fireDate = new AbsoluteDate(new DateComponents(2004, 01, 02),
                                                        new TimeComponents(04, 15, 34.080),
@@ -750,7 +750,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                                                                                    Vector3D.PLUS_I));
 
         final SpacecraftState initialState =
-            new SpacecraftState(orbit, inertialLaw.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
+            new SpacecraftState(orbit, inertialLaw.getAttitude(orbit, orbit.getDate(), orbit.getFrame())).withMass(mass);
 
         final AbsoluteDate fireDate = new AbsoluteDate(new DateComponents(2004, 01, 02),
                                                        new TimeComponents(04, 15, 34.080),
@@ -834,7 +834,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
 
         // Configuring propagator
         numProp.setOrbitType(OrbitType.CARTESIAN);
-        numProp.setInitialState(new SpacecraftState(cartesianOrbit, initialMass));
+        numProp.setInitialState(new SpacecraftState(cartesianOrbit).withMass(initialMass));
         numProp.addForceModel(nullDurationManeuver);
 
         // Propagation

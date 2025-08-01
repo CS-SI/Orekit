@@ -30,21 +30,42 @@ public class TimeStampedDoubleAndDerivative extends TimeStampedDouble {
     /**
      * Constructor.
      *
+     * @param date       date associated to value
+     * @param value      value
+     * @param derivative time derivative
+     */
+    public TimeStampedDoubleAndDerivative(final AbsoluteDate date, final double value, final double derivative) {
+        super(date, value);
+        this.derivative = derivative;
+    }
+
+    /**
+     * Constructor.
+     *
      * @param value value
      * @param derivative time derivative
      * @param date date associated to value
      */
+    @Deprecated
     public TimeStampedDoubleAndDerivative(final double value, final double derivative,
                                           final AbsoluteDate date) {
-        super(value, date);
+        super(date, value);
         this.derivative = derivative;
     }
 
     /** Get time derivative.
-     * @return time derivztive
+     * @return time derivative
      */
     public double getDerivative() {
         return derivative;
     }
 
+    @Override
+    public String toString() {
+        return "{" +
+                "date=" + getDate() +
+                ", value=" + getValue() +
+                ", derivative=" + derivative +
+                '}';
+    }
 }

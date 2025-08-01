@@ -129,7 +129,7 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
         double mu = Constants.EGM96_EARTH_MU;
         Orbit orbit = new KeplerianOrbit(a, e, i, pa, raan, anomaly,
                 type, frame, startDate, mu);
-        initialState = new SpacecraftState(orbit, mass);
+        initialState = new SpacecraftState(orbit).withMass(mass);
 
         //Numerical Propagator
         double minStep = 1.0e-5;
@@ -230,8 +230,8 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
         double deltaVTest = isp * Constants.G0_STANDARD_GRAVITY *
                 FastMath.log(mass / finalStateTest.getMass());
 
-        Assertions.assertTrue(deltaVTest == 0.0);
-        Assertions.assertTrue(finalStateTest.getMass() == mass);
+        Assertions.assertEquals(0.0, deltaVTest);
+        Assertions.assertEquals(finalStateTest.getMass(), mass);
 
         Assertions.assertNull(triggerStart);
         Assertions.assertEquals(0.0, triggerStop.durationFrom(startDate), 1.0e-10);
@@ -281,7 +281,7 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
                 FastMath.log(finalStateTest.getMass() / mass);
 
         Assertions.assertEquals(0.0, deltaVTest, dvTolerance);
-        Assertions.assertTrue(finalStateTest.getMass() == mass);
+        Assertions.assertEquals(finalStateTest.getMass(), mass);
 
         Assertions.assertEquals(0.0, triggerStart.durationFrom(startDate), 1.0e-10);
         Assertions.assertNull(triggerStop);

@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.Orbit;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.conversion.ClassicalRungeKuttaFieldIntegratorBuilder;
@@ -42,8 +42,11 @@ import org.orekit.propagation.conversion.FieldODEIntegratorBuilder;
 import org.orekit.propagation.conversion.LutherIntegratorBuilder;
 import org.orekit.propagation.conversion.MidpointIntegratorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.Constants;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 class ShootingIntegrationSettingsFactoryTest {
 
@@ -57,8 +60,7 @@ class ShootingIntegrationSettingsFactoryTest {
         final ODEIntegratorBuilder builder = integrationSettings.getIntegratorBuilder();
         // THEN
         Assertions.assertInstanceOf(MidpointIntegratorBuilder.class, builder);
-        final ODEIntegrator integrator = builder.buildIntegrator(Mockito.mock(Orbit.class),
-                Mockito.mock(OrbitType.class));
+        final ODEIntegrator integrator = builder.buildIntegrator(buildOrbit(), OrbitType.CARTESIAN);
         Assertions.assertEquals(expectedStep, ((MidpointIntegrator) integrator).getDefaultStep());
     }
 
@@ -72,8 +74,7 @@ class ShootingIntegrationSettingsFactoryTest {
         final ODEIntegratorBuilder builder = integrationSettings.getIntegratorBuilder();
         // THEN
         Assertions.assertInstanceOf(ClassicalRungeKuttaIntegratorBuilder.class, builder);
-        final ODEIntegrator integrator = builder.buildIntegrator(Mockito.mock(Orbit.class),
-                Mockito.mock(OrbitType.class));
+        final ODEIntegrator integrator = builder.buildIntegrator(buildOrbit(), OrbitType.CARTESIAN);
         Assertions.assertEquals(expectedStep, ((ClassicalRungeKuttaIntegrator) integrator).getDefaultStep());
     }
 
@@ -88,7 +89,7 @@ class ShootingIntegrationSettingsFactoryTest {
         // THEN
         Assertions.assertInstanceOf(ClassicalRungeKuttaFieldIntegratorBuilder.class, builder);
         final FieldOrbit<Complex> mockedFieldOrbit = mockFieldOrbit();
-        final FieldODEIntegrator<Complex> integrator = builder.buildIntegrator(mockedFieldOrbit, Mockito.mock(OrbitType.class));
+        final FieldODEIntegrator<Complex> integrator = builder.buildIntegrator(mockedFieldOrbit, OrbitType.CARTESIAN);
         Assertions.assertEquals(expectedStep, ((ClassicalRungeKuttaFieldIntegrator<Complex>) integrator).getDefaultStep().getReal());
     }
 
@@ -102,8 +103,7 @@ class ShootingIntegrationSettingsFactoryTest {
         final ODEIntegratorBuilder builder = integrationSettings.getIntegratorBuilder();
         // THEN
         Assertions.assertInstanceOf(LutherIntegratorBuilder.class, builder);
-        final ODEIntegrator integrator = builder.buildIntegrator(Mockito.mock(Orbit.class),
-                Mockito.mock(OrbitType.class));
+        final ODEIntegrator integrator = builder.buildIntegrator(buildOrbit(), OrbitType.CARTESIAN);
         Assertions.assertEquals(expectedStep, ((LutherIntegrator) integrator).getDefaultStep());
     }
 
@@ -145,4 +145,13 @@ class ShootingIntegrationSettingsFactoryTest {
                 new FieldVector3D<>(field, Vector3D.MINUS_J)));
         Assertions.assertInstanceOf(DormandPrince853FieldIntegrator.class, fieldIntegrator);
     }
+
+    private CartesianOrbit buildOrbit() {
+        return new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.ARBITRARY_EPOCH,
+                                                               new Vector3D(1.0e7, 0, 0),
+                                                               new Vector3D(5e3, 6e3, 100)),
+                                  FramesFactory.getEME2000(),
+                                  Constants.EIGEN5C_EARTH_MU);
+    }
+
 }

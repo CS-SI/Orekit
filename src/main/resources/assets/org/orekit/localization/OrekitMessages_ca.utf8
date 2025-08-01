@@ -407,7 +407,7 @@ NON_RESETABLE_STATE=reinicialització de l''estat no autoritzada
 DSST_NEWCOMB_OPERATORS_COMPUTATION=no es pueden calcular els operadors de Newcomb amb sigma ({0}) > rho ({1})
 
 # Cannot compute the Vmns coefficient with m > n ({0} > {1})
-DSST_VMNS_COEFFICIENT_ERROR_MS=no es pueden calcular els coeficients Vmns amb  m > n ({0} > {1})
+DSST_VMNS_COEFFICIENT_ERROR_MS=no es pueden calcular els coeficients Vmns amb m > n ({0} > {1})
 
 # inconsistent shadow computation: entry = {0} whereas exit = {1}
 DSST_SPR_SHADOW_INCONSISTENT=càlcul de sombra incoherent : entrada = {0} mentres que sortida = {1}
@@ -563,7 +563,7 @@ CCSDS_MANEUVER_MISSING_TIME=falta camp temporal per la maniobra {0}
 CCSDS_INCONSISTENT_NUMBER_OF_ATTITUDE_STATES=el tipus d''orientació {0} i el tipus de velocitat {1} necessiten {2} estats, però {3} s''han donat
 
 # incompatible keys {0} and {1} should not both be used
-CCSDS_INCOMPATIBLE_KEYS_BOTH_USED=les claus incompatibles {0} i {1}  no s''haurien d''utilitzar juntes
+CCSDS_INCOMPATIBLE_KEYS_BOTH_USED=les claus incompatibles {0} i {1} no s''haurien d''utilitzar juntes
 
 # sensor index {0} is already used
 CCSDS_SENSOR_INDEX_ALREADY_USED=índex de captor {0} ja utilitzat
@@ -575,10 +575,10 @@ CCSDS_MISSING_SENSOR_INDEX=falta l''índex de captor {0}
 INCONSISTENT_NUMBER_OF_ELEMENTS=número d''elements incoherents: esperats {0}, donats {1}
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
-NOT_ENOUGH_PROPAGATORS=per crear un propagador combinat es necesita al menys un propagador, però no s''en ha especificat cap
+NOT_ENOUGH_PROPAGATORS=Per crear un propagador combinat es necesita al menys un propagador, però no s''en ha especificat cap.
 
 # Creating an aggregate attitude provider requires at least one constituent attitude provider, but none were provided.
-NOT_ENOUGH_ATTITUDE_PROVIDERS=la creació d''un proveïdor d''actitud agregat necessita al menys un proveïdor d''actitud, però no se n''ha previst cap
+NOT_ENOUGH_ATTITUDE_PROVIDERS=La creació d''un proveïdor d''actitud agregat necessita al menys un proveïdor d''actitud, però no se n''ha previst cap.
 
 # argument {0} cannot be null
 NULL_ARGUMENT=l''entrada {0} no pot ser nul·la
@@ -629,7 +629,7 @@ UNSUPPORTED_FREQUENCY_FOR_ANTENNA=frequència {0} no presa en compte per l''ante
 CANNOT_FIND_SATELLITE_IN_SYSTEM=no es pot trobar el satèl·lit {0} en el sistema de satèl·lits {1}
 
 # unknown RINEX frequency {0} in file {1}, line {2}
-UNKNOWN_RINEX_FREQUENCY=frequència RINEX desconeguda en el fitxer {1}, linea {2}
+UNKNOWN_RINEX_FREQUENCY=frequència RINEX {0} desconeguda en el fitxer {1}, linea {2}
 
 # mismatched frequencies in file {0}, line {1} (expected {2}, got {3})
 MISMATCHED_FREQUENCIES=frequències incoherents en el fitxer {0}, linea {1} (s''esperava {2} i s''ha trobat {3})
@@ -733,7 +733,7 @@ INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS=les frequències {0} i 
 NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS=les observacions no es troben en ordre cronològic: {0} és {2} s després de {1}
 
 # Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
-EXCEPTIONAL_DATA_CONTEXT=s''ha detectat una utilització de ExceptionalDataContext. Això s''utilitza normalment per detectar errors del desenvolupador
+EXCEPTIONAL_DATA_CONTEXT=S''ha detectat una utilització de ExceptionalDataContext. Això s''utilitza normalment per detectar errors del desenvolupador.
 
 # Observations must have different dates: {0}, {1} ({3,number,0.0##############E0} s from first observation), and {2} ({4,number,0.0##############E0} s from first observation, {5,number,0.0##############E0} s from second observation)
 NON_DIFFERENT_DATES_FOR_OBSERVATIONS=les observacions han de tenir dates diferents: {0}, {1} ({3,number,0.0##############E0} s des de la primera observació), i {2} ({4,number,0.0##############E0} des de la primera observació, {5,number,0.0##############E0} des de la segona observació)
@@ -871,10 +871,10 @@ WRONG_ORBIT_PARAMETERS_TYPE=paràmetre orbital de tipus: {0} és diferent del pa
 WRONG_NB_COMPONENTS={0} necessita {1} elements, en té {2}
 
 # cannot change covariance type if defined in a local orbital frame
-CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF=no pot camviar el tipis de covariança si es defineix en el el marc de referència de l''orbita local
+CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF=no pot camviar el tipis de covariança si es defineix en el marc de referència de l''orbita local
 
 # cannot change covariance type if defined in a non pseudo-inertial reference frame
-CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME=no pot camviar el tipis de covariança si es defineix en el el marc de referència no pseudo-inercial
+CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME=no pot camviar el tipis de covariança si es defineix en el marc de referència no pseudo-inercial
 
 # primary collision object time of closest approach is different from the secondary collision object's one
 DIFFERENT_TIME_OF_CLOSEST_APPROACH=el temps del major apropament del primer objecte de col·lisió és diferent del segon objecte de col·lisió
@@ -945,3 +945,5 @@ COVARIANCE_MUST_BE_SQUARE=La covariànca ha de ser quadrada
 # state vector (dimension {0}) and covariance (dimension {1}) are inconsistent
 INCONSISTENT_STATE_DIMENSIONS=El vector d''estat (dimensió {0}) i la covariància (dimensió {1}) són inconsistents.
 
+# data at date {0} has already been automatically expunged
+EXPUNGED_SPAN=dada a la data {0} ha estat automàticament esborrada

@@ -38,6 +38,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
@@ -55,6 +56,7 @@ import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
+import org.orekit.forces.maneuvers.ConstantThrustManeuver;
 import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
@@ -99,6 +101,34 @@ class NumericalPropagatorTest {
     private AbsoluteDate         initDate;
     private SpacecraftState      initialState;
     private NumericalPropagator  propagator;
+
+    @Test
+    void testDependsOnTimeOnlyWrong() {
+        // GIVEN
+        final AdditionalDataProvider<Boolean> dummyDataProvider = new AdditionalDataProvider<Boolean>() {
+            @Override
+            public String getName() {
+                return "dummy";
+            }
+            @Override
+            public Boolean getAdditionalData(SpacecraftState state) {
+                return Boolean.TRUE;
+            }
+        };
+        propagator.addAdditionalDataProvider(dummyDataProvider);
+        propagator.setInitialState(initialState.addAdditionalData(dummyDataProvider.getName(), Boolean.TRUE));
+        final EventDetector detectorCallingData = new DateDetector() {
+            @Override
+            public double g(SpacecraftState s) {
+                s.getAdditionalData(dummyDataProvider.getName());  // this will cause an exception since detector should not depend on additional variables
+                return super.g(s);
+            }
+        };
+        // WHEN & THEN
+        propagator.addEventDetector(detectorCallingData);
+        final AbsoluteDate targetDate = initialState.getDate().shiftedBy(1);
+        Assertions.assertThrows(OrekitException.class, () -> propagator.propagate(targetDate));
+    }
 
     @Test
     void testIssue1032() {
@@ -452,11 +482,11 @@ class NumericalPropagatorTest {
 
         // Initial orbit definition
         final Vector3D initialPosition = initialState.getPosition();
-        final Vector3D initialVelocity = initialState.getPVCoordinates().getVelocity();
+        final Vector3D initialVelocity = initialState.getVelocity();
 
         // Final orbit definition
         final Vector3D finalPosition   = finalState.getPosition();
-        final Vector3D finalVelocity   = finalState.getPVCoordinates().getVelocity();
+        final Vector3D finalVelocity   = finalState.getVelocity();
 
         // Check results
         Assertions.assertEquals(initialPosition.getX(), finalPosition.getX(), 1.0e-10);
@@ -708,7 +738,7 @@ class NumericalPropagatorTest {
         final AbsoluteDate resetDate = initDate.shiftedBy(1000);
         CheckingHandler checking = new CheckingHandler(Action.RESET_STATE) {
             public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
-                return new SpacecraftState(oldState.getOrbit(), oldState.getAttitude(), oldState.getMass() - 200.0);
+                return new SpacecraftState(oldState.getOrbit(), oldState.getAttitude()).withMass(oldState.getMass() - 200.0);
             }
         };
         propagator.addEventDetector(new DateDetector(resetDate).withHandler(checking));
@@ -953,7 +983,7 @@ class NumericalPropagatorTest {
         // Numerical propagator based on the integrator
         propagator = new NumericalPropagator(integrator);
         double mass = 1000.;
-        SpacecraftState initialState = new SpacecraftState(geo, mass);
+        SpacecraftState initialState = new SpacecraftState(geo).withMass(mass);
         propagator.setInitialState(initialState);
         propagator.setOrbitType(OrbitType.CARTESIAN);
 
@@ -1155,7 +1185,7 @@ class NumericalPropagatorTest {
         final AbsoluteDate initialDate = new AbsoluteDate(2003, 1, 1, 00, 00, 00.000, utc);
         final Orbit initialOrbit = new CartesianOrbit( new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngleType.MEAN,
                                                                           inertialFrame, initialDate, mu));
-        final SpacecraftState initialState = new SpacecraftState(initialOrbit, 1000);
+        final SpacecraftState initialState = new SpacecraftState(initialOrbit).withMass( 1000);
 
         // initialize the testing points
         final List<SpacecraftState> states = new ArrayList<SpacecraftState>();
@@ -1479,7 +1509,7 @@ class NumericalPropagatorTest {
                     orbitType.mapOrbitToArray(o, angleType, stateVector, null);
                     final Orbit fixedOrbit = orbitType.mapArrayToOrbit(stateVector, null, angleType,
                                                                        o.getDate(), o.getMu(), o.getFrame());
-                    referenceState = new SpacecraftState(fixedOrbit, s.getAttitude(), s.getMass());
+                    referenceState = new SpacecraftState(fixedOrbit, s.getAttitude()).withMass(s.getMass());
                 }
             } else {
                 // recurring event, we compare with the shifted reference state
@@ -1898,6 +1928,26 @@ class NumericalPropagatorTest {
         final Frame frame = FramesFactory.getEME2000();
         final double mu   = Constants.EIGEN5C_EARTH_MU;
         return new CartesianOrbit(pv, frame, mu);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {6, 7})
+    void testClearMatricesComputation(final int stateDimension) {
+        // GIVEN
+        propagator.setupMatricesComputation("stm", MatrixUtils.createRealIdentityMatrix(stateDimension), null);
+        propagator.setInitialState(initialState);
+        propagator.setResetAtEnd(false);
+        final Maneuver maneuver = new ConstantThrustManeuver(initDate, 10, 1., 100, Vector3D.MINUS_I);
+        propagator.addForceModel(maneuver);
+        maneuver.getParameterDriver(ParameterDrivenDateIntervalDetector.MEDIAN_SUFFIX).setSelected(true);
+        maneuver.getParameterDriver(ParameterDrivenDateIntervalDetector.DURATION_SUFFIX).setSelected(true);
+        final AbsoluteDate targetDate = initialState.getDate().shiftedBy(1);
+        propagator.propagate(targetDate);
+        // WHEN
+        propagator.clearMatricesComputation();
+        // THEN
+        Assertions.assertTrue(propagator.getAdditionalDataProviders().isEmpty());
+        Assertions.assertTrue(propagator.getAdditionalDerivativesProviders().isEmpty());
     }
 
     @Test

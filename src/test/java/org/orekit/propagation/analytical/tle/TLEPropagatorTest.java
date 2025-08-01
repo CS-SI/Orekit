@@ -204,8 +204,7 @@ public class TLEPropagatorTest {
         final SpacecraftState initialState = tlePropagator.getInitialState();
         final double unexpectedMass = initialState.getMass();
         final double expectedMass = 2. * unexpectedMass;
-        final SpacecraftState newState = new SpacecraftState(initialState.getOrbit(), initialState.getAttitude(),
-                expectedMass);
+        final SpacecraftState newState = new SpacecraftState(initialState.getOrbit(), initialState.getAttitude()).withMass(expectedMass);
 
         // WHEN
         tlePropagator.resetInitialState(newState);
@@ -232,7 +231,7 @@ public class TLEPropagatorTest {
         final TLEPropagator tlePropagator = TLEPropagator.selectExtrapolator(tle);
         final double expectedMass = 2000.;
         final SpacecraftState propagatedState = tlePropagator.propagate(tle.getDate().shiftedBy(1));
-        final SpacecraftState modifiedState = new SpacecraftState(propagatedState.getOrbit(), expectedMass);
+        final SpacecraftState modifiedState = new SpacecraftState(propagatedState.getOrbit()).withMass(expectedMass);
 
         // WHEN
         tlePropagator.resetIntermediateState(modifiedState, isForward);

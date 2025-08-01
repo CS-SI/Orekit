@@ -16,8 +16,6 @@
  */
 package org.orekit.utils;
 
-import org.hipparchus.util.MathUtils;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -65,12 +63,12 @@ public class OrekitConfiguration {
      * maven, then a default value {@code "unknown"} will be returned.
      * </p>
      * @return Orekit version
-     * @since 4.0
+     * @since 13.0
      */
     public static String getOrekitVersion() {
         String version = "unknown";
         final Properties properties = new Properties();
-        try (InputStream stream = MathUtils.class.getResourceAsStream("/assets/org/orekit/orekit.properties")) {
+        try (InputStream stream = OrekitConfiguration.class.getResourceAsStream("/assets/org/orekit/orekit.properties")) {
             if (stream != null) {
                 properties.load(stream);
                 version = properties.getProperty("orekit.version", version);

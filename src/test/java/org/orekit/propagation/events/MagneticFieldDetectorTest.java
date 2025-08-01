@@ -443,9 +443,9 @@ public class MagneticFieldDetectorTest {
             Vector2D point = new Vector2D(geo.getLongitude(), geo.getLatitude());
 
             //Check that the event is outside the "smaller than SAA" geographical zone
-            Assertions.assertTrue(saaIn.checkPoint(point).equals(Location.OUTSIDE));
+            Assertions.assertEquals(saaIn.checkPoint(point), Location.OUTSIDE);
             //Check that the event is inside the "bigger than SAA" geographical zone
-            Assertions.assertTrue(saaOut.checkPoint(point).equals(Location.INSIDE));
+            Assertions.assertEquals(saaOut.checkPoint(point), Location.INSIDE);
 
         }
     }

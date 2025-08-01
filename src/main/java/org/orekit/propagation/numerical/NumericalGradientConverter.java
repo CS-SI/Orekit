@@ -37,7 +37,7 @@ class NumericalGradientConverter extends AbstractGradientConverter {
         super(freeStateParameters);
 
         // initialize the list with the state having 0 force model parameters
-        initStates(buildBasicGradientSpacecraftState(state, freeStateParameters, provider));
+        initStates(buildBasicGradientSpacecraftState(state, freeStateParameters, freeStateParameters > 3 ? provider : null));
 
     }
 

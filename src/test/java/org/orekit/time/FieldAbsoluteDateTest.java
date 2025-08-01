@@ -231,6 +231,23 @@ class FieldAbsoluteDateTest {
     }
 
     @Test
+    void testEqualsAddendum() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final UnivariateDerivative1 derivative1 = new UnivariateDerivative1(0., 1);
+        final UnivariateDerivative1Field field = UnivariateDerivative1Field.getInstance();
+        final FieldAbsoluteDate<UnivariateDerivative1> fieldDate = new FieldAbsoluteDate<>(field,
+                date).shiftedBy(derivative1);
+        final FieldAbsoluteDate<UnivariateDerivative1> sameFieldDate = fieldDate.shiftedBy(0);
+        // WHEN
+        final boolean isEqual = fieldDate.equals(new FieldAbsoluteDate<>(field, date));
+        // THEN
+        Assertions.assertFalse(isEqual);
+        Assertions.assertEquals(sameFieldDate.hashCode(), fieldDate.hashCode());
+        Assertions.assertEquals(sameFieldDate, fieldDate);
+    }
+
+    @Test
     void testIsEqualTo() { doTestIsEqualTo(Binary64Field.getInstance()); }
 
     @Test
@@ -878,7 +895,6 @@ class FieldAbsoluteDateTest {
         }
     }
 
-    @SuppressWarnings("unlikely-arg-type")
     private <T extends CalculusFieldElement<T>> void doTestEquals(final Field<T> field) {
         FieldAbsoluteDate<T> d1 =
             new FieldAbsoluteDate<>(field, new DateComponents(2006, 2, 25),
@@ -1839,6 +1855,19 @@ class FieldAbsoluteDateTest {
         final FieldAbsoluteDate<Binary64> arbitrary = FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance());
         Assertions.assertEquals(future, FieldAbsoluteDate.createMedian(future, arbitrary));
         Assertions.assertEquals(past,   FieldAbsoluteDate.createMedian(past,   arbitrary));
+    }
+
+    @Test
+    void testToFUD1Field() {
+        // GIVEN
+        final Field<Binary64> field = Binary64Field.getInstance();
+        final FieldAbsoluteDate<Binary64> date = FieldAbsoluteDate.getArbitraryEpoch(field);
+        // WHEN
+        final FieldAbsoluteDate<FieldUnivariateDerivative1<Binary64>> ud1Date = date.toFUD1Field();
+        // THEN
+        Assertions.assertEquals(date.toAbsoluteDate(), ud1Date.toAbsoluteDate());
+        final FieldUnivariateDerivative1<Binary64> shift = ud1Date.durationFrom(date.toAbsoluteDate());
+        Assertions.assertEquals(field.getOne(), shift.getFirstDerivative());
     }
 
     @Test

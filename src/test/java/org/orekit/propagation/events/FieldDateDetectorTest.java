@@ -68,29 +68,29 @@ public class FieldDateDetectorTest {
     private AbsoluteDate nodeDate;
 
     @Test
-    public void testSimpleTimer() {
+    void testSimpleTimer() {
         doTestSimpleTimer(Binary64Field.getInstance());
     }
 
     @Test
-    public void testEmbeddedTimer() {
+    void testEmbeddedTimer() {
         doTestEmbeddedTimer(Binary64Field.getInstance());
     }
 
     @Test
-    public void testAutoEmbeddedTimer() {
+    void testAutoEmbeddedTimer() {
         doTestAutoEmbeddedTimer(Binary64Field.getInstance());
     }
 
     @Test
-    public void testExceptionTimer() {
+    void testExceptionTimer() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             doTestExceptionTimer(Binary64Field.getInstance());
         });
     }
 
     @Test
-    public void testGenericHandler() {
+    void testGenericHandler() {
         doTestGenericHandler(Binary64Field.getInstance());
     }
 
@@ -124,7 +124,17 @@ public class FieldDateDetectorTest {
     }
 
     @Test
-    public void testIssue935() {
+    void testDependsOnlyOnTime() {
+        // GIVEN
+        final FieldDateDetector<Binary64> detector = new FieldDateDetector<>(FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance()));
+        // WHEN
+        final boolean value = detector.dependsOnTimeOnly();
+        // THEN
+        Assertions.assertTrue(value);
+    }
+
+    @Test
+    void testIssue935() {
         doTestIssue935(Binary64Field.getInstance());
     }
 

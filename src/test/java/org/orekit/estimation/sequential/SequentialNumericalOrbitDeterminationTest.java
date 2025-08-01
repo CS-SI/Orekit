@@ -64,7 +64,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
 
-public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDetermination<NumericalPropagatorBuilder> {
+class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDetermination<NumericalPropagatorBuilder> {
 
     /** Gravity field. */
     private NormalizedSphericalHarmonicsProvider gravityField;
@@ -205,7 +205,7 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
 
 
     @Test
-    public void testLageos2Extended() throws URISyntaxException, IOException {
+    void testLageos2Extended() throws URISyntaxException, IOException {
 
         // Position/velocity accuracy
         final double distanceAccuracy = 2.47;
@@ -233,7 +233,7 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
     }
 
     @Test
-    public void testLageos2Unscented() throws URISyntaxException, IOException {
+    void testLageos2Unscented() throws URISyntaxException, IOException {
 
         // Position/velocity accuracy
         final double distanceAccuracy = 2.46;
@@ -324,7 +324,7 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
         final Orbit refOrbit = runReference(input, orbitType, refPos0, refVel0, null,
                                             kalmanLageos2.getEstimatedPV().getDate());
         final Vector3D refPos = refOrbit.getPosition();
-        final Vector3D refVel = refOrbit.getPVCoordinates().getVelocity();
+        final Vector3D refVel = refOrbit.getVelocity();
 
         // Check distances
         final double dP = Vector3D.distance(refPos, estimatedPos);
@@ -348,7 +348,7 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
         final Orbit initialOrbit = runReference(input, orbitType, refPos0, refVel0, null,
                 kalmanLageos2.getSmoothedState().getDate());
         final Vector3D initialPos = initialOrbit.getPosition();
-        final Vector3D initialVel = initialOrbit.getPVCoordinates().getVelocity();
+        final Vector3D initialVel = initialOrbit.getVelocity();
 
         // Check smoother distances
         final double[] smoothedState = kalmanLageos2.getSmoothedState().getState().toArray();
@@ -404,7 +404,7 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
     }
 
     @Test
-    public void testW3BExtended() throws URISyntaxException, IOException {
+    void testW3BExtended() throws URISyntaxException, IOException {
         // Batch LS result: -0.2154;
         final double dragCoef  = 2.0010;
 
@@ -676,7 +676,7 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
 
         // Test on last orbit
         final Vector3D refPos = refOrbit.getPosition();
-        final Vector3D refVel = refOrbit.getPVCoordinates().getVelocity();
+        final Vector3D refVel = refOrbit.getVelocity();
 
         // Check distances
         final double dP = Vector3D.distance(refPos, estimatedPos);

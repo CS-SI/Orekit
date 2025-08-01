@@ -102,6 +102,7 @@ class FieldCartesianFuelCostTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void testGetFieldHamiltonianContribution() {
         // GIVEN
         final FieldCartesianFuelCost<Binary64> cartesianFuel = Mockito.mock(FieldCartesianFuelCost.class);
@@ -151,7 +152,7 @@ class FieldCartesianFuelCostTest {
         for (int i = 0; i < adjoint.length; i++) {
             adjoint[i] = new Binary64(i + 1);
         }
-        return new FieldSpacecraftState<>(field, new SpacecraftState(orbit, mass))
+        return new FieldSpacecraftState<>(field, new SpacecraftState(orbit).withMass(mass))
                 .addAdditionalData(adjointName, adjoint);
     }
 

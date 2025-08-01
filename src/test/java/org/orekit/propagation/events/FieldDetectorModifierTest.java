@@ -21,6 +21,8 @@ import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -43,9 +45,21 @@ class FieldDetectorModifierTest {
         Assertions.assertEquals(detectionSettings, actualSettings);
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testDependsOnlyOnTime(final boolean value) {
+        // GIVEN
+        final FieldEventDetector<?> detector = Mockito.mock(FieldEventDetector.class);
+        Mockito.when(detector.dependsOnTimeOnly()).thenReturn(value);
+        final TestFieldDetector<?> modifierDetector = new TestFieldDetector<>(detector);
+        // WHEN
+        final boolean actual = modifierDetector.dependsOnTimeOnly();
+        // THEN
+        Assertions.assertEquals(value, actual);
+    }
+
     @Test
     @SuppressWarnings("unchecked")
-
     void testGetHandler() {
         // GIVEN
         final FieldEventDetector<?> detector = Mockito.mock(FieldEventDetector.class);

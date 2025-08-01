@@ -45,10 +45,17 @@ public interface DetectorModifier extends EventDetector {
         getDetector().init(s0, t);
     }
 
+    /** {@inheritDoc} */
     @Override
-    default void reset(SpacecraftState state, AbsoluteDate target) {
+    default void reset(final SpacecraftState state, final AbsoluteDate target) {
         EventDetector.super.reset(state, target);
         getDetector().reset(state, target);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    default boolean dependsOnTimeOnly() {
+        return getDetector().dependsOnTimeOnly();
     }
 
     /** {@inheritDoc} */

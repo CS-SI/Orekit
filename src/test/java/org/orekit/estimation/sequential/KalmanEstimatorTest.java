@@ -59,7 +59,7 @@ import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class KalmanEstimatorTest {
+class KalmanEstimatorTest {
 
     @Test
     void testEstimationStepWithBStarOnly() {
@@ -87,7 +87,7 @@ public class KalmanEstimatorTest {
     }
 
     @Test
-    public void testTwoOrbitalParameters() {
+    void testTwoOrbitalParameters() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -110,7 +110,7 @@ public class KalmanEstimatorTest {
         final SpacecraftState state = propagator.propagate(measurementDate);
         final ObservedMeasurement<?> measurement = new PV(measurementDate,
                 state.getPosition().add(new Vector3D(10.0, -10.0, 5.0)),
-                state.getPVCoordinates().getVelocity().add(new Vector3D(-10.0, 5.0, -5.0)),
+                state.getVelocity().add(new Vector3D(-10.0, 5.0, -5.0)),
                 5.0, 5.0, 1.0, new ObservableSatellite(0));
 
         // Unselect all orbital propagation parameters
@@ -158,7 +158,7 @@ public class KalmanEstimatorTest {
     }
 
     @Test
-    public void testTwoOrbitalParametersMulti() {
+    void testTwoOrbitalParametersMulti() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -185,11 +185,11 @@ public class KalmanEstimatorTest {
         final SpacecraftState state = propagator.propagate(measurementDate);
         final ObservedMeasurement<?> measurement1 = new PV(measurementDate,
                 state.getPosition().add(new Vector3D(10.0, -10.0, 5.0)),
-                state.getPVCoordinates().getVelocity().add(new Vector3D(-10.0, 5.0, -5.0)),
+                state.getVelocity().add(new Vector3D(-10.0, 5.0, -5.0)),
                 5.0, 5.0, 1.0, new ObservableSatellite(0));
         final ObservedMeasurement<?> measurement2 = new PV(measurementDate,
                 state.getPosition().add(new Vector3D(-10.0, 20.0, -1.0)),
-                state.getPVCoordinates().getVelocity().add(new Vector3D(10.0, 50.0, -10.0)),
+                state.getVelocity().add(new Vector3D(10.0, 50.0, -10.0)),
                 5.0, 5.0, 1.0, new ObservableSatellite(1));
         final ObservedMeasurement<?> combinedMeasurement =
                 new MultiplexedMeasurement(Arrays.asList(measurement1, measurement2));
@@ -300,7 +300,7 @@ public class KalmanEstimatorTest {
     }
 
     @Test
-    public void testWrongProcessCovarianceDimension() {
+    void testWrongProcessCovarianceDimension() {
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -322,7 +322,7 @@ public class KalmanEstimatorTest {
         final SpacecraftState state = propagator.propagate(measurementDate);
         final ObservedMeasurement<PV> measurement = new PV(measurementDate,
                 state.getPosition().add(new Vector3D(10.0, -10.0, 5.0)),
-                state.getPVCoordinates().getVelocity().add(new Vector3D(-10.0, 5.0, -5.0)),
+                state.getVelocity().add(new Vector3D(-10.0, 5.0, -5.0)),
                5.0, 5.0, 1.0, new ObservableSatellite(0));
 
         // Unselect all orbital propagation parameters
@@ -407,7 +407,7 @@ public class KalmanEstimatorTest {
     }
 
     @Test
-    public void testWrongMeasurementCovarianceDimension() {
+    void testWrongMeasurementCovarianceDimension() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -527,7 +527,7 @@ public class KalmanEstimatorTest {
     }
 
     @Test
-    public void testMissingPropagatorBuilder() {
+    void testMissingPropagatorBuilder() {
         try {
             new KalmanEstimatorBuilder().
             build();
@@ -542,7 +542,7 @@ public class KalmanEstimatorTest {
      * Keplerian formalism
      */
     @Test
-    public void testKeplerianPV() {
+    void testKeplerianPV() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -610,7 +610,7 @@ public class KalmanEstimatorTest {
      * Keplerian formalism
      */
     @Test
-    public void testKeplerianRange() {
+    void testKeplerianRange() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -691,7 +691,7 @@ public class KalmanEstimatorTest {
      * Keplerian formalism
      */
     @Test
-    public void testKeplerianRangeWithOnBoardAntennaOffset() {
+    void testKeplerianRangeWithOnBoardAntennaOffset() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -787,7 +787,7 @@ public class KalmanEstimatorTest {
      * Cartesian formalism
      */
     @Test
-    public void testCartesianRangeRate() {
+    void testCartesianRangeRate() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -868,7 +868,7 @@ public class KalmanEstimatorTest {
      * Circular formalism
      */
     @Test
-    public void testCircularAzimuthElevation() {
+    void testCircularAzimuthElevation() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -946,7 +946,7 @@ public class KalmanEstimatorTest {
      * Equinoctial formalism
      */
     @Test
-    public void testEquinoctialRightAscensionDeclination() {
+    void testEquinoctialRightAscensionDeclination() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -1024,7 +1024,7 @@ public class KalmanEstimatorTest {
      *  Keplerian formalism
      */
     @Test
-    public void testKeplerianRangeAzElAndRangeRate() {
+    void testKeplerianRangeAzElAndRangeRate() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -1128,7 +1128,7 @@ public class KalmanEstimatorTest {
      * Perfect range and range rate measurements with a perfect start
      */
     @Test
-    public void testKeplerianRangeAndRangeRate() {
+    void testKeplerianRangeAndRangeRate() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -1213,7 +1213,7 @@ public class KalmanEstimatorTest {
     }
 
     @Test
-    public void testMultiSat() {
+    void testMultiSat() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -1291,8 +1291,8 @@ public class KalmanEstimatorTest {
                                               before.getPosition()),
                             1.0e-3);
         Assertions.assertEquals(0.0010514,
-                            Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
-                                              before.getPVCoordinates().getVelocity()),
+                            Vector3D.distance(closeOrbit.getVelocity(),
+                                              before.getVelocity()),
                             1.0e-6);
 
         Orbit[] refOrbits = new Orbit[] {
@@ -1330,7 +1330,7 @@ public class KalmanEstimatorTest {
      * Test of a wrapped exception in a Kalman observer
      */
     @Test
-    public void testWrappedException() {
+    void testWrappedException() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -1378,7 +1378,7 @@ public class KalmanEstimatorTest {
     }
 
     @Test
-    public void testIssue695() {
+    void testIssue695() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -1500,8 +1500,8 @@ public class KalmanEstimatorTest {
                                               before.getPosition()),
                             1.0e-3);
         Assertions.assertEquals(0.0010514,
-                            Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
-                                              before.getPVCoordinates().getVelocity()),
+                            Vector3D.distance(closeOrbit.getVelocity(),
+                                              before.getVelocity()),
                             1.0e-6);
 
         Orbit[] refOrbits = new Orbit[] {

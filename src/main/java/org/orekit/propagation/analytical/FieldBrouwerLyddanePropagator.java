@@ -858,9 +858,9 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
         final FieldKeplerianOrbit<T> mean = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
         final FieldBLModel<T> newModel = new FieldBLModel<>(mean, state.getMass(), referenceRadius, mu, ck0);
         if (forward) {
-            models.addValidAfter(newModel, state.getDate());
+            models.addValidAfter(newModel, state.getDate(), false);
         } else {
-            models.addValidBefore(newModel, state.getDate());
+            models.addValidBefore(newModel, state.getDate(), false);
         }
         stateChanged(state);
     }

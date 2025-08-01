@@ -18,6 +18,7 @@ package org.orekit.data;
 
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
@@ -130,6 +131,11 @@ public class ExceptionalDataContextTest {
     private void hack() {
         Object o = AbsoluteDate.ARBITRARY_EPOCH;
         Assertions.assertNotNull(o);
+    }
+
+    @AfterAll
+    static void tearDown() {
+        DataContext.setDefault(new LazyLoadedDataContext());
     }
 
 }

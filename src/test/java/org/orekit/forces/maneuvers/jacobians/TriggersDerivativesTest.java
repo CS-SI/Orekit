@@ -374,7 +374,7 @@ public class TriggersDerivativesTest {
                                                        TimeScalesFactory.getUTC());
         final Orbit        orbit    = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
                                                          FramesFactory.getEME2000(), initDate, Constants.EIGEN5C_EARTH_MU);
-        return new SpacecraftState(orbit, attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
+        return new SpacecraftState(orbit, attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame())).withMass(mass);
     }
 
     private AttitudeProvider buildAttitudeProvider() {

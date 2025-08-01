@@ -663,7 +663,7 @@ public class OcmParserTest {
         Assertions.assertEquals("ORBIT EPHEMERIS INCORPORATING DEPLOYMENTS AND MANEUVERS (BELOW)", orb.getMetadata().getComments().get(0));
         Assertions.assertEquals("intervening data records omitted after DT=20.0",     orb.getMetadata().getComments().get(1));
         // TRAJ_BASIS has no default in 502.0-B-3 (p. 6-16, Table 6-4)
-        Assertions.assertEquals(null, orb.getMetadata().getTrajBasis()); // not present in the file
+        Assertions.assertNull(orb.getMetadata().getTrajBasis()); // not present in the file
         Assertions.assertEquals("TOD", orb.getMetadata().getTrajReferenceFrame().getName());
         Assertions.assertNotNull(orb.getMetadata().getTrajReferenceFrame().asFrame());
         Assertions.assertEquals(CelestialBodyFrame.TOD, orb.getMetadata().getTrajReferenceFrame().asCelestialBodyFrame());

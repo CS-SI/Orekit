@@ -66,7 +66,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<NumericalPropagatorBuilder> {
+class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<NumericalPropagatorBuilder> {
 
     /** Gravity field. */
     private NormalizedSphericalHarmonicsProvider gravityField;
@@ -206,7 +206,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
 
     @Test
     // Orbit determination for Lageos2 based on SLR (range) measurements
-    public void testLageos2()
+    void testLageos2()
         throws URISyntaxException, IllegalArgumentException, IOException, OrekitException {
 
     	// input in resources directory
@@ -253,7 +253,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
 
     @Test
     // Orbit determination for GNSS satellite based on range measurements
-    public void testGNSS()
+    void testGNSS()
         throws URISyntaxException, IllegalArgumentException, IOException, OrekitException {
 
     	// input in resources directory
@@ -302,7 +302,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
 
     @Test
     // Orbit determination for range, azimuth elevation measurements
-    public void testW3B()
+    void testW3B()
         throws URISyntaxException, IllegalArgumentException, IOException,
               OrekitException, ParseException {
 

@@ -60,7 +60,7 @@ import java.util.List;
  * state transition, measurement, kalman gain matrices etc.
  * @author Maxime Journot
  */
-public class KalmanModelTest {
+class KalmanModelTest {
 
     /** Orbit type for propagation. */
     private final OrbitType orbitType = OrbitType.CARTESIAN;
@@ -130,7 +130,7 @@ public class KalmanModelTest {
         final AbsoluteDate date0 = context.initialOrbit.getDate();
         this.pv = new PV(date0,
                              context.initialOrbit.getPosition(),
-                             context.initialOrbit.getPVCoordinates().getVelocity(),
+                             context.initialOrbit.getVelocity(),
                              new double[] {1., 2., 3., 1e-3, 2e-3, 3e-3}, 1.,
                              sat);
 

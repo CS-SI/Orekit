@@ -167,7 +167,7 @@ public class PVTest {
 
         // Dummy P, V, T
         final Vector3D     position = context.initialOrbit.getPosition();
-        final Vector3D     velocity = context.initialOrbit.getPVCoordinates().getVelocity();
+        final Vector3D     velocity = context.initialOrbit.getVelocity();
         final AbsoluteDate date     = context.initialOrbit.getDate();
 
         // Initialize standard deviations and weight
@@ -237,7 +237,7 @@ public class PVTest {
 
         // Dummy P, V, T
         final Vector3D     position = context.initialOrbit.getPosition();
-        final Vector3D     velocity = context.initialOrbit.getPVCoordinates().getVelocity();
+        final Vector3D     velocity = context.initialOrbit.getVelocity();
         final AbsoluteDate date     = context.initialOrbit.getDate();
 
         // Initialize standard deviations and weight
@@ -311,7 +311,7 @@ public class PVTest {
 
         // Dummy P, V, T
         final Vector3D     position = context.initialOrbit.getPosition();
-        final Vector3D     velocity = context.initialOrbit.getPVCoordinates().getVelocity();
+        final Vector3D     velocity = context.initialOrbit.getVelocity();
         final AbsoluteDate date     = context.initialOrbit.getDate();
 
         // Initialize standard deviations and weight
@@ -398,7 +398,7 @@ public class PVTest {
 
         // Dummy P, V, T
         final Vector3D     position = context.initialOrbit.getPosition();
-        final Vector3D     velocity = context.initialOrbit.getPVCoordinates().getVelocity();
+        final Vector3D     velocity = context.initialOrbit.getVelocity();
         final AbsoluteDate date     = context.initialOrbit.getDate();
 
         // Initialize standard deviations, weight and corr coeff
@@ -475,7 +475,7 @@ public class PVTest {
 
         // Dummy P, V, T
         final Vector3D     position = context.initialOrbit.getPosition();
-        final Vector3D     velocity = context.initialOrbit.getPVCoordinates().getVelocity();
+        final Vector3D     velocity = context.initialOrbit.getVelocity();
         final AbsoluteDate date     = context.initialOrbit.getDate();
         final double       weight   = 1.;
 

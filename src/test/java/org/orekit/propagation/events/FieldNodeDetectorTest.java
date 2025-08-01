@@ -61,7 +61,7 @@ public class FieldNodeDetectorTest {
         FieldAbsoluteDate<T> initialDate = new FieldAbsoluteDate<>(field, 2014, 01, 01, 0, 0, 0, TimeScalesFactory.getUTC());
         FieldAbsoluteDate<T> finalDate = initialDate.shiftedBy(5000);
         FieldKeplerianOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(a, e, i, w, raan, v, PositionAngleType.TRUE, inertialFrame, initialDate, zero.add(Constants.WGS84_EARTH_MU));
-        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(initialOrbit, zero.add(1000));
+        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(initialOrbit).withMass(zero.add(1000));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(initialOrbit);
 
         // Define 2 instances of NodeDetector:

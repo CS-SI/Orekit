@@ -159,6 +159,6 @@ public class CdmRelativeMetaDataTest {
         
         // Addendum: Test setCollisionPercentile when null
         meta.setCollisionPercentile(null);
-        Assertions.assertEquals(null,  meta.getCollisionPercentile());
+        Assertions.assertNull(meta.getCollisionPercentile());
     }
 }

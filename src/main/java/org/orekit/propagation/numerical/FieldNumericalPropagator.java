@@ -28,7 +28,6 @@ import org.hipparchus.ode.FieldODEIntegrator;
 import org.hipparchus.util.MathArrays;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.AttitudeProviderModifier;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -397,9 +396,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
     /** {@inheritDoc} */
     @Override
     protected AttitudeProvider initializeAttitudeProviderForDerivatives() {
-        final AttitudeProvider attitudeProvider = getAttitudeProvider();
-        return needFullAttitudeForDerivatives ? attitudeProvider :
-            AttitudeProviderModifier.getFrozenAttitudeProvider(attitudeProvider);
+        return needFullAttitudeForDerivatives ? getAttitudeProvider() : getFrozenAttitudeProvider();
     }
 
     /** {@inheritDoc} */
@@ -502,7 +499,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
         private FieldSpacecraftState<T> currentState;
 
         /** Jacobian of the orbital parameters with respect to the Cartesian parameters. */
-        private T[][] jacobian;
+        private final T[][] jacobian;
 
         /** Flag keeping track whether Jacobian matrix needs to be recomputed or not. */
         private boolean recomputingJacobian;
@@ -571,7 +568,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
             if (superGetOrbitType() == null) {
                 // position derivative is velocity, and was not added above in the force models
                 // (it is added when orbit type is non-null because NewtonianAttraction considers it)
-                final FieldVector3D<T> velocity = currentState.getPVCoordinates().getVelocity();
+                final FieldVector3D<T> velocity = currentState.getVelocity();
                 yDot[0] = yDot[0].add(velocity.getX());
                 yDot[1] = yDot[1].add(velocity.getY());
                 yDot[2] = yDot[2].add(velocity.getZ());

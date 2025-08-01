@@ -38,7 +38,7 @@ import org.orekit.time.TimeStamped;
  * Typical uses of {@link TimeSpanMap} are to hold piecewise data, like for
  * example an orbit count that changes at ascending nodes (in which case the
  * entry would be an {@link Integer}), or a visibility status between several
- * objects (in which case the entry would be a {@link Boolean}) or a drag
+ * objects (in which case the entry would be a {@link Boolean}), or a drag
  * coefficient that is expected to be estimated daily or three-hourly.
  * </p>
  * <p>
@@ -50,7 +50,7 @@ import org.orekit.time.TimeStamped;
  * AbsoluteDate, boolean)}), or the end of the validity (when calling {@link
  * #addValidBefore(Object, AbsoluteDate, boolean)}). Entries are often added at one
  * end only (and mainly in chronological order), but this is not required. It is
- * possible for example to first set up a map that cover a large range (say one day),
+ * possible for example to first set up a map that covers a large range (say one day),
  * and then to insert intermediate dates using for example propagation and event
  * detectors to carve out some parts. This is akin to the way Binary Space Partitioning
  * Trees work.
@@ -67,8 +67,43 @@ public class TimeSpanMap<T> {
     /** Reference to last accessed data. */
     private Span<T> current;
 
+    /** First span.
+     * @since 13.1
+     */
+    private Span<T> firstSpan;
+
+    /** Last span.
+     * @since 13.1
+     */
+    private Span<T> lastSpan;
+
+    /** End of early expunged range.
+     * @since 13.1
+     */
+    private AbsoluteDate expungedEarly;
+
+    /** Start of late expunged range.
+     * @since 13.1
+     */
+    private AbsoluteDate expungedLate;
+
     /** Number of time spans. */
     private int nbSpans;
+
+    /** Maximum number of time spans.
+     * @since 13.1
+     */
+    private int maxNbSpans;
+
+    /** Maximum time range between the earliest and the latest transitions.
+     * @since 13.1
+     */
+    private double maxRange;
+
+    /** Expunge policy.
+     * @since 13.1
+     */
+    private ExpungePolicy expungePolicy;
 
     /** Create a map containing a single object, initially valid throughout the timeline.
      * <p>
@@ -77,17 +112,52 @@ public class TimeSpanMap<T> {
      * added before} it or {@link #addValidAfter(Object, AbsoluteDate, boolean)
      * added after} it.
      * </p>
+     * <p>
+     * The initial {@link #configureExpunge(int, double, ExpungePolicy) expunge policy}
+     * is to never expunge any entries, it can be changed afterward by calling
+     * {@link #configureExpunge(int, double, ExpungePolicy)}
+     * </p>
      * @param entry entry (initially valid throughout the timeline)
      */
     public TimeSpanMap(final T entry) {
-        current = new Span<>(entry);
-        nbSpans = 1;
+        this.current   = new Span<>(entry);
+        this.firstSpan = current;
+        this.lastSpan  = current;
+        this.nbSpans   = 1;
+        configureExpunge(Integer.MAX_VALUE, Double.POSITIVE_INFINITY, ExpungePolicy.EXPUNGE_FARTHEST);
+    }
+
+    /** Configure (or reconfigure) expunge policy for later additions.
+     * <p>
+     * When an entry is added to the map (using either {@link #addValidBefore(Object, AbsoluteDate, boolean)},
+     * {@link #addValidBetween(Object, AbsoluteDate, AbsoluteDate)}, or
+     * {@link #addValidAfter(Object, AbsoluteDate, boolean)} that exceeds the allowed capacity in terms
+     * of number of time spans or maximum time range between the earliest and the latest transitions,
+     * then exceeding data is expunged according to the {@code expungePolicy}.
+     * </p>
+     * <p>
+     * Note that as the policy depends on the date at which new entries are added, the policy will be enforced
+     * only for the <em>next</em> calls to {@link #addValidBefore(Object, AbsoluteDate, boolean)},
+     * {@link #addValidBetween(Object, AbsoluteDate, AbsoluteDate)}, and {@link #addValidAfter(Object,
+     * AbsoluteDate, boolean)}, it is <em>not</em> enforce immediately.
+     * </p>
+     * @param newMaxNbSpans maximum number of time spans
+     * @param newMaxRange maximum time range between the earliest and the latest transitions
+     * @param newExpungePolicy expunge policy to apply when capacity is exceeded
+     * @since 13.1
+     */
+    public synchronized void configureExpunge(final int newMaxNbSpans, final double newMaxRange, final ExpungePolicy newExpungePolicy) {
+        this.maxNbSpans    = newMaxNbSpans;
+        this.maxRange      = newMaxRange;
+        this.expungePolicy = newExpungePolicy;
+        this.expungedEarly = AbsoluteDate.PAST_INFINITY;
+        this.expungedLate  = AbsoluteDate.FUTURE_INFINITY;
     }
 
     /** Get the number of spans.
      * <p>
      * The number of spans is always at least 1. The number of transitions
-     * is always 1 less than the number of spans.
+     * is always 1 lower than the number of spans.
      * </p>
      * @return number of spans
      * @since 11.1
@@ -103,8 +173,8 @@ public class TimeSpanMap<T> {
      * </p>
      * <p>
      * If the map already contains transitions that occur earlier than {@code latestValidityDate},
-     * the {@code erasesEarlier} parameter controls what to do with them. Lets consider
-     * the time span [tₖ ; tₖ₊₁[ associated with entry eₖ that would have been valid at time
+     * the {@code erasesEarlier} parameter controls what to do with them. Let's consider
+     * the time span [tₖ; tₖ₊₁[ associated with entry eₖ that would have been valid at time
      * {@code latestValidityDate} prior to the call to the method (i.e. tₖ &lt;
      * {@code latestValidityDate} &lt; tₖ₊₁).
      * </p>
@@ -149,12 +219,13 @@ public class TimeSpanMap<T> {
 
         final Transition<T> start = current.getStartTransition();
         if (start != null && start.getDate().equals(latestValidityDate)) {
-            // the transition at start of the current span is at the exact same date
+            // the transition at the start of the current span is at the exact same date
             // we update it, without adding a new transition
             if (start.previous() != null) {
                 start.previous().setAfter(span);
             }
             start.setBefore(span);
+            updateFirstIfNeeded(span);
         } else {
 
             if (current.getStartTransition() != null) {
@@ -169,6 +240,8 @@ public class TimeSpanMap<T> {
         // we consider the last added transition as the new current one
         current = span;
 
+        expungeOldData(latestValidityDate);
+
         return span;
 
     }
@@ -180,8 +253,8 @@ public class TimeSpanMap<T> {
      * </p>
      * <p>
      * If the map already contains transitions that occur later than {@code earliestValidityDate},
-     * the {@code erasesLater} parameter controls what to do with them. Lets consider
-     * the time span [tₖ ; tₖ₊₁[ associated with entry eₖ that would have been valid at time
+     * the {@code erasesLater} parameter controls what to do with them. Let's consider
+     * the time span [tₖ; tₖ₊₁[ associated with entry eₖ that would have been valid at time
      * {@code earliestValidityDate} prior to the call to the method (i.e. tₖ &lt;
      * {@code earliestValidityDate} &lt; tₖ₊₁).
      * </p>
@@ -229,9 +302,10 @@ public class TimeSpanMap<T> {
 
         final Transition<T> start = current.getStartTransition();
         if (start != null && start.getDate().equals(earliestValidityDate)) {
-            // the transition at start of the current span is at the exact same date
+            // the transition at the start of the current span is at the exact same date
             // we update it, without adding a new transition
             start.setAfter(span);
+            updateLastIfNeeded(span);
         } else {
             // we need to add a new transition somewhere inside the current span
             insertTransition(earliestValidityDate, current, span);
@@ -239,6 +313,9 @@ public class TimeSpanMap<T> {
 
         // we consider the last added transition as the new current one
         current = span;
+
+        // update metadata
+        expungeOldData(earliestValidityDate);
 
         return span;
 
@@ -261,7 +338,9 @@ public class TimeSpanMap<T> {
         if (AbsoluteDate.PAST_INFINITY.equals(earliestValidityDate)) {
             if (AbsoluteDate.FUTURE_INFINITY.equals(latestValidityDate)) {
                 // we wipe everything in the map
-                current = new Span<>(entry);
+                current   = new Span<>(entry);
+                firstSpan = current;
+                lastSpan  = current;
                 return current;
             } else {
                 // we wipe from past infinity
@@ -292,9 +371,10 @@ public class TimeSpanMap<T> {
             // manage earliest transition
             final Transition<T> start = current.getStartTransition();
             if (start != null && start.getDate().equals(earliestValidityDate)) {
-                // the transition at start of the current span is at the exact same date
+                // the transition at the start of the current span is at the exact same date
                 // we update it, without adding a new transition
                 start.setAfter(span);
+                updateLastIfNeeded(span);
             } else {
                 // we need to add a new transition somewhere inside the current span
                 insertTransition(earliestValidityDate, current, span);
@@ -305,6 +385,10 @@ public class TimeSpanMap<T> {
 
             // we consider the last added transition as the new current one
             current = span;
+
+            // update metadata
+            final AbsoluteDate midDate = earliestValidityDate.shiftedBy(0.5 * latestValidityDate.durationFrom(earliestValidityDate));
+            expungeOldData(midDate);
 
             return span;
 
@@ -337,6 +421,12 @@ public class TimeSpanMap<T> {
      * @since 9.3
      */
     public synchronized Span<T> getSpan(final AbsoluteDate date) {
+
+        // safety check
+        if (date.isBefore(expungedEarly) || date.isAfter(expungedLate)) {
+            throw new OrekitException(OrekitMessages.EXPUNGED_SPAN, date);
+        }
+
         locate(date);
         return current;
     }
@@ -353,7 +443,7 @@ public class TimeSpanMap<T> {
     private synchronized void locate(final AbsoluteDate date) {
 
         while (current.getStart().isAfter(date)) {
-            // current span is too late
+            // the current span is too late
             current = current.previous();
         }
 
@@ -365,7 +455,7 @@ public class TimeSpanMap<T> {
                 return;
             }
 
-            // current span is too early
+            // the current span is too early
             current = next;
 
         }
@@ -382,6 +472,8 @@ public class TimeSpanMap<T> {
         final Transition<T> transition = new Transition<>(this, date);
         transition.setBefore(before);
         transition.setAfter(after);
+        updateFirstIfNeeded(before);
+        updateLastIfNeeded(after);
         ++nbSpans;
     }
 
@@ -406,11 +498,7 @@ public class TimeSpanMap<T> {
      * @since 11.1
      */
     public synchronized Span<T> getFirstSpan() {
-        Span<T> span = current;
-        while (span.getStartTransition() != null) {
-            span = span.previous();
-        }
-        return span;
+        return firstSpan;
     }
 
     /** Get the first (earliest) span with non-null data.
@@ -433,11 +521,7 @@ public class TimeSpanMap<T> {
      * @since 11.1
      */
     public synchronized Span<T> getLastSpan() {
-        Span<T> span = current;
-        while (span.getEndTransition() != null) {
-            span = span.next();
-        }
-        return span;
+        return lastSpan;
     }
 
     /** Get the last (latest) span with non-null data.
@@ -461,7 +545,7 @@ public class TimeSpanMap<T> {
      * only the transitions that lie in the specified range.
      * </p>
      * <p>
-     * Consider for example a map containing objects O₀ valid before t₁, O₁ valid
+     * Consider, for example, a map containing objects O₀ valid before t₁, O₁ valid
      * between t₁ and t₂, O₂ valid between t₂ and t₃, O₃ valid between t₃ and t₄,
      * and O₄ valid after t₄. then calling this method with a {@code start}
      * date between t₁ and t₂ and a {@code end} date between t₃ and t₄
@@ -491,7 +575,7 @@ public class TimeSpanMap<T> {
     }
 
     /**
-     * Performs an action for each non-null element of map.
+     * Performs an action for each non-null element of the map.
      * <p>
      * The action is performed chronologically.
      * </p>
@@ -503,6 +587,64 @@ public class TimeSpanMap<T> {
             if (span.getData() != null) {
                 action.accept(span.getData());
             }
+        }
+    }
+
+    /**
+     * Expunge old data.
+     * @param date date of the latest added data
+     */
+    private synchronized void expungeOldData(final AbsoluteDate date) {
+
+        while (nbSpans > maxNbSpans || lastSpan.getStart().durationFrom(firstSpan.getEnd()) > maxRange) {
+            // capacity exceeded, we need to purge old data
+            if (expungePolicy.expungeEarliest(date, firstSpan.getEnd(), lastSpan.getStart())) {
+                // we need to purge the earliest data
+                if (firstSpan.getEnd().isAfter(expungedEarly)) {
+                    expungedEarly  = firstSpan.getEnd();
+                }
+                firstSpan       = firstSpan.next();
+                firstSpan.start = null;
+                if (current.start == null) {
+                    // the current span was the one we just expunged
+                    // we need to update it
+                    current = firstSpan;
+                }
+            } else {
+                // we need to purge the latest data
+                if (lastSpan.getStart().isBefore(expungedLate)) {
+                    expungedLate = lastSpan.getStart();
+                }
+                lastSpan     = lastSpan.previous();
+                lastSpan.end = null;
+                if (current.end == null) {
+                    // the current span was the one we just expunged
+                    // we need to update it
+                    current = lastSpan;
+                }
+            }
+            --nbSpans;
+        }
+
+    }
+
+    /** Update first span if needed.
+     * @param candidate candidate first span
+     * @since 13.1
+     */
+    private void updateFirstIfNeeded(final Span<T> candidate) {
+        if (candidate.getStartTransition() == null) {
+            firstSpan = candidate;
+        }
+    }
+
+    /** Update last span if needed.
+     * @param candidate candidate last span
+     * @since 13.1
+     */
+    private void updateLastIfNeeded(final Span<T> candidate) {
+        if (candidate.getEndTransition() == null) {
+            lastSpan = candidate;
         }
     }
 
@@ -605,12 +747,13 @@ public class TimeSpanMap<T> {
                     if (newDate.isInfinite()) {
                         // we have just moved the transition to future infinity, it should really disappear
                         map.nbSpans--;
-                        before.end = null;
+                        map.lastSpan = before;
+                        before.end   = null;
                     }
                 }
 
             } else {
-                // we are moving transition towards past
+                // we are moving transition towards the past
 
                 // find span before new date
                 Span<S> newBefore = before;
@@ -636,7 +779,8 @@ public class TimeSpanMap<T> {
                     if (newDate.isInfinite()) {
                         // we have just moved the transition to past infinity, it should really disappear
                         map.nbSpans--;
-                        after.start = null;
+                        map.firstSpan = after;
+                        after.start   = null;
                     }
                 }
 
@@ -754,8 +898,8 @@ public class TimeSpanMap<T> {
             return start == null ? AbsoluteDate.PAST_INFINITY : start.getDate();
         }
 
-        /** Get the transition at start of this time span.
-         * @return transition at start of this time span (null if span extends to past infinity)
+        /** Get the transition at the start of this time span.
+         * @return transition at the start of this time span (null if span extends to past infinity)
          * @see #getStart()
          * @since 11.1
          */
@@ -772,8 +916,8 @@ public class TimeSpanMap<T> {
             return end == null ? AbsoluteDate.FUTURE_INFINITY : end.getDate();
         }
 
-        /** Get the transition at end of this time span.
-         * @return transition at end of this time span (null if span extends to future infinity)
+        /** Get the transition at the end of this time span.
+         * @return transition at the end of this time span (null if span extends to future infinity)
          * @see #getEnd()
          * @since 11.1
          */

@@ -114,7 +114,7 @@ public class ECOM2Test extends AbstractForceModelTest {
         Orbit orbit = orbitType.mapArrayToOrbit(array[0], array[1], angleType, date, mu, frame);
         return (array.length > 6) ?
                new SpacecraftState(orbit, attitude) :
-               new SpacecraftState(orbit, attitude, array[0][6]);
+               new SpacecraftState(orbit, attitude).withMass(array[0][6]);
     }
 
     private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
@@ -488,7 +488,7 @@ public class ECOM2Test extends AbstractForceModelTest {
         // Step Handler
         calc.setStepHandler(FastMath.floor(period), new SolarStepHandler());
         AbsoluteDate finalDate = date.shiftedBy(10 * period);
-        calc.setInitialState(new SpacecraftState(orbit, 1500.0));
+        calc.setInitialState(new SpacecraftState(orbit).withMass(1500.0));
         calc.propagate(finalDate);
         Assertions.assertTrue(calc.getCalls() < 7100);
     }

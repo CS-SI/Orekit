@@ -95,9 +95,9 @@ public class CartesianOrbitTest {
         Assertions.assertEquals(p.getPosition().getX(), pvCoordinates.getPosition().getX(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getPosition().getX()));
         Assertions.assertEquals(p.getPosition().getY(), pvCoordinates.getPosition().getY(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getPosition().getY()));
         Assertions.assertEquals(p.getPosition().getZ(), pvCoordinates.getPosition().getZ(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getPosition().getZ()));
-        Assertions.assertEquals(p.getPVCoordinates().getVelocity().getX(), pvCoordinates.getVelocity().getX(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getVelocity().getX()));
-        Assertions.assertEquals(p.getPVCoordinates().getVelocity().getY(), pvCoordinates.getVelocity().getY(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getVelocity().getY()));
-        Assertions.assertEquals(p.getPVCoordinates().getVelocity().getZ(), pvCoordinates.getVelocity().getZ(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getVelocity().getZ()));
+        Assertions.assertEquals(p.getVelocity().getX(), pvCoordinates.getVelocity().getX(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getVelocity().getX()));
+        Assertions.assertEquals(p.getVelocity().getY(), pvCoordinates.getVelocity().getY(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getVelocity().getY()));
+        Assertions.assertEquals(p.getVelocity().getZ(), pvCoordinates.getVelocity().getZ(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getVelocity().getZ()));
 
         Method initPV = CartesianOrbit.class.getDeclaredMethod("initPVCoordinates", new Class[0]);
         initPV.setAccessible(true);
@@ -185,8 +185,8 @@ public class CartesianOrbitTest {
 
         // validation of: V = sqrt(mu.(1+2e.cos(v)+e2)/a.(1-e2) )
         Assertions.assertEquals(na * FastMath.sqrt(ksi * ksi + nu * nu) / epsilon,
-                     p.getPVCoordinates().getVelocity().getNorm(),
-                     Utils.epsilonTest * FastMath.abs(p.getPVCoordinates().getVelocity().getNorm()));
+                     p.getVelocity().getNorm(),
+                     Utils.epsilonTest * FastMath.abs(p.getVelocity().getNorm()));
 
     }
 
@@ -217,7 +217,7 @@ public class CartesianOrbitTest {
             // Assertions.assertTrue(position.getNorm() >= perigeeRadius);
 
             position= position.normalize();
-            velocity = p.getPVCoordinates().getVelocity().normalize();
+            velocity = p.getVelocity().normalize();
 
             // at this stage of computation, all the vectors (position, velocity and momemtum) are normalized here
 
@@ -306,7 +306,7 @@ public class CartesianOrbitTest {
             CartesianOrbit rebuilt = (CartesianOrbit) OrbitType.CARTESIAN.convertType(converted);
             Assertions.assertTrue(rebuilt.hasNonKeplerianAcceleration());
             Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPosition(),     position),     2.0e-9);
-            Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPVCoordinates().getVelocity(),     velocity),     2.5e-12);
+            Assertions.assertEquals(0, Vector3D.distance(rebuilt.getVelocity(),     velocity),     2.5e-12);
             Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPVCoordinates().getAcceleration(), acceleration), 4.9e-15);
         }
 
@@ -333,7 +333,7 @@ public class CartesianOrbitTest {
         CartesianOrbit rebuilt = (CartesianOrbit) OrbitType.CARTESIAN.convertType(converted);
         Assertions.assertTrue(rebuilt.hasNonKeplerianAcceleration());
         Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPosition(),     position),     1.0e-15);
-        Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPVCoordinates().getVelocity(),     velocity),     1.0e-15);
+        Assertions.assertEquals(0, Vector3D.distance(rebuilt.getVelocity(),     velocity),     1.0e-15);
         Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPVCoordinates().getAcceleration(), acceleration), 1.0e-15);
 
     }
@@ -571,8 +571,8 @@ public class CartesianOrbitTest {
                                               shiftedOrbitCopy.getPosition()),
                             1.0e-10);
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(shiftedOrbit.getPVCoordinates().getVelocity(),
-                                              shiftedOrbitCopy.getPVCoordinates().getVelocity()),
+                            Vector3D.distance(shiftedOrbit.getVelocity(),
+                                              shiftedOrbitCopy.getVelocity()),
                             1.0e-10);
 
     }

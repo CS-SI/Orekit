@@ -209,8 +209,7 @@ public class PropagatorsParallelizerEphemerisTest {
         numericalPropagator.setInitialState(new SpacecraftState(orbit,
                 attitudeLaw.getAttitude(orbit,
                         orbit.getDate(),
-                        orbit.getFrame()),
-                mass));
+                        orbit.getFrame())).withMass(mass));
         return numericalPropagator;
     }
 

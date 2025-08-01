@@ -26,7 +26,7 @@ NULL_PARENT_FOR_FRAME=padre del sistema di riferimento {0} nullo
 FRAME_ALREADY_ATTACHED=il sistema di riferimento {0} è già allegato al sistema di riferimento {1}
 
 # frame {0} is not attached to the main frames tree
-FRAME_NOT_ATTACHED=il sistema di riferimento {0} non è ancora allegato all''albero dei sistemi di riferimento.
+FRAME_NOT_ATTACHED=il sistema di riferimento {0} non è ancora allegato all''albero dei sistemi di riferimento
 
 # frame {0} is an ancestor of both frames {1} and {2}
 FRAME_ANCESTOR_OF_BOTH_FRAMES=il sistema di riferimento {0} è un antenato di entrambi i sistemi di riferimento {1} e {2}
@@ -413,7 +413,7 @@ DSST_VMNS_COEFFICIENT_ERROR_MS=impossibile calcolare i coefficienti Vmns con m >
 DSST_SPR_SHADOW_INCONSISTENT=calcolo dell''ombra incoerente: ingresso = {0} mentre uscita = {1}
 
 # The current orbit has an eccentricity ({0} > 0.5). DSST needs an unimplemented time dependent numerical method to compute the averaged rates
-DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD=l''orbita attuale ha un''eccentricità {0} > 0.5; il DSST ha bisogno di un metodo di calcolo della media dipendente dal tempo che non è implementato.
+DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD=L''orbita attuale ha un''eccentricità {0} > 0.5. Il DSST ha bisogno di un metodo di calcolo della media dipendente dal tempo che non è implementato
 
 # unsupported sp3 file version "{0}"
 SP3_UNSUPPORTED_VERSION=versione del file sp3 "{0}" non supportata
@@ -488,10 +488,10 @@ UNABLE_TO_GENERATE_NEW_DATA_AFTER=impossibile generare dati dopo il {0}, dati ri
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY=impossibile calcolare l''anomalia eccentrica iperbolica a partire dall''anomalia media dopo {0} iterazioni
 
 # unable to compute eccentric longitude argument from the mean one after {0} iterations
-UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT=unable to compute eccentric longitude argument from the mean one after {0} iterations
+UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT=
 
 # unable to compute eccentric latitude argument from the mean one after {0} iterations
-UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT=unable to compute eccentric latitude argument from the mean one after {0} iterations
+UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT=
 
 # unable to compute mean orbit from osculating orbit after {0} iterations
 UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS=impossibile calcolare l''orbita media a partire dall''orbita osculatrice dopo {0} iterazioni
@@ -575,10 +575,10 @@ CCSDS_MISSING_SENSOR_INDEX=
 INCONSISTENT_NUMBER_OF_ELEMENTS=
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
-NOT_ENOUGH_PROPAGATORS=la creazione di un propagatore combinato richiede almeno un propagatore, ma non ne è stato fornito alcuno
+NOT_ENOUGH_PROPAGATORS=La creazione di un propagatore combinato richiede almeno un propagatore, ma non ne è stato fornito alcuno.
 
 # Creating an aggregate attitude provider requires at least one constituent attitude provider, but none were provided.
-NOT_ENOUGH_ATTITUDE_PROVIDERS=non è stato fornito nessun provider d'assetto fondamentale per creare  l'aggregazione
+NOT_ENOUGH_ATTITUDE_PROVIDERS=Con è stato fornito nessun provider d''assetto fondamentale per creare l''aggregazione.
 
 # argument {0} cannot be null
 NULL_ARGUMENT=l''argomento {0} non può essere nullo
@@ -733,7 +733,7 @@ INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS=impossibile combinare l
 NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS=le osservazioni non sono in ordine cronologico: {0} è {2,number,0.0##############E0} s dopo {1}
 
 # Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
-EXCEPTIONAL_DATA_CONTEXT=rilevato utilizzo di ExceptionalDataContext. Si utilizza solitamente per rilevare errori di programmazione
+EXCEPTIONAL_DATA_CONTEXT=Rilevato utilizzo di ExceptionalDataContext. Si utilizza solitamente per rilevare errori di programmazione.
 
 # Observations must have different dates: {0}, {1} ({3,number,0.0##############E0} s from first observation), and {2} ({4,number,0.0##############E0} s from first observation, {5,number,0.0##############E0} s from second observation)
 NON_DIFFERENT_DATES_FOR_OBSERVATIONS=Le osservazioni devono avere date differenti: {0}, {1} ({3,number,0.0##############E0} s dalla prima osservazione), e {2} ({4,number,0.0##############E0} s dalla prima osservazione, {5,number,0.0##############E0} s dalla seconda osservazione)
@@ -944,3 +944,6 @@ COVARIANCE_MUST_BE_SQUARE=
 
 # state vector (dimension {0}) and covariance (dimension {1}) are inconsistent
 INCONSISTENT_STATE_DIMENSIONS=
+
+# data at date {0} has already been automatically expunged
+EXPUNGED_SPAN=

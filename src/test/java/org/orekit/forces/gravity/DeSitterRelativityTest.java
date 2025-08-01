@@ -87,7 +87,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
 
         // Eq. 10.12
         return new FieldVector3D<>(r3.multiply(c2).reciprocal().multiply(-3.0 * gm),
-                        vEarth.crossProduct(pEarth).crossProduct(state.getPVCoordinates().getVelocity()));
+                        vEarth.crossProduct(pEarth).crossProduct(state.getVelocity()));
     }
 
     @Override
@@ -114,7 +114,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
 
         // Eq. 10.12
         return new FieldVector3D<>(r3.multiply(c2).reciprocal().multiply(-3.0 * gm),
-                        vEarth.crossProduct(pEarth).crossProduct(state.getPVCoordinates().getVelocity()));
+                        vEarth.crossProduct(pEarth).crossProduct(state.getVelocity()));
     }
 
     /**

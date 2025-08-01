@@ -58,7 +58,7 @@ class TimeStampedDoubleHermiteInterpolatorTest {
         final List<TimeStampedDouble> sample      = new ArrayList<>();
         final List<AbsoluteDate>      dates       = new ArrayList<>();
         for (int i = 0; i < sampleSize + 1; i++) {
-            sample.add(new TimeStampedDouble(i * i, initialDate.shiftedBy(i * 60)));
+            sample.add(new TimeStampedDouble(initialDate.shiftedBy(i * 60), i * i));
             dates.add(initialDate.shiftedBy(i * 60));
         }
 

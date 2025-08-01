@@ -52,7 +52,7 @@ public interface FieldTimeStampedCache<T extends FieldTimeStamped<KK>, KK extend
      * @return list of cached entries surrounding the specified date. The size of the list is guaranteed to be
      * {@link #getMaxNeighborsSize()}.
      */
-    default Stream<T> getNeighbors(FieldAbsoluteDate<KK> central) {
+    default Stream<T> getNeighbors(final FieldAbsoluteDate<KK> central) {
         return getNeighbors(central, getMaxNeighborsSize());
     }
 

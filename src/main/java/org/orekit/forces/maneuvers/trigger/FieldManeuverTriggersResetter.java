@@ -35,7 +35,7 @@ public interface FieldManeuverTriggersResetter<T extends CalculusFieldElement<T>
      * @param initialState initial spacecraft state (at the start of propagation).
      * @param target date of propagation. Not equal to {@code initialState.getDate()}.
      */
-    default void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target) {
+    default void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target) {
         // nothing by default
     }
 

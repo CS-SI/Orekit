@@ -37,7 +37,6 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
@@ -588,7 +587,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         // Step Handler
         calc.setStepHandler(FastMath.floor(period), new SolarStepHandler());
         AbsoluteDate finalDate = date.shiftedBy(10 * period);
-        calc.setInitialState(new SpacecraftState(orbit, 1500.0));
+        calc.setInitialState(new SpacecraftState(orbit).withMass(1500.0));
         calc.propagate(finalDate);
         Assertions.assertTrue(calc.getCalls() < 7100);
     }
@@ -772,7 +771,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                           FastMath.toRadians(0.0), PositionAngleType.MEAN,
                                           FramesFactory.getMOD(IERSConventions.IERS_2010),
                                           initialDate, gravityField.getMu());
-        final SpacecraftState initialState = new SpacecraftState(initialOrbit, 30.0);
+        final SpacecraftState initialState = new SpacecraftState(initialOrbit).withMass(30.0);
 
         final CelestialBody      sun            = CelestialBodyFactory.getSun();
         final CelestialBody      moon           = CelestialBodyFactory.getMoon();
@@ -845,21 +844,6 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             Assertions.assertEquals(expectedMax, currentMax, 1.0e-3 * expectedMax);
         }
 
-    }
-
-    @Test
-    void testDependsOnlyOnPosition() {
-        // GIVEN
-        final IsotropicRadiationSingleCoefficient mockedSpacecraft = Mockito.mock(IsotropicRadiationSingleCoefficient.class);
-        final SolarRadiationPressure radiationPressure = new SolarRadiationPressure(null, null, mockedSpacecraft);
-        // WHEN
-        final boolean actualValue = radiationPressure.dependsOnPositionOnly();
-        // THEN
-        Assertions.assertEquals(mockedSpacecraft, radiationPressure.getRadiationSensitiveSpacecraft());
-        Assertions.assertTrue(actualValue);
-        final BoxAndSolarArraySpacecraft mockedBoxSpacecraft = Mockito.mock(BoxAndSolarArraySpacecraft.class);
-        final SolarRadiationPressure boxRadiationPressure = new SolarRadiationPressure(null, null, mockedBoxSpacecraft);
-        Assertions.assertFalse(boxRadiationPressure.dependsOnPositionOnly());
     }
 
     /** Testing if eclipses due to Moon are considered.

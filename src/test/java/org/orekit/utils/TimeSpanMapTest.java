@@ -915,6 +915,130 @@ public class TimeSpanMapTest {
     }
 
     @Test
+    public void testExpungeNumberEarliestForward() {
+        doTestExpunge(5, Double.POSITIVE_INFINITY, ExpungePolicy.EXPUNGE_EARLIEST, true,
+                      5, 50, 90, 25.0);
+    }
+
+    @Test
+    public void testExpungeRangeEarliestForward() {
+        doTestExpunge(Integer.MAX_VALUE, 55.0, ExpungePolicy.EXPUNGE_EARLIEST, true,
+                      7, 30, 90, 25.0);
+    }
+
+    @Test
+    public void testExpungeNumberEarliestBackward() {
+        doTestExpunge(5, Double.POSITIVE_INFINITY, ExpungePolicy.EXPUNGE_EARLIEST, false,
+                      5, 60, null, 25.0);
+    }
+
+    @Test
+    public void testExpungeRangeEarliestBackward() {
+        doTestExpunge(Integer.MAX_VALUE, 55.0, ExpungePolicy.EXPUNGE_EARLIEST, false,
+                      7, 40, null, 25.0);
+    }
+
+    @Test
+    public void testExpungeNumberLatestForward() {
+        doTestExpunge(5, Double.POSITIVE_INFINITY, ExpungePolicy.EXPUNGE_LATEST, true,
+                      5, null, 30, 75.0);
+    }
+
+    @Test
+    public void testExpungeRangeLatestForward() {
+        doTestExpunge(Integer.MAX_VALUE, 55.0, ExpungePolicy.EXPUNGE_LATEST, true,
+                      7, null, 50, 75.0);
+    }
+
+    @Test
+    public void testExpungeNumberLatestBackward() {
+        doTestExpunge(5, Double.POSITIVE_INFINITY, ExpungePolicy.EXPUNGE_LATEST, false,
+                      5, 0, 40, 75.0);
+    }
+
+    @Test
+    public void testExpungeRangeLatestBackward() {
+        doTestExpunge(Integer.MAX_VALUE, 55.0, ExpungePolicy.EXPUNGE_LATEST, false,
+                      7, 0, 60, 75.0);
+    }
+
+    @Test
+    public void testExpungeNumberFarthestForward() {
+        doTestExpunge(5, Double.POSITIVE_INFINITY, ExpungePolicy.EXPUNGE_FARTHEST, true,
+                      5, 50, 90, 25.0);
+    }
+
+    @Test
+    public void testExpungeRangeFarthestForward() {
+        doTestExpunge(Integer.MAX_VALUE, 55.0, ExpungePolicy.EXPUNGE_FARTHEST, true,
+                      7, 30, 90, 25.0);
+    }
+
+    @Test
+    public void testExpungeNumberFarthestBackward() {
+        doTestExpunge(5, Double.POSITIVE_INFINITY, ExpungePolicy.EXPUNGE_FARTHEST, false,
+                      5, 0, 40, 75.0);
+    }
+
+    @Test
+    public void testExpungeRangeFarthestBackward() {
+        doTestExpunge(Integer.MAX_VALUE, 55.0, ExpungePolicy.EXPUNGE_FARTHEST, false,
+                      7, 0, 60, 75.0);
+    }
+
+    private void doTestExpunge(final int maxNbSpans, final double maxRange, final ExpungePolicy expungePolicy,
+                               final boolean fillUpForward, final int expectedNbSpans,
+                               final Integer expectedFirst, final Integer expectedLast,
+                               final double invalidOffset) {
+        final TimeSpanMap<Integer> map = new TimeSpanMap<>(null);
+        map.configureExpunge(maxNbSpans, maxRange, expungePolicy);
+        if (fillUpForward) {
+            for (int i = 0; i < 100; i += 10) {
+                map.addValidAfter(i, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i), false);
+            }
+        } else {
+            for (int i = 90; i >= 0; i -= 10) {
+                map.addValidBefore(i,  AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i + 10), false);
+            }
+        }
+        Assertions.assertEquals(expectedNbSpans, map.getSpansNumber());
+        Assertions.assertEquals(expectedFirst,   map.getFirstSpan().getData());
+        Assertions.assertEquals(expectedLast,    map.getLastSpan().getData());
+        try {
+            map.getSpan(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(invalidOffset));
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.EXPUNGED_SPAN, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testLateExpungeConfiguration() {
+
+        // initial setup
+        final TimeSpanMap<Integer> map = new TimeSpanMap<>(null);
+        for (int i = 0; i < 100; i += 10) {
+            map.addValidAfter(i, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i), false);
+        }
+        Assertions.assertEquals(  11, map.getSpansNumber());
+        Assertions.assertNull(map.getFirstSpan().getData());
+        Assertions.assertEquals(  90, map.getLastSpan().getData());
+
+        // no changes just after configuration
+        map.configureExpunge(5, Double.POSITIVE_INFINITY, ExpungePolicy.EXPUNGE_EARLIEST);
+        Assertions.assertEquals(  11, map.getSpansNumber());
+        Assertions.assertNull(map.getFirstSpan().getData());
+        Assertions.assertEquals(  90, map.getLastSpan().getData());
+
+        // changes applied after addition
+        map.addValidAfter(100, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(100), false);
+        Assertions.assertEquals(  5, map.getSpansNumber());
+        Assertions.assertEquals( 60, map.getFirstSpan().getData());
+        Assertions.assertEquals(100, map.getLastSpan().getData());
+
+    }
+
+    @Test
     public void testMoveTransitionFutureCollision() {
         final TimeSpanMap<Integer> map = new TimeSpanMap<>(null);
         for (int i = 0; i < 100; i +=10) {

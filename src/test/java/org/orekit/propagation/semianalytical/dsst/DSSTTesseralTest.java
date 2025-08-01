@@ -82,7 +82,7 @@ public class DSSTTesseralTest {
                                                  initDate,
                                                  provider.getMu());
 
-        final SpacecraftState state = new SpacecraftState(orbit, 1000.0);
+        final SpacecraftState state = new SpacecraftState(orbit).withMass(1000.0);
 
         final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
 
@@ -133,7 +133,7 @@ public class DSSTTesseralTest {
                                                       nshp, 8, 8, 4, 12, 8, 8, 4);
 
         // Initial state
-        final SpacecraftState meanState = new SpacecraftState(orbit, 45.0);
+        final SpacecraftState meanState = new SpacecraftState(orbit).withMass(45.0);
 
         //Create the auxiliary object
         final AuxiliaryElements aux = new AuxiliaryElements(orbit, 1);
@@ -189,7 +189,7 @@ public class DSSTTesseralTest {
                                                  initDate,
                                                  provider.getMu());
 
-        final SpacecraftState state = new SpacecraftState(orbit, 1000.0);
+        final SpacecraftState state = new SpacecraftState(orbit).withMass(1000.0);
 
         final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
 

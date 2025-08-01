@@ -112,7 +112,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
     private final double cachedLDot;
 
     /** Partial Cartesian coordinates (position and velocity are valid, acceleration may be missing). */
-    private transient PVCoordinates partialPV;
+    private PVCoordinates partialPV;
 
     /** Creates a new instance.
      * @param a  semi-major axis (m)
@@ -757,26 +757,6 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
             }
 
         }
-
-    }
-
-    /** Compute non-Keplerian part of the acceleration from first time derivatives.
-     * @return non-Keplerian part of the acceleration
-     */
-    private Vector3D nonKeplerianAcceleration() {
-
-        final double[][] dCdP = new double[6][6];
-        getJacobianWrtParameters(PositionAngleType.MEAN, dCdP);
-
-        final double nonKeplerianMeanMotion = getLMDot() - getKeplerianMeanMotion();
-        final double nonKeplerianAx = dCdP[3][0] * aDot  + dCdP[3][1] * exDot + dCdP[3][2] * eyDot +
-                                      dCdP[3][3] * hxDot + dCdP[3][4] * hyDot + dCdP[3][5] * nonKeplerianMeanMotion;
-        final double nonKeplerianAy = dCdP[4][0] * aDot  + dCdP[4][1] * exDot + dCdP[4][2] * eyDot +
-                                      dCdP[4][3] * hxDot + dCdP[4][4] * hyDot + dCdP[4][5] * nonKeplerianMeanMotion;
-        final double nonKeplerianAz = dCdP[5][0] * aDot  + dCdP[5][1] * exDot + dCdP[5][2] * eyDot +
-                                      dCdP[5][3] * hxDot + dCdP[5][4] * hyDot + dCdP[5][5] * nonKeplerianMeanMotion;
-
-        return new Vector3D(nonKeplerianAx, nonKeplerianAy, nonKeplerianAz);
 
     }
 

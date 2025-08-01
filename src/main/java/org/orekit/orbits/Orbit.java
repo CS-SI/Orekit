@@ -21,6 +21,7 @@ import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.QRDecomposition;
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -157,6 +158,28 @@ public abstract class Orbit
             this.pvCoordinates = pvCoordinates;
         }
         this.frame = frame;
+    }
+
+    /** Compute non-Keplerian part of the acceleration from first time derivatives.
+     * @return non-Keplerian part of the acceleration
+     * @since 13.1
+     */
+    protected Vector3D nonKeplerianAcceleration() {
+
+        final double[][] dPdC = new double[6][6];
+        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
+        getJacobianWrtCartesian(positionAngleType, dPdC);
+        final RealMatrix subMatrix = MatrixUtils.createRealMatrix(dPdC);
+
+        final DecompositionSolver solver = getDecompositionSolver(subMatrix);
+
+        final double[] derivatives = new double[6];
+        getType().mapOrbitToArray(this, positionAngleType, new double[6], derivatives);
+        derivatives[5] -= getKeplerianMeanMotion();
+
+        final RealVector solution = solver.solve(MatrixUtils.createRealVector(derivatives));
+        return new Vector3D(solution.getEntry(3), solution.getEntry(4), solution.getEntry(5));
+
     }
 
     /** Check if Cartesian coordinates include non-Keplerian acceleration.
@@ -494,6 +517,15 @@ public abstract class Orbit
         return position;
     }
 
+    /** Get the velocity in definition frame.
+     * @return velocity in the definition frame
+     * @see #getPVCoordinates()
+     * @since 13.1
+     */
+    public Vector3D getVelocity() {
+        return getPVCoordinates().getVelocity();
+    }
+
     /** Get the {@link TimeStampedPVCoordinates} in definition frame.
      * @return pvCoordinates in the definition frame
      * @see #getPVCoordinates(Frame)
@@ -665,9 +697,19 @@ public abstract class Orbit
 
         // invert the direct Jacobian
         final RealMatrix matrix = MatrixUtils.createRealMatrix(directJacobian);
-        final DecompositionSolver solver = new QRDecomposition(matrix).getSolver();
+        final DecompositionSolver solver = getDecompositionSolver(matrix);
         return solver.getInverse().getData();
 
+    }
+
+    /**
+     * Method to build a matrix decomposition solver.
+     * @param realMatrix matrix
+     * @return solver
+     * @since 13.1
+     */
+    protected DecompositionSolver getDecompositionSolver(final RealMatrix realMatrix) {
+        return new QRDecomposition(realMatrix).getSolver();
     }
 
     /** Compute the Jacobian of the orbital parameters with mean angle with respect to the Cartesian parameters.

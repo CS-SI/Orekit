@@ -42,7 +42,8 @@ import org.orekit.utils.ElevationMask;
  * @author Hank Grabowski
  * @param <T> type of the field elements
  */
-public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<FieldElevationDetector<T>, T> {
+public class FieldElevationDetector<T extends CalculusFieldElement<T>>
+        extends FieldAbstractTopocentricDetector<FieldElevationDetector<T>, T> {
 
     /** Elevation mask used for calculations, if defined. */
     private final ElevationMask elevationMask;
@@ -52,9 +53,6 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
 
     /** Atmospheric Model used for calculations, if defined. */
     private final AtmosphericRefractionModel refractionModel;
-
-    /** Topocentric frame in which elevation should be evaluated. */
-    private final TopocentricFrame topo;
 
     /**
      * Creates an instance of Elevation detector based on passed in topocentric frame
@@ -107,11 +105,10 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
                                      final double minElevation, final ElevationMask mask,
                                      final AtmosphericRefractionModel refractionModel,
                                      final TopocentricFrame topo) {
-        super(detectionSettings, handler);
+        super(detectionSettings, handler, topo);
         this.minElevation    = minElevation;
         this.elevationMask   = mask;
         this.refractionModel = refractionModel;
-        this.topo            = topo;
     }
 
     /** {@inheritDoc} */
@@ -119,7 +116,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
     protected FieldElevationDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                                final FieldEventHandler<T> newHandler) {
         return new FieldElevationDetector<>(detectionSettings, newHandler,
-                                            minElevation, elevationMask, refractionModel, topo);
+                                            minElevation, elevationMask, refractionModel, getTopocentricFrame());
     }
 
     /**
@@ -151,14 +148,6 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
         return this.refractionModel;
     }
 
-    /**
-     * Returns the currently configured topocentric frame definitions.
-     * @return topocentric frame definition
-     */
-    public TopocentricFrame getTopocentricFrame() {
-        return this.topo;
-    }
-
     /** Compute the value of the switching function.
      * This function measures the difference between the current elevation
      * (and azimuth if necessary) and the reference mask or minimum value.
@@ -168,7 +157,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
     @Override
     public T g(final FieldSpacecraftState<T> s) {
 
-        final FieldStaticTransform<T> t = s.getFrame().getStaticTransformTo(topo, s.getDate());
+        final FieldStaticTransform<T> t = s.getFrame().getStaticTransformTo(getTopocentricFrame(), s.getDate());
         final FieldVector3D<T> extPointTopo = t.transformPosition(s.getPosition());
         final T trueElevation = extPointTopo.getDelta();
 
@@ -200,7 +189,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
      */
     public FieldElevationDetector<T> withConstantElevation(final double newMinElevation) {
         return new FieldElevationDetector<>(getDetectionSettings(), getHandler(),
-                                            newMinElevation, null, refractionModel, topo);
+                                            newMinElevation, null, refractionModel, getTopocentricFrame());
     }
 
     /**
@@ -212,7 +201,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
      */
     public FieldElevationDetector<T> withElevationMask(final ElevationMask newElevationMask) {
         return new FieldElevationDetector<>(getDetectionSettings(), getHandler(),
-                                            Double.NaN, newElevationMask, refractionModel, topo);
+                                            Double.NaN, newElevationMask, refractionModel, getTopocentricFrame());
     }
 
     /**
@@ -229,7 +218,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
      */
     public FieldElevationDetector<T> withRefraction(final AtmosphericRefractionModel newRefractionModel) {
         return new FieldElevationDetector<>(getDetectionSettings(), getHandler(),
-                                            minElevation, elevationMask, newRefractionModel, topo);
+                                            minElevation, elevationMask, newRefractionModel, getTopocentricFrame());
     }
 
 }

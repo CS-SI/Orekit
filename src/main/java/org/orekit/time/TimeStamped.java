@@ -57,7 +57,7 @@ public interface TimeStamped {
      * @see AbsoluteDate#durationFrom(AbsoluteDate)
      * @since 12.0
      */
-    default double durationFrom(TimeStamped other) {
+    default double durationFrom(final TimeStamped other) {
         return getDate().durationFrom(other.getDate());
     }
 

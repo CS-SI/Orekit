@@ -322,7 +322,7 @@ public class LofOffsetTest {
         Vector3D zLof = o.getPosition().normalize().negate();
         Vector3D yLof = o.getPVCoordinates().getMomentum().normalize().negate();
         Vector3D xLof = Vector3D.crossProduct(yLof, zLof);
-        Assertions.assertTrue(Vector3D.dotProduct(xLof, o.getPVCoordinates().getVelocity()) > 0);
+        Assertions.assertTrue(Vector3D.dotProduct(xLof, o.getVelocity()) > 0);
         Vector3D v = a.getRotation().applyInverseTo(satVector);
         Assertions.assertEquals(expectedX, Vector3D.dotProduct(v, xLof), threshold);
         Assertions.assertEquals(expectedY, Vector3D.dotProduct(v, yLof), threshold);

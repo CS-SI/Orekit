@@ -33,7 +33,7 @@ public class CasterRecordTest {
         Assertions.assertEquals(2101,                              cas.getPort());
         Assertions.assertEquals("PRODUCTS",                        cas.getSourceIdentifier());
         Assertions.assertEquals("BKG",                             cas.getOperator());
-        Assertions.assertEquals(false,                             cas.canReceiveNMEA());
+        Assertions.assertFalse(cas.canReceiveNMEA());
         Assertions.assertEquals("DEU",                             cas.getCountry());
         Assertions.assertEquals(50.12,                             FastMath.toDegrees(cas.getLatitude()),  1.0e-15);
         Assertions.assertEquals( 8.69,                             FastMath.toDegrees(cas.getLongitude()), 1.0e-15);
@@ -50,7 +50,7 @@ public class CasterRecordTest {
         Assertions.assertEquals(2101,                              cas.getPort());
         Assertions.assertEquals("NtripInfoCaster",                 cas.getSourceIdentifier());
         Assertions.assertEquals("BKG",                             cas.getOperator());
-        Assertions.assertEquals(false,                             cas.canReceiveNMEA());
+        Assertions.assertFalse(cas.canReceiveNMEA());
         Assertions.assertEquals("DEU",                             cas.getCountry());
         Assertions.assertEquals(50.12,                             FastMath.toDegrees(cas.getLatitude()),  1.0e-15);
         Assertions.assertEquals( 8.69,                             FastMath.toDegrees(cas.getLongitude()), 1.0e-15);

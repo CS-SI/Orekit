@@ -108,7 +108,7 @@ public class FundamentalNutationArgumentsTest {
             m.invoke(null, "inexistent");
             Assertions.fail("an exception should have been thrown");
         } catch (InvocationTargetException ite) {
-            Assertions.assertTrue(ite.getCause() instanceof IllegalArgumentException);
+            Assertions.assertInstanceOf(IllegalArgumentException.class, ite.getCause());
         }
     }
 

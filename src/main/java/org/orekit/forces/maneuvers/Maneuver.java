@@ -169,7 +169,17 @@ public class Maneuver implements ForceModel {
 
             // Compute flow rate using the propulsion model
             // Specific drivers for the propulsion model are extracted from the array given by the ForceModel interface
-            adder.addMassDerivative(propulsionModel.getMassDerivatives(s, getPropulsionModelParameters(parameters)));
+            adder.addMassDerivative(getMassDerivative(s, getPropulsionModelParameters(parameters)));
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double getMassDerivative(final SpacecraftState state, final double[] parameters) {
+        if (maneuverTriggers.isFiring(state.getDate(), getManeuverTriggersParameters(parameters))) {
+            return propulsionModel.getMassDerivatives(state, getPropulsionModelParameters(parameters));
+        } else {
+            return 0.;
         }
     }
 
@@ -193,7 +203,18 @@ public class Maneuver implements ForceModel {
 
             // Compute flow rate using the propulsion model
             // Specific drivers for the propulsion model are extracted from the array given by the ForceModel interface
-            adder.addMassDerivative(propulsionModel.getMassDerivatives(s, getPropulsionModelParameters(parameters)));
+            adder.addMassDerivative(getMassDerivative(s, parameters));
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> T getMassDerivative(final FieldSpacecraftState<T> state,
+                                                                   final T[] parameters) {
+        if (maneuverTriggers.isFiring(state.getDate(), getManeuverTriggersParameters(parameters))) {
+            return propulsionModel.getMassDerivatives(state, getPropulsionModelParameters(parameters));
+        } else {
+            return state.getMass().getField().getZero();
         }
     }
 

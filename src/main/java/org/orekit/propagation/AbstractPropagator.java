@@ -142,6 +142,15 @@ public abstract class AbstractPropagator implements Propagator {
         return Collections.unmodifiableList(additionalDataProviders);
     }
 
+    /**
+     * Remove an additional data provider.
+     * @param name data name
+     * @since 13.1
+     */
+    public void removeAdditionalDataProvider(final String name) {
+        additionalDataProviders.removeIf(provider -> provider.getName().equals(name));
+    }
+
     /** {@inheritDoc} */
     @Override
     public MatricesHarvester setupMatricesComputation(final String stmName, final RealMatrix initialStm,
@@ -151,6 +160,14 @@ public abstract class AbstractPropagator implements Propagator {
         }
         harvester = createHarvester(stmName, initialStm, initialJacobianColumns);
         return harvester;
+    }
+
+    /**
+     * Erases the internal matrices harvester.
+     * @since 13.1
+     */
+    public void clearMatricesComputation() {
+        harvester = null;
     }
 
     /** Create the harvester suitable for propagator.

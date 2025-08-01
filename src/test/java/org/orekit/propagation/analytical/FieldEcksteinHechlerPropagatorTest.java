@@ -160,8 +160,8 @@ public class FieldEcksteinHechlerPropagatorTest {
         // fit is used to check initialization
 
         Assertions.assertEquals(0.137,
-                            FieldVector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
-                                              finalOrbit.getPVCoordinates().getVelocity()).getReal(),
+                            FieldVector3D.distance(initialOrbit.getVelocity(),
+                                              finalOrbit.getVelocity()).getReal(),
                             1.0e-3);
         Assertions.assertEquals(125.2, finalOrbit.getA().getReal() - initialOrbit.getA().getReal(), 0.1);
 
@@ -209,8 +209,8 @@ public class FieldEcksteinHechlerPropagatorTest {
         // This is shown in the testInitializationCorrectness() where a numerical
         // fit is used to check initialization
         Assertions.assertEquals(0.137,
-                            FieldVector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
-                                              finalOrbit.getPVCoordinates().getVelocity()).getReal(),
+                            FieldVector3D.distance(initialOrbit.getVelocity(),
+                                              finalOrbit.getVelocity()).getReal(),
                             1.0e-3);
         Assertions.assertEquals(126.8, finalOrbit.getA().getReal() - initialOrbit.getA().getReal(), 0.1);
 
@@ -702,7 +702,7 @@ public class FieldEcksteinHechlerPropagatorTest {
                                          propagated.getDate(),
                                          propagated.getMu());
         FieldVector3D<T> keplerianP    = keplerian.getPosition();
-        FieldVector3D<T> keplerianV    = keplerian.getPVCoordinates().getVelocity();
+        FieldVector3D<T> keplerianV    = keplerian.getVelocity();
         FieldVector3D<T> keplerianA    = keplerian.getPVCoordinates().getAcceleration();
 
         // perturbed orbit position should be similar to Keplerian orbit position
@@ -741,7 +741,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldEcksteinHechlerPropagator<T> propagator =
             new FieldEcksteinHechlerPropagator<>(orbit, provider);
         FieldNodeDetector<T> detector = new FieldNodeDetector<>(orbit, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        Assertions.assertTrue(FramesFactory.getITRF(IERSConventions.IERS_2010, true) == detector.getFrame());
+        Assertions.assertSame(FramesFactory.getITRF(IERSConventions.IERS_2010, true), detector.getFrame());
         propagator.addEventDetector(detector);
 
         FieldAbsoluteDate<T> farTarget = date.shiftedBy(10000.0);
@@ -877,7 +877,7 @@ public class FieldEcksteinHechlerPropagatorTest {
             new TopocentricFrame(earthShape, new GeodeticPoint(0.389, -2.962, 0), null);
         FieldElevationDetector<T> detector = new FieldElevationDetector<>(zero.add(60), zero.add(1.0e-9), topo).withConstantElevation(0.09);
         Assertions.assertEquals(0.09, detector.getMinElevation(), 1.0e-12);
-        Assertions.assertTrue(topo == detector.getTopocentricFrame());
+        Assertions.assertSame(topo, detector.getTopocentricFrame());
         propagator.addEventDetector(detector);
 
         FieldAbsoluteDate<T> farTarget = date.shiftedBy(10000.0);
@@ -933,8 +933,8 @@ public class FieldEcksteinHechlerPropagatorTest {
                                                    finalState.getPosition()).getReal(),
                             11.4);
         Assertions.assertEquals(0.0,
-                            FieldVector3D.distance(initialState.getPVCoordinates().getVelocity(),
-                                                   finalState.getPVCoordinates().getVelocity()).getReal(),
+                            FieldVector3D.distance(initialState.getVelocity(),
+                                                   finalState.getVelocity()).getReal(),
                             4.2e-2);
     }
 
@@ -976,8 +976,8 @@ public class FieldEcksteinHechlerPropagatorTest {
                                                    finalState.getPosition()).getReal(),
                             11.4);
         Assertions.assertEquals(0.0,
-                            FieldVector3D.distance(initialState.getPVCoordinates().getVelocity(),
-                                                   finalState.getPVCoordinates().getVelocity()).getReal(),
+                            FieldVector3D.distance(initialState.getVelocity(),
+                                                   finalState.getVelocity()).getReal(),
                             4.2e-2);
     }
 

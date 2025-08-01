@@ -17,13 +17,20 @@
 package org.orekit.forces.maneuvers.jacobians;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.forces.ForceModel;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.time.AbsoluteDate;
 
-/** Generator for effect of delaying mass depletion when delaying a maneuver.
+import java.util.Arrays;
+import java.util.List;
+
+/** Generator for effect of delaying mass depletion when delaying a maneuver,
+ *  when the mass itself is not included in the transition matrix.
+ * It neglects the influence of mass in other force models e.g. drag.
+ * For more accurate derivatives, one should use the full 7x7 state transition matrix instead.
  * @author Luc Maisonobe
  * @since 11.1
  */
@@ -44,7 +51,10 @@ public class MassDepletionDelay implements AdditionalDerivativesProvider {
     /** Indicator for forward propagation. */
     private boolean forward;
 
-    /** Simple constructor.
+    /** List of non-gravitational forces, used only if mass is not in STM. */
+    private final List<ForceModel> nonGravitationalForces;
+
+    /** Constructor.
      * <p>
      * The generated additional state and derivatives will be named by prepending
      * the {@link #PREFIX} to the name of the date trigger parameter.
@@ -52,11 +62,15 @@ public class MassDepletionDelay implements AdditionalDerivativesProvider {
      * @param triggerName name of the date trigger parameter
      * @param manageStart if true, we compute derivatives with respect to maneuver start
      * @param maneuver maneuver that is delayed
+     * @param nonGravitationalForces list of non-gravitational forces, used only if mass is not in STM.
+     *                               They are assumed to be inversely depending on mass.
      */
-    public MassDepletionDelay(final String triggerName, final boolean manageStart, final Maneuver maneuver) {
+    public MassDepletionDelay(final String triggerName, final boolean manageStart, final Maneuver maneuver,
+                              final ForceModel... nonGravitationalForces) {
         this.depletionName = PREFIX + triggerName;
         this.manageStart   = manageStart;
         this.maneuver      = maneuver;
+        this.nonGravitationalForces = Arrays.asList(nonGravitationalForces);
     }
 
     /** {@inheritDoc} */
@@ -84,7 +98,7 @@ public class MassDepletionDelay implements AdditionalDerivativesProvider {
 
         // retrieve current Jacobian column
         final double[] p = state.getAdditionalState(getName());
-        final double[] pDot = new double[6];
+        final double[] pDot = new double[getDimension()];
 
         if (forward == manageStart) {
 
@@ -92,16 +106,14 @@ public class MassDepletionDelay implements AdditionalDerivativesProvider {
             final double[] parameters   = maneuver.getParameters(state.getDate());
             // for the acceleration method we need all the span values of all the parameters driver
             // as in the acceleration method an exctractParameter method is called
-            final Vector3D acceleration = maneuver.acceleration(state, parameters);
+            Vector3D acceleration = maneuver.acceleration(state, parameters);
+            for (final ForceModel forceModel: nonGravitationalForces) {
+                acceleration = acceleration.add(forceModel.acceleration(state, forceModel.getParameters(state.getDate())));
+            }
 
-            // we have acceleration Γ = F/m and m = m₀ - q (t - tₛ)
-            // where m is current mass, m₀ is initial mass and tₛ is maneuver trigger time
-            // a delay dtₛ on trigger time induces delaying mass depletion
-            // we get: dΓ = -F/m² dm = -F/m² q dtₛ = -Γ q/m dtₛ
-            final double minusQ = maneuver.getPropulsionModel().getMassDerivatives(state, maneuver.getParameters(state.getDate()));
+            // it is assumed the non-gravitational accelerations are inversely proportional to the mass
             final double m      = state.getMass();
-            final double ratio  = minusQ / m;
-
+            final double ratio  = -1. / m;
             pDot[0] = p[3];
             pDot[1] = p[4];
             pDot[2] = p[5];

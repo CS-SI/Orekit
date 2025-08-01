@@ -47,6 +47,9 @@ import org.orekit.time.AbsoluteDate;
  */
 public class StateCovarianceMatrixProvider implements AdditionalDataProvider<RealMatrix> {
 
+    /** Dimension of the state. */
+    private static final int ORBITAL_STATE_DIMENSION = 6;
+
     /** Name of the state for State Transition Matrix. */
     private final String stmName;
 
@@ -129,7 +132,8 @@ public class StateCovarianceMatrixProvider implements AdditionalDataProvider<Rea
     public RealMatrix getAdditionalData(final SpacecraftState state) {
 
         // State transition matrix for the input state
-        final RealMatrix dYdY0 = harvester.getStateTransitionMatrix(state);
+        final int inclusiveSize = ORBITAL_STATE_DIMENSION - 1;
+        final RealMatrix dYdY0 = harvester.getStateTransitionMatrix(state).getSubMatrix(0, inclusiveSize, 0, inclusiveSize);
 
         // Compute the propagated covariance matrix
         RealMatrix propCov = dYdY0.multiply(covMatrixInit.multiplyTransposed(dYdY0));

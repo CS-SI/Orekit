@@ -45,13 +45,13 @@ public class ParameterDriverTest {
         Assertions.assertEquals(p1.getValue(date.shiftedBy(2 * 24 * 3600 + 10)), 6.0, 1e-10);
         int nb = 0;
         for (Span<String> span = p1.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-        	Assertions.assertEquals(span.getData(),"Span" + p1.getName() + Integer.toString(nb++));
+        	Assertions.assertEquals(span.getData(), "Span" + p1.getName() + Integer.toString(nb++));
         }
         
         p1.setName("p1_new");
         nb = 0;
         for (Span<String> span = p1.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-        	Assertions.assertEquals(span.getData(),"Span" + p1.getName() + Integer.toString(nb++));
+        	Assertions.assertEquals(span.getData(), "Span" + p1.getName() + Integer.toString(nb++));
         }
         
         

@@ -516,8 +516,8 @@ public class DSSTBatchLSEstimatorTest {
         ParameterDriversList estimatedParameters = estimator.getPropagatorParametersDrivers(true);
         // Verify that the propagator, the builder and the estimator know mu
         final String driverName = DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT;
-        Assertions.assertTrue(propagator.getAllForceModels().get(0) instanceof DSSTNewtonianAttraction);
-        Assertions.assertTrue(propagatorBuilder.getAllForceModels().get(0) instanceof DSSTNewtonianAttraction);
+        Assertions.assertInstanceOf(DSSTNewtonianAttraction.class, propagator.getAllForceModels().get(0));
+        Assertions.assertInstanceOf(DSSTNewtonianAttraction.class, propagatorBuilder.getAllForceModels().get(0));
         Assertions.assertNotNull(estimatedParameters.findByName(driverName));
         Assertions.assertTrue(propagator.getAllForceModels().get(0).getParametersDrivers().get(0).isSelected());
         Assertions.assertTrue(propagatorBuilder.getAllForceModels().get(0).getParametersDrivers().get(0).isSelected());

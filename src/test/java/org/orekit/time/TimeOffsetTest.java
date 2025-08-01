@@ -846,14 +846,14 @@ public class TimeOffsetTest {
 
     @Test
     public void testCompareFinite() {
-        Assertions.assertTrue(TimeOffset.ZERO.compareTo(new TimeOffset(0L, 0L)) == 0);
-        Assertions.assertTrue(new TimeOffset(1L, 1L).compareTo(new TimeOffset(1L, 1L)) == 0);
+        Assertions.assertEquals(0, TimeOffset.ZERO.compareTo(new TimeOffset(0L, 0L)));
+        Assertions.assertEquals(0, new TimeOffset(1L, 1L).compareTo(new TimeOffset(1L, 1L)));
         Assertions.assertTrue(TimeOffset.MICROSECOND.compareTo(TimeOffset.MILLISECOND) < 0);
         Assertions.assertTrue(TimeOffset.MILLISECOND.compareTo(TimeOffset.MICROSECOND) > 0);
-        Assertions.assertTrue(new TimeOffset(1, 2).compareTo(new TimeOffset(1, 2)) == 0);
+        Assertions.assertEquals(0, new TimeOffset(1, 2).compareTo(new TimeOffset(1, 2)));
         Assertions.assertTrue(new TimeOffset(1, 1).compareTo(new TimeOffset(1, 2))  < 0);
         Assertions.assertTrue(new TimeOffset(1, 2).compareTo(new TimeOffset(1, 1))  > 0);
-        Assertions.assertTrue(new TimeOffset(2, 1).compareTo(new TimeOffset(2, 1)) == 0);
+        Assertions.assertEquals(0, new TimeOffset(2, 1).compareTo(new TimeOffset(2, 1)));
         Assertions.assertTrue(new TimeOffset(1, 1).compareTo(new TimeOffset(2, 1))  < 0);
         Assertions.assertTrue(new TimeOffset(2, 1).compareTo(new TimeOffset(1, 1))  > 0);
     }
@@ -861,25 +861,25 @@ public class TimeOffsetTest {
     @Test
     public void testCompareSpecialCases() {
 
-        Assertions.assertTrue(TimeOffset.NaN.compareTo(TimeOffset.NaN)               == 0);
+        Assertions.assertEquals(0, TimeOffset.NaN.compareTo(TimeOffset.NaN));
         Assertions.assertTrue(TimeOffset.NaN.compareTo(TimeOffset.ATTOSECOND)        >  0);
         Assertions.assertTrue(TimeOffset.NaN.compareTo(TimeOffset.POSITIVE_INFINITY) >  0);
         Assertions.assertTrue(TimeOffset.NaN.compareTo(TimeOffset.NEGATIVE_INFINITY) >  0);
 
         Assertions.assertTrue(TimeOffset.ATTOSECOND.compareTo(TimeOffset.NaN)               <  0);
-        Assertions.assertTrue(TimeOffset.ATTOSECOND.compareTo(TimeOffset.ATTOSECOND)        == 0);
+        Assertions.assertEquals(0, TimeOffset.ATTOSECOND.compareTo(TimeOffset.ATTOSECOND));
         Assertions.assertTrue(TimeOffset.ATTOSECOND.compareTo(TimeOffset.POSITIVE_INFINITY) <  0);
         Assertions.assertTrue(TimeOffset.ATTOSECOND.compareTo(TimeOffset.NEGATIVE_INFINITY) >  0);
 
         Assertions.assertTrue(TimeOffset.POSITIVE_INFINITY.compareTo(TimeOffset.NaN)               <  0);
         Assertions.assertTrue(TimeOffset.POSITIVE_INFINITY.compareTo(TimeOffset.ATTOSECOND)        >  0);
-        Assertions.assertTrue(TimeOffset.POSITIVE_INFINITY.compareTo(TimeOffset.POSITIVE_INFINITY) == 0);
+        Assertions.assertEquals(0, TimeOffset.POSITIVE_INFINITY.compareTo(TimeOffset.POSITIVE_INFINITY));
         Assertions.assertTrue(TimeOffset.POSITIVE_INFINITY.compareTo(TimeOffset.NEGATIVE_INFINITY) >  0);
 
         Assertions.assertTrue(TimeOffset.NEGATIVE_INFINITY.compareTo(TimeOffset.NaN)               <  0);
         Assertions.assertTrue(TimeOffset.NEGATIVE_INFINITY.compareTo(TimeOffset.ATTOSECOND)        <  0);
         Assertions.assertTrue(TimeOffset.NEGATIVE_INFINITY.compareTo(TimeOffset.POSITIVE_INFINITY) <  0);
-        Assertions.assertTrue(TimeOffset.NEGATIVE_INFINITY.compareTo(TimeOffset.NEGATIVE_INFINITY) == 0);
+        Assertions.assertEquals(0, TimeOffset.NEGATIVE_INFINITY.compareTo(TimeOffset.NEGATIVE_INFINITY));
 
     }
 

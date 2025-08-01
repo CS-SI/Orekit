@@ -16,12 +16,6 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.text.ParseException;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -34,6 +28,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
@@ -45,9 +40,16 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.text.ParseException;
 
 public class FieldTLETest {
 
@@ -529,7 +531,7 @@ public class FieldTLETest {
                         FieldTLE<T> tle = new FieldTLE<T>(field, line1, line2);
 
                         int satNum = Integer.parseInt(title[1]);
-                        Assertions.assertTrue(satNum==tle.getSatelliteNumber());
+                        Assertions.assertEquals(satNum, tle.getSatelliteNumber());
                         final T[] parameters;
                         parameters = MathArrays.buildArray(field, 1);
                         parameters[0] = field.getZero().add(tle.getBStar());
@@ -605,7 +607,7 @@ public class FieldTLETest {
                                                   "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
         FieldTLE<T> tleB = new FieldTLE<T>(field, "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
                                                   "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
-        Assertions.assertTrue(tleA.equals(tleB));
+        Assertions.assertEquals(tleA, tleB);
     }
 
     public <T extends CalculusFieldElement<T>> void doTestNonEqualTLE(Field<T> field) {
@@ -613,7 +615,7 @@ public class FieldTLETest {
                                                   "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
         FieldTLE<T> tleB = new FieldTLE<T>(field, "1 05555U 71086J   12026.96078249 -.00000004  00001-9  01234-9 0  9082",
                                                   "2 05555  74.0161 228.9750 0075476 328.9888  30.6709 12.26882470804545");
-        Assertions.assertFalse(tleA.equals(tleB));
+        Assertions.assertNotEquals(tleA, tleB);
     }
 
     public <T extends CalculusFieldElement<T>> void doTestIssue388(Field<T> field) {
@@ -708,7 +710,7 @@ public class FieldTLETest {
                                 "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
         final FieldTLE<T> fieldTle = new FieldTLE<T>(field, tle.getLine1(), tle.getLine2());
         final TLE rebuilt = fieldTle.toTLE();
-        Assertions.assertTrue(rebuilt.equals(tle));
+        Assertions.assertEquals(rebuilt, tle);
         Assertions.assertEquals(tle.toString(), rebuilt.toString());
     }
 
@@ -731,6 +733,28 @@ public class FieldTLETest {
         //Then
         // Assert that TLE class did not round the date to the next day
         Assertions.assertEquals(tleDate, returnedDate);
+    }
+
+    @Test
+    @DisplayName("fix issue 1773 :  with Orekit 13 new date representation, TLE parsing from lines may introduce " +
+      "some attoseconds of error")
+    void testFixIssue1773() {
+        // Given
+        final Field<Binary64> field = Binary64Field.getInstance();
+        final String line1WithDateParsingError = "1 00005U 58002B   25047.63247525. .00000268  00000-0  35695-3 0  9999";
+        final String line2WithDateParsingError = "2 00005  34.2494  12.9875 1841261 109.2290 271.5928 10.85874828390491";
+
+        final DateComponents dateComponents = new DateComponents(2025, 2, 16);
+        final TimeOffset timeOffset = new TimeOffset(45, TimeOffset.MICROSECOND.multiply(861600).getAttoSeconds());
+        final TimeComponents timeComponents = new TimeComponents(15, 10, timeOffset);
+        final FieldAbsoluteDate<Binary64> reconstructedExactDate =
+          new FieldAbsoluteDate<>(field, dateComponents, timeComponents, TimeScalesFactory.getUTC());
+
+        // When
+        final FieldTLE<Binary64> parsedTle = new FieldTLE<>(field, line1WithDateParsingError, line2WithDateParsingError);
+
+        // Then
+        Assertions.assertEquals(reconstructedExactDate, parsedTle.getDate());
     }
 
     @BeforeEach

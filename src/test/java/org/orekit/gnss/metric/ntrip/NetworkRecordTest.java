@@ -31,7 +31,7 @@ public class NetworkRecordTest {
         Assertions.assertEquals("IGS",                                                                  net.getNetworkIdentifier());
         Assertions.assertEquals("IGS",                                                                  net.getOperator());
         Assertions.assertEquals(Authentication.BASIC,                                                   net.getAuthentication());
-        Assertions.assertEquals(false,                                                                  net.areFeesRequired());
+        Assertions.assertFalse(net.areFeesRequired());
         Assertions.assertEquals("https://igs.bkg.bund.de/root_ftp/NTRIP/neteams/neteamlist_igs-ip.htm", net.getNetworkInfoAddress());
         Assertions.assertEquals("https://igs.bkg.bund.de:443/root_ftp/IGS/station/rnxskl/",             net.getStreamInfoAddress());
         Assertions.assertEquals("http://register.rtcm-ntrip.org",                                       net.getRegistrationAddress());
@@ -45,7 +45,7 @@ public class NetworkRecordTest {
         Assertions.assertEquals("MISC",                                                                 net.getNetworkIdentifier());
         Assertions.assertEquals("BKG",                                                                  net.getOperator());
         Assertions.assertEquals(Authentication.BASIC,                                                   net.getAuthentication());
-        Assertions.assertEquals(false,                                                                  net.areFeesRequired());
+        Assertions.assertFalse(net.areFeesRequired());
         Assertions.assertEquals("http://igs.bkg.bund.de/root_ftp/NTRIP/neteams/neteamlist_igs-ip.htm",  net.getNetworkInfoAddress());
         Assertions.assertEquals("https://igs.bkg.bund.de:443/root_ftp/MISC/station/rnxskl/",            net.getStreamInfoAddress());
         Assertions.assertEquals("http://register.rtcm-ntrip.org",                                       net.getRegistrationAddress());

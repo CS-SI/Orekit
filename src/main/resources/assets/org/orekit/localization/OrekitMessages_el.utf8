@@ -167,7 +167,7 @@ NO_TLE_FOR_LAUNCH_YEAR_NUMBER_PIECE=κανένα δεδομένο TLE διαθέ
 NOT_TLE_LINES=οι γραμμές {0} και {1} δεν είναι γραμμές TLE:\n{0}: "{2}"\n{1}: "{3}"
 
 # expected a second TLE line after line {0}:\n{0}: "{1}"
-MISSING_SECOND_TLE_LINE=αναμένεται μια δεύτερη TLE γραμμή μετά απο τη γραμμή  {0}:\n{0}: "{1}"
+MISSING_SECOND_TLE_LINE=αναμένεται μια δεύτερη TLE γραμμή μετά απο τη γραμμή {0}:\n{0}: "{1}"
 
 # TLE lines do not refer to the same object:\n{0}\n{1}
 TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT=οι γραμμές TLE δεν αναφέρονται στο ίδιο αντικείμενο:\n{0}\n{1}
@@ -341,7 +341,7 @@ CCSDS_MISSING_KEYWORD=
 CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION=
 
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
-CCSDS_UNEXPECTED_KEYWORD=μη αναμενόμενη λέξη-κλειδί στη γραμμή {0} του CCSDS αρχείου {1}: \ n {2}
+CCSDS_UNEXPECTED_KEYWORD=μη αναμενόμενη λέξη-κλειδί στη γραμμή {0} του CCSDS αρχείου {1}:\n{2}
 
 # the central body gravitational coefficient cannot be retrieved from the ODM
 CCSDS_UNKNOWN_GM=το κεντρικό σώμα συντελεστή βαρύτητας δεν μπορεί να ανακτηθεί από το ODM
@@ -944,3 +944,6 @@ COVARIANCE_MUST_BE_SQUARE=
 
 # state vector (dimension {0}) and covariance (dimension {1}) are inconsistent
 INCONSISTENT_STATE_DIMENSIONS=
+
+# data at date {0} has already been automatically expunged
+EXPUNGED_SPAN=

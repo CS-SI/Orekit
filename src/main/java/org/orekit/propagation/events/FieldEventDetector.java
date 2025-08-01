@@ -79,7 +79,7 @@ public interface FieldEventDetector <T extends CalculusFieldElement<T>> {
      * @param t target time for the integration
      *
      */
-    default void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t) {
+    default void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
         getHandler().init(s0, t, this);
     }
 
@@ -91,8 +91,18 @@ public interface FieldEventDetector <T extends CalculusFieldElement<T>> {
      * @param target target time for the integration
      * @since 13.0
      */
-    default void reset(FieldSpacecraftState<T> state, FieldAbsoluteDate<T> target) {
+    default void reset(final FieldSpacecraftState<T> state, final FieldAbsoluteDate<T> target) {
         // nothing by default
+    }
+
+    /**
+     * Method returning true if and only if the detection function g does not depend on dependent variables,
+     * just the independent one i.e. time. This information is used for performance in propagation.
+     * @return flag
+     * @since 13.1
+     */
+    default boolean dependsOnTimeOnly() {
+        return false;
     }
 
     /** Compute the value of the switching function.
@@ -135,7 +145,7 @@ public interface FieldEventDetector <T extends CalculusFieldElement<T>> {
      * @param state state at propagation end
      * @since 12.2
      */
-    default void finish(FieldSpacecraftState<T> state) {
+    default void finish(final FieldSpacecraftState<T> state) {
         getHandler().finish(state, this);
     }
 

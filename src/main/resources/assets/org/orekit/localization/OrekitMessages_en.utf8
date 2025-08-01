@@ -944,3 +944,6 @@ COVARIANCE_MUST_BE_SQUARE=covariance matrix is not square
 
 # state vector (dimension {0}) and covariance (dimension {1}) are inconsistent
 INCONSISTENT_STATE_DIMENSIONS=state vector (dimension {0}) and covariance (dimension {1}) are inconsistent
+
+# data at date {0} has already been automatically expunged
+EXPUNGED_SPAN=data at date {0} has already been automatically expunged

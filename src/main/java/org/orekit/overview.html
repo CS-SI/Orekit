@@ -43,7 +43,7 @@
         <ul>
           <li>high accuracy absolute dates</li>
           <li>time scales (TAI, UTC, UT1, GPS, TT, TCG, TDB, TCB, GMST, GST, GLONASS, QZSS, BDT,
-            IRNSS...)</li>
+            NavIC...)</li>
           <li>transparent handling of leap seconds</li>
           <li>support for CCSDS time code standards</li>
         </ul>
@@ -90,7 +90,7 @@
           <li>covariance propagation</li>
           <li>covariance extrapolation using a Keplerian model</li>
           <li>covariance frame transformation (inertial, Earth fixed, and local orbital frames)</li>
-          <li>covariance type transformation (cartesian, keplerian, circular, and equinoctial)</li>
+          <li>covariance type transformation (Cartesian, Keplerian, circular, and equinoctial)</li>
           <li>covariance interpolation based on the blending model</li>
         </ul>
       </li>
@@ -114,7 +114,7 @@
               <li>Brouwer-Lyddane with Warren Phipps' correction for the critical inclination of
                 63.4° and the perturbative acceleration due to atmospheric drag</li>
               <li>SDP4/SGP4 with 2006 corrections</li>
-              <li>GNSS: GPS, QZSS, Galileo, GLONASS, Beidou, IRNSS and SBAS</li>
+              <li>GNSS: GPS, QZSS, Galileo, GLONASS, Beidou, NavIC and SBAS</li>
               <li>Intelsat's 11 elements</li>
             </ul>
           </li>
@@ -127,7 +127,7 @@
               <li>atmospheric drag</li>
               <li>third body attraction (with data for Sun, Moon and all solar systems planets)</li>
               <li>radiation pressure with eclipses (multiple oblate spheroids occulting bodies,
-                multiple coefficients for bow and wing models)</li>
+                multiple coefficients for box and wing models)</li>
               <li>solid tides, with or without solid pole tide</li>
               <li>ocean tides, with or without ocean pole tide</li>
               <li>general relativity (including Lense-Thirring and De Sitter corrections)</li>
@@ -136,8 +136,6 @@
               <li>empirical accelerations to account for the unmodeled forces</li>
               <li>state of the art ODE integrators (adaptive stepsize with error control, continuous
                 output, switching functions, G-stop, step normalization...)</li>
-              <li>serialization mechanism to store complete results on persistent storage for later
-                use</li>
               <li>propagation in non-inertial frames (e.g. for Lagrange point halo orbits)</li>
             </ul>
           </li>
@@ -216,7 +214,7 @@
               <li>ground at night</li>
               <li>impulse maneuvers occurrence</li>
               <li>geomagnetic intensity</li>
-  	          <li>extremum approach for TCA (Time of Closest Approach) computing</li>
+  	      <li>extremum approach for TCA (Time of Closest Approach) computing</li>
               <li>beta angle</li>
               <li>relative distance with another object</li>
             </ul>
@@ -293,11 +291,11 @@
             </ul>
           </li>
           <li>orbit determination can be performed with numerical, DSST, SDP4/SGP4,
-            Eckstein-Hechler, Brouwer-Lyddane, or Keplerian propagators</li>
+            Eckstein-Hechler, Brouwer-Lyddane, Keplerian or GNSS propagators</li>
           <li>ephemeris-based orbit determination to estimate measurement parameters like station
             biases or clock offsets</li>
           <li>multi-satellites orbit determination</li>
-          <li>initial orbit determination methods (Gibbs, Gooding, Lambert, Gauss, and Laplace)</li>
+          <li>initial orbit determination methods (Gibbs, Herrick-Gibbs, Gooding, Lambert, Gauss, and Laplace)</li>
           <li>ground stations displacements due to solid tides</li>
           <li>ground stations displacements due to ocean loading (based on Onsala Space Observatory
             files in BLQ format)</li>
@@ -394,8 +392,8 @@
       </li>
       <li>Earth models
         <ul>
-          <li>atmospheric models (DTM2000, Jacchia-Bowman 2008, NRL MSISE 2000, Harris-Priester and
-            simple exponential models), and Marshall solar Activity Future Estimation, optionally
+          <li>atmospheric models (DTM2000, Jacchia-Bowman 2006, Jacchia-Bowman 2008, NRL MSISE 2000, Harris-Priester and
+            simple exponential models), and Marshall Solar Activity Future Estimation, optionally
             with lift component</li>
           <li>support for CSSI space weather data</li>
           <li>support for SOLFSMY and DTC data for JB2008 atmospheric model</li>

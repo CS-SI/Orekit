@@ -83,7 +83,7 @@ public interface ExtendedPositionProvider extends PVCoordinatesProvider {
      * @param field field for the argument and value
      * @return converted function
      */
-    default <T extends CalculusFieldElement<T>> FieldPVCoordinatesProvider<T> toFieldPVCoordinatesProvider(Field<T> field) {
+    default <T extends CalculusFieldElement<T>> FieldPVCoordinatesProvider<T> toFieldPVCoordinatesProvider(final Field<T> field) {
         return new FieldPVCoordinatesProvider<T>() {
 
             @Override

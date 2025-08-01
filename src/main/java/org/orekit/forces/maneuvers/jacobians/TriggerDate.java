@@ -21,6 +21,7 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.QRDecomposition;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
+import org.orekit.forces.ForceModel;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.forces.maneuvers.trigger.ManeuverTriggersResetter;
 import org.orekit.propagation.AdditionalDataProvider;
@@ -43,10 +44,12 @@ import org.orekit.utils.TimeSpanMap;
  * </p>
  * <p>
  * There are two parts in this Jacobian: the primary part corresponds to the full contribution
- * of the acceleration due to the maneuver as it is delayed by a small amount \(dt_1\), whereas
+ * of the jump in the dynamics due to the maneuver as it is delayed by a small amount \(dt_1\), whereas
  * the secondary part corresponds to change of acceleration after maneuver start as the mass
  * depletion is delayed and therefore the spacecraft mass is different from the mass for nominal
  * start time.
+ * This second part is already contained in the first one when the mass is included in the transition matrix
+ * (7x7 instead of 6x6).
  * </p>
  * <p>
  * The primary part is computed as follows. After trigger time \(t_1\) (according to propagation direction),
@@ -83,13 +86,14 @@ import org.orekit.utils.TimeSpanMap;
  * if propagation starts outside of the maneuver and passes over \(t_1\) during integration.
  * </p>
  * <p>
- * The secondary part is computed as follows. We have acceleration \(\vec{\Gamma} = \frac{\vec{F}}{m}\) and
- * \(m = m_0 - q (t - t_s)\), where \(m\) is current mass, \(m_0\) is initial mass and \(t_s\) is
- * maneuver trigger time. A delay \(dt_s\) on trigger time induces delaying mass depletion.
- * We get:
- * \[d\vec{\Gamma} = \frac{-\vec{F}}{m^2} dm = \frac{-\vec{F}}{m^2} q dt_s = -\vec{\Gamma}\frac{q}{m} dt_s\]
- * From this total differential, we extract the partial derivative of the acceleration
- * \[\frac{\partial\vec{\Gamma}}{\partial t_s} = -\vec{\Gamma}\frac{q}{m}\]
+ * The secondary part, if needed (as it is not required if the mass is already included the state transition matrix
+ * i.e. when the latter is 7x7), is computed as follows. Let m be the mass and m_s its value at switching time t_s.
+ * Let (x,y,z) be the position vector, (vx, vy, vz) the velocity
+ * and (ax, ay, az) the total acceleration, we have \(\dot \frac{\partial x} {\partial \partial m_s} = \frac{\partial vx }{\partial m_s}))
+ * and similar expressions for y and z. Furthermore, \(\dot \frac{\partial vx}{ \partial \partial m_s} = \frac{\partial ax }{\partial m}
+ * . \frac{\partial m }{\partial m_s} \), and symmetric equations for vy and vy. The fact is that \( \frac{\partial m}{ \partial m_s} = 1 \)
+ * assuming the mass rate q only depends on time. On the other hand, \( \frac{\partial m_s}{ \partial t_s }= q(t_s) \)/
+ * By the chain rule of derivation, one gets the contribution due to the mass depletion delay.
  * </p>
  * <p>
  * The contribution of the secondary part to the Jacobian column can therefore be computed by integrating
@@ -114,11 +118,7 @@ import org.orekit.utils.TimeSpanMap;
  * @see MedianDate
  * @see Duration
  */
-public class TriggerDate
-    implements ManeuverTriggersResetter, AdditionalDataProvider<double[]> {
-
-    /** Dimension of the state. */
-    private static final int STATE_DIMENSION = 6;
+public class TriggerDate implements ManeuverTriggersResetter, AdditionalDataProvider<double[]> {
 
     /** Threshold for decomposing state transition matrix at trigger time. */
     private static final double DECOMPOSITION_THRESHOLD = 1.0e-10;
@@ -141,6 +141,9 @@ public class TriggerDate
     /** Event detector threshold. */
     private final double threshold;
 
+    /** State dimension. */
+    private final int stateDimension;
+
     /** Signed contribution of maneuver at trigger time ±(∂y₁/∂y₀)⁻¹ fₘ(t₁, y₁). */
     private TimeSpanMap<double[]> contribution;
 
@@ -150,21 +153,42 @@ public class TriggerDate
     /** Indicator for forward propagation. */
     private boolean forward;
 
-    /** Simple constructor.
+    /** Mass rate at trigger (sign depends on propagation direction). Set to zero until the maneuver has actually happened during a propagation. */
+    private double signedMassRateAtTrigger = 0.;
+
+    /** Constructor without mass as state variable in transition matrix.
      * @param stmName name of State Transition Matrix state
      * @param triggerName name of the parameter corresponding to the trigger date column
      * @param manageStart if true, we compute derivatives with respect to maneuver start
      * @param maneuver maneuver force model
      * @param threshold event detector threshold
+     * @param nonGravitationalForces list of non-gravitational forces, used only if mass is not in STM
      */
     public TriggerDate(final String stmName, final String triggerName, final boolean manageStart,
-                       final Maneuver maneuver, final double threshold) {
+                       final Maneuver maneuver, final double threshold, final ForceModel... nonGravitationalForces) {
+        this(stmName, triggerName, manageStart, maneuver, threshold, false, nonGravitationalForces);
+    }
+
+    /** Constructor.
+     * @param stmName name of State Transition Matrix state
+     * @param triggerName name of the parameter corresponding to the trigger date column
+     * @param manageStart if true, we compute derivatives with respect to maneuver start
+     * @param maneuver maneuver force model
+     * @param threshold event detector threshold
+     * @param isMassInStm flag on mass inclusion as state variable in STM
+     * @param nonGravitationalForces list of non-gravitational forces, used only if mass is not in STM
+     * @since 13.1
+     */
+    public TriggerDate(final String stmName, final String triggerName, final boolean manageStart,
+                       final Maneuver maneuver, final double threshold, final boolean isMassInStm,
+                       final ForceModel... nonGravitationalForces) {
         this.stmName            = stmName;
         this.triggerName        = triggerName;
-        this.massDepletionDelay = new MassDepletionDelay(triggerName, manageStart, maneuver);
+        this.massDepletionDelay = isMassInStm ? null : new MassDepletionDelay(triggerName, manageStart, maneuver, nonGravitationalForces);
         this.manageStart        = manageStart;
         this.maneuver           = maneuver;
         this.threshold          = threshold;
+        this.stateDimension     = isMassInStm ? 7 : 6;
         this.contribution       = null;
         this.trigger            = null;
         this.forward            = true;
@@ -183,10 +207,14 @@ public class TriggerDate
      */
     @Override
     public boolean yields(final SpacecraftState state) {
-        return !(state.hasAdditionalData(stmName) && state.hasAdditionalData(massDepletionDelay.getName()));
+        if (massDepletionDelay == null) {
+            return !state.hasAdditionalData(stmName);
+        } else {
+            return !(state.hasAdditionalData(stmName) && state.hasAdditionalData(massDepletionDelay.getName()));
+        }
     }
 
-    /** Get the mass depletion effect processor.
+    /** Get the mass depletion effect processor. Can be null.
      * @return mass depletion effect processor
      */
     public MassDepletionDelay getMassDepletionDelay() {
@@ -205,6 +233,7 @@ public class TriggerDate
         if (contribution == null || (forward ^ newForward)) {
             contribution = new TimeSpanMap<>(null);
             trigger      = null;
+            signedMassRateAtTrigger = 0.;
         }
 
         forward = newForward;
@@ -220,18 +249,20 @@ public class TriggerDate
         final double[] c = contribution == null ? null : contribution.get(state.getDate());
         if (c == null) {
             // no thrust, no effect
-            return new double[STATE_DIMENSION];
+            return new double[stateDimension];
         } else {
 
             // primary effect: full maneuver contribution at (delayed) trigger date
             final double[] effect = getStm(state).operate(c);
 
-            // secondary effect: maneuver change throughout thrust as mass depletion is delayed
-            final double[] secondary = state.getAdditionalState(massDepletionDelay.getName());
+            if (massDepletionDelay != null) {
+                // secondary effect: maneuver change throughout thrust as mass depletion is delayed (only needed when mass is not in the STM)
+                final double[] secondary = state.getAdditionalState(massDepletionDelay.getName());
 
-            // sum up both effects
-            for (int i = 0; i < effect.length; ++i) {
-                effect[i] += secondary[i];
+                // cumulate both effects
+                for (int i = 0; i < effect.length; ++i) {
+                    effect[i] += secondary[i] * signedMassRateAtTrigger;
+                }
             }
 
             return effect;
@@ -255,15 +286,20 @@ public class TriggerDate
         }
 
         // get the acceleration near trigger time
+        final double[] parameters = maneuver.getParameters(state.getDate());
         final SpacecraftState stateWhenFiring = state.shiftedBy((manageStart ? 2 : -2) * threshold);
-        final Vector3D        acceleration    = maneuver.acceleration(stateWhenFiring, maneuver.getParameters(state.getDate()));
+        final Vector3D        acceleration    = maneuver.acceleration(stateWhenFiring, parameters);
 
         // initialize derivatives computation
         final double     sign = (forward == manageStart) ? -1 : +1;
-        final RealVector rhs  = MatrixUtils.createRealVector(STATE_DIMENSION);
+        final RealVector rhs  = MatrixUtils.createRealVector(stateDimension);
         rhs.setEntry(3, sign * acceleration.getX());
         rhs.setEntry(4, sign * acceleration.getY());
         rhs.setEntry(5, sign * acceleration.getZ());
+        signedMassRateAtTrigger = sign * maneuver.getPropulsionModel().getMassDerivatives(state, parameters);
+        if (stateDimension == 7) {
+            rhs.setEntry(6, signedMassRateAtTrigger);
+        }
 
         // get State Transition Matrix with respect to Cartesian parameters at trigger time
         final RealMatrix dY1dY0 = getStm(state);
@@ -287,10 +323,10 @@ public class TriggerDate
      */
     private RealMatrix getStm(final SpacecraftState state) {
         final double[] p = state.getAdditionalState(stmName);
-        final RealMatrix dYdY0 = MatrixUtils.createRealMatrix(STATE_DIMENSION, STATE_DIMENSION);
+        final RealMatrix dYdY0 = MatrixUtils.createRealMatrix(stateDimension, stateDimension);
         int index = 0;
-        for (int i = 0; i < STATE_DIMENSION; ++i) {
-            for (int j = 0; j < STATE_DIMENSION; ++j) {
+        for (int i = 0; i < stateDimension; ++i) {
+            for (int j = 0; j < stateDimension; ++j) {
                 dYdY0.setEntry(i, j, p[index++]);
             }
         }

@@ -799,9 +799,9 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
         final FieldCircularOrbit<T> mean = (FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(converter.convertToMean(state.getOrbit()));
         final FieldEHModel<T> newModel = new FieldEHModel<>(mean, state.getMass(), referenceRadius, mu, ck0);
         if (forward) {
-            models.addValidAfter(newModel, state.getDate());
+            models.addValidAfter(newModel, state.getDate(), false);
         } else {
-            models.addValidBefore(newModel, state.getDate());
+            models.addValidBefore(newModel, state.getDate(), false);
         }
         stateChanged(state);
     }

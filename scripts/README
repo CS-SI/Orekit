@@ -1,0 +1,5 @@
+This directory contains various scripts used only for development purposes,
+like release management.
+
+Please refer to the [release guide](https://www.orekit.org/site-orekit-development/release-guide.html)
+to understand how and when these scripts should be used.

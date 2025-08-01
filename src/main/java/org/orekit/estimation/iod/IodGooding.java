@@ -17,7 +17,9 @@
 package org.orekit.estimation.iod;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.util.FastMath;
+import org.orekit.control.heuristics.lambert.LambertSolver;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.frames.Frame;
@@ -43,7 +45,7 @@ import org.orekit.utils.PVCoordinates;
  */
 public class IodGooding {
 
-    /** Gravitationnal constant. */
+    /** Gravitational constant. */
     private final double mu;
 
     /** Normalizing constant for distances. */
@@ -91,9 +93,6 @@ public class IodGooding {
 
     /** factor for FD. */
     private double facFiniteDiff;
-
-    /** Simple Lambert's problem solver. */
-    private IodLambert lambert;
 
     /**
      * Constructor.
@@ -387,9 +386,6 @@ public class IodGooding {
         R = FastMath.max(rho1init, rho3init);
         V = FastMath.sqrt(mu / R);
         T = R / V;
-
-        // Initialize Lambert's problem solver for non-dimensional units.
-        lambert = new IodLambert(1.);
 
         this.vObserverPosition1 = O1.scalarMultiply(1. / R);
         this.vObserverPosition2 = O2.scalarMultiply(1. / R);
@@ -734,11 +730,11 @@ public class IodGooding {
         }
 
         // Solve the Lambert's problem to get the velocities at endpoints
-        final double[] V1 = new double[2];
         // work with non-dimensional units (MU=1)
-        final boolean exitflag = lambert.solveLambertPb(R1, R3, TH, T13, nRev, V1);
+        final Vector2D v1 = LambertSolver.solveNormalized2D(R1, R3, TH, T13, nRev);
+        final double[] V1 = v1.toArray();
 
-        if (exitflag) {
+        if (v1 != Vector2D.NaN) {
             // basis vectors
             final Vector3D Pn = P1.crossProduct(P3);
             final Vector3D Pt = Pn.crossProduct(P1);

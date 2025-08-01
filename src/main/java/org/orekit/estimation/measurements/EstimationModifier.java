@@ -55,7 +55,7 @@ public interface EstimationModifier<T extends ObservedMeasurement<T>> extends Pa
     /** Apply a modifier to an estimated measurement.
      * @param estimated estimated measurement to modify
      */
-    default void modify(EstimatedMeasurement<T> estimated) {
+    default void modify(final EstimatedMeasurement<T> estimated) {
         modifyWithoutDerivatives(estimated);
     }
 

@@ -22,7 +22,6 @@ import org.orekit.bodies.CelestialBodies;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** Detects when spacecraft comes close to a moving beacon, as seen from a moving observer.
@@ -39,6 +38,9 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @since 8.0
  */
 public class AngularSeparationDetector extends AbstractDetector<AngularSeparationDetector> {
+
+    /** Default detection settings. */
+    public static final EventDetectionSettings DEFAULT_SETTINGS = new EventDetectionSettings(60., 1e-3, EventDetectionSettings.DEFAULT_MAX_ITER);
 
     /** Beacon at the center of the proximity zone. */
     private final PVCoordinatesProvider beacon;
@@ -58,8 +60,7 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
     public AngularSeparationDetector(final PVCoordinatesProvider beacon,
                                      final PVCoordinatesProvider observer,
                                      final double proximityAngle) {
-        this(new EventDetectionSettings(60., 1.0e-3, 100), new StopOnDecreasing(),
-             beacon, observer, proximityAngle);
+        this(DEFAULT_SETTINGS, new StopOnDecreasing(), beacon, observer, proximityAngle);
     }
 
     /** Protected constructor with full parameters.
@@ -133,11 +134,10 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
      * @return value of the switching function
      */
     public double g(final SpacecraftState s) {
-        final PVCoordinates sPV = s.getPVCoordinates();
+        final Vector3D sPosition = s.getPosition();
         final Vector3D bP = beacon.getPosition(s.getDate(), s.getFrame());
         final Vector3D oP = observer.getPosition(s.getDate(), s.getFrame());
-        final double separation = Vector3D.angle(sPV.getPosition().subtract(oP),
-                                                 bP.subtract(oP));
+        final double separation = Vector3D.angle(sPosition.subtract(oP), bP.subtract(oP));
         return separation - proximityAngle;
     }
 

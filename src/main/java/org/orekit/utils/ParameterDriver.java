@@ -235,6 +235,12 @@ public class ParameterDriver {
 
     /** Get current name span map of the parameterDriver, cut in interval
      * in accordance with value span map and validity period.
+     * <p>
+     * Note that if the expunge policy of the names map is
+     * {@link TimeSpanMap#configureExpunge(int, double, ExpungePolicy) reconfigured},
+     * then the expunge policy of the {@link #getValueSpanMap() values map} should
+     * be reconfigured too with the same settings.
+     * </p>
      * @return current name span map
      * @since 12.0
      */
@@ -243,6 +249,12 @@ public class ParameterDriver {
     }
 
     /** Get value time span map for parameterDriver.
+     * <p>
+     * Note that if the expunge policy of the values map is
+     * {@link TimeSpanMap#configureExpunge(int, double, ExpungePolicy) reconfigured},
+     * then the expunge policy of the {@link #getNamesSpanMap()} names map} should
+     * be reconfigured too with the same settings.
+     * </p>
      * @return value time span map
      * @since 12.0
      */

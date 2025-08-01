@@ -147,8 +147,8 @@ public class FieldBrouwerLyddanePropagatorTest {
                                                        finalOrbit.getPosition()).getReal(),
                                 4.8e-7);
         Assertions.assertEquals(0.0,
-                                FieldVector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
-                                                       finalOrbit.getPVCoordinates().getVelocity()).getReal(),
+                                FieldVector3D.distance(initialOrbit.getVelocity(),
+                                                       finalOrbit.getVelocity()).getReal(),
                                 2.9e-10);
         Assertions.assertEquals(0.0, 
                                 finalOrbit.getA().getReal() - initialOrbit.getA().getReal(),
@@ -183,8 +183,8 @@ public class FieldBrouwerLyddanePropagatorTest {
                                                        finalOrbit.getPVCoordinates().getPosition()).getReal(),
                                 1.2e-6);
         Assertions.assertEquals(0.0,
-                                FieldVector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
-                                                       finalOrbit.getPVCoordinates().getVelocity()).getReal(),
+                                FieldVector3D.distance(initialOrbit.getVelocity(),
+                                                       finalOrbit.getVelocity()).getReal(),
                                 7.0e-10);
         Assertions.assertEquals(0.0,
                                 finalOrbit.getA().getReal() - initialOrbit.getA().getReal(),
@@ -755,8 +755,8 @@ public class FieldBrouwerLyddanePropagatorTest {
                                                        finalOrbit.getPosition()).getReal(),
                                 1.5e-8);
         Assertions.assertEquals(0.0,
-                                FieldVector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
-                                                       finalOrbit.getPVCoordinates().getVelocity()).getReal(),
+                                FieldVector3D.distance(initialOrbit.getVelocity(),
+                                                       finalOrbit.getVelocity()).getReal(),
                                 2.7e-12);
         Assertions.assertEquals(0.0,
                                 finalOrbit.getA().getReal() - initialOrbit.getA().getReal(),
@@ -846,7 +846,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertEquals(finalOrbitFieldReal.getPerigeeArgument(), finalOrbit.getPerigeeArgument(), Double.MIN_VALUE);
         Assertions.assertEquals(finalOrbitFieldReal.getMeanAnomaly(), finalOrbit.getMeanAnomaly(), Double.MIN_VALUE);
         Assertions.assertEquals(0.0, finalOrbitFieldReal.getPosition().distance(finalOrbit.getPosition()), Double.MIN_VALUE);
-        Assertions.assertEquals(0.0, finalOrbitFieldReal.getPVCoordinates().getVelocity().distance(finalOrbit.getPVCoordinates().getVelocity()), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, finalOrbitFieldReal.getVelocity().distance(finalOrbit.getVelocity()), Double.MIN_VALUE);
     }
 
     @Test
@@ -898,7 +898,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertEquals(finalOrbitFieldReal.getPerigeeArgument(), finalOrbit.getPerigeeArgument(), Double.MIN_VALUE);
         Assertions.assertEquals(finalOrbitFieldReal.getMeanAnomaly(), finalOrbit.getMeanAnomaly(), Double.MIN_VALUE);
         Assertions.assertEquals(0.0, finalOrbitFieldReal.getPosition().distance(finalOrbit.getPosition()), Double.MIN_VALUE);
-        Assertions.assertEquals(0.0, finalOrbitFieldReal.getPVCoordinates().getVelocity().distance(finalOrbit.getPVCoordinates().getVelocity()), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, finalOrbitFieldReal.getVelocity().distance(finalOrbit.getVelocity()), Double.MIN_VALUE);
     }
 
     @Test

@@ -70,7 +70,7 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
     protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel, final FieldSpacecraftState<DerivativeStructure> state) {
         try {
             final FieldVector3D<DerivativeStructure> position = state.getPVCoordinates().getPosition();
-            final FieldVector3D<DerivativeStructure> velocity = state.getPVCoordinates().getVelocity();
+            final FieldVector3D<DerivativeStructure> velocity = state.getVelocity();
             java.lang.reflect.Field refInertialFrameField = InertialForces.class.getDeclaredField("referenceInertialFrame");
             refInertialFrameField.setAccessible(true);
             Frame refInertialFrame = (Frame) refInertialFrameField.get(forceModel);
@@ -102,7 +102,7 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
     protected FieldVector3D<Gradient> accelerationDerivativesGradient(final ForceModel forceModel, final FieldSpacecraftState<Gradient> state) {
         try {
             final FieldVector3D<Gradient> position = state.getPVCoordinates().getPosition();
-            final FieldVector3D<Gradient> velocity = state.getPVCoordinates().getVelocity();
+            final FieldVector3D<Gradient> velocity = state.getVelocity();
             java.lang.reflect.Field refInertialFrameField = InertialForces.class.getDeclaredField("referenceInertialFrame");
             refInertialFrameField.setAccessible(true);
             Frame refInertialFrame = (Frame) refInertialFrameField.get(forceModel);

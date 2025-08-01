@@ -17,7 +17,7 @@
 package org.orekit.propagation;
 
 import org.hipparchus.CalculusFieldElement;
-import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldBoundedPVCoordinatesProvider;
 
 /** This interface is intended for ephemerides valid only during a time range.
  *
@@ -31,16 +31,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @author Luc Maisonobe
  *
  */
-public interface FieldBoundedPropagator<T extends CalculusFieldElement<T>> extends FieldPropagator<T> {
-
-    /** Get the first date of the range.
-     * @return the first date of the range
-     */
-    FieldAbsoluteDate<T> getMinDate();
-
-    /** Get the last date of the range.
-     * @return the last date of the range
-     */
-    FieldAbsoluteDate<T> getMaxDate();
+public interface FieldBoundedPropagator<T extends CalculusFieldElement<T>>
+        extends FieldPropagator<T>, FieldBoundedPVCoordinatesProvider<T> {
 
 }

@@ -20,6 +20,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
@@ -38,55 +39,56 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinatesProvider;
 
 import java.util.List;
 
-public class GroundAtNightDetectorTest {
+class GroundAtNightDetectorTest {
 
     @Test
-    public void testMidLatitudeCivilNoRefraction() {
+    void testMidLatitudeCivilNoRefraction() {
         checkDuration(FastMath.toRadians(43.0), FastMath.toRadians(0.0),
                       GroundAtNightDetector.CIVIL_DAWN_DUSK_ELEVATION,
                       null, 45037.367);
     }
 
     @Test
-    public void testMidLatitudeCivilITURefraction() {
+    void testMidLatitudeCivilITURefraction() {
         checkDuration(FastMath.toRadians(43.0), FastMath.toRadians(0.0),
                       GroundAtNightDetector.CIVIL_DAWN_DUSK_ELEVATION,
                       new ITURP834AtmosphericRefraction(0.0), 43909.148);
     }
 
     @Test
-    public void testMidLatitudeNauticalNoRefraction() {
+    void testMidLatitudeNauticalNoRefraction() {
         checkDuration(FastMath.toRadians(43.0), FastMath.toRadians(0.0),
                       GroundAtNightDetector.NAUTICAL_DAWN_DUSK_ELEVATION,
                       null, 41045.750);
     }
 
     @Test
-    public void testMidLatitudeNauticalITURefraction() {
+    void testMidLatitudeNauticalITURefraction() {
         checkDuration(FastMath.toRadians(43.0), FastMath.toRadians(0.0),
                       GroundAtNightDetector.NAUTICAL_DAWN_DUSK_ELEVATION,
                       new ITURP834AtmosphericRefraction(0.0), 39933.656);
     }
 
     @Test
-    public void testMidLatitudeAstronomicalNoRefraction() {
+    void testMidLatitudeAstronomicalNoRefraction() {
         checkDuration(FastMath.toRadians(43.0), FastMath.toRadians(0.0),
                       GroundAtNightDetector.ASTRONOMICAL_DAWN_DUSK_ELEVATION,
                       null, 37097.821);
     }
 
     @Test
-    public void testMidLatitudeAstronomicalITURefraction() {
+    void testMidLatitudeAstronomicalITURefraction() {
         checkDuration(FastMath.toRadians(43.0), FastMath.toRadians(0.0),
                       GroundAtNightDetector.ASTRONOMICAL_DAWN_DUSK_ELEVATION,
                       new ITURP834AtmosphericRefraction(0.0), 35991.314);
     }
 
     @Test
-    public void testHighLatitudeAstronomicalITURefraction() {
+    void testHighLatitudeAstronomicalITURefraction() {
         checkDuration(FastMath.toRadians(84.0), FastMath.toRadians(0.0),
                       GroundAtNightDetector.ASTRONOMICAL_DAWN_DUSK_ELEVATION,
                       new ITURP834AtmosphericRefraction(0.0), Double.NaN);
@@ -125,8 +127,19 @@ public class GroundAtNightDetectorTest {
 
     }
 
+    @Test
+    void testDependsOnlyOnTime() {
+        // GIVEN
+        final GroundAtNightDetector detector = new GroundAtNightDetector(Mockito.mock(TopocentricFrame.class),
+                Mockito.mock(PVCoordinatesProvider.class), 1, null);
+        // WHEN
+        final boolean value = detector.dependsOnTimeOnly();
+        // THEN
+        Assertions.assertTrue(value);
+    }
+
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

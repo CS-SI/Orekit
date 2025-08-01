@@ -127,7 +127,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     private ThirdBodyShortPeriodicCoefficients shortPeriods;
 
     /** "Field" Short period terms. */
-    private Map<Field<?>, FieldThirdBodyShortPeriodicCoefficients<?>> fieldShortPeriods;
+    private final Map<Field<?>, FieldThirdBodyShortPeriodicCoefficients<?>> fieldShortPeriods;
 
     /** Drivers for third body attraction coefficient and gravitational parameter. */
     private final List<ParameterDriver> parameterDrivers;
@@ -136,7 +136,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     private HansenObjects hansen;
 
     /** Hansen objects for field elements. */
-    private Map<Field<?>, FieldHansenObjects<?>> fieldHansen;
+    private final Map<Field<?>, FieldHansenObjects<?>> fieldHansen;
 
     /** Complete constructor.
      *  @param body the 3rd body to consider
@@ -3342,9 +3342,9 @@ public class DSSTThirdBody implements DSSTForceModel {
             final FieldAbsoluteDate<T> first = meanStates[0].getDate();
             final FieldAbsoluteDate<T> last  = meanStates[meanStates.length - 1].getDate();
             if (first.compareTo(last) <= 0) {
-                slots.addValidAfter(slot, first);
+                slots.addValidAfter(slot, first, false);
             } else {
-                slots.addValidBefore(slot, first);
+                slots.addValidBefore(slot, first, false);
             }
             return slot;
         }

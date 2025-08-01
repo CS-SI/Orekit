@@ -244,7 +244,7 @@ class GnssGradientConverterTest {
                 new SpacecraftState(OrbitType.CARTESIAN.mapArrayToOrbit(in, null, PositionAngleType.MEAN,
                                                                         original.getDate(),
                                                                         original.getOrbit().getMu(), original.getFrame()),
-                                    original.getAttitude(), original.getMass());
+                                    original.getAttitude()).withMass(original.getMass());
 
             // build shifted propagator
             final GNSSPropagator shiftedPropagator = new GNSSPropagator(shiftedState,

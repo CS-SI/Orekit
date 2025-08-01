@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation;
 
-import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.BoundedPVCoordinatesProvider;
 
 /** This interface is intended for ephemerides valid only during a time range.
  *
@@ -29,16 +29,6 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  *
  */
-public interface BoundedPropagator extends Propagator {
-
-    /** Get the first date of the range.
-     * @return the first date of the range
-     */
-    AbsoluteDate getMinDate();
-
-    /** Get the last date of the range.
-     * @return the last date of the range
-     */
-    AbsoluteDate getMaxDate();
+public interface BoundedPropagator extends Propagator, BoundedPVCoordinatesProvider {
 
 }

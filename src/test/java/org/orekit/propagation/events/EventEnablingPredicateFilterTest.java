@@ -64,6 +64,30 @@ class EventEnablingPredicateFilterTest {
     private Orbit orbit;
 
     @Test
+    void testGetPredicate() {
+        // GIVEN
+        final EventDetector detector = new DateDetector();
+        final EnablingPredicate expectedPredicate = Mockito.mock();
+        final EventEnablingPredicateFilter template = new EventEnablingPredicateFilter(detector, expectedPredicate);
+        // WHEN
+        final EnablingPredicate predicateFilter = template.getPredicate();
+        // THEN
+        Assertions.assertEquals(expectedPredicate, predicateFilter);
+    }
+
+    @Test
+    void testDependsOnTimeOnly() {
+        // GIVEN
+        final EventDetector detector = new DateDetector();
+        final EnablingPredicate enablingPredicate = Mockito.mock();
+        final EventEnablingPredicateFilter predicateFilter = new EventEnablingPredicateFilter(detector, enablingPredicate);
+        // WHEN
+        final boolean value = predicateFilter.dependsOnTimeOnly();
+        // THEN
+        Assertions.assertFalse(value);
+    }
+
+    @Test
     void testWithDetectionSettings() {
         // GIVEN
         final EventDetector detector = new DateDetector();

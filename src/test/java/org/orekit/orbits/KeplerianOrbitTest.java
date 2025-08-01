@@ -119,7 +119,7 @@ class KeplerianOrbitTest {
                                     FramesFactory.getEME2000(), date, mu);
 
         Vector3D pos = kep.getPosition();
-        Vector3D vit = kep.getPVCoordinates().getVelocity();
+        Vector3D vit = kep.getVelocity();
 
         KeplerianOrbit param = new KeplerianOrbit(new PVCoordinates(pos, vit),
                                                   FramesFactory.getEME2000(), date, mu);
@@ -137,7 +137,7 @@ class KeplerianOrbitTest {
                                     FramesFactory.getEME2000(), date, mu);
 
         Vector3D posCir = kepCir.getPosition();
-        Vector3D vitCir = kepCir.getPVCoordinates().getVelocity();
+        Vector3D vitCir = kepCir.getVelocity();
 
         KeplerianOrbit paramCir = new KeplerianOrbit(new PVCoordinates(posCir, vitCir),
                                                      FramesFactory.getEME2000(), date, mu);
@@ -155,7 +155,7 @@ class KeplerianOrbitTest {
                                     FramesFactory.getEME2000(), date, mu);
 
         Vector3D posHyp = kepHyp.getPosition();
-        Vector3D vitHyp = kepHyp.getPVCoordinates().getVelocity();
+        Vector3D vitHyp = kepHyp.getVelocity();
 
         KeplerianOrbit paramHyp = new KeplerianOrbit(new PVCoordinates(posHyp, vitHyp),
                                                   FramesFactory.getEME2000(), date, mu);
@@ -177,7 +177,7 @@ class KeplerianOrbitTest {
                                     FramesFactory.getEME2000(), date, mu);
 
         Vector3D pos = kep.getPosition();
-        Vector3D vit = kep.getPVCoordinates().getVelocity();
+        Vector3D vit = kep.getVelocity();
         Assertions.assertEquals(-0.107622532467967e+07, pos.getX(), Utils.epsilonTest * FastMath.abs(pos.getX()));
         Assertions.assertEquals(-0.676589636432773e+07, pos.getY(), Utils.epsilonTest * FastMath.abs(pos.getY()));
         Assertions.assertEquals(-0.332308783350379e+06, pos.getZ(), Utils.epsilonTest * FastMath.abs(pos.getZ()));
@@ -311,8 +311,8 @@ class KeplerianOrbitTest {
 
         // validation of: V = sqrt(mu.(1+2e.cos(v)+e2)/a.(1-e2) )
         Assertions.assertEquals(na * FastMath.sqrt(ksi * ksi + nu * nu) / epsilon,
-                     p.getPVCoordinates().getVelocity().getNorm(),
-                     Utils.epsilonTest * FastMath.abs(p.getPVCoordinates().getVelocity().getNorm()));
+                     p.getVelocity().getNorm(),
+                     Utils.epsilonTest * FastMath.abs(p.getVelocity().getNorm()));
 
 
         //  circular and equatorial orbit
@@ -337,8 +337,8 @@ class KeplerianOrbitTest {
 
         // validation of: V = sqrt(mu.(1+2e.cos(v)+e2)/a.(1-e2) )
         Assertions.assertEquals(na * FastMath.sqrt(ksi * ksi + nu * nu) / epsilon,
-                     pCirEqua.getPVCoordinates().getVelocity().getNorm(),
-                     Utils.epsilonTest * FastMath.abs(pCirEqua.getPVCoordinates().getVelocity().getNorm()));
+                     pCirEqua.getVelocity().getNorm(),
+                     Utils.epsilonTest * FastMath.abs(pCirEqua.getVelocity().getNorm()));
     }
 
     @Test
@@ -352,7 +352,7 @@ class KeplerianOrbitTest {
                                     FramesFactory.getEME2000(), date, mu);
 
         Vector3D position = p.getPosition();
-        Vector3D velocity = p.getPVCoordinates().getVelocity();
+        Vector3D velocity = p.getVelocity();
         Vector3D momentum = p.getPVCoordinates().getMomentum().normalize();
 
         double apogeeRadius  = p.getA() * (1 + p.getE());
@@ -369,7 +369,7 @@ class KeplerianOrbitTest {
             Assertions.assertTrue((position.getNorm() - perigeeRadius) >= (- perigeeRadius * Utils.epsilonTest));
 
             position = position.normalize();
-            velocity = p.getPVCoordinates().getVelocity();
+            velocity = p.getVelocity();
             velocity = velocity.normalize();
 
             // at this stage of computation, all the vectors (position, velocity and momemtum) are normalized here
@@ -396,14 +396,14 @@ class KeplerianOrbitTest {
                                p.getRightAscensionOfAscendingNode(), FastMath.PI - p.getPerigeeArgument() , PositionAngleType.TRUE,
                                p.getFrame(), p.getDate(), p.getMu());
         Assertions.assertTrue(FastMath.abs(p.getPosition().getZ()) < p.getPosition().getNorm() * Utils.epsilonTest);
-        Assertions.assertTrue(p.getPVCoordinates().getVelocity().getZ() < 0);
+        Assertions.assertTrue(p.getVelocity().getZ() < 0);
 
         // ascending node
         p = new KeplerianOrbit(p.getA(), p.getE(), p.getI(), p.getPerigeeArgument(),
                                p.getRightAscensionOfAscendingNode(), 2.0 * FastMath.PI - p.getPerigeeArgument() , PositionAngleType.TRUE,
                                p.getFrame(), p.getDate(), p.getMu());
         Assertions.assertTrue(FastMath.abs(p.getPosition().getZ()) < p.getPosition().getNorm() * Utils.epsilonTest);
-        Assertions.assertTrue(p.getPVCoordinates().getVelocity().getZ() > 0);
+        Assertions.assertTrue(p.getVelocity().getZ() > 0);
 
 
         //  circular and equatorial orbit
@@ -412,7 +412,7 @@ class KeplerianOrbitTest {
                                0.67, PositionAngleType.TRUE, FramesFactory.getEME2000(), date, mu);
 
         position = pCirEqua.getPosition();
-        velocity = pCirEqua.getPVCoordinates().getVelocity();
+        velocity = pCirEqua.getVelocity();
         momentum = Vector3D.crossProduct(position, velocity).normalize();
 
         apogeeRadius  = pCirEqua.getA() * (1 + pCirEqua.getE());
@@ -432,7 +432,7 @@ class KeplerianOrbitTest {
             Assertions.assertTrue((position.getNorm() - perigeeRadius) >= (- perigeeRadius * Utils.epsilonTest));
 
             position = position.normalize();
-            velocity = pCirEqua.getPVCoordinates().getVelocity();
+            velocity = pCirEqua.getVelocity();
             velocity = velocity.normalize();
 
             // at this stage of computation, all the vectors (position, velocity and momemtum) are normalized here
@@ -456,7 +456,7 @@ class KeplerianOrbitTest {
         KeplerianOrbit p = new KeplerianOrbit(new PVCoordinates(position, velocity),
                                               FramesFactory.getEME2000(), date, mu);
         Vector3D positionOffset = p.getPosition().subtract(position);
-        Vector3D velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
+        Vector3D velocityOffset = p.getVelocity().subtract(velocity);
 
         Assertions.assertEquals(0.0, positionOffset.getNorm(), 2.9e-9);
         Assertions.assertEquals(0.0, velocityOffset.getNorm(), 1.0e-15);
@@ -469,7 +469,7 @@ class KeplerianOrbitTest {
         p = new KeplerianOrbit(new PVCoordinates(position, velocity),
                                FramesFactory.getEME2000(), date, mu);
         positionOffset = p.getPosition().subtract(position);
-        velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
+        velocityOffset = p.getVelocity().subtract(velocity);
 
         Assertions.assertEquals(0.0, positionOffset.getNorm(), 4.8e-9);
         Assertions.assertEquals(0.0, velocityOffset.getNorm(), 1.0e-100);
@@ -572,7 +572,7 @@ class KeplerianOrbitTest {
         // big dV along Y
         final Vector3D deltaV = new Vector3D(0.0, 110000.0, 0.0);
         final PVCoordinates pv1 = new PVCoordinates(orb0.getPosition(),
-                                                    orb0.getPVCoordinates().getVelocity().add(deltaV));
+                                                    orb0.getVelocity().add(deltaV));
         final KeplerianOrbit orb1 = new KeplerianOrbit(pv1, eme2000, date, mu);
 
         // Despite large eccentricity, the conversion of mean anomaly to hyperbolic eccentric anomaly
@@ -921,7 +921,7 @@ class KeplerianOrbitTest {
         // at constant energy (i.e. constant semi major axis), we have dV = -mu dP / (V * r^2)
         // we use this to compute a velocity step size from the position step size
         Vector3D p = orbit.getPosition();
-        Vector3D v = orbit.getPVCoordinates().getVelocity();
+        Vector3D v = orbit.getVelocity();
         double hV = orbit.getMu() * hP / (v.getNorm() * p.getNormSq());
 
         double h;
@@ -1019,7 +1019,7 @@ class KeplerianOrbitTest {
                                                                           new Vector3D(-2079., 5291., -7842.)),
                                                         FramesFactory.getEME2000(), date, 3.9860047e14);
         final Vector3D p = orbit.getPosition();
-        final Vector3D v = orbit.getPVCoordinates().getVelocity();
+        final Vector3D v = orbit.getVelocity();
         final Vector3D a = orbit.getPVCoordinates().getAcceleration();
 
         // check that despite we did not provide acceleration, it got recomputed
@@ -1028,23 +1028,23 @@ class KeplerianOrbitTest {
         // check velocity is the derivative of position
         final double tolerance = 3e-10;
         Assertions.assertEquals(differentiate(orbit, shifted -> shifted.getPosition().getX()),
-                            orbit.getPVCoordinates().getVelocity().getX(),
+                            orbit.getVelocity().getX(),
                             tolerance * v.getNorm());
         Assertions.assertEquals(differentiate(orbit, shifted -> shifted.getPosition().getY()),
-                            orbit.getPVCoordinates().getVelocity().getY(),
+                            orbit.getVelocity().getY(),
                             tolerance * v.getNorm());
         Assertions.assertEquals(differentiate(orbit, shifted -> shifted.getPosition().getZ()),
-                            orbit.getPVCoordinates().getVelocity().getZ(),
+                            orbit.getVelocity().getZ(),
                             tolerance * v.getNorm());
 
         // check acceleration is the derivative of velocity
-        Assertions.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getVelocity().getX()),
+        Assertions.assertEquals(differentiate(orbit, shifted -> shifted.getVelocity().getX()),
                             orbit.getPVCoordinates().getAcceleration().getX(),
                             tolerance * a.getNorm());
-        Assertions.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getVelocity().getY()),
+        Assertions.assertEquals(differentiate(orbit, shifted -> shifted.getVelocity().getY()),
                             orbit.getPVCoordinates().getAcceleration().getY(),
                             tolerance * a.getNorm());
-        Assertions.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getVelocity().getZ()),
+        Assertions.assertEquals(differentiate(orbit, shifted -> shifted.getVelocity().getZ()),
                             orbit.getPVCoordinates().getAcceleration().getZ(),
                             tolerance * a.getNorm());
 
@@ -1402,6 +1402,39 @@ class KeplerianOrbitTest {
     }
 
     @Test
+    void testNonKeplerianAcceleration() {
+        // GIVEN
+        final PVCoordinates pvCoordinates = new PVCoordinates(new Vector3D(1, 2, 3),
+                Vector3D.MINUS_K.scalarMultiply(0.1), Vector3D.MINUS_I);
+        final CartesianOrbit cartesianOrbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(),
+                AbsoluteDate.ARBITRARY_EPOCH, 1.);
+        final KeplerianOrbit keplerianOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(cartesianOrbit);
+        // WHEN
+        final Vector3D nonKeplerianAcceleration = keplerianOrbit.nonKeplerianAcceleration();
+        // THEN
+        final Vector3D expectedVector = computeLegacyNonKeplerianAcceleration(keplerianOrbit);
+        Assertions.assertArrayEquals(expectedVector.toArray(), nonKeplerianAcceleration.toArray(), 1e-10);
+    }
+
+    private Vector3D computeLegacyNonKeplerianAcceleration(final Orbit orbit) {
+        final double[][] dCdP = new double[6][6];
+        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
+        orbit.getJacobianWrtParameters(positionAngleType, dCdP);
+
+        final double[] derivatives = new double[6];
+        orbit.getType().mapOrbitToArray(orbit, positionAngleType, new double[6], derivatives);
+        derivatives[5] -= orbit.getKeplerianMeanMotion();
+        final double nonKeplerianAx = dCdP[3][0] * derivatives[0]  + dCdP[3][1] * derivatives[1] + dCdP[3][2] * derivatives[2] +
+                dCdP[3][3] * derivatives[3] + dCdP[3][4] * derivatives[4] + dCdP[3][5] * derivatives[5];
+        final double nonKeplerianAy = dCdP[4][0] * derivatives[0]  + dCdP[4][1] * derivatives[1] + dCdP[4][2] * derivatives[2] +
+                dCdP[4][3] * derivatives[3] + dCdP[4][4] * derivatives[4] + dCdP[4][5] * derivatives[5];
+        final double nonKeplerianAz = dCdP[5][0] * derivatives[0]  + dCdP[5][1] * derivatives[1] + dCdP[5][2] * derivatives[2] +
+                dCdP[5][3] * derivatives[3] + dCdP[5][4] * derivatives[4] + dCdP[5][5] * derivatives[5];
+
+        return new Vector3D(nonKeplerianAx, nonKeplerianAy, nonKeplerianAz);
+    }
+
+    @Test
     void testToString() {
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
@@ -1459,8 +1492,8 @@ class KeplerianOrbitTest {
                                               shiftedOrbitCopy.getPosition()),
                             1.0e-10);
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(shiftedOrbit.getPVCoordinates().getVelocity(),
-                                              shiftedOrbitCopy.getPVCoordinates().getVelocity()),
+                            Vector3D.distance(shiftedOrbit.getVelocity(),
+                                              shiftedOrbitCopy.getVelocity()),
                             1.0e-10);
 
     }

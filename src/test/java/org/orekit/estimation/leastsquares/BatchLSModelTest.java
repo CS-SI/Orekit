@@ -41,10 +41,10 @@ import org.orekit.utils.ParameterDriversList;
 import java.util.List;
 import java.util.Map;
 
-public class BatchLSModelTest {
+class BatchLSModelTest {
 
     @Test
-    public void testPerfectValue() {
+    void testPerfectValue() {
 
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -88,7 +88,7 @@ public class BatchLSModelTest {
         model.setEvaluationsCounter(new Incrementor(100));
 
         // Test forward propagation flag to true
-        Assertions.assertEquals(true, model.isForwardPropagation());
+        Assertions.assertTrue(model.isForwardPropagation());
 
         // evaluate model on perfect start point
         final double[] normalizedProp = propagatorBuilder.getSelectedNormalizedParameters();
@@ -111,7 +111,7 @@ public class BatchLSModelTest {
     }
 
     @Test
-    public void testBackwardPropagation() {
+    void testBackwardPropagation() {
 
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -147,7 +147,7 @@ public class BatchLSModelTest {
         };
         final BatchLSModel model = new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver);
         // Test forward propagation flag to false
-        Assertions.assertEquals(false, model.isForwardPropagation());
+        Assertions.assertFalse(model.isForwardPropagation());
     }
 
 }

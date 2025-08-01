@@ -221,6 +221,12 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
         return duration;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean dependsOnTimeOnly() {
+        return true;
+    }
+
     /** Compute the value of the switching function.
      * <p>
      * The function is positive for dates within the interval defined

@@ -18,30 +18,31 @@ package org.orekit.propagation.numerical;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.QRDecomposition;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.ODEIntegrator;
-import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.AttitudeProviderModifier;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
+import org.orekit.forces.drag.AbstractDragForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.inertia.InertialForces;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.forces.maneuvers.jacobians.Duration;
+import org.orekit.forces.maneuvers.jacobians.MassDepletionDelay;
 import org.orekit.forces.maneuvers.jacobians.MedianDate;
 import org.orekit.forces.maneuvers.jacobians.TriggerDate;
 import org.orekit.forces.maneuvers.trigger.ManeuverTriggerDetector;
 import org.orekit.forces.maneuvers.trigger.ResettableManeuverTriggers;
+import org.orekit.forces.radiation.RadiationForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -54,8 +55,10 @@ import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
+import org.orekit.propagation.events.DetectorModifier;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.ParameterDrivenDateIntervalDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.StateMapper;
@@ -71,10 +74,10 @@ import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /** This class propagates {@link org.orekit.orbits.Orbit orbits} using
@@ -99,8 +102,8 @@ import java.util.stream.Collectors;
  *   to be used for propagation where it is relevant ({@link
  *   #setPositionAngleType(PositionAngleType)}),</li>
  *   <li>whether {@link MatricesHarvester state transition matrices and Jacobians matrices}
- *   should be propagated along with orbital state ({@link
- *   #setupMatricesComputation(String, RealMatrix, DoubleArrayDictionary)}),</li>
+ *   (with the option to include mass if a 7x7 initial matrix is passed) should be propagated along with orbital state
+ *   ({@link #setupMatricesComputation(String, RealMatrix, DoubleArrayDictionary)}),</li>
  *   <li>whether {@link org.orekit.propagation.integration.AdditionalDerivativesProvider additional derivatives}
  *   should be propagated along with orbital state ({@link
  *   #addAdditionalDerivativesProvider(AdditionalDerivativesProvider)}),</li>
@@ -176,12 +179,6 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     /** Default position angle type. */
     public static final PositionAngleType DEFAULT_POSITION_ANGLE_TYPE = PositionAngleType.ECCENTRIC;
-
-    /** Space dimension. */
-    private static final int SPACE_DIMENSION = 3;
-
-    /** State dimension. */
-    private static final int STATE_DIMENSION = 2 * SPACE_DIMENSION;
 
     /** Threshold for matrix solving. */
     private static final double THRESHOLD = Precision.SAFE_MIN;
@@ -449,11 +446,37 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         return columnsNames;
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>
+     * Unlike other propagators, the numerical one can consider the mass as a state variable in the transition matrix.
+     * To do so, a 7x7 initial matrix is to be passed instead of 6x6.
+     * </p>
+     * */
     @Override
     protected AbstractMatricesHarvester createHarvester(final String stmName, final RealMatrix initialStm,
                                                         final DoubleArrayDictionary initialJacobianColumns) {
         return new NumericalPropagationHarvester(this, stmName, initialStm, initialJacobianColumns);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void clearMatricesComputation() {
+        final List<AdditionalDerivativesProvider> copiedDerivativesProviders = new ArrayList<>(getAdditionalDerivativesProviders());
+        copiedDerivativesProviders.stream().filter(AbstractStateTransitionMatrixGenerator.class::isInstance)
+                .forEach(provider -> removeAdditionalDerivativesProvider(provider.getName()));
+        final List<AdditionalDataProvider<?>> copiedDataProviders = new ArrayList<>(getAdditionalDataProviders());
+        for (final AdditionalDataProvider<?> additionalDataProvider: copiedDataProviders) {
+            if (additionalDataProvider instanceof TriggerDate) {
+                final TriggerDate triggerDate = (TriggerDate) additionalDataProvider;
+                if (triggerDate.getMassDepletionDelay() != null) {
+                    removeAdditionalDerivativesProvider(triggerDate.getMassDepletionDelay().getName());
+                }
+                removeAdditionalDataProvider(additionalDataProvider.getName());
+            } else if (additionalDataProvider instanceof MedianDate || additionalDataProvider instanceof Duration) {
+                removeAdditionalDataProvider(additionalDataProvider.getName());
+            }
+        }
+        super.clearMatricesComputation();
     }
 
     /** {@inheritDoc} */
@@ -464,8 +487,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         if (harvester != null) {
 
             // set up the additional equations and additional state providers
-            final StateTransitionMatrixGenerator stmGenerator = setUpStmGenerator();
-            final List<String> triggersDates = setUpTriggerDatesJacobiansColumns(stmGenerator.getName());
+            final AbstractStateTransitionMatrixGenerator stmGenerator = setUpStmGenerator();
+            final List<String> triggersDates = setUpTriggerDatesJacobiansColumns(stmGenerator);
             setUpRegularParametersJacobiansColumns(stmGenerator, triggersDates);
 
             // as we are now starting the propagation, everything is configured
@@ -480,23 +503,29 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * @return State Transition Matrix Generator
      * @since 11.1
      */
-    private StateTransitionMatrixGenerator setUpStmGenerator() {
+    private AbstractStateTransitionMatrixGenerator setUpStmGenerator() {
 
         final AbstractMatricesHarvester harvester = getHarvester();
 
         // add the STM generator corresponding to the current settings, and setup state accordingly
-        StateTransitionMatrixGenerator stmGenerator = null;
+        AbstractStateTransitionMatrixGenerator stmGenerator = null;
         for (final AdditionalDerivativesProvider equations : getAdditionalDerivativesProviders()) {
-            if (equations instanceof StateTransitionMatrixGenerator &&
+            if (equations instanceof AbstractStateTransitionMatrixGenerator &&
                 equations.getName().equals(harvester.getStmName())) {
                 // the STM generator has already been set up in a previous propagation
-                stmGenerator = (StateTransitionMatrixGenerator) equations;
+                stmGenerator = (AbstractStateTransitionMatrixGenerator) equations;
                 break;
             }
         }
         if (stmGenerator == null) {
             // this is the first time we need the STM generate, create it
-            stmGenerator = new StateTransitionMatrixGenerator(harvester.getStmName(), getAllForceModels(), getAttitudeProvider());
+            if (harvester.getStateDimension() > 6) {
+                stmGenerator = new ExtendedStateTransitionMatrixGenerator(harvester.getStmName(), getAllForceModels(),
+                        getAttitudeProvider());
+            } else {
+                stmGenerator = new StateTransitionMatrixGenerator(harvester.getStmName(), getAllForceModels(),
+                        getAttitudeProvider());
+            }
             addAdditionalDerivativesProvider(stmGenerator);
         }
 
@@ -514,12 +543,14 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     }
 
     /** Set up the Jacobians columns generator dedicated to trigger dates.
-     * @param stmName name of the State Transition Matrix state
+     * @param stmGenerator State Transition Matrix generator
      * @return names of the columns corresponding to trigger dates
-     * @since 11.1
+     * @since 13.1
      */
-    private List<String> setUpTriggerDatesJacobiansColumns(final String stmName) {
+    private List<String> setUpTriggerDatesJacobiansColumns(final AbstractStateTransitionMatrixGenerator stmGenerator) {
 
+        final String stmName = stmGenerator.getName();
+        final boolean isMassInStm = stmGenerator instanceof ExtendedStateTransitionMatrixGenerator;
         final List<String> names = new ArrayList<>();
         for (final ForceModel forceModel : getAllForceModels()) {
             if (forceModel instanceof Maneuver && ((Maneuver) forceModel).getManeuverTriggers() instanceof ResettableManeuverTriggers) {
@@ -540,7 +571,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                             // normally datedriver should have only 1 span but just in case the user defines several span, there will
                             // be no problem here
                             for (Span<String> span = d.getStartDriver().getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                                start = manageTriggerDate(stmName, maneuver, maneuverTriggers, span.getData(), true, d.getThreshold());
+                                start = manageTriggerDate(stmName, maneuver, maneuverTriggers, span.getData(), true,
+                                        d.getThreshold(), isMassInStm);
                                 names.add(start.getName());
                                 start = null;
                             }
@@ -549,7 +581,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                             // normally datedriver should have only 1 span but just in case the user defines several span, there will
                             // be no problem here
                             for (Span<String> span = d.getStopDriver().getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                                stop = manageTriggerDate(stmName, maneuver, maneuverTriggers, span.getData(), false, d.getThreshold());
+                                stop = manageTriggerDate(stmName, maneuver, maneuverTriggers, span.getData(), false,
+                                        d.getThreshold(), isMassInStm);
                                 names.add(stop.getName());
                                 stop = null;
                             }
@@ -609,15 +642,17 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * @param driverName name of the date driver
      * @param start if true, the driver is a maneuver start
      * @param threshold event detector threshold
+     * @param isMassInStm flag on presence on mass in STM
      * @return generator for the date driver
-     * @since 11.1
+     * @since 13.1
      */
     private TriggerDate manageTriggerDate(final String stmName,
                                           final Maneuver maneuver,
                                           final ResettableManeuverTriggers mt,
                                           final String driverName,
                                           final boolean start,
-                                          final double threshold) {
+                                          final double threshold,
+                                          final boolean isMassInStm) {
 
         TriggerDate triggerGenerator = null;
 
@@ -633,16 +668,33 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         if (triggerGenerator == null) {
             // this is the first time we need the Jacobian column generator, create it
-            triggerGenerator = new TriggerDate(stmName, driverName, start, maneuver, threshold);
+            if (isMassInStm) {
+                triggerGenerator = new TriggerDate(stmName, driverName, start, maneuver, threshold, true);
+            } else {
+                final Optional<ForceModel> dragForce = getAllForceModels().stream().filter(AbstractDragForceModel.class::isInstance).findFirst();
+                final Optional<ForceModel> srpForce = getAllForceModels().stream().filter(RadiationForceModel.class::isInstance).findFirst();
+                final List<ForceModel> nonGravitationalForces = new ArrayList<>();
+                dragForce.ifPresent(nonGravitationalForces::add);
+                srpForce.ifPresent(nonGravitationalForces::add);
+                triggerGenerator = new TriggerDate(stmName, driverName, start, maneuver, threshold, false,
+                        nonGravitationalForces.toArray(new ForceModel[0]));
+            }
             mt.addResetter(triggerGenerator);
-            addAdditionalDerivativesProvider(triggerGenerator.getMassDepletionDelay());
+            final MassDepletionDelay depletionDelay = triggerGenerator.getMassDepletionDelay();
+            if (depletionDelay != null) {
+                addAdditionalDerivativesProvider(depletionDelay);
+            }
             addAdditionalDataProvider(triggerGenerator);
         }
 
         if (!getInitialIntegrationState().hasAdditionalData(driverName)) {
             // add the initial Jacobian column if it is not already there
             // (perhaps due to a previous propagation)
-            setInitialColumn(triggerGenerator.getMassDepletionDelay().getName(), new double[6]);
+            final MassDepletionDelay depletionDelay = triggerGenerator.getMassDepletionDelay();
+            final double[] zeroes = new double[depletionDelay == null ? 7 : 6];
+            if (depletionDelay != null) {
+                setInitialColumn(depletionDelay.getName(), zeroes);
+            }
             setInitialColumn(driverName, getHarvester().getInitialJacobianColumn(driverName));
         }
 
@@ -729,7 +781,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * @param triggerDates names of the columns already managed as trigger dates
      * @since 11.1
      */
-    private void setUpRegularParametersJacobiansColumns(final StateTransitionMatrixGenerator stmGenerator,
+    private void setUpRegularParametersJacobiansColumns(final AbstractStateTransitionMatrixGenerator stmGenerator,
                                                         final List<String> triggerDates) {
 
         // first pass: gather all parameters (excluding trigger dates), binding similar names together
@@ -771,7 +823,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
                 if (generator == null) {
                     // this is the first time we need the Jacobian column generator, create it
-                    generator = new IntegrableJacobianColumnGenerator(stmGenerator, currentNameSpan.getData());
+                    final boolean isMassIncluded = stmGenerator.getStateDimension() == 7;
+                    generator = new IntegrableJacobianColumnGenerator(stmGenerator, currentNameSpan.getData(), isMassIncluded);
                     addAdditionalDerivativesProvider(generator);
                 }
 
@@ -800,30 +853,42 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         final SpacecraftState state = getInitialState();
 
-        if (dYdQ.length != STATE_DIMENSION) {
-            throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
-                                      dYdQ.length, STATE_DIMENSION);
+        final AbstractStateTransitionMatrixGenerator generator = (AbstractStateTransitionMatrixGenerator)
+                getAdditionalDerivativesProviders().stream()
+                        .filter(AbstractStateTransitionMatrixGenerator.class::isInstance)
+                        .collect(Collectors.toList()).get(0);
+        final int expectedSize = generator.getStateDimension();
+        if (dYdQ.length != expectedSize) {
+            throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH, dYdQ.length, expectedSize);
         }
 
         // convert to Cartesian Jacobian
-        final double[][] dYdC = new double[STATE_DIMENSION][STATE_DIMENSION];
-        getOrbitType().convertType(state.getOrbit()).getJacobianWrtCartesian(getPositionAngleType(), dYdC);
-        final double[] column = new QRDecomposition(MatrixUtils.createRealMatrix(dYdC), THRESHOLD).
-                        getSolver().
-                        solve(MatrixUtils.createRealVector(dYdQ)).
-                        toArray();
+        final RealMatrix dYdC = MatrixUtils.createRealIdentityMatrix(expectedSize);
+        final double[][] jacobian = new double[6][6];
+        getOrbitType().convertType(state.getOrbit()).getJacobianWrtCartesian(getPositionAngleType(), jacobian);
+        dYdC.setSubMatrix(jacobian, 0, 0);
+        final DecompositionSolver solver = getSolver(dYdC);
+        final double[] column = solver.solve(MatrixUtils.createRealVector(dYdQ)).toArray();
 
         // set additional state
         setInitialState(state.addAdditionalData(columnName, column));
 
     }
 
+    /**
+     * Method to get a linear system solver.
+     * @param matrix matrix involved in linear systems
+     * @return solver
+     * @since 13.1
+     */
+    private DecompositionSolver getSolver(final RealMatrix matrix) {
+        return new QRDecomposition(matrix, THRESHOLD).getSolver();
+    }
+
     /** {@inheritDoc} */
     @Override
     protected AttitudeProvider initializeAttitudeProviderForDerivatives() {
-        final AttitudeProvider attitudeProvider = getAttitudeProvider();
-        return needFullAttitudeForDerivatives ? attitudeProvider :
-                AttitudeProviderModifier.getFrozenAttitudeProvider(attitudeProvider);
+        return needFullAttitudeForDerivatives ? getAttitudeProvider() : getFrozenAttitudeProvider();
     }
 
     /** {@inheritDoc} */
@@ -858,6 +923,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         }
 
         /** {@inheritDoc} */
+        @Override
         public SpacecraftState mapArrayToState(final AbsoluteDate date, final double[] y, final double[] yDot,
                                                final PropagationType type) {
             // the parameter type is ignored for the Numerical Propagator
@@ -916,135 +982,102 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     /** {@inheritDoc} */
     protected MainStateEquations getMainStateEquations(final ODEIntegrator integrator) {
-        return new Main(integrator);
+        return new Main(integrator, getOrbitType(), getPositionAngleType(), getAllForceModels());
     }
 
     /** Internal class for osculating parameters integration. */
-    private class Main implements MainStateEquations, TimeDerivativesEquations {
-
-        /** Derivatives array. */
-        private final double[] yDot;
-
-        /** Current state. */
-        private SpacecraftState currentState;
-
-        /** Jacobian of the orbital parameters with respect to the Cartesian parameters. */
-        private final double[][] jacobian;
+    private class Main extends NumericalTimeDerivativesEquations implements MainStateEquations {
 
         /** Flag keeping track whether Jacobian matrix needs to be recomputed or not. */
-        private boolean recomputingJacobian;
+        private final boolean recomputingJacobian;
 
         /** Simple constructor.
          * @param integrator numerical integrator to use for propagation.
+         * @param orbitType orbit type
+         * @param positionAngleType angle type
+         * @param forceModelList forces
          */
-        Main(final ODEIntegrator integrator) {
+        Main(final ODEIntegrator integrator, final OrbitType orbitType, final PositionAngleType positionAngleType,
+             final List<ForceModel> forceModelList) {
 
-            this.yDot     = new double[7];
-            this.jacobian = new double[6][6];
-            this.recomputingJacobian = true;
+            super(orbitType, positionAngleType, forceModelList);
+            final int numberOfForces = forceModelList.size();
+            if (orbitType != null && orbitType != OrbitType.CARTESIAN && numberOfForces > 0) {
+                if (numberOfForces > 1) {
+                    recomputingJacobian = true;
+                } else {
+                    recomputingJacobian = !(forceModelList.get(0) instanceof NewtonianAttraction);
+                }
+            } else {
+                recomputingJacobian = false;
+            }
 
             // feed internal event detectors
-            for (final ForceModel forceModel : forceModels) {
-                forceModel.getEventDetectors().forEach(detector -> setUpEventDetector(integrator, detector));
-            }
-            getAttitudeProvider().getEventDetectors().forEach(detector -> setUpEventDetector(integrator, detector));
+            setUpInternalDetectors(integrator);
 
-            // default value for Jacobian is identity
-            for (int i = 0; i < jacobian.length; ++i) {
-                Arrays.fill(jacobian[i], 0.0);
-                jacobian[i][i] = 1.0;
-            }
+        }
 
+        /** Set up all user defined event detectors.
+         * @param integrator numerical integrator to use for propagation.
+         */
+        private void setUpInternalDetectors(final ODEIntegrator integrator) {
+            final NumericalTimeDerivativesEquations cartesianEquations = new NumericalTimeDerivativesEquations(OrbitType.CARTESIAN,
+                    null, forceModels);
+            for (final ForceModel forceModel : getForceModels()) {
+                forceModel.getEventDetectors().forEach(detector -> setUpInternalEventDetector(integrator, detector,
+                        cartesianEquations));
+            }
+            getAttitudeProvider().getEventDetectors().forEach(detector -> setUpInternalEventDetector(integrator,
+                    detector, cartesianEquations));
+        }
+
+        /** Set up one internal event detector.
+         * @param integrator numerical integrator to use for propagation.
+         * @param eventDetector detector
+         * @param cartesianEquations Cartesian derivatives model
+         */
+        private void setUpInternalEventDetector(final ODEIntegrator integrator,
+                                                final EventDetector eventDetector,
+                                                final NumericalTimeDerivativesEquations cartesianEquations) {
+            final Optional<ExtendedStateTransitionMatrixGenerator> generator = getAdditionalDerivativesProviders().stream()
+                    .filter(ExtendedStateTransitionMatrixGenerator.class::isInstance)
+                    .map(ExtendedStateTransitionMatrixGenerator.class::cast)
+                    .findFirst();
+            final EventDetector internalDetector;
+            if (generator.isPresent() && !eventDetector.dependsOnTimeOnly()) {
+                // need to modify STM at each dynamics discontinuities
+                final NumericalPropagationHarvester harvester = (NumericalPropagationHarvester) getHarvester();
+                final SwitchEventHandler handler = new SwitchEventHandler(eventDetector.getHandler(), harvester,
+                        cartesianEquations, getAttitudeProvider());
+                internalDetector = getLocalDetector(eventDetector, handler);
+            } else {
+                internalDetector = eventDetector;
+            }
+            setUpEventDetector(integrator, internalDetector);
         }
 
         /** {@inheritDoc} */
         @Override
         public void init(final SpacecraftState initialState, final AbsoluteDate target) {
-            needFullAttitudeForDerivatives = forceModels.stream().anyMatch(ForceModel::dependsOnAttitudeRate);
+            final List<ForceModel> forceModelList = getForceModels();
+            needFullAttitudeForDerivatives = forceModelList.stream().anyMatch(ForceModel::dependsOnAttitudeRate);
 
-            forceModels.forEach(fm -> fm.init(initialState, target));
+            forceModelList.forEach(fm -> fm.init(initialState, target));
 
-            final int numberOfForces = forceModels.size();
-            final OrbitType orbitType = getOrbitType();
-            if (orbitType != null && orbitType != OrbitType.CARTESIAN && numberOfForces > 0) {
-                if (numberOfForces > 1) {
-                    recomputingJacobian = true;
-                } else {
-                    recomputingJacobian = !(forceModels.get(0) instanceof NewtonianAttraction);
-                }
-            } else {
-                recomputingJacobian = false;
-            }
         }
 
         /** {@inheritDoc} */
         @Override
         public double[] computeDerivatives(final SpacecraftState state) {
-
-            currentState = state;
-            Arrays.fill(yDot, 0.0);
+            setCurrentState(state);
             if (recomputingJacobian) {
                 // propagation uses Jacobian matrix of orbital parameters w.r.t. Cartesian ones
-                currentState.getOrbit().getJacobianWrtCartesian(getPositionAngleType(), jacobian);
+                final double[][] jacobian = new double[6][6];
+                state.getOrbit().getJacobianWrtCartesian(getPositionAngleType(), jacobian);
+                setCoordinatesJacobian(jacobian);
             }
+            return computeTimeDerivatives(state);
 
-            // compute the contributions of all perturbing forces,
-            // using the Kepler contribution at the end since
-            // NewtonianAttraction is always the last instance in the list
-            for (final ForceModel forceModel : forceModels) {
-                forceModel.addContribution(state, this);
-            }
-
-            if (getOrbitType() == null) {
-                // position derivative is velocity, and was not added above in the force models
-                // (it is added when orbit type is non-null because NewtonianAttraction considers it)
-                final Vector3D velocity = currentState.getPVCoordinates().getVelocity();
-                yDot[0] += velocity.getX();
-                yDot[1] += velocity.getY();
-                yDot[2] += velocity.getZ();
-            }
-
-
-            return yDot.clone();
-
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void addKeplerContribution(final double mu) {
-            if (getOrbitType() == null) {
-                // if mu is neither 0 nor NaN, we want to include Newtonian acceleration
-                if (mu > 0) {
-                    // velocity derivative is Newtonian acceleration
-                    final Vector3D position = currentState.getPosition();
-                    final double r2         = position.getNormSq();
-                    final double coeff      = -mu / (r2 * FastMath.sqrt(r2));
-                    yDot[3] += coeff * position.getX();
-                    yDot[4] += coeff * position.getY();
-                    yDot[5] += coeff * position.getZ();
-                }
-
-            } else {
-                // propagation uses regular orbits
-                currentState.getOrbit().addKeplerContribution(getPositionAngleType(), mu, yDot);
-            }
-        }
-
-        /** {@inheritDoc} */
-        public void addNonKeplerianAcceleration(final Vector3D gamma) {
-            for (int i = 0; i < 6; ++i) {
-                final double[] jRow = jacobian[i];
-                yDot[i] += jRow[3] * gamma.getX() + jRow[4] * gamma.getY() + jRow[5] * gamma.getZ();
-            }
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void addMassDerivative(final double q) {
-            if (q > 0) {
-                throw new OrekitIllegalArgumentException(OrekitMessages.POSITIVE_FLOW_RATE, q);
-            }
-            yDot[6] += q;
         }
 
     }
@@ -1141,4 +1174,24 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     }
 
+    /**
+     * Creates local detector wrapping input one and using specific handler for dynamics discontinuities and STM.
+     * @param eventDetector detector
+     * @param switchEventHandler special handler
+     * @return wrapped detector
+     */
+    private static EventDetector getLocalDetector(final EventDetector eventDetector,
+                                                  final SwitchEventHandler switchEventHandler) {
+        return new DetectorModifier() {
+            @Override
+            public EventDetector getDetector() {
+                return eventDetector;
+            }
+
+            @Override
+            public EventHandler getHandler() {
+                return switchEventHandler;
+            }
+        };
+    }
 }

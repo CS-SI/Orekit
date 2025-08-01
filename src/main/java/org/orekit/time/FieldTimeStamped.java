@@ -60,8 +60,19 @@ public interface FieldTimeStamped<T extends CalculusFieldElement<T>> {
      * @see FieldAbsoluteDate#durationFrom(FieldAbsoluteDate)
      * @since 12.0
      */
-    default T durationFrom(FieldTimeStamped<T> other) {
+    default T durationFrom(final FieldTimeStamped<T> other) {
         return getDate().durationFrom(other.getDate());
+    }
+
+    /** Compute the physically elapsed duration between two instants.
+     * @param timeStamped instant to subtract from the instance
+     * @return offset in seconds between the two instants (positive
+     * if the instance is posterior to the argument)
+     * @see FieldAbsoluteDate#durationFrom(AbsoluteDate)
+     * @since 131
+     */
+    default T durationFrom(TimeStamped timeStamped) {
+        return getDate().durationFrom(timeStamped.getDate());
     }
 
 }

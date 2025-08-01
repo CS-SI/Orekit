@@ -31,6 +31,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.AbstractPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
+import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -82,7 +83,14 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
         for (int k = 0; k < propagators.length; ++k) {
             // Link the partial derivatives to this new propagator
             final String equationName = KalmanEstimator.class.getName() + "-derivatives-" + k;
-            harvesters[k] = getReferenceTrajectories()[k].setupMatricesComputation(equationName, null, null);
+            final Propagator propagator = getReferenceTrajectories()[k];
+            final RealMatrix initialStm;
+            if (propagator instanceof NumericalPropagator) {
+                initialStm = MatrixUtils.createRealIdentityMatrix(7);
+            } else {
+                initialStm = MatrixUtils.createRealIdentityMatrix(6);
+            }
+            harvesters[k] = propagator.setupMatricesComputation(equationName, initialStm, null);
         }
 
     }
@@ -141,7 +149,11 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
                 // Reset reference (for example compute short periodic terms in DSST)
                 harvesters[k].setReferenceState(predictedSpacecraftStates[k]);
 
-                final RealMatrix dYdY0 = harvesters[k].getStateTransitionMatrix(predictedSpacecraftStates[k]);
+                RealMatrix dYdY0 = harvesters[k].getStateTransitionMatrix(predictedSpacecraftStates[k]);
+                if (dYdY0.getRowDimension() == 7) {
+                    // mass was included in STM propagation, removed it now
+                    dYdY0 = dYdY0.getSubMatrix(0, 5, 0, 5);
+                }
 
                 // Fill upper left corner (dY/dY0)
                 int stmRow = 0;
@@ -162,7 +174,7 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
             // Derivatives of the state vector with respect to propagation parameters
             final int nbParams = estimatedPropagationParameters[k].getNbParams();
             if (nbOrbParams > 0 && nbParams > 0) {
-                final RealMatrix dYdPp = harvesters[k].getParametersJacobian(predictedSpacecraftStates[k]);
+                final RealMatrix dYdPp = getParametersJacobian(harvesters[k], predictedSpacecraftStates[k]);
 
                 // Fill 1st row, 2nd column (dY/dPp)
                 int stmRow = 0;
@@ -190,6 +202,22 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
         // Return the error state transition matrix
         return stm;
 
+    }
+
+    /**
+     * Extract Jacobian matrix of state w.r.t. model parameter.
+     * @param harvester matrix harvester
+     * @param state state
+     * @return jacobian matrix
+     * @since 13.1
+     */
+    private RealMatrix getParametersJacobian(final MatricesHarvester harvester, final SpacecraftState state) {
+        RealMatrix dYdP = harvester.getParametersJacobian(state);
+        if (dYdP.getRowDimension() == 7) {
+            // mass was included in STM propagation, removed it now
+            dYdP = dYdP.getSubMatrix(0, 5, 0, dYdP.getColumnDimension() - 1);
+        }
+        return dYdP;
     }
 
     /** Get the normalized measurement matrix H.
@@ -255,7 +283,7 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
             // Jacobian of the measurement with respect to propagation parameters
             final int nbParams = estimatedPropagationParameters[p].getNbParams();
             if (nbParams > 0) {
-                final RealMatrix dYdPp = harvesters[p].getParametersJacobian(evaluationStates[k]);
+                final RealMatrix dYdPp = getParametersJacobian(harvesters[p], evaluationStates[k]);
                 final RealMatrix dMdPp = dMdY.multiply(dYdPp);
                 for (int i = 0; i < dMdPp.getRowDimension(); ++i) {
                     for (int j = 0; j < nbParams; ++j) {

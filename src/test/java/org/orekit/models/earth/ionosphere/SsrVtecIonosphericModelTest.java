@@ -420,7 +420,7 @@ public class SsrVtecIonosphericModelTest {
         Orbit orbit = orbitType.mapArrayToOrbit(array[0], array[1], angleType, date, mu, frame);
         return (array.length > 6) ?
                 new SpacecraftState(orbit, attitude) :
-                new SpacecraftState(orbit, attitude, array[0][6]);
+                new SpacecraftState(orbit, attitude).withMass(array[0][6]);
     }
 
     private void fillJacobianColumn(double[][] jacobian, int column, double h,

@@ -51,7 +51,7 @@ public class IntegerBootstrappingTest {
         final IntegerBootstrapping bootstrap = new IntegerBootstrapping(0.8);
         IntegerLeastSquareSolution[] solutions = bootstrap.solveILS(1, floatAmbiguities, indirection, covariance);
         if (solutions.length != 0) {
-            Assertions.assertTrue(solutions.length == 1);
+            Assertions.assertEquals(1, solutions.length);
         }
     }
 

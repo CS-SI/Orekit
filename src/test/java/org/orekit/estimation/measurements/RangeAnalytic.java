@@ -149,7 +149,7 @@ public class RangeAnalytic extends Range {
         // When spacecraft position is changed, the downlink delay is changed, and in order
         // to still have the measurement arrive at exactly the same date on ground, we must
         // take the spacecraft-station relative velocity into account.
-        final Vector3D v         = state.getPVCoordinates().getVelocity();
+        final Vector3D v         = state.getVelocity();
         final Vector3D qv        = stationDownlink.getVelocity();
         final Vector3D downInert = stationDownlink.getPosition().subtract(transitP);
         final double   dDown     = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT * tauD -
@@ -420,7 +420,7 @@ public class RangeAnalytic extends Range {
         // -----------------------
 
         // Qt = Primary station position at tmeas = t = signal arrival at primary station
-        final Vector3D vel     = state.getPVCoordinates().getVelocity();
+        final Vector3D vel     = state.getVelocity();
         final Vector3D Qt_V    = QDownlink.getVelocity();
         final Vector3D Ptr     = transit.getPosition();
         final Vector3D Ptr_Qt  = QDownlink.getPosition().subtract(Ptr);

@@ -27,6 +27,7 @@ import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
@@ -37,6 +38,7 @@ import org.orekit.propagation.conversion.osc2mean.OsculatingToMeanConverter;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
@@ -393,7 +395,7 @@ public class TLETest {
                         TLE tle = new TLE(line1, line2);
 
                         int satNum = Integer.parseInt(title[1]);
-                        Assertions.assertTrue(satNum==tle.getSatelliteNumber());
+                        Assertions.assertEquals(satNum, tle.getSatelliteNumber());
                         TLEPropagator ex = TLEPropagator.selectExtrapolator(tle);
 
                         for (rline = rResults.readLine(); (rline!=null)&&(rline.charAt(0)!='r'); rline = rResults.readLine()) {
@@ -591,6 +593,27 @@ public class TLETest {
         //Then
         // Assert that TLE class did not round the date to the next day
         Assertions.assertEquals(tleDate, returnedDate);
+    }
+
+
+    @Test
+    @DisplayName("fix issue 1773 :  with Orekit 13 new date representation, TLE parsing from lines may introduce " +
+      "some attoseconds of error")
+    void testFixIssue1773() {
+        // Given
+        final String line1WithDateParsingError = "1 00005U 58002B   25047.63247525. .00000268  00000-0  35695-3 0  9999";
+        final String line2WithDateParsingError = "2 00005  34.2494  12.9875 1841261 109.2290 271.5928 10.85874828390491";
+
+        final DateComponents dateComponents = new DateComponents(2025, 2, 16);
+        final TimeOffset timeOffset = new TimeOffset(45, TimeOffset.MICROSECOND.multiply(861600).getAttoSeconds());
+        final TimeComponents timeComponents = new TimeComponents(15, 10, timeOffset);
+        final AbsoluteDate reconstructedExactDate = new AbsoluteDate(dateComponents, timeComponents, TimeScalesFactory.getUTC());
+
+        // When
+        final TLE parsedTle = new TLE(line1WithDateParsingError, line2WithDateParsingError);
+
+        // Then
+        Assertions.assertEquals(reconstructedExactDate, parsedTle.getDate());
     }
 
     @BeforeEach

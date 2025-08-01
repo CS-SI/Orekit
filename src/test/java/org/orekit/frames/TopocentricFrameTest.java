@@ -384,6 +384,33 @@ class TopocentricFrameTest {
     }
 
     @Test
+    void testGetPVCoordinates() {
+        // GIVEN
+        final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.), FastMath.toRadians(5.), 0.);
+        final TopocentricFrame topoFrame = new TopocentricFrame(earthSpheric, point, "lon 5 lat 45");
+        final Frame frame = FramesFactory.getGCRF();
+        // WHEN
+        final PVCoordinates pv = topoFrame.getPVCoordinates(date, frame);
+        // THEN
+        final Vector3D position = topoFrame.getPosition(date, frame);
+        Assertions.assertEquals(position, pv.getPosition());
+    }
+
+    @Test
+    void testFieldGetPVCoordinates() {
+        // GIVEN
+        final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.), FastMath.toRadians(5.), 0.);
+        final TopocentricFrame topoFrame = new TopocentricFrame(earthSpheric, point, "lon 5 lat 45");
+        final Frame frame = FramesFactory.getGCRF();
+        final FieldAbsoluteDate<Binary64> fieldDate = new FieldAbsoluteDate<>(Binary64Field.getInstance(), date);
+        // WHEN
+        final FieldPVCoordinates<Binary64> pv = topoFrame.getPVCoordinates(fieldDate, frame);
+        // THEN
+        final FieldVector3D<Binary64> position = topoFrame.getPosition(fieldDate, frame);
+        Assertions.assertEquals(position, pv.getPosition());
+    }
+
+    @Test
     void testDoppler() {
 
         // Surface point at latitude 45, longitude 5

@@ -24,6 +24,8 @@ import java.util.concurrent.TimeUnit;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.FieldElement;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1Field;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2Field;
 import org.hipparchus.util.FastMath;
@@ -449,6 +451,17 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
         this(reference.fieldOffset.getField(),
              new DateTimeComponents(reference.getComponents(timeScale), apparentOffset),
              timeScale);
+    }
+
+    /** Creates Field date with offset as univariate derivative of first order, with a unit linear coefficient in time.
+     * @return univariate derivative 1 date
+     * @since 13.1
+     */
+    public FieldAbsoluteDate<FieldUnivariateDerivative1<T>> toFUD1Field() {
+        final FieldUnivariateDerivative1Field<T> fud1Field = FieldUnivariateDerivative1Field.getUnivariateDerivative1Field(fieldOffset.getField());
+        final FieldUnivariateDerivative1<T> fud1Shift = new FieldUnivariateDerivative1<>(fieldOffset,
+                fieldOffset.getField().getOne());
+        return new FieldAbsoluteDate<>(fud1Field, date).shiftedBy(fud1Shift);
     }
 
     /** Creates Field date with offset as univariate derivative of second order, with a unit linear coefficient in time.
@@ -1314,7 +1327,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
 
     /** Check if the instance represents the same time as another instance.
      * @param other other date
-     * @return true if the instance and the other date refer to the same instant
+     * @return true if the instance and the other date refer to the same instant with same Field and addendum
      */
     public boolean equals(final Object other) {
 
@@ -1326,7 +1339,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
         if (other instanceof FieldAbsoluteDate) {
             final FieldAbsoluteDate<?> otherF = (FieldAbsoluteDate<?>) other;
             return fieldOffset.getField().equals(otherF.fieldOffset.getField()) &&
-                   date.equals(otherF.date);
+                   date.equals(otherF.date) && fieldOffset.getAddendum().equals(otherF.fieldOffset.getAddendum());
         }
 
         return false;
@@ -1427,7 +1440,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @return hashcode
      */
     public int hashCode() {
-        return date.hashCode();
+        return date.hashCode() + fieldOffset.getAddendum().hashCode();
     }
 
     /**

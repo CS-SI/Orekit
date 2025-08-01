@@ -174,7 +174,7 @@ public class IodLaplaceTest extends AbstractIodTest {
 
         // Verify
         Assertions.assertEquals(0.0, ref.getPosition().distance(orbit.getPosition()), 275.0);
-        Assertions.assertEquals(0.0, ref.getVelocity().distance(orbit.getPVCoordinates().getVelocity()), 0.8);
+        Assertions.assertEquals(0.0, ref.getVelocity().distance(orbit.getVelocity()), 0.8);
 
     }
 
@@ -201,7 +201,7 @@ public class IodLaplaceTest extends AbstractIodTest {
         // Verify
         final TimeStampedPVCoordinates truth = prop.getPVCoordinates(azEl2.getDate(), gcrf);
         Assertions.assertEquals(0.0, Vector3D.distance(truth.getPosition(), estOrbit.getPosition()), 275.0);
-        Assertions.assertEquals(0.0, Vector3D.distance(truth.getVelocity(), estOrbit.getPVCoordinates().getVelocity()), 0.8);
+        Assertions.assertEquals(0.0, Vector3D.distance(truth.getVelocity(), estOrbit.getVelocity()), 0.8);
     }
 
     // Helper function to generate measurements and estimate orbit for the given propagator
@@ -238,7 +238,7 @@ public class IodLaplaceTest extends AbstractIodTest {
         this.errorNorm[0] = Vector3D.distance(truth.getPosition(),
                           estOrbit.getPosition());
         this.errorNorm[1] = Vector3D.distance(truth.getVelocity(),
-                          estOrbit.getPVCoordinates().getVelocity());
+                          estOrbit.getVelocity());
     }
 
     public double[] getErrorNorm()

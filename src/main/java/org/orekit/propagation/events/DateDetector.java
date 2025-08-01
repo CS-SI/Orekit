@@ -180,6 +180,12 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
         return Collections.unmodifiableList(eventDateList);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean dependsOnTimeOnly() {
+        return true;
+    }
+
     /** Compute the value of the switching function.
      * This function measures the difference between the current and the target date.
      * @param s the current state information: date, kinematics, attitude

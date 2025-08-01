@@ -25,12 +25,16 @@ import org.hipparchus.geometry.euclidean.twod.FieldVector2D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.FieldCartesianOrbit;
+import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.AdditionalDataProvider;
 import org.orekit.propagation.FieldAdditionalDataProvider;
@@ -38,6 +42,9 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.AbsolutePVCoordinates;
+import org.orekit.utils.FieldAbsolutePVCoordinates;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
 import java.util.Arrays;
@@ -97,6 +104,60 @@ public class TestUtils {
                 return new double[0];
             }
         };
+    }
+
+    public static PVCoordinates getFakePVCoordinates() {
+        return new PVCoordinates(new Vector3D(1, 2, 3),
+                                 new Vector3D(4, 5, 6));
+    }
+
+    public static AbsolutePVCoordinates getFakeAbsolutePVCoordinates() {
+        return new AbsolutePVCoordinates(FramesFactory.getGCRF(),
+                                         new AbsoluteDate(),
+                                         getFakePVCoordinates());
+    }
+
+    public static Orbit getFakeOrbit() {
+        return new CartesianOrbit(getFakePVCoordinates(),
+                                  FramesFactory.getGCRF(),
+                                  new AbsoluteDate(),
+                                  1);
+    }
+
+    public static FieldOrbit<Binary64> getFakeFieldOrbit() {
+        return new FieldCartesianOrbit<>(getFakeFieldPVCoordinates(),
+                                         FramesFactory.getGCRF(),
+                                         getFakeFieldAbsoluteDate(),
+                                         new Binary64(1));
+    }
+
+    public static FieldAbsoluteDate<Binary64> getFakeFieldAbsoluteDate() {
+        return new FieldAbsoluteDate<>(Binary64Field.getInstance());
+    }
+
+    public static FieldPVCoordinates<Binary64> getFakeFieldPVCoordinates() {
+        final FieldVector3D<Binary64> fakePosition = new FieldVector3D<>(new Binary64(1),
+                                                                         new Binary64(2),
+                                                                         new Binary64(3));
+
+        final FieldVector3D<Binary64> fakeVelocity = new FieldVector3D<>(new Binary64(4),
+                                                                         new Binary64(5),
+                                                                         new Binary64(6));
+
+        return new FieldPVCoordinates<>(fakePosition, fakeVelocity);
+    }
+
+    public static FieldAbsolutePVCoordinates<Binary64> getFakeFieldAbsolutePVACoordinates() {
+        final FieldVector3D<Binary64> fakePosition = new FieldVector3D<>(new Binary64(1),
+                                                                         new Binary64(2),
+                                                                         new Binary64(3));
+
+        final FieldVector3D<Binary64> fakeVelocity = new FieldVector3D<>(new Binary64(4),
+                                                                         new Binary64(5),
+                                                                         new Binary64(6));
+
+        return new FieldAbsolutePVCoordinates<>(FramesFactory.getGCRF(), getFakeFieldAbsoluteDate(), fakePosition,
+                                                fakeVelocity);
     }
 
     /**

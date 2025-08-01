@@ -29,8 +29,12 @@ import java.util.List;
  *
  * @author Romain Serra
  * @since 13.0
+ * @see PropagationStepRecorder
  */
 public class FieldPropagationStepRecorder<T extends CalculusFieldElement<T>> implements FieldOrekitStepHandler<T> {
+
+    /** Flag to reset or not on (re)initialization. */
+    private boolean resetAutomatically;
 
     /**
      * Recorded times.
@@ -39,9 +43,36 @@ public class FieldPropagationStepRecorder<T extends CalculusFieldElement<T>> imp
 
     /**
      * Constructor.
+     * @param resetAutomatically resetting flag
+     */
+    public FieldPropagationStepRecorder(final boolean resetAutomatically) {
+        this.resetAutomatically = resetAutomatically;
+        this.states = new ArrayList<>();
+    }
+
+    /**
+     * Constructor with default flag.
      */
     public FieldPropagationStepRecorder() {
-        this.states = new ArrayList<>();
+        this(true);
+    }
+
+    /**
+     * Setter for resetting flag.
+     * @param resetAutomatically flag
+     * @since 13.1
+     */
+    public void setResetAutomatically(final boolean resetAutomatically) {
+        this.resetAutomatically = resetAutomatically;
+    }
+
+    /**
+     * Getter for resetting flag.
+     * @return flag
+     * @since 13.1
+     */
+    public boolean isResetAutomatically() {
+        return resetAutomatically;
     }
 
     /**
@@ -56,7 +87,9 @@ public class FieldPropagationStepRecorder<T extends CalculusFieldElement<T>> imp
     @Override
     public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
         FieldOrekitStepHandler.super.init(s0, t);
-        states.clear();
+        if (resetAutomatically) {
+            states.clear();
+        }
     }
 
     /** {@inheritDoc} */
