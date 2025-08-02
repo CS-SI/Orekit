@@ -38,7 +38,7 @@ safety_ckecks src/main/java/org/orekit/time
 gitlab_origin=$(find_gitlab_origin)
 
 # get users credentials
-gitlab_token=$(enter_gitlab_token)
+gitlab_token=$(enter_private_credentials "enter your gitlab private token")
 
 start_branch=$(find_start_branch)
 start_sha=$(find_start_sha)
@@ -181,33 +181,10 @@ The vote will be tallied on ${vote_date} (UTC time)"
     request_confirmation "OK to post vote topic on forum?"
 
     read -p "enter your forum user name " forum_username
-    forum_api_key=""
-    while test -z "$forum_api_key" ; do
-        echo "enter your forum API key"
-        stty_orig=$(stty -g)
-        stty -echo
-        read forum_api_key
-        stty $stty_orig
-    done
+    forum_api_key=$(enter_private_credentials "enter your forum API key")
 
-    orekit_dev_category=$(curl --silent \
-                               --request GET \
-                               --header "Content-Type: application/json" \
-                               --header "Api-Username: $forum_username" \
-                               --header "Api-Key: $forum_api_key" \
-                               --header "Accept: application/json" \
-                               https://forum.orekit.org/categories \
-                          | jq ".category_list.categories[] | select(.name==\"Orekit development\") | .id")
-
-    post_url=$(curl --silent \
-                    --request POST \
-                    --header "Content-Type: application/json" \
-                    --header "Accept: application/json" \
-                    --header "Api-Username: $forum_username"\
-                    --header "Api-Key: $forum_api_key" \
-                    --data   "{ \"title\": \"$topic_title\", \"raw\": \"$topic_raw\", \"category\": \"$orekit_dev_category\" }" \
-                    https://forum.orekit.org/posts.json \
-                   | jq --raw-output .post_url)
+    orekit_dev_category=$(find_forum_category $forum_username $forum_api_key "Orekit development")
+    post_url=$(post_to_forum $forum_username $forum_api_key $orekit_dev_category "$topic_title" "$topic_raw")
     echo ""
     echo "vote topic posted at URL: https://forum.orekit.org/$post_url"
 

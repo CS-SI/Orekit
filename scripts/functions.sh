@@ -8,6 +8,7 @@ gitlab_fqdn=gitlab.orekit.org
 gitlab_owner=luc
 gitlab_project=orekit
 gitlab_api=https://${gitlab_fqdn}/api/v4/projects/${gitlab_owner}%2F${gitlab_project}
+forum_fqdn=forum.orekit.org
 
 # note that the following function refers to a cleanup_at_exit function
 # that is *not* defined here but must be defined in the calling script
@@ -232,17 +233,17 @@ monitor_pipeline()
 
 }
 
-enter_gitlab_token()
+enter_private_credentials()
 {
-    local token=""
-    while test -z "$token" ; do
-        echo "enter your gitlab private token" 1>&2
+    local credentials=""
+    while test -z "$credentials" ; do
+        echo "$1" 1>&2
         stty_orig=$(stty -g)
         stty -echo
-        read token
+        read credentials
         stty $stty_orig
     done
-    echo "$token"
+    echo "$credentials"
 }
 
 search_in_repository()
@@ -283,4 +284,29 @@ get_mr()
           ${gitlab_api}/merge_requests/$2 \
         | jq --raw-output "$3"
     fi
+}
+
+find_forum_category()
+{
+    curl --silent \
+         --request GET \
+         --header "Content-Type: application/json" \
+         --header "Api-Username: $1" \
+         --header "Api-Key: $2" \
+         --header "Accept: application/json" \
+         https://${forum_fqdn}/categories \
+    | jq ".category_list.categories[] | select(.name==\"$3\") | .id"
+}
+
+post_to_forum()
+{
+    curl --silent \
+         --request POST \
+         --header "Content-Type: app1ication/json" \
+         --header "Accept: application/json" \
+         --header "Api-Username: $1"\
+         --header "Api-Key: $2" \
+         --data   "{ \"title\": \"$3\", \"raw\": \"$5\", \"category\": \"$3\" }" \
+         https://${forum_fqdn}/posts.json \
+    | jq --raw-output .post_url
 }
