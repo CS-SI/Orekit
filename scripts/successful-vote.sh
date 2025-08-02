@@ -1,39 +1,21 @@
 #!/bin/sh
 
-tmpdir=$(mktemp -d /tmp/orekit-failed-vote.XXXXXX)
-trap "rm -fr $tmpdir" 0
-trap "exit 1" 1 2 15
-
-gitlab_fqdn=gitlab.orekit.org
-gitlab_owner=orekit
-gitlab_project=orekit
-
-complain()
+cleanup_at_exit()
 {
-    echo "$1" 1>&2
-    exit 1
+  # nothing to cleanup in this script
 }
 
-request_confirmation()
-{
-    answer=""
-    while test "$answer" != "yes" && test "$answer" != "no" ; do
-        read -p "$1 (enter yes to continue, no to stop the release process) " answer
-    done
-    test $answer = "yes" || complain "release process stopped at user request"
-}
-
-# find top level directory
-top=$(cd $(dirname $0)/.. ; pwd)
+# load common functions
+. $(dirname $0)/functions.sh
 
 # safety checks
-for cmd in git sed xsltproc sort tail curl stty base64 jq ; do
-    which -s $cmd || complain "$cmd command not found"
-done
-git -C "$top" rev-parse 2>/dev/null        || complain "$top does not contain a git repository"
-test -f $top/pom.xml                       || complain "$top/pom.xml not found"
-test -d $top/src/main/java/org/orekit/time || complain "$top/src/main/java/org/orekit/time not found"
-origin=$(cd $top ; git remote -v | sed -n "s,\([^ \t]*\)\t*.*${gitlab_fqdn}:${gitlab_owner}/${gitlab_project}.git.*(push).*,\1,p")
+safety_ckecks src/main/java/org/orekit/time
+
+# set the gitlab remote repository name
+gitlab_origin=$(find_gitlab_origin)
+
+# get users credentials
+gitlab_token=$(enter_gitlab_token)
 
 start_branch=$(cd $top ; git branch --show-current)
 echo "start branch is $start_branch"
@@ -111,16 +93,16 @@ request_confirmation "create tag $release_tag?"
 (cd $top ; git tag $release_tag -m "Version $release_version.")
 
 # push to origin
-request_confirmation "push $release_branch branch and $release_tag tag to ${origin}?"
-(cd $top ; git push ${origin} $release_branch $release_tag)
+request_confirmation "push $release_branch branch and $release_tag tag to ${gitlab_origin}?"
+(cd $top ; git push ${gitlab_origin} $release_branch $release_tag)
 
 # merge release branch to main branch
 request_confirmation "merge $release_branch to main?"
 (cd $top ; git checkout main ; git merge --no-ff $release_branch)
 
 # push main branch
-request_confirmation "push main branch to ${origin}?"
-(cd $top ; git push ${origin} main)
+request_confirmation "push main branch to ${gitlab_origin}?"
+(cd $top ; git push ${gitlab_origin} main)
 
 # merge main branch to develop branch
 request_confirmation "merge main to develop?"
@@ -149,8 +131,8 @@ request_confirmation "commit pom.xml and changes.xml?"
 (cd $top; git add pom.xml src/changes/changes.xml; git commit -m "Incremented version number for next-release.")
 
 # push develop branch
-request_confirmation "push develop branch to ${origin}?"
-(cd $top ; git push ${origin} develop)
+request_confirmation "push develop branch to ${gitlab_origin}?"
+(cd $top ; git push ${gitlab_origin} develop)
 
 echo "please navigate to https://${gitlab_fqdn}/${gitlab_owner}/${gitlab_project}/-/releases"
 echo "and check release notes are OK (it may take some time for the releases to show up there)"
