@@ -18,7 +18,7 @@ cleanup_at_exit()
 }
 
 # run everything from top project directory
-cd $(dirname $0)
+cd $(dirname $0)/..
 
 # load common functions
 . scripts/functions.sh
@@ -52,7 +52,7 @@ rc_tag=$(rc_tag $release_version $next_rc)
 
 # reuse existing release branch for patch release or new release candidate, create it otherwise
 release_branch=$(release_branch $release_version)
-if test "$release_type" = patch -o $next_rc -ge 1 ; then
+if test "$release_type" = patch -o $next_rc -gt 1 ; then
     test ! -z $(git rev-parse --quiet --verify $release_branch) || complain "branch $release_branch doesn't exist, stopping"
     delete_release_branch_on_cleanup="false"
 else

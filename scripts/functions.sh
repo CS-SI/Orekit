@@ -5,7 +5,7 @@ trap "rm -fr $tmpdir" 0
 trap "exit 1" 1 2 15
 
 gitlab_fqdn=gitlab.orekit.org
-gitlab_owner=luc
+gitlab_owner=orekit
 gitlab_project=orekit
 gitlab_api=https://${gitlab_fqdn}/api/v4/projects/${gitlab_owner}%2F${gitlab_project}
 forum_fqdn=forum.orekit.org
@@ -187,7 +187,7 @@ merge_remote_branch()
       sleep 5
       timeout=$(expr $timeout + 5)
       test $timeout -lt 600 || complain "merge request ${mr_id} not mergeable after 10 minutes, exiting"
-      merge_status=$(get_mr ${mr_id} ".detailed_merge_status")
+      merge_status=$(get_mr "$1" ${mr_id} ".detailed_merge_status")
     done
     echo "merge request ${mr_id} is mergeable"
     echo ""
@@ -209,7 +209,7 @@ merge_remote_branch()
       sleep 5
       timeout=$(expr $timeout + 5)
       test $timeout -lt 600 || complain "merge request ${mr_id} not merged after 10 minutes, exiting"
-      merge_state=$(get_mr ${mr_id} ".state")
+      merge_state=$(get_mr "$1" ${mr_id} ".state")
     done
     echo "merge request ${mr_id} has been merged"
     echo ""

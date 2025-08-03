@@ -13,7 +13,7 @@ cleanup_at_exit()
 }
 
 # run everything from top project directory
-cd $(dirname $0)
+cd $(dirname $0)/..
 
 # load common functions
 . scripts/functions.sh
