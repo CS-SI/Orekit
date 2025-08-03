@@ -33,49 +33,48 @@ request_confirmation()
 
 safety_ckecks()
 {
-    local top=$(dirname $0)/..
     for cmd in git sed xsltproc tee sort tail curl stty base64 jq ; do
         which -s $cmd || complain "$cmd command not found"
     done
-    git -C "$top" rev-parse 2>/dev/null || complain "$top does not contain a git repository"
-    test -f $top/pom.xml                || complain "$top/pom.xml not found"
-    test -d $top/$1                     || complain "$top/$1 not found"
+    git -C . rev-parse 2>/dev/null || complain "$(pwd) does not contain a git repository"
+    test -f pom.xml                || complain "$(pwd)/pom.xml not found"
+    test -d $1                     || complain "$(pwd)/$1 not found"
 }
 
 find_gitlab_origin()
 {
-  (cd $(dirname $0)/.. ; git remote -v | sed -n "s,\([^ \t]*\)\t*.*${gitlab_fqdn}:${gitlab_owner}/${gitlab_project}.git.*(push).*,\1,p")
+  git remote -v | sed -n "s,\([^ \t]*\)\t*.*${gitlab_fqdn}:${gitlab_owner}/${gitlab_project}.git.*(push).*,\1,p"
 }
 
 find_start_branch()
 {
-    test -z "$(cd $(dirname $0)/.. ; git status --porcelain)" || complain "there are uncommitted changes in the branch"
-    (cd $(dirname $0)/.. ; git branch --show-current)
+    test -z "$(git status --porcelain)" || complain "there are uncommitted changes in the branch"
+    git branch --show-current
 }
 
 find_start_sha()
 {
-    (cd $(dirname $0)/.. ; git rev-parse --verify HEAD)
+    git rev-parse --verify HEAD
 }
 
 find_pom_version()
 {
-    xsltproc $(dirname $0)/get-pom-version.xsl $(dirname $0)/../pom.xml
+    xsltproc scripts/get-pom-version.xsl pom.xml
 }
 
 find_changes_version()
 {
-    xsltproc $(dirname $0)/get-changes-version.xsl $(dirname $0)/../src/changes/changes.xml
+    xsltproc scripts/get-changes-version.xsl src/changes/changes.xml
 }
 
 find_hipparchus_version()
 {
-    xsltproc $(dirname $0)/get-hipparchus-version.xsl $(dirname $0)/../pom.xml
+    xsltproc scripts/get-hipparchus-version.xsl pom.xml
 }
 
 compute_next_rc()
 {
-    local last_rc=$(cd $(dirname $0)/..; git tag -l "${1}-RC*" | sed 's,.*-RC,,' | sort -n | tail -1)
+    local last_rc=$(git tag -l "${1}-RC*" | sed 's,.*-RC,,' | sort -n | tail -1)
     if test -z "$last_rc" ; then
         echo 1
     else
@@ -85,17 +84,15 @@ compute_next_rc()
 
 create_local_branch()
 {
-    test -z "$(cd $(dirname $0)/.. ; git branch --list $1)" || complain "branch $1 already exists, stopping"
-    (cd $(dirname $0)/..
-     git branch $1
-     git checkout $1
-     git merge --no-ff --no-commit $2
-     if test ! -z "$(git status --porcelain)" ; then
-         git status
-         request_confirmation "commit merge from $2?"
-         git commit -m "merging $2 to $1"
-     fi
-    )
+    test -z "$(git branch --list $1)" || complain "branch $1 already exists, stopping"
+    git branch $1
+    git checkout $1
+    git merge --no-ff --no-commit $2
+    if test ! -z "$(git status --porcelain)" ; then
+        git status
+        request_confirmation "commit merge from $2?"
+        git commit -m "merging $2 to $1"
+    fi
 }
 
 create_remote_branch()
@@ -133,7 +130,7 @@ create_remote_branch()
 
 }
 
-remote_merge()
+merge_remote_branch()
 {
     local mr_id merge_status="preparing" merge_state="opened" timeout=0 current_date
 
@@ -145,8 +142,8 @@ remote_merge()
               --header "PRIVATE-TOKEN: $1" \
               --data   "source_branch=$2" \
               --data   "target_branch=$3" \
-              --data   "remove_source_branch=true" \
-              --data   "title=$4" \
+              --data   "remove_source_branch=$4" \
+              --data   "title=$5" \
               "${gitlab_api}/merge_requests" \
            | jq .iid)
     echo "merge request ID is $mr_id"

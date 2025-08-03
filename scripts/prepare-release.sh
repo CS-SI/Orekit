@@ -3,33 +3,33 @@
 cleanup_at_exit()
 {
     # rewind git repositories (both local and in the GitLab forge)
-    (cd $(dirname $0)/..
-        if test ! -z "$start_branch" && test "$(git branch --show-current)" != "$start_branch" ; then
-            # we need to clean up the branches and rewind everything
-            git reset -q --hard; git checkout $start_branch
-            if test ! -z "$(git branch --list $rc_branch)" ; then
-                git branch -D $rc_branch
-                test -z "$(search_in_repository "$gitlab_token" branches ${rc_branch} .[].name)" || delete_in_repository "$gitlab_token" branches ${rc_branch}
-            fi
-            if test ! -z "$rc_tag" ; then
-              if test ! -z "$(git tag --list $rc_tag)" ; then
-                  git tag -d $rc_tag
-                  test -z "$(search_in_repository "$gitlab_token" tags ${rc_tag} .[].name)" || delete_in_repository "$gitlab_token" tags ${rc_tag}
-              fi
-            fi
-            if test "$delete_release_branch_on_cleanup" = "true" ; then
-                git branch -D $release_branch
-                test -z "$(search_in_repository "$gitlab_token" branches ${release_branch} .[].name)" || delete_in_repository "$gitlab_token" branches ${release_branch}
-            fi
-            git fetch --prune ${gitlab_origin}
-            echo "everything has been cleaned, branch set back to $start_branch" 1>&2
+    if test ! -z "$start_branch" && test "$(git branch --show-current)" != "$start_branch" ; then
+        # we need to clean up the branches and rewind everything
+        git reset -q --hard; git checkout $start_branch
+        if test ! -z "$(git branch --list $rc_branch)" ; then
+            git branch -D $rc_branch
+            test -z "$(search_in_repository "$gitlab_token" branches ${rc_branch} .[].name)" || delete_in_repository "$gitlab_token" branches ${rc_branch}
         fi
-    )
+        if test ! -z "$rc_tag" ; then
+          if test ! -z "$(git tag --list $rc_tag)" ; then
+              git tag -d $rc_tag
+              test -z "$(search_in_repository "$gitlab_token" tags ${rc_tag} .[].name)" || delete_in_repository "$gitlab_token" tags ${rc_tag}
+          fi
+        fi
+        if test "$delete_release_branch_on_cleanup" = "true" ; then
+            git branch -D $release_branch
+            test -z "$(search_in_repository "$gitlab_token" branches ${release_branch} .[].name)" || delete_in_repository "$gitlab_token" branches ${release_branch}
+        fi
+        git fetch --prune ${gitlab_origin}
+        echo "everything has been cleaned, branch set back to $start_branch" 1>&2
+    fi
 }
 
+# run everything from top project directory
+cd $(dirname $0)
+
 # load common functions
-top=$(dirname $0/.. ; pwd)
-. $(dirname $0)/functions.sh
+. scripts/functions.sh
 
 # safety checks
 safety_ckecks src/main/java/org/orekit/time
@@ -61,13 +61,13 @@ rc_tag="${release_version}-RC$next_rc"
 # reuse existing release branch for patch release or new release candidate, create it otherwise
 release_branch=$(echo $release_version | sed 's,\([0-9]\+.[0-9]\+\)[.0-9]*,release-\1,')
 if test "$release_type" = patch -o $next_rc -ge 1 ; then
-    (cd $top ; test ! -z $(git rev-parse --quiet --verify $release_branch)) || complain "branch $release_branch doesn't exist, stopping"
+    test ! -z $(git rev-parse --quiet --verify $release_branch) || complain "branch $release_branch doesn't exist, stopping"
     delete_release_branch_on_cleanup="false"
 else
-    (cd $top ; git branch $release_branch) || complain "branch $release_branch already exist, stopping"
+    git branch $release_branch || complain "branch $release_branch already exist, stopping"
     delete_release_branch_on_cleanup="true"
 fi
-(cd $top ; git checkout $release_branch)
+git checkout $release_branch
 
 # create release candidate branch
 rc_branch="RC${next_rc}-${release_version}"
@@ -76,33 +76,34 @@ create_local_branch $rc_branch $start_branch
 # modify pom
 echo
 echo "dropping -SNAPSHOT from version number"
-cp -p $top/pom.xml $tmpdir/original-pom.xml
+cp -p pom.xml $tmpdir/original-pom.xml
 xsltproc --stringparam release-version "$release_version" \
-         $top/scripts/update-pom-version.xsl \
+         scripts/update-pom-version.xsl \
          $tmpdir/original-pom.xml \
-         > $top/pom.xml
+         > pom.xml
 echo
-(cd $top ; git diff)
+git diff
 echo
 request_confirmation "commit pom.xml?"
-(cd $top; git add pom.xml ; git commit -m "Dropped -SNAPSHOT in version number for official release.")
+git add pom.xml ; git commit -m "Dropped -SNAPSHOT in version number for official release."
 
 # compute release date in the future
 release_date=$(TZ=UTC date -d "+5 days" +"%Y-%m-%d")
 
 # update changes.xml
-cp -p $top/src/changes/changes.xml $tmpdir/original-changes.xml
+cp -p src/changes/changes.xml $tmpdir/original-changes.xml
 xsltproc --stringparam release-version     "$release_version" \
          --stringparam release-date        "$release_date" \
          --stringparam release-description "$release_version is a $release_type release." \
-         $top/scripts/update-changes.xsl \
+         scripts/update-changes.xsl \
          $tmpdir/original-changes.xml \
-         > $top/src/changes/changes.xml
+         > src/changes/changes.xml
 echo
-(cd $top ; git diff)
+git diff
 echo
 request_confirmation "commit changes.xml?"
-(cd $top ; git add src/changes/changes.xml ; git commit -m "Updated changes.xml for official release.")
+git add src/changes/changes.xml
+git commit -m "Updated changes.xml for official release."
 
 # update downloads and faq pages
 # the weird first pattern with a 13.0 in the middle avoids modifying the second #set that manages old versions
@@ -110,49 +111,50 @@ request_confirmation "commit changes.xml?"
 sed -i \
     -e "s,^\(#set *( *\$versions *= *{\)\(.*\)\(13.0.*\),\1\"$release_version\": \"$release_date\"\, \2\3," \
     -e "s,\(\"$release_version\": \"$release_date\"\,\) \"$release_version\": \"[-0-9]*\"\,,\1," \
-    $top/src/site/markdown/downloads.md.vm
+    src/site/markdown/downloads.md.vm
 justified_orekit=$(echo "$release_version      " | sed 's,\(......\).*,\1,')
 sed -i "$(sed -n '/^ *Orekit[0-9. ]*| *Hipparchus[0-9. ]*$/=' src/site/markdown/faq.md | tail -1)a\  Orekit $justified_orekit | Hipparchus          $hipparchus_version" \
-    $top/src/site/markdown/faq.md
+    src/site/markdown/faq.md
 echo
-(cd $top ; git diff)
+git diff
 echo
 request_confirmation "commit downloads.md.vm and faq.md?"
-(cd $top ; git add src/site/markdown/downloads.md.vm src/site/markdown/faq.md ; git commit -m "Updated documentation for official release.")
+git add src/site/markdown/downloads.md.vm src/site/markdown/faq.md
+git commit -m "Updated documentation for official release."
+
 
 # push to origin
 echo
 test -z "$(search_in_repository "$gitlab_token" branches ${rc_branch} .[].name)" || complain "branch ${rc_branch} already exists in ${gitlab_origin}"
 request_confirmation "push $rc_branch branch to ${gitlab_origin}?"
-(cd $top ; git push ${gitlab_origin} $rc_branch)
+git push ${gitlab_origin} $rc_branch
 
 # make sure we can merge in a release branch on the origin server
 create_remote_branch "$gitlab_token" $release_branch $start_sha $gitlab_origin
 
 # remotely merge release candidate branch into release branch
-remote_merge "$gitlab_token" $rc_branch $release_branch "preparing release $release_version"
+merge_remote_branch "$gitlab_token" $rc_branch $release_branch true "preparing release $release_version"
 
 # switch to release branch and delete release candidate branch
-(cd $top
- git fetch --prune ${gitlab_origin}
- git checkout $release_branch
- git branch --set-upstream-to ${gitlab_origin}/$release_branch $release_branch
- git pull ${gitlab_origin}
- git branch -d $rc_branch
-)
+git fetch --prune ${gitlab_origin}
+git checkout $release_branch
+git branch --set-upstream-to ${gitlab_origin}/$release_branch $release_branch
+git pull ${gitlab_origin}
+git branch -d $rc_branch
 
 echo ""
 request_confirmation "create tag $rc_tag?"
-(cd $top ; git tag $rc_tag -m "Release Candidate $next_rc for version $release_version." ; git push ${gitlab_origin} $rc_tag)
+git tag $rc_tag -m "Release Candidate $next_rc for version $release_version."
+git push ${gitlab_origin} $rc_tag
 echo ""
 
 # monitor continuous integration pipeline triggering (10 minutes max)
-merge_sha=$(cd $top ; git rev-parse --verify HEAD)
+merge_sha=$(git rev-parse --verify HEAD)
 monitor_pipeline "$gitlab_token" $merge_sha $release_branch || complain "pipeline did not succeed"
 
 if test "$release_type" = "patch" ; then
     # for patch release, there are no votes, we jump directly to the publish step
-    sh $top/scripts/successful-vote.sh
+    sh scripts/successful-vote.sh
 else
     # create vote topic
     vote_date=$(TZ=UTC date -d "+5 days" +"%Y-%m-%dT%H:%M:%SZ")
@@ -160,7 +162,7 @@ else
     topic_raw="This is a vote in order to release version ${release_version} of the Orekit library.
 Version ${release_version} is a ${release_type} release.
 
-$(xsltproc $top/scripts/changes2release.xsl $top/src/changes/changes.xml)
+$(xsltproc scripts/changes2release.xsl src/changes/changes.xml)
 
 The release candidate ${next_rc} can be found on the GitLab repository
 as tag $rc_tag in the ${release_branch} branch:
