@@ -5,20 +5,12 @@ cleanup_at_exit()
     # rewind git repositories (both local and in the GitLab forge)
     if test ! -z "$start_branch" && test "$(git branch --show-current)" != "$start_branch" ; then
         # we need to clean up the branches and rewind everything
-        git reset -q --hard; git checkout $start_branch
-        if test ! -z "$(git branch --list $rc_branch)" ; then
-            git branch -D $rc_branch
-            test -z "$(search_in_repository "$gitlab_token" branches ${rc_branch} .[].name)" || delete_in_repository "$gitlab_token" branches ${rc_branch}
-        fi
-        if test ! -z "$rc_tag" ; then
-          if test ! -z "$(git tag --list $rc_tag)" ; then
-              git tag -d $rc_tag
-              test -z "$(search_in_repository "$gitlab_token" tags ${rc_tag} .[].name)" || delete_in_repository "$gitlab_token" tags ${rc_tag}
-          fi
-        fi
+        git reset -q --hard
+        git checkout $start_branch
+        delete_local_and_remote_branch "$gitlab_token" "$rc_branch"
+        delete_local_and_remote_tag    "$gitlab_token" "$rc_tag"
         if test "$delete_release_branch_on_cleanup" = "true" ; then
-            git branch -D $release_branch
-            test -z "$(search_in_repository "$gitlab_token" branches ${release_branch} .[].name)" || delete_in_repository "$gitlab_token" branches ${release_branch}
+            delete_local_and_remote_branch "$gitlab_token" "$release_branch"
         fi
         git fetch --prune ${gitlab_origin}
         echo "everything has been cleaned, branch set back to $start_branch" 1>&2
@@ -40,26 +32,26 @@ gitlab_origin=$(find_gitlab_origin)
 # get users credentials
 gitlab_token=$(enter_private_credentials "enter your gitlab private token")
 
-start_branch=$(find_start_branch)
-start_sha=$(find_start_sha)
+start_branch=$(find_current_branch)
+start_sha=$(find_current_sha)
 
 # extract version numbers
 pom_version=$(find_pom_version)
 changes_version=$(find_changes_version)
 hipparchus_version=$(find_hipparchus_version)
 release_version=$(echo $pom_version | sed 's,-SNAPSHOT,,')
-release_type=$(echo $release_version | sed -e "s,^[0-9]*\.0$,major," -e "s,^[0-9]*\.[1-9][0-9]*$,minor," -e "s,^[0-9]*\.[0-9]*\.[0-9]*$,patch,")
+release_type=$(release_type $release_version)
 test "$release_version"  = "$changes_version" || complain "wrong version in changes.xml ($changes_version instead of $release_version)"
 echo "current version is $pom_version"
 echo "release version will be $release_version, a $release_type release, depending on Hipparchus $hipparchus_version"
 request_confirmation "do you agree with these version numbers?"
 
 # compute release candidate number
-next_rc=$(compute_next_rc $release_version)
-rc_tag="${release_version}-RC$next_rc"
+next_rc=$(expr $(last_rc $release_version) + 1)
+rc_tag=$(rc_tag $release_version $next_rc)
 
 # reuse existing release branch for patch release or new release candidate, create it otherwise
-release_branch=$(echo $release_version | sed 's,\([0-9]\+.[0-9]\+\)[.0-9]*,release-\1,')
+release_branch=$(release_branch $release_version)
 if test "$release_type" = patch -o $next_rc -ge 1 ; then
     test ! -z $(git rev-parse --quiet --verify $release_branch) || complain "branch $release_branch doesn't exist, stopping"
     delete_release_branch_on_cleanup="false"
@@ -122,12 +114,11 @@ request_confirmation "commit downloads.md.vm and faq.md?"
 git add src/site/markdown/downloads.md.vm src/site/markdown/faq.md
 git commit -m "Updated documentation for official release."
 
-
 # push to origin
 echo
-test -z "$(search_in_repository "$gitlab_token" branches ${rc_branch} .[].name)" || complain "branch ${rc_branch} already exists in ${gitlab_origin}"
+test -z "$(search_in_repository "$gitlab_token" branches $rc_branch .[].name)" || complain "branch $rc_branch already exists in ${gitlab_origin}"
 request_confirmation "push $rc_branch branch to ${gitlab_origin}?"
-git push ${gitlab_origin} $rc_branch
+git push $gitlab_origin $rc_branch
 
 # make sure we can merge in a release branch on the origin server
 create_remote_branch "$gitlab_token" $release_branch $start_sha $gitlab_origin
@@ -145,7 +136,7 @@ git branch -d $rc_branch
 echo ""
 request_confirmation "create tag $rc_tag?"
 git tag $rc_tag -m "Release Candidate $next_rc for version $release_version."
-git push ${gitlab_origin} $rc_tag
+git push $gitlab_origin $rc_tag
 echo ""
 
 # monitor continuous integration pipeline triggering (10 minutes max)
@@ -158,14 +149,15 @@ if test "$release_type" = "patch" ; then
 else
     # create vote topic
     vote_date=$(TZ=UTC date -d "+5 days" +"%Y-%m-%dT%H:%M:%SZ")
-    topic_title="[VOTE] Releasing Orekit ${release_version} from release candidate $next_rc"
-    topic_raw="This is a vote in order to release version ${release_version} of the Orekit library.
-Version ${release_version} is a ${release_type} release.
+    topic_title="[VOTE] Releasing Orekit $release_version from release candidate $next_rc"
+    release_description="$(extract_release_description)"
+    topic_raw="This is a vote in order to release version $release_version of the Orekit library.
+Version $release_version is a $release_type release.
 
-$(xsltproc scripts/changes2release.xsl src/changes/changes.xml)
+$release_description
 
-The release candidate ${next_rc} can be found on the GitLab repository
-as tag $rc_tag in the ${release_branch} branch:
+The release candidate $next_rc can be found on the GitLab repository
+as tag $rc_tag in the $release_branch branch:
 https://gitlab.orekit.org/orekit/orekit/tree/${release_branch}
 
 The maven artifacts are available in the Orekit Nexus repository at:
@@ -174,7 +166,7 @@ https://packages.orekit.org/#browse/browse:maven-releases:org%2Forekit%2Forekit%
 The generated site is available at:
 https://www.orekit.org/site-orekit-${release_version}/index.html
 
-The vote will be tallied on ${vote_date} (UTC time)"
+The vote will be tallied on $vote_date (UTC time)"
 
     echo ""
     echo "proposed vote topic for the forum:"
@@ -185,8 +177,8 @@ The vote will be tallied on ${vote_date} (UTC time)"
     read -p "enter your forum user name " forum_username
     forum_api_key=$(enter_private_credentials "enter your forum API key")
 
-    orekit_dev_category=$(find_forum_category $forum_username $forum_api_key "Orekit development")
-    post_url=$(post_to_forum $forum_username $forum_api_key $orekit_dev_category "$topic_title" "$topic_raw")
+    development_category=$(find_forum_category $forum_username $forum_api_key "Orekit development")
+    post_url=$(post_to_forum $forum_username $forum_api_key $development_category "$topic_title" "$topic_raw")
     echo ""
     echo "vote topic posted at URL: https://forum.orekit.org/$post_url"
 

@@ -33,7 +33,7 @@ request_confirmation()
 
 safety_ckecks()
 {
-    for cmd in git sed xsltproc tee sort tail curl stty base64 jq ; do
+    for cmd in git sed xsltproc sort tail curl stty base64 jq ; do
         which -s $cmd || complain "$cmd command not found"
     done
     git -C . rev-parse 2>/dev/null || complain "$(pwd) does not contain a git repository"
@@ -46,13 +46,15 @@ find_gitlab_origin()
   git remote -v | sed -n "s,\([^ \t]*\)\t*.*${gitlab_fqdn}:${gitlab_owner}/${gitlab_project}.git.*(push).*,\1,p"
 }
 
-find_start_branch()
+find_current_branch()
 {
+    local start=$(git branch --show-current)
     test -z "$(git status --porcelain)" || complain "there are uncommitted changes in the branch"
-    git branch --show-current
+    echo "current branch is $start" 1>&2
+    echo $start
 }
 
-find_start_sha()
+find_current_sha()
 {
     git rev-parse --verify HEAD
 }
@@ -72,14 +74,43 @@ find_hipparchus_version()
     xsltproc scripts/get-hipparchus-version.xsl pom.xml
 }
 
-compute_next_rc()
+extract_release_description()
 {
-    local last_rc=$(git tag -l "${1}-RC*" | sed 's,.*-RC,,' | sort -n | tail -1)
-    if test -z "$last_rc" ; then
-        echo 1
+    xsltproc scripts/changes2release.xsl src/changes/changes.xml
+}
+
+release_type()
+{
+  echo $1 | sed -e "s,^[0-9]*\.0$,major," -e "s,^[0-9]*\.[1-9][0-9]*$,minor," -e "s,^[0-9]*\.[0-9]*\.[0-9]*$,patch,"
+}
+
+release_branch()
+{
+  echo $1 | sed 's,\([0-9]\+.[0-9]\+\)[.0-9]*,release-\1,'
+}
+
+last_rc()
+{
+    local last="$(git tag -l "${1}-RC*" | sed 's,.*-RC,,' | sort -n | tail -1)"
+    if test -z "$last" ; then
+        echo 0
     else
-        expr $last_rc + 1
+        echo $last
     fi
+}
+
+rc_tag()
+{
+    echo "${1}-RC$2"
+}
+
+next_version()
+{
+    local current_major current_minor next_minor
+    current_major=$(echo $1 | sed 's,\..*,,')
+    current_minor=$(echo $release_version | sed 's,[^.]*\.\([^.]\).*,\1,')
+    next_minor=$(expr $current_minor + 1)
+    echo ${current_major}.${next_minor}
 }
 
 create_local_branch()
@@ -150,7 +181,7 @@ merge_remote_branch()
     echo ""
 
     # wait for merge request to be mergeable
-    while test "${merge_status}" != "mergeable" ; do
+    while test "$merge_status" != "mergeable" ; do
       current_date=$(date +"%Y-%m-%dT%H:%M:%S")
       echo "${current_date} merge request ${mr_id} status: ${merge_status}, waiting…"
       sleep 5
@@ -172,7 +203,7 @@ merge_remote_branch()
 
     # waiting for merge request to be merged
     timeout=0
-    while test "${merge_state}" != "merged"; do
+    while test "$merge_state" != "merged"; do
       current_date=$(date +"%Y-%m-%dT%H:%M:%S")
       echo "${current_date} merge request ${mr_id} state: ${merge_state}, waiting…"
       sleep 5
@@ -183,6 +214,38 @@ merge_remote_branch()
     echo "merge request ${mr_id} has been merged"
     echo ""
 
+}
+
+get_milestone_id()
+{
+    curl \
+      --silent \
+      --request GET \
+      --header "PRIVATE-TOKEN: $1" \
+      "${gitlab_api}/milestones" \
+   | jq ".[] | select(.title==\"$2\") | .id"
+}
+
+close_milestone()
+{
+    curl \
+      --silent \
+      --output /dev/null \
+      --request PUT \
+      --header "PRIVATE-TOKEN: $1" \
+      --data "state_event=close" \
+      "${gitlab_api}/milestones/$2"
+}
+
+create_milestone()
+{
+    curl \
+      --silent \
+      --output /dev/null \  
+      --request POST \
+      --header "PRIVATE-TOKEN: $1" \
+      --data   "title=\"$2\"" \
+      "${gitlab_api}/milestones"
 }
 
 monitor_pipeline()
@@ -207,7 +270,7 @@ monitor_pipeline()
     # monitor continuous integration pipeline run (1 hour max)
     # the status is one of
     # created, waiting_for_resource, preparing, pending, running, success, failed, canceling, canceled, skipped, manual, scheduled
-    while test "${pipeline_status}" != "success" -a "${pipeline_status}" != "failed"  -a "${pipeline_status}" != "canceled" ; do
+    while test "$pipeline_status" != "success" -a "$pipeline_status" != "failed"  -a "$pipeline_status" != "canceled" ; do
       current_date=$(date +"%Y-%m-%dT%H:%M:%S")
       echo "${current_date} pipeline ${pipeline_id} status: ${pipeline_status}, waiting…"
       sleep 30
@@ -241,6 +304,26 @@ enter_private_credentials()
         stty $stty_orig
     done
     echo "$credentials"
+}
+
+delete_local_and_remote_branch()
+{
+    if test ! -z "$2" ; then
+        if test ! -z "$(git branch --list $2)" ; then
+            git branch -D $2
+            test -z "$(search_in_repository "$1" branches $2 .[].name)" || delete_in_repository "$1" branches $2
+        fi
+    fi
+}
+
+delete_local_and_remote_tag()
+{
+    if test ! -z "$2" ; then
+        if test ! -z "$(git tag --list $2)" ; then
+            git tag -d $2
+            test -z "$(search_in_repository "$1" tags $2 .[].name)" || delete_in_repository "$1" tags $2
+        fi
+    fi
 }
 
 search_in_repository()

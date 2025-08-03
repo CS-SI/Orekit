@@ -6206,6 +6206,7 @@
         Added the changes page to the generated site.
       </action>
     </release>
-    <release version="3.1" date="2008-07-16" description="This release is the first public release of Orekit."/>
+    <release version="3.1" date="2008-07-16" description="This release is the first public release of Orekit.">
+    </release>
   </body>
 </document>
