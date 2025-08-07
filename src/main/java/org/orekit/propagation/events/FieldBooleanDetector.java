@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
@@ -141,10 +142,10 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
                                                                         detectors.stream()
                                                                                  .map(FieldEventDetector::getMaxCheckInterval)
                                                                                  .toArray(FieldAdaptableInterval[]::new));
-        
+
         final T       threshold = detectors.stream().map(FieldEventDetector::getThreshold).min(new FieldComparator<>()).get();
-        final Integer maxIters  = detectors.stream().map(FieldEventDetector::getMaxIterationCount).min(Integer::compareTo).get();
-        
+        final int maxIters  = extractMaxIter(detectors);
+
         return new FieldBooleanDetector<>(new ArrayList<>(detectors), // copy for immutability
                                           Operator.AND,
                                           new FieldEventDetectionSettings<>(fai, threshold, maxIters),
@@ -202,16 +203,16 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
                                                                         detectors.stream()
                                                                                  .map(FieldEventDetector::getMaxCheckInterval)
                                                                                  .toArray(FieldAdaptableInterval[]::new));
-        
+
         final T       threshold = detectors.stream().map(FieldEventDetector::getThreshold).min(new FieldComparator<>()).get();
-        final Integer maxIters  = detectors.stream().map(FieldEventDetector::getMaxIterationCount).min(Integer::compareTo).get();
-        
+        final int maxIters  = extractMaxIter(detectors);
+
         return new FieldBooleanDetector<>(new ArrayList<>(detectors), // copy for immutability
                                           Operator.OR,
                                           new FieldEventDetectionSettings<>(fai, threshold, maxIters),
                                           new FieldContinueOnEvent<>());
     }
-    
+
     /**
      * Create a new event detector that negates the g function of another detector.
      *
@@ -303,7 +304,6 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
         AND() {
 
             @Override
-            /** {@inheritDoc} */
             public <T extends CalculusFieldElement<T>> T combine(final T g1, final T g2) {
                 return FastMath.min(g1, g2);
             }
@@ -314,7 +314,6 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
         OR() {
 
             @Override
-            /** {@inheritDoc} */
             public <T extends CalculusFieldElement<T>> T combine(final T g1, final T g2) {
                 return FastMath.max(g1, g2);
             }
@@ -329,6 +328,16 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
          */
         public abstract <T extends CalculusFieldElement<T>> T combine(T g1, T g2);
 
+    }
+
+    /** Extract maximum iteration as minimum of all.
+     * @param <T> type of the field elements
+     * @param detectors detectors to be combined
+     * @return max. iteration
+     */
+    private static <T extends CalculusFieldElement<T>> int extractMaxIter(final Collection<? extends FieldEventDetector<T>> detectors) {
+        final Optional<Integer> minValue = detectors.stream().map(FieldEventDetector::getMaxIterationCount).min(Integer::compareTo);
+        return minValue.orElse(FieldAbstractDetector.DEFAULT_MAX_ITER);
     }
 
     /** Comparator for field elements.

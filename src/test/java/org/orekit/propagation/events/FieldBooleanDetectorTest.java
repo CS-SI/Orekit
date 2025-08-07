@@ -31,6 +31,18 @@ class FieldBooleanDetectorTest {
 
     @Test
     @SuppressWarnings("unchecked")
+    void testNotCombine() {
+        final TestDetector detector = new TestDetector();
+        final FieldSpacecraftState<Binary64> mockedState = Mockito.mock(FieldSpacecraftState.class);
+        // WHEN
+        final FieldNegateDetector<Binary64> booleanDetector = FieldBooleanDetector.notCombine(detector);
+        final Binary64 g = booleanDetector.g(mockedState);
+        // THEN
+        assertEquals(detector.g(mockedState).negate(), g);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
     void testInit() {
         final TestDetector detector = new TestDetector();
         final FieldBooleanDetector<Binary64> booleanDetector = FieldBooleanDetector.orCombine(detector);
