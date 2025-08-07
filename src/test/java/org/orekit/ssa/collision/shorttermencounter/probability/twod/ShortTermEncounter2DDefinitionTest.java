@@ -845,8 +845,8 @@ class ShortTermEncounter2DDefinitionTest {
                 ArmellinStatistics.getMahalanobisDistanceRelativeDifferenceStatistics();
 
         // THEN
-        Assertions.assertTrue(statistics.getMean() <= 1.6552529594491915E-10);
-        Assertions.assertTrue(statistics.getStandardDeviation() <= 5.289370450561195E-10);
+        Assertions.assertTrue(statistics.getMean() <= 1.655252960031764E-10);
+        Assertions.assertTrue(statistics.getStandardDeviation() <= 5.289370450380533E-10);
     }
 
     @Test

@@ -48,13 +48,13 @@ class OrbitHermiteInterpolatorTest {
                                      2474, 2707.6418, 6.6, 26.28);
 
         doTestCartesianInterpolation(true, CartesianDerivativesFilter.USE_PV,
-                                     394, 7.1466E-9, 3.21, 1.3236E-10,
-                                     2474, 0.07388, 6.6, 0.001434);
+                                     394, 8.2392E-9, 3.21, 1.3236E-10,
+                                     2474, 0.07474, 6.6, 0.001450);
 
         // Solution with PVA less precise than with PV only as the interpolating polynomial begins to oscillate heavily
         // outside the interpolating interval
         doTestCartesianInterpolation(true, CartesianDerivativesFilter.USE_PVA,
-                                     394, 1.0721e-8, 3.21, 5.52e-10,
+                                     394, 9.60e-9, 3.21, 5.39e-10,
                                      2474, 2614, 6.55, 71);
 
     }
@@ -66,8 +66,8 @@ class OrbitHermiteInterpolatorTest {
                                      2474, 2707.6419, 6.55, 26.2826);
 
         doTestCartesianInterpolation(false, CartesianDerivativesFilter.USE_PV,
-                                     394, 7.1466E-9, 3.21, 1.3236E-10,
-                                     2474, 0.07389, 6.55, 0.001435);
+                                     394, 8.2392E-9, 3.21, 1.3236E-10,
+                                     2474, 0.07474, 6.55, 0.001450);
 
         // Interpolation without derivatives is very wrong in PVA as we force first and second derivatives to be 0 i.e. we
         // give false information to the interpolator

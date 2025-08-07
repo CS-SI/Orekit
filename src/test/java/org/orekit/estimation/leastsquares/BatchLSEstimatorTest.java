@@ -718,7 +718,7 @@ class BatchLSEstimatorTest {
                           before.getVelocity()), 1.0e-6);
         EstimationTestUtils.checkFit(context, estimator, 5, 6,
                                      0.0, 5.3e-06,
-                                     0.0, 1.43e-05,
+                                     0.0, 1.4e-05,
                                      0.0, 8.8e-07,
                                      0.0, 3.6e-10);
 
