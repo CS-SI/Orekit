@@ -141,10 +141,10 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
                                                                         detectors.stream()
                                                                                  .map(FieldEventDetector::getMaxCheckInterval)
                                                                                  .toArray(FieldAdaptableInterval[]::new));
-        
+
         final T       threshold = detectors.stream().map(FieldEventDetector::getThreshold).min(new FieldComparator<>()).get();
         final Integer maxIters  = detectors.stream().map(FieldEventDetector::getMaxIterationCount).min(Integer::compareTo).get();
-        
+
         return new FieldBooleanDetector<>(new ArrayList<>(detectors), // copy for immutability
                                           Operator.AND,
                                           new FieldEventDetectionSettings<>(fai, threshold, maxIters),
@@ -202,16 +202,16 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
                                                                         detectors.stream()
                                                                                  .map(FieldEventDetector::getMaxCheckInterval)
                                                                                  .toArray(FieldAdaptableInterval[]::new));
-        
+
         final T       threshold = detectors.stream().map(FieldEventDetector::getThreshold).min(new FieldComparator<>()).get();
         final Integer maxIters  = detectors.stream().map(FieldEventDetector::getMaxIterationCount).min(Integer::compareTo).get();
-        
+
         return new FieldBooleanDetector<>(new ArrayList<>(detectors), // copy for immutability
                                           Operator.OR,
                                           new FieldEventDetectionSettings<>(fai, threshold, maxIters),
                                           new FieldContinueOnEvent<>());
     }
-    
+
     /**
      * Create a new event detector that negates the g function of another detector.
      *
