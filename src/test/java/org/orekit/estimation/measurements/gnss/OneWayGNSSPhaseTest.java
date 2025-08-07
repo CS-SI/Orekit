@@ -253,7 +253,7 @@ public class OneWayGNSSPhaseTest {
         Assertions.assertEquals(0.0, absErrorsMedian, 6.7e-7);
         Assertions.assertEquals(0.0, absErrorsMin,    3.2e-6);
         Assertions.assertEquals(0.0, absErrorsMax,    5.7e-7);
-        Assertions.assertEquals(0.0, relErrorsMedian, 5.5e-12);
+        Assertions.assertEquals(0.0, relErrorsMedian, 5.4e-12);
         Assertions.assertEquals(0.0, relErrorsMax,    1.6e-10);
 
         // Test measurement type

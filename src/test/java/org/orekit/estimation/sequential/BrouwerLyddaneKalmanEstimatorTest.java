@@ -83,7 +83,7 @@ public class BrouwerLyddaneKalmanEstimatorTest {
         final double   expectedDeltaPos  = 0.;
         final double   posEps            = 3.1e-7;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 7.63e-10;
+        final double   velEps            = 7.6e-10;
         final double[] expectedsigmasPos = {0.998881, 0.933806, 0.997357};
         final double   sigmaPosEps       = 1e-6;
         final double[] expectedSigmasVel = {9.475735e-4, 9.904680e-4, 5.060067e-4};

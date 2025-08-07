@@ -367,7 +367,7 @@ class FieldDSSTSolarRadiationPressureTest {
 
     @Test
     void testMuParametersDerivatives() throws ParseException, IOException {
-        doTestShortPeriodTermsParametersDerivatives(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT, 1e-10);
+        doTestShortPeriodTermsParametersDerivatives(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT, 5.e-11);
     }
 
     @SuppressWarnings("unchecked")

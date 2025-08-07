@@ -217,7 +217,7 @@ public class FDOATest {
             }
         }
 
-        Assertions.assertEquals(0, maxRelativeError, 3.43e-8);
+        Assertions.assertEquals(0, maxRelativeError, 3.4e-8);
 
     }
 

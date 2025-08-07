@@ -354,7 +354,7 @@ class OrbitBlenderTest {
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
-                            0.008545036927188047,
+                            0.00854503692718802,
                             0.01192593186465725,
                             0.00895077301312331,
                             0.01299681287562801,
@@ -387,7 +387,7 @@ class OrbitBlenderTest {
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
-                            0.008545036927188047,
+                            0.00854503692718802,
                             0.01192593186465725,
                             0.00895077301312331,
                             0.01299681287562801,
