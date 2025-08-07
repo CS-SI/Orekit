@@ -88,7 +88,7 @@ class FieldOrbitHermiteInterpolatorTest {
     @Test
     public void testCircularInterpolationWithDerivatives() {
         doTestCircularInterpolation(true,
-                                    397, 2.53e-8,
+                                    397, 2.47e-8,
                                     610, 4.72e-6,
                                     4870, 110);
     }

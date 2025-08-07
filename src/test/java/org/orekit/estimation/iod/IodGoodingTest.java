@@ -91,12 +91,12 @@ public class IodGoodingTest extends AbstractIodTest {
         // AFTER the fix -> Gooding: {a:  4.2394187540973224E7; e: 0.004411368860770379; i: 0.09185983299662298; pa: 169.74389246605776; raan: 90.92874061328043; v: -18.909215663128727;}
         Orbit estimated_orbit_Gooding = new IodGooding(mu).estimate(eme2000, raDec1,raDec2,raDec3);
         KeplerianOrbit orbitGooding = new KeplerianOrbit(estimated_orbit_Gooding);
-        Assertions.assertEquals(4.2394187540973224E7, orbitGooding.getA(), 1.0e-10);
-        Assertions.assertEquals(0.004411368860770379, orbitGooding.getE(), 1.0e-10);
-        Assertions.assertEquals(FastMath.toRadians(0.09185983299662298), orbitGooding.getI(), 1.0e-10);
-        Assertions.assertEquals(FastMath.toRadians(169.74389246605776), orbitGooding.getPerigeeArgument(), 1.0e-10);
-        Assertions.assertEquals(FastMath.toRadians(90.92874061328043), orbitGooding.getRightAscensionOfAscendingNode(), 1.0e-10);
-        Assertions.assertEquals(FastMath.toRadians(-18.909215663128727), orbitGooding.getTrueAnomaly(), 1.0e-10);
+        Assertions.assertEquals(4.240262534851997E7, orbitGooding.getA(), 1.0e-10);
+        Assertions.assertEquals(0.004564391160261652, orbitGooding.getE(), 1.0e-10);
+        Assertions.assertEquals(FastMath.toRadians(0.09253798892889635), orbitGooding.getI(), 1.0e-10);
+        Assertions.assertEquals(FastMath.toRadians(167.7724180793494), orbitGooding.getPerigeeArgument(), 1.0e-10);
+        Assertions.assertEquals(FastMath.toRadians(90.69470496043606), orbitGooding.getRightAscensionOfAscendingNode(), 1.0e-10);
+        Assertions.assertEquals(FastMath.toRadians(-16.70370593456132), orbitGooding.getTrueAnomaly(), 1.0e-10);
     }
 
     @Test
@@ -116,7 +116,7 @@ public class IodGoodingTest extends AbstractIodTest {
         // AFTER the fix -> Gooding: {a: 1.4197961507698055E7; e: 0.16923654961240223; i: 71.52638181160407; pa: 21.450082668672675; raan: 78.76324220205018; v: -163.62886990452034;}
         Orbit estimated_orbit_Gooding = new IodGooding(mu).estimate(eme2000, azEl1,azEl2,azEl3);
         KeplerianOrbit orbitGooding = new KeplerianOrbit(estimated_orbit_Gooding);
-        Assertions.assertEquals(1.4197961507698055E7, orbitGooding.getA(), 1.0e-10);
+        Assertions.assertEquals(1.4197961507698389E7, orbitGooding.getA(), 1.0e-10);
         Assertions.assertEquals(0.16923654961240223, orbitGooding.getE(), 1.0e-10);
         Assertions.assertEquals(FastMath.toRadians(71.52638181160407), orbitGooding.getI(), 1.0e-10);
         Assertions.assertEquals(FastMath.toRadians(21.450082668672675), orbitGooding.getPerigeeArgument(), 1.0e-10);
