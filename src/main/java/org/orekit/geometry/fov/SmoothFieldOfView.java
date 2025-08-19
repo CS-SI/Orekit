@@ -37,6 +37,18 @@ import org.orekit.propagation.events.VisibilityTrigger;
  */
 public abstract class SmoothFieldOfView extends AbstractFieldOfView {
 
+    /**
+     * The default setting for if the footprint should be projected
+     * off the body onto a spatial point when there is no intersection point.
+     */
+    public static final boolean DEFAULT_EXT_FPT = false;
+
+    /**
+     * The default length of line segments of extended footprints that
+     * project directly into space.
+     */
+    public static final double DEFAULT_MAX_DIST = 1e7;
+
     /** Direction of the FOV center. */
     private final Vector3D center;
 
@@ -48,18 +60,6 @@ public abstract class SmoothFieldOfView extends AbstractFieldOfView {
 
     /** Z axis defining FoV boundary. */
     private final Vector3D zAxis;
-
-    /**
-     * The default setting for if the footprint should be projected 
-     * off the body onto a spatial point when there is no intersection point.
-     */
-    public static final boolean DEFAULT_EXT_FPT = false;
-
-    /**
-     * The default length of line segments of extended footprints that
-     * project directly into space. 
-     */
-    public static final double DEFAULT_MAX_DIST = 1e7;
 
     /** Build a new instance.
      * @param center direction of the FOV center (Z<sub>smooth</sub>), in spacecraft frame
@@ -164,10 +164,10 @@ public abstract class SmoothFieldOfView extends AbstractFieldOfView {
                     // we use a point on the limb
                     gp = body.transform(body.pointOnLimb(position, awayBody), bodyFrame, null);
                 } else {
-                    // we project in the proper direction (to a point in space) 
+                    // we project in the proper direction (to a point in space)
                     // such that the line's length is the requested value (maxDistance)
-                    double temp_norm = awaySC.getNorm();
-                    Vector3D temp_vec = awaySC.scalarMultiply(1/temp_norm).scalarMultiply(maxDistance);
+                    final double temp_norm = awaySC.getNorm();
+                    Vector3D temp_vec = awaySC.scalarMultiply(1 / temp_norm).scalarMultiply(maxDistance);
                     temp_vec = fovToBody.transformPosition(temp_vec);
                     gp = body.transform(temp_vec, bodyFrame, null);
                 }

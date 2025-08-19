@@ -210,6 +210,9 @@ public interface FieldOfView {
      * @param extendedFootprint bool to tell the getFootprints method whether
      * to have lines that go off the body go to the limb (false) or be projected
      * a certain distance into space, preserving the 'cone' of view (true).
+     * @param maxDistance double used to describe (in m) the distance of the
+     * projected point in space from the position of the object if it doesn't
+     * intersect the celestial body
      * @return list footprint boundary loops (there may be several independent
      * loops if the Field Of View shape is complex)
      */
