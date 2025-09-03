@@ -135,6 +135,20 @@ public abstract class AbstractSmoothFieldOfViewTest {
 
     }
 
+    protected void doTestFootprintExistence(final SmoothFieldOfView fov, final AttitudeProvider attitude
+                                   ) {
+
+        Propagator propagator = new KeplerianPropagator(orbit);
+        propagator.setAttitudeProvider(attitude);
+        SpacecraftState state = propagator.propagate(orbit.getDate().shiftedBy(1000.0));
+        Transform inertToBody = state.getFrame().getTransformTo(earth.getBodyFrame(), state.getDate());
+        Transform fovToBody   = new Transform(state.getDate(),
+                                              state.toTransform().getInverse(),
+                                              inertToBody);
+        List<List<GeodeticPoint>> footprint = fov.getFootprint(fovToBody, earth, FastMath.toRadians(0.1), true, 1e7);
+        Assertions.assertEquals(footprint.size(), 1);
+    }
+
     protected void doTestBoundary(final SmoothFieldOfView fov, final RandomGenerator random,
                                   final double tol) {
         UnitSphereRandomVectorGenerator spGenerator = new UnitSphereRandomVectorGenerator(3, random);
