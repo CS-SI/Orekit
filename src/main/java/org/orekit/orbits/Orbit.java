@@ -58,7 +58,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 public abstract class Orbit
-    implements ShiftablePVCoordinatesHolder<Orbit> {
+    implements ShiftablePVCoordinatesHolder<Orbit>, OrbitalParameters {
 
     /** Absolute tolerance when checking if the rate of the position angle is Keplerian or not. */
     protected static final double TOLERANCE_POSITION_ANGLE_RATE = 1e-15;

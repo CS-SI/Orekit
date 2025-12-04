@@ -23,6 +23,8 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitalParameterFactory;
+import org.orekit.orbits.OrbitalParameters;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.time.AbsoluteDate;
@@ -75,52 +77,17 @@ public interface PropagatorBuilder extends Cloneable {
      */
     AttitudeProvider getAttitudeProvider();
 
-    /** Get the orbit type expected for the 6 first parameters in
-     * {@link #buildPropagator(double[])}.
-     * @return orbit type to use in {@link #buildPropagator(double[])}
-     * @see #buildPropagator(double[])
-     * @see #getPositionAngleType()
-     * @since 7.1
+    /** Get the orbital parameters factory.
+     * @return orbital parameters factory
+     * @since 14.0
      */
-    OrbitType getOrbitType();
-
-    /** Get the position angle type expected for the 6 first parameters in
-     * {@link #buildPropagator(double[])}.
-     * @return position angle type to use in {@link #buildPropagator(double[])}
-     * @see #buildPropagator(double[])
-     * @see #getOrbitType()
-     * @since 7.1
-     */
-    PositionAngleType getPositionAngleType();
-
-    /** Get the date of the initial orbit.
-     * @return date of the initial orbit
-     */
-    AbsoluteDate getInitialOrbitDate();
-
-    /** Get the frame in which the orbit is propagated.
-     * @return frame in which the orbit is propagated
-     */
-    Frame getFrame();
-
-    /** Get the central attraction coefficient (µ - m³/s²) value.
-     * @return the central attraction coefficient (µ - m³/s²) value
-     * @since 12.0
-     */
-    double getMu();
+    OrbitalParameterFactory<OrbitalParameters> getOrbitalParameterFactory();
 
     /** Get the initial mass.
      * @return the mass (kg)
      * @since 13.0
      */
     double getMass();
-
-    /** Get the drivers for the configurable orbital parameters.
-     * Orbital drivers should have only 1 value estimated (1 span)
-     * @return drivers for the configurable orbital parameters
-     * @since 8.0
-     */
-    ParameterDriversList getOrbitalParametersDrivers();
 
     /** Get the drivers for the configurable propagation parameters.
      * <p>

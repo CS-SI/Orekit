@@ -20,6 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.FastMath;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.orbits.OrbitalParameters;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
@@ -43,7 +44,7 @@ import org.orekit.utils.ParameterDriver;
 */
 public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
     extends GNSSOrbitalElementsDriversProvider
-    implements TimeStamped {
+    implements OrbitalParameters {
 
     /** Name for semi major axis parameter. */
     public static final String SEMI_MAJOR_AXIS = "GnssSemiMajorAxis";
