@@ -18,7 +18,9 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
 import org.orekit.time.TimeScales;
 
 /**
@@ -60,6 +62,15 @@ public class QZSSLegacyNavigationMessage extends LegacyNavigationMessage<QZSSLeg
     public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, QZSSLegacyNavigationMessage>>
         F toField(final Field<T> field) {
         return (F) new FieldQZSSLegacyNavigationMessage<>(field, this);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public GNSSPropagatorBuilder<QZSSLegacyNavigationMessage> builder(final Frame inertial, final Frame bodyFixed) {
+        return new GNSSPropagatorBuilder<>(new QZSSLegacyFactory(getTimeScales(), getSystem(),
+                                                                 inertial, bodyFixed,
+                                                                 getDate(), getMu()),
+                                           inertial, bodyFixed);
     }
 
 }

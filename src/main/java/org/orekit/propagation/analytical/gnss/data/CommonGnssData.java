@@ -69,10 +69,12 @@ public abstract class CommonGnssData<O extends CommonGnssData<O>>
      * @param system          satellite system to consider for interpreting week number
      *                        (may be different from real system, for example in Rinex nav, weeks
      *                        are always according to GPS)
+     * @param type            type (null if not a navigation message)
      */
     protected CommonGnssData(final double mu, final double angularVelocity, final int weeksInCycle,
-                             final TimeScales timeScales, final SatelliteSystem system) {
-        super(mu, angularVelocity, weeksInCycle, timeScales, system);
+                             final TimeScales timeScales, final SatelliteSystem system,
+                             final String type) {
+        super(mu, angularVelocity, weeksInCycle, timeScales, system, type);
         this.af0Driver = createDriver(AF0, -26);
         this.af1Driver = createDriver(AF1, -42);
         this.af2Driver = createDriver(AF2, -58);

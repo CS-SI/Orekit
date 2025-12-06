@@ -31,8 +31,10 @@ import java.util.function.Function;
 public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement<T>>
     extends FieldAbstractNavigationMessage<T, BeidouCivilianNavigationMessage> {
 
-    /** Radio wave on which navigation signal is sent. */
-    private final RadioWave radioWave;
+    /** Beidou civilian message type.
+     * @since 14.0
+     */
+    private final BeidouCivilianType beidouType;
 
     /** Issue of Data, Ephemeris. */
     private int iode;
@@ -88,7 +90,7 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
      */
     public FieldBeidouCivilianNavigationMessage(final Field<T> field, final BeidouCivilianNavigationMessage original) {
         super(field, original);
-        this.radioWave = original.getRadioWave();
+        this.beidouType = original.getBeidouType();
         setIODE(original.getIODE());
         setIODC(original.getIODC());
         setIscB1CD(field.getZero().newInstance(original.getIscB1CD()));
@@ -115,7 +117,7 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
     public <V extends CalculusFieldElement<V>> FieldBeidouCivilianNavigationMessage(final Function<V, T> converter,
                                                                                     final FieldBeidouCivilianNavigationMessage<V> original) {
         super(converter, original);
-        this.radioWave = original.getRadioWave();
+        this.beidouType = original.getBeidouType();
         setIODE(original.getIODE());
         setIODC(original.getIODC());
         setIscB1CD(converter.apply(original.getIscB1CD()));
@@ -132,6 +134,14 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
         setTgdB2ap(converter.apply(original.getTgdB2ap()));
         setTgdB2bI(converter.apply(original.getTgdB2bI()));
         setSatelliteType(original.getSatelliteType());
+    }
+
+    /** Get the Beidou civilian message type.
+     * @return Beidou civilian message type
+     * @since 14.0
+     */
+    public BeidouCivilianType getBeidouType() {
+        return beidouType;
     }
 
     /** {@inheritDoc} */
@@ -152,14 +162,6 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
     public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, BeidouCivilianNavigationMessage>>
         G changeField(final Function<T, U> converter) {
         return (G) new FieldBeidouCivilianNavigationMessage<>(converter, this);
-    }
-
-    /**
-     * Getter for radio wave.
-     * @return radio wave on which navigation signal is sent
-     */
-    public RadioWave getRadioWave() {
-        return radioWave;
     }
 
     /**

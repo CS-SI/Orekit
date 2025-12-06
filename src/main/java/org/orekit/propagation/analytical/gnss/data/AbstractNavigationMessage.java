@@ -45,11 +45,6 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
      */
     private double transmissionTime;
 
-    /** Message type.
-     * @since 14.0
-     */
-    private final String type;
-
     /**
      * Constructor.
      * @param mu              Earth's universal gravitational parameter
@@ -64,8 +59,7 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
     protected AbstractNavigationMessage(final double mu, final double angularVelocity, final int weeksInCycle,
                                         final TimeScales timeScales, final SatelliteSystem system,
                                         final String type) {
-        super(mu, angularVelocity, weeksInCycle, timeScales, system);
-        this.type = type;
+        super(mu, angularVelocity, weeksInCycle, timeScales, system, type);
     }
 
     /** Constructor from field instance.
@@ -78,13 +72,12 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
         super(original);
         setEpochToc(original.getEpochToc().toAbsoluteDate());
         setTransmissionTime(original.getTransmissionTime().getReal());
-        this.type = original.getNavigationMessageType();
     }
 
     /** {@inheritDoc} */
     @Override
     public String getNavigationMessageType() {
-        return type;
+        return getType();
     }
 
     /** {@inheritDoc} */

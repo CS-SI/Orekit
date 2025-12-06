@@ -18,7 +18,9 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
 import org.orekit.time.TimeScales;
 
 /**
@@ -44,7 +46,8 @@ public class QZSSAlmanac extends AbstractAlmanac<QZSSAlmanac> {
      *                   are always according to GPS)
      */
     public QZSSAlmanac(final TimeScales timeScales, final SatelliteSystem system) {
-        super(GNSSConstants.QZSS_MU, GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB, timeScales, system);
+        super(GNSSConstants.QZSS_MU, GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB,
+              timeScales, system, null);
     }
 
     /** Constructor from field instance.
@@ -110,6 +113,15 @@ public class QZSSAlmanac extends AbstractAlmanac<QZSSAlmanac> {
      */
     public void setHealth(final int health) {
         this.health = health;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public GNSSPropagatorBuilder<QZSSAlmanac> builder(final Frame inertial, final Frame bodyFixed) {
+        return new GNSSPropagatorBuilder<>(new QZSSAlmanacFactory(getTimeScales(), getSystem(),
+                                                                  inertial, bodyFixed,
+                                                                  getDate(), getMu()),
+                                           inertial, bodyFixed);
     }
 
 }

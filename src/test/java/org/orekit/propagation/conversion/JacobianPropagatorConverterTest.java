@@ -42,10 +42,11 @@ import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.FramesFactory;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.models.earth.atmosphere.SimpleExponentialAtmosphere;
+import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.CartesianOrbitFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -121,9 +122,9 @@ public class JacobianPropagatorConverterTest {
         // as the test is based on external differentiation using finite differences,
         // an adaptive step size integrator would introduce *lots* of numerical noise
         NumericalPropagatorBuilder builder =
-                        new NumericalPropagatorBuilder(OrbitType.CARTESIAN.convertType(orbit),
-                                                       new LutherIntegratorBuilder(10.0),
-                                                       PositionAngleType.TRUE, dP);
+                        new NumericalPropagatorBuilder(new CartesianOrbitFactory((CartesianOrbit) OrbitType.CARTESIAN.convertType(orbit),
+                                                                                 dP),
+                                                       new LutherIntegratorBuilder(10.0));
         builder.setMass(200.0);
         builder.addForceModel(drag);
         builder.addForceModel(gravity);
@@ -132,7 +133,7 @@ public class JacobianPropagatorConverterTest {
         // using normalized values different from 0.0 for the sake of generality
         RandomGenerator random = new Well19937a(0xe67f19c1a678d037l);
         List<ParameterDriver> all = new ArrayList<>();
-        for (final ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
+        for (final ParameterDriver driver : builder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {
             all.add(driver);
         }
         for (final ParameterDriver driver : builder.getPropagationParametersDrivers().getDrivers()) {

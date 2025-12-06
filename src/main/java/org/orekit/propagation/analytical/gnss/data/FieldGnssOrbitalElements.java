@@ -70,11 +70,13 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
      * @param system          satellite system to consider for interpreting week number
      *                        (may be different from real system, for example in Rinex nav, weeks
      *                        are always according to GPS)
+     * @param type            type (null if not a navigation message)
      */
     protected FieldGnssOrbitalElements(final T mu, final double angularVelocity, final int weeksInCycle,
-                                       final TimeScales timeScales, final SatelliteSystem system) {
+                                       final TimeScales timeScales, final SatelliteSystem system,
+                                       final String type) {
 
-        super(angularVelocity, weeksInCycle, timeScales, system);
+        super(angularVelocity, weeksInCycle, timeScales, system, type);
 
         // immutable field
         this.mu   = mu;
@@ -96,7 +98,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
     protected FieldGnssOrbitalElements(final Field<T> field, final O original) {
 
         super(original.getAngularVelocity(), original.getWeeksInCycle(),
-              original.getTimeScales(), original.getSystem());
+              original.getTimeScales(), original.getSystem(), original.getType());
         mu = field.getZero().newInstance(original.getMu());
 
         // non-Keplerian parameters
@@ -124,7 +126,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
     protected <V extends CalculusFieldElement<V>> FieldGnssOrbitalElements(final Function<V, T> converter,
                                                                            final FieldGnssOrbitalElements<V, O> original) {
         super(original.getAngularVelocity(), original.getWeeksInCycle(),
-              original.getTimeScales(), original.getSystem());
+              original.getTimeScales(), original.getSystem(), original.getType());
         mu = converter.apply(original.getMu());
 
         // non-Keplerian parameters

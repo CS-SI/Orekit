@@ -18,6 +18,7 @@ package org.orekit.orbits;
 
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
 /** Factory for orbital parameters.
@@ -27,35 +28,44 @@ import org.orekit.utils.ParameterDriversList;
 public abstract class AbstractOrbitalParameterFactory<P extends OrbitalParameters>
     implements OrbitalParameterFactory<P> {
 
-    /** Date of the orbital parameters. */
-    private AbsoluteDate date;
+    /** Drivers for orbital parameters. */
+    private final ParameterDriversList drivers;
 
     /** Frame in which the orbital parameters are defined. */
     private final Frame frame;
 
+    /** Position angle type to use. */
+    private final PositionAngleType positionAngleType;
+
+    /** Date of the orbital parameters. */
+    private AbsoluteDate date;
+
     /** Central attraction coefficient (m³/s²). */
     private double mu;
 
-    /** Drivers for orbital parameters. */
-    private final ParameterDriversList drivers;
-
-    /** Position scale used to scale the orbital drivers. */
-    private final double positionScale;
-
-    /** Simple constructor.
-     * @param date date of the orbital parameters
-     * @param frame frame in which the orbital parameters are defined
-     * @param mu central attraction coefficient (m³/s²)
-     * @param drivers drivers for orbital parameters
-     * @param positionScale position scale used to scale the orbital drivers
+    /**
+     * Simple constructor.
+     *
+     * @param drivers           drivers for orbital parameters
+     * @param frame             frame in which the orbital parameters are defined
+     * @param positionAngleType position angle type to use
+     * @param date              date of the orbital parameters
+     * @param mu                central attraction coefficient (m³/s²)
      */
-    protected AbstractOrbitalParameterFactory(final AbsoluteDate date, final Frame frame, final double mu,
-                                              final ParameterDriversList drivers, final double positionScale) {
-        this.date          = date;
-        this.frame         = frame;
-        this.mu            = mu;
-        this.drivers       = drivers;
-        this.positionScale = positionScale;
+    protected AbstractOrbitalParameterFactory(final ParameterDriversList drivers, final Frame frame,
+                                              final PositionAngleType positionAngleType,
+                                              final AbsoluteDate date, final double mu) {
+        this.drivers           = drivers;
+        this.date              = date;
+        this.frame             = frame;
+        this.positionAngleType = positionAngleType;
+        this.mu                = mu;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ParameterDriversList getOrbitalParametersDrivers() {
+        return drivers;
     }
 
     /** {@inheritDoc} */
@@ -78,6 +88,12 @@ public abstract class AbstractOrbitalParameterFactory<P extends OrbitalParameter
 
     /** {@inheritDoc} */
     @Override
+    public PositionAngleType getPositionAngleType() {
+        return positionAngleType;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public double getMu() {
         return mu;
     }
@@ -90,14 +106,40 @@ public abstract class AbstractOrbitalParameterFactory<P extends OrbitalParameter
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriversList getDrivers() {
-        return drivers;
+    public void reset(final Orbit orbit) {
+
+        // fix orbital parameters
+        final double[] stateVector = toArray(orbit);
+        for (int i = 0; i < 6; i++) {
+            final ParameterDriver driver = getOrbitalParametersDrivers().getDrivers().get(i);
+            driver.setReferenceValue(stateVector[i]);
+            driver.setValue(stateVector[i++], getDate());
+        }
+
+        // fix date
+        setDate(orbit.getDate());
+
+        // fix mu
+        setMu(orbit.getMu());
+
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public double getPositionScale() {
-        return positionScale;
+    /** Convert an input into an array suitable to feed orbital parameters drivers.
+     * @param orbit orbit to convert
+     * @return arrays corresponding to orbit
+     */
+    protected double[] toArray(final Orbit orbit) {
+
+        // fix both frame and type
+        final Orbit partiallyConverted = orbit.getFrame() == getFrame() ? orbit : orbit.inFrame(getFrame());
+        final KeplerianOrbit fullyConverted = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(partiallyConverted);
+
+        // retrieve Keplerian orbital parameters
+        final double[] stateVector = new double[6];
+        OrbitType.KEPLERIAN.mapOrbitToArray(fullyConverted, PositionAngleType.MEAN, stateVector, null);
+
+        return stateVector;
+
     }
 
 }

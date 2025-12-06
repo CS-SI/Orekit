@@ -97,11 +97,13 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
      * @param system          satellite system to consider for interpreting week number
      *                        (may be different from real system, for example in Rinex nav, weeks
      *                        are always according to GPS)
+     * @param type            type (null if not a navigation message)
      */
     protected GNSSOrbitalElements(final double mu, final double angularVelocity, final int weeksInCycle,
-                                  final TimeScales timeScales, final SatelliteSystem system) {
+                                  final TimeScales timeScales, final SatelliteSystem system,
+                                  final String type) {
 
-        super(angularVelocity, weeksInCycle, timeScales, system);
+        super(angularVelocity, weeksInCycle, timeScales, system, type);
 
         // immutable field
         this.mu         = mu;
@@ -124,7 +126,7 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
     protected <T extends CalculusFieldElement<T>,
                A extends GNSSOrbitalElements<A>> GNSSOrbitalElements(final FieldGnssOrbitalElements<T, A> original) {
         this(original.getMu().getReal(), original.getAngularVelocity(), original.getWeeksInCycle(),
-             original.getTimeScales(), original.getSystem());
+             original.getTimeScales(), original.getSystem(), original.getType());
 
         // non-Keplerian parameters
         copyNonKeplerian(original);

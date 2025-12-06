@@ -33,6 +33,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.OrbitalParameters;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationUtil;
@@ -44,7 +45,6 @@ import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScale;
-import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversProvider;
@@ -65,7 +65,7 @@ import org.orekit.utils.ParameterDriversProvider;
  * @author Fabien Maussion
  * @author Luc Maisonobe
  */
-public class TLE implements TimeStamped, ParameterDriversProvider {
+public class TLE implements OrbitalParameters, ParameterDriversProvider {
 
     /** Identifier for SGP type of ephemeris. */
     public static final int SGP = 1;
@@ -775,8 +775,7 @@ public class TLE implements TimeStamped, ParameterDriversProvider {
                                  final DataContext dataContext) {
         converter.setMeanTheory(new TLETheory(templateTLE, dataContext));
         final KeplerianOrbit mean = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
-        final TLE tle = TleGenerationUtil.newTLE(mean, templateTLE, templateTLE.getBStar(mean.getDate()),
-                                                 dataContext.getTimeScales().getUTC());
+        final TLE tle = TleGenerationUtil.newTLE(mean, templateTLE, templateTLE.getBStar(mean.getDate()));
         // reset estimated parameters from template to generated tle
         for (final ParameterDriver templateDrivers : templateTLE.getParametersDrivers()) {
             if (templateDrivers.isSelected()) {

@@ -455,6 +455,13 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
 
     /** {@inheritDoc} */
     @Override
+    public AbstractOrbitFactory<KeplerianOrbit> factory(final double positionScale,
+                                                        final PositionAngleType positionAngleType) {
+        return new KeplerianOrbitFactory(this, positionScale, positionAngleType);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public double getA() {
         return a;
     }

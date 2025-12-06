@@ -18,7 +18,9 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
 import org.orekit.time.TimeScales;
 
 /**
@@ -44,7 +46,8 @@ public class BeidouAlmanac extends AbstractAlmanac<BeidouAlmanac> {
      *                   are always according to GPS)
      */
     public BeidouAlmanac(final TimeScales timeScales, final SatelliteSystem system) {
-        super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB, timeScales, system);
+        super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB,
+              timeScales, system, null);
     }
 
     /** Constructor from field instance.
@@ -101,6 +104,15 @@ public class BeidouAlmanac extends AbstractAlmanac<BeidouAlmanac> {
      */
     public void setHealth(final int health) {
         this.health = health;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public GNSSPropagatorBuilder<BeidouAlmanac> builder(final Frame inertial, final Frame bodyFixed) {
+        return new GNSSPropagatorBuilder<>(new BeidouAlmanacFactory(getTimeScales(), getSystem(),
+                                                                    inertial, bodyFixed,
+                                                                    getDate(), getMu()),
+                                           inertial, bodyFixed);
     }
 
 }

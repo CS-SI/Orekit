@@ -215,7 +215,10 @@ public class BatchLSEstimator {
         final ParameterDriversList estimated = new ParameterDriversList();
         for (int i = 0; i < builders.length; ++i) {
             final String suffix = builders.length > 1 ? "[" + i + "]" : null;
-            for (final DelegatingDriver delegating : builders[i].getOrbitalParametersDrivers().getDrivers()) {
+            final ParameterDriversList drivers = builders[i].
+                                                 getOrbitalParameterFactory().
+                                                 getOrbitalParametersDrivers();
+            for (final DelegatingDriver delegating : drivers.getDrivers()) {
                 if (delegating.isSelected() || !estimatedOnly) {
                     for (final ParameterDriver driver : delegating.getRawDrivers()) {
                         if (suffix != null && !driver.getName().endsWith(suffix)) {
@@ -337,7 +340,8 @@ public class BatchLSEstimator {
      * For parameters whose reference date has not been set to a non-null date beforehand (i.e.
      * the parameters for which {@link ParameterDriver#getReferenceDate()} returns {@code null},
      * a default reference date will be set automatically at the start of the estimation to the
-     * {@link AbstractPropagatorBuilder#getInitialOrbitDate() initial orbit date} of the first
+     * {@link AbstractPropagatorBuilder#getOrbitalParameterFactory() orbital parameters factory}
+     * {@link org.orekit.orbits.OrbitalParameterFactory#getDate() initial orbit date} of the first
      * propagator builder. For parameters whose reference date has been set to a non-null date,
      * this reference date is untouched.
      * </p>
@@ -361,20 +365,23 @@ public class BatchLSEstimator {
      */
     public Propagator[] estimate() {
 
+        // extract default date
+        final AbsoluteDate defaultDate = builders[0].getOrbitalParameterFactory().getDate();
+
         // set reference date for all parameters that lack one (including the not estimated parameters)
         for (final ParameterDriver driver : getOrbitalParametersDrivers(false).getDrivers()) {
             if (driver.getReferenceDate() == null) {
-                driver.setReferenceDate(builders[0].getInitialOrbitDate());
+                driver.setReferenceDate(defaultDate);
             }
         }
         for (final ParameterDriver driver : getPropagatorParametersDrivers(false).getDrivers()) {
             if (driver.getReferenceDate() == null) {
-                driver.setReferenceDate(builders[0].getInitialOrbitDate());
+                driver.setReferenceDate(defaultDate);
             }
         }
         for (final ParameterDriver driver : getMeasurementsParametersDrivers(false).getDrivers()) {
             if (driver.getReferenceDate() == null) {
-                driver.setReferenceDate(builders[0].getInitialOrbitDate());
+                driver.setReferenceDate(defaultDate);
             }
         }
 

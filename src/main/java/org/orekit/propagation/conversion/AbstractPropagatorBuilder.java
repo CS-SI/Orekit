@@ -33,7 +33,6 @@ import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
@@ -42,10 +41,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Base class for propagator builders.
+ * @param <T> type of the propagator
+ * @param <O> type of the orbital parameters
+ * @param <F> type of the orbital parameters factory
  * @author Pascal Parraud
  * @since 7.1
  */
-public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> implements PropagatorBuilder {
+public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator,
+                                                O extends OrbitalParameters,
+                                                F extends OrbitalParameterFactory<O>>
+    implements PropagatorBuilder {
 
     /** Central attraction scaling factor.
      * <p>
@@ -58,12 +63,12 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
     /** Factory for initial orbit.
      * @since 14.0
      */
-    private final OrbitalParameterFactory<OrbitalParameters> factory;
+    private final F factory;
 
     /** Initial mass. */
     private double mass;
 
-    /** List of the supported parameters. */
+    /** List of the supported propagation parameters. */
     private final ParameterDriversList propagationDrivers;
 
     /** Attitude provider for the propagator. */
@@ -80,7 +85,7 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
      * are selected, which means that if the builder is used for orbit determination or
      * propagator conversion, all orbital parameters will be estimated. If only a subset
      * of the orbital parameters must be estimated, caller must retrieve the orbital
-     * parameters by calling {@link #getOrbitalParameterFactory()}.{@link OrbitalParameterFactory#getDrivers()}
+     * parameters by calling {@link #getOrbitalParameterFactory()}.{@link OrbitalParameterFactory#getOrbitalParametersDrivers()}
      * and then call {@link ParameterDriver#setSelected(boolean) setSelected(false)}.
      * </p>
      * @param factory factory for initial orbit
@@ -88,7 +93,7 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
      * be set up for central attraction coefficient
      * @since 14.0
      */
-    protected AbstractPropagatorBuilder(final OrbitalParameterFactory<OrbitalParameters> factory,
+    protected AbstractPropagatorBuilder(final F factory,
                                         final boolean addDriverForCentralAttraction) {
         this(factory, addDriverForCentralAttraction,
              new FrameAlignedProvider(factory.getFrame()), Propagator.DEFAULT_MASS);
@@ -99,7 +104,7 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
      * are selected, which means that if the builder is used for orbit determination or
      * propagator conversion, all orbital parameters will be estimated. If only a subset
      * of the orbital parameters must be estimated, caller must retrieve the orbital
-     * parameters by calling {@link #getOrbitalParameterFactory()}.{@link OrbitalParameterFactory#getDrivers()}
+     * parameters by calling {@link #getOrbitalParameterFactory()}.{@link OrbitalParameterFactory#getOrbitalParametersDrivers()}
      * and then call {@link ParameterDriver#setSelected(boolean) setSelected(false)}.
      * </p>
      * @param factory factory for initial orbit
@@ -108,7 +113,7 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
      * @param attitudeProvider for the propagator.
      * @since 14.0
      */
-    protected AbstractPropagatorBuilder(final OrbitalParameterFactory<OrbitalParameters> factory,
+    protected AbstractPropagatorBuilder(final F factory,
                                         final boolean addDriverForCentralAttraction,
                                         final AttitudeProvider attitudeProvider) {
         this(factory, addDriverForCentralAttraction, attitudeProvider,
@@ -121,7 +126,7 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
      * are selected, which means that if the builder is used for orbit determination or
      * propagator conversion, all orbital parameters will be estimated. If only a subset
      * of the orbital parameters must be estimated, caller must retrieve the orbital
-     * parameters by calling {@link #getOrbitalParameterFactory()}.{@link OrbitalParameterFactory#getDrivers()}
+     * parameters by calling {@link #getOrbitalParameterFactory()}.{@link OrbitalParameterFactory#getOrbitalParametersDrivers()}
      * and then call {@link ParameterDriver#setSelected(boolean) setSelected(false)}.
      * </p>
      * @param factory factory for initial orbit
@@ -131,7 +136,7 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
      * @param initialMass mass
      * @since 14.0
      */
-    protected AbstractPropagatorBuilder(final OrbitalParameterFactory<OrbitalParameters> factory,
+    protected AbstractPropagatorBuilder(final F factory,
                                         final boolean addDriverForCentralAttraction,
                                         final AttitudeProvider attitudeProvider, final double initialMass) {
 
@@ -139,7 +144,7 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
         this.propagationDrivers  = new ParameterDriversList();
         this.attitudeProvider    = attitudeProvider;
         this.mass                = initialMass;
-        for (final DelegatingDriver driver : factory.getDrivers().getDrivers()) {
+        for (final ParameterDriver driver : factory.getOrbitalParametersDrivers().getDrivers()) {
             driver.setSelected(true);
         }
 
@@ -183,7 +188,7 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
     }
 
     /** {@inheritDoc} */
-    public OrbitalParameterFactory<OrbitalParameters> getOrbitalParameterFactory() {
+    public F getOrbitalParameterFactory() {
         return factory;
     }
 
@@ -195,9 +200,9 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
     /** {@inheritDoc}. */
     @Override
     @SuppressWarnings("unchecked")
-    public AbstractPropagatorBuilder<T> clone() {
+    public AbstractPropagatorBuilder<T, O, F> clone() {
         try {
-            return (AbstractPropagatorBuilder<T>) super.clone();
+            return (AbstractPropagatorBuilder<T, O, F>) super.clone();
         } catch (CloneNotSupportedException cnse) {
             throw new OrekitException(OrekitMessages.PROPAGATOR_BUILDER_NOT_CLONEABLE);
         }
@@ -231,7 +236,7 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
         int count = 0;
 
         // count orbital parameters
-        for (final ParameterDriver driver : factory.getDrivers().getDrivers()) {
+        for (final ParameterDriver driver : factory.getOrbitalParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
                 count += driver.getNbOfValues();
             }
@@ -256,7 +261,7 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
 
         // fill data
         int index = 0;
-        for (final ParameterDriver driver : factory.getDrivers().getDrivers()) {
+        for (final ParameterDriver driver : factory.getOrbitalParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
                 for (int spanNumber = 0; spanNumber < driver.getNbOfValues(); ++spanNumber ) {
                     selected[index++] = driver.getNormalizedValue(AbsoluteDate.ARBITRARY_EPOCH);
@@ -300,7 +305,7 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
         int index = 0;
 
         // manage orbital parameters
-        for (final ParameterDriver driver : factory.getDrivers().getDrivers()) {
+        for (final ParameterDriver driver : factory.getOrbitalParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
                 // If the parameter driver contains only 1 value to estimate over the all time range, which
                 // is normally always the case for orbital drivers
@@ -329,11 +334,11 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
     }
 
     /**
-     * Add supported parameters.
+     * Add propagation parameters.
      *
-     * @param drivers drivers for the parameters
+     * @param drivers drivers for the propagation parameters
      */
-    protected void addSupportedParameters(final List<ParameterDriver> drivers) {
+    protected void addPropagationParameters(final List<ParameterDriver> drivers) {
         drivers.forEach(propagationDrivers::add);
         propagationDrivers.sort();
     }
@@ -342,24 +347,7 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
      * @param newOrbit New orbit to set in the propagator builder
      */
     public void resetOrbit(final Orbit newOrbit) {
-
-        // Map the new orbit in an array of double
-        final Orbit orbitInCorrectFrame = (newOrbit.getFrame() == factory.getFrame()) ?
-                                          newOrbit :
-                                          newOrbit.inFrame(factory.getFrame());
-        final double[] orbitArray = factory.toArray(orbitInCorrectFrame);
-
-        // Update all the orbital drivers, selected or unselected
-        // Reset values and reference values
-        final List<DelegatingDriver> orbitalDriversList = factory.getDrivers().getDrivers();
-        int i = 0;
-        for (DelegatingDriver driver : orbitalDriversList) {
-            driver.setReferenceValue(orbitArray[i]);
-            driver.setValue(orbitArray[i++], newOrbit.getDate());
-        }
-
-        // Change the initial orbit date in the builder
-        factory.setDate(newOrbit.getDate());
+        factory.reset(newOrbit);
     }
 
     /** Add a set of user-specified equations to be integrated along with the orbit propagation (author Shiva Iyer).
@@ -383,7 +371,7 @@ public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> im
         for (ParameterDriver driver : getPropagationParametersDrivers().getDrivers()) {
             driver.setSelected(false);
         }
-        for (ParameterDriver driver : factory.getDrivers().getDrivers()) {
+        for (ParameterDriver driver : factory.getOrbitalParametersDrivers().getDrivers()) {
             driver.setSelected(false);
         }
     }

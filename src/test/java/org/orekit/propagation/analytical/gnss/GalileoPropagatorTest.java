@@ -218,10 +218,9 @@ public class GalileoPropagatorTest {
 
     @Test
     public void testResetIntermediateState() {
-        GNSSPropagator propagator =
-            new GNSSPropagatorBuilder(goe,
-                                      context.getFrames().getEME2000(),
-                                      context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
+        GNSSPropagator<GalileoNavigationMessage> propagator =
+            goe.builder(context.getFrames().getEME2000(),
+                        context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
                 buildPropagator();
         final SpacecraftState old = propagator.getInitialState();
         propagator.resetIntermediateState(new SpacecraftState(old.getOrbit(), old.getAttitude()).withMass(old.getMass() + 1000),

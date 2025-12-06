@@ -408,6 +408,13 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
 
     /** {@inheritDoc} */
     @Override
+    public AbstractOrbitFactory<EquinoctialOrbit> factory(double positionScale,
+                                                        PositionAngleType positionAngleType) {
+        return new EquinoctialOrbitFactory(this, positionScale, positionAngleType);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public double getA() {
         return a;
     }

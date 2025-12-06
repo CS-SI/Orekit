@@ -27,6 +27,8 @@ import org.hipparchus.optim.nonlinear.vector.leastsquares.MultivariateJacobianFu
 import org.hipparchus.util.Pair;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.orbits.AbstractOrbitFactory;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
@@ -58,9 +60,11 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
                                        final double threshold,
                                        final int maxIterations) {
         super(builder, threshold, maxIterations);
-        if (builder.getOrbitType() != OrbitType.CARTESIAN) {
+        final AbstractOrbitFactory<Orbit> factory =
+            (AbstractOrbitFactory<Orbit>)  builder.getOrbitalParameterFactory();
+        if (factory.getOrbitType() != OrbitType.CARTESIAN) {
             throw new OrekitException(OrekitMessages.ORBIT_TYPE_NOT_ALLOWED,
-                                      builder.getOrbitType(), OrbitType.CARTESIAN);
+                                      factory.getOrbitType(), OrbitType.CARTESIAN);
         }
         this.builder = builder;
     }
@@ -213,7 +217,7 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
                 }
 
                 fillRows(index, interpolator.getInterpolatedState(next.getDate()),
-                         builder.getOrbitalParametersDrivers());
+                         builder.getOrbitalParameterFactory().getOrbitalParametersDrivers());
 
                 // prepare handling of next measurement
                 ++number;

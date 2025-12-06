@@ -664,7 +664,6 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      * @param utc UTC time scale
      * @param teme TEME frame
      * @return a TLE generation algorithm
-     * @since 12.0
      */
     public static TleGenerationAlgorithm getDefaultTleGenerationAlgorithm(final TimeScale utc, final Frame teme) {
         return new FixedPointTleGenerationAlgorithm(FixedPointTleGenerationAlgorithm.EPSILON_DEFAULT,

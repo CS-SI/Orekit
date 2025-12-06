@@ -515,8 +515,7 @@ public class RinexNavigationWriterTest {
         checkAbstractNavigation(first, second);
 
         // check data specific to this message
-        Assertions.assertEquals(first.getRadioWave().getFrequency(), second.getRadioWave().getFrequency(),
-                                FastMath.ulp(first.getRadioWave().getFrequency()));
+        Assertions.assertEquals(first.getBeidouType(), second.getBeidouType());
         checkDouble(first.getADot(), second.getADot());
         checkDouble(first.getDeltaN0Dot(), second.getDeltaN0Dot());
         Assertions.assertEquals(first.getIODE(), second.getIODE());

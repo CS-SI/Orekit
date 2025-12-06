@@ -229,7 +229,8 @@ public enum RtcmMessageType implements MessageType {
             // Initialize data container and navigation message
             final Rtcm1042Data            rtcm1042Data  = new Rtcm1042Data();
             final BeidouLegacyNavigationMessage beidouNavMessage =
-                new BeidouLegacyNavigationMessage(timeScales, SatelliteSystem.BEIDOU,
+                new BeidouLegacyNavigationMessage(false,
+                                                  timeScales, SatelliteSystem.BEIDOU,
                                                   BeidouLegacyNavigationMessage.D1);
 
             // Set the satellite ID

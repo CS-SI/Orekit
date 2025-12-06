@@ -18,7 +18,9 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
 import org.orekit.time.TimeScales;
 
 /**
@@ -42,7 +44,8 @@ public class NavICAlmanac
      *                   are always according to GPS)
      */
     public NavICAlmanac(final TimeScales timeScales, final SatelliteSystem system) {
-        super(GNSSConstants.NAVIC_MU, GNSSConstants.NAVIC_AV, GNSSConstants.NAVIC_WEEK_NB, timeScales, system);
+        super(GNSSConstants.NAVIC_MU, GNSSConstants.NAVIC_AV, GNSSConstants.NAVIC_WEEK_NB,
+              timeScales, system, null);
     }
 
     /** Constructor from field instance.
@@ -70,6 +73,15 @@ public class NavICAlmanac
      */
     public void setSqrtA(final double sqrtA) {
         setSma(sqrtA * sqrtA);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public GNSSPropagatorBuilder<NavICAlmanac> builder(final Frame inertial, final Frame bodyFixed) {
+        return new GNSSPropagatorBuilder<>(new NavICAlmanacFactory(getTimeScales(), getSystem(),
+                                                                   inertial, bodyFixed,
+                                                                   getDate(), getMu()),
+                                           inertial, bodyFixed);
     }
 
 }

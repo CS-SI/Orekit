@@ -96,7 +96,7 @@ public class UnscentedKalmanModel extends AbstractKalmanEstimationCommon impleme
         final ObservedMeasurement<?> observedMeasurement = measurement.getObservedMeasurement();
         for (final ParameterDriver driver : observedMeasurement.getParametersDrivers()) {
             if (driver.getReferenceDate() == null) {
-                driver.setReferenceDate(getBuilders().get(0).getInitialOrbitDate());
+                driver.setReferenceDate(getBuilders().get(0).getOrbitalParameterFactory().getDate());
             }
         }
 
@@ -167,13 +167,10 @@ public class UnscentedKalmanModel extends AbstractKalmanEstimationCommon impleme
         // "updateParameters" sets the correct orbital info, but doesn't reset the time.
         for (int k = 0; k < propagators.length; ++k) {
             final SpacecraftState predicted = propagators[k].getInitialState();
-            final Orbit predictedOrbit = getBuilders().get(k).getOrbitType().convertType(
-                    new CartesianOrbit(predicted.getPVCoordinates(),
-                            predicted.getFrame(),
-                            measurement.getObservedMeasurement().getDate(),
-                            predicted.getOrbit().getMu()
-                    )
-            );
+            final Orbit predictedOrbit = new CartesianOrbit(predicted.getPVCoordinates(),
+                                                            predicted.getFrame(),
+                                                            measurement.getObservedMeasurement().getDate(),
+                                                            predicted.getOrbit().getMu());
             getBuilders().get(k).resetOrbit(predictedOrbit);
         }
         propagators = getEstimatedPropagators();
@@ -289,14 +286,18 @@ public class UnscentedKalmanModel extends AbstractKalmanEstimationCommon impleme
             // If any mass changes have occurred during this estimation step, such as maneuvers,
             // the updated mass value must be carried over so that new Propagators from this builder start with the updated mass.
             if (getBuilders().get(k) instanceof AbstractPropagatorBuilder) {
-                ((AbstractPropagatorBuilder<?>) (getBuilders().get(k))).setMass(predicted.getMass());
+                ((AbstractPropagatorBuilder<?, ?, ?>) (getBuilders().get(k))).setMass(predicted.getMass());
             }
 
             // The orbital parameters in the state vector are replaced with their predicted values
             // The propagation & measurement parameters are not changed by the prediction (i.e. the propagation)
             // As the propagator builder was previously updated with the predicted orbit,
             // the selected orbital drivers are already up to date with the prediction
-            for (DelegatingDriver orbitalDriver : getBuilders().get(k).getOrbitalParametersDrivers().getDrivers()) {
+            final ParameterDriversList drivers = getBuilders().
+                                                 get(k).
+                                                 getOrbitalParameterFactory().
+                                                 getOrbitalParametersDrivers();
+            for (DelegatingDriver orbitalDriver : drivers.getDrivers()) {
                 if (orbitalDriver.isSelected()) {
                     orbitalDriver.setReferenceValue(referenceValues[jOrb]);
                     predictedState.setEntry(jOrb, orbitalDriver.getNormalizedValue());

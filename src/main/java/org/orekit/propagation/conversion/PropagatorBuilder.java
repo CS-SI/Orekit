@@ -20,14 +20,10 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.OrbitalParameterFactory;
 import org.orekit.orbits.OrbitalParameters;
-import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriversList;
 
 import java.util.List;
@@ -81,7 +77,7 @@ public interface PropagatorBuilder extends Cloneable {
      * @return orbital parameters factory
      * @since 14.0
      */
-    OrbitalParameterFactory<OrbitalParameters> getOrbitalParameterFactory();
+    OrbitalParameterFactory<? extends OrbitalParameters> getOrbitalParameterFactory();
 
     /** Get the initial mass.
      * @return the mass (kg)

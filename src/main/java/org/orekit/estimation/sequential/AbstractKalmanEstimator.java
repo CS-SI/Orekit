@@ -57,7 +57,7 @@ public abstract class AbstractKalmanEstimator {
     protected AbstractKalmanEstimator(final MatrixDecomposer decomposer,
                                       final List<? extends PropagatorBuilder> builders) {
         this.builders = builders;
-        this.referenceDate = builders.get(0).getInitialOrbitDate();
+        this.referenceDate = builders.get(0).getOrbitalParameterFactory().getDate();
         this.decomposer = decomposer;
         this.observer = null;
     }
@@ -79,7 +79,10 @@ public abstract class AbstractKalmanEstimator {
         final ParameterDriversList estimated = new ParameterDriversList();
         for (int i = 0; i < builders.size(); ++i) {
             final String suffix = builders.size() > 1 ? "[" + i + "]" : null;
-            for (final ParameterDriver driver : builders.get(i).getOrbitalParametersDrivers().getDrivers()) {
+            final ParameterDriversList drivers = builders.get(i).
+                                                 getOrbitalParameterFactory().
+                                                 getOrbitalParametersDrivers();
+            for (final ParameterDriver driver : drivers.getDrivers()) {
                 if (driver.isSelected() || !estimatedOnly) {
                     if (suffix != null && !driver.getName().endsWith(suffix)) {
                         // we add suffix only conditionally because the method may already have been called

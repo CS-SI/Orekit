@@ -43,10 +43,12 @@ public abstract class AbstractAlmanac<O extends AbstractAlmanac<O>> extends Comm
      * @param system          satellite system to consider for interpreting week number
      *                        (may be different from real system, for example in Rinex nav, weeks
      *                        are always according to GPS)
+     * @param type            type (null if not a navigation message)
      */
     protected AbstractAlmanac(final double mu, final double angularVelocity, final int weeksInCycle,
-                              final TimeScales timeScales, final SatelliteSystem system) {
-        super(mu, angularVelocity, weeksInCycle, timeScales, system);
+                              final TimeScales timeScales, final SatelliteSystem system,
+                              final String type) {
+        super(mu, angularVelocity, weeksInCycle, timeScales, system, type);
     }
 
     /** Constructor from field instance.
@@ -59,8 +61,7 @@ public abstract class AbstractAlmanac<O extends AbstractAlmanac<O>> extends Comm
         super(original);
     }
 
-    /**
-     * Get the propagator corresponding to the navigation message.
+    /** Get the propagator corresponding to the navigation message.
      * <p>
      * The attitude provider is set by default to be aligned with the inertialframe.<br>
      * The mass is set by default to the
@@ -72,12 +73,11 @@ public abstract class AbstractAlmanac<O extends AbstractAlmanac<O>> extends Comm
      * @see #getPropagator(AttitudeProvider, Frame, Frame, double)
      * @since 14.0
      */
-    public GNSSPropagator getPropagator(final Frame inertial, final Frame bodyFixed) {
+    public GNSSPropagator<O> getPropagator(final Frame inertial, final Frame bodyFixed) {
         return getPropagator(new FrameAlignedProvider(inertial), inertial, bodyFixed, Propagator.DEFAULT_MASS);
     }
 
-    /**
-     * Get the propagator corresponding to the navigation message.
+    /** Get the propagator corresponding to the navigation message.
      * @param provider attitude provider
      * @param inertial inertial frame, use to provide the propagated orbit
      * @param bodyFixed body fixed frame, corresponding to the navigation message
@@ -86,12 +86,20 @@ public abstract class AbstractAlmanac<O extends AbstractAlmanac<O>> extends Comm
      * @see #getPropagator(Frame, Frame)
      * @since 14.0
      */
-    public GNSSPropagator getPropagator(final AttitudeProvider provider,
-                                        final Frame inertial, final Frame bodyFixed, final double mass) {
-        final GNSSPropagatorBuilder builder = new GNSSPropagatorBuilder(this, inertial, bodyFixed);
+    public GNSSPropagator<O> getPropagator(final AttitudeProvider provider,
+                                           final Frame inertial, final Frame bodyFixed, final double mass) {
+        final GNSSPropagatorBuilder<O> builder = builder(inertial, bodyFixed);
         builder.setAttitudeProvider(provider);
         builder.setMass(mass);
         return builder.buildPropagator();
     }
+
+    /** Build the propagator builder.
+     * @param inertial inertial frame, use to provide the propagated orbit
+     * @param bodyFixed body fixed frame, corresponding to the navigation message
+     * @return propagator builder
+     * @since 14.0
+     */
+    public abstract GNSSPropagatorBuilder<O> builder(Frame inertial, Frame bodyFixed);
 
 }

@@ -18,7 +18,9 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
 import org.orekit.time.TimeScales;
 
 /**
@@ -33,6 +35,11 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
 
     /** Identifier for message type. */
     public static final String D2 = "D2";
+
+    /** Indicator for D2 messages.
+     * @since 14.0
+     */
+    private final boolean d2;
 
     /** Age of Data, Ephemeris. */
     private int aode;
@@ -55,17 +62,20 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
     private double svAccuracy;
 
     /** Constructor.
+     * @param d2         indicator for D2 messages
      * @param timeScales known time scales
      * @param system     satellite system to consider for interpreting week number
      *                   (may be different from real system, for example in Rinex nav, weeks
      *                   are always according to GPS)
      * @param type       message type
      */
-    public BeidouLegacyNavigationMessage(final TimeScales timeScales,
+    public BeidouLegacyNavigationMessage(final boolean d2,
+                                         final TimeScales timeScales,
                                          final SatelliteSystem system,
                                          final String type) {
         super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB,
               timeScales, system, type);
+        this.d2 = d2;
     }
 
     /** Constructor from field instance.
@@ -74,6 +84,7 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
      */
     public <T extends CalculusFieldElement<T>> BeidouLegacyNavigationMessage(final FieldBeidouLegacyNavigationMessage<T> original) {
         super(original);
+        this.d2 = original.isD2();
         setAODE(original.getAODE());
         setAODC(original.getAODC());
         setTGD1(original.getTGD1().getReal());
@@ -88,6 +99,15 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
     public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, BeidouLegacyNavigationMessage>>
         F toField(final Field<T> field) {
         return (F) new FieldBeidouLegacyNavigationMessage<>(field, this);
+    }
+
+    /**
+     * Check if message is a D2 message.
+     * @return true if message is a D2 message
+     * @since 14.0
+     */
+    public boolean isD2() {
+        return d2;
     }
 
     /**
@@ -186,6 +206,16 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
      */
     public void setSatH1(final int satH1) {
         this.satH1 = satH1;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public GNSSPropagatorBuilder<BeidouLegacyNavigationMessage> builder(final Frame inertial, final Frame bodyFixed) {
+        return new GNSSPropagatorBuilder<>(new BeidouLegacyFactory(isD2(),
+                                                                   getTimeScales(), getSystem(),
+                                                                   inertial, bodyFixed,
+                                                                   getDate(), getMu()),
+                                           inertial, bodyFixed);
     }
 
 }

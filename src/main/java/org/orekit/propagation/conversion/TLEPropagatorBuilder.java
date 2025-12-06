@@ -20,13 +20,11 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataContext;
-import org.orekit.frames.Frame;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngleType;
+import org.orekit.orbits.OrbitalParameterFactory;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
+import org.orekit.propagation.analytical.tle.TleParametersFactory;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -38,105 +36,68 @@ import java.util.List;
  * @author Thomas Paulet
  * @since 6.0
  */
-public class TLEPropagatorBuilder extends AbstractAnalyticalPropagatorBuilder<TLEPropagator> {
+public class TLEPropagatorBuilder
+    extends AbstractAnalyticalPropagatorBuilder<TLEPropagator, TLE, TleParametersFactory> {
 
     /** Data context used to access frames and time scales. */
     private final DataContext dataContext;
-
-    /** Template TLE. */
-    private final TLE templateTLE;
 
     /** TLE generation algorithm. */
     private final TleGenerationAlgorithm generationAlgorithm;
 
     /** Build a new instance. This constructor uses the {@link DataContext#getDefault()
      * default data context}.
-     * <p>
-     * The template TLE is used as a model to {@link
-     * #createInitialOrbit() create initial orbit}. It defines the
-     * inertial frame, the central attraction coefficient, orbit type, satellite number,
-     * classification, .... and is also used together with the {@code positionScale} to
-     * convert from the {@link ParameterDriver#setNormalizedValue(double) normalized}
-     * parameters used by the callers of this builder to the real orbital parameters.
-     * </p>
-     * @param templateTLE reference TLE from which real orbits will be built
-     * @param positionAngleType position angle type to use
-     * @param positionScale scaling factor used for orbital parameters normalization
-     * (typically set to the expected standard deviation of the position)
+     * @param factory TLE parameters factory
      * @param generationAlgorithm TLE generation algorithm
-     * @since 12.0
-     * @see #TLEPropagatorBuilder(TLE, PositionAngleType, double, DataContext, TleGenerationAlgorithm)
-     * @see #TLEPropagatorBuilder(TLE, PositionAngleType, double, DataContext, TleGenerationAlgorithm, AttitudeProvider)
+     * @since 14.0
+     * @see #TLEPropagatorBuilder(DataContext, TleParametersFactory, TleGenerationAlgorithm)
+     * @see #TLEPropagatorBuilder(DataContext, TleParametersFactory, TleGenerationAlgorithm, AttitudeProvider)
      */
     @DefaultDataContext
-    public TLEPropagatorBuilder(final TLE templateTLE, final PositionAngleType positionAngleType,
-                                final double positionScale, final TleGenerationAlgorithm generationAlgorithm) {
-        this(templateTLE, positionAngleType, positionScale, DataContext.getDefault(), generationAlgorithm);
-    }
-
-    /** Build a new instance.
-     * <p>
-     * The template TLE is used as a model to {@link
-     * #createInitialOrbit() create initial orbit}. It defines the
-     * inertial frame, the central attraction coefficient, orbit type, satellite number,
-     * classification, .... and is also used together with the {@code positionScale} to
-     * convert from the {@link ParameterDriver#setNormalizedValue(double) normalized}
-     * parameters used by the callers of this builder to the real orbital parameters.
-     * The default attitude provider is aligned with the orbit's inertial frame.
-     * </p>
-     * @param templateTLE reference TLE from which real orbits will be built
-     * @param positionAngleType position angle type to use
-     * @param positionScale scaling factor used for orbital parameters normalization
-     * (typically set to the expected standard deviation of the position)
-     * @param dataContext used to access frames and time scales.
-     * @param generationAlgorithm TLE generation algorithm
-     * @since 12.0
-     * @see #TLEPropagatorBuilder(TLE, PositionAngleType, double, DataContext, TleGenerationAlgorithm, AttitudeProvider)
-     */
-    public TLEPropagatorBuilder(final TLE templateTLE, final PositionAngleType positionAngleType,
-                                final double positionScale, final DataContext dataContext,
+    public TLEPropagatorBuilder(final TleParametersFactory factory,
                                 final TleGenerationAlgorithm generationAlgorithm) {
-        this(templateTLE, positionAngleType, positionScale, dataContext, generationAlgorithm, FrameAlignedProvider.of(dataContext.getFrames().getTEME()));
+        this(DataContext.getDefault(), factory, generationAlgorithm);
     }
 
     /** Build a new instance.
-     * <p>
-     * The template TLE is used as a model to {@link
-     * #createInitialOrbit() create initial orbit}. It defines the
-     * inertial frame, the central attraction coefficient, orbit type, satellite number,
-     * classification, .... and is also used together with the {@code positionScale} to
-     * convert from the {@link ParameterDriver#setNormalizedValue(double) normalized}
-     * parameters used by the callers of this builder to the real orbital parameters.
-     * </p>
-     * @param templateTLE reference TLE from which real orbits will be built
-     * @param positionAngleType position angle type to use
-     * @param positionScale scaling factor used for orbital parameters normalization
-     * (typically set to the expected standard deviation of the position)
      * @param dataContext used to access frames and time scales.
+     * @param factory TLE parameters factory
+     * @param generationAlgorithm TLE generation algorithm
+     * @since 14.0
+     * @see #TLEPropagatorBuilder(DataContext, TleParametersFactory, TleGenerationAlgorithm, AttitudeProvider)
+     */
+    public TLEPropagatorBuilder(final DataContext dataContext,
+                                final TleParametersFactory factory,
+                                final TleGenerationAlgorithm generationAlgorithm) {
+        this(dataContext, factory, generationAlgorithm,
+             FrameAlignedProvider.of(dataContext.getFrames().getTEME()));
+    }
+
+    /** Build a new instance.
+     * @param dataContext used to access frames and time scales.
+     * @param factory TLE parameters factory
      * @param generationAlgorithm TLE generation algorithm
      * @param attitudeProvider attitude law to use
-     * @since 12.2
+     * @since 14.0
      */
-    public TLEPropagatorBuilder(final TLE templateTLE, final PositionAngleType positionAngleType,
-                                final double positionScale, final DataContext dataContext,
-                                final TleGenerationAlgorithm generationAlgorithm, final AttitudeProvider attitudeProvider) {
-        super(TLEPropagator.selectExtrapolator(templateTLE, dataContext.getFrames().getTEME(), attitudeProvider).getInitialState().getOrbit(),
-              positionAngleType, positionScale, false, attitudeProvider, Propagator.DEFAULT_MASS);
-
-        // Supported parameters: Bstar
-        addSupportedParameters(templateTLE.getParametersDrivers());
-
-        this.templateTLE         = templateTLE;
+    public TLEPropagatorBuilder(final DataContext dataContext,
+                                final TleParametersFactory factory,
+                                final TleGenerationAlgorithm generationAlgorithm,
+                                final AttitudeProvider attitudeProvider) {
+        super(factory, false, attitudeProvider, Propagator.DEFAULT_MASS);
         this.dataContext         = dataContext;
         this.generationAlgorithm = generationAlgorithm;
+
+        // Propagation parameters: Bstar
+        addPropagationParameters(factory.createFromDrivers().getParametersDrivers());
+
     }
 
     /** Copy constructor.
      * @param builder builder to copy from
      */
     private TLEPropagatorBuilder(final TLEPropagatorBuilder builder) {
-        this(builder.getTemplateTLE(), builder.getPositionAngleType(),
-             builder.getPositionScale(), builder.dataContext,
+        this(builder.dataContext, builder.getOrbitalParameterFactory(),
              builder.generationAlgorithm, builder.getAttitudeProvider());
     }
 
@@ -163,15 +124,12 @@ public class TLEPropagatorBuilder extends AbstractAnalyticalPropagatorBuilder<TL
     @Override
     public TLEPropagator buildPropagator(final double[] normalizedParameters) {
 
-        // create the orbit
+        // set all parameters (including both orbital parameters and propagation parameters)
         setParameters(normalizedParameters);
-        final Orbit           orbit = createInitialOrbit();
-        final SpacecraftState state = new SpacecraftState(orbit);
-        final Frame           teme  = dataContext.getFrames().getTEME();
 
         // TLE related to the orbit
-        final TLE tle = generationAlgorithm.generate(state, templateTLE);
-        final List<ParameterDriver> drivers = templateTLE.getParametersDrivers();
+        final TLE tle = getOrbitalParameterFactory().createFromDrivers();
+        final List<ParameterDriver> drivers = tle.getParametersDrivers();
         for (int index = 0; index < drivers.size(); index++) {
             if (drivers.get(index).isSelected()) {
                 tle.getParametersDrivers().get(index).setSelected(true);
@@ -179,15 +137,10 @@ public class TLEPropagatorBuilder extends AbstractAnalyticalPropagatorBuilder<TL
         }
 
         // propagator
-        final TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle, getAttitudeProvider(), getMass(), teme);
+        final TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle, getAttitudeProvider(), getMass(),
+                                                                          getOrbitalParameterFactory().getFrame());
         getImpulseManeuvers().forEach(propagator::addEventDetector);
         return propagator;
     }
 
-    /** Getter for the template TLE.
-     * @return the template TLE
-     */
-    public TLE getTemplateTLE() {
-        return templateTLE;
-    }
 }

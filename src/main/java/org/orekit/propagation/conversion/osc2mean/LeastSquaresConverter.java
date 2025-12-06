@@ -170,10 +170,8 @@ public class LeastSquaresConverter implements OsculatingToMeanConverter {
         this.optimizer = optimizer;
     }
 
-    /**
-     * Gets the convergence threshold.
-     * @return convergence threshold
-     */
+    /** {@inheritDoc} */
+    @Override
     public double getThreshold() {
         return threshold;
     }

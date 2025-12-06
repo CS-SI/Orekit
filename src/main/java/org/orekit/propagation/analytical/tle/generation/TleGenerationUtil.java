@@ -25,7 +25,6 @@ import org.orekit.propagation.analytical.tle.FieldTLE;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeScale;
 
 /**
  * Utility class for TLE generation algorithm.
@@ -48,11 +47,10 @@ public final class TleGenerationUtil {
      * @param keplerianOrbit the Keplerian parameters to build the TLE from
      * @param templateTLE TLE used to get object identification
      * @param bStar TLE B* parameter
-     * @param utc UTC scale
      * @return TLE with template identification and new orbital parameters
      */
     public static TLE newTLE(final KeplerianOrbit keplerianOrbit, final TLE templateTLE,
-                             final double bStar, final TimeScale utc) {
+                             final double bStar) {
 
         // Keplerian parameters
         final double meanMotion  = keplerianOrbit.getKeplerianMeanMotion();
@@ -86,7 +84,7 @@ public final class TleGenerationUtil {
         // Returns the new TLE
         return new TLE(satelliteNumber, classification, launchYear, launchNumber, launchPiece, ephemerisType,
                        elementNumber, epoch, meanMotion, meanMotionFirstDerivative, meanMotionSecondDerivative,
-                       e, i, pa, raan, meanAnomaly, newRevolutionNumberAtEpoch, bStar, utc);
+                       e, i, pa, raan, meanAnomaly, newRevolutionNumberAtEpoch, bStar, templateTLE.getUtc());
 
     }
 
@@ -95,13 +93,11 @@ public final class TleGenerationUtil {
      * @param keplerianOrbit the Keplerian parameters to build the TLE from
      * @param templateTLE TLE used to get object identification
      * @param bStar TLE B* parameter
-     * @param utc UTC scale
      * @param <T> type of the element
      * @return TLE with template identification and new orbital parameters
      */
     public static <T extends CalculusFieldElement<T>> FieldTLE<T> newTLE(final FieldKeplerianOrbit<T> keplerianOrbit,
-                                                                         final FieldTLE<T> templateTLE, final T bStar,
-                                                                         final TimeScale utc) {
+                                                                         final FieldTLE<T> templateTLE, final T bStar) {
 
         // Keplerian parameters
         final T meanMotion  = keplerianOrbit.getKeplerianMeanMotion();
@@ -135,7 +131,8 @@ public final class TleGenerationUtil {
         // Returns the new TLE
         return new FieldTLE<>(satelliteNumber, classification, launchYear, launchNumber, launchPiece, ephemerisType,
                               elementNumber, epoch, meanMotion, meanMotionFirstDerivative, meanMotionSecondDerivative,
-                              e, i, pa, raan, meanAnomaly, newRevolutionNumberAtEpoch, bStar.getReal(), utc);
+                              e, i, pa, raan, meanAnomaly, newRevolutionNumberAtEpoch, bStar.getReal(),
+                              templateTLE.getUtc());
 
     }
 

@@ -18,7 +18,9 @@ package org.orekit.propagation.conversion;
 
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
+import org.orekit.orbits.AbstractOrbitFactory;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitalParameterFactory;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -28,61 +30,33 @@ import org.orekit.propagation.analytical.KeplerianPropagator;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class KeplerianPropagatorBuilder extends AbstractAnalyticalPropagatorBuilder<KeplerianPropagator> {
+public class KeplerianPropagatorBuilder
+    extends AbstractAnalyticalPropagatorBuilder<KeplerianPropagator, Orbit, AbstractOrbitFactory<Orbit>> {
 
     /** Build a new instance.
-     * <p>
-     * The template orbit is used as a model to {@link
-     * #createInitialOrbit() create initial orbit}. It defines the
-     * inertial frame, the central attraction coefficient, the orbit type, and is also
-     * used together with the {@code positionScale} to convert from the {@link
-     * org.orekit.utils.ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
-     * callers of this builder to the real orbital parameters.
-     * The default attitude provider is aligned with the orbit's inertial frame.
-     * </p>
-     *
-     * @param templateOrbit reference orbit from which real orbits will be built
-     * @param positionAngleType position angle type to use
-     * @param positionScale scaling factor used for orbital parameters normalization
-     * (typically set to the expected standard deviation of the position)
-     * @since 8.0
-     * @see #KeplerianPropagatorBuilder(Orbit, PositionAngleType, double, AttitudeProvider)
+     * @param factory factory for initial orbit
+     * @since 14.0
+     * @see #KeplerianPropagatorBuilder(OrbitalParameterFactory, AttitudeProvider)
      */
-    public KeplerianPropagatorBuilder(final Orbit templateOrbit, final PositionAngleType positionAngleType,
-                                      final double positionScale) {
-        this(templateOrbit, positionAngleType, positionScale,
-             FrameAlignedProvider.of(templateOrbit.getFrame()));
+    public KeplerianPropagatorBuilder(final OrbitalParameterFactory<? extends Orbit> factory) {
+        this(factory, FrameAlignedProvider.of(factory.getFrame()));
     }
 
     /** Build a new instance.
-     * <p>
-     * The template orbit is used as a model to {@link
-     * #createInitialOrbit() create initial orbit}. It defines the
-     * inertial frame, the central attraction coefficient, the orbit type, and is also
-     * used together with the {@code positionScale} to convert from the {@link
-     * org.orekit.utils.ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
-     * callers of this builder to the real orbital parameters.
-     * </p>
-     * @param templateOrbit reference orbit from which real orbits will be built
-     * @param positionAngleType position angle type to use
-     * @param positionScale scaling factor used for orbital parameters normalization
-     * (typically set to the expected standard deviation of the position)
+     * @param factory factory for initial orbit
      * @param attitudeProvider attitude law to use.
      * @since 10.1
      */
-    public KeplerianPropagatorBuilder(final Orbit templateOrbit,
-                                      final PositionAngleType positionAngleType,
-                                      final double positionScale,
+    public KeplerianPropagatorBuilder(final OrbitalParameterFactory<? extends Orbit> factory,
                                       final AttitudeProvider attitudeProvider) {
-        super(templateOrbit, positionAngleType, positionScale, true, attitudeProvider, Propagator.DEFAULT_MASS);
+        super((AbstractOrbitFactory<Orbit>) factory, true, attitudeProvider, Propagator.DEFAULT_MASS);
     }
 
     /** Copy constructor.
      * @param builder builder to copy from
      */
     private KeplerianPropagatorBuilder(final KeplerianPropagatorBuilder builder) {
-        this(builder.createInitialOrbit(), builder.getPositionAngleType(),
-             builder.getPositionScale(), builder.getAttitudeProvider());
+        this(builder.getOrbitalParameterFactory(), builder.getAttitudeProvider());
     }
 
     /** {@inheritDoc}. */
@@ -104,8 +78,12 @@ public class KeplerianPropagatorBuilder extends AbstractAnalyticalPropagatorBuil
     /** {@inheritDoc} */
     public KeplerianPropagator buildPropagator(final double[] normalizedParameters) {
         setParameters(normalizedParameters);
-        final KeplerianPropagator propagator = new KeplerianPropagator(createInitialOrbit(), getAttitudeProvider(), getMu(), getMass());
+        final KeplerianPropagator propagator =
+            new KeplerianPropagator(getOrbitalParameterFactory().createFromDrivers(),
+                                    getAttitudeProvider(), getOrbitalParameterFactory().getMu(),
+                                    getMass());
         getImpulseManeuvers().forEach(propagator::addEventDetector);
         return propagator;
     }
+
 }

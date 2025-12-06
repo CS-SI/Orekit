@@ -22,6 +22,7 @@ import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
 import org.orekit.estimation.leastsquares.BatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.orbits.AbstractOrbitFactory;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
@@ -42,7 +43,8 @@ import java.util.List;
  * @author Vincent Cucchietti
  * @since 11.3
  */
-public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder<Ephemeris> {
+public class EphemerisPropagatorBuilder
+    extends AbstractPropagatorBuilder<Ephemeris, Orbit, AbstractOrbitFactory<Orbit>> {
 
     /** Default position scale (not used for ephemeris based estimation). */
     private static final double DEFAULT_SCALE = 10.0;
@@ -143,7 +145,8 @@ public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder<Epheme
                                       final List<StateCovariance> covariances,
                                       final TimeInterpolator<TimeStampedPair<Orbit, StateCovariance>> covarianceInterpolator,
                                       final AttitudeProvider attitudeProvider) {
-        super(states.get(0).getOrbit(), PositionAngleType.TRUE, DEFAULT_SCALE, false, attitudeProvider);
+        super((AbstractOrbitFactory<Orbit>) states.get(0).getOrbit().factory(DEFAULT_SCALE, PositionAngleType.TRUE),
+              false, attitudeProvider);
         deselectDynamicParameters();
 
         // Check input consistency the same way Ephemeris is checking consistency

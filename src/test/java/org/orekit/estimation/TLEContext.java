@@ -20,12 +20,15 @@ import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataContext;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
+import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.tle.TLE;
+import org.orekit.propagation.analytical.tle.TleParametersFactory;
 import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
 import org.orekit.propagation.conversion.TLEPropagatorBuilder;
 import org.orekit.time.TimeScale;
@@ -52,7 +55,7 @@ public class TLEContext implements StationDataProvider {
     public Map<GroundStation, GroundStation>     TARstations;
 
     public TLEPropagatorBuilder createBuilder(final double dP) {
-        return new TLEPropagatorBuilder(initialTLE, PositionAngleType.MEAN, dP,
+        return new TLEPropagatorBuilder(new TleParametersFactory(initialTLE, FramesFactory.getTEME()),
                                         new FixedPointTleGenerationAlgorithm());
     }
 

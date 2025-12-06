@@ -62,10 +62,10 @@ public class FiniteDifferencePropagatorConverterTest {
         ParameterDriversList list = new ParameterDriversList();
         list.add(new ParameterDriver("p1", 0, 1e-3, Double.NEGATIVE_INFINITY,
                 Double.POSITIVE_INFINITY));
-        Mockito.when(builder.getOrbitalParametersDrivers()).thenReturn(list);
+        Mockito.when(builder.getOrbitalParameterFactory().getOrbitalParametersDrivers()).thenReturn(list);
         Mockito.when(builder.getPropagationParametersDrivers())
                 .thenReturn(new ParameterDriversList());
-        Mockito.when(builder.getFrame()).thenReturn(eci);
+        Mockito.when(builder.getOrbitalParameterFactory().getFrame()).thenReturn(eci);
         Mockito.when(builder.getSelectedNormalizedParameters()).thenReturn(new double[1]);
         Mockito.when(builder.buildPropagator(Mockito.any(double[].class)))
                 .thenReturn(source);

@@ -59,9 +59,10 @@ import java.util.List;
  * This class allows to provide easily a subset of {@link AbstractAnalyticalPropagator} methods
  * for specific GNSS propagators.
  * </p>
+ * @param <O> type of the orbital elements
  * @author Pascal Parraud
  */
-public class GNSSPropagator extends AbstractAnalyticalPropagator {
+public class GNSSPropagator<O extends GNSSOrbitalElements<O>> extends AbstractAnalyticalPropagator {
 
     /** Maximum number of iterations for internal loops.
      * @since 13.0
@@ -89,7 +90,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
     private static final double EPS = 1.0e-12;
 
     /** The GNSS propagation model used. */
-    private GNSSOrbitalElements<?> orbitalElements;
+    private O orbitalElements;
 
     /** The ECI frame used for GNSS propagation. */
     private final Frame eci;
@@ -105,7 +106,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
      * @param provider attitude provider
      * @param mass satellite mass (kg)
      */
-    GNSSPropagator(final GNSSOrbitalElements<?> orbitalElements, final Frame eci,
+    GNSSPropagator(final O orbitalElements, final Frame eci,
                    final Frame ecef, final AttitudeProvider provider, final double mass) {
         super(provider);
         // Stores the GNSS orbital elements
@@ -137,7 +138,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
      * @param mass                 spacecraft mass
      * @since 13.0
      */
-    GNSSPropagator(final SpacecraftState initialState, final GNSSOrbitalElements<?> nonKeplerianElements,
+    GNSSPropagator(final SpacecraftState initialState, final O nonKeplerianElements,
                    final Frame ecef, final AttitudeProvider provider, final double mass) {
         this(buildOrbitalElements(initialState, nonKeplerianElements, ecef, provider, mass),
              initialState.getFrame(), ecef, provider, initialState.getMass());
@@ -175,7 +176,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
      * @return the underlying GNSS orbital elements
      * @since 13.0
      */
-    public GNSSOrbitalElements<?> getOrbitalElements() {
+    public O getOrbitalElements() {
         return orbitalElements;
     }
 
@@ -347,10 +348,11 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
      * @return orbital elements that generate the {@code initialState} when used with a propagator
      * @since 13.0
      */
-    private static GNSSOrbitalElements<?> buildOrbitalElements(final SpacecraftState initialState,
-                                                               final GNSSOrbitalElements<?> nonKeplerianElements,
-                                                               final Frame ecef, final AttitudeProvider provider,
-                                                               final double mass) {
+    private static <O extends GNSSOrbitalElements<O>>
+        O buildOrbitalElements(final SpacecraftState initialState,
+                               final O nonKeplerianElements,
+                               final Frame ecef, final AttitudeProvider provider,
+                               final double mass) {
 
         // get approximate initial orbit
         final Frame frozenEcef = ecef.getFrozenFrame(initialState.getFrame(), initialState.getDate(), "frozen");
@@ -358,7 +360,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
 
         // refine orbit using simple differential correction to reach target PV
         final PVCoordinates targetPV = initialState.getPVCoordinates();
-        final FieldGnssOrbitalElements<Gradient, ?> gElements = convert(nonKeplerianElements, orbit);
+        final FieldGnssOrbitalElements<Gradient, O> gElements = convert(nonKeplerianElements, orbit);
         for (int i = 0; i < MAX_ITER; ++i) {
 
             // get position-velocity derivatives with respect to initial orbit
@@ -487,11 +489,11 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
      * @return converted elements, set up as gradient relative to Keplerian orbit
      * @since 13.0
      */
-    private static FieldGnssOrbitalElements<Gradient, ?> convert(final GNSSOrbitalElements<?> elements,
-                                                                 final KeplerianOrbit orbit) {
+    private static <O extends GNSSOrbitalElements<O>>
+        FieldGnssOrbitalElements<Gradient, O> convert(final O elements, final KeplerianOrbit orbit) {
 
         final Field<Gradient> field = GradientField.getField(FREE_PARAMETERS);
-        final FieldGnssOrbitalElements<Gradient, ?> gElements = elements.toField(field);
+        final FieldGnssOrbitalElements<Gradient, O> gElements = elements.toField(field);
 
         // Keplerian parameters
         gElements.setSma(Gradient.variable(FREE_PARAMETERS, 0, orbit.getA()));

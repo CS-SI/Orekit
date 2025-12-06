@@ -23,6 +23,7 @@ import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.propagation.analytical.gnss.data.BeidouCivilianNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.BeidouCivilianType;
 import org.orekit.propagation.analytical.gnss.data.BeidouSatelliteType;
 import org.orekit.utils.units.Unit;
 
@@ -89,12 +90,12 @@ public class BeidouCnv123Parser extends AbstractNavigationParser<BeidouCivilianN
     public void parseLine07() {
         final ParseInfo parseInfo = getParseInfo();
         final BeidouCivilianNavigationMessage message = getMessage();
-        if (message.getRadioWave().closeTo(PredefinedGnssSignal.B1C)) {
+        if (message.getBeidouType() == BeidouCivilianType.CNV1) {
             message.setIscB1CD(parseInfo.parseDouble1(Unit.SECOND));
             // field 2 is spare
             message.setTgdB1Cp(parseInfo.parseDouble3(Unit.SECOND));
             message.setTgdB2ap(parseInfo.parseDouble4(Unit.SECOND));
-        } else if (message.getRadioWave().closeTo(PredefinedGnssSignal.B2A)) {
+        } else if (message.getBeidouType() == BeidouCivilianType.CNV2) {
             // field 1 is spare
             message.setIscB2AD(parseInfo.parseDouble2(Unit.SECOND));
             message.setTgdB1Cp(parseInfo.parseDouble3(Unit.SECOND));
@@ -109,7 +110,7 @@ public class BeidouCnv123Parser extends AbstractNavigationParser<BeidouCivilianN
     public void parseLine08() {
         final ParseInfo parseInfo = getParseInfo();
         final BeidouCivilianNavigationMessage message = getMessage();
-        if (message.getRadioWave().closeTo(PredefinedGnssSignal.B2B)) {
+        if (message.getBeidouType() == BeidouCivilianType.CNV3) {
             message.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
             parseInfo.closePendingRecord();
         } else {

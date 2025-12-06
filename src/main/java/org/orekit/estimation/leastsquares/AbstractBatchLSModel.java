@@ -165,7 +165,7 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
         for (int i = 0; i < builders.length; ++i) {
             this.orbitsStartColumns[i] = columns;
             final List<ParameterDriversList.DelegatingDriver> orbitalParametersDrivers =
-                            builders[i].getOrbitalParametersDrivers().getDrivers();
+                            builders[i].getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers();
             for (int j = 0; j < orbitalParametersDrivers.size(); ++j) {
                 if (orbitalParametersDrivers.get(j).isSelected()) {
                     orbitsJacobianColumns[columns] = j;
@@ -220,7 +220,7 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
         // Decide whether the propagation will be done forward or backward.
         // Minimize the duration between first measurement treated and orbit determination date
         // Propagator builder number 0 holds the reference date for orbit determination
-        final AbsoluteDate refDate = builders[0].getInitialOrbitDate();
+        final AbsoluteDate refDate = builders[0].getOrbitalParameterFactory().getDate();
 
         // Sort the measurement list chronologically
         measurements.sort(new ChronologicalComparator());
@@ -317,8 +317,11 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
         if (estimatedOrbitalParameters[iBuilder] == null) {
 
             // Gather the drivers
+            final ParameterDriversList drivers = builders[iBuilder].
+                                                 getOrbitalParameterFactory().
+                                                 getOrbitalParametersDrivers();
             final ParameterDriversList selectedOrbitalDrivers = new ParameterDriversList();
-            for (final DelegatingDriver delegating : builders[iBuilder].getOrbitalParametersDrivers().getDrivers()) {
+            for (final DelegatingDriver delegating : drivers.getDrivers()) {
                 if (delegating.isSelected()) {
                     for (final ParameterDriver driver : delegating.getRawDrivers()) {
                         selectedOrbitalDrivers.add(driver);
@@ -446,7 +449,8 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
             // partial derivatives of the current Cartesian coordinates with respect to current orbital state
             final double[][] aCY = new double[6][6];
             final Orbit currentOrbit = evaluationStates[k].getOrbit();
-            currentOrbit.getJacobianWrtParameters(builders[p].getPositionAngleType(), aCY);
+            currentOrbit.getJacobianWrtParameters(builders[p].getOrbitalParameterFactory().getPositionAngleType(),
+                                                  aCY);
             final RealMatrix dCdY = new Array2DRowRealMatrix(aCY, false);
 
             // Jacobian of the measurement with respect to current orbital state
