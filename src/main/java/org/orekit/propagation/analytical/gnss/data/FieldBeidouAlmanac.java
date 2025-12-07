@@ -111,4 +111,14 @@ public class FieldBeidouAlmanac<T extends CalculusFieldElement<T>>
         this.health = health;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void copyNonKeplerian(final GNSSOrbitalElementsDriversProvider original) {
+        super.copyNonKeplerian(original);
+        if (original instanceof FieldBeidouAlmanac) {
+            final FieldBeidouAlmanac<?> b = (FieldBeidouAlmanac<?>) original;
+            setHealth(b.getHealth());
+        }
+    }
+
 }

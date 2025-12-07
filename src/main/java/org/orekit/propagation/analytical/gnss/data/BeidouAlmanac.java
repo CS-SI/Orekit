@@ -115,4 +115,14 @@ public class BeidouAlmanac extends AbstractAlmanac<BeidouAlmanac> {
                                            inertial, bodyFixed);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void copyNonKeplerian(final GNSSOrbitalElementsDriversProvider original) {
+        super.copyNonKeplerian(original);
+        if (original instanceof BeidouAlmanac) {
+            final BeidouAlmanac b = (BeidouAlmanac) original;
+            setHealth(b.getHealth());
+        }
+    }
+
 }

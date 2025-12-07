@@ -134,4 +134,15 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
         this.transmissionTime = transmissionTime;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void copyNonKeplerian(final GNSSOrbitalElementsDriversProvider original) {
+        super.copyNonKeplerian(original);
+        if (original instanceof FieldAbstractNavigationMessage) {
+            final FieldAbstractNavigationMessage<T, ?> m = (FieldAbstractNavigationMessage<T, ?>) original;
+            setEpochToc(m.getEpochToc());
+            setTransmissionTime(m.getTransmissionTime());
+        }
+    }
+
 }

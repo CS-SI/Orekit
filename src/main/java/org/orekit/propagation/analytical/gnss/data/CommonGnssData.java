@@ -171,4 +171,18 @@ public abstract class CommonGnssData<O extends CommonGnssData<O>>
         return toc;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void copyNonKeplerian(final GNSSOrbitalElementsDriversProvider original) {
+        super.copyNonKeplerian(original);
+        if (original instanceof CommonGnssData) {
+            final CommonGnssData<?> cgd = (CommonGnssData<?>) original;
+            setAf0(cgd.getAf0());
+            setAf1(cgd.getAf1());
+            setAf1(cgd.getAf2());
+            setTGD(cgd.getTGD());
+            setToc(cgd.getToc());
+        }
+    }
+
 }

@@ -100,7 +100,7 @@ public class GalileoAlmanac extends AbstractAlmanac<GalileoAlmanac> {
     }
 
     /**
-     * Sets the the correction of orbit reference inclination at reference time.
+     * Sets the correction of orbit reference inclination at reference time.
      * <p>
      * In addition, this method set the value of the reference inclination.
      * </p>
@@ -189,6 +189,19 @@ public class GalileoAlmanac extends AbstractAlmanac<GalileoAlmanac> {
                                                                      inertial, bodyFixed,
                                                                      getDate(), getMu()),
                                            inertial, bodyFixed);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void copyNonKeplerian(final GNSSOrbitalElementsDriversProvider original) {
+        super.copyNonKeplerian(original);
+        if (original instanceof GalileoAlmanac) {
+            final GalileoAlmanac g = (GalileoAlmanac) original;
+            setHealthE5a(g.getHealthE5a());
+            setHealthE5b(g.getHealthE5b());
+            setHealthE1(g.getHealthE1());
+            setIOD(g.getIOD());
+        }
     }
 
 }

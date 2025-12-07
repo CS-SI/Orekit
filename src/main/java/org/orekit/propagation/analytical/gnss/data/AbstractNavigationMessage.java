@@ -139,4 +139,15 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
         this.transmissionTime = transmissionTime;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void copyNonKeplerian(final GNSSOrbitalElementsDriversProvider original) {
+        super.copyNonKeplerian(original);
+        if (original instanceof AbstractNavigationMessage) {
+            final AbstractNavigationMessage<?> m = (AbstractNavigationMessage<?>) original;
+            setEpochToc(m.getEpochToc());
+            setTransmissionTime(m.getTransmissionTime());
+        }
+    }
+
 }

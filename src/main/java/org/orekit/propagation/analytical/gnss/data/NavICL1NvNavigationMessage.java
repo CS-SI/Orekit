@@ -192,4 +192,19 @@ public class NavICL1NvNavigationMessage
                                            inertial, bodyFixed);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void copyNonKeplerian(final GNSSOrbitalElementsDriversProvider original) {
+        super.copyNonKeplerian(original);
+        if (original instanceof NavICL1NvNavigationMessage) {
+            final NavICL1NvNavigationMessage m = (NavICL1NvNavigationMessage) original;
+            setReferenceSignalFlag(m.getReferenceSignalFlag());
+            setTGDSL5(m.getTGDSL5());
+            setIscSL1P(m.getIscSL1P());
+            setIscL1DL1P(m.getIscL1DL1P());
+            setIscL1PS(m.getIscL1PS());
+            setIscL1DS(m.getIscL1DS());
+        }
+    }
+
 }

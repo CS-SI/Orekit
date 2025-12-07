@@ -121,4 +121,15 @@ public class FieldQZSSAlmanac<T extends CalculusFieldElement<T>>
         this.health = health;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void copyNonKeplerian(final GNSSOrbitalElementsDriversProvider original) {
+        super.copyNonKeplerian(original);
+        if (original instanceof FieldQZSSAlmanac) {
+            final FieldQZSSAlmanac<?> q = (FieldQZSSAlmanac<?>) original;
+            setSource(q.getSource());
+            setHealth(q.getHealth());
+        }
+    }
+
 }
