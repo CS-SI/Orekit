@@ -35,6 +35,9 @@ import org.orekit.utils.ParameterDriversList;
 public class GNSSPropagatorBuilder<O extends GNSSOrbitalElements<O>>
     extends AbstractAnalyticalPropagatorBuilder<GNSSPropagator<O>, O, GNSSOrbitalElementsFactory<O>> {
 
+    /** Inertial frame. */
+    private final Frame inertial;
+
     /** The body-fixed frame. */
     private final Frame bodyFixed;
 
@@ -51,6 +54,7 @@ public class GNSSPropagatorBuilder<O extends GNSSOrbitalElements<O>>
     public GNSSPropagatorBuilder(final GNSSOrbitalElementsFactory<O> factory,
                                  final Frame inertial, final Frame bodyFixed) {
         super(factory, false, FrameAlignedProvider.of(inertial), Propagator.DEFAULT_MASS);
+        this.inertial  = inertial;
         this.bodyFixed = bodyFixed;
 
         // add non-Keplerian propagation parameters (iDot, cic, cis,…)
@@ -84,8 +88,8 @@ public class GNSSPropagatorBuilder<O extends GNSSOrbitalElements<O>>
         elements.setCic(pDrivers.findByName(GNSSOrbitalElementsDriversProvider.INCLINATION_COSINE).getValue());
         elements.setCis(pDrivers.findByName(GNSSOrbitalElementsDriversProvider.INCLINATION_SINE).getValue());
 
-        return new GNSSPropagator<>(elements, factory.getFrame(),
-                                    bodyFixed, getAttitudeProvider(), getMass());
+        return new GNSSPropagator<>(elements, inertial, bodyFixed,
+                                    getAttitudeProvider(), getMass());
 
     }
 
