@@ -19,7 +19,9 @@ package org.orekit.propagation.analytical.tle;
 import org.hipparchus.util.FastMath;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.AbstractOrbitalParameterFactory;
+import org.orekit.orbits.KeplerianOrbitFactory;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -102,8 +104,13 @@ public class TleParametersFactory extends AbstractOrbitalParameterFactory<TLE> {
     @Override
     protected double[] toArray(final Orbit orbit) {
 
-        // retrieve Keplerian orbital parameters
-        final double[] stateVector = super.toArray(orbit);
+        // fix both frame and type
+        final Orbit partiallyConverted = orbit.getFrame() == getFrame() ? orbit : orbit.inFrame(getFrame());
+        final Orbit fullyConverted     = OrbitType.KEPLERIAN.convertType(partiallyConverted);
+
+        // retrieve orbital parameters
+        final double[] stateVector = new double[6];
+        OrbitType.KEPLERIAN.mapOrbitToArray(fullyConverted, PositionAngleType.MEAN, stateVector, null);
 
         // TLE uses mean motion as first parameter, not semi major axis as Keplerian orbit
         stateVector[0] = orbit.getKeplerianMeanMotion();
