@@ -25,6 +25,8 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
 import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
 import org.orekit.time.TimeScales;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
 
 /**
  * Base class for GNSS almanacs.
@@ -88,10 +90,45 @@ public abstract class AbstractAlmanac<O extends AbstractAlmanac<O>> extends Comm
      */
     public GNSSPropagator<O> getPropagator(final AttitudeProvider provider,
                                            final Frame inertial, final Frame bodyFixed, final double mass) {
+
+        // message-specific configuration
         final GNSSPropagatorBuilder<O> builder = builder(inertial, bodyFixed);
+
+        // generic orbital parameters
+        final ParameterDriversList oDrivers = builder.getOrbitalParameterFactory().getOrbitalParametersDrivers();
+        oDrivers.findByName(GNSSOrbitalElements.SEMI_MAJOR_AXIS).setValue(getSma());
+        oDrivers.findByName(GNSSOrbitalElements.ECCENTRICITY).setValue(getE());
+        oDrivers.findByName(GNSSOrbitalElements.INCLINATION).setValue(getI0());
+        oDrivers.findByName(GNSSOrbitalElements.ARGUMENT_OF_PERIGEE).setValue(getPa());
+        oDrivers.findByName(GNSSOrbitalElements.NODE_LONGITUDE).setValue(getOmega0());
+        oDrivers.findByName(GNSSOrbitalElements.MEAN_ANOMALY).setValue(getM0());
+        for (final ParameterDriver driver : oDrivers.getDrivers()) {
+            driver.setSelected(true);
+        }
+
+        // propagation parameters
+        final ParameterDriversList pDrivers = builder.getPropagationParametersDrivers();
+        pDrivers.findByName(GNSSOrbitalElementsDriversProvider.TIME).setValue(getTime());
+        pDrivers.findByName(GNSSOrbitalElementsDriversProvider.A_DOT).setValue(getADot());
+        pDrivers.findByName(GNSSOrbitalElementsDriversProvider.DELTA_N0).setValue(getDeltaN0());
+        pDrivers.findByName(GNSSOrbitalElementsDriversProvider.DELTA_N0_DOT).setValue(getDeltaN0Dot());
+        pDrivers.findByName(GNSSOrbitalElementsDriversProvider.INCLINATION_RATE).setValue(getIDot());
+        pDrivers.findByName(GNSSOrbitalElementsDriversProvider.LONGITUDE_RATE).setValue(getOmegaDot());
+        pDrivers.findByName(GNSSOrbitalElementsDriversProvider.LATITUDE_COSINE).setValue(getCuc());
+        pDrivers.findByName(GNSSOrbitalElementsDriversProvider.LATITUDE_SINE).setValue(getCus());
+        pDrivers.findByName(GNSSOrbitalElementsDriversProvider.RADIUS_COSINE).setValue(getCrc());
+        pDrivers.findByName(GNSSOrbitalElementsDriversProvider.RADIUS_SINE).setValue(getCrs());
+        pDrivers.findByName(GNSSOrbitalElementsDriversProvider.INCLINATION_COSINE).setValue(getCic());
+        pDrivers.findByName(GNSSOrbitalElementsDriversProvider.INCLINATION_SINE).setValue(getCis());
+        for (final ParameterDriver driver : pDrivers.getDrivers()) {
+            driver.setSelected(true);
+        }
+
         builder.setAttitudeProvider(provider);
         builder.setMass(mass);
+
         return builder.buildPropagator();
+
     }
 
     /** Build the propagator builder.
