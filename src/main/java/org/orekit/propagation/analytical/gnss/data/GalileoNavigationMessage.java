@@ -196,7 +196,7 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
     /** {@inheritDoc} */
     @Override
     public GNSSPropagatorBuilder<GalileoNavigationMessage> builder(final Frame inertial, final Frame bodyFixed) {
-        return new GNSSPropagatorBuilder<>(new GalileoFactory(getType().equals(GalileoNavigationMessage.INAV),
+        return new GNSSPropagatorBuilder<>(new GalileoFactory(GalileoNavigationMessage.INAV.equals(getType()),
                                                               getTimeScales(), getSystem(),
                                                               inertial, bodyFixed,
                                                               getDate(), getMu()),
