@@ -235,7 +235,7 @@ public class SemiAnalyticalKalmanModelTest {
         final List<Double> scaleList = new ArrayList<>();
 
         // Orbital parameters
-        for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
+        for (ParameterDriver driver : builder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
                 scaleList.add(driver.getScale());
             }
@@ -282,7 +282,7 @@ public class SemiAnalyticalKalmanModelTest {
 
 
     /** Observer allowing to get Kalman model after a measurement was processed in the Kalman filter. */
-    public class ModelLogger implements KalmanObserver {
+    public static class ModelLogger implements KalmanObserver {
         KalmanEstimation estimation;
 
         @Override

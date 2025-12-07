@@ -28,6 +28,8 @@ import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.EquinoctialOrbitFactory;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
@@ -89,9 +91,8 @@ public class DSSTContext implements StationDataProvider {
                                                                   initialOrbit.getMu());
         }
         final DSSTPropagatorBuilder propagatorBuilder =
-                        new DSSTPropagatorBuilder(startOrbit,
+                        new DSSTPropagatorBuilder(new EquinoctialOrbitFactory(startOrbit, dP, PositionAngleType.ECCENTRIC),
                                                   new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
-                                                  dP,
                                                   propagationType, stateType);
         for (DSSTForce force : forces) {
             propagatorBuilder.addForceModel(force.getForceModel(this));

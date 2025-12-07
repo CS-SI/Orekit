@@ -185,8 +185,13 @@ public class TLEEstimationTestUtils {
         double[] orbitArray = new double[6];
         initialOrbit.getType().mapOrbitToArray(initialOrbit, PositionAngleType.MEAN, orbitArray, null);
         for (int i = 0; i < orbitArray.length; ++i) {
-        	// here orbital paramaters drivers have only 1 estimated values on the all time period for orbit determination
-            propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i], initialOrbit.getDate());
+        	// here orbital parameters drivers have only 1 estimated values on the all time period for orbit determination
+            propagatorBuilder.
+                getOrbitalParameterFactory().
+                getOrbitalParametersDrivers().
+                getDrivers().
+                get(i).
+                setValue(orbitArray[i], initialOrbit.getDate());
         }
 
         return propagatorBuilder.buildPropagator();

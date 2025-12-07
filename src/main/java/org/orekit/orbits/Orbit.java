@@ -246,13 +246,13 @@ public abstract class Orbit
     /**
      * Get a factory for the current orbit type.
      *
-     * @param positionScale     position scale used to scale the orbital drivers
      * @param positionAngleType position angle type to use
+     * @param positionScale     position scale used to scale the orbital drivers
      * @return factory building orbit instance of the correct type
      * @since 14.0
      */
-    public abstract AbstractOrbitFactory<? extends Orbit> factory(double positionScale,
-                                                                  PositionAngleType positionAngleType);
+    public abstract AbstractOrbitFactory<? extends Orbit> factory(PositionAngleType positionAngleType,
+                                                                  double positionScale);
 
     /** Ensure the defining frame is a pseudo-inertial frame.
      * @param frame frame to check

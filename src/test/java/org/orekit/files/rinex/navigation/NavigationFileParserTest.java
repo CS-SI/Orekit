@@ -198,7 +198,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(gps.getDate()), 1.0e-15);
         
         // check the propagator
-        final GNSSPropagator propagator =
+        final GNSSPropagator<GPSLegacyNavigationMessage> propagator =
             gps.getPropagator(context.getFrames().getEME2000(),
                               context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         final AbsoluteDate date0 = gps.getDate();
@@ -405,7 +405,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(bdt.getDate()), 1.0e-15);
 
         // check the propagator
-        final GNSSPropagator propagator =
+        final GNSSPropagator<BeidouLegacyNavigationMessage> propagator =
             bdt.getPropagator(context.getFrames().getEME2000(),
                               context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         final AbsoluteDate date0 = bdt.getDate();
@@ -456,7 +456,7 @@ public class NavigationFileParserTest {
         final List<BeidouCivilianNavigationMessage> list = file.getBeidouCivilianNavigationMessages("C19");
         Assertions.assertEquals(6, list.size());
         Assertions.assertEquals(0.0, list.get(0).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
-        Assertions.assertTrue(list.get(0).getRadioWave().closeTo(PredefinedGnssSignal.B1C, 1.0e-6));
+        Assertions.assertTrue(list.get(0).getBeidouType().getRadioWave().closeTo(PredefinedGnssSignal.B1C, 1.0e-6));
         Assertions.assertEquals(-1.139640808105e-02, list.get(0).getADot(),       1.0e-15);
         Assertions.assertEquals(-1.300156250000e+02, list.get(0).getCrs(),        1.0e-15);
         Assertions.assertEquals(3.453536710809e-09,  list.get(0).getDeltaN0(),    1.0e-15);
@@ -495,17 +495,17 @@ public class NavigationFileParserTest {
         Assertions.assertTrue(list.get(0).toField(Binary64Field.getInstance()).isCivilianMessage());
 
         Assertions.assertEquals(0.0, list.get(1).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 1, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
-        Assertions.assertTrue(list.get(1).getRadioWave().closeTo(PredefinedGnssSignal.B1C, 1.0e-6));
+        Assertions.assertTrue(list.get(1).getBeidouType().getRadioWave().closeTo(PredefinedGnssSignal.B1C, 1.0e-6));
         Assertions.assertEquals(0.0, list.get(2).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
-        Assertions.assertTrue(list.get(2).getRadioWave().closeTo(PredefinedGnssSignal.B2A, 1.0e-6));
+        Assertions.assertTrue(list.get(2).getBeidouType().getRadioWave().closeTo(PredefinedGnssSignal.B2A, 1.0e-6));
         Assertions.assertEquals(0.0,                 list.get(2).getIscB1CD(),    1.0e-15);
         Assertions.assertEquals(-2.735760062933e-09, list.get(2).getIscB2AD(),    1.0e-15);
         Assertions.assertEquals(0.0, list.get(3).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 1, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
-        Assertions.assertTrue(list.get(3).getRadioWave().closeTo(PredefinedGnssSignal.B2A));
+        Assertions.assertTrue(list.get(3).getBeidouType().getRadioWave().closeTo(PredefinedGnssSignal.B2A));
         Assertions.assertEquals(0.0, list.get(4).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 0, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
-        Assertions.assertTrue(list.get(4).getRadioWave().closeTo(PredefinedGnssSignal.B2B));
+        Assertions.assertTrue(list.get(4).getBeidouType().getRadioWave().closeTo(PredefinedGnssSignal.B2B));
         Assertions.assertEquals(0.0, list.get(5).getEpochToc().durationFrom(new AbsoluteDate(2022, 10, 5, 1, 0, 0, TimeScalesFactory.getBDT())), Double.MIN_VALUE);
-        Assertions.assertTrue(list.get(5).getRadioWave().closeTo(PredefinedGnssSignal.B2B));
+        Assertions.assertTrue(list.get(5).getBeidouType().getRadioWave().closeTo(PredefinedGnssSignal.B2B));
 
     }
 
@@ -590,7 +590,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(gal.getDate()), 1.0e-15);
 
         // check the propagator
-        final GNSSPropagator propagator =
+        final GNSSPropagator<GalileoNavigationMessage> propagator =
             gal.getPropagator(context.getFrames().getEME2000(),
                               context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         final AbsoluteDate date0 = gal.getDate();
@@ -726,7 +726,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(qzs.getDate()), 1.0e-15);
 
         // check the propagator
-        final GNSSPropagator propagator =
+        final GNSSPropagator<QZSSLegacyNavigationMessage> propagator =
             qzs.getPropagator(Propagator.getDefaultLaw(context.getFrames()),
                               FramesFactory.getEME2000(),
                               FramesFactory.getITRF(IERSConventions.IERS_2010, true),
@@ -926,7 +926,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(navic.getDate()), 1.0e-15);
 
         // check the propagator
-        final GNSSPropagator propagator =
+        final GNSSPropagator<NavICLegacyNavigationMessage> propagator =
             navic.getPropagator(context.getFrames().getEME2000(),
                                 context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         final AbsoluteDate date0 = navic.getDate();
@@ -1267,7 +1267,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(qzs.getDate()), 1.0e-15);
 
         // check the propagator
-        final GNSSPropagator propagator =
+        final GNSSPropagator<QZSSLegacyNavigationMessage> propagator =
             qzs.getPropagator(context.getFrames().getEME2000(),
                               context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         final AbsoluteDate date0 = qzs.getDate();
@@ -1365,7 +1365,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(gps.getDate()), 1.0e-15);
 
         // check the propagator
-        final GNSSPropagator propagator =
+        final GNSSPropagator<GPSLegacyNavigationMessage> propagator =
             gps.getPropagator(Propagator.getDefaultLaw(context.getFrames()),
                               FramesFactory.getEME2000(),
                               FramesFactory.getITRF(IERSConventions.IERS_2010, true),
@@ -1451,7 +1451,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(gal.getDate()), 1.0e-15);
 
         // check the propagator
-        final GNSSPropagator propagator =
+        final GNSSPropagator<GalileoNavigationMessage> propagator =
             gal.getPropagator(Propagator.getDefaultLaw(context.getFrames()),
                               FramesFactory.getEME2000(),
                               FramesFactory.getITRF(IERSConventions.IERS_2010, true),
@@ -1638,7 +1638,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(navic.getDate()), 1.0e-15);
 
         // check the propagator
-        final GNSSPropagator propagator =
+        final GNSSPropagator<NavICLegacyNavigationMessage> propagator =
             navic.getPropagator(context.getFrames().getEME2000(),
                                 context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         final AbsoluteDate date0 = navic.getDate();
@@ -1714,7 +1714,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
 
         // check the propagator
-        final GNSSPropagator propagator =
+        final GNSSPropagator<BeidouLegacyNavigationMessage> propagator =
             bdt.getPropagator(context.getFrames().getEME2000(),
                               context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         final AbsoluteDate date0 = bdt.getDate();

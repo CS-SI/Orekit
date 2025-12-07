@@ -73,7 +73,7 @@ public class EcksteinHechlerContext implements StationDataProvider {
         }
 
         // Initialize builder
-        return new EcksteinHechlerPropagatorBuilder(startOrbit, gravity, angleType, dP);
+        return new EcksteinHechlerPropagatorBuilder(startOrbit.factory(angleType, dP), gravity);
 
     }
 

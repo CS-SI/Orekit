@@ -67,7 +67,7 @@ public class KeplerianContext implements StationDataProvider {
         }
 
         // Initialize builder
-       return new KeplerianPropagatorBuilder(startOrbit, angleType, dP);
+       return new KeplerianPropagatorBuilder(startOrbit.factory(angleType, dP));
 
     }
 

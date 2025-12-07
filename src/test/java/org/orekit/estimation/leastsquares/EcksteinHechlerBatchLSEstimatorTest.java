@@ -182,7 +182,8 @@ public class EcksteinHechlerBatchLSEstimatorTest {
 
         final EcksteinHechlerPropagatorBuilder propagatorBuilder =
                         context.createBuilder(PositionAngleType.MEAN, true, 1.0);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(),
+                                                            LOFType.LVLH));
         final Vector3D antennaPhaseCenter = new Vector3D(-1.2, 2.3, -0.7);
 
         // create perfect range measurements with antenna offset
@@ -242,8 +243,7 @@ public class EcksteinHechlerBatchLSEstimatorTest {
                                                                new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
 
-        final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
-        measurements.addAll(measurements1);
+        final List<ObservedMeasurement<?>> measurements = new ArrayList<>(measurements1);
 
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),

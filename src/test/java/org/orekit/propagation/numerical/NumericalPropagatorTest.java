@@ -41,7 +41,11 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
-import org.orekit.attitudes.*;
+import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.FieldAttitude;
+import org.orekit.attitudes.FrameAlignedProvider;
+import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
@@ -68,28 +72,61 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.models.earth.atmosphere.DTM2000;
 import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation;
-import org.orekit.orbits.*;
-import org.orekit.propagation.*;
+import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.AdditionalDataProvider;
+import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.CartesianToleranceProvider;
+import org.orekit.propagation.EphemerisGenerator;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.propagation.events.*;
-import org.orekit.propagation.events.handlers.*;
+import org.orekit.propagation.events.ApsideDetector;
+import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.events.EventDetectionSettings;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.ParameterDrivenDateIntervalDetector;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.handlers.CountAndContinue;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.RecordAndContinue;
+import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
-import org.orekit.time.*;
-import org.orekit.utils.*;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeInterval;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.UTCScale;
+import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.Constants;
+import org.orekit.utils.DoubleArrayDictionary;
+import org.orekit.utils.FieldPVCoordinatesProvider;
+import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
@@ -98,8 +135,8 @@ import java.util.stream.Stream;
 class NumericalPropagatorTest {
 
     private double               mu;
-    private AbsoluteDate         initDate;
-    private SpacecraftState      initialState;
+    private AbsoluteDate initDate;
+    private SpacecraftState initialState;
     private NumericalPropagator  propagator;
 
     // This test highlights the fix of: https://gitlab.orekit.org/orekit/orekit/-/issues/1808
@@ -316,7 +353,7 @@ class NumericalPropagatorTest {
         SpacecraftState actual = ephemeris.propagate(end);
 
         //verify
-        Assertions.assertEquals(actual.getDate().durationFrom(end), 0.0, 0.0);
+        Assertions.assertEquals(0.0, actual.getDate().durationFrom(end), 0.0);
         Assertions.assertEquals(1, handler.getCount());
     }
 
@@ -344,9 +381,9 @@ class NumericalPropagatorTest {
 
         // action + verify
         // propagate forward
-        Assertions.assertEquals(ephemeris.propagate(end).getDate().durationFrom(end), 0.0, 0.0);
+        Assertions.assertEquals(0.0, ephemeris.propagate(end).getDate().durationFrom(end), 0.0);
         // propagate backward
-        Assertions.assertEquals(ephemeris.propagate(initDate).getDate().durationFrom(initDate), 0.0, 0.0);
+        Assertions.assertEquals(0.0, ephemeris.propagate(initDate).getDate().durationFrom(initDate), 0.0);
         Assertions.assertEquals(2, handler.getCount());
     }
 
@@ -373,7 +410,7 @@ class NumericalPropagatorTest {
         SpacecraftState actual = propagator.propagate(end);
 
         //verify
-        Assertions.assertEquals(actual.getDate().durationFrom(end), 0.0, 0.0);
+        Assertions.assertEquals(0.0, actual.getDate().durationFrom(end), 0.0);
     }
 
     @Test
@@ -412,8 +449,7 @@ class NumericalPropagatorTest {
                 OrekitMatchers.closeTo(0, 0));
         //test date
         AbsoluteDate date = endDate.shiftedBy(-0.11);
-        Assertions.assertEquals(
-                ephemeris.propagate(date).getDate().durationFrom(date), 0, 0);
+        Assertions.assertEquals(0, ephemeris.propagate(date).getDate().durationFrom(date), 0);
     }
 
     @Test
@@ -425,8 +461,8 @@ class NumericalPropagatorTest {
         AbsoluteDate endDate = new AbsoluteDate("2015-07-04", tai);
         Frame eci = FramesFactory.getGCRF();
         KeplerianOrbit orbit = new KeplerianOrbit(
-                600e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0, 0, 0, 0, 0,
-                PositionAngleType.TRUE, eci, initialDate, mu);
+            600e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0, 0, 0, 0, 0,
+            PositionAngleType.TRUE, eci, initialDate, mu);
         OrbitType type = OrbitType.CARTESIAN;
         double[][] tol = ToleranceProvider.of(CartesianToleranceProvider.of(1e-3)).getTolerances(orbit, type);
         NumericalPropagator prop = new NumericalPropagator(
@@ -452,8 +488,7 @@ class NumericalPropagatorTest {
                 OrekitMatchers.closeTo(0, 0));
         //test date
         AbsoluteDate date = endDate.shiftedBy(-0.11);
-        Assertions.assertEquals(
-                ephemeris.propagate(date).getDate().durationFrom(date), 0, 0);
+        Assertions.assertEquals(0, ephemeris.propagate(date).getDate().durationFrom(date), 0);
     }
 
     @Test
@@ -539,7 +574,7 @@ class NumericalPropagatorTest {
     }
 
     @Test
-    void testPropagationTypesElliptical() throws ParseException, IOException {
+    void testPropagationTypesElliptical() {
      // setup
         AbsoluteDate         initDate  = new AbsoluteDate();
         SpacecraftState     initialState;
@@ -547,7 +582,7 @@ class NumericalPropagatorTest {
         final Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
         initDate = AbsoluteDate.J2000_EPOCH;
 
-        final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
+        final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                                  FramesFactory.getEME2000(), initDate, mu);
         initialState = new SpacecraftState(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
@@ -613,7 +648,7 @@ class NumericalPropagatorTest {
     }
 
     @Test
-    void testPropagationTypesHyperbolic() throws ParseException, IOException {
+    void testPropagationTypesHyperbolic() {
 
         SpacecraftState state =
             new SpacecraftState(new KeplerianOrbit(-10000000.0, 2.5, 0.3, 0, 0, 0.0,
@@ -813,7 +848,7 @@ class NumericalPropagatorTest {
             });
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
+            Assertions.assertEquals(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE, oe.getSpecifier());
         }
         try {
             propagator.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
@@ -831,7 +866,7 @@ class NumericalPropagatorTest {
             });
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
+            Assertions.assertEquals(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE, oe.getSpecifier());
         }
         propagator.addAdditionalDataProvider(new AdditionalDataProvider<Double>() {
             public String getName() {
@@ -933,7 +968,7 @@ class NumericalPropagatorTest {
     }
 
     @Test
-    void testEventDetectionBug() throws IOException, ParseException {
+    void testEventDetectionBug() {
 
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate initialDate = new AbsoluteDate(2005, 1, 1, 0, 0, 0.0, utc);
@@ -993,7 +1028,7 @@ class NumericalPropagatorTest {
     }
 
     @Test
-    void testEphemerisGenerationIssue14() throws IOException {
+    void testEphemerisGenerationIssue14() {
 
         // Propagation of the initial at t + dt
         final double dt = 3200;
@@ -1157,7 +1192,7 @@ class NumericalPropagatorTest {
     }
 
     @Test
-    void testParallelismIssue258() throws InterruptedException, ExecutionException, FileNotFoundException {
+    void testParallelismIssue258() {
 
         Utils.setDataRoot("regular-data:atmosphere:potential/grgs-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
@@ -1172,7 +1207,7 @@ class NumericalPropagatorTest {
         final double lM = 0; // mean anomaly
         final Frame inertialFrame = FramesFactory.getEME2000();
         final TimeScale utc = TimeScalesFactory.getUTC();
-        final AbsoluteDate initialDate = new AbsoluteDate(2003, 1, 1, 00, 00, 00.000, utc);
+        final AbsoluteDate initialDate = new AbsoluteDate(2003, 1, 1, 0, 0, 0.000, utc);
         final Orbit initialOrbit = new CartesianOrbit( new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngleType.MEAN,
                                                                           inertialFrame, initialDate, mu));
         final SpacecraftState initialState = new SpacecraftState(initialOrbit).withMass( 1000);
@@ -1181,7 +1216,7 @@ class NumericalPropagatorTest {
         final List<SpacecraftState> states = new ArrayList<>();
         final NumericalPropagator propagator = createPropagator(initialState, OrbitType.CARTESIAN, PositionAngleType.TRUE);
         final double samplingStep = 10000.0;
-        propagator.setStepHandler(samplingStep, state -> states.add(state));
+        propagator.setStepHandler(samplingStep, states::add);
         propagator.propagate(initialDate.shiftedBy(5 * samplingStep));
 
         // compute reference errors, using serial computation in a for loop
@@ -1649,8 +1684,9 @@ class NumericalPropagatorTest {
         final Orbit initialOrbit = new KeplerianOrbit(8000000.0, 0.01, 0.87, 2.44, 0.21, -1.05, PositionAngleType.MEAN,
                                            eme2000,
                                            date, Constants.EIGEN5C_EARTH_MU);
-        NumericalPropagatorBuilder builder = new NumericalPropagatorBuilder(initialOrbit,
-                new DormandPrince853IntegratorBuilder(0.02, 0.2, 1.), PositionAngleType.TRUE, 10);
+        NumericalPropagatorBuilder builder =
+            new NumericalPropagatorBuilder(initialOrbit.factory(PositionAngleType.TRUE, 10),
+                                           new DormandPrince853IntegratorBuilder(0.02, 0.2, 1.));
         NumericalPropagator propagator = (NumericalPropagator) builder.buildPropagator();
 
         IntStream.
@@ -2009,7 +2045,7 @@ class NumericalPropagatorTest {
 
     private Attitude createAttitudeWithNonZeroRates(final AbsoluteDate date, final Frame frame) {
         final AngularCoordinates angularCoordinates = new AngularCoordinates(Rotation.IDENTITY,
-                Vector3D.PLUS_K, Vector3D.MINUS_I);
+                                                                             Vector3D.PLUS_K, Vector3D.MINUS_I);
         return new Attitude(date, frame, angularCoordinates);
     }
 

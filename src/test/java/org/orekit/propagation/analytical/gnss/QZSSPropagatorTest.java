@@ -76,7 +76,7 @@ public class QZSSPropagatorTest {
     @Test
     public void testQZSSCycle() {
         // Builds the QZSS propagator from the almanac
-        final GNSSPropagator propagator =
+        final GNSSPropagator<QZSSAlmanac> propagator =
             almanac.getPropagator(context.getFrames().getEME2000(),
                                   context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         // Propagate at the QZSS date and one QZSS cycle later
@@ -93,7 +93,7 @@ public class QZSSPropagatorTest {
     @Test
     public void testFrames() {
         // Builds the QZSS propagator from the almanac
-        final GNSSPropagator propagator =
+        final GNSSPropagator<QZSSAlmanac> propagator =
             almanac.getPropagator(context.getFrames().getEME2000(),
                                   context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         Assertions.assertEquals("EME2000", propagator.getFrame().getName());
@@ -112,9 +112,10 @@ public class QZSSPropagatorTest {
 
     @Test
     public void testResetInitialState() {
-        final GNSSPropagator propagator =
-            almanac.getPropagator(context.getFrames().getEME2000(),
-                                  context.getFrames().getITRF(IERSConventions.IERS_2010, false));
+        GNSSPropagator<QZSSAlmanac> propagator =
+            almanac.builder(context.getFrames().getEME2000(),
+                            context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
+            buildPropagator();
         final SpacecraftState old = propagator.getInitialState();
         propagator.resetInitialState(new SpacecraftState(old.getOrbit(), old.getAttitude()).withMass(old.getMass() + 1000));
         Assertions.assertEquals(old.getMass() + 1000, propagator.getInitialState().getMass(), 1.0e-9);
@@ -122,11 +123,10 @@ public class QZSSPropagatorTest {
 
     @Test
     public void testResetIntermediateState() {
-        GNSSPropagator propagator =
-            new GNSSPropagatorBuilder(almanac,
-                                      context.getFrames().getEME2000(),
-                                      context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
-                buildPropagator();
+        GNSSPropagator<QZSSAlmanac> propagator =
+            almanac.builder(context.getFrames().getEME2000(),
+                            context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
+            buildPropagator();
         final SpacecraftState old = propagator.getInitialState();
         propagator.resetIntermediateState(new SpacecraftState(old.getOrbit(), old.getAttitude()).withMass(old.getMass() + 1000),
                                           true);
@@ -140,7 +140,7 @@ public class QZSSPropagatorTest {
         double errorP = 0;
         double errorV = 0;
         double errorA = 0;
-        final GNSSPropagator propagator =
+        final GNSSPropagator<QZSSAlmanac> propagator =
             almanac.getPropagator(eme2000,
                                   context.getFrames().getITRF(IERSConventions.IERS_2010, true));
         GNSSOrbitalElements<?> elements = propagator.getOrbitalElements();
@@ -197,7 +197,7 @@ public class QZSSPropagatorTest {
         // Date of the QZSS orbital elements
         final AbsoluteDate target = qoe.getDate();
         // Build the QZSS propagator
-        final GNSSPropagator propagator =
+        final GNSSPropagator<QZSSLegacyNavigationMessage> propagator =
             qoe.getPropagator(context.getFrames().getEME2000(),
                               context.getFrames().getITRF(IERSConventions.IERS_2010, true));
         // Compute the PV coordinates at the date of the QZSS orbital elements
@@ -213,7 +213,7 @@ public class QZSSPropagatorTest {
     @Test
     public void testIssue544() {
         // Builds the QZSSPropagator from the almanac
-        final GNSSPropagator propagator =
+        final GNSSPropagator<QZSSAlmanac> propagator =
             almanac.getPropagator(context.getFrames().getEME2000(),
                                   context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         // In order to test the issue, we voluntary set a Double.NaN value in the date.

@@ -56,7 +56,8 @@ public class PhaseCentersRangeModifierTest {
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(),
+                                                            LOFType.LVLH));
 
         // create perfect range measurements without antenna offset
         final Propagator p1 = EstimationTestUtils.createPropagator(context.initialOrbit,
@@ -96,7 +97,8 @@ public class PhaseCentersRangeModifierTest {
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(),
+                                                            LOFType.LVLH));
         final double groundClockOffset = 1.234e-3;
         for (final GroundStation station : context.stations) {
             station.getClockOffsetDriver().setValue(groundClockOffset);
@@ -161,7 +163,8 @@ public class PhaseCentersRangeModifierTest {
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
-        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
+        propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getOrbitalParameterFactory().getFrame(),
+                                                            LOFType.LVLH));
         final double groundClockOffset = 1.234e-3;
         for (final GroundStation station : context.stations) {
             station.getClockOffsetDriver().setValue(groundClockOffset);

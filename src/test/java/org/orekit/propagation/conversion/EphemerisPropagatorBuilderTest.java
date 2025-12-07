@@ -82,10 +82,9 @@ public class EphemerisPropagatorBuilderTest {
 
         // THEN
         // Assert initial orbit
-        assertEquals(defaultOrbit.getFrame(), builder.getFrame());
-        assertEquals(defaultOrbit.getType(),  builder.getOrbitType());
-        assertEquals(defaultOrbit.getDate(),  builder.getInitialOrbitDate());
-        assertEquals(defaultOrbit.getMu(),  builder.getMu());
+        assertEquals(defaultOrbit.getFrame(), builder.getOrbitalParameterFactory().getFrame());
+        assertEquals(defaultOrbit.getDate(),  builder.getOrbitalParameterFactory().getDate());
+        assertEquals(defaultOrbit.getMu(),    builder.getOrbitalParameterFactory().getMu());
 
         // Assert attitude provider
         assertEquals(mockAttitudeProvider,  builder.getAttitudeProvider());

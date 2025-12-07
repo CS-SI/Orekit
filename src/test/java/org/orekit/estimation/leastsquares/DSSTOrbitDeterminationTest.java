@@ -46,8 +46,10 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.EquinoctialOrbitFactory;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
@@ -94,7 +96,10 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
                                                             final ODEIntegratorBuilder builder,
                                                             final double positionScale) {
         final EquinoctialOrbit equiOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(referenceOrbit);
-        return new DSSTPropagatorBuilder(equiOrbit, builder, positionScale, propagationType, stateType);
+        return new DSSTPropagatorBuilder(new EquinoctialOrbitFactory(equiOrbit,
+                                                                     positionScale,
+                                                                     PositionAngleType.ECCENTRIC),
+                                         builder, propagationType, stateType);
     }
 
     /** {@inheritDoc} */

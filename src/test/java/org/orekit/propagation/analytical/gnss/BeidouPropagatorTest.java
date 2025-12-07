@@ -76,7 +76,7 @@ public class BeidouPropagatorTest {
     @Test
     void testBeidouCycle() {
         // Builds the BeiDou propagator from the almanac
-        final GNSSPropagator propagator =
+        final GNSSPropagator<BeidouAlmanac> propagator =
             almanac.getPropagator(context.getFrames().getEME2000(),
                                   context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         // Intermediate verification
@@ -98,7 +98,7 @@ public class BeidouPropagatorTest {
     @Test
     void testFrames() {
         // Builds the BeiDou propagator from the almanac
-        final GNSSPropagator propagator =
+        final GNSSPropagator<BeidouAlmanac> propagator =
             almanac.getPropagator(context.getFrames().getEME2000(),
                                   context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         Assertions.assertEquals("EME2000", propagator.getFrame().getName());
@@ -117,7 +117,7 @@ public class BeidouPropagatorTest {
 
     @Test
     void testResetInitialState() {
-        final GNSSPropagator propagator =
+        final GNSSPropagator<BeidouAlmanac> propagator =
             almanac.getPropagator(context.getFrames().getEME2000(),
                                   context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         final SpacecraftState old = propagator.getInitialState();
@@ -127,11 +127,10 @@ public class BeidouPropagatorTest {
 
     @Test
     void testResetIntermediateState() {
-        GNSSPropagator propagator =
-            new GNSSPropagatorBuilder(almanac,
-                                      context.getFrames().getEME2000(),
-                                      context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
-                buildPropagator();
+        GNSSPropagator<BeidouAlmanac> propagator =
+            almanac.builder(context.getFrames().getEME2000(),
+                            context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
+            buildPropagator();
         final SpacecraftState old = propagator.getInitialState();
         propagator.resetIntermediateState(new SpacecraftState(old.getOrbit(), old.getAttitude()).withMass(old.getMass() + 1000),
                                           true);
@@ -145,7 +144,7 @@ public class BeidouPropagatorTest {
         double errorP = 0;
         double errorV = 0;
         double errorA = 0;
-        final GNSSPropagator propagator =
+        final GNSSPropagator<BeidouAlmanac> propagator =
             almanac.getPropagator(eme2000, context.getFrames().getITRF(IERSConventions.IERS_2010, true));
         GNSSOrbitalElements<?> elements = propagator.getOrbitalElements();
         AbsoluteDate t0 = new GNSSDate(elements.getWeek(), elements.getTime(), SatelliteSystem.BEIDOU).getDate();
@@ -178,7 +177,8 @@ public class BeidouPropagatorTest {
     void testPosition() {
         // Initial BeiDou orbital elements (Ref: IGS)
         final BeidouLegacyNavigationMessage boe =
-            new BeidouLegacyNavigationMessage(DataContext.getDefault().getTimeScales(),
+            new BeidouLegacyNavigationMessage(false,
+                                              DataContext.getDefault().getTimeScales(),
                                               SatelliteSystem.BEIDOU,
                                               BeidouLegacyNavigationMessage.D1);
         boe.setPRN(7);
@@ -202,7 +202,7 @@ public class BeidouPropagatorTest {
         // Date of the BeiDou orbital elements (GPStime - BDTtime = 14s)
         final AbsoluteDate target = boe.getDate().shiftedBy(-14.0);
         // Build the BeiDou propagator
-        final GNSSPropagator propagator =
+        final GNSSPropagator<BeidouLegacyNavigationMessage> propagator =
             boe.getPropagator(context.getFrames().getEME2000(),
                               context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         // Compute the PV coordinates at the date of the BeiDou orbital elements
@@ -217,7 +217,7 @@ public class BeidouPropagatorTest {
     @Test
     void testIssue544() {
         // Builds the BeidouPropagator from the almanac
-        final GNSSPropagator propagator =
+        final GNSSPropagator<BeidouAlmanac> propagator =
             almanac.getPropagator(context.getFrames().getEME2000(),
                                   context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         // In order to test the issue, we voluntary set a Double.NaN value in the date.

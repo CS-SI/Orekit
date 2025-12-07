@@ -90,7 +90,7 @@ class GPSPropagatorTest {
 
     @Test
     void testClockCorrections() {
-        final GNSSPropagator propagator =
+        final GNSSPropagator<GPSAlmanac> propagator =
             almanacs.get(0).
                 getPropagator(context.getFrames().getEME2000(),
                               context.getFrames().getITRF(IERSConventions.IERS_2010, false));
@@ -143,7 +143,7 @@ class GPSPropagatorTest {
     @Test
     void testGPSCycle() {
         // Builds the GPSPropagator from the almanac
-        final GNSSPropagator propagator =
+        final GNSSPropagator<GPSAlmanac> propagator =
             almanacs.get(0).getPropagator(Utils.defaultLaw(),
                                           context.getFrames().getEME2000(),
                                           context.getFrames().getITRF(IERSConventions.IERS_2010, false),
@@ -162,7 +162,7 @@ class GPSPropagatorTest {
     @Test
     void testFrames() {
         // Builds the GPSPropagator from the almanac
-        final GNSSPropagator propagator = almanacs.get(0).
+        final GNSSPropagator<GPSAlmanac> propagator = almanacs.get(0).
             getPropagator(context.getFrames().getEME2000(),
                           context.getFrames().getITRF(IERSConventions.IERS_2010, true));
         Assertions.assertEquals("EME2000", propagator.getFrame().getName());
@@ -181,7 +181,7 @@ class GPSPropagatorTest {
 
     @Test
     void testResetInitialState() {
-        final GNSSPropagator propagator =
+        final GNSSPropagator<GPSAlmanac> propagator =
             almanacs.get(0).getPropagator(context.getFrames().getEME2000(),
                                           context.getFrames().getITRF(IERSConventions.IERS_2010, false));
         final SpacecraftState old = propagator.getInitialState();
@@ -191,11 +191,10 @@ class GPSPropagatorTest {
 
     @Test
     void testResetIntermediateState() {
-        GNSSPropagator propagator =
-            new GNSSPropagatorBuilder(almanacs.get(0),
-                                      context.getFrames().getEME2000(),
-                                      context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
-                buildPropagator();
+        GNSSPropagator<GPSAlmanac> propagator =
+            almanacs.get(0).builder(context.getFrames().getEME2000(),
+                                    context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
+            buildPropagator();
         final SpacecraftState old = propagator.getInitialState();
         propagator.resetIntermediateState(new SpacecraftState(old.getOrbit(), old.getAttitude()).withMass( old.getMass() + 1000),
                                           true);
@@ -205,7 +204,7 @@ class GPSPropagatorTest {
     @Test
     void testTLE() {
 
-        List<GNSSPropagator> gpsPropagators = new ArrayList<>();
+        List<GNSSPropagator<GPSAlmanac>> gpsPropagators = new ArrayList<>();
         for (final GPSAlmanac almanac : almanacs) {
             gpsPropagators.add(almanac.getPropagator(context.getFrames().getEME2000(),
                                                      context.getFrames().getITRF(IERSConventions.IERS_2010, false)));
@@ -310,7 +309,7 @@ class GPSPropagatorTest {
                      new TLE("1 41328U 16007A   16059.56873502  .00000049  00000-0  00000+0 0  9991",
                              "2 41328  55.0137 239.0304 0002157 298.9074  61.0768  1.99172830   453"));
 
-        for (final GNSSPropagator gpsPropagator : gpsPropagators) {
+        for (final GNSSPropagator<GPSAlmanac> gpsPropagator : gpsPropagators) {
             final int prn = gpsPropagator.getOrbitalElements().getPRN();
             TLE tle = prnToTLE.get(prn);
             TLEPropagator tlePropagator = TLEPropagator.selectExtrapolator(tle);
@@ -333,7 +332,7 @@ class GPSPropagatorTest {
         double errorV = 0;
         double errorA = 0;
         for (final GPSAlmanac almanac : almanacs) {
-            final GNSSPropagator propagator =
+            final GNSSPropagator<GPSAlmanac> propagator =
                 almanac.getPropagator(context.getFrames().getEME2000(),
                                       context.getFrames().getITRF(IERSConventions.IERS_2010, true));
             GNSSOrbitalElements<?> elements = propagator.getOrbitalElements();
@@ -391,7 +390,7 @@ class GPSPropagatorTest {
         // Date of the GPS orbital elements
         final AbsoluteDate target = goe.getDate();
         // Build the GPS propagator
-        final GNSSPropagator propagator =
+        final GNSSPropagator<GPSLegacyNavigationMessage> propagator =
             goe.getPropagator(context.getFrames().getEME2000(),
                               context.getFrames().getITRF(IERSConventions.IERS_2010, true));
         // Compute the PV coordinates at the date of the GPS orbital elements
@@ -430,7 +429,7 @@ class GPSPropagatorTest {
         goe.setCrs(87.03125);
         goe.setCic(3.203749656677246E-7);
         goe.setCis(4.0978193283081055E-8);
-        GNSSPropagator propagator =
+        GNSSPropagator<GPSLegacyNavigationMessage> propagator =
             goe.getPropagator(context.getFrames().getEME2000(),
                               context.getFrames().getITRF(IERSConventions.IERS_2010, false));
 
@@ -496,10 +495,12 @@ class GPSPropagatorTest {
         goe.setCrs(87.03125);
         goe.setCic(3.203749656677246E-7);
         goe.setCis(4.0978193283081055E-8);
-        GNSSPropagator propagator = goe.getPropagator(attitudeProvider, eci, ecef, mass);
+        GNSSPropagator<GPSLegacyNavigationMessage> propagator =
+            goe.getPropagator(attitudeProvider, eci, ecef, mass);
 
-        final GNSSPropagator rebuilt = new GNSSPropagator(propagator.getInitialState(), goe,
-                                                          ecef, attitudeProvider, mass);
+        final GNSSPropagator<GPSLegacyNavigationMessage> rebuilt =
+            new GNSSPropagator<>(propagator.getInitialState(), goe,
+                                 ecef, attitudeProvider, mass);
         final GNSSOrbitalElements<?> oe2 = rebuilt.getOrbitalElements();
         Assertions.assertEquals(0, goe.getDate().durationFrom(oe2),               1.0e-20);
         Assertions.assertEquals(0,
@@ -542,11 +543,10 @@ class GPSPropagatorTest {
     @Test
     void testIssue544() {
         // Builds the GPSPropagator from the almanac
-        final GNSSPropagator propagator =
-            new GNSSPropagatorBuilder(almanacs.get(0),
-                                      context.getFrames().getEME2000(),
-                                      context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
-                buildPropagator();
+        final GNSSPropagator<GPSAlmanac> propagator =
+            almanacs.get(0).builder(context.getFrames().getEME2000(),
+                                    context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
+            buildPropagator();
         // In order to test the issue, we voluntarily set a Double.NaN value in the date.
         final AbsoluteDate date0 = new AbsoluteDate(2010, 5, 7, 7, 50, Double.NaN, TimeScalesFactory.getUTC());
         final PVCoordinates pv0 = propagator.propagateInEcef(date0);
@@ -582,11 +582,10 @@ class GPSPropagatorTest {
     void testIssue949() {
         // GIVEN
         // Setup propagator
-        final GNSSPropagator propagator =
-            new GNSSPropagatorBuilder(almanacs.get(0),
-                                      context.getFrames().getEME2000(),
-                                      context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
-                buildPropagator();
+        final GNSSPropagator<GPSAlmanac> propagator =
+            almanacs.get(0).builder(context.getFrames().getEME2000(),
+                                    context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
+            buildPropagator();
 
         // Setup additional data provider which use the initial state in its init method
         final AdditionalDataProvider<double[]> additionalDataProvider = TestUtils.getAdditionalProviderWithInit();

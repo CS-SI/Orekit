@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.analytical;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -229,8 +228,7 @@ public class EcksteinHechlerPropagatorTest {
         Orbit finalOrbitAna = extrapolatorAna.propagate(extrapDate).getOrbit();
         Orbit finalOrbitKep = extrapolatorKep.propagate(extrapDate).getOrbit();
 
-        Assertions.assertEquals(finalOrbitAna.getDate().durationFrom(extrapDate), 0.0,
-                     Utils.epsilonTest);
+        Assertions.assertEquals(0.0, finalOrbitAna.getDate().durationFrom(extrapDate), Utils.epsilonTest);
         // comparison of each orbital parameters
         Assertions.assertEquals(finalOrbitAna.getA(), finalOrbitKep.getA(), 10
                      * Utils.epsilonTest * finalOrbitKep.getA());
@@ -726,8 +724,7 @@ public class EcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void testInitializationCorrectness()
-        throws IOException {
+    public void testInitializationCorrectness() {
 
         //  Definition of initial conditions
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(154.);
@@ -769,10 +766,9 @@ public class EcksteinHechlerPropagatorTest {
 
         // find the best Eckstein-Hechler propagator that match the orbit evolution
         PropagatorConverter converter =
-                new FiniteDifferencePropagatorConverter(new EcksteinHechlerPropagatorBuilder(initial,
-                                                                                             provider,
-                                                                                             PositionAngleType.TRUE,
-                                                                                             1.0),
+                new FiniteDifferencePropagatorConverter(new EcksteinHechlerPropagatorBuilder(initial.factory(PositionAngleType.TRUE,
+                                                                                                             1.0),
+                                                                                             provider),
                                                         1.0e-6, 100);
         EcksteinHechlerPropagator fittedEH =
                 (EcksteinHechlerPropagator) converter.convert(num, 3 * initial.getKeplerianPeriod(), 300);
@@ -797,7 +793,7 @@ public class EcksteinHechlerPropagatorTest {
         // LEO orbit
         final Vector3D position = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
         final Vector3D velocity = new Vector3D(505.8479685, 942.7809215, 7435.922231);
-        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2018, 07, 15), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2018, 7, 15), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
         final SpacecraftState initialState =  new SpacecraftState(new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                                                                        FramesFactory.getEME2000(),
                                                                                        initDate,
@@ -835,7 +831,7 @@ public class EcksteinHechlerPropagatorTest {
         // LEO orbit
         final Vector3D position = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
         final Vector3D velocity = new Vector3D(505.8479685, 942.7809215, 7435.922231);
-        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2018, 07, 15), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2018, 7, 15), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
         final SpacecraftState initialState =  new SpacecraftState(new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                                                                        FramesFactory.getEME2000(),
                                                                                        initDate,

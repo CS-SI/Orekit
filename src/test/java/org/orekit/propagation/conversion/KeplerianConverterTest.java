@@ -56,9 +56,8 @@ class KeplerianConverterTest {
 
     @Test
     void testConversionWithFreeParameter() {
-        Assertions.assertThrows(OrekitException.class, () -> {
-            checkFit(orbit, 86400, 300, 1.0e-3, true, 2.65e-8, "toto");
-        });
+        Assertions.assertThrows(OrekitException.class,
+                                () -> checkFit(orbit, 86400, 300, 1.0e-3, true, 2.65e-8, "toto"));
     }
 
     protected void checkFit(final Orbit orbit,
@@ -76,9 +75,9 @@ class KeplerianConverterTest {
             sample.add(p.propagate(orbit.getDate().shiftedBy(dt)));
         }
 
-        PropagatorBuilder builder = new KeplerianPropagatorBuilder(OrbitType.KEPLERIAN.convertType(orbit),
-                                                                   PositionAngleType.MEAN,
-                                                                   1.0);
+        PropagatorBuilder builder =
+            new KeplerianPropagatorBuilder(OrbitType.KEPLERIAN.convertType(orbit).
+                                           factory(PositionAngleType.MEAN, 1.0));
 
         FiniteDifferencePropagatorConverter fitter = new FiniteDifferencePropagatorConverter(builder, threshold, 1000);
 

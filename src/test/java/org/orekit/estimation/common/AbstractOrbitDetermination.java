@@ -743,7 +743,8 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         // Orbital covariance matrix initialization
         // Jacobian of the orbital parameters w/r to Cartesian
         final double[][] dYdC = new double[6][6];
-        initialGuess.getJacobianWrtCartesian(propagatorBuilder.getPositionAngleType(), dYdC);
+        initialGuess.getJacobianWrtCartesian(propagatorBuilder.getOrbitalParameterFactory().getPositionAngleType(),
+                                             dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
         RealMatrix orbitalP = Jac.multiply(cartesianOrbitalP.multiply(Jac.transpose()));
 

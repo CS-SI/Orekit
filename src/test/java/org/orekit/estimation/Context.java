@@ -93,9 +93,8 @@ public class Context implements StationDataProvider {
                                                                 initialOrbit.getMu());
         }
         final NumericalPropagatorBuilder propagatorBuilder =
-                        new NumericalPropagatorBuilder(orbitType.convertType(startOrbit),
-                                                       new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
-                                positionAngleType, dP);
+                        new NumericalPropagatorBuilder(orbitType.convertType(startOrbit).factory(positionAngleType, dP),
+                                                       new DormandPrince853IntegratorBuilder(minStep, maxStep, dP));
         for (Force force : forces) {
             propagatorBuilder.addForceModel(force.getForceModel(this));
         }

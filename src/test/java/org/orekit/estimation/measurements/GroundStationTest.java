@@ -317,7 +317,8 @@ class GroundStationTest {
         station.getPolarDriftYDriver().setSelected(true);
 
         // just for the fun and to speed up test, we will use orbit determination, *without* estimating orbit
-        for (final ParameterDriver driver : zeroPropagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
+        for (final ParameterDriver driver :
+            zeroPropagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {
             driver.setSelected(false);
         }
 

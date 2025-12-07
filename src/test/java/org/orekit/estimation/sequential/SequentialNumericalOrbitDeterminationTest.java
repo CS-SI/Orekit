@@ -91,8 +91,8 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
     protected NumericalPropagatorBuilder createPropagatorBuilder(final Orbit referenceOrbit,
                                                                  final ODEIntegratorBuilder builder,
                                                                  final double positionScale) {
-        return new NumericalPropagatorBuilder(referenceOrbit, builder, PositionAngleType.MEAN,
-                                              positionScale);
+        return new NumericalPropagatorBuilder(referenceOrbit.factory(PositionAngleType.MEAN, positionScale),
+                                              builder);
     }
 
     /** {@inheritDoc} */

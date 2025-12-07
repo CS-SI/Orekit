@@ -255,7 +255,8 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final Orbit refOrbit = referencePropagator.
                         propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
 
-        ParameterDriver aDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(0);
+        ParameterDriver aDriver =
+            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers().get(0);
         aDriver.setValue(aDriver.getValue() + 1.2);
 
         // Cartesian covariance matrix initialization
@@ -359,7 +360,8 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final Orbit refOrbit = referencePropagator.
                         propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
 
-        ParameterDriver aDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(0);
+        ParameterDriver aDriver =
+            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers().get(0);
         aDriver.setValue(aDriver.getValue() + 1.2);
 
         // Cartesian covariance matrix initialization

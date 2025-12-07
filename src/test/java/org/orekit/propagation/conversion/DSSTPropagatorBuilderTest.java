@@ -30,6 +30,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.EquinoctialOrbitFactory;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
@@ -170,7 +171,9 @@ public class DSSTPropagatorBuilderTest {
                 new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
 
         final DSSTPropagatorBuilder builder =
-                new DSSTPropagatorBuilder(orbit, integratorBuilder, 1.0, PropagationType.OSCULATING, PropagationType.OSCULATING);
+                new DSSTPropagatorBuilder(new EquinoctialOrbitFactory((EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit),
+                                                                      1.0, PositionAngleType.ECCENTRIC),
+                                          integratorBuilder, PropagationType.OSCULATING, PropagationType.OSCULATING);
 
         builder.addForceModel(new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0)));
 
@@ -208,11 +211,11 @@ public class DSSTPropagatorBuilderTest {
 
         // We propagate using a build version of the propagator
         // We shall have the same results than before
-        DSSTPropagatorBuilder builder = new DSSTPropagatorBuilder(orbit,
-                                                                  foiBuilder,
-                                                                  1.0,
-                                                                  PropagationType.MEAN,
-                                                                  PropagationType.MEAN);
+        DSSTPropagatorBuilder builder =
+            new DSSTPropagatorBuilder(new EquinoctialOrbitFactory(orbit, 1.0, PositionAngleType.ECCENTRIC),
+                                      foiBuilder,
+                                      PropagationType.MEAN,
+                                      PropagationType.MEAN);
 
         builder.addForceModel(moon);
         builder.setMass(1000.);
@@ -236,11 +239,11 @@ public class DSSTPropagatorBuilderTest {
         // Integrator builder
         final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, toleranceProvider);
         // Propagator builder
-        final DSSTPropagatorBuilder builder = new DSSTPropagatorBuilder(orbit,
-                                                                  dp54Builder,
-                                                                  1.0,
-                                                                  PropagationType.MEAN,
-                                                                  PropagationType.MEAN);
+        final DSSTPropagatorBuilder builder =
+            new DSSTPropagatorBuilder(new EquinoctialOrbitFactory(orbit, 1.0, PositionAngleType.ECCENTRIC),
+                                      dp54Builder,
+                                      PropagationType.MEAN,
+                                      PropagationType.MEAN);
         builder.addForceModel(moon);
         // Verify that there is no Newtonian attraction force model
         Assertions.assertFalse(hasNewtonianAttraction(builder.getAllForceModels()));
@@ -258,11 +261,11 @@ public class DSSTPropagatorBuilderTest {
         // Integrator builder
         final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, toleranceProvider);
         // Propagator builder
-        final DSSTPropagatorBuilder builder = new DSSTPropagatorBuilder(orbit,
-                                                                  dp54Builder,
-                                                                  1.0,
-                                                                  PropagationType.MEAN,
-                                                                  PropagationType.MEAN);
+        final DSSTPropagatorBuilder builder =
+            new DSSTPropagatorBuilder(new EquinoctialOrbitFactory(orbit, 1.0, PositionAngleType.ECCENTRIC),
+                                      dp54Builder,
+                                      PropagationType.MEAN,
+                                      PropagationType.MEAN);
         builder.addForceModel(moon);
         builder.addForceModel(sun);
 
@@ -304,7 +307,7 @@ public class DSSTPropagatorBuilderTest {
             builder.buildPropagator();
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
+            Assertions.assertEquals(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE, oe.getSpecifier());
         }
     }
 
@@ -313,16 +316,16 @@ public class DSSTPropagatorBuilderTest {
         // Integrator builder
         final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, toleranceProvider);
         // Propagator builder
-        final DSSTPropagatorBuilder builder = new DSSTPropagatorBuilder(orbit,
-                                                                  dp54Builder,
-                                                                  1.0,
-                                                                  PropagationType.MEAN,
-                                                                  PropagationType.MEAN);
-        for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
+        final DSSTPropagatorBuilder builder =
+            new DSSTPropagatorBuilder(new EquinoctialOrbitFactory(orbit, 1.0, PositionAngleType.ECCENTRIC),
+                                      dp54Builder,
+                                      PropagationType.MEAN,
+                                      PropagationType.MEAN);
+        for (ParameterDriver driver : builder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {
             Assertions.assertTrue(driver.isSelected());
         }
         builder.deselectDynamicParameters();
-        for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
+        for (ParameterDriver driver : builder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {
             Assertions.assertFalse(driver.isSelected());
         }
     }
@@ -342,7 +345,10 @@ public class DSSTPropagatorBuilderTest {
                                                new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
 
         final DSSTPropagatorBuilder builder =
-                        new DSSTPropagatorBuilder(orbit, integratorBuilder, 1.0, PropagationType.OSCULATING, PropagationType.OSCULATING);
+                        new DSSTPropagatorBuilder(new EquinoctialOrbitFactory((EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit),
+                                                                              1.0, PositionAngleType.ECCENTRIC),
+                                                  integratorBuilder,
+                                                  PropagationType.OSCULATING, PropagationType.OSCULATING);
 
         builder.addForceModel(new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0)));
 
@@ -357,7 +363,7 @@ public class DSSTPropagatorBuilderTest {
         // Then
         // Original builder should still have original orbit
         final PVCoordinates originalPv = orbit.getPVCoordinates();
-        final PVCoordinates initialPv = builder.createInitialOrbit().getPVCoordinates();
+        final PVCoordinates initialPv = builder.getOrbitalParameterFactory().createFromDrivers().getPVCoordinates();
         final double dP = originalPv.getPosition().distance(initialPv.getPosition());
         final double dV = originalPv.getVelocity().distance(initialPv.getVelocity());
         final double dA = originalPv.getAcceleration().distance(initialPv.getAcceleration());

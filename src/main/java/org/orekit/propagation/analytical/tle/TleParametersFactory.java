@@ -64,6 +64,13 @@ public class TleParametersFactory extends AbstractOrbitalParameterFactory<TLE> {
         this.templateTLE = templateTLE;
     }
 
+    /** Get the template TLE.
+     * @return template TLE
+     */
+    public TLE getTemplateTLE() {
+        return templateTLE;
+    }
+
     /** Create parameter drivers.
      * @param tle reference TLE
      * @return drivers

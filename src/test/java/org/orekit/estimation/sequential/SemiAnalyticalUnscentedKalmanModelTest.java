@@ -189,8 +189,8 @@ public class SemiAnalyticalUnscentedKalmanModelTest {
         expX.setSubVector(0, MatrixUtils.createRealVector(orbitState0));
         expX.setEntry(6, srpCoefDriver.getReferenceValue());
         expX.setEntry(7, satRangeBiasDriver.getReferenceValue());
-        Assertions.assertArrayEquals(model.getPhysicalEstimatedState().toArray(), expX.toArray(), tol);
-        Assertions.assertArrayEquals(model.getEstimate().getState().toArray(),    new double[8], tol);
+        Assertions.assertArrayEquals(expX.toArray(), model.getPhysicalEstimatedState().toArray(), tol);
+        Assertions.assertArrayEquals(new double[8],  model.getEstimate().getState().toArray(),    tol);
 
         // Normalized covariance - filled with 1
         final double[][] Pn = model.getEstimate().getCovariance().getData();
@@ -234,7 +234,7 @@ public class SemiAnalyticalUnscentedKalmanModelTest {
         final List<Double> scaleList = new ArrayList<>();
 
         // Orbital parameters
-        for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
+        for (ParameterDriver driver : builder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
                 scaleList.add(driver.getScale());
             }
@@ -281,7 +281,7 @@ public class SemiAnalyticalUnscentedKalmanModelTest {
 
 
     /** Observer allowing to get Kalman model after a measurement was processed in the Kalman filter. */
-    public class ModelLogger implements KalmanObserver {
+    public static class ModelLogger implements KalmanObserver {
         KalmanEstimation estimation;
 
         @Override

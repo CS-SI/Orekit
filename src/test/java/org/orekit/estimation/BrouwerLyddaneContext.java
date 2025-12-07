@@ -75,7 +75,8 @@ public class BrouwerLyddaneContext implements StationDataProvider {
         }
 
         // Initialize builder
-        return new BrouwerLyddanePropagatorBuilder(startOrbit, gravity, angleType, dP, BrouwerLyddanePropagator.M2);
+        return new BrouwerLyddanePropagatorBuilder(startOrbit.factory(angleType, dP),
+                                                   gravity, BrouwerLyddanePropagator.M2);
 
     }
 

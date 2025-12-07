@@ -46,6 +46,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
+import org.orekit.propagation.analytical.tle.TleParametersFactory;
 import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.TLEPropagatorBuilder;
@@ -66,9 +67,11 @@ public class UnscentedKalmanEstimatorTest {
         String line1 = "1 07276U 74026A   00055.48318287  .00000000  00000-0  22970+3 0  9994";
         String line2 = "2 07276  71.6273  78.7838 1248323  14.0598   3.8405  4.72707036231812";
         final TLE tle = new TLE(line1, line2);
-        final TLEPropagatorBuilder propagatorBuilder = new TLEPropagatorBuilder(tle,
-                PositionAngleType.TRUE, 1., new FixedPointTleGenerationAlgorithm());
-        for (final ParameterDriver driver: propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
+        final TLEPropagatorBuilder propagatorBuilder =
+            new TLEPropagatorBuilder(new TleParametersFactory(tle, FramesFactory.getTEME()),
+                                     new FixedPointTleGenerationAlgorithm());
+        for (final ParameterDriver driver :
+            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {
             driver.setSelected(false);
         }
         propagatorBuilder.getPropagationParametersDrivers().getDrivers().get(0).setSelected(true);
@@ -113,12 +116,13 @@ public class UnscentedKalmanEstimatorTest {
                 5.0, 5.0, 1.0, new ObservableSatellite(0));
 
         // Unselect all orbital propagation parameters
-        propagatorBuilder.getOrbitalParametersDrivers().getDrivers()
-                .forEach(driver -> driver.setSelected(false));
+        final ParameterDriversList drivers =
+            propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers();
+        drivers.getDrivers().forEach(driver -> driver.setSelected(false));
 
         // Select eccentricity and anomaly
-        propagatorBuilder.getOrbitalParametersDrivers().findByName("e").setSelected(true);
-        propagatorBuilder.getOrbitalParametersDrivers().findByName("v").setSelected(true);
+        drivers.findByName("e").setSelected(true);
+        drivers.findByName("v").setSelected(true);
 
         // Covariance matrix initialization
         final RealMatrix initialP = MatrixUtils.createRealDiagonalMatrix(new double[]{
@@ -141,20 +145,14 @@ public class UnscentedKalmanEstimatorTest {
 
         // Unchanged orbital parameters (two body propagation)
         final KeplerianOrbit initialOrbit = (KeplerianOrbit) context.initialOrbit;
-        Assertions.assertEquals(initialOrbit.getA(),
-                propagatorBuilder.getOrbitalParametersDrivers().findByName("a").getValue(), 1e-8);
-        Assertions.assertEquals(initialOrbit.getI(),
-                propagatorBuilder.getOrbitalParametersDrivers().findByName("i").getValue());
-        Assertions.assertEquals(initialOrbit.getRightAscensionOfAscendingNode(),
-                propagatorBuilder.getOrbitalParametersDrivers().findByName("Ω").getValue());
-        Assertions.assertEquals(initialOrbit.getPerigeeArgument(),
-                propagatorBuilder.getOrbitalParametersDrivers().findByName("ω").getValue(), 1e-15);
+        Assertions.assertEquals(initialOrbit.getA(), drivers.findByName("a").getValue(), 1e-8);
+        Assertions.assertEquals(initialOrbit.getI(), drivers.findByName("i").getValue());
+        Assertions.assertEquals(initialOrbit.getRightAscensionOfAscendingNode(), drivers.findByName("Ω").getValue());
+        Assertions.assertEquals(initialOrbit.getPerigeeArgument(), drivers.findByName("ω").getValue(), 1e-15);
 
         // Changed orbital parameters
-        Assertions.assertNotEquals(initialOrbit.getE(),
-                propagatorBuilder.getOrbitalParametersDrivers().findByName("e").getValue());
-        Assertions.assertNotEquals(initialOrbit.getTrueAnomaly(),
-                propagatorBuilder.getOrbitalParametersDrivers().findByName("v").getValue());
+        Assertions.assertNotEquals(initialOrbit.getE(), drivers.findByName("e").getValue());
+        Assertions.assertNotEquals(initialOrbit.getTrueAnomaly(), drivers.findByName("v").getValue());
     }
 
     @Test
@@ -195,17 +193,19 @@ public class UnscentedKalmanEstimatorTest {
                 new MultiplexedMeasurement(Arrays.asList(measurement1, measurement2));
 
         // Unselect all orbital propagation parameters
-        propagatorBuilder1.getOrbitalParametersDrivers().getDrivers()
-                .forEach(driver -> driver.setSelected(false));
-        propagatorBuilder2.getOrbitalParametersDrivers().getDrivers()
-                .forEach(driver -> driver.setSelected(false));
+        final ParameterDriversList oDrivers1 =
+            propagatorBuilder1.getOrbitalParameterFactory().getOrbitalParametersDrivers();
+        final ParameterDriversList oDrivers2 =
+            propagatorBuilder2.getOrbitalParameterFactory().getOrbitalParametersDrivers();
+        oDrivers1.getDrivers().forEach(driver -> driver.setSelected(false));
+        oDrivers2.getDrivers().forEach(driver -> driver.setSelected(false));
 
         // Select eccentricity and anomaly
-        propagatorBuilder1.getOrbitalParametersDrivers().findByName("e").setSelected(true);
-        propagatorBuilder1.getOrbitalParametersDrivers().findByName("v").setSelected(true);
+        oDrivers1.findByName("e").setSelected(true);
+        oDrivers1.findByName("v").setSelected(true);
 
-        propagatorBuilder2.getOrbitalParametersDrivers().findByName("e").setSelected(true);
-        propagatorBuilder2.getOrbitalParametersDrivers().findByName("v").setSelected(true);
+        oDrivers2.findByName("e").setSelected(true);
+        oDrivers2.findByName("v").setSelected(true);
 
         // Select reflection coefficient for second sat
         propagatorBuilder2.getPropagationParametersDrivers().findByName("reflection coefficient").setSelected(true);
@@ -253,34 +253,22 @@ public class UnscentedKalmanEstimatorTest {
         unscented.estimationStep(combinedMeasurement);
 
         // Unchanged orbital parameters
-        Assertions.assertEquals(refOrbit1.getA(),
-                propagatorBuilder1.getOrbitalParametersDrivers().findByName("a[0]").getValue(), 1e-8);
-        Assertions.assertEquals(refOrbit1.getI(),
-                propagatorBuilder1.getOrbitalParametersDrivers().findByName("i[0]").getValue());
-        Assertions.assertEquals(refOrbit1.getRightAscensionOfAscendingNode(),
-                propagatorBuilder1.getOrbitalParametersDrivers().findByName("Ω[0]").getValue());
-        Assertions.assertEquals(refOrbit1.getPerigeeArgument(),
-                propagatorBuilder1.getOrbitalParametersDrivers().findByName("ω[0]").getValue(), 1e-15);
+        Assertions.assertEquals(refOrbit1.getA(), oDrivers1.findByName("a[0]").getValue(), 1e-8);
+        Assertions.assertEquals(refOrbit1.getI(), oDrivers1.findByName("i[0]").getValue());
+        Assertions.assertEquals(refOrbit1.getRightAscensionOfAscendingNode(), oDrivers1.findByName("Ω[0]").getValue());
+        Assertions.assertEquals(refOrbit1.getPerigeeArgument(), oDrivers1.findByName("ω[0]").getValue(), 1e-15);
 
-        Assertions.assertEquals(refOrbit2.getA(),
-                propagatorBuilder2.getOrbitalParametersDrivers().findByName("a[1]").getValue(), 1e-8);
-        Assertions.assertEquals(refOrbit2.getI(),
-                propagatorBuilder2.getOrbitalParametersDrivers().findByName("i[1]").getValue());
-        Assertions.assertEquals(refOrbit2.getRightAscensionOfAscendingNode(),
-                propagatorBuilder2.getOrbitalParametersDrivers().findByName("Ω[1]").getValue());
-        Assertions.assertEquals(refOrbit2.getPerigeeArgument(),
-                propagatorBuilder2.getOrbitalParametersDrivers().findByName("ω[1]").getValue(), 1e-15);
+        Assertions.assertEquals(refOrbit2.getA(), oDrivers2.findByName("a[1]").getValue(), 1e-8);
+        Assertions.assertEquals(refOrbit2.getI(), oDrivers2.findByName("i[1]").getValue());
+        Assertions.assertEquals(refOrbit2.getRightAscensionOfAscendingNode(), oDrivers2.findByName("Ω[1]").getValue());
+        Assertions.assertEquals(refOrbit2.getPerigeeArgument(), oDrivers2.findByName("ω[1]").getValue(), 1e-15);
 
         // Changed orbital parameters
-        Assertions.assertNotEquals(refOrbit1.getE(),
-                propagatorBuilder1.getOrbitalParametersDrivers().findByName("e[0]").getValue());
-        Assertions.assertNotEquals(refOrbit1.getTrueAnomaly(),
-                propagatorBuilder1.getOrbitalParametersDrivers().findByName("v[0]").getValue());
+        Assertions.assertNotEquals(refOrbit1.getE(), oDrivers1.findByName("e[0]").getValue());
+        Assertions.assertNotEquals(refOrbit1.getTrueAnomaly(), oDrivers1.findByName("v[0]").getValue());
 
-        Assertions.assertNotEquals(refOrbit2.getE(),
-                propagatorBuilder2.getOrbitalParametersDrivers().findByName("e[1]").getValue());
-        Assertions.assertNotEquals(refOrbit2.getTrueAnomaly(),
-                propagatorBuilder2.getOrbitalParametersDrivers().findByName("v[1]").getValue());
+        Assertions.assertNotEquals(refOrbit2.getE(), oDrivers2.findByName("e[1]").getValue());
+        Assertions.assertNotEquals(refOrbit2.getTrueAnomaly(), oDrivers2.findByName("v[1]").getValue());
 
         // Propagation parameters
         final List<DelegatingDriver> drivers1 = propagatorBuilder1.getPropagationParametersDrivers().getDrivers();
@@ -902,7 +890,7 @@ public class UnscentedKalmanEstimatorTest {
         final NumericalPropagatorBuilder propagatorBuilder2 =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
-        final AbsoluteDate referenceDate = propagatorBuilder1.getInitialOrbitDate();
+        final AbsoluteDate referenceDate = propagatorBuilder1.getOrbitalParameterFactory().getDate();
 
         // Create perfect inter-satellites range measurements
         final TimeStampedPVCoordinates original = context.initialOrbit.getPVCoordinates();

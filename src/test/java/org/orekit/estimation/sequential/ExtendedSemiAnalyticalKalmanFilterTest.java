@@ -65,6 +65,7 @@ import org.orekit.models.earth.atmosphere.NRLMSISE00;
 import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.EquinoctialOrbitFactory;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
@@ -314,7 +315,9 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
         final EquinoctialOrbit equinoctial = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
 
         // Initialize the numerical builder
-        final DSSTPropagatorBuilder propagator = new DSSTPropagatorBuilder(equinoctial, integrator, 1.0, PropagationType.MEAN, initialStateType);
+        final DSSTPropagatorBuilder propagator =
+            new DSSTPropagatorBuilder(new EquinoctialOrbitFactory(equinoctial, 1.0, PositionAngleType.ECCENTRIC),
+                                      integrator, PropagationType.MEAN, initialStateType);
 
         // Add the force models to the DSST propagator
         addDSSTForceModels(propagator, centralBody, gravityField, surface, useDrag, useSrp, useSun, useMoon);
@@ -496,9 +499,9 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
     public static class Observer implements KalmanObserver {
 
         /** Statistics. */
-        private StreamingStatistics statX;
-        private StreamingStatistics statY;
-        private StreamingStatistics statZ;
+        private final StreamingStatistics statX;
+        private final StreamingStatistics statY;
+        private final StreamingStatistics statZ;
 
         /** Kalman estimation. */
         private KalmanEstimation estimation;
