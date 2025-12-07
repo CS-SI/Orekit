@@ -131,8 +131,7 @@ public class TLEKalmanEstimatorTest {
         // Create initial orbit and propagator builder
         final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final double        dP            = 1.;
-        final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(dP);
+        final TLEPropagatorBuilder propagatorBuilder = context.createBuilder(dP);
 
         // Create perfect range measurements
         Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
