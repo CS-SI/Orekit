@@ -55,6 +55,11 @@ public interface BoundedPVCoordinatesProvider extends PVCoordinatesProvider {
             }
 
             @Override
+            public Vector3D getVelocity(final AbsoluteDate date, final Frame frame) {
+                return provider.getVelocity(date, frame);
+            }
+
+            @Override
             public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
                 return provider.getPosition(date, frame);
             }

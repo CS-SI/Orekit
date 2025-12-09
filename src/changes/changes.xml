@@ -54,6 +54,9 @@
         <action dev="serrof" type="add" issue="issue-1871">
           Add GNSS ExtendedPositionProvider.
         </action>
+        <action dev="serrof" type="add" issue="issue-1870">
+            Add FieldEphemeris.
+        </action>
         <action dev="luc" type="update" issue="issue-1863">
           Use more realistic scaling factors in GNSS propagators parameter drivers.
         </action>
