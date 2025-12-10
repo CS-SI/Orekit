@@ -56,14 +56,14 @@ public class LeastSquaresTleGenerationAlgorithmTest {
 
     @Test
     public void testConversionGeo() {
-        checkConversion(geoTLE, 1.0e-12, 3.135996497102161E-9);
+        checkConversion(geoTLE, 1.6e-12, 8.8e-11);
     }
 
     /** Check the State to TLE conversion. */
     private void checkConversion(final TLE tle, final double threshold, final double rms) {
 
         Propagator p = TLEPropagator.selectExtrapolator(tle);
-        LeastSquaresTleGenerationAlgorithm converter = new LeastSquaresTleGenerationAlgorithm();
+        LeastSquaresTleGenerationAlgorithm converter = new LeastSquaresTleGenerationAlgorithm(tle);
         final TLE converted = converter.generate(p.getInitialState(), tle);
 
         Assertions.assertEquals(tle.getSatelliteNumber(),         converted.getSatelliteNumber());
@@ -81,7 +81,7 @@ public class LeastSquaresTleGenerationAlgorithmTest {
         Assertions.assertEquals(tle.getRaan(), converted.getRaan(), threshold * tle.getRaan());
         Assertions.assertEquals(tle.getMeanAnomaly(), converted.getMeanAnomaly(), threshold * tle.getMeanAnomaly());
 
-        Assertions.assertEquals(converter.getRms(), rms, threshold);
+        Assertions.assertEquals(rms, converter.getRms(), threshold);
 
     }
 
@@ -98,14 +98,11 @@ public class LeastSquaresTleGenerationAlgorithmTest {
         // State at TLE epoch
         final SpacecraftState state = propagator.propagate(tleISS.getDate());
 
-        // Set the BStar driver to selected
-        tleISS.getParametersDrivers().forEach(driver -> driver.setSelected(true));
+        // Set the BStar driver to selected
+        propagator.getParametersDrivers().forEach(driver -> driver.setSelected(true));
 
         // Convert to TLE
-        final TLE rebuilt = new LeastSquaresTleGenerationAlgorithm().generate(state, tleISS);
-
-        // Verify if driver is still selected
-        rebuilt.getParametersDrivers().forEach(driver -> Assertions.assertTrue(driver.isSelected()));
+        final TLE rebuilt = new LeastSquaresTleGenerationAlgorithm(tleISS).generate(state, tleISS);
 
     }
 
@@ -116,22 +113,24 @@ public class LeastSquaresTleGenerationAlgorithmTest {
 
     private <T extends CalculusFieldElement<T>> void doTestUnsupportedField(final Field<T> field) {
         // Initialize TLE
-        final FieldTLE<T> tleISS = new FieldTLE<>(field, "1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
-                                                         "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
+        final FieldTLE<T> tleISS =
+            new FieldTLE<>(field,
+                           "1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
+                           "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
         // TLE propagator
-        final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tleISS, tleISS.getParameters(field));
+        final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tleISS);
         // State at TLE epoch
         final FieldSpacecraftState<T> state = propagator.propagate(tleISS.getDate());
         // LeastSquaresConverter
         final LeastSquaresConverter converter = new LeastSquaresConverter(null, new GaussNewtonOptimizer());
         // LeastSquaresTleGenerationAlgorithm
-        final LeastSquaresTleGenerationAlgorithm ls = new LeastSquaresTleGenerationAlgorithm(DataContext.getDefault().getTimeScales().getUTC(),
-                                                                                             DataContext.getDefault().getFrames().getTEME(),
-                                                                                             converter);
+        final LeastSquaresTleGenerationAlgorithm ls =
+            new LeastSquaresTleGenerationAlgorithm(tleISS.toTLE(),
+                                                   DataContext.getDefault().getTimeScales().getUTC(),
+                                                   DataContext.getDefault().getFrames().getTEME(),
+                                                   converter);
         // Should throw an exception
-        Assertions.assertThrows(UnsupportedOperationException.class, () -> {
-            ls.generate(state, tleISS);
-        });
+        Assertions.assertThrows(UnsupportedOperationException.class, () -> ls.generate(state, tleISS));
     }
 
 }

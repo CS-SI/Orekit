@@ -39,6 +39,8 @@ import org.orekit.propagation.analytical.tle.FieldTLE;
 import org.orekit.propagation.analytical.tle.FieldTLEPropagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
+import org.orekit.propagation.conversion.osc2mean.FixedPointConverter;
+import org.orekit.propagation.conversion.osc2mean.TLETheory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
@@ -66,7 +68,7 @@ public class FixedPointTleGenerationAlgorithmTest {
         final double dt =  2 * FastMath.PI / leoTLE.getMeanMotion();
         final AbsoluteDate target = leoTLE.getDate().shiftedBy(dt);
         final SpacecraftState endState = propagator.propagate(target);
-        final TLE endLEOTLE = new FixedPointTleGenerationAlgorithm().generate(endState, leoTLE);
+        final TLE endLEOTLE = new FixedPointTleGenerationAlgorithm(leoTLE).generate(endState, leoTLE);
         final int endRevolutionNumber = endLEOTLE.getRevolutionNumberAtEpoch();
         Assertions.assertEquals(initRevolutionNumber + 1 , endRevolutionNumber);
     }
@@ -78,7 +80,7 @@ public class FixedPointTleGenerationAlgorithmTest {
         final double dt =  - 2 * FastMath.PI / leoTLE.getMeanMotion();
         final AbsoluteDate target = leoTLE.getDate().shiftedBy(dt);
         final SpacecraftState endState = propagator.propagate(target);
-        final TLE endLEOTLE = new FixedPointTleGenerationAlgorithm().generate(endState, leoTLE);
+        final TLE endLEOTLE = new FixedPointTleGenerationAlgorithm(leoTLE).generate(endState, leoTLE);
         final int endRevolutionNumber = endLEOTLE.getRevolutionNumberAtEpoch();
         Assertions.assertEquals(initRevolutionNumber - 1 , endRevolutionNumber);
     }
@@ -92,8 +94,9 @@ public class FixedPointTleGenerationAlgorithmTest {
         Assertions.assertTrue(TLE.isFormatOK(line1, line2));
 
         final FieldTLE<DerivativeStructure> fieldTLE = new FieldTLE<>(factory.getDerivativeField(), line1, line2);
-        final FieldTLEPropagator<DerivativeStructure> tlePropagator = FieldTLEPropagator.selectExtrapolator(fieldTLE, fieldTLE.getParameters(factory.getDerivativeField()));
-        final FieldTLE<DerivativeStructure> fieldTLE1 = new FixedPointTleGenerationAlgorithm().generate(tlePropagator.getInitialState(), fieldTLE);
+        final FieldTLEPropagator<DerivativeStructure> tlePropagator = FieldTLEPropagator.selectExtrapolator(fieldTLE);
+        final FieldTLE<DerivativeStructure> fieldTLE1 = new FixedPointTleGenerationAlgorithm(fieldTLE.toTLE()).
+                                                        generate(tlePropagator.getInitialState(), fieldTLE);
         Assertions.assertEquals(line2, fieldTLE1.getLine2());
 
     }
@@ -117,7 +120,8 @@ public class FixedPointTleGenerationAlgorithmTest {
         final CartesianOrbit orbit = new CartesianOrbit(pv, eme2000, state.getOrbit().getMu());
 
         // Convert to TLE
-        final TLE rebuilt = new FixedPointTleGenerationAlgorithm().generate(new SpacecraftState(orbit), tleISS);
+        final TLE rebuilt = new FixedPointTleGenerationAlgorithm(tleISS).
+                            generate(new SpacecraftState(orbit), tleISS);
 
         // Verify
         Assertions.assertEquals(tleISS.getLine1(), rebuilt.getLine1());
@@ -136,7 +140,7 @@ public class FixedPointTleGenerationAlgorithmTest {
                                                          "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
 
         // TLE propagator
-        final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tleISS, tleISS.getParameters(field));
+        final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tleISS);
 
         // State at TLE epoch
         final FieldSpacecraftState<T> state = propagator.propagate(tleISS.getDate());
@@ -147,7 +151,8 @@ public class FixedPointTleGenerationAlgorithmTest {
         final FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<>(pv, eme2000, state.getOrbit().getMu());
 
         // Convert to TLE
-        final FieldTLE<T> rebuilt = new FixedPointTleGenerationAlgorithm().generate(new FieldSpacecraftState<>(orbit), tleISS);
+        final FieldTLE<T> rebuilt = new FixedPointTleGenerationAlgorithm(tleISS.toTLE()).
+                                    generate(new FieldSpacecraftState<>(orbit), tleISS);
 
         // Verify
         Assertions.assertEquals(tleISS.getLine1(), rebuilt.getLine1());
@@ -167,14 +172,11 @@ public class FixedPointTleGenerationAlgorithmTest {
         // State at TLE epoch
         final SpacecraftState state = propagator.propagate(tleISS.getDate());
 
-        // Set the BStar driver to selected
-        tleISS.getParametersDrivers().forEach(driver -> driver.setSelected(true));
+        // Set the BStar driver to selected
+        propagator.getParametersDrivers().forEach(driver -> driver.setSelected(true));
 
         // Convert to TLE
-        final TLE rebuilt = new FixedPointTleGenerationAlgorithm().generate(state, tleISS);
-
-        // Verify if driver is still selected
-        rebuilt.getParametersDrivers().forEach(driver -> Assertions.assertTrue(driver.isSelected()));
+        final TLE rebuilt = new FixedPointTleGenerationAlgorithm(tleISS).generate(state, tleISS);
 
     }
 
@@ -190,19 +192,16 @@ public class FixedPointTleGenerationAlgorithmTest {
                                                            "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
 
         // TLE propagator
-        final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tleISS, tleISS.getParameters(field));
+        final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tleISS);
 
         // State at TLE epoch
         final FieldSpacecraftState<T> state = propagator.propagate(tleISS.getDate());
 
-        // Set the BStar driver to selected
-        tleISS.getParametersDrivers().forEach(driver -> driver.setSelected(true));
+        // Set the BStar driver to selected
+        propagator.getParametersDrivers().forEach(driver -> driver.setSelected(true));
 
         // Convert to TLE
-        final FieldTLE<T> rebuilt = new FixedPointTleGenerationAlgorithm().generate(state, tleISS);
-
-        // Verify if driver is still selected
-        rebuilt.getParametersDrivers().forEach(driver -> Assertions.assertTrue(driver.isSelected()));
+        final FieldTLE<T> rebuilt = new FixedPointTleGenerationAlgorithm(tleISS.toTLE()).generate(state, tleISS);
 
     }
 
@@ -221,7 +220,8 @@ public class FixedPointTleGenerationAlgorithmTest {
         // default value show that the accuracy of the generated TLE is acceptable
         Propagator p = TLEPropagator.selectExtrapolator(tle);
         FixedPointTleGenerationAlgorithm algorithm =
-                        new FixedPointTleGenerationAlgorithm(FixedPointTleGenerationAlgorithm.EPSILON_DEFAULT,
+                        new FixedPointTleGenerationAlgorithm(tle,
+                                                             FixedPointTleGenerationAlgorithm.EPSILON_DEFAULT,
                                                              400, 0.5);
         final TLE converted = algorithm.generate(p.getInitialState(), tle);
 
@@ -256,9 +256,10 @@ public class FixedPointTleGenerationAlgorithmTest {
         // The purpose here is to verify that reducing the scale value (from 1.0 to 0.5) while keeping
         // 1.0e-10 for epsilon value  solve the issue. In other words, keeping epsilon value to its
         // default value show that the accuracy of the generated TLE is acceptable
-        FieldPropagator<T> p = FieldTLEPropagator.selectExtrapolator(tle, tle.getParameters(field, tle.getDate()));
+        FieldPropagator<T> p = FieldTLEPropagator.selectExtrapolator(tle);
         FixedPointTleGenerationAlgorithm algorithm =
-                        new FixedPointTleGenerationAlgorithm(FixedPointTleGenerationAlgorithm.EPSILON_DEFAULT,
+                        new FixedPointTleGenerationAlgorithm(tle.toTLE(),
+                                                             FixedPointTleGenerationAlgorithm.EPSILON_DEFAULT,
                                                              400, 0.5);
         final FieldTLE<T> converted = algorithm.generate(p.getInitialState(), tle);
 
@@ -290,7 +291,7 @@ public class FixedPointTleGenerationAlgorithmTest {
     private void checkConversion(final TLE tle, final double threshold) {
 
         Propagator p = TLEPropagator.selectExtrapolator(tle);
-        final TLE converted = new FixedPointTleGenerationAlgorithm().generate(p.getInitialState(), tle);
+        final TLE converted = new FixedPointTleGenerationAlgorithm(tle).generate(p.getInitialState(), tle);
 
         Assertions.assertEquals(tle.getSatelliteNumber(),         converted.getSatelliteNumber());
         Assertions.assertEquals(tle.getClassification(),          converted.getClassification());
@@ -335,8 +336,9 @@ public class FixedPointTleGenerationAlgorithmTest {
     private <T extends CalculusFieldElement<T>> void checkConversion(final FieldTLE<T> tle, final Field<T> field,
                                                                      final double threshold) {
 
-        FieldPropagator<T> p = FieldTLEPropagator.selectExtrapolator(tle, tle.getParameters(field, tle.getDate()));
-        final FieldTLE<T> converted = new FixedPointTleGenerationAlgorithm().generate(p.getInitialState(), tle);
+        FieldPropagator<T> p = FieldTLEPropagator.selectExtrapolator(tle);
+        final FieldTLE<T> converted = new FixedPointTleGenerationAlgorithm(tle.toTLE()).
+                                      generate(p.getInitialState(), tle);
         
         Assertions.assertEquals(tle.getSatelliteNumber(),         converted.getSatelliteNumber());
         Assertions.assertEquals(tle.getClassification(),          converted.getClassification());
@@ -352,7 +354,7 @@ public class FixedPointTleGenerationAlgorithmTest {
         Assertions.assertEquals(tle.getPerigeeArgument().getReal(), converted.getPerigeeArgument().getReal(), threshold * tle.getPerigeeArgument().getReal());
         Assertions.assertEquals(tle.getRaan().getReal(), converted.getRaan().getReal(), threshold * tle.getRaan().getReal());
         Assertions.assertEquals(tle.getMeanAnomaly().getReal(), converted.getMeanAnomaly().getReal(), threshold * tle.getMeanAnomaly().getReal());
-        Assertions.assertEquals(tle.getBStar(), converted.getBStar(), threshold * tle.getBStar());
+        Assertions.assertEquals(tle.getBStar().getReal(), converted.getBStar().getReal(), threshold * tle.getBStar().getReal());
     }
 
     @Test
@@ -361,8 +363,6 @@ public class FixedPointTleGenerationAlgorithmTest {
         // The result of the TLE generation shall not be affected by the value of the gravitational
         // parameter of the input orbit.
 
-        final TleGenerationAlgorithm algorithm = new FixedPointTleGenerationAlgorithm();
-        
         // Initial TLE
         final TLE initialTle = new TLE("1 31135U 07013A   11003.00000000  .00000816  00000-0  47577-4 0    12",
                                        "2 31135   2.4656 183.9084 0021119 236.4164  60.4567 15.10546832    15");
@@ -371,14 +371,22 @@ public class FixedPointTleGenerationAlgorithmTest {
 
         // Create a new orbit using the position and velocity taken from the TLE, but using
         // a gravitational parameter mu different from the TLE mu.
-        final CartesianOrbit orbit = new CartesianOrbit(expectedState.getOrbit().getPVCoordinates(), expectedState.getFrame(), Constants.EGM96_EARTH_MU);
+        final CartesianOrbit orbit = new CartesianOrbit(expectedState.getOrbit().getPVCoordinates(),
+                                                        expectedState.getFrame(),
+                                                        Constants.EGM96_EARTH_MU);
 
         // Generate a TLE based on the orbit and check that the generated TLE is the same as the
         // original one.
-        final TLE generatedTle = TLE.stateToTLE(new SpacecraftState(orbit), initialTle, algorithm);
+        final TleGenerationAlgorithm algorithm = new FixedPointTleGenerationAlgorithm(initialTle);
+        final TLE generatedTle = TLE.stateToTLE(new SpacecraftState(orbit),
+                                                algorithm,
+                                                new FixedPointConverter(new TLETheory(initialTle)));
         Assertions.assertEquals(initialTle.getLine1(), generatedTle.getLine1());
         Assertions.assertEquals(initialTle.getLine2(), generatedTle.getLine2());
-        final TimeStampedPVCoordinates actualPvCoordinates = TLEPropagator.selectExtrapolator(generatedTle).getInitialState().getPVCoordinates();
+        final TimeStampedPVCoordinates actualPvCoordinates = TLEPropagator.
+                                                             selectExtrapolator(generatedTle).
+                                                             getInitialState().
+                                                             getPVCoordinates();
         TestUtils.validateVector3D(expectedPV.getPosition(), actualPvCoordinates.getPosition(), 1.0e-4);
         TestUtils.validateVector3D(expectedPV.getVelocity(), actualPvCoordinates.getVelocity(), 1.0e-4);
     }

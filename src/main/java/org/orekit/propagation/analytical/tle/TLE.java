@@ -18,8 +18,6 @@ package org.orekit.propagation.analytical.tle;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.util.Collections;
-import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -46,8 +44,6 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversProvider;
 
 /** This class is a container for a single set of TLE data.
  *
@@ -65,7 +61,7 @@ import org.orekit.utils.ParameterDriversProvider;
  * @author Fabien Maussion
  * @author Luc Maisonobe
  */
-public class TLE implements OrbitalParameters, ParameterDriversProvider {
+public class TLE implements OrbitalParameters {
 
     /** Identifier for SGP type of ephemeris. */
     public static final int SGP = 1;
@@ -85,17 +81,6 @@ public class TLE implements OrbitalParameters, ParameterDriversProvider {
     /** Identifier for default type of ephemeris (SGP4/SDP4). */
     public static final int DEFAULT = 0;
 
-    /** Parameter name for B* coefficient. */
-    public static final String B_STAR = "BSTAR";
-
-    /** B* scaling factor.
-     * <p>
-     * We use a power of 2 to avoid numeric noise introduction
-     * in the multiplications/divisions sequences.
-     * </p>
-     */
-    private static final double B_STAR_SCALE = FastMath.scalb(1.0, -20);
-
     /** Name of the mean motion parameter. */
     private static final String MEAN_MOTION = "meanMotion";
 
@@ -107,8 +92,9 @@ public class TLE implements OrbitalParameters, ParameterDriversProvider {
 
     /** Pattern for line 1. */
     private static final Pattern LINE_1_PATTERN =
-        Pattern.compile("1 [ 0-9A-Z&&[^IO]][ 0-9]{4}[A-Z] [ 0-9]{5}[ A-Z]{3} [ 0-9]{5}[.][ 0-9]{8} (?:(?:[ 0+-][.][ 0-9]{8})|(?: [ +-][.][ 0-9]{7})) " +
-                        "[ +-][ 0-9]{5}[+-][ 0-9] [ +-][ 0-9]{5}[+-][ 0-9] [ 0-9] [ 0-9]{4}[ 0-9]");
+        Pattern.compile("1 [ 0-9A-Z&&[^IO]][ 0-9]{4}[A-Z] [ 0-9]{5}[ A-Z]{3} [ 0-9]{5}[.][ 0-9]{8} " +
+                        "(?:[ 0+-][.][ 0-9]{8}| [ +-][.][ 0-9]{7}) [ +-][ 0-9]{5}[+-][ 0-9] " +
+                        "[ +-][ 0-9]{5}[+-][ 0-9] [ 0-9] [ 0-9]{4}[ 0-9]");
 
     /** Pattern for line 2. */
     private static final Pattern LINE_2_PATTERN =
@@ -180,7 +166,7 @@ public class TLE implements OrbitalParameters, ParameterDriversProvider {
     private final TimeScale utc;
 
     /** Driver for ballistic coefficient parameter. */
-    private final ParameterDriver bStarParameterDriver;
+    private final double bStar;
 
 
     /** Simple constructor from unparsed two lines. This constructor uses the {@link
@@ -245,7 +231,7 @@ public class TLE implements OrbitalParameters, ParameterDriversProvider {
         meanAnomaly  = FastMath.toRadians(ParseUtils.parseDouble(line2, 43, 8));
 
         revolutionNumberAtEpoch = ParseUtils.parseInteger(line2, 63, 5);
-        final double bStarValue = Double.parseDouble((line1.substring(53, 54) + '.' +
+        bStar = Double.parseDouble((line1.substring(53, 54) + '.' +
                                     line1.substring(54, 59) + 'e' +
                                     line1.substring(59, 61)).replace(' ', '0'));
 
@@ -253,11 +239,6 @@ public class TLE implements OrbitalParameters, ParameterDriversProvider {
         this.line1 = line1;
         this.line2 = line2;
         this.utc = utc;
-
-        // create model parameter drivers
-        this.bStarParameterDriver = new ParameterDriver(B_STAR, bStarValue, B_STAR_SCALE,
-                                                        Double.NEGATIVE_INFINITY,
-                                                        Double.POSITIVE_INFINITY);
 
     }
 
@@ -399,17 +380,13 @@ public class TLE implements OrbitalParameters, ParameterDriversProvider {
         this.meanAnomaly = MathUtils.normalizeAngle(meanAnomaly, FastMath.PI);
 
         this.revolutionNumberAtEpoch = revolutionNumberAtEpoch;
+        this.bStar                   = bStar;
 
 
         // don't build the line until really needed
         this.line1 = null;
         this.line2 = null;
         this.utc = utc;
-
-        // create model parameter drivers
-        this.bStarParameterDriver = new ParameterDriver(B_STAR, bStar, B_STAR_SCALE,
-                                                        Double.NEGATIVE_INFINITY,
-                                                        Double.POSITIVE_INFINITY);
 
     }
 
@@ -689,15 +666,7 @@ public class TLE implements OrbitalParameters, ParameterDriversProvider {
      * @return bStar
      */
     public double getBStar() {
-        return bStarParameterDriver.getValue(getDate());
-    }
-
-    /** Get the ballistic coefficient at a specific date.
-     * @param date at which the ballistic coefficient wants to be known.
-     * @return bStar
-     */
-    public double getBStar(final AbsoluteDate date) {
-        return bStarParameterDriver.getValue(date);
+        return bStar;
     }
 
     /** Compute the semi-major axis from the mean motion of the TLE and the gravitational parameter from TLEConstants.
@@ -713,23 +682,7 @@ public class TLE implements OrbitalParameters, ParameterDriversProvider {
      * @return string representation of this TLE set
      */
     public String toString() {
-        return getLine1() + System.getProperty("line.separator") + getLine2();
-    }
-
-    /**
-     * Convert Spacecraft State into TLE.
-     *
-     * @param state Spacecraft State to convert into TLE
-     * @param templateTLE only used to get identifiers like satellite number, launch year, etc. In other words, the keplerian elements contained in the generated TLE are based on the provided state and not the template TLE.
-     * @param generationAlgorithm TLE generation algorithm
-     * @return a generated TLE
-     * @since 12.0
-     * @deprecated As of release 13.0, use {@link #stateToTLE(SpacecraftState, TLE, OsculatingToMeanConverter)} instead.
-     */
-    @Deprecated
-    public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE,
-                                 final TleGenerationAlgorithm generationAlgorithm) {
-        return generationAlgorithm.generate(state, templateTLE);
+        return getLine1() + System.lineSeparator() + getLine2();
     }
 
     /**
@@ -741,18 +694,16 @@ public class TLE implements OrbitalParameters, ParameterDriversProvider {
      * The B* is not calculated. Its value is simply copied from the model to the generated TLE.
      * </p>
      * @param state       Spacecraft State to convert into TLE
-     * @param templateTLE only used to get identifiers like satellite number, launch year, etc.
-     *                    In other words, the keplerian elements contained in the generated TLE
-     *                    are based on the provided state and not the template TLE.
+     * @param generationAlgorithm generator for TLE elements
      * @param converter   osculating to mean orbit converter
      * @return a generated TLE
-     * @since 13.0
+     * @since 14.0
      */
     @DefaultDataContext
     public static TLE stateToTLE(final SpacecraftState state,
-                                 final TLE templateTLE,
+                                 final TleGenerationAlgorithm generationAlgorithm,
                                  final OsculatingToMeanConverter converter) {
-        return stateToTLE(state, templateTLE, converter, DataContext.getDefault());
+        return stateToTLE(state, generationAlgorithm, converter, DataContext.getDefault());
     }
 
     /**
@@ -761,29 +712,19 @@ public class TLE implements OrbitalParameters, ParameterDriversProvider {
      * The B* is not calculated. Its value is simply copied from the model to the generated TLE.
      * </p>
      * @param state       Spacecraft State to convert into TLE
-     * @param templateTLE only used to get identifiers like satellite number, launch year, etc.
-     *                    In other words, the keplerian elements contained in the generated TLE
-     *                    are based on the provided state and not the template TLE.
+     * @param generationAlgorithm generator for TLE elements
      * @param converter   osculating to mean orbit converter
      * @param dataContext data context
      * @return a generated TLE
-     * @since 13.0
+     * @since 14.0
      */
     public static TLE stateToTLE(final SpacecraftState state,
-                                 final TLE templateTLE,
+                                 final TleGenerationAlgorithm generationAlgorithm,
                                  final OsculatingToMeanConverter converter,
                                  final DataContext dataContext) {
-        converter.setMeanTheory(new TLETheory(templateTLE, dataContext));
+        converter.setMeanTheory(new TLETheory(generationAlgorithm.getTemplateTLE(), dataContext));
         final KeplerianOrbit mean = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(converter.convertToMean(state.getOrbit()));
-        final TLE tle = TleGenerationUtil.newTLE(mean, templateTLE, templateTLE.getBStar(mean.getDate()));
-        // reset estimated parameters from template to generated tle
-        for (final ParameterDriver templateDrivers : templateTLE.getParametersDrivers()) {
-            if (templateDrivers.isSelected()) {
-                // set to selected for the new TLE
-                tle.getParameterDriver(templateDrivers.getName()).setSelected(true);
-            }
-        }
-        return tle;
+        return TleGenerationUtil.newTLE(mean, generationAlgorithm.getTemplateTLE());
     }
 
     /** Check the lines format validity.
@@ -872,7 +813,7 @@ public class TLE implements OrbitalParameters, ParameterDriversProvider {
                 raan == tle.raan &&
                 meanAnomaly == tle.meanAnomaly &&
                 revolutionNumberAtEpoch == tle.revolutionNumberAtEpoch &&
-                getBStar() == tle.getBStar();
+                bStar == tle.bStar;
     }
 
     /** Get a hashcode for this tle.
@@ -897,14 +838,7 @@ public class TLE implements OrbitalParameters, ParameterDriversProvider {
                 raan,
                 meanAnomaly,
                 revolutionNumberAtEpoch,
-                getBStar());
-    }
-
-    /** Get the drivers for TLE propagation SGP4 and SDP4.
-     * @return drivers for SGP4 and SDP4 model parameters
-     */
-    public List<ParameterDriver> getParametersDrivers() {
-        return Collections.singletonList(bStarParameterDriver);
+                bStar);
     }
 
 }

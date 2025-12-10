@@ -46,7 +46,6 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
-import org.orekit.propagation.analytical.tle.TleParametersFactory;
 import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.TLEPropagatorBuilder;
@@ -68,8 +67,7 @@ public class UnscentedKalmanEstimatorTest {
         String line2 = "2 07276  71.6273  78.7838 1248323  14.0598   3.8405  4.72707036231812";
         final TLE tle = new TLE(line1, line2);
         final TLEPropagatorBuilder propagatorBuilder =
-            new TLEPropagatorBuilder(new TleParametersFactory(tle, FramesFactory.getTEME()),
-                                     new FixedPointTleGenerationAlgorithm());
+            new TLEPropagatorBuilder(new FixedPointTleGenerationAlgorithm(tle));
         for (final ParameterDriver driver :
             propagatorBuilder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {
             driver.setSelected(false);

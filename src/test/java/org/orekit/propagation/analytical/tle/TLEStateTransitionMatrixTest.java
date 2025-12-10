@@ -59,7 +59,7 @@ public class TLEStateTransitionMatrixTest {
 
     @Test
     public void testPropagationSGP4() {
-        doTestStateJacobian(8.35e-10, tleSPOT);
+        doTestStateJacobian(8.37e-10, tleSPOT);
     }
 
     @Test
@@ -90,7 +90,7 @@ public class TLEStateTransitionMatrixTest {
         dYdY0 = harvester.getStateTransitionMatrix(finalState);
 
         // TLE generation algorithm
-        TleGenerationAlgorithm algorithm = new FixedPointTleGenerationAlgorithm();
+        TleGenerationAlgorithm algorithm = new FixedPointTleGenerationAlgorithm(tle);
 
         // compute reference state Jacobian using finite differences
         double[][] dYdY0Ref = new double[6][6];

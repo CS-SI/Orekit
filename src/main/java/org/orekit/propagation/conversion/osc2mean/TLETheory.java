@@ -152,7 +152,7 @@ public class TLETheory implements MeanTheory {
     @Override
     public double getReferenceRadius() {
         return 1000 * TLEConstants.EARTH_RADIUS;
-    };
+    }
 
     /** Pre-treatment of the osculating orbit to be converted.
      * <p>The osculating orbit is transformed to TEME frame.</p>
@@ -167,7 +167,7 @@ public class TLETheory implements MeanTheory {
     public Orbit meanToOsculating(final Orbit mean) {
         // Build TLE from mean and template
         final KeplerianOrbit meanKepl = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(mean);
-        final TLE meanTle = TleGenerationUtil.newTLE(meanKepl, tmpTle, tmpTle.getBStar(mean.getDate()));
+        final TLE meanTle = TleGenerationUtil.newTLE(meanKepl, tmpTle);
         final TLEPropagator propagator = TLEPropagator.selectExtrapolator(meanTle, teme);
         return propagator.getInitialState().getOrbit();
     }
@@ -195,12 +195,11 @@ public class TLETheory implements MeanTheory {
         final FieldAbsoluteDate<T> date = mean.getDate();
         final Field<T> field = date.getField();
         final FieldTLE<T> fieldTmpTle = new FieldTLE<>(field, tmpTle.getLine1(), tmpTle.getLine2(), tmpTle.getUtc());
-        final T bStar = field.getZero().newInstance(fieldTmpTle.getBStar());
         // Build TLE from mean and template
         final FieldKeplerianOrbit<T> meanKepl = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(mean);
-        final FieldTLE<T> meanTle = TleGenerationUtil.newTLE(meanKepl, fieldTmpTle, bStar);
+        final FieldTLE<T> meanTle = TleGenerationUtil.newTLE(meanKepl, fieldTmpTle);
         final FieldTLEPropagator<T> propagator =
-            FieldTLEPropagator.selectExtrapolator(meanTle, teme, meanTle.getParameters(field));
+            FieldTLEPropagator.selectExtrapolator(meanTle, teme);
         return propagator.getInitialState().getOrbit();
     }
 

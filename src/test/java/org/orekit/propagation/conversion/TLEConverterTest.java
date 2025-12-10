@@ -25,8 +25,8 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
-import org.orekit.propagation.analytical.tle.TleParametersFactory;
 import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.ParameterDriver;
 
 public class TLEConverterTest {
@@ -38,8 +38,12 @@ public class TLEConverterTest {
                                 "2 27508   0.0571 356.7800 0005033 344.4621 218.7816  1.00271798 34501");
 
         TLEPropagatorBuilder builder =
-            new TLEPropagatorBuilder(new TleParametersFactory(tle, FramesFactory.getTEME()),
-                                     new FixedPointTleGenerationAlgorithm());
+            new TLEPropagatorBuilder(new FixedPointTleGenerationAlgorithm(tle,
+                                                                          FixedPointTleGenerationAlgorithm.EPSILON_DEFAULT,
+                                                                          FixedPointTleGenerationAlgorithm.MAX_ITERATIONS_DEFAULT,
+                                                                          FixedPointTleGenerationAlgorithm.SCALE_DEFAULT,
+                                                                          TimeScalesFactory.getUTC(),
+                                                                          FramesFactory.getTEME()));
         for (ParameterDriver driver : builder.getOrbitalParameterFactory().getOrbitalParametersDrivers().getDrivers()) {
             Assertions.assertTrue(driver.isSelected());
         }
@@ -60,8 +64,7 @@ public class TLEConverterTest {
 
         // Verify convergence issue
         final TLEPropagatorBuilder propagatorBuilderError =
-            new TLEPropagatorBuilder(new TleParametersFactory(tle, FramesFactory.getTEME()),
-                                     new FixedPointTleGenerationAlgorithm());
+            new TLEPropagatorBuilder(new FixedPointTleGenerationAlgorithm(tle));
         try {
             propagatorBuilderError.buildPropagator();
         } catch (OrekitException oe) {
@@ -71,10 +74,11 @@ public class TLEConverterTest {
 
         // Now try using different convergence threshold
         FixedPointTleGenerationAlgorithm algorithm =
-                        new FixedPointTleGenerationAlgorithm(FixedPointTleGenerationAlgorithm.EPSILON_DEFAULT,
-                                                             1000, 0.5);
-        final TLEPropagatorBuilder propagatorBuilder =
-            new TLEPropagatorBuilder(new TleParametersFactory(tle, FramesFactory.getTEME()), algorithm);
+                        new FixedPointTleGenerationAlgorithm(tle,
+                                                             FixedPointTleGenerationAlgorithm.EPSILON_DEFAULT,
+                                                             1000,
+                                                             0.5);
+        final TLEPropagatorBuilder propagatorBuilder = new TLEPropagatorBuilder(algorithm);
         final TLEPropagator propagator = propagatorBuilder.buildPropagator(propagatorBuilderError.getSelectedNormalizedParameters());
         final TLE newTLE = propagator.getTLE();
 

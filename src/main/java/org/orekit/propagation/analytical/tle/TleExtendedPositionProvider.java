@@ -131,7 +131,6 @@ public class TleExtendedPositionProvider implements ExtendedPositionProvider {
      * @param <T> field
      */
     private <T extends CalculusFieldElement<T>> FieldTLEPropagator<T> buildFieldPropagator(final Field<T> field) {
-
-        return FieldTLEPropagator.selectExtrapolator(new FieldTLE<>(field, tle), teme, tle.getParameters(field));
+        return FieldTLEPropagator.selectExtrapolator(new FieldTLE<>(field, tle), teme);
     }
 }

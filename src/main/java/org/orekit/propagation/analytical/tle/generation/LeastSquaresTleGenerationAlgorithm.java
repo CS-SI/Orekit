@@ -16,15 +16,12 @@
  */
 package org.orekit.propagation.analytical.tle.generation;
 
-import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
-import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.analytical.tle.FieldTLE;
+import org.orekit.orbits.Orbit;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.conversion.osc2mean.LeastSquaresConverter;
 import org.orekit.propagation.conversion.osc2mean.TLETheory;
@@ -36,10 +33,15 @@ import org.orekit.time.TimeScale;
  * @author Mark Rutten
  * @since 12.0
  */
-public class LeastSquaresTleGenerationAlgorithm extends AbstractTleGenerationAlgorithm<LeastSquaresConverter> {
+public class LeastSquaresTleGenerationAlgorithm extends TleGenerationAlgorithm {
 
     /** Default value for maximum number of iterations.*/
     public static final int DEFAULT_MAX_ITERATIONS = 1000;
+
+    /** Converter to mean elements.
+     * @since 14.0
+     */
+    private final LeastSquaresConverter converter;
 
     /**
      * Default constructor.
@@ -49,10 +51,12 @@ public class LeastSquaresTleGenerationAlgorithm extends AbstractTleGenerationAlg
      * <li>{@link #DEFAULT_MAX_ITERATIONS}</li>
      * <li>the {@link LevenbergMarquardtOptimizer}</li>
      * </ul>
+     * @param templateTLE template TLE
+     * @since 14.0
      */
     @DefaultDataContext
-    public LeastSquaresTleGenerationAlgorithm() {
-        this(DEFAULT_MAX_ITERATIONS);
+    public LeastSquaresTleGenerationAlgorithm(final TLE templateTLE) {
+        this(templateTLE, DEFAULT_MAX_ITERATIONS);
     }
 
     /**
@@ -62,25 +66,31 @@ public class LeastSquaresTleGenerationAlgorithm extends AbstractTleGenerationAlg
      * <li>the {@link DataContext#getDefault() default data context}</li>
      * <li>the {@link LevenbergMarquardtOptimizer}</li>
      * </ul>
+     * @param templateTLE template TLE
      * @param maxIterations maximum number of iterations for convergence
+     * @since 14.0
      */
     @DefaultDataContext
-    public LeastSquaresTleGenerationAlgorithm(final int maxIterations) {
-        this(maxIterations, DataContext.getDefault().getTimeScales().getUTC(),
+    public LeastSquaresTleGenerationAlgorithm(final TLE templateTLE,
+                                              final int maxIterations) {
+        this(templateTLE, maxIterations, DataContext.getDefault().getTimeScales().getUTC(),
              DataContext.getDefault().getFrames().getTEME());
     }
 
     /**
      * Constructor.
      * <p>Uses the {@link LevenbergMarquardtOptimizer}.</p>
+     * @param templateTLE template TLE
      * @param maxIterations maximum number of iterations for convergence
      * @param utc  UTC time scale
      * @param teme TEME frame
+     * @since 14.0
      */
-    public LeastSquaresTleGenerationAlgorithm(final int maxIterations,
+    public LeastSquaresTleGenerationAlgorithm(final TLE templateTLE,
+                                              final int maxIterations,
                                               final TimeScale utc,
                                               final Frame teme) {
-        this(utc, teme,
+        this(templateTLE, utc, teme,
              new LeastSquaresConverter(new TLETheory(utc, teme),
                                        new LevenbergMarquardtOptimizer(),
                                        LeastSquaresConverter.DEFAULT_THRESHOLD,
@@ -91,35 +101,31 @@ public class LeastSquaresTleGenerationAlgorithm extends AbstractTleGenerationAlg
      * Constructor.
      * <p>Enables to select the {@link LeastSquaresOptimizer optimizer}
      * for the {@link LeastSquaresConverter least-squares converter}.</p>
+     * @param templateTLE template TLE
      * @param utc  UTC time scale
      * @param teme TEME frame
      * @param converter osculating to mean orbit converter using a least-squares algorithm
+     * @since 14.0
      */
-    public LeastSquaresTleGenerationAlgorithm(final TimeScale utc,
+    public LeastSquaresTleGenerationAlgorithm(final TLE templateTLE,
+                                              final TimeScale utc,
                                               final Frame teme,
                                               final LeastSquaresConverter converter) {
-        super(converter);
+        super(templateTLE, teme, converter);
         converter.setMeanTheory(new TLETheory(utc, teme));
+        this.converter = converter;
     }
 
     /**
      * Get the Root Mean Square of the TLE estimation.
      * <p>
      * Be careful that the RMS is updated each time the
-     * {@link LeastSquaresTleGenerationAlgorithm#generate(SpacecraftState, TLE)}
-     * method is called.
+     * {@link #reset(Orbit)} method is called.
      * </p>
      * @return the RMS
      */
     public double getRms() {
-        return getConverter().getRMS();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldTLE<T> generate(final FieldSpacecraftState<T> state,
-                                                                    final FieldTLE<T> templateTLE) {
-        throw new UnsupportedOperationException();
+        return converter.getRMS();
     }
 
 }

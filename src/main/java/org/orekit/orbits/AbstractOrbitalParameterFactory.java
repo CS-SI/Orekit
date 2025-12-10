@@ -70,6 +70,13 @@ public abstract class AbstractOrbitalParameterFactory<P extends OrbitalParameter
 
     /** {@inheritDoc} */
     @Override
+    public ParameterDriversList getNonKeplerianParametersDrivers() {
+        // return an empty list
+        return new ParameterDriversList();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public AbsoluteDate getDate() {
         return date;
     }

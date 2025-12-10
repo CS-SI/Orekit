@@ -86,9 +86,9 @@ public class SGP4 extends TLEPropagator {
         super(initialTLE, attitudeProvider, mass, teme);
     }
 
-    /** Initialization proper to each propagator (SGP or SDP).
-     */
-    protected void sxpInitialize() {
+    /** {@inheritDoc} */
+    @Override
+    protected void sxpInitialize(final double bStar) {
 
         // For perigee less than 220 kilometers, the equations are truncated to
         // linear variation in sqrt a and quadratic variation in mean anomaly.
@@ -113,9 +113,9 @@ public class SGP4 extends TLEPropagator {
             } else  {
                 final double c3 = coef * tsi * TLEConstants.A3OVK2 * xn0dp *
                                   TLEConstants.NORMALIZED_EQUATORIAL_RADIUS * sini0 / tle.getE();
-                xmcof = -TLEConstants.TWO_THIRD * coef * tle.getBStar() *
+                xmcof = -TLEConstants.TWO_THIRD * coef * bStar *
                         TLEConstants.NORMALIZED_EQUATORIAL_RADIUS / eeta;
-                omgcof = tle.getBStar() * c3 * FastMath.cos(tle.getPerigeeArgument());
+                omgcof = bStar * c3 * FastMath.cos(tle.getPerigeeArgument());
             }
         }
 
@@ -123,10 +123,9 @@ public class SGP4 extends TLEPropagator {
         // initialized
     }
 
-    /** Propagation proper to each propagator (SGP or SDP).
-     * @param tSince the offset from initial epoch (min)
-     */
-    protected void sxpPropagate(final double tSince) {
+    /** {@inheritDoc} */
+    @Override
+    protected void sxpPropagate(final double tSince, final double bStar) {
 
         // Update for secular gravity and atmospheric drag.
         final double xmdf = tle.getMeanAnomaly() + xmdot * tSince;
@@ -137,7 +136,7 @@ public class SGP4 extends TLEPropagator {
         final double tsq = tSince * tSince;
         xnode = xn0ddf + xnodcf * tsq;
         double tempa = 1 - c1 * tSince;
-        double tempe = tle.getBStar(tle.getDate().shiftedBy(tSince)) * c4 * tSince;
+        double tempe = bStar * c4 * tSince;
         double templ = t2cof * tsq;
 
         if (!lessThan220) {
@@ -150,7 +149,7 @@ public class SGP4 extends TLEPropagator {
             final double tcube = tsq * tSince;
             final double tfour = tSince * tcube;
             tempa = tempa - d2 * tsq - d3 * tcube - d4 * tfour;
-            tempe = tempe + tle.getBStar(tle.getDate().shiftedBy(tSince)) * c5 * (FastMath.sin(xmp) - sinM0);
+            tempe = tempe + bStar * c5 * (FastMath.sin(xmp) - sinM0);
             templ = templ + t3cof * tcube + tfour * (t4cof + tSince * t5cof);
         }
 

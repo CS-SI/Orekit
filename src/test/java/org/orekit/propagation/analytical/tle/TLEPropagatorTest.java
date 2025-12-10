@@ -260,8 +260,7 @@ public class TLEPropagatorTest {
         final double shiftSign = isForward ? 1 : -1;
         final AbsoluteDate targetDate = epoch.shiftedBy(totalShift * shiftSign);
         final EventHandler stateResetter = (s, detector, increasing) -> Action.RESET_STATE;
-        final DateDetector detector = new DateDetector(targetDate)
-                .withThreshold(1e-8).withHandler(stateResetter);
+        final DateDetector detector = new DateDetector(targetDate).withThreshold(1e-8).withHandler(stateResetter);
         tlePropagator.addEventDetector(detector);
 
         // WHEN
@@ -271,7 +270,7 @@ public class TLEPropagatorTest {
         final SpacecraftState expectedState = TLEPropagator.selectExtrapolator(tle).propagate(targetDate);
         final Vector3D expectedPosition = expectedState.getPosition();
         final Vector3D actualPosition = actualState.getPosition();
-        final double tolerance = 1e-1;
+        final double tolerance = 2.3e-3;
         Assertions.assertEquals(expectedPosition.getX(), actualPosition.getX(), tolerance);
         Assertions.assertEquals(expectedPosition.getY(), actualPosition.getY(), tolerance);
         Assertions.assertEquals(expectedPosition.getZ(), actualPosition.getZ(), tolerance);

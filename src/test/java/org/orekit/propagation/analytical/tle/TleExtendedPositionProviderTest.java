@@ -101,7 +101,7 @@ class TleExtendedPositionProviderTest {
         final FieldVector3D<Binary64> position = positionProvider.getPosition(fieldDate, frame);
         // THEN
         final FieldTLE<Binary64> fieldTLE = new FieldTLE<>(field, tle);
-        final FieldTLEPropagator<Binary64> propagator = FieldTLEPropagator.selectExtrapolator(fieldTLE, tle.getParameters(field));
+        final FieldTLEPropagator<Binary64> propagator = FieldTLEPropagator.selectExtrapolator(fieldTLE);
         final FieldVector3D<Binary64> expectedPosition = propagator.getPosition(fieldDate, frame);
         assertEquals(expectedPosition.getX().getReal(), position.getX().getReal(), 1e-6);
         assertEquals(expectedPosition.getY().getReal(), position.getY().getReal(), 1e-6);
@@ -121,7 +121,7 @@ class TleExtendedPositionProviderTest {
         final FieldVector3D<Binary64> velocity = positionProvider.getVelocity(fieldDate, frame);
         // THEN
         final FieldTLE<Binary64> fieldTLE = new FieldTLE<>(field, tle);
-        final FieldTLEPropagator<Binary64> propagator = FieldTLEPropagator.selectExtrapolator(fieldTLE, tle.getParameters(field));
+        final FieldTLEPropagator<Binary64> propagator = FieldTLEPropagator.selectExtrapolator(fieldTLE);
         final FieldVector3D<Binary64> expectedVelocity = propagator.getVelocity(fieldDate, frame);
         assertEquals(expectedVelocity.getX().getReal(), velocity.getX().getReal(), 1e-6);
         assertEquals(expectedVelocity.getY().getReal(), velocity.getY().getReal(), 1e-6);
@@ -141,7 +141,7 @@ class TleExtendedPositionProviderTest {
         final TimeStampedFieldPVCoordinates<Binary64> actualPV = positionProvider.getPVCoordinates(fieldDate, frame);
         // THEN
         final FieldTLE<Binary64> fieldTLE = new FieldTLE<>(field, LINE1, LINE2);
-        final FieldTLEPropagator<Binary64> propagator = FieldTLEPropagator.selectExtrapolator(fieldTLE, tle.getParameters(field));
+        final FieldTLEPropagator<Binary64> propagator = FieldTLEPropagator.selectExtrapolator(fieldTLE);
         final TimeStampedFieldPVCoordinates<Binary64> expectedPV = propagator.getPVCoordinates(fieldDate, frame);
         assertEquals(expectedPV.getDate(), actualPV.getDate());
         assertEquals(expectedPV.getPosition(), actualPV.getPosition());

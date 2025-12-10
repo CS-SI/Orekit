@@ -67,31 +67,29 @@ abstract class FieldSDP4<T extends CalculusFieldElement<T>>  extends FieldTLEPro
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
      * @param teme the TEME frame to use for propagation.
-     * @param parameters SGP4 and SDP4 model parameters
+     * @since 14.0
      */
     protected FieldSDP4(final FieldTLE<T> initialTLE,
                    final AttitudeProvider attitudeProvider,
                    final T mass,
-                   final Frame teme,
-                   final T[] parameters) {
-        super(initialTLE, attitudeProvider, mass, teme, parameters);
+                   final Frame teme) {
+        super(initialTLE, attitudeProvider, mass, teme);
     }
 
     /** Initialization proper to each propagator (SGP or SDP).
-     * @param parameters model parameters
+     * @param bStar value of the ballistic coefficient to use for propagation
      */
-    protected void sxpInitialize(final T[] parameters) {
+    protected void sxpInitialize(final T bStar) {
         luniSolarTermsComputation();
     }  // End of initialization
 
     /** Propagation proper to each propagator (SGP or SDP).
      * @param tSince the offset from initial epoch (minutes)
-     * @param parameters model parameters
+     * @param bStar value of the ballistic coefficient to use for propagation
      */
-    protected void sxpPropagate(final T tSince, final T[] parameters) {
+    protected void sxpPropagate(final T tSince, final T bStar) {
 
         // Update for secular gravity and atmospheric drag
-        final T bStar = parameters[0];
         omgadf = tle.getPerigeeArgument().add(omgdot.multiply(tSince));
         final T xnoddf = tle.getRaan().add(xnodot.multiply(tSince));
         final T tSinceSq = tSince.square();
@@ -104,7 +102,8 @@ abstract class FieldSDP4<T extends CalculusFieldElement<T>>  extends FieldTLEPro
         deepSecularEffects(tSince);
 
         final T tempa = c1.multiply(tSince).negate().add(1.0);
-        a  = xn.reciprocal().multiply(TLEConstants.XKE).pow(TLEConstants.TWO_THIRD).multiply(tempa).multiply(tempa);
+        final T xkeOverN = xn.reciprocal().multiply(TLEConstants.XKE);
+        a  = xkeOverN.multiply(xkeOverN).cbrt().multiply(tempa).multiply(tempa);
         em = em.subtract(bStar.multiply(c4).multiply(tSince));
 
         // Update for deep-space periodic effects
