@@ -122,21 +122,17 @@ public class EcksteinHechlerPropagatorBuilder
                                                          }));
     }
 
-    /** Copy constructor.
-     * @param builder builder to copy from
-     */
-    private EcksteinHechlerPropagatorBuilder(final EcksteinHechlerPropagatorBuilder builder) {
-        this(builder.getOrbitalParameterFactory(), builder.provider, builder.getAttitudeProvider());
-    }
-
     /** {@inheritDoc}. */
     @Override
     public EcksteinHechlerPropagatorBuilder clone() {
         // Call to super clone() method to avoid warning
         final EcksteinHechlerPropagatorBuilder clonedBuilder = (EcksteinHechlerPropagatorBuilder) super.clone();
 
-        // Use copy constructor to unlink orbital drivers
-        final EcksteinHechlerPropagatorBuilder builder = new EcksteinHechlerPropagatorBuilder(clonedBuilder);
+        // Use cloned builder to unlink orbital drivers
+        final EcksteinHechlerPropagatorBuilder builder =
+            new EcksteinHechlerPropagatorBuilder((AbstractOrbitFactory<? extends Orbit>) clonedBuilder.getOrbitalParameterFactory().clone(),
+                                                 clonedBuilder.provider,
+                                                 clonedBuilder.getAttitudeProvider());
 
         // Set mass
         builder.setMass(getMass());

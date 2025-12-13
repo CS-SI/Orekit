@@ -927,6 +927,9 @@ INFINITE_NRLMSISE00_DENSITY=
 # Propagator builder cannot be cloned
 PROPAGATOR_BUILDER_NOT_CLONEABLE=
 
+# Orbital parameter factory cannot be cloned
+ORBITAL_PARAMETER_FACTORY_NOT_CLONEABLE=
+
 # field "{0}" is too long, maximum length is {1} characters
 FIELD_TOO_LONG=
 

@@ -169,22 +169,18 @@ public class BrouwerLyddanePropagatorBuilder
         addPropagationParameters(Collections.singletonList(M2Driver));
     }
 
-    /** Copy constructor.
-     * @param builder builder to copy from
-     */
-    private BrouwerLyddanePropagatorBuilder(final BrouwerLyddanePropagatorBuilder builder) {
-        this(builder.getOrbitalParameterFactory(), builder.provider,
-             builder.getAttitudeProvider(), builder.getM2Value());
-    }
-
     /** {@inheritDoc}. */
     @Override
     public BrouwerLyddanePropagatorBuilder clone() {
         // Call to super clone() method to avoid warning
         final BrouwerLyddanePropagatorBuilder clonedBuilder = (BrouwerLyddanePropagatorBuilder) super.clone();
 
-        // Use copy constructor to unlink orbital drivers
-        final BrouwerLyddanePropagatorBuilder builder = new BrouwerLyddanePropagatorBuilder(clonedBuilder);
+        // Use cloned builder to unlink orbital drivers
+        final BrouwerLyddanePropagatorBuilder builder =
+            new BrouwerLyddanePropagatorBuilder((AbstractOrbitFactory<? extends Orbit>) clonedBuilder.getOrbitalParameterFactory().clone(),
+                                                clonedBuilder.provider,
+                                                clonedBuilder.getAttitudeProvider(),
+                                                clonedBuilder.getM2Value());
 
         // Set mass
         builder.setMass(getMass());

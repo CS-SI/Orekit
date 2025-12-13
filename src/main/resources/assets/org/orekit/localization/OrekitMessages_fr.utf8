@@ -922,10 +922,13 @@ WRONG_EOP_INTERPOLATION_DEGREE=le degré d''interpolation pour les EOP devrait �
 WALKER_INCONSISTENT_PLANES=le nombre {0} de plans est incohérent avec le nombre {1} total de satellites pour une constellation de Walker
 
 # Infinite value appears during computation of atmospheric density in NRLMSISE00 model
-INFINITE_NRLMSISE00_DENSITY=Valeur infinie lors du calcul de la densité atmosphérique dans le modèle NRLMSISE00
+INFINITE_NRLMSISE00_DENSITY=valeur infinie lors du calcul de la densité atmosphérique dans le modèle NRLMSISE00
 
 # Propagator builder cannot be cloned
-PROPAGATOR_BUILDER_NOT_CLONEABLE=Le constructeur de propagateur ne peut pas être cloné
+PROPAGATOR_BUILDER_NOT_CLONEABLE=le constructeur de propagateur ne peut pas être cloné
+
+# Orbital parameter factory cannot be cloned
+ORBITAL_PARAMETER_FACTORY_NOT_CLONEABLE=le constructeur de paramètres orbitaux ne peut pas être cloné
 
 # field "{0}" is too long, maximum length is {1} characters
 FIELD_TOO_LONG=le champ « {0} » est trop long, la longueur maximale est de {1} caractères

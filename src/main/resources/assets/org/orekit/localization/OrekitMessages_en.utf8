@@ -927,6 +927,9 @@ INFINITE_NRLMSISE00_DENSITY=Infinite value appears during computation of atmosph
 # Propagator builder cannot be cloned
 PROPAGATOR_BUILDER_NOT_CLONEABLE=Propagator builder cannot be cloned
 
+# Orbital parameter factory cannot be cloned
+ORBITAL_PARAMETER_FACTORY_NOT_CLONEABLE=orbital parameter factory cannot be cloned
+
 # field "{0}" is too long, maximum length is {1} characters
 FIELD_TOO_LONG=field "{0}" is too long, maximum length is {1} characters
 

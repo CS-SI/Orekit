@@ -103,8 +103,13 @@ public class DSSTPropagatorBuilder
         // Call to super clone() method to avoid warning
         final DSSTPropagatorBuilder clonedBuilder = (DSSTPropagatorBuilder) super.clone();
 
-        // Use copy constructor to unlink orbital drivers
-        final DSSTPropagatorBuilder copyBuilder = new DSSTPropagatorBuilder(clonedBuilder);
+        // Use cloned builder to unlink orbital drivers
+        final DSSTPropagatorBuilder copyBuilder =
+            new DSSTPropagatorBuilder((EquinoctialOrbitFactory) clonedBuilder.getOrbitalParameterFactory().clone(),
+                                      clonedBuilder.getIntegratorBuilder(),
+                                      clonedBuilder.getPropagationType(),
+                                      clonedBuilder.getStateType(),
+                                      clonedBuilder.getAttitudeProvider());
 
         // Update mass and force models
         copyBuilder.setMass(getMass());

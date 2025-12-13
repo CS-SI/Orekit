@@ -38,7 +38,7 @@ public class TLEPropagatorBuilder
     private final DataContext dataContext;
 
     /** TLE generation algorithm. */
-    private final TleGenerationAlgorithm generationAlgorithm;
+    private TleGenerationAlgorithm generationAlgorithm;
 
     /** Build a new instance. This constructor uses the {@link DataContext#getDefault()
      * default data context}.
@@ -79,21 +79,17 @@ public class TLEPropagatorBuilder
 
     }
 
-    /** Copy constructor.
-     * @param builder builder to copy from
-     */
-    private TLEPropagatorBuilder(final TLEPropagatorBuilder builder) {
-        this(builder.dataContext, builder.generationAlgorithm, builder.getAttitudeProvider());
-    }
-
     /** {@inheritDoc}. */
     @Override
     public TLEPropagatorBuilder clone() {
         // Call to super clone() method to avoid warning
         final TLEPropagatorBuilder clonedBuilder = (TLEPropagatorBuilder) super.clone();
 
-        // Use copy constructor to unlink orbital drivers
-        final TLEPropagatorBuilder builder = new TLEPropagatorBuilder(clonedBuilder);
+        // Use cloned builder to unlink orbital drivers
+        final TLEPropagatorBuilder builder =
+            new TLEPropagatorBuilder(clonedBuilder.dataContext,
+                                     clonedBuilder.generationAlgorithm.clone(),
+                                     clonedBuilder.getAttitudeProvider());
 
         // Set mass
         builder.setMass(getMass());
@@ -102,7 +98,7 @@ public class TLEPropagatorBuilder
         final ParameterDriversList propDrivers = clonedBuilder.getPropagationParametersDrivers();
         builder.getPropagationParametersDrivers().getDrivers().
                         forEach(driver -> driver.setSelected(propDrivers.findByName(driver.getName()).isSelected()));
-        return new TLEPropagatorBuilder(clonedBuilder);
+        return builder;
     }
 
     /** {@inheritDoc} */

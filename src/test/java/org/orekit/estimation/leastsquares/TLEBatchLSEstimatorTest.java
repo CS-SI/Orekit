@@ -38,9 +38,9 @@ import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
 import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
+import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.propagation.conversion.TLEPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -209,10 +209,10 @@ public class TLEBatchLSEstimatorTest {
             }
         });
 
-        ParameterDriver xDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().get(0);
-        Assertions.assertEquals(OrbitType.POS_X, xDriver.getName());
-        xDriver.setValue(xDriver.getValue() + 10.0);
-        xDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
+        ParameterDriver nDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().get(0);
+        Assertions.assertEquals(TleGenerationAlgorithm.MEAN_MOTION, nDriver.getName());
+        nDriver.setValue(nDriver.getValue() + 1.0e-10);
+        nDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         TLEEstimationTestUtils.checkFit(context, estimator, 2, 3,
                                         0.0, 1.67e-5,
@@ -223,7 +223,7 @@ public class TLEBatchLSEstimatorTest {
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one
         for (final ParameterDriver driver : estimator.getOrbitalParametersDrivers(true).getDrivers()) {
-            if (OrbitType.POS_X.equals(driver.getName())) {
+            if (TleGenerationAlgorithm.MEAN_MOTION.equals(driver.getName())) {
                 // user-specified reference date
                 Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
             } else {
