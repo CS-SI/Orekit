@@ -20,6 +20,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.propagation.analytical.gnss.data.NavICLegacyNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.NavICLegacyNavigationMessageFactory;
 import org.orekit.utils.units.Unit;
 
 /** Parser for NavIC legacy.
@@ -27,7 +28,8 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 14.0
  */
-public class NavICLnavParser extends LegacyNavigationParser<NavICLegacyNavigationMessage> {
+public class NavICLnavParser
+    extends LegacyNavigationParser<NavICLegacyNavigationMessage, NavICLegacyNavigationMessageFactory> {
 
     /** URA index to URA mapping (table 23 of NavIC ICD). */
     // CHECKSTYLE: stop Indentation check
@@ -41,17 +43,17 @@ public class NavICLnavParser extends LegacyNavigationParser<NavICLegacyNavigatio
 
     /** Simple constructor.
      * @param parseInfo container for parsing data
-     * @param message container for navigation message
+     * @param factory factory for navigation message
      */
-    public NavICLnavParser(final ParseInfo parseInfo, final NavICLegacyNavigationMessage message) {
-        super(parseInfo, message);
+    public NavICLnavParser(final ParseInfo parseInfo, final NavICLegacyNavigationMessageFactory factory) {
+        super(parseInfo, factory);
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine00() {
         final ParseInfo parseInfo = getParseInfo();
-        parseSvEpochSvClockLine(parseInfo.getTimeScales().getNavIC(), parseInfo, getMessage());
+        parseSvEpochSvClockLine(parseInfo.getTimeScales().getNavIC(), parseInfo, getFactory());
     }
 
     /** {@inheritDoc} */
@@ -59,8 +61,8 @@ public class NavICLnavParser extends LegacyNavigationParser<NavICLegacyNavigatio
     public void parseLine01() {
         super.parseLine01();
         // for NavIC legacy, Issue Of Data applies to both clock and ephemeris
-        final NavICLegacyNavigationMessage message = getMessage();
-        message.setIODC(message.getIODE());
+        final NavICLegacyNavigationMessageFactory factory = getFactory();
+        factory.setIODC(factory.getIODE());
     }
 
     /** {@inheritDoc} */
@@ -70,9 +72,9 @@ public class NavICLnavParser extends LegacyNavigationParser<NavICLegacyNavigatio
 
         // for NavIC legacy, the User Range Accurary is provided as an index in a table
         // the base class implementation just parsed it as a double, we need to fix it
-        final NavICLegacyNavigationMessage message = getMessage();
-        final int index = (int) FastMath.rint(message.getSvAccuracy());
-        message.setSvAccuracy(NAVIC_URA[FastMath.min(index, NAVIC_URA.length - 1)]);
+        final NavICLegacyNavigationMessageFactory factory = getFactory();
+        final int index = (int) FastMath.rint(factory.getSvAccuracy());
+        factory.setSvAccuracy(NAVIC_URA[FastMath.min(index, NAVIC_URA.length - 1)]);
 
     }
 
@@ -80,8 +82,8 @@ public class NavICLnavParser extends LegacyNavigationParser<NavICLegacyNavigatio
     @Override
     public void parseLine07() {
         final ParseInfo parseInfo = getParseInfo();
-        final NavICLegacyNavigationMessage message = getMessage();
-        message.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
+        final NavICLegacyNavigationMessageFactory factory = getFactory();
+        factory.setTransmissionTime(parseInfo.parseDouble1(Unit.SECOND));
         // there is no fit interval in NavIC L message
         parseInfo.closePendingRecord();
     }

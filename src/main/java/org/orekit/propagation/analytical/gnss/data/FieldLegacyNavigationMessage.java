@@ -30,33 +30,32 @@ import java.util.function.Function;
  */
 public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElement<T>,
                                                    O extends LegacyNavigationMessage<O>>
-    extends FieldAbstractNavigationMessage<T, O>
-    implements FieldGNSSClockElements<T> {
+    extends FieldAbstractNavigationMessage<T, O> {
 
     /** Issue of Data, Ephemeris. */
-    private int iode;
+    private final int iode;
 
     /** Issue of Data, Clock. */
-    private int iodc;
+    private final int iodc;
 
     /** The user SV accuracy (m). */
-    private T svAccuracy;
+    private final T svAccuracy;
 
     /** Satellite health status. */
-    private int svHealth;
+    private final int svHealth;
 
     /** Fit interval. */
-    private int fitInterval;
+    private final int fitInterval;
 
     /** Codes on L2 channel.
      * @since 14.0
      */
-    private int l2Codes;
+    private final int l2Codes;
 
     /** L2 P data flags.
      * @since 14.0
      */
-    private int l2PFlags;
+    private final int l2PFlags;
 
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
@@ -64,13 +63,13 @@ public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElemen
      */
     protected FieldLegacyNavigationMessage(final Field<T> field, final O original) {
         super(field, original);
-        setIODE(field.getZero().newInstance(original.getIODE()));
-        setIODC(original.getIODC());
-        setSvAccuracy(field.getZero().newInstance(original.getSvAccuracy()));
-        setSvHealth(original.getSvHealth());
-        setFitInterval(original.getFitInterval());
-        setL2Codes(original.getL2Codes());
-        setL2PFlags(original.getL2PFlags());
+        iode        = original.getIODE();
+        iodc        = original.getIODC();
+        svAccuracy  = field.getZero().newInstance(original.getSvAccuracy());
+        svHealth    = original.getSvHealth();
+        fitInterval = original.getFitInterval();
+        l2Codes     = original.getL2Codes();
+        l2PFlags    = original.getL2PFlags();
     }
 
     /** Constructor from different field instance.
@@ -81,13 +80,13 @@ public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElemen
     protected <V extends CalculusFieldElement<V>> FieldLegacyNavigationMessage(final Function<V, T> converter,
                                                                                final FieldLegacyNavigationMessage<V, O> original) {
         super(converter, original);
-        setIODE(getMu().newInstance(original.getIODE()));
-        setIODC(original.getIODC());
-        setSvAccuracy(converter.apply(original.getSvAccuracy()));
-        setSvHealth(original.getSvHealth());
-        setFitInterval(original.getFitInterval());
-        setL2Codes(original.getL2Codes());
-        setL2PFlags(original.getL2PFlags());
+        iode        = original.getIODE();
+        iodc        = original.getIODC();
+        svAccuracy  = converter.apply(original.getSvAccuracy());
+        svHealth    = original.getSvHealth();
+        fitInterval = original.getFitInterval();
+        l2Codes     = original.getL2Codes();
+        l2PFlags    = original.getL2PFlags();
     }
 
     /**
@@ -99,28 +98,11 @@ public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElemen
     }
 
     /**
-     * Setter for the Issue of Data Ephemeris.
-     * @param value the IODE to set
-     */
-    public void setIODE(final T value) {
-        // The value is given as a floating number in the navigation message
-        this.iode = (int) value.getReal();
-    }
-
-    /**
      * Getter for the Issue Of Data Clock (IODC).
      * @return the Issue Of Data Clock (IODC)
      */
     public int getIODC() {
         return iodc;
-    }
-
-    /**
-     * Setter for the Issue of Data Clock.
-     * @param value the IODC to set
-     */
-    public void setIODC(final int value) {
-        this.iodc = value;
     }
 
     /**
@@ -132,27 +114,11 @@ public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElemen
     }
 
     /**
-     * Setter for the user SV accuracy.
-     * @param svAccuracy the value to set
-     */
-    public void setSvAccuracy(final T svAccuracy) {
-        this.svAccuracy = svAccuracy;
-    }
-
-    /**
      * Getter for the satellite health status.
      * @return the satellite health status
      */
     public int getSvHealth() {
         return svHealth;
-    }
-
-    /**
-     * Setter for the satellite health status.
-     * @param svHealth the value to set
-     */
-    public void setSvHealth(final int svHealth) {
-        this.svHealth = svHealth;
     }
 
     /**
@@ -163,14 +129,6 @@ public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElemen
         return fitInterval;
     }
 
-    /**
-     * Setter for the fit interval.
-     * @param fitInterval fit interval
-     */
-    public void setFitInterval(final int fitInterval) {
-        this.fitInterval = fitInterval;
-    }
-
     /** Get the codes on L2 channel.
      * @return codes on L2 channel
      * @since 14.0
@@ -179,44 +137,12 @@ public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElemen
         return l2Codes;
     }
 
-    /** Set the codes on L2 channel.
-     * @param l2Codes codes on L2 channel
-     * @since 14.0
-     */
-    public void setL2Codes(final int l2Codes) {
-        this.l2Codes = l2Codes;
-    }
-
     /** Get the L2 P data flags.
      * @return L2 P data flags
      * @since 14.0
      */
     public int getL2PFlags() {
         return l2PFlags;
-    }
-
-    /** Set the L2 P data flags.
-     * @param l2PFlags L2 P data flags
-     * @since 14.0
-     */
-    public void setL2PFlags(final int l2PFlags) {
-        this.l2PFlags = l2PFlags;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void copyNonKeplerian(final GNSSOrbitalElementsDriversProvider original) {
-        super.copyNonKeplerian(original);
-        if (original instanceof FieldLegacyNavigationMessage) {
-            final FieldLegacyNavigationMessage<T, ?> m = (FieldLegacyNavigationMessage<T, ?>) original;
-            setIODE(m.getSvAccuracy().newInstance(m.getIODE()));
-            setIODC(m.getIODC());
-            setSvAccuracy(m.getSvAccuracy());
-            setSvHealth(m.getSvHealth());
-            setFitInterval(m.getFitInterval());
-            setL2Codes(m.getL2Codes());
-            setL2PFlags(m.getL2PFlags());
-        }
     }
 
 }

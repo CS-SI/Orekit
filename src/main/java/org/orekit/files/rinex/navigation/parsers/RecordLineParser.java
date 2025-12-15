@@ -20,7 +20,7 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.files.rinex.navigation.RinexNavigation;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.utils.ParsingUtils;
-import org.orekit.propagation.analytical.gnss.data.AbstractNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.AbstractNavigationMessageFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.units.Unit;
@@ -34,12 +34,12 @@ public abstract class RecordLineParser {
     /** Parse the SV/Epoch/Sv clock of the navigation message.
      * @param line      line to read
      * @param timeScale time scale to use
-     * @param message   navigation message
+     * @param factory   message factory
      */
     protected void parseSvEpochSvClockLineRinex2(final String line, final TimeScale timeScale,
-                                                 final AbstractNavigationMessage<?> message) {
+                                                 final AbstractNavigationMessageFactory<?> factory) {
         // PRN
-        message.setPRN(ParsingUtils.parseInt(line, 0, 2));
+        factory.setPrn(ParsingUtils.parseInt(line, 0, 2));
 
         // Toc
         final int    year  = ParsingUtils.convert2DigitsYear(ParsingUtils.parseInt(line, 2, 3));
@@ -48,12 +48,12 @@ public abstract class RecordLineParser {
         final int    hours = ParsingUtils.parseInt(line,    11, 3);
         final int    min   = ParsingUtils.parseInt(line,    14, 3);
         final double sec   = ParsingUtils.parseDouble(line, 17, 5);
-        message.setEpochToc(new AbsoluteDate(year, month, day, hours, min, sec, timeScale));
+        factory.setEpochToc(new AbsoluteDate(year, month, day, hours, min, sec, timeScale));
 
         // clock
-        message.setAf0(ParsingUtils.parseDouble(line, 22, 19));
-        message.setAf1(ParsingUtils.parseDouble(line, 41, 19));
-        message.setAf2(ParsingUtils.parseDouble(line, 60, 19));
+        factory.getAf0Driver().setValue(ParsingUtils.parseDouble(line, 22, 19));
+        factory.getAf1Driver().setValue(ParsingUtils.parseDouble(line, 41, 19));
+        factory.getAf2Driver().setValue(ParsingUtils.parseDouble(line, 60, 19));
 
     }
 
@@ -62,20 +62,20 @@ public abstract class RecordLineParser {
      *
      * @param timeScale time scale to use
      * @param parseInfo container for parsing info
-     * @param message   navigation message
+     * @param factory   message factory
      */
     protected void parseSvEpochSvClockLine(final TimeScale timeScale,
-                                           final ParseInfo parseInfo, final AbstractNavigationMessage<?> message) {
+                                           final ParseInfo parseInfo, final AbstractNavigationMessageFactory<?> factory) {
         // PRN
-        message.setPRN(ParsingUtils.parseInt(parseInfo.getLine(), 1, 2));
+        factory.setPrn(ParsingUtils.parseInt(parseInfo.getLine(), 1, 2));
 
         // Toc
-        message.setEpochToc(parseInfo.parseDate(timeScale));
+        factory.setEpochToc(parseInfo.parseDate(timeScale));
 
         // clock
-        message.setAf0(parseInfo.parseDouble2(Unit.SECOND));
-        message.setAf1(parseInfo.parseDouble3(RinexNavigationParser.S_PER_S));
-        message.setAf2(parseInfo.parseDouble4(RinexNavigationParser.S_PER_S2));
+        factory.getAf0Driver().setValue(parseInfo.parseDouble2(Unit.SECOND));
+        factory.getAf1Driver().setValue(parseInfo.parseDouble3(RinexNavigationParser.S_PER_S));
+        factory.getAf2Driver().setValue(parseInfo.parseDouble4(RinexNavigationParser.S_PER_S2));
 
     }
 

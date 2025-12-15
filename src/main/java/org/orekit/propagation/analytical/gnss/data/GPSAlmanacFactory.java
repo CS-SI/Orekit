@@ -18,6 +18,7 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScales;
 
@@ -28,29 +29,123 @@ import org.orekit.time.TimeScales;
  */
 public class GPSAlmanacFactory extends GNSSOrbitalElementsFactory<GPSAlmanac> {
 
+    /** Source of the almanac. */
+    private String source;
+
+    /** SVN number. */
+    private int svn;
+
+    /** Health status. */
+    private int health;
+
+    /** Average URA. */
+    private int ura;
+
+    /** Satellite configuration. */
+    private int satConfiguration;
+
     /** Simple constructor.
-     * @param timeScales known time scales
-     * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav, weeks
-     *                   are always according to GPS)
-     * @param inertial   inertial frame
-     * @param bodyFixed  body fixed frame, corresponding to the navigation message
-     * @param date       date of the orbital parameters
-     * @param mu         central attraction coefficient (m³/s²)
+     * @param timeScales      known time scales
+     * @param system          satellite system to use for interpreting week number
+     * @param type            message type (null if not a navigation message)
+     * @param inertial        reference inertial frame
+     * @param bodyFixed       body fixed frame (will be frozen at {@code date} to build the orbital elements
+     * @param date            date of the orbital parameters
      */
     public GPSAlmanacFactory(final TimeScales timeScales, final SatelliteSystem system,
-                             final Frame inertial, final Frame bodyFixed,
-                             final AbsoluteDate date, final double mu) {
-        super(new GPSAlmanac(timeScales, system),
-              inertial, bodyFixed, date, mu);
+                             final String type, final Frame inertial, final Frame bodyFixed,
+                             final AbsoluteDate date) {
+        super(GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB, timeScales, system,
+              type, inertial, bodyFixed, date, GNSSConstants.GPS_MU);
+    }
+
+    /** Get the source of this GPS almanac.
+     * <p>Sources can be SEM or YUMA, when the almanac is read from a file.</p>
+     * @return the source of this GPS almanac
+     */
+    public String getSource() {
+        return source;
+    }
+
+    /** Set the source of this GPS almanac.
+     * <p>Sources can be SEM or YUMA, when the almanac is read from a file.</p>
+     * @param source source of this GPS almanac
+     */
+    public void setSource(final String source) {
+        this.source = source;
+    }
+
+    /** Get the satellite "SVN" reference number.
+     * @return the satellite "SVN" reference number
+     */
+    public int getSVN() {
+        return svn;
+    }
+
+    /** Set the satellite "SVN" reference number.
+     * @param svn the satellite "SVN" reference number
+     */
+    public void setSVN(final int svn) {
+        this.svn = svn;
+    }
+
+    /** Get the Health status.
+     * @return the Health status
+     */
+    public int getHealth() {
+        return health;
+    }
+
+    /** Set the Health status.
+     * @param health the Health status
+     */
+    public void setHealth(final int health) {
+        this.health = health;
+    }
+
+    /** Get the average URA number.
+     * @return the average URA number
+     */
+    public int getURA() {
+        return ura;
+    }
+
+    /** Set the average URA number.
+     * @param ura the average URA number
+     */
+    public void setURA(final int ura) {
+        this.ura = ura;
+    }
+
+    /** Get the satellite configuration.
+     * @return the satellite configuration
+     */
+    public int getSatConfiguration() {
+        return satConfiguration;
+    }
+
+    /** Set the satellite configuration.
+     * @param satConfiguration the satellite configuration
+     */
+    public void setSatConfiguration(final int satConfiguration) {
+        this.satConfiguration = satConfiguration;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected GPSAlmanac createEmptyMessage(final TimeScales timeScales,
-                                            final SatelliteSystem system,
-                                            final String type) {
-        return new GPSAlmanac(timeScales, system);
+    public GPSAlmanac createFromDrivers() {
+        return new GPSAlmanac(getTimeScales(), getSystem(), getPrn(), getWeek(),
+                              createOrbitFromDrivers(),
+                              getTimeDriver().getValue(), getADotDriver().getValue(),
+                              getDeltaN0Driver().getValue(), getDeltaN0DotDriver().getValue(),
+                              getIDotDriver().getValue(), getOmegaDotDriver().getValue(),
+                              getCucDriver().getValue(), getCusDriver().getValue(),
+                              getCrcDriver().getValue(), getCrsDriver().getValue(),
+                              getCicDriver().getValue(), getCisDriver().getValue(),
+                              getAf0Driver().getValue(), getAf1Driver().getValue(),
+                              getAf2Driver().getValue(),
+                              getTGD(), getToc(),
+                              getSource(), getSVN(), getHealth(), getURA(), getSatConfiguration());
     }
 
 }

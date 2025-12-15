@@ -66,7 +66,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @param <T> type of the field elements
  */
 public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
-    implements ShiftableFieldPVCoordinatesHolder<FieldOrbit<T>, T> {
+    implements FieldOrbitalParameters<T>, ShiftableFieldPVCoordinatesHolder<FieldOrbit<T>, T> {
 
     /** Absolute tolerance when checking if the rate of the position angle is Keplerian or not. */
     protected static final double TOLERANCE_POSITION_ANGLE_RATE = 1e-15;

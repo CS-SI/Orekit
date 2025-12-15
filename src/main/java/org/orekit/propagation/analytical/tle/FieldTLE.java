@@ -32,6 +32,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.orbits.FieldOrbitalParameters;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
@@ -41,7 +42,6 @@ import org.orekit.propagation.conversion.osc2mean.TLETheory;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScale;
@@ -66,7 +66,7 @@ import org.orekit.utils.Constants;
  * @since 11.0
  * @param <T> type of the field elements
  */
-public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeStamped<T> {
+public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldOrbitalParameters<T> {
 
     /** Identifier for default type of ephemeris (SGP4/SDP4). */
     public static final int DEFAULT = 0;

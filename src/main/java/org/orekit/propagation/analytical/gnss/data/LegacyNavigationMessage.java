@@ -18,6 +18,8 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScales;
 
 /**
@@ -27,51 +29,99 @@ import org.orekit.time.TimeScales;
  * @since 11.0
  */
 public abstract class LegacyNavigationMessage<O extends LegacyNavigationMessage<O>>
-    extends AbstractNavigationMessage<O>
-    implements GNSSClockElements {
+    extends AbstractNavigationMessage<O> {
 
     /** Issue of Data, Ephemeris. */
-    private int iode;
+    private final int iode;
 
     /** Issue of Data, Clock. */
-    private int iodc;
+    private final int iodc;
 
     /** The user SV accuracy (m). */
-    private double svAccuracy;
+    private final double svAccuracy;
 
     /** Satellite health status. */
-    private int svHealth;
+    private final int svHealth;
 
     /** Fit interval.
      * @since 12.0
      */
-    private int fitInterval;
+    private final int fitInterval;
 
     /** Codes on L2 channel.
      * @since 14.0
      */
-    private int l2Codes;
+    private final int l2Codes;
 
     /** L2 P data flags.
      * @since 14.0
      */
-    private int l2PFlags;
+    private final int l2PFlags;
 
     /**
      * Constructor.
-     * @param mu              Earth's universal gravitational parameter
-     * @param angularVelocity mean angular velocity of the Earth for the GNSS model
-     * @param weeksInCycle    number of weeks in the GNSS cycle
-     * @param timeScales      known time scales
-     * @param system          satellite system to consider for interpreting week number
-     *                        (may be different from real system, for example in Rinex nav, weeks
-     *                        are always according to GPS)
-     * @param type            message type
+     * @param angularVelocity  mean angular velocity of the Earth for the GNSS model
+     * @param weeksInCycle     number of weeks in the GNSS cycle
+     * @param timeScales       known time scales
+     * @param system           satellite system to consider for interpreting week number
+     *                         (may be different from real system, for example in Rinex nav, weeks
+     *                         are always according to GPS)
+     * @param type             message type
+     * @param prn              PRN number of the satellite
+     * @param week             reference Week of the orbit
+     * @param orbit            Keplerian orbit in Earth-frozen frame
+     * @param time             reference time
+     * @param aDot             change rate in semi-major axis (m/s)
+     * @param deltaN0          delta of satellite mean motion
+     * @param deltaN0Dot       change rate in Δn₀
+     * @param iDot             inclination rate (rad/s)
+     * @param omegaDot         rate of right ascension (rad/s)
+     * @param cuc              amplitude of the cosine harmonic correction term to the argument of latitude
+     * @param cus              amplitude of the sine harmonic correction term to the argument of latitude
+     * @param crc              amplitude of the cosine harmonic correction term to the orbit radius
+     * @param crs              amplitude of the sine harmonic correction term to the orbit radius
+     * @param cic              amplitude of the cosine harmonic correction term to the inclination
+     * @param cis              amplitude of the sine harmonic correction term to the inclination
+     * @param af0              zero-th order clock correction (s)
+     * @param af1              first order clock correction (s/s)
+     * @param af2              second order clock correction (s/s²)
+     * @param tgd              group delay differential TGD for L1-L2 correction
+     * @param toc              time of clock
+     * @param epochToc         time of clock epoch
+     * @param transmissionTime transmission time
+     * @param iode             issue of data, ephemeris
+     * @param iodc             issue of data, clock
+     * @param svAccuracy       user SV accuracy (m)
+     * @param svHealth         satellite health status
+     * @param fitInterval      fit interval
+     * @param l2Codes          codes on L2 channel
+     * @param l2PFlags         L2 P data flags.
      */
-    protected LegacyNavigationMessage(final double mu, final double angularVelocity, final int weeksInCycle,
-                                      final TimeScales timeScales, final SatelliteSystem system,
-                                      final String type) {
-        super(mu, angularVelocity, weeksInCycle, timeScales, system, type);
+    protected LegacyNavigationMessage(final double angularVelocity, final int weeksInCycle,
+                                      final TimeScales timeScales, final SatelliteSystem system, final String type,
+                                      final int prn, final int week, final KeplerianOrbit orbit,
+                                      final double time, final double aDot,
+                                      final double deltaN0, final double deltaN0Dot,
+                                      final double iDot, final double omegaDot,
+                                      final double cuc, final double cus,
+                                      final double crc, final double crs,
+                                      final double cic, final double cis,
+                                      final double af0, final double af1, final double af2,
+                                      final double tgd, final double toc,
+                                      final AbsoluteDate epochToc, final double transmissionTime,
+                                      final int iode, final int iodc, final double svAccuracy,
+                                      final int svHealth, final int fitInterval,
+                                      final int l2Codes, final int l2PFlags) {
+        super(angularVelocity, weeksInCycle, timeScales, system, type, prn, week, orbit,
+              time, aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
+              af0, af1, af2, tgd, toc, epochToc, transmissionTime);
+        this.iode        = iode;
+        this.iodc        = iodc;
+        this.svAccuracy  = svAccuracy;
+        this.svHealth    = svHealth;
+        this.fitInterval = fitInterval;
+        this.l2Codes     = l2Codes;
+        this.l2PFlags    = l2PFlags;
     }
 
     /** Constructor from field instance.
@@ -82,96 +132,49 @@ public abstract class LegacyNavigationMessage<O extends LegacyNavigationMessage<
     protected <T extends CalculusFieldElement<T>, A extends LegacyNavigationMessage<A>>
         LegacyNavigationMessage(final FieldLegacyNavigationMessage<T, A> original) {
         super(original);
-        setIODE(original.getIODE());
-        setIODC(original.getIODC());
-        setSvAccuracy(original.getSvAccuracy().getReal());
-        setSvHealth(original.getSvHealth());
-        setFitInterval(original.getFitInterval());
-        setL2Codes(original.getL2Codes());
-        setL2PFlags(original.getL2PFlags());
+        iode        = original.getIODE();
+        iodc        = original.getIODC();
+        svAccuracy  = original.getSvAccuracy().getReal();
+        svHealth    = original.getSvHealth();
+        fitInterval = original.getFitInterval();
+        l2Codes     = original.getL2Codes();
+        l2PFlags    = original.getL2PFlags();
     }
 
-    /**
-     * Getter for the Issue Of Data Ephemeris (IODE).
+    /** Get the Issue Of Data Ephemeris (IODE).
      * @return the Issue Of Data Ephemeris (IODE)
      */
     public int getIODE() {
         return iode;
     }
 
-    /**
-     * Setter for the Issue of Data Ephemeris.
-     * @param value the IODE to set
-     */
-    public void setIODE(final double value) {
-        // The value is given as a floating number in the navigation message
-        this.iode = (int) value;
-    }
-
-    /**
-     * Getter for the Issue Of Data Clock (IODC).
+    /** Get the Issue Of Data Clock (IODC).
      * @return the Issue Of Data Clock (IODC)
      */
     public int getIODC() {
         return iodc;
     }
 
-    /**
-     * Setter for the Issue of Data Clock.
-     * @param value the IODC to set
-     */
-    public void setIODC(final int value) {
-        this.iodc = value;
-    }
-
-    /**
-     * Getter for the user SV accuray (meters).
+    /** Get the user SV accuray (meters).
      * @return the user SV accuracy
      */
     public double getSvAccuracy() {
         return svAccuracy;
     }
 
-    /**
-     * Setter for the user SV accuracy.
-     * @param svAccuracy the value to set
-     */
-    public void setSvAccuracy(final double svAccuracy) {
-        this.svAccuracy = svAccuracy;
-    }
-
-    /**
-     * Getter for the satellite health status.
+    /** Get the satellite health status.
      * @return the satellite health status
      */
     public int getSvHealth() {
         return svHealth;
     }
 
-    /**
-     * Setter for the satellite health status.
-     * @param svHealth the value to set
-     */
-    public void setSvHealth(final int svHealth) {
-        this.svHealth = svHealth;
-    }
-
-    /**
-     * Getter for the fit interval.
+    /** Get the fit interval.
      * @return the fit interval
      * @since 12.0
      */
     public int getFitInterval() {
         return fitInterval;
-    }
-
-    /**
-     * Setter for the fit interval.
-     * @param fitInterval fit interval
-     * @since 12.0
-     */
-    public void setFitInterval(final int fitInterval) {
-        this.fitInterval = fitInterval;
     }
 
     /** Get the codes on L2 channel.
@@ -182,44 +185,12 @@ public abstract class LegacyNavigationMessage<O extends LegacyNavigationMessage<
         return l2Codes;
     }
 
-    /** Set the codes on L2 channel.
-     * @param l2Codes codes on L2 channel
-     * @since 14.0
-     */
-    public void setL2Codes(final int l2Codes) {
-        this.l2Codes = l2Codes;
-    }
-
     /** Get the L2 P data flags.
      * @return L2 P data flags
      * @since 14.0
      */
     public int getL2PFlags() {
         return l2PFlags;
-    }
-
-    /** Set the L2 P data flags.
-     * @param l2PFlags L2 P data flags
-     * @since 14.0
-     */
-    public void setL2PFlags(final int l2PFlags) {
-        this.l2PFlags = l2PFlags;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void copyNonKeplerian(final GNSSOrbitalElementsDriversProvider original) {
-        super.copyNonKeplerian(original);
-        if (original instanceof LegacyNavigationMessage) {
-            final LegacyNavigationMessage<?> m = (LegacyNavigationMessage<?>) original;
-            setIODE(m.getIODE());
-            setIODC(m.getIODC());
-            setSvAccuracy(m.getSvAccuracy());
-            setSvHealth(m.getSvHealth());
-            setFitInterval(m.getFitInterval());
-            setL2Codes(m.getL2Codes());
-            setL2PFlags(m.getL2PFlags());
-        }
     }
 
 }

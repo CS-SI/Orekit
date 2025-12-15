@@ -21,18 +21,20 @@ import org.orekit.files.rinex.navigation.parsers.ParseInfo;
 import org.orekit.files.rinex.navigation.parsers.RecordLineParser;
 import org.orekit.propagation.analytical.gnss.data.AbstractNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.AbstractNavigationMessageFactory;
+import org.orekit.propagation.analytical.gnss.data.CivilianNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.CivilianNavigationMessageFactory;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.utils.units.Unit;
 
-/** Parser for abstract navigation messages.
+/** Parser for NavIC L1NV, QZSS, and GPS civilian messages.
  * @param <T> type of the navigation message
  * @param <F> type of the navigation message factory
  * @author Bryan Cazabonne
  * @author Luc Maisonobe
  * @since 14.0
  */
-public abstract class AbstractNavigationParser<T extends AbstractNavigationMessage<T>,
-                                               F extends AbstractNavigationMessageFactory<T>>
+public abstract class CivilianLevel1NavigationParser<T extends AbstractNavigationMessage<T>,
+                                                     F extends AbstractNavigationMessageFactory<T>>
     extends RecordLineParser {
 
     /** Container for parsing data. */
@@ -45,7 +47,7 @@ public abstract class AbstractNavigationParser<T extends AbstractNavigationMessa
      * @param parseInfo container for parsing data
      * @param factory factory for navigation message
      */
-    protected AbstractNavigationParser(final ParseInfo parseInfo, final F factory) {
+    protected CivilianLevel1NavigationParser(final ParseInfo parseInfo, final F factory) {
         this.parseInfo = parseInfo;
         this.factory   = factory;
     }
@@ -74,16 +76,13 @@ public abstract class AbstractNavigationParser<T extends AbstractNavigationMessa
     /** {@inheritDoc} */
     @Override
     public void parseLine00() {
-        if (parseInfo.getHeader().getFormatVersion() < 3.0) {
-            parseSvEpochSvClockLineRinex2(parseInfo.getLine(), parseInfo.getTimeScales().getGPS(), factory);
-        } else {
-            parseSvEpochSvClockLine(parseInfo.getTimeScales().getGPS(), parseInfo, factory);
-        }
+        parseSvEpochSvClockLine(parseInfo.getTimeScales().getGPS(), parseInfo, factory);
     }
 
     /** {@inheritDoc} */
     @Override
     public void parseLine01() {
+        factory.getADotDriver().setValue(parseInfo.parseDouble1(RinexNavigationParser.M_PER_S));
         factory.getCrsDriver().setValue(parseInfo.parseDouble2(Unit.METRE));
         factory.getDeltaN0Driver().setValue(parseInfo.parseDouble3(RinexNavigationParser.RAD_PER_S));
         factory.
@@ -133,13 +132,6 @@ public abstract class AbstractNavigationParser<T extends AbstractNavigationMessa
             findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).
             setValue(parseInfo.parseDouble3(Unit.RADIAN));
         factory.getOmegaDotDriver().setValue(parseInfo.parseDouble4(RinexNavigationParser.RAD_PER_S));
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void parseLine05() {
-        factory.getIDotDriver().setValue(parseInfo.parseDouble1(RinexNavigationParser.RAD_PER_S));
-        factory.setWeek(parseInfo.parseInt3());
     }
 
 }

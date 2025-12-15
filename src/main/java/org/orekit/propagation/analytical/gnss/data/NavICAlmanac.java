@@ -20,7 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.TimeScales;
 
 /**
@@ -34,7 +34,7 @@ import org.orekit.time.TimeScales;
  *
  */
 public class NavICAlmanac
-    extends AbstractAlmanac<NavICAlmanac> {
+    extends GNSSOrbitalElements<NavICAlmanac> {
 
     /**
      * Constructor.
@@ -42,10 +42,42 @@ public class NavICAlmanac
      * @param system     satellite system to consider for interpreting week number
      *                   (may be different from real system, for example in Rinex nav, weeks
      *                   are always according to GPS)
+     * @param prn        PRN number of the satellite
+     * @param week       reference Week of the orbit
+     * @param orbit      Keplerian orbit in Earth-frozen frame
+     * @param time       reference time
+     * @param aDot       change rate in semi-major axis (m/s)
+     * @param deltaN0    delta of satellite mean motion
+     * @param deltaN0Dot change rate in Δn₀
+     * @param iDot       inclination rate (rad/s)
+     * @param omegaDot   rate of right ascension (rad/s)
+     * @param cuc        amplitude of the cosine harmonic correction term to the argument of latitude
+     * @param cus        amplitude of the sine harmonic correction term to the argument of latitude
+     * @param crc        amplitude of the cosine harmonic correction term to the orbit radius
+     * @param crs        amplitude of the sine harmonic correction term to the orbit radius
+     * @param cic        amplitude of the cosine harmonic correction term to the inclination
+     * @param cis        amplitude of the sine harmonic correction term to the inclination
+     * @param af0        zero-th order clock correction (s)
+     * @param af1        first order clock correction (s/s)
+     * @param af2        second order clock correction (s/s²)
+     * @param tgd        group delay differential TGD for L1-L2 correction
+     * @param toc        time of clock
      */
-    public NavICAlmanac(final TimeScales timeScales, final SatelliteSystem system) {
-        super(GNSSConstants.NAVIC_MU, GNSSConstants.NAVIC_AV, GNSSConstants.NAVIC_WEEK_NB,
-              timeScales, system, null);
+    public NavICAlmanac(final TimeScales timeScales, final SatelliteSystem system,
+                        final int prn, final int week, final KeplerianOrbit orbit,
+                        final double time, final double aDot,
+                        final double deltaN0, final double deltaN0Dot,
+                        final double iDot, final double omegaDot,
+                        final double cuc, final double cus,
+                        final double crc, final double crs,
+                        final double cic, final double cis,
+                        final double af0, final double af1, final double af2,
+                        final double tgd, final double toc) {
+        super(GNSSConstants.NAVIC_AV, GNSSConstants.NAVIC_WEEK_NB,
+              timeScales, system, null,
+              prn, week, orbit,
+              time, aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
+              af0, af1, af2, tgd, toc);
     }
 
     /** Constructor from field instance.
@@ -64,24 +96,10 @@ public class NavICAlmanac
         return (F) new FieldNavICAlmanac<>(field, this);
     }
 
-    /**
-     * Setter for the Square Root of Semi-Major Axis (m^1/2).
-     * <p>
-     * In addition, this method set the value of the Semi-Major Axis.
-     * </p>
-     * @param sqrtA the Square Root of Semi-Major Axis (m^1/2)
-     */
-    public void setSqrtA(final double sqrtA) {
-        setSma(sqrtA * sqrtA);
-    }
-
     /** {@inheritDoc} */
     @Override
-    public GNSSPropagatorBuilder<NavICAlmanac> builder(final Frame inertial, final Frame bodyFixed) {
-        return new GNSSPropagatorBuilder<>(new NavICAlmanacFactory(getTimeScales(), getSystem(),
-                                                                   inertial, bodyFixed,
-                                                                   getDate(), getMu()),
-                                           inertial, bodyFixed);
+    public NavICAlmanacFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
+        return new NavICAlmanacFactory(getTimeScales(), getSystem(), getType(), inertial, bodyFixed, getDate());
     }
 
 }

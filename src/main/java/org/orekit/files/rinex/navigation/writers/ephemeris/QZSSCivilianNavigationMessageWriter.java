@@ -28,7 +28,7 @@ import java.io.IOException;
  * @since 14.0
  */
 public class QZSSCivilianNavigationMessageWriter
-    extends CivilianNavigationMessageWriter<QZSSCivilianNavigationMessage> {
+    extends CivilianLevel2NavigationMessageWriter<QZSSCivilianNavigationMessage> {
 
     /** {@inheritDoc} */
     @Override

@@ -30,7 +30,7 @@ import java.io.IOException;
  * @since 14.0
  */
 public class NavICL1NVNavigationMessageWriter
-    extends CivilianNavigationMessageWriter<NavICL1NvNavigationMessage> {
+    extends CivilianLevel1NavigationMessageWriter<NavICL1NvNavigationMessage> {
 
     /** {@inheritDoc} */
     @Override
@@ -69,17 +69,8 @@ public class NavICL1NVNavigationMessageWriter
         throws IOException {
         writer.indentLine(header);
 
-        // convert accuracy to index
-        int index = 0;
-        while (index < NavICLnavParser.NAVIC_URA.length - 1) {
-            if (message.getSvAccuracy() <= NavICLnavParser.NAVIC_URA[index]) {
-                break;
-            }
-            ++index;
-        }
-        writer.writeInt(index);
-
-        writer.writeInt(message.getSvHealth());
+        writer.writeInt(message.getUrai());
+        writer.writeInt(message.getL1SpsHealth());
         writer.writeDouble(message.getTGD(),    Unit.SECOND);
         writer.writeDouble(message.getTGDSL5(), Unit.SECOND);
         writer.finishLine();

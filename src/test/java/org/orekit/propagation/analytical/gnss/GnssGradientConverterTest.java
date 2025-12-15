@@ -51,7 +51,7 @@ import java.util.function.ToDoubleFunction;
 class GnssGradientConverterTest {
 
     private DataContext context;
-    private GNSSPropagator propagator;
+    private GNSSPropagator<GalileoNavigationMessage> propagator;
 
     @DefaultDataContext
     @BeforeEach
@@ -86,7 +86,7 @@ class GnssGradientConverterTest {
 
     @Test
     void testInitialStateStmNoSelectedParameters() {
-        final FieldGnssPropagator<Gradient> gPropagator = new GnssGradientConverter(propagator).getPropagator();
+        final FieldGnssPropagator<Gradient> gPropagator = new GnssGradientConverter<>(propagator).getPropagator();
         Assertions.assertEquals(12, gPropagator.getParametersDrivers().size());
         Assertions.assertEquals(0, gPropagator.getParametersDrivers().stream().filter(ParameterDriver::isSelected).count());
         Assertions.assertEquals(6, gPropagator.getInitialState().getOrbit().getA().getFreeParameters());
@@ -96,7 +96,7 @@ class GnssGradientConverterTest {
     @Test
     void testInitialStateStmAllParametersSelected() {
         propagator.getOrbitalElements().getParametersDrivers().forEach(p -> p.setSelected(true));
-        final FieldGnssPropagator<Gradient> gPropagator = new GnssGradientConverter(propagator).getPropagator();
+        final FieldGnssPropagator<Gradient> gPropagator = new GnssGradientConverter<>(propagator).getPropagator();
         Assertions.assertEquals(12, gPropagator.getParametersDrivers().size());
         Assertions.assertEquals(12, gPropagator.getParametersDrivers().stream().filter(ParameterDriver::isSelected).count());
         Assertions.assertEquals(18, gPropagator.getInitialState().getOrbit().getA().getFreeParameters());
@@ -127,8 +127,9 @@ class GnssGradientConverterTest {
         goe.setCrs(87.03125);
         goe.setCic(3.203749656677246E-7);
         goe.setCis(4.0978193283081055E-8);
-        GNSSPropagator propagator = goe.getPropagator(context.getFrames().getEME2000(),
-                                                      context.getFrames().getITRF(IERSConventions.IERS_2010, true));
+        GNSSPropagator<GPSLegacyNavigationMessage> propagator =
+            goe.getPropagator(context.getFrames().getEME2000(),
+                              context.getFrames().getITRF(IERSConventions.IERS_2010, true));
 
         // we want to compute the partial derivatives with respect to Crs and Crc parameters
         Assertions.assertEquals(12, propagator.getOrbitalElements().getParameters().length);
@@ -235,7 +236,7 @@ class GnssGradientConverterTest {
         }
     }
 
-    private double differentiate(final GNSSPropagator basePropagator, final AbsoluteDate target,
+    private double differentiate(final GNSSPropagator<?> basePropagator, final AbsoluteDate target,
                                  final double step, final int outIndex, final int inIndex) {
 
         // function that converts a shift in one element of initial state (i.e. Px, Py, Pz, Vx, Vy, Vz)
@@ -258,11 +259,12 @@ class GnssGradientConverterTest {
                                     original.getAttitude()).withMass(original.getMass());
 
             // build shifted propagator
-            final GNSSPropagator shiftedPropagator = new GNSSPropagator(shiftedState,
-                                                                        basePropagator.getOrbitalElements(),
-                                                                        basePropagator.getECEF(),
-                                                                        basePropagator.getAttitudeProvider(),
-                                                                        shiftedState.getMass());
+            final GNSSPropagator<?> shiftedPropagator =
+                new GNSSPropagator<>(shiftedState,
+                                     basePropagator.getOrbitalElements(),
+                                     basePropagator.getECEF(),
+                                     basePropagator.getAttitudeProvider(),
+                                     shiftedState.getMass());
 
             // propagated state
             final SpacecraftState outState = shiftedPropagator.propagate(target);
@@ -281,7 +283,7 @@ class GnssGradientConverterTest {
 
     }
 
-    private double differentiate(final GNSSPropagator basePropagator, final AbsoluteDate target,
+    private double differentiate(final GNSSPropagator<?> basePropagator, final AbsoluteDate target,
                                  final ToDoubleFunction<GNSSOrbitalElements<?>> getter,
                                  final BiConsumer<GNSSOrbitalElements<?>, Double> setter,
                                  final double step, final int outIndex) {

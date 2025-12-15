@@ -21,7 +21,7 @@ import org.hipparchus.Field;
 import org.hipparchus.util.FastMath;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.TimeScales;
 
 /**
@@ -34,7 +34,7 @@ import org.orekit.time.TimeScales;
  * @since 10.0
  *
  */
-public class GalileoAlmanac extends AbstractAlmanac<GalileoAlmanac> {
+public class GalileoAlmanac extends GNSSOrbitalElements<GalileoAlmanac> {
 
     /** Nominal inclination (Ref: Galileo ICD - Table 75). */
     private static final double I0 = FastMath.toRadians(56.0);
@@ -43,16 +43,16 @@ public class GalileoAlmanac extends AbstractAlmanac<GalileoAlmanac> {
     private static final double A0 = 29600000;
 
     /** Satellite E5a signal health status. */
-    private int healthE5a;
+    private final int healthE5a;
 
     /** Satellite E5b signal health status. */
-    private int healthE5b;
+    private final int healthE5b;
 
     /** Satellite E1-B/C signal health status. */
-    private int healthE1;
+    private final int healthE1;
 
     /** Almanac Issue Of Data. */
-    private int iod;
+    private final int iod;
 
     /**
      * Build a new almanac.
@@ -60,10 +60,51 @@ public class GalileoAlmanac extends AbstractAlmanac<GalileoAlmanac> {
      * @param system     satellite system to consider for interpreting week number
      *                   (may be different from real system, for example in Rinex nav, weeks
      *                   are always according to GPS)
+     * @param prn        PRN number of the satellite
+     * @param week       reference Week of the orbit
+     * @param orbit      Keplerian orbit in Earth-frozen frame
+     * @param time       reference time
+     * @param aDot       change rate in semi-major axis (m/s)
+     * @param deltaN0    delta of satellite mean motion
+     * @param deltaN0Dot change rate in Δn₀
+     * @param iDot       inclination rate (rad/s)
+     * @param omegaDot   rate of right ascension (rad/s)
+     * @param cuc        amplitude of the cosine harmonic correction term to the argument of latitude
+     * @param cus        amplitude of the sine harmonic correction term to the argument of latitude
+     * @param crc        amplitude of the cosine harmonic correction term to the orbit radius
+     * @param crs        amplitude of the sine harmonic correction term to the orbit radius
+     * @param cic        amplitude of the cosine harmonic correction term to the inclination
+     * @param cis        amplitude of the sine harmonic correction term to the inclination
+     * @param af0        zero-th order clock correction (s)
+     * @param af1        first order clock correction (s/s)
+     * @param af2        second order clock correction (s/s²)
+     * @param tgd        group delay differential TGD for L1-L2 correction
+     * @param toc        time of clock
+     * @param healthE5a  satellite E5a signal health status
+     * @param healthE5b  satellite E5b signal health status
+     * @param healthE1   satellite E1-B/C signal health status
+     * @param iod        issue of data
      */
-    public GalileoAlmanac(final TimeScales timeScales, final SatelliteSystem system) {
-        super(GNSSConstants.GALILEO_MU, GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB,
-              timeScales, system, null);
+    public GalileoAlmanac(final TimeScales timeScales, final SatelliteSystem system,
+                          final int prn, final int week, final KeplerianOrbit orbit,
+                          final double time, final double aDot,
+                          final double deltaN0, final double deltaN0Dot,
+                          final double iDot, final double omegaDot,
+                          final double cuc, final double cus,
+                          final double crc, final double crs,
+                          final double cic, final double cis,
+                          final double af0, final double af1, final double af2,
+                          final double tgd, final double toc,
+                          final int healthE5a, final int healthE5b, final int healthE1, final int iod) {
+        super(GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB,
+              timeScales, system, null,
+              prn, week, orbit,
+              time, aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
+              af0, af1, af2, tgd, toc);
+        this.healthE5a = healthE5a;
+        this.healthE5b = healthE5b;
+        this.healthE1 = healthE1;
+        this.iod      = iod;
     }
 
     /** Constructor from field instance.
@@ -72,10 +113,10 @@ public class GalileoAlmanac extends AbstractAlmanac<GalileoAlmanac> {
      */
     public <T extends CalculusFieldElement<T>> GalileoAlmanac(final FieldGalileoAlmanac<T> original) {
         super(original);
-        setHealthE5a(original.getHealthE5a());
-        setHealthE5b(original.getHealthE5b());
-        setHealthE1(original.getHealthE1());
-        setIOD(original.getIOD());
+        healthE5a = original.getHealthE5a();
+        healthE5b = original.getHealthE5b();
+        healthE1  = original.getHealthE1();
+        iod       = original.getIOD();
     }
 
     /** {@inheritDoc} */
@@ -86,122 +127,38 @@ public class GalileoAlmanac extends AbstractAlmanac<GalileoAlmanac> {
         return (F) new FieldGalileoAlmanac<>(field, this);
     }
 
-    /**
-     * Sets the difference between the square root of the semi-major axis
-     * and the square root of the nominal semi-major axis.
-     * <p>
-     * In addition, this method set the value of the Semi-Major Axis.
-     * </p>
-     * @param dsqa the value to set
-     */
-    public void setDeltaSqrtA(final double dsqa) {
-        final double sqrtA = dsqa + FastMath.sqrt(A0);
-        setSma(sqrtA * sqrtA);
-    }
-
-    /**
-     * Sets the correction of orbit reference inclination at reference time.
-     * <p>
-     * In addition, this method set the value of the reference inclination.
-     * </p>
-     * @param dinc correction of orbit reference inclination at reference time in radians
-     */
-    public void setDeltaInc(final double dinc) {
-        setI0(I0 + dinc);
-    }
-
-    /**
-     * Gets the Issue of Data (IOD).
-     *
-     * @return the Issue Of Data
-     */
-    public int getIOD() {
-        return iod;
-    }
-
-    /**
-     * Sets the Issue of Data (IOD).
-     *
-     * @param iodValue the value to set
-     */
-    public void setIOD(final int iodValue) {
-        this.iod = iodValue;
-    }
-
-    /**
-     * Gets the E1-B/C signal health status.
-     *
+    /** Get the E1-B/C signal health status.
      * @return the E1-B/C signal health status
      */
     public int getHealthE1() {
         return healthE1;
     }
 
-    /**
-     * Sets the E1-B/C signal health status.
-     *
-     * @param healthE1 health status to set
-     */
-    public void setHealthE1(final int healthE1) {
-        this.healthE1 = healthE1;
-    }
-
-    /**
-     * Gets the E5a signal health status.
-     *
+    /** Get the E5a signal health status.
      * @return the E5a signal health status
      */
     public int getHealthE5a() {
         return healthE5a;
     }
 
-    /**
-     * Sets the E5a signal health status.
-     *
-     * @param healthE5a health status to set
-     */
-    public void setHealthE5a(final int healthE5a) {
-        this.healthE5a = healthE5a;
-    }
-
-    /**
-     * Gets the E5b signal health status.
-     *
+    /** Get the E5b signal health status.
      * @return the E5b signal health status
      */
     public int getHealthE5b() {
         return healthE5b;
     }
 
-    /**
-     * Sets the E5b signal health status.
-     *
-     * @param healthE5b health status to set
+    /** Get the Issue of Data (IOD).
+     * @return the Issue Of Data
      */
-    public void setHealthE5b(final int healthE5b) {
-        this.healthE5b = healthE5b;
+    public int getIOD() {
+        return iod;
     }
 
     /** {@inheritDoc} */
     @Override
-    public GNSSPropagatorBuilder<GalileoAlmanac> builder(final Frame inertial, final Frame bodyFixed) {
-        return new GNSSPropagatorBuilder<>(new GalileoAlmanacFactory(getTimeScales(), getSystem(),
-                                                                     inertial, bodyFixed,
-                                                                     getDate(), getMu()),
-                                           inertial, bodyFixed);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void copyNonKeplerian(final GNSSOrbitalElementsDriversProvider original) {
-        super.copyNonKeplerian(original);
-        if (original instanceof GalileoAlmanac) {
-            final GalileoAlmanac g = (GalileoAlmanac) original;
-            setHealthE5a(g.getHealthE5a());
-            setHealthE5b(g.getHealthE5b());
-            setHealthE1(g.getHealthE1());
-            setIOD(g.getIOD());
-        }
+    public GalileoAlmanacFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
+        return new GalileoAlmanacFactory(getTimeScales(), getSystem(), getType(), inertial, bodyFixed, getDate());
     }
 
 }

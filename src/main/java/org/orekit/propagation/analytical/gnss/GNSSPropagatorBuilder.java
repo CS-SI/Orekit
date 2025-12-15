@@ -19,11 +19,11 @@ package org.orekit.propagation.analytical.gnss;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsDriversProvider;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.propagation.conversion.AbstractAnalyticalPropagatorBuilder;
-import org.orekit.utils.ParameterDriversList;
+
+import java.util.stream.Collectors;
 
 /**
  * Builder for {@link GNSSPropagator}.
@@ -58,7 +58,12 @@ public class GNSSPropagatorBuilder<O extends GNSSOrbitalElements<O>>
         this.bodyFixed = bodyFixed;
 
         // add non-Keplerian propagation parameters (iDot, cic, cis,…)
-        addPropagationParameters(factory.createFromDrivers().getParametersDrivers());
+        addPropagationParameters(factory.
+                                 getNonKeplerianParametersDrivers().
+                                 getDrivers().
+                                 stream().
+                                 map(d -> d.getRawDrivers().get(0)).
+                                 collect(Collectors.toList()));
 
     }
 
@@ -72,21 +77,6 @@ public class GNSSPropagatorBuilder<O extends GNSSOrbitalElements<O>>
         // Keplerian elements
         final GNSSOrbitalElementsFactory<O> factory = getOrbitalParameterFactory();
         final O elements = factory.createFromDrivers();
-
-        // non-Keplerian elements
-        final ParameterDriversList pDrivers = getPropagationParametersDrivers();
-        elements.setTime(pDrivers.findByName(GNSSOrbitalElementsDriversProvider.TIME).getValue());
-        elements.setADot(pDrivers.findByName(GNSSOrbitalElementsDriversProvider.A_DOT).getValue());
-        elements.setDeltaN0(pDrivers.findByName(GNSSOrbitalElementsDriversProvider.DELTA_N0).getValue());
-        elements.setDeltaN0Dot(pDrivers.findByName(GNSSOrbitalElementsDriversProvider.DELTA_N0_DOT).getValue());
-        elements.setIDot(pDrivers.findByName(GNSSOrbitalElementsDriversProvider.INCLINATION_RATE).getValue());
-        elements.setOmegaDot(pDrivers.findByName(GNSSOrbitalElementsDriversProvider.LONGITUDE_RATE).getValue());
-        elements.setCuc(pDrivers.findByName(GNSSOrbitalElementsDriversProvider.LATITUDE_COSINE).getValue());
-        elements.setCus(pDrivers.findByName(GNSSOrbitalElementsDriversProvider.LATITUDE_SINE).getValue());
-        elements.setCrc(pDrivers.findByName(GNSSOrbitalElementsDriversProvider.RADIUS_COSINE).getValue());
-        elements.setCrs(pDrivers.findByName(GNSSOrbitalElementsDriversProvider.RADIUS_SINE).getValue());
-        elements.setCic(pDrivers.findByName(GNSSOrbitalElementsDriversProvider.INCLINATION_COSINE).getValue());
-        elements.setCis(pDrivers.findByName(GNSSOrbitalElementsDriversProvider.INCLINATION_SINE).getValue());
 
         return new GNSSPropagator<>(elements, inertial, bodyFixed,
                                     getAttitudeProvider(), getMass());

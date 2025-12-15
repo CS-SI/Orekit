@@ -28,29 +28,37 @@ import org.orekit.time.TimeScales;
  */
 public class NavICAlmanacFactory extends GNSSOrbitalElementsFactory<NavICAlmanac> {
 
-    /** Simple constructor.
-     * @param timeScales known time scales
-     * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav, weeks
-     *                   are always according to GPS)
-     * @param inertial   inertial frame
-     * @param bodyFixed  body fixed frame, corresponding to the navigation message
-     * @param date       date of the orbital parameters
-     * @param mu         central attraction coefficient (m³/s²)
+    /**
+     * Simple constructor.
+     *
+     * @param timeScales      known time scales
+     * @param system          satellite system to use for interpreting week number
+     * @param type            message type (null if not a navigation message)
+     * @param inertial        reference inertial frame
+     * @param bodyFixed       body fixed frame (will be frozen at {@code date} to build the orbital elements
+     * @param date            date of the orbital parameters
      */
     public NavICAlmanacFactory(final TimeScales timeScales, final SatelliteSystem system,
-                               final Frame inertial, final Frame bodyFixed,
-                               final AbsoluteDate date, final double mu) {
-        super(new NavICAlmanac(timeScales, system),
-              inertial, bodyFixed, date, mu);
+                               final String type, final Frame inertial, final Frame bodyFixed,
+                               final AbsoluteDate date) {
+        super(GNSSConstants.NAVIC_AV, GNSSConstants.NAVIC_WEEK_NB, timeScales, system,
+              type, inertial, bodyFixed, date, GNSSConstants.NAVIC_MU);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected NavICAlmanac createEmptyMessage(final TimeScales timeScales,
-                                              final SatelliteSystem system,
-                                              final String type) {
-        return new NavICAlmanac(timeScales, system);
+    public NavICAlmanac createFromDrivers() {
+        return new NavICAlmanac(getTimeScales(), getSystem(), getPrn(), getWeek(),
+                                createOrbitFromDrivers(),
+                                getTimeDriver().getValue(), getADotDriver().getValue(),
+                                getDeltaN0Driver().getValue(), getDeltaN0DotDriver().getValue(),
+                                getIDotDriver().getValue(), getOmegaDotDriver().getValue(),
+                                getCucDriver().getValue(), getCusDriver().getValue(),
+                                getCrcDriver().getValue(), getCrsDriver().getValue(),
+                                getCicDriver().getValue(), getCisDriver().getValue(),
+                                getAf0Driver().getValue(), getAf1Driver().getValue(),
+                                getAf2Driver().getValue(),
+                                getTGD(), getToc());
     }
 
 }

@@ -18,6 +18,7 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScales;
 
@@ -28,29 +29,70 @@ import org.orekit.time.TimeScales;
  */
 public class QZSSAlmanacFactory extends GNSSOrbitalElementsFactory<QZSSAlmanac> {
 
+    /** Source of the almanac. */
+    private String source;
+
+    /** Health status. */
+    private int health;
+
     /** Simple constructor.
-     * @param timeScales known time scales
-     * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav, weeks
-     *                   are always according to GPS)
-     * @param inertial   inertial frame
-     * @param bodyFixed  body fixed frame, corresponding to the navigation message
-     * @param date       date of the orbital parameters
-     * @param mu         central attraction coefficient (m³/s²)
+     * @param timeScales      known time scales
+     * @param system          satellite system to use for interpreting week number
+     * @param type            message type (null if not a navigation message)
+     * @param inertial        reference inertial frame
+     * @param bodyFixed       body fixed frame (will be frozen at {@code date} to build the orbital elements
+     * @param date            date of the orbital parameters
      */
     public QZSSAlmanacFactory(final TimeScales timeScales, final SatelliteSystem system,
-                              final Frame inertial, final Frame bodyFixed,
-                              final AbsoluteDate date, final double mu) {
-        super(new QZSSAlmanac(timeScales, system),
-              inertial, bodyFixed, date, mu);
+                              final String type, final Frame inertial, final Frame bodyFixed,
+                              final AbsoluteDate date) {
+        super(GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB, timeScales, system,
+              type, inertial, bodyFixed, date, GNSSConstants.QZSS_MU);
+    }
+
+    /** Get the source of this QZSS almanac.
+     * @return the source of this QZSS almanac
+     */
+    public String getSource() {
+        return source;
+    }
+
+    /** Set the source of this QZSS almanac.
+     * @param source source of this QZSS almanac
+     */
+    public void setSource(final String source) {
+        this.source = source;
+    }
+
+    /** Get the Health status.
+     * @return the Health status
+     */
+    public int getHealth() {
+        return health;
+    }
+
+    /** Set the Health status.
+     * @param health Health status
+     */
+    public void setHealth(final int health) {
+        this.health = health;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected QZSSAlmanac createEmptyMessage(final TimeScales timeScales,
-                                              final SatelliteSystem system,
-                                              final String type) {
-        return new QZSSAlmanac(timeScales, system);
+    public QZSSAlmanac createFromDrivers() {
+        return new QZSSAlmanac(getTimeScales(), getSystem(), getPrn(), getWeek(),
+                               createOrbitFromDrivers(),
+                               getTimeDriver().getValue(), getADotDriver().getValue(),
+                               getDeltaN0Driver().getValue(), getDeltaN0DotDriver().getValue(),
+                               getIDotDriver().getValue(), getOmegaDotDriver().getValue(),
+                               getCucDriver().getValue(), getCusDriver().getValue(),
+                               getCrcDriver().getValue(), getCrsDriver().getValue(),
+                               getCicDriver().getValue(), getCisDriver().getValue(),
+                               getAf0Driver().getValue(), getAf1Driver().getValue(),
+                               getAf2Driver().getValue(),
+                               getTGD(), getToc(),
+                               getSource(), getHealth());
     }
 
 }

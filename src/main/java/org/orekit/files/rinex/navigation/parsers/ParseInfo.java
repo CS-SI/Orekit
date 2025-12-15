@@ -59,6 +59,7 @@ import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage
 import org.orekit.propagation.analytical.gnss.data.GLONASSFdmaNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessageFactory;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.NavICL1NvNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.NavICLegacyNavigationMessage;
@@ -481,9 +482,9 @@ public class ParseInfo {
                 if (messageType == null || messageType.equals(GPSLegacyNavigationMessage.LNAV)) {
                     // in Rinex, week number is aligned to GPS week!
                     return new GPSLnavParser(this,
-                                             new GPSLegacyNavigationMessage(timeScales,
-                                                                            SatelliteSystem.GPS,
-                                                                            GPSLegacyNavigationMessage.LNAV));
+                                             new GPSLegacyNavigationMessageFactory(timeScales,
+                                                                                   SatelliteSystem.GPS,
+                                                                                   GPSLegacyNavigationMessage.LNAV));
                 } else if (messageType.equals(GPSCivilianNavigationMessage.CNAV)) {
                     // in Rinex, week number is aligned to GPS week!
                     return new GPSCnavParser(this,
