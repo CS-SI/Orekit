@@ -49,10 +49,20 @@ public interface OrbitalParameterFactory<P extends OrbitalParameters> extends Cl
      */
     Frame getFrame();
 
+    /** Set the frame in which the orbit is propagated.
+     * @param frame frame in which the orbit is propagated
+     */
+    void setFrame(Frame frame);
+
     /** Get the position angle type to use.
      * @return position angle type to use
      */
     PositionAngleType getPositionAngleType();
+
+    /** Set the position angle type to use.
+     * @param positionAngleType position angle type to use
+     */
+    void setPositionAngleType(PositionAngleType positionAngleType);
 
     /** Get the date of the orbital parameters.
      * @return date of the orbital parameters

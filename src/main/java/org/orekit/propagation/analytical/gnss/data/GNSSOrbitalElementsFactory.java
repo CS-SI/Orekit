@@ -252,7 +252,10 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
             @Override
             public void valueChanged(final double previousValue, final ParameterDriver driver,
                                      final AbsoluteDate date) {
-                setDate(new GNSSDate(week, driver.getValue(), system, timeScales).getDate());
+                final AbsoluteDate driverDate =
+                        new GNSSDate(week, driver.getValue(), system, timeScales).getDate();
+                setDate(driverDate);
+                setFrame(bodyFixed.getFrozenFrame(inertial, driverDate, FROZEN + bodyFixed.getName()));
             }
 
             /** {@inheritDoc} */

@@ -18,6 +18,7 @@ package org.orekit.gnss.metric.messages.rtcm.ephemeris;
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
+import org.orekit.gnss.metric.messages.common.AccuracyProvider;
 import org.orekit.propagation.analytical.gnss.data.GLONASSFdmaNavigationMessage;
 import org.orekit.propagation.numerical.GLONASSNumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -100,9 +101,13 @@ public class Rtcm1020Data extends RtcmEphemerisData {
     /** Glonass l<sub>n</sub> (fifth string). */
     private int lNFifthString;
 
-    /** Constructor. */
-    public Rtcm1020Data() {
-        // Nothing to do ...
+    /** Constructor.
+     * @param satelliteId satellite ID
+     * @param accuracyProvider accuracy provider
+     * @since 14.0
+     */
+    public Rtcm1020Data(final int satelliteId, final AccuracyProvider accuracyProvider) {
+        super(satelliteId, accuracyProvider);
     }
 
     /**
