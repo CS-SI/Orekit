@@ -47,6 +47,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
 import org.orekit.gnss.metric.messages.ParsedMessage;
 import org.orekit.time.TimeScales;
 
@@ -147,6 +148,16 @@ public class NtripClient {
      */
     private final TimeScales timeScales;
 
+    /** Reference inertial frame.
+     * @since 14.0
+     */
+    private final Frame inertial;
+
+    /** Body fixed frame.
+     * @since 14.0
+     */
+    private final Frame bodyFixed;
+
     /** Build a client for NTRIP.
      * <p>
      * The default configuration uses default timeout, default reconnection
@@ -155,10 +166,13 @@ public class NtripClient {
      * @param host caster host providing the source table
      * @param port port to use for connection
      * @param timeScales known time scales
-     * @since 13.0
+     * @param inertial reference inertial frame
+     * @param bodyFixed body fixed frame (will be frozen at {@code date} to build the orbital elements
+     * @since 14.0
      * see {@link #DEFAULT_PORT}
      */
-    public NtripClient(final String host, final int port, final TimeScales timeScales) {
+    public NtripClient(final String host, final int port, final TimeScales timeScales,
+                       final int maxRetries, final Frame inertial, final Frame bodyFixed) {
         this.host         = host;
         this.port         = port;
         this.observers    = new ArrayList<>();
@@ -172,6 +186,8 @@ public class NtripClient {
         this.sourceTable     = null;
         this.executorService = null;
         this.timeScales      = timeScales;
+        this.inertial        = inertial;
+        this.bodyFixed       = bodyFixed;
     }
 
     /** Get the caster host.
@@ -430,7 +446,8 @@ public class NtripClient {
 
         // create the monitor
         final StreamMonitor monitor = new StreamMonitor(this, mountPoint, type, requiresNMEA, ignoreUnknownMessageTypes,
-                                                        reconnectDelay, reconnectDelayFactor, maxRetries);
+                                                        reconnectDelay, reconnectDelayFactor, maxRetries,
+                                                        inertial, bodyFixed);
         monitors.put(mountPoint, monitor);
 
         // set up the already known observers

@@ -17,7 +17,7 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
+import org.orekit.orbits.FieldKeplerianOrbit;
 
 import java.util.function.Function;
 
@@ -28,7 +28,7 @@ import java.util.function.Function;
  * @since 13.0
  */
 public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement<T>>
-    extends FieldAbstractNavigationMessage<T, BeidouCivilianNavigationMessage> {
+    extends FieldAbstractNavigationMessage<T, BeidouCivilianNavigationMessage, FieldBeidouCivilianNavigationMessage<T>> {
 
     /** Beidou civilian message type.
      * @since 14.0
@@ -84,17 +84,17 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
     private final BeidouSatelliteType satelliteType;
 
     /** Constructor from non-field instance.
-     * @param field    field to which elements belong
+     * @param orbit    orbit in the correct field
      * @param original regular non-field instance
      */
-    public FieldBeidouCivilianNavigationMessage(final Field<T> field, final BeidouCivilianNavigationMessage original) {
-        super(field, original);
+    public FieldBeidouCivilianNavigationMessage(final FieldKeplerianOrbit<T> orbit, final BeidouCivilianNavigationMessage original) {
+        super(orbit, original);
         this.beidouType     = original.getBeidouType();
         this.iode           = original.getIODE();
         this.iodc           = original.getIODC();
-        this.iscB1CD        = field.getZero().newInstance(original.getIscB1CD());
-        this.iscB1CP        = field.getZero().newInstance(original.getIscB1CP());
-        this.iscB2AD        = field.getZero().newInstance(original.getIscB2AD());
+        this.iscB1CD        = orbit.getMu().newInstance(original.getIscB1CD());
+        this.iscB1CP        = orbit.getMu().newInstance(original.getIscB1CP());
+        this.iscB2AD        = orbit.getMu().newInstance(original.getIscB2AD());
         this.sisaiOe        = original.getSisaiOe();
         this.sisaiOcb       = original.getSisaiOcb();
         this.sisaiOc1       = original.getSisaiOc1();
@@ -102,20 +102,22 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
         this.sismai         = original.getSismai();
         this.health         = original.getHealth();
         this.integrityFlags = original.getIntegrityFlags();
-        this.tgdB1Cp        = field.getZero().newInstance(original.getTgdB1Cp());
-        this.tgdB2ap        = field.getZero().newInstance(original.getTgdB2ap());
-        this.tgdB2bI        = field.getZero().newInstance(original.getTgdB2bI());
+        this.tgdB1Cp        = orbit.getMu().newInstance(original.getTgdB1Cp());
+        this.tgdB2ap        = orbit.getMu().newInstance(original.getTgdB2ap());
+        this.tgdB2bI        = orbit.getMu().newInstance(original.getTgdB2bI());
         this.satelliteType  = original.getSatelliteType();
     }
 
     /** Constructor from different field instance.
      * @param <V> type of the old field elements
-     * @param original regular non-field instance
+     * @param orbit     orbit in the correct field
+     * @param original  regular non-field instance
      * @param converter for field elements
      */
-    public <V extends CalculusFieldElement<V>> FieldBeidouCivilianNavigationMessage(final Function<V, T> converter,
+    public <V extends CalculusFieldElement<V>> FieldBeidouCivilianNavigationMessage(final FieldKeplerianOrbit<T> orbit,
+                                                                                    final Function<V, T> converter,
                                                                                     final FieldBeidouCivilianNavigationMessage<V> original) {
-        super(converter, original);
+        super(orbit, converter, original);
         this.beidouType     = original.getBeidouType();
         this.iode           = original.getIODE();
         this.iodc           = original.getIODC();
@@ -158,9 +160,9 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, BeidouCivilianNavigationMessage>>
-        G changeField(final Function<T, U> converter) {
-        return (G) new FieldBeidouCivilianNavigationMessage<>(converter, this);
+    public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, BeidouCivilianNavigationMessage, V>>
+        V toField(final FieldKeplerianOrbit<U> orbit, final Function<T, U> converter) {
+        return (V) new FieldBeidouCivilianNavigationMessage<>(orbit, converter, this);
     }
 
     /**

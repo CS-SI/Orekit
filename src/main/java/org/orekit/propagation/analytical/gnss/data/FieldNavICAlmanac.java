@@ -17,7 +17,7 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
+import org.orekit.orbits.FieldKeplerianOrbit;
 
 import java.util.function.Function;
 
@@ -33,24 +33,26 @@ import java.util.function.Function;
  *
  */
 public class FieldNavICAlmanac<T extends CalculusFieldElement<T>>
-    extends FieldGnssOrbitalElements<T, NavICAlmanac> {
+    extends FieldGnssOrbitalElements<T, NavICAlmanac, FieldNavICAlmanac<T>> {
 
     /** Constructor from non-field instance.
-     * @param field    field to which elements belong
+     * @param orbit    orbit in the correct field
      * @param original regular non-field instance
      */
-    public FieldNavICAlmanac(final Field<T> field, final NavICAlmanac original) {
-        super(field, original);
+    public FieldNavICAlmanac(final FieldKeplerianOrbit<T> orbit, final NavICAlmanac original) {
+        super(orbit, original);
     }
 
     /** Constructor from different field instance.
      * @param <V> type of the old field elements
-     * @param original regular non-field instance
+     * @param orbit     orbit in the correct field
+     * @param original  regular non-field instance
      * @param converter for field elements
      */
-    public <V extends CalculusFieldElement<V>> FieldNavICAlmanac(final Function<V, T> converter,
+    public <V extends CalculusFieldElement<V>> FieldNavICAlmanac(final FieldKeplerianOrbit<T> orbit,
+                                                                 final Function<V, T> converter,
                                                                  final FieldNavICAlmanac<V> original) {
-        super(converter, original);
+        super(orbit, converter, original);
     }
 
     /** {@inheritDoc} */
@@ -62,9 +64,9 @@ public class FieldNavICAlmanac<T extends CalculusFieldElement<T>>
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, NavICAlmanac>>
-        G changeField(final Function<T, U> converter) {
-        return (G) new FieldNavICAlmanac<>(converter, this);
+    public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, NavICAlmanac, V>>
+        V toField(final FieldKeplerianOrbit<U> orbit, final Function<T, U> converter) {
+        return (V) new FieldNavICAlmanac<>(orbit, converter, this);
     }
 
 }

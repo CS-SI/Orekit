@@ -52,19 +52,29 @@ import org.orekit.files.rinex.navigation.parsers.ionosphere.NavICKlobucharParser
 import org.orekit.files.rinex.navigation.parsers.ionosphere.NavICNeQuickNParser;
 import org.orekit.files.rinex.navigation.parsers.ionosphere.NeQuickGParser;
 import org.orekit.files.rinex.utils.ParsingUtils;
+import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.analytical.gnss.data.BeidouCivilianNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.BeidouCivilianNavigationMessageFactory;
 import org.orekit.propagation.analytical.gnss.data.BeidouCivilianType;
 import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessageFactory;
+import org.orekit.propagation.analytical.gnss.data.BeidouSatelliteType;
 import org.orekit.propagation.analytical.gnss.data.GLONASSFdmaNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSCivilianNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GPSCivilianNavigationMessageFactory;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessageFactory;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessageFactory;
 import org.orekit.propagation.analytical.gnss.data.NavICL1NvNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.NavICL1NvNavigationMessageFactory;
 import org.orekit.propagation.analytical.gnss.data.NavICLegacyNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.NavICLegacyNavigationMessageFactory;
 import org.orekit.propagation.analytical.gnss.data.QZSSCivilianNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.QZSSCivilianNavigationMessageFactory;
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessageFactory;
 import org.orekit.propagation.analytical.gnss.data.SBASNavigationMessage;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -98,6 +108,16 @@ public class ParseInfo {
 
     /** Set of time scales for parsing dates. */
     private final TimeScales timeScales;
+
+    /** Reference inertial frame.
+     * @since 14.0
+     */
+    private final Frame inertial;
+
+    /** Body fixed frame.
+     * @since 14.0
+     */
+    private final Frame bodyFixed;
 
     /** The corresponding navigation messages file object. */
     private final RinexNavigation file;
@@ -136,12 +156,15 @@ public class ParseInfo {
      * @param name       name of the data source
      * @param timeScales set of time scales for parsing dates
      * @param inertial   reference inertial frame
-     * @param bodyFixed  body fixed frame (will be frozen at {@code date} to build the orbital elements
+     * @param bodyFixed  body fixed frame
      */
-    public ParseInfo(final String name, final TimeScales timeScales) {
+    public ParseInfo(final String name, final TimeScales timeScales,
+                     final Frame inertial, final Frame bodyFixed) {
         // Initialize default values for fields
         this.name       = name;
         this.timeScales = timeScales;
+        this.inertial    = inertial;
+        this.bodyFixed  = bodyFixed;
         this.file       = new RinexNavigation();
 
         // reset the default values set by header constructor
@@ -486,30 +509,32 @@ public class ParseInfo {
                     return new GPSLnavParser(this,
                                              new GPSLegacyNavigationMessageFactory(timeScales,
                                                                                    SatelliteSystem.GPS,
-                                                                                   GPSLegacyNavigationMessage.LNAV));
+                                                                                   GPSLegacyNavigationMessage.LNAV,
+                                                                                   inertial, bodyFixed));
                 } else if (messageType.equals(GPSCivilianNavigationMessage.CNAV)) {
                     // in Rinex, week number is aligned to GPS week!
                     return new GPSCnavParser(this,
-                                             new GPSCivilianNavigationMessage(false,
-                                                                              timeScales,
-                                                                              SatelliteSystem.GPS,
-                                                                              GPSCivilianNavigationMessage.CNAV));
+                                             new GPSCivilianNavigationMessageFactory(timeScales,
+                                                                                     SatelliteSystem.GPS,
+                                                                                     GPSCivilianNavigationMessage.CNAV,
+                                                                                     inertial, bodyFixed, false));
                 } else if (messageType.equals(GPSCivilianNavigationMessage.CNV2)) {
                     // in Rinex, week number is aligned to GPS week!
                     return new GPSCnavParser(this,
-                                             new GPSCivilianNavigationMessage(true,
-                                                                              timeScales,
-                                                                              SatelliteSystem.GPS,
-                                                                              GPSCivilianNavigationMessage.CNV2));
+                                             new GPSCivilianNavigationMessageFactory(timeScales,
+                                                                                     SatelliteSystem.GPS,
+                                                                                     GPSCivilianNavigationMessage.CNV2,
+                                                                                     inertial, bodyFixed, true));
                 }
                 break;
             case GALILEO:
                 if (messageType == null || messageType.equals(GalileoNavigationMessage.INAV) || messageType.equals(
                     GalileoNavigationMessage.FNAV)) {
                     // in Rinex, week number is aligned to GPS week!
-                    return new GalileoParser(this, new GalileoNavigationMessage(timeScales,
-                                                                                SatelliteSystem.GPS,
-                                                                                messageType));
+                    return new GalileoParser(this, new GalileoNavigationMessageFactory(timeScales,
+                                                                                       SatelliteSystem.GPS,
+                                                                                       messageType,
+                                                                                       inertial, bodyFixed));
                 }
                 break;
             case GLONASS:
@@ -523,23 +548,25 @@ public class ParseInfo {
                 if (messageType == null || messageType.equals(QZSSLegacyNavigationMessage.LNAV)) {
                     // in Rinex, week number is aligned to GPS week!
                     return new QzssLnavParser(this,
-                                              new QZSSLegacyNavigationMessage(timeScales,
-                                                                              SatelliteSystem.GPS,
-                                                                              QZSSLegacyNavigationMessage.LNAV));
+                                              new QZSSLegacyNavigationMessageFactory(timeScales,
+                                                                                     SatelliteSystem.GPS,
+                                                                                     QZSSLegacyNavigationMessage.LNAV,
+                                                                                     inertial, bodyFixed));
                 } else if (messageType.equals(QZSSCivilianNavigationMessage.CNAV)) {
                     // in Rinex, week number is aligned to GPS week!
                     return new QzssCnavParser(this,
-                                              new QZSSCivilianNavigationMessage(false,
-                                                                                timeScales,
-                                                                                SatelliteSystem.GPS,
-                                                                                QZSSCivilianNavigationMessage.CNAV));
+                                              new QZSSCivilianNavigationMessageFactory(timeScales,
+                                                                                       SatelliteSystem.GPS,
+                                                                                       QZSSCivilianNavigationMessage.CNAV,
+                                                                                       inertial, bodyFixed, false));
                 } else if (messageType.equals(QZSSCivilianNavigationMessage.CNV2)) {
                     // in Rinex, week number is aligned to GPS week!
                     return new QzssCnavParser(this,
-                                              new QZSSCivilianNavigationMessage(true,
-                                                                                timeScales,
-                                                                                SatelliteSystem.GPS,
-                                                                                QZSSCivilianNavigationMessage.CNV2));
+                                              new QZSSCivilianNavigationMessageFactory(timeScales,
+                                                                                       SatelliteSystem.GPS,
+                                                                                       QZSSCivilianNavigationMessage.CNV2,
+                                                                                       inertial, bodyFixed,
+                                                                                       true));
                 }
                 break;
             case BEIDOU:
@@ -549,17 +576,21 @@ public class ParseInfo {
                     // in Rinex, week number for Beidou is really aligned to Beidou week!
                     final boolean d2 = BeidouLegacyNavigationMessage.D2.equals(messageType);
                     return new BeidouD1D2Parser(this,
-                                                new BeidouLegacyNavigationMessage(d2,
-                                                                                  timeScales,
-                                                                                  SatelliteSystem.BEIDOU,
-                                                                                  messageType));
+                                                new BeidouLegacyNavigationMessageFactory(timeScales,
+                                                                                         SatelliteSystem.BEIDOU,
+                                                                                         messageType,
+                                                                                         inertial, bodyFixed,
+                                                                                         d2));
                 } else {
                     // in Rinex, week number for Beidou is really aligned to Beidou week!
                     try {
                         return new BeidouCnv123Parser(this,
-                                                      new BeidouCivilianNavigationMessage(BeidouCivilianType.valueOf(messageType),
-                                                                                          timeScales,
-                                                                                          SatelliteSystem.BEIDOU));
+                                                      new BeidouCivilianNavigationMessageFactory(timeScales,
+                                                                                                 SatelliteSystem.BEIDOU,
+                                                                                                 messageType,
+                                                                                                 inertial, bodyFixed,
+                                                                                                 BeidouCivilianType.valueOf(messageType),
+                                                                                                 BeidouSatelliteType.GEO));
                     } catch (IllegalArgumentException iae) {
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                   lineNumber, name, line);
@@ -569,15 +600,17 @@ public class ParseInfo {
                 if (messageType == null || messageType.equals(NavICLegacyNavigationMessage.LNAV)) {
                     // in Rinex, week number is aligned to GPS week!
                     return new NavICLnavParser(this,
-                                               new NavICLegacyNavigationMessage(timeScales,
-                                                                                SatelliteSystem.GPS,
-                                                                                NavICLegacyNavigationMessage.LNAV));
+                                               new NavICLegacyNavigationMessageFactory(timeScales,
+                                                                                       SatelliteSystem.GPS,
+                                                                                       NavICLegacyNavigationMessage.LNAV,
+                                                                                       inertial, bodyFixed));
                 } else if (messageType.equals(NavICL1NvNavigationMessage.L1NV)) {
                     // in Rinex, week number is aligned to GPS week!
                     return new NavICL1NvParser(this,
-                                               new NavICL1NvNavigationMessage(timeScales,
-                                                                              SatelliteSystem.GPS,
-                                                                              NavICL1NvNavigationMessage.L1NV));
+                                               new NavICL1NvNavigationMessageFactory(timeScales,
+                                                                                     SatelliteSystem.GPS,
+                                                                                     NavICL1NvNavigationMessage.L1NV,
+                                                                                     inertial, bodyFixed));
                 }
                 break;
             case SBAS:

@@ -18,7 +18,6 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScales;
 
@@ -82,22 +81,20 @@ public class BeidouCivilianNavigationMessageFactory
     private double tgdB2bI;
 
     /** Simple constructor.
-     * @param timeScales      known time scales
-     * @param system          satellite system to use for interpreting week number
-     * @param type            message type (null if not a navigation message)
-     * @param inertial        reference inertial frame
-     * @param bodyFixed       body fixed frame (will be frozen at {@code date} to build the orbital elements
-     * @param date            date of the orbital parameters
-     * @param beidouType      Beidou civilian message type
-     * @param satelliteType   satellite type
+     * @param timeScales    known time scales
+     * @param system        satellite system to use for interpreting week number
+     * @param type          message type (null if not a navigation message)
+     * @param inertial      reference inertial frame
+     * @param bodyFixed     body fixed frame (will be frozen at {@code date} to build the orbital elements
+     * @param beidouType    Beidou civilian message type
+     * @param satelliteType satellite type
      */
     public BeidouCivilianNavigationMessageFactory(final TimeScales timeScales, final SatelliteSystem system,
                                                   final String type, final Frame inertial, final Frame bodyFixed,
-                                                  final AbsoluteDate date,
                                                   final BeidouCivilianType beidouType,
                                                   final BeidouSatelliteType satelliteType) {
         super(GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB, timeScales, system,
-              type, inertial, bodyFixed, date, GNSSConstants.BEIDOU_MU);
+              type, inertial, bodyFixed, GNSSConstants.BEIDOU_MU);
         this.beidouType    = beidouType;
         this.satelliteType = satelliteType;
     }
@@ -337,9 +334,8 @@ public class BeidouCivilianNavigationMessageFactory
     @Override
     public BeidouCivilianNavigationMessage createFromDrivers() {
         return new BeidouCivilianNavigationMessage(getBeidouType(),
-                                                   getTimeScales(), getSystem(), getPrn(), getWeek(),
-                                                   createOrbitFromDrivers(),
-                                                   getTimeDriver().getValue(), getADotDriver().getValue(),
+                                                   getTimeScales(), getSystem(), getPrn(),
+                                                   createOrbitFromDrivers(), getADotDriver().getValue(),
                                                    getDeltaN0Driver().getValue(), getDeltaN0DotDriver().getValue(),
                                                    getIDotDriver().getValue(), getOmegaDotDriver().getValue(),
                                                    getCucDriver().getValue(), getCusDriver().getValue(),

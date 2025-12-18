@@ -17,11 +17,12 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.TimeScales;
+
 
 /**
  * Class for NavIC almanac.
@@ -43,9 +44,7 @@ public class NavICAlmanac
      *                   (may be different from real system, for example in Rinex nav, weeks
      *                   are always according to GPS)
      * @param prn        PRN number of the satellite
-     * @param week       reference Week of the orbit
      * @param orbit      Keplerian orbit in Earth-frozen frame
-     * @param time       reference time
      * @param aDot       change rate in semi-major axis (m/s)
      * @param deltaN0    delta of satellite mean motion
      * @param deltaN0Dot change rate in Δn₀
@@ -63,9 +62,8 @@ public class NavICAlmanac
      * @param tgd        group delay differential TGD for L1-L2 correction
      * @param toc        time of clock
      */
-    public NavICAlmanac(final TimeScales timeScales, final SatelliteSystem system,
-                        final int prn, final int week, final KeplerianOrbit orbit,
-                        final double time, final double aDot,
+    public NavICAlmanac(final TimeScales timeScales, final SatelliteSystem system, final int prn,
+                        final KeplerianOrbit orbit, final double aDot,
                         final double deltaN0, final double deltaN0Dot,
                         final double iDot, final double omegaDot,
                         final double cuc, final double cus,
@@ -74,9 +72,8 @@ public class NavICAlmanac
                         final double af0, final double af1, final double af2,
                         final double tgd, final double toc) {
         super(GNSSConstants.NAVIC_AV, GNSSConstants.NAVIC_WEEK_NB,
-              timeScales, system, null,
-              prn, week, orbit,
-              time, aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
+              timeScales, system, null, prn, orbit,
+              aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
               af0, af1, af2, tgd, toc);
     }
 
@@ -91,15 +88,15 @@ public class NavICAlmanac
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, NavICAlmanac>>
-        F toField(final Field<T> field) {
-        return (F) new FieldNavICAlmanac<>(field, this);
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, NavICAlmanac, F>>
+        F toField(final FieldKeplerianOrbit<T> orbit) {
+        return (F) new FieldNavICAlmanac<>(orbit, this);
     }
 
     /** {@inheritDoc} */
     @Override
     public NavICAlmanacFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
-        return new NavICAlmanacFactory(getTimeScales(), getSystem(), getType(), inertial, bodyFixed, getDate());
+        return new NavICAlmanacFactory(getTimeScales(), getSystem(), inertial, bodyFixed);
     }
 
 }

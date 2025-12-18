@@ -17,7 +17,7 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
+import org.orekit.orbits.FieldKeplerianOrbit;
 
 import java.util.function.Function;
 
@@ -28,24 +28,26 @@ import java.util.function.Function;
  * @since 13.0
  */
 public class FieldQZSSCivilianNavigationMessage<T extends CalculusFieldElement<T>>
-    extends FieldCivilianNavigationMessage<T, QZSSCivilianNavigationMessage> {
+    extends FieldCivilianNavigationMessage<T, QZSSCivilianNavigationMessage, FieldQZSSCivilianNavigationMessage<T>> {
 
     /** Constructor from non-field instance.
-     * @param field    field to which elements belong
+     * @param orbit    orbit in the correct field
      * @param original regular non-field instance
      */
-    public FieldQZSSCivilianNavigationMessage(final Field<T> field, final QZSSCivilianNavigationMessage original) {
-        super(field, original);
+    public FieldQZSSCivilianNavigationMessage(final FieldKeplerianOrbit<T> orbit, final QZSSCivilianNavigationMessage original) {
+        super(orbit, original);
     }
 
     /** Constructor from different field instance.
      * @param <V> type of the old field elements
-     * @param original regular non-field instance
+     * @param orbit     orbit in the correct field
+     * @param original  regular non-field instance
      * @param converter for field elements
      */
-    public <V extends CalculusFieldElement<V>> FieldQZSSCivilianNavigationMessage(final Function<V, T> converter,
+    public <V extends CalculusFieldElement<V>> FieldQZSSCivilianNavigationMessage(final FieldKeplerianOrbit<T> orbit,
+                                                                                  final Function<V, T> converter,
                                                                                   final FieldQZSSCivilianNavigationMessage<V> original) {
-        super(converter, original);
+        super(orbit, converter, original);
     }
 
     /** {@inheritDoc} */
@@ -57,9 +59,9 @@ public class FieldQZSSCivilianNavigationMessage<T extends CalculusFieldElement<T
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, QZSSCivilianNavigationMessage>>
-        G changeField(final Function<T, U> converter) {
-        return (G) new FieldQZSSCivilianNavigationMessage<>(converter, this);
+    public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, QZSSCivilianNavigationMessage, V>>
+        V toField(final FieldKeplerianOrbit<U> orbit, final Function<T, U> converter) {
+        return (V) new FieldQZSSCivilianNavigationMessage<>(orbit, converter, this);
     }
 
 }

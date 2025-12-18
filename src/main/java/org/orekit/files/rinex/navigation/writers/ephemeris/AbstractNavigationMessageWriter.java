@@ -16,6 +16,7 @@
  */
 package org.orekit.files.rinex.navigation.writers.ephemeris;
 
+import org.hipparchus.util.FastMath;
 import org.orekit.files.rinex.navigation.RecordType;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
@@ -24,6 +25,7 @@ import org.orekit.files.rinex.navigation.writers.NavigationMessageWriter;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.analytical.gnss.data.AbstractNavigationMessage;
 import org.orekit.time.DateTimeComponents;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.formatting.FastDecimalFormatter;
 import org.orekit.utils.formatting.FastDoubleFormatter;
@@ -140,7 +142,7 @@ public abstract class AbstractNavigationMessageWriter<T extends AbstractNavigati
         writeField1Line1(message, writer);
         writer.writeDouble(message.getCrs(), Unit.METRE);
         writer.writeDouble(message.getDeltaN0(), RinexNavigationParser.RAD_PER_S);
-        writer.writeDouble(message.getM0(), Unit.RADIAN);
+        writer.writeDouble(message.getOrbit().getMeanAnomaly(), Unit.RADIAN);
         writer.finishLine();
     }
 
@@ -163,9 +165,9 @@ public abstract class AbstractNavigationMessageWriter<T extends AbstractNavigati
         throws IOException {
         writer.indentLine(header);
         writer.writeDouble(message.getCuc(), Unit.RADIAN);
-        writer.writeDouble(message.getE(), Unit.NONE);
+        writer.writeDouble(message.getOrbit().getE(), Unit.NONE);
         writer.writeDouble(message.getCus(), Unit.RADIAN);
-        writer.writeDouble(message.getSqrtA(), RinexNavigationParser.SQRT_M);
+        writer.writeDouble(FastMath.sqrt(message.getOrbit().getA()), RinexNavigationParser.SQRT_M);
         writer.finishLine();
     }
 
@@ -179,9 +181,9 @@ public abstract class AbstractNavigationMessageWriter<T extends AbstractNavigati
                                  final RinexNavigationHeader header, final RinexNavigationWriter writer)
         throws IOException {
         writer.indentLine(header);
-        writer.writeDouble(message.getTime(), Unit.SECOND);
+        writer.writeDouble(new GNSSDate(message.getDate(), message.getSystem()).getSecondsInWeek(), Unit.SECOND);
         writer.writeDouble(message.getCic(), Unit.RADIAN);
-        writer.writeDouble(message.getOmega0(), Unit.RADIAN);
+        writer.writeDouble(message.getOrbit().getRightAscensionOfAscendingNode(), Unit.RADIAN);
         writer.writeDouble(message.getCis(), Unit.RADIAN);
         writer.finishLine();
     }
@@ -196,9 +198,9 @@ public abstract class AbstractNavigationMessageWriter<T extends AbstractNavigati
                                  final RinexNavigationHeader header, final RinexNavigationWriter writer)
         throws IOException {
         writer.indentLine(header);
-        writer.writeDouble(message.getI0(), Unit.RADIAN);
+        writer.writeDouble(message.getOrbit().getI(), Unit.RADIAN);
         writer.writeDouble(message.getCrc(), Unit.METRE);
-        writer.writeDouble(message.getPa(), Unit.RADIAN);
+        writer.writeDouble(message.getOrbit().getPerigeeArgument(), Unit.RADIAN);
         writer.writeDouble(message.getOmegaDot(), RinexNavigationParser.RAD_PER_S);
         writer.finishLine();
     }

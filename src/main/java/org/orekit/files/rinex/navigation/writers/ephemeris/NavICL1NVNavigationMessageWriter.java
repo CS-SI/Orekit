@@ -19,8 +19,9 @@ package org.orekit.files.rinex.navigation.writers.ephemeris;
 import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
-import org.orekit.files.rinex.navigation.parsers.ephemeris.NavICLnavParser;
+import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.analytical.gnss.data.NavICL1NvNavigationMessage;
+import org.orekit.time.GNSSDate;
 import org.orekit.utils.units.Unit;
 
 import java.io.IOException;
@@ -44,7 +45,7 @@ public class NavICL1NVNavigationMessageWriter
         // EPH MESSAGE LINE - 8
         writer.indentLine(header);
         writer.writeDouble(message.getTransmissionTime(), Unit.SECOND);
-        writer.writeInt(message.getWeek());
+        writer.writeInt(new GNSSDate(message.getDate(), SatelliteSystem.NAVIC).getWeekNumber());
         writer.finishLine();
 
     }

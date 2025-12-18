@@ -20,6 +20,7 @@ import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
 import org.orekit.propagation.analytical.gnss.data.LegacyNavigationMessage;
+import org.orekit.time.GNSSDate;
 import org.orekit.utils.units.Unit;
 
 import java.io.IOException;
@@ -46,7 +47,7 @@ public abstract class LegacyNavigationMessageWriter<O extends LegacyNavigationMe
         writer.indentLine(header);
         writer.writeDouble(message.getIDot(), RinexNavigationParser.RAD_PER_S);
         writer.writeInt(message.getL2Codes());
-        writer.writeInt(message.getWeek());
+        writer.writeInt(new GNSSDate(message.getDate(), message.getSystem()).getWeekNumber());
         writer.writeInt(message.getL2PFlags());
         writer.finishLine();
     }

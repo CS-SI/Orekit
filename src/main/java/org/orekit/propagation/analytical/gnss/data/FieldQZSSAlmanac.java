@@ -17,7 +17,7 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
+import org.orekit.orbits.FieldKeplerianOrbit;
 
 import java.util.function.Function;
 
@@ -30,7 +30,7 @@ import java.util.function.Function;
  *
  */
 public class FieldQZSSAlmanac<T extends CalculusFieldElement<T>>
-    extends FieldGnssOrbitalElements<T, QZSSAlmanac> {
+    extends FieldGnssOrbitalElements<T, QZSSAlmanac, FieldQZSSAlmanac<T>> {
 
     /** Source of the almanac. */
     private final String source;
@@ -39,23 +39,25 @@ public class FieldQZSSAlmanac<T extends CalculusFieldElement<T>>
     private final int health;
 
     /** Constructor from non-field instance.
-     * @param field    field to which elements belong
+     * @param orbit    orbit in the correct field
      * @param original regular non-field instance
      */
-    public FieldQZSSAlmanac(final Field<T> field, final QZSSAlmanac original) {
-        super(field, original);
+    public FieldQZSSAlmanac(final FieldKeplerianOrbit<T> orbit, final QZSSAlmanac original) {
+        super(orbit, original);
         source = original.getSource();
         health = original.getHealth();
     }
 
     /** Constructor from different field instance.
      * @param <V> type of the old field elements
-     * @param original regular non-field instance
+     * @param orbit     orbit in the correct field
+     * @param original  regular non-field instance
      * @param converter for field elements
      */
-    public <V extends CalculusFieldElement<V>> FieldQZSSAlmanac(final Function<V, T> converter,
+    public <V extends CalculusFieldElement<V>> FieldQZSSAlmanac(final FieldKeplerianOrbit<T> orbit,
+                                                                final Function<V, T> converter,
                                                                 final FieldQZSSAlmanac<V> original) {
-        super(converter, original);
+        super(orbit, converter, original);
         source = original.getSource();
         health = original.getHealth();
     }
@@ -69,9 +71,9 @@ public class FieldQZSSAlmanac<T extends CalculusFieldElement<T>>
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
-    public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, QZSSAlmanac>>
-        G changeField(final Function<T, U> converter) {
-        return (G) new FieldQZSSAlmanac<>(converter, this);
+    public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, QZSSAlmanac, V>>
+        V toField(final FieldKeplerianOrbit<U> orbit, final Function<T, U> converter) {
+        return (V) new FieldQZSSAlmanac<>(orbit, converter, this);
     }
 
     /**

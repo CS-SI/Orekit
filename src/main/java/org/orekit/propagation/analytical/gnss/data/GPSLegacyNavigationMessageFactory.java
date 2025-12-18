@@ -18,7 +18,6 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScales;
 
@@ -31,26 +30,23 @@ public class GPSLegacyNavigationMessageFactory
     extends LegacyNavigationMessageFactory<GPSLegacyNavigationMessage> {
 
     /** Simple constructor.
-     * @param timeScales      known time scales
-     * @param system          satellite system to use for interpreting week number
-     * @param type            message type (null if not a navigation message)
-     * @param inertial        reference inertial frame
-     * @param bodyFixed       body fixed frame (will be frozen at {@code date} to build the orbital elements
-     * @param date            date of the orbital parameters
+     * @param timeScales known time scales
+     * @param system     satellite system to use for interpreting week number
+     * @param type       message type (null if not a navigation message)
+     * @param inertial   reference inertial frame
+     * @param bodyFixed  body fixed frame (will be frozen at {@code date} to build the orbital elements
      */
     public GPSLegacyNavigationMessageFactory(final TimeScales timeScales, final SatelliteSystem system,
-                                             final String type, final Frame inertial, final Frame bodyFixed,
-                                             final AbsoluteDate date) {
+                                             final String type, final Frame inertial, final Frame bodyFixed) {
         super(GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB, timeScales, system,
-              type, inertial, bodyFixed, date, GNSSConstants.GPS_MU);
+              type, inertial, bodyFixed, GNSSConstants.GPS_MU);
     }
 
     /** {@inheritDoc} */
     @Override
     public GPSLegacyNavigationMessage createFromDrivers() {
-        return new GPSLegacyNavigationMessage(getTimeScales(), getSystem(), getType(), getPrn(), getWeek(),
-                                              createOrbitFromDrivers(),
-                                              getTimeDriver().getValue(), getADotDriver().getValue(),
+        return new GPSLegacyNavigationMessage(getTimeScales(), getSystem(), getType(), getPrn(),
+                                              createOrbitFromDrivers(), getADotDriver().getValue(),
                                               getDeltaN0Driver().getValue(), getDeltaN0DotDriver().getValue(),
                                               getIDotDriver().getValue(), getOmegaDotDriver().getValue(),
                                               getCucDriver().getValue(), getCusDriver().getValue(),

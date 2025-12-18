@@ -18,7 +18,6 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScales;
 
@@ -52,19 +51,18 @@ public class BeidouLegacyNavigationMessageFactory
     private double svAccuracy;
 
     /** Simple constructor.
-     * @param timeScales      known time scales
-     * @param system          satellite system to use for interpreting week number
-     * @param type            message type (null if not a navigation message)
-     * @param inertial        reference inertial frame
-     * @param bodyFixed       body fixed frame (will be frozen at {@code date} to build the orbital elements
-     * @param date            date of the orbital parameters
-     * @param d2              indicator for D2 messages
+     * @param timeScales known time scales
+     * @param system     satellite system to use for interpreting week number
+     * @param type       message type (null if not a navigation message)
+     * @param inertial   reference inertial frame
+     * @param bodyFixed  body fixed frame (will be frozen at {@code date} to build the orbital elements
+     * @param d2         indicator for D2 messages
      */
     public BeidouLegacyNavigationMessageFactory(final TimeScales timeScales, final SatelliteSystem system,
                                                 final String type, final Frame inertial, final Frame bodyFixed,
-                                                final AbsoluteDate date, final boolean d2) {
+                                                final boolean d2) {
         super(GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB, timeScales, system,
-              type, inertial, bodyFixed, date, GNSSConstants.BEIDOU_MU);
+              type, inertial, bodyFixed, GNSSConstants.BEIDOU_MU);
         this.d2 = d2;
     }
 
@@ -163,9 +161,8 @@ public class BeidouLegacyNavigationMessageFactory
     @Override
     public BeidouLegacyNavigationMessage createFromDrivers() {
         return new BeidouLegacyNavigationMessage(isD2(),
-                                                 getTimeScales(), getSystem(), getType(), getPrn(), getWeek(),
-                                                 createOrbitFromDrivers(),
-                                                 getTimeDriver().getValue(), getADotDriver().getValue(),
+                                                 getTimeScales(), getSystem(), getType(), getPrn(),
+                                                 createOrbitFromDrivers(), getADotDriver().getValue(),
                                                  getDeltaN0Driver().getValue(), getDeltaN0DotDriver().getValue(),
                                                  getIDotDriver().getValue(), getOmegaDotDriver().getValue(),
                                                  getCucDriver().getValue(), getCusDriver().getValue(),

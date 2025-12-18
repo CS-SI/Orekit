@@ -17,12 +17,13 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScales;
+
 
 /**
  * Container for data contained in a NavIC navigation message.
@@ -72,9 +73,7 @@ public class NavICL1NvNavigationMessage
      *                            are always according to GPS)
      * @param type                message type
      * @param prn                 PRN number of the satellite
-     * @param week                reference Week of the orbit
      * @param orbit               Keplerian orbit in Earth-frozen frame
-     * @param time                reference time
      * @param aDot                change rate in semi-major axis (m/s)
      * @param deltaN0             delta of satellite mean motion
      * @param deltaN0Dot          change rate in Δn₀
@@ -103,8 +102,7 @@ public class NavICL1NvNavigationMessage
      * @param iscL1DS             inter signal delay for L1D S
      */
     public NavICL1NvNavigationMessage(final TimeScales timeScales, final SatelliteSystem system, final String type,
-                                      final int prn, final int week, final KeplerianOrbit orbit,
-                                      final double time, final double aDot,
+                                      final int prn, final KeplerianOrbit orbit, final double aDot,
                                       final double deltaN0, final double deltaN0Dot,
                                       final double iDot, final double omegaDot,
                                       final double cuc, final double cus,
@@ -119,8 +117,8 @@ public class NavICL1NvNavigationMessage
                                       final double iscSL1P, final double iscL1DL1P,
                                       final double iscL1PS, final double iscL1DS) {
         super(GNSSConstants.NAVIC_AV, GNSSConstants.NAVIC_WEEK_NB,
-              timeScales, system, type, prn, week, orbit,
-              time, aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
+              timeScales, system, type, prn, orbit,
+              aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
               af0, af1, af2, tgd, toc, epochToc, transmissionTime);
         this.referenceSignalFlag = referenceSignalFlag;
         this.urai                = urai;
@@ -151,9 +149,9 @@ public class NavICL1NvNavigationMessage
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, NavICL1NvNavigationMessage>>
-        F toField(final Field<T> field) {
-        return (F) new FieldNavicL1NvNavigationMessage<>(field, this);
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, NavICL1NvNavigationMessage, F>>
+        F toField(final FieldKeplerianOrbit<T> orbit) {
+        return (F) new FieldNavicL1NvNavigationMessage<>(orbit, this);
     }
 
     /** Get the reference signal flag.
@@ -218,7 +216,7 @@ public class NavICL1NvNavigationMessage
     @Override
     public NavICL1NvNavigationMessageFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
         return new NavICL1NvNavigationMessageFactory(getTimeScales(), getSystem(), getType(),
-                                                     inertial, bodyFixed, getDate());
+                                                     inertial, bodyFixed);
     }
 
 }

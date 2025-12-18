@@ -17,7 +17,7 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
+import org.orekit.orbits.FieldKeplerianOrbit;
 
 import java.util.function.Function;
 
@@ -25,12 +25,14 @@ import java.util.function.Function;
  * Container for data contained in a GPS/QZNSS legacy navigation message.
  * @param <T> type of the field elements
  * @param <O> type of the orbital elements (non-field version)
+ * @param <P> type of the orbital elements (field version)
  * @author Luc Maisonobe
  * @since 13.0
  */
 public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElement<T>,
-                                                   O extends LegacyNavigationMessage<O>>
-    extends FieldAbstractNavigationMessage<T, O> {
+                                                   O extends LegacyNavigationMessage<O>,
+                                                   P extends FieldLegacyNavigationMessage<T, O, P>>
+    extends FieldAbstractNavigationMessage<T, O, P> {
 
     /** Issue of Data, Ephemeris. */
     private final int iode;
@@ -58,14 +60,14 @@ public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElemen
     private final int l2PFlags;
 
     /** Constructor from non-field instance.
-     * @param field    field to which elements belong
+     * @param orbit    orbit in the correct field
      * @param original regular non-field instance
      */
-    protected FieldLegacyNavigationMessage(final Field<T> field, final O original) {
-        super(field, original);
+    protected FieldLegacyNavigationMessage(final FieldKeplerianOrbit<T> orbit, final O original) {
+        super(orbit, original);
         iode        = original.getIODE();
         iodc        = original.getIODC();
-        svAccuracy  = field.getZero().newInstance(original.getSvAccuracy());
+        svAccuracy  = orbit.getMu().newInstance(original.getSvAccuracy());
         svHealth    = original.getSvHealth();
         fitInterval = original.getFitInterval();
         l2Codes     = original.getL2Codes();
@@ -74,12 +76,14 @@ public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElemen
 
     /** Constructor from different field instance.
      * @param <V> type of the old field elements
-     * @param original regular non-field instance
+     * @param orbit     orbit in the correct field
+     * @param original  regular non-field instance
      * @param converter for field elements
      */
-    protected <V extends CalculusFieldElement<V>> FieldLegacyNavigationMessage(final Function<V, T> converter,
-                                                                               final FieldLegacyNavigationMessage<V, O> original) {
-        super(converter, original);
+    protected <V extends CalculusFieldElement<V>> FieldLegacyNavigationMessage(final FieldKeplerianOrbit<T> orbit,
+                                                                               final Function<V, T> converter,
+                                                                               final FieldLegacyNavigationMessage<V, O, ?> original) {
+        super(orbit, converter, original);
         iode        = original.getIODE();
         iodc        = original.getIODC();
         svAccuracy  = converter.apply(original.getSvAccuracy());

@@ -17,13 +17,14 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitalParameters;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.ParameterDriver;
 
@@ -59,14 +60,8 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
     /** PRN number of the satellite. */
     private final int prn;
 
-    /** Reference Week of the orbit. */
-    private final int week;
-
     /** Orbit. */
     private final KeplerianOrbit orbit;
-
-    /** Reference time. */
-    private final double time;
 
     /** Change rate in semi-major axis (m/s).
      * @since 14.0
@@ -122,18 +117,17 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
     /** Time Of Clock. */
     private final double toc;
 
-    /** Creates a new instance.
+    /**
+     * Creates a new instance.
+     *
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
      * @param weeksInCycle    number of weeks in the GNSS cycle
      * @param timeScales      known time scales
-     * @param system          satellite system to consider for interpreting week number
-     *                        (may be different from real system, for example in Rinex nav, weeks
-     *                        are always according to GPS)
+     * @param system          satellite system to consider for interpreting week number (may be different from real
+     *                        system, for example in Rinex nav, weeks are always according to GPS)
      * @param type            type (null if not a navigation message)
      * @param prn             PRN number of the satellite
-     * @param week            reference Week of the orbit
      * @param orbit           Keplerian orbit in Earth-frozen frame
-     * @param time            reference time
      * @param aDot            change rate in semi-major axis (m/s)
      * @param deltaN0         delta of satellite mean motion
      * @param deltaN0Dot      change rate in Δn₀
@@ -154,8 +148,7 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
      */
     protected GNSSOrbitalElements(final double angularVelocity, final int weeksInCycle,
                                   final TimeScales timeScales, final SatelliteSystem system, final String type,
-                                  final int prn, final int week, final KeplerianOrbit orbit,
-                                  final double time, final double aDot,
+                                  final int prn, final KeplerianOrbit orbit, final double aDot,
                                   final double deltaN0, final double deltaN0Dot,
                                   final double iDot, final double omegaDot,
                                   final double cuc, final double cus,
@@ -174,13 +167,11 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
 
         // satellite identifier
         this.prn             = prn;
-        this.week            = week;
 
         // Keplerian orbit
         this.orbit           = orbit;
 
         // non-Keplerian elements
-        this.time            = time;
         this.aDot            = aDot;
         this.deltaN0         = deltaN0;
         this.deltaN0Dot      = deltaN0Dot;
@@ -208,11 +199,10 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
      * @param original regular field instance
      */
     protected <T extends CalculusFieldElement<T>,
-               A extends GNSSOrbitalElements<A>> GNSSOrbitalElements(final FieldGnssOrbitalElements<T, A> original) {
+               A extends GNSSOrbitalElements<A>> GNSSOrbitalElements(final FieldGnssOrbitalElements<T, A, ?> original) {
         this(original.getAngularVelocity(), original.getWeeksInCycle(), original.getTimeScales(),
-             original.getSystem(), original.getType(), original.getPRN(), original.getWeek(),
-             original.getOrbit().toOrbit(),
-             original.getTime().getReal(), original.getADot().getReal(),
+             original.getSystem(), original.getType(), original.getPRN(),
+             original.getOrbit().toOrbit(), original.getADot().getReal(),
              original.getDeltaN0().getReal(), original.getDeltaN0Dot().getReal(),
              original.getIDot().getReal(), original.getOmegaDot().getReal(),
              original.getCuc().getReal(), original.getCus().getReal(),
@@ -230,12 +220,13 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
 
     /** Create a field version of the instance.
      * @param <T> type of the field elements
-     * @param <F> type of the orbital elements (field version)
-     * @param field field to which elements belong
+     * @param <P> type of the orbital elements (field version)
+     * @param orbit orbit in the correct field
      * @return field version of the instance
      */
-    public abstract <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, O>>
-        F toField(Field<T> field);
+    public abstract <T extends CalculusFieldElement<T>,
+                     P extends FieldGnssOrbitalElements<T, O, P>>
+        P toField(FieldKeplerianOrbit<T> orbit);
 
     /** Get satellite system.
      * @return satellite system
@@ -286,26 +277,12 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
         return prn;
     }
 
-    /** Get the reference week of the orbit.
-     * @return reference week of the orbit
-     */
-    public int getWeek() {
-        return week;
-    }
-
     /** Get the underlying Keplerian orbit.
      * @return underlying Keplerian orbit
      * @since 14.0
      */
     public KeplerianOrbit getOrbit() {
         return orbit;
-    }
-
-    /** Get reference time.
-     * @return reference time
-     */
-    public double getTime() {
-        return time;
     }
 
     /** Get change rate in semi-major axis.
@@ -436,9 +413,12 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
         // create base factory
         final GNSSOrbitalElementsFactory<O> factory = baseFactory(inertial, bodyFixed);
 
+        // initialize date
+        final GNSSDate date = new GNSSDate(getDate(), getSystem());
+        factory.setWeekAndTime(date.getWeekNumber(), date.getSecondsInWeek());
+
         // initialize the satellite identifier
         factory.setPrn(prn);
-        factory.setWeek(week);
 
         // initialize the orbital parameters
         reset(factory, GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS,     KeplerianOrbit::getA);
@@ -449,7 +429,7 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
         reset(factory, GNSSOrbitalElementsFactory.MEAN_ANOMALY,        KeplerianOrbit::getMeanAnomaly);
 
         // initialize the non-Keplerian elements
-        reset(factory.getTimeDriver(),       time);
+        reset(factory.getTimeDriver(),       new GNSSDate(orbit.getDate(), system).getSecondsInWeek());
         reset(factory.getADotDriver(),       aDot);
         reset(factory.getDeltaN0Driver(),    deltaN0);
         reset(factory.getDeltaN0DotDriver(), deltaN0);

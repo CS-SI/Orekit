@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
-import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
@@ -44,7 +43,10 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.propagation.analytical.gnss.data.FieldGnssOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.NonKeplerianDriversFactory;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.GNSSDate;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
@@ -95,6 +97,11 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
     /** The GNSS propagation model used. */
     private O orbitalElements;
 
+    /** Factory for non-Keplerian elements drivers.
+     * @since 14.0
+     */
+    private final NonKeplerianDriversFactory driversFactory;
+
     /** The ECI frame used for GNSS propagation. */
     private final Frame eci;
 
@@ -114,6 +121,7 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
         super(provider);
         // Stores the GNSS orbital elements
         this.orbitalElements = orbitalElements;
+        this.driversFactory  = new NonKeplerianDriversFactory();
         // Sets the Earth Centered Inertial frame
         this.eci  = eci;
         // Sets the Earth Centered Earth Fixed frame
@@ -123,7 +131,7 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
         final Orbit orbit = propagateOrbit(orbitalElements.getDate());
         final Attitude attitude = provider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
 
-        // calling the method from base class because the one overridden below recomputes the orbital elements
+        // calling the method from constructor because the one overridden below recomputes the orbital elements
         super.resetInitialState(new SpacecraftState(orbit, attitude).withMass(mass));
 
     }
@@ -151,7 +159,7 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
-        // TODO
+        return driversFactory.getParametersDrivers();
     }
 
     /**
@@ -278,7 +286,7 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
         // Corrected Argument of Latitude
         final FieldSinCos<UnivariateDerivative2> csuk = FastMath.sinCos(phik.add(dphik));
         // Corrected Radius
-        final UnivariateDerivative2 rk = ek.cos().multiply(-orbit.getE()).add(1).multiply(ak).add(drk);
+        final UnivariateDerivative2 rk = ek.cos().multiply(e.negate()).add(1).multiply(ak).add(drk);
         // Corrected Inclination
         final UnivariateDerivative2 ik  = tk.multiply(orbitalElements.getIDot()).add(orbit.getI()).add(dik);
         final FieldSinCos<UnivariateDerivative2> csik = FastMath.sinCos(ik);
@@ -287,9 +295,10 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
         final UnivariateDerivative2 yk = csuk.sin().multiply(rk);
         // Corrected longitude of ascending node
         final double thetaDot = orbitalElements.getAngularVelocity();
+        final double toe = new GNSSDate(orbitalElements.getDate(), orbitalElements.getSystem()).getSecondsInWeek();
         final FieldSinCos<UnivariateDerivative2> csomk =
             FastMath.sinCos(tk.multiply(orbitalElements.getOmegaDot() - thetaDot).
-                            add(orbit.getRightAscensionOfAscendingNode() - thetaDot * orbitalElements.getTime()));
+                            add(orbit.getRightAscensionOfAscendingNode() - thetaDot * toe));
         // returns the Earth-fixed coordinates
         final FieldVector3D<UnivariateDerivative2> positionWithDerivatives =
                         new FieldVector3D<>(xk.multiply(csomk.cos()).subtract(yk.multiply(csomk.sin()).multiply(csik.cos())),
@@ -373,7 +382,7 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
 
         // refine orbit using simple differential correction to reach target PV
         final PVCoordinates targetPV = initialState.getPVCoordinates();
-        FieldGnssOrbitalElements<Gradient, O> gElements = convert(nonKeplerianElements, orbit);
+        FieldGnssOrbitalElements<Gradient, O, ?> gElements = convert(nonKeplerianElements, orbit);
         for (int i = 0; i < MAX_ITER; ++i) {
 
             // get position-velocity derivatives with respect to initial orbit
@@ -482,7 +491,9 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
         // here, we know that tk = 0 since our orbital elements will be at initial state date
         final double i0  = ik - (cs2phi.cos() * nonKeplerianElements.getCic() + cs2phi.sin() * nonKeplerianElements.getCis());
         final double om0 = FastMath.atan2(sin, cos) +
-                           nonKeplerianElements.getAngularVelocity() * nonKeplerianElements.getTime();
+                           nonKeplerianElements.getAngularVelocity() *
+                           new GNSSDate(nonKeplerianElements.getDate(),
+                                        nonKeplerianElements.getSystem()).getSecondsInWeek();
 
         // recover eccentricity and anomaly
         final double mu = initialState.getOrbit().getMu();
@@ -508,21 +519,24 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
      * @since 13.0
      */
     private static <O extends GNSSOrbitalElements<O>>
-        FieldGnssOrbitalElements<Gradient, O> convert(final O elements, final KeplerianOrbit orbit) {
-
-        final Field<Gradient> field = GradientField.getField(FREE_PARAMETERS);
-        final FieldGnssOrbitalElements<Gradient, O> gElements = elements.toField(field);
-
-        // Keplerian parameters
-        gElements.setSma(Gradient.variable(FREE_PARAMETERS, 0, orbit.getA()));
-        gElements.setE(Gradient.variable(FREE_PARAMETERS, 1, orbit.getE()));
-        gElements.setI0(Gradient.variable(FREE_PARAMETERS, 2, orbit.getI()));
-        gElements.setPa(Gradient.variable(FREE_PARAMETERS, 3, orbit.getPerigeeArgument()));
-        gElements.setOmega0(Gradient.variable(FREE_PARAMETERS, 4, orbit.getRightAscensionOfAscendingNode()));
-        gElements.setM0(Gradient.variable(FREE_PARAMETERS, 5, orbit.getMeanAnomaly()));
-
-        return gElements;
-
+        FieldGnssOrbitalElements<Gradient, O, ?> convert(final O elements, final KeplerianOrbit orbit) {
+        return elements.toField(new FieldKeplerianOrbit<>(Gradient.variable(FREE_PARAMETERS, 0,
+                                                                            orbit.getA()),
+                                                          Gradient.variable(FREE_PARAMETERS, 1,
+                                                                            orbit.getE()),
+                                                          Gradient.variable(FREE_PARAMETERS, 2,
+                                                                            orbit.getI()),
+                                                          Gradient.variable(FREE_PARAMETERS, 3,
+                                                                            orbit.getPerigeeArgument()),
+                                                          Gradient.variable(FREE_PARAMETERS, 4,
+                                                                            orbit.getRightAscensionOfAscendingNode()),
+                                                          Gradient.variable(FREE_PARAMETERS, 5,
+                                                                            orbit.getMeanAnomaly()),
+                                                          PositionAngleType.MEAN, PositionAngleType.MEAN,
+                                                          orbit.getFrame(),
+                                                          new FieldAbsoluteDate<>(GradientField.getField(FREE_PARAMETERS),
+                                                                                  orbit.getDate()),
+                                                          Gradient.constant(FREE_PARAMETERS, orbit.getMu())));
     }
 
 }

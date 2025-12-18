@@ -17,19 +17,27 @@
 package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
+import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
+import org.orekit.propagation.analytical.gnss.data.FieldGnssOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.utils.ParameterDriver;
 
 import java.util.List;
 
 /** Converter for GNSS propagator.
- * @param <O> type of the orbital elements
+ * @param <O> type of the orbital elements (non-field version)
+ * @param <P> type of the orbital elements (field version)
  * @author Luc Maisonobe
  * @since 13.0
  */
-class GnssGradientConverter<O extends GNSSOrbitalElements<O>> extends AbstractAnalyticalGradientConverter {
+class GnssGradientConverter<O extends GNSSOrbitalElements<O>,
+                            P extends FieldGnssOrbitalElements<Gradient, O, P>>
+    extends AbstractAnalyticalGradientConverter {
 
     /** Fixed dimension of the state. */
     public static final int FREE_STATE_PARAMETERS = 6;
@@ -53,8 +61,10 @@ class GnssGradientConverter<O extends GNSSOrbitalElements<O>> extends AbstractAn
         final FieldSpacecraftState<Gradient> state = getState(this);
 
         // build propagator handling gradient
+        final FieldKeplerianOrbit<Gradient> orbit =
+            (FieldKeplerianOrbit<Gradient>) OrbitType.KEPLERIAN.convertType(state.getOrbit());
         return new FieldGnssPropagator<>(state,
-                                         propagator.getOrbitalElements().toField(state.getDate().getField()),
+                                         propagator.getOrbitalElements().toField(orbit),
                                          propagator.getECEF(), propagator.getAttitudeProvider(),
                                          state.getMass());
 

@@ -139,7 +139,7 @@ public abstract class AbstractNavigationParser<T extends AbstractNavigationMessa
     @Override
     public void parseLine05() {
         factory.getIDotDriver().setValue(parseInfo.parseDouble1(RinexNavigationParser.RAD_PER_S));
-        factory.setWeek(parseInfo.parseInt3());
+        factory.setWeekAndTime(parseInfo.parseInt3(), factory.getTimeDriver().getValue());
     }
 
 }

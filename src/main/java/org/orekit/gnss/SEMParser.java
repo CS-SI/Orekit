@@ -33,10 +33,14 @@ import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
 import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
+import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.propagation.analytical.gnss.data.GPSAlmanac;
+import org.orekit.propagation.analytical.gnss.data.GPSAlmanacFactory;
 import org.orekit.time.TimeScales;
-
+import org.orekit.utils.IERSConventions;
+import org.orekit.utils.ParameterDriversList;
 
 /**
  * This class reads SEM almanac files and provides {@link GPSAlmanac GPS almanacs}.
@@ -78,6 +82,16 @@ public class SEMParser extends AbstractSelfFeedingLoader implements DataLoader {
     /** Set of time scales to use. */
     private final TimeScales timeScales;
 
+    /** Reference inertial frame.
+     * @since 14.0
+     */
+    private final Frame inertial;
+
+    /** Body fixed frame.
+     * @since 14.0
+     */
+    private final Frame bodyFixed;
+
     /** Simple constructor.
      *
      * <p>This constructor does not load any data by itself. Data must be loaded
@@ -87,20 +101,23 @@ public class SEMParser extends AbstractSelfFeedingLoader implements DataLoader {
      *
      * <p>The supported files names are used when getting data from the
      * {@link #loadData() loadData()} method that relies on the
-     * {@link DataContext#getDefault() default data context}. They are useless when
+     * {@link DataContext#getDefault() default data context}. The frames
+     *      * are set to EME2000 and ITRF with IERS 2010 conventions. They are useless when
      * getting data from the {@link #loadData(InputStream, String) loadData(input, name)}
      * method.</p>
      *
      * @param supportedNames regular expression for supported files names
      * (if null, a default pattern matching files with a ".al3" extension will be used)
      * @see #loadData()
-     * @see #SEMParser(String, DataProvidersManager, TimeScales)
+     * @see #SEMParser(String, DataProvidersManager, TimeScales, Frame, Frame)
      */
     @DefaultDataContext
     public SEMParser(final String supportedNames) {
         this(supportedNames,
                 DataContext.getDefault().getDataProvidersManager(),
-                DataContext.getDefault().getTimeScales());
+                DataContext.getDefault().getTimeScales(),
+                DataContext.getDefault().getFrames().getEME2000(),
+                DataContext.getDefault().getFrames().getITRF(IERSConventions.IERS_2010, false));
     }
 
     /**
@@ -121,17 +138,21 @@ public class SEMParser extends AbstractSelfFeedingLoader implements DataLoader {
      * (if null, a default pattern matching files with a ".al3" extension will be used)
      * @param dataProvidersManager provides access to auxiliary data.
      * @param timeScales to use when parsing the GPS dates.
+     * @param inertial   reference inertial frame
+     * @param bodyFixed  body fixed frame
+     * @since 14.0
      * @see #loadData()
-     * @since 10.1
      */
     public SEMParser(final String supportedNames,
                      final DataProvidersManager dataProvidersManager,
-                     final TimeScales timeScales) {
+                     final TimeScales timeScales, final Frame inertial, final Frame bodyFixed) {
         super((supportedNames == null) ? DEFAULT_SUPPORTED_NAMES : supportedNames,
                 dataProvidersManager);
-        this.almanacs = new ArrayList<>();
-        this.prnList = new ArrayList<>();
+        this.almanacs   = new ArrayList<>();
+        this.prnList    = new ArrayList<>();
         this.timeScales = timeScales;
+        this.inertial   = inertial;
+        this.bodyFixed  = bodyFixed;
     }
 
     /**
@@ -222,55 +243,63 @@ public class SEMParser extends AbstractSelfFeedingLoader implements DataLoader {
         reader.readLine();
 
         // Create an empty GPS almanac and set the source
-        final GPSAlmanac almanac = new GPSAlmanac(timeScales, SatelliteSystem.GPS);
-        almanac.setSource(SOURCE);
+        final GPSAlmanacFactory factory = new GPSAlmanacFactory(timeScales, SatelliteSystem.GPS,
+                                                                inertial, bodyFixed);
+        factory.setSource(SOURCE);
 
+        final ParameterDriversList orb = factory.getOrbitalParametersDrivers();
         try {
             // Reads the PRN number from the first line
             String[] token = getTokens(reader);
-            almanac.setPRN(Integer.parseInt(token[0].trim()));
+            factory.setPrn(Integer.parseInt(token[0].trim()));
 
             // Reads the SV number from the second line
             token = getTokens(reader);
-            almanac.setSVN(Integer.parseInt(token[0].trim()));
+            factory.setSVN(Integer.parseInt(token[0].trim()));
 
             // Reads the average URA number from the third line
             token = getTokens(reader);
-            almanac.setURA(Integer.parseInt(token[0].trim()));
+            factory.setURA(Integer.parseInt(token[0].trim()));
 
             // Reads the fourth line to get ecc, inc and dom
             token = getTokens(reader);
-            almanac.setE(Double.parseDouble(token[0].trim()));
-            almanac.setI0(getInclination(Double.parseDouble(token[1].trim())));
-            almanac.setOmegaDot(toRadians(Double.parseDouble(token[2].trim())));
+            orb.findByName(GNSSOrbitalElementsFactory.ECCENTRICITY).
+                        setValue(Double.parseDouble(token[0].trim()));
+            orb.findByName(GNSSOrbitalElementsFactory.INCLINATION).
+                        setValue(getInclination(Double.parseDouble(token[1].trim())));
+            factory.getOmegaDotDriver().setValue(toRadians(Double.parseDouble(token[2].trim())));
 
             // Reads the fifth line to get sqa, raan and aop
             token = getTokens(reader);
-            almanac.setSqrtA(Double.parseDouble(token[0].trim()));
-            almanac.setOmega0(toRadians(Double.parseDouble(token[1].trim())));
-            almanac.setPa(toRadians(Double.parseDouble(token[2].trim())));
+            final double sqrtA = Double.parseDouble(token[0].trim());
+            orb.findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS).
+                        setValue(sqrtA * sqrtA);
+            orb.findByName(GNSSOrbitalElementsFactory.NODE_LONGITUDE).
+                setValue(toRadians(Double.parseDouble(token[1].trim())));
+            orb.findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).
+                setValue(toRadians(Double.parseDouble(token[2].trim())));
 
             // Reads the sixth line to get anom, af0 and af1
             token = getTokens(reader);
-            almanac.setM0(toRadians(Double.parseDouble(token[0].trim())));
-            almanac.setAf0(Double.parseDouble(token[1].trim()));
-            almanac.setAf1(Double.parseDouble(token[2].trim()));
+            orb.findByName(GNSSOrbitalElementsFactory.MEAN_ANOMALY).
+                setValue(toRadians(Double.parseDouble(token[0].trim())));
+            factory.getAf0Driver().setValue(Double.parseDouble(token[1].trim()));
+            factory.getAf1Driver().setValue(Double.parseDouble(token[2].trim()));
 
             // Reads the seventh line to get health
             token = getTokens(reader);
-            almanac.setHealth(Integer.parseInt(token[0].trim()));
+            factory.setHealth(Integer.parseInt(token[0].trim()));
 
             // Reads the eighth line to get Satellite Configuration
             token = getTokens(reader);
-            almanac.setSatConfiguration(Integer.parseInt(token[0].trim()));
+            factory.setSatConfiguration(Integer.parseInt(token[0].trim()));
 
             // Adds the almanac to the list
-            almanac.setTime(toa);
-            almanac.setWeek(week);
-            almanacs.add(almanac);
+            factory.setWeekAndTime(week, toa);
+            almanacs.add(factory.createFromDrivers());
 
             // Adds the PRN to the list
-            prnList.add(almanac.getPRN());
+            prnList.add(factory.getPrn());
         } catch (IndexOutOfBoundsException aioobe) {
             throw new IOException(aioobe);
         }

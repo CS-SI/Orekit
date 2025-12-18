@@ -17,12 +17,13 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScales;
+
 
 /**
  * Container for data contained in an NavIC navigation message.
@@ -44,9 +45,7 @@ public class NavICLegacyNavigationMessage
      *                         are always according to GPS)
      * @param type             message type
      * @param prn              PRN number of the satellite
-     * @param week             reference Week of the orbit
      * @param orbit            Keplerian orbit in Earth-frozen frame
-     * @param time             reference time
      * @param aDot             change rate in semi-major axis (m/s)
      * @param deltaN0          delta of satellite mean motion
      * @param deltaN0Dot       change rate in Δn₀
@@ -74,8 +73,7 @@ public class NavICLegacyNavigationMessage
      * @param l2PFlags         L2 P data flags.
      */
     public NavICLegacyNavigationMessage(final TimeScales timeScales, final SatelliteSystem system, final String type,
-                                        final int prn, final int week, final KeplerianOrbit orbit,
-                                        final double time, final double aDot,
+                                        final int prn, final KeplerianOrbit orbit, final double aDot,
                                         final double deltaN0, final double deltaN0Dot,
                                         final double iDot, final double omegaDot,
                                         final double cuc, final double cus,
@@ -88,8 +86,8 @@ public class NavICLegacyNavigationMessage
                                         final int svHealth, final int fitInterval,
                                         final int l2Codes, final int l2PFlags) {
         super(GNSSConstants.NAVIC_AV, GNSSConstants.NAVIC_WEEK_NB,
-              timeScales, system, type, prn, week, orbit,
-              time, aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
+              timeScales, system, type, prn, orbit,
+              aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
               af0, af1, af2, tgd, toc, epochToc, transmissionTime,
               iode, iodc, svAccuracy, svHealth, fitInterval, l2Codes, l2PFlags);
     }
@@ -105,16 +103,16 @@ public class NavICLegacyNavigationMessage
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, NavICLegacyNavigationMessage>>
-        F toField(final Field<T> field) {
-        return (F) new FieldNavicLegacyNavigationMessage<>(field, this);
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, NavICLegacyNavigationMessage, F>>
+        F toField(final FieldKeplerianOrbit<T> orbit) {
+        return (F) new FieldNavicLegacyNavigationMessage<>(orbit, this);
     }
 
     /** {@inheritDoc} */
     @Override
     public NavICLegacyNavigationMessageFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
         return new NavICLegacyNavigationMessageFactory(getTimeScales(), getSystem(), getType(),
-                                                       inertial, bodyFixed, getDate());
+                                                       inertial, bodyFixed);
     }
 
 }

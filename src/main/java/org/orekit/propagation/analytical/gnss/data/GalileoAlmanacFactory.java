@@ -18,7 +18,6 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScales;
 
@@ -44,16 +43,13 @@ public class GalileoAlmanacFactory extends GNSSOrbitalElementsFactory<GalileoAlm
     /** Simple constructor.
      * @param timeScales      known time scales
      * @param system          satellite system to use for interpreting week number
-     * @param type            message type (null if not a navigation message)
      * @param inertial        reference inertial frame
      * @param bodyFixed       body fixed frame (will be frozen at {@code date} to build the orbital elements
-     * @param date            date of the orbital parameters
      */
     public GalileoAlmanacFactory(final TimeScales timeScales, final SatelliteSystem system,
-                                 final String type, final Frame inertial, final Frame bodyFixed,
-                                 final AbsoluteDate date) {
-        super(GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB, timeScales, system,
-              type, inertial, bodyFixed, date, GNSSConstants.GALILEO_MU);
+                                 final Frame inertial, final Frame bodyFixed) {
+        super(GNSSConstants.GALILEO_AV, timeScales, system,
+              null, inertial, bodyFixed, GNSSConstants.GALILEO_MU);
     }
 
     /** Get the E1-B/C signal health status.
@@ -115,9 +111,8 @@ public class GalileoAlmanacFactory extends GNSSOrbitalElementsFactory<GalileoAlm
     /** {@inheritDoc} */
     @Override
     public GalileoAlmanac createFromDrivers() {
-        return new GalileoAlmanac(getTimeScales(), getSystem(), getPrn(), getWeek(),
-                                  createOrbitFromDrivers(),
-                                  getTimeDriver().getValue(), getADotDriver().getValue(),
+        return new GalileoAlmanac(getTimeScales(), getSystem(), getPrn(),
+                                  createOrbitFromDrivers(), getADotDriver().getValue(),
                                   getDeltaN0Driver().getValue(), getDeltaN0DotDriver().getValue(),
                                   getIDotDriver().getValue(), getOmegaDotDriver().getValue(),
                                   getCucDriver().getValue(), getCusDriver().getValue(),

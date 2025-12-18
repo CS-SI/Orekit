@@ -18,7 +18,6 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScales;
 
@@ -47,15 +46,13 @@ public abstract class AbstractNavigationMessageFactory<O extends AbstractNavigat
      * @param type            message type (null if not a navigation message)
      * @param inertial        reference inertial frame
      * @param bodyFixed       body fixed frame (will be frozen at {@code date} to build the orbital elements
-     * @param date            date of the orbital parameters
      * @param mu              central attraction coefficient (m³/s²)
      */
     public AbstractNavigationMessageFactory(final double angularVelocity, final int weeksInCycle,
                                             final TimeScales timeScales, final SatelliteSystem system,
                                             final String type, final Frame inertial, final Frame bodyFixed,
-                                            final AbsoluteDate date, final double mu) {
-        super(angularVelocity, weeksInCycle, timeScales, system,
-              type, inertial, bodyFixed, date, mu);
+                                            final double mu) {
+        super(angularVelocity, timeScales, system, type, inertial, bodyFixed, mu);
     }
 
     /** Get the time of clock epoch.

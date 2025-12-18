@@ -31,26 +31,23 @@ public class QZSSLegacyNavigationMessageFactory
     extends LegacyNavigationMessageFactory<QZSSLegacyNavigationMessage> {
 
     /** Simple constructor.
-     * @param timeScales      known time scales
-     * @param system          satellite system to use for interpreting week number
-     * @param type            message type (null if not a navigation message)
-     * @param inertial        reference inertial frame
-     * @param bodyFixed       body fixed frame (will be frozen at {@code date} to build the orbital elements
-     * @param date            date of the orbital parameters
+     * @param timeScales known time scales
+     * @param system     satellite system to use for interpreting week number
+     * @param type       message type (null if not a navigation message)
+     * @param inertial   reference inertial frame
+     * @param bodyFixed  body fixed frame (will be frozen at {@code date} to build the orbital elements
      */
     public QZSSLegacyNavigationMessageFactory(final TimeScales timeScales, final SatelliteSystem system,
-                                              final String type, final Frame inertial, final Frame bodyFixed,
-                                              final AbsoluteDate date) {
+                                              final String type, final Frame inertial, final Frame bodyFixed) {
         super(GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB, timeScales, system,
-              type, inertial, bodyFixed, date, GNSSConstants.QZSS_MU);
+              type, inertial, bodyFixed, GNSSConstants.QZSS_MU);
     }
 
     /** {@inheritDoc} */
     @Override
     public QZSSLegacyNavigationMessage createFromDrivers() {
-        return new QZSSLegacyNavigationMessage(getTimeScales(), getSystem(), getType(), getPrn(), getWeek(),
-                                               createOrbitFromDrivers(),
-                                               getTimeDriver().getValue(), getADotDriver().getValue(),
+        return new QZSSLegacyNavigationMessage(getTimeScales(), getSystem(), getType(), getPrn(),
+                                               createOrbitFromDrivers(), getADotDriver().getValue(),
                                                getDeltaN0Driver().getValue(), getDeltaN0DotDriver().getValue(),
                                                getIDotDriver().getValue(), getOmegaDotDriver().getValue(),
                                                getCucDriver().getValue(), getCusDriver().getValue(),

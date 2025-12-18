@@ -17,7 +17,6 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbitalParameters;
@@ -30,10 +29,13 @@ import java.util.function.Function;
  * org.orekit.propagation.analytical.gnss.FieldGnssPropagator}.
  * @param <T> type of the field elements
  * @param <O> type of the orbital elements (non-field version)
+ * @param <P> type of the orbital elements (field version)
  * @since 13.0
  * @author Luc Maisonobe
 */
-public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>, O extends GNSSOrbitalElements<O>>
+public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>,
+                                               O extends GNSSOrbitalElements<O>,
+                                               P extends FieldGnssOrbitalElements<T, O, P>>
     implements FieldOrbitalParameters<T>, FieldGNSSClockElements<T> {
 
     /** Mean angular velocity of the Earth for the GNSS model. */
@@ -57,14 +59,8 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
     /** PRN number of the satellite. */
     private final int prn;
 
-    /** Reference Week of the orbit. */
-    private final int week;
-
     /** Orbit. */
     private final FieldKeplerianOrbit<T> orbit;
-
-    /** Reference time. */
-    private final T time;
 
     /** Change rate in semi-major axis (m/s).
      * @since 14.0
@@ -129,9 +125,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
      *                        are always according to GPS)
      * @param type            type (null if not a navigation message)
      * @param prn             PRN number of the satellite
-     * @param week            reference Week of the orbit
      * @param orbit           Keplerian orbit in Earth-frozen frame
-     * @param time            reference time
      * @param aDot            change rate in semi-major axis (m/s)
      * @param deltaN0         delta of satellite mean motion
      * @param deltaN0Dot      change rate in Δn₀
@@ -152,8 +146,8 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
      */
     public FieldGnssOrbitalElements(final double angularVelocity, final int weeksInCycle,
                                     final TimeScales timeScales, final SatelliteSystem system, final String type,
-                                    final int prn, final int week, final FieldKeplerianOrbit<T> orbit,
-                                    final T time, final T aDot,
+                                    final int prn, final FieldKeplerianOrbit<T> orbit,
+                                    final T aDot,
                                     final T deltaN0, final T deltaN0Dot,
                                     final T iDot, final T omegaDot,
                                     final T cuc, final T cus,
@@ -171,13 +165,11 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
 
         // satellite identifier
         this.prn             = prn;
-        this.week            = week;
 
         // Keplerian orbit
         this.orbit           = orbit;
 
         // non-Keplerian elements
-        this.time            = time;
         this.aDot            = aDot;
         this.deltaN0         = deltaN0;
         this.deltaN0Dot      = deltaN0Dot;
@@ -200,47 +192,38 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
     }
 
     /** Constructor from non-field instance.
-     * @param field    field to which elements belong
+     * @param orbit    orbit in the correct field
      * @param original regular non-field instance
      */
-    protected FieldGnssOrbitalElements(final Field<T> field, final O original) {
+    protected FieldGnssOrbitalElements(final FieldKeplerianOrbit<T> orbit, final O original) {
         this(original.getAngularVelocity(), original.getWeeksInCycle(),  original.getTimeScales(),
-             original.getSystem(), original.getType(), original.getPRN(), original.getWeek(),
-             new FieldKeplerianOrbit<>(field, original.getOrbit()),
-             field.getZero().newInstance(original.getTime()), field.getZero().newInstance(original.getADot()),
-             field.getZero().newInstance(original.getDeltaN0()), field.getZero().newInstance(original.getDeltaN0Dot()),
-             field.getZero().newInstance(original.getIDot()), field.getZero().newInstance(original.getOmegaDot()),
-             field.getZero().newInstance(original.getCuc()), field.getZero().newInstance(original.getCus()),
-             field.getZero().newInstance(original.getCrc()), field.getZero().newInstance(original.getCrs()),
-             field.getZero().newInstance(original.getCic()), field.getZero().newInstance(original.getCis()),
-             field.getZero().newInstance(original.getAf0()),
-             field.getZero().newInstance(original.getAf1()),
-             field.getZero().newInstance(original.getAf2()),
-             field.getZero().newInstance(original.getTGD()), field.getZero().newInstance(original.getToc()));
+             original.getSystem(), original.getType(), original.getPRN(),
+             orbit,
+             orbit.getMu().newInstance(original.getADot()),
+             orbit.getMu().newInstance(original.getDeltaN0()), orbit.getMu().newInstance(original.getDeltaN0Dot()),
+             orbit.getMu().newInstance(original.getIDot()), orbit.getMu().newInstance(original.getOmegaDot()),
+             orbit.getMu().newInstance(original.getCuc()), orbit.getMu().newInstance(original.getCus()),
+             orbit.getMu().newInstance(original.getCrc()), orbit.getMu().newInstance(original.getCrs()),
+             orbit.getMu().newInstance(original.getCic()), orbit.getMu().newInstance(original.getCis()),
+             orbit.getMu().newInstance(original.getAf0()),
+             orbit.getMu().newInstance(original.getAf1()),
+             orbit.getMu().newInstance(original.getAf2()),
+             orbit.getMu().newInstance(original.getTGD()), orbit.getMu().newInstance(original.getToc()));
      }
 
     /** Constructor from different field instance.
      * @param <V> type of the old field elements
+     * @param orbit    orbit in the correct field
      * @param original regular non-field instance
      * @param converter for field elements
      */
-    protected <V extends CalculusFieldElement<V>> FieldGnssOrbitalElements(final Function<V, T> converter,
-                                                                           final FieldGnssOrbitalElements<V, O> original) {
+    protected <V extends CalculusFieldElement<V>> FieldGnssOrbitalElements(final FieldKeplerianOrbit<T> orbit,
+                                                                           final Function<V, T> converter,
+                                                                           final FieldGnssOrbitalElements<V, O, ?> original) {
         this(original.getAngularVelocity(), original.getWeeksInCycle(), original.getTimeScales(),
-             original.getSystem(), original.getType(), original.getPRN(), original.getWeek(),
-             new FieldKeplerianOrbit<>(converter.apply(original.getOrbit().getA()),
-                                       converter.apply(original.getOrbit().getE()),
-                                       converter.apply(original.getOrbit().getI()),
-                                       converter.apply(original.getOrbit().getPerigeeArgument()),
-                                       converter.apply(original.getOrbit().getRightAscensionOfAscendingNode()),
-                                       converter.apply(original.getOrbit().getMeanAnomaly()),
-                                       original.getOrbit().getCachedPositionAngleType(),
-                                       original.getOrbit().getCachedPositionAngleType(),
-                                       original.getOrbit().getFrame(),
-                                       new FieldAbsoluteDate<>(converter.apply(original.getDate().getField().getZero()).getField(),
-                                                               original.getDate().toAbsoluteDate()),
-                                       converter.apply(original.getOrbit().getMu())),
-             converter.apply(original.getTime()), converter.apply(original.getADot()),
+             original.getSystem(), original.getType(), original.getPRN(),
+             orbit,
+             converter.apply(original.getADot()),
              converter.apply(original.getDeltaN0()), converter.apply(original.getDeltaN0Dot()),
              converter.apply(original.getIDot()), converter.apply(original.getOmegaDot()),
              converter.apply(original.getCuc()), converter.apply(original.getCus()),
@@ -266,12 +249,11 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
 
     /** Create another field version of the instance.
      * @param <U>       type of the new field elements
-     * @param <G>       type of the orbital elements (field version)
      * @param converter for field elements
      * @return field version of the instance
      */
-    public abstract <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, O>>
-        G changeField(Function<T, U> converter);
+    public abstract <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, O, V>>
+    V toField(FieldKeplerianOrbit<U> orbit, Function<T, U> converter);
 
     /** Get satellite system.
      * @return satellite system
@@ -322,26 +304,12 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
         return prn;
     }
 
-    /** Get the reference week of the orbit.
-     * @return reference week of the orbit
-     */
-    public int getWeek() {
-        return week;
-    }
-
     /** Get the underlying Keplerian orbit.
      * @return underlying Keplerian orbit
      * @since 14.0
      */
     public FieldKeplerianOrbit<T> getOrbit() {
         return orbit;
-    }
-
-    /** Get reference time.
-     * @return reference time
-     */
-    public T getTime() {
-        return time;
     }
 
     /** Get change rate in semi-major axis.
