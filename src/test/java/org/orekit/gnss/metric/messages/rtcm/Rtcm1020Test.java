@@ -32,12 +32,13 @@ import org.orekit.propagation.analytical.gnss.data.GLONASSFdmaNavigationMessage;
 import org.orekit.propagation.numerical.GLONASSNumericalPropagator;
 import org.orekit.propagation.numerical.GLONASSNumericalPropagatorBuilder;
 import org.orekit.time.GLONASSDate;
+import org.orekit.utils.IERSConventions;
 
 import java.util.ArrayList;
 
 public class Rtcm1020Test {
 
-    private double eps = 1.0e-16;
+    private final double eps = 1.0e-16;
 
     @BeforeEach
     public void setUp() {
@@ -91,8 +92,13 @@ public class Rtcm1020Test {
         ArrayList<Integer> messages = new ArrayList<>();
         messages.add(1020);
 
-        final Rtcm1020                 rtcm1020       = (Rtcm1020) new RtcmMessagesParser(messages, DataContext.getDefault().getTimeScales()).
-                                                        parse(message, false);
+        final DataContext context  = DataContext.getDefault();
+        final Rtcm1020    rtcm1020 = (Rtcm1020) new RtcmMessagesParser(messages,
+                                                                       context.getTimeScales(),
+                                                                       context.getFrames().getEME2000(),
+                                                                       context.getFrames().getITRF(IERSConventions.IERS_2010,
+                                                                                                   false)).
+                                     parse(message, false);
         final Rtcm1020Data             ephemerisData  = rtcm1020.getEphemerisData();
         final GLONASSFdmaNavigationMessage glonassMessage = ephemerisData.getGlonassNavigationMessage();
 
@@ -182,7 +188,12 @@ public class Rtcm1020Test {
        ArrayList<Integer> messages = new ArrayList<>();
        messages.add(9999999);
 
-       final Rtcm1020 rtcm1020 = (Rtcm1020) new RtcmMessagesParser(messages, DataContext.getDefault().getTimeScales()).
+       final DataContext context  = DataContext.getDefault();
+       final Rtcm1020 rtcm1020 = (Rtcm1020) new RtcmMessagesParser(messages,
+                                                                   context.getTimeScales(),
+                                                                   context.getFrames().getEME2000(),
+                                                                   context.getFrames().getITRF(IERSConventions.IERS_2010,
+                                                                                               false)).
                                  parse(message, false);
 
        Assertions.assertNull(rtcm1020);

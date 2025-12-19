@@ -217,7 +217,7 @@ public class YUMAParser extends AbstractSelfFeedingLoader implements DataLoader 
                     // Adds the GPSAlmanac to the list
                     almanacs.add(almanac);
                     // Adds the PRN number of the GPSAlmanac to the list
-                    prnList.add(almanac.getPRN());
+                    prnList.add(almanac.getPrn());
                     // Clears the entries
                     entries.clear();
                 }

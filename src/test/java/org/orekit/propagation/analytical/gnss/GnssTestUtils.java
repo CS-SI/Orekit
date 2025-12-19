@@ -21,6 +21,7 @@ import org.hipparchus.analysis.differentiation.FieldGradient;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
+import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.propagation.analytical.gnss.data.FieldGnssOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.time.AbsoluteDate;
@@ -38,10 +39,12 @@ public class GnssTestUtils {
     void checkFieldConversion(final O message) {
         try {
             // looping over several types to check conversion functions
-            FieldGnssOrbitalElements<Binary64, ?> intermediate1 =
-                message.toField(Binary64Field.getInstance());
-            FieldGnssOrbitalElements<? extends FieldGradient<?>, ?> intermediate2 =
-                intermediate1.changeField(t -> FieldGradient.constant(6, t));
+            FieldGnssOrbitalElements<Binary64, O, ?> intermediate1 = message.toField(Binary64Field.getInstance());
+            FieldKeplerianOrbit<FieldGradient<Binary64>> o =
+                new FieldKeplerianOrbit<>(FieldGradient.constant(6, Binary64.ZERO).getField(),
+                                          intermediate1.getOrbit().toOrbit());
+            FieldGnssOrbitalElements<? extends FieldGradient<?>, ?, ?> intermediate2 =
+                intermediate1.toField(o, t -> FieldGradient.constant(6, t));
             final O rebuilt = (O) intermediate2.toNonField();
 
             for (final Method getter : getGetters(message, Integer.TYPE)) {

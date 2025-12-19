@@ -149,21 +149,25 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
 
     }
 
+    /** Get the reference inertial frame.
+     * @return reference inertial frame
+     */
+    public Frame getInertial() {
+        return inertial;
+    }
+
+    /** Get the body fixed frame.
+     * @return body fixed frame
+     */
+    public Frame getBodyFixed() {
+        return bodyFixed;
+    }
+
     /** {@inheritDoc} */
     @Override
     public void setDate(final AbsoluteDate date) {
         super.setDate(date);
         setFrame(bodyFixed.getFrozenFrame(inertial, date, FROZEN + bodyFixed.getName()));
-    }
-
-    /** Create parameter driver.
-     * @param name name of the driver
-     * @param scalePower power of two of the scale parameter
-     * @return build driver
-     */
-    protected static ParameterDriver createDriver(final String name, final int scalePower) {
-        return new ParameterDriver(name, 0, FastMath.scalb(1.0, scalePower),
-                                   Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
     }
 
     /** Get the mean angular velocity of the Earth for the GNSS model.

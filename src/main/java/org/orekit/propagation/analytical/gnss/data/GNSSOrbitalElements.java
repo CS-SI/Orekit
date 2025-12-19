@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.orbits.FieldKeplerianOrbit;
@@ -32,10 +33,10 @@ import java.util.function.ToDoubleFunction;
 
 /** This class provides the minimal set of orbital elements needed by the {@link GNSSPropagator}.
  * @param <O> type of the orbital elements
- * @since 13.0
  * @author Pascal Parraud
  * @author Luc Maisonobe
-*/
+ * @since 13.0
+ */
 public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
     implements OrbitalParameters, GNSSClockElements {
 
@@ -44,9 +45,6 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
 
     /** Duration of the GNSS cycle in weeks. */
     private final int weeksInCycle;
-
-    /** Duration of the GNSS cycle in seconds. */
-    private final double cycleDuration;
 
     /** Known time scales. */
     private final TimeScales timeScales;
@@ -160,7 +158,6 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
         // system parameters
         this.angularVelocity = angularVelocity;
         this.weeksInCycle    = weeksInCycle;
-        this.cycleDuration   = GNSSConstants.GNSS_WEEK_IN_SECONDS * weeksInCycle;
         this.timeScales      = timeScales;
         this.system          = system;
         this.type            = type;
@@ -219,10 +216,35 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
     }
 
     /** Create a field version of the instance.
+     * <p>
+     * This method just calls {@link #toField(FieldKeplerianOrbit)} using a
+     * basic conversion for the orbit (typically no fancy generation of
+     * gradients).
+     * </p>
+     * @param <T> type of the field elements
+     * @param <P> type of the orbital elements (field version)
+     * @param field field
+     * @return field version of the instance
+     * @since 14.0
+     */
+    public <T extends CalculusFieldElement<T>, P extends FieldGnssOrbitalElements<T, O, P>>
+        P toField(Field<T> field) {
+        return toField(new FieldKeplerianOrbit<>(field, orbit));
+    }
+
+    /** Create a field version of the instance.
+     * <p>
+     * This method uses the provided already converted orbit,
+     * it is typically used for initializing gradients by putting
+     * finely tuned Keplerian elements as
+     * {@link org.hipparchus.analysis.differentiation.Gradient#variable(int, int, double)
+     * gradient variables}.
+     * </p>
      * @param <T> type of the field elements
      * @param <P> type of the orbital elements (field version)
      * @param orbit orbit in the correct field
      * @return field version of the instance
+     * @since 14.0
      */
     public abstract <T extends CalculusFieldElement<T>,
                      P extends FieldGnssOrbitalElements<T, O, P>>
@@ -267,13 +289,13 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
      * @return the duration of the GNSS cycle in seconds
      */
     public double getCycleDuration() {
-        return cycleDuration;
+        return GNSSConstants.GNSS_WEEK_IN_SECONDS * weeksInCycle;
     }
 
     /** Get the PRN number of the satellite.
      * @return PRN number of the satellite
      */
-    public int getPRN() {
+    public int getPrn() {
         return prn;
     }
 
@@ -283,6 +305,14 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
      */
     public KeplerianOrbit getOrbit() {
         return orbit;
+    }
+
+    /** Get the GNSS date.
+     * @return gnss date
+     * @since 14.0
+     */
+    public GNSSDate getGnssDate() {
+        return new GNSSDate(orbit.getDate(), system);
     }
 
     /** Get change rate in semi-major axis.

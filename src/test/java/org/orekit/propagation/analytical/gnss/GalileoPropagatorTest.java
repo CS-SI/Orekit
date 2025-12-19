@@ -33,8 +33,11 @@ import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.data.FieldGalileoAlmanac;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.propagation.analytical.gnss.data.GalileoAlmanac;
+import org.orekit.propagation.analytical.gnss.data.GalileoAlmanacFactory;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessageFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.GNSSDate;
@@ -44,6 +47,7 @@ import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
@@ -53,33 +57,36 @@ import java.util.List;
 public class GalileoPropagatorTest {
 
     private DataContext context;
-    private GalileoNavigationMessage goe;
+    private GalileoNavigationMessageFactory factory;
 
     @DefaultDataContext
     @BeforeEach
     public void setUp() {
         context = DataContext.getDefault();
-        goe = new GalileoNavigationMessage(context.getTimeScales(),
-                                           SatelliteSystem.GALILEO, GalileoNavigationMessage.FNAV);
-        goe.setPRN(4);
-        goe.setWeek(1024);
-        goe.setTime(293400.0);
-        goe.setSqrtA(5440.602949142456);
-        goe.setDeltaN0(3.7394414770330066E-9);
-        goe.setE(2.4088891223073006E-4);
-        goe.setI0(0.9531656087278083);
-        goe.setIDot(-2.36081262303612E-10);
-        goe.setOmega0(-0.36639513583951266);
-        goe.setOmegaDot(-5.7695260382035525E-9);
-        goe.setPa(-1.6870064194345724);
-        goe.setM0(-0.38716557650888);
-        goe.setCuc(-8.903443813323975E-7);
-        goe.setCus(6.61797821521759E-6);
-        goe.setCrc(194.0625);
-        goe.setCrs(-18.78125);
-        goe.setCic(3.166496753692627E-8);
-        goe.setCis(-1.862645149230957E-8);
-        goe.setEpochToc(new GNSSDate(1024, 0.0, SatelliteSystem.GALILEO).getDate());
+        factory = new GalileoNavigationMessageFactory(context.getTimeScales(),
+                                                      SatelliteSystem.GALILEO,
+                                                      GalileoNavigationMessage.FNAV,
+                                                      context.getFrames().getEME2000(),
+                                                      context.getFrames().getITRF(IERSConventions.IERS_2010, false));
+        factory.setPrn(4);
+        factory.setWeekAndTime(1024, 293400.0);
+        final double sqrtA = 5440.602949142456;
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS).setValue(sqrtA * sqrtA);
+        factory.getDeltaN0Driver().setValue(3.7394414770330066E-9);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ECCENTRICITY).setValue(2.4088891223073006E-4);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.INCLINATION).setValue(0.9531656087278083);
+        factory.getIDotDriver().setValue(-2.36081262303612E-10);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.NODE_LONGITUDE).setValue(-0.36639513583951266);
+        factory.getOmegaDotDriver().setValue(-5.7695260382035525E-9);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).setValue(-1.6870064194345724);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.MEAN_ANOMALY).setValue(-0.38716557650888);
+        factory.getCucDriver().setValue(-8.903443813323975E-7);
+        factory.getCusDriver().setValue(6.61797821521759E-6);
+        factory.getCrcDriver().setValue(194.0625);
+        factory.getCrsDriver().setValue(-18.78125);
+        factory.getCicDriver().setValue(3.166496753692627E-8);
+        factory.getCisDriver().setValue(-1.862645149230957E-8);
+        factory.setToc(new GNSSDate(1024, 0.0, SatelliteSystem.GALILEO).getSecondsInWeek());
     }
 
     @BeforeAll
@@ -90,44 +97,45 @@ public class GalileoPropagatorTest {
     @Test
     public void testGalileoCycle() {
         // Reference for the almanac: 2019-05-28T09:40:01.0Z
-        final GalileoAlmanac almanac = new GalileoAlmanac(context.getTimeScales(),
-                                                          SatelliteSystem.GALILEO);
-        almanac.setPRN(1);
-        almanac.setWeek(1024);
-        almanac.setTime(293400.0);
-        almanac.setDeltaSqrtA(0.013671875);
-        almanac.setE(0.000152587890625);
-        almanac.setDeltaInc(0.003356933593);
-        almanac.setIOD(4);
-        almanac.setOmega0(0.2739257812499857891);
-        almanac.setOmegaDot(-1.74622982740407E-9);
-        almanac.setPa(0.7363586425);
-        almanac.setM0(0.27276611328124);
-        almanac.setAf0(-0.0006141662597);
-        almanac.setAf1(-7.275957614183E-12);
-        almanac.setHealthE1(0);
-        almanac.setHealthE5a(0);
-        almanac.setHealthE5b(0);
+        final GalileoAlmanacFactory almanacFactory =
+            new GalileoAlmanacFactory(context.getTimeScales(),
+                                      SatelliteSystem.GALILEO,
+                                      context.getFrames().getEME2000(),
+                                      context.getFrames().getITRF(IERSConventions.IERS_2010, false));
+        final ParameterDriversList orb = factory.getNonKeplerianParametersDrivers();
+        almanacFactory.setPrn(1);
+        almanacFactory.setWeekAndTime(1024, 293400.0);
+        final double sqrtA = FastMath.sqrt(GalileoAlmanac.A0) + 0.013671875;
+        orb.findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS).setValue(sqrtA * sqrtA);
+        orb.findByName(GNSSOrbitalElementsFactory.ECCENTRICITY).setValue(0.000152587890625);
+        orb.findByName(GNSSOrbitalElementsFactory.INCLINATION).setValue(GalileoAlmanac.I0 + 0.003356933593);
+        almanacFactory.setIOD(4);
+        orb.findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).setValue(0.2739257812499857891);
+        almanacFactory.getOmegaDotDriver().setValue(-1.74622982740407E-9);
+        orb.findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).setValue(0.7363586425);
+        orb.findByName(GNSSOrbitalElementsFactory.MEAN_ANOMALY).setValue(0.27276611328124);
+        almanacFactory.getAf0Driver().setValue(-0.0006141662597);
+        almanacFactory.getAf1Driver().setValue(-7.275957614183E-12);
+        almanacFactory.setHealthE1(0);
+        almanacFactory.setHealthE5a(0);
+        almanacFactory.setHealthE5b(0);
 
         // Intermediate verification
-        Assertions.assertEquals(1,                   almanac.getPRN());
-        Assertions.assertEquals(1024,                almanac.getWeek());
-        Assertions.assertEquals(4,                   almanac.getIOD());
-        Assertions.assertEquals(0,                   almanac.getHealthE1());
-        Assertions.assertEquals(0,                   almanac.getHealthE5a());
-        Assertions.assertEquals(0,                   almanac.getHealthE5b());
-        Assertions.assertEquals(-0.0006141662597,    almanac.getAf0(), 1.0e-15);
-        Assertions.assertEquals(-7.275957614183E-12, almanac.getAf1(), 1.0e-15);
+        Assertions.assertEquals(1,                   almanacFactory.getPrn());
+        Assertions.assertEquals(1024,                almanacFactory.getWeek());
+        Assertions.assertEquals(4,                   almanacFactory.getIOD());
+        Assertions.assertEquals(0,                   almanacFactory.getHealthE1());
+        Assertions.assertEquals(0,                   almanacFactory.getHealthE5a());
+        Assertions.assertEquals(0,                   almanacFactory.getHealthE5b());
+        Assertions.assertEquals(-0.0006141662597,    almanacFactory.getAf0Driver().getValue(), 1.0e-15);
+        Assertions.assertEquals(-7.275957614183E-12, almanacFactory.getAf1Driver().getValue(), 1.0e-15);
 
         // Builds the GalileoPropagator from the almanac
-        final GNSSPropagator<GalileoAlmanac> propagator =
-            almanac.getPropagator(context.getFrames().getEME2000(),
-                                  context.getFrames().getITRF(IERSConventions.IERS_2010, false));
+        final GNSSPropagator<GalileoAlmanac> propagator = new GNSSPropagator<>(almanacFactory);
         // Propagate at the Galileo date and one Galileo cycle later
-        final AbsoluteDate date0 = almanac.getDate();
+        final AbsoluteDate date0 = almanacFactory.getDate();
         final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();
-        final double galCycleDuration = almanac.getCycleDuration();
-        final AbsoluteDate date1 = date0.shiftedBy(galCycleDuration);
+        final AbsoluteDate date1 = date0.shiftedBy(propagator.getOrbitalElements().getCycleDuration());
         final Vector3D p1 = propagator.propagateInEcef(date1).getPosition();
 
         // Checks
@@ -137,29 +145,34 @@ public class GalileoPropagatorTest {
     @Test
     public void testFieldGalileoCycle() {
         // Reference for the almanac: 2019-05-28T09:40:01.0Z
+        final GalileoAlmanacFactory almanacFactory =
+            new GalileoAlmanacFactory(context.getTimeScales(),
+                                      SatelliteSystem.GALILEO,
+                                      context.getFrames().getEME2000(),
+                                      context.getFrames().getITRF(IERSConventions.IERS_2010, false));
+        final ParameterDriversList orb = almanacFactory.getNonKeplerianParametersDrivers();
+        almanacFactory.setPrn(1);
+        almanacFactory.setWeekAndTime(1024, 293400.0);
+        final double sqrtA = GalileoAlmanac.A0 + 0.013671875;
+        orb.findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS).setValue(sqrtA * sqrtA);
+        orb.findByName(GNSSOrbitalElementsFactory.ECCENTRICITY).setValue(0.000152587890625);
+        orb.findByName(GNSSOrbitalElementsFactory.INCLINATION).setValue(GalileoAlmanac.I0 + 0.003356933593);
+        almanacFactory.setIOD(4);
+        orb.findByName(GNSSOrbitalElementsFactory.NODE_LONGITUDE).setValue(0.2739257812499857891);
+        almanacFactory.getOmegaDotDriver().setValue(-1.74622982740407E-9);
+        orb.findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).setValue(0.7363586425);
+        orb.findByName(GNSSOrbitalElementsFactory.MEAN_ANOMALY).setValue(0.27276611328124);
+        almanacFactory.getAf0Driver().setValue(-0.0006141662597);
+        almanacFactory.getAf1Driver().setValue(-7.275957614183E-12);
+        almanacFactory.setHealthE1(0);
+        almanacFactory.setHealthE5a(0);
+        almanacFactory.setHealthE5b(0);
         final FieldGalileoAlmanac<Binary64> almanac =
-            new GalileoAlmanac(context.getTimeScales(),
-                               SatelliteSystem.GALILEO).toField(Binary64Field.getInstance());
-        almanac.setPRN(1);
-        almanac.setWeek(1024);
-        almanac.setTime(293400.0);
-        almanac.setDeltaSqrtA(new Binary64(0.013671875));
-        almanac.setE(new Binary64(0.000152587890625));
-        almanac.setDeltaInc(new Binary64(0.003356933593));
-        almanac.setIOD(4);
-        almanac.setOmega0(new Binary64(0.2739257812499857891));
-        almanac.setOmegaDot(-1.74622982740407E-9);
-        almanac.setPa(new Binary64(0.7363586425));
-        almanac.setM0(new Binary64(0.27276611328124));
-        almanac.setAf0(new Binary64(-0.0006141662597));
-        almanac.setAf1(new Binary64(-7.275957614183E-12));
-        almanac.setHealthE1(0);
-        almanac.setHealthE5a(0);
-        almanac.setHealthE5b(0);
+            almanacFactory.createFromDrivers().toField(Binary64Field.getInstance());
 
         // Intermediate verification
-        Assertions.assertEquals(1,                   almanac.getPRN());
-        Assertions.assertEquals(1024,                almanac.getWeek());
+        Assertions.assertEquals(1,                   almanacFactory.getPrn());
+        Assertions.assertEquals(1024,                almanacFactory.getWeek());
         Assertions.assertEquals(4,                   almanac.getIOD());
         Assertions.assertEquals(0,                   almanac.getHealthE1());
         Assertions.assertEquals(0,                   almanac.getHealthE5a());
@@ -168,16 +181,14 @@ public class GalileoPropagatorTest {
         Assertions.assertEquals(-7.275957614183E-12, almanac.getAf1().getReal(), 1.0e-15);
 
         // Builds the GalileoPropagator from the almanac
-        final FieldGnssPropagator<Binary64> propagator =
-            almanac.getPropagator(context.getFrames().getEME2000(),
-                                  context.getFrames().getITRF(IERSConventions.IERS_2010, false));
+        final FieldGnssPropagator<Binary64, GalileoAlmanac, FieldGalileoAlmanac<Binary64>> propagator =
+            new FieldGnssPropagator<>(Binary64Field.getInstance(), almanacFactory);
         // Propagate at the Galileo date and one Galileo cycle later
-        final FieldAbsoluteDate<Binary64> date0 = almanac.getDate();
+        final FieldAbsoluteDate<Binary64> date0 = almanac.getOrbit().getDate();
         final FieldVector3D<Binary64> p0 =
                 propagator.propagateInEcef(date0, propagator.getParameters(Binary64Field.getInstance())).
                 getPosition();
-        final double galCycleDuration = almanac.getCycleDuration();
-        final FieldAbsoluteDate<Binary64> date1 = date0.shiftedBy(galCycleDuration);
+        final FieldAbsoluteDate<Binary64> date1 = date0.shiftedBy(propagator.getOrbitalElements().getCycleDuration());
         final FieldVector3D<Binary64> p1 =
                 propagator.propagateInEcef(date1, propagator.getParameters(Binary64Field.getInstance())).
                 getPosition();
@@ -190,10 +201,9 @@ public class GalileoPropagatorTest {
     public void testFrames() {
         // Builds the GalileoPropagator from the ephemeris
         final GNSSPropagator<GalileoNavigationMessage> propagator =
-            goe.getPropagator(context.getFrames().getEME2000(),
-                              context.getFrames().getITRF(IERSConventions.IERS_2010, false));
+            new GNSSPropagatorBuilder<>(factory).buildPropagator();
         Assertions.assertEquals("EME2000", propagator.getFrame().getName());
-        Assertions.assertEquals(3.986004418e+14, goe.getMu(), 1.0e6);
+        Assertions.assertEquals(3.986004418e+14, factory.getMu(), 1.0e6);
         // Defines some date
         final AbsoluteDate date = new AbsoluteDate(2016, 3, 3, 12, 0, 0., TimeScalesFactory.getUTC());
         // Get PVCoordinates at the date in the ECEF
@@ -209,8 +219,7 @@ public class GalileoPropagatorTest {
     @Test
     public void testResetInitialState() {
         final GNSSPropagator<GalileoNavigationMessage> propagator =
-            goe.getPropagator(context.getFrames().getEME2000(),
-                              context.getFrames().getITRF(IERSConventions.IERS_2010, false));
+            new GNSSPropagatorBuilder<>(factory).buildPropagator();
         final SpacecraftState old = propagator.getInitialState();
         propagator.resetInitialState(new SpacecraftState(old.getOrbit(), old.getAttitude()).withMass(old.getMass() + 1000));
         Assertions.assertEquals(old.getMass() + 1000, propagator.getInitialState().getMass(), 1.0e-9);
@@ -219,9 +228,7 @@ public class GalileoPropagatorTest {
     @Test
     public void testResetIntermediateState() {
         GNSSPropagator<GalileoNavigationMessage> propagator =
-            goe.builder(context.getFrames().getEME2000(),
-                        context.getFrames().getITRF(IERSConventions.IERS_2010, false)).
-                buildPropagator();
+            new GNSSPropagatorBuilder<>(factory).buildPropagator();
         final SpacecraftState old = propagator.getInitialState();
         propagator.resetIntermediateState(new SpacecraftState(old.getOrbit(), old.getAttitude()).withMass(old.getMass() + 1000),
                                           true);
@@ -236,10 +243,9 @@ public class GalileoPropagatorTest {
         double errorV = 0;
         double errorA = 0;
         final GNSSPropagator<GalileoNavigationMessage> propagator =
-            goe.getPropagator(eme2000,
-                              context.getFrames().getITRF(IERSConventions.IERS_2010, true));
+            new GNSSPropagatorBuilder<>(factory).buildPropagator();
         GNSSOrbitalElements<?> elements = propagator.getOrbitalElements();
-        AbsoluteDate t0 = new GNSSDate(elements.getWeek(), elements.getTime(), SatelliteSystem.GALILEO).getDate();
+        AbsoluteDate t0 = elements.getOrbit().getDate();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
             final AbsoluteDate central = t0.shiftedBy(dt);
             final PVCoordinates pv = propagator.getPVCoordinates(central, eme2000);
@@ -267,11 +273,10 @@ public class GalileoPropagatorTest {
     @Test
     public void testPosition() {
         // Date of the Galileo orbital elements, 10 April 2019 at 09:30:00 UTC
-        final AbsoluteDate target = goe.getDate();
+        final AbsoluteDate target = factory.getDate();
         // Build the Galileo propagator
         final GNSSPropagator<GalileoNavigationMessage> propagator =
-            goe.getPropagator(context.getFrames().getEME2000(),
-                              context.getFrames().getITRF(IERSConventions.IERS_2010, false));
+            new GNSSPropagatorBuilder<>(factory).buildPropagator();
         // Compute the PV coordinates at the date of the Galileo orbital elements
         final PVCoordinates pv =
             propagator.getPVCoordinates(target,
@@ -287,8 +292,7 @@ public class GalileoPropagatorTest {
     public void testIssue544() {
         // Builds the GalileoPropagator from the almanac
         final GNSSPropagator<GalileoNavigationMessage> propagator =
-            goe.getPropagator(context.getFrames().getEME2000(),
-                              context.getFrames().getITRF(IERSConventions.IERS_2010, false));
+            new GNSSPropagatorBuilder<>(factory).buildPropagator();
         // In order to test the issue, we voluntarily set a Double.NaN value in the date.
         final AbsoluteDate date0 = new AbsoluteDate(2010, 5, 7, 7, 50, Double.NaN, TimeScalesFactory.getUTC());
         final PVCoordinates pv0 = propagator.propagateInEcef(date0);
@@ -299,7 +303,7 @@ public class GalileoPropagatorTest {
 
     @Test
     public void testConversion() {
-        GnssTestUtils.checkFieldConversion(goe);
+        GnssTestUtils.checkFieldConversion(factory.createFromDrivers());
     }
 
 }

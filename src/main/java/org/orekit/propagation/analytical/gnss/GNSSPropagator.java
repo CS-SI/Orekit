@@ -30,6 +30,7 @@ import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.SinCos;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldKeplerianAnomalyUtility;
@@ -39,10 +40,12 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.propagation.analytical.gnss.data.FieldGnssOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.propagation.analytical.gnss.data.NonKeplerianDriversFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -108,16 +111,35 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
     /** The ECEF frame used for GNSS propagation. */
     private final Frame ecef;
 
-    /**
-     * Build a new instance.
+    /** Build a new instance.
+     * <p>
+     * The attitude provider is set by default to be aligned with the provided inertial frame.
+     * This can be changed (typically to {@link org.orekit.gnss.attitude.GenericGNSS}) after
+     * construction by calling {@link #setAttitudeProvider(org.orekit.attitudes.AttitudeProvider)
+     * setAttitudeProvider}
+     * </p>
+     * <p>
+     * The mass is set to the {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.
+     * </p>
+     * @param factory factory for the elements and frames
+     * @since 14.0
+     */
+
+    public GNSSPropagator(final GNSSOrbitalElementsFactory<O> factory) {
+        this(factory.createFromDrivers(), factory.getInertial(), factory.getBodyFixed(),
+             FrameAlignedProvider.of(factory.getInertial()),
+             Propagator.DEFAULT_MASS);
+    }
+
+    /** Build a new instance.
      * @param orbitalElements GNSS orbital elements
      * @param eci Earth Centered Inertial frame
      * @param ecef Earth Centered Earth Fixed frame
      * @param provider attitude provider
      * @param mass satellite mass (kg)
      */
-    GNSSPropagator(final O orbitalElements, final Frame eci,
-                   final Frame ecef, final AttitudeProvider provider, final double mass) {
+    public GNSSPropagator(final O orbitalElements, final Frame eci, final Frame ecef,
+                          final AttitudeProvider provider, final double mass) {
         super(provider);
         // Stores the GNSS orbital elements
         this.orbitalElements = orbitalElements;
@@ -150,8 +172,8 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
      * @param mass                 spacecraft mass
      * @since 13.0
      */
-    GNSSPropagator(final SpacecraftState initialState, final O nonKeplerianElements,
-                   final Frame ecef, final AttitudeProvider provider, final double mass) {
+    public GNSSPropagator(final SpacecraftState initialState, final O nonKeplerianElements,
+                          final Frame ecef, final AttitudeProvider provider, final double mass) {
         this(buildOrbitalElements(initialState, nonKeplerianElements, ecef, provider, mass),
              initialState.getFrame(), ecef, provider, initialState.getMass());
     }
@@ -362,6 +384,8 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
      * inertial frame
      * </p>
      *
+     * @param <O> type of the orbital elements (non-field version)
+     * @param <Q> type of the orbital elements (gradient version)
      * @param initialState    initial state
      * @param nonKeplerianElements non-Keplerian orbital elements (the Keplerian orbital elements will be overridden)
      * @param ecef            Earth Centered Earth Fixed frame
@@ -370,7 +394,8 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
      * @return orbital elements that generate the {@code initialState} when used with a propagator
      * @since 13.0
      */
-    private static <O extends GNSSOrbitalElements<O>>
+    private static <O extends GNSSOrbitalElements<O>,
+                    Q extends FieldGnssOrbitalElements<Gradient, O, Q>>
         O buildOrbitalElements(final SpacecraftState initialState,
                                final O nonKeplerianElements,
                                final Frame ecef, final AttitudeProvider provider,
@@ -382,11 +407,11 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
 
         // refine orbit using simple differential correction to reach target PV
         final PVCoordinates targetPV = initialState.getPVCoordinates();
-        FieldGnssOrbitalElements<Gradient, O, ?> gElements = convert(nonKeplerianElements, orbit);
+        Q gElements = convert(nonKeplerianElements, orbit);
         for (int i = 0; i < MAX_ITER; ++i) {
 
             // get position-velocity derivatives with respect to initial orbit
-            final FieldGnssPropagator<Gradient> gPropagator =
+            final FieldGnssPropagator<Gradient, O, Q> gPropagator =
                 new FieldGnssPropagator<>(gElements, initialState.getFrame(), ecef, provider,
                                           gElements.getToc().newInstance(mass));
             final FieldPVCoordinates<Gradient> gPV = gPropagator.getInitialState().getPVCoordinates();
@@ -513,13 +538,16 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
     }
 
     /** Convert orbital elements to gradient.
+     * @param <O> type of the orbital elements (non-field version)
+     * @param <Q> type of the orbital elements (gradient version)
      * @param elements   primitive double elements
      * @param orbit      Keplerian orbit
      * @return converted elements, set up as gradient relative to Keplerian orbit
      * @since 13.0
      */
-    private static <O extends GNSSOrbitalElements<O>>
-        FieldGnssOrbitalElements<Gradient, O, ?> convert(final O elements, final KeplerianOrbit orbit) {
+    private static <O extends GNSSOrbitalElements<O>,
+                    Q extends FieldGnssOrbitalElements<Gradient, O, Q>>
+        Q convert(final O elements, final KeplerianOrbit orbit) {
         return elements.toField(new FieldKeplerianOrbit<>(Gradient.variable(FREE_PARAMETERS, 0,
                                                                             orbit.getA()),
                                                           Gradient.variable(FREE_PARAMETERS, 1,

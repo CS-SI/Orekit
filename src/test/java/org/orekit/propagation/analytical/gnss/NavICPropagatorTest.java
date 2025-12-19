@@ -27,11 +27,13 @@ import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.propagation.analytical.gnss.data.NavICAlmanac;
+import org.orekit.propagation.analytical.gnss.data.NavICAlmanacFactory;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
@@ -46,7 +48,7 @@ import java.util.List;
 
 public class NavICPropagatorTest {
 
-    private static NavICAlmanac almanac;
+    private static NavICAlmanacFactory factory;
     private static Frames frames;
 
     @DefaultDataContext
@@ -56,19 +58,22 @@ public class NavICPropagatorTest {
         final DataContext context = DataContext.getDefault();
 
         // Almanac for satellite 1 for April 1st 2014 (Source: Rinex 3.04 format - Table A19)
-        almanac = new NavICAlmanac(context.getTimeScales(), SatelliteSystem.NAVIC);
-        almanac.setPRN(1);
-        almanac.setWeek(1786);
-        almanac.setTime(172800.0);
-        almanac.setSqrtA(6.493487739563E03);
-        almanac.setE(2.257102518342E-03);
-        almanac.setI0(4.758105460020e-01);
-        almanac.setOmega0(-8.912102146884E-01);
-        almanac.setOmegaDot(-4.414469594664e-09);
-        almanac.setPa(-2.999907424014);
-        almanac.setM0(-1.396094758025);
-        almanac.setAf0(-9.473115205765e-04);
-        almanac.setAf1(1.250555214938e-12);
+        factory = new NavICAlmanacFactory(context.getTimeScales(),
+                                          SatelliteSystem.NAVIC,
+                                          context.getFrames().getEME2000(),
+                                          context.getFrames().getITRF(IERSConventions.IERS_2010, false));
+        factory.setPrn(1);
+        factory.setWeekAndTime(1786, 172800.0);
+        final double sqrtA = 6.493487739563E03;
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS).setValue(sqrtA * sqrtA);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ECCENTRICITY).setValue(2.257102518342E-03);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.INCLINATION).setValue(4.758105460020e-01);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.NODE_LONGITUDE).setValue(-8.912102146884E-01);
+        factory.getOmegaDotDriver().setValue(-4.414469594664e-09);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.ARGUMENT_OF_PERIGEE).setValue(-2.999907424014);
+        factory.getOrbitalParametersDrivers().findByName(GNSSOrbitalElementsFactory.MEAN_ANOMALY).setValue(-1.396094758025);
+        factory.getAf0Driver().setValue(-9.473115205765e-04);
+        factory.getAf1Driver().setValue(1.250555214938e-12);
 
         frames = context.getFrames();
     }
@@ -77,13 +82,11 @@ public class NavICPropagatorTest {
     public void testNavICCycle() {
         // Builds the NavIC propagator from the almanac
         final GNSSPropagator<NavICAlmanac> propagator =
-            almanac.getPropagator(frames.getEME2000(),
-                                  frames.getITRF(IERSConventions.IERS_2010, false));
+            new GNSSPropagator<>(factory);
         // Propagate at the NavIC date and one NavIC cycle later
-        final AbsoluteDate date0 = almanac.getDate();
+        final AbsoluteDate date0 = factory.getDate();
         final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();
-        final double bdtCycleDuration = almanac.getCycleDuration();
-        final AbsoluteDate date1 = date0.shiftedBy(bdtCycleDuration);
+        final AbsoluteDate date1 = date0.shiftedBy(propagator.getOrbitalElements().getCycleDuration());
         final Vector3D p1 = propagator.propagateInEcef(date1).getPosition();
 
         // Checks
@@ -93,11 +96,9 @@ public class NavICPropagatorTest {
     @Test
     public void testFrames() {
         // Builds the NavIC propagator from the almanac
-        final GNSSPropagator<NavICAlmanac> propagator =
-            almanac.getPropagator(frames.getEME2000(),
-                                  frames.getITRF(IERSConventions.IERS_2010, true));
+        final GNSSPropagator<NavICAlmanac> propagator = new GNSSPropagator<>(factory);
         Assertions.assertEquals("EME2000", propagator.getFrame().getName());
-        Assertions.assertEquals(3.986005e+14, almanac.getMu(), 1.0e6);
+        Assertions.assertEquals(3.986005e+14, factory.getMu(), 1.0e6);
         // Defines some date
         final AbsoluteDate date = new AbsoluteDate(2016, 3, 3, 12, 0, 0., TimeScalesFactory.getUTC());
         // Get PVCoordinates at the date in the ECEF
@@ -112,9 +113,7 @@ public class NavICPropagatorTest {
 
     @Test
     public void testResetInitialState() {
-        final GNSSPropagator<NavICAlmanac> propagator =
-            almanac.getPropagator(frames.getEME2000(),
-                                  frames.getITRF(IERSConventions.IERS_2010, false));
+        final GNSSPropagator<NavICAlmanac> propagator = new GNSSPropagator<>(factory);
         final SpacecraftState old = propagator.getInitialState();
         propagator.resetInitialState(new SpacecraftState(old.getOrbit(), old.getAttitude()).withMass(old.getMass() + 1000));
         Assertions.assertEquals(old.getMass() + 1000, propagator.getInitialState().getMass(), 1.0e-9);
@@ -122,10 +121,7 @@ public class NavICPropagatorTest {
 
     @Test
     public void testResetIntermediateState() {
-        GNSSPropagator<NavICAlmanac> propagator =
-            almanac.builder(frames.getEME2000(),
-                            frames.getITRF(IERSConventions.IERS_2010, false)).
-            buildPropagator();
+        GNSSPropagator<NavICAlmanac> propagator = new GNSSPropagator<>(factory);
         final SpacecraftState old = propagator.getInitialState();
         propagator.resetIntermediateState(new SpacecraftState(old.getOrbit(), old.getAttitude()).withMass(old.getMass() + 1000),
                                           true);
@@ -140,9 +136,13 @@ public class NavICPropagatorTest {
         double errorV = 0;
         double errorA = 0;
         final GNSSPropagator<NavICAlmanac> propagator =
-            almanac.getPropagator(eme2000, frames.getITRF(IERSConventions.IERS_2010, true));
+            new GNSSPropagator<>(factory.createFromDrivers(),
+                                 eme2000,
+                                 frames.getITRF(IERSConventions.IERS_2010, true),
+                                 Propagator.getDefaultLaw(frames),
+                                 Propagator.DEFAULT_MASS);
         GNSSOrbitalElements<?> elements = propagator.getOrbitalElements();
-        AbsoluteDate t0 = new GNSSDate(elements.getWeek(), elements.getTime(), SatelliteSystem.NAVIC).getDate();
+        AbsoluteDate t0 = elements.getDate();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
             final AbsoluteDate central = t0.shiftedBy(dt);
             final PVCoordinates pv = propagator.getPVCoordinates(central, eme2000);
@@ -171,10 +171,8 @@ public class NavICPropagatorTest {
     @Test
     public void testIssue544() {
         // Builds the NavICPropagator from the almanac
-        final GNSSPropagator<NavICAlmanac> propagator =
-            almanac.getPropagator(frames.getEME2000(),
-                                  frames.getITRF(IERSConventions.IERS_2010, false));
-        // In order to test the issue, we voluntary set a Double.NaN value in the date.
+        final GNSSPropagator<NavICAlmanac> propagator = new GNSSPropagator<>(factory);
+        // In order to test the issue, we voluntarily set a Double.NaN value in the date.
         final AbsoluteDate date0 = new AbsoluteDate(2010, 5, 7, 7, 50, Double.NaN, TimeScalesFactory.getUTC());
         final PVCoordinates pv0 = propagator.propagateInEcef(date0);
         // Verify that an infinite loop did not occur
@@ -184,7 +182,7 @@ public class NavICPropagatorTest {
 
     @Test
     public void testConversion() {
-        GnssTestUtils.checkFieldConversion(almanac);
+        GnssTestUtils.checkFieldConversion(factory.createFromDrivers());
     }
 
 }

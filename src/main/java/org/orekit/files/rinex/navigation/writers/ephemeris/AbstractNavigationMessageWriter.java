@@ -108,7 +108,7 @@ public abstract class AbstractNavigationMessageWriter<T extends AbstractNavigati
                                  writer.getTimeScales().getGLONASS() :
                                  writer.getTimeScales().getGPS();
             final DateTimeComponents dtc = message.getEpochToc().getComponents(ts);
-            writer.outputField(TWO_DIGITS_INTEGER, message.getPRN(),                2);
+            writer.outputField(TWO_DIGITS_INTEGER, message.getPrn(), 2);
             writer.outputField(THREE_DIGITS_INTEGER, dtc.getDate().getYear() % 100, 5);
             writer.outputField(THREE_DIGITS_INTEGER, dtc.getDate().getMonth(),      8);
             writer.outputField(THREE_DIGITS_INTEGER, dtc.getDate().getDay(),       11);

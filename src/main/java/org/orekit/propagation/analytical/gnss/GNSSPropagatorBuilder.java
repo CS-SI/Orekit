@@ -17,7 +17,6 @@
 package org.orekit.propagation.analytical.gnss;
 
 import org.orekit.attitudes.FrameAlignedProvider;
-import org.orekit.frames.Frame;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
@@ -35,27 +34,20 @@ import java.util.stream.Collectors;
 public class GNSSPropagatorBuilder<O extends GNSSOrbitalElements<O>>
     extends AbstractAnalyticalPropagatorBuilder<GNSSPropagator<O>, O, GNSSOrbitalElementsFactory<O>> {
 
-    /** Inertial frame. */
-    private final Frame inertial;
-
-    /** The body-fixed frame. */
-    private final Frame bodyFixed;
-
     /** Initializes the builder.
-     * <p>The attitude provider is set by default to be aligned with the provided inertial frame.<br>
-     * The mass is set by default to the
-     *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.
+     * <p>
+     * The attitude provider is set by default to be aligned with the provided inertial frame.
+     * This can be changed after construction by calling
+     * {@link #setAttitudeProvider(org.orekit.attitudes.AttitudeProvider) setAttitudeProvider}
      * </p>
-     *
+     * <p>
+     * The mass is set to the {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.
+     * This can be changed after construction by calling {@link #setMass(double) setMass}
+     * </p>
      * @param factory factory for initial orbit
-     * @param inertial inertial frame, use to provide the propagated orbit
-     * @param bodyFixed body fixed frame, corresponding to the navigation message
      */
-    public GNSSPropagatorBuilder(final GNSSOrbitalElementsFactory<O> factory,
-                                 final Frame inertial, final Frame bodyFixed) {
-        super(factory, false, FrameAlignedProvider.of(inertial), Propagator.DEFAULT_MASS);
-        this.inertial  = inertial;
-        this.bodyFixed = bodyFixed;
+    public GNSSPropagatorBuilder(final GNSSOrbitalElementsFactory<O> factory) {
+        super(factory, false, FrameAlignedProvider.of(factory.getInertial()), Propagator.DEFAULT_MASS);
 
         // add non-Keplerian propagation parameters (iDot, cic, cis,…)
         addPropagationParameters(factory.
@@ -74,13 +66,17 @@ public class GNSSPropagatorBuilder<O extends GNSSOrbitalElements<O>>
         // set parameters
         setParameters(normalizedParameters);
 
-        // Keplerian elements
-        final GNSSOrbitalElementsFactory<O> factory = getOrbitalParameterFactory();
-        final O elements = factory.createFromDrivers();
-
-        return new GNSSPropagator<>(elements, inertial, bodyFixed,
+        return new GNSSPropagator<>(getOrbitalParameterFactory().createFromDrivers(),
+                                    getOrbitalParameterFactory().getInertial(),
+                                    getOrbitalParameterFactory().getBodyFixed(),
                                     getAttitudeProvider(), getMass());
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public GNSSPropagator<O> buildPropagator() {
+        return buildPropagator(getSelectedNormalizedParameters());
     }
 
 }

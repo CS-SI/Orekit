@@ -17,9 +17,7 @@
 package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.analysis.differentiation.GradientField;
 import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
@@ -55,7 +53,7 @@ class GnssGradientConverter<O extends GNSSOrbitalElements<O>,
 
     /** {@inheritDoc} */
     @Override
-    public FieldGnssPropagator<Gradient> getPropagator() {
+    public FieldGnssPropagator<Gradient, O, P> getPropagator() {
 
         // prepare initial state with proper derivatives
         final FieldSpacecraftState<Gradient> state = getState(this);
@@ -63,8 +61,8 @@ class GnssGradientConverter<O extends GNSSOrbitalElements<O>,
         // build propagator handling gradient
         final FieldKeplerianOrbit<Gradient> orbit =
             (FieldKeplerianOrbit<Gradient>) OrbitType.KEPLERIAN.convertType(state.getOrbit());
-        return new FieldGnssPropagator<>(state,
-                                         propagator.getOrbitalElements().toField(orbit),
+        final P elements = propagator.getOrbitalElements().toField(orbit);
+        return new FieldGnssPropagator<>(state, elements,
                                          propagator.getECEF(), propagator.getAttitudeProvider(),
                                          state.getMass());
 
