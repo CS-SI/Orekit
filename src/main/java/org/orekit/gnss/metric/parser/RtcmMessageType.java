@@ -94,8 +94,8 @@ public enum RtcmMessageType implements MessageType {
             // Set the satellite ID
             final int gpsId = RtcmDataField.DF009.intValue(encodedMessage);
 
-            // Accuracy provider
-            final AccuracyProvider gpsProvider = new UserRangeAccuracy(RtcmDataField.DF077.intValue(encodedMessage));
+            // Week number
+            final int gpsWeekNumber = RtcmDataField.DF076.intValue(encodedMessage);
 
             // Initialize data container and navigation message
             final GPSLegacyNavigationMessageFactory factory =
@@ -103,9 +103,9 @@ public enum RtcmMessageType implements MessageType {
                                                       GPSLegacyNavigationMessage.LNAV,
                                                       inertial, bodyFixed);
 
-            // Date
-            factory.setWeekAndTime(RtcmDataField.DF076.intValue(encodedMessage),
-                                   RtcmDataField.DF093.doubleValue(encodedMessage));
+            // Accuracy provider
+            final AccuracyProvider gpsProvider = new UserRangeAccuracy(RtcmDataField.DF077.intValue(encodedMessage));
+           factory.setSvAccuracy(gpsProvider.getAccuracy());
 
             // GPS Code on L2
             factory.setL2Codes(RtcmDataField.DF078.intValue(encodedMessage));
@@ -128,6 +128,8 @@ public enum RtcmMessageType implements MessageType {
             factory.getCusDriver().setValue(RtcmDataField.DF091.doubleValue(encodedMessage));
             final double sqrtA = RtcmDataField.DF092.doubleValue(encodedMessage);
             setValue(orb, GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS, sqrtA * sqrtA);
+            factory.setWeekAndTime(gpsWeekNumber,
+                                   RtcmDataField.DF093.doubleValue(encodedMessage));
             factory.getCicDriver().setValue(RtcmDataField.DF094.doubleValue(encodedMessage));
             setValue(orb, GNSSOrbitalElementsFactory.NODE_LONGITUDE, RtcmDataField.DF095, encodedMessage);
             factory.getCisDriver().setValue(RtcmDataField.DF096.doubleValue(encodedMessage));
@@ -160,12 +162,8 @@ public enum RtcmMessageType implements MessageType {
             // satellite ID
             final int glonassId = RtcmDataField.DF038.intValue(encodedMessage);
 
-            // Glonass accuracy
-            final int index = RtcmDataField.DF128.intValue(encodedMessage);
-            final GlonassUserRangeAccuracy accuracy = new GlonassUserRangeAccuracy(index);
-
             // Initialize data container and navigation message
-            final Rtcm1020Data                 rtcm1020Data      = new Rtcm1020Data(glonassId, accuracy);
+            final Rtcm1020Data                 rtcm1020Data      = new Rtcm1020Data(glonassId);
             final GLONASSFdmaNavigationMessage glonassNavMessage = new GLONASSFdmaNavigationMessage();
 
             // Read data
@@ -196,6 +194,10 @@ public enum RtcmMessageType implements MessageType {
             rtcm1020Data.setEn(RtcmDataField.DF126.intValue(encodedMessage));
             rtcm1020Data.setP4(RtcmDataField.DF127.intValue(encodedMessage));
 
+            // Glonass accuracy
+            final int index = RtcmDataField.DF128.intValue(encodedMessage);
+            final GlonassUserRangeAccuracy accuracy = new GlonassUserRangeAccuracy(index);
+            rtcm1020Data.setAccuracyProvider(accuracy);
             rtcm1020Data.setFT(index);
 
             // Read other data
@@ -229,18 +231,18 @@ public enum RtcmMessageType implements MessageType {
             // Satellite ID
             final int beidouId = RtcmDataField.DF488.intValue(encodedMessage);
 
-            // Accuracy provider
-            final AccuracyProvider beidouProvider = new UserRangeAccuracy(RtcmDataField.DF490.intValue(encodedMessage));
-
             // Initialize data container and navigation message factory
             final BeidouLegacyNavigationMessageFactory factory =
                 new BeidouLegacyNavigationMessageFactory(timeScales, SatelliteSystem.BEIDOU,
                                                          BeidouLegacyNavigationMessage.D1,
                                                          inertial, bodyFixed, false);
 
-            // Date
-            factory.setWeekAndTime(RtcmDataField.DF489.intValue(encodedMessage),
-                                   RtcmDataField.DF505.doubleValue(encodedMessage));
+            // Week number
+            final int beidouWeekNumber = RtcmDataField.DF489.intValue(encodedMessage);
+
+            // Accuracy provider
+            final AccuracyProvider beidouProvider = new UserRangeAccuracy(RtcmDataField.DF490.intValue(encodedMessage));
+            factory.setSvAccuracy(beidouProvider.getAccuracy());
 
             // Fill navigation message
             final ParameterDriversList orb = factory.getOrbitalParametersDrivers();
@@ -260,6 +262,8 @@ public enum RtcmMessageType implements MessageType {
             factory.getCusDriver().setValue(RtcmDataField.DF503.doubleValue(encodedMessage));
             final double sqrtA = RtcmDataField.DF504.doubleValue(encodedMessage);
             setValue(orb, GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS, sqrtA * sqrtA);
+            factory.setWeekAndTime(beidouWeekNumber,
+                                   RtcmDataField.DF505.doubleValue(encodedMessage));
             factory.getCicDriver().setValue(RtcmDataField.DF506.doubleValue(encodedMessage));
             setValue(orb, GNSSOrbitalElementsFactory.NODE_LONGITUDE, RtcmDataField.DF507, encodedMessage);
             factory.getCisDriver().setValue(RtcmDataField.DF508.doubleValue(encodedMessage));
@@ -289,19 +293,11 @@ public enum RtcmMessageType implements MessageType {
             // Satellite ID
             final int qzssId = RtcmDataField.DF429.intValue(encodedMessage);
 
-            // Accuracy provider
-            final AccuracyProvider qzssProvider = new UserRangeAccuracy(RtcmDataField.DF453.intValue(encodedMessage));
-
-
             // Initialize data container and navigation message
             final QZSSLegacyNavigationMessageFactory factory =
                 new QZSSLegacyNavigationMessageFactory(timeScales, SatelliteSystem.QZSS,
                                                        QZSSLegacyNavigationMessage.LNAV,
                                                        inertial, bodyFixed);
-
-            // Date
-            factory.setWeekAndTime(RtcmDataField.DF452.intValue(encodedMessage),
-                                   RtcmDataField.DF442.doubleValue(encodedMessage));
 
             // Fill navigation message
             final ParameterDriversList orb = factory.getOrbitalParametersDrivers();
@@ -319,6 +315,7 @@ public enum RtcmMessageType implements MessageType {
             factory.getCusDriver().setValue(RtcmDataField.DF440.doubleValue(encodedMessage));
             final double sqrtA = RtcmDataField.DF441.doubleValue(encodedMessage);
             setValue(orb, GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS, sqrtA * sqrtA);
+            final double time = RtcmDataField.DF442.doubleValue(encodedMessage);
             factory.getCicDriver().setValue(RtcmDataField.DF443.doubleValue(encodedMessage));
             setValue(orb, GNSSOrbitalElementsFactory.NODE_LONGITUDE, RtcmDataField.DF444, encodedMessage);
             factory.getCisDriver().setValue(RtcmDataField.DF445.doubleValue(encodedMessage));
@@ -330,6 +327,12 @@ public enum RtcmMessageType implements MessageType {
 
             // QZSS Code on L2
             factory.setL2Codes(RtcmDataField.DF451.intValue(encodedMessage));
+
+            factory.setWeekAndTime(RtcmDataField.DF452.intValue(encodedMessage), time);
+
+            // Accuracy provider
+            final AccuracyProvider qzssProvider = new UserRangeAccuracy(RtcmDataField.DF453.intValue(encodedMessage));
+            factory.setSvAccuracy(qzssProvider.getAccuracy());
 
             // Health
             factory.setSvHealth(RtcmDataField.DF454.intValue(encodedMessage));
@@ -357,21 +360,21 @@ public enum RtcmMessageType implements MessageType {
             // Satellite ID
             final int galileoId = RtcmDataField.DF252.intValue(encodedMessage);
 
-            // Accuracy provider
-            final AccuracyProvider galileoProvider = new SignalInSpaceAccuracy(RtcmDataField.DF291.intValue(encodedMessage));
-
             // Initialize data container and navigation message
             final GalileoNavigationMessageFactory factory =
                 new GalileoNavigationMessageFactory(timeScales, SatelliteSystem.GALILEO,
                                                     GalileoNavigationMessage.FNAV,
                                                     inertial, bodyFixed);
 
-            // Date
-            factory.setWeekAndTime(RtcmDataField.DF289.intValue(encodedMessage),
-                                   RtcmDataField.DF304.doubleValue(encodedMessage));
+            // Week number
+            final int galileoWeekNumber = RtcmDataField.DF289.intValue(encodedMessage);
 
             // IODNav
             factory.setIODNav(RtcmDataField.DF290.intValue(encodedMessage));
+
+            // Accuracy provider
+            final AccuracyProvider galileoProvider = new SignalInSpaceAccuracy(RtcmDataField.DF291.intValue(encodedMessage));
+           factory.setSisa(galileoProvider.getAccuracy());
 
             // Fill navigation message
             final ParameterDriversList orb = factory.getOrbitalParametersDrivers();
@@ -389,6 +392,8 @@ public enum RtcmMessageType implements MessageType {
             factory.getCusDriver().setValue(RtcmDataField.DF302.doubleValue(encodedMessage));
             final double sqrtA = RtcmDataField.DF303.doubleValue(encodedMessage);
             setValue(orb, GNSSOrbitalElementsFactory.SEMI_MAJOR_AXIS, sqrtA * sqrtA);
+            factory.setWeekAndTime(galileoWeekNumber,
+                                   RtcmDataField.DF304.doubleValue(encodedMessage));
             factory.getCicDriver().setValue(RtcmDataField.DF305.doubleValue(encodedMessage));
             setValue(orb, GNSSOrbitalElementsFactory.NODE_LONGITUDE, RtcmDataField.DF306, encodedMessage);
             factory.getCisDriver().setValue(RtcmDataField.DF307.doubleValue(encodedMessage));

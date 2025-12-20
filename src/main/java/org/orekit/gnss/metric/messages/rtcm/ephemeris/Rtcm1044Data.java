@@ -41,8 +41,9 @@ public class Rtcm1044Data extends RtcmEphemerisData {
      */
     public Rtcm1044Data(final int satelliteId, final AccuracyProvider accuracyProvider,
                         final QZSSLegacyNavigationMessageFactory factory) {
-        super(satelliteId, accuracyProvider);
+        super(satelliteId);
         this.factory = factory;
+        setAccuracyProvider(accuracyProvider);
     }
 
     /**

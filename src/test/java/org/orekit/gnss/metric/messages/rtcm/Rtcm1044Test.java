@@ -31,6 +31,8 @@ import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
+import org.orekit.time.DateComponents;
+import org.orekit.time.GNSSDate;
 import org.orekit.utils.IERSConventions;
 
 import java.util.ArrayList;
@@ -85,6 +87,7 @@ public class Rtcm1044Test {
         ArrayList<Integer> messages = new ArrayList<>();
         messages.add(1044);
 
+        GNSSDate.setRolloverReference(DateComponents.GPS_EPOCH);
         final DataContext context  = DataContext.getDefault();
         final Rtcm1044    rtcm1044 = (Rtcm1044) new RtcmMessagesParser(messages,
                                                                        context.getTimeScales(),

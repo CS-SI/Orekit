@@ -29,7 +29,7 @@ import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessageFacto
 public class Rtcm1045Data extends RtcmEphemerisData {
 
     /** Factory for Galileo navigation message. */
-    private GalileoNavigationMessageFactory factory;
+    private final GalileoNavigationMessageFactory factory;
 
     /** Constructor.
      * @param satelliteId satellite ID
@@ -39,8 +39,9 @@ public class Rtcm1045Data extends RtcmEphemerisData {
      */
     public Rtcm1045Data(final int satelliteId, final AccuracyProvider accuracyProvider,
                         final GalileoNavigationMessageFactory factory) {
-        super(satelliteId, accuracyProvider);
+        super(satelliteId);
         this.factory = factory;
+        setAccuracyProvider(accuracyProvider);
     }
 
     /**

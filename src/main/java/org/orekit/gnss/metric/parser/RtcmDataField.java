@@ -321,8 +321,8 @@ public enum RtcmDataField implements DataField {
     DF103 {
         /** {@inheritDoc} */
         @Override
-        public boolean booleanValue(final EncodedMessage message) {
-            return DataType.BIT_1.decode(message) == 0;
+        public int intValue(final EncodedMessage message) {
+            return DataType.BIT_1.decode(message).intValue();
         }
     },
 
@@ -1621,6 +1621,6 @@ public enum RtcmDataField implements DataField {
         public int intValue(final EncodedMessage message) {
             return DataType.BIT_1.decode(message).intValue();
         }
-    };
+    }
 
 }
