@@ -17,10 +17,10 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.orekit.gnss.SatelliteSystem;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbitalParameters;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
 import java.util.function.Function;
@@ -50,14 +50,16 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
     /** Known time scales. */
     private final TimeScales timeScales;
 
-    /** Satellite system to use for interpreting week number. */
-    private final SatelliteSystem system;
-
     /** Message type (null if not a navigation message). */
     private final String type;
 
     /** PRN number of the satellite. */
     private final int prn;
+
+    /** GNSS Date.
+     * @since 14.0
+     */
+    private final GNSSDate gnssDate;
 
     /** Orbit. */
     private final FieldKeplerianOrbit<T> orbit;
@@ -120,11 +122,9 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
      * @param weeksInCycle    number of weeks in the GNSS cycle
      * @param timeScales      known time scales
-     * @param system          satellite system to consider for interpreting week number
-     *                        (may be different from real system, for example in Rinex nav, weeks
-     *                        are always according to GPS)
      * @param type            type (null if not a navigation message)
      * @param prn             PRN number of the satellite
+     * @param gnssDate        GNSS date (<em>must</em> be consistent with {@code orbit})
      * @param orbit           Keplerian orbit in Earth-frozen frame
      * @param aDot            change rate in semi-major axis (m/s)
      * @param deltaN0         delta of satellite mean motion
@@ -145,8 +145,8 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
      * @since 14.0
      */
     public FieldGnssOrbitalElements(final double angularVelocity, final int weeksInCycle,
-                                    final TimeScales timeScales, final SatelliteSystem system, final String type,
-                                    final int prn, final FieldKeplerianOrbit<T> orbit,
+                                    final TimeScales timeScales, final String type, final int prn,
+                                    final GNSSDate gnssDate, final FieldKeplerianOrbit<T> orbit,
                                     final T aDot,
                                     final T deltaN0, final T deltaN0Dot,
                                     final T iDot, final T omegaDot,
@@ -160,11 +160,13 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
         this.weeksInCycle    = weeksInCycle;
         this.cycleDuration   = GNSSConstants.GNSS_WEEK_IN_SECONDS * weeksInCycle;
         this.timeScales      = timeScales;
-        this.system          = system;
         this.type            = type;
 
         // satellite identifier
         this.prn             = prn;
+
+        // date
+        this.gnssDate        = gnssDate;
 
         // Keplerian orbit
         this.orbit           = orbit;
@@ -197,8 +199,8 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
      */
     protected FieldGnssOrbitalElements(final FieldKeplerianOrbit<T> orbit, final O original) {
         this(original.getAngularVelocity(), original.getWeeksInCycle(),  original.getTimeScales(),
-             original.getSystem(), original.getType(), original.getPrn(),
-             orbit,
+             original.getType(), original.getPrn(),
+             new GNSSDate(orbit.getDate().toAbsoluteDate(), original.getGnssDate().getSystem()), orbit,
              orbit.getMu().newInstance(original.getADot()),
              orbit.getMu().newInstance(original.getDeltaN0()), orbit.getMu().newInstance(original.getDeltaN0Dot()),
              orbit.getMu().newInstance(original.getIDot()), orbit.getMu().newInstance(original.getOmegaDot()),
@@ -221,8 +223,8 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
                                                                            final Function<V, T> converter,
                                                                            final FieldGnssOrbitalElements<V, O, ?> original) {
         this(original.getAngularVelocity(), original.getWeeksInCycle(), original.getTimeScales(),
-             original.getSystem(), original.getType(), original.getPRN(),
-             orbit,
+             original.getType(), original.getPRN(),
+             new GNSSDate(orbit.getDate().toAbsoluteDate(), original.getGnssDate().getSystem()), orbit,
              converter.apply(original.getADot()),
              converter.apply(original.getDeltaN0()), converter.apply(original.getDeltaN0Dot()),
              converter.apply(original.getIDot()), converter.apply(original.getOmegaDot()),
@@ -242,6 +244,14 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
         return orbit.getDate();
     }
 
+    /** Get the GNSS date.
+     * @return GNSS date
+     * @since 14.0
+     */
+    public GNSSDate getGnssDate() {
+        return gnssDate;
+    }
+
     /** Create a non-field version of the instance.
      * @return non-field version of the instance
      */
@@ -254,13 +264,6 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
      */
     public abstract <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, O, V>>
     V toField(FieldKeplerianOrbit<U> orbit, Function<T, U> converter);
-
-    /** Get satellite system.
-     * @return satellite system
-     */
-    public SatelliteSystem getSystem() {
-        return system;
-    }
 
     /** Get known time scales.
      * @return known time scales

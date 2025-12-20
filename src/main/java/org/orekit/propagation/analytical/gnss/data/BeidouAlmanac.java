@@ -18,11 +18,10 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.Frame;
-import org.orekit.gnss.SatelliteSystem;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
-
 
 /**
  * Class for BeiDou almanac.
@@ -42,11 +41,9 @@ public class BeidouAlmanac extends GNSSOrbitalElements<BeidouAlmanac> {
     /**
      * Build a new almanac.
      * @param timeScales known time scales
-     * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav, weeks
-     *                   are always according to GPS)
      * @param prn        PRN number of the satellite
      * @param orbit      Keplerian orbit in Earth-frozen frame
+     * @param gnssDate   GNSS date (<em>must</em> be consistent with {@code orbit})
      * @param aDot       change rate in semi-major axis (m/s)
      * @param deltaN0    delta of satellite mean motion
      * @param deltaN0Dot change rate in Δn₀
@@ -65,9 +62,9 @@ public class BeidouAlmanac extends GNSSOrbitalElements<BeidouAlmanac> {
      * @param toc        time of clock
      * @param health     health status
      */
-    public BeidouAlmanac(final TimeScales timeScales, final SatelliteSystem system, final int prn,
-                         final KeplerianOrbit orbit, final double aDot,
-                         final double deltaN0, final double deltaN0Dot,
+    public BeidouAlmanac(final TimeScales timeScales, final int prn,
+                         final GNSSDate gnssDate, final KeplerianOrbit orbit,
+                         final double aDot, final double deltaN0, final double deltaN0Dot,
                          final double iDot, final double omegaDot,
                          final double cuc, final double cus,
                          final double crc, final double crs,
@@ -75,9 +72,9 @@ public class BeidouAlmanac extends GNSSOrbitalElements<BeidouAlmanac> {
                          final double af0, final double af1, final double af2,
                          final double tgd, final double toc,
                          final int health) {
-        super(GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB, timeScales, system, null, prn,
-              orbit, aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
-              af0, af1, af2, tgd, toc);
+        super(GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB, timeScales, null, prn,
+              gnssDate, orbit, aDot, deltaN0, deltaN0Dot, iDot, omegaDot,
+              cuc, cus, crc, crs, cic, cis, af0, af1, af2, tgd, toc);
         this.health = health;
     }
 
@@ -108,7 +105,8 @@ public class BeidouAlmanac extends GNSSOrbitalElements<BeidouAlmanac> {
     /** {@inheritDoc} */
     @Override
     public BeidouAlmanacFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
-        return new BeidouAlmanacFactory(getTimeScales(), getSystem(), inertial, bodyFixed);
+        return new BeidouAlmanacFactory(getTimeScales(), getGnssDate().getSystem(),
+                                        inertial, bodyFixed);
     }
 
 }

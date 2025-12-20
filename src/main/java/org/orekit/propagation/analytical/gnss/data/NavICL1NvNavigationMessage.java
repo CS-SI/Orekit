@@ -18,10 +18,10 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.Frame;
-import org.orekit.gnss.SatelliteSystem;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
 
@@ -68,11 +68,9 @@ public class NavICL1NvNavigationMessage
 
     /** Constructor.
      * @param timeScales          known time scales
-     * @param system              satellite system to consider for interpreting week number
-     *                            (may be different from real system, for example in Rinex nav, weeks
-     *                            are always according to GPS)
      * @param type                message type
      * @param prn                 PRN number of the satellite
+     * @param gnssDate            GNSS date (<em>must</em> be consistent with {@code orbit})
      * @param orbit               Keplerian orbit in Earth-frozen frame
      * @param aDot                change rate in semi-major axis (m/s)
      * @param deltaN0             delta of satellite mean motion
@@ -101,9 +99,9 @@ public class NavICL1NvNavigationMessage
      * @param iscL1PS             inter signal delay for L1P S
      * @param iscL1DS             inter signal delay for L1D S
      */
-    public NavICL1NvNavigationMessage(final TimeScales timeScales, final SatelliteSystem system, final String type,
-                                      final int prn, final KeplerianOrbit orbit, final double aDot,
-                                      final double deltaN0, final double deltaN0Dot,
+    public NavICL1NvNavigationMessage(final TimeScales timeScales, final String type,
+                                      final int prn, final GNSSDate gnssDate, final KeplerianOrbit orbit,
+                                      final double aDot, final double deltaN0, final double deltaN0Dot,
                                       final double iDot, final double omegaDot,
                                       final double cuc, final double cus,
                                       final double crc, final double crs,
@@ -117,7 +115,7 @@ public class NavICL1NvNavigationMessage
                                       final double iscSL1P, final double iscL1DL1P,
                                       final double iscL1PS, final double iscL1DS) {
         super(GNSSConstants.NAVIC_AV, GNSSConstants.NAVIC_WEEK_NB,
-              timeScales, system, type, prn, orbit,
+              timeScales, type, prn, gnssDate, orbit,
               aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
               af0, af1, af2, tgd, toc, epochToc, transmissionTime);
         this.referenceSignalFlag = referenceSignalFlag;
@@ -215,7 +213,7 @@ public class NavICL1NvNavigationMessage
     /** {@inheritDoc} */
     @Override
     public NavICL1NvNavigationMessageFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
-        return new NavICL1NvNavigationMessageFactory(getTimeScales(), getSystem(), getType(),
+        return new NavICL1NvNavigationMessageFactory(getTimeScales(), getGnssDate().getSystem(), getType(),
                                                      inertial, bodyFixed);
     }
 

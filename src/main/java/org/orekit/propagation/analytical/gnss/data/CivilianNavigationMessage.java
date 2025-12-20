@@ -17,9 +17,9 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.orekit.gnss.SatelliteSystem;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
 /**
@@ -80,11 +80,9 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
      * @param angularVelocity  mean angular velocity of the Earth for the GNSS model
      * @param weeksInCycle     number of weeks in the GNSS cycle
      * @param timeScales       known time scales
-     * @param system           satellite system to consider for interpreting week number
-     *                         (may be different from real system, for example in Rinex nav, weeks
-     *                         are always according to GPS)
      * @param type             message type
      * @param prn              PRN number of the satellite
+     * @param gnssDate         GNSS date (<em>must</em> be consistent with {@code orbit})
      * @param orbit            Keplerian orbit in Earth-frozen frame
      * @param aDot             change rate in semi-major axis (m/s)
      * @param deltaN0          delta of satellite mean motion
@@ -120,9 +118,9 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
      */
     protected CivilianNavigationMessage(final boolean cnv2,
                                         final double angularVelocity, final int weeksInCycle,
-                                        final TimeScales timeScales, final SatelliteSystem system, final String type,
-                                        final int prn, final KeplerianOrbit orbit, final double aDot,
-                                        final double deltaN0, final double deltaN0Dot,
+                                        final TimeScales timeScales, final String type,
+                                        final int prn, final GNSSDate gnssDate, final KeplerianOrbit orbit,
+                                        final double aDot, final double deltaN0, final double deltaN0Dot,
                                         final double iDot, final double omegaDot,
                                         final double cuc, final double cus,
                                         final double crc, final double crs,
@@ -135,9 +133,9 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
                                         final double iscL2C, final double iscL5I5, final double iscL5Q5,
                                         final int uraiEd, final int uraiNed0, final int uraiNed1, final int uraiNed2,
                                         final int flags) {
-        super(angularVelocity, weeksInCycle, timeScales, system, type, prn,
-              orbit, aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
-              af0, af1, af2, tgd, toc, epochToc, transmissionTime);
+        super(angularVelocity, weeksInCycle, timeScales, type, prn,
+              gnssDate, orbit, aDot, deltaN0, deltaN0Dot, iDot, omegaDot,
+              cuc, cus, crc, crs, cic, cis, af0, af1, af2, tgd, toc, epochToc, transmissionTime);
         this.cnv2       = cnv2;
         this.svAccuracy = svAccuracy;
         this.svHealth   = svHealth;

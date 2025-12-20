@@ -18,8 +18,7 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
 /**
@@ -46,8 +45,10 @@ public class QZSSLegacyNavigationMessageFactory
     /** {@inheritDoc} */
     @Override
     public QZSSLegacyNavigationMessage createFromDrivers() {
-        return new QZSSLegacyNavigationMessage(getTimeScales(), getSystem(), getType(), getPrn(),
-                                               createOrbitFromDrivers(), getADotDriver().getValue(),
+        return new QZSSLegacyNavigationMessage(getTimeScales(), getType(), getPrn(),
+                                               new GNSSDate(getWeek(), getTimeDriver().getValue(), getSystem()),
+                                               createOrbitFromDrivers(),
+                                               getADotDriver().getValue(),
                                                getDeltaN0Driver().getValue(), getDeltaN0DotDriver().getValue(),
                                                getIDotDriver().getValue(), getOmegaDotDriver().getValue(),
                                                getCucDriver().getValue(), getCusDriver().getValue(),

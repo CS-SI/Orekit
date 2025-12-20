@@ -36,6 +36,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.data.FieldGalileoNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessageFactory;
@@ -198,8 +199,8 @@ class GnssGradientConverterTest {
         double maxErrorV = 0.0;
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 2; j++) {
-                final ToDoubleFunction<GNSSOrbitalElementsFactory<?>> getter;
-                final BiConsumer<GNSSOrbitalElementsFactory<?>, Double> setter;
+                final ToDoubleFunction<GNSSOrbitalElementsFactory<GPSLegacyNavigationMessage>> getter;
+                final BiConsumer<GNSSOrbitalElementsFactory<GPSLegacyNavigationMessage>, Double> setter;
                 if (j == 0) {
                     getter = f      -> f.getCrcDriver().getValue();
                     setter = (f, d) -> f.getCrcDriver().setValue(d);
@@ -247,8 +248,9 @@ class GnssGradientConverterTest {
         }
     }
 
-    private double differentiate(final GNSSPropagator<?> basePropagator, final AbsoluteDate target,
-                                 final double step, final int outIndex, final int inIndex) {
+    private <O extends GNSSOrbitalElements<O>> double differentiate(final GNSSPropagator<O> basePropagator,
+                                                                    final AbsoluteDate target, final double step,
+                                                                    final int outIndex, final int inIndex) {
 
         // function that converts a shift in one element of initial state (i.e. Px, Py, Pz, Vx, Vy, Vz)
         // into one element of propagated state
@@ -270,7 +272,7 @@ class GnssGradientConverterTest {
                                     original.getAttitude()).withMass(original.getMass());
 
             // build shifted propagator
-            final GNSSPropagator<?> shiftedPropagator =
+            final GNSSPropagator<O> shiftedPropagator =
                 new GNSSPropagator<>(shiftedState,
                                      basePropagator.getOrbitalElements(),
                                      basePropagator.getECEF(),
@@ -294,10 +296,11 @@ class GnssGradientConverterTest {
 
     }
 
-    private double differentiate(final GNSSOrbitalElementsFactory<?> factory, final AbsoluteDate target,
-                                 final ToDoubleFunction<GNSSOrbitalElementsFactory<?>> getter,
-                                 final BiConsumer<GNSSOrbitalElementsFactory<?>, Double> setter,
-                                 final double step, final int outIndex) {
+    private <O extends GNSSOrbitalElements<O>> double differentiate(final GNSSOrbitalElementsFactory<O> factory,
+                                                                    final AbsoluteDate target,
+                                                                    final ToDoubleFunction<GNSSOrbitalElementsFactory<O>> getter,
+                                                                    final BiConsumer<GNSSOrbitalElementsFactory<O>, Double> setter,
+                                                                    final double step, final int outIndex) {
 
         // function that converts a shift in one element of initial state (i.e Px, Py, Pz, Vx, Vy, Vz)
         // into one element of propagated state

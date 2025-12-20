@@ -19,11 +19,10 @@ package org.orekit.propagation.analytical.gnss.data;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.frames.Frame;
-import org.orekit.gnss.SatelliteSystem;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
-
 
 /**
  * Class for Galileo almanac.
@@ -58,10 +57,8 @@ public class GalileoAlmanac extends GNSSOrbitalElements<GalileoAlmanac> {
     /**
      * Build a new almanac.
      * @param timeScales known time scales
-     * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav, weeks
-     *                   are always according to GPS)
      * @param prn        PRN number of the satellite
+     * @param gnssDate   GNSS date (<em>must</em> be consistent with {@code orbit})
      * @param orbit      Keplerian orbit in Earth-frozen frame
      * @param aDot       change rate in semi-major axis (m/s)
      * @param deltaN0    delta of satellite mean motion
@@ -84,9 +81,9 @@ public class GalileoAlmanac extends GNSSOrbitalElements<GalileoAlmanac> {
      * @param healthE1   satellite E1-B/C signal health status
      * @param iod        issue of data
      */
-    public GalileoAlmanac(final TimeScales timeScales, final SatelliteSystem system,
-                          final int prn, final KeplerianOrbit orbit, final double aDot,
-                          final double deltaN0, final double deltaN0Dot,
+    public GalileoAlmanac(final TimeScales timeScales, final int prn,
+                          final GNSSDate gnssDate, final KeplerianOrbit orbit,
+                          final double aDot, final double deltaN0, final double deltaN0Dot,
                           final double iDot, final double omegaDot,
                           final double cuc, final double cus,
                           final double crc, final double crs,
@@ -94,10 +91,9 @@ public class GalileoAlmanac extends GNSSOrbitalElements<GalileoAlmanac> {
                           final double af0, final double af1, final double af2,
                           final double tgd, final double toc,
                           final int healthE5a, final int healthE5b, final int healthE1, final int iod) {
-        super(GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB,
-              timeScales, system, null,
-              prn, orbit, aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
-              af0, af1, af2, tgd, toc);
+        super(GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB, timeScales, null,
+              prn, gnssDate, orbit, aDot, deltaN0, deltaN0Dot, iDot, omegaDot,
+              cuc, cus, crc, crs, cic, cis, af0, af1, af2, tgd, toc);
         this.healthE5a = healthE5a;
         this.healthE5b = healthE5b;
         this.healthE1 = healthE1;
@@ -155,7 +151,8 @@ public class GalileoAlmanac extends GNSSOrbitalElements<GalileoAlmanac> {
     /** {@inheritDoc} */
     @Override
     public GalileoAlmanacFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
-        return new GalileoAlmanacFactory(getTimeScales(), getSystem(), inertial, bodyFixed);
+        return new GalileoAlmanacFactory(getTimeScales(), getGnssDate().getSystem(),
+                                         inertial, bodyFixed);
     }
 
 }

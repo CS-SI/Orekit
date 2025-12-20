@@ -18,9 +18,9 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.Frame;
-import org.orekit.gnss.SatelliteSystem;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
 
@@ -40,10 +40,8 @@ public class NavICAlmanac
     /**
      * Constructor.
      * @param timeScales known time scales
-     * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav, weeks
-     *                   are always according to GPS)
      * @param prn        PRN number of the satellite
+     * @param gnssDate   GNSS date (<em>must</em> be consistent with {@code orbit})
      * @param orbit      Keplerian orbit in Earth-frozen frame
      * @param aDot       change rate in semi-major axis (m/s)
      * @param deltaN0    delta of satellite mean motion
@@ -62,9 +60,9 @@ public class NavICAlmanac
      * @param tgd        group delay differential TGD for L1-L2 correction
      * @param toc        time of clock
      */
-    public NavICAlmanac(final TimeScales timeScales, final SatelliteSystem system, final int prn,
-                        final KeplerianOrbit orbit, final double aDot,
-                        final double deltaN0, final double deltaN0Dot,
+    public NavICAlmanac(final TimeScales timeScales, final int prn,
+                        final GNSSDate gnssDate, final KeplerianOrbit orbit,
+                        final double aDot, final double deltaN0, final double deltaN0Dot,
                         final double iDot, final double omegaDot,
                         final double cuc, final double cus,
                         final double crc, final double crs,
@@ -72,7 +70,7 @@ public class NavICAlmanac
                         final double af0, final double af1, final double af2,
                         final double tgd, final double toc) {
         super(GNSSConstants.NAVIC_AV, GNSSConstants.NAVIC_WEEK_NB,
-              timeScales, system, null, prn, orbit,
+              timeScales, null, prn, gnssDate, orbit,
               aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
               af0, af1, af2, tgd, toc);
     }
@@ -96,7 +94,7 @@ public class NavICAlmanac
     /** {@inheritDoc} */
     @Override
     public NavICAlmanacFactory baseFactory(final Frame inertial, final Frame bodyFixed) {
-        return new NavICAlmanacFactory(getTimeScales(), getSystem(), inertial, bodyFixed);
+        return new NavICAlmanacFactory(getTimeScales(), getGnssDate().getSystem(), inertial, bodyFixed);
     }
 
 }

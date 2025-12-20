@@ -45,7 +45,6 @@ import org.orekit.propagation.analytical.gnss.data.QZSSCivilianNavigationMessage
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.SBASNavigationMessage;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.GNSSDate;
 import org.orekit.utils.IERSConventions;
 
 import java.io.ByteArrayInputStream;
@@ -693,7 +692,7 @@ public class RinexNavigationWriterTest {
     private <T extends GNSSOrbitalElements<T>> void checkGNSSOrbitalElements(final GNSSOrbitalElements<T> first,
                                                                              final GNSSOrbitalElements<T> second) {
 
-        Assertions.assertEquals(first.getSystem(), second.getSystem());
+        Assertions.assertEquals(first.getGnssDate().getSystem(), second.getGnssDate().getSystem());
         Assertions.assertSame(first.getTimeScales(), second.getTimeScales());
         Assertions.assertEquals(first.getAngularVelocity(), second.getAngularVelocity(),
                                 FastMath.ulp(first.getAngularVelocity()));
@@ -702,10 +701,8 @@ public class RinexNavigationWriterTest {
                                 FastMath.ulp(first.getCycleDuration()));
         Assertions.assertEquals(first.getPrn(), second.getPrn());
 
-        final GNSSDate firstDate  = new GNSSDate(first.getDate(), first.getSystem());
-        final GNSSDate secondDate = new GNSSDate(second.getDate(), second.getSystem());
-        Assertions.assertEquals(firstDate.getWeekNumber(), secondDate.getWeekNumber());
-        checkDouble(firstDate.getSecondsInWeek(), secondDate.getSecondsInWeek());
+        Assertions.assertEquals(first.getGnssDate().getWeekNumber(), second.getGnssDate().getWeekNumber());
+        checkDouble(first.getGnssDate().getSecondsInWeek(), second.getGnssDate().getSecondsInWeek());
         checkDate(first.getDate(), second.getDate());
 
         // check data specific to this message

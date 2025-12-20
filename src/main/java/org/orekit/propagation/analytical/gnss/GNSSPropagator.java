@@ -317,7 +317,7 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
         final UnivariateDerivative2 yk = csuk.sin().multiply(rk);
         // Corrected longitude of ascending node
         final double thetaDot = orbitalElements.getAngularVelocity();
-        final double toe = new GNSSDate(orbitalElements.getDate(), orbitalElements.getSystem()).getSecondsInWeek();
+        final double toe = orbitalElements.getGnssDate().getSecondsInWeek();
         final FieldSinCos<UnivariateDerivative2> csomk =
             FastMath.sinCos(tk.multiply(orbitalElements.getOmegaDot() - thetaDot).
                             add(orbit.getRightAscensionOfAscendingNode() - thetaDot * toe));
@@ -517,8 +517,7 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
         final double i0  = ik - (cs2phi.cos() * nonKeplerianElements.getCic() + cs2phi.sin() * nonKeplerianElements.getCis());
         final double om0 = FastMath.atan2(sin, cos) +
                            nonKeplerianElements.getAngularVelocity() *
-                           new GNSSDate(nonKeplerianElements.getDate(),
-                                        nonKeplerianElements.getSystem()).getSecondsInWeek();
+                           nonKeplerianElements.getGnssDate().getSecondsInWeek();
 
         // recover eccentricity and anomaly
         final double mu = initialState.getOrbit().getMu();

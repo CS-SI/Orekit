@@ -527,14 +527,13 @@ class GPSPropagatorTest {
                                 4.0e-11);
 
         // general parameters
-        final GNSSDate gnssDate = new GNSSDate(oe2.getDate(), oe2.getSystem());
         Assertions.assertEquals(factory.getMu(),     oe2.getOrbit().getMu(), 1.0e-20);
-        Assertions.assertEquals(factory.getSystem(), oe2.getSystem());
+        Assertions.assertEquals(factory.getSystem(), oe2.getGnssDate().getSystem());
         Assertions.assertEquals(factory.getPrn(),    oe2.getPrn());
-        Assertions.assertEquals(factory.getWeek(),   gnssDate.getWeekNumber());
+        Assertions.assertEquals(factory.getWeek(),   oe2.getGnssDate().getWeekNumber());
 
         // non-Keplerian parameters, which are just copied
-        Assertions.assertEquals(factory.getTimeDriver().getValue(), gnssDate.getSecondsInWeek(), 1.0e-20);
+        Assertions.assertEquals(factory.getTimeDriver().getValue(), oe2.getGnssDate().getSecondsInWeek(), 1.0e-20);
         Assertions.assertEquals(factory.getIDotDriver().getValue(),     oe2.getIDot(),     1.0e-20);
         Assertions.assertEquals(factory.getOmegaDotDriver().getValue(), oe2.getOmegaDot(), 1.0e-20);
         Assertions.assertEquals(factory.getCucDriver().getValue(),      oe2.getCuc(),      1.0e-20);

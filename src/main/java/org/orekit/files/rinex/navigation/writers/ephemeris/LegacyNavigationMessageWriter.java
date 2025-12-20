@@ -47,7 +47,7 @@ public abstract class LegacyNavigationMessageWriter<O extends LegacyNavigationMe
         writer.indentLine(header);
         writer.writeDouble(message.getIDot(), RinexNavigationParser.RAD_PER_S);
         writer.writeInt(message.getL2Codes());
-        writer.writeInt(new GNSSDate(message.getDate(), message.getSystem()).getWeekNumber());
+        writer.writeInt(message.getGnssDate().getWeekNumber());
         writer.writeInt(message.getL2PFlags());
         writer.finishLine();
     }
