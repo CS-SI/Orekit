@@ -307,7 +307,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.0, sbas.getEpochToc().durationFrom(new AbsoluteDate(2015, 1, 4, 23, 58, 56.0, TimeScalesFactory.getUTC())), Double.MIN_VALUE);
         Assertions.assertEquals(2.980232238770E-08,  sbas.getAGf0(), 1.0e-10);
         Assertions.assertEquals(1.182343112305E-11,  sbas.getAGf1(), 1.0e-10);
-        Assertions.assertEquals(8.631300000000E+04,  new GNSSDate(sbas.getDate(), SatelliteSystem.SBAS).getSecondsInWeek(), 1.0e-10);
+        Assertions.assertEquals(8.631300000000E+04,  sbas.getTime(), 1.0e-10);
         Assertions.assertEquals(2420.415392000E+04,  sbas.getX(), 1.0e-10);
         Assertions.assertEquals(-3450.000000000E-04, sbas.getXDot(), 1.0e-10);
         Assertions.assertEquals(-3375.000000000E-07, sbas.getXDotDot(), 1.0e-10);
@@ -839,7 +839,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.0, glo.getEpochToc().durationFrom(new AbsoluteDate(2021, 2, 17, 23, 45, 0.0, TimeScalesFactory.getUTC())), Double.MIN_VALUE);
         Assertions.assertEquals(-4.674419760704e-04, glo.getTN(), 1.0e-10);
         Assertions.assertEquals(9.094947017729e-13,  glo.getGammaN(), 1.0e-10);
-        Assertions.assertEquals(84600.0,             new GNSSDate(glo.getDate(), SatelliteSystem.GLONASS).getSecondsInWeek(), 1.0e-10);
+        Assertions.assertEquals(84600.0,             glo.getTime(), 1.0e-10);
         Assertions.assertEquals(-1252.090332031e+04, glo.getX(), 1.0e-10);
         Assertions.assertEquals(-2661.552429199e+00, glo.getXDot(), 1.0e-10);
         Assertions.assertEquals(0.000000000000e+00,  glo.getXDotDot(), 1.0e-10);
@@ -1106,7 +1106,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.0, glo.getEpochToc().durationFrom(new AbsoluteDate(2020, 2, 10, 23, 45, 0.0, TimeScalesFactory.getUTC())), Double.MIN_VALUE);
         Assertions.assertEquals(-0.447863712907e-04, glo.getTN(), 1.0e-10);
         Assertions.assertEquals(0.909494701773e-12,  glo.getGammaN(), 1.0e-10);
-        Assertions.assertEquals(86370.0,             new GNSSDate(glo.getDate(), SatelliteSystem.GLONASS).getSecondsInWeek(), 1.0e-10);
+        Assertions.assertEquals(86370.0,             glo.getTime(), 1.0e-10);
         Assertions.assertEquals(0182.817373047e+05,  glo.getX(), 1.0e-10);
         Assertions.assertEquals(-176.770305634e+01,  glo.getXDot(), 1.0e-10);
         Assertions.assertEquals(651.925802231e-08,   glo.getXDotDot(), 1.0e-10);
@@ -1184,7 +1184,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.0, glo.getEpochToc().durationFrom(new AbsoluteDate(2006, 10, 1, 0, 15, 0.0, TimeScalesFactory.getUTC())), Double.MIN_VALUE);
         Assertions.assertEquals( 0.137668102980E-04,  glo.getTN(),      1.0e-10);
         Assertions.assertEquals(-0.454747350886E-11,  glo.getGammaN(),  1.0e-10);
-        Assertions.assertEquals(90.0,                 new GNSSDate(glo.getDate(), SatelliteSystem.GLONASS).getSecondsInWeek(),    1.0e-10);
+        Assertions.assertEquals(90.0,                 glo.getTime(),    1.0e-10);
         Assertions.assertEquals(0.157594921875E+08,   glo.getX(),       1.0e-6);
         Assertions.assertEquals(-0.145566368103E+04,  glo.getXDot(),    1.0e-9);
         Assertions.assertEquals(0.000000000000E+00,   glo.getXDotDot(), 1.0e-12);
@@ -1500,7 +1500,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(0.0, sbas.getEpochToc().durationFrom(new AbsoluteDate(2021, 2, 17, 23, 58, 56.0, TimeScalesFactory.getGPS())), Double.MIN_VALUE);
         Assertions.assertEquals(0.000000000000E+00, sbas.getAGf0(), 1.0e-10);
         Assertions.assertEquals(0.000000000000E+00, sbas.getAGf1(), 1.0e-10);
-        Assertions.assertEquals(3.456150000000E+05, new GNSSDate(sbas.getDate(), SatelliteSystem.SBAS).getSecondsInWeek(), 1.0e-10);
+        Assertions.assertEquals(3.456150000000E+05, sbas.getTime(), 1.0e-10);
         Assertions.assertEquals(4200.368800000E+04, sbas.getX(), 1.0e-10);
         Assertions.assertEquals(0.000000000000E+00, sbas.getXDot(), 1.0e-10);
         Assertions.assertEquals(0.000000000000E+00, sbas.getXDotDot(), 1.0e-10);
