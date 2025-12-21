@@ -17,6 +17,8 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -87,8 +89,21 @@ public class NavICAlmanac
     @SuppressWarnings("unchecked")
     @Override
     public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, NavICAlmanac, F>>
-        F toField(final FieldKeplerianOrbit<T> orbit) {
-        return (F) new FieldNavICAlmanac<>(orbit, this);
+        F toField(final Field<T> field) {
+        return (F) new FieldNavICAlmanac<>(new FieldKeplerianOrbit<>(field, getOrbit()), this);
+    }
+
+    /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
+    @Override
+    public <P extends FieldGnssOrbitalElements<Gradient, NavICAlmanac, P>>
+        P toGradient(final FieldKeplerianOrbit<Gradient> orbit, final NonKeplerianDriversFactory nonKeplerian) {
+        final int freeParameters = orbit.getMu().getFreeParameters();
+        return (P) new FieldNavICAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                           getType(), getPrn(), getGnssDate(), orbit,
+                                           nonKeplerian.toGradients(freeParameters),
+                                           Gradient.constant(freeParameters, getTGD()),
+                                           Gradient.constant(freeParameters, getToc()));
     }
 
     /** {@inheritDoc} */

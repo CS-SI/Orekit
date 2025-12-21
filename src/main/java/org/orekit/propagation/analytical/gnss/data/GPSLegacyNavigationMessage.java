@@ -17,10 +17,13 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
@@ -99,8 +102,28 @@ public class GPSLegacyNavigationMessage extends LegacyNavigationMessage<GPSLegac
     @SuppressWarnings("unchecked")
     @Override
     public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, GPSLegacyNavigationMessage, F>>
-        F toField(final FieldKeplerianOrbit<T> orbit) {
-        return (F) new FieldGPSLegacyNavigationMessage<>(orbit, this);
+        F toField(final Field<T> field) {
+        return (F) new FieldGPSLegacyNavigationMessage<>(new FieldKeplerianOrbit<>(field, getOrbit()), this);
+    }
+
+    /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
+    @Override
+    public <P extends FieldGnssOrbitalElements<Gradient, GPSLegacyNavigationMessage, P>>
+        P toGradient(final FieldKeplerianOrbit<Gradient> orbit, final NonKeplerianDriversFactory nonKeplerian) {
+        final int freeParameters = orbit.getMu().getFreeParameters();
+        return (P) new FieldGPSLegacyNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                                         getType(), getPrn(), getGnssDate(), orbit,
+                                                         nonKeplerian.toGradients(freeParameters),
+                                                         Gradient.constant(freeParameters, getTGD()),
+                                                         Gradient.constant(freeParameters, getToc()),
+                                                         new FieldAbsoluteDate<>(orbit.getMu().getField(),
+                                                                                 getEpochToc()),
+                                                         Gradient.constant(freeParameters, getTransmissionTime()),
+                                                         getIODE(), getIODC(),
+                                                         Gradient.constant(freeParameters, getSvAccuracy()),
+                                                         getSvHealth(), getFitInterval(),
+                                                         getL2Codes(), getL2PFlags());
     }
 
     /** {@inheritDoc} */

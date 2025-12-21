@@ -18,6 +18,7 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -200,7 +201,8 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
     protected <T extends CalculusFieldElement<T>,
                A extends GNSSOrbitalElements<A>> GNSSOrbitalElements(final FieldGnssOrbitalElements<T, A, ?> original) {
         this(original.getAngularVelocity(), original.getWeeksInCycle(), original.getTimeScales(),
-             original.getType(), original.getPrn(), original.getGnssDate(), original.getOrbit().toOrbit(),
+             original.getType(), original.getPrn(),
+             original.getGnssDate().getGnssDate(), original.getOrbit().toOrbit(),
              original.getADot().getReal(),
              original.getDeltaN0().getReal(), original.getDeltaN0Dot().getReal(),
              original.getIDot().getReal(), original.getOmegaDot().getReal(),
@@ -226,39 +228,31 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
     }
 
     /** Create a field version of the instance.
-     * <p>
-     * This method just calls {@link #toField(FieldKeplerianOrbit)} using a
-     * basic conversion for the orbit (typically no fancy generation of
-     * gradients).
-     * </p>
      * @param <T> type of the field elements
      * @param <P> type of the orbital elements (field version)
      * @param field field
      * @return field version of the instance
      * @since 14.0
      */
-    public <T extends CalculusFieldElement<T>, P extends FieldGnssOrbitalElements<T, O, P>>
-        P toField(Field<T> field) {
-        return toField(new FieldKeplerianOrbit<>(field, orbit));
-    }
+    public abstract <T extends CalculusFieldElement<T>, P extends FieldGnssOrbitalElements<T, O, P>>
+        P toField(Field<T> field);
 
-    /** Create a field version of the instance.
+    /**
+     * Create a gradient version of the instance.
      * <p>
-     * This method uses the provided already converted orbit,
-     * it is typically used for initializing gradients by putting
-     * finely tuned Keplerian elements as
-     * {@link org.hipparchus.analysis.differentiation.Gradient#variable(int, int, double)
-     * gradient variables}.
+     * This method uses the provided already converted orbit for the Keplerian parameters. The non-Keplerian parameters
+     * are initialized either as {@link Gradient#variable(int, int, double) gradient variables} or as
+     * {@link Gradient#constant(int, double) constants} depending on the corresponding parameter being selected or not.
      * </p>
-     * @param <T> type of the field elements
-     * @param <P> type of the orbital elements (field version)
-     * @param orbit orbit in the correct field
-     * @return field version of the instance
+     *
+     * @param <P>          type of the orbital elements (gradient version)
+     * @param orbit        orbit in the correct gradient field
+     * @param nonKeplerian factory for non-Keplerian terms
+     * @return gradient version of the instance
      * @since 14.0
      */
-    public abstract <T extends CalculusFieldElement<T>,
-                     P extends FieldGnssOrbitalElements<T, O, P>>
-        P toField(FieldKeplerianOrbit<T> orbit);
+    public abstract <P extends FieldGnssOrbitalElements<Gradient, O, P>>
+        P toGradient(FieldKeplerianOrbit<Gradient> orbit, NonKeplerianDriversFactory nonKeplerian);
 
     /** Get known time scales.
      * @return known time scales

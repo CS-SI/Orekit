@@ -108,7 +108,7 @@ class GnssGradientConverterTest {
             converter = new GnssGradientConverter<>(propagator);
         final FieldGnssPropagator<Gradient, GalileoNavigationMessage, FieldGalileoNavigationMessage<Gradient>>
             gPropagator = converter.getPropagator();
-        Assertions.assertEquals(12, gPropagator.getParametersDrivers().size());
+        Assertions.assertEquals(15, gPropagator.getParametersDrivers().size());
         Assertions.assertEquals(12, gPropagator.getParametersDrivers().stream().filter(ParameterDriver::isSelected).count());
         Assertions.assertEquals(18, gPropagator.getInitialState().getOrbit().getA().getFreeParameters());
         checkUnitaryInitialSTM(gPropagator.getInitialState());

@@ -20,7 +20,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FieldGradient;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
-import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.FieldMatrix;
@@ -46,7 +45,6 @@ import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.propagation.analytical.gnss.data.NonKeplerianDriversFactory;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.GNSSDate;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
@@ -299,7 +297,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
      */
     private T getTk(final FieldAbsoluteDate<T> date) {
         // Time from ephemeris reference epoch
-        T tk = date.durationFrom(orbitalElements.getDate());
+        T tk = date.durationFrom(orbitalElements.getGnssDate());
         // Adjusts the time to take roll over week into account
         while (tk.getReal() > 0.5 * orbitalElements.getCycleDuration()) {
             tk = tk.subtract(orbitalElements.getCycleDuration());
@@ -513,7 +511,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
         // recover plane orientation before correction
         // here, we know that tk = 0 since our orbital elements will be at initial state date
         final T i0  = ik.subtract(cs2phi.cos().multiply(nonKeplerianElements.getCic()).add(cs2phi.sin().multiply(nonKeplerianElements.getCis())));
-        final double toe = nonKeplerianElements.getGnssDate().getSecondsInWeek();
+        final double toe = nonKeplerianElements.getGnssDate().getGnssDate().getSecondsInWeek();
         final T om0 = FastMath.atan2(sin, cos).
                       add(nonKeplerianElements.getAngularVelocity() * toe);
 

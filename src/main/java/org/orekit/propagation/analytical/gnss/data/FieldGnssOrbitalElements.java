@@ -20,6 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbitalParameters;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldGNSSDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
@@ -59,7 +60,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
     /** GNSS Date.
      * @since 14.0
      */
-    private final GNSSDate gnssDate;
+    private final FieldGNSSDate<T> gnssDate;
 
     /** Orbit. */
     private final FieldKeplerianOrbit<T> orbit;
@@ -146,7 +147,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
      */
     public FieldGnssOrbitalElements(final double angularVelocity, final int weeksInCycle,
                                     final TimeScales timeScales, final String type, final int prn,
-                                    final GNSSDate gnssDate, final FieldKeplerianOrbit<T> orbit,
+                                    final FieldGNSSDate<T> gnssDate, final FieldKeplerianOrbit<T> orbit,
                                     final T aDot,
                                     final T deltaN0, final T deltaN0Dot,
                                     final T iDot, final T omegaDot,
@@ -193,14 +194,54 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
 
     }
 
+    /** Creates a new instance.
+     * @param angularVelocity mean angular velocity of the Earth for the GNSS model
+     * @param weeksInCycle    number of weeks in the GNSS cycle
+     * @param timeScales      known time scales
+     * @param type            type (null if not a navigation message)
+     * @param prn             PRN number of the satellite
+     * @param gnssDate        GNSS date (<em>must</em> be consistent with {@code orbit})
+     * @param orbit           Keplerian orbit in Earth-frozen frame
+     * @param nonKeplerian    15 non-Keplerian parameters (in the order given by {@link NonKeplerianDriversFactory}
+     * @param tgd             group delay differential TGD for L1-L2 correction
+     * @param toc             time of clock
+     * @since 14.0
+     */
+    public FieldGnssOrbitalElements(final double angularVelocity, final int weeksInCycle,
+                                    final TimeScales timeScales, final String type, final int prn,
+                                    final GNSSDate gnssDate, final FieldKeplerianOrbit<T> orbit,
+                                    final T[] nonKeplerian, final T tgd, final T toc) {
+        this(angularVelocity, weeksInCycle, timeScales, type, prn,
+             new FieldGNSSDate<>(orbit.getDate().getField(),
+                                 new GNSSDate(gnssDate.getWeekNumber(),
+                                              nonKeplerian[NonKeplerianDriversFactory.TIME_INDEX].getReal(),
+                                              gnssDate.getSystem())),
+             orbit,
+             nonKeplerian[NonKeplerianDriversFactory.A_DOT_INDEX],
+             nonKeplerian[NonKeplerianDriversFactory.DELTA_N0_INDEX],
+             nonKeplerian[NonKeplerianDriversFactory.DELTA_N0_DOT_INDEX],
+             nonKeplerian[NonKeplerianDriversFactory.I_DOT_INDEX],
+             nonKeplerian[NonKeplerianDriversFactory.OMEGA_DOT_INDEX],
+             nonKeplerian[NonKeplerianDriversFactory.CUC_INDEX],
+             nonKeplerian[NonKeplerianDriversFactory.CUS_INDEX],
+             nonKeplerian[NonKeplerianDriversFactory.CRC_INDEX],
+             nonKeplerian[NonKeplerianDriversFactory.CRS_INDEX],
+             nonKeplerian[NonKeplerianDriversFactory.CIC_INDEX],
+             nonKeplerian[NonKeplerianDriversFactory.CIS_INDEX],
+             nonKeplerian[NonKeplerianDriversFactory.AF0_INDEX],
+             nonKeplerian[NonKeplerianDriversFactory.AF1_INDEX],
+             nonKeplerian[NonKeplerianDriversFactory.AF2_INDEX],
+             tgd, toc);
+    }
+
     /** Constructor from non-field instance.
      * @param orbit    orbit in the correct field
      * @param original regular non-field instance
      */
     protected FieldGnssOrbitalElements(final FieldKeplerianOrbit<T> orbit, final O original) {
-        this(original.getAngularVelocity(), original.getWeeksInCycle(),  original.getTimeScales(),
+        this(original.getAngularVelocity(), original.getWeeksInCycle(), original.getTimeScales(),
              original.getType(), original.getPrn(),
-             new GNSSDate(orbit.getDate().toAbsoluteDate(), original.getGnssDate().getSystem()), orbit,
+             new FieldGNSSDate<>(orbit.getDate().getField(), original.getGnssDate()), orbit,
              orbit.getMu().newInstance(original.getADot()),
              orbit.getMu().newInstance(original.getDeltaN0()), orbit.getMu().newInstance(original.getDeltaN0Dot()),
              orbit.getMu().newInstance(original.getIDot()), orbit.getMu().newInstance(original.getOmegaDot()),
@@ -224,7 +265,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
                                                                            final FieldGnssOrbitalElements<V, O, ?> original) {
         this(original.getAngularVelocity(), original.getWeeksInCycle(), original.getTimeScales(),
              original.getType(), original.getPrn(),
-             new GNSSDate(orbit.getDate().toAbsoluteDate(), original.getGnssDate().getSystem()), orbit,
+             new FieldGNSSDate<>(orbit.getDate().getField(), original.getGnssDate().getGnssDate()), orbit,
              converter.apply(original.getADot()),
              converter.apply(original.getDeltaN0()), converter.apply(original.getDeltaN0Dot()),
              converter.apply(original.getIDot()), converter.apply(original.getOmegaDot()),
@@ -239,7 +280,6 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
     }
 
     /** {@inheritDoc} */
-    @Override
     public FieldAbsoluteDate<T> getDate() {
         return orbit.getDate();
     }
@@ -248,7 +288,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
      * @return GNSS date
      * @since 14.0
      */
-    public GNSSDate getGnssDate() {
+    public FieldGNSSDate<T> getGnssDate() {
         return gnssDate;
     }
 

@@ -17,10 +17,13 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
@@ -135,8 +138,29 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
     @SuppressWarnings("unchecked")
     @Override
     public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, GalileoNavigationMessage, F>>
-        F toField(final FieldKeplerianOrbit<T> orbit) {
-        return (F) new FieldGalileoNavigationMessage<>(orbit, this);
+        F toField(final Field<T> field) {
+        return (F) new FieldGalileoNavigationMessage<>(new FieldKeplerianOrbit<>(field, getOrbit()), this);
+    }
+
+    /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
+    @Override
+    public <P extends FieldGnssOrbitalElements<Gradient, GalileoNavigationMessage, P>>
+        P toGradient(final FieldKeplerianOrbit<Gradient> orbit, final NonKeplerianDriversFactory nonKeplerian) {
+        final int freeParameters = orbit.getMu().getFreeParameters();
+        return (P) new FieldGalileoNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                                       getType(), getPrn(), getGnssDate(), orbit,
+                                                       nonKeplerian.toGradients(freeParameters),
+                                                       Gradient.constant(freeParameters, getTGD()),
+                                                       Gradient.constant(freeParameters, getToc()),
+                                                       new FieldAbsoluteDate<>(orbit.getMu().getField(),
+                                                                               getEpochToc()),
+                                                       Gradient.constant(freeParameters, getTransmissionTime()),
+                                                       getIODNav(), getDataSource(),
+                                                       Gradient.constant(freeParameters, getBGDE1E5a()),
+                                                       Gradient.constant(freeParameters, getBGDE5bE1()),
+                                                       Gradient.constant(freeParameters, getSisa()),
+                                                       Gradient.constant(freeParameters, getSvHealth()));
     }
 
     /** Get the Issue Of Data (IOD).

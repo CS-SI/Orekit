@@ -18,6 +18,9 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.GNSSDate;
+import org.orekit.time.TimeScales;
 
 import java.util.function.Function;
 
@@ -106,6 +109,72 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
         this.tgdB2ap        = orbit.getMu().newInstance(original.getTgdB2ap());
         this.tgdB2bI        = orbit.getMu().newInstance(original.getTgdB2bI());
         this.satelliteType  = original.getSatelliteType();
+    }
+
+    /** Creates a new instance.
+     * @param beidouType       Beidou civilian message type
+     * @param angularVelocity  mean angular velocity of the Earth for the GNSS model
+     * @param weeksInCycle     number of weeks in the GNSS cycle
+     * @param timeScales       known time scales
+     * @param type             type (null if not a navigation message)
+     * @param prn              PRN number of the satellite
+     * @param gnssDate         GNSS date (<em>must</em> be consistent with {@code orbit})
+     * @param orbit            Keplerian orbit in Earth-frozen frame
+     * @param nonKeplerian     15 non-Keplerian parameters (in the order given by {@link NonKeplerianDriversFactory}
+     * @param tgd              group delay differential TGD for L1-L2 correction
+     * @param toc              time of clock
+     * @param epochToc         time of clock epoch
+     * @param transmissionTime transmission time
+     * @param iode             issue of data, ephemeris
+     * @param iodc             issue of data, clock
+     * @param iscB1CD          inter signal delay for B1 CD
+     * @param iscB1CP          inter signal delay for B1 CP
+     * @param iscB2AD          inter signal delay for B2 AD
+     * @param sisaiOe          signal in space accuracy index (along track and across track)
+     * @param sisaiOcb         signal in space accuracy index (radial and clock)
+     * @param sisaiOc1         signal in space accuracy index (clock drift accuracy)
+     * @param sisaiOc2         signal in space accuracy index (clock drift rate accuracy)
+     * @param sismai           signal in space monitoring accuracy index
+     * @param health           health
+     * @param integrityFlags   integrity flags
+     * @param tgdB1Cp          B1/B3 Group Delay Differential (s)
+     * @param tgdB2ap          B2 AP Group Delay Differential (s)
+     * @param tgdB2bI          B2B_i / B3I Group Delay Differential (s)
+     * @param satelliteType    satellite type
+     * @since 14.0
+     */
+    public FieldBeidouCivilianNavigationMessage(final BeidouCivilianType beidouType,
+                                                final double angularVelocity, final int weeksInCycle,
+                                                final TimeScales timeScales, final String type, final int prn,
+                                                final GNSSDate gnssDate, final FieldKeplerianOrbit<T> orbit,
+                                                final T[] nonKeplerian, final T tgd, final T toc,
+                                                final FieldAbsoluteDate<T> epochToc, final T transmissionTime,
+                                                final int iode, final int iodc,
+                                                final T iscB1CD, final T iscB1CP, final T iscB2AD,
+                                                final int sisaiOe, final int sisaiOcb,
+                                                final int sisaiOc1, final int sisaiOc2,
+                                                final int sismai, final int health, final int integrityFlags,
+                                                final T tgdB1Cp, final T tgdB2ap, final T tgdB2bI,
+                                                final BeidouSatelliteType satelliteType) {
+        super(angularVelocity, weeksInCycle, timeScales, type, prn, gnssDate, orbit, nonKeplerian,
+              tgd, toc, epochToc, transmissionTime);
+        this.beidouType     = beidouType;
+        this.iode           = iode;
+        this.iodc           = iodc;
+        this.iscB1CD        = iscB1CD;
+        this.iscB1CP        = iscB1CP;
+        this.iscB2AD        = iscB2AD;
+        this.sisaiOe        = sisaiOe;
+        this.sisaiOcb       = sisaiOcb;
+        this.sisaiOc1       = sisaiOc1;
+        this.sisaiOc2       = sisaiOc2;
+        this.sismai         = sismai;
+        this.health         = health;
+        this.integrityFlags = integrityFlags;
+        this.tgdB1Cp        = tgdB1Cp;
+        this.tgdB2ap        = tgdB2ap;
+        this.tgdB2bI        = tgdB2bI;
+        this.satelliteType  = satelliteType;
     }
 
     /** Constructor from different field instance.

@@ -17,6 +17,8 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.FastMath;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
@@ -96,8 +98,8 @@ public class GalileoAlmanac extends GNSSOrbitalElements<GalileoAlmanac> {
               cuc, cus, crc, crs, cic, cis, af0, af1, af2, tgd, toc);
         this.healthE5a = healthE5a;
         this.healthE5b = healthE5b;
-        this.healthE1 = healthE1;
-        this.iod      = iod;
+        this.healthE1  = healthE1;
+        this.iod       = iod;
     }
 
     /** Constructor from field instance.
@@ -116,8 +118,23 @@ public class GalileoAlmanac extends GNSSOrbitalElements<GalileoAlmanac> {
     @SuppressWarnings("unchecked")
     @Override
     public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, GalileoAlmanac, F>>
-        F toField(final FieldKeplerianOrbit<T> orbit) {
-        return (F) new FieldGalileoAlmanac<>(orbit, this);
+        F toField(final Field<T> field) {
+        return (F) new FieldGalileoAlmanac<>(new FieldKeplerianOrbit<>(field, getOrbit()), this);
+    }
+
+    /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
+    @Override
+    public <P extends FieldGnssOrbitalElements<Gradient, GalileoAlmanac, P>>
+        P toGradient(final FieldKeplerianOrbit<Gradient> orbit, final NonKeplerianDriversFactory nonKeplerian) {
+        final int freeParameters = orbit.getMu().getFreeParameters();
+        return (P) new FieldGalileoAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                             getType(), getPrn(), getGnssDate(), orbit,
+                                             nonKeplerian.toGradients(freeParameters),
+                                             Gradient.constant(freeParameters, getTGD()),
+                                             Gradient.constant(freeParameters, getToc()),
+                                             getHealthE5a(), getHealthE5b(), getHealthE1(),
+                                             getIOD());
     }
 
     /** Get the E1-B/C signal health status.

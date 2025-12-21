@@ -49,7 +49,6 @@ import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.propagation.analytical.gnss.data.NonKeplerianDriversFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.GNSSDate;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
@@ -181,7 +180,8 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
      */
     public GNSSPropagator(final SpacecraftState initialState, final O nonKeplerianElements,
                           final Frame ecef, final AttitudeProvider provider, final double mass) {
-        this(buildOrbitalElements(initialState, nonKeplerianElements, ecef, provider, mass),
+        this(buildOrbitalElements(initialState, nonKeplerianElements, new NonKeplerianDriversFactory(),
+                                  ecef, provider, mass),
              initialState.getFrame(), ecef, provider, initialState.getMass());
     }
 
@@ -189,6 +189,13 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
     @Override
     public List<ParameterDriver> getParametersDrivers() {
         return driversFactory.getParametersDrivers();
+    }
+
+    /** Get the factory for non-Keplerian elements drivers.
+     * @return factory for non-Keplerian elements drivers
+     */
+    public NonKeplerianDriversFactory getDriversFactory() {
+        return driversFactory;
     }
 
     /**
@@ -372,7 +379,8 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
     /** {@inheritDoc} */
     @Override
     public void resetInitialState(final SpacecraftState state) {
-        orbitalElements = buildOrbitalElements(state, orbitalElements, ecef, getAttitudeProvider(), state.getMass());
+        orbitalElements = buildOrbitalElements(state, orbitalElements, driversFactory,
+                                               ecef, getAttitudeProvider(), state.getMass());
         final Orbit orbit = propagateOrbit(orbitalElements.getDate());
         final Attitude attitude = getAttitudeProvider().getAttitude(orbit, orbit.getDate(), orbit.getFrame());
         super.resetInitialState(new SpacecraftState(orbit, attitude).withMass(state.getMass()));
@@ -393,11 +401,12 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
      *
      * @param <O> type of the orbital elements (non-field version)
      * @param <Q> type of the orbital elements (gradient version)
-     * @param initialState    initial state
+     * @param initialState         initial state
      * @param nonKeplerianElements non-Keplerian orbital elements (the Keplerian orbital elements will be overridden)
-     * @param ecef            Earth Centered Earth Fixed frame
-     * @param provider        attitude provider
-     * @param mass            satellite mass (kg)
+     * @param driversFactory       factory for non-Kepleria drivers
+     * @param ecef                 Earth Centered Earth Fixed frame
+     * @param provider             attitude provider
+     * @param mass                 satellite mass (kg)
      * @return orbital elements that generate the {@code initialState} when used with a propagator
      * @since 13.0
      */
@@ -405,6 +414,7 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
                     Q extends FieldGnssOrbitalElements<Gradient, O, Q>>
         O buildOrbitalElements(final SpacecraftState initialState,
                                final O nonKeplerianElements,
+                               final NonKeplerianDriversFactory driversFactory,
                                final Frame ecef, final AttitudeProvider provider,
                                final double mass) {
 
@@ -414,7 +424,7 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
 
         // refine orbit using simple differential correction to reach target PV
         final PVCoordinates targetPV = initialState.getPVCoordinates();
-        Q gElements = convert(nonKeplerianElements, orbit);
+        Q gElements = convert(nonKeplerianElements, orbit, driversFactory);
         for (int i = 0; i < MAX_ITER; ++i) {
 
             // get position-velocity derivatives with respect to initial orbit
@@ -464,7 +474,7 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
                                           previous.getMeanAnomaly().add(correction.getEntry(5) / factor),
                                           PositionAngleType.MEAN, PositionAngleType.MEAN,
                                           previous.getFrame(), previous.getDate(), previous.getMu());
-            gElements = convert(nonKeplerianElements, updated.toOrbit());
+            gElements = convert(nonKeplerianElements, updated.toOrbit(), driversFactory);
 
             final double deltaP = FastMath.sqrt(residuals.getEntry(0) * residuals.getEntry(0) +
                                                 residuals.getEntry(1) * residuals.getEntry(1) +
@@ -557,31 +567,33 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
     /** Convert orbital elements to gradient.
      * @param <O> type of the orbital elements (non-field version)
      * @param <Q> type of the orbital elements (gradient version)
-     * @param elements   primitive double elements
-     * @param orbit      Keplerian orbit
+     * @param elements       primitive double elements
+     * @param orbit          Keplerian orbit
+     * @param driversFactory factory for non-Kepleria drivers
      * @return converted elements, set up as gradient relative to Keplerian orbit
-     * @since 13.0
+     * @since 14.0
      */
     private static <O extends GNSSOrbitalElements<O>,
                     Q extends FieldGnssOrbitalElements<Gradient, O, Q>>
-        Q convert(final O elements, final KeplerianOrbit orbit) {
-        return elements.toField(new FieldKeplerianOrbit<>(Gradient.variable(FREE_PARAMETERS, 0,
-                                                                            orbit.getA()),
-                                                          Gradient.variable(FREE_PARAMETERS, 1,
-                                                                            orbit.getE()),
-                                                          Gradient.variable(FREE_PARAMETERS, 2,
-                                                                            orbit.getI()),
-                                                          Gradient.variable(FREE_PARAMETERS, 3,
-                                                                            orbit.getPerigeeArgument()),
-                                                          Gradient.variable(FREE_PARAMETERS, 4,
-                                                                            orbit.getRightAscensionOfAscendingNode()),
-                                                          Gradient.variable(FREE_PARAMETERS, 5,
-                                                                            orbit.getMeanAnomaly()),
-                                                          PositionAngleType.MEAN, PositionAngleType.MEAN,
-                                                          orbit.getFrame(),
-                                                          new FieldAbsoluteDate<>(GradientField.getField(FREE_PARAMETERS),
-                                                                                  orbit.getDate()),
-                                                          Gradient.constant(FREE_PARAMETERS, orbit.getMu())));
+        Q convert(final O elements, final KeplerianOrbit orbit, final NonKeplerianDriversFactory driversFactory) {
+        return elements.toGradient(new FieldKeplerianOrbit<>(Gradient.variable(FREE_PARAMETERS, 0,
+                                                                               orbit.getA()),
+                                                             Gradient.variable(FREE_PARAMETERS, 1,
+                                                                               orbit.getE()),
+                                                             Gradient.variable(FREE_PARAMETERS, 2,
+                                                                               orbit.getI()),
+                                                             Gradient.variable(FREE_PARAMETERS, 3,
+                                                                               orbit.getPerigeeArgument()),
+                                                             Gradient.variable(FREE_PARAMETERS, 4,
+                                                                               orbit.getRightAscensionOfAscendingNode()),
+                                                             Gradient.variable(FREE_PARAMETERS, 5,
+                                                                               orbit.getMeanAnomaly()),
+                                                             PositionAngleType.MEAN, PositionAngleType.MEAN,
+                                                             orbit.getFrame(),
+                                                             new FieldAbsoluteDate<>(GradientField.getField(FREE_PARAMETERS),
+                                                                                     orbit.getDate()),
+                                                             Gradient.constant(FREE_PARAMETERS, orbit.getMu())),
+                                   driversFactory);
     }
 
 }

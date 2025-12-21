@@ -17,6 +17,8 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -118,8 +120,23 @@ public class GPSAlmanac extends GNSSOrbitalElements<GPSAlmanac> {
     @SuppressWarnings("unchecked")
     @Override
     public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, GPSAlmanac, F>>
-        F toField(final FieldKeplerianOrbit<T> orbit) {
-        return (F) new FieldGPSAlmanac<>(orbit, this);
+        F toField(final Field<T> field) {
+        return (F) new FieldGPSAlmanac<>(new FieldKeplerianOrbit<>(field, getOrbit()), this);
+    }
+
+    /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
+    @Override
+    public <P extends FieldGnssOrbitalElements<Gradient, GPSAlmanac, P>>
+        P toGradient(final FieldKeplerianOrbit<Gradient> orbit, final NonKeplerianDriversFactory nonKeplerian) {
+        final int freeParameters = orbit.getMu().getFreeParameters();
+        return (P) new FieldGPSAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                         getType(), getPrn(), getGnssDate(), orbit,
+                                         nonKeplerian.toGradients(freeParameters),
+                                         Gradient.constant(freeParameters, getTGD()),
+                                         Gradient.constant(freeParameters, getToc()),
+                                         getSource(), getSVN(),
+                                         getHealth(), getURA(), getSatConfiguration());
     }
 
     /** Get the source of this GPS almanac.

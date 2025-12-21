@@ -445,7 +445,7 @@ class GPSPropagatorTest {
         GNSSPropagator<GPSLegacyNavigationMessage> propagator = new GNSSPropagator<>(factory);
 
         // we want to compute the partial derivatives with respect to Crs and Crc parameters
-        Assertions.assertEquals(12, propagator.getParameters().length);
+        Assertions.assertEquals(15, propagator.getParameters().length);
         propagator.getParametersDrivers().get(NonKeplerianDriversFactory.CRS_INDEX).setSelected(true);
         propagator.getParametersDrivers().get(NonKeplerianDriversFactory.CRC_INDEX).setSelected(true);
         final DoubleArrayDictionary initialJacobianColumns = new DoubleArrayDictionary();
