@@ -113,6 +113,13 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
 
     /** Build a new instance.
      * <p>
+     * Beware that since GNSS orbital elements refer to an Earth frame frozen at a specific date
+     * to become an inertial frame, the factory date <em>must</em> have been initialized properly
+     * (by calling {@link GNSSOrbitalElementsFactory#setWeekAndTime(int, double)}). Setting the date
+     * allows the frozen frame to be set properly, otherwise a null pointer exception will be thrown
+     * when the propagator builder attempts to use the frame.
+     * </p>
+     * <p>
      * The attitude provider is set by default to be aligned with the provided inertial frame.
      * This can be changed (typically to {@link org.orekit.gnss.attitude.GenericGNSS}) after
      * construction by calling {@link #setAttitudeProvider(org.orekit.attitudes.AttitudeProvider)
