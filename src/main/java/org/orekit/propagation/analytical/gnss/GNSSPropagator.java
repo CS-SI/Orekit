@@ -442,15 +442,26 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
             residuals.setEntry(5, targetPV.getVelocity().getZ() - gPV.getVelocity().getZ().getValue());
             final RealVector correction = new QRDecomposition(jacobian, EPS).getSolver().solve(residuals);
 
-            // update initial orbit
+            // prevent correction to produce invalid values
             final FieldKeplerianOrbit<Gradient> previous = gElements.getOrbit();
+            Gradient updatedA;
+            Gradient updatedE;
+            int factor = 1;
+            do {
+                // loop until eccentricity is valid
+                updatedA = previous.getA().add(correction.getEntry(0) / factor);
+                updatedE = previous.getE().add(correction.getEntry(1) / factor);
+                factor *= 2;
+            } while (updatedA.getValue() < 0 || updatedE.getValue() < 0 || updatedE.getValue() >= 1);
+
+            // update initial orbit
             final FieldKeplerianOrbit<Gradient> updated =
-                new FieldKeplerianOrbit<>(previous.getA().add(correction.getEntry(0)),
-                                          previous.getE().add(correction.getEntry(1)),
-                                          previous.getI().add(correction.getEntry(2)),
-                                          previous.getPerigeeArgument().add(correction.getEntry(3)),
-                                          previous.getRightAscensionOfAscendingNode().add(correction.getEntry(4)),
-                                          previous.getMeanAnomaly().add(correction.getEntry(5)),
+                new FieldKeplerianOrbit<>(updatedA,
+                                          updatedE,
+                                          previous.getI().add(correction.getEntry(2) / factor),
+                                          previous.getPerigeeArgument().add(correction.getEntry(3) / factor),
+                                          previous.getRightAscensionOfAscendingNode().add(correction.getEntry(4) / factor),
+                                          previous.getMeanAnomaly().add(correction.getEntry(5) / factor),
                                           PositionAngleType.MEAN, PositionAngleType.MEAN,
                                           previous.getFrame(), previous.getDate(), previous.getMu());
             gElements = convert(nonKeplerianElements, updated.toOrbit());
