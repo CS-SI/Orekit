@@ -223,7 +223,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
                                                                            final Function<V, T> converter,
                                                                            final FieldGnssOrbitalElements<V, O, ?> original) {
         this(original.getAngularVelocity(), original.getWeeksInCycle(), original.getTimeScales(),
-             original.getType(), original.getPRN(),
+             original.getType(), original.getPrn(),
              new GNSSDate(orbit.getDate().toAbsoluteDate(), original.getGnssDate().getSystem()), orbit,
              converter.apply(original.getADot()),
              converter.apply(original.getDeltaN0()), converter.apply(original.getDeltaN0Dot()),
@@ -303,7 +303,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
     /** Get the PRN number of the satellite.
      * @return PRN number of the satellite
      */
-    public int getPRN() {
+    public int getPrn() {
         return prn;
     }
 
