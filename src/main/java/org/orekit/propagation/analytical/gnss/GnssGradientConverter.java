@@ -17,14 +17,20 @@
 package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
+import org.orekit.attitudes.FieldAttitude;
 import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
 import org.orekit.propagation.analytical.gnss.data.FieldGnssOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
-import org.orekit.propagation.analytical.gnss.data.NonKeplerianDriversFactory;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
 import java.util.List;
 
@@ -56,17 +62,55 @@ class GnssGradientConverter<O extends GNSSOrbitalElements<O>,
     @Override
     public FieldGnssPropagator<Gradient, O, P> getPropagator() {
 
-        // prepare initial state with proper derivatives
-        final FieldSpacecraftState<Gradient> state = getState(this);
+        // count the required number of parameters
+        int n = FREE_STATE_PARAMETERS;
+        for (final ParameterDriver driver : getParametersDrivers()) {
+            if (driver.isSelected()) {
+                n += driver.getNbOfValues();
+            }
+        }
+        final int nbParams = n;
+
+        // prepare orbit with proper derivatives
+        final SpacecraftState s0    = propagator.getInitialState();
+        final KeplerianOrbit  orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(s0.getOrbit());
+        final FieldKeplerianOrbit<Gradient> gOrbit =
+            new FieldKeplerianOrbit<>(Gradient.variable(nbParams, 0, orbit.getA()),
+                                      Gradient.variable(nbParams, 1, orbit.getE()),
+                                      Gradient.variable(nbParams, 2, orbit.getI()),
+                                      Gradient.variable(nbParams, 3, orbit.getPerigeeArgument()),
+                                      Gradient.variable(nbParams, 4, orbit.getRightAscensionOfAscendingNode()),
+                                      Gradient.variable(nbParams, 5, orbit.getMeanAnomaly()),
+                                      PositionAngleType.MEAN, PositionAngleType.MEAN,
+                                      orbit.getFrame(),
+                                      new FieldAbsoluteDate<>(GradientField.getField(nbParams), orbit.getDate()),
+                                      Gradient.constant(nbParams, orbit.getMu()));
+
+        // attitude
+        final FieldAttitude<Gradient> gAttitude =
+            new FieldAttitude<>(s0.getAttitude().getReferenceFrame(),
+                                new TimeStampedFieldAngularCoordinates<>(gOrbit.getDate().getField(),
+                                                                         s0.getAttitude().getOrientation()));
+
+        // mass
+        final Gradient gMass = Gradient.constant(nbParams, s0.getMass());
+
+        // completed state
+        final FieldSpacecraftState<Gradient> gState =
+            new FieldSpacecraftState<>(gOrbit, gAttitude).withMass(gMass);
+
+        // prepare non-Keplerian elements with proper derivatives
+        final Gradient[] parameters = propagator.getDriversFactory().toGradients(nbParams);
+
+        // convert elements to support gradient
+        final P elements = propagator.getOrbitalElements().toField(gOrbit,
+                                                                   parameters,
+                                                                   d  -> Gradient.constant(nbParams, d));
 
         // build propagator handling gradient
-        final FieldKeplerianOrbit<Gradient> orbit =
-            (FieldKeplerianOrbit<Gradient>) OrbitType.KEPLERIAN.convertType(state.getOrbit());
-        final NonKeplerianDriversFactory driversFactory = propagator.getDriversFactory();
-        final P elements = propagator.getOrbitalElements().toGradient(orbit, driversFactory);
-        return new FieldGnssPropagator<>(state, elements,
+        return new FieldGnssPropagator<>(gState, elements,
                                          propagator.getECEF(), propagator.getAttitudeProvider(),
-                                         state.getMass());
+                                         gState.getMass());
 
     }
 

@@ -576,24 +576,25 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
     private static <O extends GNSSOrbitalElements<O>,
                     Q extends FieldGnssOrbitalElements<Gradient, O, Q>>
         Q convert(final O elements, final KeplerianOrbit orbit, final NonKeplerianDriversFactory driversFactory) {
-        return elements.toGradient(new FieldKeplerianOrbit<>(Gradient.variable(FREE_PARAMETERS, 0,
-                                                                               orbit.getA()),
-                                                             Gradient.variable(FREE_PARAMETERS, 1,
+        return elements.toField(new FieldKeplerianOrbit<>(Gradient.variable(FREE_PARAMETERS, 0,
+                                                                            orbit.getA()),
+                                                          Gradient.variable(FREE_PARAMETERS, 1,
                                                                                orbit.getE()),
-                                                             Gradient.variable(FREE_PARAMETERS, 2,
+                                                          Gradient.variable(FREE_PARAMETERS, 2,
                                                                                orbit.getI()),
-                                                             Gradient.variable(FREE_PARAMETERS, 3,
+                                                          Gradient.variable(FREE_PARAMETERS, 3,
                                                                                orbit.getPerigeeArgument()),
-                                                             Gradient.variable(FREE_PARAMETERS, 4,
+                                                          Gradient.variable(FREE_PARAMETERS, 4,
                                                                                orbit.getRightAscensionOfAscendingNode()),
-                                                             Gradient.variable(FREE_PARAMETERS, 5,
+                                                          Gradient.variable(FREE_PARAMETERS, 5,
                                                                                orbit.getMeanAnomaly()),
-                                                             PositionAngleType.MEAN, PositionAngleType.MEAN,
-                                                             orbit.getFrame(),
-                                                             new FieldAbsoluteDate<>(GradientField.getField(FREE_PARAMETERS),
+                                                          PositionAngleType.MEAN, PositionAngleType.MEAN,
+                                                          orbit.getFrame(),
+                                                          new FieldAbsoluteDate<>(GradientField.getField(FREE_PARAMETERS),
                                                                                      orbit.getDate()),
-                                                             Gradient.constant(FREE_PARAMETERS, orbit.getMu())),
-                                   driversFactory);
+                                                          Gradient.constant(FREE_PARAMETERS, orbit.getMu())),
+                                driversFactory.toGradients(FREE_PARAMETERS),
+                                d -> Gradient.constant(FREE_PARAMETERS, d));
     }
 
 }

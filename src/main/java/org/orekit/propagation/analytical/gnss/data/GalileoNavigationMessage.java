@@ -17,8 +17,6 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -26,6 +24,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
+
+import java.util.function.DoubleFunction;
 
 /**
  * Container for data contained in a Galileo navigation message.
@@ -137,30 +137,20 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, GalileoNavigationMessage, F>>
-        F toField(final Field<T> field) {
-        return (F) new FieldGalileoNavigationMessage<>(new FieldKeplerianOrbit<>(field, getOrbit()), this);
-    }
-
-    /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
-    @Override
-    public <P extends FieldGnssOrbitalElements<Gradient, GalileoNavigationMessage, P>>
-        P toGradient(final FieldKeplerianOrbit<Gradient> orbit, final NonKeplerianDriversFactory nonKeplerian) {
-        final int freeParameters = orbit.getMu().getFreeParameters();
+    public <T extends CalculusFieldElement<T>, P extends FieldGnssOrbitalElements<T, GalileoNavigationMessage, P>>
+    P toField(final FieldKeplerianOrbit<T> orbit, final T[] nonKeplerian, final DoubleFunction<T> converter) {
         return (P) new FieldGalileoNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                                       getType(), getPrn(), getGnssDate(), orbit,
-                                                       nonKeplerian.toGradients(freeParameters),
-                                                       Gradient.constant(freeParameters, getTGD()),
-                                                       Gradient.constant(freeParameters, getToc()),
+                                                       getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
+                                                       converter.apply(getTGD()),
+                                                       converter.apply(getToc()),
                                                        new FieldAbsoluteDate<>(orbit.getMu().getField(),
                                                                                getEpochToc()),
-                                                       Gradient.constant(freeParameters, getTransmissionTime()),
+                                                       converter.apply(getTransmissionTime()),
                                                        getIODNav(), getDataSource(),
-                                                       Gradient.constant(freeParameters, getBGDE1E5a()),
-                                                       Gradient.constant(freeParameters, getBGDE5bE1()),
-                                                       Gradient.constant(freeParameters, getSisa()),
-                                                       Gradient.constant(freeParameters, getSvHealth()));
+                                                       converter.apply(getBGDE1E5a()),
+                                                       converter.apply(getBGDE5bE1()),
+                                                       converter.apply(getSisa()),
+                                                       converter.apply( getSvHealth()));
     }
 
     /** Get the Issue Of Data (IOD).

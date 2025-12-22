@@ -17,8 +17,6 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -27,6 +25,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
+import java.util.function.DoubleFunction;
 
 /**
  * Container for data contained in a NavIC navigation message.
@@ -150,32 +149,22 @@ public class NavICL1NvNavigationMessage
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, NavICL1NvNavigationMessage, F>>
-        F toField(final Field<T> field) {
-        return (F) new FieldNavicL1NvNavigationMessage<>(new FieldKeplerianOrbit<>(field, getOrbit()), this);
-    }
-
-    /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
-    @Override
-    public <P extends FieldGnssOrbitalElements<Gradient, NavICL1NvNavigationMessage, P>>
-        P toGradient(final FieldKeplerianOrbit<Gradient> orbit, final NonKeplerianDriversFactory nonKeplerian) {
-        final int freeParameters = orbit.getMu().getFreeParameters();
-        return (P) new FieldNavicL1NvNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
-                                                         getType(), getPrn(), getGnssDate(), orbit,
-                                                         nonKeplerian.toGradients(freeParameters),
-                                                         Gradient.constant(freeParameters, getTGD()),
-                                                         Gradient.constant(freeParameters, getToc()),
+    public <T extends CalculusFieldElement<T>, P extends FieldGnssOrbitalElements<T, NavICL1NvNavigationMessage, P>>
+    P toField(final FieldKeplerianOrbit<T> orbit, final T[] nonKeplerian, final DoubleFunction<T> converter) {
+       return (P) new FieldNavicL1NvNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                                         getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
+                                                         converter.apply(getTGD()),
+                                                         converter.apply(getToc()),
                                                          new FieldAbsoluteDate<>(orbit.getMu().getField(),
                                                                                  getEpochToc()),
-                                                         Gradient.constant(freeParameters, getTransmissionTime()),
+                                                         converter.apply(getTransmissionTime()),
                                                          getReferenceSignalFlag(),
                                                          getUrai(), getL1SpsHealth(),
-                                                         Gradient.constant(freeParameters, getTGDSL5()),
-                                                         Gradient.constant(freeParameters, getIscSL1P()),
-                                                         Gradient.constant(freeParameters, getIscL1DL1P()),
-                                                         Gradient.constant(freeParameters, getIscL1PS()),
-                                                         Gradient.constant(freeParameters, getIscL1DS()));
+                                                         converter.apply(getTGDSL5()),
+                                                         converter.apply(getIscSL1P()),
+                                                         converter.apply(getIscL1DL1P()),
+                                                         converter.apply(getIscL1PS()),
+                                                         converter.apply(getIscL1DS()));
     }
 
     /** Get the reference signal flag.
