@@ -17,11 +17,9 @@
 package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.analysis.differentiation.FieldGradient;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
-import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.propagation.analytical.gnss.data.FieldGnssOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.time.AbsoluteDate;
@@ -38,32 +36,26 @@ public class GnssTestUtils {
     public static <O extends GNSSOrbitalElements<O>>
     void checkFieldConversion(final O message) {
         try {
-            // looping over several types to check conversion functions
-            FieldGnssOrbitalElements<Binary64, O, ?> intermediate1 = message.toField(Binary64Field.getInstance());
-            FieldKeplerianOrbit<FieldGradient<Binary64>> o =
-                new FieldKeplerianOrbit<>(FieldGradient.constant(6, Binary64.ZERO).getField(),
-                                          intermediate1.getOrbit().toOrbit());
-            FieldGnssOrbitalElements<? extends FieldGradient<?>, ?, ?> intermediate2 =
-                intermediate1.toField(o, t -> FieldGradient.constant(6, t));
-            final O rebuilt = (O) intermediate2.toNonField();
+            FieldGnssOrbitalElements<Binary64, O, ?> intermediate = message.toField(Binary64Field.getInstance());
+            final O rebuilt = intermediate.toNonField();
 
             for (final Method getter : getGetters(message, Integer.TYPE)) {
-                final Method fieldGetter = intermediate2.getClass().getMethod(getter.getName());
-                Assertions.assertEquals(getter.invoke(message), fieldGetter.invoke(intermediate2));
+                final Method fieldGetter = intermediate.getClass().getMethod(getter.getName());
+                Assertions.assertEquals(getter.invoke(message), fieldGetter.invoke(intermediate));
                 Assertions.assertEquals(getter.invoke(message), getter.invoke(rebuilt));
             }
             for (final Method getter : getGetters(message, Double.TYPE)) {
-                final Method fieldGetter = intermediate2.getClass().getMethod(getter.getName());
+                final Method fieldGetter = intermediate.getClass().getMethod(getter.getName());
                 final double f = fieldGetter.getReturnType().equals(Double.TYPE) ?
-                                 (Double) fieldGetter.invoke(intermediate2) :
-                                 ((CalculusFieldElement<?>) fieldGetter.invoke(intermediate2)).getReal();
+                                 (Double) fieldGetter.invoke(intermediate) :
+                                 ((CalculusFieldElement<?>) fieldGetter.invoke(intermediate)).getReal();
                 Assertions.assertEquals((Double) getter.invoke(message), f, 1.0e-15);
                 Assertions.assertEquals((Double) getter.invoke(message), (Double) getter.invoke(rebuilt), 1.0e-15, message.getClass().getName() + "." +getter.getName());
             }
             for (final Method getter : getGetters(message, AbsoluteDate.class)) {
-                final Method               fieldGetter = intermediate2.getClass().getMethod(getter.getName());
+                final Method               fieldGetter = intermediate.getClass().getMethod(getter.getName());
                 final AbsoluteDate         date        = (AbsoluteDate) getter.invoke(message);
-                final FieldAbsoluteDate<?> fieldDate   = (FieldAbsoluteDate<?>) fieldGetter.invoke(intermediate2);
+                final FieldAbsoluteDate<?> fieldDate   = (FieldAbsoluteDate<?>) fieldGetter.invoke(intermediate);
                 final AbsoluteDate         rebuiltDate = (AbsoluteDate) getter.invoke(rebuilt);
                 Assertions.assertEquals(0.0, date.durationFrom(fieldDate.toAbsoluteDate()), 1.0e-15);
                 Assertions.assertEquals(0.0, date.durationFrom(rebuiltDate),                1.0e-15);

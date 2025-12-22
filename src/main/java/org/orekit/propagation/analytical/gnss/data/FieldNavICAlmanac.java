@@ -37,14 +37,6 @@ import java.util.function.Function;
 public class FieldNavICAlmanac<T extends CalculusFieldElement<T>>
     extends FieldGnssOrbitalElements<T, NavICAlmanac, FieldNavICAlmanac<T>> {
 
-    /** Constructor from non-field instance.
-     * @param orbit    orbit in the correct field
-     * @param original regular non-field instance
-     */
-    public FieldNavICAlmanac(final FieldKeplerianOrbit<T> orbit, final NavICAlmanac original) {
-        super(orbit, original);
-    }
-
     /** Creates a new instance.
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
      * @param weeksInCycle    number of weeks in the GNSS cycle
@@ -65,18 +57,6 @@ public class FieldNavICAlmanac<T extends CalculusFieldElement<T>>
         super(angularVelocity, weeksInCycle, timeScales, type, prn, gnssDate, orbit, nonKeplerian, tgd, toc);
     }
 
-    /** Constructor from different field instance.
-     * @param <V> type of the old field elements
-     * @param orbit     orbit in the correct field
-     * @param original  regular non-field instance
-     * @param converter for field elements
-     */
-    public <V extends CalculusFieldElement<V>> FieldNavICAlmanac(final FieldKeplerianOrbit<T> orbit,
-                                                                 final Function<V, T> converter,
-                                                                 final FieldNavICAlmanac<V> original) {
-        super(orbit, converter, original);
-    }
-
     /** {@inheritDoc} */
     @Override
     public NavICAlmanac toNonField() {
@@ -87,8 +67,12 @@ public class FieldNavICAlmanac<T extends CalculusFieldElement<T>>
     @SuppressWarnings("unchecked")
     @Override
     public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, NavICAlmanac, V>>
-        V toField(final FieldKeplerianOrbit<U> orbit, final Function<T, U> converter) {
-        return (V) new FieldNavICAlmanac<>(orbit, converter, this);
+        V toField(final FieldKeplerianOrbit<U> orbit, final U[] nonKeplerian, final Function<T, U> converter) {
+        return (V) new FieldNavICAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                           getType(), getPrn(), getGnssDate().getGnssDate(),
+                                           orbit, nonKeplerian,
+                                           converter.apply(getTgd()),
+                                           converter.apply(getToc()));
     }
 
 }

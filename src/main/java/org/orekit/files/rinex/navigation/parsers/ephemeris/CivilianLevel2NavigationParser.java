@@ -59,7 +59,7 @@ public abstract class CivilianLevel2NavigationParser<T extends CivilianNavigatio
         final ParseInfo parseInfo = getParseInfo();
         factory.setUraiEd(parseInfo.parseInt1());
         factory.setSvHealth(parseInfo.parseInt2());
-        factory.setTGD(parseInfo.parseDouble3(Unit.SECOND));
+        factory.setTgd(parseInfo.parseDouble3(Unit.SECOND));
         factory.setUraiNed2(parseInfo.parseInt4());
     }
 

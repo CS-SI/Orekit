@@ -58,21 +58,6 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
     /** The user SV accuracy (m). */
     private final T svAccuracy;
 
-    /** Constructor from non-field instance.
-     * @param orbit    orbit in the correct field
-     * @param original regular non-field instance
-     */
-    public FieldBeidouLegacyNavigationMessage(final FieldKeplerianOrbit<T> orbit, final BeidouLegacyNavigationMessage original) {
-        super(orbit, original);
-        d2         = original.isD2();
-        aode       = original.getAODE();
-        aodc       = original.getAODC();
-        satH1      = original.getSatH1();
-        tgd1       = orbit.getMu().newInstance(original.getTGD1());
-        tgd2       = orbit.getMu().newInstance(original.getTGD2());
-        svAccuracy = orbit.getMu().newInstance(original.getSvAccuracy());
-    }
-
     /** Creates a new instance.
      * @param d2               indicator for D2 messages
      * @param angularVelocity  mean angular velocity of the Earth for the GNSS model
@@ -114,25 +99,6 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
         this.svAccuracy = svAccuracy;
     }
 
-    /** Constructor from different field instance.
-     * @param <V> type of the old field elements
-     * @param orbit     orbit in the correct field
-     * @param original  regular non-field instance
-     * @param converter for field elements
-     */
-    public <V extends CalculusFieldElement<V>> FieldBeidouLegacyNavigationMessage(final FieldKeplerianOrbit<T> orbit,
-                                                                                  final Function<V, T> converter,
-                                                                                  final FieldBeidouLegacyNavigationMessage<V> original) {
-        super(orbit, converter, original);
-        d2         = original.isD2();
-        aode       = original.getAODE();
-        aodc       = original.getAODC();
-        satH1      = original.getSatH1();
-        tgd1       = converter.apply(original.getTGD1());
-        tgd2       = converter.apply(original.getTGD2());
-        svAccuracy = converter.apply(original.getSvAccuracy());
-    }
-
     /** {@inheritDoc} */
     @Override
     public BeidouLegacyNavigationMessage toNonField() {
@@ -143,8 +109,19 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
     @SuppressWarnings("unchecked")
     @Override
     public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, BeidouLegacyNavigationMessage, V>>
-        V toField(final FieldKeplerianOrbit<U> orbit, final Function<T, U> converter) {
-        return (V) new FieldBeidouLegacyNavigationMessage<>(orbit, converter, this);
+        V toField(final FieldKeplerianOrbit<U> orbit, final U[] nonKeplerian, final Function<T, U> converter) {
+        return (V) new FieldBeidouLegacyNavigationMessage<>(isD2(),
+                                                            getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                                            getType(), getPrn(), getGnssDate().getGnssDate(),
+                                                            orbit, nonKeplerian,
+                                                            converter.apply(getTgd()), converter.apply(getToc()),
+                                                            new FieldAbsoluteDate<>(orbit.getMu().getField(),
+                                                                                    getEpochToc().toAbsoluteDate()),
+                                                            converter.apply(getTransmissionTime()),
+                                                            getAODE(), getAODC(), getSatH1(),
+                                                            converter.apply(getTGD1()),
+                                                            converter.apply(getTGD2()),
+                                                            converter.apply(getSvAccuracy()));
     }
 
     /**

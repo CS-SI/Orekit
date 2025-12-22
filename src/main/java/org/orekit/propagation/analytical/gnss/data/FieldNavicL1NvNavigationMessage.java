@@ -61,22 +61,6 @@ public class FieldNavicL1NvNavigationMessage<T extends CalculusFieldElement<T>>
     /** Inter Signal Delay for L1DS. */
     private final T iscL1DS;
 
-    /** Constructor from non-field instance.
-     * @param orbit    orbit in the correct field
-     * @param original regular non-field instance
-     */
-    public FieldNavicL1NvNavigationMessage(final FieldKeplerianOrbit<T> orbit, final NavICL1NvNavigationMessage original) {
-        super(orbit, original);
-        referenceSignalFlag = original.getReferenceSignalFlag();
-        urai                = original.getUrai();
-        l1SpsHealth         = original.getL1SpsHealth();
-        tgdSL5              = orbit.getMu().newInstance(original.getTGDSL5());
-        iscSL1P             = orbit.getMu().newInstance(original.getIscSL1P());
-        iscL1DL1P           = orbit.getMu().newInstance(original.getIscL1DL1P());
-        iscL1PS             = orbit.getMu().newInstance(original.getIscL1PS());
-        iscL1DS             = orbit.getMu().newInstance(original.getIscL1DS());
-    }
-
     /** Creates a new instance.
      * @param angularVelocity     mean angular velocity of the Earth for the GNSS model
      * @param weeksInCycle        number of weeks in the GNSS cycle
@@ -122,26 +106,6 @@ public class FieldNavicL1NvNavigationMessage<T extends CalculusFieldElement<T>>
         this.iscL1DS             = iscL1DS;
     }
 
-    /** Constructor from different field instance.
-     * @param <V> type of the old field elements
-     * @param orbit     orbit in the correct field
-     * @param original  regular non-field instance
-     * @param converter for field elements
-     */
-    public <V extends CalculusFieldElement<V>> FieldNavicL1NvNavigationMessage(final FieldKeplerianOrbit<T> orbit,
-                                                                               final Function<V, T> converter,
-                                                                               final FieldNavicL1NvNavigationMessage<V> original) {
-        super(orbit, converter, original);
-        referenceSignalFlag = original.getReferenceSignalFlag();
-        urai                = original.getUrai();
-        l1SpsHealth         = original.getL1SpsHealth();
-        tgdSL5              = converter.apply(original.getTGDSL5());
-        iscSL1P             = converter.apply(original.getIscSL1P());
-        iscL1DL1P           = converter.apply(original.getIscL1DL1P());
-        iscL1PS             = converter.apply(original.getIscL1PS());
-        iscL1DS             = converter.apply(original.getIscL1DS());
-    }
-
     /** {@inheritDoc} */
     @Override
     public NavICL1NvNavigationMessage toNonField() {
@@ -152,8 +116,21 @@ public class FieldNavicL1NvNavigationMessage<T extends CalculusFieldElement<T>>
     @SuppressWarnings("unchecked")
     @Override
     public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, NavICL1NvNavigationMessage, V>>
-        V toField(final FieldKeplerianOrbit<U> orbit, final Function<T, U> converter) {
-        return (V) new FieldNavicL1NvNavigationMessage<>(orbit, converter, this);
+        V toField(final FieldKeplerianOrbit<U> orbit, final U[] nonKeplerian, final Function<T, U> converter) {
+        return (V) new FieldNavicL1NvNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                                         getType(), getPrn(), getGnssDate().getGnssDate(),
+                                                         orbit, nonKeplerian,
+                                                         converter.apply(getTgd()), converter.apply(getToc()),
+                                                         new FieldAbsoluteDate<>(orbit.getMu().getField(),
+                                                                                 getEpochToc().toAbsoluteDate()),
+                                                         converter.apply(getTransmissionTime()),
+                                                         getReferenceSignalFlag(),
+                                                         getUrai(), getL1SpsHealth(),
+                                                         converter.apply(getTGDSL5()),
+                                                         converter.apply(getIscSL1P()),
+                                                         converter.apply(getIscL1DL1P()),
+                                                         converter.apply(getIscL1PS()),
+                                                         converter.apply(getIscL1DS()));
     }
 
     /** Get reference signal flag.

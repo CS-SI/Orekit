@@ -57,7 +57,7 @@ public interface GNSSClockElements extends TimeStamped {
      * Get the estimated group delay differential TGD for L1-L2 correction.
      * @return the estimated group delay differential TGD for L1-L2 correction (s)
      */
-    double getTGD();
+    double getTgd();
 
     /**
      * Get the time of clock.

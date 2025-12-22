@@ -342,14 +342,14 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
     /** Get the estimated group delay differential TGD for L1-L2 correction.
      * @return the estimated group delay differential TGD for L1-L2 correction (s)
      */
-    public double getTGD() {
+    public double getTgd() {
         return tgd;
     }
 
     /** Set the estimated group delay differential TGD for L1-L2 correction.
      * @param tgd estimated group delay differential TGD for L1-L2 correction (s)
      */
-    public void setTGD(final double tgd) {
+    public void setTgd(final double tgd) {
         this.tgd = tgd;
     }
 

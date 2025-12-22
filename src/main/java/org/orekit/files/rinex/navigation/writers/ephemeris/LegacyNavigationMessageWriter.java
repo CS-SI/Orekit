@@ -20,7 +20,6 @@ import org.orekit.files.rinex.navigation.RinexNavigationHeader;
 import org.orekit.files.rinex.navigation.RinexNavigationParser;
 import org.orekit.files.rinex.navigation.RinexNavigationWriter;
 import org.orekit.propagation.analytical.gnss.data.LegacyNavigationMessage;
-import org.orekit.time.GNSSDate;
 import org.orekit.utils.units.Unit;
 
 import java.io.IOException;
@@ -60,7 +59,7 @@ public abstract class LegacyNavigationMessageWriter<O extends LegacyNavigationMe
         writer.indentLine(header);
         writeURA(message, writer);
         writer.writeInt(message.getSvHealth());
-        writer.writeDouble(message.getTGD(), Unit.SECOND);
+        writer.writeDouble(message.getTgd(), Unit.SECOND);
         writer.writeInt(message.getIODC());
         writer.finishLine();
     }

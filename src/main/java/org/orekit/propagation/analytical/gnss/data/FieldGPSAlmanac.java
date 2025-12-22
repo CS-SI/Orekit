@@ -53,19 +53,6 @@ public class FieldGPSAlmanac<T extends CalculusFieldElement<T>>
     /** Satellite configuration. */
     private final int satConfiguration;
 
-    /** Constructor from non-field instance.
-     * @param orbit    orbit in the correct field
-     * @param original regular non-field instance
-     */
-    public FieldGPSAlmanac(final FieldKeplerianOrbit<T> orbit, final GPSAlmanac original) {
-        super(orbit, original);
-        source           = original.getSource();
-        svn              = original.getSVN();
-        health           = original.getHealth();
-        ura              = original.getURA();
-        satConfiguration = original.getSatConfiguration();
-    }
-
     /** Creates a new instance.
      * @param angularVelocity  mean angular velocity of the Earth for the GNSS model
      * @param weeksInCycle     number of weeks in the GNSS cycle
@@ -98,23 +85,6 @@ public class FieldGPSAlmanac<T extends CalculusFieldElement<T>>
         this.satConfiguration = satConfiguration;
     }
 
-    /** Constructor from different field instance.
-     * @param <V> type of the old field elements
-     * @param orbit     orbit in the correct field
-     * @param original  regular non-field instance
-     * @param converter for field elements
-     */
-    public <V extends CalculusFieldElement<V>> FieldGPSAlmanac(final FieldKeplerianOrbit<T> orbit,
-                                                               final Function<V, T> converter,
-                                                               final FieldGPSAlmanac<V> original) {
-        super(orbit, converter, original);
-        source           = original.getSource();
-        svn              = original.getSVN();
-        health           = original.getHealth();
-        ura              = original.getURA();
-        satConfiguration = original.getSatConfiguration();
-    }
-
     /** {@inheritDoc} */
     @Override
     public GPSAlmanac toNonField() {
@@ -125,8 +95,13 @@ public class FieldGPSAlmanac<T extends CalculusFieldElement<T>>
     @SuppressWarnings("unchecked")
     @Override
     public <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, GPSAlmanac, V>>
-        V toField(final FieldKeplerianOrbit<U> orbit, final Function<T, U> converter) {
-        return (V) new FieldGPSAlmanac<>(orbit, converter, this);
+        V toField(final FieldKeplerianOrbit<U> orbit, final U[] nonKeplerian, final Function<T, U> converter) {
+        return (V) new FieldGPSAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
+                                         getType(), getPrn(), getGnssDate().getGnssDate(),
+                                         orbit, nonKeplerian,
+                                         converter.apply(getTgd()), converter.apply(getToc()),
+                                         getSource(), getSVN(), getHealth(),
+                                         getURA(), getSatConfiguration());
     }
 
     /**

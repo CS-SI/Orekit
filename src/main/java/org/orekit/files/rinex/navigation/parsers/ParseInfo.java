@@ -54,7 +54,6 @@ import org.orekit.files.rinex.navigation.parsers.ionosphere.NeQuickGParser;
 import org.orekit.files.rinex.utils.ParsingUtils;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.propagation.analytical.gnss.data.BeidouCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.BeidouCivilianNavigationMessageFactory;
 import org.orekit.propagation.analytical.gnss.data.BeidouCivilianType;
 import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;

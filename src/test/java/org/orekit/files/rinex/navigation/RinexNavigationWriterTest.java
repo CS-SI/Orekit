@@ -722,7 +722,7 @@ public class RinexNavigationWriterTest {
         checkDouble(first.getAf0(), second.getAf0());
         checkDouble(first.getAf1(), second.getAf1());
         checkDouble(first.getAf2(), second.getAf2());
-        checkDouble(first.getTGD(), second.getTGD());
+        checkDouble(first.getTgd(), second.getTgd());
         checkDouble(first.getToc(), second.getToc());
     }
 

@@ -135,7 +135,7 @@ public class Rtcm1044Test {
         Assertions.assertEquals(0.30049130834913723, qzssMessage.getOrbit().getPerigeeArgument(), eps);
         Assertions.assertEquals(-5.855958209879004E-9, qzssMessage.getOmegaDot(), eps);
         Assertions.assertEquals(0.6980085385373721, qzssMessage.getOrbit().getRightAscensionOfAscendingNode(), eps);
-        Assertions.assertEquals(1.3969839E-9, qzssMessage.getTGD(), eps);
+        Assertions.assertEquals(1.3969839E-9, qzssMessage.getTgd(), eps);
 
         // Verify other data
         Assertions.assertEquals(204,     ephemerisData.getSatelliteID());

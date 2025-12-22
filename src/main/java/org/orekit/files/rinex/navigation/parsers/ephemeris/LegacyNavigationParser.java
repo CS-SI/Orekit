@@ -64,7 +64,7 @@ public abstract class LegacyNavigationParser<T extends LegacyNavigationMessage<T
         final F factory = getFactory();
         factory.setSvAccuracy(parseInfo.parseDouble1(Unit.METRE));
         factory.setSvHealth(parseInfo.parseInt2());
-        factory.setTGD(parseInfo.parseDouble3(Unit.SECOND));
+        factory.setTgd(parseInfo.parseDouble3(Unit.SECOND));
         factory.setIODC(parseInfo.parseInt4());
     }
 

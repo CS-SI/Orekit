@@ -16,13 +16,19 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.FieldGradient;
+import org.hipparchus.analysis.differentiation.FieldGradientField;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.DoubleFunction;
 
 /** Factory for non-Keplerian drivers.
  * @since 14.0
@@ -207,6 +213,57 @@ public class NonKeplerianDriversFactory {
 
     }
 
+    /** Reset the parameters drivers from existing elements.
+     * @param elements elements to use for reset
+     */
+    public void reset(final GNSSOrbitalElements<?> elements) {
+        reset(timeDriver,       elements.getGnssDate().getSecondsInWeek());
+        reset(aDotDriver,       elements.getADot());
+        reset(deltaN0Driver,    elements.getDeltaN0());
+        reset(deltaN0DotDriver, elements.getDeltaN0Dot());
+        reset(iDotDriver,       elements.getIDot());
+        reset(domDriver,        elements.getOmegaDot());
+        reset(cucDriver,        elements.getCuc());
+        reset(cusDriver,        elements.getCus());
+        reset(crcDriver,        elements.getCrc());
+        reset(crsDriver,        elements.getCrs());
+        reset(cicDriver,        elements.getCic());
+        reset(cisDriver,        elements.getCis());
+        reset(af0Driver,        elements.getAf0());
+        reset(af1Driver,        elements.getAf1());
+        reset(af2Driver,        elements.getAf2());
+    }
+
+    /** Reset the parameters drivers from existing elements.
+     * @param elements elements to use for reset
+     */
+    public void reset(final FieldGnssOrbitalElements<?, ?, ?> elements) {
+        reset(timeDriver,       elements.getGnssDate().getGnssDate().getSecondsInWeek());
+        reset(aDotDriver,       elements.getADot().getReal());
+        reset(deltaN0Driver,    elements.getDeltaN0().getReal());
+        reset(deltaN0DotDriver, elements.getDeltaN0Dot().getReal());
+        reset(iDotDriver,       elements.getIDot().getReal());
+        reset(domDriver,        elements.getOmegaDot().getReal());
+        reset(cucDriver,        elements.getCuc().getReal());
+        reset(cusDriver,        elements.getCus().getReal());
+        reset(crcDriver,        elements.getCrc().getReal());
+        reset(crsDriver,        elements.getCrs().getReal());
+        reset(cicDriver,        elements.getCic().getReal());
+        reset(cisDriver,        elements.getCis().getReal());
+        reset(af0Driver,        elements.getAf0().getReal());
+        reset(af1Driver,        elements.getAf1().getReal());
+        reset(af2Driver,        elements.getAf2().getReal());
+    }
+
+    /** Reset one driver.
+     * @param driver driver to reset
+     * @param value new value (also used as reference)
+     */
+    private void reset (final ParameterDriver driver, final double value) {
+        driver.setValue(value);
+        driver.setReferenceValue(value);
+    }
+
     /** {@inheritDoc}
      * <p>
      * Only the 15 non-Keplerian parameters (12 evolution parameters and 3 clock parameters)
@@ -359,6 +416,32 @@ public class NonKeplerianDriversFactory {
         return af2Driver;
     }
 
+    /** Get the non-Keplerian elements as a flat array.
+     * @param <T> type of the field elements
+     * @param field field to which elements belong
+     * @param converter converter for parameters values
+     */
+    public <T extends CalculusFieldElement<T>> T[] toArray(final Field<T> field,
+                                                           final DoubleFunction<T> converter) {
+        final T[] array = MathArrays.buildArray(field, SIZE);
+        array[TIME_INDEX]         = converter.apply(timeDriver.getValue());
+        array[A_DOT_INDEX]        = converter.apply(aDotDriver.getValue());
+        array[DELTA_N0_INDEX]     = converter.apply(deltaN0Driver.getValue());
+        array[DELTA_N0_DOT_INDEX] = converter.apply(deltaN0DotDriver.getValue());
+        array[I_DOT_INDEX]        = converter.apply(iDotDriver.getValue());
+        array[OMEGA_DOT_INDEX]    = converter.apply(domDriver.getValue());
+        array[CUC_INDEX]          = converter.apply(cucDriver.getValue());
+        array[CUS_INDEX]          = converter.apply(cusDriver.getValue());
+        array[CRC_INDEX]          = converter.apply(crcDriver.getValue());
+        array[CRS_INDEX]          = converter.apply(crsDriver.getValue());
+        array[CIC_INDEX]          = converter.apply(cicDriver.getValue());
+        array[CIS_INDEX]          = converter.apply(cisDriver.getValue());
+        array[AF0_INDEX]          = converter.apply(af0Driver.getValue());
+        array[AF1_INDEX]          = converter.apply(af1Driver.getValue());
+        array[AF2_INDEX]          = converter.apply(af2Driver.getValue());
+        return array;
+    }
+
     /** Get the non-Keplerian elements as gradient variables or constants, depending on selection status.
      * @param freeParameters total number of free parameters in the gradient
      */
@@ -382,6 +465,34 @@ public class NonKeplerianDriversFactory {
         return filler.gradients;
     }
 
+    /** Get the non-Keplerian elements as gradient variables or constants, depending on selection status.
+     * @param field field
+     * @param freeParameters total number of free parameters in the gradient
+     */
+    public <T extends CalculusFieldElement<T>> FieldGradient<T>[] toGradients(final Field<T> field,
+                                                                              final int freeParameters) {
+        final FieldFiller<T> filler = new FieldFiller<>(field, freeParameters);
+        filler.manage(timeDriver,       TIME_INDEX);
+        filler.manage(aDotDriver,       A_DOT_INDEX);
+        filler.manage(deltaN0Driver,    DELTA_N0_INDEX);
+        filler.manage(deltaN0DotDriver, DELTA_N0_DOT_INDEX);
+        filler.manage(iDotDriver,       I_DOT_INDEX);
+        filler.manage(domDriver,        OMEGA_DOT_INDEX);
+        filler.manage(cucDriver,        CUC_INDEX);
+        filler.manage(cusDriver,        CUS_INDEX);
+        filler.manage(crcDriver,        CRC_INDEX);
+        filler.manage(crsDriver,        CRS_INDEX);
+        filler.manage(cicDriver,        CIC_INDEX);
+        filler.manage(cisDriver,        CIS_INDEX);
+        filler.manage(af0Driver,        AF0_INDEX);
+        filler.manage(af1Driver,        AF1_INDEX);
+        filler.manage(af2Driver,        AF2_INDEX);
+        return filler.gradients;
+    }
+
+    /** Array filler for gradients.
+     * @since 14.0
+     */
     private static class Filler {
 
         /** Total number of free parameters in the gradient. */
@@ -414,6 +525,54 @@ public class NonKeplerianDriversFactory {
             } else {
                 // this driver should be managed as a constant
                 gradients[index] = Gradient.constant(freeParameters, driver.getValue());
+            }
+        }
+
+    }
+
+    /** Array filler for gradients.
+     * @param <T> field to which elements belong
+     * @since 14.0
+     */
+    private static class FieldFiller<T extends CalculusFieldElement<T>> {
+
+        /** Field. */
+        private final Field<T> field;
+
+        /** Total number of free parameters in the gradient. */
+        private final int freeParameters;
+
+        /** Gradient array. */
+        private final FieldGradient<T>[] gradients;
+
+        /** Partial derivative index. */
+        private int derivative;
+
+        /** Simple constructor.
+         * @param field field
+         * @param freeParameters total number of free parameters in the gradient
+         */
+        FieldFiller(final Field<T> field, final int freeParameters) {
+            this.field          = field;
+            this.freeParameters = freeParameters;
+            this.gradients      = MathArrays.buildArray(FieldGradientField.getField(field, freeParameters), SIZE);
+            this.derivative     = 6;
+        }
+
+        /** Manage one driver.
+         * @param driver driver to manage
+         * @param index index of the driver in the array
+         */
+        private void manage(final ParameterDriver driver, final int index) {
+            if (driver.isSelected()) {
+                // this driver should be managed as a variable
+                gradients[index] = FieldGradient.variable(freeParameters, derivative,
+                                                          field.getZero().newInstance(driver.getValue()));
+                ++derivative;
+            } else {
+                // this driver should be managed as a constant
+                gradients[index] = FieldGradient.constant(freeParameters,
+                                                          field.getZero().newInstance(driver.getValue()));
             }
         }
 

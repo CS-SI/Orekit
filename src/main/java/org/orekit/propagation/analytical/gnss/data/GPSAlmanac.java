@@ -123,7 +123,7 @@ public class GPSAlmanac extends GNSSOrbitalElements<GPSAlmanac> {
     P toField(final FieldKeplerianOrbit<T> orbit, final T[] nonKeplerian, final DoubleFunction<T> converter) {
         return (P) new FieldGPSAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                          getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                         converter.apply(getTGD()),
+                                         converter.apply(getTgd()),
                                          converter.apply(getToc()),
                                          getSource(), getSVN(),
                                          getHealth(), getURA(), getSatConfiguration());

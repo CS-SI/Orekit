@@ -105,7 +105,7 @@ public class QZSSLegacyNavigationMessage extends LegacyNavigationMessage<QZSSLeg
     P toField(final FieldKeplerianOrbit<T> orbit, final T[] nonKeplerian, final DoubleFunction<T> converter) {
         return (P) new FieldQZSSLegacyNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                                           getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                                          converter.apply(getTGD()),
+                                                          converter.apply(getTgd()),
                                                           converter.apply(getToc()),
                                                           new FieldAbsoluteDate<>(orbit.getMu().getField(),
                                                                                   getEpochToc()),

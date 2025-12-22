@@ -60,7 +60,7 @@ public interface FieldGNSSClockElements<T extends CalculusFieldElement<T>>
      * Get the estimated group delay differential TGD for L1-L2 correction.
      * @return the estimated group delay differential TGD for L1-L2 correction (s)
      */
-    T getTGD();
+    T getTgd();
 
     /**
      * Get the time of clock.

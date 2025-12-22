@@ -218,7 +218,7 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
         return (P) new FieldBeidouCivilianNavigationMessage<>(getBeidouType(),
                                                               getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                                               getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                                              converter.apply(getTGD()),
+                                                              converter.apply(getTgd()),
                                                               converter.apply(getToc()),
                                                               new FieldAbsoluteDate<>(orbit.getMu().getField(),
                                                                                       getEpochToc()),

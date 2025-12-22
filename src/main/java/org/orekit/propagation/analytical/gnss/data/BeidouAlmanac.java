@@ -96,7 +96,7 @@ public class BeidouAlmanac extends GNSSOrbitalElements<BeidouAlmanac> {
     P toField(final FieldKeplerianOrbit<T> orbit, final T[] nonKeplerian, final DoubleFunction<T> converter) {
         return (P) new FieldBeidouAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                             getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                            converter.apply( getTGD()),
+                                            converter.apply( getTgd()),
                                             converter.apply(getToc()),
                                             getHealth());
     }

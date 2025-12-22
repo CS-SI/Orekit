@@ -185,7 +185,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(1025,                gps.getGnssDate().getWeekNumber());
         Assertions.assertEquals(0.000000000000e+00,  gps.getSvAccuracy(), 1.0e-15);
         Assertions.assertEquals(0.000000000000e+00,  gps.getSvHealth(), 1.0e-15);
-        Assertions.assertEquals(0.000000000000e+00,  gps.getTGD(), 1.0e-15);
+        Assertions.assertEquals(0.000000000000e+00,  gps.getTgd(), 1.0e-15);
         Assertions.assertEquals(389,                 gps.getIODC());
         Assertions.assertFalse(gps.isCivilianMessage());
         Assertions.assertFalse(gps.toField(Binary64Field.getInstance()).isCivilianMessage());
@@ -717,7 +717,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(2109,                qzss.getGnssDate().getWeekNumber());
         Assertions.assertEquals(0.280000000000e+01,  qzss.getSvAccuracy(), 1.0e-15);
         Assertions.assertEquals(0.620000000000e+02,  qzss.getSvHealth(), 1.0e-15);
-        Assertions.assertEquals(-0.605359673500e-08, qzss.getTGD(), 1.0e-15);
+        Assertions.assertEquals(-0.605359673500e-08, qzss.getTgd(), 1.0e-15);
         Assertions.assertEquals(957,                 qzss.getIODC(), 1.0e-15);
 
         // check weeks reference in Rinex navigation are aligned with GPS weeks
@@ -918,7 +918,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(2077,                navic.getGnssDate().getWeekNumber());
         Assertions.assertEquals(4.85,                navic.getSvAccuracy(), 1.0e-15);
         Assertions.assertEquals(0.000000000000e+00,  navic.getSvHealth(), 1.0e-15);
-        Assertions.assertEquals(-4.656613000000e-10, navic.getTGD(), 1.0e-15);
+        Assertions.assertEquals(-4.656613000000e-10, navic.getTgd(), 1.0e-15);
 
         // check weeks reference in Rinex navigation are aligned with GPS weeks
         final AbsoluteDate obsRebuiltDate = new GNSSDate(navic.getGnssDate().getWeekNumber(), navic.getGnssDate().getSecondsInWeek(), SatelliteSystem.GPS).
@@ -1037,7 +1037,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(15, navICL1.getUrai());
 
         // as reference signal flag is set to 1, ISC S are *not* broadcast
-        Assertions.assertTrue(Double.isNaN(navICL1.getTGD()));
+        Assertions.assertTrue(Double.isNaN(navICL1.getTgd()));
         Assertions.assertTrue(Double.isNaN(navICL1.getIscSL1P()));
         Assertions.assertTrue(Double.isNaN(navICL1.getIscL1DL1P()));
 
@@ -1257,7 +1257,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(2109,                qzss.getGnssDate().getWeekNumber());
         Assertions.assertEquals(2.000000000000e+00,  qzss.getSvAccuracy(), 1.0e-15);
         Assertions.assertEquals(0.000000000000e+00,  qzss.getSvHealth(), 1.0e-15);
-        Assertions.assertEquals(0.000000000000e+00,  qzss.getTGD(), 1.0e-15);
+        Assertions.assertEquals(0.000000000000e+00,  qzss.getTgd(), 1.0e-15);
         Assertions.assertEquals(961,                 qzss.getIODC(), 1.0e-15);
 
         // check weeks reference in Rinex navigation are aligned with GPS weeks
@@ -1354,7 +1354,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(2147,                gps.getGnssDate().getWeekNumber());
         Assertions.assertEquals(2.000000000000E+00,  gps.getSvAccuracy(), 1.0e-15);
         Assertions.assertEquals(0,                   gps.getSvHealth());
-        Assertions.assertEquals(4.656612873077E-09,  gps.getTGD(), 1.0e-15);
+        Assertions.assertEquals(4.656612873077E-09,  gps.getTgd(), 1.0e-15);
         Assertions.assertEquals(9,                   gps.getIODC());
 
         // check weeks reference in Rinex navigation are aligned with GPS weeks
@@ -1628,7 +1628,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(2148,                navic.getGnssDate().getWeekNumber());
         Assertions.assertEquals(9.65,                navic.getSvAccuracy(), 1.0e-15);
         Assertions.assertEquals(0.000000000000e+00,  navic.getSvHealth(), 1.0e-15);
-        Assertions.assertEquals(-4.656613000000e-10, navic.getTGD(), 1.0e-15);
+        Assertions.assertEquals(-4.656613000000e-10, navic.getTgd(), 1.0e-15);
 
         // check weeks reference in Rinex navigation are aligned with GPS weeks
         final AbsoluteDate obsRebuiltDate = new GNSSDate(navic.getGnssDate().getWeekNumber(), navic.getGnssDate().getSecondsInWeek(), SatelliteSystem.GPS).
