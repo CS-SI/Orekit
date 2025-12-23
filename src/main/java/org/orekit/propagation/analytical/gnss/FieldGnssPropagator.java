@@ -131,6 +131,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
         // Stores the GNSS orbital elements
         this.orbitalElements = orbitalElements;
         this.driversFactory  = new NonKeplerianDriversFactory();
+        driversFactory.reset(orbitalElements);
        // Sets the Earth Centered Inertial frame
         this.eci  = eci;
         // Sets the Earth Centered Earth Fixed frame
@@ -373,18 +374,18 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
         // get approximate initial orbit
         final Frame frozenEcef = ecef.getFrozenFrame(initialState.getFrame(),
                                                      initialState.getDate().toAbsoluteDate(),
-                                                     "frozen");
+                                                     GNSSOrbitalElementsFactory.FROZEN + ecef.getName());
         final FieldKeplerianOrbit<T> orbit = approximateInitialOrbit(initialState, nonKeplerianElements, frozenEcef);
         driversFactory.reset(nonKeplerianElements);
 
         // refine orbit using simple differential correction to reach target PV
-        final FieldPVCoordinates<T> targetPV = initialState.getPVCoordinates();
+        final FieldPVCoordinates<T> targetPV = initialState.getPVCoordinates(frozenEcef);
         Q gElements = convert(nonKeplerianElements, orbit, driversFactory);
         for (int i = 0; i < MAX_ITER; ++i) {
 
             // get position-velocity derivatives with respect to initial orbit
             final FieldGnssPropagator<FieldGradient<T>, O, Q> gPropagator =
-                new FieldGnssPropagator<>(gElements, initialState.getFrame(), ecef, provider,
+                new FieldGnssPropagator<>(gElements, frozenEcef, ecef, provider,
                                           gElements.getOrbit().getMu().newInstance(mass));
             final FieldPVCoordinates<FieldGradient<T>> gPV = gPropagator.getInitialState().getPVCoordinates();
 
