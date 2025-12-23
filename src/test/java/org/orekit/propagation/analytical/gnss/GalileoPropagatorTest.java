@@ -102,7 +102,7 @@ public class GalileoPropagatorTest {
                                       SatelliteSystem.GALILEO,
                                       context.getFrames().getEME2000(),
                                       context.getFrames().getITRF(IERSConventions.IERS_2010, false));
-        final ParameterDriversList orb = factory.getNonKeplerianParametersDrivers();
+        final ParameterDriversList orb = factory.getOrbitalParametersDrivers();
         almanacFactory.setPrn(1);
         almanacFactory.setWeekAndTime(1024, 293400.0);
         final double sqrtA = FastMath.sqrt(GalileoAlmanac.A0) + 0.013671875;
@@ -150,7 +150,7 @@ public class GalileoPropagatorTest {
                                       SatelliteSystem.GALILEO,
                                       context.getFrames().getEME2000(),
                                       context.getFrames().getITRF(IERSConventions.IERS_2010, false));
-        final ParameterDriversList orb = almanacFactory.getNonKeplerianParametersDrivers();
+        final ParameterDriversList orb = almanacFactory.getOrbitalParametersDrivers();
         almanacFactory.setPrn(1);
         almanacFactory.setWeekAndTime(1024, 293400.0);
         final double sqrtA = GalileoAlmanac.A0 + 0.013671875;
