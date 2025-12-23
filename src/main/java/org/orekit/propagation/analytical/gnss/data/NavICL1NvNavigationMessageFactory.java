@@ -62,7 +62,7 @@ public class NavICL1NvNavigationMessageFactory
      */
     public NavICL1NvNavigationMessageFactory(final TimeScales timeScales, final SatelliteSystem system,
                                              final String type, final Frame inertial, final Frame bodyFixed) {
-        super(GNSSConstants.NAVIC_AV, GNSSConstants.NAVIC_WEEK_NB, timeScales, system,
+        super(GNSSConstants.NAVIC_AV, timeScales, system,
               type, inertial, bodyFixed, GNSSConstants.NAVIC_MU);
     }
 

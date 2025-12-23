@@ -40,7 +40,7 @@ public class QZSSCivilianNavigationMessageFactory
     public QZSSCivilianNavigationMessageFactory(final TimeScales timeScales, final SatelliteSystem system,
                                                 final String type, final Frame inertial, final Frame bodyFixed,
                                                 final boolean cnv2) {
-        super(GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB, timeScales, system,
+        super(GNSSConstants.QZSS_AV, timeScales, system,
               type, inertial, bodyFixed, GNSSConstants.QZSS_MU, cnv2);
     }
 

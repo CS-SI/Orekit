@@ -22,8 +22,6 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
-import java.util.function.Function;
-
 /**
  * Container for data contained in a GPS/QZNSS legacy navigation message.
  * @param <T> type of the field elements
