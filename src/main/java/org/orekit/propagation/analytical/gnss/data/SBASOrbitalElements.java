@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.orekit.propagation.analytical.gnss.SBASPropagator;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
 /** This interface provides the minimal set of orbital elements needed by the {@link SBASPropagator}.
@@ -143,8 +144,6 @@ public interface SBASOrbitalElements extends TimeStamped {
      *
      * @return the clock correction reference time (s)
      */
-    default double getToc() {
-        return 0.0;
-    }
+    AbsoluteDate getToc();
 
 }

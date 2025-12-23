@@ -21,7 +21,6 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
@@ -67,7 +66,6 @@ public class GPSCivilianNavigationMessage extends CivilianNavigationMessage<GPSC
      * @param af2              second order clock correction (s/s²)
      * @param tgd              group delay differential TGD for L1-L2 correction
      * @param toc              time of clock
-     * @param epochToc         time of clock epoch
      * @param transmissionTime transmission time
      * @param svAccuracy       user SV accuracy (m)
      * @param svHealth         satellite health status
@@ -92,8 +90,7 @@ public class GPSCivilianNavigationMessage extends CivilianNavigationMessage<GPSC
                                         final double crc, final double crs,
                                         final double cic, final double cis,
                                         final double af0, final double af1, final double af2,
-                                        final double tgd, final double toc,
-                                        final AbsoluteDate epochToc, final double transmissionTime,
+                                        final double tgd, final AbsoluteDate toc, final double transmissionTime,
                                         final double svAccuracy, final int svHealth,
                                         final double iscL1CA, final double iscL1CD, final double iscL1CP,
                                         final double iscL2C, final double iscL5I5, final double iscL5Q5,
@@ -102,7 +99,7 @@ public class GPSCivilianNavigationMessage extends CivilianNavigationMessage<GPSC
         super(cnv2, GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB,
               timeScales, type, prn, gnssDate, orbit,
               aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
-              af0, af1, af2, tgd, toc, epochToc, transmissionTime,
+              af0, af1, af2, tgd, toc, transmissionTime,
               svAccuracy, svHealth, iscL1CA, iscL1CD, iscL1CP, iscL2C, iscL5I5, iscL5Q5,
               uraiEd, uraiNed0, uraiNed1, uraiNed2, flags);
     }
@@ -123,10 +120,7 @@ public class GPSCivilianNavigationMessage extends CivilianNavigationMessage<GPSC
         return (P) new FieldGPSCivilianNavigationMessage<>(isCnv2(),
                                                            getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                                            getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                                           converter.apply(getTgd()),
-                                                           converter.apply(getToc()),
-                                                           new FieldAbsoluteDate<>(orbit.getMu().getField(),
-                                                                                   getEpochToc()),
+                                                           converter.apply(getTgd()), toFieldToc(orbit),
                                                            converter.apply(getTransmissionTime()),
                                                            converter.apply(getSvAccuracy()),
                                                            getSvHealth(),

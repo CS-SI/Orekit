@@ -21,6 +21,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
@@ -91,7 +92,7 @@ public class GalileoAlmanac extends GNSSOrbitalElements<GalileoAlmanac> {
                           final double crc, final double crs,
                           final double cic, final double cis,
                           final double af0, final double af1, final double af2,
-                          final double tgd, final double toc,
+                          final double tgd, final AbsoluteDate toc,
                           final int healthE5a, final int healthE5b, final int healthE1, final int iod) {
         super(GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB, timeScales, null,
               prn, gnssDate, orbit, aDot, deltaN0, deltaN0Dot, iDot, omegaDot,
@@ -121,8 +122,7 @@ public class GalileoAlmanac extends GNSSOrbitalElements<GalileoAlmanac> {
     P toField(final FieldKeplerianOrbit<T> orbit, final T[] nonKeplerian, final DoubleFunction<T> converter) {
         return (P) new FieldGalileoAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                              getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                             converter.apply(getTgd()),
-                                             converter.apply(getToc()),
+                                             converter.apply(getTgd()), toFieldToc(orbit),
                                              getHealthE5a(), getHealthE5b(), getHealthE1(),
                                              getIOD());
     }

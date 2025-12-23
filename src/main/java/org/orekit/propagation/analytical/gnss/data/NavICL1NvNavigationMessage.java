@@ -21,7 +21,6 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
@@ -90,7 +89,6 @@ public class NavICL1NvNavigationMessage
      * @param af2                 second order clock correction (s/s²)
      * @param tgd                 group delay differential TGD for L1-L2 correction
      * @param toc                 time of clock
-     * @param epochToc            time of clock epoch
      * @param transmissionTime    transmission time
      * @param referenceSignalFlag reference signal flag
      * @param urai                User Range Accuracy Index
@@ -109,8 +107,7 @@ public class NavICL1NvNavigationMessage
                                       final double crc, final double crs,
                                       final double cic, final double cis,
                                       final double af0, final double af1, final double af2,
-                                      final double tgd, final double toc,
-                                      final AbsoluteDate epochToc, final double transmissionTime,
+                                      final double tgd, final AbsoluteDate toc, final double transmissionTime,
                                       final int referenceSignalFlag,
                                       final int urai, final int l1SpsHealth,
                                       final double tgdSL5,
@@ -119,7 +116,7 @@ public class NavICL1NvNavigationMessage
         super(GNSSConstants.NAVIC_AV, GNSSConstants.NAVIC_WEEK_NB,
               timeScales, type, prn, gnssDate, orbit,
               aDot, deltaN0, deltaN0Dot, iDot, omegaDot, cuc, cus, crc, crs, cic, cis,
-              af0, af1, af2, tgd, toc, epochToc, transmissionTime);
+              af0, af1, af2, tgd, toc, transmissionTime);
         this.referenceSignalFlag = referenceSignalFlag;
         this.urai                = urai;
         this.l1SpsHealth         = l1SpsHealth;
@@ -153,10 +150,7 @@ public class NavICL1NvNavigationMessage
     P toField(final FieldKeplerianOrbit<T> orbit, final T[] nonKeplerian, final DoubleFunction<T> converter) {
        return (P) new FieldNavicL1NvNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                                          getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                                         converter.apply(getTgd()),
-                                                         converter.apply(getToc()),
-                                                         new FieldAbsoluteDate<>(orbit.getMu().getField(),
-                                                                                 getEpochToc()),
+                                                         converter.apply(getTgd()), toFieldToc(orbit),
                                                          converter.apply(getTransmissionTime()),
                                                          getReferenceSignalFlag(),
                                                          getUrai(), getL1SpsHealth(),

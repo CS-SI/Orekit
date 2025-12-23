@@ -20,6 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
@@ -72,7 +73,7 @@ public class BeidouAlmanac extends GNSSOrbitalElements<BeidouAlmanac> {
                          final double crc, final double crs,
                          final double cic, final double cis,
                          final double af0, final double af1, final double af2,
-                         final double tgd, final double toc,
+                         final double tgd, final AbsoluteDate toc,
                          final int health) {
         super(GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB, timeScales, null, prn,
               gnssDate, orbit, aDot, deltaN0, deltaN0Dot, iDot, omegaDot,
@@ -96,8 +97,7 @@ public class BeidouAlmanac extends GNSSOrbitalElements<BeidouAlmanac> {
     P toField(final FieldKeplerianOrbit<T> orbit, final T[] nonKeplerian, final DoubleFunction<T> converter) {
         return (P) new FieldBeidouAlmanac<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                             getType(), getPrn(), getGnssDate(), orbit, nonKeplerian,
-                                            converter.apply( getTgd()),
-                                            converter.apply(getToc()),
+                                            converter.apply( getTgd()), toFieldToc(orbit),
                                             getHealth());
     }
 

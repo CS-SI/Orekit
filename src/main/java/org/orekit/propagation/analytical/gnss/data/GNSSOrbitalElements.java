@@ -24,6 +24,7 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitalParameters;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.ParameterDriver;
@@ -115,8 +116,8 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
     /** Group delay differential TGD for L1-L2 correction. */
     private final double tgd;
 
-    /** Time Of Clock. */
-    private final double toc;
+    /** Time Of Clock epoch. */
+    private final AbsoluteDate toc;
 
     /**
      * Creates a new instance.
@@ -155,7 +156,7 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
                                   final double crc, final double crs,
                                   final double cic, final double cis,
                                   final double af0, final double af1, final double af2,
-                                  final double tgd, final double toc) {
+                                  final double tgd, final AbsoluteDate toc) {
 
         // system parameters
         this.angularVelocity = angularVelocity;
@@ -211,7 +212,8 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
              original.getCrc().getReal(), original.getCrs().getReal(),
              original.getCic().getReal(), original.getCis().getReal(),
              original.getAf0().getReal(), original.getAf1().getReal(), original.getAf2().getReal(),
-             original.getTgd().getReal(), original.getToc().getReal());
+             original.getTgd().getReal(),
+             original.getToc() == null ? null : original.getToc().toAbsoluteDate());
     }
 
     /** {@inheritDoc} */
@@ -268,6 +270,19 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
      */
     public abstract <T extends CalculusFieldElement<T>, P extends FieldGnssOrbitalElements<T, O, P>>
         P toField(FieldKeplerianOrbit<T> orbit, T[] nonKeplerian, DoubleFunction<T> converter);
+
+    /** Convert TOC.
+     * @param <T>   type of the field elements
+     * @param orbit orbit in the correct gradient field
+     * @return converted Time Of Clock
+     * @since 14.0
+     */
+    protected <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T>
+        toFieldToc(final FieldKeplerianOrbit<T> orbit) {
+        return getToc() == null ?
+               null :
+               new FieldAbsoluteDate<>(orbit.getDate().getField(), getToc());
+    }
 
     /** Get known time scales.
      * @return known time scales
@@ -425,7 +440,7 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
 
     /** {@inheritDoc} */
     @Override
-    public double getToc() {
+    public AbsoluteDate getToc() {
         return toc;
     }
 

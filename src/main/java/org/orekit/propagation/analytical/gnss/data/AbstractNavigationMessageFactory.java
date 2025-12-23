@@ -18,7 +18,6 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.orekit.frames.Frame;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScales;
 
 /**
@@ -29,9 +28,6 @@ import org.orekit.time.TimeScales;
  */
 public abstract class AbstractNavigationMessageFactory<O extends AbstractNavigationMessage<O>>
     extends GNSSOrbitalElementsFactory<O> {
-
-    /** Time of clock epoch. */
-    private AbsoluteDate epochToc;
 
     /** Transmission time.
      * @since 12.0
@@ -53,20 +49,6 @@ public abstract class AbstractNavigationMessageFactory<O extends AbstractNavigat
                                             final String type, final Frame inertial, final Frame bodyFixed,
                                             final double mu) {
         super(angularVelocity, timeScales, system, type, inertial, bodyFixed, mu);
-    }
-
-    /** Get the time of clock epoch.
-     * @return the time of clock epoch
-     */
-    public AbsoluteDate getEpochToc() {
-        return epochToc;
-    }
-
-    /** Set the time of clock epoch.
-     * @param epochToc the time of clock epoch
-     */
-    public void setEpochToc(final AbsoluteDate epochToc) {
-        this.epochToc = epochToc;
     }
 
     /** Get transmission time.

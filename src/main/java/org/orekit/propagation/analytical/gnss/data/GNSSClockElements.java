@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
 /** This interface provides the minimal set of clock elements needed by the
@@ -60,12 +61,13 @@ public interface GNSSClockElements extends TimeStamped {
     double getTgd();
 
     /**
-     * Get the time of clock.
-     * @return the time of clock (s)
+     * Get the time of clock epoch.
+     * @return the time of clock epoch
      * @see #getAf0()
      * @see #getAf1()
      * @see #getAf2()
+     * @since 14.0
      */
-    double getToc();
+    AbsoluteDate getToc();
 
 }

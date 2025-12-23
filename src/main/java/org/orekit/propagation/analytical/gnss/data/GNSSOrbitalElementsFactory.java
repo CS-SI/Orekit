@@ -97,7 +97,7 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
     private double tgd;
 
     /** Time Of Clock. */
-    private double toc;
+    private AbsoluteDate toc;
 
     /**
      * Simple constructor.
@@ -353,17 +353,17 @@ public abstract class GNSSOrbitalElementsFactory<O extends GNSSOrbitalElements<O
         this.tgd = tgd;
     }
 
-    /** Get the time of clock.
-     * @return the time of clock (s)
+    /** Get the time of clock epoch.
+     * @return the time of clock epoch
      */
-    public double getToc() {
+    public AbsoluteDate getToc() {
         return toc;
     }
 
     /** Set the time of clock.
      * @param toc time of clock (s)
      */
-    public void setToc(final double toc) {
+    public void setToc(final AbsoluteDate toc) {
         this.toc = toc;
     }
 

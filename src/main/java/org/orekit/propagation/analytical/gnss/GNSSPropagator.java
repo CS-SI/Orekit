@@ -433,7 +433,7 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
             // get position-velocity derivatives with respect to initial orbit
             final FieldGnssPropagator<Gradient, O, Q> gPropagator =
                 new FieldGnssPropagator<>(gElements, frozenEcef, ecef, provider,
-                                          gElements.getToc().newInstance(mass));
+                                          gElements.getTgd().newInstance(mass));
             final FieldPVCoordinates<Gradient> gPV = gPropagator.getInitialState().getPVCoordinates();
 
             // compute Jacobian matrix

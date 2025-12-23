@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
+import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1045;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1045Data;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
@@ -30,6 +31,7 @@ import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
+import org.orekit.time.GNSSDate;
 import org.orekit.utils.IERSConventions;
 
 import java.util.ArrayList;
@@ -135,7 +137,10 @@ public class Rtcm1045Test {
 
         // Verify other data
         Assertions.assertEquals(12,      ephemerisData.getSatelliteID());
-        Assertions.assertEquals(59220.0, ephemerisData.getGalileoNavigationMessage().getToc(), eps);
+        Assertions.assertEquals(59220.0,
+                                new GNSSDate(ephemerisData.getGalileoNavigationMessage().getToc(), SatelliteSystem.GALILEO).
+                                    getSecondsInWeek(),
+                                eps);
         Assertions.assertEquals(0,       ephemerisData.getGalileoNavigationMessage().getSvHealth());
         Assertions.assertEquals(ephemerisData.getAccuracyProvider().getAccuracy(), galileoMessage.getSisa(), eps);
 

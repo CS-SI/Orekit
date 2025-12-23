@@ -24,6 +24,7 @@ import org.orekit.Utils;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.data.LazyLoadedDataContext;
+import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1042;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1042Data;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
@@ -31,6 +32,7 @@ import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
 import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
+import org.orekit.time.GNSSDate;
 import org.orekit.utils.IERSConventions;
 
 import java.util.ArrayList;
@@ -137,7 +139,10 @@ public class Rtcm1042Test {
         // Verify other data
         Assertions.assertEquals(12,                     ephemerisData.getSatelliteID());
         Assertions.assertEquals(0.0, ephemerisData.getBeidouNavigationMessage().getSatH1(), eps);
-        Assertions.assertEquals(63224, ephemerisData.getBeidouNavigationMessage().getToc(), eps);
+        Assertions.assertEquals(63224,
+                                new GNSSDate(ephemerisData.getBeidouNavigationMessage().getToc(), SatelliteSystem.BEIDOU).
+                                    getSecondsInWeek(),
+                                eps);
         Assertions.assertEquals(ephemerisData.getAccuracyProvider().getAccuracy(), beidouMessage.getSvAccuracy(), eps);
 
     }

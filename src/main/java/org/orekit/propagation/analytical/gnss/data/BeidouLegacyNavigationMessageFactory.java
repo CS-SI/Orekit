@@ -172,8 +172,7 @@ public class BeidouLegacyNavigationMessageFactory
                                                  getCicDriver().getValue(), getCisDriver().getValue(),
                                                  getAf0Driver().getValue(), getAf1Driver().getValue(),
                                                  getAf2Driver().getValue(),
-                                                 getTgd(), getToc(),
-                                                 getEpochToc(), getTransmissionTime(),
+                                                 getTgd(), getToc(), getTransmissionTime(),
                                                  getAODE(), getAODC(), getSatH1(),
                                                  getTGD1(), getTGD2(), getSvAccuracy());
     }

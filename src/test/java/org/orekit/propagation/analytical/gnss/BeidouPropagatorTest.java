@@ -37,6 +37,7 @@ import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElementsFactory;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
@@ -78,6 +79,7 @@ public class BeidouPropagatorTest {
         factory.getAf0Driver().setValue(0.0001096725);
         factory.getAf1Driver().setValue(7.27596e-12);
         factory.setHealth(0);
+        factory.setToc(new GNSSDate(694, 123456.0, SatelliteSystem.BEIDOU).getDate());
     }
 
     @Test

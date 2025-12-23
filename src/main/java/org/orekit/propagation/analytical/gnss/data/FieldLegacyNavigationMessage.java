@@ -62,21 +62,6 @@ public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElemen
      */
     private final int l2PFlags;
 
-    /** Constructor from non-field instance.
-     * @param orbit    orbit in the correct field
-     * @param original regular non-field instance
-     */
-    protected FieldLegacyNavigationMessage(final FieldKeplerianOrbit<T> orbit, final O original) {
-        super(orbit, original);
-        iode        = original.getIODE();
-        iodc        = original.getIODC();
-        svAccuracy  = orbit.getMu().newInstance(original.getSvAccuracy());
-        svHealth    = original.getSvHealth();
-        fitInterval = original.getFitInterval();
-        l2Codes     = original.getL2Codes();
-        l2PFlags    = original.getL2PFlags();
-    }
-
     /** Creates a new instance.
      * @param angularVelocity  mean angular velocity of the Earth for the GNSS model
      * @param weeksInCycle     number of weeks in the GNSS cycle
@@ -88,7 +73,6 @@ public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElemen
      * @param nonKeplerian     15 non-Keplerian parameters (in the order given by {@link NonKeplerianDriversFactory}
      * @param tgd              group delay differential TGD for L1-L2 correction
      * @param toc              time of clock
-     * @param epochToc         time of clock epoch
      * @param transmissionTime transmission time
      * @param iode             issue of data, ephemeris
      * @param iodc             issue of data, clock
@@ -102,13 +86,13 @@ public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElemen
     public FieldLegacyNavigationMessage(final double angularVelocity, final int weeksInCycle,
                                         final TimeScales timeScales, final String type, final int prn,
                                         final GNSSDate gnssDate, final FieldKeplerianOrbit<T> orbit,
-                                        final T[] nonKeplerian, final T tgd, final T toc,
-                                        final FieldAbsoluteDate<T> epochToc, final T transmissionTime,
+                                        final T[] nonKeplerian, final T tgd,
+                                        final FieldAbsoluteDate<T> toc, final T transmissionTime,
                                         final int iode, final int iodc, final T svAccuracy,
                                         final int svHealth, final int fitInterval,
                                         final int l2Codes, final int l2PFlags) {
         super(angularVelocity, weeksInCycle, timeScales, type, prn, gnssDate, orbit, nonKeplerian,
-              tgd, toc, epochToc, transmissionTime);
+              tgd, toc, transmissionTime);
         this.iode        = iode;
         this.iodc        = iodc;
         this.svAccuracy  = svAccuracy;
@@ -116,25 +100,6 @@ public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElemen
         this.fitInterval = fitInterval;
         this.l2Codes     = l2Codes;
         this.l2PFlags    = l2PFlags;
-    }
-
-    /** Constructor from different field instance.
-     * @param <V> type of the old field elements
-     * @param orbit     orbit in the correct field
-     * @param original  regular non-field instance
-     * @param converter for field elements
-     */
-    protected <V extends CalculusFieldElement<V>> FieldLegacyNavigationMessage(final FieldKeplerianOrbit<T> orbit,
-                                                                               final Function<V, T> converter,
-                                                                               final FieldLegacyNavigationMessage<V, O, ?> original) {
-        super(orbit, converter, original);
-        iode        = original.getIODE();
-        iodc        = original.getIODC();
-        svAccuracy  = converter.apply(original.getSvAccuracy());
-        svHealth    = original.getSvHealth();
-        fitInterval = original.getFitInterval();
-        l2Codes     = original.getL2Codes();
-        l2PFlags    = original.getL2PFlags();
     }
 
     /**

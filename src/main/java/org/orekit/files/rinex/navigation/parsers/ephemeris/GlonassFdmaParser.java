@@ -57,21 +57,21 @@ public class GlonassFdmaParser extends AbstractEphemerisParser<GLONASSFdmaNaviga
             final int hours = ParsingUtils.parseInt(parseInfo.getLine(), 12, 2);
             final int min = ParsingUtils.parseInt(parseInfo.getLine(), 15, 2);
             final double sec = ParsingUtils.parseDouble(parseInfo.getLine(), 17, 5);
-            message.setEpochToc(new AbsoluteDate(year, month, day, hours, min, sec,
-                                                 parseInfo.getTimeScales().getUTC()));
+            message.setToc(new AbsoluteDate(year, month, day, hours, min, sec,
+                                            parseInfo.getTimeScales().getUTC()));
 
             // clock
             message.setTauN(Unit.SECOND.toSI(-ParsingUtils.parseDouble(parseInfo.getLine(), 22, 19)));
             message.setGammaN(Unit.NONE.toSI(ParsingUtils.parseDouble(parseInfo.getLine(), 41, 19)));
 
             // Set the ephemeris epoch (same as time of clock epoch)
-            message.setDate(message.getEpochToc());
+            message.setDate(message.getToc());
 
         } else {
             message.setPRN(ParsingUtils.parseInt(parseInfo.getLine(), 1, 2));
 
             // Toc
-            message.setEpochToc(parseInfo.parseDate(parseInfo.getTimeScales().getUTC()));
+            message.setToc(parseInfo.parseDate(parseInfo.getTimeScales().getUTC()));
 
             // clock
             message.setTauN(-parseInfo.parseDouble2(Unit.ONE));
@@ -79,7 +79,7 @@ public class GlonassFdmaParser extends AbstractEphemerisParser<GLONASSFdmaNaviga
             message.setTime(fmod(parseInfo.parseDouble4(Unit.ONE), Constants.JULIAN_DAY));
 
             // Set the ephemeris epoch (same as time of clock epoch)
-            message.setDate(message.getEpochToc());
+            message.setDate(message.getToc());
         }
 
     }

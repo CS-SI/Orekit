@@ -62,7 +62,6 @@ public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
      * @param nonKeplerian     15 non-Keplerian parameters (in the order given by {@link NonKeplerianDriversFactory}
      * @param tgd              group delay differential TGD for L1-L2 correction
      * @param toc              time of clock
-     * @param epochToc         time of clock epoch
      * @param transmissionTime transmission time
      * @param iodNav           issue of Data of the navigation batch
      * @param dataSource       data source
@@ -75,13 +74,13 @@ public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
     public FieldGalileoNavigationMessage(final double angularVelocity, final int weeksInCycle,
                                          final TimeScales timeScales, final String type, final int prn,
                                          final GNSSDate gnssDate, final FieldKeplerianOrbit<T> orbit,
-                                         final T[] nonKeplerian, final T tgd, final T toc,
-                                         final FieldAbsoluteDate<T> epochToc, final T transmissionTime,
+                                         final T[] nonKeplerian, final T tgd,
+                                         final FieldAbsoluteDate<T> toc, final T transmissionTime,
                                          final int iodNav, final int dataSource,
                                          final T bgbE1E5a, final T bgdE5bE1,
                                          final T sisa, final T svHealth) {
         super(angularVelocity, weeksInCycle, timeScales, type, prn, gnssDate, orbit, nonKeplerian,
-              tgd, toc, epochToc, transmissionTime);
+              tgd, toc, transmissionTime);
         this.iodNav     = iodNav;
         this.dataSource = dataSource;
         this.bgbE1E5a   = bgbE1E5a;
@@ -104,9 +103,9 @@ public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
         return (V) new FieldGalileoNavigationMessage<>(getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                                        getType(), getPrn(), getGnssDate().getGnssDate(),
                                                        orbit, nonKeplerian,
-                                                       converter.apply(getTgd()), converter.apply(getToc()),
+                                                       converter.apply(getTgd()),
                                                        new FieldAbsoluteDate<>(orbit.getMu().getField(),
-                                                                               getEpochToc().toAbsoluteDate()),
+                                                                               getToc().toAbsoluteDate()),
                                                        converter.apply(getTransmissionTime()),
                                                        getIODNav(), getDataSource(),
                                                        converter.apply(getBGDE1E5a()),

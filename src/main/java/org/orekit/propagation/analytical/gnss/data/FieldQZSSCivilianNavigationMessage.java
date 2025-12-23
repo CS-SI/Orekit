@@ -45,7 +45,6 @@ public class FieldQZSSCivilianNavigationMessage<T extends CalculusFieldElement<T
      * @param nonKeplerian     15 non-Keplerian parameters (in the order given by {@link NonKeplerianDriversFactory}
      * @param tgd              group delay differential TGD for L1-L2 correction
      * @param toc              time of clock
-     * @param epochToc         time of clock epoch
      * @param transmissionTime transmission time
      * @param svAccuracy       user SV accuracy (m)
      * @param svHealth         satellite health status
@@ -66,15 +65,15 @@ public class FieldQZSSCivilianNavigationMessage<T extends CalculusFieldElement<T
                                               final double angularVelocity, final int weeksInCycle,
                                               final TimeScales timeScales, final String type, final int prn,
                                               final GNSSDate gnssDate, final FieldKeplerianOrbit<T> orbit,
-                                              final T[] nonKeplerian, final T tgd, final T toc,
-                                              final FieldAbsoluteDate<T> epochToc, final T transmissionTime,
+                                              final T[] nonKeplerian, final T tgd,
+                                              final FieldAbsoluteDate<T> toc, final T transmissionTime,
                                               final T svAccuracy, final int svHealth,
                                               final T iscL1CA, final T iscL1CD, final T iscL1CP,
                                               final T iscL2C, final T iscL5I5, final T iscL5Q5,
                                               final int uraiEd, final int uraiNed0, final int uraiNed1, final int uraiNed2,
                                               final int flags) {
         super(cnv2, angularVelocity, weeksInCycle, timeScales, type, prn, gnssDate, orbit, nonKeplerian,
-              tgd, toc, epochToc, transmissionTime, svAccuracy, svHealth,
+              tgd, toc, transmissionTime, svAccuracy, svHealth,
               iscL1CA, iscL1CD, iscL1CP, iscL2C, iscL5I5, iscL5Q5,
               uraiEd, uraiNed0, uraiNed1, uraiNed2, flags);
     }
@@ -94,9 +93,9 @@ public class FieldQZSSCivilianNavigationMessage<T extends CalculusFieldElement<T
                                                             getAngularVelocity(), getWeeksInCycle(), getTimeScales(),
                                                             getType(), getPrn(), getGnssDate().getGnssDate(),
                                                             orbit, nonKeplerian,
-                                                            converter.apply(getTgd()), converter.apply(getToc()),
+                                                            converter.apply(getTgd()),
                                                             new FieldAbsoluteDate<>(orbit.getMu().getField(),
-                                                                                    getEpochToc().toAbsoluteDate()),
+                                                                                    getToc().toAbsoluteDate()),
                                                             converter.apply(getTransmissionTime()),
                                                             converter.apply(getSvAccuracy()), getSvHealth(),
                                                             converter.apply(getIscL1CA()),

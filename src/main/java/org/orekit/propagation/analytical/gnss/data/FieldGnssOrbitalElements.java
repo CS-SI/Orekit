@@ -117,7 +117,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
     private final T tgd;
 
     /** Time Of Clock. */
-    private final T toc;
+    private final FieldAbsoluteDate<T> toc;
 
     /** Creates a new instance.
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
@@ -155,7 +155,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
                                        final T crc, final T crs,
                                        final T cic, final T cis,
                                        final T af0, final T af1, final T af2,
-                                       final T tgd, final T toc) {
+                                       final T tgd, final FieldAbsoluteDate<T> toc) {
 
         // system parameters
         this.angularVelocity = angularVelocity;
@@ -211,7 +211,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
     protected FieldGnssOrbitalElements(final double angularVelocity, final int weeksInCycle,
                                        final TimeScales timeScales, final String type, final int prn,
                                        final GNSSDate gnssDate, final FieldKeplerianOrbit<T> orbit,
-                                       final T[] nonKeplerian, final T tgd, final T toc) {
+                                       final T[] nonKeplerian, final T tgd, final FieldAbsoluteDate<T> toc) {
         this(angularVelocity, weeksInCycle, timeScales, type, prn,
              new FieldGNSSDate<>(orbit.getDate().getField(),
                                  new GNSSDate(gnssDate.getWeekNumber(),
@@ -252,7 +252,8 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
              orbit.getMu().newInstance(original.getAf0()),
              orbit.getMu().newInstance(original.getAf1()),
              orbit.getMu().newInstance(original.getAf2()),
-             orbit.getMu().newInstance(original.getTgd()), orbit.getMu().newInstance(original.getToc()));
+             orbit.getMu().newInstance(original.getTgd()),
+             new FieldAbsoluteDate<>(orbit.getDate().getField(), original.getToc()));
      }
 
     /** Constructor from different field instance.
@@ -277,7 +278,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
              converter.apply(original.getAf1()),
              converter.apply(original.getAf2()),
              converter.apply(original.getTgd()),
-             converter.apply(original.getToc()));
+             new FieldAbsoluteDate<>(orbit.getDate().getField(), original.getToc().toAbsoluteDate()));
     }
 
     /** {@inheritDoc} */
@@ -465,7 +466,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
 
     /** {@inheritDoc} */
     @Override
-    public T getToc() {
+    public FieldAbsoluteDate<T> getToc() {
         return toc;
     }
 
