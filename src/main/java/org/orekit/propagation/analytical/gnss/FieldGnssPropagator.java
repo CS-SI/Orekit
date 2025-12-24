@@ -451,7 +451,6 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
         }
 
         final FieldKeplerianOrbit<FieldGradient<T>> initialOrbit = gElements.getOrbit();
-        final T zero = initialState.getOrbit().getMu().getField().getZero();
         return gElements.toField(new FieldKeplerianOrbit<>(initialOrbit.getA().getValue(),
                                                            initialOrbit.getE().getValue(),
                                                            initialOrbit.getI().getValue(),
@@ -463,7 +462,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>,
                                                            new FieldAbsoluteDate<>(initialOrbit.getMu().getValue().getField(),
                                                                                    initialOrbit.getDate().toAbsoluteDate()),
                                                            initialOrbit.getMu().getValue()),
-                                 driversFactory.toArray(zero.getField(), zero::newInstance),
+                                 nonKeplerianElements.toArray(),
                                  FieldGradient::getValue);
 
     }

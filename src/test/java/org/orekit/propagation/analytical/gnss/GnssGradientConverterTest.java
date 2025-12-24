@@ -95,7 +95,7 @@ class GnssGradientConverterTest {
             converter = new GnssGradientConverter<>(propagator);
         final FieldGnssPropagator<Gradient, GalileoNavigationMessage, FieldGalileoNavigationMessage<Gradient>>
             gPropagator = converter.getPropagator();
-        Assertions.assertEquals(12, gPropagator.getParametersDrivers().size());
+        Assertions.assertEquals(15, gPropagator.getParametersDrivers().size());
         Assertions.assertEquals(0, gPropagator.getParametersDrivers().stream().filter(ParameterDriver::isSelected).count());
         Assertions.assertEquals(6, gPropagator.getInitialState().getOrbit().getA().getFreeParameters());
         checkUnitaryInitialSTM(gPropagator.getInitialState());
@@ -109,8 +109,8 @@ class GnssGradientConverterTest {
         final FieldGnssPropagator<Gradient, GalileoNavigationMessage, FieldGalileoNavigationMessage<Gradient>>
             gPropagator = converter.getPropagator();
         Assertions.assertEquals(15, gPropagator.getParametersDrivers().size());
-        Assertions.assertEquals(12, gPropagator.getParametersDrivers().stream().filter(ParameterDriver::isSelected).count());
-        Assertions.assertEquals(18, gPropagator.getInitialState().getOrbit().getA().getFreeParameters());
+        Assertions.assertEquals(15, gPropagator.getParametersDrivers().stream().filter(ParameterDriver::isSelected).count());
+        Assertions.assertEquals(21, gPropagator.getInitialState().getOrbit().getA().getFreeParameters());
         checkUnitaryInitialSTM(gPropagator.getInitialState());
     }
 
@@ -144,7 +144,7 @@ class GnssGradientConverterTest {
         GNSSPropagator<GPSLegacyNavigationMessage> propagator = new GNSSPropagator<>(factory);
 
         // we want to compute the partial derivatives with respect to Crs and Crc parameters
-        Assertions.assertEquals(12, propagator.getParameters().length);
+        Assertions.assertEquals(15, propagator.getParameters().length);
         propagator.getParametersDrivers().get(NonKeplerianDriversFactory.CRS_INDEX).setSelected(true);
         propagator.getParametersDrivers().get(NonKeplerianDriversFactory.CRC_INDEX).setSelected(true);
         final DoubleArrayDictionary initialJacobianColumns = new DoubleArrayDictionary();
