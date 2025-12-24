@@ -310,6 +310,19 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
     public abstract <U extends CalculusFieldElement<U>, V extends FieldGnssOrbitalElements<U, O, V>>
     V toField(FieldKeplerianOrbit<U> orbit, U[] nonKeplerian, Function<T, U> converter);
 
+    /** Convert TOC.
+     * @param <U>   type of the field elements
+     * @param orbit orbit in the correct gradient field
+     * @return converted Time Of Clock
+     * @since 14.0
+     */
+    protected <U extends CalculusFieldElement<U>> FieldAbsoluteDate<U>
+        toFieldToc(final FieldKeplerianOrbit<U> orbit) {
+        return getToc() == null ?
+               null :
+               new FieldAbsoluteDate<>(orbit.getDate().getField(), getToc().toAbsoluteDate());
+    }
+
     /** Get known time scales.
      * @return known time scales
      */
