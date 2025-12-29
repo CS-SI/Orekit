@@ -40,7 +40,7 @@ public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
     private final int dataSource;
 
     /** E1/E5a broadcast group delay (s). */
-    private final T bgbE1E5a;
+    private final T bgdE1E5a;
 
     /** E5b/E1 broadcast group delay (s). */
     private final T bgdE5bE1;
@@ -65,7 +65,7 @@ public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
      * @param transmissionTime transmission time
      * @param iodNav           issue of Data of the navigation batch
      * @param dataSource       data source
-     * @param bgbE1E5a         E1/E5a broadcast group delay (s)
+     * @param bgdE1E5a         E1/E5a broadcast group delay (s)
      * @param bgdE5bE1         E5b/E1 broadcast group delay (s)
      * @param sisa             signal in space accuracy
      * @param svHealth         satellite health status
@@ -77,13 +77,13 @@ public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
                                          final T[] nonKeplerian, final T tgd,
                                          final FieldAbsoluteDate<T> toc, final T transmissionTime,
                                          final int iodNav, final int dataSource,
-                                         final T bgbE1E5a, final T bgdE5bE1,
+                                         final T bgdE1E5a, final T bgdE5bE1,
                                          final T sisa, final T svHealth) {
         super(angularVelocity, weeksInCycle, timeScales, type, prn, gnssDate, orbit, nonKeplerian,
               tgd, toc, transmissionTime);
         this.iodNav     = iodNav;
         this.dataSource = dataSource;
-        this.bgbE1E5a   = bgbE1E5a;
+        this.bgdE1E5a   = bgdE1E5a;
         this.bgdE5bE1   = bgdE5bE1;
         this.sisa       = sisa;
         this.svHealth   = svHealth;
@@ -133,7 +133,7 @@ public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
      * @return the E1/E5a broadcast group delay (s)
      */
     public T getBGDE1E5a() {
-        return bgbE1E5a;
+        return bgdE1E5a;
     }
 
     /**

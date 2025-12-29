@@ -36,7 +36,7 @@ public class GalileoNavigationMessageFactory
     private int dataSource;
 
     /** E1/E5a broadcast group delay (s). */
-    private double bgbE1E5a;
+    private double bgdE1E5a;
 
     /** E5b/E1 broadcast group delay (s). */
     private double bgdE5bE1;
@@ -92,14 +92,14 @@ public class GalileoNavigationMessageFactory
      * @return the E1/E5a broadcast group delay (s)
      */
     public double getBGDE1E5a() {
-        return bgbE1E5a;
+        return bgdE1E5a;
     }
 
     /** Set the E1/E5a broadcast group delay.
-     * @param bgbE1E5a the E1/E5a broadcast group delay (s)
+     * @param bgdE1E5a the E1/E5a broadcast group delay (s)
      */
-    public void setBGDE1E5a(final double bgbE1E5a) {
-        this.bgbE1E5a = bgbE1E5a;
+    public void setBGDE1E5a(final double bgdE1E5a) {
+        this.bgdE1E5a = bgdE1E5a;
     }
 
     /** Get the Broadcast Group Delay E5b/E1.
