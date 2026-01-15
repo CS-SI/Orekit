@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.hipparchus.CalculusFieldElement;
@@ -48,6 +49,7 @@ import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.Constants;
@@ -85,8 +87,9 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
     /** Default supported files name pattern for IMCCE INPOP files. */
     public static final String DEFAULT_INPOP_SUPPORTED_NAMES = "^inpop.*\\.dat$";
 
-    /** 50 days in seconds. */
-    private static final double FIFTY_DAYS = 50 * Constants.JULIAN_DAY;
+    /** 50 days. */
+    private static final TimeOffset FIFTY_DAYS =
+            new TimeOffset(50, TimeUnit.DAYS);
 
     /** DE number used by INPOP files. */
     private static final int INPOP_DE_NUMBER = 100;
@@ -315,7 +318,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
 
         ephemerides = new GenericTimeStampedCache<>(
                 2, OrekitConfiguration.getCacheSlotsNumber(),
-                Double.POSITIVE_INFINITY, FIFTY_DAYS,
+                Double.POSITIVE_INFINITY, FIFTY_DAYS.toDouble(),
                 new EphemerisParser());
         maxChunksDuration = Double.NaN;
         chunksDuration    = Double.NaN;
@@ -901,8 +904,8 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
                 entries.clear();
                 if (existingDate == null) {
                     // we want ephemeris data for the first time, set up an arbitrary first range
-                    start = date.shiftedBy(-FIFTY_DAYS);
-                    end   = date.shiftedBy(+FIFTY_DAYS);
+                    start = date.shiftedBy(FIFTY_DAYS.negate());
+                    end   = date.shiftedBy(FIFTY_DAYS);
                 } else if (existingDate.compareTo(date) <= 0) {
                     // we want to extend an existing range towards future dates
                     start = existingDate;
