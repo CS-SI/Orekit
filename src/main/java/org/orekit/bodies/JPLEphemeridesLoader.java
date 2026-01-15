@@ -249,7 +249,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
     private double maxChunksDuration;
 
     /** Current file chunks duration (in seconds). */
-    private double chunksDuration;
+    private TimeOffset chunksDuration;
 
     /** Index of the first data for selected body. */
     private int firstIndex;
@@ -321,7 +321,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
                 Double.POSITIVE_INFINITY, FIFTY_DAYS.toDouble(),
                 new EphemerisParser());
         maxChunksDuration = Double.NaN;
-        chunksDuration    = Double.NaN;
+        chunksDuration    = null;
 
     }
 
@@ -583,11 +583,12 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
         // compute chunks duration
         final double timeSpan = extractDouble(record, HEADER_CHUNK_DURATION_OFFSET);
         ok = ok && timeSpan > 0 && timeSpan < 100;
-        chunksDuration = Constants.JULIAN_DAY * (timeSpan / chunks);
+        chunksDuration = new TimeOffset(timeSpan).divide(chunks).multiply(86400L);
         if (Double.isNaN(maxChunksDuration)) {
-            maxChunksDuration = chunksDuration;
+            maxChunksDuration = chunksDuration.toDouble();
         } else {
-            maxChunksDuration = FastMath.max(maxChunksDuration, chunksDuration);
+            maxChunksDuration = FastMath
+                    .max(maxChunksDuration, chunksDuration.toDouble());
         }
 
         // sanity checks
@@ -1032,12 +1033,13 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
             final int nbChunks    = chunks;
             final int nbCoeffs    = coeffs;
             final int first       = firstIndex;
-            final double duration = chunksDuration;
+            final TimeOffset duration = chunksDuration;
             for (int i = 0; i < nbChunks; ++i) {
 
                 // set up chunk validity range
                 final AbsoluteDate chunkStart = chunkEnd;
-                chunkEnd = (i == nbChunks - 1) ? rangeEnd : rangeStart.shiftedBy((i + 1) * duration);
+                chunkEnd = (i == nbChunks - 1) ? rangeEnd :
+                        rangeStart.shiftedBy(duration.multiply(i + 1));
 
                 // extract Chebyshev coefficients for the selected body
                 // and convert them from kilometers to meters
@@ -1055,7 +1057,8 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
                 }
 
                 // build the position-velocity model for current chunk
-                entries.add(new PosVelChebyshev(chunkStart, timeScale, duration, xCoeffs, yCoeffs, zCoeffs));
+                entries.add(new PosVelChebyshev(chunkStart, timeScale,
+                        duration.toDouble(), xCoeffs, yCoeffs, zCoeffs));
 
             }
 
