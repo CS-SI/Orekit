@@ -1038,8 +1038,14 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
 
                 // set up chunk validity range
                 final AbsoluteDate chunkStart = chunkEnd;
-                chunkEnd = (i == nbChunks - 1) ? rangeEnd :
-                        rangeStart.shiftedBy(duration.multiply(i + 1));
+                if (i == nbChunks - 1) {
+                    chunkEnd = rangeEnd;
+                } else {
+                    chunkEnd = new AbsoluteDate(
+                            rangeStart,
+                            duration.multiply(i + 1),
+                            timeScale);
+                }
 
                 // extract Chebyshev coefficients for the selected body
                 // and convert them from kilometers to meters
