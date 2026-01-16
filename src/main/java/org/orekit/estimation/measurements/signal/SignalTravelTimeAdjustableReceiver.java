@@ -25,6 +25,7 @@ import org.orekit.utils.PVCoordinatesProvider;
 /**
  * Class for computing signal time of travel with an adjustable receiver and fixed emitter's position.
  * The delay is calculated via a fixed-point algorithm with customizable settings (even enabling instantaneous transmission).
+ * Note that a couple of iterations are usually enough for Earth orbits.
  * @since 14.0
  * @author Romain Serra
  */

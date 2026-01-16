@@ -31,7 +31,7 @@ import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /**
- * Perfect measurement model for right ascension and declination.
+ * Perfect measurement model for right ascension and declination. It is assumed that the signal reception date is known.
  * It is passive in the sense that the sensor did not generate the signal in the first place, it is only collecting it.
  * @since 14.0
  * @author Romain Serra
@@ -60,6 +60,19 @@ public class RaDecModel extends AbstractAngularMeasurementModel {
      * @param receiverPosition receiver position in input frame at reception time
      * @param receptionDate signal reception date
      * @param emitter signal emitter coordinates provider
+     * @return RA-Dec (radians)
+     */
+    public double[] value(final Frame frame, final Vector3D receiverPosition, final AbsoluteDate receptionDate,
+                          final PVCoordinatesProvider emitter) {
+        return value(frame, receiverPosition, receptionDate, emitter, receptionDate);
+    }
+
+    /**
+     * Compute theoretical measurement with guess for the emission date.
+     * @param frame frame where receiver position is given
+     * @param receiverPosition receiver position in input frame at reception time
+     * @param receptionDate signal reception date
+     * @param emitter signal emitter coordinates provider
      * @param approxEmissionDate guess for the emission date (shall be adjusted by signal travel time computer)
      * @return RA-Dec (radians)
      */
@@ -79,6 +92,20 @@ public class RaDecModel extends AbstractAngularMeasurementModel {
 
     /**
      * Compute theoretical measurement in Taylor Differential Algebra.
+     * @param frame frame where receiver position is given
+     * @param receiverPosition receiver position in input frame at reception time
+     * @param receptionDate signal reception date
+     * @param emitter signal emitter coordinates provider
+     * @return RA-Dec (radians)
+     */
+    public Gradient[] value(final Frame frame, final FieldVector3D<Gradient> receiverPosition,
+                            final FieldAbsoluteDate<Gradient> receptionDate,
+                            final FieldPVCoordinatesProvider<Gradient> emitter) {
+        return value(frame, receiverPosition, receptionDate, emitter, receptionDate);
+    }
+
+    /**
+     * Compute theoretical measurement in Taylor Differential Algebra with guess for emission date.
      * @param frame frame where receiver position is given
      * @param receiverPosition receiver position in input frame at reception time
      * @param receptionDate signal reception date

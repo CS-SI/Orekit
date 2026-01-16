@@ -100,9 +100,9 @@ class RaDecModelTest {
                 final GeodeticPoint geodeticPoint = new GeodeticPoint(FastMath.toRadians( -90. + j * 18.),
                         FastMath.toRadians(i * 36.), 0.);
                 final Vector3D position = bodyShape.transform(geodeticPoint);
-                final double[] raDec = measurementModel.value(earthFixedFrame, position, date, orbit, date);
+                final double[] raDec = measurementModel.value(earthFixedFrame, position, date, orbit);
                 final FieldVector3D<Gradient> fieldPosition = new FieldVector3D<>(field, position);
-                final Gradient[] gradientRaDec = measurementModel.value(earthFixedFrame, fieldPosition, fieldDate, fieldOrbit, fieldDate);
+                final Gradient[] gradientRaDec = measurementModel.value(earthFixedFrame, fieldPosition, fieldDate, fieldOrbit);
                 assertEquals(raDec[0], gradientRaDec[0].getValue(), 1e-12);
                 assertEquals(raDec[1], gradientRaDec[1].getValue(), 1e-12);
             }
