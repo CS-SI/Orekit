@@ -214,8 +214,8 @@ class FieldOrbitTest {
         AbsoluteDate date1 = new AbsoluteDate("2025-12-15T11:11:00.000000000000000000Z", utc);
         AbsoluteDate date2 = new AbsoluteDate("2025-12-15T14:56:00.000000000000000000Z", utc);
 
-        FieldAbsoluteDate<T> fieldDate1        = new FieldAbsoluteDate<T>(field, date1);
-        FieldAbsoluteDate<T> fieldDate2        = new FieldAbsoluteDate<T>(field, date2);
+        FieldAbsoluteDate<T> fieldDate1        = new FieldAbsoluteDate<>(field, date1);
+        FieldAbsoluteDate<T> fieldDate2        = new FieldAbsoluteDate<>(field, date2);
         FieldAbsoluteDate<T> fieldDate2Shifted = fieldDate2.shiftedBy(0.123456789);
 
         // Define orbit
