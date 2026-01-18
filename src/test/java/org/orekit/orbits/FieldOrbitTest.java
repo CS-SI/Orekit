@@ -46,6 +46,8 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
+import java.util.function.Function;
+
 class FieldOrbitTest {
 
     @BeforeAll
@@ -157,32 +159,72 @@ class FieldOrbitTest {
         Assertions.assertEquals(fakeOrbit.getVelocity(), velocity);
     }
 
+    @Test
+    void testCorrectShiftedDateWithCartesianOrbit() {
+        // GIVEN
+        final Field<Binary64> field = Binary64Field.getInstance();
+
+        // WHEN & THEN
+        doTestCorrectShiftedDate(TestUtils::getDefaultFieldOrbit, field);
+    }
+
+    @Test
+    void testCorrectShiftedDateWithKeplerianOrbit() {
+        // GIVEN
+        final Field<Binary64> field = Binary64Field.getInstance();
+
+        // WHEN & THEN
+        doTestCorrectShiftedDate((date) -> new FieldKeplerianOrbit<>(TestUtils.getDefaultFieldOrbit(date)),
+                                 field);
+    }
+
+    @Test
+    void testCorrectShiftedDateWithCircularOrbit() {
+        // GIVEN
+        final Field<Binary64> field = Binary64Field.getInstance();
+
+        // WHEN & THEN
+        doTestCorrectShiftedDate((date) -> new FieldCircularOrbit<>(TestUtils.getDefaultFieldOrbit(date)),
+                                 field);
+    }
+
+    @Test
+    void testCorrectShiftedDateWithEquinoctialOrbit() {
+        // GIVEN
+        final Field<Binary64> field = Binary64Field.getInstance();
+
+        // WHEN & THEN
+        doTestCorrectShiftedDate((date) -> new FieldEquinoctialOrbit<>(TestUtils.getDefaultFieldOrbit(date)),
+                                 field);
+    }
+
     /**
      * Test related to issue 1883.
      *
      * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1883">Issue 1883</a>
      */
-    @Test
-    public void testCorrectDate() {
+    public <T extends CalculusFieldElement<T>> void doTestCorrectShiftedDate(final Function<FieldAbsoluteDate<T>, FieldOrbit<T>> dateToOrbit,
+                                                                             final Field<T> field) {
         // GIVEN
         // Define dates
-        final TimeScale       utc   = TimeScalesFactory.getUTC();
-        final Frame           gcrf  = FramesFactory.getGCRF();
-        final Field<Binary64> field = Binary64Field.getInstance();
+        final TimeScale utc   = TimeScalesFactory.getUTC();
+        final Frame     gcrf  = FramesFactory.getGCRF();
+
 
         AbsoluteDate date1 = new AbsoluteDate("2025-12-15T11:11:00.000000000000000000Z", utc);
         AbsoluteDate date2 = new AbsoluteDate("2025-12-15T14:56:00.000000000000000000Z", utc);
 
-        FieldAbsoluteDate<Binary64> fieldDate1        = new FieldAbsoluteDate<>(field, date1);
-        FieldAbsoluteDate<Binary64> fieldDate2        = new FieldAbsoluteDate<>(field, date2);
-        FieldAbsoluteDate<Binary64> fieldDate2Shifted = fieldDate2.shiftedBy(0.123456789);
+        FieldAbsoluteDate<T> fieldDate1        = new FieldAbsoluteDate<T>(field, date1);
+        FieldAbsoluteDate<T> fieldDate2        = new FieldAbsoluteDate<T>(field, date2);
+        FieldAbsoluteDate<T> fieldDate2Shifted = fieldDate2.shiftedBy(0.123456789);
 
         // Define orbit
-        final FieldOrbit<Binary64> orbitAtShiftedDate = TestUtils.getDefaultFieldOrbit(fieldDate2Shifted);
+        final FieldOrbit<T> orbitAtShiftedDate = dateToOrbit.apply(fieldDate2Shifted);
 
         // WHEN
-        final TimeStampedFieldPVCoordinates<Binary64> pv         = orbitAtShiftedDate.getPVCoordinates(fieldDate1, gcrf);
-        final FieldAbsoluteDate<Binary64>             actualDate = pv.getDate();
+        final TimeStampedFieldPVCoordinates<T> pv =
+                orbitAtShiftedDate.getPVCoordinates(fieldDate1, gcrf);
+        final FieldAbsoluteDate<T> actualDate = pv.getDate();
 
         // THEN
         Assertions.assertEquals(0, actualDate.durationFrom(date1).getReal());

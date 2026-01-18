@@ -29,6 +29,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FieldKinematicTransform;
 import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
@@ -907,14 +908,28 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     /** {@inheritDoc} */
     @Override
     public FieldEquinoctialOrbit<T> shiftedBy(final T dt) {
+        return shiftedBy(new TimeOffset(dt.getReal()));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldEquinoctialOrbit<T> shiftedBy(final TimeOffset dt) {
+
+        // Get field and express dt as T
+        final Field<T> field   = getField();
+        final T        dtField = field.getOne().multiply(dt.toDouble());
 
         // use Keplerian-only motion
-        final FieldEquinoctialOrbit<T> keplerianShifted = new FieldEquinoctialOrbit<>(a, ex, ey, hx, hy,
-                                                                                      getLM().add(getKeplerianMeanMotion().multiply(dt)),
-                                                                                      PositionAngleType.MEAN, cachedPositionAngleType, getFrame(),
-                                                                                      getDate().shiftedBy(dt), getMu());
+        final FieldEquinoctialOrbit<T> keplerianShifted =
+                new FieldEquinoctialOrbit<>(a, ex, ey, hx, hy,
+                                            getLM().add(getKeplerianMeanMotion().multiply(dtField)),
+                                            PositionAngleType.MEAN,
+                                            cachedPositionAngleType,
+                                            getFrame(),
+                                            getDate().shiftedBy(dt),
+                                            getMu());
 
-        if (!dt.isZero() && hasNonKeplerianRates()) {
+        if (!dtField.isZero() && hasNonKeplerianRates()) {
 
             // extract non-Keplerian acceleration from first time derivatives
             final FieldVector3D<T> nonKeplerianAcceleration = nonKeplerianAcceleration();
@@ -922,11 +937,11 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
             // add quadratic effect of non-Keplerian acceleration to Keplerian-only shift
             keplerianShifted.computePVWithoutA();
             final FieldVector3D<T> fixedP   = new FieldVector3D<>(getOne(), keplerianShifted.partialPV.getPosition(),
-                                                                  dt.square().multiply(0.5), nonKeplerianAcceleration);
+                                                                  dtField.square().multiply(0.5), nonKeplerianAcceleration);
             final T   fixedR2 = fixedP.getNormSq();
             final T   fixedR  = fixedR2.sqrt();
             final FieldVector3D<T> fixedV  = new FieldVector3D<>(getOne(), keplerianShifted.partialPV.getVelocity(),
-                                                                 dt, nonKeplerianAcceleration);
+                                                                 dtField, nonKeplerianAcceleration);
             final FieldVector3D<T> fixedA  = new FieldVector3D<>(fixedR2.multiply(fixedR).reciprocal().multiply(getMu().negate()),
                                                                  keplerianShifted.partialPV.getPosition(),
                                                                  getOne(), nonKeplerianAcceleration);
