@@ -1114,7 +1114,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
         // Non-Keplerian acceleration shall be considered
         if (!dt.isZero() && hasNonKeplerianRates()) {
-            return keplerianShifted.applyNonKeplerianAcceleration(dt);
+            return keplerianShifted.applyNonKeplerianAcceleration(nonKeplerianAcceleration(), dt);
         }
         // Keplerian-only motion is all we can do
         else {
@@ -1136,7 +1136,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
         // Non-Keplerian acceleration shall be considered
         if (!dtValue.isZero() && hasNonKeplerianRates()) {
-            return keplerianShifted.applyNonKeplerianAcceleration(dtValue);
+            return keplerianShifted.applyNonKeplerianAcceleration(nonKeplerianAcceleration(), dtValue);
         }
         // Keplerian-only motion is all we can do
         else {
@@ -1182,13 +1182,14 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * Shifts the current orbit with consideration of non-Keplerian acceleration by including the quadratic effects of
      * the acceleration into the position, velocity, and acceleration calculations.
      *
-     * @param dt the time shift in seconds for which the orbit is to be shifted.
+     * @param nonKeplerianAcceleration non-Keplerian acceleration vector to apply
+     * @param dt                       the time shift in seconds for which the orbit is to be shifted.
      * @return a new {@link FieldCircularOrbit} representing the shifted orbit, factoring in non-Keplerian acceleration
      * effects.
      */
-    private FieldKeplerianOrbit<T> applyNonKeplerianAcceleration(final T dt) {
+    private FieldKeplerianOrbit<T> applyNonKeplerianAcceleration(final FieldVector3D<T> nonKeplerianAcceleration,
+                                                                 final T dt) {
         // extract non-Keplerian acceleration from first time derivatives
-        final FieldVector3D<T> nonKeplerianAcceleration = nonKeplerianAcceleration();
 
         // add quadratic effect of non-Keplerian acceleration to Keplerian-only shift
         this.computePVWithoutA();
