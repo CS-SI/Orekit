@@ -95,21 +95,25 @@ class OrbitTest {
     @Test
     void testCorrectShiftedDateWithCartesianOrbit() {
         doTestCorrectShiftedDate(TestUtils::getDefaultOrbit);
+        doTestCorrectShiftedDate((date) -> new CartesianOrbit(TestUtils.getDefaultOrbitWithDerivatives(date)));
     }
 
     @Test
     void testCorrectShiftedDateWithKeplerianOrbit() {
         doTestCorrectShiftedDate((date) -> new KeplerianOrbit(TestUtils.getDefaultOrbit(date)));
+        doTestCorrectShiftedDate((date) -> new KeplerianOrbit(TestUtils.getDefaultOrbitWithDerivatives(date)));
     }
 
     @Test
     void testCorrectShiftedDateWithCircularOrbit() {
         doTestCorrectShiftedDate((date) -> new CircularOrbit(TestUtils.getDefaultOrbit(date)));
+        doTestCorrectShiftedDate((date) -> new CircularOrbit(TestUtils.getDefaultOrbitWithDerivatives(date)));
     }
 
     @Test
     void testCorrectShiftedDateWithEquinoctialOrbit() {
-        doTestCorrectShiftedDate((date) -> new EquinoctialOrbit(TestUtils.getDefaultOrbit(date)));
+       doTestCorrectShiftedDate((date) -> new EquinoctialOrbit(TestUtils.getDefaultOrbit(date)));
+        doTestCorrectShiftedDate((date) -> new EquinoctialOrbit(TestUtils.getDefaultOrbitWithDerivatives(date)));
     }
 
 
@@ -124,16 +128,18 @@ class OrbitTest {
         final TimeScale utc  = TimeScalesFactory.getUTC();
         final Frame     gcrf = FramesFactory.getGCRF();
 
-        AbsoluteDate date1 = new AbsoluteDate("2025-12-15T11:11:00.000000000000000000Z", utc);
-        AbsoluteDate date2 = new AbsoluteDate("2025-12-15T14:56:00.000000000000000000Z", utc);
+        AbsoluteDate date1        = new AbsoluteDate("2025-12-15T11:11:00.000000000000000000Z", utc);
+        AbsoluteDate date2        = new AbsoluteDate("2025-12-15T14:56:00.000000000000000000Z", utc);
         AbsoluteDate date2Shifted = date2.shiftedBy(0.123456789);
 
         // Define orbit
         final Orbit orbitAtShiftedDate = dateToOrbit.apply(date2Shifted);
 
+
         // WHEN
-        final TimeStampedPVCoordinates pv         = orbitAtShiftedDate.getPVCoordinates(date1, gcrf);
-        final AbsoluteDate             actualDate = pv.getDate();
+        final TimeStampedPVCoordinates pv = orbitAtShiftedDate.getPVCoordinates(date1, gcrf);
+
+        final AbsoluteDate actualDate = pv.getDate();
 
         // THEN
         Assertions.assertEquals(0, actualDate.durationFrom(date1));

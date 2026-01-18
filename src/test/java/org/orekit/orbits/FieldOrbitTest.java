@@ -174,8 +174,8 @@ class FieldOrbitTest {
         final Field<Binary64> field = Binary64Field.getInstance();
 
         // WHEN & THEN
-        doTestCorrectShiftedDate((date) -> new FieldKeplerianOrbit<>(TestUtils.getDefaultFieldOrbit(date)),
-                                 field);
+        doTestCorrectShiftedDate((date) -> new FieldKeplerianOrbit<>(TestUtils.getDefaultFieldOrbit(date)), field);
+        doTestCorrectShiftedDate((date) -> new FieldKeplerianOrbit<>(TestUtils.getDefaultFieldOrbitWithDerivatives(date)), field);
     }
 
     @Test
@@ -184,8 +184,8 @@ class FieldOrbitTest {
         final Field<Binary64> field = Binary64Field.getInstance();
 
         // WHEN & THEN
-        doTestCorrectShiftedDate((date) -> new FieldCircularOrbit<>(TestUtils.getDefaultFieldOrbit(date)),
-                                 field);
+        doTestCorrectShiftedDate((date) -> new FieldCircularOrbit<>(TestUtils.getDefaultFieldOrbit(date)), field);
+        doTestCorrectShiftedDate((date) -> new FieldCircularOrbit<>(TestUtils.getDefaultFieldOrbitWithDerivatives(date)), field);
     }
 
     @Test
@@ -194,8 +194,8 @@ class FieldOrbitTest {
         final Field<Binary64> field = Binary64Field.getInstance();
 
         // WHEN & THEN
-        doTestCorrectShiftedDate((date) -> new FieldEquinoctialOrbit<>(TestUtils.getDefaultFieldOrbit(date)),
-                                 field);
+        doTestCorrectShiftedDate((date) -> new FieldEquinoctialOrbit<>(TestUtils.getDefaultFieldOrbit(date)), field);
+        doTestCorrectShiftedDate((date) -> new FieldEquinoctialOrbit<>(TestUtils.getDefaultFieldOrbitWithDerivatives(date)), field);
     }
 
     /**

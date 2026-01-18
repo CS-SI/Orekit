@@ -35,6 +35,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
@@ -50,6 +51,8 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -66,29 +69,40 @@ public class TestUtils {
     }
 
     /**
-     * Create and return a default equatorial circular orbit at 400km altitude.
+     * Create and return a default orbit.
      *
      * @param date date of the orbit
-     *
      * @return default orbit
      */
     public static Orbit getDefaultOrbit(final AbsoluteDate date) {
-        final PVCoordinates pv = new PVCoordinates(
-                new Vector3D(6378000 + 400000, 0, 0),
-                new Vector3D(0, 7668.631425, 0));
+        return new CartesianOrbit(new PVCoordinates(
+                new Vector3D(6778000, 0, 0),
+                new Vector3D(0, 7668.631425, 0)),
+                                  FramesFactory.getGCRF(), date, 398600e9);
+    }
 
-        final Frame frame = FramesFactory.getGCRF();
+    /**
+     * Create and return a default orbit with non keplerian derivatives.
+     *
+     * @param date date of the orbit
+     * @return default orbit
+     */
+    public static Orbit getDefaultOrbitWithDerivatives(final AbsoluteDate date) {
+        final Vector3D position     = new Vector3D(6896874.444705, 1956581.072644, -147476.245054);
+        final Vector3D velocity     = new Vector3D(166.816407662, -1106.783301861, -7372.745712770);
+        final Vector3D acceleration = new Vector3D(-7.466182457944, -2.118153357345, 0.160004048437);
+        final TimeStampedPVCoordinates pv =
+                new TimeStampedPVCoordinates(date, position, velocity, acceleration);
+        final Frame  frame = FramesFactory.getEME2000();
+        final double mu    = Constants.EIGEN5C_EARTH_MU;
 
-        final double DEFAULT_MU = 398600e9; // m**3/s**2
-
-        return new CartesianOrbit(pv, frame, date, DEFAULT_MU);
+        return new EquinoctialOrbit(pv, frame, mu);
     }
 
     /**
      * Create and return a default equatorial circular orbit at 400km altitude.
      *
      * @param date date of the orbit
-     *
      * @return default orbit
      */
     public static <T extends CalculusFieldElement<T>> FieldOrbit<T> getDefaultFieldOrbit(FieldAbsoluteDate<T> date) {
@@ -98,14 +112,40 @@ public class TestUtils {
 
         // Define default orbit
         final FieldPVCoordinates<T> pv =
-                        new FieldPVCoordinates<>(new FieldVector3D<>(one.multiply(6778000), zero, zero),
-                                                 new FieldVector3D<>(zero, one.multiply(7668.631425), zero));
+                new FieldPVCoordinates<>(new FieldVector3D<>(one.multiply(6778000), zero, zero),
+                                         new FieldVector3D<>(zero, one.multiply(7668.631425), zero));
 
         final Frame frame = FramesFactory.getGCRF();
 
-        final T DEFAULT_MU = one.multiply(398600e9); // m**3/s**2
+        final T mu = one.multiply(3.9860047e14);
 
-        return new FieldCartesianOrbit<>(pv, frame, date, DEFAULT_MU);
+        return new FieldCartesianOrbit<>(pv, frame, date, mu);
+    }
+
+    /**
+     * Create and return a default field orbit with non keplerian derivatives.
+     *
+     * @param date date of the orbit
+     * @param <T>  type of the field elements
+     * @return default orbit
+     */
+    public static <T extends CalculusFieldElement<T>> FieldOrbit<T> getDefaultFieldOrbitWithDerivatives(final FieldAbsoluteDate<T> date) {
+        final T one = date.getField().getOne();
+        final FieldVector3D<T> position = new FieldVector3D<>(one.newInstance(6896874.444705),
+                                                              one.newInstance(1956581.072644),
+                                                              one.newInstance(-147476.245054));
+        final FieldVector3D<T> velocity = new FieldVector3D<>(one.newInstance(166.816407662),
+                                                              one.newInstance(-1106.783301861),
+                                                              one.newInstance(-7372.745712770));
+        final FieldVector3D<T> acceleration = new FieldVector3D<>(one.newInstance(-7.466182457944),
+                                                                  one.newInstance(-2.118153357345),
+                                                                  one.newInstance(0.160004048437));
+        final TimeStampedFieldPVCoordinates<T> pv =
+                new TimeStampedFieldPVCoordinates<>(date, position, velocity, acceleration);
+        final Frame frame = FramesFactory.getEME2000();
+        final T     mu    = one.newInstance(Constants.EIGEN5C_EARTH_MU);
+
+        return new FieldCartesianOrbit<>(pv, frame, mu);
     }
 
     /**
