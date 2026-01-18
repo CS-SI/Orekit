@@ -32,6 +32,8 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import java.util.function.Function;
+
 
 class OrbitTest {
 
@@ -90,13 +92,33 @@ class OrbitTest {
         Assertions.assertEquals(fakeOrbit.getVelocity(), velocity);
     }
 
+    @Test
+    void testCorrectShiftedDateWithCartesianOrbit() {
+        doTestCorrectShiftedDate(TestUtils::getDefaultOrbit);
+    }
+
+    @Test
+    void testCorrectShiftedDateWithKeplerianOrbit() {
+        doTestCorrectShiftedDate((date) -> new KeplerianOrbit(TestUtils.getDefaultOrbit(date)));
+    }
+
+    @Test
+    void testCorrectShiftedDateWithCircularOrbit() {
+        doTestCorrectShiftedDate((date) -> new CircularOrbit(TestUtils.getDefaultOrbit(date)));
+    }
+
+    @Test
+    void testCorrectShiftedDateWithEquinoctialOrbit() {
+        doTestCorrectShiftedDate((date) -> new EquinoctialOrbit(TestUtils.getDefaultOrbit(date)));
+    }
+
+
     /**
      * Test related to issue 1883.
      *
      * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1883">Issue 1883</a>
      */
-    @Test
-    public void testCorrectDate() {
+    public void doTestCorrectShiftedDate(final Function<AbsoluteDate, Orbit> dateToOrbit) {
         // GIVEN
         // Define dates
         final TimeScale utc  = TimeScalesFactory.getUTC();
@@ -107,7 +129,7 @@ class OrbitTest {
         AbsoluteDate date2Shifted = date2.shiftedBy(0.123456789);
 
         // Define orbit
-        final Orbit orbitAtShiftedDate = TestUtils.getDefaultOrbit(date2Shifted);
+        final Orbit orbitAtShiftedDate = dateToOrbit.apply(date2Shifted);
 
         // WHEN
         final TimeStampedPVCoordinates pv         = orbitAtShiftedDate.getPVCoordinates(date1, gcrf);
