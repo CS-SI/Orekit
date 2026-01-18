@@ -23,6 +23,7 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.frames.Frame;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.clocks.ClockOffset;
@@ -69,6 +70,15 @@ public abstract class GroundReceiverMeasurement<T extends ObservedMeasurement<T>
      */
     public final GroundStation getReceiverStation() {
         return station;
+    }
+
+    /**
+     * Form the mapping between parameters' names and derivatives' indices.
+     * @param states observables
+     * @return map
+     */
+    protected Map<String, Integer> getParameterIndices(final SpacecraftState[] states) {
+        return getReceiverStation().getParamaterIndices(states, getParametersDrivers());
     }
 
     /**

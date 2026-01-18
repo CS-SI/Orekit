@@ -16,8 +16,9 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.HashMap;
+
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -29,10 +30,12 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.clocks.QuadraticClockModel;
 import org.orekit.utils.Constants;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class GroundBasedAngularMeasurementTest {
+class GroundReceiverMeasurementTest {
 
     @BeforeAll
     static void setUp() {
@@ -40,41 +43,43 @@ class GroundBasedAngularMeasurementTest {
     }
 
     @Test
-    void testWrapFirstAngle() {
+    void testGetCorrectedReceptionDate() {
         // GIVEN
         final BodyShape bodyShape = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0., FramesFactory.getGTOD(true));
         final TopocentricFrame topocentricFrame = new TopocentricFrame(bodyShape,
                 new GeodeticPoint(0., 0., 0.), "");
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
-        final GroundStation groundStation = new GroundStation(topocentricFrame);
-        final GroundBasedAngularMeasurement<?> measurement = new TestMeasurement(groundStation, date, new SignalTravelTimeModel());
-        final double angle = 7.;
+        final QuadraticClockModel clockModel = new QuadraticClockModel(date, 1., 2., 3.);
+        final GroundStation groundStation = new GroundStation(topocentricFrame, clockModel);
+        final GroundReceiverMeasurement<?> measurement = new TestMeasurement(groundStation, date, new SignalTravelTimeModel());
         // WHEN
-        final double actualAngle = measurement.wrapFirstAngle(angle);
+        final AbsoluteDate actualReceptionDate = measurement.getCorrectedReceptionDate();
         // THEN
-        assertEquals(angle - MathUtils.TWO_PI, actualAngle);
+        final AbsoluteDate expectedDate = date.shiftedBy(-clockModel.getOffset(date).getOffset());
+        assertEquals(expectedDate, actualReceptionDate);
     }
 
     @Test
-    void testWrapFirstAngleGradient() {
+    void testGetCorrectedReceptionDateField() {
         // GIVEN
         final BodyShape bodyShape = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0., FramesFactory.getGTOD(true));
         final TopocentricFrame topocentricFrame = new TopocentricFrame(bodyShape,
                 new GeodeticPoint(0., 0., 0.), "");
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
-        final GroundStation groundStation = new GroundStation(topocentricFrame);
-        final GroundBasedAngularMeasurement<?> measurement = new TestMeasurement(groundStation, date, new SignalTravelTimeModel());
-        final Gradient angle = new Gradient(-7.);
+        final QuadraticClockModel clockModel = new QuadraticClockModel(date.shiftedBy(10.), 1., 2., 3.);
+        final GroundStation groundStation = new GroundStation(topocentricFrame, clockModel);
+        final GroundReceiverMeasurement<?> measurement = new TestMeasurement(groundStation, date, new SignalTravelTimeModel());
         // WHEN
-        final Gradient actualAngle = measurement.wrapFirstAngle(angle);
+        final FieldAbsoluteDate<Gradient> actualReceptionDate = measurement.getCorrectedReceptionDateField(0, new HashMap<>());
         // THEN
-        assertEquals(measurement.wrapFirstAngle(angle.getValue()), actualAngle.getValue());
+        final AbsoluteDate expectedDate = date.shiftedBy(-clockModel.getOffset(date).getOffset());
+        assertEquals(expectedDate, actualReceptionDate.toAbsoluteDate());
     }
 
-    class TestMeasurement extends GroundBasedAngularMeasurement<AngularAzEl> {
+    static class TestMeasurement extends GroundReceiverMeasurement<AngularAzEl> {
 
         protected TestMeasurement(GroundStation station, AbsoluteDate date, SignalTravelTimeModel signalTravelTimeModel) {
-            super(station, date, new double[2], new double[2], new double[2], signalTravelTimeModel, new ObservableSatellite(0));
+            super(station, true, date, new double[2], new double[2], new double[2], signalTravelTimeModel, new ObservableSatellite(0));
         }
 
         @Override

@@ -31,7 +31,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @since 14.0
  * @author Romain Serra
  */
-public class TwoWaySignalTravelTimer {
+public class TwoLegsSignalTravelTimer {
 
     /** Signal travel time model. */
     private final SignalTravelTimeModel signalTravelTimeModel;
@@ -40,7 +40,7 @@ public class TwoWaySignalTravelTimer {
      * Constructor.
      * @param signalTravelTimeModel time delay computer
      */
-    public TwoWaySignalTravelTimer(final SignalTravelTimeModel signalTravelTimeModel) {
+    public TwoLegsSignalTravelTimer(final SignalTravelTimeModel signalTravelTimeModel) {
         this.signalTravelTimeModel = signalTravelTimeModel;
     }
 
@@ -51,21 +51,67 @@ public class TwoWaySignalTravelTimer {
      * @param receiverPosition end receiver position (at reception)
      * @param receptionDate    signal end reception date
      * @param relay            signal relay (initial reception) coordinates provider
+     * @param approxRelayDate guess for the relay date
+     * @param emitter          signal initial emitter coordinates provider
+     * @param approxEmissionDate guess for the emission date
+     * @return ranges on both legs in chronological order (m)
+     */
+    public double[] computeDelays(final Frame frame, final Vector3D receiverPosition, final AbsoluteDate receptionDate,
+                                  final PVCoordinatesProvider relay, final AbsoluteDate approxRelayDate,
+                                  final PVCoordinatesProvider emitter, final AbsoluteDate approxEmissionDate) {
+        final double secondLegTravelTime = computeTravelTime(frame, receiverPosition, receptionDate, relay, approxRelayDate);
+        final AbsoluteDate relayDate = receptionDate.shiftedBy(-secondLegTravelTime);
+        final Vector3D relayPosition = relay.getPosition(relayDate, frame);
+        final double firstLegTravelTime = computeTravelTime(frame, relayPosition, relayDate, emitter, approxEmissionDate);
+        return new double[] { firstLegTravelTime, secondLegTravelTime };
+    }
+
+    /**
+     * Compute first and second leg delays without guess.
+     *
+     * @param frame            frame where position is given
+     * @param receiverPosition end receiver position (at reception)
+     * @param receptionDate    signal end reception date
+     * @param relay            signal relay (initial reception) coordinates provider
      * @param emitter          signal initial emitter coordinates provider
      * @return ranges on both legs in chronological order (m)
      */
     public double[] computeDelays(final Frame frame, final Vector3D receiverPosition, final AbsoluteDate receptionDate,
-                                  final PVCoordinatesProvider relay,
-                                  final PVCoordinatesProvider emitter) {
-        final double secondLegTravelTime = computeTravelTime(frame, receiverPosition, receptionDate, relay);
+                                  final PVCoordinatesProvider relay, final PVCoordinatesProvider emitter) {
+        final double secondLegTravelTime = computeTravelTime(frame, receiverPosition, receptionDate, relay, receptionDate);
         final AbsoluteDate relayDate = receptionDate.shiftedBy(-secondLegTravelTime);
         final Vector3D relayPosition = relay.getPosition(relayDate, frame);
-        final double firstLegTravelTime = computeTravelTime(frame, relayPosition, relayDate, emitter);
+        final double firstLegTravelTime = computeTravelTime(frame, relayPosition, relayDate, emitter, relayDate);
         return new double[] { firstLegTravelTime, secondLegTravelTime };
     }
 
     /**
      * Compute first and second leg delays.
+     *
+     * @param frame            frame where position is given
+     * @param receiverPosition end receiver position (at reception)
+     * @param receptionDate    signal end reception date
+     * @param relay            signal relay (initial reception, second emission) coordinates provider
+     * @param approxRelayDate  guess for the relay date
+     * @param emitter          signal initial emitter coordinates provider
+     * @param approxEmissionDate  guess for the emission date
+     * @return ranges on both legs in chronological order (m)
+     */
+    public Gradient[] computeDelays(final Frame frame, final FieldVector3D<Gradient> receiverPosition,
+                                    final FieldAbsoluteDate<Gradient> receptionDate,
+                                    final FieldPVCoordinatesProvider<Gradient> relay,
+                                    final FieldAbsoluteDate<Gradient> approxRelayDate,
+                                    final FieldPVCoordinatesProvider<Gradient> emitter,
+                                    final FieldAbsoluteDate<Gradient> approxEmissionDate) {
+        final Gradient secondLegTravelTime = computeTravelTime(frame, receiverPosition, receptionDate, relay, approxRelayDate);
+        final FieldAbsoluteDate<Gradient> relayDate = receptionDate.shiftedBy(secondLegTravelTime.negate());
+        final FieldVector3D<Gradient> relayPosition = relay.getPosition(relayDate, frame);
+        final Gradient firstLegTravelTime = computeTravelTime(frame, relayPosition, relayDate, emitter, approxEmissionDate);
+        return new Gradient[] { firstLegTravelTime, secondLegTravelTime };
+    }
+
+    /**
+     * Compute first and second leg delays without guess.
      *
      * @param frame            frame where position is given
      * @param receiverPosition end receiver position (at reception)
@@ -78,10 +124,10 @@ public class TwoWaySignalTravelTimer {
                                     final FieldAbsoluteDate<Gradient> receptionDate,
                                     final FieldPVCoordinatesProvider<Gradient> relay,
                                     final FieldPVCoordinatesProvider<Gradient> emitter) {
-        final Gradient secondLegTravelTime = computeTravelTime(frame, receiverPosition, receptionDate, relay);
+        final Gradient secondLegTravelTime = computeTravelTime(frame, receiverPosition, receptionDate, relay, receptionDate);
         final FieldAbsoluteDate<Gradient> relayDate = receptionDate.shiftedBy(secondLegTravelTime.negate());
         final FieldVector3D<Gradient> relayPosition = relay.getPosition(relayDate, frame);
-        final Gradient firstLegTravelTime = computeTravelTime(frame, relayPosition, relayDate, emitter);
+        final Gradient firstLegTravelTime = computeTravelTime(frame, relayPosition, relayDate, emitter, relayDate);
         return new Gradient[] { firstLegTravelTime, secondLegTravelTime };
     }
 
@@ -91,11 +137,12 @@ public class TwoWaySignalTravelTimer {
      * @param receiverPosition receiver position at reception
      * @param receptionDate reception date
      * @param emitter emitter
+     * @param guessEmissionDate guess for the emission date
      * @return signal travel time
      */
     private double computeTravelTime(final Frame frame, final Vector3D receiverPosition, final AbsoluteDate receptionDate,
-                                     final PVCoordinatesProvider emitter) {
-        return signalTravelTimeModel.getAdjustableEmitterComputer(emitter).computeDelay(receptionDate,
+                                     final PVCoordinatesProvider emitter, final AbsoluteDate guessEmissionDate) {
+        return signalTravelTimeModel.getAdjustableEmitterComputer(emitter).computeDelay(guessEmissionDate,
                 receiverPosition, receptionDate, frame);
     }
 
@@ -105,12 +152,14 @@ public class TwoWaySignalTravelTimer {
      * @param receiverPosition receiver position at reception
      * @param receptionDate reception date
      * @param emitter emitter
+     * @param guessEmissionDate guess for the emission date
      * @return signal travel time
      */
     private Gradient computeTravelTime(final Frame frame, final FieldVector3D<Gradient> receiverPosition,
                                        final FieldAbsoluteDate<Gradient> receptionDate,
-                                       final FieldPVCoordinatesProvider<Gradient> emitter) {
-        return signalTravelTimeModel.getAdjustableEmitterComputer(emitter).computeDelay(receptionDate,
+                                       final FieldPVCoordinatesProvider<Gradient> emitter,
+                                       final FieldAbsoluteDate<Gradient> guessEmissionDate) {
+        return signalTravelTimeModel.getAdjustableEmitterComputer(emitter).computeDelay(guessEmissionDate,
                 receiverPosition, receptionDate, frame);
     }
 }

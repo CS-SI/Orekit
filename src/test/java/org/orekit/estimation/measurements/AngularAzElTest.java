@@ -52,6 +52,7 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
@@ -375,6 +376,7 @@ class AngularAzElTest {
         final EstimatedMeasurementBase<AngularAzEl> estimatedWithoutDerivatives = angularAzEl.estimateWithoutDerivatives(state);
         // THEN
         final EstimatedMeasurement<AngularAzEl> estimated = angularAzEl.estimate(0, 0, state);
+        assertArrayEquals(estimated.getEstimatedValue(), estimatedWithoutDerivatives.getEstimatedValue());
         final TimeStampedPVCoordinates firstParticipant = estimatedWithoutDerivatives.getParticipants()[0];
         final TimeStampedPVCoordinates secondParticipant = estimatedWithoutDerivatives.getParticipants()[1];
         final TimeStampedPVCoordinates expectedFirstParticipant = estimated.getParticipants()[0];
