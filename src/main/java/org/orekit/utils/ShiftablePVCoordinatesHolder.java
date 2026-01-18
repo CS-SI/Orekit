@@ -63,7 +63,7 @@ public interface ShiftablePVCoordinatesHolder<T extends PVCoordinatesProvider>
 
     @Override
     default Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
-        final ShiftablePVCoordinatesHolder<T> shifted = shiftedBy(date.durationFrom(getDate()));
+        final ShiftablePVCoordinatesHolder<T> shifted = shiftedBy(date.accurateDurationFrom(getDate()));
         final Vector3D position = shifted.getPosition();
         if (frame ==  getFrame()) {
             return position;
@@ -74,7 +74,7 @@ public interface ShiftablePVCoordinatesHolder<T extends PVCoordinatesProvider>
 
     @Override
     default Vector3D getVelocity(final AbsoluteDate date, final Frame frame) {
-        final ShiftablePVCoordinatesHolder<T> shifted = shiftedBy(date.durationFrom(getDate()));
+        final ShiftablePVCoordinatesHolder<T> shifted = shiftedBy(date.accurateDurationFrom(getDate()));
         final TimeStampedPVCoordinates pv = shifted.getPVCoordinates();
         if (frame ==  getFrame()) {
             return pv.getVelocity();
