@@ -445,7 +445,7 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
             jacobian.setRow(4, gPV.getVelocity().getY().getGradient());
             jacobian.setRow(5, gPV.getVelocity().getZ().getGradient());
 
-            // linear correction to get closer to target PV
+            // compute residuals
             final RealVector residuals = MatrixUtils.createRealVector(FREE_PARAMETERS);
             residuals.setEntry(0, targetPV.getPosition().getX() - gPV.getPosition().getX().getValue());
             residuals.setEntry(1, targetPV.getPosition().getY() - gPV.getPosition().getY().getValue());
@@ -453,6 +453,19 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
             residuals.setEntry(3, targetPV.getVelocity().getX() - gPV.getVelocity().getX().getValue());
             residuals.setEntry(4, targetPV.getVelocity().getY() - gPV.getVelocity().getY().getValue());
             residuals.setEntry(5, targetPV.getVelocity().getZ() - gPV.getVelocity().getZ().getValue());
+
+            // check convergence
+            final double deltaP = FastMath.sqrt(residuals.getEntry(0) * residuals.getEntry(0) +
+                                                residuals.getEntry(1) * residuals.getEntry(1) +
+                                                residuals.getEntry(2) * residuals.getEntry(2));
+            final double deltaV = FastMath.sqrt(residuals.getEntry(3) * residuals.getEntry(3) +
+                                                residuals.getEntry(4) * residuals.getEntry(4) +
+                                                residuals.getEntry(5) * residuals.getEntry(5));
+            if (deltaP < TOL_P && deltaV < TOL_V) {
+                break;
+            }
+
+            // linear correction to get closer to target PV
             final RealVector correction = new QRDecomposition(jacobian, EPS).getSolver().solve(residuals);
 
             // prevent correction to produce invalid values
@@ -478,17 +491,6 @@ public class GNSSPropagator<O extends GNSSOrbitalElements<O>>
                                           PositionAngleType.MEAN, PositionAngleType.MEAN,
                                           previous.getFrame(), previous.getDate(), previous.getMu());
             gElements = convert(nonKeplerianElements, updated.toOrbit(), driversFactory);
-
-            final double deltaP = FastMath.sqrt(residuals.getEntry(0) * residuals.getEntry(0) +
-                                                residuals.getEntry(1) * residuals.getEntry(1) +
-                                                residuals.getEntry(2) * residuals.getEntry(2));
-            final double deltaV = FastMath.sqrt(residuals.getEntry(3) * residuals.getEntry(3) +
-                                                residuals.getEntry(4) * residuals.getEntry(4) +
-                                                residuals.getEntry(5) * residuals.getEntry(5));
-
-            if (deltaP < TOL_P && deltaV < TOL_V) {
-                break;
-            }
 
         }
 
