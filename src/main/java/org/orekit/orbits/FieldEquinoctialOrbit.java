@@ -908,54 +908,111 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     /** {@inheritDoc} */
     @Override
     public FieldEquinoctialOrbit<T> shiftedBy(final T dt) {
-        return shiftedBy(new TimeOffset(dt.getReal()));
+
+        // use Keplerian-only motion
+        final FieldEquinoctialOrbit<T> keplerianShifted = shiftWithKeplerianMotion(dt);
+
+        // Non-Keplerian acceleration shall be considered
+        if (!dt.isZero() && hasNonKeplerianRates()) {
+            return keplerianShifted.applyNonKeplerianAcceleration(dt);
+        }
+        // Keplerian-only motion is all we can do
+        else {
+            return keplerianShifted;
+        }
+
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     *
+     * @since 13.1.3
+     */
     @Override
     public FieldEquinoctialOrbit<T> shiftedBy(final TimeOffset dt) {
 
         // Get field and express dt as T
         final Field<T> field   = getField();
-        final T        dtField = field.getOne().multiply(dt.toDouble());
+        final T        dtValue = field.getOne().multiply(dt.toDouble());
 
         // use Keplerian-only motion
-        final FieldEquinoctialOrbit<T> keplerianShifted =
-                new FieldEquinoctialOrbit<>(a, ex, ey, hx, hy,
-                                            getLM().add(getKeplerianMeanMotion().multiply(dtField)),
-                                            PositionAngleType.MEAN,
-                                            cachedPositionAngleType,
-                                            getFrame(),
-                                            getDate().shiftedBy(dt),
-                                            getMu());
+        final FieldEquinoctialOrbit<T> keplerianShifted = shiftWithKeplerianMotion(dt);
 
-        if (!dtField.isZero() && hasNonKeplerianRates()) {
-
-            // extract non-Keplerian acceleration from first time derivatives
-            final FieldVector3D<T> nonKeplerianAcceleration = nonKeplerianAcceleration();
-
-            // add quadratic effect of non-Keplerian acceleration to Keplerian-only shift
-            keplerianShifted.computePVWithoutA();
-            final FieldVector3D<T> fixedP   = new FieldVector3D<>(getOne(), keplerianShifted.partialPV.getPosition(),
-                                                                  dtField.square().multiply(0.5), nonKeplerianAcceleration);
-            final T   fixedR2 = fixedP.getNormSq();
-            final T   fixedR  = fixedR2.sqrt();
-            final FieldVector3D<T> fixedV  = new FieldVector3D<>(getOne(), keplerianShifted.partialPV.getVelocity(),
-                                                                 dtField, nonKeplerianAcceleration);
-            final FieldVector3D<T> fixedA  = new FieldVector3D<>(fixedR2.multiply(fixedR).reciprocal().multiply(getMu().negate()),
-                                                                 keplerianShifted.partialPV.getPosition(),
-                                                                 getOne(), nonKeplerianAcceleration);
-
-            // build a new orbit, taking non-Keplerian acceleration into account
-            return new FieldEquinoctialOrbit<>(new TimeStampedFieldPVCoordinates<>(keplerianShifted.getDate(),
-                                                                                   fixedP, fixedV, fixedA),
-                                               keplerianShifted.getFrame(), keplerianShifted.getMu());
-
-        } else {
-            // Keplerian-only motion is all we can do
+        // Non-Keplerian acceleration shall be considered
+        if (!dtValue.isZero() && hasNonKeplerianRates()) {
+            return keplerianShifted.applyNonKeplerianAcceleration(dtValue);
+        }
+        // Keplerian-only motion is all we can do
+        else {
             return keplerianShifted;
         }
 
+    }
+
+    /**
+     * Computes a new orbit by shifting the current orbit forward or backward in time using Keplerian motion.
+     *
+     * @param dt time delta
+     * @return shifted orbit
+     */
+    private FieldEquinoctialOrbit<T> shiftWithKeplerianMotion(final T dt) {
+        return new FieldEquinoctialOrbit<>(a, ex, ey, hx, hy,
+                                           getLM().add(getKeplerianMeanMotion().multiply(dt)),
+                                           PositionAngleType.MEAN,
+                                           cachedPositionAngleType,
+                                           getFrame(),
+                                           getDate().shiftedBy(dt),
+                                           getMu());
+
+    }
+
+    /**
+     * Computes a new orbit by shifting the current orbit forward or backward in time using Keplerian motion. This
+     * implementation uses the more accurate {@link TimeOffset} to compute the shifted date.
+     *
+     * @param dt time offset
+     * @return shifted orbit
+     */
+    private FieldEquinoctialOrbit<T> shiftWithKeplerianMotion(final TimeOffset dt) {
+        return new FieldEquinoctialOrbit<>(a, ex, ey, hx, hy,
+                                           getLM().add(getKeplerianMeanMotion().multiply(dt.toDouble())),
+                                           PositionAngleType.MEAN,
+                                           cachedPositionAngleType,
+                                           getFrame(),
+                                           getDate().shiftedBy(dt),
+                                           getMu());
+
+    }
+
+    /**
+     * Shifts the current orbit with consideration of non-Keplerian acceleration by including the quadratic effects of
+     * the acceleration into the position, velocity, and acceleration calculations.
+     *
+     * @param dt the time shift in seconds for which the orbit is to be shifted.
+     * @return a new {@link FieldEquinoctialOrbit} representing the shifted orbit, factoring in non-Keplerian
+     * acceleration effects.
+     */
+    private FieldEquinoctialOrbit<T> applyNonKeplerianAcceleration(final T dt) {
+        // extract non-Keplerian acceleration from first time derivatives
+        final FieldVector3D<T> nonKeplerianAcceleration = nonKeplerianAcceleration();
+
+        // add quadratic effect of non-Keplerian acceleration to Keplerian-only shift
+        this.computePVWithoutA();
+        final FieldVector3D<T> fixedP = new FieldVector3D<>(getOne(), this.partialPV.getPosition(),
+                                                            dt.square().multiply(0.5), nonKeplerianAcceleration);
+        final T fixedR2 = fixedP.getNormSq();
+        final T fixedR  = fixedR2.sqrt();
+        final FieldVector3D<T> fixedV = new FieldVector3D<>(getOne(), this.partialPV.getVelocity(),
+                                                            dt, nonKeplerianAcceleration);
+        final FieldVector3D<T> fixedA =
+                new FieldVector3D<>(fixedR2.multiply(fixedR).reciprocal().multiply(getMu().negate()),
+                                    this.partialPV.getPosition(),
+                                    getOne(), nonKeplerianAcceleration);
+
+        // build a new orbit, taking non-Keplerian acceleration into account
+        return new FieldEquinoctialOrbit<>(new TimeStampedFieldPVCoordinates<>(this.getDate(),
+                                                                               fixedP, fixedV, fixedA),
+                                           this.getFrame(), this.getMu());
     }
 
     /** {@inheritDoc} */
