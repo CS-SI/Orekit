@@ -85,7 +85,7 @@ class TopocentricAzElModelTest {
                 AbsoluteDate.ARBITRARY_EPOCH, new PVCoordinates(emitterPosition));
         // WHEN
         final double[] azEl = measurementModel.value(geodeticPoint, absolutePVCoordinates.getDate(),
-                absolutePVCoordinates, absolutePVCoordinates.getDate());
+                absolutePVCoordinates);
         // THEN
         final TopocentricFrame topocentricFrame = new TopocentricFrame(bodyShape, geodeticPoint, "");
         final TrackingCoordinates trackingCoordinates = topocentricFrame.getTrackingCoordinates(absolutePVCoordinates.getPosition(),
@@ -141,7 +141,7 @@ class TopocentricAzElModelTest {
         final FieldAbsolutePVCoordinates<Gradient> fieldAPV = new FieldAbsolutePVCoordinates<>(field, absolutePVCoordinates).shiftedBy(dt);
         final FieldGeodeticPoint<Gradient> fieldGeodeticPoint = new FieldGeodeticPoint<>(field, geodeticPoint);
         // WHEN
-        final Gradient[] azEl = measurementModel.value(fieldGeodeticPoint, fieldAPV.getDate(), fieldAPV, fieldAPV.getDate());
+        final Gradient[] azEl = measurementModel.value(fieldGeodeticPoint, fieldAPV.getDate(), fieldAPV);
         // THEN
         final FieldTrackingCoordinates<Gradient> trackingCoordinates = new FieldTrackingCoordinates<>(azEl[0], azEl[1], field.getOne());
         final FieldVector3D<Gradient> lineOfSightInTopocentric = TopocentricFrame.getTopocentricPosition(trackingCoordinates);

@@ -82,6 +82,18 @@ public class TopocentricAzElModel extends AbstractAngularMeasurementModel {
      * @param receiver receiver geodetic coordinates
      * @param receptionDate signal reception date
      * @param emitter signal emitter coordinates provider
+     * @return azimuth-elevation (radians)
+     */
+    public double[] value(final GeodeticPoint receiver, final AbsoluteDate receptionDate,
+                          final PVCoordinatesProvider emitter) {
+        return value(receiver, receptionDate, emitter, receptionDate);
+    }
+
+    /**
+     * Compute theoretical measurement with guess for emission date.
+     * @param receiver receiver geodetic coordinates
+     * @param receptionDate signal reception date
+     * @param emitter signal emitter coordinates provider
      * @param approxEmissionDate guess for the emission date (shall be adjusted by signal travel time computer)
      * @return azimuth-elevation (radians)
      */
@@ -106,6 +118,19 @@ public class TopocentricAzElModel extends AbstractAngularMeasurementModel {
 
     /**
      * Compute theoretical measurement in Taylor Differential Algebra.
+     * @param receiver receiver geodetic coordinates
+     * @param receptionDate signal reception date
+     * @param emitter signal emitter coordinates provider
+     * @return azimuth-elevation (radians)
+     */
+    public Gradient[] value(final FieldGeodeticPoint<Gradient> receiver,
+                            final FieldAbsoluteDate<Gradient> receptionDate,
+                            final FieldPVCoordinatesProvider<Gradient> emitter) {
+        return value(receiver, receptionDate, emitter, receptionDate);
+    }
+
+    /**
+     * Compute theoretical measurement in Taylor Differential Algebra with guess for emission date.
      * @param receiver receiver geodetic coordinates
      * @param receptionDate signal reception date
      * @param emitter signal emitter coordinates provider

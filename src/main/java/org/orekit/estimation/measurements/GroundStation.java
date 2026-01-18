@@ -47,6 +47,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.UT1Scale;
 import org.orekit.time.clocks.QuadraticClockModel;
 import org.orekit.utils.FieldPVCoordinatesProvider;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
@@ -480,8 +481,7 @@ public class GroundStation extends MeasurementObject implements Observer {
         return (date, frame) -> {
             final Transform emitterToInertial =
                 getOffsetToInertial(frame, date, true);
-            return emitterToInertial.transformPVCoordinates(new TimeStampedPVCoordinates(date,
-                                                            Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
+            return emitterToInertial.transformPVCoordinates(new TimeStampedPVCoordinates(date, new PVCoordinates()));
         };
     }
 
