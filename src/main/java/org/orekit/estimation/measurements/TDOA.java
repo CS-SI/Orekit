@@ -16,19 +16,15 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Arrays;
-import java.util.Collections;
-
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.signal.FieldSignalTravelTimeAdjustableReceiver;
 import org.orekit.estimation.measurements.signal.SignalTravelTimeAdjustableReceiver;
+import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -48,18 +44,12 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Pascal Parraud
  * @since 11.2
  */
-public class TDOA extends AbstractMeasurement<TDOA> {
+public class TDOA extends DifferenceOfArrivalGroundMeasurement<TDOA> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "TDOA";
 
-    /** First ground station to receiver the measurement. */
-    private final GroundStation primeStation;
-
-    /** Second ground station, the one that gives the measurement, i.e. the delay. */
-    private final GroundStation secondStation;
-
-    /** Simple constructor.
+    /** Simple constructor with default signal model.
      * @param primeStation ground station that gives the date of the measurement
      * @param secondStation ground station that gives the measurement
      * @param date date of the measurement
@@ -69,29 +59,26 @@ public class TDOA extends AbstractMeasurement<TDOA> {
      * @param satellite satellite related to this measurement
      */
     public TDOA(final GroundStation primeStation, final GroundStation secondStation,
-                final AbsoluteDate date, final double tdoa, final double sigma,
-                final double baseWeight, final ObservableSatellite satellite) {
-        super(date, false, tdoa, sigma, baseWeight, Collections.singletonList(satellite));
-
-        // add parameter drivers for the secondary station
-        addParametersDrivers(primeStation.getParametersDrivers());
-        addParametersDrivers(secondStation.getParametersDrivers());
-        this.primeStation = primeStation;
-        this.secondStation = secondStation;
+                final AbsoluteDate date, final double tdoa, final double sigma, final double baseWeight,
+                final ObservableSatellite satellite) {
+        this(primeStation, secondStation, date, tdoa, sigma, baseWeight, new SignalTravelTimeModel(), satellite);
     }
 
-    /** Get the prime ground station, the one that receives the signal first.
-     * @return prime ground station
+    /** Simple constructor.
+     * @param primeStation ground station that gives the date of the measurement
+     * @param secondStation ground station that gives the measurement
+     * @param date date of the measurement
+     * @param tdoa observed value (s)
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param signalTravelTimeModel signal model
+     * @param satellite satellite related to this measurement
+     * @since 14.0
      */
-    public GroundStation getPrimeStation() {
-        return primeStation;
-    }
-
-    /** Get the second ground station, the one that gives the measurement.
-     * @return second ground station
-     */
-    public GroundStation getSecondStation() {
-        return secondStation;
+    public TDOA(final GroundStation primeStation, final GroundStation secondStation,
+                final AbsoluteDate date, final double tdoa, final double sigma, final double baseWeight,
+                final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
+        super(primeStation, secondStation, date, tdoa, sigma, baseWeight, signalTravelTimeModel, satellite);
     }
 
     /** {@inheritDoc} */
@@ -189,21 +176,7 @@ public class TDOA extends AbstractMeasurement<TDOA> {
                                                    });
 
         // set TDOA value
-        estimated.setEstimatedValue(tdoa);
-
-        // set first order derivatives with respect to state
-        final double[] derivatives = tdoaG.getGradient();
-        estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 0, 6));
-
-        // Set first order derivatives with respect to parameters
-        for (final ParameterDriver driver : getParametersDrivers()) {
-            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                final Integer index = common.getIndices().get(span.getData());
-                if (index != null) {
-                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
-                }
-            }
-        }
+        fillEstimation(tdoaG, common.getIndices(), estimated);
 
         return estimated;
     }

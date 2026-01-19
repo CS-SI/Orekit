@@ -50,7 +50,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Romain Serra
  * @since 14.0
  */
-public abstract class BistaticRangeRelatedMeasurement<T extends GroundReceiverMeasurement<T>> extends GroundReceiverMeasurement<T> {
+abstract class BistaticRangeRelatedMeasurement<T extends GroundReceiverMeasurement<T>> extends GroundReceiverMeasurement<T> {
 
     /**
      * Ground station from which transmission is made.

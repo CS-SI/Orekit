@@ -31,7 +31,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @since 14.0
  * @author Romain Serra
  */
-public class AbstractAngularMeasurementModel {
+public abstract class AbstractAngularMeasurementModel {
 
     /** Signal travel time model. */
     private final SignalTravelTimeModel signalTravelTimeModel;

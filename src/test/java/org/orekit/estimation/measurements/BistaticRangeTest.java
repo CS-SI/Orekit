@@ -469,7 +469,7 @@ class BistaticRangeTest {
     }
 
     @Test
-    void testParticipantsField() {
+    void testParticipantsAgainstWithoutDerivatives() {
         // GIVEN
         Utils.setDataRoot("regular-data");
         final double[] pos = {Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 5e5, 1000., 0.};

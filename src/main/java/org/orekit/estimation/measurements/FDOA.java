@@ -16,22 +16,18 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Arrays;
-import java.util.Collections;
-
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.signal.FieldSignalTravelTimeAdjustableReceiver;
 import org.orekit.estimation.measurements.signal.SignalTravelTimeAdjustableReceiver;
+import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -51,7 +47,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Mark Rutten
  * @since 12.0
  */
-public class FDOA extends AbstractMeasurement<FDOA> {
+public class FDOA extends DifferenceOfArrivalGroundMeasurement<FDOA> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "FDOA";
@@ -59,13 +55,7 @@ public class FDOA extends AbstractMeasurement<FDOA> {
     /** Centre frequency of the signal emitted from the satellite. */
     private final double centreFrequency;
 
-    /** First ground station to receiver the measurement. */
-    private final GroundStation primeStation;
-
-    /** Second ground station, the one that gives the measurement, i.e. the delay. */
-    private final GroundStation secondStation;
-
-    /** Simple constructor.
+    /** Simple constructor with default signal model.
      * @param primeStation ground station that gives the date of the measurement
      * @param secondStation ground station that gives the measurement
      * @param centreFrequency satellite emitter frequency (Hz)
@@ -75,19 +65,31 @@ public class FDOA extends AbstractMeasurement<FDOA> {
      * @param baseWeight base weight
      * @param satellite satellite related to this measurement
      */
-    public FDOA(final GroundStation primeStation, final GroundStation secondStation,
-                final double centreFrequency,
-                final AbsoluteDate date, final double fdoa, final double sigma,
-                final double baseWeight, final ObservableSatellite satellite) {
-        super(date, false, fdoa, sigma, baseWeight, Collections.singletonList(satellite));
+    public FDOA(final GroundStation primeStation, final GroundStation secondStation, final double centreFrequency,
+                final AbsoluteDate date, final double fdoa, final double sigma, final double baseWeight,
+                final ObservableSatellite satellite) {
+        this(primeStation, secondStation, centreFrequency, date, fdoa, sigma, baseWeight,
+                new SignalTravelTimeModel(), satellite);
+    }
 
-        // add parameter drivers for the secondary station
-        addParametersDrivers(primeStation.getParametersDrivers());
-        addParametersDrivers(secondStation.getParametersDrivers());
+    /** Simple constructor.
+     * @param primeStation ground station that gives the date of the measurement
+     * @param secondStation ground station that gives the measurement
+     * @param centreFrequency satellite emitter frequency (Hz)
+     * @param date date of the measurement
+     * @param fdoa observed value (Hz)
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param signalTravelTimeModel signal model
+     * @param satellite satellite related to this measurement
+     * @since 14.0
+     */
+    public FDOA(final GroundStation primeStation, final GroundStation secondStation, final double centreFrequency,
+                final AbsoluteDate date, final double fdoa, final double sigma, final double baseWeight,
+                final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
+        super(primeStation, secondStation, date, fdoa, sigma, baseWeight, signalTravelTimeModel, satellite);
 
         // Set values
-        this.primeStation    = primeStation;
-        this.secondStation   = secondStation;
         this.centreFrequency = centreFrequency;
     }
 
@@ -96,20 +98,6 @@ public class FDOA extends AbstractMeasurement<FDOA> {
      */
     public double getCentreFrequency() {
         return centreFrequency;
-    }
-
-    /** Get the prime ground station, the one that receives the signal first.
-     * @return prime ground station
-     */
-    public GroundStation getPrimeStation() {
-        return primeStation;
-    }
-
-    /** Get the second ground station, the one that gives the measurement.
-     * @return second ground station
-     */
-    public GroundStation getSecondStation() {
-        return secondStation;
     }
 
     /** {@inheritDoc} */
@@ -239,21 +227,7 @@ public class FDOA extends AbstractMeasurement<FDOA> {
         // set FDOA value
         final double rangeRateToHz = -centreFrequency / Constants.SPEED_OF_LIGHT;
         final Gradient fdoa = rangeRateDifference.multiply(rangeRateToHz);
-        estimated.setEstimatedValue(fdoa.getValue());
-
-        // Range first order derivatives with respect to state
-        final double[] derivatives = fdoa.getGradient();
-        estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 0, 6));
-
-        // set first order derivatives with respect to parameters
-        for (final ParameterDriver driver : getParametersDrivers()) {
-            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                final Integer index = common.getIndices().get(span.getData());
-                if (index != null) {
-                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
-                }
-            }
-        }
+        fillEstimation(fdoa, common.getIndices(), estimated);
 
         return estimated;
     }
