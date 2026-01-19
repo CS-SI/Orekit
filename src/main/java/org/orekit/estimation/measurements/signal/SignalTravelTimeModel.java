@@ -16,14 +16,17 @@
  */
 package org.orekit.estimation.measurements.signal;
 
-import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.optim.ConvergenceChecker;
+import org.hipparchus.optim.FieldScalarConvergenceCheckerProvider;
+import org.hipparchus.util.FastMath;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /**
- * Full model for signal travel time (adjustable receiver/emitter with fixed emission/reception),
- * compatible with automatic differentiation.
+ * Full model for signal travel time in vacuum (adjustable receiver/emitter with fixed emission/reception),
+ * compatible with Field.
  * @since 14.0
  * @author Romain Serra
  */
@@ -32,18 +35,18 @@ public class SignalTravelTimeModel {
     /** Convergence checker for standard values. */
     private final ConvergenceChecker<Double> convergenceChecker;
 
-    /** Convergence checker for automatic differentiation. */
-    private final ConvergenceChecker<Gradient> gradientConvergenceChecker;
+    /** Convergence checker provider for Field values. */
+    private final FieldScalarConvergenceCheckerProvider fieldConvergenceChecker;
 
     /**
      * Constructor.
      * @param convergenceChecker convergence settings for standard values
-     * @param gradientConvergenceChecker convergence settings for automatic differentiation
+     * @param fieldConvergenceChecker convergence settings for Field values
      */
     public SignalTravelTimeModel(final ConvergenceChecker<Double> convergenceChecker,
-                                 final ConvergenceChecker<Gradient> gradientConvergenceChecker) {
+                                 final FieldScalarConvergenceCheckerProvider fieldConvergenceChecker) {
         this.convergenceChecker = convergenceChecker;
-        this.gradientConvergenceChecker = gradientConvergenceChecker;
+        this.fieldConvergenceChecker = fieldConvergenceChecker;
     }
 
     /**
@@ -51,7 +54,13 @@ public class SignalTravelTimeModel {
      * @param convergenceChecker convergence settings for standard values
      */
     public SignalTravelTimeModel(final ConvergenceChecker<Double> convergenceChecker) {
-        this(convergenceChecker, FieldAbstractSignalTravelTime.getDefaultConvergenceChecker());
+        this(convergenceChecker, new FieldScalarConvergenceCheckerProvider() {
+            @Override
+            public <T extends CalculusFieldElement<T>> ConvergenceChecker<T> getChecker(final Field<T> field) {
+                return (iteration, previous, current) -> iteration != 0 && (iteration > AbstractSignalTravelTime.DEFAULT_MAX_ITER ||
+                        (previous.subtract(current)).norm() <= 2 * FastMath.ulp(current).getReal());
+            }
+        });
     }
 
     /**
@@ -81,19 +90,25 @@ public class SignalTravelTimeModel {
 
     /**
      * Method constructing a delay computer with input emitter.
+     * @param <T> field type
+     * @param field field
      * @param emitter signal emitter
      * @return (positive) time delay
      */
-    public FieldSignalTravelTimeAdjustableEmitter<Gradient> getAdjustableEmitterComputer(final FieldPVCoordinatesProvider<Gradient> emitter) {
-        return new FieldSignalTravelTimeAdjustableEmitter<>(emitter, gradientConvergenceChecker);
+    public <T extends CalculusFieldElement<T>> FieldSignalTravelTimeAdjustableEmitter<T> getFieldAdjustableEmitterComputer(final Field<T> field,
+                                                                                                                           final FieldPVCoordinatesProvider<T> emitter) {
+        return new FieldSignalTravelTimeAdjustableEmitter<>(emitter, fieldConvergenceChecker.getChecker(field));
     }
 
     /**
      * Method constructing a delay computer with input receiver.
+     * @param <T> field type
+     * @param field field
      * @param receiver signal receiver
      * @return (positive) time delay
      */
-    public FieldSignalTravelTimeAdjustableReceiver<Gradient> getFieldAdjustableReceiverComputer(final FieldPVCoordinatesProvider<Gradient> receiver) {
-        return new FieldSignalTravelTimeAdjustableReceiver<>(receiver, gradientConvergenceChecker);
+    public <T extends CalculusFieldElement<T>> FieldSignalTravelTimeAdjustableReceiver<T> getFieldAdjustableReceiverComputer(final Field<T> field,
+                                                                                                                             final FieldPVCoordinatesProvider<T> receiver) {
+        return new FieldSignalTravelTimeAdjustableReceiver<>(receiver, fieldConvergenceChecker.getChecker(field));
     }
 }

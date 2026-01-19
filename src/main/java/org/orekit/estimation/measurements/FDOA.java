@@ -191,7 +191,8 @@ public class FDOA extends AbstractMeasurement<FDOA> {
 
         // Obtain time at which signal arrives at second station from emitter
         final FieldPVCoordinatesProvider<Gradient> fieldPvCoordinatesProvider = getSecondStation().getFieldPVCoordinatesProvider(nbParams, common.getIndices());
-        final FieldSignalTravelTimeAdjustableReceiver<Gradient> fieldComputer = getSignalTravelTimeModel().getFieldAdjustableReceiverComputer(fieldPvCoordinatesProvider);
+        final FieldSignalTravelTimeAdjustableReceiver<Gradient> fieldComputer = getSignalTravelTimeModel()
+                .getFieldAdjustableReceiverComputer(emitterDate.getField(), fieldPvCoordinatesProvider);
         final Gradient tau2 = fieldComputer.computeDelay(emitterPV.getPosition(), emitterDate, emitterDate, states[0].getFrame());
 
         // Second station coordinates at receive time

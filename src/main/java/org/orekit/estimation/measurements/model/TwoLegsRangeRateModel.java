@@ -16,7 +16,7 @@
  */
 package org.orekit.estimation.measurements.model;
 
-import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.signal.TwoLegsSignalTravelTimer;
@@ -100,7 +100,7 @@ public class TwoLegsRangeRateModel {
 
     /**
      * Compute measurement without guess.
-     *
+     * @param <T> field type
      * @param frame            frame where position is given
      * @param receiverPV       end receiver position and velocity (at reception)
      * @param receptionDate    signal end reception date
@@ -108,15 +108,15 @@ public class TwoLegsRangeRateModel {
      * @param emitter          signal initial emitter coordinates provider
      * @return range rate (m/s)
      */
-    public Gradient value(final Frame frame, final FieldPVCoordinates<Gradient> receiverPV,
-                          final FieldAbsoluteDate<Gradient> receptionDate,
-                          final FieldPVCoordinatesProvider<Gradient> relay,
-                          final FieldPVCoordinatesProvider<Gradient> emitter) {
+    public <T extends CalculusFieldElement<T>>  T value(final Frame frame, final FieldPVCoordinates<T> receiverPV,
+                                                        final FieldAbsoluteDate<T> receptionDate,
+                                                        final FieldPVCoordinatesProvider<T> relay,
+                                                        final FieldPVCoordinatesProvider<T> emitter) {
         return value(frame, receiverPV, receptionDate, relay, receptionDate, emitter, receptionDate);
     }
     /**
      * Compute measurement.
-     *
+     * @param <T> field type
      * @param frame            frame where position is given
      * @param receiverPV       end receiver position and velocity (at reception)
      * @param receptionDate    signal end reception date
@@ -126,27 +126,27 @@ public class TwoLegsRangeRateModel {
      * @param approxEmissionDate guess for the emission date
      * @return range rate (m/s)
      */
-    public Gradient value(final Frame frame, final FieldPVCoordinates<Gradient> receiverPV,
-                          final FieldAbsoluteDate<Gradient> receptionDate,
-                          final FieldPVCoordinatesProvider<Gradient> relay,
-                          final FieldAbsoluteDate<Gradient> approxRelayDate,
-                          final FieldPVCoordinatesProvider<Gradient> emitter,
-                          final FieldAbsoluteDate<Gradient> approxEmissionDate) {
+    public <T extends CalculusFieldElement<T>>  T value(final Frame frame, final FieldPVCoordinates<T> receiverPV,
+                          final FieldAbsoluteDate<T> receptionDate,
+                          final FieldPVCoordinatesProvider<T> relay,
+                          final FieldAbsoluteDate<T> approxRelayDate,
+                          final FieldPVCoordinatesProvider<T> emitter,
+                          final FieldAbsoluteDate<T> approxEmissionDate) {
         // Compute relay and emission dates
-        final Gradient[] delays = twoWayTimer.computeDelays(frame, receiverPV.getPosition(), receptionDate, relay,
+        final T[] delays = twoWayTimer.computeDelays(frame, receiverPV.getPosition(), receptionDate, relay,
                 approxRelayDate, emitter, approxEmissionDate);
-        final FieldAbsoluteDate<Gradient> relayDate = receptionDate.shiftedBy(delays[1].negate());
-        final FieldAbsoluteDate<Gradient> emissionDate = relayDate.shiftedBy(delays[0].negate());
+        final FieldAbsoluteDate<T> relayDate = receptionDate.shiftedBy(delays[1].negate());
+        final FieldAbsoluteDate<T> emissionDate = relayDate.shiftedBy(delays[0].negate());
 
         // Compute position and velocity of interest
-        final FieldPVCoordinates<Gradient> relayPV = relay.getPVCoordinates(relayDate, frame);
-        final FieldPVCoordinates<Gradient> emitterPV = emitter.getPVCoordinates(emissionDate, frame);
+        final FieldPVCoordinates<T> relayPV = relay.getPVCoordinates(relayDate, frame);
+        final FieldPVCoordinates<T> emitterPV = emitter.getPVCoordinates(emissionDate, frame);
 
         // Range-rate components
-        final FieldVector3D<Gradient> receiverRelativePosition = receiverPV.getPosition().subtract(relayPV.getPosition()).normalize();
-        final FieldVector3D<Gradient> emitterRelativePosition = emitterPV.getPosition().subtract(relayPV.getPosition()).normalize();
-        final FieldVector3D<Gradient> receiverRelativeVelocity = receiverPV.getVelocity().subtract(relayPV.getVelocity());
-        final FieldVector3D<Gradient> emitterRelativeVelocity = emitterPV.getVelocity().subtract(relayPV.getVelocity());
+        final FieldVector3D<T> receiverRelativePosition = receiverPV.getPosition().subtract(relayPV.getPosition()).normalize();
+        final FieldVector3D<T> emitterRelativePosition = emitterPV.getPosition().subtract(relayPV.getPosition()).normalize();
+        final FieldVector3D<T> receiverRelativeVelocity = receiverPV.getVelocity().subtract(relayPV.getVelocity());
+        final FieldVector3D<T> emitterRelativeVelocity = emitterPV.getVelocity().subtract(relayPV.getVelocity());
 
         // range rate
         return FieldVector3D.dotProduct(receiverRelativePosition.normalize(), receiverRelativeVelocity).add(

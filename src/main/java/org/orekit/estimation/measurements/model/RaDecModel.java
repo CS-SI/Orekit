@@ -16,9 +16,10 @@
  */
 package org.orekit.estimation.measurements.model;
 
-import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
@@ -91,21 +92,23 @@ public class RaDecModel extends AbstractAngularMeasurementModel {
     }
 
     /**
-     * Compute theoretical measurement in Taylor Differential Algebra.
+     * Compute theoretical measurement with FIeld.
+     * @param <T> field type
      * @param frame frame where receiver position is given
      * @param receiverPosition receiver position in input frame at reception time
      * @param receptionDate signal reception date
      * @param emitter signal emitter coordinates provider
      * @return RA-Dec (radians)
      */
-    public Gradient[] value(final Frame frame, final FieldVector3D<Gradient> receiverPosition,
-                            final FieldAbsoluteDate<Gradient> receptionDate,
-                            final FieldPVCoordinatesProvider<Gradient> emitter) {
+    public <T extends CalculusFieldElement<T>> T[] value(final Frame frame, final FieldVector3D<T> receiverPosition,
+                                                         final FieldAbsoluteDate<T> receptionDate,
+                                                         final FieldPVCoordinatesProvider<T> emitter) {
         return value(frame, receiverPosition, receptionDate, emitter, receptionDate);
     }
 
     /**
-     * Compute theoretical measurement in Taylor Differential Algebra with guess for emission date.
+     * Compute theoretical measurement with FIeld with guess for emission date.
+     * @param <T> field type
      * @param frame frame where receiver position is given
      * @param receiverPosition receiver position in input frame at reception time
      * @param receptionDate signal reception date
@@ -113,19 +116,22 @@ public class RaDecModel extends AbstractAngularMeasurementModel {
      * @param approxEmissionDate guess for the emission date (shall be adjusted by signal travel time computer)
      * @return RA-Dec (radians)
      */
-    public Gradient[] value(final Frame frame, final FieldVector3D<Gradient> receiverPosition,
-                            final FieldAbsoluteDate<Gradient> receptionDate,
-                            final FieldPVCoordinatesProvider<Gradient> emitter,
-                            final FieldAbsoluteDate<Gradient> approxEmissionDate) {
+    public <T extends CalculusFieldElement<T>> T[] value(final Frame frame, final FieldVector3D<T> receiverPosition,
+                                                         final FieldAbsoluteDate<T> receptionDate,
+                                                         final FieldPVCoordinatesProvider<T> emitter,
+                                                         final FieldAbsoluteDate<T> approxEmissionDate) {
         // Compute line-of-sight
-        final FieldVector3D<Gradient> apparentLineOfSightInInputFrame = getEmitterToReceiverVector(frame, receiverPosition,
+        final FieldVector3D<T> apparentLineOfSightInInputFrame = getEmitterToReceiverVector(frame, receiverPosition,
                 receptionDate, emitter, approxEmissionDate).normalize();
-        final FieldStaticTransform<Gradient> toInertialFrameAtReception = frame.getStaticTransformTo(referenceFrame, receptionDate);
-        final FieldVector3D<Gradient> apparentLineOfSight = toInertialFrameAtReception.transformVector(apparentLineOfSightInInputFrame);
+        final FieldStaticTransform<T> toInertialFrameAtReception = frame.getStaticTransformTo(referenceFrame, receptionDate);
+        final FieldVector3D<T> apparentLineOfSight = toInertialFrameAtReception.transformVector(apparentLineOfSightInInputFrame);
 
         // Compute right ascension and declination
-        final Gradient rightAscension = apparentLineOfSight.getAlpha();
-        final Gradient declination = apparentLineOfSight.getDelta();
-        return new Gradient[] { rightAscension, declination };
+        final T rightAscension = apparentLineOfSight.getAlpha();
+        final T declination = apparentLineOfSight.getDelta();
+        final T[] output = MathArrays.buildArray(receiverPosition.getX().getField(), 2);
+        output[0] = rightAscension;
+        output[1] = declination;
+        return output;
     }
 }

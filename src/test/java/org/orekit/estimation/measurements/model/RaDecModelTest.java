@@ -16,10 +16,14 @@
  */
 package org.orekit.estimation.measurements.model;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.optim.ConvergenceChecker;
+import org.hipparchus.optim.FieldScalarConvergenceCheckerProvider;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -65,7 +69,12 @@ class RaDecModelTest {
     void testValueInstantaneousSignal() {
         // GIVEN
         final SignalTravelTimeModel instantaneousSignalModel = new SignalTravelTimeModel((iteration, previous, current) -> true,
-                (iteration, previous, current) -> true);
+                new FieldScalarConvergenceCheckerProvider() {
+                    @Override
+                    public <T extends CalculusFieldElement<T>> ConvergenceChecker<T> getChecker(Field<T> field) {
+                        return ((iteration, previous, current) -> true);
+                    }
+                });
         final Frame frame = FramesFactory.getGCRF();
         final RaDecModel measurementModel = new RaDecModel(frame, instantaneousSignalModel);
         final Vector3D receiverPosition = Vector3D.MINUS_J;

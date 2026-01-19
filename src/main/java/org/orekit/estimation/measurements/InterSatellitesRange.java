@@ -331,7 +331,7 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
         final TimeStampedFieldPVCoordinates<Gradient> localPVAtReception = MeasurementObject.extractFieldPVCoordinatesProvider(local, pvaL)
                 .getPVCoordinates(receptionDate, frame);
         final FieldSignalTravelTimeAdjustableEmitter<Gradient> adjustableEmitterComputer = getSignalTravelTimeModel()
-                .getAdjustableEmitterComputer(remotePVProvider);
+                .getFieldAdjustableEmitterComputer(dtl.getField(), remotePVProvider);
         final Gradient delay = adjustableEmitterComputer.computeDelay(localPVAtReception.getPosition(), receptionDate, frame);
         final FieldAbsoluteDate<Gradient> emissionDate = receptionDate.shiftedBy(delay.negate());
 

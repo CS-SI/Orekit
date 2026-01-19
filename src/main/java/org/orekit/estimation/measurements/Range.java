@@ -207,8 +207,9 @@ public class Range extends AbstractMeasurement<Range> {
             final TimeStampedFieldPVCoordinates<Gradient> stationAtTransitDate =
                             common.getRemotePV().shiftedBy(common.getTauD().negate());
             // Uplink delay
-            final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer =
-                getSignalTravelTimeModel().getAdjustableEmitterComputer(new FieldAbsolutePVCoordinates<>(state.getFrame(), stationAtTransitDate));
+            final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer = getSignalTravelTimeModel()
+                    .getFieldAdjustableEmitterComputer(transitPV.getDate().getField(),
+                            new FieldAbsolutePVCoordinates<>(state.getFrame(), stationAtTransitDate));
             final Gradient tauU =
                 fieldComputer.computeDelay(stationAtTransitDate.getDate(), transitPV.getPosition(), transitPV.getDate(), state.getFrame());
             final TimeStampedFieldPVCoordinates<Gradient> stationUplink =

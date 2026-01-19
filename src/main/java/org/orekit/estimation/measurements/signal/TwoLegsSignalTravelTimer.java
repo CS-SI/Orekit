@@ -16,9 +16,10 @@
  */
 package org.orekit.estimation.measurements.signal;
 
-import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.MathArrays;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -87,7 +88,7 @@ public class TwoLegsSignalTravelTimer {
 
     /**
      * Compute first and second leg delays.
-     *
+     * @param <T> field type
      * @param frame            frame where position is given
      * @param receiverPosition end receiver position (at reception)
      * @param receptionDate    signal end reception date
@@ -97,22 +98,25 @@ public class TwoLegsSignalTravelTimer {
      * @param approxEmissionDate  guess for the emission date
      * @return delays on both legs in chronological order (s)
      */
-    public Gradient[] computeDelays(final Frame frame, final FieldVector3D<Gradient> receiverPosition,
-                                    final FieldAbsoluteDate<Gradient> receptionDate,
-                                    final FieldPVCoordinatesProvider<Gradient> relay,
-                                    final FieldAbsoluteDate<Gradient> approxRelayDate,
-                                    final FieldPVCoordinatesProvider<Gradient> emitter,
-                                    final FieldAbsoluteDate<Gradient> approxEmissionDate) {
-        final Gradient secondLegTravelTime = computeTravelTime(frame, receiverPosition, receptionDate, relay, approxRelayDate);
-        final FieldAbsoluteDate<Gradient> relayDate = receptionDate.shiftedBy(secondLegTravelTime.negate());
-        final FieldVector3D<Gradient> relayPosition = relay.getPosition(relayDate, frame);
-        final Gradient firstLegTravelTime = computeTravelTime(frame, relayPosition, relayDate, emitter, approxEmissionDate);
-        return new Gradient[] { firstLegTravelTime, secondLegTravelTime };
+    public <T extends CalculusFieldElement<T>> T[] computeDelays(final Frame frame, final FieldVector3D<T> receiverPosition,
+                                                                 final FieldAbsoluteDate<T> receptionDate,
+                                                                 final FieldPVCoordinatesProvider<T> relay,
+                                                                 final FieldAbsoluteDate<T> approxRelayDate,
+                                                                 final FieldPVCoordinatesProvider<T> emitter,
+                                                                 final FieldAbsoluteDate<T> approxEmissionDate) {
+        final T secondLegTravelTime = computeTravelTime(frame, receiverPosition, receptionDate, relay, approxRelayDate);
+        final FieldAbsoluteDate<T> relayDate = receptionDate.shiftedBy(secondLegTravelTime.negate());
+        final FieldVector3D<T> relayPosition = relay.getPosition(relayDate, frame);
+        final T firstLegTravelTime = computeTravelTime(frame, relayPosition, relayDate, emitter, approxEmissionDate);
+        final T[] output = MathArrays.buildArray(receiverPosition.getX().getField(), 2);
+        output[0] = firstLegTravelTime;
+        output[1] = secondLegTravelTime;
+        return output;
     }
 
     /**
      * Compute first and second leg delays without guess.
-     *
+     * @param <T> field type
      * @param frame            frame where position is given
      * @param receiverPosition end receiver position (at reception)
      * @param receptionDate    signal end reception date
@@ -120,15 +124,18 @@ public class TwoLegsSignalTravelTimer {
      * @param emitter          signal initial emitter coordinates provider
      * @return delays on both legs in chronological order (s)
      */
-    public Gradient[] computeDelays(final Frame frame, final FieldVector3D<Gradient> receiverPosition,
-                                    final FieldAbsoluteDate<Gradient> receptionDate,
-                                    final FieldPVCoordinatesProvider<Gradient> relay,
-                                    final FieldPVCoordinatesProvider<Gradient> emitter) {
-        final Gradient secondLegTravelTime = computeTravelTime(frame, receiverPosition, receptionDate, relay, receptionDate);
-        final FieldAbsoluteDate<Gradient> relayDate = receptionDate.shiftedBy(secondLegTravelTime.negate());
-        final FieldVector3D<Gradient> relayPosition = relay.getPosition(relayDate, frame);
-        final Gradient firstLegTravelTime = computeTravelTime(frame, relayPosition, relayDate, emitter, relayDate);
-        return new Gradient[] { firstLegTravelTime, secondLegTravelTime };
+    public <T extends CalculusFieldElement<T>> T[] computeDelays(final Frame frame, final FieldVector3D<T> receiverPosition,
+                                                                 final FieldAbsoluteDate<T> receptionDate,
+                                                                 final FieldPVCoordinatesProvider<T> relay,
+                                                                 final FieldPVCoordinatesProvider<T> emitter) {
+        final T secondLegTravelTime = computeTravelTime(frame, receiverPosition, receptionDate, relay, receptionDate);
+        final FieldAbsoluteDate<T> relayDate = receptionDate.shiftedBy(secondLegTravelTime.negate());
+        final FieldVector3D<T> relayPosition = relay.getPosition(relayDate, frame);
+        final T firstLegTravelTime = computeTravelTime(frame, relayPosition, relayDate, emitter, relayDate);
+        final T[] output = MathArrays.buildArray(receiverPosition.getX().getField(), 2);
+        output[0] = firstLegTravelTime;
+        output[1] = secondLegTravelTime;
+        return output;
     }
 
     /**
@@ -148,6 +155,7 @@ public class TwoLegsSignalTravelTimer {
 
     /**
      * Method for one leg travel time.
+     * @param <T> field type
      * @param frame frame where position is given
      * @param receiverPosition receiver position at reception
      * @param receptionDate reception date
@@ -155,11 +163,11 @@ public class TwoLegsSignalTravelTimer {
      * @param guessEmissionDate guess for the emission date
      * @return signal travel time
      */
-    private Gradient computeTravelTime(final Frame frame, final FieldVector3D<Gradient> receiverPosition,
-                                       final FieldAbsoluteDate<Gradient> receptionDate,
-                                       final FieldPVCoordinatesProvider<Gradient> emitter,
-                                       final FieldAbsoluteDate<Gradient> guessEmissionDate) {
-        return signalTravelTimeModel.getAdjustableEmitterComputer(emitter).computeDelay(guessEmissionDate,
-                receiverPosition, receptionDate, frame);
+    private <T extends CalculusFieldElement<T>> T computeTravelTime(final Frame frame, final FieldVector3D<T> receiverPosition,
+                                                                    final FieldAbsoluteDate<T> receptionDate,
+                                                                    final FieldPVCoordinatesProvider<T> emitter,
+                                                                    final FieldAbsoluteDate<T> guessEmissionDate) {
+        return signalTravelTimeModel.getFieldAdjustableEmitterComputer(receptionDate.getField(), emitter)
+                .computeDelay(guessEmissionDate, receiverPosition, receptionDate, frame);
     }
 }
