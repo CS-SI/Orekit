@@ -495,6 +495,7 @@ class BistaticRangeTest {
         final EstimatedMeasurementBase<BistaticRange> estimatedWithoutDerivatives = bistaticRange.estimateWithoutDerivatives(state);
         // THEN
         final EstimatedMeasurement<BistaticRange> estimated = bistaticRange.estimate(0, 0, state);
+        assertEquals(estimated.getEstimatedValue()[0], estimatedWithoutDerivatives.getEstimatedValue()[0], 1e-7);
         compareParticipants(estimated, estimatedWithoutDerivatives);
     }
 

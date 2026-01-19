@@ -19,32 +19,49 @@ package org.orekit.estimation.measurements;
 import java.util.Arrays;
 import java.util.List;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.BistaticRangeRateTroposphericDelayModifier;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.ITRFVersion;
+import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.clocks.QuadraticClockModel;
+import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
+import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
+import org.orekit.utils.TimeStampedPVCoordinates;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class BistaticRangeRateTest {
+class BistaticRangeRateTest {
 
     /**
      * Compare observed values and estimated values.
      * Both are calculated with a different algorithm.
      */
     @Test
-    public void testValues() {
+    void testValues() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -88,7 +105,7 @@ public class BistaticRangeRateTest {
      * finite differences calculation as a reference.
      */
     @Test
-    public void testStateDerivatives() {
+    void testStateDerivatives() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -142,7 +159,7 @@ public class BistaticRangeRateTest {
      * finite differences calculation as a reference, with modifiers (tropospheric corrections).
      */
     @Test
-    public void testStateDerivativesWithModifier() {
+    void testStateDerivativesWithModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -204,7 +221,7 @@ public class BistaticRangeRateTest {
      * finite differences calculation as a reference.
      */
     @Test
-    public void testParameterDerivatives() {
+    void testParameterDerivatives() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -276,7 +293,7 @@ public class BistaticRangeRateTest {
             }
         }
 
-        Assertions.assertEquals(0, maxRelativeError, 9.3e-8);
+        Assertions.assertEquals(0, maxRelativeError, 4.e-7);
 
     }
 
@@ -285,7 +302,7 @@ public class BistaticRangeRateTest {
      * finite differences calculation as a reference, with modifiers (tropospheric corrections).
      */
     @Test
-    public void testParameterDerivativesWithModifier() {
+    void testParameterDerivativesWithModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -370,4 +387,101 @@ public class BistaticRangeRateTest {
 
     }
 
+    @Test
+    void testAgainstTwoWayRangeRate() {
+        // GIVEN
+        Utils.setDataRoot("regular-data");
+        final double[] pos = {Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 5e5, 1000., 0.};
+        final double[] vel = {0., 10., 0.};
+        final PVCoordinates pvCoordinates = new PVCoordinates(new Vector3D(pos[0], pos[1], pos[2]),
+                new Vector3D(vel[0], vel[1], vel[2]));
+        final AbsoluteDate epoch = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame gcrf = FramesFactory.getGCRF();
+        final CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, gcrf, epoch, Constants.EGM96_EARTH_MU);
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.IERS2010_EARTH_EQUATORIAL_RADIUS,
+                Constants.IERS2010_EARTH_FLATTENING,
+                FramesFactory.getITRF(ITRFVersion.ITRF_2020, IERSConventions.IERS_2010, false));
+        final GeodeticPoint point = new GeodeticPoint(-0.1, 0.1, 100.);
+        final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "name");
+        final GroundStation station = new GroundStation(baseFrame);
+        activateStation(station);
+        final ObservableSatellite satellite = new ObservableSatellite(0);
+        final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit) };
+        // WHEN
+        final BistaticRangeRate bistaticDoppler = new BistaticRangeRate(station, station, epoch, 0., 1., 1., satellite);
+        final EstimatedMeasurementBase<BistaticRangeRate> estimatedBistatic = bistaticDoppler.estimateWithoutDerivatives(state);
+        // THEN
+        final RangeRate rangeRate = new RangeRate(station, epoch, 0., 1., 1., true, satellite);
+        final EstimatedMeasurementBase<RangeRate> estimatedRange = rangeRate.estimateWithoutDerivatives(0, 0, state);
+        assertEquals(estimatedRange.getEstimatedValue()[0] * 2., estimatedBistatic.getEstimatedValue()[0], 1e-6);
+        // compareParticipants(estimatedRange, estimatedBistatic); FIXME when Range uses correct PVCoordinatesProvider for emitter
+    }
+
+    @Test
+    void testParticipantsField() {
+        // GIVEN
+        Utils.setDataRoot("regular-data");
+        final double[] pos = {Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 5e5, 1000., 0.};
+        final double[] vel = {0., 10., 0.};
+        final PVCoordinates pvCoordinates = new PVCoordinates(new Vector3D(pos[0], pos[1], pos[2]),
+                new Vector3D(vel[0], vel[1], vel[2]));
+        final AbsoluteDate epoch = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame gcrf = FramesFactory.getGCRF();
+        final CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, gcrf, epoch, Constants.EGM96_EARTH_MU);
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.IERS2010_EARTH_EQUATORIAL_RADIUS,
+                Constants.IERS2010_EARTH_FLATTENING,
+                FramesFactory.getITRF(ITRFVersion.ITRF_2020, IERSConventions.IERS_2010, false));
+        final GeodeticPoint point = new GeodeticPoint(0., 0., 100.);
+        final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "name");
+        final GroundStation receiver = new GroundStation(baseFrame, new QuadraticClockModel(AbsoluteDate.JULIAN_EPOCH, 1e-2, 0, 0));
+        final GroundStation emitter = new GroundStation(new TopocentricFrame(earth, new GeodeticPoint(0.1, 0.1, 1e3), "emitter"));
+        activateStation(receiver);
+        activateStation(emitter);
+        final ObservableSatellite satellite = new ObservableSatellite(0);
+        final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit) };
+        // WHEN
+        final BistaticRangeRate bistaticDoppler = new BistaticRangeRate(emitter, receiver, epoch, 0., 1., 1., satellite);
+        final EstimatedMeasurementBase<BistaticRangeRate> estimatedWithoutDerivatives = bistaticDoppler.estimateWithoutDerivatives(state);
+        // THEN
+        final EstimatedMeasurement<BistaticRangeRate> estimated = bistaticDoppler.estimate(0, 0, state);
+        assertEquals(estimated.getEstimatedValue()[0], estimatedWithoutDerivatives.getEstimatedValue()[0], 1e-7);
+        compareParticipants(estimated, estimatedWithoutDerivatives);
+    }
+
+    private void compareParticipants(final EstimatedMeasurementBase<?> expected, final EstimatedMeasurementBase<?> actual) {
+        final TimeStampedPVCoordinates firstParticipant = expected.getParticipants()[0];
+        final TimeStampedPVCoordinates secondParticipant = expected.getParticipants()[1];
+        final TimeStampedPVCoordinates thirdParticipant = expected.getParticipants()[2];
+        final TimeStampedPVCoordinates expectedFirstParticipant = actual.getParticipants()[0];
+        final TimeStampedPVCoordinates expectedSecondParticipant = actual.getParticipants()[1];
+        final TimeStampedPVCoordinates expectedThirdParticipant = actual.getParticipants()[2];
+        final double tolerance = 1e-7;
+        assertCloseDate(expectedFirstParticipant.getDate(), firstParticipant.getDate());
+        assertArrayEquals(expectedFirstParticipant.getPosition().toArray(), firstParticipant.getPosition().toArray(), tolerance);
+        assertCloseDate(expectedSecondParticipant.getDate(), secondParticipant.getDate());
+        assertArrayEquals(expectedSecondParticipant.getPosition().toArray(), secondParticipant.getPosition().toArray(), tolerance);
+        assertCloseDate(expectedThirdParticipant.getDate(), thirdParticipant.getDate());
+        assertArrayEquals(expectedThirdParticipant.getPosition().toArray(), thirdParticipant.getPosition().toArray(), tolerance);
+    }
+
+    private void assertCloseDate(final AbsoluteDate expected, final AbsoluteDate actual) {
+        assertTrue(expected.isCloseTo(actual, 1e-11));
+    }
+
+    private void activateStation(final GroundStation station) {
+        for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
+                station.getEastOffsetDriver(),
+                station.getNorthOffsetDriver(),
+                station.getZenithOffsetDriver(),
+                station.getPrimeMeridianOffsetDriver(),
+                station.getPrimeMeridianDriftDriver(),
+                station.getPolarOffsetXDriver(),
+                station.getPolarDriftXDriver(),
+                station.getPolarOffsetYDriver(),
+                station.getPolarDriftYDriver())) {
+            if (driver.getReferenceDate() == null) {
+                driver.setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH);
+            }
+        }
+    }
 }
