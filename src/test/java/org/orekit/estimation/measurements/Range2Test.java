@@ -354,7 +354,7 @@ public class Range2Test {
                     jacobianRef = Differentiation.differentiate(state1 -> measurement.
                            estimateWithoutDerivatives(new SpacecraftState[] { state1 }).
                            getEstimatedValue(), measurement.getDimension(), propagator.getAttitudeProvider(),
-                                                                OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(state);
+                                                                OrbitType.CARTESIAN, PositionAngleType.TRUE, 20.0, 3).value(state);
 
                     Assertions.assertEquals(jacobianRef.length, jacobian.length);
                     Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);

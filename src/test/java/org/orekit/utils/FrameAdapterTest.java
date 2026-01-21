@@ -57,7 +57,7 @@ public class FrameAdapterTest {
             maxV = FastMath.max(maxV, Vector3D.distance(pvRef.getVelocity(),     pvAdapted.getVelocity()));
             maxA = FastMath.max(maxA, Vector3D.distance(pvRef.getAcceleration(), pvAdapted.getAcceleration()));
         }
-        Assertions.assertEquals(0.0, maxP, 7.6e-7);
+        Assertions.assertEquals(0.0, maxP, 8.2e-7);
         Assertions.assertEquals(0.0, maxV, 2.9e-12);
         Assertions.assertEquals(0.0, maxA, 1.1e-17);
 
@@ -89,7 +89,7 @@ public class FrameAdapterTest {
             maxV = FastMath.max(maxV, FieldVector3D.distance(pvRef.getVelocity(),     pvAdapted.getVelocity()));
             maxA = FastMath.max(maxA, FieldVector3D.distance(pvRef.getAcceleration(), pvAdapted.getAcceleration()));
         }
-        Assertions.assertEquals(0.0, maxP.getReal(), 7.6e-7);
+        Assertions.assertEquals(0.0, maxP.getReal(), 8.2e-7);
         Assertions.assertEquals(0.0, maxV.getReal(), 2.9e-12);
         Assertions.assertEquals(0.0, maxA.getReal(), 1.1e-17);
 

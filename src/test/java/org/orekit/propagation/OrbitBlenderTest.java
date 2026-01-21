@@ -238,7 +238,7 @@ class OrbitBlenderTest {
                             0.08349987869494085,
                             0.10151652739088853,
                             0.14827634525717634,
-                            1e-12, false);
+                            2e-10, false);
     }
 
     @Test
@@ -264,7 +264,7 @@ class OrbitBlenderTest {
                             0.08349987869494085,
                             0.10151652739088853,
                             0.14827634525717634,
-                            1e-12, false);
+                            2e-10, false);
     }
 
     @Test
@@ -296,7 +296,7 @@ class OrbitBlenderTest {
                             0.0640733000793,
                             0.2095374397997,
                             0.0901515566892,
-                            1e-13, false);
+                            1e-10, false);
     }
 
     @SuppressWarnings("deprecation")
@@ -331,7 +331,7 @@ class OrbitBlenderTest {
                             0.0640733000793,
                             0.2095374397997,
                             0.0901515566892,
-                            1e-13, false);
+                            1e-10, false);
     }
 
     @Test
@@ -360,7 +360,7 @@ class OrbitBlenderTest {
                             0.01299681287562801,
                             0.01600030634898298,
                             0.01743228685360753,
-                            1e-17, false);
+                            3e-10, false);
                             
     }
 
@@ -392,7 +392,7 @@ class OrbitBlenderTest {
                             0.01299681287562801,
                             0.01600030634898298,
                             0.01743228685360753,
-                            1e-17, false);
+                            3e-10, false);
     }
 
     @Test

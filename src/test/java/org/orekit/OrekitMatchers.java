@@ -235,6 +235,26 @@ public class OrekitMatchers {
     }
 
     /**
+     * Matches a {@link Vector3D} to another one.
+     *
+     * @param vector the reference vector
+     * @param absTol the absolute tolerance of comparison, in each dimension.
+     * @param relTol the relative tolerance of comparison, which is multiplied
+     *               by {@code vector}'s magnitude.
+     * @return a matcher that matches if either the absolute or relative
+     * comparison matches in each dimension.
+     */
+    public static Matcher<Vector3D> vectorCloseTo(Vector3D vector,
+                                                  double absTol,
+                                                  double relTol) {
+        final double tol = FastMath.max(absTol, relTol * vector.getNorm());
+        return vector(
+                closeTo(vector.getX(), tol),
+                closeTo(vector.getY(), tol),
+                closeTo(vector.getZ(), tol));
+    }
+
+    /**
      * Match a {@link PVCoordinates}
      *
      * @param position matcher for the position
@@ -366,6 +386,50 @@ public class OrekitMatchers {
         matchers.add(closeTo(number, absTol));
         matchers.add(relativelyCloseTo(number, ulps));
         return anyOf(matchers);
+    }
+
+    /**
+     * Check a number is close to another number using a relative <strong>or</strong>
+     * absolute comparison.
+     *
+     * @param expected the expected value
+     * @param absTol   absolute tolerance of comparison
+     * @param relTol   relative tolerance of {@code number}.
+     * @return a matcher that matches if the differences is less than or equal to absTol
+     * <strong>or</strong> the two numbers differ by less than the relative tolerance.
+     */
+    public static Matcher<Double> numberCloseTo(final double expected,
+                                                final double absTol,
+                                                final double relTol) {
+        return new TypeSafeDiagnosingMatcher<Double>() {
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("a numeric value within ")
+                        .appendValue(absTol).appendText(" absolute tolerance or")
+                        .appendValue(relTol).appendText(" relative tolerance of ")
+                        .appendValue(expected);
+            }
+
+            @Override
+            protected boolean matchesSafely(Double item,
+                                            Description mismatchDescription) {
+                final double tol = FastMath.max(absTol, relTol * FastMath.abs(expected));
+                final double difference = item - expected;
+                if (FastMath.abs(difference) > tol || Double.isNaN(item)
+                        || Double.isNaN(expected)) {
+                    mismatchDescription
+                            .appendValue(item)
+                            .appendText(" was off by ")
+                            .appendValue(difference)
+                            .appendText(" absolute and ")
+                            .appendValue(difference / FastMath.abs(expected))
+                            .appendText(" relative");
+                    return false;
+                }
+                return true;
+            }
+        };
     }
 
     /**

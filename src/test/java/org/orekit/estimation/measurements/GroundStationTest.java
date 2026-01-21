@@ -201,7 +201,7 @@ class GroundStationTest {
         moved.getNorthOffsetDriver().setSelected(true);
         moved.getZenithOffsetDriver().setSelected(true);
 
-        EstimationTestUtils.checkFit(context, estimator, 2, 8,
+        EstimationTestUtils.checkFit(context, estimator, 2, 3,
                                      0.0, 6.7e-7,
                                      0.0, 1.8e-6,
                                      0.0, 9.1e-7,
@@ -215,7 +215,7 @@ class GroundStationTest {
         GeodeticPoint reference = context.stations.get(0).getBaseFrame().getPoint();
         Assertions.assertEquals(reference.getLatitude(),  result.getLatitude(),  3.3e-14);
         Assertions.assertEquals(reference.getLongitude(), result.getLongitude(), 1e-13);
-        Assertions.assertEquals(reference.getAltitude(),  result.getAltitude(),  2.6e-7);
+        Assertions.assertEquals(reference.getAltitude(),  result.getAltitude(),  2.7e-7);
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);

@@ -16,12 +16,14 @@
  */
 package org.orekit.forces;
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
+import org.orekit.OrekitMatchers;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -157,6 +159,8 @@ public abstract class AbstractLegacyForceModelTest extends AbstractForceModelTes
     }
 
     private void checkdFdP(final Vector3D reference, final Vector3D result, final double checkTolerance) {
+        MatcherAssert.assertThat(result,
+                OrekitMatchers.vectorCloseTo(reference, Precision.SAFE_MIN, checkTolerance));
         if (reference.getNorm() == 0) {
             // if dF/dP is exactly zero (i.e. no dependency between F and P),
             // then the result should also be exactly zero

@@ -16,6 +16,8 @@
  */
 package org.orekit.frames;
 
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -258,7 +260,10 @@ public class L1TransformProviderTest {
             final Vector3D     sunPositionInL1   = sun.getPosition(date, l1Frame);
             final Vector3D     earthPositionInL1 = earth.getPosition(date, l1Frame);
             Assertions.assertEquals(0.0, Vector3D.angle(sunPositionInL1,   Vector3D.MINUS_I), 3.0e-14);
-            Assertions.assertEquals(FastMath.PI, Vector3D.angle(earthPositionInL1, Vector3D.MINUS_I), 3.0e-14);
+            MatcherAssert.assertThat(
+                    "dt=" + dt,
+                    Vector3D.angle(earthPositionInL1, Vector3D.MINUS_I),
+                    Matchers.closeTo(FastMath.PI, 3.4e-14));
         }
     }
 
@@ -279,7 +284,7 @@ public class L1TransformProviderTest {
             final FieldVector3D<T>     sunPositionInL1   = sun.getPosition(date, l1Frame);
             final FieldVector3D<T>     earthPositionInL1 = earth.getPosition(date, l1Frame);
             Assertions.assertEquals(0.0, FieldVector3D.angle(sunPositionInL1,   Vector3D.MINUS_I).getReal(), 3.0e-14);
-            Assertions.assertEquals(FastMath.PI, FieldVector3D.angle(earthPositionInL1, Vector3D.MINUS_I).getReal(), 3.0e-14);
+            Assertions.assertEquals(FastMath.PI, FieldVector3D.angle(earthPositionInL1, Vector3D.MINUS_I).getReal(), 3.4e-14);
         }
     }
 

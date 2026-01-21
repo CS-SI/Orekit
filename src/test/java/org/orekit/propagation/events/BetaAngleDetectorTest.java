@@ -18,6 +18,8 @@ package org.orekit.propagation.events;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
@@ -95,7 +97,9 @@ public class BetaAngleDetectorTest {
         propagator.addEventDetector(detector);
         
         final SpacecraftState state = propagator.propagate(date, date.shiftedBy(30 * 86400));
-        assertEquals(1883928.588393031, state.getDate().durationFrom(date), 1e-9);
+        // expected value was 1883928.588393031 before fixing CelestialBody time
+        MatcherAssert.assertThat(state.getDate().durationFrom(date),
+                Matchers.closeTo(1883928.588771722, 1e-9));
 
         assertEquals(0, BetaAngleDetector.calculateBetaAngle(state, propagator), 1e-9);
     }
