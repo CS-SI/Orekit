@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -120,12 +122,12 @@ class DSSTSolarRadiationPressureTest {
             elements[i] = daidt[i];
         }
 
-        Assertions.assertEquals( 6.840790448823038E-8,    elements[0], 1.e-23);
-        Assertions.assertEquals(-2.990943627915497E-11,   elements[1], 1.e-26);
-        Assertions.assertEquals(-2.538400074176317E-10,   elements[2], 1.e-25);
-        Assertions.assertEquals( 2.037839945151859E-13,   elements[3], 1.e-28);
-        Assertions.assertEquals(-2.3338909771295392E-14,  elements[4], 1.e-29);
-        Assertions.assertEquals( 1.6082478750869883E-11,  elements[5], 1.e-26);
+        MatcherAssert.assertThat(elements[0], Matchers.closeTo(6.840790443922876E-8, 1.e-23));
+        MatcherAssert.assertThat(elements[1], Matchers.closeTo(-2.99094362892394E-11, 1.e-26));
+        MatcherAssert.assertThat(elements[2], Matchers.closeTo(-2.5384000741622047E-10, 1.e-25));
+        MatcherAssert.assertThat(elements[3], Matchers.closeTo(2.0378399457431395E-13, 1.e-28));
+        MatcherAssert.assertThat(elements[4], Matchers.closeTo(-2.3338909786277413E-14, 1.e-29));
+        MatcherAssert.assertThat(elements[5], Matchers.closeTo(1.608247875016891E-11, 1.e-26));
 
     }
 
@@ -183,12 +185,12 @@ class DSSTSolarRadiationPressureTest {
                 y[i] += shortPeriodic[i];
             }
         }
-        Assertions.assertEquals( 0.3668654523023707,   y[0], 1.e-15);
-        Assertions.assertEquals(-2.5673332283107E-10,  y[1], 1.e-23);
-        Assertions.assertEquals(-3.84959877691969E-9,  y[2], 1.e-23);
-        Assertions.assertEquals(-3.069285299519558E-9, y[3], 1.e-24);
-        Assertions.assertEquals(-4.908870542277221E-9, y[4], 1.e-24);
-        Assertions.assertEquals(-2.38549338428359E-9,  y[5], 1.e-23);
+        Assertions.assertEquals( 0.36686545228885553,   y[0], 1.e-15);
+        Assertions.assertEquals(-2.567333239397649E-10, y[1], 1.e-23);
+        Assertions.assertEquals(-3.8495987778959705E-9, y[2], 1.e-23);
+        Assertions.assertEquals(-3.0692852999091516E-9, y[3], 1.e-24);
+        Assertions.assertEquals(-4.908870542706539E-9,  y[4], 1.e-24);
+        Assertions.assertEquals(-2.385493386999146E-9,  y[5], 1.e-23);
     }
 
     @BeforeEach

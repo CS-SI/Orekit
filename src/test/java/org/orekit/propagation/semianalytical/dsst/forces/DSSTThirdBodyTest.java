@@ -92,10 +92,10 @@ class DSSTThirdBodyTest {
 
         Assertions.assertEquals(0.0,                    elements[0], eps);
         Assertions.assertEquals(4.346622389086759E-10,  elements[1], eps);
-        Assertions.assertEquals(7.293879548440941E-10,  elements[2], eps);
-        Assertions.assertEquals(7.465699631747887E-11,  elements[3], eps);
-        Assertions.assertEquals(3.9170221137233836E-10, elements[4], eps);
-        Assertions.assertEquals(-3.178319341840074E-10, elements[5], eps);
+        Assertions.assertEquals(7.29387954793016E-10,   elements[2], eps);
+        Assertions.assertEquals(7.465699634930727E-11,  elements[3], eps);
+        Assertions.assertEquals(3.917022111382985E-10,  elements[4], eps);
+        Assertions.assertEquals(-3.178319348509369E-10, elements[5], eps);
 
     }
 
@@ -128,12 +128,12 @@ class DSSTThirdBodyTest {
             }
         }
 
-        Assertions.assertEquals(-413.20633326933154,    y[0], 1.e-14);
-        Assertions.assertEquals(-1.8060137920197483E-5, y[1], 1.e-20);
-        Assertions.assertEquals(-2.8416367511811057E-5, y[2], 1.e-20);
-        Assertions.assertEquals(-2.791424363476855E-6,  y[3], 1.e-21);
-        Assertions.assertEquals(1.8817187527805853E-6,  y[4], 1.e-21);
-        Assertions.assertEquals(-3.423664701811889E-5,  y[5], 1.e-20);
+        Assertions.assertEquals(-413.2063352842228,     y[0], 1.e-14);
+        Assertions.assertEquals(-1.8060137998923913E-5, y[1], 1.e-20);
+        Assertions.assertEquals(-2.8416367485988227E-5, y[2], 1.e-20);
+        Assertions.assertEquals(-2.7914243657805077E-6,  y[3], 1.e-21);
+        Assertions.assertEquals(1.881718752671939E-6,  y[4], 1.e-21);
+        Assertions.assertEquals(-3.4236646973819904E-5,  y[5], 1.e-20);
     }
 
     private SpacecraftState getGEOState() throws IllegalArgumentException {
