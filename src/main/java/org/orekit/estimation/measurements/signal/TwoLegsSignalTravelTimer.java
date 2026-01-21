@@ -54,7 +54,7 @@ public class TwoLegsSignalTravelTimer {
      * @param approxRelayDate guess for the relay date
      * @param emitter          signal initial emitter coordinates provider
      * @param approxEmissionDate guess for the emission date
-     * @return ranges on both legs in chronological order (m)
+     * @return delays on both legs in chronological order (s)
      */
     public double[] computeDelays(final Frame frame, final Vector3D receiverPosition, final AbsoluteDate receptionDate,
                                   final PVCoordinatesProvider relay, final AbsoluteDate approxRelayDate,
@@ -74,7 +74,7 @@ public class TwoLegsSignalTravelTimer {
      * @param receptionDate    signal end reception date
      * @param relay            signal relay (initial reception) coordinates provider
      * @param emitter          signal initial emitter coordinates provider
-     * @return ranges on both legs in chronological order (m)
+     * @return delays on both legs in chronological order (s)
      */
     public double[] computeDelays(final Frame frame, final Vector3D receiverPosition, final AbsoluteDate receptionDate,
                                   final PVCoordinatesProvider relay, final PVCoordinatesProvider emitter) {
@@ -95,7 +95,7 @@ public class TwoLegsSignalTravelTimer {
      * @param approxRelayDate  guess for the relay date
      * @param emitter          signal initial emitter coordinates provider
      * @param approxEmissionDate  guess for the emission date
-     * @return ranges on both legs in chronological order (m)
+     * @return delays on both legs in chronological order (s)
      */
     public Gradient[] computeDelays(final Frame frame, final FieldVector3D<Gradient> receiverPosition,
                                     final FieldAbsoluteDate<Gradient> receptionDate,
@@ -118,7 +118,7 @@ public class TwoLegsSignalTravelTimer {
      * @param receptionDate    signal end reception date
      * @param relay            signal relay (initial reception, second emission) coordinates provider
      * @param emitter          signal initial emitter coordinates provider
-     * @return ranges on both legs in chronological order (m)
+     * @return delays on both legs in chronological order (s)
      */
     public Gradient[] computeDelays(final Frame frame, final FieldVector3D<Gradient> receiverPosition,
                                     final FieldAbsoluteDate<Gradient> receptionDate,
