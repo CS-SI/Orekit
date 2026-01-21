@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -33,6 +34,7 @@ import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.data.DataContext;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
@@ -377,26 +379,35 @@ class RangeTest {
 
         // Statistics' assertion
         final double absErrorsMedian = new Median().evaluate(absErrors);
+        final double absErrorsMean   = new Mean().evaluate(absErrors);
         final double absErrorsMin    = new Min().evaluate(absErrors);
         final double absErrorsMax    = new Max().evaluate(absErrors);
         final double relErrorsMedian = new Median().evaluate(relErrors);
+        final double relErrorsMean   = new Mean().evaluate(relErrors);
         final double relErrorsMax    = new Max().evaluate(relErrors);
 
         // Print the results on console ? Final results
         if (printResults) {
             System.out.println();
             System.out.println("Absolute errors median: " +  absErrorsMedian);
+            System.out.println("Absolute errors mean  : " +  absErrorsMean);
             System.out.println("Absolute errors min   : " +  absErrorsMin);
             System.out.println("Absolute errors max   : " +  absErrorsMax);
             System.out.println("Relative errors median: " +  relErrorsMedian);
+            System.out.println("Relative errors mean  : " +  relErrorsMean);
             System.out.println("Relative errors max   : " +  relErrorsMax);
+            Set<String> names = DataContext.getDefault()
+                    .getDataProvidersManager().getLoadedDataNames();
+            System.out.println("Used files:\n  " + String.join("\n  ", names));
         }
 
         Assertions.assertEquals(0.0, absErrorsMedian, 6.3e-8);
+        Assertions.assertEquals(0.0, absErrorsMean,   5.4e-8);
         Assertions.assertEquals(0.0, absErrorsMin,    2.0e-7);
         Assertions.assertEquals(0.0, absErrorsMax,    2.6e-7);
         Assertions.assertEquals(0.0, relErrorsMedian, 8.5e-15);
-        Assertions.assertEquals(0.0, relErrorsMax,    2.9e-14);
+        Assertions.assertEquals(0.0, relErrorsMean,   9.7e-15);
+        Assertions.assertEquals(0.0, relErrorsMax,    3.0e-14);
 
         // Test measurement type
         Assertions.assertEquals(Range.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());

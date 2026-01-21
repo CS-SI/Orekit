@@ -108,6 +108,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
             double gm = forceModel.
                         getParameterDriver(body.getName() + SingleBodyRelativeAttraction.ATTRACTION_COEFFICIENT_SUFFIX).
                         getValue(date);
+            Gradient gmGrad = state.getDate().getField().getZero().add(gm);
 
             // compute bodies separation vectors and squared norm
             final FieldPVCoordinates<Gradient> bodyPV = body.getPVCoordinates(state.getDate(), state.getFrame());
@@ -116,7 +117,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
 
             // compute relative acceleration
             final FieldVector3D<Gradient> satAcc =
-                    new FieldVector3D<>(r2Sat.divide(gm).reciprocal(), satToBody.normalize()).add(bodyPV.getAcceleration());
+                    new FieldVector3D<>(gmGrad.divide(r2Sat), satToBody.normalize()).add(bodyPV.getAcceleration());
             return satAcc;
 
 

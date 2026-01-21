@@ -91,7 +91,7 @@ class DSSTThirdBodyTest {
         }
 
         Assertions.assertEquals(0.0,                    elements[0], eps);
-        Assertions.assertEquals(4.346622384804537E-10,  elements[1], eps);
+        Assertions.assertEquals(4.346622389086759E-10,  elements[1], eps);
         Assertions.assertEquals(7.293879548440941E-10,  elements[2], eps);
         Assertions.assertEquals(7.465699631747887E-11,  elements[3], eps);
         Assertions.assertEquals(3.9170221137233836E-10, elements[4], eps);

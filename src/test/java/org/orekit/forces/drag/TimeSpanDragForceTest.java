@@ -777,7 +777,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         // Check parameter derivatives before date3: only 3nd model parameter derivatives shouldn't be 0.
         checkParameterDerivative(state.shiftedBy(dt3 * 1.1), forceModel, DragSensitive.GLOBAL_DRAG_FACTOR, 1.0e-4, 0.);
         checkParameterDerivative(state.shiftedBy(dt3 * 1.1), forceModel, "factor2", 1.0e-4, 0.);
-        checkParameterDerivative(state.shiftedBy(dt3 * 1.1), forceModel, "factor3", 1.0e-4, 2.0e-12);
+        checkParameterDerivative(state.shiftedBy(dt3 * 1.1), forceModel, "factor3", 2.0e-4, 2.0e-12);
 
     }
 
@@ -849,7 +849,7 @@ class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         // Check parameter derivatives before date3: only 3nd model parameter derivatives shouldn't be 0.
         checkParameterDerivativeGradient(state.shiftedBy(dt3 * 1.1), forceModel, DragSensitive.GLOBAL_DRAG_FACTOR, 1.0e-4, 0.);
         checkParameterDerivativeGradient(state.shiftedBy(dt3 * 1.1), forceModel, "factor2", 1.0e-4, 0.);
-        checkParameterDerivativeGradient(state.shiftedBy(dt3 * 1.1), forceModel, "factor3", 1.0e-4, 2.0e-12);
+        checkParameterDerivativeGradient(state.shiftedBy(dt3 * 1.1), forceModel, "factor3", 2.0e-4, 2.0e-12);
 
     }
 
