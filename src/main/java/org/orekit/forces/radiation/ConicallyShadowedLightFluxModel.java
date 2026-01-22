@@ -175,31 +175,44 @@ public class ConicallyShadowedLightFluxModel extends AbstractSolarLightFluxModel
     /** {@inheritDoc} */
     @Override
     protected double getLightingRatio(final Vector3D position, final Vector3D occultedBodyPosition) {
+        // See Section 3.4.2, Figure 3.8
         final double distanceSun = occultedBodyPosition.getNorm();
         final double squaredDistance = position.getNorm2Sq();
         final Vector3D occultedBodyDirection = occultedBodyPosition.normalize();
         final double s0 = -position.dotProduct(occultedBodyDirection);
         if (s0 > 0.0) {
             final double l = FastMath.sqrt(squaredDistance - s0 * s0);
-            final double sinf2 = (occultedBodyRadius - getOccultingBodyRadius()) / distanceSun;
-            final double l2 = (s0 * sinf2 - getOccultingBodyRadius()) / FastMath.sqrt(1.0 - sinf2 * sinf2);
+            final double occultingBodyRadius = getOccultingBodyRadius();
+            final double sinf2 = (occultedBodyRadius - occultingBodyRadius) / distanceSun;
+            final double l2 = (s0 * sinf2 - occultingBodyRadius) / FastMath.sqrt(1.0 - sinf2 * sinf2);
             if (FastMath.abs(l2) - l >= 0.0) { // umbra
                 return 0.;
             }
-            final double sinf1 = (occultedBodyRadius + getOccultingBodyRadius()) / distanceSun;
-            final double l1 = (s0 * sinf1 + getOccultingBodyRadius()) / FastMath.sqrt(1.0 - sinf1 * sinf1);
+            final double sinf1 = (occultedBodyRadius + occultingBodyRadius) / distanceSun;
+            final double l1 = (s0 * sinf1 + occultingBodyRadius) / FastMath.sqrt(1.0 - sinf1 * sinf1);
             if (l1 - l > 0.0) { // penumbra
                 final Vector3D relativePosition = occultedBodyPosition.subtract(position);
                 final double relativeDistance = relativePosition.getNorm();
                 final double a = FastMath.asin(occultedBodyRadius / relativeDistance);
                 final double a2 = a * a;
                 final double r = FastMath.sqrt(squaredDistance);
-                final double b = FastMath.asin(getOccultingBodyRadius() / r);
-                final double c = FastMath.acos(-(relativePosition.dotProduct(position)) / (r * relativeDistance));
-                final double x = (c * c + a2 - b * b) / (2 * c);
+                final double b = FastMath.asin(occultingBodyRadius / r);
+                final double b2 = b * b;
+                final double c = Vector3D.angle(relativePosition.negate(), position);
+                final double c2 = c * c;
+                final double x = (c2 + a2 - b2) / (2 * c);
+                // expression for (c - x), i.e. BE in Fig 3.8. See #1892
+                final double cMinusX = (c2 + b2 - a2) / (2 * c);
                 final double y = FastMath.sqrt(FastMath.max(0., a2 - x * x));
-                final double arcCosXOverA = FastMath.acos(FastMath.max(-1, x / a));
-                final double intermediate = (arcCosXOverA + (b * b * FastMath.acos((c - x) / b) - c * y) / a2) / FastMath.PI;
+                // ref Figure 3.8
+                final double alpha = FastMath.atan2(y, x);
+                final double beta = FastMath.atan2(y, cMinusX);
+                // equivalent to c*y, see #1892
+                final double triangleArea = FastMath.sqrt(
+                        (-c + a + b) * (c + a - b) * (c - a + b) * (c + a + b)
+                ) / 2;
+                final double intermediate =
+                        (alpha + (b2 * beta - triangleArea) / a2) / FastMath.PI;
                 return 1. - intermediate;
             }
         }
@@ -233,13 +246,21 @@ public class ConicallyShadowedLightFluxModel extends AbstractSolarLightFluxModel
                 final T r = FastMath.sqrt(squaredDistance);
                 final T b = FastMath.asin(r.reciprocal().multiply(getOccultingBodyRadius()));
                 final T b2 = b.square();
-                final T c = FastMath.acos((relativePosition.dotProduct(position).negate()).divide(r.multiply(relativeDistance)));
-                final T x = (c.square().add(a2).subtract(b2)).divide(c.multiply(2));
+                final T c = FieldVector3D.angle(relativePosition.negate(), position);
+                final T c2 = c.square();
+                final T x = (c2.add(a2).subtract(b2)).divide(c.multiply(2));
                 final T x2 = x.square();
+                final T cMinusX = (c2.add(b2).subtract(a2)).divide(c.multiply(2));
                 final T y = (a2.getReal() - x2.getReal() <= 0) ? s0.getField().getZero() : FastMath.sqrt(a2.subtract(x2));
-                final T arcCosXOverA = (x.getReal() / a.getReal() < -1) ? s0.getPi().negate() : FastMath.acos(x.divide(a));
-                final T intermediate = arcCosXOverA.add(((b2.multiply(FastMath.acos((c.subtract(x)).divide(b))))
-                        .subtract(c.multiply(y))).divide(a2));
+                final T alpha = y.atan2(x);
+                final T beta = y.atan2(cMinusX);
+                final T triangleArea = c.negate().add(a).add(b)
+                        .multiply(c.add(a).subtract(b))
+                        .multiply(c.subtract(a).add(b))
+                        .multiply(c.add(a).add(b))
+                        .sqrt().divide(2);
+                final T intermediate = alpha.add(((b2.multiply(beta))
+                        .subtract(triangleArea)).divide(a2));
                 return intermediate.divide(-FastMath.PI).add(1);
             }
         }
