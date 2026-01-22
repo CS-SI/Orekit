@@ -130,6 +130,43 @@ direct work is done on this branch. It is updated only by merging either
 release branches or bugfix branches branches to it.
 
 
+## Test and Validation
+
+When implementing a feature, developers must set up validation tests. If possible, these
+tests should contain reference values that can relied upon and come from available published
+references (papers, other known reference software…). Sometimes, however, it is impossible to
+include such reference values. This might happen when the Orekit team simply doesn't have access
+to them, or when they have access but are not allowed to publish them.
+
+When developers attempt to validate their code, it is done by various means. Reviewing the code
+itself is one mean, but other means imply developping and running tests. Then developers check
+the result values against references when available, but also check behavior when values changes,
+check against order of magnitudes against other models or different implementations (like using
+both finite differences and algorithmic differentiation for example). At the end, developers are
+convinced their implementation is correct. When this stage is achieved, the tests change nature.
+Prior to that, they were considered to be validation tests, after that, they become non-regression
+tests. As they become non-regression tests, the output results from one Orekit run can be printed
+and saved to serve as reference values with an intentionally very small tolerance allowed for the
+test to pass. This tolerance is often set far below the real accuracy of the implementation (we
+have tests with positions checked at micrometer level for example), but this is intentional. The
+intent of these very small tolerances is that when later evolution of the code change the values
+Orekit computes, then the test will fail (even for millimeter-level changes). When this occurs,
+the developers responsible for the evolution will be warned something changed and the test should be
+once again assessed by a human mind. The developers must convince themselves again that the change
+is fine, it is in practice a new iteration of validation. When the human decision to accept the new
+test results is made, the developers can either change the tolerance of the test, admitting it
+was really too stringent in the first place and future code evolution should be allowed to change
+slightly the results, or they can change the reference value itself with a new truth value that is
+produced by the changed Orekit version. The test becomes a non-regression test again.
+
+This is of course not perfect, and sometimes one cannot be really sure if the test should pass or not.
+We are human, and we make human errors. But this process has proven OK in many cases. For the record,
+in at least one occurrence (related to the yaw compensation attitude model), a test started to fail at
+millimeter level, which was physically well below the real accuracy of the model. This indeed forced
+the developer to review the change and finally discover there was indeed a small computation bug. The
+bug was fixed and the test that had a reference value computed by other means and a millimeter-level
+could in fact be kept as is, as it passed with the fixed implementation.
+
 ## Style Rules
 
 For reading ease and consistency, the existing code style should be preserved
