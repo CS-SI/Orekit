@@ -43,6 +43,7 @@ import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.Frame;
@@ -507,6 +508,54 @@ public class BoxAndSolarArraySpacecraftTest {
             Assertions.assertEquals(0.0, Vector3D.distance(aDrag, aDragF.toVector3D()), Precision.EPSILON);
             Assertions.assertEquals(0.0, Vector3D.distance(aSrp,  aSrpF.toVector3D()), Precision.EPSILON);
         }
+    }
+
+    @Test
+    void testWrongEvenFacets() {
+        try {
+            new BoxAndSolarArraySpacecraft(12, 2.0, CelestialBodyFactory.getSun(), 0.5, 0.5, 0.4, 0.6);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.NUMBER_OF_FACETS_NOT_ODD, oe.getSpecifier());
+            Assertions.assertEquals(12, (Integer) oe.getParts()[0]);
+        }
+    }
+
+    @Test
+    void testDiscoBallSmall() {
+        doTestDiscoBallN(7, 1.1703, 1.1718);
+    }
+
+    @Test
+    void testDiscoBallMedium() {
+        doTestDiscoBallN(99, 0.3106, 0.3447);
+    }
+
+    @Test
+    void testDiscoBallLarge() {
+        // 6765 is Fibonacci number F₂₀
+        doTestDiscoBallN(6765, 0.0376, 0.0428);
+    }
+
+    private void doTestDiscoBallN(final int n, final double closestMin, final double closestMax) {
+        final SpacecraftState state = propagator.getInitialState();
+        final BoxAndSolarArraySpacecraft shape =
+                new BoxAndSolarArraySpacecraft(n, 1.0, CelestialBodyFactory.getSun(), 0.5, 0.5, 0.4, 0.6);
+        Assertions.assertEquals(n, shape.getPanels().size());
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+        for (final Panel pA : shape.getPanels()) {
+            double close = Double.POSITIVE_INFINITY;
+            for (final Panel pB : shape.getPanels()) {
+                if (pB != pA) {
+                    close = FastMath.min(close, Vector3D.distance(pA.getNormal(state), pB.getNormal(state)));
+                }
+            }
+            min = FastMath.min(min, close);
+            max = FastMath.max(max, close);
+        }
+        Assertions.assertEquals(closestMin, min, 1.0e-4);
+        Assertions.assertEquals(closestMax, max, 1.0e-4);
     }
 
     /** Get drag parameters as double[]. */

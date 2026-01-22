@@ -20,6 +20,10 @@
   </properties>
   <body>
     <release version="14.0" date="TBD" description="TBD">
+        <action dev="luc" type="add" issue="issue-1896">
+            Allow to build simply a Starlette or Lageos type shape without wings
+            for BoxAndSolarArray (aka disco ball).
+        </action>
         <action dev="serrof" type="add" issue="issue-1888">
             Add plane crossing event function and detector.
         </action>

@@ -970,10 +970,13 @@ INVALID_FORMAT=format invalide : taille = {0}, précision = {1}
 OUTPUT_ALREADY_CLOSED=la sortie {0} a déjà été fermée
 
 # Householder solver failed to converge after {0} iterations
-LAMBERT_HOUSEHOLDER_DID_NOT_CONVERGE=
+LAMBERT_HOUSEHOLDER_DID_NOT_CONVERGE=échec de convergence après {0} itérations dans le solveur de Householder
 
 # correction of perturbed Lambert solution failed to converge after {0} iterations
-LAMBERT_CORRECTION_DID_NOT_CONVERGE=
+LAMBERT_CORRECTION_DID_NOT_CONVERGE=échec de convergence après {0} itérations dans la correction de la solution de Lambert perturbée
 
 # invalid number of revolutions {0} for Lambert problem, a maximum of {1} is possible with the given time of flight
-LAMBERT_INVALID_NUMBER_OF_REVOLUTIONS=
+LAMBERT_INVALID_NUMBER_OF_REVOLUTIONS=nombre de révolutions {0} invalide, le nombre maximum est de 1} pour cette durée de transfert
+
+# invalid number of facets: {0}, it must be an odd number
+NUMBER_OF_FACETS_NOT_ODD={0} facettes est un nombre invalide, le nombre de facettes doit être impair

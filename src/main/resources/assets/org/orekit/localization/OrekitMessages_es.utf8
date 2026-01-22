@@ -977,3 +977,6 @@ LAMBERT_CORRECTION_DID_NOT_CONVERGE=la corrección de la solución de Lambert pe
 
 # invalid number of revolutions {0} for Lambert problem, a maximum of {1} is possible with the given time of flight
 LAMBERT_INVALID_NUMBER_OF_REVOLUTIONS=número de revoluciones {0} inválido para el problema de Lambert, un máximo de {1} es posible con el tiempo de vuelo especificado
+
+# invalid number of facets: {0}, it must be an odd number
+NUMBER_OF_FACETS_NOT_ODD=
