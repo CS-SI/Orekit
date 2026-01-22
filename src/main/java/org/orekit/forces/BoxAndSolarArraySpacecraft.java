@@ -163,7 +163,6 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * </p>
      * @param n number of facets (<em>must</em> be an odd number)
      * @param diameter diameter of the spherical body
-     * @param sun sun model
      * @param dragCoeff drag coefficient for each facet (used only for drag)
      * @param liftRatio lift ratio for each facet (proportion between 0 and 1 of atmosphere modecules
      * that will experience specular reflection when hitting spacecraft instead
@@ -178,10 +177,9 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @since 14.0
      */
     public BoxAndSolarArraySpacecraft(final int n, final double diameter,
-                                      final ExtendedPositionProvider sun,
                                       final double dragCoeff, final double liftRatio,
                                       final double absorptionCoeff, final double reflectionCoeff) {
-        this(buildDiscoBall(n, diameter, sun, dragCoeff, liftRatio, absorptionCoeff, reflectionCoeff));
+        this(buildDiscoBall(n, diameter, dragCoeff, liftRatio, absorptionCoeff, reflectionCoeff));
     }
 
     /** Get the panels composing the body.
@@ -455,7 +453,6 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
     /** Build the panels of a disco ball.
      * @param n number of facets (<em>must</em> be an odd number)
      * @param diameter diameter of the spherical body
-     * @param sun sun model
      * @param dragCoeff drag coefficient for each facet (used only for drag)
      * @param liftRatio lift ratio for each facet (proportion between 0 and 1 of atmosphere modecules
      * that will experience specular reflection when hitting spacecraft instead
@@ -470,7 +467,6 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @since 14.0
      */
     public static List<Panel> buildDiscoBall(final int n, final double diameter,
-                                             final ExtendedPositionProvider sun,
                                              final double dragCoeff, final double liftRatio,
                                              final double absorptionCoeff, final double reflectionCoeff) {
 
