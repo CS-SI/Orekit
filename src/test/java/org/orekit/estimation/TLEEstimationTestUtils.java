@@ -245,12 +245,6 @@ public class TLEEstimationTestUtils {
         final Vector3D estimatedPosition = estimatedOrbit.getPosition();
         final Vector3D estimatedVelocity = estimatedOrbit.getVelocity();
 
-        Assertions.assertEquals(iterations, estimator.getIterationsCount());
-        Assertions.assertEquals(evaluations, estimator.getEvaluationsCount());
-        Optimum optimum = estimator.getOptimum();
-        Assertions.assertEquals(iterations, optimum.getIterations());
-        Assertions.assertEquals(evaluations, optimum.getEvaluations());
-
         int    k   = 0;
         double sum = 0;
         double max = 0;
@@ -269,18 +263,38 @@ public class TLEEstimationTestUtils {
                 max = FastMath.max(max, FastMath.abs(weightedResidual));
             }
         }
+        final double rms = FastMath.sqrt(sum / k);
+        final double deltaPos =
+                Vector3D.distance(initialOrbit.getPosition(), estimatedPosition);
+        final double deltaVel =
+                Vector3D.distance(initialOrbit.getVelocity(), estimatedVelocity);
 
+        boolean print = false;
+        if (print) {
+            System.out.format("%25s %25s %25s %25s\n", "", "Actual", "Expected", "Tolerance");
+            System.out.format("%25s %25d %25d %25d\n", "iterations", estimator.getIterationsCount(), iterations, 0);
+            System.out.format("%25s %25d %25d %25d\n", "evaluations", estimator.getEvaluationsCount(), evaluations, 0);
+            System.out.format("%25s %25e %25e %25e\n", "RMS", rms, expectedRMS, rmsEps);
+            System.out.format("%25s %25e %25e %25e\n", "DeltaPos", deltaPos, expectedDeltaPos, posEps);
+            System.out.format("%25s %25e %25e %25e\n", "DeltaVel", deltaVel, expectedDeltaVel, velEps);
+        }
+
+        Assertions.assertEquals(iterations, estimator.getIterationsCount());
+        Assertions.assertEquals(evaluations, estimator.getEvaluationsCount());
+        Optimum optimum = estimator.getOptimum();
+        Assertions.assertEquals(iterations, optimum.getIterations());
+        Assertions.assertEquals(evaluations, optimum.getEvaluations());
         Assertions.assertEquals(expectedRMS,
-                            FastMath.sqrt(sum / k),
+                            rms,
                             rmsEps);
         Assertions.assertEquals(expectedMax,
                             max,
                             maxEps);
         Assertions.assertEquals(expectedDeltaPos,
-                            Vector3D.distance(initialOrbit.getPosition(), estimatedPosition),
+                            deltaPos,
                             posEps);
         Assertions.assertEquals(expectedDeltaVel,
-                            Vector3D.distance(initialOrbit.getVelocity(), estimatedVelocity),
+                            deltaVel,
                             velEps);
 
     }
