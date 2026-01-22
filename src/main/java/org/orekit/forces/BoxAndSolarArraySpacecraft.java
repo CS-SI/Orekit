@@ -25,10 +25,13 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.spherical.twod.S2Point;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -76,13 +79,18 @@ import org.orekit.utils.ParameterDriver;
  */
 public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensitive {
 
+    /** Inverse of Fibonacci golden ratio.
+     * @since 14.0
+     */
+    private static final double INV_PHI = (1 + FastMath.sqrt(5.0)) * 0.5 - 1.0;
+
     /** Parameters scaling factor.
      * <p>
      * We use a power of 2 to avoid numeric noise introduction
      * in the multiplications/divisions sequences.
      * </p>
      */
-    private final double SCALE = FastMath.scalb(1.0, -3);
+    private static final double SCALE = FastMath.scalb(1.0, -3);
 
     /** Driver for drag multiplicative factor parameter. */
     private final ParameterDriver dragFactorParameterDriver;
@@ -145,6 +153,33 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         this(buildPanels(xLength, yLength, zLength,
                          sun, solarArrayArea, solarArrayAxis,
                          dragCoeff, liftRatio, absorptionCoeff, reflectionCoeff));
+    }
+
+    /** Build a spacecraft model in the shape of a disco ball.
+     * <p>
+     * This shape is intended either for comparison with isotropic models or as a model
+     * for geodesy satellites like Starlette or Lageos. All facets are fixed, there are
+     * no solar arrays. The facets are arranged in a spiral that attempts to preserve area.
+     * </p>
+     * @param n number of facets (<em>must</em> be an odd number)
+     * @param diameter diameter of the spherical body
+     * @param dragCoeff drag coefficient for each facet (used only for drag)
+     * @param liftRatio lift ratio for each facet (proportion between 0 and 1 of atmosphere modecules
+     * that will experience specular reflection when hitting spacecraft instead
+     * of experiencing diffuse reflection, hence producing lift)
+     * @param absorptionCoeff absorption coefficient between 0.0 an 1.0
+     * for each facet (used only for radiation pressure)
+     * @param reflectionCoeff specular reflection coefficient between 0.0 an 1.0
+     * for each facet (used only for radiation pressure)
+     * @see <a href="https://www.researchgate.net/publication/45891871_Measurement_of_Areas_on_a_Sphere_Using_Fibonacci_and_Latitude-Longitude_Lattices">
+     * Measurement of Areas on a Sphere Using Fibonacci and Latitude, Álvaro González, January 2010,
+     * Mathematical Geosciences 42(1):49-64,  DOI: 10.1007/s11004-009-9257-x</a>
+     * @since 14.0
+     */
+    public BoxAndSolarArraySpacecraft(final int n, final double diameter,
+                                      final double dragCoeff, final double liftRatio,
+                                      final double absorptionCoeff, final double reflectionCoeff) {
+        this(buildDiscoBall(n, diameter, dragCoeff, liftRatio, absorptionCoeff, reflectionCoeff));
     }
 
     /** Get the panels composing the body.
@@ -410,6 +445,48 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
 
         // solar array
         panels.add(new PointingPanel(solarArrayAxis, sun, solarArrayArea, drag, liftRatio, absorption, reflection));
+
+        return panels;
+
+    }
+
+    /** Build the panels of a disco ball.
+     * @param n number of facets (<em>must</em> be an odd number)
+     * @param diameter diameter of the spherical body
+     * @param dragCoeff drag coefficient for each facet (used only for drag)
+     * @param liftRatio lift ratio for each facet (proportion between 0 and 1 of atmosphere modecules
+     * that will experience specular reflection when hitting spacecraft instead
+     * of experiencing diffuse reflection, hence producing lift)
+     * @param absorptionCoeff absorption coefficient between 0.0 an 1.0
+     * for each facet (used only for radiation pressure)
+     * @param reflectionCoeff specular reflection coefficient between 0.0 an 1.0
+     * for each facet (used only for radiation pressure)
+     * @return panels for the complete ball
+     * @see <a href="https://www.researchgate.net/publication/45891871_Measurement_of_Areas_on_a_Sphere_Using_Fibonacci_and_Latitude-Longitude_Lattices">
+     * Measurement of Areas on a Sphere Using Fibonacci and Latitude, Álvaro González, January 2010,
+     * Mathematical Geosciences 42(1):49-64,  DOI: 10.1007/s11004-009-9257-x</a>
+     * @since 14.0
+     */
+    public static List<Panel> buildDiscoBall(final int n, final double diameter,
+                                             final double dragCoeff, final double liftRatio,
+                                             final double absorptionCoeff, final double reflectionCoeff) {
+
+        if (n % 2 != 1) {
+            throw new OrekitException(OrekitMessages.NUMBER_OF_FACETS_NOT_ODD, n);
+        }
+
+        // prepare facets list
+        final List<Panel> panels = new ArrayList<>(n);
+        final double area = FastMath.PI * diameter * diameter / n;
+
+        final int p = (n - 1) / 2;
+        final double polarStep = 2.0 / n;
+        for (int i = -p; i <= p; ++i) {
+            final double   polarAngle     = MathUtils.SEMI_PI - FastMath.asin(i * polarStep);
+            final double   azimuthalAngle = MathUtils.TWO_PI * i * INV_PHI;
+            final Vector3D normal         = new S2Point(azimuthalAngle, polarAngle).getVector();
+            panels.add(new FixedPanel(normal, area, false, dragCoeff, liftRatio, absorptionCoeff, reflectionCoeff));
+        }
 
         return panels;
 
