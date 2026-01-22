@@ -480,11 +480,10 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
 
         final int p = (n - 1) / 2;
         final double polarStep = 2.0 / n;
-        double azimuthalAngle = 0;
         for (int i = -p; i <= p; ++i) {
-            final double polarAngle = MathUtils.SEMI_PI - FastMath.asin(i * polarStep);
-            azimuthalAngle = MathUtils.normalizeAngle(MathUtils.TWO_PI * i * INV_PHI, azimuthalAngle);
-            final Vector3D normal = new S2Point(azimuthalAngle, polarAngle).getVector();
+            final double   polarAngle     = MathUtils.SEMI_PI - FastMath.asin(i * polarStep);
+            final double   azimuthalAngle = MathUtils.TWO_PI * i * INV_PHI;
+            final Vector3D normal         = new S2Point(azimuthalAngle, polarAngle).getVector();
             panels.add(new FixedPanel(normal, area, false, dragCoeff, liftRatio, absorptionCoeff, reflectionCoeff));
         }
 

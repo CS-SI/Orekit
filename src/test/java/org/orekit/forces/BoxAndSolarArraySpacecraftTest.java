@@ -78,8 +78,7 @@ public class BoxAndSolarArraySpacecraftTest {
         final double tol = 1.0e-15;
 
         // build box
-        List<Panel> box = BoxAndSolarArraySpacecraft.buildBox(1.5, 3.5, 2.5,
-            drag, lift, abso, refl);
+        List<Panel> box = BoxAndSolarArraySpacecraft.buildBox(1.5, 3.5, 2.5, drag, lift, abso, refl);
 
         // check
         for (Panel panel : box) {
