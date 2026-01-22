@@ -461,6 +461,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * for each facet (used only for radiation pressure)
      * @param reflectionCoeff specular reflection coefficient between 0.0 an 1.0
      * for each facet (used only for radiation pressure)
+     * @return panels for the complete ball
      * @see <a href="https://www.researchgate.net/publication/45891871_Measurement_of_Areas_on_a_Sphere_Using_Fibonacci_and_Latitude-Longitude_Lattices">
      * Measurement of Areas on a Sphere Using Fibonacci and Latitude, Álvaro González, January 2010,
      * Mathematical Geosciences 42(1):49-64,  DOI: 10.1007/s11004-009-9257-x</a>
