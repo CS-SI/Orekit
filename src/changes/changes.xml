@@ -20,7 +20,10 @@
   </properties>
   <body>
     <release version="13.1.3" date="TBD" description="Orekit 13.1.3 is a patch release.">
-       <action dev="evan" type="fix" issue="1891">
+      <action dev="evan" type="fix" issue="1892">
+          Fix NaN in ConicallyShadowedLightFluxModel.
+      </action>
+        <action dev="evan" type="fix" issue="1891">
           Improve time accuracy in CelestialBodies.
       </action>
       <action dev="vcucchie" type="fix" issue="1878">

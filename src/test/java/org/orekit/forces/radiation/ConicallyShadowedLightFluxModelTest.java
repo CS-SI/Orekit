@@ -1,8 +1,16 @@
 package org.orekit.forces.radiation;
 
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
+import org.hipparchus.Field;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
+import org.hipparchus.dfp.Dfp;
+import org.hipparchus.dfp.DfpField;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.BigReal;
+import org.hipparchus.util.BigRealField;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -126,6 +134,63 @@ class ConicallyShadowedLightFluxModelTest {
             final double expectedRatio = radiationPressure.getLightingRatio(state);
             Assertions.assertEquals(expectedRatio, fluxModel.getLightingRatio(state), 1e-6);
         }
+    }
+
+    /**
+     * Check for NaN in case discovered when running RadiationPressureModelTest.
+     * This case causes numerical issues because the Sun is almost entirely
+     * occulted. The remaining area is computed as 1 - (occulted area) which
+     * causes catastrophic cancellation in this case. Computing the occulted
+     * area is further problematic because it sums two quantities that are
+     * almost the same magnitude, but with opposite signs. Even in extended
+     * precision, changing nominally equivalent expressions can produce a
+     * negative (infeasible) result. For example, computing an angle with acos
+     * instead of atan2.
+     */
+    @Test
+    public void testGetLightingRatioNan() {
+        // setup
+        final ConicallyShadowedLightFluxModel model = new ConicallyShadowedLightFluxModel(
+                1.0205062355092827E17,
+                6.957E8,
+                null,
+                6378136.3);
+        final Vector3D position = new Vector3D(
+                4634793.393351071,
+                6979388.527107593,
+                0.1946021760969457);
+        final Vector3D occultedBodyPosition = new Vector3D(
+                2.6535624002170452E10,
+                -1.3275125037266681E11,
+                -5.755404493076553E10);
+        // value was computed with extended precision below.
+        // Though I don't trust it, making some mathematically allowable
+        // transformations gives different, even negative results.
+        final double expected = 7.0542775362244865347040611195042e-21;
+
+        // action
+        double actual = model.getLightingRatio(position, occultedBodyPosition);
+
+        // verify
+        MatcherAssert.assertThat(actual, Matchers.greaterThan(0.0));
+        MatcherAssert.assertThat(actual, Matchers.closeTo(expected, 1e-5));
+
+        // now for the field version
+        Field<Dfp> field = new DfpField(50);
+        FieldVector3D<Dfp> fieldPosition = new FieldVector3D<>(field, position);
+        FieldVector3D<Dfp> fieldOccultedBodyPosition =
+                new FieldVector3D<>(field, occultedBodyPosition);
+        Dfp fieldActual = model.getLightingRatio(
+                fieldPosition,
+                fieldOccultedBodyPosition);
+        MatcherAssert.assertThat(
+                fieldActual.toString(),
+                fieldActual.greaterThan(field.getZero()),
+                Matchers.is(true));
+        MatcherAssert.assertThat(
+                fieldActual.toString(),
+                fieldActual.toDouble(),
+                Matchers.closeTo(expected, 1e-25));
     }
 
 }
