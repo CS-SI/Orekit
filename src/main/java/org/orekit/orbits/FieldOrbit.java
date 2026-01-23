@@ -506,7 +506,8 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
     public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> otherDate,
                                                              final Frame otherFrame) {
         final TimeOffset timeOffset = otherDate.toAbsoluteDate().accurateDurationFrom(getDate().toAbsoluteDate());
-        return shiftedBy(timeOffset).getPVCoordinates(otherFrame);
+        final T          fieldShift = otherDate.durationFrom(getDate()).subtract(timeOffset.toDouble());
+        return shiftedBy(timeOffset).shiftedBy(fieldShift).getPVCoordinates(otherFrame);
     }
 
     /** {@inheritDoc} */
