@@ -446,8 +446,8 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     @Override
-    public FieldOrbit<T> shiftedBy(final TimeOffset dt) {
-        final FieldPVCoordinates<T> shiftedPV = shiftPV(getField().getOne().multiply(dt.toDouble()));
+    public FieldCartesianOrbit<T> shiftedBy(final TimeOffset dt) {
+        final FieldPVCoordinates<T> shiftedPV  = shiftPV(getField().getOne().newInstance(dt.toDouble()));
         return new FieldCartesianOrbit<>(shiftedPV, getFrame(), getDate().shiftedBy(dt), getMu());
     }
 
