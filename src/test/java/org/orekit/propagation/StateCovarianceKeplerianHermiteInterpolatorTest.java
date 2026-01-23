@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.CelestialBody;
@@ -812,12 +813,12 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
             System.out.format(Locale.US, "%35s = %20.12f%n", "relativeRMSSigmaError[1].getMax", relativeRMSSigmaError[1].getMax());
 
         }
-        assertEquals( 0.081480745610, relativeRMSSigmaError[0].getMean(), tolerance);
-        assertEquals(19.410354129217, relativeRMSSigmaError[1].getMean(), tolerance);
-        assertEquals( 0.084585943748, relativeRMSSigmaError[0].getPercentile(50), tolerance);
-        assertEquals(14.968741953217, relativeRMSSigmaError[1].getPercentile(50), tolerance);
-        assertEquals( 0.165222304428, relativeRMSSigmaError[0].getMax(), tolerance);
-        assertEquals(75.482690533794, relativeRMSSigmaError[1].getMax(), 3 * tolerance);
+        Assertions.assertEquals( 0.081480745610, relativeRMSSigmaError[0].getMean(), tolerance);
+        Assertions.assertEquals(19.410354129217, relativeRMSSigmaError[1].getMean(), tolerance);
+        Assertions.assertEquals( 0.084585943748, relativeRMSSigmaError[0].getPercentile(50), tolerance);
+        Assertions.assertEquals(14.968741953217, relativeRMSSigmaError[1].getPercentile(50), tolerance);
+        Assertions.assertEquals( 0.165222304428, relativeRMSSigmaError[0].getMax(), tolerance);
+        Assertions.assertEquals(75.482690533794, relativeRMSSigmaError[1].getMax(), 3 * tolerance);
     }
 
     @Test
@@ -826,7 +827,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
         // GIVEN
 
         // Define mock orbit interpolator
-        final TimeInterpolator<Orbit> orbitInterpolator = mock(TimeInterpolator.class);
+        final TimeInterpolator<Orbit> orbitInterpolator = Mockito.mock(TimeInterpolator.class);
 
 
         // Define covariance interpolator
@@ -837,7 +838,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
         final List<TimeInterpolator<?>> subInterpolators = interpolator.getSubInterpolators();
 
         // THEN
-        assertEquals(1, subInterpolators.size());
-        assertEquals(orbitInterpolator, subInterpolators.get(0));
+        Assertions.assertEquals(1, subInterpolators.size());
+        Assertions.assertEquals(orbitInterpolator, subInterpolators.get(0));
     }
 }
