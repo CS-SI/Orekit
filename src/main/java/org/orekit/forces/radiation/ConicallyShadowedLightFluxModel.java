@@ -179,95 +179,106 @@ public class ConicallyShadowedLightFluxModel extends AbstractSolarLightFluxModel
     @Override
     protected double getLightingRatio(final Vector3D position, final Vector3D occultedBodyPosition) {
         // See Section 3.4.2, Figure 3.8
-        final double distanceSun = occultedBodyPosition.getNorm();
-        final double squaredDistance = position.getNormSq();
-        final Vector3D occultedBodyDirection = occultedBodyPosition.normalize();
-        final double s0 = -position.dotProduct(occultedBodyDirection);
-        if (s0 > 0.0) {
-            final double l = FastMath.sqrt(squaredDistance - s0 * s0);
-            final double occultingBodyRadius = getOccultingBodyRadius();
-            final double sinf2 = (occultedBodyRadius - occultingBodyRadius) / distanceSun;
-            final double l2 = (s0 * sinf2 - occultingBodyRadius) / FastMath.sqrt(1.0 - sinf2 * sinf2);
-            if (FastMath.abs(l2) - l >= 0.0) { // umbra
-                return 0.;
-            }
-            final double sinf1 = (occultedBodyRadius + occultingBodyRadius) / distanceSun;
-            final double l1 = (s0 * sinf1 + occultingBodyRadius) / FastMath.sqrt(1.0 - sinf1 * sinf1);
-            if (l1 - l > 0.0) { // penumbra
-                final Vector3D relativePosition = occultedBodyPosition.subtract(position);
-                final double relativeDistance = relativePosition.getNorm();
-                final double a = FastMath.asin(occultedBodyRadius / relativeDistance);
-                final double a2 = a * a;
-                final double r = FastMath.sqrt(squaredDistance);
-                final double b = FastMath.asin(occultingBodyRadius / r);
-                final double b2 = b * b;
-                final double c = Vector3D.angle(relativePosition.negate(), position);
-                final double c2 = c * c;
-                final double x = (c2 + a2 - b2) / (2 * c);
-                // expression for (c - x), i.e. BE in Fig 3.8. See #1892
-                final double cMinusX = (c2 + b2 - a2) / (2 * c);
-                final double y = FastMath.sqrt(FastMath.max(0., a2 - x * x));
-                // ref Figure 3.8
-                final double alpha = FastMath.atan2(y, x);
-                final double beta = FastMath.atan2(y, cMinusX);
-                // equivalent to c*y, see #1892
-                final double triangleArea = FastMath.sqrt(
-                        (-c + a + b) * (c + a - b) * (c - a + b) * (c + a + b)
-                ) / 2;
-                final double intermediate =
-                        (alpha + (b2 * beta - triangleArea) / a2) / FastMath.PI;
-                return 1. - intermediate;
-            }
+        final double occultingBodyRadius = getOccultingBodyRadius();
+        final Vector3D relativePosition = occultedBodyPosition.subtract(position);
+        final double relativeDistance = relativePosition.getNorm();
+        final double a = FastMath.asin(occultedBodyRadius / relativeDistance);
+        final double a2 = a * a;
+        final double r = position.getNorm();
+        final double b = FastMath.asin(occultingBodyRadius / r);
+        final double b2 = b * b;
+        final double c = Vector3D.angle(relativePosition.negate(), position);
+        final double c2 = c * c;
+        if (a + b <= c) {
+            // no occultation
+            return 1.0;
         }
-        return 1.;
+        if (a <= b && c + a <= b) {
+            // may have total eclipse and in umbra
+            return 0.0;
+        }
+        if (a >= b && c + b <= a) {
+            // occulting body too small for total eclipse
+            // and maximally eclipsed
+            // simple ratio of areas
+            return 1.0 - b2 / a2;
+        }
+        final double x = (c2 + a2 - b2) / (2 * c);
+        final double x2 = x * x;
+        // expression for (c - x), i.e. BE in Fig 3.8. See #1892
+        final double cMinusX = (c2 + b2 - a2) / (2 * c);
+        final double y = FastMath.sqrt(FastMath.max(0., a2 - x2));
+        // ref Figure 3.8
+        final double alpha = FastMath.atan2(y, x);
+        final double beta = FastMath.atan2(y, cMinusX);
+        // because a, b, c are sides of a triangle, which is verified by the
+        // three if's above, every expression in ( ... ) must be positive.
+        final double triangleArea2 =
+                (-c + a + b) * (c + a - b) * (c - a + b) * (c + a + b) / 4;
+        // equivalent to c*y, see #1892
+        final double triangleArea = FastMath.sqrt(triangleArea2);
+        final double intermediate =
+                (alpha + (b2 * beta - triangleArea) / a2) / FastMath.PI;
+        return 1. - intermediate;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected <T extends CalculusFieldElement<T>> T getLightingRatio(final FieldVector3D<T> position,
-                                                                     final FieldVector3D<T> occultedBodyPosition) {
+    protected <T extends CalculusFieldElement<T>> T getLightingRatio(
+            final FieldVector3D<T> position,
+            final FieldVector3D<T> occultedBodyPosition) {
+
         final Field<T> field = position.getX().getField();
-        final T distanceSun = occultedBodyPosition.getNorm();
-        final T squaredDistance = position.getNormSq();
-        final FieldVector3D<T> occultedBodyDirection = occultedBodyPosition.normalize();
-        final T s0 = position.dotProduct(occultedBodyDirection).negate();
-        if (s0.getReal() > 0.0) {
-            final T reciprocalDistanceSun = distanceSun.reciprocal();
-            final T sinf2 = reciprocalDistanceSun.multiply(occultedBodyRadius - getOccultingBodyRadius());
-            final T l2 = (s0.multiply(sinf2).subtract(getOccultingBodyRadius())).divide(FastMath.sqrt(sinf2.square().negate().add(1)));
-            final T l = FastMath.sqrt(squaredDistance.subtract(s0.square()));
-            if (FastMath.abs(l2).subtract(l).getReal() >= 0.0) { // umbra
-                return field.getZero();
-            }
-            final T sinf1 = reciprocalDistanceSun.multiply(occultedBodyRadius + getOccultingBodyRadius());
-            final T l1 = (s0.multiply(sinf1).add(getOccultingBodyRadius())).divide(FastMath.sqrt(sinf1.square().negate().add(1)));
-            if (l1.subtract(l).getReal() > 0.0) { // penumbra
-                final FieldVector3D<T> relativePosition = occultedBodyPosition.subtract(position);
-                final T relativeDistance = relativePosition.getNorm();
-                final T a = FastMath.asin(relativeDistance.reciprocal().multiply(occultedBodyRadius));
-                final T a2 = a.square();
-                final T r = FastMath.sqrt(squaredDistance);
-                final T b = FastMath.asin(r.reciprocal().multiply(getOccultingBodyRadius()));
-                final T b2 = b.square();
-                final T c = FieldVector3D.angle(relativePosition.negate(), position);
-                final T c2 = c.square();
-                final T x = (c2.add(a2).subtract(b2)).divide(c.multiply(2));
-                final T x2 = x.square();
-                final T cMinusX = (c2.add(b2).subtract(a2)).divide(c.multiply(2));
-                final T y = (a2.getReal() - x2.getReal() <= 0) ? s0.getField().getZero() : FastMath.sqrt(a2.subtract(x2));
-                final T alpha = y.atan2(x);
-                final T beta = y.atan2(cMinusX);
-                final T triangleArea = c.negate().add(a).add(b)
-                        .multiply(c.add(a).subtract(b))
-                        .multiply(c.subtract(a).add(b))
-                        .multiply(c.add(a).add(b))
-                        .sqrt().divide(2);
-                final T intermediate = alpha.add(((b2.multiply(beta))
-                        .subtract(triangleArea)).divide(a2));
-                return intermediate.divide(-FastMath.PI).add(1);
-            }
+        final T zero = field.getZero();
+        final T one = field.getOne();
+
+        // See Section 3.4.2, Figure 3.8
+        final T occultingBodyRadius = zero.add(getOccultingBodyRadius());
+        final FieldVector3D<T> relativePosition =
+                occultedBodyPosition.subtract(position);
+        final T relativeDistance = relativePosition.getNorm();
+        final T a = zero.add(occultedBodyRadius).divide(relativeDistance).asin();
+        final T a2 = a.square();
+        final T r = position.getNorm();
+        final T b = occultingBodyRadius.divide(r).asin();
+        final T b2 = b.square();
+        final T c = FieldVector3D.angle(relativePosition.negate(), position);
+        final T c2 = c.square();
+        if (a.add(b).getReal() <= c.getReal()) {
+            // no occultation
+            return one;
         }
-        return field.getOne();
+        if (a.getReal() <= b.getReal() && c.add(a).getReal() <= b.getReal()) {
+            // may have total eclipse and in umbra
+            return zero;
+        }
+        if (a.getReal() >= b.getReal() && c.add(b).getReal() <= a.getReal()) {
+            // occulting body too small for total eclipse
+            // and maximally eclipsed
+            // simple ratio of areas
+            return one.subtract(b2.divide(a2));
+        }
+        final T x = c2.add(a2).subtract(b2).divide(c.multiply(2));
+        final T x2 = x.square();
+        // expression for (c - x), i.e. BE in Fig 3.8. See #1892
+        final T cMinusX = c2.add(b2).subtract(a2).divide(c.multiply(2));
+        final T y = FastMath.sqrt(FastMath.max(zero, a2.subtract(x2)));
+        // ref Figure 3.8
+        final T alpha = FastMath.atan2(y, x);
+        final T beta = FastMath.atan2(y, cMinusX);
+        // because a, b, c are sides of a triangle, which is verified by the
+        // three if's above, every expression in ( ... ) must be positive.
+        final T triangleArea2 = c.negate().add(a).add(b)
+                .multiply(c.add(a).subtract(b))
+                .multiply(c.subtract(a).add(b))
+                .multiply(c.add(a).add(b))
+                .divide(4);
+        // equivalent to c*y, see #1892
+        final T triangleArea = FastMath.sqrt(triangleArea2);
+        final T intermediate = alpha
+                .add(b2.multiply(beta).subtract(triangleArea).divide(a2))
+                .divide(FastMath.PI);
+        return one.subtract(intermediate);
     }
 
     /** {@inheritDoc} */
