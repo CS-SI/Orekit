@@ -160,6 +160,25 @@ class FieldOrbitTest {
     }
 
     @Test
+    void testTimeShiftIsApplied() {
+        // GIVEN
+        final GradientField               field       = GradientField.getField(1);
+        final Gradient                    shift       = Gradient.variable(1, 0, 10.);
+        final FieldAbsoluteDate<Gradient> date        = new FieldAbsoluteDate<>(field, new AbsoluteDate());
+        final FieldAbsoluteDate<Gradient> shiftedDate = date.shiftedBy(shift);
+
+        final FieldOrbit<Gradient> orbit = TestUtils.getDefaultFieldOrbit(date);
+
+        // WHEN
+        final TimeStampedFieldPVCoordinates<Gradient>
+                        pv =
+                        orbit.getPVCoordinates(shiftedDate, FramesFactory.getEME2000());
+
+        // THEN
+        Assertions.assertNotEquals(0, pv.getPosition().getNorm1().getGradient()[0]);
+    }
+
+    @Test
     void testCorrectShiftedDateWithCartesianOrbit() {
         // GIVEN
         final Field<Binary64> field = Binary64Field.getInstance();
