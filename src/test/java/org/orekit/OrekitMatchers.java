@@ -22,6 +22,9 @@ import org.hamcrest.Matchers;
 import org.hamcrest.SelfDescribing;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.hamcrest.TypeSafeMatcher;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.FieldElement;
+import org.hipparchus.dfp.Dfp;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
@@ -629,6 +632,49 @@ public class OrekitMatchers {
 
             private double actualDelta(Double item) {
                 return (FastMath.abs((item - value)) - delta);
+            }
+        };
+
+    }
+
+    /**
+     * Creates a matcher of {@link Double}s that matches when an examined double
+     * is equal to the specified <code>operand</code>, within a range of +/-
+     * <code>error</code>. <p/> For example:
+     * <pre>assertThat(1.03, is(closeTo(1.0, 0.03)))</pre>
+     *
+     * @param value the expected value of matching doubles
+     * @param delta the delta (+/-) within which matches will be allowed
+     * @return a double matcher.
+     */
+    public static <T extends CalculusFieldElement<T>> Matcher<T> closeTo(
+            final T value,
+            final double delta) {
+
+        return new TypeSafeMatcher<T>() {
+            @Override
+            public boolean matchesSafely(T item) {
+                // actualDelta(item) <= 0.0
+                return actualDelta(item).sign().getReal() <= 0.0;
+            }
+
+            @Override
+            public void describeMismatchSafely(T item, Description mismatchDescription) {
+                mismatchDescription.appendValue(item)
+                        .appendText(" differed by ")
+                        .appendValue(actualDelta(item));
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("a numeric value within ")
+                        .appendValue(delta)
+                        .appendText(" of ")
+                        .appendValue(value);
+            }
+
+            private T actualDelta(T item) {
+                return item.subtract(value).abs().subtract(delta);
             }
         };
 

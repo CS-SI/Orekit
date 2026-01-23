@@ -2,6 +2,7 @@ package org.orekit.forces.radiation;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
+import org.hamcrest.comparator.ComparatorMatcherBuilder;
 import org.hipparchus.Field;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
@@ -9,11 +10,11 @@ import org.hipparchus.dfp.Dfp;
 import org.hipparchus.dfp.DfpField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.BigReal;
-import org.hipparchus.util.BigRealField;
+import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.bodies.AnalyticalSolarPositionProvider;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -33,9 +34,21 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.PVCoordinates;
 
+import java.util.Comparator;
 import java.util.List;
 
 class ConicallyShadowedLightFluxModelTest {
+
+    /** Compares Dfp values. */
+    private static final Comparator<Dfp> dfpComparator = (o1, o2) -> {
+        if (o1.lessThan(o2)) {
+            return -1;
+        }
+        if (o1.greaterThan(o2)) {
+            return 1;
+        }
+        return 0;
+    };
 
     @BeforeEach
     public void setUp() throws OrekitException {
@@ -136,6 +149,91 @@ class ConicallyShadowedLightFluxModelTest {
         }
     }
 
+    @Test
+    public void testGetLightingRatioConditions() {
+        // setup
+        final double au = Constants.JPL_SSD_ASTRONOMICAL_UNIT;
+        Vector3D sunP = new Vector3D(-au, 0, 0);
+        final double rS = 6.957E8;
+        final double rE = 6378136.3;
+        ConicallyShadowedLightFluxModel model =
+                new ConicallyShadowedLightFluxModel(0, rS, null, rE);
+        final double f2 = FastMath.asin((rS - rE) / au);
+        final double c2 = au - rE / FastMath.sin(f2);
+        final double l2 = c2 * FastMath.tan(f2);
+        // small angle approximation for ratio of disk area
+        final double expected = 1.0 - 4 * rE * rE / (rS * rS);
+
+        // action
+        MatcherAssert.assertThat(
+                model.getLightingRatio(new Vector3D(au, 0, 0), sunP),
+                Matchers.allOf(
+                        Matchers.greaterThanOrEqualTo(0.0),
+                        Matchers.lessThanOrEqualTo(1.0),
+                        Matchers.closeTo(expected, 1e-8)));
+        // on the edge
+        MatcherAssert.assertThat(
+                model.getLightingRatio(new Vector3D(au, l2, 0), sunP),
+                Matchers.allOf(
+                        Matchers.greaterThanOrEqualTo(0.0),
+                        Matchers.lessThanOrEqualTo(1.0),
+                        Matchers.greaterThanOrEqualTo(expected),
+                        Matchers.closeTo(expected, 1e-8)));
+        // disks intersect
+        MatcherAssert.assertThat(
+                model.getLightingRatio(new Vector3D(au, l2 + 1e6, 0), sunP),
+                Matchers.allOf(
+                        Matchers.greaterThanOrEqualTo(0.0),
+                        Matchers.lessThanOrEqualTo(1.0),
+                        Matchers.greaterThanOrEqualTo(expected),
+                        Matchers.closeTo(expected, 1e-5)));
+    }
+
+    @Test
+    public void testGetLightingRatioConditionsField() {
+        // setup
+        Field<Dfp> field = new DfpField(20);
+        final Dfp zero = field.getZero();
+        final Dfp one = field.getOne();
+        final Dfp au = zero.add(Constants.JPL_SSD_ASTRONOMICAL_UNIT);
+        FieldVector3D<Dfp> sunP = new FieldVector3D<>(au.negate(), zero, zero);
+        final Dfp rS = zero.add(6.957E8);
+        final Dfp rE = zero.add(6378136.3);
+        ConicallyShadowedLightFluxModel model =
+                new ConicallyShadowedLightFluxModel(0, rS.getReal(), null, rE.getReal());
+        final Dfp f2 = FastMath.asin((rS.subtract(rE)).divide(au));
+        final Dfp c2 = au.subtract(rE.divide(FastMath.sin(f2)));
+        final Dfp l2 = c2.multiply(FastMath.tan(f2));
+        // small angle approximation for ratio of disk area
+        final Dfp expected = one.subtract(rE.square().divide(rS.square()).multiply(4.0));
+
+        // action
+        final ComparatorMatcherBuilder<Dfp> builder =
+                ComparatorMatcherBuilder.comparedBy(dfpComparator);
+        MatcherAssert.assertThat(
+                model.getLightingRatio(new FieldVector3D<>(au, zero, zero), sunP),
+                Matchers.allOf(
+                        builder.greaterThanOrEqualTo(zero),
+                        builder.lessThanOrEqualTo(one),
+                        OrekitMatchers.closeTo(expected, 1e-9)));
+        // on the edge
+        MatcherAssert.assertThat(
+                model.getLightingRatio(new FieldVector3D<>(au, l2, zero), sunP),
+                Matchers.allOf(
+                        builder.greaterThanOrEqualTo(zero),
+                        builder.lessThanOrEqualTo(one),
+                        builder.greaterThanOrEqualTo(expected),
+                        OrekitMatchers.closeTo(expected, 1e-8)));
+        // disks intersect
+        MatcherAssert.assertThat(
+                model.getLightingRatio(new FieldVector3D<>(au, l2.add(1e6), zero), sunP),
+                Matchers.allOf(
+                        builder.greaterThanOrEqualTo(zero),
+                        builder.lessThanOrEqualTo(one),
+                        builder.greaterThanOrEqualTo(expected),
+                        OrekitMatchers.closeTo(expected, 1e-5)));
+    }
+
     /**
      * Check for NaN in case discovered when running RadiationPressureModelTest.
      * This case causes numerical issues because the Sun is almost entirely
@@ -166,14 +264,66 @@ class ConicallyShadowedLightFluxModelTest {
         // value was computed with extended precision below.
         // Though I don't trust it, making some mathematically allowable
         // transformations gives different, even negative results.
-        final double expected = 7.0542775362244865347040611195042e-21;
+        DfpField field = new DfpField(50);
+        final Dfp zero = field.getZero();
+        final Dfp expected = zero.newInstance("7.0542775362244865347040611195042e-21");
 
         // action
         double actual = model.getLightingRatio(position, occultedBodyPosition);
 
         // verify
-        MatcherAssert.assertThat(actual, Matchers.greaterThan(0.0));
-        MatcherAssert.assertThat(actual, Matchers.closeTo(expected, 1e-5));
+        MatcherAssert.assertThat(actual, Matchers.greaterThanOrEqualTo(0.0));
+        MatcherAssert.assertThat(actual,
+                Matchers.closeTo(expected.getReal(), 1e-5));
+
+        // now for the field version
+        FieldVector3D<Dfp> fieldPosition = new FieldVector3D<>(field, position);
+        FieldVector3D<Dfp> fieldOccultedBodyPosition =
+                new FieldVector3D<>(field, occultedBodyPosition);
+        Dfp fieldActual = model.getLightingRatio(
+                fieldPosition,
+                fieldOccultedBodyPosition);
+        final ComparatorMatcherBuilder<Dfp> builder =
+                ComparatorMatcherBuilder.comparedBy(dfpComparator);
+        MatcherAssert.assertThat(
+                fieldActual,
+                builder.greaterThanOrEqualTo(zero));
+        MatcherAssert.assertThat(
+                fieldActual,
+                OrekitMatchers.closeTo(expected, 1e-25));
+    }
+
+    /**
+     * Check another case that produced NaNs. Satellite is on the line between
+     * penumbra and umbra. #1892.
+     */
+    @Test
+    public void testGetLightingRatioNanAgain() {
+        // setup
+        final ConicallyShadowedLightFluxModel model = new ConicallyShadowedLightFluxModel(
+                1.0205062355092827E17,
+                6.957E8,
+                null,
+                6378136.3);
+        final Vector3D position = new Vector3D(
+                5416037.98611839,
+                4557004.944798493,
+                2.09861286566582);
+        final Vector3D occultedBodyPosition = new Vector3D(
+                2.7402005760327873E10,
+                -1.3260269763721999E11,
+                -5.748964657098426E10);
+        // point is right on the line between umbra and penumbra, so depending
+        // on the check used it should either be zero, or a very small positive
+        // value.
+        final double expected = 0.0;
+
+        // action
+        double actual = model.getLightingRatio(position, occultedBodyPosition);
+
+        // verify
+        MatcherAssert.assertThat(actual, Matchers.greaterThanOrEqualTo(0.0));
+        MatcherAssert.assertThat(actual, Matchers.closeTo(expected, 0.0));
 
         // now for the field version
         Field<Dfp> field = new DfpField(50);
@@ -183,14 +333,15 @@ class ConicallyShadowedLightFluxModelTest {
         Dfp fieldActual = model.getLightingRatio(
                 fieldPosition,
                 fieldOccultedBodyPosition);
+        final Dfp zero = field.getZero();
+        final ComparatorMatcherBuilder<Dfp> builder =
+                ComparatorMatcherBuilder.comparedBy(dfpComparator);
         MatcherAssert.assertThat(
-                fieldActual.toString(),
-                fieldActual.greaterThan(field.getZero()),
-                Matchers.is(true));
+                fieldActual,
+                builder.greaterThanOrEqualTo(zero));
         MatcherAssert.assertThat(
-                fieldActual.toString(),
-                fieldActual.toDouble(),
-                Matchers.closeTo(expected, 1e-25));
+                fieldActual,
+                OrekitMatchers.closeTo(zero.add(expected), 0.0));
     }
 
 }
