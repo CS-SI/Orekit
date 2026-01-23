@@ -126,7 +126,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
                                                                                      Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
                                                                                      FastMath.toRadians(30));
 
-        checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 0.25, 1.8e-16);
+        checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 0.5, 1.8e-16);
 
     }
 

@@ -103,7 +103,7 @@ class FieldBetaAngleDetectorTest {
         propagator.addEventDetector(detector);
         
         final FieldSpacecraftState<Binary64> state = propagator.propagate(date, date.shiftedBy(30 * 86400));
-        assertEquals(1883928.588393031, state.getDate().durationFrom(date).getReal(), 1e-9);
+        assertEquals(1883928.588771722, state.getDate().durationFrom(date).getReal(), 1e-9);
 
         assertEquals(0, FieldBetaAngleDetector.calculateBetaAngle(state, sun).getReal(), 1e-9);
     }

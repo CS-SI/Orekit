@@ -20,6 +20,9 @@
   </properties>
   <body>
     <release version="14.0" date="TBD" description="TBD">
+        <action dev="evan" type="fix" issue="1891">
+          Improve time accuracy in CelestialBodies.
+        </action>
         <action dev="evan" type="fix" issue="1892">
           Fix NaN in ConicallyShadowedLightFluxModel.
         </action>

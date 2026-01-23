@@ -282,7 +282,7 @@ class AttitudesSequenceTest {
         // as we have 2 switch events (even if they share the same underlying event detector),
         // and these events are triggered at both eclipse entry and exit, we get 8
         // raw events on 2 orbits
-        Assertions.assertEquals(10, logger.getLoggedEvents().size());
+        Assertions.assertEquals(8, logger.getLoggedEvents().size());
 
         // we have 4 attitudes switch on 2 orbits, 2 of each type
         Assertions.assertEquals(2, dayToNightHandler.dates.size());

@@ -332,12 +332,6 @@ public class EstimationTestUtils {
         final Vector3D estimatedPosition = estimatedOrbit.getPosition();
         final Vector3D estimatedVelocity = estimatedOrbit.getVelocity();
 
-        Assertions.assertEquals(iterations, estimator.getIterationsCount());
-        Assertions.assertEquals(evaluations, estimator.getEvaluationsCount());
-        Optimum optimum = estimator.getOptimum();
-        Assertions.assertEquals(iterations, optimum.getIterations());
-        Assertions.assertEquals(evaluations, optimum.getEvaluations());
-
         int    k   = 0;
         double sum = 0;
         double max = 0;
@@ -360,11 +354,25 @@ public class EstimationTestUtils {
         final double rms      = FastMath.sqrt(sum / k);
         final double deltaPos = Vector3D.distance(context.initialOrbit.getPosition(), estimatedPosition);
         final double deltaVel = Vector3D.distance(context.initialOrbit.getVelocity(), estimatedVelocity);
+
+        boolean print = false;
+        if (print) {
+            System.out.format("%25s %25s %25s %25s\n", "", "Actual", "Expected", "Tolerance");
+            System.out.format("%25s %25d %25d %25d\n", "iterations", estimator.getIterationsCount(), iterations, 0);
+            System.out.format("%25s %25d %25d %25d\n", "evaluations", estimator.getEvaluationsCount(), evaluations, 0);
+            System.out.format("%25s %25e %25e %25e\n", "RMS", rms, expectedRMS, rmsEps);
+        }
+
         Assertions.assertEquals(expectedRMS,      rms,      rmsEps);
         Assertions.assertEquals(expectedMax,      max,      maxEps);
         Assertions.assertEquals(expectedDeltaPos, deltaPos, posEps);
         Assertions.assertEquals(expectedDeltaVel, deltaVel, velEps);
 
+        Assertions.assertEquals(iterations, estimator.getIterationsCount());
+        Assertions.assertEquals(evaluations, estimator.getEvaluationsCount());
+        Optimum optimum = estimator.getOptimum();
+        Assertions.assertEquals(iterations, optimum.getIterations());
+        Assertions.assertEquals(evaluations, optimum.getEvaluations());
     }
 
     /**

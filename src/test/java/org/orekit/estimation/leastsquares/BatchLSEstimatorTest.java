@@ -660,7 +660,7 @@ class BatchLSEstimatorTest {
         r12.forEach(estimator::addMeasurement);
         r1.forEach(estimator::addMeasurement);
         a1.forEach(estimator::addMeasurement);
-        estimator.setParametersConvergenceThreshold(1.0e-3);
+        estimator.setParametersConvergenceThreshold(1.0e-2);
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
         estimator.setObserver(new BatchLSObserver() {
