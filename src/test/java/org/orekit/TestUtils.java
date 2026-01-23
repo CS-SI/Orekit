@@ -100,26 +100,13 @@ public class TestUtils {
     }
 
     /**
-     * Create and return a default equatorial circular orbit at 400km altitude.
+     * Create and return a default orbit.
      *
      * @param date date of the orbit
      * @return default orbit
      */
     public static <T extends CalculusFieldElement<T>> FieldOrbit<T> getDefaultFieldOrbit(FieldAbsoluteDate<T> date) {
-        // Extract recurrent variables
-        final T one  = date.getField().getOne();
-        final T zero = date.getField().getZero();
-
-        // Define default orbit
-        final FieldPVCoordinates<T> pv =
-                new FieldPVCoordinates<>(new FieldVector3D<>(one.multiply(6778000), zero, zero),
-                                         new FieldVector3D<>(zero, one.multiply(7668.631425), zero));
-
-        final Frame frame = FramesFactory.getGCRF();
-
-        final T mu = one.multiply(3.9860047e14);
-
-        return new FieldCartesianOrbit<>(pv, frame, date, mu);
+        return new FieldCartesianOrbit<>(date.getField(), getDefaultOrbit(date.toAbsoluteDate()));
     }
 
     /**
@@ -130,22 +117,7 @@ public class TestUtils {
      * @return default orbit
      */
     public static <T extends CalculusFieldElement<T>> FieldOrbit<T> getDefaultFieldOrbitWithDerivatives(final FieldAbsoluteDate<T> date) {
-        final T one = date.getField().getOne();
-        final FieldVector3D<T> position = new FieldVector3D<>(one.newInstance(6896874.444705),
-                                                              one.newInstance(1956581.072644),
-                                                              one.newInstance(-147476.245054));
-        final FieldVector3D<T> velocity = new FieldVector3D<>(one.newInstance(166.816407662),
-                                                              one.newInstance(-1106.783301861),
-                                                              one.newInstance(-7372.745712770));
-        final FieldVector3D<T> acceleration = new FieldVector3D<>(one.newInstance(-7.466182457944),
-                                                                  one.newInstance(-2.118153357345),
-                                                                  one.newInstance(0.160004048437));
-        final TimeStampedFieldPVCoordinates<T> pv =
-                new TimeStampedFieldPVCoordinates<>(date, position, velocity, acceleration);
-        final Frame frame = FramesFactory.getEME2000();
-        final T     mu    = one.newInstance(Constants.EIGEN5C_EARTH_MU);
-
-        return new FieldCartesianOrbit<>(pv, frame, mu);
+        return new FieldCartesianOrbit<>(date.getField(), getDefaultOrbit(date.toAbsoluteDate()));
     }
 
     /**
