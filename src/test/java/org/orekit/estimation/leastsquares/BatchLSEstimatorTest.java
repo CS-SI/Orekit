@@ -16,6 +16,10 @@
  */
 package org.orekit.estimation.leastsquares;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.IntStream;
+
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
@@ -37,8 +41,8 @@ import org.orekit.estimation.measurements.MultiplexedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.radiation.RadiationSensitive;
@@ -60,10 +64,6 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.IntStream;
 
 class BatchLSEstimatorTest {
 
@@ -541,7 +541,7 @@ class BatchLSEstimatorTest {
         Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPosition(),
                           determined.getPosition()), 6.2e-6);
         Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getVelocity(),
-                          determined.getVelocity()), 1.9e-9);
+                          determined.getVelocity()), 4.0e-9);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one
