@@ -1016,7 +1016,10 @@ public enum OrekitMessages implements Localizable {
     LAMBERT_CORRECTION_DID_NOT_CONVERGE("correction of perturbed Lambert solution failed to converge after {0} iterations"),
 
     /** LAMBERT_INVALID_NUMBER_OF_REVOLUTIONS. */
-    LAMBERT_INVALID_NUMBER_OF_REVOLUTIONS("invalid number of revolutions {0} for Lambert problem, a maximum of {1} is possible with the given time of flight");
+    LAMBERT_INVALID_NUMBER_OF_REVOLUTIONS("invalid number of revolutions {0} for Lambert problem, a maximum of {1} is possible with the given time of flight"),
+
+    /** NUMBER_OF_FACETS_NOT_ODD. */
+    NUMBER_OF_FACETS_NOT_ODD("invalid number of facets: {0}, it must be an odd number");
 
     /** Base name of the resource bundle in classpath. */
     private static final String RESOURCE_BASE_NAME = "assets/org/orekit/localization/OrekitMessages";
