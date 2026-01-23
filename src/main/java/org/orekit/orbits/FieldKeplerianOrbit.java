@@ -1129,7 +1129,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
         // Get field and express dt as T
         final Field<T> field   = getField();
-        final T        dtValue = field.getOne().multiply(dt.toDouble());
+        final T        dtValue = field.getOne().newInstance(dt.toDouble());
 
         // use Keplerian-only motion
         final FieldKeplerianOrbit<T> keplerianShifted = shiftWithKeplerianMotion(dt);

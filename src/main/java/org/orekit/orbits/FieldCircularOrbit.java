@@ -1099,9 +1099,10 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
      */
     @Override
     public FieldCircularOrbit<T> shiftedBy(final TimeOffset dt) {
+
         // Get field and express dt as T
         final Field<T> field   = getField();
-        final T        dtValue = field.getOne().multiply(dt.toDouble());
+        final T        dtValue = field.getOne().newInstance(dt.toDouble());
 
         // use Keplerian-only motion
         final FieldCircularOrbit<T> keplerianShifted = shiftWithKeplerianMotion(dt);
