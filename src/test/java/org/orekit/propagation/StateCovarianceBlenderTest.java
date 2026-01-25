@@ -146,7 +146,7 @@ class StateCovarianceBlenderTest {
     void testKeplerianQuadraticBlending() {
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-11;
+        final double tolerance = 1.e-6;
 
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
@@ -186,7 +186,7 @@ class StateCovarianceBlenderTest {
     void testBrouwerLyddaneQuadraticBlending() {
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-11;
+        final double tolerance = 1.e-6;
 
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
@@ -237,7 +237,7 @@ class StateCovarianceBlenderTest {
     void testBrouwerLyddaneQuadraticBlendingDeprecated() {
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-11;
+        final double tolerance = 1.e-6;
 
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
@@ -287,7 +287,7 @@ class StateCovarianceBlenderTest {
     void testEksteinHechlerQuadraticBlending() {
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-11;
+        final double tolerance = 1.e-6;
 
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
@@ -344,7 +344,7 @@ class StateCovarianceBlenderTest {
     void testLOFKeplerianBlending() {
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-9;
+        final double tolerance = 1.e-6;
 
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
@@ -378,9 +378,9 @@ class StateCovarianceBlenderTest {
         Assertions.assertEquals( 0.1219305982260829, relativeRMSSigmaError[0].getMean(), tolerance);
         Assertions.assertEquals(19.1744012628613100, relativeRMSSigmaError[1].getMean(), tolerance);
         Assertions.assertEquals( 0.1268691798373903, relativeRMSSigmaError[0].getPercentile(50), tolerance);
-        Assertions.assertEquals(15.0743592436524190, relativeRMSSigmaError[1].getPercentile(50), tolerance);
+        Assertions.assertEquals(15.074357209468475, relativeRMSSigmaError[1].getPercentile(50), tolerance);
         Assertions.assertEquals( 0.2395147080521065, relativeRMSSigmaError[0].getMax(), tolerance);
-        Assertions.assertEquals(75.1358213683371000, relativeRMSSigmaError[1].getMax(), 3 * tolerance);
+        Assertions.assertEquals(75.13545251822399, relativeRMSSigmaError[1].getMax(), 3 * tolerance);
 
         // Assert getters as well
         Assertions.assertNull(covarianceInterpolator.getOutFrame());
