@@ -29,6 +29,7 @@ import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.signal.FieldSignalTravelTimeAdjustableEmitter;
 import org.orekit.estimation.measurements.signal.SignalTravelTimeAdjustableEmitter;
+import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -65,15 +66,19 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
      * @param observed observed value
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
+     * @param signalTravelTimeModel signal travel time model
      * @param local satellite which receives the signal and performs the measurement
      * @param remote remote satellite which simply emits the signal
+     * @since 14.0
      */
     protected AbstractInterSatellitesMeasurement(final AbsoluteDate date, final double observed,
                                                  final double sigma, final double baseWeight,
+                                                 final SignalTravelTimeModel signalTravelTimeModel,
                                                  final ObservableSatellite local,
                                                  final ObservableSatellite remote) {
         // Call to super constructor
-        super(date, false, observed, sigma, baseWeight, Arrays.asList(local, remote));
+        super(date, false, new double[] {observed}, new double[] {sigma}, new double[] {baseWeight},
+                signalTravelTimeModel, Arrays.asList(local, remote));
     }
 
     /** Retrieves the clock of the satellite being treated as "remote"

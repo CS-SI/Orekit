@@ -16,20 +16,21 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import java.util.Map;
+
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.TurnAroundRange;
+import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
-
-import java.util.Map;
 
 /** Builder for {@link TurnAroundRange} measurements.
  * @author Luc Maisonobe
  * @since 9.3
  */
-public class TurnAroundRangeBuilder extends AbstractMeasurementBuilder<TurnAroundRange> {
+public class TurnAroundRangeBuilder extends AbstractSignalBasedBuilder<TurnAroundRange> {
 
     /** Primary ground station from which measurement is performed. */
     private final GroundStation primaryStation;
@@ -49,7 +50,25 @@ public class TurnAroundRangeBuilder extends AbstractMeasurementBuilder<TurnAroun
                                   final GroundStation primaryStation, final GroundStation secondaryStation,
                                   final double sigma, final double baseWeight,
                                   final ObservableSatellite satellite) {
-        super(noiseSource, sigma, baseWeight, satellite);
+        this(noiseSource, primaryStation, secondaryStation, sigma, baseWeight, new SignalTravelTimeModel(), satellite);
+    }
+
+    /** Simple constructor.
+     * @param noiseSource noise source, may be null for generating perfect measurements
+     * @param primaryStation ground station from which measurement is performed
+     * @param secondaryStation ground station reflecting the signal
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param signalTravelTimeModel signal travel time model
+     * @param satellite satellite related to this builder
+     * @since 14.0
+     */
+    public TurnAroundRangeBuilder(final CorrelatedRandomVectorGenerator noiseSource,
+                                  final GroundStation primaryStation, final GroundStation secondaryStation,
+                                  final double sigma, final double baseWeight,
+                                  final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
+        super(noiseSource, new double[] {sigma}, new double[] {baseWeight}, signalTravelTimeModel,
+                new ObservableSatellite[] {satellite});
         this.primaryStation   = primaryStation;
         this.secondaryStation = secondaryStation;
     }
@@ -58,10 +77,8 @@ public class TurnAroundRangeBuilder extends AbstractMeasurementBuilder<TurnAroun
     @Override
     protected TurnAroundRange buildObserved(final AbsoluteDate date,
                                             final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new TurnAroundRange(primaryStation, secondaryStation,
-                                   date, Double.NaN,
-                                   getTheoreticalStandardDeviation()[0],
-                                   getBaseWeight()[0], getSatellites()[0]);
+        return new TurnAroundRange(primaryStation, secondaryStation, date, Double.NaN, getTheoreticalStandardDeviation()[0],
+                                   getBaseWeight()[0], getSignalTravelTimeModel(), getSatellites()[0]);
     }
 
 }

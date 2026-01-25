@@ -22,6 +22,7 @@ import java.util.Collections;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.signal.FieldSignalTravelTimeAdjustableReceiver;
 import org.orekit.estimation.measurements.signal.SignalTravelTimeAdjustableReceiver;
+import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -59,7 +60,7 @@ public class TDOA extends AbstractMeasurement<TDOA> {
     /** Second ground station, the one that gives the measurement, i.e. the delay. */
     private final GroundStation secondStation;
 
-    /** Simple constructor.
+    /** Constructor.
      * @param primeStation ground station that gives the date of the measurement
      * @param secondStation ground station that gives the measurement
      * @param date date of the measurement
@@ -69,9 +70,27 @@ public class TDOA extends AbstractMeasurement<TDOA> {
      * @param satellite satellite related to this measurement
      */
     public TDOA(final GroundStation primeStation, final GroundStation secondStation,
-                final AbsoluteDate date, final double tdoa, final double sigma,
-                final double baseWeight, final ObservableSatellite satellite) {
-        super(date, false, tdoa, sigma, baseWeight, Collections.singletonList(satellite));
+                final AbsoluteDate date, final double tdoa, final double sigma, final double baseWeight,
+                final ObservableSatellite satellite) {
+        this(primeStation, secondStation, date, tdoa, sigma, baseWeight, new SignalTravelTimeModel(), satellite);
+    }
+
+    /** Constructor.
+     * @param primeStation ground station that gives the date of the measurement
+     * @param secondStation ground station that gives the measurement
+     * @param date date of the measurement
+     * @param tdoa observed value (s)
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param signalTravelTimeModel signal travel time model
+     * @param satellite satellite related to this measurement
+     * @since 14.0
+     */
+    public TDOA(final GroundStation primeStation, final GroundStation secondStation,
+                final AbsoluteDate date, final double tdoa, final double sigma, final double baseWeight,
+                final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
+        super(date, false, new double[] {tdoa}, new double[] {sigma}, new double[] {baseWeight},
+                signalTravelTimeModel, Collections.singletonList(satellite));
 
         // add parameter drivers for the secondary station
         addParametersDrivers(primeStation.getParametersDrivers());

@@ -24,6 +24,7 @@ import org.orekit.estimation.measurements.CommonParametersWithoutDerivatives;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -54,7 +55,7 @@ public class InterSatellitesPhase extends AbstractInterSatellitesMeasurement<Int
     /** Wavelength of the phase observed value [m]. */
     private final double wavelength;
 
-    /** Constructor.
+    /** Constructor with default signal travel time model.
      * @param local satellite which receives the signal and performs the measurement
      * @param remote remote satellite which simply emits the signal
      * @param date date of the measurement
@@ -65,14 +66,31 @@ public class InterSatellitesPhase extends AbstractInterSatellitesMeasurement<Int
      * @param cache from which ambiguity drive should come
      * @since 12.1
      */
-    public InterSatellitesPhase(final ObservableSatellite local,
-                                final ObservableSatellite remote,
+    public InterSatellitesPhase(final ObservableSatellite local, final ObservableSatellite remote,
                                 final AbsoluteDate date, final double phase,
-                                final double wavelength, final double sigma,
-                                final double baseWeight,
+                                final double wavelength, final double sigma, final double baseWeight,
                                 final AmbiguityCache cache) {
+        this(local, remote, date, phase, wavelength, sigma, baseWeight, cache, new SignalTravelTimeModel());
+    }
+
+    /** Constructor.
+     * @param local satellite which receives the signal and performs the measurement
+     * @param remote remote satellite which simply emits the signal
+     * @param date date of the measurement
+     * @param phase observed value (cycles)
+     * @param wavelength phase observed value wavelength (m)
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param cache from which ambiguity drive should come
+     * @param signalTravelTimeModel signal travel time model
+     * @since 12.1
+     */
+    public InterSatellitesPhase(final ObservableSatellite local, final ObservableSatellite remote,
+                                final AbsoluteDate date, final double phase,
+                                final double wavelength, final double sigma, final double baseWeight,
+                                final AmbiguityCache cache, final SignalTravelTimeModel signalTravelTimeModel) {
         // Call to super constructor
-        super(date, phase, sigma, baseWeight, local, remote);
+        super(date, phase, sigma, baseWeight, signalTravelTimeModel, local, remote);
 
         // Initialize phase ambiguity driver
         ambiguityDriver = cache.getAmbiguity(remote.getName(), local.getName(), wavelength);
