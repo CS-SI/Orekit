@@ -105,7 +105,7 @@ public class AngularRaDec extends GroundBasedAngularMeasurement<AngularRaDec> {
         final AbsoluteDate receptionDate = getCorrectedReceptionDate();
         final PVCoordinatesProvider receiver = station.getPVCoordinatesProvider();
         final SpacecraftState state = states[0];
-        final PVCoordinatesProvider emitter = MeasurementObject.extractPVCoordinatesProvider(state, state.getPVCoordinates());
+        final PVCoordinatesProvider emitter = AbstractMeasurementObject.extractPVCoordinatesProvider(state, state.getPVCoordinates());
         final AbsoluteDate emissionDate = computeEmissionDate(referenceFrame, receiver, receptionDate, emitter);
 
         // Evaluate angular measurement model (use state frame to avoid rounding error in case reference one is not Earth-centered)
@@ -145,7 +145,7 @@ public class AngularRaDec extends GroundBasedAngularMeasurement<AngularRaDec> {
         // Compute emission date
         final FieldAbsoluteDate<Gradient> receptionDate = getCorrectedReceptionDateField(nbParams, paramIndices);
         final FieldPVCoordinatesProvider<Gradient> receiver = station.getFieldPVCoordinatesProvider(nbParams, paramIndices);
-        final FieldPVCoordinatesProvider<Gradient> emitter = MeasurementObject.extractFieldPVCoordinatesProvider(state, pva);
+        final FieldPVCoordinatesProvider<Gradient> emitter = AbstractMeasurementObject.extractFieldPVCoordinatesProvider(state, pva);
         final FieldAbsoluteDate<Gradient> emissionDate = computeEmissionDateField(referenceFrame, receiver, receptionDate, emitter);
 
         // Evaluate angular measurement model (use state frame to avoid rounding error in case reference one is not Earth-centered)

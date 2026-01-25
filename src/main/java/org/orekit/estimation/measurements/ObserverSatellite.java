@@ -18,9 +18,9 @@ package org.orekit.estimation.measurements;
 
 import java.util.Map;
 
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
-import org.hipparchus.Field;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -40,7 +40,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Brianna Aubin
  * @since 14.0
  */
-public class ObserverSatellite extends MeasurementObject implements Observer {
+public class ObserverSatellite extends AbstractMeasurementObject implements Observer {
 
     /** Provides satellite trajectory. */
     private final PVCoordinatesProvider pvCoordsProvider;
