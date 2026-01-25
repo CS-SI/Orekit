@@ -209,7 +209,8 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
         // Downlink delay
         final Gradient deltaT = arrivalDate.durationFrom(states[0].getDate());
         final TimeStampedFieldPVCoordinates<Gradient> pvaDownlink = pvaLocal.shiftedBy(deltaT);
-        final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer = getSignalTravelTimeModel().getAdjustableEmitterComputer(remotePV);
+        final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer = getSignalTravelTimeModel()
+                .getFieldAdjustableEmitterComputer(deltaT.getField(), remotePV);
         final Gradient tauD = fieldComputer.computeDelay(arrivalDate, pvaDownlink.getPosition(), arrivalDate, frame);
 
         // Remote satellite at signal emission

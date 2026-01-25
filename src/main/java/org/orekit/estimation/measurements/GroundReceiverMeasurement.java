@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
+import org.orekit.estimation.measurements.signal.FieldSignalTravelTimeAdjustableEmitter;
 import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
@@ -133,8 +134,10 @@ public abstract class GroundReceiverMeasurement<T extends ObservedMeasurement<T>
                                                                    final FieldPVCoordinatesProvider<Gradient> receiver,
                                                                    final FieldAbsoluteDate<Gradient> receptionDate,
                                                                    final FieldPVCoordinatesProvider<Gradient> emitter) {
-        final Gradient signalTravelTime = getSignalTravelTimeModel().getAdjustableEmitterComputer(emitter)
-                .computeDelay(receptionDate, receiver.getPosition(receptionDate, frame), receptionDate, frame);
+        final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldSignalTravelTimeAdjustableEmitter = getSignalTravelTimeModel().
+                getFieldAdjustableEmitterComputer(receptionDate.getField(), emitter);
+        final Gradient signalTravelTime = fieldSignalTravelTimeAdjustableEmitter.computeDelay(receptionDate,
+                receiver.getPosition(receptionDate, frame), receptionDate, frame);
         return receptionDate.shiftedBy(signalTravelTime.negate());
     }
 }

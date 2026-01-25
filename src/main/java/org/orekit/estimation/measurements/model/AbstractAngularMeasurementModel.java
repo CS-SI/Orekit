@@ -16,7 +16,7 @@
  */
 package org.orekit.estimation.measurements.model;
 
-import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
@@ -31,7 +31,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @since 14.0
  * @author Romain Serra
  */
-public class AbstractAngularMeasurementModel {
+public abstract class AbstractAngularMeasurementModel {
 
     /** Signal travel time model. */
     private final SignalTravelTimeModel signalTravelTimeModel;
@@ -74,7 +74,8 @@ public class AbstractAngularMeasurementModel {
     }
 
     /**
-     * Compute emitter-to-receiver vector in Taylor Differential Algebra.
+     * Compute emitter-to-receiver vector with FIeld.
+     * @param <T> field type
      * @param frame frame where receiver position is given
      * @param receiverPosition receiver position in input frame at reception time
      * @param receptionDate signal reception date
@@ -82,16 +83,16 @@ public class AbstractAngularMeasurementModel {
      * @param approxEmissionDate guess for the emission date (shall be adjusted by signal travel time computer)
      * @return emitter-to-receiver vector
      */
-    protected FieldVector3D<Gradient> getEmitterToReceiverVector(final Frame frame, final FieldVector3D<Gradient> receiverPosition,
-                                                                 final FieldAbsoluteDate<Gradient> receptionDate,
-                                                                 final FieldPVCoordinatesProvider<Gradient> emitter,
-                                                                 final FieldAbsoluteDate<Gradient> approxEmissionDate) {
+    protected <T extends CalculusFieldElement<T>> FieldVector3D<T> getEmitterToReceiverVector(final Frame frame, final FieldVector3D<T> receiverPosition,
+                                                                                              final FieldAbsoluteDate<T> receptionDate,
+                                                                                              final FieldPVCoordinatesProvider<T> emitter,
+                                                                                              final FieldAbsoluteDate<T> approxEmissionDate) {
         // Refine time delay
-        final Gradient signalTravelTime = signalTravelTimeModel.getAdjustableEmitterComputer(emitter)
+        final T signalTravelTime = signalTravelTimeModel.getFieldAdjustableEmitterComputer(receptionDate.getField(), emitter)
                 .computeDelay(approxEmissionDate, receiverPosition, receptionDate, frame);
-        final FieldAbsoluteDate<Gradient> emissionDate = receptionDate.shiftedBy(signalTravelTime.negate());
+        final FieldAbsoluteDate<T> emissionDate = receptionDate.shiftedBy(signalTravelTime.negate());
 
-        final FieldVector3D<Gradient> observedPosition = emitter.getPosition(emissionDate, frame);
+        final FieldVector3D<T> observedPosition = emitter.getPosition(emissionDate, frame);
         return observedPosition.subtract(receiverPosition);
     }
 }

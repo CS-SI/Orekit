@@ -168,7 +168,8 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
 
             final FieldAbsoluteDate<Gradient> approxUplinkDateDS = common.getRemotePV().getDate().shiftedBy(common.getTauD().multiply(-2.0));
             final FieldPVCoordinatesProvider<Gradient> primaryCoordsProvider = getStation().getFieldPVCoordinatesProvider(nbParams, common.getIndices());
-            final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer = getSignalTravelTimeModel().getAdjustableEmitterComputer(primaryCoordsProvider);
+            final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer = getSignalTravelTimeModel()
+                    .getFieldAdjustableEmitterComputer(transitPV.getDate().getField(), primaryCoordsProvider);
             final Gradient tauU = fieldComputer.computeDelay(transitPV.getPosition(), transitPV.getDate(), state.getFrame());
 
             final TimeStampedFieldPVCoordinates<Gradient> stationUplink =

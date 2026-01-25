@@ -135,8 +135,8 @@ public class AngularAzEl extends GroundBasedAngularMeasurement<AngularAzEl> {
         final FieldAbsoluteDate<Gradient> receptionDate = getCorrectedReceptionDateField(nbParams, paramIndices);
         final TimeStampedFieldPVCoordinates<Gradient> receiverPV = receiverPVProvider.getPVCoordinates(receptionDate, frame);
         final FieldPVCoordinatesProvider<Gradient> emitter = MeasurementObject.extractFieldPVCoordinatesProvider(state, pva);
-        final Gradient signalTravelTime = getSignalTravelTimeModel().getAdjustableEmitterComputer(emitter)
-                .computeDelay(receptionDate, receiverPV.getPosition(), receptionDate, frame);
+        final Gradient signalTravelTime = getSignalTravelTimeModel().getFieldAdjustableEmitterComputer(receptionDate.getField(),
+                        emitter).computeDelay(receptionDate, receiverPV.getPosition(), receptionDate, frame);
         final FieldAbsoluteDate<Gradient> emissionDate = receptionDate.shiftedBy(signalTravelTime.negate());
 
         // Compute azimuth and elevation

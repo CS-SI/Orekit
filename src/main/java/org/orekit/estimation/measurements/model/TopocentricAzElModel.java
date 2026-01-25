@@ -16,10 +16,11 @@
  */
 package org.orekit.estimation.measurements.model;
 
-import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
@@ -117,47 +118,52 @@ public class TopocentricAzElModel extends AbstractAngularMeasurementModel {
     }
 
     /**
-     * Compute theoretical measurement in Taylor Differential Algebra.
+     * Compute theoretical measurement with FIeld.
+     * @param <T> field type
      * @param receiver receiver geodetic coordinates
      * @param receptionDate signal reception date
      * @param emitter signal emitter coordinates provider
      * @return azimuth-elevation (radians)
      */
-    public Gradient[] value(final FieldGeodeticPoint<Gradient> receiver,
-                            final FieldAbsoluteDate<Gradient> receptionDate,
-                            final FieldPVCoordinatesProvider<Gradient> emitter) {
+    public <T extends CalculusFieldElement<T>> T[] value(final FieldGeodeticPoint<T> receiver,
+                                                         final FieldAbsoluteDate<T> receptionDate,
+                                                         final FieldPVCoordinatesProvider<T> emitter) {
         return value(receiver, receptionDate, emitter, receptionDate);
     }
 
     /**
-     * Compute theoretical measurement in Taylor Differential Algebra with guess for emission date.
+     * Compute theoretical measurement with FIeld with guess for emission date.
+     * @param <T> field type
      * @param receiver receiver geodetic coordinates
      * @param receptionDate signal reception date
      * @param emitter signal emitter coordinates provider
      * @param approxEmissionDate guess for the emission date (shall be adjusted by signal travel time computer)
      * @return azimuth-elevation (radians)
      */
-    public Gradient[] value(final FieldGeodeticPoint<Gradient> receiver,
-                            final FieldAbsoluteDate<Gradient> receptionDate,
-                            final FieldPVCoordinatesProvider<Gradient> emitter,
-                            final FieldAbsoluteDate<Gradient> approxEmissionDate) {
+    public <T extends CalculusFieldElement<T>>  T[] value(final FieldGeodeticPoint<T> receiver,
+                                                          final FieldAbsoluteDate<T> receptionDate,
+                                                          final FieldPVCoordinatesProvider<T> emitter,
+                                                          final FieldAbsoluteDate<T> approxEmissionDate) {
         // Compute line-of-sight
         final Frame bodyFixedFrame = bodyShape.getBodyFrame();
-        final FieldVector3D<Gradient> bodyFixedReceiverPosition = bodyShape.transform(receiver);
-        final FieldStaticTransform<Gradient> toInertialFrameAtReception = bodyFixedFrame.getStaticTransformTo(inertialFrame,
+        final FieldVector3D<T> bodyFixedReceiverPosition = bodyShape.transform(receiver);
+        final FieldStaticTransform<T> toInertialFrameAtReception = bodyFixedFrame.getStaticTransformTo(inertialFrame,
                 receptionDate);
-        final FieldVector3D<Gradient> receiverPosition = toInertialFrameAtReception.transformPosition(bodyFixedReceiverPosition);
-        final FieldVector3D<Gradient> apparentLineOfSight = getEmitterToReceiverVector(inertialFrame, receiverPosition,
+        final FieldVector3D<T> receiverPosition = toInertialFrameAtReception.transformPosition(bodyFixedReceiverPosition);
+        final FieldVector3D<T> apparentLineOfSight = getEmitterToReceiverVector(inertialFrame, receiverPosition,
                 receptionDate, emitter, approxEmissionDate).normalize();
 
         // Compute azimuth and elevation
-        final FieldVector3D<Gradient> east = toInertialFrameAtReception.transformVector(receiver.getEast());
-        final FieldVector3D<Gradient> north = toInertialFrameAtReception.transformVector(receiver.getNorth());
-        final FieldVector3D<Gradient> zenith = toInertialFrameAtReception.transformVector(receiver.getZenith());
-        final Gradient azimuth = FastMath.atan2(apparentLineOfSight.dotProduct(east),
+        final FieldVector3D<T> east = toInertialFrameAtReception.transformVector(receiver.getEast());
+        final FieldVector3D<T> north = toInertialFrameAtReception.transformVector(receiver.getNorth());
+        final FieldVector3D<T> zenith = toInertialFrameAtReception.transformVector(receiver.getZenith());
+        final T azimuth = FastMath.atan2(apparentLineOfSight.dotProduct(east),
                 apparentLineOfSight.dotProduct(north));
-        final Gradient elevation = FastMath.asin(apparentLineOfSight.dotProduct(zenith)
+        final T elevation = FastMath.asin(apparentLineOfSight.dotProduct(zenith)
                 .divide(apparentLineOfSight.getNorm2()));
-        return new Gradient[] { azimuth, elevation };
+        final T[] output = MathArrays.buildArray(receiverPosition.getX().getField(), 2);
+        output[0] = azimuth;
+        output[1] = elevation;
+        return output;
     }
 }
