@@ -16,14 +16,12 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.Arrays;
-
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AbstractGradientConverter;
@@ -53,8 +51,8 @@ class TDOAModifierUtil {
      * @since 12.1
      */
     public static <T extends ObservedMeasurement<T>> void modifyWithoutDerivatives(final EstimatedMeasurementBase<T> estimated,
-                                                                                   final GroundStation primeStation,
-                                                                                   final GroundStation secondStation,
+                                                                                   final Observer primeStation,
+                                                                                   final Observer secondStation,
                                                                                    final ParametricModelEffect modelEffect,
                                                                                    final EstimationModifier<T> modifier) {
 
@@ -85,7 +83,7 @@ class TDOAModifierUtil {
     public static <T extends ObservedMeasurement<T>> void modify(final EstimatedMeasurement<T> estimated,
                                                                  final ParameterDriversProvider parametricModel,
                                                                  final AbstractGradientConverter converter,
-                                                                 final GroundStation primeStation, final GroundStation secondStation,
+                                                                 final Observer primeStation, final Observer secondStation,
                                                                  final ParametricModelEffect modelEffect,
                                                                  final ParametricModelEffectGradient modelEffectGradient,
                                                                  final EstimationModifier<T> modifier) {
@@ -125,10 +123,7 @@ class TDOAModifierUtil {
         }
 
         // Update derivatives with respect to primary station position
-        for (final ParameterDriver driver : Arrays.asList(primeStation.getClockOffsetDriver(),
-                                                          primeStation.getEastOffsetDriver(),
-                                                          primeStation.getNorthOffsetDriver(),
-                                                          primeStation.getZenithOffsetDriver())) {
+        for (final ParameterDriver driver : primeStation.getParametersDrivers()) {
             if (driver.isSelected()) {
                 for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 
@@ -141,10 +136,7 @@ class TDOAModifierUtil {
         }
 
         // Update derivatives with respect to secondary station position
-        for (final ParameterDriver driver : Arrays.asList(secondStation.getClockOffsetDriver(),
-                                                          secondStation.getEastOffsetDriver(),
-                                                          secondStation.getNorthOffsetDriver(),
-                                                          secondStation.getZenithOffsetDriver())) {
+        for (final ParameterDriver driver : secondStation.getParametersDrivers()) {
             if (driver.isSelected()) {
                 for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 

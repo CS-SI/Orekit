@@ -21,6 +21,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataSource;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScale;
@@ -65,11 +66,13 @@ public class NeQuickItu extends NeQuickModel {
     private final double f107;
 
     /** Build a new instance.
+     * @param earth earth body shape
      * @param f107 solar flux
      * @param utc UTC time scale
+     * @since 14.0
      */
-    public NeQuickItu(final double f107, final TimeScale utc) {
-        super(utc);
+    public NeQuickItu(final OneAxisEllipsoid earth, final double f107, final TimeScale utc) {
+        super(earth, utc);
         this.f107 = f107;
     }
 

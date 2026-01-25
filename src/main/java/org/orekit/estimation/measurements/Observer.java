@@ -39,6 +39,7 @@ import org.orekit.time.clocks.QuadraticFieldClockModel;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -49,7 +50,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Brianna Aubin
  * @since 14.0
  */
-public interface Observer {
+public interface Observer extends ParameterDriversProvider {
 
     enum ObserverType {
         /** Indicates a ground-based observation station. */
@@ -376,7 +377,6 @@ public interface Observer {
      * @param states state(s) of all measured spacecraft
      * @param localSat satellite whose state is being estimated
      * @param measurementDate date when measurement was taken
-     * @param receiverClockOffsetAlreadyApplied if true, the specified {@code date} is as read
      * @param parameterDrivers list of parameter drivers associated with measurement
      * @return common parameters
      * @since 14.0
@@ -384,7 +384,6 @@ public interface Observer {
     default CommonParametersWithDerivatives computeRemoteParametersWith(SpacecraftState[] states,
                                                                         ObservableSatellite localSat,
                                                                         AbsoluteDate measurementDate,
-                                                                        boolean receiverClockOffsetAlreadyApplied,
                                                                         List<ParameterDriver> parameterDrivers) {
 
         // Create the parameter indices map

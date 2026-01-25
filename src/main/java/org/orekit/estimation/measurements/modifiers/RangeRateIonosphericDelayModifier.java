@@ -21,7 +21,7 @@ import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -68,13 +68,13 @@ public class RangeRateIonosphericDelayModifier extends BaseRangeRateIonosphericD
 
     /** {@inheritDoc} */
     @Override
-    protected double rangeRateErrorIonosphericModel(final GroundStation station, final SpacecraftState state) {
+    protected double rangeRateErrorIonosphericModel(final Observer station, final SpacecraftState state) {
         return fTwoWay * super.rangeRateErrorIonosphericModel(station, state);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected <T extends CalculusFieldElement<T>> T rangeRateErrorIonosphericModel(final GroundStation station,
+    protected <T extends CalculusFieldElement<T>> T rangeRateErrorIonosphericModel(final Observer station,
                                                                                    final FieldSpacecraftState<T> state,
                                                                                    final T[] parameters) {
         return super.rangeRateErrorIonosphericModel(station, state, parameters).multiply(fTwoWay);
@@ -84,10 +84,10 @@ public class RangeRateIonosphericDelayModifier extends BaseRangeRateIonosphericD
     @Override
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<RangeRate> estimated) {
 
-        final RangeRate       measurement = estimated.getObservedMeasurement();
-        final GroundStation   station     = measurement.getStation();
+        final RangeRate  measurement = estimated.getObservedMeasurement();
+        final Observer   station     = measurement.getStation();
 
-        RangeModifierUtil.modifyWithoutDerivatives(estimated,  station,
+        RangeModifierUtil.modifyWithoutDerivatives(estimated, station,
                                                    this::rangeRateErrorIonosphericModel,
                                                    this);
 
@@ -98,7 +98,7 @@ public class RangeRateIonosphericDelayModifier extends BaseRangeRateIonosphericD
     public void modify(final EstimatedMeasurement<RangeRate> estimated) {
 
         final RangeRate       measurement = estimated.getObservedMeasurement();
-        final GroundStation   station     = measurement.getStation();
+        final Observer        station     = measurement.getStation();
         final SpacecraftState state       = estimated.getStates()[0];
 
         RangeModifierUtil.modify(estimated, getIonoModel(),

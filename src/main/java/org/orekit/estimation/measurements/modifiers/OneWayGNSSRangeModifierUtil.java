@@ -16,12 +16,14 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
+import java.util.Arrays;
+
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AbstractGradientConverter;
@@ -35,23 +37,23 @@ import org.orekit.utils.TimeSpanMap.Span;
  * @author Joris Olympio
  * @since 11.2
  */
-public class RangeModifierUtil {
+public class OneWayGNSSRangeModifierUtil {
 
     /** Private constructor for utility class.*/
-    private RangeModifierUtil() {
+    private OneWayGNSSRangeModifierUtil() {
         // not used
     }
 
     /** Apply a modifier to an estimated measurement.
      * @param <T> type of the measurement
      * @param estimated estimated measurement to modify
-     * @param station ground station
+     * @param gnssSatellite GNSS satellite signal sender
      * @param modelEffect model effect
      * @param modifier applied modifier
      * @since 12.1
      */
     public static <T extends ObservedMeasurement<T>> void modifyWithoutDerivatives(final EstimatedMeasurementBase<T> estimated,
-                                                                                   final Observer station,
+                                                                                   final Observer gnssSatellite,
                                                                                    final ParametricModelEffect modelEffect,
                                                                                    final EstimationModifier<T> modifier) {
 
@@ -60,7 +62,7 @@ public class RangeModifierUtil {
 
         // update estimated value taking into account the delay. The delay is directly added to the range.
         final double[] newValue = oldValue.clone();
-        final double delay = modelEffect.evaluate(station, state);
+        final double delay = modelEffect.evaluate(gnssSatellite, state);
         newValue[0] = newValue[0] + delay;
         estimated.modifyEstimatedValue(modifier, newValue);
 
@@ -69,7 +71,7 @@ public class RangeModifierUtil {
     /** Apply a modifier to an estimated measurement.
      * @param <T> type of the measurement
      * @param estimated estimated measurement to modify
-     * @param station ground station
+     * @param gnssSatellite GNSS satellite signal sender
      * @param converter gradient converter
      * @param parametricModel parametric modifier model
      * @param modelEffect model effect
@@ -79,7 +81,7 @@ public class RangeModifierUtil {
     public static <T extends ObservedMeasurement<T>> void modify(final EstimatedMeasurement<T> estimated,
                                                                  final ParameterDriversProvider parametricModel,
                                                                  final AbstractGradientConverter converter,
-                                                                 final Observer station,
+                                                                 final Observer gnssSatellite,
                                                                  final ParametricModelEffect modelEffect,
                                                                  final ParametricModelEffectGradient modelEffectGradient,
                                                                  final EstimationModifier<T> modifier) {
@@ -89,7 +91,7 @@ public class RangeModifierUtil {
         // update estimated derivatives with Jacobian of the measure wrt state
         final FieldSpacecraftState<Gradient> gState = converter.getState(parametricModel);
         final Gradient[] gParameters = converter.getParameters(gState, parametricModel);
-        final Gradient gDelay = modelEffectGradient.evaluate(station, gState, gParameters);
+        final Gradient gDelay = modelEffectGradient.evaluate(gnssSatellite, gState, gParameters);
         final double[] derivatives = gDelay.getGradient();
 
         final double[][] stateDerivatives = estimated.getStateDerivatives(0);
@@ -112,12 +114,12 @@ public class RangeModifierUtil {
 
         }
 
-        for (final ParameterDriver driver : station.getParametersDrivers()) {
+        for (final ParameterDriver driver : Arrays.asList(gnssSatellite.getClockOffsetDriver())) {
             if (driver.isSelected()) {
                 // update estimated derivatives with derivative of the modification wrt station parameters
                 for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                     double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
-                    parameterDerivative += Differentiation.differentiate((d, t) -> modelEffect.evaluate(station, state),
+                    parameterDerivative += Differentiation.differentiate((d, t) -> modelEffect.evaluate(gnssSatellite, state),
                                                                      3, 10.0 * driver.getScale()).value(driver, state.getDate());
                     estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
                 }
@@ -125,7 +127,7 @@ public class RangeModifierUtil {
         }
 
         // update estimated value taking into account the delay
-        modifyWithoutDerivatives(estimated, station, modelEffect, modifier);
+        modifyWithoutDerivatives(estimated, gnssSatellite, modelEffect, modifier);
 
     }
 

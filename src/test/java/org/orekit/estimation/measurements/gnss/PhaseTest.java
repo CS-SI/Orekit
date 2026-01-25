@@ -215,7 +215,7 @@ public class PhaseTest {
                     // Print results on console ?
                     if (printResults) {
                         final AbsoluteDate measurementDate = measurement.getDate();
-                        String stationName = ((Phase) measurement).getStation().getBaseFrame().getName();
+                        String stationName = ((Phase) measurement).getStation().getName();
 
                         System.out.format(Locale.US, "%-15s  %-23s  %-23s     %19.6f      %19.6f    %13.6e   %13.6e%n",
                                          stationName, measurementDate, date,
@@ -358,7 +358,7 @@ public class PhaseTest {
                     }
                     // Print values in console ?
                     if (printResults) {
-                        String stationName  = ((Phase) measurement).getStation().getBaseFrame().getName();
+                        String stationName  = ((Phase) measurement).getStation().getName();
                         System.out.format(Locale.US, "%-15s  %-23s  %-23s  " +
                                           "%10.3e  %10.3e  %10.3e  " +
                                           "%10.3e  %10.3e  %10.3e  " +
@@ -490,7 +490,7 @@ public class PhaseTest {
                     };
 
                     if (printResults) {
-                        String stationName  = ((Phase) measurement).getStation().getBaseFrame().getName();
+                        String stationName  = ((Phase) measurement).getStation().getName();
                         System.out.format(Locale.US, "%-15s  %-23s  %-23s  ",
                                           stationName, measurement.getDate(), date);
                     }
@@ -619,7 +619,7 @@ public class PhaseTest {
                 if ((measurement.getDate().durationFrom(interpolator.getPreviousState().getDate()) > 0.) &&
                     (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)) {
 
-                    String stationName  = ((Phase) measurement).getStation().getBaseFrame().getName();
+                    String stationName  = ((Phase) measurement).getStation().getName();
 
                     // Add modifier
                     final NiellMappingFunctionModel      mappingFunction = new NiellMappingFunctionModel();
@@ -774,9 +774,14 @@ public class PhaseTest {
         // "final" value to be seen by "handleStep" function of the propagator
         final List<Double> errorsP = new ArrayList<>();
         final List<Double> errorsV = new ArrayList<>();
-
-        final IonosphericModel model = new KlobucharIonoModel(new double[]{.3820e-07, .1490e-07, -.1790e-06, 0},
+        
+        // Create the ionospheric model
+        final OneAxisEllipsoid earthBodyShape  = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                 Constants.WGS84_EARTH_FLATTENING,
+                                                 FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        final IonosphericModel model = new KlobucharIonoModel(earthBodyShape, new double[]{.3820e-07, .1490e-07, -.1790e-06, 0},
                                                               new double[]{.1430e+06, 0, -.3280e+06, .1130e+06});
+
         final double frequency = PredefinedGnssSignal.G01.getFrequency();
         final PhaseIonosphericDelayModifier modifier = new PhaseIonosphericDelayModifier(model, frequency);
 
@@ -839,7 +844,7 @@ public class PhaseTest {
                                           "%10.3e  %10.3e  %10.3e  " +
                                           "%10.3e  %10.3e  %10.3e  " +
                                           "%10.3e  %10.3e  %10.3e%n",
-                                          phase.getStation().getBaseFrame().getName(), measurement.getDate(), date,
+                                          phase.getStation().getName(), measurement.getDate(), date,
                                           dJacobian[0][0], dJacobian[0][1], dJacobian[0][2],
                                           dJacobian[0][3], dJacobian[0][4], dJacobian[0][5],
                                           dJacobianRelative[0][0], dJacobianRelative[0][1], dJacobianRelative[0][2],

@@ -80,7 +80,7 @@ public class Phase extends AbstractMeasurement<Phase> {
                  final AmbiguityCache cache) {
         super(date, false, phase, sigma, baseWeight, Collections.singletonList(satellite));
         ambiguityDriver = cache.getAmbiguity(satellite.getName(),
-                                             station.getBaseFrame().getName(),
+                                             station.getName(),
                                              wavelength);
         addParametersDrivers(station.getParametersDrivers());
         addParameterDriver(ambiguityDriver);
@@ -162,7 +162,7 @@ public class Phase extends AbstractMeasurement<Phase> {
         //  - 3..5 - Velocity of the spacecraft in inertial frame
         //  - 6..n - station parameters (ambiguity, clock offset, station offsets, pole, prime meridian...)
         final CommonParametersWithDerivatives common = getStation().
-            computeRemoteParametersWith(states, getSatellites().get(0), getDate(), false, getParametersDrivers());
+            computeRemoteParametersWith(states, getSatellites().get(0), getDate(), getParametersDrivers());
         final int nbParams = common.getTauD().getFreeParameters();
 
         // prepare the evaluation

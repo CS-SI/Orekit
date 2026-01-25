@@ -23,10 +23,13 @@ import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.FrameAlignedProvider;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.TDOA;
 import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -67,12 +70,19 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
     }
 
     /** Compute the measurement error due to Troposphere on a single downlink.
-     * @param station station
-     * @param state spacecraft state
+     * @param observer object that observes signal
+     * @param state    estimated spacecraft state
      * @return the measurement error due to Troposphere (s)
      */
-    private double timeErrorTroposphericModel(final GroundStation station, final SpacecraftState state) {
+    private double timeErrorTroposphericModel(final Observer observer, final SpacecraftState state) {
+
+        // Currently not calculating tropospheric delays for this type of observer
+        if (observer.getObserverType() == Observer.ObserverType.SATELLITE) {
+            throw new OrekitException(OrekitMessages.WRONG_OBSERVER_TYPE);
+        }
+
         final Vector3D position = state.getPosition();
+        final GroundStation station = (GroundStation) observer;
 
         // tracking
         final TrackingCoordinates trackingCoordinates =
@@ -93,18 +103,25 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
     }
 
     /** Compute the measurement error due to Troposphere on a single downlink.
-     * @param <T> type of the element
-     * @param station station
-     * @param state spacecraft state
+     * @param <T>        type of the element
+     * @param observer   object that observes signal
+     * @param state      estimated spacecraft state
      * @param parameters tropospheric model parameters
      * @return the measurement error due to Troposphere (s)
      */
-    private <T extends CalculusFieldElement<T>> T timeErrorTroposphericModel(final GroundStation station,
+    private <T extends CalculusFieldElement<T>> T timeErrorTroposphericModel(final Observer observer,
                                                                              final FieldSpacecraftState<T> state,
                                                                              final T[] parameters) {
+
+        // Currently not calculating tropospheric delays for this type of observer
+        if (observer.getObserverType() == Observer.ObserverType.SATELLITE) {
+            throw new OrekitException(OrekitMessages.WRONG_OBSERVER_TYPE);
+        }
+
         // Field
         final Field<T> field = state.getDate().getField();
         final T zero         = field.getZero();
+        final GroundStation station = (GroundStation) observer;
 
         // tracking
         final FieldVector3D<T> pos = state.getPosition();

@@ -18,8 +18,12 @@ package org.orekit.gnss.metric.messages.ssr.subtype;
 
 import java.util.List;
 
+import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.metric.messages.ssr.SsrMessage;
 import org.orekit.models.earth.ionosphere.SsrVtecIonosphericModel;
+import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
 /**
  * SSR Ionosphere VTEC Spherical Harmonics Message.
@@ -44,7 +48,10 @@ public class SsrIm201 extends SsrMessage<SsrIm201Header, SsrIm201Data> {
      * @return the ionospheric model
      */
     public SsrVtecIonosphericModel getIonosphericModel() {
-        return new SsrVtecIonosphericModel(this);
+        final OneAxisEllipsoid earthBodyShape  = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                              Constants.WGS84_EARTH_FLATTENING,
+                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        return new SsrVtecIonosphericModel(earthBodyShape, this);
     }
 
 }

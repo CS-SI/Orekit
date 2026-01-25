@@ -154,6 +154,9 @@ WRONG_DEGREE_OR_ORDER=cap terme ({0}, {1}) en una descomposició armònica esfè
 # wrong orbital elements for averaging theory
 WRONG_ELEMENTS_FOR_AVERAGING_THEORY=
 
+# not a valid Observer type for this calculation
+WRONG_OBSERVER_TYPE=
+
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD=s''han trobat varies dates de referència ({0} i {1} difereixen de {3,number,0.0##############E0} s) en el fitxer de camp gravitacional {2}
 

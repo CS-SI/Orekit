@@ -22,7 +22,10 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -70,15 +73,21 @@ public abstract class BaseRangeTroposphericDelayModifier {
     }
 
     /** Compute the measurement error due to Troposphere.
-     * @param station station
-     * @param state spacecraft state
+     * @param observer object that observes signal
+     * @param state    estimated spacecraft state
      * @return the measurement error due to Troposphere
      */
-    public double rangeErrorTroposphericModel(final GroundStation station,
+    public double rangeErrorTroposphericModel(final Observer observer,
                                               final SpacecraftState state) {
+
+        // Currently not calculating tropospheric delays for this type of observer
+        if (observer.getObserverType() == Observer.ObserverType.SATELLITE) {
+            throw new OrekitException(OrekitMessages.WRONG_OBSERVER_TYPE);
+        }
 
         // spacecraft position and elevation as seen from the ground station
         final Vector3D position = state.getPosition();
+        final GroundStation station = (GroundStation) observer;
         final TrackingCoordinates trackingCoordinates =
                         station.getBaseFrame().getTrackingCoordinates(position, state.getFrame(), state.getDate());
 
@@ -98,17 +107,24 @@ public abstract class BaseRangeTroposphericDelayModifier {
 
     /** Compute the measurement error due to Troposphere.
      * @param <T> type of the element
-     * @param station station
-     * @param state spacecraft state
+     * @param observer   object that observes signal
+     * @param state      estimated spacecraft state
      * @param parameters tropospheric model parameters
      * @return the measurement error due to Troposphere
      */
-    public <T extends CalculusFieldElement<T>> T rangeErrorTroposphericModel(final GroundStation station,
+    public <T extends CalculusFieldElement<T>> T rangeErrorTroposphericModel(final Observer observer,
                                                                              final FieldSpacecraftState<T> state,
                                                                              final T[] parameters) {
+
+        // Currently not calculating tropospheric delays for this type of observer
+        if (observer.getObserverType() == Observer.ObserverType.SATELLITE) {
+            throw new OrekitException(OrekitMessages.WRONG_OBSERVER_TYPE);
+        }
+
         // Field
         final Field<T> field = state.getDate().getField();
         final T zero         = field.getZero();
+        final GroundStation station = (GroundStation) observer;
 
         // spacecraft position and elevation as seen from the ground station
         final FieldVector3D<T> position = state.getPosition();

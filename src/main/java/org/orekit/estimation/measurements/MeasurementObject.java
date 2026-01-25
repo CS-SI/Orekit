@@ -36,7 +36,6 @@ import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -48,7 +47,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @since 14.0
  */
 
-abstract class MeasurementObject implements ParameterDriversProvider {
+public abstract class MeasurementObject {
 
     /** Suffix for ground station position and clock offset parameters names. */
     public static final String OFFSET_SUFFIX = "-offset";
@@ -170,9 +169,13 @@ abstract class MeasurementObject implements ParameterDriversProvider {
         return getQuadraticClockModel().toGradientModel(freeParameters, indices, date);
     }
 
-
-    /** {@inheritDoc} */
-    @Override
+    /** Get model parameters.
+     * @return model parameters, will throw an
+     * exception if one PDriver has several values driven. If
+     * it's the case (if at least 1 PDriver of the model has several values
+     * driven) the method {@link #getParameters(AbsoluteDate)} must be used.
+     * @since 14.0
+     */
     public List<ParameterDriver> getParametersDrivers() {
         return Collections.unmodifiableList(parameterDrivers);
     }

@@ -20,7 +20,7 @@ import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.SpacecraftState;
@@ -54,10 +54,10 @@ public class RangeTroposphericDelayModifier extends BaseRangeTroposphericDelayMo
     @Override
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<Range> estimated) {
 
-        final Range         measurement = estimated.getObservedMeasurement();
-        final GroundStation station     = measurement.getStation();
+        final Range    measurement = estimated.getObservedMeasurement();
+        final Observer station     = measurement.getStation();
 
-        RangeModifierUtil.modifyWithoutDerivatives(estimated,  station,
+        RangeModifierUtil.modifyWithoutDerivatives(estimated, station,
                                                    this::rangeErrorTroposphericModel,
                                                    this);
 
@@ -69,7 +69,7 @@ public class RangeTroposphericDelayModifier extends BaseRangeTroposphericDelayMo
     public void modify(final EstimatedMeasurement<Range> estimated) {
 
         final Range           measurement = estimated.getObservedMeasurement();
-        final GroundStation   station     = measurement.getStation();
+        final Observer        station     = measurement.getStation();
         final SpacecraftState state       = estimated.getStates()[0];
 
         RangeModifierUtil.modify(estimated, getTropoModel(),

@@ -154,6 +154,9 @@ WRONG_DEGREE_OR_ORDER=ningún término ({0}, {1}) en una descomposición armóni
 # wrong orbital elements for averaging theory
 WRONG_ELEMENTS_FOR_AVERAGING_THEORY=tipos de elementos orbitales incorrectos para esta teoría de de promediado
 
+# not a valid Observer type for this calculation
+WRONG_OBSERVER_TYPE=
+
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD=se han encontrado varias fechas de referencia ({0} y {1} difieren de {3,number,0.0##############E0} s) en el fichero de campo gravitacional {2}
 

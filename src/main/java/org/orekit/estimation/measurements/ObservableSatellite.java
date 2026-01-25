@@ -16,12 +16,14 @@
  */
 package org.orekit.estimation.measurements;
 
+import org.orekit.utils.ParameterDriversProvider;
+
 /** Class modeling a satellite that can be observed.
  *
  * @author Luc Maisonobe
  * @since 9.3
  */
-public class ObservableSatellite extends MeasurementObject {
+public class ObservableSatellite extends MeasurementObject implements ParameterDriversProvider  {
 
     /** Prefix for satellite names. */
     private static final String SAT_PREFIX = "sat-";

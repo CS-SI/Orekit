@@ -84,6 +84,13 @@ public class OneWayGNSSRangeRate extends AbstractMeasurement<OneWayGNSSRangeRate
         this.gnssSat = gnssSatellite;
     }
 
+    /** Get satellite sending signal.
+     * @return GNSS satellite
+     */
+    public final ObserverSatellite getObserver() {
+        return gnssSat;
+    }
+
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurementBase<OneWayGNSSRangeRate> theoreticalEvaluationWithoutDerivatives(final int iteration,
