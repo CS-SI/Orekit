@@ -359,7 +359,10 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
             // TIME SYSTEM CORR
             for (final TimeSystemCorrection correction : header.getTimeSystemCorrections()) {
                 if ("GPUT".equals(correction.getTimeSystemCorrectionType())) {
-                    final GNSSDate date = new GNSSDate(correction.getReferenceDate(), SatelliteSystem.GPS);
+                    final GNSSDate date = new GNSSDate(
+                            correction.getReferenceDate(),
+                            SatelliteSystem.GPS,
+                            getTimeScales());
                     outputField(' ', 3);
                     outputField(NINETEEN_SCIENTIFIC_FLOAT, correction.getTimeSystemCorrectionA0(), 22);
                     outputField(NINETEEN_SCIENTIFIC_FLOAT, correction.getTimeSystemCorrectionA1(), 41);
@@ -421,9 +424,15 @@ public class RinexNavigationWriter extends BaseRinexWriter<RinexNavigationHeader
                 final SatelliteSystem system = header.getSatelliteSystem() == SatelliteSystem.BEIDOU ?
                                                header.getSatelliteSystem() :
                                                SatelliteSystem.GPS;
-                final GNSSDate date = correction.getReferenceDate()  == null ?
-                                      new GNSSDate(0, 0, system) :
-                                      new GNSSDate(correction.getReferenceDate(), system);
+                final GNSSDate date;
+                if (correction.getReferenceDate() == null) {
+                    date = new GNSSDate(0, 0, system, getTimeScales());
+                } else {
+                    date = new GNSSDate(
+                            correction.getReferenceDate(),
+                            system,
+                            getTimeScales());
+                }
                 outputField(correction.getTimeSystemCorrectionType(), 5, true);
                 outputField(SEVENTEEN_DIGITS_SCIENTIFIC, correction.getTimeSystemCorrectionA0(), 22);
                 outputField(SIXTEEN_DIGITS_SCIENTIFIC,   correction.getTimeSystemCorrectionA1(), 38);
