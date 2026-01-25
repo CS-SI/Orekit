@@ -200,9 +200,6 @@
         <action dev="serrof" type="update" issue="1244">
             Add abstract classes for detectors based on body shape.
         </action>
-        <action dev="evan" type="fix">
-            Fix use of default data context in RINEX writer.
-        </action>
     </release>
     <release version="13.1.2" date="2025-09-25" description="Orekit 13.1.2 is a patch release. It fixes various bugs including a couple of urgent ones">
         <action dev="luc" type="fix" issue="1831">
