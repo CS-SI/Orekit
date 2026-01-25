@@ -121,7 +121,7 @@ import org.orekit.utils.TimeSpanMap;
  *    ...
  * </pre>
  * <p>
- * Note that this model {@link #pathDelay(SpacecraftState, TopocentricFrame, double,
+ * Note that this model {@link IonosphericModel#pathDelay(SpacecraftState, org.orekit.utils.PVCoordinatesProvider, double,
  * double[]) pathDelay} methods <em>requires</em> the {@link TopocentricFrame topocentric frame}
  * to lie on a {@link OneAxisEllipsoid} body shape, because the single layer on which
  * pierce point is computed must be an ellipsoidal shape at some altitude.
@@ -159,7 +159,7 @@ public class GlobalIonosphereMapModel extends AbstractIonosphericModel  {
      * @param supportedNames regular expression that matches the names of the IONEX files
      *                       to be loaded. See {@link DataProvidersManager#feed(String,
      *                       DataLoader)}.
-     * @see #GlobalIonosphereMapModel(String, DataProvidersManager, TimeScale, TimeInterpolator)
+     * @see GlobalIonosphereMapModel(String, DataProvidersManager, TimeScale, TimeInterpolator)
      * @since 14.0
      */
     @DefaultDataContext
@@ -227,7 +227,7 @@ public class GlobalIonosphereMapModel extends AbstractIonosphericModel  {
      * @param ionex          sources for the IONEX files
      * @since 14.0
      * @deprecated as of 13.1.1, replaced by
-     * {@link #GlobalIonosphereMapModel(TimeScale, TimeInterpolator, DataSource...)}
+     * {@link #GlobalIonosphereMapModel(OneAxisEllipsoid, TimeScale, TimeInterpolator, DataSource...)}
      */
     @Deprecated
     public GlobalIonosphereMapModel(final OneAxisEllipsoid earth, final TimeScale utc, final DataSource... ionex) {

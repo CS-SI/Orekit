@@ -48,8 +48,6 @@ import org.orekit.utils.ParameterDriversProvider;
 public interface IonosphericModel extends ParameterDriversProvider {
 
     /** Lambda header for calculating the path delay.
-     * @param pos position of endpoint in local topocentric frame
-     * @return the path delay due to the ionosphere in m
      */
     @FunctionalInterface
     interface DelayCalculator {
@@ -57,8 +55,6 @@ public interface IonosphericModel extends ParameterDriversProvider {
     }
 
     /** Lambda header for calculating the path delay.
-     * @param pos position of endpoint in local topocentric frame
-     * @return the path delay due to the ionosphere in m
      */
     @FunctionalInterface
     interface FieldDelayCalculator<T extends CalculusFieldElement<T>> {

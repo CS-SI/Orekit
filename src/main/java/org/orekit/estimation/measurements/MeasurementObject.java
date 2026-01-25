@@ -173,7 +173,7 @@ public abstract class MeasurementObject {
      * @return model parameters, will throw an
      * exception if one PDriver has several values driven. If
      * it's the case (if at least 1 PDriver of the model has several values
-     * driven) the method {@link #getParameters(AbsoluteDate)} must be used.
+     * driven) the method {@link org.orekit.utils.ParameterDriversProvider#getParameters(AbsoluteDate)} must be used.
      * @since 14.0
      */
     public List<ParameterDriver> getParametersDrivers() {
