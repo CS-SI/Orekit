@@ -250,9 +250,9 @@ class IodGoodingTest extends AbstractIodTest {
 
         final KeplerianOrbit orbit1 = new KeplerianOrbit(iod.estimate(frame, raDec1, raDec2, raDec3, rhoInit1, rhoInit3));
         final KeplerianOrbit orbit2 = new KeplerianOrbit(iod.estimate(frame,
-                                                         raDec1.getStation().getPosition(raDec1.getDate(), frame),
-                                                         raDec2.getStation().getPosition(raDec2.getDate(), frame),
-                                                         raDec3.getStation().getPosition(raDec3.getDate(), frame),
+                                                         raDec1.getStation().getPVCoordinatesProvider().getPosition(raDec1.getDate(), frame),
+                                                         raDec2.getStation().getPVCoordinatesProvider().getPosition(raDec2.getDate(), frame),
+                                                         raDec3.getStation().getPVCoordinatesProvider().getPosition(raDec3.getDate(), frame),
                                                          raDec1.getObservedLineOfSight(frame), raDec1.getDate(),
                                                          raDec2.getObservedLineOfSight(frame), raDec2.getDate(),
                                                          raDec3.getObservedLineOfSight(frame), raDec3.getDate(),
@@ -301,9 +301,9 @@ class IodGoodingTest extends AbstractIodTest {
 
         final KeplerianOrbit orbit1 = new KeplerianOrbit(iod.estimate(frame, azEl1, azEl2, azEl3, rhoInit1, rhoInit3));
         final KeplerianOrbit orbit2 = new KeplerianOrbit(iod.estimate(frame,
-            azEl1.getStation().getPosition(azEl1.getDate(), frame),
-            azEl2.getStation().getPosition(azEl2.getDate(), frame),
-            azEl3.getStation().getPosition(azEl3.getDate(), frame),
+            azEl1.getStation().getPVCoordinatesProvider().getPosition(azEl1.getDate(), frame),
+            azEl2.getStation().getPVCoordinatesProvider().getPosition(azEl2.getDate(), frame),
+            azEl3.getStation().getPVCoordinatesProvider().getPosition(azEl3.getDate(), frame),
             azEl1.getObservedLineOfSight(frame), azEl1.getDate(),
             azEl2.getObservedLineOfSight(frame), azEl2.getDate(),
             azEl3.getObservedLineOfSight(frame), azEl3.getDate(),

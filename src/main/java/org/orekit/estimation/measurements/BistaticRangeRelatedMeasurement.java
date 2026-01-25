@@ -128,7 +128,7 @@ abstract class BistaticRangeRelatedMeasurement<T extends GroundReceiverMeasureme
 
         final double shift = transitDate.durationFrom(state);
         final SpacecraftState transitState = state.shiftedBy(shift);
-        return new TimeStampedPVCoordinates[] { emitter.getPVCoordinates(emissionDate, frame),
+        return new TimeStampedPVCoordinates[] { emitter.getPVCoordinatesProvider().getPVCoordinates(emissionDate, frame),
                 transitState.getPVCoordinates(), receiverPV };
     }
 

@@ -1,5 +1,5 @@
-/* Copyright 2002-2026 Brianna Aubin
- * Licensed to Hawkeye 360 (HE360) under one or more
+/* Copyright 2025-2026 Hawkeye 360 (HE360)
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0

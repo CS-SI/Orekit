@@ -71,7 +71,7 @@ public class IodLaplace {
     public Orbit estimate(final Frame outputFrame,
                           final AngularAzEl azEl1, final AngularAzEl azEl2,
                           final AngularAzEl azEl3) {
-        return estimate(outputFrame, azEl2.getStation().getPVCoordinates(azEl2.getDate(), outputFrame),
+        return estimate(outputFrame, azEl2.getStation().getPVCoordinatesProvider().getPVCoordinates(azEl2.getDate(), outputFrame),
                         azEl1.getDate(), azEl1.getObservedLineOfSight(outputFrame),
                         azEl2.getDate(), azEl2.getObservedLineOfSight(outputFrame),
                         azEl3.getDate(), azEl3.getObservedLineOfSight(outputFrame));
@@ -90,7 +90,7 @@ public class IodLaplace {
     public Orbit estimate(final Frame outputFrame,
                           final AngularRaDec raDec1, final AngularRaDec raDec2,
                           final AngularRaDec raDec3) {
-        return estimate(outputFrame, raDec2.getStation().getPVCoordinates(raDec2.getDate(), outputFrame),
+        return estimate(outputFrame, raDec2.getStation().getPVCoordinatesProvider().getPVCoordinates(raDec2.getDate(), outputFrame),
                         raDec1.getDate(), raDec1.getObservedLineOfSight(outputFrame),
                         raDec2.getDate(), raDec2.getObservedLineOfSight(outputFrame),
                         raDec3.getDate(), raDec3.getObservedLineOfSight(outputFrame));

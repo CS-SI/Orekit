@@ -179,8 +179,8 @@ public class IodGooding {
 
         // Now, IOD Gooding can be used
         return estimate(outputFrame, azEl1, azEl2, azEl3,
-                        computeDistance(propagator, azEl1.getDate(), azEl1.getStation().getPosition(azEl1.getDate(), outputFrame)),
-                        computeDistance(propagator, azEl3.getDate(), azEl3.getStation().getPosition(azEl3.getDate(), outputFrame)),
+                        computeDistance(propagator, azEl1.getDate(), azEl1.getStation().getPVCoordinatesProvider().getPosition(azEl1.getDate(), outputFrame)),
+                        computeDistance(propagator, azEl3.getDate(), azEl3.getStation().getPVCoordinatesProvider().getPosition(azEl3.getDate(), outputFrame)),
                         nRev, direction);
     }
 
@@ -223,9 +223,9 @@ public class IodGooding {
                           final double rho1init, final double rho3init,
                           final int nRev, final boolean direction) {
         return estimate(outputFrame,
-                        azEl1.getStation().getPosition(azEl1.getDate(), outputFrame),
-                        azEl2.getStation().getPosition(azEl2.getDate(), outputFrame),
-                        azEl3.getStation().getPosition(azEl3.getDate(), outputFrame),
+                        azEl1.getStation().getPVCoordinatesProvider().getPosition(azEl1.getDate(), outputFrame),
+                        azEl2.getStation().getPVCoordinatesProvider().getPosition(azEl2.getDate(), outputFrame),
+                        azEl3.getStation().getPVCoordinatesProvider().getPosition(azEl3.getDate(), outputFrame),
                         azEl1.getObservedLineOfSight(outputFrame), azEl1.getDate(),
                         azEl2.getObservedLineOfSight(outputFrame), azEl2.getDate(),
                         azEl3.getObservedLineOfSight(outputFrame), azEl3.getDate(),
@@ -276,8 +276,8 @@ public class IodGooding {
 
         // Now, IOD Gooding can be used
         return estimate(outputFrame, raDec1, raDec2, raDec3,
-                        computeDistance(propagator, raDec1.getDate(), raDec1.getStation().getPosition(raDec1.getDate(), outputFrame)),
-                        computeDistance(propagator, raDec3.getDate(), raDec3.getStation().getPosition(raDec3.getDate(), outputFrame)),
+                        computeDistance(propagator, raDec1.getDate(), raDec1.getStation().getPVCoordinatesProvider().getPosition(raDec1.getDate(), outputFrame)),
+                        computeDistance(propagator, raDec3.getDate(), raDec3.getStation().getPVCoordinatesProvider().getPosition(raDec3.getDate(), outputFrame)),
                         nRev, direction);
     }
 
@@ -320,9 +320,9 @@ public class IodGooding {
                           final double rho1init, final double rho3init,
                           final int nRev, final boolean direction) {
         return estimate(outputFrame,
-                        raDec1.getStation().getPosition(raDec1.getDate(), outputFrame),
-                        raDec2.getStation().getPosition(raDec2.getDate(), outputFrame),
-                        raDec3.getStation().getPosition(raDec3.getDate(), outputFrame),
+                        raDec1.getStation().getPVCoordinatesProvider().getPosition(raDec1.getDate(), outputFrame),
+                        raDec2.getStation().getPVCoordinatesProvider().getPosition(raDec2.getDate(), outputFrame),
+                        raDec3.getStation().getPVCoordinatesProvider().getPosition(raDec3.getDate(), outputFrame),
                         raDec1.getObservedLineOfSight(outputFrame), raDec1.getDate(),
                         raDec2.getObservedLineOfSight(outputFrame), raDec2.getDate(),
                         raDec3.getObservedLineOfSight(outputFrame), raDec3.getDate(),

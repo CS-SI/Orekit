@@ -1,5 +1,5 @@
-/* Copyright 2002-2026 Brianna Aubin
- * Licensed to Hawkeye 360 (HE360) under one or more
+/* Copyright 2025-2026 Hawkeye 360 (HE360)
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -77,26 +77,6 @@ public interface Observer extends MeasurementObject {
     FieldPVCoordinatesProvider<Gradient> getFieldPVCoordinatesProvider(int freeParameters,
                                                                        Map<String, Integer> parameterIndices);
 
-    /** Return the time-stamped PV coordinates.
-     * @param date date of output coordinates
-     * @param frame desired frame for output coordinates
-     * @return observer position vector
-     * @since 14.0
-     */
-    default Vector3D getPosition(AbsoluteDate date, Frame frame) {
-        return getPVCoordinates(date, frame).getPosition();
-    }
-
-    /** Return the time-stamped PV coordinates.
-     * @param date date of output coordinates
-     * @param frame desired frame for output coordinates
-     * @return time-stamped observer pos/vel values
-     * @since 14.0
-     */
-    default TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame) {
-        return getPVCoordinatesProvider().getPVCoordinates(date, frame);
-    }
-
     /** Get the transform between offset frame and inertial frame.
      * <p>
      * The offset frame takes the <em>current</em> position offset,
@@ -161,7 +141,7 @@ public interface Observer extends MeasurementObject {
      * @param parameterDrivers list of all parameter values for the measurement
      * @return map of the free parameter values
      */
-    default Map<String, Integer> getParamaterIndices(SpacecraftState[] states,
+    default Map<String, Integer> getParameterIndices(SpacecraftState[] states,
                                                      List<ParameterDriver> parameterDrivers) {
 
         // measurement derivatives are computed with respect to spacecraft state in inertial frame
@@ -246,7 +226,7 @@ public interface Observer extends MeasurementObject {
                                                                        List<ParameterDriver> parameterDrivers)  {
         // Create the parameter indices map
         final Frame                frame        = states[0].getFrame();
-        final Map<String, Integer> paramIndices = getParamaterIndices(states, parameterDrivers);
+        final Map<String, Integer> paramIndices = getParameterIndices(states, parameterDrivers);
         final int                  nbParams     = 6 * states.length + paramIndices.size();
 
         // Turn measurement date into FieldAbsoluteDate<Gradient>
@@ -348,7 +328,7 @@ public interface Observer extends MeasurementObject {
 
         // Create the parameter indices map
         final Frame                frame        = states[0].getFrame();
-        final Map<String, Integer> paramIndices = getParamaterIndices(states, parameterDrivers);
+        final Map<String, Integer> paramIndices = getParameterIndices(states, parameterDrivers);
         final int                  nbParams     = 6 * states.length + paramIndices.size();
 
         // Coordinates of the spacecraft expressed as a gradient
