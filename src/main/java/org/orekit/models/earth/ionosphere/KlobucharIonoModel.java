@@ -19,8 +19,8 @@ package org.orekit.models.earth.ionosphere;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -30,12 +30,9 @@ import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
-import org.orekit.frames.FieldStaticTransform;
-import org.orekit.frames.StaticTransform;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
@@ -67,7 +64,7 @@ import org.orekit.utils.ParameterDriver;
  * @since 7.1
  *
  */
-public class KlobucharIonoModel implements IonosphericModel, IonosphericDelayModel {
+public class KlobucharIonoModel extends AbstractIonosphericModel {
 
     /** The 4 coefficients of a cubic equation representing the amplitude of the vertical delay. Units are sec/semi-circle^(i-1) for the i-th coefficient, i=1, 2, 3, 4. */
     private final double[] alpha;
@@ -83,13 +80,14 @@ public class KlobucharIonoModel implements IonosphericModel, IonosphericDelayMod
      *
      * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
      *
+     * @param earth earth body shape
      * @param alpha coefficients of a cubic equation representing the amplitude of the vertical delay.
      * @param beta coefficients of a cubic equation representing the period of the model.
      * @see #KlobucharIonoModel(double[], double[], TimeScale)
      */
     @DefaultDataContext
-    public KlobucharIonoModel(final double[] alpha, final double[] beta) {
-        this(alpha, beta, DataContext.getDefault().getTimeScales().getGPS());
+    public KlobucharIonoModel(final OneAxisEllipsoid earth, final double[] alpha, final double[] beta) {
+        this(earth, alpha, beta, DataContext.getDefault().getTimeScales().getGPS());
     }
 
     /**
@@ -97,16 +95,19 @@ public class KlobucharIonoModel implements IonosphericModel, IonosphericDelayMod
      * used. This model accounts for at least 50 percent of RMS error due to ionospheric
      * propagation effect (ICD-GPS-200)
      *
+     * @param earth earth body shape
      * @param alpha coefficients of a cubic equation representing the amplitude of the
      *              vertical delay.
      * @param beta  coefficients of a cubic equation representing the period of the
      *              model.
      * @param gps   GPS time scale.
-     * @since 10.1
+     * @since 14.0
      */
-    public KlobucharIonoModel(final double[] alpha,
+    public KlobucharIonoModel(final OneAxisEllipsoid earth,
+                              final double[] alpha,
                               final double[] beta,
                               final TimeScale gps) {
+        super(earth);
         this.alpha = alpha.clone();
         this.beta  = beta.clone();
         this.gps = gps;
@@ -155,12 +156,12 @@ public class KlobucharIonoModel implements IonosphericModel, IonosphericDelayMod
 
         // day of week and tow (sec)
         // Note: Sunday=0, Monday=1, Tuesday=2, Wednesday=3, Thursday=4, Friday=5, Saturday=6
-        final DateTimeComponents dtc = date.getComponents(gps);
-        final int dofweek = dtc.getDate().getDayOfWeek();
-        final double secday = dtc.getTime().getSecondsInLocalDay();
-        final double tow = dofweek * 86400. + secday;
+        final DateTimeComponents dtc     = date.getComponents(gps);
+        final int                dofweek = dtc.getDate().getDayOfWeek();
+        final double             secday  = dtc.getTime().getSecondsInLocalDay();
+        final double             tow     = dofweek * 86400. + secday;
 
-        final double t = 43200. * lonIono + tow;
+        final double t    = 43200. * lonIono + tow;
         final double tsec = t - FastMath.floor(t / 86400.) * 86400; // Seconds of day
 
         // Slant factor, semicircle
@@ -189,42 +190,33 @@ public class KlobucharIonoModel implements IonosphericModel, IonosphericDelayMod
 
     /** {@inheritDoc} */
     @Override
-    public double pathDelay(final SpacecraftState state, final TopocentricFrame baseFrame,
-                            final double frequency, final double[] parameters) {
-        return pathDelay(state, baseFrame, state.getDate(), frequency, parameters);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double pathDelay(final SpacecraftState state,
+    public double pathDelay(final Vector3D localP1, final Vector3D localP2,
                             final TopocentricFrame baseFrame, final AbsoluteDate receptionDate,
                             final double frequency, final double[] parameters) {
 
-        // we use transform from base frame to inert frame and invert it
-        // because base frame could be peered with inertial frame (hence improving performances with caching)
-        // but the reverse is almost never used
-        final StaticTransform base2Inert = baseFrame.getStaticTransformTo(state.getFrame(), receptionDate);
-        final Vector3D        position   = base2Inert.getInverse().transformPosition(state.getPosition());
+        final double baseAlt   = baseFrame.getPoint().getAltitude();
 
-        // Elevation in radians
-        final double   elevation = position.getDelta();
+        // Lambda function for calculating path delay for each side of the link
+        final DelayCalculator calculateDelay = position -> {
 
-        // Only consider measures above the horizon
-        if (elevation > 0.0) {
-            // Date
-            final AbsoluteDate date = state.getDate();
-            // Geodetic point
-            final GeodeticPoint geo = baseFrame.getPoint();
-            // Azimuth angle in radians
-            double azimuth = FastMath.atan2(position.getX(), position.getY());
-            if (azimuth < 0.) {
-                azimuth += MathUtils.TWO_PI;
+            // Elevation of position w.r.t the base frame
+            final double elevation = position.getDelta();
+
+            if (checkIfPathIsValid(position, localP1, localP2, baseAlt)) {
+                // Geodetic point
+                final GeodeticPoint geo = baseFrame.getPoint();
+                // Azimuth angle in radians
+                double azimuth = FastMath.atan2(position.getX(), position.getY());
+                if (azimuth < 0.) {
+                    azimuth += MathUtils.TWO_PI;
+                }
+                // Delay
+                return pathDelay(receptionDate, geo, elevation, azimuth, frequency, parameters);
             }
-            // Delay
-            return pathDelay(date, geo, elevation, azimuth, frequency, parameters);
-        }
+            return 0.0;
+        };
 
-        return 0.0;
+        return calculateDelay.apply(localP1) + calculateDelay.apply(localP2);
     }
 
     /**
@@ -243,8 +235,8 @@ public class KlobucharIonoModel implements IonosphericModel, IonosphericDelayMod
      * @return the path delay due to the ionosphere in m
      */
     public <T extends CalculusFieldElement<T>> T pathDelay(final FieldAbsoluteDate<T> date, final FieldGeodeticPoint<T> geo,
-                                                       final T elevation, final T azimuth, final double frequency,
-                                                       final T[] parameters) {
+                                                           final T elevation, final T azimuth, final double frequency,
+                                                           final T[] parameters) {
 
         // Sine and cosine of the azimuth
         final FieldSinCos<T> sc = FastMath.sinCos(azimuth);
@@ -310,41 +302,33 @@ public class KlobucharIonoModel implements IonosphericModel, IonosphericDelayMod
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
-                                                       final double frequency, final T[] parameters) {
-        return pathDelay(state, baseFrame, state.getDate(), frequency, parameters);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldVector3D<T> localP1, final FieldVector3D<T> localP2,
                                                            final TopocentricFrame baseFrame, final FieldAbsoluteDate<T> receptionDate,
                                                            final double frequency, final T[] parameters) {
 
-        // we use transform from base frame to inert frame and invert it
-        // because base frame could be peered with inertial frame (hence improving performances with caching)
-        // but the reverse is almost never used
-        final FieldStaticTransform<T> base2Inert = baseFrame.getStaticTransformTo(state.getFrame(), receptionDate);
-        final FieldVector3D<T>        position   = base2Inert.getInverse().transformPosition(state.getPosition());
+        final double baseAlt = baseFrame.getPoint().getAltitude();
 
-        // Elevation in radians
-        final T elevation = position.getDelta();
+        // Lambda function for calculating path delay for each side of the link
+        final FieldDelayCalculator<T> calculateFieldDelay = position -> {
 
-        if (elevation.getReal() > 0.0) {
-            // Date
-            final FieldAbsoluteDate<T> date = state.getDate();
-            // Geodetic point
-            final FieldGeodeticPoint<T> geo = baseFrame.getPoint(date.getField());
-            // Azimuth angle in radians
-            T azimuth = FastMath.atan2(position.getX(), position.getY());
-            if (azimuth.getReal() < 0.) {
-                azimuth = azimuth.add(MathUtils.TWO_PI);
+            // Elevation of object in radians w.r.t. minimum altitude point
+            final T elevation = position.getDelta();
+
+            if (checkIfPathIsValid(position, localP1, localP2, baseAlt)) {
+                // Geodetic point
+                final FieldGeodeticPoint<T> geo = baseFrame.getPoint(receptionDate.getField());
+                // Azimuth angle in radians
+                T azimuth = FastMath.atan2(position.getX(), position.getY());
+                if (azimuth.getReal() < 0.) {
+                    azimuth = azimuth.add(MathUtils.TWO_PI);
+                }
+                // Delay
+                return pathDelay(receptionDate, geo, elevation, azimuth, frequency, parameters);
             }
-            // Delay
-            return pathDelay(date, geo, elevation, azimuth, frequency, parameters);
-        }
+            return elevation.getField().getZero();
+        };
 
-        return elevation.getField().getZero();
+        return calculateFieldDelay.apply(localP1).add( calculateFieldDelay.apply(localP2) );
     }
 
     @Override

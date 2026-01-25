@@ -192,7 +192,7 @@ public class Range extends AbstractMeasurement<Range> {
         //  - 6..n - measurements parameters (clock offset, station offsets, pole, prime meridian, sat clock offset...)
 
         final CommonParametersWithDerivatives common = getStation().
-            computeRemoteParametersWith(states, getSatellites().get(0), getDate(), false, getParametersDrivers());
+            computeRemoteParametersWith(states, getSatellites().get(0), getDate(), getParametersDrivers());
 
         final int nbParams = common.getTauD().getFreeParameters();
         final TimeStampedFieldPVCoordinates<Gradient> transitPV = common.getTransitPV();

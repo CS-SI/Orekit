@@ -1657,7 +1657,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                 if (stationIonosphericModelEstimated[i]) {
                     // Estimated ionospheric model
                     final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction(stationIonosphericHIon[i]);
-                    ionosphericModel  = new EstimatedIonosphericModel(mapping, stationIonosphericVTEC[i]);
+                    ionosphericModel  = new EstimatedIonosphericModel(body, mapping, stationIonosphericVTEC[i]);
                     final ParameterDriver  ionosphericDriver = ionosphericModel.getParametersDrivers().get(0);
                     ionosphericDriver.setSelected(stationVTECEstimated[i]);
                     ionosphericDriver.setName(stationNames[i].substring(0, 5) + EstimatedIonosphericModel.VERTICAL_TOTAL_ELECTRON_CONTENT);
@@ -1666,7 +1666,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                     // Klobuchar model
                     final KlobucharIonoCoefficientsLoader loader = new KlobucharIonoCoefficientsLoader();
                     loader.loadKlobucharIonosphericCoefficients(parser.getDate(ParameterKey.ORBIT_DATE, utc).getComponents(utc).getDate());
-                    ionosphericModel = new KlobucharIonoModel(loader.getAlpha(), loader.getBeta());
+                    ionosphericModel = new KlobucharIonoModel(body, loader.getAlpha(), loader.getBeta());
                 }
             } else {
                 ionosphericModel = null;

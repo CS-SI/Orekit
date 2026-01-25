@@ -153,7 +153,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         //  - 3..5 - Velocity of the spacecraft in inertial frame
         //  - 6..n - station parameters (clock offset, clock drift, station offsets, pole, prime meridian...)
         final CommonParametersWithDerivatives common = getStation().
-            computeRemoteParametersWith(states, getSatellites().get(0), getDate(), false, getParametersDrivers());
+            computeRemoteParametersWith(states, getSatellites().get(0), getDate(), getParametersDrivers());
         final int nbParams = common.getTauD().getFreeParameters();
         final TimeStampedFieldPVCoordinates<Gradient> transitPV = common.getTransitPV();
 

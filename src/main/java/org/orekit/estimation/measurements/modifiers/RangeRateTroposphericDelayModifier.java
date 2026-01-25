@@ -21,7 +21,7 @@ import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -67,7 +67,7 @@ public class RangeRateTroposphericDelayModifier extends BaseRangeRateTropospheri
      * @return the measurement error due to Troposphere
      */
     @Override
-    public double rangeRateErrorTroposphericModel(final GroundStation station,
+    public double rangeRateErrorTroposphericModel(final Observer station,
                                                   final SpacecraftState state) {
         return fTwoWay * super.rangeRateErrorTroposphericModel(station, state);
     }
@@ -81,7 +81,7 @@ public class RangeRateTroposphericDelayModifier extends BaseRangeRateTropospheri
      * @return the measurement error due to Troposphere
      */
     @Override
-    public <T extends CalculusFieldElement<T>> T rangeRateErrorTroposphericModel(final GroundStation station,
+    public <T extends CalculusFieldElement<T>> T rangeRateErrorTroposphericModel(final Observer station,
                                                                                  final FieldSpacecraftState<T> state,
                                                                                  final T[] parameters) {
         return super.rangeRateErrorTroposphericModel(station, state, parameters).multiply(fTwoWay);
@@ -91,8 +91,8 @@ public class RangeRateTroposphericDelayModifier extends BaseRangeRateTropospheri
     @Override
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<RangeRate> estimated) {
 
-        final RangeRate       measurement = estimated.getObservedMeasurement();
-        final GroundStation   station     = measurement.getStation();
+        final RangeRate measurement = estimated.getObservedMeasurement();
+        final Observer  station     = measurement.getStation();
 
         RangeRateModifierUtil.modifyWithoutDerivatives(estimated,  station, this::rangeRateErrorTroposphericModel, this);
 
@@ -104,7 +104,7 @@ public class RangeRateTroposphericDelayModifier extends BaseRangeRateTropospheri
     public void modify(final EstimatedMeasurement<RangeRate> estimated) {
 
         final RangeRate       measurement = estimated.getObservedMeasurement();
-        final GroundStation   station     = measurement.getStation();
+        final Observer        station     = measurement.getStation();
         final SpacecraftState state       = estimated.getStates()[0];
 
         RangeRateModifierUtil.modify(estimated, getTropoModel(),

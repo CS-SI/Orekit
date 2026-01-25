@@ -154,6 +154,9 @@ WRONG_DEGREE_OR_ORDER=nu există termenul ({0}, {1}) în decompozitia armonicilo
 # wrong orbital elements for averaging theory
 WRONG_ELEMENTS_FOR_AVERAGING_THEORY=elemente orbitale invalide pentru teoria de mediere
 
+# not a valid Observer type for this calculation
+WRONG_OBSERVER_TYPE=
+
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD=mai multe date de referință ({0} and {1} separate de {3,number,0.0##############E0} s) descoperite în fișierul de câmp gravitațional {2}
 

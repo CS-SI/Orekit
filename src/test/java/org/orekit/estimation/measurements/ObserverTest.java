@@ -227,7 +227,7 @@ public class ObserverTest {
 
         final CommonParametersWithDerivatives common =
             station.computeRemoteParametersWith(states, observableSatellite, 
-            measurementDate.toAbsoluteDate(), false, parametersDrivers);
+            measurementDate.toAbsoluteDate(), parametersDrivers);
 
         final QuadraticFieldClockModel<Gradient> remoteClock = station.
                         getQuadraticFieldClock(nbParams, measurementDate.toAbsoluteDate(), paramIndices);
@@ -285,7 +285,7 @@ public class ObserverTest {
         final CommonParametersWithDerivatives common =
             observerSatellite.computeRemoteParametersWith(states, observableSatellite, 
                                                           measurementDate.toAbsoluteDate(), 
-                                                          false, parametersDrivers);
+                                                          parametersDrivers);
 
         final QuadraticFieldClockModel<Gradient> remoteClock = observerSatellite.
                         getQuadraticFieldClock(nbParams, measurementDate.toAbsoluteDate(), paramIndices);

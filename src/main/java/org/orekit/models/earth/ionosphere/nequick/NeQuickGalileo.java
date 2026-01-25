@@ -22,6 +22,7 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
@@ -46,12 +47,14 @@ public class NeQuickGalileo extends NeQuickModel {
      *
      * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
      *
+     * @param earth earth body shape
      * @param alpha effective ionisation level coefficients
      * @see #NeQuickGalileo(double[], TimeScale)
+     * @since 14.0
      */
     @DefaultDataContext
-    public NeQuickGalileo(final double[] alpha) {
-        this(alpha, DataContext.getDefault().getTimeScales().getUTC());
+    public NeQuickGalileo(final OneAxisEllipsoid earth, final double[] alpha) {
+        this(earth, alpha, DataContext.getDefault().getTimeScales().getUTC());
     }
 
     /**
@@ -60,12 +63,13 @@ public class NeQuickGalileo extends NeQuickModel {
      * The Galileo version uses a loose modip grid and 3 broadcast parameters to compute
      * effective ionization level.
      * </p>
+     * @param earth earth body shape
      * @param alpha broadcast effective ionisation level coefficients
      * @param utc UTC time scale.
-     * @since 10.1
+     * @since 14.0
      */
-    public NeQuickGalileo(final double[] alpha, final TimeScale utc) {
-        super(utc);
+    public NeQuickGalileo(final OneAxisEllipsoid earth, final double[] alpha, final TimeScale utc) {
+        super(earth, utc);
         this.alpha = alpha.clone();
     }
 

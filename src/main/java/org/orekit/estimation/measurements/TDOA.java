@@ -151,7 +151,7 @@ public class TDOA extends AbstractMeasurement<TDOA> {
         //  - 3..5 - Velocity of the spacecraft in inertial frame
         //  - 6..n - measurements parameters (clock offset, station offsets, pole, prime meridian, sat clock offset...)
         final CommonParametersWithDerivatives common = getPrimeStation().
-            computeRemoteParametersWith(states, getSatellites().get(0), getDate(), false, getParametersDrivers());
+            computeRemoteParametersWith(states, getSatellites().get(0), getDate(), getParametersDrivers());
         final int nbParams = common.getTauD().getFreeParameters();
         final TimeStampedFieldPVCoordinates<Gradient> emitterPV = common.getTransitPV();
         final FieldAbsoluteDate<Gradient> emitterDate = emitterPV.getDate();

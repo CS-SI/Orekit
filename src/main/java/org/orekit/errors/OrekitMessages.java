@@ -922,6 +922,9 @@ public enum OrekitMessages implements Localizable {
     /** WRONG ELEMENTS FOR AVERAGING THEORY. */
     WRONG_ELEMENTS_FOR_AVERAGING_THEORY("unexpected type of orbital elements for required averaging theory"),
 
+    /** WRONG OBSERVER TYPE. */
+    WRONG_OBSERVER_TYPE("not a valid Observer type for this calculation"),
+
     /** ORBITS_MUS_MISMATCH. */
     ORBITS_MUS_MISMATCH("first orbit mu {0} does not match second orbit mu {1}"),
 

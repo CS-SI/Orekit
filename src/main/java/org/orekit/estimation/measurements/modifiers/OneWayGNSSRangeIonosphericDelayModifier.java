@@ -21,7 +21,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.Observer;
-import org.orekit.estimation.measurements.Range;
+import org.orekit.estimation.measurements.gnss.OneWayGNSSRange;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.propagation.SpacecraftState;
 
@@ -42,44 +42,44 @@ import org.orekit.propagation.SpacecraftState;
  * @author Joris Olympio
  * @since 8.0
  */
-public class RangeIonosphericDelayModifier extends BaseRangeIonosphericDelayModifier implements EstimationModifier<Range> {
+public class OneWayGNSSRangeIonosphericDelayModifier extends BaseOneWayGNSSRangeIonosphericDelayModifier implements EstimationModifier<OneWayGNSSRange> {
 
     /** Constructor.
      *
      * @param model Ionospheric delay model appropriate for the current range measurement method.
      * @param freq frequency of the signal in Hz
      */
-    public RangeIonosphericDelayModifier(final IonosphericModel model,
+    public OneWayGNSSRangeIonosphericDelayModifier(final IonosphericModel model,
                                          final double freq) {
         super(model, freq);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<Range> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<OneWayGNSSRange> estimated) {
 
-        final Range    measurement = estimated.getObservedMeasurement();
-        final Observer station     = measurement.getStation();
+        final OneWayGNSSRange    measurement = estimated.getObservedMeasurement();
+        final Observer station     = measurement.getObserver();
 
-        RangeModifierUtil.modifyWithoutDerivatives(estimated, station,
-                                                   this::rangeErrorIonosphericModel,
+        OneWayGNSSRangeModifierUtil.modifyWithoutDerivatives(estimated, station,
+                                                   this::oneWayGNSSErrorIonosphericModel,
                                                    this);
 
     }
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<Range> estimated) {
+    public void modify(final EstimatedMeasurement<OneWayGNSSRange> estimated) {
 
-        final Range           measurement = estimated.getObservedMeasurement();
-        final Observer        station     = measurement.getStation();
+        final OneWayGNSSRange           measurement = estimated.getObservedMeasurement();
+        final Observer        station     = measurement.getObserver();
         final SpacecraftState state       = estimated.getStates()[0];
 
-        RangeModifierUtil.modify(estimated, getIonoModel(),
+        OneWayGNSSRangeModifierUtil.modify(estimated, getIonoModel(),
                                  new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame())),
                                  station,
-                                 this::rangeErrorIonosphericModel,
-                                 this::rangeErrorIonosphericModel,
+                                 this::oneWayGNSSErrorIonosphericModel,
+                                 this::oneWayGNSSErrorIonosphericModel,
                                  this);
 
     }

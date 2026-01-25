@@ -99,6 +99,13 @@ public class OneWayGNSSPhase extends AbstractMeasurement<OneWayGNSSPhase> {
         this.gnssSat = gnssSatellite;
     }
 
+    /** Get satellite sending signal.
+     * @return GNSS satellite
+     */
+    public final ObserverSatellite getObserver() {
+        return gnssSat;
+    }
+
     /** Get the wavelength.
      * @return wavelength (m)
      */

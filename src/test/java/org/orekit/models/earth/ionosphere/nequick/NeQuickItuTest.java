@@ -52,17 +52,23 @@ import org.orekit.utils.PVCoordinates;
  * Open Service-Ionospheric Correction Algorithm for Galileo Single Frequency Users. 1.2."
  */
 public class NeQuickItuTest {
+    
+    /** Earth model. */
+    private OneAxisEllipsoid earthBodyShape;
 
     @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
+        earthBodyShape  = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                              Constants.WGS84_EARTH_FLATTENING,
+                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true));
     }
 
     @Test
     public void testMediumSolarActivityItu() {
 
         // Model
-        final NeQuickItu model = new NeQuickItu(137.568737, TimeScalesFactory.getUTC());
+        final NeQuickItu model = new NeQuickItu(earthBodyShape, 137.568737, TimeScalesFactory.getUTC());
 
         // Getters
         Assertions.assertEquals(137.568737, model.getF107(), 1.0e-6);
@@ -91,7 +97,7 @@ public class NeQuickItuTest {
         final T zero = field.getZero();
 
         // Model
-        final NeQuickItu model = new NeQuickItu(137.568737, TimeScalesFactory.getUTC());
+        final NeQuickItu model = new NeQuickItu(earthBodyShape, 137.568737, TimeScalesFactory.getUTC());
 
         // Geodetic points
         final FieldGeodeticPoint<T> recP = new FieldGeodeticPoint<>(zero.newInstance(FastMath.toRadians(-31.80)),
@@ -130,7 +136,7 @@ public class NeQuickItuTest {
     private void doTestValidationItu(final double flux, final double expected) {
 
         // Model
-        final NeQuickItu model = new NeQuickItu(flux, TimeScalesFactory.getUTC());
+        final NeQuickItu model = new NeQuickItu(earthBodyShape, flux, TimeScalesFactory.getUTC());
 
         // Geodetic points
         final GeodeticPoint recP = new GeodeticPoint(FastMath.toRadians(82.494293510492980204),
@@ -170,7 +176,7 @@ public class NeQuickItuTest {
                                                                          final double flux, final double expected) {
 
         // Model
-        final NeQuickItu model = new NeQuickItu(flux, TimeScalesFactory.getUTC());
+        final NeQuickItu model = new NeQuickItu(earthBodyShape, flux, TimeScalesFactory.getUTC());
 
         // Geodetic points
         final FieldGeodeticPoint<T> recP =
@@ -221,7 +227,7 @@ public class NeQuickItuTest {
     private void doTestHeights(final double hRec, final double hSat, final double expected) {
 
         // Model
-        final NeQuickItu model = new NeQuickItu(128.0, TimeScalesFactory.getUTC());
+        final NeQuickItu model = new NeQuickItu(earthBodyShape, 128.0, TimeScalesFactory.getUTC());
 
         // Geodetic points
         final GeodeticPoint recP = new GeodeticPoint(FastMath.toRadians( 82.494),
@@ -242,7 +248,7 @@ public class NeQuickItuTest {
 
     @Test
     public void testMeridian() {
-        final NeQuickItu model = new NeQuickItu(128.0, TimeScalesFactory.getUTC());
+        final NeQuickItu model = new NeQuickItu(earthBodyShape, 128.0, TimeScalesFactory.getUTC());
         final GeodeticPoint recP = new GeodeticPoint(FastMath.toRadians(1.0e-3), FastMath.toRadians(0), 0);
         final GeodeticPoint satP = new GeodeticPoint(FastMath.toRadians(0.761e-3), FastMath.toRadians(0), 2.0e6);
         final AbsoluteDate date = new AbsoluteDate(2007, 4, 1, TimeScalesFactory.getUTC());
@@ -253,7 +259,7 @@ public class NeQuickItuTest {
     public void testMeridianField() {
         final Field<Binary64> field = Binary64Field.getInstance();
         final Binary64 zero = field.getZero();
-        final NeQuickItu model = new NeQuickItu(128.0, TimeScalesFactory.getUTC());
+        final NeQuickItu model = new NeQuickItu(earthBodyShape, 128.0, TimeScalesFactory.getUTC());
         final FieldGeodeticPoint<Binary64> recP = new FieldGeodeticPoint<>(FastMath.toRadians(zero.newInstance(1.0e-3)),
                                                                            FastMath.toRadians(zero.newInstance(0)),
                                                                            zero.newInstance(0));
@@ -296,7 +302,7 @@ public class NeQuickItuTest {
         final T zero = field.getZero();
 
         // Model
-        final NeQuickItu model = new NeQuickItu(128.0, TimeScalesFactory.getUTC());
+        final NeQuickItu model = new NeQuickItu(earthBodyShape, 128.0, TimeScalesFactory.getUTC());
 
         // Geodetic points
         final FieldGeodeticPoint<T> recP = new FieldGeodeticPoint<>(FastMath.toRadians(zero.newInstance( 82.494)),
@@ -319,7 +325,7 @@ public class NeQuickItuTest {
     public void testDelay() {
 
         // Model
-        final NeQuickItu model = new NeQuickItu(128.0, TimeScalesFactory.getUTC());
+        final NeQuickItu model = new NeQuickItu(earthBodyShape, 128.0, TimeScalesFactory.getUTC());
 
         // Geodetic points
         final GeodeticPoint recP = new GeodeticPoint(FastMath.toRadians(-31.80), FastMath.toRadians(115.89), 12.78);
@@ -328,20 +334,16 @@ public class NeQuickItuTest {
         // Date
         final AbsoluteDate date = new AbsoluteDate(2018, 4, 2, 16, 0, 0, TimeScalesFactory.getUTC());
 
-        // Earth
-        final OneAxisEllipsoid ellipsoid = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                Constants.WGS84_EARTH_FLATTENING,
-                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         // Satellite position
-        final Vector3D satPosInITRF    = ellipsoid.transform(satP);
-        final Vector3D satPosInEME2000 = ellipsoid.getBodyFrame().getStaticTransformTo(FramesFactory.getEME2000(), date).transformPosition(satPosInITRF);
+        final Vector3D satPosInITRF    = earthBodyShape.transform(satP);
+        final Vector3D satPosInEME2000 = earthBodyShape.getBodyFrame().getStaticTransformTo(FramesFactory.getEME2000(), date).transformPosition(satPosInITRF);
 
         // Spacecraft state
         final PVCoordinates   pv      = new PVCoordinates(satPosInEME2000, new Vector3D(1.0, 1.0, 1.0));
         final Orbit           orbit   = new CartesianOrbit(pv, FramesFactory.getEME2000(), date, Constants.WGS84_EARTH_MU);
         final SpacecraftState state   = new SpacecraftState(orbit);
 
-        final double delay = model.pathDelay(state, new TopocentricFrame(ellipsoid, recP, null),
+        final double delay = model.pathDelay(state, new TopocentricFrame(earthBodyShape, recP, null),
                                              PredefinedGnssSignal.G01.getFrequency(), model.getParameters());
        
         // Verify
@@ -360,7 +362,7 @@ public class NeQuickItuTest {
         final T one  = field.getOne();
 
         // Model
-        final NeQuickItu model = new NeQuickItu(128.0, TimeScalesFactory.getUTC());
+        final NeQuickItu model = new NeQuickItu(earthBodyShape, 128.0, TimeScalesFactory.getUTC());
 
         // Geodetic points
         final double recLat = FastMath.toRadians(-31.80);
@@ -373,20 +375,16 @@ public class NeQuickItuTest {
         // Date
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2018, 4, 2, 16, 0, 0, TimeScalesFactory.getUTC());
 
-        // Earth
-        final OneAxisEllipsoid ellipsoid = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                Constants.WGS84_EARTH_FLATTENING,
-                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         // Satellite position
-        final FieldVector3D<T> satPosInITRF    = ellipsoid.transform(satP);
-        final FieldVector3D<T> satPosInEME2000 = ellipsoid.getBodyFrame().getStaticTransformTo(FramesFactory.getEME2000(), date).transformPosition(satPosInITRF);
+        final FieldVector3D<T> satPosInITRF    = earthBodyShape.transform(satP);
+        final FieldVector3D<T> satPosInEME2000 = earthBodyShape.getBodyFrame().getStaticTransformTo(FramesFactory.getEME2000(), date).transformPosition(satPosInITRF);
 
         // Spacecraft state
         final FieldPVCoordinates<T>   pv      = new FieldPVCoordinates<>(satPosInEME2000, new FieldVector3D<>(one, one, one));
         final FieldOrbit<T>           orbit   = new FieldCartesianOrbit<>(pv, FramesFactory.getEME2000(), date, zero.newInstance(Constants.WGS84_EARTH_MU));
         final FieldSpacecraftState<T> state   = new FieldSpacecraftState<>(orbit);
 
-        final T delay = model.pathDelay(state, new TopocentricFrame(ellipsoid, recP, null),
+        final T delay = model.pathDelay(state, new TopocentricFrame(earthBodyShape, recP, null),
                                         PredefinedGnssSignal.G01.getFrequency(), model.getParameters(field));
        
         // Verify
@@ -397,7 +395,7 @@ public class NeQuickItuTest {
     public void testAntiMeridian() {
 
         // Model
-        final NeQuickItu model = new NeQuickItu(128.0, TimeScalesFactory.getUTC());
+        final NeQuickItu model = new NeQuickItu(earthBodyShape, 128.0, TimeScalesFactory.getUTC());
 
         // Date
         final AbsoluteDate date = new AbsoluteDate(2018,  11,  2, 16, 0, 0, TimeScalesFactory.getUTC());
@@ -420,7 +418,7 @@ public class NeQuickItuTest {
         final T zero = field.getZero();
 
         // Model
-        final NeQuickItu model = new NeQuickItu(128.0, TimeScalesFactory.getUTC());
+        final NeQuickItu model = new NeQuickItu(earthBodyShape, 128.0, TimeScalesFactory.getUTC());
 
         // Date
         final FieldAbsoluteDate<T> date =
@@ -443,7 +441,7 @@ public class NeQuickItuTest {
     public void testPole() {
 
         // Model
-        final NeQuickItu model = new NeQuickItu(128.0, TimeScalesFactory.getUTC());
+        final NeQuickItu model = new NeQuickItu(earthBodyShape, 128.0, TimeScalesFactory.getUTC());
 
         // Date
         final AbsoluteDate date = new AbsoluteDate(2018,  11,  2, 16, 0, 0, TimeScalesFactory.getUTC());
@@ -466,7 +464,7 @@ public class NeQuickItuTest {
         final T zero = field.getZero();
 
         // Model
-        final NeQuickItu model = new NeQuickItu(128.0, TimeScalesFactory.getUTC());
+        final NeQuickItu model = new NeQuickItu(earthBodyShape, 128.0, TimeScalesFactory.getUTC());
 
         // Date
         final FieldAbsoluteDate<T> date =
@@ -489,7 +487,7 @@ public class NeQuickItuTest {
     public void testZenith() {
 
         // Model
-        final NeQuickItu model = new NeQuickItu(128.0, TimeScalesFactory.getUTC());
+        final NeQuickItu model = new NeQuickItu(earthBodyShape, 128.0, TimeScalesFactory.getUTC());
 
         // Date
         final AbsoluteDate date = new AbsoluteDate(2018,  4,  2, 16, 0, 0, TimeScalesFactory.getUTC());
@@ -512,7 +510,7 @@ public class NeQuickItuTest {
         final T zero = field.getZero();
 
         // Model
-        final NeQuickItu model = new NeQuickItu(128.0, TimeScalesFactory.getUTC());
+        final NeQuickItu model = new NeQuickItu(earthBodyShape, 128.0, TimeScalesFactory.getUTC());
 
         // Date
         final FieldAbsoluteDate<T> date =

@@ -154,6 +154,9 @@ WRONG_DEGREE_OR_ORDER=nessun termine ({0}, {1}) nella decomposizione armonica sf
 # wrong orbital elements for averaging theory
 WRONG_ELEMENTS_FOR_AVERAGING_THEORY=
 
+# not a valid Observer type for this calculation
+WRONG_OBSERVER_TYPE=
+
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD=sono state trovate varie date di riferimento ({0} e {1} differenti di {3,number,0.0##############E0} s) nel file del campo gravitazionale {2}
 
