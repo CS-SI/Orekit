@@ -79,7 +79,7 @@ public abstract class GroundReceiverMeasurement<T extends ObservedMeasurement<T>
      * @return map
      */
     protected Map<String, Integer> getParameterIndices(final SpacecraftState[] states) {
-        return getReceiverStation().getParamaterIndices(states, getParametersDrivers());
+        return getReceiverStation().getParameterIndices(states, getParametersDrivers());
     }
 
     /**

@@ -147,7 +147,8 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         // Solve for PV coords at signal arrival time at first station
         final double primeClockOffset = getPrimaryStation().getQuadraticClockModel().getOffset(getDate()).getOffset();
         final AbsoluteDate measurementDate = getDate().shiftedBy(-primeClockOffset);
-        final TimeStampedPVCoordinates primaryArrival = getPrimaryStation().getPVCoordinates(measurementDate, state.getFrame());
+        final TimeStampedPVCoordinates primaryArrival = getPrimaryStation().getPVCoordinatesProvider()
+                .getPVCoordinates(measurementDate, state.getFrame());
 
         // Compute propagation times
         final PVCoordinatesProvider localCoordsProvider = new AbsolutePVCoordinates(state.getFrame(), pva);
@@ -184,7 +185,7 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         final AbsoluteDate reboundDate = measurementDate.shiftedBy(-tauLeg2);
 
         // Secondary station PV in inertial frame at rebound date on secondary station
-        final TimeStampedPVCoordinates secondaryRebound = getSecondaryStation().getPVCoordinates(reboundDate, state.getFrame());
+        final TimeStampedPVCoordinates secondaryRebound = getSecondaryStation().getPVCoordinatesProvider().getPVCoordinates(reboundDate, state.getFrame());
 
         // Downlink time of flight from transitStateLeg1 to secondary station at rebound date
         final SignalTravelTimeAdjustableEmitter signalTimeOfFlightLeg2 =
@@ -199,7 +200,7 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
 
         // Primary station PV in inertial frame at approximate emission date
         final AbsoluteDate approxEmissionDate = measurementDate.shiftedBy(-2 * (secondaryTauU + primaryTauD));
-        final TimeStampedPVCoordinates QPrimaryApprox = getPrimaryStation().getPVCoordinates(approxEmissionDate, state.getFrame());
+        final TimeStampedPVCoordinates QPrimaryApprox = getPrimaryStation().getPVCoordinatesProvider().getPVCoordinates(approxEmissionDate, state.getFrame());
 
         // Uplink time of flight from primary station to transit state of leg1
         final SignalTravelTimeAdjustableEmitter signalTimeOfFlightQPrimary =
@@ -212,7 +213,7 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         // Primary station PV in inertial frame at exact emission date
         final AbsoluteDate emissionDate = transitStateLeg1PV.getDate().shiftedBy(-primaryTauU);
         final TimeStampedPVCoordinates checkPrimaryDeparture =
-                        getPrimaryStation().getPVCoordinates(emissionDate, state.getFrame());
+                        getPrimaryStation().getPVCoordinatesProvider().getPVCoordinates(emissionDate, state.getFrame());
 
         // Total time of flight for leg 1
         final double tauLeg1 = secondaryTauD + primaryTauU;
@@ -373,8 +374,8 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
 
         // Primary station PV in inertial frame at exact emission date
         final AbsoluteDate emissionDate = transitStateLeg1PV.getDate().toAbsoluteDate().shiftedBy(-primaryTauU.getValue());
-        final TimeStampedPVCoordinates primaryDeparture =
-                        getPrimaryStation().getPVCoordinates(emissionDate, state.getFrame());
+        final TimeStampedPVCoordinates primaryDeparture = getPrimaryStation().getPVCoordinatesProvider()
+                .getPVCoordinates(emissionDate, state.getFrame());
 
         // Total time of flight for leg 1
         final Gradient tauLeg1 = secondaryTauD.add(primaryTauU);

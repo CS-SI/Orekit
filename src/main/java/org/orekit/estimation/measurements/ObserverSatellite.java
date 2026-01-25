@@ -1,5 +1,5 @@
-/* Copyright 2002-2026 Brianna Aubin
- * Licensed to Hawkeye 360 (HE360) under one or more
+/* Copyright 2025-2026 Hawkeye 360 (HE360)
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,9 +18,9 @@ package org.orekit.estimation.measurements;
 
 import java.util.Map;
 
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
-import org.hipparchus.Field;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -40,7 +40,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Brianna Aubin
  * @since 14.0
  */
-public class ObserverSatellite extends MeasurementObject implements Observer {
+public class ObserverSatellite extends AbstractMeasurementObject implements Observer {
 
     /** Provides satellite trajectory. */
     private final PVCoordinatesProvider pvCoordsProvider;
@@ -60,7 +60,8 @@ public class ObserverSatellite extends MeasurementObject implements Observer {
      * @param quadraticClock clock model for receiver
      * @since 14.0
      */
-    public ObserverSatellite(final String name, final PVCoordinatesProvider pvCoordsProvider, final QuadraticClockModel quadraticClock) {
+    public ObserverSatellite(final String name, final PVCoordinatesProvider pvCoordsProvider,
+                             final QuadraticClockModel quadraticClock) {
         super(name, quadraticClock);
         this.pvCoordsProvider = pvCoordsProvider;
     }
@@ -119,7 +120,7 @@ public class ObserverSatellite extends MeasurementObject implements Observer {
                                                    new AbsoluteDate(date, -getClockOffsetDriver().getValue());
 
         // Return transform that will give PV coords of emitter when pos = 0, vel = 0 is entered
-        final PVCoordinates coords = getPVCoordinates(offsetCompensatedDate, inertial);
+        final PVCoordinates coords = getPVCoordinatesProvider().getPVCoordinates(offsetCompensatedDate, inertial);
         return new Transform(offsetCompensatedDate, coords.getPosition(), coords.getVelocity(), coords.getAcceleration());
     }
 

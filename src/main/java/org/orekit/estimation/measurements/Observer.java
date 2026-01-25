@@ -1,5 +1,5 @@
-/* Copyright 2002-2026 Brianna Aubin
- * Licensed to Hawkeye 360 (HE360) under one or more
+/* Copyright 2025-2026 Hawkeye 360 (HE360)
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -34,12 +34,10 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.clocks.ClockOffset;
 import org.orekit.time.clocks.FieldClockOffset;
-import org.orekit.time.clocks.QuadraticClockModel;
 import org.orekit.time.clocks.QuadraticFieldClockModel;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversProvider;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -50,7 +48,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Brianna Aubin
  * @since 14.0
  */
-public interface Observer extends ParameterDriversProvider {
+public interface Observer extends MeasurementObject {
 
     enum ObserverType {
         /** Indicates a ground-based observation station. */
@@ -62,42 +60,11 @@ public interface Observer extends ParameterDriversProvider {
 
     /** Get the type of object being used in measurement observations.
      * @return string value
-     * @since 14.0
-     */
+=     */
     ObserverType getObserverType();
-
-    /** Get the Observer name.
-     * @return name for the object
-     * @since 12.1
-     */
-    String getName();
-
-    /** Get the clock offset driver.
-     * @return clock offset driver
-     */
-    ParameterDriver getClockOffsetDriver();
-
-    /** Get a quadratic clock model valid at some date.
-     * @return quadratic clock model
-     * @since 12.1
-     */
-
-    QuadraticClockModel getQuadraticClockModel();
-
-    /** Get emitting satellite clock provider.
-     * @param freeParameters total number of free parameters in the gradient
-     * @param date time of computations
-     * @param indices indices of the differentiation parameters in derivatives computations,
-     * must be span name and not driver name
-     * @return emitting satellite clock provider
-     */
-    QuadraticFieldClockModel<Gradient> getQuadraticFieldClock(int freeParameters,
-                                                              AbsoluteDate date,
-                                                              Map<String, Integer> indices);
 
     /** Return the PVCoordinatesProvider.
      * @return pos/vel coordinates provider
-     * @since 14.0
      */
     PVCoordinatesProvider getPVCoordinatesProvider();
 
@@ -109,26 +76,6 @@ public interface Observer extends ParameterDriversProvider {
      */
     FieldPVCoordinatesProvider<Gradient> getFieldPVCoordinatesProvider(int freeParameters,
                                                                        Map<String, Integer> parameterIndices);
-
-    /** Return the time-stamped PV coordinates.
-     * @param date date of output coordinates
-     * @param frame desired frame for output coordinates
-     * @return observer position vector
-     * @since 14.0
-     */
-    default Vector3D getPosition(AbsoluteDate date, Frame frame) {
-        return getPVCoordinates(date, frame).getPosition();
-    }
-
-    /** Return the time-stamped PV coordinates.
-     * @param date date of output coordinates
-     * @param frame desired frame for output coordinates
-     * @return time-stamped observer pos/vel values
-     * @since 14.0
-     */
-    default TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame) {
-        return getPVCoordinatesProvider().getPVCoordinates(date, frame);
-    }
 
     /** Get the transform between offset frame and inertial frame.
      * <p>
@@ -162,7 +109,6 @@ public interface Observer extends ParameterDriversProvider {
      * @param indices indices of the estimated parameters in derivatives computations, must be driver
      * span name in map, not driver name or will not give right results (see {@link ParameterDriver#getValue(int, Map)})
      * @return transform between offset frame and inertial frame, at specified date
-     * @since 10.2
      */
     default FieldTransform<Gradient> getOffsetToInertial(Frame inertial, AbsoluteDate clockDate,
                                                          int freeParameters, Map<String, Integer> indices) {
@@ -186,7 +132,6 @@ public interface Observer extends ParameterDriversProvider {
      * @param indices indices of the estimated parameters in derivatives computations, must be driver
      * span name in map, not driver name or will not give right results (see {@link ParameterDriver#getValue(int, Map)})
      * @return transform between offset frame and inertial frame, at specified date
-     * @since 10.2
      */
     FieldTransform<Gradient> getOffsetToInertial(Frame inertial, FieldAbsoluteDate<Gradient> offsetCompensatedDate,
                                                  int freeParameters, Map<String, Integer> indices);
@@ -195,9 +140,8 @@ public interface Observer extends ParameterDriversProvider {
      * @param states list of ObservableSatellite measurement states
      * @param parameterDrivers list of all parameter values for the measurement
      * @return map of the free parameter values
-     * @since 14.0
      */
-    default Map<String, Integer> getParamaterIndices(SpacecraftState[] states,
+    default Map<String, Integer> getParameterIndices(SpacecraftState[] states,
                                                      List<ParameterDriver> parameterDrivers) {
 
         // measurement derivatives are computed with respect to spacecraft state in inertial frame
@@ -226,7 +170,6 @@ public interface Observer extends ParameterDriversProvider {
      * by the receiver clock (i.e. clock offset <em>not</em> compensated), if false,
      * the specified {@code date} was already compensated and is a physical absolute date
      * @return common parameters
-     * @since 14.0
      */
     default CommonParametersWithoutDerivatives computeLocalParametersWithout(SpacecraftState[] states,
                                                                              ObservableSatellite localSat,
@@ -275,7 +218,6 @@ public interface Observer extends ParameterDriversProvider {
      * by the receiver clock (i.e. clock offset <em>not</em> compensated), if false,
      * the specified {@code date} was already compensated and is a physical absolute date
      * @return common parameters
-     * @since 14.0
      */
     default CommonParametersWithDerivatives computeLocalParametersWith(SpacecraftState[] states,
                                                                        ObservableSatellite localSat,
@@ -284,7 +226,7 @@ public interface Observer extends ParameterDriversProvider {
                                                                        List<ParameterDriver> parameterDrivers)  {
         // Create the parameter indices map
         final Frame                frame        = states[0].getFrame();
-        final Map<String, Integer> paramIndices = getParamaterIndices(states, parameterDrivers);
+        final Map<String, Integer> paramIndices = getParameterIndices(states, parameterDrivers);
         final int                  nbParams     = 6 * states.length + paramIndices.size();
 
         // Turn measurement date into FieldAbsoluteDate<Gradient>
@@ -332,7 +274,6 @@ public interface Observer extends ParameterDriversProvider {
      * by the receiver clock (i.e. clock offset <em>not</em> compensated), if false,
      * the specified {@code date} was already compensated and is a physical absolute date
      * @return common parameters
-     * @since 14.0
      */
     default CommonParametersWithoutDerivatives computeRemoteParametersWithout(SpacecraftState[] states,
                                                                               ObservableSatellite localSat,
@@ -354,7 +295,7 @@ public interface Observer extends ParameterDriversProvider {
         final TimeStampedPVCoordinates satelliteDownlink = offsetToInertialDownlink.transformPVCoordinates(origin);
 
         // Coordinates provider for emitting object (observed spacecraft)
-        final PVCoordinatesProvider pvCoordinatesProvider = MeasurementObject.extractPVCoordinatesProvider(states[0], pva);
+        final PVCoordinatesProvider pvCoordinatesProvider = AbstractMeasurementObject.extractPVCoordinatesProvider(states[0], pva);
 
         // Downlink delay / determine time of emission of signal by ObservableSatellite
         final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = new SignalTravelTimeAdjustableEmitter(pvCoordinatesProvider);
@@ -379,7 +320,6 @@ public interface Observer extends ParameterDriversProvider {
      * @param measurementDate date when measurement was taken
      * @param parameterDrivers list of parameter drivers associated with measurement
      * @return common parameters
-     * @since 14.0
      */
     default CommonParametersWithDerivatives computeRemoteParametersWith(SpacecraftState[] states,
                                                                         ObservableSatellite localSat,
@@ -388,7 +328,7 @@ public interface Observer extends ParameterDriversProvider {
 
         // Create the parameter indices map
         final Frame                frame        = states[0].getFrame();
-        final Map<String, Integer> paramIndices = getParamaterIndices(states, parameterDrivers);
+        final Map<String, Integer> paramIndices = getParameterIndices(states, parameterDrivers);
         final int                  nbParams     = 6 * states.length + paramIndices.size();
 
         // Coordinates of the spacecraft expressed as a gradient
@@ -413,7 +353,7 @@ public interface Observer extends ParameterDriversProvider {
                                                                                                             zero, zero, zero));
 
         // Form coordinates provider
-        final FieldPVCoordinatesProvider<Gradient> fieldPVCoordinatesProvider = MeasurementObject.extractFieldPVCoordinatesProvider(states[0], pva);
+        final FieldPVCoordinatesProvider<Gradient> fieldPVCoordinatesProvider = AbstractMeasurementObject.extractFieldPVCoordinatesProvider(states[0], pva);
 
         // Downlink delay
         final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer = new FieldSignalTravelTimeAdjustableEmitter<>(fieldPVCoordinatesProvider);

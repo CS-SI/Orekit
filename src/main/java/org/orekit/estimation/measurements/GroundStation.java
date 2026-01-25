@@ -91,7 +91,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  * @since 8.0
  */
-public class GroundStation extends MeasurementObject implements Observer {
+public class GroundStation extends AbstractMeasurementObject implements Observer {
 
     /** Position offsets scaling factor.
      * <p>

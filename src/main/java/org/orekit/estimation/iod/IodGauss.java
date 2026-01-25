@@ -75,9 +75,9 @@ public class IodGauss {
     public Orbit estimate(final Frame outputFrame, final AngularAzEl azEl1,
                           final AngularAzEl azEl2, final AngularAzEl azEl3) {
         return estimate(outputFrame,
-                        azEl1.getStation().getPosition(azEl1.getDate(), outputFrame), azEl1.getDate(), azEl1.getObservedLineOfSight(outputFrame),
-                        azEl2.getStation().getPosition(azEl2.getDate(), outputFrame), azEl2.getDate(), azEl2.getObservedLineOfSight(outputFrame),
-                        azEl3.getStation().getPosition(azEl3.getDate(), outputFrame), azEl3.getDate(), azEl3.getObservedLineOfSight(outputFrame));
+                        azEl1.getStation().getPVCoordinatesProvider().getPosition(azEl1.getDate(), outputFrame), azEl1.getDate(), azEl1.getObservedLineOfSight(outputFrame),
+                        azEl2.getStation().getPVCoordinatesProvider().getPosition(azEl2.getDate(), outputFrame), azEl2.getDate(), azEl2.getObservedLineOfSight(outputFrame),
+                        azEl3.getStation().getPVCoordinatesProvider().getPosition(azEl3.getDate(), outputFrame), azEl3.getDate(), azEl3.getObservedLineOfSight(outputFrame));
     }
 
     /**
@@ -93,9 +93,9 @@ public class IodGauss {
     public Orbit estimate(final Frame outputFrame, final AngularRaDec raDec1,
                           final AngularRaDec raDec2, final AngularRaDec raDec3) {
         return estimate(outputFrame,
-                        raDec1.getStation().getPosition(raDec1.getDate(), outputFrame), raDec1.getDate(), raDec1.getObservedLineOfSight(outputFrame),
-                        raDec2.getStation().getPosition(raDec2.getDate(), outputFrame), raDec2.getDate(), raDec2.getObservedLineOfSight(outputFrame),
-                        raDec3.getStation().getPosition(raDec3.getDate(), outputFrame), raDec3.getDate(), raDec3.getObservedLineOfSight(outputFrame));
+                        raDec1.getStation().getPVCoordinatesProvider().getPosition(raDec1.getDate(), outputFrame), raDec1.getDate(), raDec1.getObservedLineOfSight(outputFrame),
+                        raDec2.getStation().getPVCoordinatesProvider().getPosition(raDec2.getDate(), outputFrame), raDec2.getDate(), raDec2.getObservedLineOfSight(outputFrame),
+                        raDec3.getStation().getPVCoordinatesProvider().getPosition(raDec3.getDate(), outputFrame), raDec3.getDate(), raDec3.getObservedLineOfSight(outputFrame));
     }
 
     /**

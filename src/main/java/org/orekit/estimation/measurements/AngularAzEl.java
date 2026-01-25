@@ -89,7 +89,7 @@ public class AngularAzEl extends GroundBasedAngularMeasurement<AngularAzEl> {
         final PVCoordinatesProvider receiverPVProvider = getStation().getPVCoordinatesProvider();
         final SpacecraftState state = states[0];
         final Frame frame = state.getFrame();
-        final PVCoordinatesProvider emitter = MeasurementObject.extractPVCoordinatesProvider(state, state.getPVCoordinates());
+        final PVCoordinatesProvider emitter = AbstractMeasurementObject.extractPVCoordinatesProvider(state, state.getPVCoordinates());
         final AbsoluteDate emissionDate = computeEmissionDate(frame, receiverPVProvider, receptionDate, emitter);
 
         // Compute azimuth and elevation
@@ -123,7 +123,7 @@ public class AngularAzEl extends GroundBasedAngularMeasurement<AngularAzEl> {
         //  - 6..n - station parameters (clock offset, station offsets, pole, prime meridian...)
 
         // Create the parameter indices map
-        final Map<String, Integer> paramIndices = getStation().getParamaterIndices(states, getParametersDrivers());
+        final Map<String, Integer> paramIndices = getStation().getParameterIndices(states, getParametersDrivers());
         final int nbParams = 6 * states.length + paramIndices.size();
         final SpacecraftState state = states[0];
         final TimeStampedFieldPVCoordinates<Gradient> pva = AbstractMeasurement.getCoordinates(state, 0, nbParams);
@@ -134,7 +134,7 @@ public class AngularAzEl extends GroundBasedAngularMeasurement<AngularAzEl> {
         final Frame frame = state.getFrame();
         final FieldAbsoluteDate<Gradient> receptionDate = getCorrectedReceptionDateField(nbParams, paramIndices);
         final TimeStampedFieldPVCoordinates<Gradient> receiverPV = receiverPVProvider.getPVCoordinates(receptionDate, frame);
-        final FieldPVCoordinatesProvider<Gradient> emitter = MeasurementObject.extractFieldPVCoordinatesProvider(state, pva);
+        final FieldPVCoordinatesProvider<Gradient> emitter = AbstractMeasurementObject.extractFieldPVCoordinatesProvider(state, pva);
         final Gradient signalTravelTime = getSignalTravelTimeModel().getFieldAdjustableEmitterComputer(receptionDate.getField(),
                         emitter).computeDelay(receptionDate, receiverPV.getPosition(), receptionDate, frame);
         final FieldAbsoluteDate<Gradient> emissionDate = receptionDate.shiftedBy(signalTravelTime.negate());
