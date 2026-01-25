@@ -26,6 +26,7 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.orekit.estimation.measurements.signal.FieldSignalTravelTimeAdjustableEmitter;
 import org.orekit.estimation.measurements.signal.SignalTravelTimeAdjustableEmitter;
+import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -85,7 +86,28 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
                            final AbsoluteDate date, final double turnAroundRange,
                            final double sigma, final double baseWeight,
                            final ObservableSatellite satellite) {
-        super(date, true, turnAroundRange, sigma, baseWeight, Collections.singletonList(satellite));
+        this(primaryStation, secondaryStation, date, turnAroundRange, sigma, baseWeight, new SignalTravelTimeModel(),
+                satellite);
+    }
+
+    /** Constructor.
+     * @param primaryStation ground station from which measurement is performed
+     * @param secondaryStation ground station reflecting the signal
+     * @param date date of the measurement
+     * @param turnAroundRange observed value
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param signalTravelTimeModel signal travel time model
+     * @param satellite satellite related to this measurement
+     * @since 14.0
+     */
+    public TurnAroundRange(final GroundStation primaryStation, final GroundStation secondaryStation,
+                           final AbsoluteDate date, final double turnAroundRange,
+                           final double sigma, final double baseWeight,
+                           final SignalTravelTimeModel signalTravelTimeModel,
+                           final ObservableSatellite satellite) {
+        super(date, true, new double[] {turnAroundRange}, new double[] {sigma}, new double[] {baseWeight},
+                signalTravelTimeModel, Collections.singletonList(satellite));
 
         // Add parameter drivers
         addParametersDrivers(primaryStation.getParametersDrivers());

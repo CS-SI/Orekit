@@ -24,6 +24,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.signal.FieldSignalTravelTimeAdjustableReceiver;
 import org.orekit.estimation.measurements.signal.SignalTravelTimeAdjustableReceiver;
+import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -65,7 +66,7 @@ public class FDOA extends AbstractMeasurement<FDOA> {
     /** Second ground station, the one that gives the measurement, i.e. the delay. */
     private final GroundStation secondStation;
 
-    /** Simple constructor.
+    /** Constructor with default signal travel time model.
      * @param primeStation ground station that gives the date of the measurement
      * @param secondStation ground station that gives the measurement
      * @param centreFrequency satellite emitter frequency (Hz)
@@ -76,10 +77,30 @@ public class FDOA extends AbstractMeasurement<FDOA> {
      * @param satellite satellite related to this measurement
      */
     public FDOA(final GroundStation primeStation, final GroundStation secondStation,
-                final double centreFrequency,
-                final AbsoluteDate date, final double fdoa, final double sigma,
+                final double centreFrequency, final AbsoluteDate date, final double fdoa, final double sigma,
                 final double baseWeight, final ObservableSatellite satellite) {
-        super(date, false, fdoa, sigma, baseWeight, Collections.singletonList(satellite));
+        this(primeStation, secondStation, centreFrequency, date, fdoa, sigma, baseWeight, new SignalTravelTimeModel(),
+                satellite);
+    }
+
+    /** Constructor.
+     * @param primeStation ground station that gives the date of the measurement
+     * @param secondStation ground station that gives the measurement
+     * @param centreFrequency satellite emitter frequency (Hz)
+     * @param date date of the measurement
+     * @param fdoa observed value (Hz)
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param signalTravelTimeModel signal travel time model
+     * @param satellite satellite related to this measurement
+     * @since 14.0
+     */
+    public FDOA(final GroundStation primeStation, final GroundStation secondStation,
+                final double centreFrequency, final AbsoluteDate date, final double fdoa, final double sigma,
+                final double baseWeight, final SignalTravelTimeModel signalTravelTimeModel,
+                final ObservableSatellite satellite) {
+        super(date, false, new double[] {fdoa}, new double[] {sigma}, new double[] {baseWeight},
+                signalTravelTimeModel, Collections.singletonList(satellite));
 
         // add parameter drivers for the secondary station
         addParametersDrivers(primeStation.getParametersDrivers());

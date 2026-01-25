@@ -16,28 +16,23 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import java.util.Map;
+
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.BistaticRangeRate;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
-
-import java.util.Map;
 
 /** Builder for {@link BistaticRangeRate} measurements.
  * @author Pascal Parraud
  * @since 11.2
  */
-public class BistaticRangeRateBuilder extends AbstractMeasurementBuilder<BistaticRangeRate> {
+public class BistaticRangeRateBuilder extends AbstractBistaticBuilder<BistaticRangeRate> {
 
-    /** Emitter ground station. */
-    private final GroundStation emitter;
-
-    /** Receiver ground station. */
-    private final GroundStation receiver;
-
-    /** Simple constructor.
+    /** Constructor with default signal travel time model.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param emitter emitter ground station
      * @param receiver receiver ground station, from which measurement is performed
@@ -49,18 +44,32 @@ public class BistaticRangeRateBuilder extends AbstractMeasurementBuilder<Bistati
                                     final GroundStation emitter, final GroundStation receiver,
                                     final double sigma, final double baseWeight,
                                     final ObservableSatellite satellite) {
-        super(noiseSource, sigma, baseWeight, satellite);
-        this.emitter  = emitter;
-        this.receiver = receiver;
+        this(noiseSource, emitter, receiver, sigma, baseWeight, new SignalTravelTimeModel(), satellite);
+    }
+
+    /** Simple constructor.
+     * @param noiseSource noise source, may be null for generating perfect measurements
+     * @param emitter emitter ground station
+     * @param receiver receiver ground station, from which measurement is performed
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param signalTravelTimeModel signal travel time model
+     * @param satellite satellite related to this builder
+     * @since 14.0
+     */
+    public BistaticRangeRateBuilder(final CorrelatedRandomVectorGenerator noiseSource,
+                                    final GroundStation emitter, final GroundStation receiver,
+                                    final double sigma, final double baseWeight, final SignalTravelTimeModel signalTravelTimeModel,
+                                    final ObservableSatellite satellite) {
+        super(noiseSource, emitter, receiver, sigma, baseWeight, signalTravelTimeModel, satellite);
     }
 
     /** {@inheritDoc} */
     @Override
     protected BistaticRangeRate buildObserved(final AbsoluteDate date,
                                               final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new BistaticRangeRate(emitter, receiver, date, 0.0,
-                                     getTheoreticalStandardDeviation()[0],
-                                     getBaseWeight()[0], getSatellites()[0]);
+        return new BistaticRangeRate(getEmitter(), getReceiver(), date, 0.0, getTheoreticalStandardDeviation()[0],
+                                     getBaseWeight()[0], getSignalTravelTimeModel(), getSatellites()[0]);
     }
 
 }

@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
+import java.util.Arrays;
+
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -24,6 +26,7 @@ import org.orekit.estimation.measurements.CommonParametersWithoutDerivatives;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -32,8 +35,6 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.Arrays;
 
 /** One way range-rate measurement between two satellites.
  * @author Luc Maisonobe
@@ -52,13 +53,31 @@ public class InterSatellitesOneWayRangeRate
      * @param rangeRate observed value (m/s)
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
+     * @param signalTravelTimeModel signal travel time model
+     * @since 14.0
+     */
+    public InterSatellitesOneWayRangeRate(final ObservableSatellite local,
+                                          final ObservableSatellite remote,
+                                          final AbsoluteDate date, final double rangeRate,
+                                          final double sigma, final double baseWeight,
+                                          final SignalTravelTimeModel signalTravelTimeModel) {
+        // Call to super constructor
+        super(date, rangeRate, sigma, baseWeight, signalTravelTimeModel, local, remote);
+    }
+
+    /** Constructor with default signal travel time model.
+     * @param local satellite which receives the signal and performs the measurement
+     * @param remote remote satellite which simply emits the signal
+     * @param date date of the measurement
+     * @param rangeRate observed value (m/s)
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
      */
     public InterSatellitesOneWayRangeRate(final ObservableSatellite local,
                                           final ObservableSatellite remote,
                                           final AbsoluteDate date, final double rangeRate,
                                           final double sigma, final double baseWeight) {
-        // Call to super constructor
-        super(date, rangeRate, sigma, baseWeight, local, remote);
+        this(local, remote, date, rangeRate, sigma, baseWeight, new SignalTravelTimeModel());
     }
 
     /** {@inheritDoc} */

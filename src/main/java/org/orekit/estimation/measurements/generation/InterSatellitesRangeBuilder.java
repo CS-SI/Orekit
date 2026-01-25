@@ -16,19 +16,20 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import java.util.Map;
+
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.InterSatellitesRange;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
-
-import java.util.Map;
 
 /** Builder for {@link InterSatellitesRange} measurements.
  * @author Luc Maisonobe
  * @since 9.3
  */
-public class InterSatellitesRangeBuilder extends AbstractMeasurementBuilder<InterSatellitesRange> {
+public class InterSatellitesRangeBuilder extends AbstractSignalBasedBuilder<InterSatellitesRange> {
 
     /** Flag indicating whether it is a two-way measurement. */
     private final boolean twoway;
@@ -45,7 +46,26 @@ public class InterSatellitesRangeBuilder extends AbstractMeasurementBuilder<Inte
     public InterSatellitesRangeBuilder(final CorrelatedRandomVectorGenerator noiseSource,
                                        final ObservableSatellite local, final ObservableSatellite remote,
                                        final boolean twoWay, final double sigma, final double baseWeight) {
-        super(noiseSource, sigma, baseWeight, local, remote);
+        this(noiseSource, local, remote, twoWay, sigma, baseWeight, new SignalTravelTimeModel());
+    }
+
+    /** Simple constructor.
+     * @param noiseSource noise source, may be null for generating perfect measurements
+     * @param local satellite which receives the signal and performs the measurement
+     * @param remote satellite which simply emits the signal in the one-way case,
+     * or reflects the signal in the two-way case
+     * @param twoWay flag indicating whether it is a two-way measurement
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param signalTravelTimeModel signal travel time model
+     * @since 14.0
+     */
+    public InterSatellitesRangeBuilder(final CorrelatedRandomVectorGenerator noiseSource,
+                                       final ObservableSatellite local, final ObservableSatellite remote,
+                                       final boolean twoWay, final double sigma, final double baseWeight,
+                                       final SignalTravelTimeModel signalTravelTimeModel) {
+        super(noiseSource, new double[] {sigma}, new double[] {baseWeight}, signalTravelTimeModel,
+                new ObservableSatellite[] { local, remote });
         this.twoway = twoWay;
     }
 
@@ -53,10 +73,8 @@ public class InterSatellitesRangeBuilder extends AbstractMeasurementBuilder<Inte
     @Override
     protected InterSatellitesRange buildObserved(final AbsoluteDate date,
                                                  final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new InterSatellitesRange(getSatellites()[0], getSatellites()[1],
-                                        twoway, date, Double.NaN,
-                                        getTheoreticalStandardDeviation()[0],
-                                        getBaseWeight()[0]);
+        return new InterSatellitesRange(getSatellites()[0], getSatellites()[1], twoway, date, Double.NaN,
+                                        getTheoreticalStandardDeviation()[0], getBaseWeight()[0], getSignalTravelTimeModel());
     }
 
 }
