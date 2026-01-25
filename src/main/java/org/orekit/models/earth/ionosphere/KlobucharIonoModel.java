@@ -83,7 +83,7 @@ public class KlobucharIonoModel extends AbstractIonosphericModel {
      * @param earth earth body shape
      * @param alpha coefficients of a cubic equation representing the amplitude of the vertical delay.
      * @param beta coefficients of a cubic equation representing the period of the model.
-     * @see #KlobucharIonoModel(double[], double[], TimeScale)
+     * @see KlobucharIonoModel(double[], double[], TimeScale)
      */
     @DefaultDataContext
     public KlobucharIonoModel(final OneAxisEllipsoid earth, final double[] alpha, final double[] beta) {

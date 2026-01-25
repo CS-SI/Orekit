@@ -49,7 +49,7 @@ public class NeQuickGalileo extends NeQuickModel {
      *
      * @param earth earth body shape
      * @param alpha effective ionisation level coefficients
-     * @see #NeQuickGalileo(double[], TimeScale)
+     * @see NeQuickGalileo(double[], TimeScale)
      * @since 14.0
      */
     @DefaultDataContext
