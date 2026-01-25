@@ -159,7 +159,7 @@ public class GlobalIonosphereMapModel extends AbstractIonosphericModel  {
      * @param supportedNames regular expression that matches the names of the IONEX files
      *                       to be loaded. See {@link DataProvidersManager#feed(String,
      *                       DataLoader)}.
-     * @see GlobalIonosphereMapModel(String, DataProvidersManager, TimeScale, TimeInterpolator)
+     * @see #GlobalIonosphereMapModel(OneAxisEllipsoid, String, DataProvidersManager, TimeScale, TimeInterpolator)
      * @since 14.0
      */
     @DefaultDataContext
