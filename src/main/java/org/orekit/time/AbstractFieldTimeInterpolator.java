@@ -262,7 +262,8 @@ public abstract class AbstractFieldTimeInterpolator<T extends FieldTimeStamped<K
             }
 
             // TODO performance: create neighborsList without copying sample.
-            if (sample.size() == interpolationPoints) {
+            final int nbInterpolationPoints = getNbInterpolationPoints();
+            if (sample.size() == nbInterpolationPoints) {
                 // shortcut for simple case
                 // copy list to make neighborList immutable
                 this.neighborList = Collections.unmodifiableList(new ArrayList<>(sample));
@@ -271,7 +272,7 @@ public abstract class AbstractFieldTimeInterpolator<T extends FieldTimeStamped<K
 
                 // Create immutable time stamped cache
                 final ImmutableFieldTimeStampedCache<T, KK> cachedSamples =
-                        new ImmutableFieldTimeStampedCache<>(interpolationPoints, sample);
+                        new ImmutableFieldTimeStampedCache<>(nbInterpolationPoints, sample);
 
                 // Find neighbors
                 final FieldAbsoluteDate<KK> central =

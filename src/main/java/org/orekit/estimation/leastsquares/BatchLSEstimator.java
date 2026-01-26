@@ -29,6 +29,7 @@ import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.optim.ConvergenceChecker;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.AbstractEvaluation;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.EvaluationRmsChecker;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresBuilder;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer;
@@ -38,6 +39,7 @@ import org.hipparchus.optim.nonlinear.vector.leastsquares.ParameterValidator;
 import org.hipparchus.util.Incrementor;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
@@ -96,7 +98,7 @@ public class BatchLSEstimator {
     private Orbit[] orbits;
 
     /** Optimum found. */
-    private Optimum optimum;
+    private OrekitOptimum optimum;
 
     /** Counter for the evaluations. */
     private Incrementor evaluationsCounter;
@@ -456,7 +458,13 @@ public class BatchLSEstimator {
         try {
 
             // solve the problem
-            optimum = optimizer.optimize(problem);
+            final Optimum hipparchusOptimum = optimizer.optimize(problem);
+            final int dimension = getLastEstimations().values().stream()
+                    .filter(estimatedMeasurement -> estimatedMeasurement.getObservedMeasurement().isEnabled() &&
+                            estimatedMeasurement.getStatus() != EstimatedMeasurementBase.Status.REJECTED)
+                    .mapToInt(estimatedMeasurement -> estimatedMeasurement.getObservedMeasurement().getDimension())
+                    .sum();
+            optimum = new OrekitOptimum(dimension, hipparchusOptimum);
 
             // create a new configured propagator with all estimated parameters
             return model.createPropagators(optimum.getPoint());
@@ -805,4 +813,48 @@ public class BatchLSEstimator {
         }
     }
 
+    /**
+     * Private class implementing Optimum for proper handling of rejected measurements.
+     * @since 13.1.3
+     */
+    private static class OrekitOptimum extends AbstractEvaluation implements Optimum {
+
+        /** Wrapped optimum. */
+        private final Optimum optimumIn;
+
+        /**
+         * Constructor.
+         * @param observationSize number of non-rejected measurements
+         * @param optimumIn optimum to wrap
+         */
+        OrekitOptimum(final int observationSize, final Optimum optimumIn) {
+            super(observationSize);
+            this.optimumIn = optimumIn;
+        }
+
+        @Override
+        public int getEvaluations() {
+            return optimumIn.getEvaluations();
+        }
+
+        @Override
+        public int getIterations() {
+            return optimumIn.getIterations();
+        }
+
+        @Override
+        public RealMatrix getJacobian() {
+            return optimumIn.getJacobian();
+        }
+
+        @Override
+        public RealVector getResiduals() {
+            return optimumIn.getResiduals();
+        }
+
+        @Override
+        public RealVector getPoint() {
+            return optimumIn.getPoint();
+        }
+    }
 }

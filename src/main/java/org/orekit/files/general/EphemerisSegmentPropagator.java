@@ -29,13 +29,13 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ImmutableTimeStampedCache;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.SortedListTrimmer;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * A {@link Propagator} based on a {@link EphemerisSegment}.
@@ -51,6 +51,12 @@ import java.util.List;
 public class EphemerisSegmentPropagator<C extends TimeStampedPVCoordinates> extends AbstractAnalyticalPropagator
         implements BoundedPropagator {
 
+    /**
+     * Sorted cache of state vectors. A duplication of the information in {@link
+     * #ephemeris} that could be avoided by duplicating the logic of {@link
+     * ImmutableTimeStampedCache#getNeighbors(AbsoluteDate)} for a general {@link List}.
+     */
+    private final ImmutableTimeStampedCache<C> cache;
     /** Tabular data from which this propagator is built. */
     private final EphemerisSegment<C> ephemeris;
     /** Interpolator to use.
@@ -72,12 +78,18 @@ public class EphemerisSegmentPropagator<C extends TimeStampedPVCoordinates> exte
                                       final AttitudeProvider attitudeProvider) {
         super(attitudeProvider);
         this.ephemeris      = ephemeris;
-        this.interpolator   = new TimeStampedPVCoordinatesHermiteInterpolator(ephemeris.getInterpolationSamples(),
-                                                                              ephemeris.getAvailableDerivatives());
+        final int nSamples  = ephemeris.getInterpolationSamples();
+        this.interpolator   = new TimeStampedPVCoordinatesHermiteInterpolator(
+                nSamples,
+                ephemeris.getAvailableDerivatives());
+        this.cache = new ImmutableTimeStampedCache<>(
+                nSamples,
+                // #1854 only call getCoordinates() once!
+                ephemeris.getCoordinates());
         this.ephemerisFrame = ephemeris.getFrame();
         this.inertialFrame  = ephemeris.getInertialFrame();
         // set the initial state so getFrame() works
-        final TimeStampedPVCoordinates ic = ephemeris.getCoordinates().get(0);
+        final TimeStampedPVCoordinates ic = cache.getEarliest();
         final TimeStampedPVCoordinates icInertial = ephemerisFrame
                 .getTransformTo(inertialFrame, ic.getDate())
                 .transformPVCoordinates(ic);
@@ -156,12 +168,11 @@ public class EphemerisSegmentPropagator<C extends TimeStampedPVCoordinates> exte
      * @return interpolated position-velocity vector
      */
     private TimeStampedPVCoordinates interpolate(final AbsoluteDate date) {
-        final List<C> neighbors = new SortedListTrimmer(interpolator.getNbInterpolationPoints()).
-                                  getNeighborsSubList(date, ephemeris.getCoordinates());
+        final Stream<C> neighbors = this.cache.getNeighbors(date);
 
         // cast stream to super type
-        final List<TimeStampedPVCoordinates> castedNeighbors = new ArrayList<>(neighbors.size());
-        castedNeighbors.addAll(neighbors);
+        final Stream<TimeStampedPVCoordinates> castedNeighbors =
+                neighbors.map(neighbor -> neighbor);
 
         // create interpolator
         return interpolator.interpolate(date, castedNeighbors);

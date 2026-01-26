@@ -19,11 +19,9 @@ package org.orekit.forces.gravity;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.analysis.differentiation.GradientField;
+import org.hipparchus.analysis.differentiation.*;
 import org.hipparchus.dfp.Dfp;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -38,6 +36,7 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,13 +61,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
-import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.EquinoctialOrbit;
-import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngleType;
+import org.orekit.orbits.*;
 import org.orekit.propagation.*;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -79,11 +72,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.Constants;
-import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.*;
 
 
 public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceModelTest {
@@ -1268,6 +1257,152 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         Assertions.assertNotEquals(0., MatrixUtils.createRealVector(derivatives).getNorm());
     }
 
+    @Test
+    void testIssue1866GradientDate() {
+        doTestIssue1866(true, false, true);
+    }
+
+    @Test
+    void testIssue1866GradientMu() {
+        doTestIssue1866(false, true, true);
+    }
+
+    @Test
+    void testIssue1866DSDate() {
+        doTestIssue1866(true, false, false);
+    }
+
+    @Test
+    void testIssue1866DSMu() {
+        doTestIssue1866(false, true, false);
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestIssue1866(final boolean partialsWrtDate,
+                                                                     final boolean partialsWrtMu,
+                                                                     final boolean isGradient) {
+
+        Utils.setDataRoot("regular-data:potential/icgem-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
+
+        // GIVEN
+        final Orbit orbit = new KeplerianOrbit(7e6, 0.2, 0.7, -1.0, 0.5, 0.7,
+                PositionAngleType.TRUE, FramesFactory.getGCRF(), AbsoluteDate.ARBITRARY_EPOCH, Constants.EIGEN5C_EARTH_MU);
+
+        // reference state which always uses the full field implementation
+        final DSFactory referenceFactory = new DSFactory(8, 2);
+        final DerivativeStructure referenceMu = getFieldMu(orbit.getMu(), referenceFactory, partialsWrtMu);
+        final FieldAbsoluteDate<DerivativeStructure> referenceDate = getFieldAbsoluteDate(orbit.getDate(), referenceFactory, partialsWrtDate);
+        final FieldPVCoordinates<DerivativeStructure> referencePV = getFieldPVCoordinates(orbit.getPVCoordinates(), referenceFactory);
+        final FieldSpacecraftState<DerivativeStructure> referenceState = new FieldSpacecraftState<>(
+                new FieldCartesianOrbit<>(referencePV, orbit.getFrame(), referenceDate, referenceMu));
+
+        // actual state which might use the fast computation
+        final DSFactory actualFactory = isGradient ? null : new DSFactory(8, 1);
+        final T actualMu = getFieldMu(orbit.getMu(), actualFactory, partialsWrtMu);
+        final FieldAbsoluteDate<T> actualDate = getFieldAbsoluteDate(orbit.getDate(), actualFactory, partialsWrtDate);
+        final FieldPVCoordinates<T> actualPV = getFieldPVCoordinates(orbit.getPVCoordinates(), actualFactory);
+        final FieldSpacecraftState<T> actualState = new FieldSpacecraftState<>(
+                new FieldCartesianOrbit<>(actualPV, orbit.getFrame(), actualDate, actualMu));
+
+        // WHEN
+        final HolmesFeatherstoneAttractionModel model = new HolmesFeatherstoneAttractionModel(
+                FramesFactory.getITRF(IERSConventions.IERS_2010, true),
+                GravityFieldFactory.getNormalizedProvider(4, 4));
+
+        final FieldVector3D<DerivativeStructure> referenceAcceleration = model
+                .acceleration(referenceState, new DerivativeStructure[]{referenceMu});
+
+        final T[] parameters = MathArrays.buildArray(actualMu.getField(), 1);
+        parameters[0] = actualMu;
+        final FieldVector3D<T> actualAcceleration = model.acceleration(actualState, parameters);
+
+        // THEN
+        Assertions.assertArrayEquals(referenceAcceleration.toVector3D().toArray(), actualAcceleration.toVector3D().toArray(), 1e-16);
+        checkPartials(referenceAcceleration.getX(), actualAcceleration.getX());
+        checkPartials(referenceAcceleration.getY(), actualAcceleration.getY());
+        checkPartials(referenceAcceleration.getZ(), actualAcceleration.getZ());
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> getFieldPVCoordinates(
+            final PVCoordinates pv,
+            final DSFactory factory) {
+        if (factory == null) {
+            return (FieldPVCoordinates<T>) new FieldPVCoordinates<>(
+                    new FieldVector3D<>(
+                            Gradient.variable(8, 0, pv.getPosition().getX()),
+                            Gradient.variable(8, 1, pv.getPosition().getY()),
+                            Gradient.variable(8, 2, pv.getPosition().getZ())),
+                    new FieldVector3D<>(
+                            Gradient.variable(8, 3, pv.getVelocity().getX()),
+                            Gradient.variable(8, 4, pv.getVelocity().getY()),
+                            Gradient.variable(8, 5, pv.getVelocity().getZ())));
+        } else {
+            return (FieldPVCoordinates<T>) new FieldPVCoordinates<>(
+                    new FieldVector3D<>(
+                            factory.variable(0, pv.getPosition().getX()),
+                            factory.variable(1, pv.getPosition().getY()),
+                            factory.variable(2, pv.getPosition().getZ())),
+                    new FieldVector3D<>(
+                            factory.variable(3, pv.getVelocity().getX()),
+                            factory.variable(4, pv.getVelocity().getY()),
+                            factory.variable(5, pv.getVelocity().getZ())));
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends CalculusFieldElement<T>> T getFieldMu(
+            final double mu,
+            final DSFactory factory,
+            final boolean partialsWrtMu) {
+        if (factory == null) {
+            if (partialsWrtMu) {
+                return (T) Gradient.variable(8, 7, 0.0).multiply(1e6).add(mu);
+            } else {
+                return (T) Gradient.constant(8, mu);
+            }
+        } else {
+            if (partialsWrtMu) {
+                return (T) factory.variable(7, 0.0).multiply(1e6).add(mu);
+            } else {
+                return (T) factory.constant(mu);
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> getFieldAbsoluteDate(
+            final AbsoluteDate date,
+            final DSFactory factory,
+            final boolean partialsWrtDate) {
+        if (factory == null) {
+            if (partialsWrtDate) {
+                final Gradient fieldOffset = Gradient.variable(8, 6, 0.0);
+                return (FieldAbsoluteDate<T>) new FieldAbsoluteDate<>(fieldOffset.getField(), date).shiftedBy(fieldOffset);
+            } else {
+                return (FieldAbsoluteDate<T>) new FieldAbsoluteDate<>(GradientField.getField(8), date);
+            }
+        } else {
+            if (partialsWrtDate) {
+                final DerivativeStructure fieldOffset = factory.variable(6, 0.0);
+                return (FieldAbsoluteDate<T>) new FieldAbsoluteDate<>(fieldOffset.getField(), date).shiftedBy(fieldOffset);
+            } else {
+                return (FieldAbsoluteDate<T>) new FieldAbsoluteDate<>(factory.getDerivativeField(), date);
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends CalculusFieldElement<T>> void checkPartials(final DerivativeStructure reference, final T actual) {
+        final int[] orders = new int[reference.getFreeParameters()];
+        final Derivative<T> derivatives = (Derivative<T>) actual;
+        for (int i = 0; i < orders.length; i++) {
+            orders[i] = 1;
+            Assertions.assertEquals(reference.getPartialDerivative(orders), derivatives.getPartialDerivative(orders), 1e-16);
+            orders[i] = 0;
+        }
+    }
+
     @BeforeEach
     public void setUp() {
         itrf   = null;
@@ -1327,5 +1462,3 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     private NumericalPropagator propagator;
 
 }
-
-

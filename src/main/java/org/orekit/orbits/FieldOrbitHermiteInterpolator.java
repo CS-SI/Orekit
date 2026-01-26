@@ -168,41 +168,50 @@ public class FieldOrbitHermiteInterpolator<KK extends CalculusFieldElement<KK>> 
     @Override
     protected FieldOrbit<KK> interpolate(final InterpolationData interpolationData) {
 
-        // Get interpolation date
-        final FieldAbsoluteDate<KK> interpolationDate = interpolationData.getInterpolationDate();
-
         // Get orbit sample
         final List<FieldOrbit<KK>> sample = interpolationData.getNeighborList();
 
-        // Get first entry
-        final FieldOrbit<KK> firstEntry = sample.get(0);
-
-        // Get orbit type for interpolation
-        final OrbitType orbitType = firstEntry.getType();
+        // Get information for interpolation
+        final FieldAbsoluteDate<KK> interpolationDate = interpolationData.getInterpolationDate();
+        final FieldOrbit<KK>        firstEntry        = sample.get(0);
+        final OrbitType             orbitType         = firstEntry.getType();
+        final Frame                 inputFrame        = firstEntry.getFrame();
+        final Frame                 outputFrame       = getOutputInertialFrame();
 
         // Extract field
         this.field = firstEntry.getA().getField();
         this.zero  = field.getZero();
         this.one   = field.getOne();
 
+        final FieldOrbit<KK> interpolated;
         if (orbitType == OrbitType.CARTESIAN) {
-            return interpolateCartesian(interpolationDate, sample);
+            interpolated = interpolateCartesian(interpolationDate, inputFrame, sample);
         }
         else {
-            return interpolateCommon(interpolationDate, sample, orbitType);
+            // Interpolate in input frame
+            interpolated = interpolateCommon(interpolationDate, inputFrame, sample, orbitType);
         }
 
+        // Return interpolated if input and output frame are the same
+        if (inputFrame.equals(outputFrame)) {
+            return interpolated;
+        }
+
+        // Otherwise, express in the output frame
+        return interpolated.inFrame(outputFrame);
     }
 
     /**
      * Interpolate Cartesian orbit using specific method for Cartesian orbit.
      *
      * @param interpolationDate interpolation date
+     * @param inputFrame input frame of the sample
      * @param sample orbits sample
      *
      * @return interpolated Cartesian orbit
      */
     private FieldCartesianOrbit<KK> interpolateCartesian(final FieldAbsoluteDate<KK> interpolationDate,
+                                                         final Frame inputFrame,
                                                          final List<FieldOrbit<KK>> sample) {
 
         // Create time stamped position-velocity-acceleration Hermite interpolator
@@ -224,19 +233,21 @@ public class FieldOrbitHermiteInterpolator<KK extends CalculusFieldElement<KK>> 
         // Use first entry gravitational parameter
         final KK mu = sample.get(0).getMu();
 
-        return new FieldCartesianOrbit<>(interpolated, getOutputInertialFrame(), interpolationDate, mu);
+        return new FieldCartesianOrbit<>(interpolated, inputFrame, interpolationDate, mu);
     }
 
     /**
      * Method gathering common parts of interpolation between circular, equinoctial and keplerian orbit.
      *
      * @param interpolationDate interpolation date
+     * @param inputFrame input frame
      * @param orbits orbits sample
      * @param orbitType interpolation method to use
      *
      * @return interpolated orbit
      */
     private FieldOrbit<KK> interpolateCommon(final FieldAbsoluteDate<KK> interpolationDate,
+                                             final Frame inputFrame,
                                              final List<FieldOrbit<KK>> orbits,
                                              final OrbitType orbitType) {
 
@@ -258,21 +269,21 @@ public class FieldOrbitHermiteInterpolator<KK extends CalculusFieldElement<KK>> 
                                                 interpolated[0][3], interpolated[0][4], interpolated[0][5],
                                                 interpolated[1][0], interpolated[1][1], interpolated[1][2],
                                                 interpolated[1][3], interpolated[1][4], interpolated[1][5],
-                                                PositionAngleType.MEAN, getOutputInertialFrame(), interpolationDate, mu);
+                                                PositionAngleType.MEAN, inputFrame, interpolationDate, mu);
             case KEPLERIAN:
                 interpolated = interpolateKeplerian(interpolationDate, orbits, useDerivatives);
                 return new FieldKeplerianOrbit<>(interpolated[0][0], interpolated[0][1], interpolated[0][2],
                                                  interpolated[0][3], interpolated[0][4], interpolated[0][5],
                                                  interpolated[1][0], interpolated[1][1], interpolated[1][2],
                                                  interpolated[1][3], interpolated[1][4], interpolated[1][5],
-                                                 PositionAngleType.MEAN, getOutputInertialFrame(), interpolationDate, mu);
+                                                 PositionAngleType.MEAN, inputFrame, interpolationDate, mu);
             case EQUINOCTIAL:
                 interpolated = interpolateEquinoctial(interpolationDate, orbits, useDerivatives);
                 return new FieldEquinoctialOrbit<>(interpolated[0][0], interpolated[0][1], interpolated[0][2],
                                                    interpolated[0][3], interpolated[0][4], interpolated[0][5],
                                                    interpolated[1][0], interpolated[1][1], interpolated[1][2],
                                                    interpolated[1][3], interpolated[1][4], interpolated[1][5],
-                                                   PositionAngleType.MEAN, getOutputInertialFrame(), interpolationDate, mu);
+                                                   PositionAngleType.MEAN, inputFrame, interpolationDate, mu);
             default:
                 // Should never happen
                 throw new OrekitInternalError(null);

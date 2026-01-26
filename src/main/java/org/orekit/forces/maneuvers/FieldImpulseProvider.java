@@ -86,9 +86,24 @@ public interface FieldImpulseProvider<T extends CalculusFieldElement<T>> {
      * @return provider
      */
     static <T extends CalculusFieldElement<T>> FieldImpulseProvider<T> of(final ImpulseProvider impulseProvider) {
-        return (state, isForward) -> {
-            final Vector3D deltaV = impulseProvider.getImpulse(state.toSpacecraftState(), isForward);
-            return new FieldVector3D<>(state.getDate().getField(), deltaV);
+        return new FieldImpulseProvider<T>() {
+            @Override
+            public void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> targetDate) {
+                FieldImpulseProvider.super.init(initialState, targetDate);
+                impulseProvider.init(initialState.toSpacecraftState(), targetDate.toAbsoluteDate());
+            }
+
+            @Override
+            public FieldVector3D<T> getImpulse(final FieldSpacecraftState<T> state, final boolean isForward) {
+                return new FieldVector3D<>(state.getDate().getField(),
+                        impulseProvider.getImpulse(state.toSpacecraftState(), isForward));
+            }
+
+            @Override
+            public void finish(final FieldSpacecraftState<T> finalState) {
+                FieldImpulseProvider.super.finish(finalState);
+                impulseProvider.finish(finalState.toSpacecraftState());
+            }
         };
     }
 }

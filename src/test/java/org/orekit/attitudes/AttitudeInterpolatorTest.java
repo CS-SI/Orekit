@@ -22,7 +22,6 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -43,6 +42,8 @@ import org.orekit.utils.TimeStampedAngularCoordinatesHermiteInterpolator;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.mockito.Mockito.mock;
 
 class AttitudeInterpolatorTest {
 
@@ -150,10 +151,10 @@ class AttitudeInterpolatorTest {
     @DisplayName("Test constructor")
     void testConstructor() {
         // Given
-        final Frame frameMock = Mockito.mock(Frame.class);
+        final Frame frameMock = mock(Frame.class);
 
         @SuppressWarnings("unchecked")
-        final TimeInterpolator<TimeStampedAngularCoordinates> angularInterpolatorMock = Mockito.mock(TimeInterpolator.class);
+        final TimeInterpolator<TimeStampedAngularCoordinates> angularInterpolatorMock = mock(TimeInterpolator.class);
 
         // When
         final AttitudeInterpolator attitudeInterpolator = new AttitudeInterpolator(frameMock, angularInterpolatorMock);
@@ -171,7 +172,7 @@ class AttitudeInterpolatorTest {
         final AbsoluteDate interpolationDate = new AbsoluteDate();
 
         final List<Attitude> attitudes = new ArrayList<>();
-        attitudes.add(Mockito.mock(Attitude.class));
+        attitudes.add(mock(Attitude.class));
 
         final TimeInterpolator<TimeStampedAngularCoordinates> angularInterpolator =
                 new TimeStampedAngularCoordinatesHermiteInterpolator(2, AngularDerivativesFilter.USE_R);
@@ -187,6 +188,31 @@ class AttitudeInterpolatorTest {
         Assertions.assertEquals(1, ((Integer) thrown.getParts()[0]).intValue());
         Assertions.assertEquals(2, ((Integer) thrown.getParts()[1]).intValue());
 
+    }
+
+    /**
+     * Test related to issue 1878.
+     *
+     * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1878">Issue 1878</a>
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    void testGetSubInterpolator() {
+
+        // Define sub interpolator
+        final TimeInterpolator<TimeStampedAngularCoordinates> mockTimeInterpolator =
+                mock(TimeInterpolator.class);
+
+        // GIVEN
+        final AttitudeInterpolator attitudeInterpolator =
+                new AttitudeInterpolator(FramesFactory.getGCRF(), mockTimeInterpolator);
+
+        // WHEN
+        final List<TimeInterpolator<?>> actualSubInterpolators = attitudeInterpolator.getSubInterpolators();
+
+        // THEN
+        Assertions.assertEquals(1, actualSubInterpolators.size());
+        Assertions.assertSame(mockTimeInterpolator, actualSubInterpolators.get(0));
     }
 
 }

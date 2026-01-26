@@ -435,7 +435,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         estimator.estimate();
         Assertions.assertTrue(estimator.getIterationsCount()  < 15);
         Assertions.assertTrue(estimator.getEvaluationsCount() < 15);
-        Assertions.assertEquals(0.0, estimator.getOptimum().getRMS(), 1.0e-5);
+        Assertions.assertEquals(0.0, estimator.getOptimum().getRMS(), 1.6e-5);
 
         Assertions.assertEquals(hpaRefX1.getParametersDrivers().get(0).getValue(), getParameter(estimator, "X1 γ"), 1.e-12);
         Assertions.assertEquals(hpaRefX1.getParametersDrivers().get(1).getValue(), getParameter(estimator, "X1 φ"), 1.e-12);

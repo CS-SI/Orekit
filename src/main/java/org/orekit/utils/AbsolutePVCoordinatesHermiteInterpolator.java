@@ -26,11 +26,12 @@ import org.orekit.time.AbstractTimeInterpolator;
 import java.util.List;
 
 /**
- * Class using a Hermite interpolator to interpolate absolute position-velocity-acceleration coordinates.
+ * Class using a Hermite interpolator to interpolate absolute position-velocity-acceleration coordinates. It is assumed
+ * that provided samples have the same frame.
  * <p>
- * As this implementation of interpolation is polynomial, it should be used only with small number of interpolation points
- * (about 10-20 points) in order to avoid <a href="https://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
- * and numerical problems (including NaN appearing).
+ * As this implementation of interpolation is polynomial, it should be used only with small number of interpolation
+ * points (about 10-20 points) in order to avoid <a href="https://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's
+ * phenomenon</a> and numerical problems (including NaN appearing).
  *
  * @author Luc Maisonobe
  * @author Vincent Cucchietti
@@ -150,6 +151,9 @@ public class AbsolutePVCoordinatesHermiteInterpolator extends AbstractTimeInterp
         // Get sample
         final List<AbsolutePVCoordinates> sample = interpolationData.getNeighborList();
 
+        // Extract input frame from sample
+        final Frame inputFrame = sample.get(0).getFrame();
+
         // Set up an interpolator taking derivatives into account
         final HermiteInterpolator interpolator = new HermiteInterpolator();
 
@@ -191,7 +195,18 @@ public class AbsolutePVCoordinatesHermiteInterpolator extends AbstractTimeInterp
         final double[][] pva = interpolator.derivatives(0.0, 2);
 
         // build a new interpolated instance
-        return new AbsolutePVCoordinates(outputFrame, date, new Vector3D(pva[0]), new Vector3D(pva[1]),
-                                         new Vector3D(pva[2]));
+        final AbsolutePVCoordinates interpolated = new AbsolutePVCoordinates(inputFrame,
+                                                                             date,
+                                                                             new Vector3D(pva[0]),
+                                                                             new Vector3D(pva[1]),
+                                                                             new Vector3D(pva[2]));
+
+        // return interpolated as is
+        if (inputFrame == outputFrame) {
+            return interpolated;
+        }
+
+        // convert to output frame
+        return new AbsolutePVCoordinates(outputFrame, interpolated.getPVCoordinates(outputFrame));
     }
 }

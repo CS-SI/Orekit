@@ -962,6 +962,186 @@ class EphemerisTest {
                 OrekitMatchers.pvCloseTo(finalOrbit.getPVCoordinates(), 0.0));
     }
 
+    /**
+     * Output PV should be consistent frame wise. Tolerances value are most probably impacted by issue 358 on
+     * Hipparchus.
+     *
+     * @see <a href="https://github.com/Hipparchus-Math/hipparchus/issues/358">Issue 358</a>
+     */
+    @Test
+    public void testIssue1844CartesianOrbit() {
+        // GIVEN
+        Utils.setDataRoot("regular-data");
+
+        // Create samples
+        final double            a          = Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 415.0 * 1e3;
+        final double            e          = 0.0003381;
+        final double            i          = Math.toRadians(51.6488);
+        final double            raan       = Math.toRadians(120.0917);
+        final double            pa         = Math.toRadians(342.2352);
+        final double            anomaly    = Math.toRadians(159.2688);
+        final PositionAngleType type       = PositionAngleType.MEAN;
+        final Frame             inputFrame = FramesFactory.getEME2000();
+        final AbsoluteDate      date       = new AbsoluteDate("2014-01-01T09:46:36.000Z", TimeScalesFactory.getUTC());
+        final double            mu         = Constants.EGM96_EARTH_MU;
+        final KeplerianOrbit    iss        = new KeplerianOrbit(a, e, i, pa, raan, anomaly, type, inputFrame, date, mu);
+
+        final List<SpacecraftState> samples = new ArrayList<>();
+        samples.add(new SpacecraftState(new CartesianOrbit(iss)));
+        samples.add(new SpacecraftState(new CartesianOrbit(iss).shiftedBy(60.)));
+        samples.add(new SpacecraftState(new CartesianOrbit(iss).shiftedBy(120.)));
+
+        // Create interpolator
+        final Frame outputFrame = FramesFactory.getGCRF();
+        final SpacecraftStateInterpolator interpolator = new SpacecraftStateInterpolator(
+                2,
+                0.001,
+                outputFrame,
+                outputFrame,
+                CartesianDerivativesFilter.USE_PV,
+                AngularDerivativesFilter.USE_R
+        );
+
+        // Create ephemeris
+        final Ephemeris ephemeris = new Ephemeris(samples, interpolator);
+
+        // WHEN
+        final SpacecraftState propState = ephemeris.propagate(iss.getDate());
+
+        // THEN
+        // Assert expected output frame
+        Assertions.assertEquals(outputFrame, propState.getFrame());
+
+        // Assert equivalent PV in input frame
+        final PVCoordinates actualPV = propState.getPVCoordinates(inputFrame);
+        Assertions.assertEquals(iss.getPVCoordinates().getPosition().getX(), actualPV.getPosition().getX(), 1e-8);
+        Assertions.assertEquals(iss.getPVCoordinates().getPosition().getY(), actualPV.getPosition().getY(), 1e-8);
+        Assertions.assertEquals(iss.getPVCoordinates().getPosition().getZ(), actualPV.getPosition().getZ(), 1e-8);
+        Assertions.assertEquals(iss.getPVCoordinates().getVelocity().getX(), actualPV.getVelocity().getX(), 1e-8);
+        Assertions.assertEquals(iss.getPVCoordinates().getVelocity().getY(), actualPV.getVelocity().getY(), 1e-8);
+        Assertions.assertEquals(iss.getPVCoordinates().getVelocity().getZ(), actualPV.getVelocity().getZ(), 1e-8);
+    }
+
+    /**
+     * Output PV should be consistent frame wise. Tolerances value are most probably impacted by issue 358 on
+     * Hipparchus.
+     *
+     * @see <a href="https://github.com/Hipparchus-Math/hipparchus/issues/358">Issue 358</a>
+     */
+    @Test
+    public void testIssue1844NonCartesianOrbit() {
+        // GIVEN
+        Utils.setDataRoot("regular-data");
+
+        // Create samples
+        final double            a          = Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 415.0 * 1e3;
+        final double            e          = 0.0003381;
+        final double            i          = Math.toRadians(51.6488);
+        final double            raan       = Math.toRadians(120.0917);
+        final double            pa         = Math.toRadians(342.2352);
+        final double            anomaly    = Math.toRadians(159.2688);
+        final PositionAngleType type       = PositionAngleType.MEAN;
+        final Frame             inputFrame = FramesFactory.getEME2000();
+        final AbsoluteDate      date       = new AbsoluteDate("2014-01-01T09:46:36.000Z", TimeScalesFactory.getUTC());
+        final double            mu         = Constants.EGM96_EARTH_MU;
+        final KeplerianOrbit    iss        = new KeplerianOrbit(a, e, i, pa, raan, anomaly, type, inputFrame, date, mu);
+
+        final List<SpacecraftState> samples = new ArrayList<>();
+        samples.add(new SpacecraftState(new KeplerianOrbit(iss)));
+        samples.add(new SpacecraftState(new KeplerianOrbit(iss).shiftedBy(60.)));
+        samples.add(new SpacecraftState(new KeplerianOrbit(iss).shiftedBy(120.)));
+
+        // Create interpolator
+        final Frame outputFrame = FramesFactory.getGCRF();
+        final SpacecraftStateInterpolator interpolator = new SpacecraftStateInterpolator(
+                2,
+                0.001,
+                outputFrame,
+                outputFrame,
+                CartesianDerivativesFilter.USE_PV,
+                AngularDerivativesFilter.USE_R
+        );
+
+        // Create ephemeris
+        final Ephemeris ephemeris = new Ephemeris(samples, interpolator);
+
+        // WHEN
+        final SpacecraftState propState = ephemeris.propagate(iss.getDate());
+
+        // THEN
+        // Assert expected output frame
+        Assertions.assertEquals(outputFrame, propState.getFrame());
+
+        // Assert equivalent PV in input frame
+        final PVCoordinates actualPV = propState.getPVCoordinates(inputFrame);
+        Assertions.assertEquals(iss.getPVCoordinates().getPosition().getX(), actualPV.getPosition().getX(), 1e-8);
+        Assertions.assertEquals(iss.getPVCoordinates().getPosition().getY(), actualPV.getPosition().getY(), 1e-8);
+        Assertions.assertEquals(iss.getPVCoordinates().getPosition().getZ(), actualPV.getPosition().getZ(), 1e-8);
+        Assertions.assertEquals(iss.getPVCoordinates().getVelocity().getX(), actualPV.getVelocity().getX(), 1e-8);
+        Assertions.assertEquals(iss.getPVCoordinates().getVelocity().getY(), actualPV.getVelocity().getY(), 1e-8);
+        Assertions.assertEquals(iss.getPVCoordinates().getVelocity().getZ(), actualPV.getVelocity().getZ(), 1e-8);
+    }
+
+    /**
+     * Output PV should be consistent frame wise. Tolerances value are most probably impacted by issue 358 on
+     * Hipparchus.
+     *
+     * @see <a href="https://github.com/Hipparchus-Math/hipparchus/issues/358">Issue 358</a>
+     */
+    @Test
+    public void testIssue1844AbsolutePVCoordinates() {
+        // GIVEN
+        Utils.setDataRoot("regular-data");
+
+        // Create samples
+        final double            a          = Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 415.0 * 1e3;
+        final double            e          = 0.0003381;
+        final double            i          = Math.toRadians(51.6488);
+        final double            raan       = Math.toRadians(120.0917);
+        final double            pa         = Math.toRadians(342.2352);
+        final double            anomaly    = Math.toRadians(159.2688);
+        final PositionAngleType type       = PositionAngleType.MEAN;
+        final Frame             inputFrame = FramesFactory.getEME2000();
+        final AbsoluteDate      date       = new AbsoluteDate("2014-01-01T09:46:36.000Z", TimeScalesFactory.getUTC());
+        final double            mu         = Constants.EGM96_EARTH_MU;
+        final KeplerianOrbit    iss        = new KeplerianOrbit(a, e, i, pa, raan, anomaly, type, inputFrame, date, mu);
+
+        final List<SpacecraftState> samples = new ArrayList<>();
+        samples.add(new SpacecraftState(new AbsolutePVCoordinates(iss.getFrame(), iss.getPVCoordinates())));
+        samples.add(new SpacecraftState(new AbsolutePVCoordinates(iss.getFrame(), iss.getPVCoordinates()).shiftedBy(60.)));
+
+        // Create interpolator
+        final Frame outputFrame = FramesFactory.getGCRF();
+        final SpacecraftStateInterpolator interpolator = new SpacecraftStateInterpolator(
+                2,
+                0.001,
+                outputFrame,
+                outputFrame,
+                CartesianDerivativesFilter.USE_PV,
+                AngularDerivativesFilter.USE_R
+        );
+
+        // Create ephemeris
+        final Ephemeris ephemeris = new Ephemeris(samples, interpolator);
+
+        // WHEN
+        final SpacecraftState propState = ephemeris.propagate(iss.getDate());
+
+        // THEN
+        // Assert expected output frame
+        Assertions.assertEquals(outputFrame, propState.getFrame());
+
+        // Assert equivalent PV in input frame
+        final PVCoordinates actualPV = propState.getPVCoordinates(inputFrame);
+        Assertions.assertEquals(iss.getPVCoordinates().getPosition().getX(), actualPV.getPosition().getX(), 1e-8);
+        Assertions.assertEquals(iss.getPVCoordinates().getPosition().getY(), actualPV.getPosition().getY(), 1e-8);
+        Assertions.assertEquals(iss.getPVCoordinates().getPosition().getZ(), actualPV.getPosition().getZ(), 1e-8);
+        Assertions.assertEquals(iss.getPVCoordinates().getVelocity().getX(), actualPV.getVelocity().getX(), 1e-8);
+        Assertions.assertEquals(iss.getPVCoordinates().getVelocity().getY(), actualPV.getVelocity().getY(), 1e-8);
+        Assertions.assertEquals(iss.getPVCoordinates().getVelocity().getZ(), actualPV.getVelocity().getZ(), 1e-8);
+    }
+
+
     public void setUp() throws IllegalArgumentException, OrekitException {
         Utils.setDataRoot("regular-data");
 

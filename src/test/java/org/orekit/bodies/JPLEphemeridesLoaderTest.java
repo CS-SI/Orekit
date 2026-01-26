@@ -16,20 +16,29 @@
  */
 package org.orekit.bodies;
 
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
+import org.orekit.data.DataProvidersManager;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashSet;
+import java.util.Scanner;
+import java.util.Set;
 
 public class JPLEphemeridesLoaderTest {
 
@@ -258,6 +267,192 @@ public class JPLEphemeridesLoaderTest {
             moon.getPVCoordinates(currentDate, FramesFactory.getGCRF());
         }
 
+    }
+
+    /**
+     * Check against subset of DE431 validation set from
+     * https://ssd.jpl.nasa.gov/ftp/eph/planets/Linux/de431/testpo.431
+     * @throws IOException on error.
+     */
+    @Test
+    public void testPo431() throws IOException {
+        // setup
+        Utils.setDataRoot("regular-data/de431-ephemerides");
+        final int nChecked = testPo("/bodies/testpo.431");
+        MatcherAssert.assertThat(nChecked, Matchers.is(5));
+    }
+
+    /**
+     * Check against subset of DE405 validation set from
+     * https://ssd.jpl.nasa.gov/ftp/eph/planets/Linux/de405/testpo.405
+     * @throws IOException on error.
+     */
+    @Test
+    public void testPo405() throws IOException {
+        Utils.setDataRoot("regular-data/de405-ephemerides");
+        final int nChecked = testPo("/bodies/testpo.405");
+        MatcherAssert.assertThat(nChecked, Matchers.is(5));
+    }
+
+    /**
+     * Check against subset of DE440 validation set from
+     * https://ssd.jpl.nasa.gov/ftp/eph/planets/Linux/de440/testpo.440
+     * @throws IOException on error.
+     */
+    @Test
+    public void testPo440() throws IOException {
+        Utils.setDataRoot("2007");
+        final int nChecked = testPo("/2007/testpo.440");
+        MatcherAssert.assertThat(nChecked, Matchers.is(11));
+    }
+
+    private int testPo(String name) throws IOException {
+        JPLEphemeridesLoader loader = new JPLEphemeridesLoader(
+                JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES,
+                JPLEphemeridesLoader.EphemerisType.SUN);
+        final double au = loader.getLoadedAstronomicalUnit();
+        final double day = Constants.JULIAN_DAY;
+        final TimeScale tdb = TimeScalesFactory.getTDB();
+        final double tolS = 1e-13;
+        final double tolP = 1e-13 * au; // tolerance used by JPL
+        final double tolV = 1e-13 * au / day; // tolerance used by JPL
+        final Frame gcrf = FramesFactory.getGCRF();
+        final Frame icrf = FramesFactory.getICRF();
+        final Set<Integer> nearEarth = new HashSet<>();
+        nearEarth.add(3);
+        nearEarth.add(10);
+        nearEarth.add(13);
+
+        int i = 0;
+        // 431  1999.12.01 2451513.5  8 11  2      -23.03253618370120000000
+        try(InputStream is = this.getClass().getResourceAsStream(name)) {
+            final Scanner scanner = new Scanner(is, "UTF-8");
+            while (scanner.hasNext()) {
+                final int version = scanner.nextInt();
+                final String dateString = scanner.next().replace('.', '-');
+                final AbsoluteDate date = new AbsoluteDate(dateString, tdb);
+                final double jd = scanner.nextDouble();
+                final String message = version + " " + dateString;
+                MatcherAssert.assertThat(
+                        message,
+                        date.getJD(tdb),
+                        Matchers.closeTo(jd, tolS));
+                final int targetInt = scanner.nextInt();
+                final int centerInt = scanner.nextInt();
+                final String targetName = getName(targetInt);
+                final String centerName = getName(centerInt);
+                if (targetName == null || centerName == null) {
+                    scanner.nextLine();
+                    continue;
+                }
+                CelestialBody target = CelestialBodyFactory.getBody(targetName);
+                CelestialBody center = CelestialBodyFactory.getBody(centerName);
+                Frame frame;
+                if (nearEarth.contains(targetInt) || nearEarth.contains(centerInt)) {
+                    frame = gcrf;
+                } else {
+                    frame = icrf;
+                }
+                PVCoordinates targetPv = target.getPVCoordinates(date, frame);
+                PVCoordinates centerPv = center.getPVCoordinates(date, frame);
+                final int coordinate = scanner.nextInt();
+                double actual = getCoordinate(targetPv, centerPv, coordinate);
+                final double expected = scanner.nextDouble();
+                if (coordinate < 4) {
+                    // position
+                    MatcherAssert.assertThat(
+                            message,
+                            actual,
+                            Matchers.closeTo(expected * au, tolP));
+                } else {
+                    // velocity
+                    MatcherAssert.assertThat(
+                            message,
+                            actual,
+                            Matchers.closeTo(expected * au / day, tolV));
+                }
+                i++;
+                scanner.nextLine();
+            }
+        }
+        return i;
+    }
+
+    /**
+     * Get the selected coordinate
+     *
+     * @param targetPv   A
+     * @param centerPv   B
+     * @param coordinate number from JPL.
+     * @return (A - B).coordinate
+     */
+    private double getCoordinate(PVCoordinates targetPv,
+                                 PVCoordinates centerPv,
+                                 int coordinate) {
+        final Vector3D d;
+        if (coordinate < 4) {
+            d = targetPv.getPosition().subtract(centerPv.getPosition());
+        } else {
+            d = targetPv.getVelocity().subtract(centerPv.getVelocity());
+            coordinate -= 3;
+        }
+
+        switch (coordinate) {
+            case 1:
+                return d.getX();
+            case 2:
+                return d.getY();
+            case 3:
+                return d.getZ();
+            default:
+                throw new RuntimeException("Unknown coordinate: " + coordinate);
+        }
+    }
+
+
+    /**
+     * Get the Orekit body name for a JPL body number.
+     *
+     * @param body number.
+     * @return body name.
+     */
+    private static String getName(int body) {
+        /*
+        target number (1-Mercury, ...,3-Earth, ,,,9-Pluto, 10-Moon, 11-Sun,
+                       12-Solar System Barycenter, 13-Earth-Moon Barycenter
+                       14-Nutations, 15-Librations)
+         */
+        switch (body) {
+            case 1:
+                return CelestialBodyFactory.MERCURY;
+            case 2:
+                return CelestialBodyFactory.VENUS;
+            case 3:
+                return CelestialBodyFactory.EARTH;
+            case 4:
+                return CelestialBodyFactory.MARS;
+            case 5:
+                return CelestialBodyFactory.JUPITER;
+            case 6:
+                return CelestialBodyFactory.SATURN;
+            case 7:
+                return CelestialBodyFactory.URANUS;
+            case 8:
+                return CelestialBodyFactory.NEPTUNE;
+            case 9:
+                return CelestialBodyFactory.PLUTO;
+            case 10:
+                return CelestialBodyFactory.MOON;
+            case 11:
+                return CelestialBodyFactory.SUN;
+            case 12:
+                return CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER;
+            case 13:
+                return CelestialBodyFactory.EARTH_MOON;
+            default:
+                // nutations and librations not implemented
+                return null;
+        }
     }
 
     private void checkDerivative(String supportedNames, AbsoluteDate date, double maxChunkDuration)

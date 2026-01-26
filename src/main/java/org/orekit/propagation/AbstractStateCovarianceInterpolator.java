@@ -24,8 +24,10 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.AbstractTimeInterpolator;
 import org.orekit.time.TimeInterpolator;
+import org.orekit.time.TimeStamped;
 import org.orekit.time.TimeStampedPair;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -113,6 +115,12 @@ public abstract class AbstractStateCovarianceInterpolator
         this.outFrame          = outFrame;
         this.outOrbitType      = outOrbitType;
         this.outPositionAngleType = outPositionAngleType;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<TimeInterpolator<? extends TimeStamped>> getSubInterpolators() {
+        return Collections.singletonList(orbitInterpolator);
     }
 
     /**
