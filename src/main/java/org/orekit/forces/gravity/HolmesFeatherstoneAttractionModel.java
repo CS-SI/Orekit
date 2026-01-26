@@ -279,6 +279,10 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
     }
 
     /** Compute the gradient of the non-central part of the gravity field.
+     * <p>
+     * If U represents the non-central part of the gravity field,
+     * this method returns the negative gradient of U (-grad(U)).
+     * </p>
      * @param date current date
      * @param position position at which gravity field is desired in body frame
      * @param mu central attraction coefficient to use
@@ -393,6 +397,10 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
     }
 
     /** Compute the gradient of the non-central part of the gravity field.
+     * <p>
+     * If U represents the non-central part of the gravity field,
+     * this method returns the negative gradient of U (-grad(U)).
+     * </p>
      * @param date current date
      * @param position position at which gravity field is desired in body frame
      * @param mu central attraction coefficient to use
@@ -537,6 +545,10 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
     }
 
     /** Compute both the gradient and the hessian of the non-central part of the gravity field.
+     * <p>
+     * If U represents the non-central part of the gravity field,
+     * this method returns the negative gradient and hessian of U (-grad(U) and -hessian(U)).
+     * </p>
      * @param date current date
      * @param position position at which gravity field is desired in body frame
      * @param mu central attraction coefficient to use
