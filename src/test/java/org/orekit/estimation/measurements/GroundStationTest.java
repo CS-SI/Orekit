@@ -57,15 +57,95 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.clocks.QuadraticClockModel;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
 
 class GroundStationTest {
+
+    @Test
+    void getPVCoordinatesProvider() {
+        // GIVEN
+        EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        final Frame ecef = FramesFactory.getGTOD(true);
+        final GeodeticPoint geodeticPoint = new GeodeticPoint(1., 2., 3.);
+        final TopocentricFrame topocentricFrame = new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                Constants.WGS84_EARTH_FLATTENING, ecef), geodeticPoint, "");
+        final GroundStation station = new GroundStation(topocentricFrame);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        for (final ParameterDriver driver: selectAllDrivers(station)) {
+            driver.setReferenceDate(date);
+        }
+        station.getEastOffsetDriver().setValue(1);
+        station.getNorthOffsetDriver().setValue(-1);
+        station.getZenithOffsetDriver().setValue(2);
+        final PVCoordinatesProvider pvCoordinatesProvider = station.getPVCoordinatesProvider();
+        // WHEN
+        final PVCoordinates actualPV = pvCoordinatesProvider.getPVCoordinates(date, topocentricFrame);
+        // THEN
+        Assertions.assertArrayEquals(new Vector3D(1., -1., 2).toArray(), actualPV.getPosition().toArray(), 1e-8);
+        Assertions.assertEquals(0., actualPV.getVelocity().getNorm2());
+    }
+
+    @Test
+    void getPVCoordinatesProviderGetPosition() {
+        // GIVEN
+        EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        final Frame ecef = FramesFactory.getGTOD(true);
+        final GeodeticPoint geodeticPoint = new GeodeticPoint(1., 2., 3.);
+        final TopocentricFrame topocentricFrame = new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                Constants.WGS84_EARTH_FLATTENING, ecef), geodeticPoint, "");
+        final GroundStation station = new GroundStation(topocentricFrame);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        for (final ParameterDriver driver: selectAllDrivers(station)) {
+            driver.setReferenceDate(date);
+        }
+        station.getEastOffsetDriver().setValue(1);
+        station.getNorthOffsetDriver().setValue(-1);
+        station.getZenithOffsetDriver().setValue(2);
+        final PVCoordinatesProvider pvCoordinatesProvider = station.getPVCoordinatesProvider();
+        final Frame eci = FramesFactory.getEME2000();
+        // WHEN
+        final Vector3D actualPosition = pvCoordinatesProvider.getPosition(date, eci);
+        // THEN
+        final PVCoordinates pvCoordinates = pvCoordinatesProvider.getPVCoordinates(date, eci);
+        Assertions.assertEquals(pvCoordinates.getPosition(), actualPosition);
+    }
+
+    @Test
+    void getFieldPVCoordinatesProvider() {
+        // GIVEN
+        EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        final Frame ecef = FramesFactory.getGTOD(true);
+        final GeodeticPoint geodeticPoint = new GeodeticPoint(1., 2., 3.);
+        final TopocentricFrame topocentricFrame = new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                Constants.WGS84_EARTH_FLATTENING, ecef), geodeticPoint, "");
+        final GroundStation station = new GroundStation(topocentricFrame);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        for (final ParameterDriver driver: selectAllDrivers(station)) {
+            driver.setReferenceDate(date);
+        }
+        station.getEastOffsetDriver().setValue(1);
+        station.getNorthOffsetDriver().setValue(-1);
+        station.getZenithOffsetDriver().setValue(2);
+        final int freeParams = 0;
+        final FieldPVCoordinatesProvider<Gradient> pvCoordinatesProvider = station.getFieldPVCoordinatesProvider(freeParams,
+                new HashMap<>());
+        final Frame eci = FramesFactory.getEME2000();
+        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(GradientField.getField(freeParams), date);
+        // WHEN
+        final FieldPVCoordinates<Gradient> pvCoordinates = pvCoordinatesProvider.getPVCoordinates(fieldDate, eci);
+        // THEN
+        Assertions.assertEquals(pvCoordinates.getPosition(), pvCoordinatesProvider.getPosition(fieldDate, eci));
+        final PVCoordinates nonFieldPV = station.getPVCoordinatesProvider().getPVCoordinates(date, eci);
+        Assertions.assertEquals(pvCoordinates.getVelocity().toVector3D(), nonFieldPV.getVelocity());
+    }
 
     @Test
     void testEstimateClockOffset() {
@@ -93,7 +173,6 @@ class GroundStationTest {
         final GroundStation changed  = new GroundStation(new TopocentricFrame(parent, base.getPoint(),
                                                                               base.getName() + changedSuffix), context.ut1.getEOPHistory(),
                                                          blankClock, context.stations.get(0).getDisplacements());
-        final PVCoordinatesProvider groundCoordProvider = changed.getPVCoordinatesProvider();
 
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
