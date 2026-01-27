@@ -29,7 +29,7 @@ import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 public abstract class AbstractAngularBuilder<T extends ObservedMeasurement<T>> extends AbstractSignalBasedBuilder<T> {
 
     /** Zero value for initial dummy measurement. */
-    protected static final double[] ZERO = { 0.0, 0.0 };
+    static final double[] ZERO = { 0.0, 0.0 };
 
     /** Ground station from which measurement is performed. */
     private final GroundStation station;

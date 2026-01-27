@@ -31,7 +31,7 @@ public class NavICLnavParser extends LegacyNavigationParser<NavICLegacyNavigatio
 
     /** URA index to URA mapping (table 23 of NavIC ICD). */
     // CHECKSTYLE: stop Indentation check
-    public static final double[] NAVIC_URA = {
+    static final double[] NAVIC_URA = {
            2.40,    3.40,    4.85,   6.85,
            9.65,   13.65,   24.00,  48.00,
           96.00,  192.00,  384.00, 768.00,

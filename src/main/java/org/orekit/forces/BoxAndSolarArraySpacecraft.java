@@ -471,7 +471,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                                              final double dragCoeff, final double liftRatio,
                                              final double absorptionCoeff, final double reflectionCoeff) {
 
-        if (n % 2 != 1) {
+        if (n <= 0 || (n & 1) == 0) {
             throw new OrekitException(OrekitMessages.NUMBER_OF_FACETS_NOT_ODD, n);
         }
 

@@ -518,6 +518,17 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
+    void testNegativeNumberOfFacets() {
+        try {
+            new BoxAndSolarArraySpacecraft(-1, 2.0, 0.5, 0.5, 0.4, 0.6);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.NUMBER_OF_FACETS_NOT_ODD, oe.getSpecifier());
+            Assertions.assertEquals(-1, (Integer) oe.getParts()[0]);
+        }
+    }
+
+    @Test
     void testDiscoBallSmall() {
         doTestDiscoBallN(7, 1.1703, 1.1718);
     }
