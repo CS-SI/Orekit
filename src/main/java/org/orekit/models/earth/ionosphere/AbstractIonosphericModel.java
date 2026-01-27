@@ -40,7 +40,7 @@ public abstract class AbstractIonosphericModel implements IonosphericModel {
      * @param earth elliptic earth body
      * @since 14.0
      */
-    public AbstractIonosphericModel(final OneAxisEllipsoid earth) {
+    protected AbstractIonosphericModel(final OneAxisEllipsoid earth) {
         this.earth = earth;
     }
 

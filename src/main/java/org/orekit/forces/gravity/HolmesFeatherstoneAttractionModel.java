@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.SphericalCoordinates;
@@ -1075,16 +1074,14 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
         final T mu = parameters[0];
 
         // check for faster computation dedicated to derivatives with respect to state and gravitational parameter
-        if (s.getDate().hasZeroField()) {
-            if (isGradientStateDerivative(s) && isGradientConstantOrMuDerivative(mu)) {
-                @SuppressWarnings("unchecked")
-                final FieldVector3D<Gradient> p = (FieldVector3D<Gradient>) s.getPosition();
-                @SuppressWarnings("unchecked")
-                final FieldVector3D<T> a = (FieldVector3D<T>) accelerationWrtState(s.getDate().toAbsoluteDate(),
-                        s.getFrame(), p,
-                        (Gradient) mu);
-                return a;
-            }
+        if (s.getDate().hasZeroField() && isGradientStateDerivative(s) && isGradientConstantOrMuDerivative(mu)) {
+            @SuppressWarnings("unchecked")
+            final FieldVector3D<Gradient> p = (FieldVector3D<Gradient>) s.getPosition();
+            @SuppressWarnings("unchecked")
+            final FieldVector3D<T> a = (FieldVector3D<T>) accelerationWrtState(s.getDate().toAbsoluteDate(),
+                    s.getFrame(), p,
+                    (Gradient) mu);
+            return a;
         }
 
         // get the position in body frame
@@ -1111,53 +1108,13 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
             if (p < 3) {
                 return false;
             }
-            @SuppressWarnings("unchecked")
-            final FieldPVCoordinates<Gradient> pv = (FieldPVCoordinates<Gradient>) state.getPVCoordinates();
+            @SuppressWarnings("unchecked") final FieldPVCoordinates<Gradient> pv = (FieldPVCoordinates<Gradient>) state.getPVCoordinates();
             return isVariable(pv.getPosition().getX(), 0) &&
-                   isVariable(pv.getPosition().getY(), 1) &&
-                   isVariable(pv.getPosition().getZ(), 2);
+                    isVariable(pv.getPosition().getY(), 1) &&
+                    isVariable(pv.getPosition().getZ(), 2);
         } else {
             return false;
         }
-    }
-
-    /**
-     * Check if a field gravitational parameter is constant or represents an independent variable.
-     * @param mu field gravitational parameter
-     * @return true if the field gravitational parameter is constant or represents an independent variable
-     * @param <T> type of field
-     * @since 13.1.3
-     */
-    private <T extends CalculusFieldElement<T>> boolean isDSConstantOrMuDerivative(final T mu) {
-        try {
-            final double[] derivatives = ((DerivativeStructure) mu).getAllDerivatives();
-            boolean check = true;
-            for (int i = 1; i < derivatives.length; i++) {
-                if (i == 4) {
-                    check &= derivatives[i] == 0.0 || derivatives[i] == 1.0;
-                } else {
-                    check &= derivatives[i] == 0.0;
-                }
-            }
-            return check;
-        } catch (ClassCastException cce) {
-            return false;
-        }
-    }
-
-    /** Check if a derivative represents a specified variable.
-     * @param ds derivative to check
-     * @param index index of the variable
-     * @return true if the derivative represents a specified variable
-     * @since 9.0
-     */
-    private boolean isVariable(final DerivativeStructure ds, final int index) {
-        final double[] derivatives = ds.getAllDerivatives();
-        boolean check = true;
-        for (int i = 1; i < derivatives.length; ++i) {
-            check &= derivatives[i] == ((index + 1 == i) ? 1.0 : 0.0);
-        }
-        return check;
     }
 
     /**
@@ -1203,7 +1160,7 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
      * <p>
      * From a theoretical point of view, this method computes the same values
      * as {@link #acceleration(FieldSpacecraftState, CalculusFieldElement[])} in the
-     * specific case of {@link DerivativeStructure} with respect to state, so
+     * specific case of {@link Gradient} with respect to state, so
      * it is less general. However, it is *much* faster in this important case.
      * <p>
      * <p>

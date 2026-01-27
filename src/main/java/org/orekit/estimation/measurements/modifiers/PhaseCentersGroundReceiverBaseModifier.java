@@ -43,8 +43,8 @@ public abstract class PhaseCentersGroundReceiverBaseModifier<T extends AbstractM
      * @param stationPattern station pattern
      * @param satellitePattern satellite pattern
      */
-    public PhaseCentersGroundReceiverBaseModifier(final FrequencyPattern stationPattern,
-                                                  final FrequencyPattern satellitePattern) {
+    protected PhaseCentersGroundReceiverBaseModifier(final FrequencyPattern stationPattern,
+                                                     final FrequencyPattern satellitePattern) {
         this.uplink   = new PhaseCentersOffsetComputer(stationPattern, satellitePattern);
         this.downlink = new PhaseCentersOffsetComputer(satellitePattern, stationPattern);
     }
