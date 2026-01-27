@@ -20,6 +20,7 @@ package org.orekit.utils;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
@@ -290,6 +291,68 @@ class FieldAbsolutePVCoordinatesHermiteInterpolatorTest {
 
         }
 
+    }
+
+    /**
+     * Test related to issue 1844.
+     *
+     * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1844">Issue 1844</a>
+     */
+    @Test
+    void testOutputFrame() {
+        // GIVEN
+
+        // Define field
+        final Field<Binary64> field = Binary64Field.getInstance();
+
+        // Define output frame
+        final Frame outputFrame = FramesFactory.getEME2000();
+
+        // Create samples
+        final Frame                                      inputFrame = FramesFactory.getGCRF();
+        final List<FieldAbsolutePVCoordinates<Binary64>> samples    = new ArrayList<>();
+
+        final FieldAbsoluteDate<Binary64> date1 = new FieldAbsoluteDate<>(field);
+        final FieldAbsolutePVCoordinates<Binary64> sample1 =
+                new FieldAbsolutePVCoordinates<>(inputFrame, date1,
+                                                 new FieldVector3D<>(field, Vector3D.PLUS_I),
+                                                 new FieldVector3D<>(field, Vector3D.PLUS_J));
+
+        final FieldAbsoluteDate<Binary64> date2 = new FieldAbsoluteDate<>(field).shiftedBy(1);
+        final FieldAbsolutePVCoordinates<Binary64> sample2 =
+                new FieldAbsolutePVCoordinates<>(inputFrame, date2,
+                                                 new FieldVector3D<>(field, Vector3D.PLUS_J),
+                                                 new FieldVector3D<>(field, Vector3D.MINUS_I));
+
+        samples.add(sample1);
+        samples.add(sample2);
+
+        // Create interpolator
+        final FieldAbsolutePVCoordinatesHermiteInterpolator<Binary64> interpolator =
+                new FieldAbsolutePVCoordinatesHermiteInterpolator<>(2,
+                                                                    outputFrame,
+                                                                    CartesianDerivativesFilter.USE_P);
+
+        // Define interpolation date
+        final FieldAbsoluteDate<Binary64> interpolationDate = new FieldAbsoluteDate<>(field).shiftedBy(0.5);
+
+
+        // WHEN
+        final FieldAbsolutePVCoordinates<Binary64> interpolated = interpolator.interpolate(interpolationDate, samples);
+
+        // THEN
+        final PVCoordinates pvInInputFrame = interpolated.getPVCoordinates(inputFrame).toPVCoordinates();
+
+        // Assert actual output frame is respected
+        Assertions.assertEquals(outputFrame, interpolated.getFrame());
+
+        // Assert that the interpolated result is correct
+        Assertions.assertEquals(0.5, pvInInputFrame.getPosition().getX(), 1e-15);
+        Assertions.assertEquals(0.5, pvInInputFrame.getPosition().getY(), 1e-15);
+        Assertions.assertEquals(0, pvInInputFrame.getPosition().getZ(), 1e-15);
+
+        // Assert that input and output frame does not match
+        Assertions.assertNotEquals(inputFrame, outputFrame);
     }
 
     @BeforeEach

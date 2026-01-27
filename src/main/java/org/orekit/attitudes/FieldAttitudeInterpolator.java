@@ -20,8 +20,10 @@ import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbstractFieldTimeInterpolator;
 import org.orekit.time.FieldTimeInterpolator;
+import org.orekit.time.FieldTimeStamped;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -93,5 +95,10 @@ public class FieldAttitudeInterpolator<KK extends CalculusFieldElement<KK>>
                 interpolator.interpolate(interpolationData.getInterpolationDate(), angularSample);
 
         return new FieldAttitude<>(referenceFrame, interpolated);
+    }
+
+    @Override
+    public List<FieldTimeInterpolator<? extends FieldTimeStamped<KK>, KK>> getSubInterpolators() {
+        return Collections.singletonList(interpolator);
     }
 }

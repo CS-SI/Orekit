@@ -27,6 +27,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.CelestialBody;
@@ -93,6 +94,8 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
     private final  int    DEFAULT_SERGEI_INTERPOLATION_POINTS = 2;
     private final  double DEFAULT_SERGEI_PROPAGATION_TIME     = 2400;
     private final  double DEFAULT_SERGEI_TABULATED_TIMESTEP   = 2400;
+
+    private static final double TOLERANCE = 1e-6;
 
     @BeforeAll
     public static void setUp() {
@@ -392,11 +395,11 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
 
     public static ODEIntegrator generateDefaultIntegrator(final Orbit orbit, final OrbitType orbitType) {
         final double     dP         = 1;
-        final double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, orbitType);
+        final double[][] TOLERANCEs = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, orbitType);
         final double     minStep    = 0.001;
         final double     maxStep    = 300.;
 
-        return new DormandPrince853Integrator(minStep, maxStep, tolerances[0], tolerances[1]);
+        return new DormandPrince853Integrator(minStep, maxStep, TOLERANCEs[0], TOLERANCEs[1]);
     }
 
     public static void configurePropagatorForSergeiCase(final NumericalPropagator propagator) {
@@ -553,7 +556,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
                                      final double expectedMedianRMSVelocityError,
                                      final double expectedMaxRMSPositionError,
                                      final double expectedMaxRMSVelocityError,
-                                     final double tolerance,
+                                     final double TOLERANCE,
                                      final boolean showResults) {
         final DescriptiveStatistics[] relativeRMSSigmaError =
                 computeStatisticsCovarianceInterpolationOnSergeiCase(propagationHorizon, tabulatedTimeStep,
@@ -562,9 +565,8 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
         // Then
         if (showResults) {
             // Significant number to display
-            final int nDigits = (int) FastMath.log10(1/tolerance);
+            final int nDigits = (int) FastMath.log10(1/TOLERANCE);
             final String fmt = String.format(Locale.US, "%%35s = %%%02d.%02df%%n", nDigits + 4, nDigits);
-
             System.out.format(Locale.US, fmt, "relativeRMSSigmaError[0].getMean", relativeRMSSigmaError[0].getMean());
             System.out.format(Locale.US, fmt, "relativeRMSSigmaError[1].getMean", relativeRMSSigmaError[1].getMean());
             System.out.format(Locale.US, fmt, "relativeRMSSigmaError[0].getMedian", relativeRMSSigmaError[0].getPercentile(50));
@@ -574,12 +576,12 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
 
         }
         // Results obtained when using modified orbit date to use truncated JPL test resource file
-        assertEquals(expectedMeanRMSPositionError, relativeRMSSigmaError[0].getMean(), tolerance);
-        assertEquals(expectedMeanRMSVelocityError, relativeRMSSigmaError[1].getMean(), tolerance);
-        assertEquals(expectedMedianRMSPositionError, relativeRMSSigmaError[0].getPercentile(50), tolerance);
-        assertEquals(expectedMedianRMSVelocityError, relativeRMSSigmaError[1].getPercentile(50), tolerance);
-        assertEquals(expectedMaxRMSPositionError, relativeRMSSigmaError[0].getMax(), tolerance);
-        assertEquals(expectedMaxRMSVelocityError, relativeRMSSigmaError[1].getMax(), tolerance);
+        assertEquals(expectedMeanRMSPositionError, relativeRMSSigmaError[0].getMean(), TOLERANCE);
+        assertEquals(expectedMeanRMSVelocityError, relativeRMSSigmaError[1].getMean(), TOLERANCE);
+        assertEquals(expectedMedianRMSPositionError, relativeRMSSigmaError[0].getPercentile(50), TOLERANCE);
+        assertEquals(expectedMedianRMSVelocityError, relativeRMSSigmaError[1].getPercentile(50), TOLERANCE);
+        assertEquals(expectedMaxRMSPositionError, relativeRMSSigmaError[0].getMax(), TOLERANCE);
+        assertEquals(expectedMaxRMSVelocityError, relativeRMSSigmaError[1].getMax(), TOLERANCE);
     }
 
     /**
@@ -602,7 +604,6 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
 
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-9;
 
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
@@ -629,7 +630,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
                             0.207587317,
                             0.185452386,
                             0.609433792,
-                            tolerance,
+                            TOLERANCE,
                             showResults);
 
 /*      Results obtained when using the reference sergei date
@@ -660,7 +661,6 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
 
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-9;
 
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
@@ -689,7 +689,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
                             0.176451233,
                             0.211682516,
                             0.639107824,
-                            tolerance,
+                            TOLERANCE,
                             showResults);
 
         // Results obtained when using Sergei reference date
@@ -719,7 +719,6 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
 
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-9;
 
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
@@ -748,7 +747,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
                             0.237517672,
                             0.493068781,
                             0.829556363,
-                            tolerance,
+                            TOLERANCE,
                             showResults);
 
         // Results obtained when using Sergei reference date
@@ -785,7 +784,6 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
 
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-9;
 
         // Default orbit case
         final Orbit orbit = generateSergeiReferenceOrbit();

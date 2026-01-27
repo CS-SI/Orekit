@@ -116,6 +116,12 @@ public abstract class AbstractStateCovarianceInterpolator
         this.outPositionAngleType = outPositionAngleType;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public List<TimeInterpolator<? extends TimeStamped>> getSubInterpolators() {
+        return Collections.singletonList(orbitInterpolator);
+    }
+
     /**
      * Interpolate orbit and associated covariance.
      *

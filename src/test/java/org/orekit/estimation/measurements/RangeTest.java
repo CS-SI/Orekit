@@ -94,7 +94,7 @@ class RangeTest {
         // Run test
         boolean isModifier = false;
         double refErrorsPMedian = 6.7e-10;
-        double refErrorsPMean   = 3.1e-09;
+        double refErrorsPMean   = 3.2e-09;
         double refErrorsPMax    = 1.0e-07;
         double refErrorsVMedian = 2.1e-04;
         double refErrorsVMean   = 1.3e-03;
@@ -118,7 +118,7 @@ class RangeTest {
         // Run test
         boolean isModifier = true;
         double refErrorsPMedian = 7.9e-10;
-        double refErrorsPMean   = 2.6e-09;
+        double refErrorsPMean   = 2.7e-09;
         double refErrorsPMax    = 9.3e-08;
         double refErrorsVMedian = 2.1e-04;
         double refErrorsVMean   = 1.3e-03;

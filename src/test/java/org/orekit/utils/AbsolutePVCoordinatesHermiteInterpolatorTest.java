@@ -223,6 +223,65 @@ class AbsolutePVCoordinatesHermiteInterpolatorTest {
 
     }
 
+    /**
+     * Test related to issue 1844.
+     *
+     * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1844">Issue 1844</a>
+     */
+    @Test
+    void testOutputFrame() {
+        // GIVEN
+
+        // Define output frame
+        final Frame outputFrame = FramesFactory.getEME2000();
+
+        // Create samples
+        final Frame                       inputFrame = FramesFactory.getGCRF();
+        final List<AbsolutePVCoordinates> samples    = new ArrayList<>();
+
+        final AbsoluteDate date1 = AbsoluteDate.J2000_EPOCH;
+        final AbsolutePVCoordinates sample1 = new AbsolutePVCoordinates(inputFrame,
+                                                                        date1,
+                                                                        Vector3D.PLUS_I,
+                                                                        Vector3D.PLUS_J);
+
+        final AbsoluteDate date2 = AbsoluteDate.J2000_EPOCH.shiftedBy(1);
+        final AbsolutePVCoordinates sample2 = new AbsolutePVCoordinates(inputFrame,
+                                                                        date2,
+                                                                        Vector3D.PLUS_J,
+                                                                        Vector3D.MINUS_I);
+
+        samples.add(sample1);
+        samples.add(sample2);
+
+        // Create interpolator
+        final AbsolutePVCoordinatesHermiteInterpolator interpolator =
+                new AbsolutePVCoordinatesHermiteInterpolator(2,
+                                                             outputFrame,
+                                                             CartesianDerivativesFilter.USE_P);
+
+        // Define interpolation date
+        final AbsoluteDate interpolationDate = AbsoluteDate.J2000_EPOCH.shiftedBy(0.5);
+
+
+        // WHEN
+        final AbsolutePVCoordinates interpolated = interpolator.interpolate(interpolationDate, samples);
+
+        // THEN
+        final PVCoordinates pvInInputFrame = interpolated.getPVCoordinates(inputFrame);
+
+        // Assert actual output frame is respected
+        Assertions.assertEquals(outputFrame, interpolated.getFrame());
+
+        // Assert that the interpolated result is correct
+        Assertions.assertEquals(0.5, pvInInputFrame.getPosition().getX(), 1e-15);
+        Assertions.assertEquals(0.5, pvInInputFrame.getPosition().getY(), 1e-15);
+        Assertions.assertEquals(0, pvInInputFrame.getPosition().getZ(), 1e-15);
+
+        // Assert that input and output frame does not match
+        Assertions.assertNotEquals(inputFrame, outputFrame);
+    }
+
     private PolynomialFunction randomPolynomial(int degree, Random random) {
         double[] coeff = new double[1 + degree];
         for (int j = 0; j < degree; ++j) {

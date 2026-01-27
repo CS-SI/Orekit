@@ -51,7 +51,7 @@ public abstract class AbstractOrbitInterpolator extends AbstractTimeInterpolator
     }
 
     /**
-     * Check orbits consistency by comparing their gravitational parameters µ.
+     * Check orbits consistency by comparing their frame and gravitational parameters µ.
      *
      * @param sample orbits sample
      */
@@ -63,6 +63,12 @@ public abstract class AbstractOrbitInterpolator extends AbstractTimeInterpolator
         for (int i = 0; i < sampleList.size() - 1; i++) {
             final Orbit currentOrbit = sampleList.get(i);
             final Orbit nextOrbit    = sampleList.get(i + 1);
+
+            if (currentOrbit.getFrame() != nextOrbit.getFrame()) {
+                throw new OrekitIllegalArgumentException(OrekitMessages.FRAMES_MISMATCH,
+                                                         currentOrbit.getFrame(),
+                                                         nextOrbit.getFrame());
+            }
 
             if (currentOrbit.getMu() != nextOrbit.getMu()) {
                 throw new OrekitIllegalArgumentException(OrekitMessages.ORBITS_MUS_MISMATCH, currentOrbit.getMu(),

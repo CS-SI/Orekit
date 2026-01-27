@@ -39,6 +39,7 @@ import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeInterpolator;
+import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.Constants;
@@ -51,6 +52,8 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinatesHermiteInterpolator;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.mockito.Mockito.mock;
 
 public class FieldAttitudeInterpolatorTest {
 
@@ -206,6 +209,32 @@ public class FieldAttitudeInterpolatorTest {
         Assertions.assertEquals(1, ((Integer) thrown.getParts()[0]).intValue());
         Assertions.assertEquals(2, ((Integer) thrown.getParts()[1]).intValue());
 
+    }
+
+    /**
+     * Test related to issue 1878.
+     *
+     * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1878">Issue 1878</a>
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    void testGetSubInterpolator() {
+
+        // Define sub interpolator
+        final FieldTimeInterpolator<TimeStampedFieldAngularCoordinates<Binary64>, Binary64> mockTimeInterpolator =
+                mock(FieldTimeInterpolator.class);
+
+        // GIVEN
+        final FieldAttitudeInterpolator<Binary64> attitudeInterpolator =
+                new FieldAttitudeInterpolator<>(FramesFactory.getGCRF(), mockTimeInterpolator);
+
+        // WHEN
+        final List<FieldTimeInterpolator<? extends FieldTimeStamped<Binary64>, Binary64>> actualSubInterpolators =
+                attitudeInterpolator.getSubInterpolators();
+
+        // THEN
+        Assertions.assertEquals(1, actualSubInterpolators.size());
+        Assertions.assertSame(mockTimeInterpolator, actualSubInterpolators.get(0));
     }
 
 }

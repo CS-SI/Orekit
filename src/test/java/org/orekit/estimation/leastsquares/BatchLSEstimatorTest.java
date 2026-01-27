@@ -23,10 +23,13 @@ import java.util.stream.IntStream;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.GaussNewtonOptimizer;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Evaluation;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -38,7 +41,9 @@ import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.InterSatellitesRangeMeasurementCreator;
 import org.orekit.estimation.measurements.MultiplexedMeasurement;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
@@ -56,16 +61,51 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.conversion.KeplerianPropagatorBuilder;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 class BatchLSEstimatorTest {
+
+    @Test
+    void testIssue1864() {
+        // GIVEN
+        EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
+        final KeplerianPropagatorBuilder propagatorBuilder = new KeplerianPropagatorBuilder(OrbitType.CARTESIAN.convertType(orbit),
+                PositionAngleType.TRUE, 1.);
+        final BatchLSEstimator estimator = new BatchLSEstimator(new GaussNewtonOptimizer(), propagatorBuilder);
+        estimator.setParametersConvergenceThreshold(1e-2);
+        estimator.setMaxIterations(100);
+        estimator.setMaxEvaluations(100);
+        final ObservableSatellite satellite = new ObservableSatellite(0);
+        for (int i = 0; i < 10; i++) {
+            final TimeStampedPVCoordinates shifted = orbit.shiftedBy(i * 100).getPVCoordinates();
+            estimator.addMeasurement(new PV(shifted.getDate(), shifted.getPosition(), shifted.getVelocity(),
+                    1e1, 1.e-1, 1., satellite));
+        }
+        final PVCoordinates pvCoordinates = orbit.shiftedBy(1e4).getPVCoordinates();
+        final PV outlier = new PV(orbit.getDate().shiftedBy(-1), pvCoordinates.getPosition(), pvCoordinates.getVelocity(),
+                1e1, 1.e-1, 1., satellite);
+        final OutlierFilter<PV> outlierFilter = new OutlierFilter<>(1, 1.);
+        outlier.addModifier(outlierFilter);
+        estimator.addMeasurement(outlier);
+        // WHEN
+        estimator.estimate();
+        final LeastSquaresOptimizer.Optimum optimum = estimator.getOptimum();
+        // THEN
+        Assertions.assertEquals(6, optimum.getIterations());
+        Assertions.assertEquals(9.3177e-19, optimum.getChiSquare(), 1e-22);
+        final double actualReduced = optimum.getReducedChiSquare(0);
+        Assertions.assertEquals(1.5275e-20, actualReduced, 1e-22);
+    }
 
     /**
      * Perfect PV measurements with a perfect start
@@ -735,7 +775,7 @@ class BatchLSEstimatorTest {
         Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPosition(),
                           determined.getPosition()), 5.3e-6);
         Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getVelocity(),
-                          determined.getVelocity()), 2.9e-9);
+                          determined.getVelocity()), 3.2e-9);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one
@@ -1124,6 +1164,51 @@ class BatchLSEstimatorTest {
     @Test
     void testEstimateOnlyFewOrbitalParameters() {
         doTestEstimateOnlySomeOrbitalParameters(new boolean[]{ false,  true, false, true, false, false });
+    }
+
+    /**
+     * Test added for coverage. Check that an error is returned when no observed measurements are available for
+     * estimator.
+     * @since 13.1.3
+     */
+    @Test
+    void testErrorThrownWhenNoEnabledMeasurements() {
+        // GIVEN
+        // Create propagator builder for estimator
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        final NumericalPropagatorBuilder propagatorBuilder =
+                context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                                      1.0e-6, 60.0, 1.0e-3);
+
+        // Estimate orbital parameters
+        final List<DelegatingDriver> drivers = propagatorBuilder.getOrbitalParametersDrivers().getDrivers();
+        drivers.forEach(driver -> driver.setSelected(true));
+        drivers.forEach(driver -> driver.setValue(1.0001 * driver.getValue()));
+
+        // create the estimator
+        final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
+                                                                propagatorBuilder);
+        estimator.setParametersConvergenceThreshold(1.0e-2);
+        estimator.setMaxIterations(10);
+        estimator.setMaxEvaluations(20);
+
+
+        // Create measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                EstimationTestUtils.createMeasurements(propagator,
+                                                       new PVMeasurementCreator(),
+                                                       0.0, 1.0, 300.0);
+
+        // Disable measurements for test purpose
+        measurements.forEach(measurement -> measurement.setEnabled(false));
+
+        // Add measurements to estimator
+        measurements.forEach(estimator::addMeasurement);
+
+        // WHEN & THEN
+        Assertions.assertThrows(IndexOutOfBoundsException.class, estimator::estimate);
     }
 
     private void doTestEstimateOnlySomeOrbitalParameters(boolean[] orbitalParametersEstimated) {

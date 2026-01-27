@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
@@ -29,7 +30,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.time.AbstractTimeInterpolator;
@@ -568,5 +572,111 @@ class FieldOrbitHermiteInterpolatorTest {
         Assertions.assertEquals(interpolationPoints,
                                 interpolator.getNbInterpolationPoints());
         Assertions.assertEquals(CartesianDerivativesFilter.USE_PVA, interpolator.getPVAFilter());
+    }
+
+    @Test
+    public void testErrorThrownWhenUsingOrbitWithFrameMismatch() {
+        // GIVEN
+        // Define sample with frame mismatch
+        final Field<Binary64>      field  = Binary64Field.getInstance();
+        final FieldOrbit<Binary64> orbit1 = TestUtils.getFakeFieldOrbit();
+        final FieldOrbit<Binary64> orbit2 = new FieldCartesianOrbit<>(orbit1.shiftedBy(1).getPVCoordinates(),
+                                                                      FramesFactory.getEME2000(),
+                                                                      orbit1.getMu());
+
+        final List<FieldOrbit<Binary64>> sample = new ArrayList<>();
+        sample.add(orbit1);
+        sample.add(orbit2);
+
+        // Define interpolator
+        final FieldOrbitHermiteInterpolator<Binary64> interpolator =
+                new FieldOrbitHermiteInterpolator<>(FramesFactory.getGCRF());
+
+        // WHEN & THEN
+        Assertions.assertThrows(OrekitIllegalArgumentException.class,
+                                () -> interpolator.interpolate(new FieldAbsoluteDate<>(field), sample));
+    }
+
+    /**
+     * Test related to issue 1844 with Cartesian orbits.
+     *
+     * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1844">Issue 1844</a>
+     */
+    @Test
+    void testOutputFrameCartesian() {
+        // GIVEN
+        // Define samples
+        final FieldOrbit<Binary64> orbit1 = TestUtils.getFakeFieldOrbit();
+        final FieldOrbit<Binary64> orbit2 = orbit1.shiftedBy(1);
+
+        final List<FieldOrbit<Binary64>> samples = new ArrayList<>();
+        samples.add(orbit1);
+        samples.add(orbit2);
+
+        // Define output frame
+        final Frame outputFrame = FramesFactory.getEME2000();
+
+        // Define interpolator
+        final FieldOrbitHermiteInterpolator<Binary64> interpolator = new FieldOrbitHermiteInterpolator<>(outputFrame);
+
+        // Define interpolation date
+        final FieldAbsoluteDate<Binary64> interpolationDate = orbit1.getDate();
+
+        // WHEN
+        final FieldOrbit<Binary64> interpolatedOrbit = interpolator.interpolate(interpolationDate, samples);
+
+        // THEN
+        // Assert against original orbit
+        final Vector3D originalPosition = orbit1.getPosition().toVector3D();
+        final Vector3D actualPosition   = interpolatedOrbit.getPosition(orbit1.getFrame()).toVector3D();
+        Assertions.assertEquals(originalPosition.getX(), actualPosition.getX(), 1.0e-14);
+        Assertions.assertEquals(originalPosition.getY(), actualPosition.getY(), 1.0e-14);
+        Assertions.assertEquals(originalPosition.getZ(), actualPosition.getZ(), 1.0e-14);
+
+        // Assert output type
+        Assertions.assertInstanceOf(FieldCartesianOrbit.class, interpolatedOrbit);
+
+        // Assert frame
+        Assertions.assertEquals(outputFrame, interpolatedOrbit.getFrame());
+    }
+
+    /**
+     * Test related to issue 1844 with Common orbits (other than Cartesian).
+     *
+     * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1844">Issue 1844</a>
+     */
+    @Test
+    void testOutputFrameCommon() {
+        // GIVEN
+        // Define samples
+        final FieldOrbit<Binary64> orbit1 = new FieldCircularOrbit<>(TestUtils.getTestFieldOrbit());
+        final FieldOrbit<Binary64> orbit2 = new FieldCircularOrbit<>(orbit1.shiftedBy(1));
+
+        final List<FieldOrbit<Binary64>> samples = new ArrayList<>();
+        samples.add(orbit1);
+        samples.add(orbit2);
+
+        // Define output frame
+        final Frame outputFrame = FramesFactory.getEME2000();
+
+        // Define interpolator
+        final FieldOrbitHermiteInterpolator<Binary64> interpolator = new FieldOrbitHermiteInterpolator<>(outputFrame);
+
+        // Define interpolation date
+        final FieldAbsoluteDate<Binary64> interpolationDate = orbit1.getDate();
+
+        // WHEN
+        final FieldOrbit<Binary64> interpolatedOrbit = interpolator.interpolate(interpolationDate, samples);
+
+        // THEN
+        // Assert against original orbit
+        final Vector3D originalPosition = orbit1.getPosition().toVector3D();
+        final Vector3D actualPosition   = interpolatedOrbit.getPosition(orbit1.getFrame()).toVector3D();
+        Assertions.assertEquals(originalPosition.getX(), actualPosition.getX(), 1.0e-8);
+        Assertions.assertEquals(originalPosition.getY(), actualPosition.getY(), 1.0e-8);
+        Assertions.assertEquals(originalPosition.getZ(), actualPosition.getZ(), 1.0e-8);
+
+        // Assert frame
+        Assertions.assertEquals(outputFrame, interpolatedOrbit.getFrame());
     }
 }

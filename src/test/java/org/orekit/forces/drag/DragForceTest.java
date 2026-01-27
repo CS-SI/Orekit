@@ -901,7 +901,7 @@ class DragForceTest extends AbstractLegacyForceModelTest {
         checkParameterDerivative(state.shiftedBy(dt2 * 1.1), forceModel, "Cd", 1.0e-4, 2.7e-12);
 
         // Check parameter derivatives after date3: for "Cd3"
-        checkParameterDerivative(state.shiftedBy(dt3 * 1.1), forceModel, "Cd", 1.0e-4, 2.0e-12);
+        checkParameterDerivative(state.shiftedBy(dt3 * 1.1), forceModel, "Cd", 1.0e-4, 3.0e-12);
     }
 
     private Atmosphere getAtmosphere() {

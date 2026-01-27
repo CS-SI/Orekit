@@ -25,7 +25,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -533,6 +536,111 @@ class OrbitHermiteInterpolatorTest {
         Assertions.assertEquals(interpolationPoints,
                                 interpolator.getNbInterpolationPoints());
         Assertions.assertEquals(CartesianDerivativesFilter.USE_PVA, interpolator.getPVAFilter());
+    }
+
+   @Test
+   public void testErrorThrownWhenUsingOrbitWithFrameMismatch() {
+      // GIVEN
+      // Define sample with frame mismatch
+      final Orbit orbit1 = TestUtils.getFakeOrbit();
+      final Orbit orbit2 = new CartesianOrbit(orbit1.shiftedBy(1).getPVCoordinates(),
+                                              FramesFactory.getEME2000(),
+                                              orbit1.getMu());
+
+      final List<Orbit> sample = new ArrayList<>();
+      sample.add(orbit1);
+      sample.add(orbit2);
+
+      // Define interpolator
+      final OrbitHermiteInterpolator interpolator =
+              new OrbitHermiteInterpolator(FramesFactory.getGCRF());
+
+      // WHEN & THEN
+      Assertions.assertThrows(OrekitIllegalArgumentException.class,
+                              () -> interpolator.interpolate(new AbsoluteDate(), sample));
+   }
+
+    /**
+     * Test related to issue 1844 with Cartesian orbits.
+     *
+     * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1844">Issue 1844</a>
+     */
+    @Test
+    void testOutputFrameCartesian() {
+        // GIVEN
+        // Define samples
+        final Orbit orbit1 = TestUtils.getFakeOrbit();
+        final Orbit orbit2 = orbit1.shiftedBy(1);
+
+        final List<Orbit> samples = new ArrayList<>();
+        samples.add(orbit1);
+        samples.add(orbit2);
+
+        // Define output frame
+        final Frame outputFrame = FramesFactory.getEME2000();
+
+        // Define interpolator
+        final OrbitHermiteInterpolator interpolator = new OrbitHermiteInterpolator(outputFrame);
+
+        // Define interpolation date
+        final AbsoluteDate interpolationDate = orbit1.getDate();
+
+        // WHEN
+        final Orbit interpolatedOrbit = interpolator.interpolate(interpolationDate, samples);
+
+        // THEN
+        // Assert against original orbit
+        final Vector3D originalPosition = orbit1.getPosition();
+        final Vector3D actualPosition   = interpolatedOrbit.getPosition(orbit1.getFrame());
+        Assertions.assertEquals(originalPosition.getX(), actualPosition.getX(), 1.0e-14);
+        Assertions.assertEquals(originalPosition.getY(), actualPosition.getY(), 1.0e-14);
+        Assertions.assertEquals(originalPosition.getZ(), actualPosition.getZ(), 1.0e-14);
+
+        // Assert output type
+        Assertions.assertInstanceOf(CartesianOrbit.class, interpolatedOrbit);
+
+        // Assert frame
+        Assertions.assertEquals(outputFrame, interpolatedOrbit.getFrame());
+    }
+
+    /**
+     * Test related to issue 1844 with Common orbits (other than Cartesian).
+     *
+     * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1844">Issue 1844</a>
+     */
+    @Test
+    void testOutputFrameCommon() {
+        // GIVEN
+        // Define samples
+        final Orbit orbit1 = new CircularOrbit(TestUtils.getTestOrbit());
+        final Orbit orbit2 = new CircularOrbit(orbit1.shiftedBy(1));
+
+        final List<Orbit> samples = new ArrayList<>();
+        samples.add(orbit1);
+        samples.add(orbit2);
+
+        // Define output frame
+        final Frame outputFrame = FramesFactory.getEME2000();
+
+        // Define interpolator
+        final OrbitHermiteInterpolator interpolator = new OrbitHermiteInterpolator(outputFrame);
+
+        // Define interpolation date
+        final AbsoluteDate interpolationDate = orbit1.getDate();
+
+        // WHEN
+        final Orbit interpolatedOrbit = interpolator.interpolate(interpolationDate, samples);
+
+        // THEN
+        // Assert against original orbit
+        final Vector3D originalPosition = orbit1.getPosition();
+        final Vector3D actualPosition   = interpolatedOrbit.getPosition(orbit1.getFrame());
+        Assertions.assertEquals(originalPosition.getX(), actualPosition.getX(), 1.0e-8);
+        Assertions.assertEquals(originalPosition.getY(), actualPosition.getY(), 1.0e-8);
+        Assertions.assertEquals(originalPosition.getZ(), actualPosition.getZ(), 1.0e-8);
+    
+        // Assert frame
+        Assertions.assertEquals(outputFrame, interpolatedOrbit.getFrame());
     }
 
 }

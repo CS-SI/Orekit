@@ -114,7 +114,7 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
     }
 
     /**
-     * Get the central date to use to find neighbors while taking into account extrapolation threshold.
+     * Get the central date to use to find neighbors while taking into account an extrapolation threshold.
      *
      * @param date interpolation date
      * @param minDate earliest date in the sample.
@@ -152,7 +152,7 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
     public int getNbInterpolationPoints() {
         final List<TimeInterpolator<? extends TimeStamped>> subInterpolators = getSubInterpolators();
         // In case the interpolator does not have sub interpolators
-        if (subInterpolators.size() == 1) {
+        if (subInterpolators.size() == 1 && subInterpolators.get(0) == this) {
             return interpolationPoints;
         }
         // Otherwise find maximum number of interpolation points among sub interpolators
@@ -232,13 +232,14 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
          * @param sample time stamped sample
          */
         protected InterpolationData(final AbsoluteDate interpolationDate, final Collection<T> sample) {
-            // Handle specific case that is not handled by the immutable time stamped cache constructor
+            // Handle specific case not handled by the immutable time stamped cache constructor
             if (sample.isEmpty()) {
                 throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA, 0);
             }
 
             // TODO performance: create neighborsList without copying sample.
-            if (sample.size() == interpolationPoints) {
+            final int nbInterpolationPoints = getNbInterpolationPoints();
+            if (sample.size() == nbInterpolationPoints) {
                 // shortcut for simple case
                 // copy list to make neighborList immutable
                 this.neighborList = Collections.unmodifiableList(new ArrayList<>(sample));
@@ -247,7 +248,7 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
 
                 // Create immutable time stamped cache
                 final ImmutableTimeStampedCache<T> cachedSamples =
-                        new ImmutableTimeStampedCache<>(interpolationPoints, sample);
+                        new ImmutableTimeStampedCache<>(nbInterpolationPoints, sample);
 
                 // Find neighbors
                 final AbsoluteDate central = AbstractTimeInterpolator.getCentralDate(

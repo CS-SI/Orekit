@@ -32,6 +32,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
 class FieldImpulseProviderTest {
@@ -82,6 +83,58 @@ class FieldImpulseProviderTest {
     private static FieldSpacecraftState<Binary64> buildFieldState() {
         return new FieldSpacecraftState<>(new FieldCartesianOrbit<>(Binary64Field.getInstance(),
                 new CartesianOrbit(new PVCoordinates(Vector3D.MINUS_J, Vector3D.MINUS_K), FramesFactory.getEME2000(), AbsoluteDate.ARBITRARY_EPOCH, 1)));
+    }
+
+    @Test
+    void testOfImpulseProviderInit() {
+        // GIVEN
+        final Vector3D forwardImpulse = new Vector3D(1, 2, 3);
+        final TestImpulseProvider impulseProvider = new TestImpulseProvider(forwardImpulse);
+        final FieldImpulseProvider<Binary64> fieldImpulseProvider = FieldImpulseProvider.of(impulseProvider);
+        final FieldSpacecraftState<Binary64> fieldSpacecraftState = buildFieldState();
+        // WHEN
+        fieldImpulseProvider.init(fieldSpacecraftState, FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance()));
+        // THEN
+        Assertions.assertTrue(impulseProvider.initialized);
+    }
+
+    @Test
+    void testOfImpulseProviderFinish() {
+        // GIVEN
+        final Vector3D forwardImpulse = new Vector3D(1, 2, 3);
+        final TestImpulseProvider impulseProvider = new TestImpulseProvider(forwardImpulse);
+        final FieldImpulseProvider<Binary64> fieldImpulseProvider = FieldImpulseProvider.of(impulseProvider);
+        final FieldSpacecraftState<Binary64> fieldSpacecraftState = buildFieldState();
+        // WHEN
+        fieldImpulseProvider.finish(fieldSpacecraftState);
+        // THEN
+        Assertions.assertTrue(impulseProvider.finished);
+    }
+
+    private static class TestImpulseProvider implements ImpulseProvider {
+
+        private final Vector3D impulse;
+        boolean initialized = false;
+        boolean finished = false;
+
+        TestImpulseProvider(final Vector3D impulse) {
+            this.impulse = impulse;
+        }
+
+        @Override
+        public Vector3D getImpulse(SpacecraftState state, boolean isForward) {
+            return impulse;
+        }
+
+        @Override
+        public void init(SpacecraftState initialState, AbsoluteDate targetDate) {
+            initialized = true;
+        }
+
+        @Override
+        public void finish(SpacecraftState finalState) {
+            finished = true;
+        }
     }
 }
 
