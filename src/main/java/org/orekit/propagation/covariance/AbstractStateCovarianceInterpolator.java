@@ -179,11 +179,6 @@ public abstract class AbstractStateCovarianceInterpolator
         return orbitInterpolator;
     }
 
-    @Override
-    public List<TimeInterpolator<? extends TimeStamped>> getSubInterpolators() {
-        return Collections.singletonList(orbitInterpolator);
-    }
-
     /**
      * Interpolate orbit at given interpolation date.
      *

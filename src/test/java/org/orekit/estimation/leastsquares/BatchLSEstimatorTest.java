@@ -48,6 +48,7 @@ import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
 import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
+import org.orekit.estimation.measurements.modifiers.OutlierFilter;
 import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.radiation.RadiationSensitive;
@@ -102,9 +103,9 @@ class BatchLSEstimatorTest {
         final LeastSquaresOptimizer.Optimum optimum = estimator.getOptimum();
         // THEN
         Assertions.assertEquals(6, optimum.getIterations());
-        Assertions.assertEquals(9.3177e-19, optimum.getChiSquare(), 1e-22);
+        Assertions.assertEquals(3.1781e-20, optimum.getChiSquare(), 1e-22);
         final double actualReduced = optimum.getReducedChiSquare(0);
-        Assertions.assertEquals(1.5275e-20, actualReduced, 1e-22);
+        Assertions.assertEquals(5.2099e-22, actualReduced, 1e-24);
     }
 
     /**
@@ -321,7 +322,7 @@ class BatchLSEstimatorTest {
 
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
                                      0.0, 1.2e-6,
-                                     0.0, 3.0e-6,
+                                     0.0, 2.8e-6,
                                      0.0, 7.0e-7,
                                      0.0, 3e-10);
 
@@ -775,7 +776,7 @@ class BatchLSEstimatorTest {
         Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPosition(),
                           determined.getPosition()), 5.3e-6);
         Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getVelocity(),
-                          determined.getVelocity()), 3.2e-9);
+                          determined.getVelocity()), 2.9e-9);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one
@@ -849,7 +850,7 @@ class BatchLSEstimatorTest {
         // The threshold is fixed to 60s in order to build multiplexed measurements
         // If it is less than 60s we cannot have mutliplexed measurement and we would not be able to
         // test the issue.
-        final List<ObservedMeasurement<?>> multiplexed = multiplexMeasurements(independentMeasurements, 60.0);
+        final List<ObservedMeasurement<?>> multiplexed = multiplexMeasurements(independentMeasurements);
 
         for (final ObservedMeasurement<?> measurement : multiplexed) {
             estimator.addMeasurement(measurement);
@@ -1260,18 +1261,18 @@ class BatchLSEstimatorTest {
 
     }
 
-    /** Multiplex measurements.
+    /**
+     * Multiplex measurements.
+     *
      * @param independentMeasurements independent measurements
-     * @param tol tolerance on time difference for multiplexed measurements
      * @return multiplexed measurements
      */
-    private List<ObservedMeasurement<?>> multiplexMeasurements(final List<ObservedMeasurement<?>> independentMeasurements,
-                                                               final double tol) {
+    private List<ObservedMeasurement<?>> multiplexMeasurements(final List<ObservedMeasurement<?>> independentMeasurements) {
         final List<ObservedMeasurement<?>> multiplexed = new ArrayList<>();
         independentMeasurements.sort(new ChronologicalComparator());
         List<ObservedMeasurement<?>> clump = new ArrayList<>();
         for (final ObservedMeasurement<?> measurement : independentMeasurements) {
-            if (!clump.isEmpty() && measurement.getDate().durationFrom(clump.get(0).getDate()) > tol) {
+            if (!clump.isEmpty() && measurement.getDate().durationFrom(clump.get(0).getDate()) > 60.0) {
 
                 // previous clump is finished
                 if (clump.size() == 1) {

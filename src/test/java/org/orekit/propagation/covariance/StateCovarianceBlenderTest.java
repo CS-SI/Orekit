@@ -40,6 +40,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitHermiteInterpolator;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.OrbitBlender;
@@ -147,7 +148,7 @@ class StateCovarianceBlenderTest {
     void testKeplerianQuadraticBlending() {
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-6;
+        final double tolerance = 1.e-11;
 
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
@@ -187,7 +188,7 @@ class StateCovarianceBlenderTest {
     void testBrouwerLyddaneQuadraticBlending() {
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-6;
+        final double tolerance = 1.e-11;
 
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
@@ -238,7 +239,7 @@ class StateCovarianceBlenderTest {
     void testBrouwerLyddaneQuadraticBlendingDeprecated() {
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-6;
+        final double tolerance = 1.e-11;
 
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
@@ -288,7 +289,7 @@ class StateCovarianceBlenderTest {
     void testEksteinHechlerQuadraticBlending() {
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-6;
+        final double tolerance = 1.e-11;
 
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
@@ -345,7 +346,7 @@ class StateCovarianceBlenderTest {
     void testLOFKeplerianBlending() {
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-6;
+        final double tolerance = 1.e-11;
 
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
@@ -381,7 +382,7 @@ class StateCovarianceBlenderTest {
         Assertions.assertEquals( 0.1268691798373903, relativeRMSSigmaError[0].getPercentile(50), tolerance);
         Assertions.assertEquals(15.0743592436524190, relativeRMSSigmaError[1].getPercentile(50), tolerance);
         Assertions.assertEquals( 0.2395147080521065, relativeRMSSigmaError[0].getMax(), tolerance);
-        Assertions.assertEquals(75.1358213683371000, relativeRMSSigmaError[1].getMax(), 3 * tolerance);
+        Assertions.assertEquals(75.1358213683371, relativeRMSSigmaError[1].getMax(), 3 * tolerance);
 
         // Assert getters as well
         Assertions.assertNull(covarianceInterpolator.getOutFrame());

@@ -37,6 +37,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -327,6 +328,7 @@ public class JPLEphemeridesLoaderTest {
         // 431  1999.12.01 2451513.5  8 11  2      -23.03253618370120000000
         try(InputStream is = this.getClass().getResourceAsStream(name)) {
             final Scanner scanner = new Scanner(is, "UTF-8");
+            scanner.useLocale(Locale.US);
             while (scanner.hasNext()) {
                 final int version = scanner.nextInt();
                 final String dateString = scanner.next().replace('.', '-');

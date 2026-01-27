@@ -1084,14 +1084,6 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
                         s.getFrame(), p,
                         (Gradient) mu);
                 return a;
-            } else if (isDSStateDerivative(s) && isDSConstantOrMuDerivative(mu)) {
-                @SuppressWarnings("unchecked")
-                final FieldVector3D<DerivativeStructure> p = (FieldVector3D<DerivativeStructure>) s.getPosition();
-                @SuppressWarnings("unchecked")
-                final FieldVector3D<T> a = (FieldVector3D<T>) accelerationWrtState(s.getDate().toAbsoluteDate(),
-                        s.getFrame(), p,
-                        (DerivativeStructure) mu);
-                return a;
             }
         }
 

@@ -382,7 +382,7 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
 
 
         // Accuracy for tests
-        final double parametersAccuracy = 2e-6;
+        final double parametersAccuracy = 1e-6;
 
         // Test on measurements parameters
         final List<DelegatingDriver> list = new ArrayList<>(kalmanLageos2.getMeasurementsParameters().getDrivers());
