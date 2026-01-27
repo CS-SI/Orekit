@@ -283,10 +283,10 @@ class StateCovarianceBlenderTest {
      * non-regression test.
      */
     @Test
-    @DisplayName("test Ekstein Hechler quadratic blending interpolation on full force model test case from: "
+    @DisplayName("test Eckstein Hechler quadratic blending interpolation on full force model test case from: "
                     + "TANYGIN, Sergei. Efficient covariance interpolation using blending of approximate covariance propagations. "
                     + "The Journal of the Astronautical Sciences, 2014, vol. 61, no 1, p. 107-132.")
-    void testEksteinHechlerQuadraticBlending() {
+    void testEcksteinHechlerQuadraticBlending() {
         // Given
         final boolean showResults = false; // Show results?
         final double tolerance = 1.e-11;
