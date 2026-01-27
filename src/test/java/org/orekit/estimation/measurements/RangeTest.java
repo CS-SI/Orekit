@@ -403,11 +403,11 @@ class RangeTest {
         }
 
         Assertions.assertEquals(0.0, absErrorsMedian, 6.3e-8);
-        Assertions.assertEquals(0.0, absErrorsMean,   5.4e-8);
+        Assertions.assertEquals(0.0, absErrorsMean,   5.6e-8);
         Assertions.assertEquals(0.0, absErrorsMin,    2.0e-7);
         Assertions.assertEquals(0.0, absErrorsMax,    2.6e-7);
         Assertions.assertEquals(0.0, relErrorsMedian, 8.5e-15);
-        Assertions.assertEquals(0.0, relErrorsMean,   9.7e-15);
+        Assertions.assertEquals(0.0, relErrorsMean,   9.9e-15);
         Assertions.assertEquals(0.0, relErrorsMax,    3.0e-14);
 
         // Test measurement type

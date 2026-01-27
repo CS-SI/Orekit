@@ -16,26 +16,21 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import java.util.Arrays;
-import java.util.Collections;
-
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.estimation.measurements.AbstractMeasurement;
 import org.orekit.estimation.measurements.CommonParametersWithDerivatives;
 import org.orekit.estimation.measurements.CommonParametersWithoutDerivatives;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObserverSatellite;
+import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** One-way GNSS range rate measurement.
@@ -57,13 +52,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  * @since 12.1
  */
-public class OneWayGNSSRangeRate extends AbstractMeasurement<OneWayGNSSRangeRate> {
+public class OneWayGNSSRangeRate extends AbstractOneWayGNSS<OneWayGNSSRangeRate> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "OneWayGNSSRangeRate";
-
-    /** GNSS satellite sending range data. */
-    private final ObserverSatellite gnssSat;
 
     /** Simple constructor.
      * @param gnssSatellite GNSS observer satellite
@@ -79,16 +71,7 @@ public class OneWayGNSSRangeRate extends AbstractMeasurement<OneWayGNSSRangeRate
                                final double rangeRate, final double sigma,
                                final double baseWeight, final ObservableSatellite local) {
         // Call super constructor
-        super(date, false, rangeRate, sigma, baseWeight, Collections.singletonList(local));
-
-        this.gnssSat = gnssSatellite;
-    }
-
-    /** Get satellite sending signal.
-     * @return GNSS satellite
-     */
-    public final ObserverSatellite getObserver() {
-        return gnssSat;
+        super(gnssSatellite, date, rangeRate, sigma, baseWeight, new SignalTravelTimeModel(), local);
     }
 
     /** {@inheritDoc} */
@@ -97,7 +80,7 @@ public class OneWayGNSSRangeRate extends AbstractMeasurement<OneWayGNSSRangeRate
                                                                                                     final int evaluation,
                                                                                                     final SpacecraftState[] states) {
 
-        final CommonParametersWithoutDerivatives common = gnssSat.
+        final CommonParametersWithoutDerivatives common =
             computeLocalParametersWithout(states, getSatellites().get(0), getDate(), false);
 
         // Estimated measurement
@@ -129,7 +112,7 @@ public class OneWayGNSSRangeRate extends AbstractMeasurement<OneWayGNSSRangeRate
                                                                               final int evaluation,
                                                                               final SpacecraftState[] states) {
 
-        final CommonParametersWithDerivatives common = gnssSat.
+        final CommonParametersWithDerivatives common =
             computeLocalParametersWith(states, getSatellites().get(0), getDate(), false, getParametersDrivers());
 
         // Estimated measurement
@@ -146,22 +129,8 @@ public class OneWayGNSSRangeRate extends AbstractMeasurement<OneWayGNSSRangeRate
         final FieldPVCoordinates<Gradient> delta = new FieldPVCoordinates<>(common.getRemotePV(), common.getTransitPV());
         final Gradient rangeRate = FieldVector3D.dotProduct(delta.getVelocity(), delta.getPosition().normalize()).
                                    add(common.getLocalOffset().getRate().subtract(common.getRemoteOffset().getRate()).multiply(Constants.SPEED_OF_LIGHT));
-        final double[] rangeRateDerivatives = rangeRate.getGradient();
 
-        // Set value and state first order derivatives of the estimated measurement
-        estimatedRangeRate.setEstimatedValue(rangeRate.getValue());
-        estimatedRangeRate.setStateDerivatives(0, Arrays.copyOfRange(rangeRateDerivatives, 0,  6));
-
-        // Set first order derivatives with respect to parameters
-        for (final ParameterDriver measurementDriver : getParametersDrivers()) {
-            for (Span<String> span = measurementDriver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
-                final Integer index = common.getIndices().get(span.getData());
-                if (index != null) {
-                    estimatedRangeRate.setParameterDerivatives(measurementDriver, span.getStart(), rangeRateDerivatives[index]);
-                }
-            }
-        }
+        fillDerivatives(rangeRate, common.getIndices(), estimatedRangeRate);
 
         // Return the estimated measurement
         return estimatedRangeRate;

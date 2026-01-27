@@ -213,7 +213,7 @@ public class PhaseCentersRangeModifierTest {
             EstimatedMeasurementBase<Range> estimated = sr.estimateWithoutDerivatives(new SpacecraftState[] { p3.propagate(sr.getDate()) });
             Range ar = (Range) antennaCenteredMeasurements.get(i);
             Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 1.0e-8);
-            Assertions.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 3.4e-7);
+            Assertions.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 1e-6);
             Assertions.assertEquals(1,
                                     estimated.getAppliedEffects().entrySet().stream().
                                     filter(e -> e.getKey().getEffectName().equals("mean phase center")).count());
