@@ -112,8 +112,9 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
             final double tauU = signalTimeOfFlight.computeDelay(transitPV.getPosition(), transitPV.getDate(), common.getState().getFrame());
 
             final TimeStampedPVCoordinates stationApproxUplink = primaryCoordsProvider.getPVCoordinates(approxUplinkDate, states[0].getFrame());
-            final TimeStampedPVCoordinates stationUplink =
-                            stationApproxUplink.shiftedBy(transitPV.getDate().durationFrom(approxUplinkDate) - tauU);
+            final AbsoluteDate date = stationApproxUplink.getDate().shiftedBy(transitPV.getDate().durationFrom(approxUplinkDate) - tauU);
+            final TimeStampedPVCoordinates stationUplink = station.getPVCoordinatesProvider().getPVCoordinates(date,
+                    states[0].getFrame());
 
             final EstimatedMeasurementBase<RangeRate> evalOneWay2 =
                             oneWayTheoreticalEvaluation(iteration, evaluation, false,
@@ -172,9 +173,9 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
                     .getFieldAdjustableEmitterComputer(transitPV.getDate().getField(), primaryCoordsProvider);
             final Gradient tauU = fieldComputer.computeDelay(transitPV.getPosition(), transitPV.getDate(), state.getFrame());
 
+            final FieldAbsoluteDate<Gradient> date = approxUplinkDateDS.shiftedBy(transitPV.getDate().durationFrom(approxUplinkDateDS).subtract(tauU));
             final TimeStampedFieldPVCoordinates<Gradient> stationUplink =
-                            primaryCoordsProvider.getPVCoordinates(approxUplinkDateDS, states[0].getFrame()).
-                                            shiftedBy(transitPV.getDate().durationFrom(approxUplinkDateDS).subtract(tauU));
+                            primaryCoordsProvider.getPVCoordinates(date, states[0].getFrame());
 
             final EstimatedMeasurement<RangeRate> evalOneWay2 =
                             oneWayTheoreticalEvaluation(iteration, evaluation, false,

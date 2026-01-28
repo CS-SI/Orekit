@@ -16,7 +16,6 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -421,19 +420,8 @@ class AngularRaDecTest {
     }
 
     private void activateStation(final GroundStation station) {
-        for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
-                station.getEastOffsetDriver(),
-                station.getNorthOffsetDriver(),
-                station.getZenithOffsetDriver(),
-                station.getPrimeMeridianOffsetDriver(),
-                station.getPrimeMeridianDriftDriver(),
-                station.getPolarOffsetXDriver(),
-                station.getPolarDriftXDriver(),
-                station.getPolarOffsetYDriver(),
-                station.getPolarDriftYDriver())) {
-            if (driver.getReferenceDate() == null) {
-                driver.setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH);
-            }
+        for (final ParameterDriver driver: station.getParametersDrivers()) {
+            driver.setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH);
         }
 
     }
