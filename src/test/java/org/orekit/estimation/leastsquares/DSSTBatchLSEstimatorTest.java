@@ -16,6 +16,9 @@
  */
 package org.orekit.estimation.leastsquares;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
@@ -33,8 +36,8 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.frames.LOFType;
 import org.orekit.gnss.antenna.FrequencyPattern;
@@ -46,9 +49,6 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
-
-import java.util.ArrayList;
-import java.util.List;
 
 class DSSTBatchLSEstimatorTest {
 
@@ -431,9 +431,9 @@ class DSSTBatchLSEstimatorTest {
 
         EstimationTestUtils.checkFit(false, context, estimator, 1, 3,
                                      0.0, 1.2e-10,
-                                     0.0, 2.7e-10,
-                                     0.0, 8.1e-9,
-                                     0.0, 1.3e-11);
+                                     0.0, 3.0e-10,
+                                     0.0, 8.5e-9,
+                                     0.0, 1.4e-11);
     }
 
     /**

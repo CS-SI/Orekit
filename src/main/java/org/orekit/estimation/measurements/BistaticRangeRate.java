@@ -154,8 +154,8 @@ public class BistaticRangeRate extends BistaticRangeRelatedMeasurement<BistaticR
         final SpacecraftState transitState = state.shiftedBy(shift);
         final int nbParams = field.getZero().getFreeParameters();
         final Map<String, Integer> paramIndices = getParameterIndices(states);
-        final FieldPVCoordinatesProvider<Gradient> receiver = getReceiverStation().getFieldPVCoordinatesProvider(field.getOne().getFreeParameters(),
-                getParameterIndices(states));
+        final FieldPVCoordinatesProvider<Gradient> receiver = getReceiverStation().getFieldPVCoordinatesProvider(nbParams,
+                paramIndices);
         final TimeStampedFieldPVCoordinates<Gradient> receiverPV = receiver.getPVCoordinates(receptionDate, frame);
         final EstimatedMeasurement<BistaticRangeRate> estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
                 new SpacecraftState[] { transitState },

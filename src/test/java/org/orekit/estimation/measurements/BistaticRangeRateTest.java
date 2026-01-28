@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -409,12 +410,14 @@ class BistaticRangeRateTest {
         final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit) };
         // WHEN
         final BistaticRangeRate bistaticDoppler = new BistaticRangeRate(station, station, epoch, 0., 1., 1., satellite);
-        final EstimatedMeasurementBase<BistaticRangeRate> estimatedBistatic = bistaticDoppler.estimateWithoutDerivatives(state);
+        final EstimatedMeasurement<BistaticRangeRate> estimatedBistatic = bistaticDoppler.estimate(0, 0, state);
         // THEN
         final RangeRate rangeRate = new RangeRate(station, epoch, 0., 1., 1., true, satellite);
-        final EstimatedMeasurementBase<RangeRate> estimatedRange = rangeRate.estimateWithoutDerivatives(0, 0, state);
+        final EstimatedMeasurement<RangeRate> estimatedRange = rangeRate.estimate(0, 0, state);
         assertEquals(estimatedRange.getEstimatedValue()[0] * 2., estimatedBistatic.getEstimatedValue()[0], 1e-6);
-        // compareParticipants(estimatedRange, estimatedBistatic); FIXME when Range uses correct PVCoordinatesProvider for emitter
+        final double[] doubleDerivatives = MatrixUtils.createRealVector(estimatedRange.getStateDerivatives(0)[0]).mapMultiply(2).toArray();
+        assertArrayEquals(doubleDerivatives, estimatedBistatic.getStateDerivatives(0)[0], 1e-12);
+        compareParticipants(estimatedRange, estimatedBistatic);
     }
 
     @Test

@@ -66,7 +66,7 @@ class FieldSignalTravelTimeAdjustableEmitterTest {
         final FieldAbsolutePVCoordinates<Complex> reversed = new FieldAbsolutePVCoordinates<>(frame, receptionDate,
                 new FieldPVCoordinates<>(receiverPosition, FieldVector3D.getZero(field)));
         final FieldSignalTravelTimeAdjustableReceiver<Complex> signalTimeOfFlightAdjustableReceiver = new FieldSignalTravelTimeAdjustableReceiver<>(reversed);
-        final FieldAbsoluteDate<Complex> emissionDate = receptionDate.shiftedBy(actual);
+        final FieldAbsoluteDate<Complex> emissionDate = receptionDate.shiftedBy(actual.negate());
         final Complex expected = signalTimeOfFlightAdjustableReceiver.computeDelay(emitterPosition, emissionDate, frame);
         assertEquals(expected, actual);
     }

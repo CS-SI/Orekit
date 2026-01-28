@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.leastsquares;
 
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Evaluation;
@@ -32,8 +34,8 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.frames.LOFType;
 import org.orekit.gnss.antenna.FrequencyPattern;
@@ -42,8 +44,6 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.KeplerianPropagatorBuilder;
 import org.orekit.utils.ParameterDriversList;
-
-import java.util.List;
 
 class KeplerianBatchLSEstimatorTest {
 
@@ -224,7 +224,7 @@ class KeplerianBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        EstimationTestUtils.checkFit(false, context, estimator, 1, 2, 0.0, 1.2e-11,  0.0, 2.5e-11, 0.0, 1.5e-9, 0.0, 2.1e-12);
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 2, 0.0, 1.8e-11,  0.0, 4.7e-11, 0.0, 1.5e-9, 0.0, 2.1e-12);
     }
 
     @Test
