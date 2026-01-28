@@ -20,6 +20,9 @@
   </properties>
   <body>
     <release version="14.0" date="TBD" description="TBD">
+        <action dev="bryan" type="fix" issue="1898">
+            Refactored orbit determination contexts to reduce code duplication.
+        </action>
         <action dev="serrof" type="add" issue="1897">
             Introduce abstract class for GNSS one way measurements.
         </action>

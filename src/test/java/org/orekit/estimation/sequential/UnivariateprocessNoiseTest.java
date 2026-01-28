@@ -254,7 +254,7 @@ public class UnivariateprocessNoiseTest {
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
-        final NumericalPropagatorBuilder propagatorBuilder = context.createBuilder(orbitType, positionAngleType, perfectStart,
+        final NumericalPropagatorBuilder propagatorBuilder = context.createNumerical(orbitType, positionAngleType, perfectStart,
                                                                                    minStep, maxStep, dP,
                                                                                    Force.POTENTIAL, Force.THIRD_BODY_MOON,
                                                                                    Force.THIRD_BODY_SUN,
@@ -696,7 +696,7 @@ public class UnivariateprocessNoiseTest {
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
-        final NumericalPropagatorBuilder propagatorBuilder = context.createBuilder(orbitType, positionAngleType, perfectStart,
+        final NumericalPropagatorBuilder propagatorBuilder = context.createNumerical(orbitType, positionAngleType, perfectStart,
                                                                                    minStep, maxStep, dP,
                                                                                    Force.POTENTIAL, Force.THIRD_BODY_MOON,
                                                                                    Force.THIRD_BODY_SUN,

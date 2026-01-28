@@ -25,8 +25,8 @@ import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.estimation.KeplerianContext;
-import org.orekit.estimation.KeplerianEstimationTestUtils;
+import org.orekit.estimation.Context;
+import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -53,17 +53,14 @@ class KeplerianBatchLSEstimatorTest {
     @Test
     void testPV() {
 
-        KeplerianContext context = KeplerianEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-        final KeplerianPropagatorBuilder propagatorBuilder = context.createBuilder(PositionAngleType.MEAN, true, 1.0);
+        final KeplerianPropagatorBuilder propagatorBuilder = context.createKeplerian(PositionAngleType.MEAN, true, 1.0);
 
         // create perfect PV measurements
-        final Propagator propagator = KeplerianEstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                                         propagatorBuilder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        KeplerianEstimationTestUtils.createMeasurements(propagator,
-                                                                             new PVMeasurementCreator(),
-                                                                             0.0, 1.0, 300.0);
+                        EstimationTestUtils.createMeasurements(propagator, new PVMeasurementCreator(), 0.0, 1.0, 300.0);
 
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
@@ -75,11 +72,7 @@ class KeplerianBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        KeplerianEstimationTestUtils.checkFit(context, estimator, 1, 1,
-                                                   0.0, 1.0e-15,
-                                                   0.0, 1.0e-15,
-                                                   0.0, 1.0e-15,
-                                                   0.0, 1.0e-15);
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 1, 0.0, 1.0e-15, 0.0, 1.0e-15, 0.0, 1.0e-15, 0.0, 1.0e-15);
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
@@ -94,16 +87,14 @@ class KeplerianBatchLSEstimatorTest {
     @Test
     void testKeplerPVBackward() {
 
-        KeplerianContext context = KeplerianEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-        final KeplerianPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(PositionAngleType.MEAN, true, 1.0);
+        final KeplerianPropagatorBuilder propagatorBuilder = context.createKeplerian(PositionAngleType.MEAN, true, 1.0);
 
         // create perfect PV measurements
-        final Propagator propagator = KeplerianEstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                                         propagatorBuilder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        KeplerianEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new PVMeasurementCreator(),
                                                                0.0, -1.0, 300.0);
 
@@ -117,11 +108,7 @@ class KeplerianBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        KeplerianEstimationTestUtils.checkFit(context, estimator, 1, 1,
-                                                   0.0, 1.0e-15,
-                                                   0.0, 1.0e-15,
-                                                   0.0, 1.0e-15,
-                                                   0.0, 1.0e-15);
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 1, 0.0, 1.0e-15,  0.0, 1.0e-15, 0.0, 1.0e-15, 0.0, 1.0e-15);
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
@@ -139,16 +126,14 @@ class KeplerianBatchLSEstimatorTest {
     @Test
     void testKeplerRange() {
 
-        KeplerianContext context = KeplerianEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-        final KeplerianPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(PositionAngleType.MEAN, true, 1.0);
+        final KeplerianPropagatorBuilder propagatorBuilder = context.createKeplerian(PositionAngleType.MEAN, true, 1.0);
 
         // create perfect range measurements
-        final Propagator propagator = KeplerianEstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                           propagatorBuilder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        KeplerianEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
@@ -162,11 +147,7 @@ class KeplerianBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        KeplerianEstimationTestUtils.checkFit(context, estimator, 1, 2,
-                                                   0.0, 8.5e-7,
-                                                   0.0, 2.6e-6,
-                                                   0.0, 7e-8,
-                                                   0.0, 4.0e-11);
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 2,  0.0, 8.4e-7,  0.0, 2.4e-6, 0.0, 7.2e-8, 0.0, 3.2e-11);
 
     }
 
@@ -176,18 +157,16 @@ class KeplerianBatchLSEstimatorTest {
     @Test
     void testKeplerRangeWithOnBoardAntennaOffset() {
 
-        KeplerianContext context = KeplerianEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-        final KeplerianPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(PositionAngleType.MEAN, true, 1.0);
+        final KeplerianPropagatorBuilder propagatorBuilder = context.createKeplerian(PositionAngleType.MEAN, true, 1.0);
         propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
         final Vector3D antennaPhaseCenter = new Vector3D(-1.2, 2.3, -0.7);
 
         // create perfect range measurements with antenna offset
-        final Propagator propagator = KeplerianEstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                           propagatorBuilder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        KeplerianEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new TwoWayRangeMeasurementCreator(context,
                                                                                                  Vector3D.ZERO, null,
                                                                                                  antennaPhaseCenter, null,
@@ -208,11 +187,7 @@ class KeplerianBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        KeplerianEstimationTestUtils.checkFit(context, estimator, 1, 11,
-                                                   0.0, 5.9e-5,
-                                                   0.0, 1.5e-4,
-                                                   0.0, 7.2e-9,
-                                                   0.0, 7.8e-12);
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 11, 0.0, 5.9e-5, 0.0, 1.5e-4, 0.0, 8.6e-9, 0.0, 8.1e-12);
 
     }
 
@@ -222,13 +197,12 @@ class KeplerianBatchLSEstimatorTest {
     @Test
     void testKeplerRangeRate() {
 
-        KeplerianContext context = KeplerianEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-        final KeplerianPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(PositionAngleType.MEAN, true, 1.0);
+        final KeplerianPropagatorBuilder propagatorBuilder = context.createKeplerian(PositionAngleType.MEAN, true, 1.0);
 
         // create perfect range rate measurements
-        final Propagator propagator = KeplerianEstimationTestUtils.createPropagator(context.initialOrbit,
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                                          propagatorBuilder);
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
@@ -236,7 +210,7 @@ class KeplerianBatchLSEstimatorTest {
         }
         final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements =
-                        KeplerianEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
 
@@ -250,28 +224,21 @@ class KeplerianBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        KeplerianEstimationTestUtils.checkFit(context, estimator, 1, 2,
-                                                   0.0, 5.6e-7,
-                                                   0.0, 7.7e-7,
-                                                   0.0, 8.7e-5,
-                                                   0.0, 3.5e-8);
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 2, 0.0, 1.2e-11,  0.0, 2.5e-11, 0.0, 1.5e-9, 0.0, 2.1e-12);
     }
 
     @Test
     void testWrappedException() {
 
-        KeplerianContext context = KeplerianEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-        final KeplerianPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(PositionAngleType.MEAN, true, 1.0);
+        final KeplerianPropagatorBuilder propagatorBuilder = context.createKeplerian(PositionAngleType.MEAN, true, 1.0);
 
         // create perfect range measurements
-        final Propagator propagator = KeplerianEstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                                         propagatorBuilder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        KeplerianEstimationTestUtils.createMeasurements(propagator,
-                                                                             new TwoWayRangeMeasurementCreator(context),
-                                                                             1.0, 3.0, 300.0);
+                        EstimationTestUtils.createMeasurements(propagator, new TwoWayRangeMeasurementCreator(context),
+                                                               1.0, 3.0, 300.0);
 
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
@@ -285,7 +252,7 @@ class KeplerianBatchLSEstimatorTest {
         estimator.setObserver(new BatchLSObserver() {
             /** {@inheritDoc} */
             @Override
-            public void evaluationPerformed(int iterationsCount, int evaluationscount,
+            public void evaluationPerformed(int iterationsCount, int evaluationsCount,
                                            Orbit[] orbits,
                                            ParameterDriversList estimatedOrbitalParameters,
                                            ParameterDriversList estimatedPropagatorParameters,
@@ -296,11 +263,7 @@ class KeplerianBatchLSEstimatorTest {
         });
 
         try {
-            KeplerianEstimationTestUtils.checkFit(context, estimator, 3, 4,
-                                                       0.0, 1.5e-6,
-                                                       0.0, 3.2e-6,
-                                                       0.0, 3.8e-7,
-                                                       0.0, 1.5e-10);
+            EstimationTestUtils.checkFit(false, context, estimator, 3, 4, 0.0, 1.5e-6, 0.0, 3.2e-6, 0.0, 3.8e-7, 0.0, 1.5e-10);
             Assertions.fail("an exception should have been thrown");
         } catch (DummyException de) {
             // expected

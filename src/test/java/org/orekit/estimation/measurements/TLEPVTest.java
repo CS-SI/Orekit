@@ -23,8 +23,8 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
-import org.orekit.estimation.TLEContext;
-import org.orekit.estimation.TLEEstimationTestUtils;
+import org.orekit.estimation.Context;
+import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
@@ -42,19 +42,15 @@ public class TLEPVTest {
     @Test
     public void testStateDerivatives() {
 
-        TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.contextFromTle("regular-data:potential:tides");
 
-        final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(0.001);
+        final TLEPropagatorBuilder propagatorBuilder = context.createTleBuilder(0.001);
 
         // create perfect range measurements
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
-        final Propagator propagator = TLEEstimationTestUtils.createPropagator(initialOrbit,
-                                                                           propagatorBuilder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(initialOrbit, propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        TLEEstimationTestUtils.createMeasurements(propagator,
-                                                               new PVMeasurementCreator(),
-                                                               1.0, 3.0, 300.0);
+                        EstimationTestUtils.createMeasurements(propagator, new PVMeasurementCreator(), 1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
 
         double[] errorsP = new double[3 * 6 * measurements.size()];
@@ -102,7 +98,7 @@ public class TLEPVTest {
     public void testPVWithSingleStandardDeviations() {
 
         // Context
-        TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.contextFromTle("regular-data:potential:tides");
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
 
         // Dummy P, V, T
@@ -173,7 +169,7 @@ public class TLEPVTest {
     public void testPVWithVectorStandardDeviations() {
 
         // Context
-        TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.contextFromTle("regular-data:potential:tides");
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
 
         // Dummy P, V, T
@@ -248,7 +244,7 @@ public class TLEPVTest {
     @Test
     public void testPVWithTwoCovarianceMatrices() {
         // Context
-        TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.contextFromTle("regular-data:potential:tides");
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
 
         // Dummy P, V, T
@@ -336,7 +332,7 @@ public class TLEPVTest {
     @Test
     public void testPVWithCovarianceMatrix() {
         // Context
-        TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.contextFromTle("regular-data:potential:tides");
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
 
         // Dummy P, V, T
@@ -414,7 +410,7 @@ public class TLEPVTest {
     @Test
     public void testExceptions() {
         // Context
-        TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.contextFromTle("regular-data:potential:tides");
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
 
         // Dummy P, V, T

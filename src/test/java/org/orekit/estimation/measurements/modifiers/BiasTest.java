@@ -47,7 +47,7 @@ public class BiasTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -117,7 +117,7 @@ public class BiasTest {
             }
         }
 
-        EstimationTestUtils.checkFit(context, estimator, 2, 3,
+        EstimationTestUtils.checkFit(false, context, estimator, 2, 3,
                                      0.0,  8.5e-7,
                                      0.0,  2.1e-6,
                                      0.0,  6.2e-7,

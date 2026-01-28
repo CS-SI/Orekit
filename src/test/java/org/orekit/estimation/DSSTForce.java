@@ -28,41 +28,41 @@ import org.orekit.utils.Constants;
 public enum DSSTForce {
 
     ZONAL() {
-        public DSSTForceModel getForceModel(DSSTContext context) {
-            return new DSSTZonal(context.gravity, 4, 3, 9);
+        public DSSTForceModel getForceModel(Context context) {
+            return new DSSTZonal(context.unnormalizedProvider, 4, 3, 9);
         }
     },
 
     TESSERAL() {
-        public DSSTForceModel getForceModel(DSSTContext context) {
-            return new DSSTTesseral(context.earth.getBodyFrame(), Constants.WGS84_EARTH_ANGULAR_VELOCITY, context.gravity, 4, 4, 4, 8, 4, 4, 2);
+        public DSSTForceModel getForceModel(Context context) {
+            return new DSSTTesseral(context.earth.getBodyFrame(), Constants.WGS84_EARTH_ANGULAR_VELOCITY, context.unnormalizedProvider, 4, 4, 4, 8, 4, 4, 2);
         }
     },
 
     THIRD_BODY_SUN() {
-        public DSSTForceModel getForceModel(DSSTContext context) {
-            return new DSSTThirdBody(context.sun, context.gravity.getMu());
+        public DSSTForceModel getForceModel(Context context) {
+            return new DSSTThirdBody(context.sun, context.unnormalizedProvider.getMu());
         }
     },
 
     THIRD_BODY_MOON() {
-        public DSSTForceModel getForceModel(DSSTContext context) {
-            return new DSSTThirdBody(context.moon, context.gravity.getMu());
+        public DSSTForceModel getForceModel(Context context) {
+            return new DSSTThirdBody(context.moon, context.unnormalizedProvider.getMu());
         }
     },
 
     DRAG() {
-        public DSSTForceModel getForceModel(DSSTContext context) {
-            return new DSSTAtmosphericDrag(new HarrisPriester(context.sun, context.earth), context.dragSensitive, context.gravity.getMu());
+        public DSSTForceModel getForceModel(Context context) {
+            return new DSSTAtmosphericDrag(new HarrisPriester(context.sun, context.earth), context.dragSensitive, context.unnormalizedProvider.getMu());
         }
     },
 
     SOLAR_RADIATION_PRESSURE() {
-        public DSSTForceModel getForceModel(DSSTContext context) {
+        public DSSTForceModel getForceModel(Context context) {
             return new DSSTSolarRadiationPressure(context.sun, context.earth,
-                                                  context.radiationSensitive, context.gravity.getMu());
+                                                  context.radiationSensitive, context.unnormalizedProvider.getMu());
         }
     };
 
-    public abstract DSSTForceModel getForceModel(DSSTContext context);
+    public abstract DSSTForceModel getForceModel(Context context);
 }
