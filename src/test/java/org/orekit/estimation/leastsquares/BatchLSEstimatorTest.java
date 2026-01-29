@@ -117,7 +117,7 @@ class BatchLSEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0, Force.DRAG);
 
         for (ParameterDriver driver:propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
@@ -145,7 +145,7 @@ class BatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        EstimationTestUtils.checkFit(context, estimator, 1, 2,
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 2,
                                      0.0, 7.8e-8,
                                      0.0, 6.0e-7,
                                      0.0, 3.2e-7,
@@ -171,7 +171,7 @@ class BatchLSEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
 
         // create perfect PV measurements
@@ -190,7 +190,7 @@ class BatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        EstimationTestUtils.checkFit(context, estimator, 1, 4,
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 4,
                                      0.0, 2.2e-8,
                                      0.0, 1.1e-7,
                                      0.0, 1.4e-8,
@@ -213,7 +213,7 @@ class BatchLSEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
 
         // create perfect PV measurements
@@ -232,7 +232,7 @@ class BatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        EstimationTestUtils.checkFit(context, estimator, 1, 2,
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 2,
                                      0.0, 8.3e-9,
                                      0.0, 5.3e-8,
                                      0.0, 5.6e-9,
@@ -257,7 +257,7 @@ class BatchLSEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
 
         // create perfect range measurements
@@ -320,7 +320,7 @@ class BatchLSEstimatorTest {
         aDriver.setValue(aDriver.getValue() + 1.2);
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
-        EstimationTestUtils.checkFit(context, estimator, 2, 3,
+        EstimationTestUtils.checkFit(false, context, estimator, 2, 3,
                                      0.0, 1.2e-6,
                                      0.0, 2.8e-6,
                                      0.0, 7.0e-7,
@@ -350,7 +350,7 @@ class BatchLSEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
         propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
         final Vector3D antennaPhaseCenter = new Vector3D(-1.2, 2.3, -0.7);
@@ -424,7 +424,7 @@ class BatchLSEstimatorTest {
         aDriver.setValue(aDriver.getValue() + 1.2);
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
-        EstimationTestUtils.checkFit(context, estimator, 2, 3,
+        EstimationTestUtils.checkFit(false, context, estimator, 2, 3,
                                      0.0, 2.0e-5,
                                      0.0, 5.3e-5,
                                      0.0, 2.7e-5,
@@ -451,10 +451,10 @@ class BatchLSEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder1 =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0e-3);
         final NumericalPropagatorBuilder propagatorBuilder2 =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0e-3);
 
         // Create perfect inter-satellites range measurements
@@ -563,7 +563,7 @@ class BatchLSEstimatorTest {
                           before.getPosition()), 1.0e-3);
         Assertions.assertEquals(0.0010514, Vector3D.distance(closeOrbit.getVelocity(),
                           before.getVelocity()), 1.0e-6);
-        EstimationTestUtils.checkFit(context, estimator, 3, 4,
+        EstimationTestUtils.checkFit(false, context, estimator, 3, 4,
                                      0.0, 5e-06,
                                      0.0, 1.3e-05,
                                      0.0, 8.3e-07,
@@ -618,7 +618,7 @@ class BatchLSEstimatorTest {
         // Builder sat 1
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         final NumericalPropagatorBuilder propagatorBuilder1 =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0e-3, Force.POTENTIAL, Force.SOLAR_RADIATION_PRESSURE);
 
         // Adding selection of parameters
@@ -640,7 +640,7 @@ class BatchLSEstimatorTest {
         // Builder for sat 2
         final Context context2 = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         final NumericalPropagatorBuilder propagatorBuilder2 =
-                        context2.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context2.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0e-3, Force.POTENTIAL, Force.SOLAR_RADIATION_PRESSURE);
 
         // Adding selection of parameters
@@ -757,7 +757,7 @@ class BatchLSEstimatorTest {
                           before.getPosition()), 1.0e-3);
         Assertions.assertEquals(0.0010514, Vector3D.distance(closeOrbit.getVelocity(),
                           before.getVelocity()), 1.0e-6);
-        EstimationTestUtils.checkFit(context, estimator, 4, 5,
+        EstimationTestUtils.checkFit(false, context, estimator, 4, 5,
                                      0.0, 5.3e-06,
                                      0.0, 1.43e-05,
                                      0.0, 8.8e-07,
@@ -803,10 +803,10 @@ class BatchLSEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder1 =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
         final NumericalPropagatorBuilder propagatorBuilder2 =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
 
         // Create perfect inter-satellites range measurements
@@ -924,7 +924,7 @@ class BatchLSEstimatorTest {
                           before.getPosition()), 1.0e-3);
         Assertions.assertEquals(0.0010514, Vector3D.distance(closeOrbit.getVelocity(),
                           before.getVelocity()), 1.0e-6);
-        EstimationTestUtils.checkFit(context, estimator, 2, 3,
+        EstimationTestUtils.checkFit(false, context, estimator, 2, 3,
                                      0.0, 2.9e-06,
                                      0.0, 8.1e-06,
                                      0.0, 7.1e-07,
@@ -966,7 +966,7 @@ class BatchLSEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
 
         // create perfect range measurements
@@ -998,7 +998,7 @@ class BatchLSEstimatorTest {
         });
 
         try {
-            EstimationTestUtils.checkFit(context, estimator, 3, 4,
+            EstimationTestUtils.checkFit(false, context, estimator, 3, 4,
                                          0.0, 1.5e-6,
                                          0.0, 3.2e-6,
                                          0.0, 3.8e-7,
@@ -1026,7 +1026,7 @@ class BatchLSEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
 
         // create perfect range rate measurements
@@ -1053,7 +1053,7 @@ class BatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        EstimationTestUtils.checkFit(context, estimator, 1, 2,
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 2,
                                      0.0, 5.3e-7,
                                      0.0, 1.3e-6,
                                      0.0, 8.4e-4,
@@ -1069,7 +1069,7 @@ class BatchLSEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
 
         // create perfect range measurements
@@ -1106,7 +1106,7 @@ class BatchLSEstimatorTest {
         estimator.setMaxEvaluations(20);
 
         // we have low correlation between the two types of measurement. We can expect a good estimate.
-        EstimationTestUtils.checkFit(context, estimator, 1, 2,
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 2,
                                      0.0, 4.6e7,
                                      0.0, 1.8e-6,
                                      0.0, 5.8e-7,
@@ -1122,7 +1122,7 @@ class BatchLSEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 1.0);
 
         // Select the central attraction coefficient (here there is only the central attraction coefficient)
@@ -1178,7 +1178,7 @@ class BatchLSEstimatorTest {
         // Create propagator builder for estimator
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         final NumericalPropagatorBuilder propagatorBuilder =
-                context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                       1.0e-6, 60.0, 1.0e-3);
 
         // Estimate orbital parameters
@@ -1217,7 +1217,7 @@ class BatchLSEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                       1.0e-6, 60.0, 1.0e-3);
 
         // create perfect PV measurements

@@ -29,8 +29,8 @@ import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.estimation.EcksteinHechlerContext;
-import org.orekit.estimation.EcksteinHechlerEstimationTestUtils;
+import org.orekit.estimation.Context;
+import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -55,17 +55,14 @@ public class EcksteinHechlerBatchLSEstimatorTest {
     @Test
     void testPV() {
 
-        EcksteinHechlerContext context = EcksteinHechlerEstimationTestUtils.smallEccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.smallEccentricContext("regular-data:potential:tides");
 
-        final EcksteinHechlerPropagatorBuilder propagatorBuilder = context.createBuilder(PositionAngleType.MEAN, true, 1.0);
+        final EcksteinHechlerPropagatorBuilder propagatorBuilder = context.createEcksteinHechler(PositionAngleType.MEAN, true, 1.0);
 
         // create perfect PV measurements
-        final Propagator propagator = EcksteinHechlerEstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                                          propagatorBuilder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,  propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        EcksteinHechlerEstimationTestUtils.createMeasurements(propagator,
-                                                                             new PVMeasurementCreator(),
-                                                                             0.0, 1.0, 300.0);
+                        EstimationTestUtils.createMeasurements(propagator, new PVMeasurementCreator(), 0.0, 1.0, 300.0);
 
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
@@ -77,11 +74,11 @@ public class EcksteinHechlerBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        EcksteinHechlerEstimationTestUtils.checkFit(context, estimator, 1, 1,
-                                                    0.0, 1.0e-15,
-                                                    0.0, 1.0e-15,
-                                                    0.0, 1.0e-15,
-                                                    0.0, 1.0e-15);
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 1,
+                                     0.0, 1.0e-15,
+                                     0.0, 1.0e-15,
+                                     0.0, 1.0e-15,
+                                     0.0, 1.0e-15);
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
@@ -96,16 +93,15 @@ public class EcksteinHechlerBatchLSEstimatorTest {
     @Test
     void testKeplerPVBackward() {
 
-        EcksteinHechlerContext context = EcksteinHechlerEstimationTestUtils.smallEccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.smallEccentricContext("regular-data:potential:tides");
 
         final EcksteinHechlerPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(PositionAngleType.MEAN, true, 1.0);
+                        context.createEcksteinHechler(PositionAngleType.MEAN, true, 1.0);
 
         // create perfect PV measurements
-        final Propagator propagator = EcksteinHechlerEstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                                         propagatorBuilder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        EcksteinHechlerEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new PVMeasurementCreator(),
                                                                0.0, -1.0, 300.0);
 
@@ -119,11 +115,11 @@ public class EcksteinHechlerBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        EcksteinHechlerEstimationTestUtils.checkFit(context, estimator, 1, 1,
-                                                    0.0, 1.0e-15,
-                                                    0.0, 1.0e-15,
-                                                    0.0, 1.0e-15,
-                                                    0.0, 1.0e-15);
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 1,
+                                     0.0, 1.0e-15,
+                                     0.0, 1.0e-15,
+                                     0.0, 1.0e-15,
+                                     0.0, 1.0e-15);
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
@@ -140,16 +136,15 @@ public class EcksteinHechlerBatchLSEstimatorTest {
     @Test
     void testKeplerRange() {
 
-        EcksteinHechlerContext context = EcksteinHechlerEstimationTestUtils.smallEccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.smallEccentricContext("regular-data:potential:tides");
 
         final EcksteinHechlerPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(PositionAngleType.MEAN, true, 1.0);
+                        context.createEcksteinHechler(PositionAngleType.MEAN, true, 1.0);
 
         // create perfect range measurements
-        final Propagator propagator = EcksteinHechlerEstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                           propagatorBuilder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        EcksteinHechlerEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
@@ -163,11 +158,11 @@ public class EcksteinHechlerBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        EcksteinHechlerEstimationTestUtils.checkFit(context, estimator, 1, 10,
-                                                    0.0, 1.1e-6,
-                                                    0.0, 3.0e-6,
-                                                    0.0, 5.7e-8,
-                                                    0.0, 5.4e-11);
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 10,
+                                     0.0, 7.3e-7,
+                                     0.0, 1.8e-6,
+                                     0.0, 3.7e-8,
+                                     0.0, 3.5e-11);
 
     }
 
@@ -178,18 +173,17 @@ public class EcksteinHechlerBatchLSEstimatorTest {
     @Test
     void testKeplerRangeWithOnBoardAntennaOffset() {
 
-        EcksteinHechlerContext context = EcksteinHechlerEstimationTestUtils.smallEccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.smallEccentricContext("regular-data:potential:tides");
 
         final EcksteinHechlerPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(PositionAngleType.MEAN, true, 1.0);
+                        context.createEcksteinHechler(PositionAngleType.MEAN, true, 1.0);
         propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
         final Vector3D antennaPhaseCenter = new Vector3D(-1.2, 2.3, -0.7);
 
         // create perfect range measurements with antenna offset
-        final Propagator propagator = EcksteinHechlerEstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                           propagatorBuilder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        EcksteinHechlerEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new TwoWayRangeMeasurementCreator(context,
                                                                                                  Vector3D.ZERO, null,
                                                                                                  antennaPhaseCenter, null,
@@ -210,11 +204,11 @@ public class EcksteinHechlerBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        EcksteinHechlerEstimationTestUtils.checkFit(context, estimator, 1, 12,
-                                                    0.0, 4.3e-5,
-                                                    0.0, 1.2e-4,
-                                                    0.0, 3.0e-8,
-                                                    0.0, 2.5e-11);
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 12,
+                                     0.0, 4.3e-5,
+                                     0.0, 1.2e-4,
+                                     0.0, 3.0e-8,
+                                     0.0, 2.5e-11);
 
     }
 
@@ -224,26 +218,24 @@ public class EcksteinHechlerBatchLSEstimatorTest {
     @Test
     void testKeplerRangeRate() {
 
-        EcksteinHechlerContext context = EcksteinHechlerEstimationTestUtils.smallEccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.smallEccentricContext("regular-data:potential:tides");
 
         final EcksteinHechlerPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(PositionAngleType.MEAN, true, 1.0);
+                        context.createEcksteinHechler(PositionAngleType.MEAN, true, 1.0);
 
         // create perfect range rate measurements
-        final Propagator propagator = EcksteinHechlerEstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                                         propagatorBuilder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,  propagatorBuilder);
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
             station.getClockDriftDriver().setValue(groundClockDrift);
         }
         final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements1 =
-                        EcksteinHechlerEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
 
-        final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
-        measurements.addAll(measurements1);
+        final List<ObservedMeasurement<?>> measurements = new ArrayList<>(measurements1);
 
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
@@ -255,28 +247,26 @@ public class EcksteinHechlerBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        EcksteinHechlerEstimationTestUtils.checkFit(context, estimator, 1, 10,
-                                                   0.0, 7.4e-8,
-                                                   0.0, 1.3e-7,
-                                                   0.0, 3.2e-5,
-                                                   0.0, 3.2e-8);
+        EstimationTestUtils.checkFit(false, context, estimator, 1, 10,
+                                     0.0, 5.6e-10,
+                                     0.0, 8.7e-10,
+                                     0.0, 1.5e-7,
+                                     0.0, 1.3e-10);
     }
 
     @Test
     void testWrappedException() {
 
-        EcksteinHechlerContext context = EcksteinHechlerEstimationTestUtils.smallEccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.smallEccentricContext("regular-data:potential:tides");
 
         final EcksteinHechlerPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(PositionAngleType.MEAN, true, 1.0);
+                        context.createEcksteinHechler(PositionAngleType.MEAN, true, 1.0);
 
         // create perfect range measurements
-        final Propagator propagator = EcksteinHechlerEstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                                         propagatorBuilder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        EcksteinHechlerEstimationTestUtils.createMeasurements(propagator,
-                                                                             new TwoWayRangeMeasurementCreator(context),
-                                                                             1.0, 3.0, 300.0);
+                        EstimationTestUtils.createMeasurements(propagator, new TwoWayRangeMeasurementCreator(context),
+                                                               1.0, 3.0, 300.0);
 
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
@@ -301,7 +291,7 @@ public class EcksteinHechlerBatchLSEstimatorTest {
         });
 
         try {
-            EcksteinHechlerEstimationTestUtils.checkFit(context, estimator, 3, 4,
+            EstimationTestUtils.checkFit(false, context, estimator, 3, 4,
                                                        0.0, 1.5e-6,
                                                        0.0, 3.2e-6,
                                                        0.0, 3.8e-7,
