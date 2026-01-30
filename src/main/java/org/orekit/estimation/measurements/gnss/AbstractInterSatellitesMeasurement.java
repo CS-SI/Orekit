@@ -23,6 +23,7 @@ import java.util.Map;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.orekit.estimation.measurements.AbstractMeasurement;
+import org.orekit.estimation.measurements.AbstractMeasurementObject;
 import org.orekit.estimation.measurements.CommonParametersWithDerivatives;
 import org.orekit.estimation.measurements.CommonParametersWithoutDerivatives;
 import org.orekit.estimation.measurements.ObservableSatellite;
@@ -38,7 +39,6 @@ import org.orekit.time.clocks.ClockOffset;
 import org.orekit.time.clocks.FieldClockOffset;
 import org.orekit.time.clocks.QuadraticClockModel;
 import org.orekit.time.clocks.QuadraticFieldClockModel;
-import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
@@ -106,7 +106,7 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
      * @since 14.0
      */
     protected PVCoordinatesProvider getRemotePV(final SpacecraftState state) {
-        return new AbsolutePVCoordinates(state.getFrame(), state.getPVCoordinates());
+        return AbstractMeasurementObject.extractPVCoordinatesProvider(state, state.getPVCoordinates());
     }
 
     /** Return the FieldPVCoordinatesProvider.
@@ -117,19 +117,8 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
      */
     protected FieldPVCoordinatesProvider<Gradient> getRemotePV(final SpacecraftState state,
                                                                final int freeParameters) {
-        // convert the SpacecraftState to a FieldPVCoordinatesProvider<Gradient>
-        return (date, frame) -> {
-
-            // set up the derivatives with respect to remote state at its date
-            final TimeStampedFieldPVCoordinates<Gradient> pv0 = getCoordinates(state, 6, freeParameters);
-
-            // shift to desired date
-            final TimeStampedFieldPVCoordinates<Gradient> shifted = pv0.shiftedBy(date.durationFrom(state.getDate()));
-
-            // transform to desired frame
-            return state.getFrame().getTransformTo(frame, state.getDate()).transformPVCoordinates(shifted);
-
-        };
+        final TimeStampedFieldPVCoordinates<Gradient> pv0 = getCoordinates(state, 6, freeParameters);
+        return AbstractMeasurementObject.extractFieldPVCoordinatesProvider(state, pv0);
     }
 
     /** Compute common estimation parameters.

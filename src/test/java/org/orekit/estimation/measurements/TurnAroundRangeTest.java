@@ -156,7 +156,7 @@ public class TurnAroundRangeTest {
         double refErrorQMMedian = 1.3e-8;
         double refErrorQMMean   = 8.9e-8;
         double refErrorQMMax    = 5.1e-6;
-        double refErrorQSMedian = 3.4e-8;
+        double refErrorQSMedian = 3.6e-8;
         double refErrorQSMean   = 1.9e-5;
         double refErrorQSMax    = 2.2e-4;
         this.genericTestParameterDerivatives(isModifier, printResults,

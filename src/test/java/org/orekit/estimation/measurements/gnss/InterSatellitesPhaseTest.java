@@ -84,10 +84,10 @@ public class InterSatellitesPhaseTest {
             System.out.println("\nTest inter-satellites Phase State Derivatives - Finite Differences Comparison\n");
         }
         // Run test
-        double refErrorsPMedian = 2.0e-10;
-        double refErrorsPMean   = 5.9e-10;
-        double refErrorsPMax    = 3.3e-08;
-        double refErrorsVMedian = 4.4e-04;
+        double refErrorsPMedian = 1.7e-09;
+        double refErrorsPMean   = 4.7e-09;
+        double refErrorsPMax    = 1.6e-07;
+        double refErrorsVMedian = 4.6e-04;
         double refErrorsVMean   = 1.7e-03;
         double refErrorsVMax    = 1.1e-01;
         this.genericTestStateDerivatives(printResults, 0,
@@ -110,7 +110,7 @@ public class InterSatellitesPhaseTest {
         double refErrorsPMedian = 2.0e-10;
         double refErrorsPMean   = 5.7e-10;
         double refErrorsPMax    = 3.3e-08;
-        double refErrorsVMedian = 4.1e-04;
+        double refErrorsVMedian = 4.8e-04;
         double refErrorsVMean   = 1.6e-03;
         double refErrorsVMax    = 7.1e-02;
         this.genericTestStateDerivatives(printResults, 1,
@@ -272,11 +272,11 @@ public class InterSatellitesPhaseTest {
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
 
-        Assertions.assertEquals(0.0, absErrorsMedian, 6.1e-7);
+        Assertions.assertEquals(0.0, absErrorsMedian, 6.2e-7);
         Assertions.assertEquals(0.0, absErrorsMin,    3.3e-6);
-        Assertions.assertEquals(0.0, absErrorsMax,    7.0e-7);
+        Assertions.assertEquals(0.0, absErrorsMax,    7.2e-7);
         Assertions.assertEquals(0.0, relErrorsMedian, 5.2e-12);
-        Assertions.assertEquals(0.0, relErrorsMax,    2.9e-10);
+        Assertions.assertEquals(0.0, relErrorsMax,    3.0e-10);
 
         // Test measurement type
         Assertions.assertEquals(InterSatellitesPhase.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());

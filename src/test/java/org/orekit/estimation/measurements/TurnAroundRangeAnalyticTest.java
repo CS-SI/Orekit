@@ -93,7 +93,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = false;
         boolean isFiniteDifferences  = true;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    7.2e-9, 2.5e-8, 3.5e-7, 8.0e-5, 3.0e-4, 7.3e-3);
+                                    1.2e-8, 4.4e-8, 6.1e-7, 8.0e-5, 3.1e-4, 7.3e-3);
     }
 
     /**
