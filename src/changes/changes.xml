@@ -26,11 +26,8 @@
         <action dev="serrof" type="add" issue="1897">
             Introduce abstract class for GNSS one way measurements.
         </action>
-        <action dev="evan" type="fix" issue="1891">
-          Improve time accuracy in CelestialBodies.
-        </action>
-        <action dev="evan" type="fix" issue="1892">
-          Fix NaN in ConicallyShadowedLightFluxModel.
+        <action dev="serrof" type="fix" issue="1893">
+            Use proper shiftedBy for position-velocity of observable satellites with light-time delay.
         </action>
         <action dev="luc" type="add" issue="issue-1896">
             Allow to build simply a Starlette or Lageos type shape without wings
