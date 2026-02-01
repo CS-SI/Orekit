@@ -14,39 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.orbits;
+package org.orekit.propagation.analytical;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.orekit.utils.AbstractExtendedPositionProvider;
-import org.orekit.utils.PVCoordinates;
 
 /**
- * Position provider assuming pure Keplerian motion.
- * Propagation is computed with the same orbital parameters used to define the reference.
+ * Class providing position, including Field, based on ephemeris (tabulated states).
  *
+ * @see Ephemeris
+ * @see FieldEphemeris
  * @author Romain Serra
- * @see org.orekit.utils.ExtendedPositionProvider
- * @see Orbit
- * @see FieldOrbit
- *
  * @since 14.0
  */
-public class KeplerianExtendedPositionProvider extends AbstractExtendedPositionProvider<Orbit> {
+public class EphemerisExtendedPositionProvider extends AbstractExtendedPositionProvider<Ephemeris> {
 
     /**
      * Constructor.
-     * @param referenceOrbit reference orbit (non-Keplerian terms will be ignored if any)
+     * @param ephemeris ephemeris
      */
-    public KeplerianExtendedPositionProvider(final Orbit referenceOrbit) {
-        // Remove non-Keplerian rates if any
-        super(referenceOrbit.getType().convertType(new CartesianOrbit(new PVCoordinates(referenceOrbit.getPosition(),
-                referenceOrbit.getVelocity()), referenceOrbit.getFrame(), referenceOrbit.getDate(), referenceOrbit.getMu())));
+    public EphemerisExtendedPositionProvider(final Ephemeris ephemeris) {
+        super(ephemeris);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected <T extends CalculusFieldElement<T>> FieldOrbit<T> getFieldProvider(final Field<T> field) {
-        return getProvider().getType().convertToFieldOrbit(field, getProvider());
+    protected <T extends CalculusFieldElement<T>> FieldEphemeris<T> getFieldProvider(final Field<T> field) {
+        return new FieldEphemeris<>(field, getProvider());
     }
 }

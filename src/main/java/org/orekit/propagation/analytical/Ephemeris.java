@@ -16,6 +16,10 @@
  */
 package org.orekit.propagation.analytical;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.linear.RealMatrix;
@@ -37,13 +41,9 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.AbstractTimeInterpolator;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeStampedPair;
+import org.orekit.utils.DataDictionary;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ImmutableTimeStampedCache;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import org.orekit.utils.DataDictionary;
 
 /**
  * This class is designed to accept and handle tabulated orbital entries. Tabulated entries are classified and then
@@ -400,6 +400,15 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     /** {@inheritDoc} */
     protected double getMass(final AbsoluteDate date) {
         return basicPropagate(date).getMass();
+    }
+
+    /**
+     * Getter for the interpolated states.
+     * @return copy of states
+     * @since 14.0
+     */
+    public List<SpacecraftState> getStates() {
+        return statesCache.getAll();
     }
 
     /**

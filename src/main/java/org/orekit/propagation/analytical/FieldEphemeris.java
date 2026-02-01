@@ -18,8 +18,10 @@ package org.orekit.propagation.analytical;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
@@ -142,6 +144,25 @@ public class FieldEphemeris<T extends CalculusFieldElement<T>> extends FieldAbst
 
         // Initialize initial state
         super.resetInitialState(getInitialState());
+    }
+
+    /**
+     * Constructor from non-Field object.
+     * @param field field
+     * @param ephemeris ephemeris
+     */
+    public FieldEphemeris(final Field<T> field, final Ephemeris ephemeris) {
+        this(ephemeris.getStates().stream().map(state -> new FieldSpacecraftState<>(field, state)).collect(Collectors.toList()),
+                new FieldSpacecraftStateInterpolator<>(ephemeris.getStateInterpolator().getNbInterpolationPoints(),
+                ephemeris.getFrame()), ephemeris.getAttitudeProvider());
+    }
+
+    /**
+     * Getter for the interpolated states.
+     * @return copy of states
+     */
+    public List<FieldSpacecraftState<T>> getStates() {
+        return statesCache.getAll();
     }
 
     /**

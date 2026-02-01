@@ -16,6 +16,15 @@
  */
 package org.orekit.propagation;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.MathArrays;
@@ -46,15 +55,6 @@ import org.orekit.utils.FieldDataDictionary;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldAngularCoordinatesHermiteInterpolator;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 /**
  * Generic class for spacecraft state interpolator.
  * <p>
@@ -66,7 +66,7 @@ import java.util.stream.Collectors;
  *
  * @author Luc Maisonobe
  * @author Vincent Cucchietti
- * @see SpacecraftState
+ * @see FieldSpacecraftState
  */
 public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK>>
         extends AbstractFieldTimeInterpolator<FieldSpacecraftState<KK>, KK> {
