@@ -26,6 +26,7 @@ import org.orekit.time.AbstractTimeInterpolator;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeStamped;
 import org.orekit.time.TimeStampedPair;
+import org.orekit.utils.SortedListTrimmer;
 
 import java.util.Collections;
 import java.util.List;
@@ -137,12 +138,33 @@ public abstract class AbstractStateCovarianceInterpolator
         final Orbit interpolatedOrbit = interpolateOrbit(interpolationData.getInterpolationDate(),
                                                          interpolationData.getNeighborList());
 
+        // Ensure that the chosen number of interpolation points is used to interpolate the state covariance
+        final List<TimeStampedPair<Orbit, StateCovariance>> uncertainStates = getNeighborsSubList(interpolationData);
+
         // Rebuild state covariance
         final StateCovariance covarianceInOrbitFrame =
-                computeInterpolatedCovarianceInOrbitFrame(interpolationData.getNeighborList(), interpolatedOrbit);
+                computeInterpolatedCovarianceInOrbitFrame(uncertainStates, interpolatedOrbit);
 
         // Output new blended StateCovariance instance in desired output
         return expressCovarianceInDesiredOutput(interpolatedOrbit, covarianceInOrbitFrame);
+    }
+
+    /**
+     * Extract the correct number of interpolation points for state covariance interpolation/blending. Otherwise,
+     * sub-interpolators may require more samples and state covariance interpolation itself would use the wrong number
+     * of samples.
+     *
+     * @param interpolationData interpolation data
+     * @return Sample specific to state covariance interpolation/blending
+     */
+    private List<TimeStampedPair<Orbit, StateCovariance>> getNeighborsSubList(final InterpolationData interpolationData) {
+        final AbsoluteDate central = getCentralDate(interpolationData.getInterpolationDate(),
+                                                    interpolationData.getNeighborList().getFirst().getDate(),
+                                                    interpolationData.getNeighborList().getLast().getDate(),
+                                                    getExtrapolationThreshold());
+
+        return new SortedListTrimmer(getInternalNbInterpolationPoints()).getNeighborsSubList(central,
+                                                                                             interpolationData.getNeighborList());
     }
 
     /** Get output frame.

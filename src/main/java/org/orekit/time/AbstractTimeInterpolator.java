@@ -168,6 +168,16 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
         }
     }
 
+    /**
+     * Get the number of interpolation points for this instance only i.e., not taking into account sub-interpolators.
+     *
+     * @return required the number of interpolation points for this instance only i.e., not taking into account
+     * sub-interpolators.
+     */
+    public int getInternalNbInterpolationPoints() {
+        return interpolationPoints;
+    }
+
     /** {@inheritDoc} */
     public double getExtrapolationThreshold() {
         return extrapolationThreshold;
