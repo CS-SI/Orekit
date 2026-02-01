@@ -21,6 +21,8 @@ import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
@@ -53,7 +55,7 @@ class TwoLegsSignalTravelTimerTest {
     }
 
     @Test
-    void testComputeGuss() {
+    void testComputeGuess() {
         // GIVEN
         final Frame frame = FramesFactory.getGCRF();
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
@@ -73,13 +75,14 @@ class TwoLegsSignalTravelTimerTest {
         assertEquals(expectedDelays[1], delays[1]);
     }
 
-    @Test
-    void testComputeField() {
+    @ParameterizedTest
+    @ValueSource(doubles = {-1e3, 1e2, 1e4, 1e6})
+    void testComputeField(final double position) {
         // GIVEN
         final Frame frame = FramesFactory.getGCRF();
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         final TwoLegsSignalTravelTimer twoLegsSignalTravelTimer = new TwoLegsSignalTravelTimer(new SignalTravelTimeModel());
-        final Vector3D receiverPosition = Vector3D.PLUS_I.scalarMultiply(1e4);
+        final Vector3D receiverPosition = Vector3D.PLUS_I.scalarMultiply(position);
         final PVCoordinates pvRelay = new PVCoordinates(new Vector3D(1e5, 1e6, -1e4), Vector3D.MINUS_J);
         final PVCoordinates pvEmitter = new PVCoordinates(new Vector3D(2e5, -3e4, 1e5), new Vector3D(1, 2, 3));
         final AbsolutePVCoordinates relay = new AbsolutePVCoordinates(frame, date, pvRelay);

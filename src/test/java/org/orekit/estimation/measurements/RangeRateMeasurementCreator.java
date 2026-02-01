@@ -16,7 +16,8 @@
  */
 package org.orekit.estimation.measurements;
 
-import org.hipparchus.analysis.UnivariateFunction;
+import java.util.Arrays;
+
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolver;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -29,8 +30,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
-
-import java.util.Arrays;
 
 public class RangeRateMeasurementCreator extends MeasurementCreator {
 
@@ -83,15 +82,13 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
             final double           satDft    = satellite.getClockDriftDriver().getValue(date);
             final double           deltaD    = Constants.SPEED_OF_LIGHT * (groundDft - satDft);
 
-            if (station.getBaseFrame().getTrackingCoordinates(position, inertial, date).getElevation() > FastMath.toRadians(30.0)) {
+            if (station.getBaseFrame().getElevation(position, inertial, date) > FastMath.toRadians(30.0)) {
                 final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 
-                final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
-                    public double value(final double x) {
-                        final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x), false);
-                        final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
-                        return d - x * Constants.SPEED_OF_LIGHT;
-                    }
+                final double downLinkDelay  = solver.solve(1000, x -> {
+                    final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x), false);
+                    final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
+                    return d - x * Constants.SPEED_OF_LIGHT;
                 }, -1.0, 1.0);
                 final AbsoluteDate receptionDate  = currentState.getDate().shiftedBy(downLinkDelay);
                 final PVCoordinates stationAtReception =
@@ -103,12 +100,10 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
                 // relative velocity, spacecraft-station, at the date of reception
                 final Vector3D deltaVr = velocity.subtract(stationAtReception.getVelocity());
 
-                final double upLinkDelay = solver.solve(1000, new UnivariateFunction() {
-                    public double value(final double x) {
-                        final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(-x), false);
-                        final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
-                        return d - x * Constants.SPEED_OF_LIGHT;
-                    }
+                final double upLinkDelay = solver.solve(1000, x -> {
+                    final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(-x), false);
+                    final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
+                    return d - x * Constants.SPEED_OF_LIGHT;
                 }, -1.0, 1.0);
                 final AbsoluteDate emissionDate   = currentState.getDate().shiftedBy(-upLinkDelay);
                 final PVCoordinates stationAtEmission  =

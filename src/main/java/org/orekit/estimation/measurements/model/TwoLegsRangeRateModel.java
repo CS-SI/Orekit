@@ -88,8 +88,8 @@ public class TwoLegsRangeRateModel {
         final PVCoordinates emitterPV = emitter.getPVCoordinates(emissionDate, frame);
 
         // Range-rate components
-        final Vector3D receiverRelativePosition = receiverPV.getPosition().subtract(relayPV.getPosition()).normalize();
-        final Vector3D emitterRelativePosition = emitterPV.getPosition().subtract(relayPV.getPosition()).normalize();
+        final Vector3D receiverRelativePosition = receiverPV.getPosition().subtract(relayPV.getPosition());
+        final Vector3D emitterRelativePosition = emitterPV.getPosition().subtract(relayPV.getPosition());
         final Vector3D receiverRelativeVelocity = receiverPV.getVelocity().subtract(relayPV.getVelocity());
         final Vector3D emitterRelativeVelocity = emitterPV.getVelocity().subtract(relayPV.getVelocity());
 
@@ -108,10 +108,10 @@ public class TwoLegsRangeRateModel {
      * @param emitter          signal initial emitter coordinates provider
      * @return range rate (m/s)
      */
-    public <T extends CalculusFieldElement<T>>  T value(final Frame frame, final FieldPVCoordinates<T> receiverPV,
-                                                        final FieldAbsoluteDate<T> receptionDate,
-                                                        final FieldPVCoordinatesProvider<T> relay,
-                                                        final FieldPVCoordinatesProvider<T> emitter) {
+    public <T extends CalculusFieldElement<T>> T value(final Frame frame, final FieldPVCoordinates<T> receiverPV,
+                                                       final FieldAbsoluteDate<T> receptionDate,
+                                                       final FieldPVCoordinatesProvider<T> relay,
+                                                       final FieldPVCoordinatesProvider<T> emitter) {
         return value(frame, receiverPV, receptionDate, relay, receptionDate, emitter, receptionDate);
     }
     /**
@@ -126,12 +126,12 @@ public class TwoLegsRangeRateModel {
      * @param approxEmissionDate guess for the emission date
      * @return range rate (m/s)
      */
-    public <T extends CalculusFieldElement<T>>  T value(final Frame frame, final FieldPVCoordinates<T> receiverPV,
-                          final FieldAbsoluteDate<T> receptionDate,
-                          final FieldPVCoordinatesProvider<T> relay,
-                          final FieldAbsoluteDate<T> approxRelayDate,
-                          final FieldPVCoordinatesProvider<T> emitter,
-                          final FieldAbsoluteDate<T> approxEmissionDate) {
+    public <T extends CalculusFieldElement<T>> T value(final Frame frame, final FieldPVCoordinates<T> receiverPV,
+                                                       final FieldAbsoluteDate<T> receptionDate,
+                                                       final FieldPVCoordinatesProvider<T> relay,
+                                                       final FieldAbsoluteDate<T> approxRelayDate,
+                                                       final FieldPVCoordinatesProvider<T> emitter,
+                                                       final FieldAbsoluteDate<T> approxEmissionDate) {
         // Compute relay and emission dates
         final T[] delays = twoWayTimer.computeDelays(frame, receiverPV.getPosition(), receptionDate, relay,
                 approxRelayDate, emitter, approxEmissionDate);
@@ -143,8 +143,8 @@ public class TwoLegsRangeRateModel {
         final FieldPVCoordinates<T> emitterPV = emitter.getPVCoordinates(emissionDate, frame);
 
         // Range-rate components
-        final FieldVector3D<T> receiverRelativePosition = receiverPV.getPosition().subtract(relayPV.getPosition()).normalize();
-        final FieldVector3D<T> emitterRelativePosition = emitterPV.getPosition().subtract(relayPV.getPosition()).normalize();
+        final FieldVector3D<T> receiverRelativePosition = receiverPV.getPosition().subtract(relayPV.getPosition());
+        final FieldVector3D<T> emitterRelativePosition = emitterPV.getPosition().subtract(relayPV.getPosition());
         final FieldVector3D<T> receiverRelativeVelocity = receiverPV.getVelocity().subtract(relayPV.getVelocity());
         final FieldVector3D<T> emitterRelativeVelocity = emitterPV.getVelocity().subtract(relayPV.getVelocity());
 

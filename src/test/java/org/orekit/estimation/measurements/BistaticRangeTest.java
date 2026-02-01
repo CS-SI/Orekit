@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -460,11 +461,13 @@ class BistaticRangeTest {
         final SpacecraftState[] state = new SpacecraftState[] { new SpacecraftState(orbit) };
         // WHEN
         final BistaticRange bistaticRange = new BistaticRange(station, station, epoch, 0., 1., 1., satellite);
-        final EstimatedMeasurementBase<BistaticRange> estimatedBistatic = bistaticRange.estimateWithoutDerivatives(state);
+        final EstimatedMeasurement<BistaticRange> estimatedBistatic = bistaticRange.estimate(0, 0, state);
         // THEN
         final Range range = new Range(station, true, epoch, 0., 1., 1., satellite);
-        final EstimatedMeasurementBase<Range> estimatedRange = range.estimateWithoutDerivatives(0, 0, state);
+        final EstimatedMeasurement<Range> estimatedRange = range.estimate(0, 0, state);
         assertEquals(estimatedRange.getEstimatedValue()[0] * 2., estimatedBistatic.getEstimatedValue()[0], 1e-6);
+        final double[] doubleDerivatives = MatrixUtils.createRealVector(estimatedRange.getStateDerivatives(0)[0]).mapMultiply(2).toArray();
+        assertArrayEquals(doubleDerivatives, estimatedBistatic.getStateDerivatives(0)[0], 1e-12);
         compareParticipants(estimatedRange, estimatedBistatic);
     }
 
@@ -520,19 +523,8 @@ class BistaticRangeTest {
     }
 
     private void activateStation(final GroundStation station) {
-        for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
-                station.getEastOffsetDriver(),
-                station.getNorthOffsetDriver(),
-                station.getZenithOffsetDriver(),
-                station.getPrimeMeridianOffsetDriver(),
-                station.getPrimeMeridianDriftDriver(),
-                station.getPolarOffsetXDriver(),
-                station.getPolarDriftXDriver(),
-                station.getPolarOffsetYDriver(),
-                station.getPolarDriftYDriver())) {
-            if (driver.getReferenceDate() == null) {
-                driver.setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH);
-            }
+        for (final ParameterDriver driver: station.getParametersDrivers()) {
+            driver.setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH);
         }
     }
 }
