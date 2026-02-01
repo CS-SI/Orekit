@@ -1,5 +1,7 @@
 package org.orekit.estimation.measurements.signal;
 
+import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
+import org.hipparchus.analysis.solvers.UnivariateSolver;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.optim.ConvergenceChecker;
 import org.junit.jupiter.api.Test;
@@ -45,6 +47,28 @@ class SignalTravelTimeAdjustableReceiverTest {
         final double expected = emitterPosition.getNorm() / Constants.SPEED_OF_LIGHT;
         assertEquals(expected, actual);
     }
+
+    @ParameterizedTest
+    @ValueSource(doubles = {-1e2, 0., 1e3, 1e5})
+    void testComputeDelayVersusBrent(final double speed) {
+        // GIVEN
+        final Frame frame = FramesFactory.getGCRF();
+        final AbsoluteDate emissionDate = AbsoluteDate.ARBITRARY_EPOCH;
+        final Vector3D emitterPosition = new Vector3D(-1e1, 1e2, -1e3);
+        final AbsolutePVCoordinates absolutePVCoordinates = new AbsolutePVCoordinates(frame, emissionDate,
+                new PVCoordinates(emitterPosition, Vector3D.MINUS_J.scalarMultiply(speed), Vector3D.PLUS_J));
+        final SignalTravelTimeAdjustableReceiver signalTimeOfFlight = new SignalTravelTimeAdjustableReceiver(absolutePVCoordinates);
+        // WHEN
+        final double actual = signalTimeOfFlight.computeDelay(emitterPosition, emissionDate, frame);
+        // THEN
+        final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
+        final double expected = solver.solve(1000, x -> {
+            final double d = Vector3D.distance(emitterPosition, absolutePVCoordinates.getPosition(emissionDate.shiftedBy(x), frame));
+            return d - x * Constants.SPEED_OF_LIGHT;
+        }, -1.0, 1.0);
+        assertEquals(expected, actual);
+    }
+
 
     @ParameterizedTest
     @ValueSource(doubles = {-1e3, -1e1, 0., 1e1, 1e2, 1e3, 1e4})
