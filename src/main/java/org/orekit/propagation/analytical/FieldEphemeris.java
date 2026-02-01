@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.analytical;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.orekit.attitudes.AttitudeProvider;
@@ -28,7 +31,6 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.FieldSpacecraftStateInterpolator;
-import org.orekit.propagation.SpacecraftStateInterpolator;
 import org.orekit.time.AbstractFieldTimeInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeInterpolator;
@@ -36,9 +38,6 @@ import org.orekit.utils.FieldBoundedPVCoordinatesProvider;
 import org.orekit.utils.FieldDataDictionary;
 import org.orekit.utils.ImmutableFieldTimeStampedCache;
 import org.orekit.utils.ParameterDriver;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * This class is designed to accept and handle tabulated orbital entries. Tabulated entries are classified and then
@@ -72,11 +71,7 @@ public class FieldEphemeris<T extends CalculusFieldElement<T>> extends FieldAbst
     private final FieldTimeInterpolator<FieldSpacecraftState<T>, T> stateInterpolator;
 
     /**
-     * Legacy constructor with tabulated states and default Hermite interpolation.
-     * <p>
-     * As this implementation of interpolation is polynomial, it should be used only with small samples (about 10-20 points)
-     * in order to avoid <a href="ht@tps://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a> and numerical
-     * problems (including NaN appearing).
+     * Constructor with tabulated states and default Hermite interpolation.
      *
      * @param states list of spacecraft states
      * @param interpolationPoints number of points to use in interpolation
@@ -85,13 +80,11 @@ public class FieldEphemeris<T extends CalculusFieldElement<T>> extends FieldAbst
      *                                        interpolation
      * @throws OrekitIllegalArgumentException if states are not defined the same way (orbit or absolute
      *                                        position-velocity-acceleration)
-     * @see SpacecraftStateInterpolator
+     * @see FieldSpacecraftStateInterpolator
      */
     public FieldEphemeris(final List<FieldSpacecraftState<T>> states, final int interpolationPoints)
             throws MathIllegalArgumentException {
-        this(states, new FieldSpacecraftStateInterpolator<>(interpolationPoints,
-                                                     states.get(0).getFrame(),
-                                                     states.get(0).getFrame()));
+        this(states, new FieldSpacecraftStateInterpolator<>(interpolationPoints, states.get(0).getFrame(), states.get(0).getFrame()));
     }
 
     /**
@@ -105,13 +98,14 @@ public class FieldEphemeris<T extends CalculusFieldElement<T>> extends FieldAbst
      * @throws OrekitIllegalArgumentException if states are not defined the same way (orbit or absolute
      *                                        position-velocity-acceleration)
      */
-    public FieldEphemeris(final List<FieldSpacecraftState<T>> states, final FieldTimeInterpolator<FieldSpacecraftState<T>, T> stateInterpolator)
+    public FieldEphemeris(final List<FieldSpacecraftState<T>> states,
+                          final FieldTimeInterpolator<FieldSpacecraftState<T>, T> stateInterpolator)
             throws MathIllegalArgumentException {
         this(states, stateInterpolator, new FrameAlignedProvider(states.get(0).getFrame()));
     }
 
     /**
-     * Constructor with tabulated states.
+     * Constructor with tabulated states and attitude provider.
      *
      * @param states list of spacecraft states
      * @param stateInterpolator spacecraft state interpolator
