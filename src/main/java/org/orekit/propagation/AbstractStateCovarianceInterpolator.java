@@ -158,9 +158,10 @@ public abstract class AbstractStateCovarianceInterpolator
      * @return Sample specific to state covariance interpolation/blending
      */
     private List<TimeStampedPair<Orbit, StateCovariance>> getNeighborsSubList(final InterpolationData interpolationData) {
+        final List<TimeStampedPair<Orbit, StateCovariance>> neighborList = interpolationData.getNeighborList();
         final AbsoluteDate central = getCentralDate(interpolationData.getInterpolationDate(),
-                                                    interpolationData.getNeighborList().getFirst().getDate(),
-                                                    interpolationData.getNeighborList().getLast().getDate(),
+                                                    neighborList.get(0).getDate(),
+                                                    neighborList.get(neighborList.size() - 1).getDate(),
                                                     getExtrapolationThreshold());
 
         return new SortedListTrimmer(getInternalNbInterpolationPoints()).getNeighborsSubList(central,
