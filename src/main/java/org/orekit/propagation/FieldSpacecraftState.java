@@ -148,6 +148,24 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
                                 final FieldArrayDictionary<T> additionalDot)
         throws IllegalArgumentException {
         this(orbit, null, attitude, mass, mass.getField().getZero(), additional, additionalDot, true);
+    }
+
+    /** Build a spacecraft state from orbit, attitude, mass, additional states and derivatives.
+     * @param orbit the orbit
+     * @param attitude attitude
+     * @param mass the mass (kg)
+     * @param massRate the mass rate (kg/s)
+     * @param additional additional states (may be null if no additional states are available)
+     * @param additionalDot additional states derivatives(may be null if no additional states derivative sare available)
+     * @exception IllegalArgumentException if orbit and attitude dates
+     * or frames are not equal
+     * @since 14.0
+     */
+    public FieldSpacecraftState(final FieldOrbit<T> orbit, final FieldAttitude<T> attitude, final T mass,
+                                final T massRate, final FieldDataDictionary<T> additional,
+                                final FieldArrayDictionary<T> additionalDot)
+            throws IllegalArgumentException {
+        this(orbit, null, attitude, mass, massRate, additional, additionalDot, true);
         checkConsistency(orbit, attitude);
     }
 
@@ -208,7 +226,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
 
     }
 
-    /** Build a spacecraft state from orbit only.
+    /** Build a spacecraft state from absolute coordinates only.
      * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param absPva position-velocity-acceleration
      */
@@ -219,7 +237,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
              absPva.getDate().getField().getZero().newInstance(DEFAULT_MASS), null, null);
     }
 
-    /** Build a spacecraft state from orbit and attitude. Kept for performance.
+    /** Build a spacecraft state from absolute coordinates and attitude. Kept for performance.
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
      * @param absPva position-velocity-acceleration
      * @param attitude attitude
@@ -232,7 +250,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         checkConsistency(absPva, attitude);
     }
 
-    /** Build a spacecraft state from orbit, attitude and mass.
+    /** Build a spacecraft state from absolute coordinates, attitude and mass.
      * @param absPva position-velocity-acceleration
      * @param attitude attitude
      * @param mass the mass (kg)
@@ -249,15 +267,14 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         checkConsistency(absPva, attitude);
     }
 
-    /** Build a spacecraft state from orbit, attitude and mass.
+    /** Build a spacecraft state from absolute coordinates, attitude, mass and mass rate.
      * @param absPva position-velocity-acceleration
      * @param attitude attitude
      * @param mass the mass (kg)
      * @param massRate mass rate (kg/s)
      * @param additional additional states (may be null if no additional states are available)
      * @param additionalDot additional states derivatives(may be null if no additional states derivatives are available)
-     * @exception IllegalArgumentException if orbit and attitude dates
-     * or frames are not equal
+     * @exception IllegalArgumentException if orbit and attitude dates or frames are not equal
      * @since 14.0
      */
     public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final FieldAttitude<T> attitude,
@@ -265,6 +282,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
                                 final FieldDataDictionary<T> additional, final FieldArrayDictionary<T> additionalDot)
             throws IllegalArgumentException {
         this(null, absPva, attitude, mass, massRate, additional, additionalDot, true);
+        checkConsistency(absPva, attitude);
     }
 
     /** Full, private constructor.
