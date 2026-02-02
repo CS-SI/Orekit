@@ -36,17 +36,17 @@ public class SignalTravelTimeModel {
     private final ConvergenceChecker<Double> convergenceChecker;
 
     /** Convergence checker provider for Field values. */
-    private final FieldScalarConvergenceCheckerProvider fieldConvergenceChecker;
+    private final FieldScalarConvergenceCheckerProvider fieldConvergenceCheckerProvider;
 
     /**
      * Constructor.
      * @param convergenceChecker convergence settings for standard values
-     * @param fieldConvergenceChecker convergence settings for Field values
+     * @param fieldConvergenceCheckerProvider convergence settings for Field values
      */
     public SignalTravelTimeModel(final ConvergenceChecker<Double> convergenceChecker,
-                                 final FieldScalarConvergenceCheckerProvider fieldConvergenceChecker) {
+                                 final FieldScalarConvergenceCheckerProvider fieldConvergenceCheckerProvider) {
         this.convergenceChecker = convergenceChecker;
-        this.fieldConvergenceChecker = fieldConvergenceChecker;
+        this.fieldConvergenceCheckerProvider = fieldConvergenceCheckerProvider;
     }
 
     /**
@@ -68,6 +68,22 @@ public class SignalTravelTimeModel {
      */
     public SignalTravelTimeModel() {
         this(AbstractSignalTravelTime.getDefaultConvergenceChecker());
+    }
+
+    /**
+     * Getter for the convergence checker.
+     * @return checker
+     */
+    public ConvergenceChecker<Double> getConvergenceChecker() {
+        return convergenceChecker;
+    }
+
+    /**
+     * Getter for the Field convergence checker provider.
+     * @return provider
+     */
+    public FieldScalarConvergenceCheckerProvider getFieldConvergenceCheckerProvider() {
+        return fieldConvergenceCheckerProvider;
     }
 
     /**
@@ -97,7 +113,7 @@ public class SignalTravelTimeModel {
      */
     public <T extends CalculusFieldElement<T>> FieldSignalTravelTimeAdjustableEmitter<T> getFieldAdjustableEmitterComputer(final Field<T> field,
                                                                                                                            final FieldPVCoordinatesProvider<T> emitter) {
-        return new FieldSignalTravelTimeAdjustableEmitter<>(emitter, fieldConvergenceChecker.getChecker(field));
+        return new FieldSignalTravelTimeAdjustableEmitter<>(emitter, fieldConvergenceCheckerProvider.getChecker(field));
     }
 
     /**
@@ -109,6 +125,6 @@ public class SignalTravelTimeModel {
      */
     public <T extends CalculusFieldElement<T>> FieldSignalTravelTimeAdjustableReceiver<T> getFieldAdjustableReceiverComputer(final Field<T> field,
                                                                                                                              final FieldPVCoordinatesProvider<T> receiver) {
-        return new FieldSignalTravelTimeAdjustableReceiver<>(receiver, fieldConvergenceChecker.getChecker(field));
+        return new FieldSignalTravelTimeAdjustableReceiver<>(receiver, fieldConvergenceCheckerProvider.getChecker(field));
     }
 }
