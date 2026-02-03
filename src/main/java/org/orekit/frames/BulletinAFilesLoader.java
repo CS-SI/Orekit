@@ -528,10 +528,10 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader
                         }
                         history.add(new EOPEntry(mjd,
                                                  0.0, Double.NaN, 0.0, 0.0, Double.NaN, Double.NaN,
-                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[1]),
-                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[2]),
                                                  UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[3]),
                                                  UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[4]),
+                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[1]),
+                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[2]),
                                                  configuration.getVersion(),
                                                  mjdDate, eopDataType));
                     }
