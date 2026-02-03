@@ -182,7 +182,10 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
         NEPTUNE,
 
         /** Constant for Pluto. */
-        PLUTO
+        PLUTO,
+
+        /** Constant for Lunar librations. */
+        LIBRATION
 
     }
 
@@ -393,6 +396,17 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
 
     }
 
+    /** Load libration.
+     * @return loaded libration
+     * @since 14.0
+     */
+    public JPLLibration loadLibration() {
+        final RawPVProvider rawPVProvider = new EphemerisRawPVProvider();
+
+        // build the libration
+        return new JPLLibration(rawPVProvider);
+    }
+
     /** Get astronomical unit.
      * @return astronomical unit in meters
      */
@@ -557,26 +571,36 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
         finalEpoch = extractDate(record, HEADER_END_EPOCH_OFFSET);
         boolean ok = finalEpoch.compareTo(startEpoch) > 0;
 
-        // indices of the Chebyshev coefficients for each ephemeris
-        for (int i = 0; i < 12; ++i) {
-            final int row1 = extractInt(record, HEADER_CHEBISHEV_INDICES_OFFSET     + 12 * i);
-            final int row2 = extractInt(record, HEADER_CHEBISHEV_INDICES_OFFSET + 4 + 12 * i);
-            final int row3 = extractInt(record, HEADER_CHEBISHEV_INDICES_OFFSET + 8 + 12 * i);
-            ok = ok && row1 >= 0 && row2 >= 0 && row3 >= 0;
-            if (i ==  0 && loadType == EphemerisType.MERCURY    ||
-                    i ==  1 && loadType == EphemerisType.VENUS      ||
-                    i ==  2 && loadType == EphemerisType.EARTH_MOON ||
-                    i ==  3 && loadType == EphemerisType.MARS       ||
-                    i ==  4 && loadType == EphemerisType.JUPITER    ||
-                    i ==  5 && loadType == EphemerisType.SATURN     ||
-                    i ==  6 && loadType == EphemerisType.URANUS     ||
-                    i ==  7 && loadType == EphemerisType.NEPTUNE    ||
-                    i ==  8 && loadType == EphemerisType.PLUTO      ||
-                    i ==  9 && loadType == EphemerisType.MOON       ||
-                    i == 10 && loadType == EphemerisType.SUN) {
-                firstIndex = row1;
-                coeffs     = row2;
-                chunks     = row3;
+        if (loadType == EphemerisType.LIBRATION) {
+            // indices of the Chebyshev coefficients for lunar librations
+            firstIndex = extractInt(record, HEADER_LIBRATION_INDICES_OFFSET);
+            coeffs     = extractInt(record, HEADER_LIBRATION_INDICES_OFFSET + 4);
+            chunks     = extractInt(record, HEADER_LIBRATION_INDICES_OFFSET + 8);
+            ok = ok && firstIndex >= 0 && coeffs >= 0 && chunks >= 0;
+            positionUnit = 1.0;
+        }
+        else {
+            // indices of the Chebyshev coefficients for each ephemeris
+            for (int i = 0; i < 12; ++i) {
+                final int row1 = extractInt(record, HEADER_CHEBISHEV_INDICES_OFFSET     + 12 * i);
+                final int row2 = extractInt(record, HEADER_CHEBISHEV_INDICES_OFFSET + 4 + 12 * i);
+                final int row3 = extractInt(record, HEADER_CHEBISHEV_INDICES_OFFSET + 8 + 12 * i);
+                ok = ok && row1 >= 0 && row2 >= 0 && row3 >= 0;
+                if (i ==  0 && loadType == EphemerisType.MERCURY    ||
+                        i ==  1 && loadType == EphemerisType.VENUS      ||
+                        i ==  2 && loadType == EphemerisType.EARTH_MOON ||
+                        i ==  3 && loadType == EphemerisType.MARS       ||
+                        i ==  4 && loadType == EphemerisType.JUPITER    ||
+                        i ==  5 && loadType == EphemerisType.SATURN     ||
+                        i ==  6 && loadType == EphemerisType.URANUS     ||
+                        i ==  7 && loadType == EphemerisType.NEPTUNE    ||
+                        i ==  8 && loadType == EphemerisType.PLUTO      ||
+                        i ==  9 && loadType == EphemerisType.MOON       ||
+                        i == 10 && loadType == EphemerisType.SUN) {
+                    firstIndex = row1;
+                    coeffs     = row2;
+                    chunks     = row3;
+                }
             }
         }
 
