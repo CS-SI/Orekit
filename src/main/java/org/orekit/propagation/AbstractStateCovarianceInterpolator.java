@@ -159,6 +159,13 @@ public abstract class AbstractStateCovarianceInterpolator
      */
     private List<TimeStampedPair<Orbit, StateCovariance>> getNeighborsSubList(final InterpolationData interpolationData) {
         final List<TimeStampedPair<Orbit, StateCovariance>> neighborList = interpolationData.getNeighborList();
+
+        // Handle special case where sub-interpolator uses the same number of interpolation points
+        if (getNbInterpolationPoints() == getInternalNbInterpolationPoints()) {
+            return interpolationData.getNeighborList();
+        }
+
+        // Otherwise, select sublist around interpolation date
         final AbsoluteDate central = getCentralDate(interpolationData.getInterpolationDate(),
                                                     neighborList.get(0).getDate(),
                                                     neighborList.get(neighborList.size() - 1).getDate(),
