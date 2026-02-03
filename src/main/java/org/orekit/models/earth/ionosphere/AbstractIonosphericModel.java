@@ -99,8 +99,8 @@ public abstract class AbstractIonosphericModel implements IonosphericModel {
         // altitude than the other
         final Boolean elevationCheck = elevation > 1e-7;
 
-        // Check that distance to topocentric frame is > 0 m
-        final Boolean distanceCheck = position.getNorm() > 1e-7;
+        // Check that distance to topocentric frame is > 1 m
+        final Boolean distanceCheck = position.getNorm() > 1.0;
 
         return elevationCheck && distanceCheck;
     }
