@@ -60,6 +60,9 @@
         <action dev="serrof" type="add" issue="issue-1870">
             Add FieldEphemeris.
         </action>
+        <action dev="xiaozhongguo" type="add" issue="1865">
+          Add a method of loadLibration in JPLEphemerisLoader and an new JPLLibration class.
+        </action>
         <action dev="luc" type="update" issue="issue-1863">
           Use more realistic scaling factors in GNSS propagators parameter drivers.
         </action>

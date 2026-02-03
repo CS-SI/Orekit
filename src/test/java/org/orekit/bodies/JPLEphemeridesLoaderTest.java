@@ -307,6 +307,20 @@ public class JPLEphemeridesLoaderTest {
         MatcherAssert.assertThat(nChecked, Matchers.is(11));
     }
 
+    @Test
+    void testJPLLoadLibration() {
+        Utils.setDataRoot("regular-data/de431-ephemerides");
+
+        JPLEphemeridesLoader loader =
+            new JPLEphemeridesLoader(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES,
+                                     JPLEphemeridesLoader.EphemerisType.LIBRATION);
+        JPLLibration libration = loader.loadLibration();
+        AbsoluteDate date = new AbsoluteDate(2000, 1, 1, 0, 1, 4.184, TimeScalesFactory.getTDB());
+        Assertions.assertEquals(-0.05408383637, libration.getPhi(date), 1.0e-11);
+        Assertions.assertEquals(0.42483375049, libration.getTheta(date), 1.0e-11);
+        Assertions.assertEquals(2564.14339017, libration.getPsi(date), 1.0e-8);
+    }
+
     private int testPo(String name) throws IOException {
         JPLEphemeridesLoader loader = new JPLEphemeridesLoader(
                 JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES,
