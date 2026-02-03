@@ -59,8 +59,7 @@ import org.orekit.utils.ExtendedPositionProvider;
  * but also needs space weather data : mean and daily solar flux, retrieved through
  * different indices, and planetary geomagnetic indices.<br>
  * More information on these indices can be found on the <a
- * href="http://sol.spacenvironment.net/~JB2008/indices.html">
- * official JB2008 website.</a>
+ * href="https://spacewx.com/JB2008/"> official JB2008 website.</a>
  * </p>
  *
  * @author Bruce R Bowman (HQ AFSPC, Space Analysis Division), 2008: FORTRAN routine
