@@ -201,6 +201,13 @@
         <role>developer</role>
       </roles>
     </developer>
+    <developer>
+      <name>Brianna Aubin</name>
+      <id>briannaaubin</id>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
   </developers>
 
   <contributors>
@@ -218,9 +225,6 @@
     </contributor>
     <contributor>
       <name>Julien Asquier</name>
-    </contributor>
-    <contributor>
-      <name>Brianna Aubin</name>
     </contributor>
     <contributor>
       <name>Louis Aucouturier</name>
