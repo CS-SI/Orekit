@@ -20,9 +20,12 @@
   </properties>
   <body>
     <release version="13.1.4" date="TBD" description="Orekit 13.1.4 is a patch release.">
-       <action dev="vcucchie" type="fix" issue="1904">
-           Fixed state covariance blending when using more interpolation points for sub-interpolators.
-       </action>
+      <action dev="vcucchie" type="fix" issue="1904">
+          Fixed state covariance blending when using more interpolation points for sub-interpolators.
+      </action>
+      <action dev="bryan" type="fix" issue="1841">
+          Fixed parsing of nutation parameters in bulletin A.
+      </action>
     </release>
     <release version="13.1.3" date="2026-01-27" description="Orekit 13.1.3 is a patch release. It fixes documentation issues and various bugs.">
       <action dev="bryan" type="fix" issue="1895">
