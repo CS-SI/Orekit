@@ -84,8 +84,8 @@ public class EopCsvFilesLoaderTest extends AbstractFilesLoaderTest {
         Assertions.assertEquals(2.325298397135211E-6,   csvHistory.getPoleCorrection(date).getYp(),                1.0e-25);
         Assertions.assertEquals(3.82064825755344E-9,    csvHistory.getEquinoxNutationCorrection(date)[0],          1.0e-25);
         Assertions.assertEquals(-1.1033150064768268E-9, csvHistory.getEquinoxNutationCorrection(date)[1],          1.0e-25);
-        Assertions.assertEquals(1.5135095005872742E-9,  csvHistory.getNonRotatinOriginNutationCorrection(date)[0], 1.0e-25);
-        Assertions.assertEquals(-1.111662473262389E-9,  csvHistory.getNonRotatinOriginNutationCorrection(date)[1], 1.0e-25);
+        Assertions.assertEquals(1.5135095005872742E-9,  csvHistory.getNonRotatingOriginNutationCorrection(date)[0], 1.0e-25);
+        Assertions.assertEquals(-1.111662473262389E-9,  csvHistory.getNonRotatingOriginNutationCorrection(date)[1], 1.0e-25);
     }
 
     private EOPHistory load(final String name) {

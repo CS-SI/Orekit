@@ -132,8 +132,8 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
 
         // check parsing for Bulletin B data
         AbsoluteDate t0 = new AbsoluteDate(2011, 5, 31, TimeScalesFactory.getUTC());
-        Assertions.assertEquals(-0.211, 3600000 * FastMath.toDegrees(history.getNonRotatinOriginNutationCorrection(t0)[0]), 1.0e-10);
-        Assertions.assertEquals(-0.171, 3600000 * FastMath.toDegrees(history.getNonRotatinOriginNutationCorrection(t0)[1]), 1.0e-10);
+        Assertions.assertEquals(-0.211, 3600000 * FastMath.toDegrees(history.getNonRotatingOriginNutationCorrection(t0)[0]), 1.0e-10);
+        Assertions.assertEquals(-0.171, 3600000 * FastMath.toDegrees(history.getNonRotatingOriginNutationCorrection(t0)[1]), 1.0e-10);
         Assertions.assertEquals(-0.016455, 3600 * FastMath.toDegrees(history.getPoleCorrection(t0).getXp()), 1.0e-10);
         Assertions.assertEquals(0.401976, 3600 * FastMath.toDegrees(history.getPoleCorrection(t0).getYp()), 1.0e-10);
         Assertions.assertEquals(-0.2772868, history.getUT1MinusUTC(t0), 1.0e-10);
@@ -142,8 +142,8 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
         // after 2011-05-31, the example daily file has no columns for Bulletin B data
         // we don't see anything since we fall back to bulletin A
         AbsoluteDate t1Inf = new AbsoluteDate(2011, 6, 1, TimeScalesFactory.getUTC());
-        Assertions.assertEquals(-0.279, 3600000 * FastMath.toDegrees(history.getNonRotatinOriginNutationCorrection(t1Inf)[0]), 1.0e-10);
-        Assertions.assertEquals(-0.125, 3600000 * FastMath.toDegrees(history.getNonRotatinOriginNutationCorrection(t1Inf)[1]), 1.0e-10);
+        Assertions.assertEquals(-0.279, 3600000 * FastMath.toDegrees(history.getNonRotatingOriginNutationCorrection(t1Inf)[0]), 1.0e-10);
+        Assertions.assertEquals(-0.125, 3600000 * FastMath.toDegrees(history.getNonRotatingOriginNutationCorrection(t1Inf)[1]), 1.0e-10);
         Assertions.assertEquals(-0.015313, 3600 * FastMath.toDegrees(history.getPoleCorrection(t1Inf).getXp()), 1.0e-10);
         Assertions.assertEquals(0.403214, 3600 * FastMath.toDegrees(history.getPoleCorrection(t1Inf).getYp()), 1.0e-10);
         Assertions.assertEquals(-0.2778790, history.getUT1MinusUTC(t1Inf), 1.0e-10);
@@ -170,8 +170,8 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
 
         // after 2011-09-19, the example daily file has no columns for nutation
         AbsoluteDate t3Inf = new AbsoluteDate(2011, 9, 19, TimeScalesFactory.getUTC());
-        Assertions.assertEquals(-0.437, 3600000 * FastMath.toDegrees(history.getNonRotatinOriginNutationCorrection(t3Inf)[0]), 1.0e-10);
-        Assertions.assertEquals(0.010, 3600000 * FastMath.toDegrees(history.getNonRotatinOriginNutationCorrection(t3Inf)[1]), 1.0e-10);
+        Assertions.assertEquals(-0.437, 3600000 * FastMath.toDegrees(history.getNonRotatingOriginNutationCorrection(t3Inf)[0]), 1.0e-10);
+        Assertions.assertEquals(0.010, 3600000 * FastMath.toDegrees(history.getNonRotatingOriginNutationCorrection(t3Inf)[1]), 1.0e-10);
         Assertions.assertEquals(-0.3112849, history.getUT1MinusUTC(t3Inf), 1.0e-10);
         Assertions.assertEquals(3.2137e-6, 1000 * history.getLOD(t3Inf), 1.0e-10);
         Assertions.assertEquals(EopDataType.PREDICTED, history.getEopDataType(t3Inf));
@@ -200,8 +200,8 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
         Assertions.assertEquals(0.0, eopH.getPoleCorrection(testDate).getYp(), 1.0e-15);
         Assertions.assertEquals(0.0, eopH.getUT1MinusUTC(testDate), 1.0e-15);
         Assertions.assertEquals(0.0, eopH.getLOD(testDate), 1.0e-15);
-        Assertions.assertEquals(0.0, eopH.getNonRotatinOriginNutationCorrection(testDate)[0], 1.0e-15);
-        Assertions.assertEquals(0.0, eopH.getNonRotatinOriginNutationCorrection(testDate)[1], 1.0e-15);
+        Assertions.assertEquals(0.0, eopH.getNonRotatingOriginNutationCorrection(testDate)[0], 1.0e-15);
+        Assertions.assertEquals(0.0, eopH.getNonRotatingOriginNutationCorrection(testDate)[1], 1.0e-15);
     }
 
     @Test
