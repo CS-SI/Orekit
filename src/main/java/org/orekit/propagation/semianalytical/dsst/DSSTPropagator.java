@@ -1253,7 +1253,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         @Override
-        public void updateOnStep(ODEStateInterpolator interpolator) {
+        public void updateOnStep(final ODEStateInterpolator interpolator) {
             // Get the grid points to compute
             final double[] interpolationPoints =
                     interpolationgrid.getGridPoints(interpolator.getPreviousState().getTime(),
