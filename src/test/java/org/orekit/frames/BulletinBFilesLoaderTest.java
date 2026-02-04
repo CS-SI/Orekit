@@ -157,8 +157,8 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
         Assertions.assertEquals(msToS((   -3 * -57.1711 + 27 * -57.2523 + 27 * -57.3103 - 3 * -57.4101) / 48), history.getUT1MinusUTC(date), 1.0e-10);
         Assertions.assertEquals(masToRad((-3 *  -1.216  + 27 *   1.658  + 27 *   4.926  - 3 *   7.789)  / 48), history.getPoleCorrection(date).getXp(), 1.0e-10);
         Assertions.assertEquals(masToRad((-3 * 467.780  + 27 * 469.330  + 27 * 470.931  - 3 * 472.388)  / 48), history.getPoleCorrection(date).getYp(), 1.0e-10);
-        Assertions.assertEquals(masToRad((-3 *   0.097  + 27 *   0.089  + 27 *   0.050  - 3 *  -0.007)  / 48), history.getNonRotatinOriginNutationCorrection(date)[0],  1.0e-10);
-        Assertions.assertEquals(masToRad((-3 *   0.071  + 27 *   0.066  + 27 *   0.090  - 3 *   0.111)  / 48), history.getNonRotatinOriginNutationCorrection(date)[1],  1.0e-10);
+        Assertions.assertEquals(masToRad((-3 *   0.097  + 27 *   0.089  + 27 *   0.050  - 3 *  -0.007)  / 48), history.getNonRotatingOriginNutationCorrection(date)[0],  1.0e-10);
+        Assertions.assertEquals(masToRad((-3 *   0.071  + 27 *   0.066  + 27 *   0.090  - 3 *   0.111)  / 48), history.getNonRotatingOriginNutationCorrection(date)[1],  1.0e-10);
     }
 
     @Test

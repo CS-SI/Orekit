@@ -103,8 +103,8 @@ public class PredictedEOPHistoryTest {
             final PoleCorrection predPC    = predicted.getPoleCorrection(date);
             final double[]       rawENC    = truncatedEOP.getEquinoxNutationCorrection(date);
             final double[]       predENC   = predicted.getEquinoxNutationCorrection(date);
-            final double[]       rawNroNC  = truncatedEOP.getNonRotatinOriginNutationCorrection(date);
-            final double[]       predNroNC = predicted.getNonRotatinOriginNutationCorrection(date);
+            final double[]       rawNroNC  = truncatedEOP.getNonRotatingOriginNutationCorrection(date);
+            final double[]       predNroNC = predicted.getNonRotatingOriginNutationCorrection(date);
             maxErrorUT1  = FastMath.max(maxErrorUT1,  FastMath.abs(truncatedEOP.getUT1MinusUTC(date) - predicted.getUT1MinusUTC(date)));
             maxErrorLOD  = FastMath.max(maxErrorLOD,  FastMath.abs(truncatedEOP.getLOD(date)         - predicted.getLOD(date)));
             maxErrorXp   = FastMath.max(maxErrorXp,   FastMath.abs(rawPC.getXp()            - predPC.getXp()));
