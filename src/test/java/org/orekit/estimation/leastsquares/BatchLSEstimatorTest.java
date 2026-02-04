@@ -1142,7 +1142,7 @@ class BatchLSEstimatorTest {
 
         measurements.forEach(estimator::addMeasurement);
 
-        ParameterDriversList estimatedParameters = estimator.getPropagatorParametersDrivers(true);
+        ParameterDriversList estimatedParameters = estimator.getPropagationParametersDrivers(true);
         // Verify that the propagator, the builder and the estimator know mu
         final String driverName = NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT;
         Assertions.assertInstanceOf(NewtonianAttraction.class, propagator.getAllForceModels().get(0));
