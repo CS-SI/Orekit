@@ -18,11 +18,6 @@ package org.orekit.utils;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.frames.Frame;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
 
 /**
  * Class providing position, including Field, according to 2nd order Taylor expansion.
@@ -30,59 +25,19 @@ import org.orekit.time.FieldAbsoluteDate;
  * @see AbsolutePVCoordinates
  * @since 14.0
  */
-public class TaylorExtendedPositionProvider implements ExtendedPositionProvider {
-
-    /** Absolute Cartesian coordinates. */
-    private final AbsolutePVCoordinates absolutePVCoordinates;
+public class TaylorExtendedPositionProvider extends AbstractExtendedPositionProvider<AbsolutePVCoordinates> {
 
     /**
      * Constructor.
      * @param absolutePVCoordinates absolute Cartesian coordinates
      */
     public TaylorExtendedPositionProvider(final AbsolutePVCoordinates absolutePVCoordinates) {
-        this.absolutePVCoordinates = absolutePVCoordinates;
+        super(absolutePVCoordinates);
     }
 
+    /** {@inheritDoc} */
     @Override
-    public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
-        return absolutePVCoordinates.getPosition(date, frame);
-    }
-
-    @Override
-    public Vector3D getVelocity(final AbsoluteDate date, final Frame frame) {
-        return absolutePVCoordinates.getVelocity(date, frame);
-    }
-
-    @Override
-    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
-        return absolutePVCoordinates.getPVCoordinates(date, frame);
-    }
-
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> date,
-                                                                            final  Frame frame) {
-        return getFieldAbsolute(date.getField()).getPosition(date, frame);
-    }
-
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getVelocity(final FieldAbsoluteDate<T> date,
-                                                                            final Frame frame) {
-        return getFieldAbsolute(date.getField()).getVelocity(date, frame);
-    }
-
-    @Override
-    public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date,
-                                                                                                 final Frame frame) {
-        return getFieldAbsolute(date.getField()).getPVCoordinates(date, frame);
-    }
-
-    /**
-     * Build a Field version of the absolute coordinates.
-     * @param field field
-     * @return field absolute coordinates
-     * @param <T> field type
-     */
-    private <T extends CalculusFieldElement<T>> FieldAbsolutePVCoordinates<T> getFieldAbsolute(final Field<T> field) {
-        return new FieldAbsolutePVCoordinates<>(field, absolutePVCoordinates);
+    protected <T extends CalculusFieldElement<T>> FieldAbsolutePVCoordinates<T> getFieldProvider(final Field<T> field) {
+        return new FieldAbsolutePVCoordinates<>(field, getProvider());
     }
 }

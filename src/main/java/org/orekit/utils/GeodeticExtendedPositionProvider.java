@@ -31,6 +31,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @author Romain Serra
  * @since 14.0
  * @see PVCoordinatesProvider
+ * @see GeodeticPoint
  */
 public class GeodeticExtendedPositionProvider implements ExtendedPositionProvider {
 
