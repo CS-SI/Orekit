@@ -22,6 +22,8 @@ import org.orekit.propagation.events.handlers.FieldEventHandler;
 
 /** Abstract class for detectors using a topocentric frame.
  *
+ * @param <D> type of the detector
+ * @param <T> type of the field elements
  * @author Romain Serra
  * @since 13.1
  * @see AbstractTopocentricDetector

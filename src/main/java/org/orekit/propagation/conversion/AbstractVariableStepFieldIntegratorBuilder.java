@@ -29,7 +29,7 @@ import org.orekit.utils.FieldAbsolutePVCoordinates;
  * Abstract class for integrator builder using variable step size.
  *
  * @param <T> type of the field elements
- *
+ * @param <W> type of the field integrator
  * @author Vincent Cucchietti
  */
 public abstract class AbstractVariableStepFieldIntegratorBuilder<T extends CalculusFieldElement<T>, W extends AdaptiveStepsizeFieldIntegrator<T>>

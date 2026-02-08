@@ -21,6 +21,7 @@ import org.orekit.propagation.events.handlers.EventHandler;
 
 /** Abstract class for detectors using a topocentric frame.
  *
+ * @param <T> type of the detector
  * @author Romain Serra
  * @since 13.1
  * @see TopocentricFrame

@@ -74,6 +74,7 @@ public abstract class AbstractSolarActivityData<L extends AbstractSolarActivityD
     private final AbsoluteDate lastDate;
 
     /**
+     * Constructor.
      * @param supportedNames regular expression for supported AGI/CSSI space weather files names
      * @param loader data loader
      * @param dataProvidersManager provides access to auxiliary data files.
@@ -271,12 +272,18 @@ public abstract class AbstractSolarActivityData<L extends AbstractSolarActivityD
             return currentDate;
         }
 
-        /** @return previous parameters */
+        /**
+         * Get previous parameters.
+         * @return previous parameters
+         */
         public L getPreviousParam() {
             return previousParam;
         }
 
-        /** @return next parameters */
+        /**
+         * Get next parameters.
+         * @return next parameters
+         */
         public L getNextParam() {
             return nextParam;
         }

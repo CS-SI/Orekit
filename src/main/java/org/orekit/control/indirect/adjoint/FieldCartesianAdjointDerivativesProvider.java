@@ -33,6 +33,7 @@ import org.orekit.utils.FieldPVCoordinates;
 
 /**
  * Class defining the Field version of the adjoint dynamics for Cartesian coordinates, as defined in the Pontryagin Maximum Principle.
+ * @param <T> type of the field elements
  * @author Romain Serra
  * @see FieldAdditionalDerivativesProvider
  * @see org.orekit.propagation.numerical.FieldNumericalPropagator

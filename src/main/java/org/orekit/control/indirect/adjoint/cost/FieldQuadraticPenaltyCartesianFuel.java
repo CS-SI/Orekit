@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 /**
  * Fuel cost penalized with a quadratic term. For epsilon equal to 1, one gets the bounded energy cost.
  *
+ * @param <T> type of the field elements
  * @author Romain Serra
  * @since 13.0
  * @see BoundedCartesianEnergy

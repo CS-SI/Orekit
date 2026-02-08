@@ -25,6 +25,7 @@ import org.orekit.time.FieldAbsoluteDate;
 
 /** Interface providing velocity increment vectors to impulsive maneuvers (Field version).
  *
+ * @param <T> type of the field elements
  * @author Romain Serra
  * @see ImpulseProvider
  * @see FieldImpulseManeuver

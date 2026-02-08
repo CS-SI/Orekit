@@ -25,6 +25,8 @@ import org.orekit.propagation.events.handlers.FieldEventHandler;
 /**
  * Wrapper for event detection triggering maneuvers (Field version).
  *
+ * @param <W> type of the field elements
+ * @param <T> type of the field event detector
  * @see AbstractManeuverTriggers
  * @see ManeuverTriggerDetector
  * @author Romain Serra

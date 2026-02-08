@@ -23,6 +23,7 @@ import org.hipparchus.util.FastMath;
 /**
  * Fuel cost penalized with a logarithmic term, which is a barrier so is not defined for epsilon equal to 0 or 1.
  *
+ * @param <T> type of the field elements
  * @author Romain Serra
  * @since 13.0
  */

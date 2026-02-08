@@ -27,6 +27,7 @@ import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 
 /** Interface for time-shiftable PV provider holding themselves PV coordinates.
+ * @param <T> type of the PV coordinates provider
  * @author Romain Serra
  * @since 13.1.2
  */

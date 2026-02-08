@@ -25,8 +25,8 @@ import org.hipparchus.ode.AbstractFieldIntegrator;
 /**
  * Abstract class for integrator builder using fixed step size.
  *
- * @param <T> Type of the field elements
- *
+ * @param <T> type of the field elements
+ * @param <W> type of the field integrator
  * @author Vincent Cucchietti
  */
 public abstract class AbstractFixedStepFieldIntegratorBuilder<T extends CalculusFieldElement<T>, W  extends AbstractFieldIntegrator<T>>

@@ -29,6 +29,7 @@ import org.orekit.utils.ExtendedPositionProvider;
  * <p>
  *     The so-called g function is negative in eclipse, positive otherwise.
  * </p>
+ * @param <T> type of the field elements
  * @author Romain Serra
  * @see FieldEclipseDetector
  * @see CylindricalShadowEclipseDetector
