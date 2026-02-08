@@ -48,6 +48,12 @@ public abstract class AbstractParametricAcceleration implements ForceModel {
     /** The attitude to override, if set. */
     private final AttitudeProvider attitudeOverride;
 
+    /**
+     * Constructor.
+     * @param direction direction of the acceleration
+     * @param isInertial flag defining if the acceleration direction is already defined in inertial frame (true)
+     * @param attitudeOverride override for the attitude provider.
+     */
     protected AbstractParametricAcceleration(final Vector3D direction, final boolean isInertial,
                                              final AttitudeProvider attitudeOverride) {
         this.direction = direction;
