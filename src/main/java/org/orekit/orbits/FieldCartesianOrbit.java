@@ -29,6 +29,7 @@ import org.orekit.frames.FieldKinematicTransform;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
@@ -441,6 +442,13 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
             final FieldKinematicTransform<T> transform = getFrame().getKinematicTransformTo(inertialFrame, getDate());
             return new FieldCartesianOrbit<>(transform.transformOnlyPV(getPVCoordinates()), inertialFrame, getDate(), getMu());
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldCartesianOrbit<T> shiftedBy(final TimeOffset dt) {
+        final FieldPVCoordinates<T> shiftedPV  = shiftPV(getField().getOne().newInstance(dt.toDouble()));
+        return new FieldCartesianOrbit<>(shiftedPV, getFrame(), getDate().shiftedBy(dt), getMu());
     }
 
     /** {@inheritDoc} */

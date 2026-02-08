@@ -23,6 +23,9 @@
       <action dev="vcucchie" type="fix" issue="1904">
           Fixed state covariance blending when using more interpolation points for sub-interpolators.
       </action>
+      <action dev="vcucchie" type="fix" issue="1883">
+          Fixed date precision issue when shifting shiftable objects.
+      </action>
       <action dev="bryan" type="fix" issue="1841">
           Fixed parsing of nutation parameters in bulletin A.
       </action>
