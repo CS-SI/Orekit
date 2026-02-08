@@ -20,6 +20,9 @@
   </properties>
   <body>
     <release version="14.0" date="TBD" description="TBD">
+        <action dev="rafa" type="add" issue="1899">
+          Add support for NAIF SPICE generic DAF binary files.
+        </action>
         <action dev="bryan" type="fix" issue="1910">
             Fixed typo in EOPHistory#getNonRotatingOriginNutationCorrection method name.
         </action>
