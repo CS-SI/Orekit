@@ -16,6 +16,10 @@
  */
 package org.orekit.utils;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -31,14 +35,10 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.AbstractTimeInterpolator;
 import org.orekit.time.TimeInterpolator;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
 class AbsolutePVCoordinatesHermiteInterpolatorTest {
 
     @Test
-    public void testInterpolatePolynomialPVA() {
+    void testInterpolatePolynomialPVA() {
         Random       random = new Random(0xfe3945fcb8bf47ceL);
         AbsoluteDate t0     = AbsoluteDate.J2000_EPOCH;
         Frame        frame  = FramesFactory.getEME2000();
@@ -89,7 +89,7 @@ class AbsolutePVCoordinatesHermiteInterpolatorTest {
     }
 
     @Test
-    public void testInterpolatePolynomialPV() {
+    void testInterpolatePolynomialPV() {
         Random       random = new Random(0xae7771c9933407bdL);
         AbsoluteDate t0     = AbsoluteDate.J2000_EPOCH;
         Frame        frame  = FramesFactory.getEME2000();
@@ -139,7 +139,7 @@ class AbsolutePVCoordinatesHermiteInterpolatorTest {
     }
 
     @Test
-    public void testInterpolatePolynomialPositionOnly() {
+    void testInterpolatePolynomialPositionOnly() {
         Random       random = new Random(0x88740a12e4299003L);
         AbsoluteDate t0     = AbsoluteDate.J2000_EPOCH;
         Frame        frame  = FramesFactory.getEME2000();
@@ -159,7 +159,7 @@ class AbsolutePVCoordinatesHermiteInterpolatorTest {
             List<AbsolutePVCoordinates> sample = new ArrayList<>();
             for (double dt : new double[] { 0.0, 0.2, 0.4, 0.6, 0.8, 1.0 }) {
                 Vector3D position = new Vector3D(px.value(dt), py.value(dt), pz.value(dt));
-                sample.add(new AbsolutePVCoordinates(frame, t0.shiftedBy(dt), position, Vector3D.ZERO, Vector3D.ZERO));
+                sample.add(new AbsolutePVCoordinates(frame, t0.shiftedBy(dt), position, Vector3D.ZERO));
             }
 
             // Create interpolator
@@ -187,7 +187,7 @@ class AbsolutePVCoordinatesHermiteInterpolatorTest {
     }
 
     @Test
-    public void testInterpolateNonPolynomial() {
+    void testInterpolateNonPolynomial() {
         AbsoluteDate t0    = AbsoluteDate.J2000_EPOCH;
         Frame        frame = FramesFactory.getEME2000();
 
@@ -310,7 +310,7 @@ class AbsolutePVCoordinatesHermiteInterpolatorTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

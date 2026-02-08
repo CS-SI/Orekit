@@ -53,12 +53,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 class GNSSAttitudeContext implements TimeStamped {
 
     /** Constant Y axis. */
-    private static final PVCoordinates PLUS_Y_PV =
-            new PVCoordinates(Vector3D.PLUS_J, Vector3D.ZERO, Vector3D.ZERO);
+    private static final PVCoordinates PLUS_Y_PV = new PVCoordinates(Vector3D.PLUS_J);
 
     /** Constant Z axis. */
-    private static final PVCoordinates MINUS_Z_PV =
-            new PVCoordinates(Vector3D.MINUS_K, Vector3D.ZERO, Vector3D.ZERO);
+    private static final PVCoordinates MINUS_Z_PV = new PVCoordinates(Vector3D.MINUS_K);
 
     /** Limit value below which we shoud use replace beta by betaIni. */
     private static final double BETA_SIGN_CHANGE_PROTECTION = FastMath.toRadians(0.07);

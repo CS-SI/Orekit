@@ -16,8 +16,8 @@
  */
 package org.orekit.attitudes;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -63,12 +63,10 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 public class YawCompensation extends GroundPointingAttitudeModifier implements AttitudeProviderModifier {
 
     /** J axis. */
-    private static final PVCoordinates PLUS_J =
-            new PVCoordinates(Vector3D.PLUS_J, Vector3D.ZERO, Vector3D.ZERO);
+    private static final PVCoordinates PLUS_J = new PVCoordinates(Vector3D.PLUS_J);
 
     /** K axis. */
-    private static final PVCoordinates PLUS_K =
-            new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO, Vector3D.ZERO);
+    private static final PVCoordinates PLUS_K = new PVCoordinates(Vector3D.PLUS_K);
 
     /** Creates a new instance.
      * @param inertialFrame frame in which orbital velocities are computed

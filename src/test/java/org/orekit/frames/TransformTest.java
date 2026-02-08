@@ -16,6 +16,9 @@
  */
 package org.orekit.frames;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
 import org.hipparchus.complex.Complex;
@@ -39,8 +42,8 @@ import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeInterpolator;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
@@ -52,10 +55,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class TransformTest {
+class TransformTest {
 
     @Test
     void testIdentityTransformVector() {
@@ -153,19 +153,19 @@ public class TransformTest {
     }
 
     @Test
-    public void testIdentityTranslation() {
+    void testIdentityTranslation() {
         checkNoTransform(new Transform(AbsoluteDate.J2000_EPOCH, new Vector3D(0, 0, 0)),
                 new Well19937a(0xfd118eac6b5ec136L));
     }
 
     @Test
-    public void testIdentityRotation() {
+    void testIdentityRotation() {
         checkNoTransform(new Transform(AbsoluteDate.J2000_EPOCH, new Rotation(1, 0, 0, 0, false)),
                 new Well19937a(0xfd118eac6b5ec136L));
     }
 
     @Test
-    public void testIdentityLine() {
+    void testIdentityLine() {
         RandomGenerator random = new Well19937a(0x98603025df70db7cL);
         Vector3D p1 = randomVector(100.0, random);
         Vector3D p2 = randomVector(100.0, random);
@@ -175,7 +175,7 @@ public class TransformTest {
     }
 
     @Test
-    public void testFieldBackwardGeneration() {
+    void testFieldBackwardGeneration() {
         Utils.setDataRoot("regular-data");
         TimeScale utc = TimeScalesFactory.getUTC();
         Frame tod = FramesFactory.getTOD(false);
@@ -188,7 +188,7 @@ public class TransformTest {
     }
 
     @Test
-    public void testSimpleComposition() {
+    void testSimpleComposition() {
         Transform transform =
                 new Transform(AbsoluteDate.J2000_EPOCH,
                         new Transform(AbsoluteDate.J2000_EPOCH,
@@ -201,7 +201,7 @@ public class TransformTest {
     }
 
     @Test
-    public void testAcceleration() {
+    void testAcceleration() {
 
         PVCoordinates initPV = new PVCoordinates(new Vector3D(9, 8, 7), new Vector3D(6, 5, 4), new Vector3D(3, 2, 1));
         for (TimeOffset dt = TimeOffset.ZERO; dt.compareTo(TimeOffset.SECOND) < 0; dt = dt.add(
@@ -234,7 +234,7 @@ public class TransformTest {
     }
 
     @Test
-    public void testAccelerationComposition() {
+    void testAccelerationComposition() {
         RandomGenerator random = new Well19937a(0x41fdd07d6c9e9f65L);
 
         Vector3D  p1 = randomVector(1.0e3,  random);
@@ -285,7 +285,7 @@ public class TransformTest {
     }
 
     @Test
-    public void testRandomComposition() {
+    void testRandomComposition() {
 
         RandomGenerator random = new Well19937a(0x171c79e323a1123L);
         for (int i = 0; i < 20; ++i) {
@@ -335,7 +335,7 @@ public class TransformTest {
     }
 
     @Test
-    public void testReverse() {
+    void testReverse() {
         RandomGenerator random = new Well19937a(0x9f82ba2b2c98dac5L);
         for (int i = 0; i < 20; ++i) {
             Transform combined = randomTransform(random);
@@ -347,17 +347,17 @@ public class TransformTest {
     }
 
     @Test
-    public void testIdentityJacobianP() {
+    void testIdentityJacobianP() {
         doTestIdentityJacobian(3, CartesianDerivativesFilter.USE_P);
     }
 
     @Test
-    public void testIdentityJacobianPV() {
+    void testIdentityJacobianPV() {
         doTestIdentityJacobian(6, CartesianDerivativesFilter.USE_PV);
     }
 
     @Test
-    public void testIdentityJacobianPVA() {
+    void testIdentityJacobianPVA() {
         doTestIdentityJacobian(9, CartesianDerivativesFilter.USE_PVA);
     }
 
@@ -372,7 +372,7 @@ public class TransformTest {
     }
 
     @Test
-    public void testDecomposeAndRebuild() {
+    void testDecomposeAndRebuild() {
         RandomGenerator random = new Well19937a(0xb8ee9da1b05198c9L);
         for (int i = 0; i < 20; ++i) {
             Transform combined = randomTransform(random);
@@ -389,7 +389,7 @@ public class TransformTest {
     }
 
     @Test
-    public void testTranslation() {
+    void testTranslation() {
         RandomGenerator rnd = new Well19937a(0x7e9d737ba4147787L);
         for (int i = 0; i < 10; ++i) {
             Vector3D delta = randomVector(1.0e3, rnd);
@@ -407,7 +407,7 @@ public class TransformTest {
     }
 
     @Test
-    public void testRoughTransPV() {
+    void testRoughTransPV() {
 
         PVCoordinates pointP1 = new PVCoordinates(Vector3D.PLUS_I, Vector3D.PLUS_I, Vector3D.PLUS_I);
 
@@ -495,7 +495,7 @@ public class TransformTest {
     }
 
     @Test
-    public void testRotPV() {
+    void testRotPV() {
 
         RandomGenerator rnd = new Well19937a(0x73d5554d99427af0L);
 
@@ -537,7 +537,7 @@ public class TransformTest {
     }
 
     @Test
-    public void testTransPV() {
+    void testTransPV() {
 
         RandomGenerator rnd = new Well19937a(0x73d5554d99427af0L);
 
@@ -596,7 +596,7 @@ public class TransformTest {
     }
 
     @Test
-    public void testRotation() {
+    void testRotation() {
         RandomGenerator rnd = new Well19937a(0x73d5554d99427af0L);
         for (int i = 0; i < 10; ++i) {
 
@@ -620,13 +620,13 @@ public class TransformTest {
     }
 
     @Test
-    public void testJacobianP() {
+    void testJacobianP() {
 
         // base directions for finite differences
         PVCoordinates[] directions = new PVCoordinates[] {
-                new PVCoordinates(Vector3D.PLUS_I, Vector3D.ZERO, Vector3D.ZERO),
-                new PVCoordinates(Vector3D.PLUS_J, Vector3D.ZERO, Vector3D.ZERO),
-                new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO, Vector3D.ZERO),
+                new PVCoordinates(Vector3D.PLUS_I),
+                new PVCoordinates(Vector3D.PLUS_J),
+                new PVCoordinates(Vector3D.PLUS_K),
         };
         double h = 0.01;
 
@@ -693,7 +693,7 @@ public class TransformTest {
     }
 
     @Test
-    public void testJacobianPV() {
+    void testJacobianPV() {
 
         // base directions for finite differences
         PVCoordinates[] directions = new PVCoordinates[] {
@@ -773,7 +773,7 @@ public class TransformTest {
     }
 
     @Test
-    public void testJacobianPVA() {
+    void testJacobianPVA() {
 
         // base directions for finite differences
         PVCoordinates[] directions = new PVCoordinates[] {
@@ -848,7 +848,7 @@ public class TransformTest {
     }
 
     @Test
-    public void testLine() {
+    void testLine() {
         RandomGenerator random = new Well19937a(0x4a5ff67426c5731fL);
         for (int i = 0; i < 100; ++i) {
             Transform transform = randomTransform(random);
@@ -866,7 +866,7 @@ public class TransformTest {
     }
 
     @Test
-    public void testLinear() {
+    void testLinear() {
 
         RandomGenerator random = new Well19937a(0x14f6411217b148d8L);
         for (int n = 0; n < 100; ++n) {
@@ -916,7 +916,7 @@ public class TransformTest {
     }
 
     @Test
-    public void testShift() {
+    void testShift() {
 
         // the following transform corresponds to a frame moving along the line x=1 and rotating around its -z axis
         // the linear motion velocity is (0, +1, 0), the angular rate is PI/2
@@ -974,7 +974,7 @@ public class TransformTest {
     }
 
     @Test
-    public void testShiftDerivatives() {
+    void testShiftDerivatives() {
 
         RandomGenerator random = new Well19937a(0x5acda4f605aadce7L);
         for (int i = 0; i < 10; ++i) {
@@ -1123,7 +1123,7 @@ public class TransformTest {
     }
 
     @Test
-    public void testInterpolation() {
+    void testInterpolation() {
 
         AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
         List<Transform> sample = new ArrayList<>();
