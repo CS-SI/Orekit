@@ -93,7 +93,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = false;
         boolean isFiniteDifferences  = true;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    7.0e-9, 2.5e-8, 3.9e-7, 8.2e-5, 3.1e-4, 7.3e-3);
+                                    7.2e-9, 2.5e-8, 3.5e-7, 8.0e-5, 3.0e-4, 7.3e-3);
     }
 
     /**
@@ -301,7 +301,7 @@ public class TurnAroundRangeAnalyticTest {
 
         // Assert statistical errors
         Assertions.assertEquals(0.0, absErrorsMedian, 8.5e-08);
-        Assertions.assertEquals(0.0, absErrorsMin,    9.7e-08);
+        Assertions.assertEquals(0.0, absErrorsMin,    1.1e-07);
         Assertions.assertEquals(0.0, absErrorsMax,    2.0e-07);
         Assertions.assertEquals(0.0, relErrorsMedian, 5.1e-15);
         Assertions.assertEquals(0.0, relErrorsMax,    1.2e-14);

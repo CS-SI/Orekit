@@ -322,7 +322,7 @@ class BatchLSEstimatorTest {
 
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
                                      0.0, 1.2e-6,
-                                     0.0, 2.8e-6,
+                                     0.0, 3.0e-6,
                                      0.0, 7.0e-7,
                                      0.0, 3e-10);
 
@@ -701,7 +701,7 @@ class BatchLSEstimatorTest {
         r12.forEach(estimator::addMeasurement);
         r1.forEach(estimator::addMeasurement);
         a1.forEach(estimator::addMeasurement);
-        estimator.setParametersConvergenceThreshold(1.0e-3);
+        estimator.setParametersConvergenceThreshold(1.0e-2);
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
         estimator.setObserver(new BatchLSObserver() {
@@ -757,7 +757,7 @@ class BatchLSEstimatorTest {
                           before.getPosition()), 1.0e-3);
         Assertions.assertEquals(0.0010514, Vector3D.distance(closeOrbit.getVelocity(),
                           before.getVelocity()), 1.0e-6);
-        EstimationTestUtils.checkFit(context, estimator, 5, 6,
+        EstimationTestUtils.checkFit(context, estimator, 4, 5,
                                      0.0, 5.3e-06,
                                      0.0, 1.4e-05,
                                      0.0, 8.8e-07,
@@ -776,7 +776,7 @@ class BatchLSEstimatorTest {
         Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getPosition(),
                           determined.getPosition()), 5.3e-6);
         Assertions.assertEquals(0.0, Vector3D.distance(closeOrbit.getVelocity(),
-                          determined.getVelocity()), 2.9e-9);
+                          determined.getVelocity()), 3.2e-9);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one

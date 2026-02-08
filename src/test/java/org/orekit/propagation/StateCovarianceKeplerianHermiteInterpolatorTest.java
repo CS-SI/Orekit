@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.CelestialBody;
@@ -88,6 +89,8 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
     private final  double DEFAULT_SERGEI_PROPAGATION_TIME     = 2400;
     private final  double DEFAULT_SERGEI_TABULATED_TIMESTEP   = 2400;
 
+    private static final double TOLERANCE = 1e-6;
+    
     @BeforeAll
     public static void setUp() {
         Utils.setDataRoot("regular-data:potential/egm-format:atmosphere:tides:regular-data/de405-ephemerides");
@@ -386,11 +389,11 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
 
     public static ODEIntegrator generateDefaultIntegrator(final Orbit orbit, final OrbitType orbitType) {
         final double     dP         = 1;
-        final double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, orbitType);
+        final double[][] TOLERANCEs = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, orbitType);
         final double     minStep    = 0.001;
         final double     maxStep    = 300.;
 
-        return new DormandPrince853Integrator(minStep, maxStep, tolerances[0], tolerances[1]);
+        return new DormandPrince853Integrator(minStep, maxStep, TOLERANCEs[0], TOLERANCEs[1]);
     }
 
     public static void configurePropagatorForSergeiCase(final NumericalPropagator propagator) {
@@ -547,7 +550,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
                                      final double expectedMedianRMSVelocityError,
                                      final double expectedMaxRMSPositionError,
                                      final double expectedMaxRMSVelocityError,
-                                     final double tolerance,
+                                     final double TOLERANCE,
                                      final boolean showResults) {
         final DescriptiveStatistics[] relativeRMSSigmaError =
                 computeStatisticsCovarianceInterpolationOnSergeiCase(propagationHorizon, tabulatedTimeStep,
@@ -556,24 +559,24 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
         // Then
         if (showResults) {
             // Significant number to display
-            final int nDigits = (int) FastMath.log10(1/tolerance);
-            final String fmt = String.format(Locale.US, "%%35s = %%%2d.%2df%%n", nDigits + 4, nDigits);
-            
+            final int nDigits = (int) FastMath.log10(1/TOLERANCE);
+            final String fmt = String.format(Locale.US, "%%35s = %%%02d.%02df%%n", nDigits + 4, nDigits);
+
             System.out.format(Locale.US, fmt, "relativeRMSSigmaError[0].getMean", relativeRMSSigmaError[0].getMean());
             System.out.format(Locale.US, fmt, "relativeRMSSigmaError[1].getMean", relativeRMSSigmaError[1].getMean());
             System.out.format(Locale.US, fmt, "relativeRMSSigmaError[0].getMedian", relativeRMSSigmaError[0].getPercentile(50));
             System.out.format(Locale.US, fmt, "relativeRMSSigmaError[1].getMedian", relativeRMSSigmaError[1].getPercentile(50));
             System.out.format(Locale.US, fmt, "relativeRMSSigmaError[0].getMax", relativeRMSSigmaError[0].getMax());
             System.out.format(Locale.US, fmt, "relativeRMSSigmaError[1].getMax", relativeRMSSigmaError[1].getMax());
-            
+
         }
         // Results obtained when using modified orbit date to use truncated JPL test resource file
-        Assertions.assertEquals(expectedMeanRMSPositionError, relativeRMSSigmaError[0].getMean(), tolerance);
-        Assertions.assertEquals(expectedMeanRMSVelocityError, relativeRMSSigmaError[1].getMean(), tolerance);
-        Assertions.assertEquals(expectedMedianRMSPositionError, relativeRMSSigmaError[0].getPercentile(50), tolerance);
-        Assertions.assertEquals(expectedMedianRMSVelocityError, relativeRMSSigmaError[1].getPercentile(50), tolerance);
-        Assertions.assertEquals(expectedMaxRMSPositionError, relativeRMSSigmaError[0].getMax(), tolerance);
-        Assertions.assertEquals(expectedMaxRMSVelocityError, relativeRMSSigmaError[1].getMax(), tolerance);
+        Assertions.assertEquals(expectedMeanRMSPositionError, relativeRMSSigmaError[0].getMean(), TOLERANCE);
+        Assertions.assertEquals(expectedMeanRMSVelocityError, relativeRMSSigmaError[1].getMean(), TOLERANCE);
+        Assertions.assertEquals(expectedMedianRMSPositionError, relativeRMSSigmaError[0].getPercentile(50), TOLERANCE);
+        Assertions.assertEquals(expectedMedianRMSVelocityError, relativeRMSSigmaError[1].getPercentile(50), TOLERANCE);
+        Assertions.assertEquals(expectedMaxRMSPositionError, relativeRMSSigmaError[0].getMax(), TOLERANCE);
+        Assertions.assertEquals(expectedMaxRMSVelocityError, relativeRMSSigmaError[1].getMax(), TOLERANCE);
     }
 
     /**
@@ -596,8 +599,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
 
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-9;
-        
+
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
 
@@ -611,19 +613,19 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
         // Create state interpolator
         final TimeInterpolator<SpacecraftState> stateInterpolator =
                 new SpacecraftStateInterpolator(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS, AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
-                                                sergeiFrame, orbitInterpolator, 
+                                                sergeiFrame, orbitInterpolator,
                                                 null, null, null, null);
 
         // When & Then
         doTestInterpolation(stateInterpolator, covarianceInterpolator,
                             DEFAULT_SERGEI_PROPAGATION_TIME, DEFAULT_SERGEI_TABULATED_TIMESTEP,
-                            0.06468878849,
-                            0.18700110863,
-                            0.06052527006,
-                            0.20900926133,
-                            0.17225595779,
-                            0.37560104200,
-                            tolerance,
+                            0.069908803,
+                            0.207658157,
+                            0.068772221,
+                            0.207587317,
+                            0.185452386,
+                            0.609433792,
+                            TOLERANCE,
                             showResults);
 
 /*      Results obtained when using the reference sergei date
@@ -654,8 +656,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
 
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-9;
-        
+
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
 
@@ -677,13 +678,13 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
         // When & then
         doTestInterpolation(stateInterpolator, covarianceInterpolator,
                             DEFAULT_SERGEI_PROPAGATION_TIME, DEFAULT_SERGEI_TABULATED_TIMESTEP,
-                            0.0687107434,
-                            0.1727658634,
-                            0.06966854473,
-                            0.17880639263,
-                            0.17028706967,
-                            0.3841670162,
-                            tolerance,
+                            0.099905557,
+                            0.201661811,
+                            0.107651204,
+                            0.176451233,
+                            0.211682516,
+                            0.639107824,
+                            TOLERANCE,
                             showResults);
 
         // Results obtained when using Sergei reference date
@@ -713,8 +714,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
 
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-9;
-        
+
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
 
@@ -736,13 +736,13 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
         // When & Then
         doTestInterpolation(stateInterpolator, covarianceInterpolator,
                             DEFAULT_SERGEI_PROPAGATION_TIME, DEFAULT_SERGEI_TABULATED_TIMESTEP,
-                            0.1967532898,
-                            0.174480997,
-                            0.220130098,
-                            0.150103817,
-                            0.311560976,
-                            0.491299092,
-                            tolerance, 
+                            0.315401052,
+                            0.277053458,
+                            0.359035707,
+                            0.237517672,
+                            0.493068781,
+                            0.829556363,
+                            TOLERANCE,
                             showResults);
 
         // Results obtained when using Sergei reference date
@@ -779,8 +779,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
 
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-9;
-        
+
         // Default orbit case
         final Orbit orbit = generateSergeiReferenceOrbit();
         final Frame frame = orbit.getFrame();
@@ -810,13 +809,34 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
             System.out.format(Locale.US, "%35s = %20.12f%n", "relativeRMSSigmaError[1].getMedian", relativeRMSSigmaError[1].getPercentile(50));
             System.out.format(Locale.US, "%35s = %20.12f%n", "relativeRMSSigmaError[0].getMax", relativeRMSSigmaError[0].getMax());
             System.out.format(Locale.US, "%35s = %20.12f%n", "relativeRMSSigmaError[1].getMax", relativeRMSSigmaError[1].getMax());
-            
+
         }
-        Assertions.assertEquals( 0.067889396, relativeRMSSigmaError[0].getMean(), tolerance);
-        Assertions.assertEquals( 20.113671554, relativeRMSSigmaError[1].getMean(), tolerance);
-        Assertions.assertEquals( 0.064925239, relativeRMSSigmaError[0].getPercentile(50), tolerance);
-        Assertions.assertEquals( 13.962696065, relativeRMSSigmaError[1].getPercentile(50), tolerance);
-        Assertions.assertEquals( 0.140595553, relativeRMSSigmaError[0].getMax(), tolerance);
-        Assertions.assertEquals(99.8740338063, relativeRMSSigmaError[1].getMax(), tolerance);
+        Assertions.assertEquals( 0.081480745610, relativeRMSSigmaError[0].getMean(), TOLERANCE);
+        Assertions.assertEquals(19.410354129217, relativeRMSSigmaError[1].getMean(), TOLERANCE);
+        Assertions.assertEquals( 0.084585943748, relativeRMSSigmaError[0].getPercentile(50), TOLERANCE);
+        Assertions.assertEquals(14.968739949999694, relativeRMSSigmaError[1].getPercentile(50), TOLERANCE);
+        Assertions.assertEquals( 0.165222304428, relativeRMSSigmaError[0].getMax(), TOLERANCE);
+        Assertions.assertEquals(75.48232040417717, relativeRMSSigmaError[1].getMax(), 3 * TOLERANCE);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void testIssue1521() {
+        // GIVEN
+
+        // Define mock orbit interpolator
+        final TimeInterpolator<Orbit> orbitInterpolator = Mockito.mock(TimeInterpolator.class);
+
+
+        // Define covariance interpolator
+        final StateCovarianceKeplerianHermiteInterpolator interpolator =
+                new StateCovarianceKeplerianHermiteInterpolator(orbitInterpolator, LOFType.NTW);
+
+        // WHEN
+        final List<TimeInterpolator<?>> subInterpolators = interpolator.getSubInterpolators();
+
+        // THEN
+        Assertions.assertEquals(1, subInterpolators.size());
+        Assertions.assertEquals(orbitInterpolator, subInterpolators.get(0));
     }
 }

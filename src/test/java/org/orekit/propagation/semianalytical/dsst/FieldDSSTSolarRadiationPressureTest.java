@@ -157,12 +157,12 @@ class FieldDSSTSolarRadiationPressureTest {
             elements[i] = daidt[i];
         }
 
-        Assertions.assertEquals( 6.839644083279315E-8,    elements[0].getReal(), 1.0e-23);
-        Assertions.assertEquals(-2.990943651374143E-11,   elements[1].getReal(), 1.0e-27);
-        Assertions.assertEquals(-2.5384000825777143E-10,  elements[2].getReal(), 1.0e-26);
-        Assertions.assertEquals( 2.0378397296268607E-13,  elements[3].getReal(), 1.0e-29);
-        Assertions.assertEquals(-2.33389107008235E-14,  elements[4].getReal(), 1.0e-30);
-        Assertions.assertEquals( 1.6082477070964215E-11,  elements[5].getReal(), 1.0e-27);
+        Assertions.assertEquals( 6.840790444913617E-8,    elements[0].getReal(), 1.0e-23);
+        Assertions.assertEquals(-2.990943628923924E-11,   elements[1].getReal(), 1.0e-27);
+        Assertions.assertEquals(-2.538400074162202E-10,   elements[2].getReal(), 1.0e-26);
+        Assertions.assertEquals( 2.037839945743177E-13,   elements[3].getReal(), 1.0e-29);
+        Assertions.assertEquals(-2.3338909786274816E-14,  elements[4].getReal(), 1.0e-30);
+        Assertions.assertEquals( 1.6082478750169186E-11,  elements[5].getReal(), 1.0e-27);
 
     }
 
@@ -229,12 +229,12 @@ class FieldDSSTSolarRadiationPressureTest {
             }
         }
 
-        Assertions.assertEquals(0.3668654523023674,    y[0].getReal(), 1.0e-15);
-        Assertions.assertEquals(-2.5673332283029E-10,  y[1].getReal(), 1.0e-23);
-        Assertions.assertEquals(-3.84959877691874E-9,  y[2].getReal(), 1.0e-23);
-        Assertions.assertEquals(-3.069285299519465E-9, y[3].getReal(), 1.0e-23);
-        Assertions.assertEquals(-4.90887054227722E-9,  y[4].getReal(), 1.0e-23);
-        Assertions.assertEquals(-2.38549338428378E-9,  y[5].getReal(), 1.0e-20);
+        Assertions.assertEquals( 0.3668654522888568,     y[0].getReal(), 1.0e-15);
+        Assertions.assertEquals(-2.5673332393999294E-10, y[1].getReal(), 1.0e-23);
+        Assertions.assertEquals(-3.8495987778962385E-9,  y[2].getReal(), 1.0e-23);
+        Assertions.assertEquals(-3.069285299909178E-9,   y[3].getReal(), 1.0e-23);
+        Assertions.assertEquals(-4.9088705427065455E-9,  y[4].getReal(), 1.0e-23);
+        Assertions.assertEquals(-2.3854933869990808E-9,  y[5].getReal(), 1.0e-20);
     }
 
     @Test
@@ -367,7 +367,7 @@ class FieldDSSTSolarRadiationPressureTest {
 
     @Test
     void testMuParametersDerivatives() throws ParseException, IOException {
-        doTestShortPeriodTermsParametersDerivatives(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT, 5.e-11);
+        doTestShortPeriodTermsParametersDerivatives(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT, 6.e-11);
     }
 
     @SuppressWarnings("unchecked")

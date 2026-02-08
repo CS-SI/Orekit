@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -118,7 +118,7 @@ public class BiasTest {
         }
 
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
-                                     0.0,  7.2e-7,
+                                     0.0,  8.5e-7,
                                      0.0,  2.1e-6,
                                      0.0,  6e-7,
                                      0.0,  2.5e-10);

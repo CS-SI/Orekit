@@ -16,6 +16,8 @@
  */
 package org.orekit.forces.gravity;
 
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
@@ -240,10 +242,17 @@ public class SolidTidesFieldTest {
             {           0.0,           -4.897228975221076E-12, -4.1034042689652575E-12,         0.0,                  0.0 }
         };
         for (int n = 0; n < refDeltaCnm.length; ++n) {
-            double threshold = (n == 2) ? 1.3e-17 : 3.1e-21;
+            double threshold = (n == 2) ? 1.3e-17 : 2.3e-20;
             for (int m = 0; m <= n; ++m) {
-                Assertions.assertEquals(refDeltaCnm[n][m], harmonics.getNormalizedCnm(n, m), threshold);
-                Assertions.assertEquals(refDeltaSnm[n][m], harmonics.getNormalizedSnm(n, m), threshold);
+                final String reason = "n" + n + "m" + m;
+                MatcherAssert.assertThat(
+                        reason,
+                        harmonics.getNormalizedCnm(n, m),
+                        Matchers.closeTo(refDeltaCnm[n][m], threshold));
+                MatcherAssert.assertThat(
+                        reason,
+                        harmonics.getNormalizedSnm(n, m),
+                        Matchers.closeTo(refDeltaSnm[n][m], threshold));
             }
         }
     }

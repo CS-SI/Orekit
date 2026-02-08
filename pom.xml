@@ -3,7 +3,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>13.1.2</version>
+  <version>13.1.3</version>
   <name>OREKIT</name>
   <url>https://www.orekit.org/</url>
 
@@ -50,7 +50,7 @@
     <orekit.orekit.cyclonedx-maven-plugin.version>2.9.1</orekit.orekit.cyclonedx-maven-plugin.version>
     <orekit.mathjax.config>&lt;script type="text/x-mathjax-config"&gt;MathJax.Hub.Config({ TeX: { extensions: ["autoload.js"]}});&lt;/script&gt;</orekit.mathjax.config>
     <orekit.mathjax.enable>&lt;script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML"&gt;&lt;/script&gt;</orekit.mathjax.enable>
-    <orekit.hipparchus.version>4.0.2</orekit.hipparchus.version>
+    <orekit.hipparchus.version>4.0.3</orekit.hipparchus.version>
     <orekit.junit.version>5.13.2</orekit.junit.version>
     <orekit.hamcrest.version>3.0</orekit.hamcrest.version>
     <orekit.compiler.source>1.8</orekit.compiler.source>

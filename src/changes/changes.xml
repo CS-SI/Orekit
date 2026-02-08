@@ -1,4 +1,4 @@
-<!-- Copyright 2002-2025 CS GROUP
+<!-- Copyright 2002-2026 CS GROUP
   Licensed to CS GROUP (CS) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
@@ -19,16 +19,36 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="13.1.3" date="TBD" description="Orekit 13.1.3 is a patch release.">
+    <release version="13.1.4" date="TBD" description="Orekit 13.1.4 is a patch release.">
+      <action dev="vcucchie" type="fix" issue="1904">
+          Fixed state covariance blending when using more interpolation points for sub-interpolators.
+      </action>
       <action dev="vcucchie" type="fix" issue="1883">
           Fixed date precision issue when shifting shiftable objects.
+      </action>
+      <action dev="bryan" type="fix" issue="1841">
+          Fixed parsing of nutation parameters in bulletin A.
+      </action>
+    </release>
+    <release version="13.1.3" date="2026-01-27" description="Orekit 13.1.3 is a patch release. It fixes documentation issues and various bugs.">
+      <action dev="bryan" type="fix" issue="1895">
+          Fixed JavaDoc for gradient method in HolmesFeatherstoneAttractionModel.
+      </action>
+      <action dev="luc" type="fix" issue="1894">
+          Added explanation about test reference values and tolerances.
+      </action>
+      <action dev="evan" type="fix" issue="1892">
+          Fix NaN in ConicallyShadowedLightFluxModel.
+      </action>
+        <action dev="evan" type="fix" issue="1891">
+          Improve time accuracy in CelestialBodies.
       </action>
       <action dev="vcucchie" type="fix" issue="1878">
           Fixed getSubInterpolators method in attitude interpolators (including fielded version).
       </action>
       <action dev="vcucchie" type="fix" issue="1875">
           Fixed number of interpolation points used when using interpolators with sub-interpolators requiring more
-          interpolation points (normal + fielded version).
+          interpolation points (normal and fielded version).
       </action>
       <action dev="serrof" type="fix" issue="1874">
           Call init and finish in FieldImpulseProvider built from ImpulseProvider.
@@ -125,6 +145,9 @@
         </action>
         <action dev="guillaumefiorello" type="fix" issue="1773">
             Fixed regression on TLE date parsing.
+        </action>
+        <action dev="serrof" type="add" issue="1772">
+            Add event handler logging secondary.
         </action>
         <action dev="luc" type="fix" issue="1771">
             Fixed failing tests on Windows.
