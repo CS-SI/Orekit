@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Base class for propagator builders.
+ * @param <T> type of the propagator
  * @author Pascal Parraud
  * @since 7.1
  */

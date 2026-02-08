@@ -27,6 +27,7 @@ import java.util.SortedSet;
 /**
  * Abstract class for solar activity data loader.
  *
+ * @param <L> type of the line parameters
  * @author Vincent Cucchietti
  * @since 12.0
  */

@@ -23,6 +23,7 @@ import org.orekit.time.FieldTimeStamped;
 
 /**
  * Implements a time-stamped {@link FieldGeodeticPoint}.
+ * @param <T> type of the field elements
  * @author Romain Serra
  * @since 13.1
  */

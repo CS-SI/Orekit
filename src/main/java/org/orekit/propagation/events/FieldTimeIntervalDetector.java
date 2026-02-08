@@ -31,6 +31,7 @@ import org.orekit.time.TimeInterval;
 /**
  * Detector for time intervals. Positive whenever the date is inside, negative otherwise.
  *
+ * @param <T> type of the field elements
  * @author Romain Serra
  * @since 13.1
  * @see TimeInterval

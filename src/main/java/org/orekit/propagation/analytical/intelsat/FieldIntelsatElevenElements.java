@@ -25,6 +25,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * Intelsat's 11 elements are defined in ITU-R S.1525 standard.
  * </p>
  *
+ * @param <T> type of the field elements
  * @author Bryan Cazabonne
  * @since 12.1
  */

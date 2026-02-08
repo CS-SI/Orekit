@@ -23,6 +23,7 @@ import org.orekit.propagation.events.FieldEventDetector;
 
 /**
  * Event handler counting event occurrences and always returning {@link Action#CONTINUE}.
+ * @param <T> type of the field elements
  * @author Romain Serra
  * @since 13.0
  */

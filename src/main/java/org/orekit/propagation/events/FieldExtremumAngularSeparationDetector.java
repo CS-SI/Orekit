@@ -26,6 +26,7 @@ import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.FieldPVCoordinates;
 
 /** Detector of local extrema with angular separation.
+ * @param <T> type of the field elements
  * @author Romain Serra
  * @see FieldAngularSeparationDetector
  * @since 13.1

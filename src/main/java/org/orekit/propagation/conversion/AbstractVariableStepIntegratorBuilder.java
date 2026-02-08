@@ -26,6 +26,7 @@ import org.orekit.utils.AbsolutePVCoordinates;
 /**
  * Abstract class for integrator builder using variable step size.
  *
+ * @param <T> type of the integrator
  * @author Romain Serra
  * @since 12.2
  */

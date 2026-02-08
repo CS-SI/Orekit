@@ -43,6 +43,7 @@ import org.orekit.utils.FieldPVCoordinatesProvider;
  * computationally costly.
  * </p>
  *
+ * @param <T> type of the field elements
  * @see org.orekit.propagation.FieldPropagator#addEventDetector(FieldEventDetector)
  * @author Romain Serra
  * @since 12.1

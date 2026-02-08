@@ -27,6 +27,7 @@ import java.util.List;
  * Step handler recording states.
  * Automatically clears them at start of propagation.
  *
+ * @param <T> type of the field elements
  * @author Romain Serra
  * @since 13.0
  * @see PropagationStepRecorder

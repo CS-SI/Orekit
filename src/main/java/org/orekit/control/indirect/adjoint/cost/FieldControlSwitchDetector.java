@@ -25,6 +25,7 @@ import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
 /**
  * Abstract event detector for singularities in adjoint dynamics.
  *
+ * @param <T> type of the field elements
  * @author Romain Serra
  * @since 13.0
  */

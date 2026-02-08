@@ -24,6 +24,7 @@ import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 /**
  * Class containing parameters for event detection.
  *
+ * @param <T> type of the field elements
  * @author Romain Serra.
  * @since 12.2
  * @see EventDetectionSettings

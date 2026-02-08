@@ -168,6 +168,9 @@ public abstract class AbstractKalmanEstimator {
         return getKalmanEstimation().getEstimatedMeasurementsParameters();
     }
 
+    /** Get the list of propagator builders.
+     * @return the list of propagator builders
+     */
     protected List<? extends PropagatorBuilder> getBuilders() {
         return builders;
     }
