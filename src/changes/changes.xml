@@ -20,6 +20,10 @@
   </properties>
   <body>
     <release version="13.1.4" date="TBD" description="Orekit 13.1.4 is a patch release.">
+      <action dev="lebihanbastien" type="fix" issue="1907">
+          Fixed DSST propagation to only update short periods once per step and avoid wrongly
+          computed osculating orbit with events handling.
+      </action>
       <action dev="vcucchie" type="fix" issue="1904">
           Fixed state covariance blending when using more interpolation points for sub-interpolators.
       </action>
