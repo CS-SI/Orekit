@@ -983,3 +983,111 @@ LAMBERT_INVALID_NUMBER_OF_REVOLUTIONS=invalid number of revolutions {0} for Lamb
 
 # invalid number of facets: {0}, it must be an odd number
 NUMBER_OF_FACETS_NOT_ODD=invalid number of facets: {0}, it must be an odd number
+
+# Invalid DAF FTP string found in DAF file {0}
+INVALID_DAF_FTPSTR = Invalid DAF FTP string found in DAF file {0}
+
+# Incomplete DAF comment record found
+INCOMPLETE_DAF_COMMENT_RECORD = Incomplete DAF comment record found
+
+# Incomplete DAF summary record found
+INCOMPLETE_DAF_SUMMARY_RECORD = Incomplete DAF summary record found
+
+# DAF endianness string must be BIG-IEEE or LTL-IEEE, got {0}
+INVALID_DAF_ENDIANNESS = DAF endianness string must be BIG-IEEE or LTL-IEEE, got {0}
+
+# DAF file type string must be of the format DAF/XXXX, got {0}
+INVALID_DAF_FILETYPE_STRING = DAF file type string must be of the format DAF/XXXX, got {0}
+
+# Incomplete DAF name record found
+INCOMPLETE_DAF_NAME_RECORD = Incomplete DAF name record found
+
+# DAF object cannot be null
+NULL_DAF = DAF object cannot be null
+
+# Initial position for two-body propagator is zero
+TWOBODY_ZERO_INITIAL_DISTANCE = Initial position for two-body propagator is zero
+
+# Initial velocity for two-body propagator is zero
+TWOBODY_ZERO_INITIAL_VELOCITY = Initial velocity for two-body propagator is zero
+
+# Rectilinear motion detected in two-body propagator
+TWOBODY_RECTILINEAR_MOTION = Rectilinear motion detected in two-body propagator
+
+# Two-body propagation numerically unstable
+TWOBODY_UNSTABLE_PROPAGATION = Two-body propagation numerically unstable
+
+# GM value cannot be negative
+NEGATIVE_GM = GM value cannot be negative
+
+# Stumpff function order cannot be negative
+STUMPFF_NEGATIVE_ORDER = Stumpff function order cannot be negative
+
+# Semilatus rectum cannot be negative
+NEGATIVE_SEMILATUS_RECTUM = Semilatus rectum cannot be negative
+
+# Eccentricity cannot be negative
+NEGATIVE_ECCENTRICITY = Eccentricity cannot be negative
+
+# Central body radius cannot be negative
+NEGATIVE_CENTRAL_BODY_RADIUS = Central body radius cannot be negative
+
+# Norm of trajectory pole vector is zero
+ZERO_NORM_TRAJECTORY_POLE_VECTOR = Norm of trajectory pole vector is zero
+
+# Norm of periapsis vector is zero
+ZERO_NORM_PERIAPSIS_VECTOR = Norm of periapsis vector is zero
+
+# Norm of central body pole vector is zero
+ZERO_NORM_CENTRAL_BODY_POLE_VECTOR = Norm of central body pole vector is zero
+
+# Trajectory pole and periapsis vectors are not orthogonal
+NON_ORTHOGONAL_TRAJECTORY_POLE_PERIAPSIS = Trajectory pole and periapsis vectors are not orthogonal
+
+# Semimajor axis cannot be negative
+NEGATIVE_SEMIMAJOR_AXIS = Semimajor axis cannot be negative
+
+# Unknown SPK segment type {0}
+UNKNOWN_SPK_TYPE = Unknown SPK segment type {0}
+
+# Unknown SPK subtype code found for SPK segment of type {0}
+UNKNOWN_SPK_SUBTYPE = Unknown SPK subtype code found for SPK segment of type {0}
+
+# Unexpected number of metadata items in type {0} SPK segment
+SPK_UNEXPECTED_NUMBER_METADATA = Unexpected number of metadata items in type {0} SPK segment
+
+# Unexpected number of constants in type {0} SPK segment
+SPK_UNEXPECTED_NUMBER_CONSTANTS = Unexpected number of constants in type {0} SPK segment
+
+# Unexpected data packet size in type {0} SPK segment
+SPK_UNEXPECTED_DATA_PACKET_SIZE = Unexpected data packet size in type {0} SPK segment
+
+# Target date {0} is outside the interval covered by the SPK segment
+SPK_TARGET_DATE_OUTSIDE_INTERVAL = Target date {0} is outside the interval covered by the SPK segment
+
+# SPK segment does not contain enough data records to perform {0} interpolation ({1} available, at least {2} needed)
+SPK_INTERPOLATION_SEGMENT_TOO_SHORT = SPK segment does not contain enough data records to perform {0} interpolation ({1} available, at least {2} needed)
+
+# Unknown PCK segment type {0}.
+UNKNOWN_PCK_TYPE = Unknown PCK segment type {0}
+
+# Unexpected number of metadata items in type {0} PCK segment
+PCK_UNEXPECTED_NUMBER_METADATA = Unexpected number of metadata items in type {0} PCK segment
+
+# Unexpected number of constants in type {0} PCK segment
+PCK_UNEXPECTED_NUMBER_CONSTANTS = Unexpected number of constants in type {0} PCK segment
+
+# Unexpected data packet size in type {0} PCK segment
+PCK_UNEXPECTED_DATA_PACKET_SIZE = Unexpected data packet size in type {0} PCK segment
+
+# Target date {0} is outside the interval covered by the PCK segment
+PCK_TARGET_DATE_OUTSIDE_INTERVAL = Target date {0} is outside the interval covered by the PCK segment
+
+# PCK segment does not contain enough data records to perform {0} interpolation ({1} available, at least {2} needed)
+PCK_INTERPOLATION_SEGMENT_TOO_SHORT = PCK segment does not contain enough data records to perform {0} interpolation ({1} available, at least {2} needed)
+
+# Comments require {0} records but DAF file record specifies only {1} reserved records
+DAF_INSUFFICIENT_COMMENT_RECORDS = Comments require {0} records but DAF file record specifies only {1} reserved records
+
+# File description string is {0} characters long but should be at most 60 characters
+DAF_TOO_LONG_FILEDESCRIPTION_STRING = File description string is {0} characters long but should be at most 60 characters

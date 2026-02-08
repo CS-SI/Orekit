@@ -155,7 +155,7 @@ WRONG_DEGREE_OR_ORDER=ningún término ({0}, {1}) en una descomposición armóni
 WRONG_ELEMENTS_FOR_AVERAGING_THEORY=tipos de elementos orbitales incorrectos para esta teoría de de promediado
 
 # not a valid Observer type for this calculation
-WRONG_OBSERVER_TYPE=
+WRONG_OBSERVER_TYPE=tipo de observador no válido para este cálculo
 
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD=se han encontrado varias fechas de referencia ({0} y {1} difieren de {3,number,0.0##############E0} s) en el fichero de campo gravitacional {2}
@@ -982,4 +982,112 @@ LAMBERT_CORRECTION_DID_NOT_CONVERGE=la corrección de la solución de Lambert pe
 LAMBERT_INVALID_NUMBER_OF_REVOLUTIONS=número de revoluciones {0} inválido para el problema de Lambert, un máximo de {1} es posible con el tiempo de vuelo especificado
 
 # invalid number of facets: {0}, it must be an odd number
-NUMBER_OF_FACETS_NOT_ODD=
+NUMBER_OF_FACETS_NOT_ODD=número de facetas inválido: {0}, debe ser un número impar
+
+# Invalid DAF FTP string found in DAF file {0}
+INVALID_DAF_FTPSTR = Cadena FTP de DAF invalida en archivo DAF {0}
+
+# Incomplete DAF comment record found
+INCOMPLETE_DAF_COMMENT_RECORD = Registro DAF de comentarios incompleto encontrado
+
+# Incomplete DAF summary record found
+INCOMPLETE_DAF_SUMMARY_RECORD = Registro DAF de resúmenes incompleto encontrado
+
+# DAF endianness string must be BIG-IEEE or LTL-IEEE, got {0}
+INVALID_DAF_ENDIANNESS = La cadena DAF de endianidad debe ser BIG-IEEE o LTL-IEEE, pero se encontró {0}
+
+# DAF file type string must be of the format DAF/XXXX, got {0}
+INVALID_DAF_FILETYPE_STRING = La cadena DAF de tipo de archivo debe seguir el formato DAF/XXXX, pero se encontró {0}
+
+# Incomplete DAF name record found
+INCOMPLETE_DAF_NAME_RECORD = Registro DAF de nombres incompleto encontrado
+
+# DAF object cannot be null
+NULL_DAF = El objeto DAF no puede ser nulo
+
+# Initial position for two-body propagator is zero
+TWOBODY_ZERO_INITIAL_DISTANCE = Posición inicial para el propagador de dos cuerpos es cero
+
+# Initial velocity for two-body propagator is zero
+TWOBODY_ZERO_INITIAL_VELOCITY = Velocidad inicial para el propagador de dos cuerpos es cero
+
+# Rectilinear motion detected in two-body propagator
+TWOBODY_RECTILINEAR_MOTION = Movimiento rectilíneo detectado en el propagador de dos cuerpos
+
+# Two-body propagation numerically unstable
+TWOBODY_UNSTABLE_PROPAGATION = Propagación de dos cuerpos es numéricamente inestable
+
+# GM value cannot be negative
+NEGATIVE_GM = El valor de GM no puede ser negativo
+
+# Stumpff function order cannot be negative
+STUMPFF_NEGATIVE_ORDER = El orden de las funciones de Stumpff no puede ser negativo
+
+# Semilatus rectum cannot be negative
+NEGATIVE_SEMILATUS_RECTUM = El semilatus rectum no puede ser negativo
+
+# Eccentricity cannot be negative
+NEGATIVE_ECCENTRICITY = La eccentricidad no puede ser negativa
+
+# Central body radius cannot be negative
+NEGATIVE_CENTRAL_BODY_RADIUS = El radio del cuerpo central no puede ser negativo
+
+# Norm of trajectory pole vector is zero
+ZERO_NORM_TRAJECTORY_POLE_VECTOR = La norma del vector del polo de la trayectoria es cero
+
+# Norm of periapsis vector is zero
+ZERO_NORM_PERIAPSIS_VECTOR = La norma del vector del periastro es cero
+
+# Norm of central body pole vector is zero
+ZERO_NORM_CENTRAL_BODY_POLE_VECTOR = La normal del vector del polo del cuerpo central es cero
+
+# Trajectory pole and periapsis vectors are not orthogonal
+NON_ORTHOGONAL_TRAJECTORY_POLE_PERIAPSIS = Los vectors del polo de la trayectoria y del periastro no son ortogonales
+
+# Semimajor axis cannot be negative
+NEGATIVE_SEMIMAJOR_AXIS = El semieje mayor no puede ser negativo
+
+# Unknown SPK type {0}
+UNKNOWN_SPK_TYPE = El tipo de SPK {0} es desconocido
+
+# Unknown SPK subtype code found for SPK segment of type {0}
+UNKNOWN_SPK_SUBTYPE = Subtipo de SPK desconocido encontrado para segmento SPK de tipo {0}
+
+# Unexpected number of metadata items in type {0} SPK
+SPK_UNEXPECTED_NUMBER_METADATA = Número inesperado de elementos de metadatos en SPK de tipo {0}
+
+# Unexpected number of constants in type {0} SPK
+SPK_UNEXPECTED_NUMBER_CONSTANTS = Número inesperado de constantes en SPK de tipo {0}
+
+# Unexpected data packet size in type {0} SPK"
+SPK_UNEXPECTED_DATA_PACKET_SIZE = Tamaño de paquete de datos inesperado en SPK de tipo {0}
+
+# Target date {0} is outside the interval covered by the SPK segment
+SPK_TARGET_DATE_OUTSIDE_INTERVAL = La fecha objetivo {0} se encuentra fuera del intervalo cubierto por el segmento SPK
+
+# Segment does not contain enough data records to perform {0} interpolation ({1} available, at least {2} needed)
+SPK_INTERPOLATION_SEGMENT_TOO_SHORT = El segmento no contiene suficientes registros de datos para llevar a cabo interpolación de tipo {0} ({1} disponibles, al menos {2} requeridos)
+
+# Unknown PCK segment type {0}.
+UNKNOWN_PCK_TYPE = El tipo de PCK {0} es desconocido.
+
+# Unexpected number of metadata items in type {0} PCK segment
+PCK_UNEXPECTED_NUMBER_METADATA = Número inesperado de elementos de metadatos en segmento PCK de tipo {0}
+
+# Unexpected number of constants in type {0} PCK segment
+PCK_UNEXPECTED_NUMBER_CONSTANTS = Número inesperado de constantes en segmento PCK de tipo {0}
+
+# Unexpected data packet size in type {0} PCK segment
+PCK_UNEXPECTED_DATA_PACKET_SIZE = Tamaño de paquete de datos inesperado en segmento PCK de tipo {0}
+
+# Target date {0} is outside the interval covered by the PCK segment
+PCK_TARGET_DATE_OUTSIDE_INTERVAL = La fecha objetivo {0} se encuentra fuera del intervalo cubierto por el segmento PCK
+
+# PCK segment does not contain enough data records to perform {0} interpolation ({1} available, at least {2} needed)
+PCK_INTERPOLATION_SEGMENT_TOO_SHORT = El segmento PCK no contiene suficientes registros de datos para realizar interpolación de tipo {0} ({1} disponibles, al menos {2} requeridos)
+
+# Comments require {0} records but DAF file record specifies only {1} reserved records
+DAF_INSUFFICIENT_COMMENT_RECORDS = Los comentarios requieren {0} registros pero el registro de archivo DAF especifica solo {1} registros reservados
+
+# File description string is {0} characters long but should be at most 60 characters
+DAF_TOO_LONG_FILEDESCRIPTION_STRING = La cadena de descripción del archivo tiene {0} caracteres pero debería tener como máximo 60 caracteres
