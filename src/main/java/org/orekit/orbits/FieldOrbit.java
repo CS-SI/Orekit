@@ -38,6 +38,7 @@ import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeShiftable;
 import org.orekit.time.FieldTimeStamped;
+import org.orekit.time.TimeOffset;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
@@ -502,8 +503,11 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> otherDate, final Frame otherFrame) {
-        return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(otherFrame);
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> otherDate,
+                                                             final Frame otherFrame) {
+        final TimeOffset timeOffset = otherDate.toAbsoluteDate().accurateDurationFrom(getDate().toAbsoluteDate());
+        final T          fieldShift = otherDate.durationFrom(getDate()).subtract(timeOffset.toDouble());
+        return shiftedBy(timeOffset).shiftedBy(fieldShift).getPVCoordinates(otherFrame);
     }
 
     /** {@inheritDoc} */
