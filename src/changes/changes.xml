@@ -19,7 +19,7 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="13.1.4" date="TBD" description="Orekit 13.1.4 is a patch release.">
+    <release version="13.1.4" date="2026-02-08" description="Orekit 13.1.4 is a patch release. It fixes bugs related to DSST, parsing, time and interpolation">
       <action dev="lebihanbastien" type="fix" issue="1907">
           Fixed DSST propagation to only update short periods once per step and avoid wrongly
           computed osculating orbit with events handling.
