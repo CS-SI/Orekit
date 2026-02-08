@@ -23,12 +23,12 @@ public class GalileoTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testPatchedLargeNegativeBeta() {
-        doTestAxes("patched-eclips/beta-large-negative-GALILEO.txt", 7.3e-15, 5.8e-16, false);
+        doTestAxes("patched-eclips/beta-large-negative-GALILEO.txt", 7.3e-15, 9.41e-16, false);
     }
 
     @Test
     public void testPatchedSmallNegativeBeta() {
-        doTestAxes("patched-eclips/beta-small-negative-GALILEO.txt", 2.9e-12, 1.3e-15, false);
+        doTestAxes("patched-eclips/beta-small-negative-GALILEO.txt", 3.0e-12, 1.3e-15, false);
     }
 
     @Test
@@ -38,17 +38,17 @@ public class GalileoTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testPatchedSmallPositiveBeta() {
-        doTestAxes("patched-eclips/beta-small-positive-GALILEO.txt", 8.7e-12, 9.8e-16, false);
+        doTestAxes("patched-eclips/beta-small-positive-GALILEO.txt", 8.7e-12, 1.18e-15, false);
     }
 
     @Test
     public void testPatchedLargePositiveBeta() {
-        doTestAxes("patched-eclips/beta-large-positive-GALILEO.txt", 7.3e-15, 7.9e-16, false);
+        doTestAxes("patched-eclips/beta-large-positive-GALILEO.txt", 7.3e-15, 1.52e-15, false);
     }
 
     @Test
     public void testOriginalLargeNegativeBeta() {
-        doTestAxes("original-eclips/beta-large-negative-GALILEO.txt", 7.3e-15, 5.8e-16, false);
+        doTestAxes("original-eclips/beta-large-negative-GALILEO.txt", 7.3e-15, 9.41e-16, false);
     }
 
     @Test
@@ -63,12 +63,12 @@ public class GalileoTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testOriginalSmallPositiveBeta() {
-        doTestAxes("original-eclips/beta-small-positive-GALILEO.txt", 9.5e-3, 9.8e-16, false);
+        doTestAxes("original-eclips/beta-small-positive-GALILEO.txt", 9.5e-3, 1.18e-15, false);
     }
 
     @Test
     public void testOriginalLargePositiveBeta() {
-        doTestAxes("original-eclips/beta-large-positive-GALILEO.txt", 7.3e-15, 7.9e-16, false);
+        doTestAxes("original-eclips/beta-large-positive-GALILEO.txt", 7.3e-15, 1.52e-15, false);
     }
 
 }

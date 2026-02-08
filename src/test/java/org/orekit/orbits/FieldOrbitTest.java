@@ -17,6 +17,7 @@
 package org.orekit.orbits;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.complex.Complex;
@@ -24,23 +25,36 @@ import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.TestUtils;
+import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
+import java.util.function.Function;
 
 class FieldOrbitTest {
+
+    @BeforeAll
+    static void setUp() {
+        // Load orekit data
+        Utils.setDataRoot("regular-data");
+    }
 
     @Test
     void testGetPosition() {
@@ -73,7 +87,7 @@ class FieldOrbitTest {
     void testHasNonKeplerianAccelerationDerivative() {
         // GIVEN
         final GradientField field = GradientField.getField(0);
-        final Gradient mu = field.getZero().newInstance(Constants.EGM96_EARTH_MU);
+        final Gradient                     mu                 = field.getZero().newInstance(Constants.EGM96_EARTH_MU);
         final FieldPVCoordinates<Gradient> fieldPVCoordinates = createFieldTPVWithKeplerianAcceleration(mu);
         // WHEN
         final boolean actualResult = FieldOrbit.hasNonKeplerianAcceleration(fieldPVCoordinates, mu);
@@ -143,6 +157,96 @@ class FieldOrbitTest {
 
         // THEN
         Assertions.assertEquals(fakeOrbit.getVelocity(), velocity);
+    }
+
+    @Test
+    void testTimeShiftIsApplied() {
+        // GIVEN
+        final GradientField               field       = GradientField.getField(1);
+        final Gradient                    shift       = Gradient.variable(1, 0, 10.);
+        final FieldAbsoluteDate<Gradient> date        = new FieldAbsoluteDate<>(field, new AbsoluteDate());
+        final FieldAbsoluteDate<Gradient> shiftedDate = date.shiftedBy(shift);
+
+        final FieldOrbit<Gradient> orbit = TestUtils.getDefaultFieldOrbit(date);
+
+        // WHEN
+        final TimeStampedFieldPVCoordinates<Gradient>
+                        pv =
+                        orbit.getPVCoordinates(shiftedDate, FramesFactory.getEME2000());
+
+        // THEN
+        Assertions.assertNotEquals(0, pv.getPosition().getNorm1().getGradient()[0]);
+    }
+
+    @Test
+    void testCorrectShiftedDateWithCartesianOrbit() {
+        // GIVEN
+        final Field<Binary64> field = Binary64Field.getInstance();
+
+        // WHEN & THEN
+        doTestCorrectShiftedDate(TestUtils::getDefaultFieldOrbit, field);
+    }
+
+    @Test
+    void testCorrectShiftedDateWithKeplerianOrbit() {
+        // GIVEN
+        final Field<Binary64> field = Binary64Field.getInstance();
+
+        // WHEN & THEN
+        doTestCorrectShiftedDate((date) -> new FieldKeplerianOrbit<>(TestUtils.getDefaultFieldOrbit(date)), field);
+        doTestCorrectShiftedDate((date) -> new FieldKeplerianOrbit<>(TestUtils.getDefaultFieldOrbitWithDerivatives(date)), field);
+    }
+
+    @Test
+    void testCorrectShiftedDateWithCircularOrbit() {
+        // GIVEN
+        final Field<Binary64> field = Binary64Field.getInstance();
+
+        // WHEN & THEN
+        doTestCorrectShiftedDate((date) -> new FieldCircularOrbit<>(TestUtils.getDefaultFieldOrbit(date)), field);
+        doTestCorrectShiftedDate((date) -> new FieldCircularOrbit<>(TestUtils.getDefaultFieldOrbitWithDerivatives(date)), field);
+    }
+
+    @Test
+    void testCorrectShiftedDateWithEquinoctialOrbit() {
+        // GIVEN
+        final Field<Binary64> field = Binary64Field.getInstance();
+
+        // WHEN & THEN
+        doTestCorrectShiftedDate((date) -> new FieldEquinoctialOrbit<>(TestUtils.getDefaultFieldOrbit(date)), field);
+        doTestCorrectShiftedDate((date) -> new FieldEquinoctialOrbit<>(TestUtils.getDefaultFieldOrbitWithDerivatives(date)), field);
+    }
+
+    /**
+     * Test related to issue 1883.
+     *
+     * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1883">Issue 1883</a>
+     */
+    public <T extends CalculusFieldElement<T>> void doTestCorrectShiftedDate(final Function<FieldAbsoluteDate<T>, FieldOrbit<T>> dateToOrbit,
+                                                                             final Field<T> field) {
+        // GIVEN
+        // Define dates
+        final TimeScale utc   = TimeScalesFactory.getUTC();
+        final Frame     gcrf  = FramesFactory.getGCRF();
+
+
+        AbsoluteDate date1 = new AbsoluteDate("2025-12-15T11:11:00.000000000000000000Z", utc);
+        AbsoluteDate date2 = new AbsoluteDate("2025-12-15T14:56:00.000000000000000000Z", utc);
+
+        FieldAbsoluteDate<T> fieldDate1        = new FieldAbsoluteDate<>(field, date1);
+        FieldAbsoluteDate<T> fieldDate2        = new FieldAbsoluteDate<>(field, date2);
+        FieldAbsoluteDate<T> fieldDate2Shifted = fieldDate2.shiftedBy(0.123456789);
+
+        // Define orbit
+        final FieldOrbit<T> orbitAtShiftedDate = dateToOrbit.apply(fieldDate2Shifted);
+
+        // WHEN
+        final TimeStampedFieldPVCoordinates<T> pv =
+                orbitAtShiftedDate.getPVCoordinates(fieldDate1, gcrf);
+        final FieldAbsoluteDate<T> actualDate = pv.getDate();
+
+        // THEN
+        Assertions.assertEquals(0, actualDate.durationFrom(date1).getReal());
     }
 
     private static class TestFieldOrbit extends FieldOrbit<Complex> {
