@@ -32,8 +32,8 @@ import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.AngularAzElMeasurementCreator;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -135,7 +135,7 @@ public class EphemerisBatchLSEstimatorTest {
         Assertions.assertEquals(refBias, estimator.getMeasurementsParametersDrivers(true).getDrivers().get(0).getValue(), 5.0e-6);
         Assertions.assertEquals(1, estimator.getMeasurementsParametersDrivers(true).getNbParams());
         Assertions.assertEquals(0, estimator.getOrbitalParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(0, estimator.getPropagatorParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(0, estimator.getPropagationParametersDrivers(true).getNbParams());
 
     }
 
@@ -181,7 +181,7 @@ public class EphemerisBatchLSEstimatorTest {
         Assertions.assertEquals(refClockBias, estimator.getMeasurementsParametersDrivers(true).getDrivers().get(0).getValue(), 6.0e-16);
         Assertions.assertEquals(1, estimator.getMeasurementsParametersDrivers(true).getNbParams());
         Assertions.assertEquals(0, estimator.getOrbitalParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(0, estimator.getPropagatorParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(0, estimator.getPropagationParametersDrivers(true).getNbParams());
 
     }
 
@@ -234,7 +234,7 @@ public class EphemerisBatchLSEstimatorTest {
         Assertions.assertEquals(refElBias, estimator.getMeasurementsParametersDrivers(true).getDrivers().get(1).getValue(), 1.0e-7);
         Assertions.assertEquals(2, estimator.getMeasurementsParametersDrivers(true).getNbParams());
         Assertions.assertEquals(0, estimator.getOrbitalParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(0, estimator.getPropagatorParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(0, estimator.getPropagationParametersDrivers(true).getNbParams());
 
     }
 

@@ -512,7 +512,7 @@ class DSSTBatchLSEstimatorTest {
         for (final ObservedMeasurement<?> measurement : measurements) {
             estimator.addMeasurement(measurement);
         }
-        ParameterDriversList estimatedParameters = estimator.getPropagatorParametersDrivers(true);
+        ParameterDriversList estimatedParameters = estimator.getPropagationParametersDrivers(true);
         // Verify that the propagator, the builder and the estimator know mu
         final String driverName = DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT;
         Assertions.assertInstanceOf(DSSTNewtonianAttraction.class, propagator.getAllForceModels().get(0));
