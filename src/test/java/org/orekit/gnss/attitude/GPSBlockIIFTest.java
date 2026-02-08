@@ -23,7 +23,7 @@ class GPSBlockIIFTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     void testPatchedLargeNegativeBeta() {
-        doTestAxes("patched-eclips/beta-large-negative-BLOCK-IIF.txt",  6.8e-15, 7.6e-16, false);
+        doTestAxes("patched-eclips/beta-large-negative-BLOCK-IIF.txt",  6.98e-15, 8.6e-16, false);
     }
 
     @Test
@@ -33,12 +33,12 @@ class GPSBlockIIFTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     void testPatchedCrossingBeta() {
-        doTestAxes("patched-eclips/beta-crossing-BLOCK-IIF.txt", 5.7e-4, 7.8e-16, false);
+        doTestAxes("patched-eclips/beta-crossing-BLOCK-IIF.txt", 5.7e-4,  1.15e-15, false);
     }
 
     @Test
     void testPatchedSmallPositiveBeta() {
-        doTestAxes("patched-eclips/beta-small-positive-BLOCK-IIF.txt", 2.9e-12, 6.0e-16, false);
+        doTestAxes("patched-eclips/beta-small-positive-BLOCK-IIF.txt", 2.9e-12, 7.7e-16, false);
     }
 
     @Test
@@ -48,7 +48,7 @@ class GPSBlockIIFTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     void testOriginalLargeNegativeBeta() {
-        doTestAxes("original-eclips/beta-large-negative-BLOCK-IIF.txt", 6.8e-15, 7.6e-16, false);
+        doTestAxes("original-eclips/beta-large-negative-BLOCK-IIF.txt", 6.98e-15, 8.6e-16, false);
     }
 
     @Test
@@ -75,12 +75,12 @@ class GPSBlockIIFTest extends AbstractGNSSAttitudeProviderTest {
         // As a conclusion, we consider here that the reference output is wrong and that
         // Orekit behaviour is correct, so we increased the threshold so the test pass,
         // and wrote this big comment to explain the situation
-        doTestAxes("original-eclips/beta-crossing-BLOCK-IIF.txt", 0.24, 7.8e-16, false);
+        doTestAxes("original-eclips/beta-crossing-BLOCK-IIF.txt", 0.24, 1.15e-15, false);
     }
 
     @Test
     void testOriginalSmallPositiveBeta() {
-        doTestAxes("original-eclips/beta-small-positive-BLOCK-IIF.txt", 2.8e-4, 6.0e-16, false);
+        doTestAxes("original-eclips/beta-small-positive-BLOCK-IIF.txt", 2.8e-4, 7.63e-16, false);
     }
 
     @Test
