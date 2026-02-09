@@ -28,7 +28,6 @@ import org.orekit.files.iirv.terms.base.LongValuedIIRVTerm;
  * <li> 3 = Off-line
  * <li> 4 = Off-line/mean
  * </ul>
- * <p>
  *
  * @author Nick LaFarge
  * @since 13.0

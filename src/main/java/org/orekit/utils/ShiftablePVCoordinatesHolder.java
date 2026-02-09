@@ -28,6 +28,7 @@ import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 
 /** Interface for time-shiftable PV provider holding themselves PV coordinates.
+ * @param <T> type of the PV coordinates provider
  * @author Romain Serra
  * @since 13.1.2
  */
@@ -80,7 +81,7 @@ public interface ShiftablePVCoordinatesHolder<T extends PVCoordinatesProvider>
 
     @Override
     default Vector3D getPosition(final AbsoluteDate date, final Frame outputFrame) {
-        final ShiftablePVCoordinatesHolder<T> shifted = shiftedBy(date.durationFrom(getDate()));
+        final ShiftablePVCoordinatesHolder<T> shifted = shiftedBy(date.accurateDurationFrom(getDate()));
         final Vector3D position = shifted.getPosition();
         if (outputFrame == getFrame()) {
             return position;
@@ -103,7 +104,7 @@ public interface ShiftablePVCoordinatesHolder<T extends PVCoordinatesProvider>
 
     @Override
     default Vector3D getVelocity(final AbsoluteDate date, final Frame outputFrame) {
-        final ShiftablePVCoordinatesHolder<T> shifted = shiftedBy(date.durationFrom(getDate()));
+        final ShiftablePVCoordinatesHolder<T> shifted = shiftedBy(date.accurateDurationFrom(getDate()));
         final TimeStampedPVCoordinates pv = shifted.getPVCoordinates();
         if (outputFrame ==  getFrame()) {
             return pv.getVelocity();
@@ -133,7 +134,7 @@ public interface ShiftablePVCoordinatesHolder<T extends PVCoordinatesProvider>
 
     @Override
     default TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame outputFrame) {
-        final ShiftablePVCoordinatesHolder<T> shifted = shiftedBy(date.durationFrom(getDate()));
+        final ShiftablePVCoordinatesHolder<T> shifted = shiftedBy(date.accurateDurationFrom(getDate()));
         final TimeStampedPVCoordinates pv = shifted.getPVCoordinates();
         if (outputFrame == getFrame()) {
             return pv;

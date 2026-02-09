@@ -34,6 +34,9 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeShiftable;
+import org.orekit.time.FieldTimeStamped;
+import org.orekit.time.TimeOffset;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ShiftableFieldPVCoordinatesHolder;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
@@ -518,6 +521,54 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
         // Else, PV coordinates are transformed to output frame
         final FieldTransform<T> t = frame.getTransformTo(outputFrame, date);
         return t.transformPVCoordinates(pvCoordinates);
+    }
+
+    /** {@inheritDoc} */
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> otherDate,
+                                                             final Frame otherFrame) {
+        final TimeOffset timeOffset = otherDate.toAbsoluteDate().accurateDurationFrom(getDate().toAbsoluteDate());
+        final T          fieldShift = otherDate.durationFrom(getDate()).subtract(timeOffset.toDouble());
+        return shiftedBy(timeOffset).shiftedBy(fieldShift).getPVCoordinates(otherFrame);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldVector3D<T> getVelocity(final FieldAbsoluteDate<T> otherDate, final Frame otherFrame) {
+        final FieldPVCoordinates<T> pv = getPVCoordinates(otherDate, otherFrame);
+        if (otherFrame == getFrame()) {
+            return pv.getVelocity();
+        }
+        final FieldKinematicTransform<T> kinematicTransform = getFrame().getKinematicTransformTo(otherFrame, date);
+        return kinematicTransform.transformOnlyPV(pv).getVelocity();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> otherDate, final Frame otherFrame) {
+        return shiftedBy(otherDate.durationFrom(getDate())).getPosition(otherFrame);
+    }
+
+    /** Get the position in a specified frame.
+     * @param outputFrame frame in which the position coordinates shall be computed
+     * @return position in the specified output frame
+     * @see #getPosition()
+     * @since 12.0
+     */
+    public FieldVector3D<T> getPosition(final Frame outputFrame) {
+        if (position == null) {
+            position = initPosition();
+        }
+
+        // If output frame requested is the same as definition frame,
+        // Position vector is returned directly
+        if (outputFrame == frame) {
+            return position;
+        }
+
+        // Else, position vector is transformed to output frame
+        final FieldStaticTransform<T> t = frame.getStaticTransformTo(outputFrame, date);
+        return t.transformPosition(position);
+
     }
 
     /** Get the position in definition frame.

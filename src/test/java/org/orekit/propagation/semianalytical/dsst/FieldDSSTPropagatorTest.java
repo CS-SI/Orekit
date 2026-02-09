@@ -38,6 +38,7 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince54FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -86,6 +87,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldAltitudeDetector;
+import org.orekit.propagation.events.FieldApsideDetector;
 import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.FieldLatitudeCrossingDetector;
@@ -113,7 +115,54 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 class FieldDSSTPropagatorTest {
- 
+
+    /** Test designed after fixing issue 1907.
+     * It tests that using an apside detector with an osculating DSST propagation doesn't lead to an hyperbolic orbit anymore.
+     */
+    @Test
+    public void testApsideDetectorAndDsstLeadsToHyperbolicOrbit() {
+        Binary64Field field = Binary64Field.getInstance();
+
+        // Spacecraft state
+        final FieldSpacecraftState<Binary64> state = getLEOState(field);
+
+        // Body frame
+        final Frame itrf = FramesFactory .getITRF(IERSConventions.IERS_2010, true);
+
+        // Earth
+        final UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(4, 4);
+
+        // Detectors
+        final List<FieldEventDetector<Binary64>> events = new ArrayList<>();
+        events.add(new FieldApsideDetector<>(state.getOrbit()).withHandler(new ApsideHandlerWithResetState()));
+
+        // Force models
+        final List<DSSTForceModel> forceModels = new ArrayList<>();
+        forceModels.add(new DSSTZonal(provider));
+        forceModels.add(new DSSTTesseral(itrf, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider));
+
+        // Set up DSST propagator
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(state.getOrbit(), OrbitType.EQUINOCTIAL);
+        final AdaptiveStepsizeFieldIntegrator<Binary64> integrator = new DormandPrince853FieldIntegrator<>(field, 60.0, 3600.0, tol[0], tol[1]);
+        final FieldDSSTPropagator<Binary64> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.OSCULATING);
+        for (DSSTForceModel force : forceModels) {
+            propagator.addForceModel(force);
+        }
+        for (FieldEventDetector<Binary64> event : events) {
+            propagator.addEventDetector(event);
+        }
+        propagator.setInitialState(state);
+
+        // Propagation
+        Assertions.assertDoesNotThrow(() -> propagator.propagate(state.getDate().shiftedBy(3600)));
+    }
+
+    public static class ApsideHandlerWithResetState implements FieldEventHandler<Binary64> {
+        @Override
+        public Action eventOccurred(FieldSpacecraftState<Binary64> s, FieldEventDetector<Binary64> detector, boolean increasing) {
+            return Action.RESET_STATE;
+        }
+    }
     /**
      * Test issue #1029 about DSST short period terms computation.
      * Issue #1029 is a regression introduced in version 10.0

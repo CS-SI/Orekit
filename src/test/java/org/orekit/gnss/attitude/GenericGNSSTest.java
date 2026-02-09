@@ -23,17 +23,17 @@ class GenericGNSSTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     void testPatchedLargeNegativeBetaGalileo() {
-        doTestAxes("patched-eclips/beta-large-negative-GALILEO.txt", 7.3e-15, 5.8e-16, true);
+        doTestAxes("patched-eclips/beta-large-negative-GALILEO.txt", 7.3e-15, 9.5e-16, true);
     }
 
     @Test
     void testPatchedLargePositiveBetaGalileo() {
-        doTestAxes("patched-eclips/beta-large-positive-GALILEO.txt", 7.3e-15, 1.02e-15, true);
+        doTestAxes("patched-eclips/beta-large-positive-GALILEO.txt", 7.3e-15, 1.52e-15, true);
     }
 
     @Test
     void testPatchedLargeNegativeBetaGlonass() {
-        doTestAxes("patched-eclips/beta-large-negative-GLONASS.txt", 7.2e-15, 1.1e-15, true);
+        doTestAxes("patched-eclips/beta-large-negative-GLONASS.txt", 7.2e-15, 1.15e-15, true);
     }
 
     @Test
@@ -43,17 +43,17 @@ class GenericGNSSTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     void testPatchedLargeNegativeBetaBlockIIA() {
-        doTestAxes("patched-eclips/beta-large-negative-BLOCK-IIA.txt", 6.3e-15, 1.1e-15, true);
+        doTestAxes("patched-eclips/beta-large-negative-BLOCK-IIA.txt", 7.36e-15, 1.15e-15, true);
     }
 
     @Test
     void testPatchedLargePositiveBetaBlockIIA() {
-        doTestAxes("patched-eclips/beta-large-positive-BLOCK-IIA.txt", 7.2e-15, 8.8e-16, true);
+        doTestAxes("patched-eclips/beta-large-positive-BLOCK-IIA.txt", 7.43e-15, 9.4e-16, true);
     }
 
     @Test
     void testPatchedLargeNegativeBetaBlockIIF() {
-        doTestAxes("patched-eclips/beta-large-negative-BLOCK-IIF.txt", 6.8e-15, 7.6e-16, true);
+        doTestAxes("patched-eclips/beta-large-negative-BLOCK-IIF.txt", 6.98e-15, 8.6e-16, true);
     }
 
     @Test
@@ -63,7 +63,7 @@ class GenericGNSSTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     void testPatchedLargeNegativeBetaBlockIIR() {
-        doTestAxes("patched-eclips/beta-large-negative-BLOCK-IIR.txt", 8.0e-15, 8.7e-16, true);
+        doTestAxes("patched-eclips/beta-large-negative-BLOCK-IIR.txt", 8.0e-15, 8.8e-16, true);
     }
 
     @Test
@@ -73,17 +73,17 @@ class GenericGNSSTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     void testOriginalLargeNegativeBetaGalileo() {
-        doTestAxes("original-eclips/beta-large-negative-GALILEO.txt", 7.3e-15, 5.8e-16, true);
+        doTestAxes("original-eclips/beta-large-negative-GALILEO.txt", 7.3e-15, 9.5e-16, true);
     }
 
     @Test
     void testOriginalLargePositiveBetaGalileo() {
-        doTestAxes("original-eclips/beta-large-positive-GALILEO.txt", 7.3e-15, 1.02e-15, true);
+        doTestAxes("original-eclips/beta-large-positive-GALILEO.txt", 7.3e-15, 1.52e-15, true);
     }
 
     @Test
     void testOriginalLargeNegativeBetaGlonass() {
-        doTestAxes("original-eclips/beta-large-negative-GLONASS.txt", 7.2e-15, 1.1e-15, true);
+        doTestAxes("original-eclips/beta-large-negative-GLONASS.txt", 7.2e-15, 1.15e-15, true);
     }
 
     @Test
@@ -93,17 +93,17 @@ class GenericGNSSTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     void testOriginalLargeNegativeBetaBlockIIA() {
-        doTestAxes("original-eclips/beta-large-negative-BLOCK-IIA.txt", 6.3e-15, 1.1e-15, true);
+        doTestAxes("original-eclips/beta-large-negative-BLOCK-IIA.txt", 7.4e-15, 1.15e-15, true);
     }
 
     @Test
     void testOriginalLargePositiveBetaBlockIIA() {
-        doTestAxes("original-eclips/beta-large-positive-BLOCK-IIA.txt", 7.2e-15, 8.8e-16, true);
+        doTestAxes("original-eclips/beta-large-positive-BLOCK-IIA.txt", 7.43e-15, 9.4e-16, true);
     }
 
     @Test
     void testOriginalLargeNegativeBetaBlockIIF() {
-        doTestAxes("original-eclips/beta-large-negative-BLOCK-IIF.txt", 6.8e-15, 7.6e-16, true);
+        doTestAxes("original-eclips/beta-large-negative-BLOCK-IIF.txt", 6.98e-15, 8.6e-16, true);
     }
 
     @Test

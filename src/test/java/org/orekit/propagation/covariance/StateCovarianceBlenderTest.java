@@ -394,9 +394,10 @@ class StateCovarianceBlenderTest {
     }
 
     /**
-     * Test related to issue 1875.
+     * Test related to issue 1875 & 1904.
      *
      * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1875">Issue 1875</a>
+     * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1904">Issue 1904</a>
      */
     @Test
     void testStateCovarianceBlenderWithOrbitInterpolatorUsingMoreInterpolationPoints() {
@@ -431,7 +432,15 @@ class StateCovarianceBlenderTest {
         samples.add(new TimeStampedPair<>(orbit3, covariance3));
 
         // WHEN & THEN
+        // Interpolate on each sample point and in-between
+        Assertions.assertDoesNotThrow(() -> covarianceBlender.interpolate(interpolationDate.shiftedBy(-1), samples));
+        Assertions.assertDoesNotThrow(() -> covarianceBlender.interpolate(interpolationDate.shiftedBy(-0.9), samples));
+        Assertions.assertDoesNotThrow(() -> covarianceBlender.interpolate(interpolationDate.shiftedBy(-0.1), samples));
         Assertions.assertDoesNotThrow(() -> covarianceBlender.interpolate(interpolationDate, samples));
+        Assertions.assertDoesNotThrow(() -> covarianceBlender.interpolate(interpolationDate.shiftedBy(0.1), samples));
+        Assertions.assertDoesNotThrow(() -> covarianceBlender.interpolate(interpolationDate.shiftedBy(0.9), samples));
+        Assertions.assertDoesNotThrow(() -> covarianceBlender.interpolate(interpolationDate.shiftedBy(1), samples));
+
     }
 
     /**

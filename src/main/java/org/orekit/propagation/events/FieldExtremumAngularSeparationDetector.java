@@ -25,6 +25,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ExtendedPositionProvider;
 
 /** Detector of local extrema with angular separation.
+ * @param <T> type of the field elements
  * @author Romain Serra
  * @see FieldAngularSeparationDetector
  * @since 13.1

@@ -38,6 +38,7 @@ import org.orekit.utils.ExtendedPositionProvider;
  * The {@code g} function of this detector is positive when ground is at night
  * (i.e. Sun is below dawn/dusk elevation angle).
  * </p>
+ * @param <T> type of the field elements
  * @author Luc Maisonobe
  * @author Romain Serra
  * @see GroundAtNightDetector

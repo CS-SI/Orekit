@@ -35,6 +35,7 @@ import java.util.Map;
  * needs the regular {@code Map<String, Object>} should be preferred.
  * </p>
  *
+ * @param <T> type of the field elements
  * @see FieldArrayDictionary
  * @author Bryan Cazabonne
  * @since 13.0

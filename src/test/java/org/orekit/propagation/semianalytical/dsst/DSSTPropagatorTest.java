@@ -88,6 +88,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.*;
 import org.orekit.propagation.events.AltitudeDetector;
+import org.orekit.propagation.events.ApsideDetector;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
@@ -1050,6 +1051,50 @@ class DSSTPropagatorTest {
                                                   computedOsculatingState.getPosition()),
                                 5.0e-6);
 
+    }
+
+
+    @Test
+    public void testIssue1907() {
+        // Spacecraft state
+        final SpacecraftState state = getLEOState();
+
+        // Body frame
+        final Frame itrf = FramesFactory .getITRF(IERSConventions.IERS_2010, true);
+
+        // Earth
+        final UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(4, 4);
+
+        // Detectors
+        final List<EventDetector> events = new ArrayList<>();
+        events.add(new ApsideDetector(state.getOrbit()).withHandler(new ApsideHandlerWithResetState()));
+
+        // Force models
+        final List<DSSTForceModel> forceModels = new ArrayList<>();
+        forceModels.add(new DSSTZonal(provider));
+        forceModels.add(new DSSTTesseral(itrf, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider));
+
+        // Set up DSST propagator
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(state.getOrbit(), OrbitType.EQUINOCTIAL);
+        final ODEIntegrator integrator = new DormandPrince54Integrator(60.0, 3600.0, tol[0], tol[1]);
+        final DSSTPropagator propagator = new DSSTPropagator(integrator, PropagationType.OSCULATING);
+        for (DSSTForceModel force : forceModels) {
+            propagator.addForceModel(force);
+        }
+        for (EventDetector event : events) {
+            propagator.addEventDetector(event);
+        }
+        propagator.setInitialState(state);
+
+        // Propagation does not throw any exception
+        Assertions.assertDoesNotThrow(() -> propagator.propagate(state.getDate().shiftedBy(3600)));
+    }
+
+    public class ApsideHandlerWithResetState implements EventHandler {
+        @Override
+        public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
+            return Action.RESET_STATE;
+        }
     }
 
     @Test

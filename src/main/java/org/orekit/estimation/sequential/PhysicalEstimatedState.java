@@ -42,6 +42,12 @@ public class PhysicalEstimatedState implements TimeStamped {
     /** State covariance. */
     private final RealMatrix covarianceMatrix;
 
+    /**
+     * Constructor.
+     * @param date date
+     * @param state mean state
+     * @param covarianceMatrix covariance matrix
+     */
     public PhysicalEstimatedState(final AbsoluteDate date,
                                   final RealVector state,
                                   final RealMatrix covarianceMatrix) {

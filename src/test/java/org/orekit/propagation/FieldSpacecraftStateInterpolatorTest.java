@@ -587,6 +587,7 @@ class FieldSpacecraftStateInterpolatorTest {
 
         // THEN
         Assertions.assertEquals(AdditionalStateNbInterpolationPoints, returnedNbInterpolationPoints);
+        Assertions.assertEquals(2, stateInterpolator.getInternalNbInterpolationPoints());
     }
 
     @Test
