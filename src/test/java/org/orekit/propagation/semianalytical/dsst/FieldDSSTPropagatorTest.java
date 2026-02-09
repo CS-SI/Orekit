@@ -144,7 +144,7 @@ class FieldDSSTPropagatorTest {
         // Set up DSST propagator
         final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(state.getOrbit(), OrbitType.EQUINOCTIAL);
         final AdaptiveStepsizeFieldIntegrator<Binary64> integrator = new DormandPrince853FieldIntegrator<>(field, 60.0, 3600.0, tol[0], tol[1]);
-        final FieldDSSTPropagator<Binary64> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.OSCULATING);
+        final FieldDSSTPropagator<Binary64> propagator = new FieldDSSTPropagator<>(integrator, PropagationType.OSCULATING);
         for (DSSTForceModel force : forceModels) {
             propagator.addForceModel(force);
         }
