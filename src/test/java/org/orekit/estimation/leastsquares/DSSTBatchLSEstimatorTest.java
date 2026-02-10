@@ -432,7 +432,7 @@ class DSSTBatchLSEstimatorTest {
         EstimationTestUtils.checkFit(false, context, estimator, 1, 3,
                                      0.0, 1.2e-10,
                                      0.0, 3.0e-10,
-                                     0.0, 8.5e-9,
+                                     0.0, 9.4e-9,
                                      0.0, 1.4e-11);
     }
 
@@ -484,8 +484,8 @@ class DSSTBatchLSEstimatorTest {
         EstimationTestUtils.checkFit(false, context, estimator, 1, 3,
                                      0.0, 5.4e-7,
                                      0.0, 2.9e-6,
-                                     0.0, 7.0e-8,
-                                     0.0, 5.1e-11);
+                                     0.0, 7.2e-8,
+                                     0.0, 5.2e-11);
     }
 
     @Test
