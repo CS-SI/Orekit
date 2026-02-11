@@ -37,18 +37,6 @@ import org.orekit.propagation.events.VisibilityTrigger;
  */
 public abstract class SmoothFieldOfView extends AbstractFieldOfView {
 
-    /**
-     * The default setting for if the footprint should be projected
-     * off the body onto a spatial point when there is no intersection point.
-     */
-    public static final boolean DEFAULT_EXT_FPT = false;
-
-    /**
-     * The default length of line segments of extended footprints that
-     * project directly into space.
-     */
-    public static final double DEFAULT_MAX_DIST = 1e7;
-
     /** Direction of the FOV center. */
     private final Vector3D center;
 
@@ -116,7 +104,7 @@ public abstract class SmoothFieldOfView extends AbstractFieldOfView {
                                                   final OneAxisEllipsoid body,
                                                   final double angularStep) {
 
-        return getFootprint(fovToBody, body, angularStep, DEFAULT_EXT_FPT, DEFAULT_MAX_DIST);
+        return getFootprint(fovToBody, body, angularStep, DEFAULT_EXTERNAL_FOOTPRINT, DEFAULT_MAX_DIST);
 
     }
 

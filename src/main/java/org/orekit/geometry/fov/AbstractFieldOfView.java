@@ -22,6 +22,18 @@ package org.orekit.geometry.fov;
  */
 public abstract class AbstractFieldOfView implements FieldOfView {
 
+    /**
+     * The default setting for if the footprint should be projected
+     * off the body onto a spatial point when there is no intersection point.
+     */
+    protected static final boolean DEFAULT_EXTERNAL_FOOTPRINT = false;
+
+    /**
+     * The default length of line segments of extended footprints that
+     * project directly into space.
+     */
+    protected static final double DEFAULT_MAX_DIST = 1e7;
+
     /** Margin to apply to the zone. */
     private final double margin;
 

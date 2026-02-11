@@ -50,18 +50,6 @@ import org.orekit.propagation.events.VisibilityTrigger;
  */
 public class PolygonalFieldOfView extends AbstractFieldOfView {
 
-    /**
-     * The default setting for if the footprint should be projected
-     * off the body onto a spatial point when there is no intersection point.
-     */
-    public static final boolean DEFAULT_EXT_FPT = false;
-
-    /**
-     * The default length of line segments of extended footprints that
-     * project directly into space.
-     */
-    public static final double DEFAULT_MAX_DIST = 1e7;
-
     /** Spherical zone. */
     private final SphericalPolygonsSet zone;
 
@@ -151,7 +139,7 @@ public class PolygonalFieldOfView extends AbstractFieldOfView {
     /** {@inheritDoc} */
     @Override
     public Vector3D projectToBoundary(final Vector3D lineOfSight) {
-        return ((S2Point) zone.projectToBoundary(new S2Point(lineOfSight)).getProjected()).getVector();
+        return (zone.projectToBoundary(new S2Point(lineOfSight)).getProjected()).getVector();
     }
 
     /** {@inheritDoc} */
@@ -160,7 +148,7 @@ public class PolygonalFieldOfView extends AbstractFieldOfView {
                                                   final OneAxisEllipsoid body,
                                                   final double angularStep) {
 
-        return getFootprint(fovToBody, body, angularStep, DEFAULT_EXT_FPT, DEFAULT_MAX_DIST);
+        return getFootprint(fovToBody, body, angularStep, DEFAULT_EXTERNAL_FOOTPRINT, DEFAULT_MAX_DIST);
 
     }
 
