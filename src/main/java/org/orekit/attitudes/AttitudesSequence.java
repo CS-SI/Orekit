@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,6 +30,8 @@ import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.functions.EventFunction;
+import org.orekit.propagation.events.functions.EventFunctionModifier;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeInterpolator;
@@ -177,6 +179,9 @@ public class AttitudesSequence extends AbstractSwitchingAttitudeProvider {
     /** Switch specification. Handles the transition. */
     public class Switch extends AbstractAttitudeSwitch {
 
+        /** Event function. */
+        private final SwitchEventFunction switchEventFunction;
+
         /** Duration of the transition between the past and future attitude laws. */
         private final double transitionTime;
 
@@ -206,6 +211,7 @@ public class AttitudesSequence extends AbstractSwitchingAttitudeProvider {
             super(event, switchOnIncrease, switchOnDecrease, past, future, switchHandler);
             this.transitionTime   = transitionTime;
             this.transitionFilter = transitionFilter;
+            this.switchEventFunction = new SwitchEventFunction(event.getEventFunction());
         }
 
         /** {@inheritDoc} */
@@ -228,14 +234,14 @@ public class AttitudesSequence extends AbstractSwitchingAttitudeProvider {
         }
 
         @Override
-        public boolean dependsOnMainVariablesOnly() {
-            return false;
+        public EventFunction getEventFunction() {
+            return switchEventFunction;
         }
 
         /** {@inheritDoc} */
         @Override
         public double g(final SpacecraftState s) {
-            return getDetector().g(forward ? s : s.shiftedBy(-transitionTime));
+            return getEventFunction().value(forward ? s : s.shiftedBy(-transitionTime));
         }
 
         /** {@inheritDoc} */
@@ -295,6 +301,29 @@ public class AttitudesSequence extends AbstractSwitchingAttitudeProvider {
                 return getDetector().getHandler().eventOccurred(s, getDetector(), increasing);
             }
 
+        }
+
+        /** Local switch event function.
+         * @since 14.0
+         * */
+        private class SwitchEventFunction implements EventFunctionModifier {
+
+            /** Wrapped event function. */
+            private final EventFunction function;
+
+            SwitchEventFunction(final EventFunction function) {
+                this.function = function;
+            }
+
+            @Override
+            public EventFunction getBaseFunction() {
+                return function;
+            }
+
+            @Override
+            public boolean dependsOnMainVariablesOnly() {
+                return false;
+            }
         }
 
         /** Provider for transition phases.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -124,9 +124,7 @@ public class GeodeticPoint implements Serializable {
      */
     public Vector3D getZenith() {
         if (zenith == null) {
-            final SinCos scLat = FastMath.sinCos(latitude);
-            final SinCos scLon = FastMath.sinCos(longitude);
-            zenith = new Vector3D(scLon.cos() * scLat.cos(), scLon.sin() * scLat.cos(), scLat.sin());
+            zenith = new Vector3D(longitude, latitude);
         }
         return zenith;
     }

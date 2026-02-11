@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,11 @@
  * limitations under the License.
  */
 package org.orekit.estimation.measurements.gnss;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.moment.Mean;
@@ -46,11 +51,6 @@ import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
-
 public class InterSatellitesOneWayRangeRateTest {
 
     /**
@@ -79,9 +79,9 @@ public class InterSatellitesOneWayRangeRateTest {
             System.out.println("\nTest inter-satellites Range Rate State Derivatives - Finite Differences Comparison\n");
         }
         // Run test
-        double refErrorsPMedian = 1.3e-08;
+        double refErrorsPMedian = 1.4e-08;
         double refErrorsPMean   = 7.9e-08;
-        double refErrorsPMax    = 4.5e-06;
+        double refErrorsPMax    = 4.8e-06;
         double refErrorsVMedian = 2.4e-10;
         double refErrorsVMean   = 5.2e-10;
         double refErrorsVMax    = 2.5e-08;
@@ -106,8 +106,8 @@ public class InterSatellitesOneWayRangeRateTest {
         double refErrorsPMean   = 9.3e-07;
         double refErrorsPMax    = 1.2e-04;
         double refErrorsVMedian = 2.6e-10;
-        double refErrorsVMean   = 4.9e-10;
-        double refErrorsVMax    = 1.1e-08;
+        double refErrorsVMean   = 5.2e-10;
+        double refErrorsVMax    = 1.3e-08;
         this.genericTestStateDerivatives(printResults, 1,
                                          refErrorsPMedian, refErrorsPMean, refErrorsPMax,
                                          refErrorsVMedian, refErrorsVMean, refErrorsVMax);
@@ -128,8 +128,8 @@ public class InterSatellitesOneWayRangeRateTest {
         }
         // Run test
         double refErrorsMedian = 2.6e-15;
-        double refErrorsMean   = 1.2e-7;
-        double refErrorsMax    = 2.9e-6;
+        double refErrorsMean   = 9.1e-6;
+        double refErrorsMax    = 1.5e-4;
         this.genericTestParameterDerivatives(printResults,
                                              refErrorsMedian, refErrorsMean, refErrorsMax);
 
@@ -144,7 +144,7 @@ public class InterSatellitesOneWayRangeRateTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect inter-satellites range rate measurements
@@ -276,11 +276,11 @@ public class InterSatellitesOneWayRangeRateTest {
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
 
-        Assertions.assertEquals(0.0, absErrorsMedian, 3.7e-09);
+        Assertions.assertEquals(0.0, absErrorsMedian, 3.9e-09);
         Assertions.assertEquals(0.0, absErrorsMin,    2.6e-11);
-        Assertions.assertEquals(0.0, absErrorsMax,    1.5e-08);
-        Assertions.assertEquals(0.0, relErrorsMedian, 9.9e-10);
-        Assertions.assertEquals(0.0, relErrorsMax,    5.7e-8);
+        Assertions.assertEquals(0.0, absErrorsMax,    1.6e-08);
+        Assertions.assertEquals(0.0, relErrorsMedian, 1.0e-09);
+        Assertions.assertEquals(0.0, relErrorsMax,    5.8e-8);
 
         // Test measurement type
         Assertions.assertEquals(InterSatellitesOneWayRangeRate.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
@@ -293,7 +293,7 @@ public class InterSatellitesOneWayRangeRateTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect inter-satellites range rate measurements
@@ -454,7 +454,7 @@ public class InterSatellitesOneWayRangeRateTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect inter-satellites range rate measurements

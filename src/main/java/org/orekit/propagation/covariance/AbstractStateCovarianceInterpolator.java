@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -116,6 +116,12 @@ public abstract class AbstractStateCovarianceInterpolator
         this.outPositionAngleType = outPositionAngleType;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public List<TimeInterpolator<? extends TimeStamped>> getSubInterpolators() {
+        return Collections.singletonList(orbitInterpolator);
+    }
+
     /**
      * Interpolate orbit and associated covariance.
      *
@@ -171,11 +177,6 @@ public abstract class AbstractStateCovarianceInterpolator
      */
     public TimeInterpolator<Orbit> getOrbitInterpolator() {
         return orbitInterpolator;
-    }
-
-    @Override
-    public List<TimeInterpolator<? extends TimeStamped>> getSubInterpolators() {
-        return Collections.singletonList(orbitInterpolator);
     }
 
     /**

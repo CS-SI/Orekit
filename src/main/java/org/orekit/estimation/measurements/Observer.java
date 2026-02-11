@@ -1,5 +1,5 @@
-/* Copyright 2002-2025 Brianna Aubin
- * Licensed to Hawkeye 360 (HE360) under one or more
+/* Copyright 2025-2026 Hawkeye 360 (HE360)
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,31 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.estimation.measurements.signal.FieldSignalTravelTimeAdjustableEmitter;
+import org.orekit.estimation.measurements.signal.SignalTravelTimeAdjustableEmitter;
+import org.orekit.frames.FieldTransform;
+import org.orekit.frames.Frame;
+import org.orekit.frames.Transform;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.clocks.ClockOffset;
+import org.orekit.time.clocks.FieldClockOffset;
+import org.orekit.time.clocks.QuadraticFieldClockModel;
+import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Abstract interface that contains those methods necessary
  *  for both space and ground-based satellite observers.
@@ -24,7 +48,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author Brianna Aubin
  * @since 14.0
  */
-interface Observer  {
+public interface Observer extends MeasurementObject {
 
     enum ObserverType {
         /** Indicates a ground-based observation station. */
@@ -36,13 +60,215 @@ interface Observer  {
 
     /** Get the type of object being used in measurement observations.
      * @return string value
-     * @since 14.0
-     */
+=     */
     ObserverType getObserverType();
 
     /** Return the PVCoordinatesProvider.
      * @return pos/vel coordinates provider
-     * @since 14.0
      */
     PVCoordinatesProvider getPVCoordinatesProvider();
+
+    /** Return the FieldPVCoordinatesProvider.
+     * @param freeParameters number of estimated parameters
+     * @param parameterIndices indices of the estimated parameters in derivatives computations, must be driver
+     * @return pos/vel coordinates provider for values with Gradient field
+     * @since 14.0
+     */
+    FieldPVCoordinatesProvider<Gradient> getFieldPVCoordinatesProvider(int freeParameters,
+                                                                       Map<String, Integer> parameterIndices);
+
+    /** Get the transform between offset frame and inertial frame.
+     * <p>
+     * The offset frame takes the <em>current</em> position offset,
+     * polar motion and the meridian shift into account. The frame
+     * returned is disconnected from later changes in the parameters.
+     * When the {@link ParameterDriver parameters} managing these
+     * offsets are changed, the method must be called again to retrieve
+     * a new offset frame.
+     * </p>
+     * @param inertial inertial frame to transform to
+     * @param date date of the transform
+     * @param clockOffsetAlreadyApplied if true, the specified {@code date} is as read
+     * by the ground station clock (i.e. clock offset <em>not</em> compensated), if false,
+     * the specified {@code date} was already compensated and is a physical absolute date
+     * @return transform between offset frame and inertial frame, at <em>real</em> measurement
+     * date (i.e. with clock, Earth and station offsets applied)
+     */
+    Transform getOffsetToInertial(Frame inertial, AbsoluteDate date, boolean clockOffsetAlreadyApplied);
+
+    /** Get the transform between offset frame and inertial frame with derivatives.
+     * <p>
+     * As the East and North vectors are not well defined at pole, the derivatives
+     * of these two vectors diverge to infinity as we get closer to the pole.
+     * So this method should not be used for stations less than 0.0001 degree from
+     * either poles.
+     * </p>
+     * @param inertial inertial frame to transform to
+     * @param clockDate date of the transform, clock offset and its derivatives already compensated
+     * @param freeParameters total number of free parameters in the gradient
+     * @param indices indices of the estimated parameters in derivatives computations, must be driver
+     * span name in map, not driver name or will not give right results (see {@link ParameterDriver#getValue(int, Map)})
+     * @return transform between offset frame and inertial frame, at specified date
+     */
+    default FieldTransform<Gradient> getOffsetToInertial(Frame inertial, AbsoluteDate clockDate,
+                                                         int freeParameters, Map<String, Integer> indices) {
+        // take clock offset into account
+        final Gradient offset = getClockOffsetDriver().getValue(freeParameters, indices, clockDate);
+        final FieldAbsoluteDate<Gradient> offsetCompensatedDate = new FieldAbsoluteDate<>(clockDate, offset.negate());
+
+        return getOffsetToInertial(inertial, offsetCompensatedDate, freeParameters, indices);
+    }
+
+    /** Get the transform between offset frame and inertial frame with derivatives.
+     * <p>
+     * As the East and North vectors are not well defined at pole, the derivatives
+     * of these two vectors diverge to infinity as we get closer to the pole.
+     * So this method should not be used for stations less than 0.0001 degree from
+     * either poles.
+     * </p>
+     * @param inertial inertial frame to transform to
+     * @param offsetCompensatedDate date of the transform, clock offset and its derivatives already compensated
+     * @param freeParameters total number of free parameters in the gradient
+     * @param indices indices of the estimated parameters in derivatives computations, must be driver
+     * span name in map, not driver name or will not give right results (see {@link ParameterDriver#getValue(int, Map)})
+     * @return transform between offset frame and inertial frame, at specified date
+     */
+    FieldTransform<Gradient> getOffsetToInertial(Frame inertial, FieldAbsoluteDate<Gradient> offsetCompensatedDate,
+                                                 int freeParameters, Map<String, Integer> indices);
+
+    /** Create a map of the free parameter values.
+     * @param states list of ObservableSatellite measurement states
+     * @param parameterDrivers list of all parameter values for the measurement
+     * @return map of the free parameter values
+     */
+    default Map<String, Integer> getParameterIndices(SpacecraftState[] states,
+                                                     List<ParameterDriver> parameterDrivers) {
+
+        // measurement derivatives are computed with respect to spacecraft state in inertial frame
+        // Parameters:
+        //  - 6k..6k+2 - Position of spacecraft k (counting k from 0 to nbSat-1) in inertial frame
+        //  - 6k+3..6k+5 - Velocity of spacecraft k (counting k from 0 to nbSat-1) in inertial frame
+        //  - 6nbSat..n - measurements parameters (clock offset, etc)
+        int nbParams = 6 * states.length;
+        final Map<String, Integer> paramIndices = new HashMap<>();
+        for (ParameterDriver measurementDriver : parameterDrivers) {
+            if (measurementDriver.isSelected()) {
+                for (Span<String> span = measurementDriver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    paramIndices.put(span.getData(), nbParams++);
+                }
+            }
+        }
+        return paramIndices;
+    }
+
+    /** Compute common estimation parameters when remote object is the receiver
+     * of the signal (e.g. ObservableSatellite sends signal to measuring ground station).
+     * @param states state(s) of all measured spacecraft
+     * @param localSat satellite whose state is being estimated
+     * @param measurementDate date when measurement was taken
+     * @param receiverClockOffsetAlreadyApplied if true, the specified {@code date} is as read
+     * by the receiver clock (i.e. clock offset <em>not</em> compensated), if false,
+     * the specified {@code date} was already compensated and is a physical absolute date
+     * @return common parameters
+     */
+    default CommonParametersWithoutDerivatives computeRemoteParametersWithout(SpacecraftState[] states,
+                                                                              ObservableSatellite localSat,
+                                                                              AbsoluteDate measurementDate,
+                                                                              boolean receiverClockOffsetAlreadyApplied) {
+
+        // Coordinates of the measured spacecraft
+        final Frame                    frame = states[0].getFrame();
+        final TimeStampedPVCoordinates pva   = states[0].getPVCoordinates();
+
+        // transform between remote observer frame and inertial frame
+        final Transform    offsetToInertialDownlink = getOffsetToInertial(frame, measurementDate, receiverClockOffsetAlreadyApplied);
+        final AbsoluteDate downlinkDate             = offsetToInertialDownlink.getDate();
+        final ClockOffset  localClockOffset         = localSat.getQuadraticClockModel().getOffset(measurementDate);
+
+        // Observer position in inertial frame at end of the downlink leg
+        final TimeStampedPVCoordinates origin = new TimeStampedPVCoordinates(downlinkDate,
+                                                                             Vector3D.ZERO, Vector3D.ZERO);
+        final TimeStampedPVCoordinates satelliteDownlink = offsetToInertialDownlink.transformPVCoordinates(origin);
+
+        // Coordinates provider for emitting object (observed spacecraft)
+        final PVCoordinatesProvider pvCoordinatesProvider = AbstractMeasurementObject.extractPVCoordinatesProvider(states[0], pva);
+
+        // Downlink delay / determine time of emission of signal by ObservableSatellite
+        final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = new SignalTravelTimeAdjustableEmitter(pvCoordinatesProvider);
+        final double tauD = signalTimeOfFlight.computeDelay(pva.getDate(), satelliteDownlink.getPosition(), downlinkDate, frame);
+
+        // Transit state & Transit state (re)computed with gradients
+        final double          delta             = downlinkDate.durationFrom(states[0].getDate());
+        final double          deltaMTauD        = delta - tauD;
+        final SpacecraftState transitState      = states[0].shiftedBy(deltaMTauD);
+        final ClockOffset     remoteClockOffset = getQuadraticClockModel().getOffset(measurementDate);
+
+        return new CommonParametersWithoutDerivatives(states[0], tauD,
+                                                      localClockOffset, remoteClockOffset,
+                                                      transitState, transitState.getPVCoordinates(),
+                                                      satelliteDownlink);
+    }
+
+    /** Compute common estimation parameters with derivative when remote object
+     * is the receiver of the signal.
+     * @param states state(s) of all measured spacecraft
+     * @param localSat satellite whose state is being estimated
+     * @param measurementDate date when measurement was taken
+     * @param parameterDrivers list of parameter drivers associated with measurement
+     * @return common parameters
+     */
+    default CommonParametersWithDerivatives computeRemoteParametersWith(SpacecraftState[] states,
+                                                                        ObservableSatellite localSat,
+                                                                        AbsoluteDate measurementDate,
+                                                                        List<ParameterDriver> parameterDrivers) {
+
+        // Create the parameter indices map
+        final Frame                frame        = states[0].getFrame();
+        final Map<String, Integer> paramIndices = getParameterIndices(states, parameterDrivers);
+        final int                  nbParams     = 6 * states.length + paramIndices.size();
+
+        // Coordinates of the spacecraft expressed as a gradient
+        final TimeStampedFieldPVCoordinates<Gradient> pva = AbstractMeasurement.getCoordinates(states[0], 0, nbParams);
+
+        // transform between Observer object and inertial frame, expressed as a gradient
+        // The components of the Observer's position in offset frame are the 3 last derivative parameters
+        final FieldTransform<Gradient> offsetToInertialDownlink =
+                        getOffsetToInertial(frame, measurementDate, nbParams, paramIndices);
+        final FieldAbsoluteDate<Gradient> downlinkDate = offsetToInertialDownlink.getFieldDate();
+
+        // Get local satellite clock offset
+        final QuadraticFieldClockModel<Gradient> localClock = localSat.getQuadraticClockModel().
+                                                              toGradientModel(nbParams, paramIndices, measurementDate);
+        final FieldClockOffset<Gradient>   localClockOffset = localClock.getOffset(downlinkDate);
+
+        // Observer position in inertial frame at end of the downlink leg
+        final GradientField           field = GradientField.getField(nbParams);
+        final FieldVector3D<Gradient> zero  = FieldVector3D.getZero(field);
+        final TimeStampedFieldPVCoordinates<Gradient> satelliteDownlink =
+                        offsetToInertialDownlink.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(downlinkDate,
+                                                                                                            zero, zero, zero));
+
+        // Form coordinates provider
+        final FieldPVCoordinatesProvider<Gradient> fieldPVCoordinatesProvider = AbstractMeasurementObject.extractFieldPVCoordinatesProvider(states[0], pva);
+
+        // Downlink delay
+        final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer = new FieldSignalTravelTimeAdjustableEmitter<>(fieldPVCoordinatesProvider);
+        final Gradient tauD = fieldComputer.computeDelay(pva.getDate(), satelliteDownlink.getPosition(), downlinkDate, frame);
+
+        // Transit state & Transit state (re)computed with gradients
+        final Gradient        delta        = downlinkDate.durationFrom(states[0].getDate());
+        final Gradient        deltaMTauD   = tauD.negate().add(delta);
+        final SpacecraftState transitState = states[0].shiftedBy(deltaMTauD.getValue());
+        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(field, states[0].getDate()).shiftedBy(deltaMTauD);
+        final TimeStampedFieldPVCoordinates<Gradient> transitPV = fieldPVCoordinatesProvider.getPVCoordinates(fieldDate, frame);
+
+        // Get remote clock offset at time of measurement reception
+        final QuadraticFieldClockModel<Gradient> remoteClock       = getQuadraticFieldClock(nbParams, downlinkDate.toAbsoluteDate(), paramIndices);
+        final FieldClockOffset<Gradient>         remoteClockOffset = remoteClock.getOffset(downlinkDate);
+
+        return new CommonParametersWithDerivatives(states[0], paramIndices, tauD,
+                                                   localClockOffset, remoteClockOffset,
+                                                   transitState, transitPV, satelliteDownlink);
+    }
+
 }

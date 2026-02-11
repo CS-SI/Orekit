@@ -19,8 +19,12 @@ package org.orekit.propagation.events;
 
 import java.util.Arrays;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.EventFunction;
+import org.orekit.propagation.events.functions.EventFunctionModifier;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 
@@ -91,6 +95,9 @@ public class EventSlopeFilter<T extends EventDetector> implements EventDetector 
     /** Specialized event handler. */
     private final LocalHandler<T> handler;
 
+    /** Event function. */
+    private final EventFunction eventFunction;
+
     /** Wrap an {@link EventDetector event detector}.
      * @param rawDetector event detector to wrap
      * @param filter filter to use
@@ -113,6 +120,13 @@ public class EventSlopeFilter<T extends EventDetector> implements EventDetector 
         this.filterType = filterType;
         this.transformers = new Transformer[HISTORY_SIZE];
         this.updates      = new AbsoluteDate[HISTORY_SIZE];
+        this.eventFunction = new LocalEventFunction();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public EventFunction getEventFunction() {
+        return eventFunction;
     }
 
     /** {@inheritDoc} */
@@ -121,7 +135,7 @@ public class EventSlopeFilter<T extends EventDetector> implements EventDetector 
         return handler;
     }
 
-
+    /** {@inheritDoc} */
     @Override
     public EventDetectionSettings getDetectionSettings() {
         return detectionSettings;
@@ -183,94 +197,9 @@ public class EventSlopeFilter<T extends EventDetector> implements EventDetector 
         rawDetector.finish(state);
     }
 
-    /**  {@inheritDoc} */
     @Override
     public double g(final SpacecraftState s) {
-
-        final double rawG = rawDetector.g(s);
-
-        // search which transformer should be applied to g
-        if (isForward()) {
-            final int last = transformers.length - 1;
-            if (extremeT.compareTo(s.getDate()) < 0) {
-                // we are at the forward end of the history
-
-                // check if a new rough root has been crossed
-                final Transformer previous = transformers[last];
-                final Transformer next     = filterType.selectTransformer(previous, rawG, forward);
-                if (next != previous) {
-                    // there is a root somewhere between extremeT and t.
-                    // the new transformer is valid for t (this is how we have just computed
-                    // it above), but it is in fact valid on both sides of the root, so
-                    // it was already valid before t and even up to previous time. We store
-                    // the switch at extremeT for safety, to ensure the previous transformer
-                    // is not applied too close of the root
-                    System.arraycopy(updates,      1, updates,      0, last);
-                    System.arraycopy(transformers, 1, transformers, 0, last);
-                    updates[last]      = extremeT;
-                    transformers[last] = next;
-                }
-
-                extremeT = s.getDate();
-
-                // apply the transform
-                return next.transformed(rawG);
-
-            } else {
-                // we are in the middle of the history
-
-                // select the transformer
-                for (int i = last; i > 0; --i) {
-                    if (updates[i].compareTo(s.getDate()) <= 0) {
-                        // apply the transform
-                        return transformers[i].transformed(rawG);
-                    }
-                }
-
-                return transformers[0].transformed(rawG);
-
-            }
-        } else {
-            if (s.getDate().compareTo(extremeT) < 0) {
-                // we are at the backward end of the history
-
-                // check if a new rough root has been crossed
-                final Transformer previous = transformers[0];
-                final Transformer next     = filterType.selectTransformer(previous, rawG, forward);
-                if (next != previous) {
-                    // there is a root somewhere between extremeT and t.
-                    // the new transformer is valid for t (this is how we have just computed
-                    // it above), but it is in fact valid on both sides of the root, so
-                    // it was already valid before t and even up to previous time. We store
-                    // the switch at extremeT for safety, to ensure the previous transformer
-                    // is not applied too close of the root
-                    System.arraycopy(updates,      0, updates,      1, updates.length - 1);
-                    System.arraycopy(transformers, 0, transformers, 1, transformers.length - 1);
-                    updates[0]      = extremeT;
-                    transformers[0] = next;
-                }
-
-                extremeT = s.getDate();
-
-                // apply the transform
-                return next.transformed(rawG);
-
-            } else {
-                // we are in the middle of the history
-
-                // select the transformer
-                for (int i = 0; i < updates.length - 1; ++i) {
-                    if (s.getDate().compareTo(updates[i]) <= 0) {
-                        // apply the transform
-                        return transformers[i].transformed(rawG);
-                    }
-                }
-
-                return transformers[updates.length - 1].transformed(rawG);
-
-            }
-        }
-
+        return eventFunction.value(s);
     }
 
     /** Check if the current propagation is forward or backward.
@@ -300,4 +229,110 @@ public class EventSlopeFilter<T extends EventDetector> implements EventDetector 
 
     }
 
+    /**
+     * Local event function.
+     * @since 14.0
+     */
+    private class LocalEventFunction implements EventFunctionModifier {
+
+        @Override
+        public EventFunction getBaseFunction() {
+            return rawDetector.getEventFunction();
+        }
+
+        @Override
+        public <S extends CalculusFieldElement<S>> S value(final FieldSpacecraftState<S> fieldState) {
+            return fieldState.getMass().newInstance(value(fieldState.toSpacecraftState()));
+        }
+
+        /**  {@inheritDoc} */
+        @Override
+        public double value(final SpacecraftState s) {
+
+            final double rawG = rawDetector.g(s);
+
+            // search which transformer should be applied to g
+            if (isForward()) {
+                final int last = transformers.length - 1;
+                if (extremeT.compareTo(s.getDate()) < 0) {
+                    // we are at the forward end of the history
+
+                    // check if a new rough root has been crossed
+                    final Transformer previous = transformers[last];
+                    final Transformer next     = filterType.selectTransformer(previous, rawG, forward);
+                    if (next != previous) {
+                        // there is a root somewhere between extremeT and t.
+                        // the new transformer is valid for t (this is how we have just computed
+                        // it above), but it is in fact valid on both sides of the root, so
+                        // it was already valid before t and even up to previous time. We store
+                        // the switch at extremeT for safety, to ensure the previous transformer
+                        // is not applied too close of the root
+                        System.arraycopy(updates,      1, updates,      0, last);
+                        System.arraycopy(transformers, 1, transformers, 0, last);
+                        updates[last]      = extremeT;
+                        transformers[last] = next;
+                    }
+
+                    extremeT = s.getDate();
+
+                    // apply the transform
+                    return next.transformed(rawG);
+
+                } else {
+                    // we are in the middle of the history
+
+                    // select the transformer
+                    for (int i = last; i > 0; --i) {
+                        if (updates[i].compareTo(s.getDate()) <= 0) {
+                            // apply the transform
+                            return transformers[i].transformed(rawG);
+                        }
+                    }
+
+                    return transformers[0].transformed(rawG);
+
+                }
+            } else {
+                if (s.getDate().compareTo(extremeT) < 0) {
+                    // we are at the backward end of the history
+
+                    // check if a new rough root has been crossed
+                    final Transformer previous = transformers[0];
+                    final Transformer next     = filterType.selectTransformer(previous, rawG, forward);
+                    if (next != previous) {
+                        // there is a root somewhere between extremeT and t.
+                        // the new transformer is valid for t (this is how we have just computed
+                        // it above), but it is in fact valid on both sides of the root, so
+                        // it was already valid before t and even up to previous time. We store
+                        // the switch at extremeT for safety, to ensure the previous transformer
+                        // is not applied too close of the root
+                        System.arraycopy(updates,      0, updates,      1, updates.length - 1);
+                        System.arraycopy(transformers, 0, transformers, 1, transformers.length - 1);
+                        updates[0]      = extremeT;
+                        transformers[0] = next;
+                    }
+
+                    extremeT = s.getDate();
+
+                    // apply the transform
+                    return next.transformed(rawG);
+
+                } else {
+                    // we are in the middle of the history
+
+                    // select the transformer
+                    for (int i = 0; i < updates.length - 1; ++i) {
+                        if (s.getDate().compareTo(updates[i]) <= 0) {
+                            // apply the transform
+                            return transformers[i].transformed(rawG);
+                        }
+                    }
+
+                    return transformers[updates.length - 1].transformed(rawG);
+
+                }
+            }
+
+        }
+    }
 }

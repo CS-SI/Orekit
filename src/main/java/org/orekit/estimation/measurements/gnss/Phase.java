@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,13 +17,14 @@
 package org.orekit.estimation.measurements.gnss;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.orekit.estimation.measurements.AbstractMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
-import org.orekit.estimation.measurements.GroundReceiverCommonParametersWithDerivatives;
-import org.orekit.estimation.measurements.GroundReceiverCommonParametersWithoutDerivatives;
-import org.orekit.estimation.measurements.GroundReceiverMeasurement;
+import org.orekit.estimation.measurements.CommonParametersWithDerivatives;
+import org.orekit.estimation.measurements.CommonParametersWithoutDerivatives;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.propagation.SpacecraftState;
@@ -48,7 +49,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Maxime Journot
  * @since 9.2
  */
-public class Phase extends GroundReceiverMeasurement<Phase> {
+public class Phase extends AbstractMeasurement<Phase> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "Phase";
@@ -58,6 +59,9 @@ public class Phase extends GroundReceiverMeasurement<Phase> {
 
     /** Wavelength of the phase observed value [m]. */
     private final double wavelength;
+
+    /** Ground station that receives signal from satellite. */
+    private final GroundStation station;
 
     /** Simple constructor.
      * @param station ground station from which measurement is performed
@@ -74,12 +78,21 @@ public class Phase extends GroundReceiverMeasurement<Phase> {
                  final double phase, final double wavelength, final double sigma,
                  final double baseWeight, final ObservableSatellite satellite,
                  final AmbiguityCache cache) {
-        super(station, false, date, phase, sigma, baseWeight, satellite);
+        super(date, false, phase, sigma, baseWeight, Collections.singletonList(satellite));
         ambiguityDriver = cache.getAmbiguity(satellite.getName(),
-                                             station.getBaseFrame().getName(),
+                                             station.getName(),
                                              wavelength);
+        addParametersDrivers(station.getParametersDrivers());
         addParameterDriver(ambiguityDriver);
+        this.station = station;
         this.wavelength = wavelength;
+    }
+
+    /** Get receiving ground station.
+     * @return ground station
+     */
+    public final GroundStation getStation() {
+        return station;
     }
 
     /** Get the wavelength.
@@ -103,7 +116,8 @@ public class Phase extends GroundReceiverMeasurement<Phase> {
                                                                                       final int evaluation,
                                                                                       final SpacecraftState[] states) {
 
-        final GroundReceiverCommonParametersWithoutDerivatives common = computeCommonParametersWithout(states[0]);
+        final CommonParametersWithoutDerivatives common = getStation().
+            computeRemoteParametersWithout(states, getSatellites().get(0), getDate(), false);
 
         // prepare the evaluation
         final EstimatedMeasurementBase<Phase> estimated =
@@ -112,7 +126,7 @@ public class Phase extends GroundReceiverMeasurement<Phase> {
                                                            common.getTransitState()
                                                        }, new TimeStampedPVCoordinates[] {
                                                            common.getTransitPV(),
-                                                           common.getStationDownlink()
+                                                           common.getRemotePV()
                                                        });
 
         // Clock offsets
@@ -147,7 +161,8 @@ public class Phase extends GroundReceiverMeasurement<Phase> {
         //  - 0..2 - Position of the spacecraft in inertial frame
         //  - 3..5 - Velocity of the spacecraft in inertial frame
         //  - 6..n - station parameters (ambiguity, clock offset, station offsets, pole, prime meridian...)
-        final GroundReceiverCommonParametersWithDerivatives common = computeCommonParametersWithDerivatives(state);
+        final CommonParametersWithDerivatives common = getStation().
+            computeRemoteParametersWith(states, getSatellites().get(0), getDate(), getParametersDrivers());
         final int nbParams = common.getTauD().getFreeParameters();
 
         // prepare the evaluation
@@ -157,7 +172,7 @@ public class Phase extends GroundReceiverMeasurement<Phase> {
                                                        common.getTransitState()
                                                    }, new TimeStampedPVCoordinates[] {
                                                        common.getTransitPV().toTimeStampedPVCoordinates(),
-                                                       common.getStationDownlink().toTimeStampedPVCoordinates()
+                                                       common.getRemotePV().toTimeStampedPVCoordinates()
                                                    });
 
         // Clock offsets

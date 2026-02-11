@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,6 +43,9 @@ public final class KeplerianAnomalyUtility {
      * elliptic and hyperbolic eccentric anomalies differences.
      */
     static final double CONVERGENCE_THRESHOLD = 1e-10;
+
+    /** Tolerance for stopping criterion in iterative conversion from mean to eccentric angle. */
+    static final double RELATIVE_CONVERGENCE_THRESHOLD = 1.0e-13;
 
     /**
      * Maximum number of iterations in the iterative computation of

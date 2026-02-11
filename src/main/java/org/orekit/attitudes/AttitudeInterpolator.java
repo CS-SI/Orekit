@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,8 +19,10 @@ package org.orekit.attitudes;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbstractTimeInterpolator;
 import org.orekit.time.TimeInterpolator;
+import org.orekit.time.TimeStamped;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -67,6 +69,11 @@ public class AttitudeInterpolator extends AbstractTimeInterpolator<Attitude> {
      */
     public TimeInterpolator<TimeStampedAngularCoordinates> getAngularInterpolator() {
         return interpolator;
+    }
+
+    @Override
+    public List<TimeInterpolator<? extends TimeStamped>> getSubInterpolators() {
+        return Collections.singletonList(interpolator);
     }
 
     /** {@inheritDoc} */

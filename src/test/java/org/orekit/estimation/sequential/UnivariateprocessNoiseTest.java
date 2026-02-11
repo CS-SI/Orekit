@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -254,7 +254,7 @@ public class UnivariateprocessNoiseTest {
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
-        final NumericalPropagatorBuilder propagatorBuilder = context.createBuilder(orbitType, positionAngleType, perfectStart,
+        final NumericalPropagatorBuilder propagatorBuilder = context.createNumerical(orbitType, positionAngleType, perfectStart,
                                                                                    minStep, maxStep, dP,
                                                                                    Force.POTENTIAL, Force.THIRD_BODY_MOON,
                                                                                    Force.THIRD_BODY_SUN,
@@ -696,7 +696,7 @@ public class UnivariateprocessNoiseTest {
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
-        final NumericalPropagatorBuilder propagatorBuilder = context.createBuilder(orbitType, positionAngleType, perfectStart,
+        final NumericalPropagatorBuilder propagatorBuilder = context.createNumerical(orbitType, positionAngleType, perfectStart,
                                                                                    minStep, maxStep, dP,
                                                                                    Force.POTENTIAL, Force.THIRD_BODY_MOON,
                                                                                    Force.THIRD_BODY_SUN,

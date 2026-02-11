@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -225,7 +225,7 @@ class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDeterminati
 
         // Batch LS values
         //final double[] refStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
-        final double[] refStatRange = { -5.910596, 3.306618, -0.037131, 1.454304 };
+        final double[] refStatRange = { -5.910596, 3.306617, -0.037131, 1.454304 };
 
         testLageos2(distanceAccuracy, velocityAccuracy, stationOffSet, rangeBias, refStatRange,
                 smoothDistanceAccuracy, smoothVelocityAccuracy, distanceStd, velocityStd,

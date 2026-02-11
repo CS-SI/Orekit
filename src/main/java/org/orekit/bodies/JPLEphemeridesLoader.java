@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.hipparchus.CalculusFieldElement;
@@ -48,6 +49,7 @@ import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.Constants;
@@ -85,8 +87,9 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
     /** Default supported files name pattern for IMCCE INPOP files. */
     public static final String DEFAULT_INPOP_SUPPORTED_NAMES = "^inpop.*\\.dat$";
 
-    /** 50 days in seconds. */
-    private static final double FIFTY_DAYS = 50 * Constants.JULIAN_DAY;
+    /** 50 days. */
+    private static final TimeOffset FIFTY_DAYS =
+            new TimeOffset(50, TimeUnit.DAYS);
 
     /** DE number used by INPOP files. */
     private static final int INPOP_DE_NUMBER = 100;
@@ -179,7 +182,10 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
         NEPTUNE,
 
         /** Constant for Pluto. */
-        PLUTO
+        PLUTO,
+
+        /** Constant for Lunar librations. */
+        LIBRATION
 
     }
 
@@ -246,7 +252,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
     private double maxChunksDuration;
 
     /** Current file chunks duration (in seconds). */
-    private double chunksDuration;
+    private TimeOffset chunksDuration;
 
     /** Index of the first data for selected body. */
     private int firstIndex;
@@ -315,10 +321,10 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
 
         ephemerides = new GenericTimeStampedCache<>(
                 2, OrekitConfiguration.getCacheSlotsNumber(),
-                Double.POSITIVE_INFINITY, FIFTY_DAYS,
+                Double.POSITIVE_INFINITY, FIFTY_DAYS.toDouble(),
                 new EphemerisParser());
         maxChunksDuration = Double.NaN;
-        chunksDuration    = Double.NaN;
+        chunksDuration    = null;
 
     }
 
@@ -388,6 +394,17 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
                                     gm, scale, iauPole, definingFrameAlignedWithICRF,
                                     inertialFrameName, bodyOrientedFrameName);
 
+    }
+
+    /** Load libration.
+     * @return loaded libration
+     * @since 14.0
+     */
+    public JPLLibration loadLibration() {
+        final RawPVProvider rawPVProvider = new EphemerisRawPVProvider();
+
+        // build the libration
+        return new JPLLibration(rawPVProvider);
     }
 
     /** Get astronomical unit.
@@ -554,37 +571,48 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
         finalEpoch = extractDate(record, HEADER_END_EPOCH_OFFSET);
         boolean ok = finalEpoch.compareTo(startEpoch) > 0;
 
-        // indices of the Chebyshev coefficients for each ephemeris
-        for (int i = 0; i < 12; ++i) {
-            final int row1 = extractInt(record, HEADER_CHEBISHEV_INDICES_OFFSET     + 12 * i);
-            final int row2 = extractInt(record, HEADER_CHEBISHEV_INDICES_OFFSET + 4 + 12 * i);
-            final int row3 = extractInt(record, HEADER_CHEBISHEV_INDICES_OFFSET + 8 + 12 * i);
-            ok = ok && row1 >= 0 && row2 >= 0 && row3 >= 0;
-            if (i ==  0 && loadType == EphemerisType.MERCURY    ||
-                    i ==  1 && loadType == EphemerisType.VENUS      ||
-                    i ==  2 && loadType == EphemerisType.EARTH_MOON ||
-                    i ==  3 && loadType == EphemerisType.MARS       ||
-                    i ==  4 && loadType == EphemerisType.JUPITER    ||
-                    i ==  5 && loadType == EphemerisType.SATURN     ||
-                    i ==  6 && loadType == EphemerisType.URANUS     ||
-                    i ==  7 && loadType == EphemerisType.NEPTUNE    ||
-                    i ==  8 && loadType == EphemerisType.PLUTO      ||
-                    i ==  9 && loadType == EphemerisType.MOON       ||
-                    i == 10 && loadType == EphemerisType.SUN) {
-                firstIndex = row1;
-                coeffs     = row2;
-                chunks     = row3;
+        if (loadType == EphemerisType.LIBRATION) {
+            // indices of the Chebyshev coefficients for lunar librations
+            firstIndex = extractInt(record, HEADER_LIBRATION_INDICES_OFFSET);
+            coeffs     = extractInt(record, HEADER_LIBRATION_INDICES_OFFSET + 4);
+            chunks     = extractInt(record, HEADER_LIBRATION_INDICES_OFFSET + 8);
+            ok = ok && firstIndex >= 0 && coeffs >= 0 && chunks >= 0;
+            positionUnit = 1.0;
+        }
+        else {
+            // indices of the Chebyshev coefficients for each ephemeris
+            for (int i = 0; i < 12; ++i) {
+                final int row1 = extractInt(record, HEADER_CHEBISHEV_INDICES_OFFSET     + 12 * i);
+                final int row2 = extractInt(record, HEADER_CHEBISHEV_INDICES_OFFSET + 4 + 12 * i);
+                final int row3 = extractInt(record, HEADER_CHEBISHEV_INDICES_OFFSET + 8 + 12 * i);
+                ok = ok && row1 >= 0 && row2 >= 0 && row3 >= 0;
+                if (i ==  0 && loadType == EphemerisType.MERCURY    ||
+                        i ==  1 && loadType == EphemerisType.VENUS      ||
+                        i ==  2 && loadType == EphemerisType.EARTH_MOON ||
+                        i ==  3 && loadType == EphemerisType.MARS       ||
+                        i ==  4 && loadType == EphemerisType.JUPITER    ||
+                        i ==  5 && loadType == EphemerisType.SATURN     ||
+                        i ==  6 && loadType == EphemerisType.URANUS     ||
+                        i ==  7 && loadType == EphemerisType.NEPTUNE    ||
+                        i ==  8 && loadType == EphemerisType.PLUTO      ||
+                        i ==  9 && loadType == EphemerisType.MOON       ||
+                        i == 10 && loadType == EphemerisType.SUN) {
+                    firstIndex = row1;
+                    coeffs     = row2;
+                    chunks     = row3;
+                }
             }
         }
 
         // compute chunks duration
         final double timeSpan = extractDouble(record, HEADER_CHUNK_DURATION_OFFSET);
         ok = ok && timeSpan > 0 && timeSpan < 100;
-        chunksDuration = Constants.JULIAN_DAY * (timeSpan / chunks);
+        chunksDuration = new TimeOffset(timeSpan).divide(chunks).multiply(86400L);
         if (Double.isNaN(maxChunksDuration)) {
-            maxChunksDuration = chunksDuration;
+            maxChunksDuration = chunksDuration.toDouble();
         } else {
-            maxChunksDuration = FastMath.max(maxChunksDuration, chunksDuration);
+            maxChunksDuration = FastMath
+                    .max(maxChunksDuration, chunksDuration.toDouble());
         }
 
         // sanity checks
@@ -901,8 +929,8 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
                 entries.clear();
                 if (existingDate == null) {
                     // we want ephemeris data for the first time, set up an arbitrary first range
-                    start = date.shiftedBy(-FIFTY_DAYS);
-                    end   = date.shiftedBy(+FIFTY_DAYS);
+                    start = date.shiftedBy(FIFTY_DAYS.negate());
+                    end   = date.shiftedBy(FIFTY_DAYS);
                 } else if (existingDate.compareTo(date) <= 0) {
                     // we want to extend an existing range towards future dates
                     start = existingDate;
@@ -1029,12 +1057,19 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
             final int nbChunks    = chunks;
             final int nbCoeffs    = coeffs;
             final int first       = firstIndex;
-            final double duration = chunksDuration;
+            final TimeOffset duration = chunksDuration;
             for (int i = 0; i < nbChunks; ++i) {
 
                 // set up chunk validity range
                 final AbsoluteDate chunkStart = chunkEnd;
-                chunkEnd = (i == nbChunks - 1) ? rangeEnd : rangeStart.shiftedBy((i + 1) * duration);
+                if (i == nbChunks - 1) {
+                    chunkEnd = rangeEnd;
+                } else {
+                    chunkEnd = new AbsoluteDate(
+                            rangeStart,
+                            duration.multiply(i + 1),
+                            timeScale);
+                }
 
                 // extract Chebyshev coefficients for the selected body
                 // and convert them from kilometers to meters
@@ -1052,7 +1087,8 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
                 }
 
                 // build the position-velocity model for current chunk
-                entries.add(new PosVelChebyshev(chunkStart, timeScale, duration, xCoeffs, yCoeffs, zCoeffs));
+                entries.add(new PosVelChebyshev(chunkStart, timeScale,
+                        duration.toDouble(), xCoeffs, yCoeffs, zCoeffs));
 
             }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -51,7 +51,6 @@ import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -122,7 +121,7 @@ import org.orekit.utils.TimeSpanMap;
  *    ...
  * </pre>
  * <p>
- * Note that this model {@link #pathDelay(SpacecraftState, TopocentricFrame, double,
+ * Note that this model {@link IonosphericModel#pathDelay(SpacecraftState, org.orekit.utils.PVCoordinatesProvider, double,
  * double[]) pathDelay} methods <em>requires</em> the {@link TopocentricFrame topocentric frame}
  * to lie on a {@link OneAxisEllipsoid} body shape, because the single layer on which
  * pierce point is computed must be an ellipsoidal shape at some altitude.
@@ -134,7 +133,7 @@ import org.orekit.utils.TimeSpanMap;
  * @author Bryan Cazabonne
  *
  */
-public class GlobalIonosphereMapModel implements IonosphericModel, IonosphericDelayModel {
+public class GlobalIonosphereMapModel extends AbstractIonosphericModel  {
 
     /** Map of interpolable TEC. */
     private final TimeSpanMap<TECMapPair> tecMap;
@@ -156,14 +155,16 @@ public class GlobalIonosphereMapModel implements IonosphericModel, IonosphericDe
      * Constructor with supported names given by user. This constructor uses the {@link
      * DataContext#getDefault() default data context}.
      *
+     * @param earth earth body shape
      * @param supportedNames regular expression that matches the names of the IONEX files
      *                       to be loaded. See {@link DataProvidersManager#feed(String,
      *                       DataLoader)}.
-     * @see #GlobalIonosphereMapModel(String, DataProvidersManager, TimeScale, TimeInterpolator)
+     * @see #GlobalIonosphereMapModel(OneAxisEllipsoid, String, DataProvidersManager, TimeScale, TimeInterpolator)
+     * @since 14.0
      */
     @DefaultDataContext
-    public GlobalIonosphereMapModel(final String supportedNames) {
-        this(supportedNames,
+    public GlobalIonosphereMapModel(final OneAxisEllipsoid earth, final String supportedNames) {
+        this(earth, supportedNames,
              DataContext.getDefault().getDataProvidersManager(),
              DataContext.getDefault().getTimeScales().getUTC(),
              TimeInterpolator.SIMPLE_LINEAR);
@@ -172,37 +173,42 @@ public class GlobalIonosphereMapModel implements IonosphericModel, IonosphericDe
     /**
      * Constructor that uses user defined supported names and data context.
      *
+     * @param earth       earth body shape
      * @param supportedNames       regular expression that matches the names of the IONEX
      *                             files to be loaded. See {@link DataProvidersManager#feed(String,
      *                             DataLoader)}.
      * @param dataProvidersManager provides access to auxiliary data files.
      * @param utc                  UTC time scale.
-     * @since 10.1
+     * @since 14.0
      * @deprecated as of 13.1.1, replaced by
-     * {@link #GlobalIonosphereMapModel(String, DataProvidersManager, TimeScale, TimeInterpolator)}
+     * {@link #GlobalIonosphereMapModel(OneAxisEllipsoid, String, DataProvidersManager, TimeScale, TimeInterpolator)}
      */
     @Deprecated
-    public GlobalIonosphereMapModel(final String supportedNames,
+    public GlobalIonosphereMapModel(final OneAxisEllipsoid earth,
+                                    final String supportedNames,
                                     final DataProvidersManager dataProvidersManager,
                                     final TimeScale utc) {
-        this(supportedNames, dataProvidersManager, utc, TimeInterpolator.SIMPLE_LINEAR);
+        this(earth, supportedNames, dataProvidersManager, utc, TimeInterpolator.SIMPLE_LINEAR);
     }
 
     /**
      * Constructor that uses user defined supported names and data context.
      *
+     * @param earth       earth body shape
      * @param supportedNames       regular expression that matches the names of the IONEX
      *                             files to be loaded. See {@link DataProvidersManager#feed(String,
      *                             DataLoader)}.
      * @param dataProvidersManager provides access to auxiliary data files.
      * @param utc                  UTC time scale.
      * @param interpolator         interpolator to use
-     * @since 13.1.1
+     * @since 14.0
      */
-    public GlobalIonosphereMapModel(final String supportedNames,
+    public GlobalIonosphereMapModel(final OneAxisEllipsoid earth,
+                                    final String supportedNames,
                                     final DataProvidersManager dataProvidersManager,
                                     final TimeScale utc,
                                     final TimeInterpolator interpolator) {
+        super(earth);
         this.utc          = utc;
         this.tecMap       = new TimeSpanMap<>(null);
         this.names        = "";
@@ -216,28 +222,32 @@ public class GlobalIonosphereMapModel implements IonosphericModel, IonosphericDe
     /**
      * Constructor that uses user defined data sources.
      *
-     * @param utc   UTC time scale.
-     * @param ionex sources for the IONEX files
-     * @since 12.0
+     * @param earth earth body shape
+     * @param utc            UTC time scale.
+     * @param ionex          sources for the IONEX files
+     * @since 14.0
      * @deprecated as of 13.1.1, replaced by
-     * {@link #GlobalIonosphereMapModel(TimeScale, TimeInterpolator, DataSource...)}
+     * {@link #GlobalIonosphereMapModel(OneAxisEllipsoid, TimeScale, TimeInterpolator, DataSource...)}
      */
     @Deprecated
-    public GlobalIonosphereMapModel(final TimeScale utc, final DataSource... ionex) {
-        this(utc, TimeInterpolator.SIMPLE_LINEAR, ionex);
+    public GlobalIonosphereMapModel(final OneAxisEllipsoid earth, final TimeScale utc, final DataSource... ionex) {
+        this(earth, utc, TimeInterpolator.SIMPLE_LINEAR, ionex);
     }
 
     /**
      * Constructor that uses user defined data sources.
      *
-     * @param utc   UTC time scale.
-     * @param interpolator interpolator to use
-     * @param ionex sources for the IONEX files
-     * @since 13.1.1
+     * @param earth earth body shape
+     * @param utc            UTC time scale.
+     * @param interpolator   interpolator to use
+     * @param ionex          sources for the IONEX files
+     * @since 14.0
      */
-    public GlobalIonosphereMapModel(final TimeScale utc,
+    public GlobalIonosphereMapModel(final OneAxisEllipsoid earth,
+                                    final TimeScale utc,
                                     final TimeInterpolator interpolator,
                                     final DataSource... ionex) {
+        super(earth);
         try {
             this.utc            = utc;
             this.tecMap         = new TimeSpanMap<>(null);
@@ -299,56 +309,53 @@ public class GlobalIonosphereMapModel implements IonosphericModel, IonosphericDe
     }
 
     @Override
-    public double pathDelay(final SpacecraftState state, final TopocentricFrame baseFrame,
-                            final double frequency, final double[] parameters) {
-        return pathDelay(state, baseFrame, state.getDate(), frequency, parameters);
-    }
-
-    @Override
-    public double pathDelay(final SpacecraftState state,
+    public double pathDelay(final Vector3D localP1, final Vector3D localP2,
                             final TopocentricFrame baseFrame, final AbsoluteDate receptionDate,
                             final double frequency, final double[] parameters) {
 
-        // we use transform from body frame to inert frame and invert it
-        // because base frame could be peered with inertial frame (hence improving performances with caching)
-        // but the reverse is almost never used
-        final Frame           bodyFrame  = baseFrame.getParentShape().getBodyFrame();
-        final StaticTransform body2Inert = bodyFrame.getStaticTransformTo(state.getFrame(), receptionDate);
-        final Vector3D        satPoint   = body2Inert.getInverse().transformPosition(state.getPosition());
+        final Frame           bodyFrame       = getEarth().getFrame();
+        final StaticTransform baseFrameToBody = baseFrame.getStaticTransformTo(bodyFrame, receptionDate);
+        final double          baseAlt         = baseFrame.getPoint().getAltitude();
 
-        // Elevation in radians
-        final double   elevation = bodyFrame.
-                                   getStaticTransformTo(baseFrame, receptionDate).
-                                   transformPosition(satPoint).
-                                   getDelta();
+        // Lambda function for calculating path delay for each side of the link
+        final DelayCalculator calculateDelay = position -> {
 
-        // Only consider measures above the horizon
-        if (elevation > 0.0) {
-            // Normalized Line Of Sight in body frame
-            final Vector3D los = satPoint.subtract(baseFrame.getCartesianPoint()).normalize();
-            try {
+            // Position of object in Earth frame
+            final Vector3D bodyP1 = baseFrameToBody.transformPosition(position);
 
-                // ionosphere Pierce Point
-                final GeodeticPoint ipp = piercePoint(state.getDate(), baseFrame.getCartesianPoint(), los,
-                                                      baseFrame.getParentShape());
+            // Elevation of position w.r.t the base frame
+            final double elevation = position.getDelta();
 
-                // delay
-                return pathDelayAtIPP(state.getDate(), ipp, elevation, frequency);
+            if (checkIfPathIsValid(position, localP1, localP2, baseAlt)) {
 
-            } catch (final OrekitException oe) {
-                if (oe.getSpecifier() == OrekitMessages.LINE_NEVER_CROSSES_ALTITUDE ||
-                    oe.getSpecifier() == LocalizedCoreFormats.CONVERGENCE_FAILED) {
-                    // we don't cross ionosphere layer (or we just skim it)
-                    return 0.0;
-                } else {
-                    // this is an unexpected error
-                    throw oe;
+                // Normalized Line Of Sight in body frame
+                final Vector3D los = bodyP1.subtract(baseFrame.getCartesianPoint()).normalize();
+                try {
+
+                    // ionosphere Pierce Point
+                    final GeodeticPoint ipp = piercePoint(receptionDate, baseFrame.getCartesianPoint(), los,
+                                                        baseFrame.getParentShape());
+
+                    // delay
+                    return pathDelayAtIPP(receptionDate, ipp, elevation, frequency);
+
+                } catch (final OrekitException oe) {
+                    if (oe.getSpecifier() == OrekitMessages.LINE_NEVER_CROSSES_ALTITUDE ||
+                        oe.getSpecifier() == LocalizedCoreFormats.CONVERGENCE_FAILED) {
+                        // we don't cross ionosphere layer (or we just skim it)
+                        return 0.0;
+                    } else {
+                        // this is an unexpected error
+                        throw oe;
+                    }
                 }
             }
-        }
 
-        return 0.0;
+            return 0.0;
 
+        };
+
+        return calculateDelay.apply(localP1) + calculateDelay.apply(localP2);
     }
 
     /**
@@ -388,56 +395,51 @@ public class GlobalIonosphereMapModel implements IonosphericModel, IonosphericDe
     }
 
     @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
-                                                           final double frequency, final T[] parameters) {
-        return pathDelay(state, baseFrame, state.getDate(), frequency, parameters);
-    }
-
-    @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldVector3D<T> localP1, final FieldVector3D<T> localP2,
                                                            final TopocentricFrame baseFrame, final FieldAbsoluteDate<T> receptionDate,
                                                            final double frequency, final T[] parameters) {
 
-        // we use transform from body frame to inert frame and invert it
-        // because base frame could be peered with inertial frame (hence improving performances with caching)
-        // but the reverse is almost never used
-        final Frame                   bodyFrame  = baseFrame.getParentShape().getBodyFrame();
-        final FieldStaticTransform<T> body2Inert = bodyFrame.getStaticTransformTo(state.getFrame(), receptionDate);
-        final FieldVector3D<T>        satPoint   = body2Inert.getInverse().transformPosition(state.getPosition());
+        final Frame                   bodyFrame       = getEarth().getFrame();
+        final FieldStaticTransform<T> baseFrameToBody = baseFrame.getStaticTransformTo(bodyFrame, receptionDate);
+        final double                  baseAlt         = baseFrame.getPoint().getAltitude();
 
-        // Elevation in radians
-        final T                elevation = bodyFrame.
-                                           getStaticTransformTo(baseFrame, receptionDate).
-                                           transformPosition(satPoint).
-                                           getDelta();
+        // Lambda function for calculating path delay for each side of the link
+        final FieldDelayCalculator<T> calculateFieldDelay = position -> {
 
-        // Only consider measures above the horizon
-        if (elevation.getReal() > 0.0) {
-            // Normalized Line Of Sight in body frame
-            final FieldVector3D<T> los = satPoint.subtract(baseFrame.getCartesianPoint()).normalize();
-            try {
+            // Position of object in earth body frame
+            final FieldVector3D<T> satPoint  = baseFrameToBody.transformPosition(position);
 
-                // ionosphere Pierce Point
-                final FieldGeodeticPoint<T> ipp = piercePoint(state.getDate(), baseFrame.getCartesianPoint(),
-                                                              los, baseFrame.getParentShape());
+            // Elevation of object in radians w.r.t. minimum altitude point
+            final T elevation = position.getDelta();
 
-                // delay
-                return pathDelayAtIPP(state.getDate(), ipp, elevation, frequency);
+            if (checkIfPathIsValid(position, localP1, localP2, baseAlt)) {
+                // Normalized Line Of Sight in body frame
+                final FieldVector3D<T> los = satPoint.subtract(baseFrame.getCartesianPoint()).normalize();
+                try {
 
-            } catch (final OrekitException oe) {
-                if (oe.getSpecifier() == OrekitMessages.LINE_NEVER_CROSSES_ALTITUDE ||
-                    oe.getSpecifier() == LocalizedCoreFormats.CONVERGENCE_FAILED) {
-                    // we don't cross ionosphere layer (or we just skim it)
-                    return elevation.getField().getZero();
-                } else {
-                    // this is an unexpected error
-                    throw oe;
+                    // ionosphere Pierce Point
+                    final FieldGeodeticPoint<T> ipp = piercePoint(receptionDate, baseFrame.getCartesianPoint(),
+                                                                los, baseFrame.getParentShape());
+
+                    // delay
+                    return pathDelayAtIPP(receptionDate, ipp, elevation, frequency);
+
+                } catch (final OrekitException oe) {
+                    if (oe.getSpecifier() == OrekitMessages.LINE_NEVER_CROSSES_ALTITUDE ||
+                        oe.getSpecifier() == LocalizedCoreFormats.CONVERGENCE_FAILED) {
+                        // we don't cross ionosphere layer (or we just skim it)
+                        return elevation.getField().getZero();
+                    } else {
+                        // this is an unexpected error
+                        throw oe;
+                    }
                 }
             }
-        }
 
-        return elevation.getField().getZero();
+            return elevation.getField().getZero();
+        };
 
+        return calculateFieldDelay.apply(localP1).add( calculateFieldDelay.apply(localP2) );
     }
 
     /** Get the pair valid at date.

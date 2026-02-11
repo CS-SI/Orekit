@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,16 +18,11 @@ package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.AbstractExtendedPositionProvider;
 import org.orekit.utils.ExtendedPositionProvider;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * Class for GNSS extended position provider.
@@ -35,10 +30,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Romain Serra
  * @since 14.0
  */
-public class GNSSExtendedPositionProvider implements ExtendedPositionProvider {
-
-    /** Internal propagator. */
-    private final GNSSPropagator gnssPropagator;
+public class GNSSExtendedPositionProvider extends AbstractExtendedPositionProvider<GNSSPropagator> {
 
     /**
      * Build a new instance.
@@ -50,51 +42,14 @@ public class GNSSExtendedPositionProvider implements ExtendedPositionProvider {
      */
     public GNSSExtendedPositionProvider(final GNSSOrbitalElements<?> orbitalElements, final Frame eci,
                                         final Frame ecef, final AttitudeProvider provider, final double mass) {
-        this.gnssPropagator = new GNSSPropagator(orbitalElements, eci, ecef, provider, mass);
+        super(new GNSSPropagator(orbitalElements, eci, ecef, provider, mass));
     }
 
+    /** {@inheritDoc} */
     @Override
-    public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
-        return gnssPropagator.getPosition(date, frame);
-    }
-
-    @Override
-    public Vector3D getVelocity(final AbsoluteDate date, final Frame frame) {
-        return gnssPropagator.getVelocity(date, frame);
-    }
-
-    @Override
-    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
-        return gnssPropagator.getPVCoordinates(date, frame);
-    }
-
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> date,
-                                                                            final Frame frame) {
-        return getFieldPropagator(date.getField()).getPosition(date, frame);
-    }
-
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getVelocity(final FieldAbsoluteDate<T> date,
-                                                                            final Frame frame) {
-        return getFieldPropagator(date.getField()).getVelocity(date, frame);
-    }
-
-    @Override
-    public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date,
-                                                                                                 final Frame frame) {
-        return getFieldPropagator(date.getField()).getPVCoordinates(date, frame);
-    }
-
-    /**
-     * Build Field propagator.
-     * @param field field
-     * @return field propagator
-     * @param <T> field type
-     */
-    private <T extends CalculusFieldElement<T>> FieldGnssPropagator<T> getFieldPropagator(final Field<T> field) {
-        return new FieldGnssPropagator<>(gnssPropagator.getOrbitalElements().toField(field),
-                gnssPropagator.getECI(), gnssPropagator.getECEF(), gnssPropagator.getAttitudeProvider(),
-                field.getZero().newInstance(gnssPropagator.getInitialState().getMass()));
+    protected  <T extends CalculusFieldElement<T>> FieldGnssPropagator<T> getFieldProvider(final Field<T> field) {
+        return new FieldGnssPropagator<>(getProvider().getOrbitalElements().toField(field),
+                getProvider().getECI(), getProvider().getECEF(), getProvider().getAttitudeProvider(),
+                field.getZero().newInstance(getProvider().getInitialState().getMass()));
     }
 }

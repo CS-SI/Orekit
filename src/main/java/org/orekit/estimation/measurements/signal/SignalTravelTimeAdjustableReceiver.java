@@ -1,0 +1,88 @@
+/* Copyright 2022-2026 Romain Serra
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.orekit.estimation.measurements.signal;
+
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.optim.ConvergenceChecker;
+import org.orekit.frames.Frame;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinatesProvider;
+
+/**
+ * Class for computing signal time of travel with an adjustable receiver and fixed emitter's position.
+ * The delay is calculated via a fixed-point algorithm with customizable settings (even enabling instantaneous transmission).
+ * Note that a couple of iterations are usually enough for Earth orbits.
+ * @since 14.0
+ * @author Romain Serra
+ */
+public class SignalTravelTimeAdjustableReceiver extends AbstractSignalTravelTime {
+
+    /** Position/velocity provider of receiver. */
+    private final PVCoordinatesProvider adjustableReceiverPVProvider;
+
+    /**
+     * Constructor.
+     * @param adjustableReceiverPVProvider adjustable receiver
+     */
+    public SignalTravelTimeAdjustableReceiver(final PVCoordinatesProvider adjustableReceiverPVProvider) {
+        this(adjustableReceiverPVProvider, getDefaultConvergenceChecker());
+    }
+
+    /**
+     * Constructor.
+     * @param adjustableReceiverPVProvider adjustable receiver
+     * @param checker convergence checker for fixed-point algorithm
+     */
+    public SignalTravelTimeAdjustableReceiver(final PVCoordinatesProvider adjustableReceiverPVProvider,
+                                             final ConvergenceChecker<Double> checker) {
+        super(checker);
+        this.adjustableReceiverPVProvider = adjustableReceiverPVProvider;
+    }
+
+    /** Compute propagation delay on a link leg (typically downlink or uplink) without custom guess.
+     * @param emitterPosition fixed position of emitter
+     * @param emissionDate emission date
+     * @param frame inertial frame in which emitter is defined
+     * @return <em>positive</em> delay between signal emission and signal reception dates
+     */
+    public double computeDelay(final Vector3D emitterPosition, final AbsoluteDate emissionDate, final Frame frame) {
+        final Vector3D receiverPosition = adjustableReceiverPVProvider.getPosition(emissionDate, frame);
+        final double distance = receiverPosition.subtract(emitterPosition).getNorm2();
+        final AbsoluteDate approxReceptionDate = emissionDate.shiftedBy(distance * C_RECIPROCAL);
+        return computeDelay(emitterPosition, emissionDate, approxReceptionDate, frame);
+    }
+
+    /** Compute propagation delay on a link leg (typically downlink or uplink).
+     * @param emitterPosition fixed position of emitter
+     * @param emissionDate emission date
+     * @param approxReceptionDate approximate reception date
+     * @param frame inertial frame in which emitter is defined
+     * @return <em>positive</em> delay between signal emission and signal reception dates
+     */
+    public double computeDelay(final Vector3D emitterPosition, final AbsoluteDate emissionDate,
+                               final AbsoluteDate approxReceptionDate, final Frame frame) {
+        // initialize reception date search loop assuming the state is already correct
+        final double offset = approxReceptionDate.durationFrom(emissionDate);
+
+        return compute(adjustableReceiverPVProvider, offset, emitterPosition, approxReceptionDate, frame);
+    }
+
+    @Override
+    protected double computeShift(final double offset, final double delay) {
+        return delay - offset;
+    }
+}

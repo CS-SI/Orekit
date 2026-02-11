@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,9 +27,8 @@ import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.TLEContext;
-import org.orekit.estimation.TLEEstimationTestUtils;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Range;
@@ -68,19 +67,18 @@ public class TLEKalmanEstimatorTest {
     public void testPV() {
 
         // Create context
-        TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.contextFromTle("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
         final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final double        dP            = 1.;
-        final TLEPropagatorBuilder propagatorBuilder = context.createBuilder(dP);
+        final TLEPropagatorBuilder propagatorBuilder = context.createTleBuilder(dP);
 
         // Create perfect PV measurements
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
-        final Propagator propagator = TLEEstimationTestUtils.createPropagator(initialOrbit,
-                                                                           propagatorBuilder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(initialOrbit, propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        TLEEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new PVMeasurementCreator(),
                                                                0.0, 3.0, 300.0);
         // Reference propagator for estimation performances
@@ -109,13 +107,19 @@ public class TLEKalmanEstimatorTest {
 
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 9.61e-2; // With numerical propagator: 5.80e-8;
+        final double   posEps            = 9.61e-2;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 7.86e-5; // With numerical propagator: 2.28e-11;
-        TLEEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngleType,
-                                           expectedDeltaPos, posEps,
-                                           expectedDeltaVel, velEps);
+        final double   velEps            = 7.86e-5;
+        final double[] expectedSigmasPos = {0.387328, 0.447026, 0.398594};
+        final double   sigmaPosEps       = 1e-6;
+        final double[] expectedSigmasVel = {2.452197E-4, 3.233220E-4, 2.367788E-4};
+        final double   sigmaVelEps       = 1e-10;
+        EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
+                                                   refOrbit, positionAngleType,
+                                                   expectedDeltaPos, posEps,
+                                                   expectedDeltaVel, velEps,
+                                                   expectedSigmasPos, sigmaPosEps,
+                                                   expectedSigmasVel, sigmaVelEps);
     }
 
     /**
@@ -126,20 +130,19 @@ public class TLEKalmanEstimatorTest {
     public void testRange() {
 
         // Create context
-        TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.contextFromTle("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
         final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final double        dP            = 1.;
-        final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(dP);
+        final TLEPropagatorBuilder propagatorBuilder = context.createTleBuilder(dP);
 
         // Create perfect range measurements
         Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
-        final Propagator propagator = TLEEstimationTestUtils.createPropagator(initialOrbit,
+        final Propagator propagator = EstimationTestUtils.createPropagator(initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        TLEEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 4.0, 60.0);
 
@@ -172,13 +175,19 @@ public class TLEKalmanEstimatorTest {
 
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 0.32; // With numerical propagator: 1.77e-4;
+        final double   posEps            = 0.32;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 7.45e-5; // With numerical propagator: 7.93e-8;
-        TLEEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngleType,
-                                           expectedDeltaPos, posEps,
-                                           expectedDeltaVel, velEps);
+        final double   velEps            = 7.45e-5;
+        final double[] expectedSigmasPos = {0.741641, 0.282908, 0.564609,};
+        final double   sigmaPosEps       = 1e-6;
+        final double[] expectedSigmasVel = {2.188273E-4, 1.308109E-4, 1.300570E-4};
+        final double   sigmaVelEps       = 1e-10;
+        EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
+                                                   refOrbit, positionAngleType,
+                                                   expectedDeltaPos, posEps,
+                                                   expectedDeltaVel, velEps,
+                                                   expectedSigmasPos, sigmaPosEps,
+                                                   expectedSigmasVel, sigmaVelEps);
     }
 
     /**
@@ -189,13 +198,12 @@ public class TLEKalmanEstimatorTest {
     public void testRangeWithOnBoardAntennaOffset() {
 
         // Create context
-        TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.contextFromTle("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
         final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final double        dP            = 1.;
-        final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(dP);
+        final TLEPropagatorBuilder propagatorBuilder = context.createTleBuilder(dP);
         propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
 
         // Antenna phase center definition
@@ -206,7 +214,7 @@ public class TLEKalmanEstimatorTest {
         final Propagator propagator = EstimationTestUtils.createPropagator(initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        TLEEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new TwoWayRangeMeasurementCreator(context,
                                                                                                  Vector3D.ZERO, null,
                                                                                                  antennaPhaseCenter, null,
@@ -250,13 +258,19 @@ public class TLEKalmanEstimatorTest {
 
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 0.69; // With numerical propagator: 4.57e-3;
+        final double   posEps            = 0.69;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 2.69e-4; // With numerical propagator: 7.29e-6;
-        TLEEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngleType,
-                                           expectedDeltaPos, posEps,
-                                           expectedDeltaVel, velEps);
+        final double   velEps            = 2.69e-4;
+        final double[] expectedSigmasPos = {1.250710, 1.197467, 1.543259};
+        final double   sigmaPosEps       = 1e-6;
+        final double[] expectedSigmasVel = {7.114021E-4, 4.470958E-4, 4.333322E-4};
+        final double   sigmaVelEps       = 1e-10;
+        EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
+                                                   refOrbit, positionAngleType,
+                                                   expectedDeltaPos, posEps,
+                                                   expectedDeltaVel, velEps,
+                                                   expectedSigmasPos, sigmaPosEps,
+                                                   expectedSigmasVel, sigmaVelEps);
     }
 
     /**
@@ -266,25 +280,24 @@ public class TLEKalmanEstimatorTest {
     public void testRangeAndRangeRate() {
 
         // Create context
-        TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.contextFromTle("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
         final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final double        dP            = 1.;
-        final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(dP);
+        final TLEPropagatorBuilder propagatorBuilder = context.createTleBuilder(dP);
 
         // Create perfect range & range rate measurements
         Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
-        final Propagator propagator = TLEEstimationTestUtils.createPropagator(initialOrbit,
+        final Propagator propagator = EstimationTestUtils.createPropagator(initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurementsRange =
-                        TLEEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         final List<ObservedMeasurement<?>> measurementsRangeRate =
-                        TLEEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context, false, 0.0),
                                                                1.0, 3.0, 300.0);
 
@@ -321,13 +334,19 @@ public class TLEKalmanEstimatorTest {
 
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 0.45; // With numerical propagator: 1.2e-6;
+        final double   posEps            = 0.45;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 1.86e-4; // With numerical propagator: 4.2e-10;
-        TLEEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngleType,
-                                           expectedDeltaPos, posEps,
-                                           expectedDeltaVel, velEps);
+        final double   velEps            = 1.86e-4;
+        final double[] expectedSigmasPos = {1.250710, 1.197466, 1.543258};
+        final double   sigmaPosEps       = 1e-6;
+        final double[] expectedSigmasVel = {7.114018E-4, 4.470955E-4, 4.333319E-4};
+        final double   sigmaVelEps       = 1e-10;
+        EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
+                                                   refOrbit, positionAngleType,
+                                                   expectedDeltaPos, posEps,
+                                                   expectedDeltaVel, velEps,
+                                                   expectedSigmasPos, sigmaPosEps,
+                                                   expectedSigmasVel, sigmaVelEps);
     }
 
     /**
@@ -337,20 +356,19 @@ public class TLEKalmanEstimatorTest {
     public void testWrappedException() {
 
         // Create context
-        TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.contextFromTle("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
         final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final double        dP            = 1.;
-        final TLEPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(dP);
+        final TLEPropagatorBuilder propagatorBuilder = context.createTleBuilder(dP);
 
         // Create perfect range measurements
         Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
-        final Propagator propagator = TLEEstimationTestUtils.createPropagator(initialOrbit,
+        final Propagator propagator = EstimationTestUtils.createPropagator(initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        TLEEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
         // Build the Kalman filter
@@ -366,10 +384,9 @@ public class TLEKalmanEstimatorTest {
 
         try {
             // Filter the measurements and expect an exception to occur
-            TLEEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                               initialOrbit, positionAngleType,
-                                               0., 0.,
-                                               0., 0.);
+            EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
+                                                       initialOrbit, positionAngleType,
+                                                       0., 0., 0., 0., new double[0], 0., new double[0], 0.);
         } catch (DummyException de) {
             // expected
         }

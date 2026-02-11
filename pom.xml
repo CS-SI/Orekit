@@ -201,6 +201,13 @@
         <role>developer</role>
       </roles>
     </developer>
+    <developer>
+      <name>Brianna Aubin</name>
+      <id>briannaaubin</id>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
   </developers>
 
   <contributors>
@@ -218,9 +225,6 @@
     </contributor>
     <contributor>
       <name>Julien Asquier</name>
-    </contributor>
-    <contributor>
-      <name>Brianna Aubin</name>
     </contributor>
     <contributor>
       <name>Louis Aucouturier</name>
@@ -299,6 +303,9 @@
     </contributor>
     <contributor>
       <name>David Gondelach</name>
+    </contributor>
+    <contributor>
+      <name>Xiaozhong Guo</name>
     </contributor>
     <contributor>
       <name>Brad Hards</name>
@@ -971,7 +978,7 @@
         <artifactId>maven-changes-plugin</artifactId>
         <version>${orekit.maven-changes-plugin.version}</version>
         <configuration>
-          <teamlist>team.html</teamlist>
+          <team>team.html</team>
         </configuration>
         <reportSets>
           <reportSet>

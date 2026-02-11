@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 Mark Rutten
+/* Copyright 2002-2026 Mark Rutten
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -50,7 +50,7 @@ public class FDOATest {
 
         // Create perfect measurements
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
+                        context.createNumerical(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
                                               1.0e-6, 60.0, 0.001);
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -59,6 +59,10 @@ public class FDOATest {
                                                                new FDOAMeasurementCreator(context, CENTRE_FREQUENCY),
                                                                1.0, 3.0, 300.0);
         propagator.clearStepHandlers();
+
+        for (final ObservedMeasurement<?> m : measurements) {
+            Assertions.assertTrue(((FDOA) m).getCentreFrequency() == CENTRE_FREQUENCY);
+        }
 
         // Prepare statistics for values difference
         final StreamingStatistics diffStat = new StreamingStatistics();
@@ -94,7 +98,7 @@ public class FDOATest {
 
         // create perfect measurements
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -149,7 +153,7 @@ public class FDOATest {
 
         // create perfect measurements
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         final FDOAMeasurementCreator creator = new FDOAMeasurementCreator(context, CENTRE_FREQUENCY);
         final GroundStation primary = context.TDOAstations.getKey();

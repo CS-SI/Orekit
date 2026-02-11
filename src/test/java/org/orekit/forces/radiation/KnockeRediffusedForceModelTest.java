@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -126,7 +126,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
                                                                                      Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
                                                                                      FastMath.toRadians(30));
 
-        checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 0.25, 1.8e-16);
+        checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 0.5, 1.8e-16);
 
     }
 

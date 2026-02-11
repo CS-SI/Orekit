@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -73,6 +73,7 @@ import org.orekit.propagation.*;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.events.*;
+import org.orekit.propagation.events.functions.EventFunction;
 import org.orekit.propagation.events.handlers.*;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
@@ -874,12 +875,23 @@ class NumericalPropagatorTest {
         }
 
         @Override
-        public boolean dependsOnMainVariablesOnly() {
-            return false;
+        public EventFunction getEventFunction() {
+            return new EventFunction() {
+                @Override
+                public double value(SpacecraftState state) {
+                    return state.getAdditionalState("linear")[0] - 3.0;
+                }
+
+                @Override
+                public boolean dependsOnMainVariablesOnly() {
+                    return false;
+                }
+            };
         }
 
+        @Override
         public double g(SpacecraftState s) {
-            return s.getAdditionalState("linear")[0] - 3.0;
+            return getEventFunction().value(s);
         }
 
         @Override

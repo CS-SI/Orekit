@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,6 +37,16 @@ public class NavICL1NvNavigationMessage
     /** Reference signal flag. */
     private int referenceSignalFlag;
 
+    /** User Range Accuracy Index.
+     * @since 14.0
+     */
+    private int urai;
+
+    /** L1 SPS health.
+     * @since 14.0
+     */
+    private int l1SpsHealth;
+
     /** Estimated group delay differential TGD for S-L5 correction. */
     private double tgdSL5;
 
@@ -72,6 +82,8 @@ public class NavICL1NvNavigationMessage
     public <T extends CalculusFieldElement<T>> NavICL1NvNavigationMessage(final FieldNavicL1NvNavigationMessage<T> original) {
         super(original);
         setReferenceSignalFlag(original.getReferenceSignalFlag());
+        setUrai(original.getUrai());
+        setL1SpsHealth(original.getL1SpsHealth());
         setTGDSL5(original.getTGDSL5().getReal());
         setIscSL1P(original.getIscSL1P().getReal());
         setIscL1DL1P(original.getIscL1DL1P().getReal());
@@ -99,6 +111,38 @@ public class NavICL1NvNavigationMessage
      */
     public int getReferenceSignalFlag() {
         return referenceSignalFlag;
+    }
+
+    /** Set User Range Accuracy Index.
+     * @param urai User Range Accuracy Index
+     * @since 14.0
+     */
+    public void setUrai(final int urai) {
+        this.urai = urai;
+    }
+
+    /** Get User Range Accuracy Index.
+     * @return User Range Accuracy Index
+     * @since 14.0
+     */
+    public int getUrai() {
+        return urai;
+    }
+
+    /** Set L1 SPS health.
+     * @param l1SpsHealth L1 SPS health
+     * @since 14.0
+     */
+    public void setL1SpsHealth(final int l1SpsHealth) {
+        this.l1SpsHealth = l1SpsHealth;
+    }
+
+    /** Get L1 SPS health.
+     * @return L1 SPS health
+     * @since 14.0
+     */
+    public int getL1SpsHealth() {
+        return l1SpsHealth;
     }
 
     /**

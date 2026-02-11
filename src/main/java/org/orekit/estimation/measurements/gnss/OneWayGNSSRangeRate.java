@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,22 +16,21 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import java.util.Arrays;
-
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.estimation.measurements.CommonParametersWithDerivatives;
+import org.orekit.estimation.measurements.CommonParametersWithoutDerivatives;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObserverSatellite;
+import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** One-way GNSS range rate measurement.
@@ -53,7 +52,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  * @since 12.1
  */
-public class OneWayGNSSRangeRate extends AbstractOneWayGNSSMeasurement<OneWayGNSSRangeRate> {
+public class OneWayGNSSRangeRate extends AbstractOneWayGNSS<OneWayGNSSRangeRate> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "OneWayGNSSRangeRate";
@@ -72,7 +71,7 @@ public class OneWayGNSSRangeRate extends AbstractOneWayGNSSMeasurement<OneWayGNS
                                final double rangeRate, final double sigma,
                                final double baseWeight, final ObservableSatellite local) {
         // Call super constructor
-        super(gnssSatellite, date, rangeRate, sigma, baseWeight, local);
+        super(gnssSatellite, date, rangeRate, sigma, baseWeight, new SignalTravelTimeModel(), local);
     }
 
     /** {@inheritDoc} */
@@ -81,8 +80,8 @@ public class OneWayGNSSRangeRate extends AbstractOneWayGNSSMeasurement<OneWayGNS
                                                                                                     final int evaluation,
                                                                                                     final SpacecraftState[] states) {
 
-
-        final OnBoardCommonParametersWithoutDerivatives common = computeCommonParametersWithout(states, false);
+        final CommonParametersWithoutDerivatives common =
+            computeLocalParametersWithout(states, getSatellites().get(0), getDate(), false);
 
         // Estimated measurement
         final EstimatedMeasurementBase<OneWayGNSSRangeRate> estimatedRangeRate =
@@ -97,7 +96,7 @@ public class OneWayGNSSRangeRate extends AbstractOneWayGNSSMeasurement<OneWayGNS
         // Range rate value
         final PVCoordinates delta = new PVCoordinates(common.getRemotePV(), common.getTransitPV());
         final double rangeRate = Vector3D.dotProduct(delta.getVelocity(), delta.getPosition().normalize()) +
-                                 Constants.SPEED_OF_LIGHT * (common.getLocalRate() - common.getRemoteRate());
+                                 Constants.SPEED_OF_LIGHT * (common.getLocalOffset().getRate() - common.getRemoteOffset().getRate());
 
         // Set value of the estimated measurement
         estimatedRangeRate.setEstimatedValue(rangeRate);
@@ -113,7 +112,8 @@ public class OneWayGNSSRangeRate extends AbstractOneWayGNSSMeasurement<OneWayGNS
                                                                               final int evaluation,
                                                                               final SpacecraftState[] states) {
 
-        final OnBoardCommonParametersWithDerivatives common = computeCommonParametersWith(states, false);
+        final CommonParametersWithDerivatives common =
+            computeLocalParametersWith(states, getSatellites().get(0), getDate(), false, getParametersDrivers());
 
         // Estimated measurement
         final EstimatedMeasurement<OneWayGNSSRangeRate> estimatedRangeRate =
@@ -128,23 +128,9 @@ public class OneWayGNSSRangeRate extends AbstractOneWayGNSSMeasurement<OneWayGNS
         // Range rate value
         final FieldPVCoordinates<Gradient> delta = new FieldPVCoordinates<>(common.getRemotePV(), common.getTransitPV());
         final Gradient rangeRate = FieldVector3D.dotProduct(delta.getVelocity(), delta.getPosition().normalize()).
-                                   add(common.getLocalRate().subtract(common.getRemoteRate()).multiply(Constants.SPEED_OF_LIGHT));
-        final double[] rangeRateDerivatives = rangeRate.getGradient();
+                                   add(common.getLocalOffset().getRate().subtract(common.getRemoteOffset().getRate()).multiply(Constants.SPEED_OF_LIGHT));
 
-        // Set value and state first order derivatives of the estimated measurement
-        estimatedRangeRate.setEstimatedValue(rangeRate.getValue());
-        estimatedRangeRate.setStateDerivatives(0, Arrays.copyOfRange(rangeRateDerivatives, 0,  6));
-
-        // Set first order derivatives with respect to parameters
-        for (final ParameterDriver measurementDriver : getParametersDrivers()) {
-            for (Span<String> span = measurementDriver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
-                final Integer index = common.getIndices().get(span.getData());
-                if (index != null) {
-                    estimatedRangeRate.setParameterDerivatives(measurementDriver, span.getStart(), rangeRateDerivatives[index]);
-                }
-            }
-        }
+        fillDerivatives(rangeRate, common.getIndices(), estimatedRangeRate);
 
         // Return the estimated measurement
         return estimatedRangeRate;

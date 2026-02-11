@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 Mark Rutten
+/* Copyright 2002-2026 Mark Rutten
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,22 +16,16 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Arrays;
+import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.frames.FieldTransform;
-import org.orekit.frames.Transform;
+import org.hipparchus.analysis.differentiation.GradientField;
+import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
+import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.Constants;
-import org.orekit.utils.FieldAbsolutePVCoordinates;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap.Span;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
@@ -52,15 +46,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Mark Rutten
  * @since 11.2
  */
-public class BistaticRange extends GroundReceiverMeasurement<BistaticRange> {
+public class BistaticRange extends BistaticRangeRelatedMeasurement<BistaticRange> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "BistaticRange";
-
-    /**
-     * Ground station from which transmission is made.
-     */
-    private final GroundStation emitter;
 
     /**
      * Simple constructor.
@@ -77,35 +66,28 @@ public class BistaticRange extends GroundReceiverMeasurement<BistaticRange> {
     public BistaticRange(final GroundStation emitter, final GroundStation receiver, final AbsoluteDate date,
                          final double range, final double sigma, final double baseWeight,
                          final ObservableSatellite satellite) {
-        super(receiver, true, date, range, sigma, baseWeight, satellite);
-
-        addParameterDriver(emitter.getClockOffsetDriver());
-        addParameterDriver(emitter.getEastOffsetDriver());
-        addParameterDriver(emitter.getNorthOffsetDriver());
-        addParameterDriver(emitter.getZenithOffsetDriver());
-        addParameterDriver(emitter.getPrimeMeridianOffsetDriver());
-        addParameterDriver(emitter.getPrimeMeridianDriftDriver());
-        addParameterDriver(emitter.getPolarOffsetXDriver());
-        addParameterDriver(emitter.getPolarDriftXDriver());
-        addParameterDriver(emitter.getPolarOffsetYDriver());
-        addParameterDriver(emitter.getPolarDriftYDriver());
-
-        this.emitter = emitter;
-
+        this(emitter, receiver, date, range, sigma, baseWeight, new SignalTravelTimeModel(), satellite);
     }
 
-    /** Get the emitter ground station.
-     * @return emitter ground station
+    /**
+     * Simple constructor.
+     *
+     * @param emitter     ground station from which transmission is performed
+     * @param receiver    ground station from which measurement is performed
+     * @param date        date of the measurement
+     * @param range       observed value
+     * @param sigma       theoretical standard deviation
+     * @param baseWeight  base weight
+     * @param signalTravelTimeModel signal travel time model
+     * @param satellite   satellite related to this measurement
+     * @since 14.0
      */
-    public GroundStation getEmitterStation() {
-        return emitter;
-    }
-
-    /** Get the receiver ground station.
-     * @return receiver ground station
-     */
-    public GroundStation getReceiverStation() {
-        return getStation();
+    public BistaticRange(final GroundStation emitter, final GroundStation receiver, final AbsoluteDate date,
+                         final double range, final double sigma, final double baseWeight,
+                         final SignalTravelTimeModel signalTravelTimeModel,
+                         final ObservableSatellite satellite) {
+        super(emitter, receiver, true, date, new double[] { range }, new double[] { sigma }, new double[] { baseWeight },
+                signalTravelTimeModel, satellite);
     }
 
     /**
@@ -115,49 +97,32 @@ public class BistaticRange extends GroundReceiverMeasurement<BistaticRange> {
     protected EstimatedMeasurementBase<BistaticRange> theoreticalEvaluationWithoutDerivatives(final int iteration,
                                                                                               final int evaluation,
                                                                                               final SpacecraftState[] states) {
+        // Compute participants (position-velocities at signal transmissions)
+        final SpacecraftState state = states[0];
+        final TimeStampedPVCoordinates[] participants = getParticipants(state);
 
-        final GroundReceiverCommonParametersWithoutDerivatives common = computeCommonParametersWithout(states[0]);
-        final TimeStampedPVCoordinates transitPV = common.getTransitPV();
-        final AbsoluteDate transitDate = transitPV.getDate();
-
-        // Approximate emitter location at transit time
-        final Transform emitterToInertial =
-                getEmitterStation().getOffsetToInertial(common.getState().getFrame(), transitDate, true);
-        final TimeStampedPVCoordinates emitterApprox =
-                emitterToInertial.transformPVCoordinates(new TimeStampedPVCoordinates(transitDate,
-                                                                                      Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
-
-        // Uplink time of flight from emitter station to transit state
-        final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = new SignalTravelTimeAdjustableEmitter(new AbsolutePVCoordinates(common.getState().getFrame(), emitterApprox));
-        final double tauU = signalTimeOfFlight.compute(emitterApprox.getDate(), transitPV.getPosition(), transitDate,
-                common.getState().getFrame());
-
-        // Secondary station PV in inertial frame at rebound date on secondary station
-        final TimeStampedPVCoordinates emitterPV = emitterApprox.shiftedBy(-tauU);
+        // Extract dates
+        final AbsoluteDate emissionDate = participants[0].getDate();
+        final AbsoluteDate transitDate = participants[1].getDate();
+        final AbsoluteDate receptionDate = participants[2].getDate();
 
         // Prepare the evaluation
-        final EstimatedMeasurementBase<BistaticRange> estimated =
-                        new EstimatedMeasurementBase<>(this,
-                                                       iteration, evaluation,
-                                                       new SpacecraftState[] {
-                                                           common.getTransitState()
-                                                       },
-                                                       new TimeStampedPVCoordinates[] {
-                                                           common.getStationDownlink(),
-                                                           transitPV,
-                                                           emitterPV
-                                                       });
+        final double shift = transitDate.durationFrom(state);
+        final SpacecraftState transitState = state.shiftedBy(shift);
+        final EstimatedMeasurementBase<BistaticRange> estimated = new EstimatedMeasurementBase<>(this, iteration, evaluation,
+                new SpacecraftState[] { transitState }, participants);
 
         // Clock offsets
-        final double dte = getEmitterStation().getClockOffsetDriver().getValue(common.getState().getDate());
-        final double dtr = getReceiverStation().getClockOffsetDriver().getValue(common.getState().getDate());
+        final double dte = getEmitterStation().getClockOffsetDriver().getValue(emissionDate);
+        final double dtr = getReceiverStation().getClockOffsetDriver().getValue(receptionDate);
 
         // Range value
-        final double tau = common.getTauD() + tauU + dtr - dte;
+        final double firstLegDelay = transitDate.durationFrom(emissionDate);
+        final double secondLegDelay = receptionDate.durationFrom(transitDate);
+        final double tau = firstLegDelay + secondLegDelay + dtr - dte;
         final double range = tau * Constants.SPEED_OF_LIGHT;
 
         estimated.setEstimatedValue(range);
-
         return estimated;
     }
 
@@ -168,72 +133,36 @@ public class BistaticRange extends GroundReceiverMeasurement<BistaticRange> {
     protected EstimatedMeasurement<BistaticRange> theoreticalEvaluation(final int iteration,
                                                                         final int evaluation,
                                                                         final SpacecraftState[] states) {
-        final SpacecraftState state = states[0];
-
-        // Bistatic range derivatives are computed with respect to spacecraft state in inertial frame
-        // and station parameters
-        // ----------------------
-        //
-        // Parameters:
-        //  - 0..2 - Position of the spacecraft in inertial frame
-        //  - 3..5 - Velocity of the spacecraft in inertial frame
-        //  - 6..n - measurements parameters (clock offset, station offsets, pole, prime meridian, sat clock offset...)
-        final GroundReceiverCommonParametersWithDerivatives common = computeCommonParametersWithDerivatives(state);
-        final int nbParams = common.getTauD().getFreeParameters();
-        final TimeStampedFieldPVCoordinates<Gradient> transitPV = common.getTransitPV();
-        final FieldAbsoluteDate<Gradient> transitDate = transitPV.getDate();
-
-        // Approximate emitter location (at transit time)
-        final FieldVector3D<Gradient> zero = FieldVector3D.getZero(common.getTauD().getField());
-        final FieldTransform<Gradient> emitterToInertial =
-                getEmitterStation().getOffsetToInertial(state.getFrame(), transitDate, nbParams, common.getIndices());
-        final TimeStampedFieldPVCoordinates<Gradient> emitterApprox =
-                emitterToInertial.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(transitDate,
-                                                                                             zero, zero, zero));
-
-        // Uplink time of flight from emitter to transit state
-        final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer = new FieldSignalTravelTimeAdjustableEmitter<>(new FieldAbsolutePVCoordinates<>(state.getFrame(), emitterApprox));
-        final Gradient tauU = fieldComputer.compute(emitterApprox.getDate(), transitPV.getPosition(), transitPV.getDate(), state.getFrame());
-
-        // Emitter coordinates at transmit time
-        final TimeStampedFieldPVCoordinates<Gradient> emitterPV = emitterApprox.shiftedBy(tauU.negate());
+        // Compute time shifts w.r.t. recorded observation date
+        final Gradient[] shifts = getFieldShifts(states);
+        final GradientField field = shifts[0].getField();
+        final FieldAbsoluteDate<Gradient> receptionDate = new FieldAbsoluteDate<>(field, getDate()).shiftedBy(shifts[0]);
+        final FieldAbsoluteDate<Gradient> transitDate = receptionDate.shiftedBy(shifts[1]);
+        final FieldAbsoluteDate<Gradient> emissionDate = transitDate.shiftedBy(shifts[2]);
 
         // Prepare the evaluation
-        final EstimatedMeasurement<BistaticRange> estimated = new EstimatedMeasurement<>(this,
-                iteration, evaluation,
-                new SpacecraftState[] {
-                    common.getTransitState()
-                },
+        final SpacecraftState state = states[0];
+        final Frame frame = state.getFrame();
+        final double shift = transitDate.toAbsoluteDate().durationFrom(state);
+        final SpacecraftState transitState = state.shiftedBy(shift);
+        final EstimatedMeasurement<BistaticRange> estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
+                new SpacecraftState[] { transitState },
                 new TimeStampedPVCoordinates[] {
-                    common.getStationDownlink().toTimeStampedPVCoordinates(),
-                    common.getTransitPV().toTimeStampedPVCoordinates(),
-                    emitterPV.toTimeStampedPVCoordinates()
-                });
+                        getEmitterStation().getPVCoordinatesProvider().getPVCoordinates(emissionDate.toAbsoluteDate(), frame),
+                        transitState.getPVCoordinates(),
+                        getReceiverStation().getPVCoordinatesProvider().getPVCoordinates(receptionDate.toAbsoluteDate(), frame)});
 
         // Clock offsets
-        final Gradient dte = getEmitterStation().getClockOffsetDriver().getValue(nbParams, common.getIndices(), state.getDate());
-        final Gradient dtr = getReceiverStation().getClockOffsetDriver().getValue(nbParams, common.getIndices(), state.getDate());
+        final int nbParams = field.getZero().getFreeParameters();
+        final Map<String, Integer> paramIndices = getParameterIndices(states);
+        final Gradient dte = getEmitterStation().getClockOffsetDriver().getValue(nbParams, paramIndices, emissionDate.toAbsoluteDate());
+        final Gradient dtr = getReceiverStation().getClockOffsetDriver().getValue(nbParams, paramIndices, receptionDate.toAbsoluteDate());
 
         // Range value
-        final Gradient tau = common.getTauD().add(tauU).add(dtr).subtract(dte);
+        final Gradient tau   = (shifts[1].add(shifts[2])).negate().add(dtr).subtract(dte);
         final Gradient range = tau.multiply(Constants.SPEED_OF_LIGHT);
 
-        estimated.setEstimatedValue(range.getValue());
-
-        // Range first order derivatives with respect to state
-        final double[] derivatives = range.getGradient();
-        estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 0, 6));
-
-        // Set first order derivatives with respect to parameters
-        for (final ParameterDriver driver : getParametersDrivers()) {
-            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                final Integer index = common.getIndices().get(span.getData());
-                if (index != null) {
-                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
-                }
-            }
-        }
-
+        fillEstimation(range, paramIndices, estimated);
         return estimated;
     }
 

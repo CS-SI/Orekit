@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Bryan Cazabonne
+/* Copyright 2022-2026 Bryan Cazabonne
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,16 +25,15 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
-import org.orekit.estimation.EphemerisContext;
-import org.orekit.estimation.KeplerianEstimationTestUtils;
+import org.orekit.estimation.Context;
+import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.AngularAzElMeasurementCreator;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -59,12 +58,11 @@ public class EphemerisBatchLSEstimatorTest {
     private AbsoluteDate     finalDate;
     private Frame            inertialFrame;
     private Propagator       propagator;
-    private EphemerisContext context;
+    private Context          context;
 
     @BeforeEach
     public void setUp() throws IllegalArgumentException, OrekitException {
-        Utils.setDataRoot("regular-data");
-
+        context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
                 TimeComponents.H00,
                 TimeScalesFactory.getUTC());
@@ -85,8 +83,6 @@ public class EphemerisBatchLSEstimatorTest {
         Orbit initialState = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
                                             inertialFrame, initDate, mu);
         propagator = new KeplerianPropagator(initialState);
-
-        context = new EphemerisContext();
 
     }
 
@@ -109,12 +105,11 @@ public class EphemerisBatchLSEstimatorTest {
 
         final double refBias = 1234.56;
         final List<ObservedMeasurement<?>> measurements =
-                        KeplerianEstimationTestUtils.createMeasurements(ephemeris,
-                                                                        new TwoWayRangeMeasurementCreator(context,
-                                                                                                          Vector3D.ZERO, null,
-                                                                                                          Vector3D.ZERO, null,
-                                                                                                          refBias),
-                                                                        1.0, 5.0, 10.0);
+                        EstimationTestUtils.createMeasurements(ephemeris, new TwoWayRangeMeasurementCreator(context,
+                                                                                                            Vector3D.ZERO, null,
+                                                                                                            Vector3D.ZERO, null,
+                                                                                                            refBias),
+                                                                1.0, 5.0, 10.0);
 
         // estimated bias
         final Bias<Range> rangeBias = new Bias<>(new String[]{"rangeBias"}, new double[]{0.0},
@@ -140,7 +135,7 @@ public class EphemerisBatchLSEstimatorTest {
         Assertions.assertEquals(refBias, estimator.getMeasurementsParametersDrivers(true).getDrivers().get(0).getValue(), 5.0e-6);
         Assertions.assertEquals(1, estimator.getMeasurementsParametersDrivers(true).getNbParams());
         Assertions.assertEquals(0, estimator.getOrbitalParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(0, estimator.getPropagatorParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(0, estimator.getPropagationParametersDrivers(true).getNbParams());
 
     }
 
@@ -165,8 +160,7 @@ public class EphemerisBatchLSEstimatorTest {
         final RangeRateMeasurementCreator creator = new RangeRateMeasurementCreator(context, false, refClockBias);
         creator.getSatellite().getClockDriftDriver().setSelected(true);
         final List<ObservedMeasurement<?>> measurements =
-                        KeplerianEstimationTestUtils.createMeasurements(ephemeris, creator,
-                                                                        1.0, 5.0, 10.0);
+                EstimationTestUtils.createMeasurements(ephemeris, creator, 1.0, 5.0, 10.0);
 
 
         // create orbit estimator
@@ -187,7 +181,7 @@ public class EphemerisBatchLSEstimatorTest {
         Assertions.assertEquals(refClockBias, estimator.getMeasurementsParametersDrivers(true).getDrivers().get(0).getValue(), 6.0e-16);
         Assertions.assertEquals(1, estimator.getMeasurementsParametersDrivers(true).getNbParams());
         Assertions.assertEquals(0, estimator.getOrbitalParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(0, estimator.getPropagatorParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(0, estimator.getPropagationParametersDrivers(true).getNbParams());
 
     }
 
@@ -211,9 +205,8 @@ public class EphemerisBatchLSEstimatorTest {
         final double refAzBias = FastMath.toRadians(0.3);
         final double refElBias = FastMath.toRadians(0.1);
         final List<ObservedMeasurement<?>> measurements =
-                        KeplerianEstimationTestUtils.createMeasurements(ephemeris,
-                                                                        new AngularAzElMeasurementCreator(context, refAzBias, refElBias),
-                                                                        1.0, 5.0, 10.0);
+                EstimationTestUtils.createMeasurements(ephemeris, new AngularAzElMeasurementCreator(context, refAzBias, refElBias),
+                                                       1.0, 5.0, 10.0);
 
         // estimated bias
         final Bias<AngularAzEl> azElBias = new Bias<>(new String[] {"azBias", "elBias"}, new double[] {0.0, 0.0},
@@ -241,7 +234,7 @@ public class EphemerisBatchLSEstimatorTest {
         Assertions.assertEquals(refElBias, estimator.getMeasurementsParametersDrivers(true).getDrivers().get(1).getValue(), 1.0e-7);
         Assertions.assertEquals(2, estimator.getMeasurementsParametersDrivers(true).getNbParams());
         Assertions.assertEquals(0, estimator.getOrbitalParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(0, estimator.getPropagatorParametersDrivers(true).getNbParams());
+        Assertions.assertEquals(0, estimator.getPropagationParametersDrivers(true).getNbParams());
 
     }
 

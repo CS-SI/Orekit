@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,15 +16,15 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.Field;
 import org.hipparchus.ode.events.Action;
-import org.hipparchus.util.FastMath;
-import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.functions.MaskedElevationEventFunction;
+import org.orekit.propagation.events.functions.MinimumElevationEventFunction;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnDecreasing;
 import org.orekit.utils.ElevationMask;
@@ -105,7 +105,8 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>>
                                      final double minElevation, final ElevationMask mask,
                                      final AtmosphericRefractionModel refractionModel,
                                      final TopocentricFrame topo) {
-        super(detectionSettings, handler, topo);
+        super(mask == null ? new MinimumElevationEventFunction(refractionModel, topo, minElevation) :
+                new MaskedElevationEventFunction(refractionModel, topo, mask), detectionSettings, handler, topo);
         this.minElevation    = minElevation;
         this.elevationMask   = mask;
         this.refractionModel = refractionModel;
@@ -156,25 +157,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>>
      */
     @Override
     public T g(final FieldSpacecraftState<T> s) {
-
-        final FieldStaticTransform<T> t = s.getFrame().getStaticTransformTo(getTopocentricFrame(), s.getDate());
-        final FieldVector3D<T> extPointTopo = t.transformPosition(s.getPosition());
-        final T trueElevation = extPointTopo.getDelta();
-
-        final T calculatedElevation;
-        if (refractionModel != null) {
-            calculatedElevation = trueElevation.add(refractionModel.getRefraction(trueElevation.getReal()));
-        } else {
-            calculatedElevation = trueElevation;
-        }
-
-        if (elevationMask != null) {
-            final double azimuth = FastMath.atan2(extPointTopo.getY().getReal(), extPointTopo.getX().getReal());
-            return calculatedElevation.subtract(elevationMask.getElevation(azimuth));
-        } else {
-            return calculatedElevation.subtract(minElevation);
-        }
-
+        return getEventFunction().value(s);
     }
 
     /**
@@ -221,4 +204,9 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>>
                                             minElevation, elevationMask, newRefractionModel, getTopocentricFrame());
     }
 
+    @Override
+    public ElevationDetector toEventDetector(final EventHandler eventHandler) {
+        return new ElevationDetector(getDetectionSettings().toEventDetectionSettings(), eventHandler, minElevation,
+                elevationMask, refractionModel, getTopocentricFrame());
+    }
 }

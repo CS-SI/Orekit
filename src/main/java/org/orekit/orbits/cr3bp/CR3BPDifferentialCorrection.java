@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,10 @@ import org.orekit.bodies.CR3BPSystem;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.HaloXZPlaneCrossingDetector;
+import org.orekit.propagation.events.EventDetectionSettings;
+import org.orekit.propagation.events.PlaneCrossingDetector;
+import org.orekit.propagation.events.functions.PlaneCrossingFunction;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.cr3bp.CR3BPForceModel;
 import org.orekit.propagation.numerical.cr3bp.STMEquations;
@@ -123,12 +126,15 @@ public class CR3BPDifferentialCorrection {
         // Add CR3BP Force Model to the propagator
         propagator.addForceModel(new CR3BPForceModel(syst));
 
-        // Add event detector for crossing plane
-        propagator.addEventDetector(new HaloXZPlaneCrossingDetector(CROSSING_MAX_CHECK, CROSSING_TOLERANCE).
-                                    withHandler((state, detector, increasing) -> {
-                                        cross = true;
-                                        return Action.STOP;
-                                    }));
+        // Add event detector for XZ crossing plane
+        final PlaneCrossingFunction crossingFunction = new PlaneCrossingFunction(Vector3D.PLUS_J, syst.getRotatingFrame());
+        final EventDetectionSettings detectionSettings = new EventDetectionSettings(CROSSING_MAX_CHECK, CROSSING_TOLERANCE,
+                EventDetectionSettings.DEFAULT_MAX_ITER);
+        final EventHandler eventHandler = (state, detector, increasing) -> {
+            cross = true;
+            return Action.STOP;
+        };
+        propagator.addEventDetector(new PlaneCrossingDetector(detectionSettings, eventHandler, crossingFunction));
 
         return propagator;
 

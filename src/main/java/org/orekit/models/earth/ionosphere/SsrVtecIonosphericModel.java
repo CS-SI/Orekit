@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,14 +29,11 @@ import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.SinCos;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.frames.FieldStaticTransform;
-import org.orekit.frames.StaticTransform;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.metric.messages.ssr.subtype.SsrIm201;
 import org.orekit.gnss.metric.messages.ssr.subtype.SsrIm201Data;
 import org.orekit.gnss.metric.messages.ssr.subtype.SsrIm201Header;
-import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
@@ -58,7 +55,7 @@ import org.orekit.utils.ParameterDriver;
  * @since 11.0
  * @see "IGS State Space Representation (SSR) Format, Version 1.00, October 2020."
  */
-public class SsrVtecIonosphericModel implements IonosphericModel, IonosphericDelayModel {
+public class SsrVtecIonosphericModel extends AbstractIonosphericModel {
 
     /** Earth radius in meters (see reference). */
     private static final double EARTH_RADIUS = 6370000.0;
@@ -71,116 +68,105 @@ public class SsrVtecIonosphericModel implements IonosphericModel, IonosphericDel
 
     /**
      * Constructor.
-     * @param vtecMessage SSR Ionosphere VTEC Spherical Harmonics Message.
+     * @param earth earth body shape
+     * @param vtecMessage    SSR Ionosphere VTEC Spherical Harmonics Message.
+     * @since 14.0
      */
-    public SsrVtecIonosphericModel(final SsrIm201 vtecMessage) {
+    public SsrVtecIonosphericModel(final OneAxisEllipsoid earth, final SsrIm201 vtecMessage) {
+        super(earth);
         this.vtecMessage = vtecMessage;
     }
 
     /** {@inheritDoc} */
     @Override
-    public double pathDelay(final SpacecraftState state, final TopocentricFrame baseFrame,
-                            final double frequency, final double[] parameters) {
-        return pathDelay(state, baseFrame, state.getDate(), frequency, parameters);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double pathDelay(final SpacecraftState state,
+    public double pathDelay(final Vector3D localP1, final Vector3D localP2,
                             final TopocentricFrame baseFrame, final AbsoluteDate receptionDate,
                             final double frequency, final double[] parameters) {
 
-        // we use transform from base frame to inert frame and invert it
-        // because base frame could be peered with inertial frame (hence improving performances with caching)
-        // but the reverse is almost never used
-        final StaticTransform base2Inert = baseFrame.getStaticTransformTo(state.getFrame(), receptionDate);
-        final Vector3D        position   = base2Inert.getInverse().transformPosition(state.getPosition());
+        final double baseAlt = baseFrame.getPoint().getAltitude();
 
-        // Elevation in radians
-        final double   elevation = position.getDelta();
+        // Lambda function for calculating path delay for each side of the link
+        final DelayCalculator calculateDelay = position -> {
 
-        // Only consider measures above the horizon
-        if (elevation > 0.0) {
+            // Elevation of position w.r.t the base frame
+            final double elevation = position.getDelta();
 
-            // Azimuth angle in radians
-            double azimuth = FastMath.atan2(position.getX(), position.getY());
-            if (azimuth < 0.) {
-                azimuth += MathUtils.TWO_PI;
+            if (checkIfPathIsValid(position, localP1, localP2, baseAlt)) {
+
+                // Azimuth angle in radians
+                double azimuth = FastMath.atan2(position.getX(), position.getY());
+                if (azimuth < 0.) {
+                    azimuth += MathUtils.TWO_PI;
+                }
+
+                // Initialize slant TEC
+                double stec = 0.0;
+
+                // Message header
+                final SsrIm201Header header = vtecMessage.getHeader();
+
+                // Loop on ionospheric layers
+                for (final SsrIm201Data data : vtecMessage.getData()) {
+                    stec += stecIonosphericLayer(data, header, elevation, azimuth, baseFrame.getPoint());
+                }
+
+                // Return the path delay
+                return FACTOR * stec / (frequency * frequency);
+
             }
 
-            // Initialize slant TEC
-            double stec = 0.0;
+            // Delay is equal to 0.0
+            return 0.0;
+        };
 
-            // Message header
-            final SsrIm201Header header = vtecMessage.getHeader();
-
-            // Loop on ionospheric layers
-            for (final SsrIm201Data data : vtecMessage.getData()) {
-                stec += stecIonosphericLayer(data, header, elevation, azimuth, baseFrame.getPoint());
-            }
-
-            // Return the path delay
-            return FACTOR * stec / (frequency * frequency);
-
-        }
-
-        // Delay is equal to 0.0
-        return 0.0;
-
+        return calculateDelay.apply(localP1) + calculateDelay.apply(localP2);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
-                                                       final double frequency, final T[] parameters) {
-        return pathDelay(state, baseFrame, state.getDate(), frequency, parameters);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldVector3D<T> localP1, final FieldVector3D<T> localP2,
                                                            final TopocentricFrame baseFrame, final FieldAbsoluteDate<T> receptionDate,
                                                            final double frequency, final T[] parameters) {
 
         // Field
-        final Field<T> field = state.getDate().getField();
+        final Field<T> field   = receptionDate.getField();
+        final double   baseAlt = baseFrame.getPoint().getAltitude();
 
-        // we use transform from base frame to inert frame and invert it
-        // because base frame could be peered with inertial frame (hence improving performances with caching)
-        // but the reverse is almost never used
-        final FieldStaticTransform<T> base2Inert = baseFrame.getStaticTransformTo(state.getFrame(), receptionDate);
-        final FieldVector3D<T>        position   = base2Inert.getInverse().transformPosition(state.getPosition());
+        // Lambda function for calculating path delay for each side of the link
+        final FieldDelayCalculator<T> calculateFieldDelay = position -> {
 
-        // Elevation in radians
-        final T                elevation = position.getDelta();
+            // Elevation of object in radians w.r.t. minimum altitude point
+            final T elevation = position.getDelta();
 
-        // Only consider measures above the horizon
-        if (elevation.getReal() > 0.0) {
+            if (checkIfPathIsValid(position, localP1, localP2, baseAlt)) {
 
-            // Azimuth angle in radians
-            T azimuth = FastMath.atan2(position.getX(), position.getY());
-            if (azimuth.getReal() < 0.) {
-                azimuth = azimuth.add(MathUtils.TWO_PI);
+                // Azimuth angle in radians
+                T azimuth = FastMath.atan2(position.getX(), position.getY());
+                if (azimuth.getReal() < 0.) {
+                    azimuth = azimuth.add(MathUtils.TWO_PI);
+                }
+
+                // Initialize slant TEC
+                T stec = field.getZero();
+
+                // Message header
+                final SsrIm201Header header = vtecMessage.getHeader();
+
+                // Loop on ionospheric layers
+                for (SsrIm201Data data : vtecMessage.getData()) {
+                    stec = stec.add(stecIonosphericLayer(data, header, elevation, azimuth, baseFrame.getPoint(field)));
+                }
+
+                // Return the path delay
+                return stec.multiply(FACTOR).divide(frequency * frequency);
+
             }
 
-            // Initialize slant TEC
-            T stec = field.getZero();
+            // Delay is equal to 0.0
+            return field.getZero();
+        };
 
-            // Message header
-            final SsrIm201Header header = vtecMessage.getHeader();
-
-            // Loop on ionospheric layers
-            for (SsrIm201Data data : vtecMessage.getData()) {
-                stec = stec.add(stecIonosphericLayer(data, header, elevation, azimuth, baseFrame.getPoint(field)));
-            }
-
-            // Return the path delay
-            return stec.multiply(FACTOR).divide(frequency * frequency);
-
-        }
-
-        // Delay is equal to 0.0
-        return field.getZero();
+        return calculateFieldDelay.apply(localP1).add( calculateFieldDelay.apply(localP2) );
 
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -479,7 +479,8 @@ public class FieldKeplerianAnomalyUtility {
 
             delta = f.divide(df);
             deltaE = deltaE.subtract(delta);
-            hasConverged = delta.norm() <= KeplerianAnomalyUtility.CONVERGENCE_THRESHOLD;
+            hasConverged = delta.norm() <= KeplerianAnomalyUtility.CONVERGENCE_THRESHOLD ||
+                           delta.isSmall(deltaE, KeplerianAnomalyUtility.RELATIVE_CONVERGENCE_THRESHOLD);
         } while (++iter < KeplerianAnomalyUtility.MAXIMUM_ITERATIONS && !hasConverged);
 
         if (!hasConverged) {
@@ -525,7 +526,8 @@ public class FieldKeplerianAnomalyUtility {
 
             delta = f.divide(df);
             shH = shH.subtract(delta);
-            hasConverged = delta.norm() <= KeplerianAnomalyUtility.CONVERGENCE_THRESHOLD;
+            hasConverged = delta.norm() <= KeplerianAnomalyUtility.CONVERGENCE_THRESHOLD ||
+                           delta.isSmall(shH, KeplerianAnomalyUtility.RELATIVE_CONVERGENCE_THRESHOLD);
         } while (++iter < KeplerianAnomalyUtility.MAXIMUM_ITERATIONS && !hasConverged);
 
         if (!hasConverged) {

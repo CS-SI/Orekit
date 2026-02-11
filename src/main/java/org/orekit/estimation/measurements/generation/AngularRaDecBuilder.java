@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,27 +16,22 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import java.util.Map;
+
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
-
-import java.util.Map;
 
 /** Builder for {@link AngularRaDec} measurements.
  * @author Luc Maisonobe
  * @since 9.3
  */
-public class AngularRaDecBuilder extends AbstractMeasurementBuilder<AngularRaDec> {
-
-    /** Zero value for initial dummy measurement. */
-    private static final double[] ZERO = { 0.0, 0.0 };
-
-    /** Ground station from which measurement is performed. */
-    private final GroundStation station;
+public class AngularRaDecBuilder extends AbstractAngularBuilder<AngularRaDec> {
 
     /** Reference frame in which the right ascension - declination angles are given. */
     private final Frame referenceFrame;
@@ -49,12 +44,26 @@ public class AngularRaDecBuilder extends AbstractMeasurementBuilder<AngularRaDec
      * @param baseWeight base weight
      * @param satellite satellite related to this builder
      */
-    public AngularRaDecBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                               final GroundStation station, final Frame referenceFrame,
-                               final double[] sigma, final double[] baseWeight,
+    public AngularRaDecBuilder(final CorrelatedRandomVectorGenerator noiseSource, final GroundStation station,
+                               final Frame referenceFrame, final double[] sigma, final double[] baseWeight,
                                final ObservableSatellite satellite) {
-        super(noiseSource, sigma, baseWeight, satellite);
-        this.station        = station;
+        this(noiseSource, station, referenceFrame, sigma, baseWeight, new SignalTravelTimeModel(), satellite);
+    }
+
+    /** Simple constructor.
+     * @param noiseSource noise source, may be null for generating perfect measurements
+     * @param station ground station from which measurement is performed
+     * @param referenceFrame Reference frame in which the right ascension - declination angles are given
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param signalTravelTimeModel signal travel time model
+     * @param satellite satellite related to this builder
+     * @since 14.0
+     */
+    public AngularRaDecBuilder(final CorrelatedRandomVectorGenerator noiseSource, final GroundStation station,
+                               final Frame referenceFrame, final double[] sigma, final double[] baseWeight,
+                               final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
+        super(noiseSource, station, sigma, baseWeight, signalTravelTimeModel, satellite);
         this.referenceFrame = referenceFrame;
     }
 
@@ -62,9 +71,8 @@ public class AngularRaDecBuilder extends AbstractMeasurementBuilder<AngularRaDec
     @Override
     protected AngularRaDec buildObserved(final AbsoluteDate date,
                                          final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new AngularRaDec(station, referenceFrame, date, ZERO,
-                                getTheoreticalStandardDeviation(),
-                                getBaseWeight(), getSatellites()[0]);
+        return new AngularRaDec(getStation(), referenceFrame, date, ZERO, getTheoreticalStandardDeviation(),
+                                getBaseWeight(), getSignalTravelTimeModel(), getSatellites()[0]);
     }
 
 }

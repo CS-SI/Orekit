@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,8 @@
 package org.orekit.propagation.events;
 
 import org.orekit.frames.TopocentricFrame;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.EventFunction;
 import org.orekit.propagation.events.handlers.EventHandler;
 
 /** Abstract class for detectors using a topocentric frame.
@@ -31,13 +33,16 @@ public abstract class AbstractTopocentricDetector<T extends AbstractDetector<T>>
     private final TopocentricFrame topocentricFrame;
 
     /** Protected constructor with full parameters.
+     * @param eventFunction event function
      * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param topocentricFrame topocentric frame
+     * @since 14.0
      */
-    protected AbstractTopocentricDetector(final EventDetectionSettings detectionSettings, final EventHandler handler,
+    protected AbstractTopocentricDetector(final EventFunction eventFunction,
+                                          final EventDetectionSettings detectionSettings, final EventHandler handler,
                                           final TopocentricFrame topocentricFrame) {
-        super(detectionSettings, handler);
+        super(eventFunction, detectionSettings, handler);
         this.topocentricFrame = topocentricFrame;
     }
 
@@ -49,4 +54,12 @@ public abstract class AbstractTopocentricDetector<T extends AbstractDetector<T>>
         return topocentricFrame;
     }
 
+
+    /** Get the elevation value.
+     * @param s the current state information: date, kinematics, attitude
+     * @return spacecraft elevation
+     */
+    public double getElevation(final SpacecraftState s) {
+        return getTopocentricFrame().getElevation(s.getPosition(), s.getFrame(), s.getDate());
+    }
 }

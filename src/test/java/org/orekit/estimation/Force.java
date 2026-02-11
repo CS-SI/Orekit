@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,7 +30,7 @@ public enum Force {
 
     POTENTIAL() {
         public ForceModel getForceModel(Context context) {
-            return new HolmesFeatherstoneAttractionModel(context.earth.getBodyFrame(), context.gravity);
+            return new HolmesFeatherstoneAttractionModel(context.earth.getBodyFrame(), context.normalizedProvider);
         }
     },
 
@@ -60,22 +60,22 @@ public enum Force {
 
     OCEAN_TIDES() {
         public ForceModel getForceModel(Context context) {
-            return new OceanTides(context.earth.getBodyFrame(), context.gravity.getAe(), context.gravity.getMu(),
+            return new OceanTides(context.earth.getBodyFrame(), context.normalizedProvider.getAe(), context.normalizedProvider.getMu(),
                                   7, 7, context.conventions, context.ut1);
         }
     },
 
     SOLID_TIDES() {
         public ForceModel getForceModel(Context context) {
-            return new SolidTides(context.earth.getBodyFrame(), context.gravity.getAe(), context.gravity.getMu(),
-                                  context.gravity.getTideSystem(),
+            return new SolidTides(context.earth.getBodyFrame(), context.normalizedProvider.getAe(), context.normalizedProvider.getMu(),
+                                  context.normalizedProvider.getTideSystem(),
                                   context.conventions, context.ut1, context.sun, context.moon);
         }
     },
 
     RELATIVITY() {
         public ForceModel getForceModel(Context context) {
-            return new Relativity(context.gravity.getMu());
+            return new Relativity(context.normalizedProvider.getMu());
         }
     };
 

@@ -154,6 +154,9 @@ WRONG_DEGREE_OR_ORDER=nu există termenul ({0}, {1}) în decompozitia armonicilo
 # wrong orbital elements for averaging theory
 WRONG_ELEMENTS_FOR_AVERAGING_THEORY=elemente orbitale invalide pentru teoria de mediere
 
+# not a valid Observer type for this calculation
+WRONG_OBSERVER_TYPE=
+
 # several reference dates ({0} and {1} differ by {3,number,0.0##############E0} s) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD=mai multe date de referință ({0} and {1} separate de {3,number,0.0##############E0} s) descoperite în fișierul de câmp gravitațional {2}
 
@@ -977,3 +980,114 @@ LAMBERT_CORRECTION_DID_NOT_CONVERGE=
 
 # invalid number of revolutions {0} for Lambert problem, a maximum of {1} is possible with the given time of flight
 LAMBERT_INVALID_NUMBER_OF_REVOLUTIONS=
+
+# invalid number of facets: {0}, it must be an odd number
+NUMBER_OF_FACETS_NOT_ODD=
+
+# Invalid DAF FTP string found in DAF file {0}
+INVALID_DAF_FTPSTR = <MISSING TRANSLATION>
+
+# Incomplete DAF comment record found
+INCOMPLETE_DAF_COMMENT_RECORD = <MISSING TRANSLATION>
+
+# Incomplete DAF summary record found
+INCOMPLETE_DAF_SUMMARY_RECORD = <MISSING TRANSLATION>
+
+# DAF endianness string must be BIG-IEEE or LTL-IEEE, got {0}
+INVALID_DAF_ENDIANNESS = <MISSING TRANSLATION>
+
+# DAF file type string must be of the format DAF/XXXX, got {0}
+INVALID_DAF_FILETYPE_STRING = <MISSING TRANSLATION>
+
+# Incomplete DAF name record found
+INCOMPLETE_DAF_NAME_RECORD = <MISSING TRANSLATION>
+
+# DAF object cannot be null
+NULL_DAF = <MISSING TRANSLATION>
+
+# Initial position for two-body propagator is zero
+TWOBODY_ZERO_INITIAL_DISTANCE = <MISSING TRANSLATION>
+
+# Initial velocity for two-body propagator is zero
+TWOBODY_ZERO_INITIAL_VELOCITY = <MISSING TRANSLATION>
+
+# Rectilinear motion detected in two-body propagator
+TWOBODY_RECTILINEAR_MOTION = <MISSING TRANSLATION>
+
+# Two-body propagation numerically unstable
+TWOBODY_UNSTABLE_PROPAGATION = <MISSING TRANSLATION>
+
+# GM value cannot be negative
+NEGATIVE_GM = <MISSING TRANSLATION>
+
+# Stumpff function order cannot be negative
+STUMPFF_NEGATIVE_ORDER = <MISSING TRANSLATION>
+
+# Semilatus rectum cannot be negative
+NEGATIVE_SEMILATUS_RECTUM = <MISSING TRANSLATION>
+
+# Eccentricity cannot be negative
+NEGATIVE_ECCENTRICITY = <MISSING TRANSLATION>
+
+# Central body radius cannot be negative
+NEGATIVE_CENTRAL_BODY_RADIUS = <MISSING TRANSLATION>
+
+# Norm of trajectory pole vector is zero
+ZERO_NORM_TRAJECTORY_POLE_VECTOR = <MISSING TRANSLATION>
+
+# Norm of periapsis vector is zero
+ZERO_NORM_PERIAPSIS_VECTOR = <MISSING TRANSLATION>
+
+# Norm of central body pole vector is zero
+ZERO_NORM_CENTRAL_BODY_POLE_VECTOR = <MISSING TRANSLATION>
+
+# Trajectory pole and periapsis vectors are not orthogonal
+NON_ORTHOGONAL_TRAJECTORY_POLE_PERIAPSIS = <MISSING TRANSLATION>
+
+# Semimajor axis cannot be negative
+NEGATIVE_SEMIMAJOR_AXIS = <MISSING TRANSLATION>
+
+# Unknown SPK type {0}
+UNKNOWN_SPK_TYPE = <MISSING TRANSLATION>
+
+# Unknown SPK subtype code found for SPK segment of type {0}
+UNKNOWN_SPK_SUBTYPE = <MISSING TRANSLATION>
+
+# Unexpected number of metadata items in type {0} SPK
+SPK_UNEXPECTED_NUMBER_METADATA = <MISSING TRANSLATION>
+
+# Unexpected number of constants in type {0} SPK
+SPK_UNEXPECTED_NUMBER_CONSTANTS = <MISSING TRANSLATION>
+
+# Unexpected data packet size in type {0} SPK"
+SPK_UNEXPECTED_DATA_PACKET_SIZE = <MISSING TRANSLATION>
+
+# Target date {0} is outside the interval covered by the SPK segment
+SPK_TARGET_DATE_OUTSIDE_INTERVAL = <MISSING TRANSLATION>
+
+# Segment does not contain enough data records to perform {0} interpolation ({1} available, at least {2} needed)
+SPK_INTERPOLATION_SEGMENT_TOO_SHORT = <MISSING TRANSLATION>
+
+# Unknown PCK segment type {0}.
+UNKNOWN_PCK_TYPE = <MISSING TRANSLATION>
+
+# Unexpected number of metadata items in type {0} PCK segment
+PCK_UNEXPECTED_NUMBER_METADATA = <MISSING TRANSLATION>
+
+# Unexpected number of constants in type {0} PCK segment
+PCK_UNEXPECTED_NUMBER_CONSTANTS = <MISSING TRANSLATION>
+
+# Unexpected data packet size in type {0} PCK segment
+PCK_UNEXPECTED_DATA_PACKET_SIZE = <MISSING TRANSLATION>
+
+# Target date {0} is outside the interval covered by the PCK segment
+PCK_TARGET_DATE_OUTSIDE_INTERVAL = <MISSING TRANSLATION>
+
+# PCK segment does not contain enough data records to perform {0} interpolation ({1} available, at least {2} needed)
+PCK_INTERPOLATION_SEGMENT_TOO_SHORT = <MISSING TRANSLATION>
+
+# Comments require {0} records but DAF file record specifies only {1} reserved records
+DAF_INSUFFICIENT_COMMENT_RECORDS = <MISSING TRANSLATION>
+
+# File description string is {0} characters long but should be at most 60 characters
+DAF_TOO_LONG_FILEDESCRIPTION_STRING = <MISSING TRANSLATION>

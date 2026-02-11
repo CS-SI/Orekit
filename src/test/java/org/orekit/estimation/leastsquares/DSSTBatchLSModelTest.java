@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,9 +24,9 @@ import org.hipparchus.util.Incrementor;
 import org.hipparchus.util.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.orekit.estimation.DSSTContext;
-import org.orekit.estimation.DSSTEstimationTestUtils;
+import org.orekit.estimation.Context;
 import org.orekit.estimation.DSSTForce;
+import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
@@ -50,18 +50,18 @@ public class DSSTBatchLSModelTest {
     @Test
     public void testPerfectValue() {
 
-        final DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        final Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         final DSSTPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(true, 1.0e-6, 60.0, 0.001);
+                        context.createDsst(true, 1.0e-6, 60.0, 0.001);
         final DSSTPropagatorBuilder[] builders = { propagatorBuilder };
 
         // create perfect PV measurements
-        final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit,
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                                propagatorBuilder);
 
         final List<ObservedMeasurement<?>> measurements =
-                        DSSTEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new PVMeasurementCreator(),
                                                                0.0, 1.0, 300.0);
         final ParameterDriversList estimatedMeasurementsParameters = new ParameterDriversList();
@@ -120,17 +120,17 @@ public class DSSTBatchLSModelTest {
     @Test
     public void testBackwardPropagation() {
 
-        final DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        final Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         final DSSTPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(true, 1.0e-6, 60.0, 0.001);
+                        context.createDsst(true, 1.0e-6, 60.0, 0.001);
         final DSSTPropagatorBuilder[] builders = { propagatorBuilder };
 
         // create perfect PV measurements
-        final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit,
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        DSSTEstimationTestUtils.createMeasurements(propagator,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new PVMeasurementCreator(),
                                                                0.0, -1.0, 300.0);
         final ParameterDriversList estimatedMeasurementsParameters = new ParameterDriversList();
@@ -160,7 +160,7 @@ public class DSSTBatchLSModelTest {
     public void testIssue718() {
 
         // Context
-        final DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        final Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         // Force models
         final DSSTForce zonal = DSSTForce.ZONAL;
@@ -169,16 +169,16 @@ public class DSSTBatchLSModelTest {
 
         // Create propagator builders
         final DSSTPropagatorBuilder propagatorBuilderMean =
-                        context.createBuilder(true, 0.01, 600.0, 1.0);
+                        context.createDsst(true, 0.01, 600.0, 1.0);
         final DSSTPropagatorBuilder propagatorBuilderOsc  =
-                        context.createBuilder(PropagationType.OSCULATING, PropagationType.OSCULATING, true, 0.01, 600.0, 1.0, zonal);
+                        context.createDsst(PropagationType.OSCULATING, PropagationType.OSCULATING, true, 0.01, 600.0, 1.0, zonal);
 
         // Propagators
-        final Propagator propagatorMean = DSSTEstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilderMean);
-        final Propagator propagatorOsc  = DSSTEstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilderOsc);
+        final Propagator propagatorMean = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilderMean);
+        final Propagator propagatorOsc  = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilderOsc);
 
         // Measurements
-        final List<ObservedMeasurement<?>> measurements = DSSTEstimationTestUtils.createMeasurements(propagatorMean, new PVMeasurementCreator(),
+        final List<ObservedMeasurement<?>> measurements = EstimationTestUtils.createMeasurements(propagatorMean, new PVMeasurementCreator(),
                                                                                                      0.0, 1.0, 300.0);
         // Empty list of measurement parameters
         final ParameterDriversList estimatedMeasurementsParameters = new ParameterDriversList();

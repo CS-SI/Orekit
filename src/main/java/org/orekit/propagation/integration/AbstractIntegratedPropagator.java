@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -1009,7 +1009,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
          * @return Orekit state
          */
         private SpacecraftState convertToOrekitForEventFunction(final ODEStateAndDerivative s) {
-            if (!this.detector.dependsOnMainVariablesOnly()) {
+            if (!this.detector.getEventFunction().dependsOnMainVariablesOnly()) {
                 return convertToOrekitWithAdditional(s);
             } else {
                 // event function does not require secondary states or attitude rates
@@ -1332,7 +1332,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * If propagator-specific event handlers and step handlers are added to
      * the integrator in the try block, they will be removed automatically
      * when leaving the block, so the integrator only keeps its own handlers
-     * between calls to {@link AbstractIntegratedPropagator#propagate(AbsoluteDate, AbsoluteDate).
+     * between calls to {@link AbstractIntegratedPropagator#propagate(AbsoluteDate, AbsoluteDate)}.
      * </p>
      * @since 11.0
      */

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 Joseph Reed
+/* Copyright 2002-2026 Joseph Reed
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -190,4 +190,5 @@ public class FieldBetaAngleDetector<T extends CalculusFieldElement<T>> extends F
         return new FieldBetaAngleDetector<>(detectionSettings, newHandler,
                 getBetaAngleThreshold(), getCelestialBodyProvider(), getInertialFrame());
     }
+
 }

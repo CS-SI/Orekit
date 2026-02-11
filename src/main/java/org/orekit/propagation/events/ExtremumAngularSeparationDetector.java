@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,7 +47,7 @@ public class ExtremumAngularSeparationDetector extends AbstractDetector<Extremum
     public ExtremumAngularSeparationDetector(final EventDetectionSettings detectionSettings,
                                              final EventHandler handler,
                                              final ExtendedPositionProvider beacon,
-                                                final ExtendedPositionProvider observer) {
+                                             final ExtendedPositionProvider observer) {
         super(detectionSettings, handler);
         this.beacon         = beacon;
         this.observer       = observer;

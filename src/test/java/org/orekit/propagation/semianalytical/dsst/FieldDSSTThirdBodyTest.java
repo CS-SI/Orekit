@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -118,11 +118,11 @@ public class FieldDSSTThirdBodyTest {
         }
 
         Assertions.assertEquals(0.0,                    elements[0].getReal(), eps);
-        Assertions.assertEquals(4.346622384804537E-10,  elements[1].getReal(), eps);
-        Assertions.assertEquals(7.293879548440941E-10,  elements[2].getReal(), eps);
-        Assertions.assertEquals(7.465699631747887E-11,  elements[3].getReal(), eps);
-        Assertions.assertEquals(3.9170221137233836E-10, elements[4].getReal(), eps);
-        Assertions.assertEquals(-3.178319341840074E-10, elements[5].getReal(), eps);
+        Assertions.assertEquals(4.3466223890867583E-10, elements[1].getReal(), eps);
+        Assertions.assertEquals(7.29387954793016E-10,   elements[2].getReal(), eps);
+        Assertions.assertEquals(7.465699634930727E-11,  elements[3].getReal(), eps);
+        Assertions.assertEquals(3.917022111382985E-10,  elements[4].getReal(), eps);
+        Assertions.assertEquals(-3.178319348509368E-10, elements[5].getReal(), eps);
 
     }
 
@@ -163,12 +163,12 @@ public class FieldDSSTThirdBodyTest {
             }
         }
 
-        Assertions.assertEquals(-413.20633326933154,    y[0].getReal(), 1.0e-15);
-        Assertions.assertEquals(-1.8060137920197483E-5, y[1].getReal(), 1.0e-20);
-        Assertions.assertEquals(-2.8416367511811057E-5, y[2].getReal(), 1.4e-20);
-        Assertions.assertEquals(-2.791424363476855E-6,  y[3].getReal(), 1.0e-21);
-        Assertions.assertEquals(1.8817187527805853E-6,  y[4].getReal(), 1.0e-21);
-        Assertions.assertEquals(-3.423664701811889E-5,  y[5].getReal(), 1.0e-20);
+        Assertions.assertEquals(-413.20633528422286,    y[0].getReal(), 1.0e-15);
+        Assertions.assertEquals(-1.8060137998923913E-5, y[1].getReal(), 1.0e-20);
+        Assertions.assertEquals(-2.8416367485988227E-5, y[2].getReal(), 1.4e-20);
+        Assertions.assertEquals(-2.7914243657805077E-6, y[3].getReal(), 1.0e-21);
+        Assertions.assertEquals(1.881718752671939E-6,   y[4].getReal(), 1.0e-21);
+        Assertions.assertEquals(-3.4236646973819904E-5, y[5].getReal(), 1.0e-20);
 
     }
 
@@ -395,7 +395,7 @@ public class FieldDSSTThirdBodyTest {
         ParameterDriver selected = bound.getDrivers().get(0);
         double[] parameters = new double[1];
         double p0 = selected.getReferenceValue();
-        double h  = selected.getScale();
+        double h  = selected.getScale() * 2;
       
         selected.setValue(p0 - 4 * h);
         final double[] shortPeriodM4 = computeShortPeriodTerms(meanState, forces);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -38,6 +39,10 @@ import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.propagation.events.FieldEventsLogger.FieldLoggedEvent;
+import org.orekit.propagation.events.functions.EventFunction;
+import org.orekit.propagation.events.functions.EventFunctionModifier;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.intervals.AdaptableInterval;
 import org.orekit.propagation.events.intervals.ApsideDetectionAdaptableIntervalFactory;
@@ -47,6 +52,7 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FieldApsideDetectorTest {
 
@@ -124,7 +130,7 @@ class FieldApsideDetectorTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
@@ -172,12 +178,31 @@ class FieldApsideDetectorTest {
         }
 
         @Override
-        public T g(final FieldSpacecraftState<T> s) {
-            ++count;
-            return FieldDetectorModifier.super.g(s);
-        }
+        public EventFunction getEventFunction() {
+            return new EventFunctionModifier() {
+                @Override
+                public EventFunction getBaseFunction() {
+                    return detector.getEventFunction();
+                }
 
+                @Override
+                public <S extends CalculusFieldElement<S>> S value(FieldSpacecraftState<S> fieldState) {
+                    count++;
+                    return EventFunctionModifier.super.value(fieldState);
+                }
+            };
+        }
     }
 
+    @Test
+    void testToEventDetector() {
+        // GIVEN
+        final FieldApsideDetector<Binary64> fieldDetector = new FieldApsideDetector<>(Binary64.ONE);
+        final EventHandler expectedHandler = new ContinueOnEvent();
+        // WHEN
+        final ApsideDetector detector = fieldDetector.toEventDetector(expectedHandler);
+        // THEN
+        assertEquals(expectedHandler, detector.getHandler());
+    }
 }
 

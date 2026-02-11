@@ -22,6 +22,7 @@ import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
@@ -111,4 +112,9 @@ public class FieldFunctionalDetector<T extends CalculusFieldElement<T>>
         return function;
     }
 
+    @Override
+    public FunctionalDetector toEventDetector(final EventHandler eventHandler) {
+        return new FunctionalDetector(getDetectionSettings().toEventDetectionSettings(), eventHandler,
+                state -> getFunction().apply(new FieldSpacecraftState<>(getThreshold().getField(), state)).getReal());
+    }
 }

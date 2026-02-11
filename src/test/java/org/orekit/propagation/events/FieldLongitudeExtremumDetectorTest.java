@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.TestUtils;
 import org.orekit.Utils;
+import org.orekit.bodies.BodyShape;
 import org.orekit.frames.FramesFactory;
 import org.orekit.models.earth.ReferenceEllipsoid;
 import org.orekit.orbits.FieldEquinoctialOrbit;
@@ -32,13 +33,16 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 
 class FieldLongitudeExtremumDetectorTest {
 
@@ -105,6 +109,19 @@ class FieldLongitudeExtremumDetectorTest {
             final Binary64 duration = fieldState.durationFrom(state);
             assertEquals(0., duration.getReal(), 1e-7);
         }
+    }
+
+    @Test
+    void testToEventDetector() {
+        // GIVEN
+        final FieldLongitudeExtremumDetector<Binary64> fieldDetector = new FieldLongitudeExtremumDetector<>(Binary64Field.getInstance(),
+                mock(BodyShape.class));
+        final EventHandler expectedHandler = new ContinueOnEvent();
+        // WHEN
+        final LongitudeExtremumDetector detector = fieldDetector.toEventDetector(expectedHandler);
+        // THEN
+        assertEquals(expectedHandler, detector.getHandler());
+        assertEquals(fieldDetector.getBodyShape(), detector.getBodyShape());
     }
 
     @BeforeEach

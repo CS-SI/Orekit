@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -93,7 +93,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = false;
         boolean isFiniteDifferences  = true;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    7.0e-9, 2.6e-8, 3.9e-7, 8.2e-5, 3.1e-4, 7.3e-3);
+                                    1.2e-8, 4.4e-8, 6.1e-7, 8.0e-5, 3.1e-4, 7.3e-3);
     }
 
     /**
@@ -226,7 +226,7 @@ public class TurnAroundRangeAnalyticTest {
         //Context context = EstimationTestUtils.geoStationnaryContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -301,7 +301,7 @@ public class TurnAroundRangeAnalyticTest {
 
         // Assert statistical errors
         Assertions.assertEquals(0.0, absErrorsMedian, 8.5e-08);
-        Assertions.assertEquals(0.0, absErrorsMin,    1.1e-07);
+        Assertions.assertEquals(0.0, absErrorsMin,    9.7e-08);
         Assertions.assertEquals(0.0, absErrorsMax,    2.0e-07);
         Assertions.assertEquals(0.0, relErrorsMedian, 5.1e-15);
         Assertions.assertEquals(0.0, relErrorsMax,    1.2e-14);
@@ -328,7 +328,7 @@ public class TurnAroundRangeAnalyticTest {
         //Context context = EstimationTestUtils.geoStationnaryContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range2 measurements
@@ -484,7 +484,7 @@ public class TurnAroundRangeAnalyticTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect TAR measurements

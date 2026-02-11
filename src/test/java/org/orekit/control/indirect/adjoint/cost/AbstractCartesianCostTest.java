@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,32 +16,30 @@
  */
 package org.orekit.control.indirect.adjoint.cost;
 
-import org.hipparchus.complex.Complex;
-import org.hipparchus.complex.ComplexField;
-import org.hipparchus.util.MathArrays;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.orekit.propagation.events.EventDetectionSettings;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class AbstractCartesianCostTest {
 
     @Test
     void testGetFieldAdjointVelocityNorm() {
         // GIVEN
-        final Complex[] fieldAdjoint = MathArrays.buildArray(ComplexField.getInstance(), 6);
-        for (int i = 0; i < fieldAdjoint.length; i++) {
-            fieldAdjoint[i] = Complex.ONE.multiply(i);
-        }
-        final double[] adjoint = new double[fieldAdjoint.length];
-        for (int i = 0; i < fieldAdjoint.length; i++) {
-            adjoint[i] = fieldAdjoint[i].getReal();
-        }
-        final AbstractCartesianCost cartesianEnergy = Mockito.mock(AbstractCartesianCost.class);
-        Mockito.when(cartesianEnergy.getFieldAdjointVelocityNorm(fieldAdjoint)).thenCallRealMethod();
-        Mockito.when(cartesianEnergy.getAdjointVelocityNorm(adjoint)).thenCallRealMethod();
+        final AbstractCartesianCost cost = mock();
+        when(cost.buildSwitchDetector(any(), any())).thenCallRealMethod();
+        final EventDetectionSettings detectionSettings = EventDetectionSettings.getDefaultEventDetectionSettings();
+        final ControlSwitchFunction controlSwitchFunction = mock();
         // WHEN
-        final Complex fieldNorm = cartesianEnergy.getFieldAdjointVelocityNorm(fieldAdjoint);
+        final EventDetector detector = cost.buildSwitchDetector(controlSwitchFunction, detectionSettings);
         // THEN
-        Assertions.assertEquals(cartesianEnergy.getAdjointVelocityNorm(adjoint), fieldNorm.getReal());
+        assertEquals(detector.getEventFunction(), controlSwitchFunction);
+        assertEquals(detector.getDetectionSettings(), detectionSettings);
+        assertInstanceOf(ResetDerivativesOnEvent.class, detector.getHandler());
     }
 }

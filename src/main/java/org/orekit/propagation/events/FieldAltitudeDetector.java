@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,9 +19,10 @@ package org.orekit.propagation.events;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
 import org.orekit.bodies.BodyShape;
-import org.orekit.bodies.FieldGeodeticPoint;
-import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.functions.AltitudeEventFunction;
+import org.orekit.propagation.events.functions.EventFunctionModifier;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnDecreasing;
 
@@ -105,7 +106,8 @@ public class FieldAltitudeDetector<T extends CalculusFieldElement<T>> extends Fi
      */
     protected FieldAltitudeDetector(final FieldEventDetectionSettings<T> detectionSettings,
                                     final FieldEventHandler<T> handler, final T altitude, final BodyShape bodyShape) {
-        super(detectionSettings, handler, bodyShape);
+        super(EventFunctionModifier.addFieldValue(new AltitudeEventFunction(bodyShape, altitude.getReal()),
+                altitude.getAddendum()), detectionSettings, handler, bodyShape);
         this.altitude  = altitude;
     }
 
@@ -130,10 +132,11 @@ public class FieldAltitudeDetector<T extends CalculusFieldElement<T>> extends Fi
      * @return value of the switching function
      */
     public T g(final FieldSpacecraftState<T> s) {
-        final Frame bodyFrame              = getBodyShape().getBodyFrame();
-        final FieldGeodeticPoint<T> point  = getBodyShape().transform(s.getPosition(bodyFrame),
-                                                                 bodyFrame, s.getDate());
-        return point.getAltitude().subtract(altitude);
+        return getEventFunction().value(s);
     }
 
+    @Override
+    public AltitudeDetector toEventDetector(final EventHandler eventHandler) {
+        return new AltitudeDetector(altitude.getReal(), getBodyShape()).withHandler(eventHandler);
+    }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,9 +18,9 @@
 package org.orekit.propagation.events;
 
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.TimeIntervalEventFunction;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.intervals.DateDetectionAdaptableIntervalFactory;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterval;
 
 
@@ -54,8 +54,20 @@ public class TimeIntervalDetector extends AbstractDetector<TimeIntervalDetector>
      */
     public TimeIntervalDetector(final EventDetectionSettings detectionSettings, final EventHandler handler,
                                 final TimeInterval timeInterval) {
-        super(detectionSettings, handler);
-        this.timeInterval = timeInterval;
+        this(new TimeIntervalEventFunction(timeInterval), detectionSettings, handler);
+    }
+
+    /**
+     * Full constructor.
+     * @param eventFunction event function
+     * @param detectionSettings event detection settings
+     * @param handler event handler
+     * @since 14.0
+     */
+    public TimeIntervalDetector(final TimeIntervalEventFunction eventFunction,
+                                final EventDetectionSettings detectionSettings, final EventHandler handler) {
+        super(eventFunction, detectionSettings, handler);
+        this.timeInterval = eventFunction.getTimeInterval();
     }
 
     /**
@@ -68,18 +80,11 @@ public class TimeIntervalDetector extends AbstractDetector<TimeIntervalDetector>
 
     @Override
     protected TimeIntervalDetector create(final EventDetectionSettings detectionSettings, final EventHandler newHandler) {
-        return new TimeIntervalDetector(detectionSettings, newHandler, timeInterval);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean dependsOnTimeOnly() {
-        return true;
+        return new TimeIntervalDetector((TimeIntervalEventFunction) getEventFunction(), detectionSettings, newHandler);
     }
 
     @Override
     public double g(final SpacecraftState s) {
-        final AbsoluteDate date = s.getDate();
-        return (date.durationFrom(timeInterval.getStartDate())) * (timeInterval.getEndDate().durationFrom(date));
+        return getEventFunction().value(s);
     }
 }

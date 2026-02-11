@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -74,7 +74,7 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
      * @since 10.1
      */
     public MultiplexedMeasurement(final List<ObservedMeasurement<?>> measurements) {
-        super(measurements.get(0).getDate(),
+        super(measurements.get(0).getDate(), solveTwoWay(measurements),
               multiplex(measurements, ComparableMeasurement::getObservedValue),
               multiplex(measurements, ObservedMeasurement::getTheoreticalStandardDeviation),
               multiplex(measurements, ObservedMeasurement::getBaseWeight),
@@ -328,6 +328,15 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
 
         return multiplexed;
 
+    }
+
+    private static boolean solveTwoWay(final List<ObservedMeasurement<?>> measurements) {
+        for (final ObservedMeasurement<?> measurement : measurements) {
+            if (measurement.isTwoWay()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Multiplex measurements data.

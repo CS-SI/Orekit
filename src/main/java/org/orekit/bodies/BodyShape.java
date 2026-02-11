@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -112,6 +112,30 @@ public interface BodyShape {
      */
     <T extends CalculusFieldElement<T>> FieldGeodeticPoint<T> transform(FieldVector3D<T> point, Frame frame,
                                                                     FieldAbsoluteDate<T> date);
+
+    /** Computes the longitude of a surface-relative point. This has its own method for performance with symmetrical bodies around the Z axis.
+     * @param point Cartesian point
+     * @param frame frame in which Cartesian point is expressed
+     * @param date date of the computation (used for frames conversions)
+     * @return longitude of surface-relative point
+     * @since 14.0
+     */
+    default double getLongitude(final Vector3D point, final Frame frame, final AbsoluteDate date) {
+        return transform(point, frame, date).getLongitude();
+    }
+
+    /** Computes the longitude of a surface-relative point. This has its own method for performance with symmetrical bodies around the Z axis.
+     * @param <T> field type
+     * @param point Cartesian point
+     * @param frame frame in which Cartesian point is expressed
+     * @param date date of the computation (used for frames conversions)
+     * @return longitude of surface-relative point
+     * @since 14.0
+     */
+    default <T extends CalculusFieldElement<T>> T getLongitude(final FieldVector3D<T> point, final Frame frame,
+                                                               final FieldAbsoluteDate<T> date) {
+        return transform(point, frame, date).getLongitude();
+    }
 
     /** Transform a surface-relative point to a Cartesian point.
      * @param point surface-relative point

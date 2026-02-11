@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -51,6 +52,8 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class FieldEventEnablingPredicateFilterTest {
 
@@ -79,20 +82,37 @@ class FieldEventEnablingPredicateFilterTest {
         final FieldEventEnablingPredicateFilter<Binary64> filter = new FieldEventEnablingPredicateFilter<>(detector,
                 expectedPredicate);
         // WHEN
-        final boolean value = filter.dependsOnTimeOnly();
+        final boolean value = filter.getEventFunction().dependsOnTimeOnly();
         // THEN
         Assertions.assertFalse(value);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    @SuppressWarnings("unchecked")
+    void testDependsOnMainVariablesOnly(final boolean flag) {
+        // GIVEN
+        final FieldEventDetector<Binary64> detector = new FieldDateDetector<>(Binary64Field.getInstance());
+        final FieldEnablingPredicate<Binary64> enablingPredicate = mock();
+        when(enablingPredicate.dependsOnMainVariablesOnly()).thenReturn(flag);
+        final FieldEventEnablingPredicateFilter<Binary64> predicateFilter = new FieldEventEnablingPredicateFilter<>(detector, enablingPredicate);
+        // WHEN
+        final boolean value = predicateFilter.getEventFunction().dependsOnMainVariablesOnly();
+        // THEN
+        Assertions.assertEquals(flag, value);
     }
 
     @Test
     @SuppressWarnings("unchecked")
     void testWithDetectionSettings() {
         // GIVEN
-        final FieldDateDetector<Binary64> detector = new FieldDateDetector<>(FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance()));
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldDateDetector<Binary64> detector = new FieldDateDetector<>(FieldAbsoluteDate.getArbitraryEpoch(field));
         final FieldEnablingPredicate<Binary64> predicate = (s, e, t) -> true;
         final FieldEventEnablingPredicateFilter<Binary64> template = new FieldEventEnablingPredicateFilter<>(detector,
                 predicate);
-        final FieldEventDetectionSettings<Binary64> detectionSettings = Mockito.mock();
+        final FieldEventDetectionSettings<Binary64> detectionSettings = new FieldEventDetectionSettings<>(field,
+                EventDetectionSettings.getDefaultEventDetectionSettings());
         // WHEN
         final FieldEventEnablingPredicateFilter<Binary64> filter = template.withDetectionSettings(detectionSettings);
         // THEN
@@ -216,6 +236,7 @@ class FieldEventEnablingPredicateFilterTest {
         FieldDateDetector<Binary64> raw = new FieldDateDetector<>(Binary64Field.getInstance(), orbit.getDate().shiftedBy(3600.0)).
                         withMaxCheck(1000.0).
                         withHandler(new FieldEventHandler<Binary64>() {
+                            @Override
                             public FieldSpacecraftState<Binary64> resetState(FieldEventDetector<Binary64> detector,
                                                                              FieldSpacecraftState<Binary64> oldState) {
                                 reset.add(oldState.getDate());

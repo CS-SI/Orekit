@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 package org.orekit.models.earth.ionosphere;
+
+import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -54,20 +56,25 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-import java.util.List;
-
 public class EstimatedIonosphericModelTest {
+    
+    /** Earth model. */
+    private OneAxisEllipsoid earthBodyShape;
 
     @BeforeEach
     public void setUp() throws Exception {
         Utils.setDataRoot("regular-data");
+        earthBodyShape  = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                               Constants.WGS84_EARTH_FLATTENING,
+                                               FramesFactory.getITRF(IERSConventions.IERS_2010, 
+                                               true));
     }
 
     @Test
     public void testL1GPS() {
         // Model
         final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction(0.0);
-        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 1.0);
+        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(earthBodyShape, mapping, 1.0);
         // Delay
         final double delay = model.pathDelay(0.5 * FastMath.PI,
                                              PredefinedGnssSignal.G01.getFrequency(),
@@ -86,7 +93,7 @@ public class EstimatedIonosphericModelTest {
         final T zero = field.getZero();
         // Model
         final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction(0.0);
-        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 1.0);
+        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(earthBodyShape, mapping, 1.0);
         // Delay
         final T delay = model.pathDelay(zero.add(0.5 * FastMath.PI),
                                         PredefinedGnssSignal.G01.getFrequency(),
@@ -100,7 +107,7 @@ public class EstimatedIonosphericModelTest {
         final double elevation = 70.;
 
         final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction();
-        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 50.0);
+        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(earthBodyShape, mapping, 50.0);
         
         // the pamater driver has no validity period, so only 1 values estimated over
         // the all period, that is why getParameters is called with no argument
@@ -121,7 +128,7 @@ public class EstimatedIonosphericModelTest {
         final double elevation = 70.;
 
         final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction();
-        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 50.0);
+        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(earthBodyShape, mapping, 50.0);
         T zero = field.getZero();
         T delayMeters = model.pathDelay(zero.add(FastMath.toRadians(elevation)),
                                              PredefinedGnssSignal.G01.getFrequency(),
@@ -139,16 +146,12 @@ public class EstimatedIonosphericModelTest {
         // Geodetic point
         final double height       = 0.0;
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
-        // Body: earth
-        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                            Constants.WGS84_EARTH_FLATTENING,
-                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         // Topocentric frame
-        final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
+        final TopocentricFrame baseFrame = new TopocentricFrame(earthBodyShape, point, "topo");
 
         // Ionospheric model
         final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction();
-        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 10.0);
+        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(earthBodyShape, mapping, 10.0);
 
         // Spacecraft state
         final AbsoluteDate    date    = AbsoluteDate.J2000_EPOCH;
@@ -176,16 +179,12 @@ public class EstimatedIonosphericModelTest {
         // Geodetic point
         final double height       = 0.0;
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
-        // Body: earth
-        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                            Constants.WGS84_EARTH_FLATTENING,
-                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         // Topocentric frame
-        final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
+        final TopocentricFrame baseFrame = new TopocentricFrame(earthBodyShape, point, "topo");
 
         // Ionospheric model
         final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction();
-        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 10.0);
+        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(earthBodyShape, mapping, 10.0);
 
         // Spacecraft state
         final FieldAbsoluteDate<T>    date    = FieldAbsoluteDate.getJ2000Epoch(field);
@@ -209,7 +208,7 @@ public class EstimatedIonosphericModelTest {
         final double elevation = 70.;
 
         final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction();
-        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 50.0);
+        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(earthBodyShape, mapping, 50.0);
         T zero = field.getZero();
         T delayMetersF = model.pathDelay(zero.add(FastMath.toRadians(elevation)),
                                              PredefinedGnssSignal.G01.getFrequency(),
@@ -231,19 +230,16 @@ public class EstimatedIonosphericModelTest {
         // Geodetic point
         final double height       = 0.0;
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(0.0), FastMath.toRadians(0.0), height);
-        // Body: earth
-        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                            Constants.WGS84_EARTH_FLATTENING,
-                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+
         // Topocentric frame
-        final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
+        final TopocentricFrame baseFrame = new TopocentricFrame(earthBodyShape, point, "topo");
 
         // Station
         final GroundStation station = new GroundStation(baseFrame);
 
         // Ionospheric model
         final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction();
-        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 10.0);
+        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(earthBodyShape, mapping, 10.0);
 
         // Derivative Structure
         final DSFactory factory = new DSFactory(6, 1);
@@ -384,16 +380,13 @@ public class EstimatedIonosphericModelTest {
         final double longitude    = FastMath.toRadians(45.0);
         final double height       = 0.0;
         final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
-        // Body: earth
-        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                            Constants.WGS84_EARTH_FLATTENING,
-                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+
         // Topocentric frame
-        final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
+        final TopocentricFrame baseFrame = new TopocentricFrame(earthBodyShape, point, "topo");
 
         // Ionospheric model
         final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction();
-        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 50.0);
+        final EstimatedIonosphericModel model = new EstimatedIonosphericModel(earthBodyShape, mapping, 50.0);
 
         // Set Parameter Driver
         for (final ParameterDriver driver : model.getParametersDrivers()) {

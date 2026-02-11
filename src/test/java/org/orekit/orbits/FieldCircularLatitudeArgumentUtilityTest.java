@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.orekit.orbits;
 
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.FastMath;
@@ -37,7 +38,7 @@ class FieldCircularLatitudeArgumentUtilityTest {
     private static final double TOLERANCE = 1e-10;
 
     @Test
-    void testIssue1764() {
+    void testIssue1784() {
         final double mu = 1.0;
         final double dt = FastMath.PI / 2.0;
 
@@ -59,6 +60,17 @@ class FieldCircularLatitudeArgumentUtilityTest {
         for (int i = 1; i < derivatives.length; i++) {
             Assertions.assertEquals(0., derivatives[i], 1e-12);
         }
+    }
+
+    @Test
+    public void testIssue1784Gradient() {
+        final Gradient ex     = Gradient.variable(17, 1, -0.0101607539016407);
+        final Gradient ey     = Gradient.variable(17, 2, -0.009918035364979852);
+        final Gradient alphaM = new Gradient(5.599907675824894,
+                                             -2.7678731181697196E-8, 0.0, 0.0, 0.0, 0.0, 1.0, 3360.0,
+                                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 5644800.0);
+        final Gradient alphaE = FieldCircularLatitudeArgumentUtility.meanToEccentric(ex, ey, alphaM);
+        Assertions.assertEquals(5.613989875605707, alphaE.getValue(), 1.0e-15);
     }
 
     @Test

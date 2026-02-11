@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,15 +17,14 @@
 package org.orekit.control.indirect.adjoint.cost;
 
 
+import java.util.stream.Stream;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.FieldEventDetectionSettings;
 import org.orekit.propagation.events.FieldEventDetector;
-
-import java.util.stream.Stream;
 
 /**
  * Class for fuel cost with Cartesian coordinates.
@@ -140,30 +139,15 @@ public class FieldCartesianFuelCost<T extends CalculusFieldElement<T>> extends F
     /** {@inheritDoc} */
     @Override
     public Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
-        return Stream.of(new FieldSwitchDetector(getEventDetectionSettings()));
+        return Stream.of(buildSwitchDetector(new FieldSwitchFunction(state -> {
+            final T[] adjoint = state.getAdditionalState(getAdjointName());
+            return evaluateFieldSwitchFunction(adjoint, state.getMass());
+        }), getEventDetectionSettings()));
     }
 
     @Override
     public CartesianFuelCost toCartesianCost() {
         return new CartesianFuelCost(getAdjointName(), getMassFlowRateFactor().getReal(), maximumThrustMagnitude.getReal(),
                 getEventDetectionSettings().toEventDetectionSettings());
-    }
-
-    /**
-     * Field event detector for bang-bang switches.
-     */
-    class FieldSwitchDetector extends FieldControlSwitchDetector<T> {
-
-        FieldSwitchDetector(final FieldEventDetectionSettings<T> detectionSettings) {
-            super(detectionSettings);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public T g(final FieldSpacecraftState<T> state) {
-            final T[] adjoint = state.getAdditionalState(getAdjointName());
-            return evaluateFieldSwitchFunction(adjoint, state.getMass());
-        }
-
     }
 }

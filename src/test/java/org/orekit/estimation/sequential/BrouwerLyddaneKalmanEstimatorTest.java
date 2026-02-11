@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,8 +21,8 @@ import java.util.List;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.junit.jupiter.api.Test;
-import org.orekit.estimation.BrouwerLyddaneContext;
-import org.orekit.estimation.BrouwerLyddaneEstimationTestUtils;
+import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.estimation.Context;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.orbits.Orbit;
@@ -40,28 +40,24 @@ public class BrouwerLyddaneKalmanEstimatorTest {
     public void testKeplerianPV() {
 
         // Create context
-        BrouwerLyddaneContext context = BrouwerLyddaneEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
         final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final boolean       perfectStart  = true;
         final double        dP            = 1.;
-        final BrouwerLyddanePropagatorBuilder propagatorBuilder =
-                        context.createBuilder(positionAngleType, perfectStart, dP);
+        final BrouwerLyddanePropagatorBuilder propagatorBuilder = context.createBrouwerLyddane(positionAngleType, perfectStart, dP);
 
         // Create perfect PV measurements
-        final Propagator propagator = BrouwerLyddaneEstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                           propagatorBuilder);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        BrouwerLyddaneEstimationTestUtils.createMeasurements(propagator,
-                                                               new PVMeasurementCreator(),
-                                                               0.0, 3.0, 300.0);
+                        EstimationTestUtils.createMeasurements(propagator, new PVMeasurementCreator(), 0.0, 3.0, 300.0);
+
         // Reference propagator for estimation performances
         final Propagator referencePropagator = propagatorBuilder.buildPropagator();
 
         // Reference position/velocity at last measurement date
-        final Orbit refOrbit = referencePropagator.
-                        propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
+        final Orbit refOrbit = referencePropagator.propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
 
         // Covariance matrix initialization
         final RealMatrix initialP = MatrixUtils.createRealDiagonalMatrix(new double [] {
@@ -75,25 +71,24 @@ public class BrouwerLyddaneKalmanEstimatorTest {
 
 
         // Build the Kalman filter
-        final KalmanEstimator kalman = new KalmanEstimatorBuilder().
-                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
-                        build();
+        final KalmanEstimator kalman = new KalmanEstimatorBuilder().addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q))
+                                                                   .build();
 
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 3.1e-7;
+        final double   posEps            = 3.0e-7;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 7.63e-10;
+        final double   velEps            = 7.5e-10;
         final double[] expectedsigmasPos = {0.998881, 0.933806, 0.997357};
         final double   sigmaPosEps       = 1e-6;
         final double[] expectedSigmasVel = {9.475735e-4, 9.904680e-4, 5.060067e-4};
         final double   sigmaVelEps       = 1e-10;
-        BrouwerLyddaneEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                                         refOrbit, positionAngleType,
-                                                         expectedDeltaPos, posEps,
-                                                         expectedDeltaVel, velEps,
-                                                         expectedsigmasPos, sigmaPosEps,
-                                                         expectedSigmasVel, sigmaVelEps);
+        EstimationTestUtils.checkExtendedKalmanFit(false, kalman, measurements,
+                                                   refOrbit, positionAngleType,
+                                                   expectedDeltaPos, posEps,
+                                                   expectedDeltaVel, velEps,
+                                                   expectedsigmasPos, sigmaPosEps,
+                                                   expectedSigmasVel, sigmaVelEps);
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -154,6 +154,9 @@ public class FieldAbsolutePVCoordinatesHermiteInterpolator<KK extends CalculusFi
         // Get sample
         final List<FieldAbsolutePVCoordinates<KK>> sample = interpolationData.getNeighborList();
 
+        // Extract input frame from sample
+        final Frame inputFrame = sample.get(0).getFrame();
+
         // Set up an interpolator taking derivatives into account
         final FieldHermiteInterpolator<KK> interpolator = new FieldHermiteInterpolator<>();
 
@@ -196,7 +199,17 @@ public class FieldAbsolutePVCoordinatesHermiteInterpolator<KK extends CalculusFi
         final KK[][] p    = interpolator.derivatives(zero, 2);
 
         // build a new interpolated instance
-        return new FieldAbsolutePVCoordinates<>(outputFrame, date, new FieldVector3D<>(p[0]), new FieldVector3D<>(p[1]),
-                                                new FieldVector3D<>(p[2]));
+        final FieldAbsolutePVCoordinates<KK> interpolated = new FieldAbsolutePVCoordinates<>(inputFrame, date,
+                                                                                             new FieldVector3D<>(p[0]),
+                                                                                             new FieldVector3D<>(p[1]),
+                                                                                             new FieldVector3D<>(p[2]));
+
+        // return the interpolated instance as is
+        if (inputFrame == outputFrame) {
+            return interpolated;
+        }
+
+        // convert to output frame
+        return new FieldAbsolutePVCoordinates<>(outputFrame, interpolated.getPVCoordinates(outputFrame));
     }
 }

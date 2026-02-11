@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,7 +36,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -49,8 +49,11 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
+import org.orekit.propagation.events.functions.EventFunction;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
@@ -64,47 +67,85 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class FieldEventDetectorTest {
 
     private double mu;
 
     @Test
-    void testDependsOnTimeOnly() {
+    @SuppressWarnings("unchecked")
+    void testOf() {
         // GIVEN
-        final FieldEventDetector<Binary64> detector = new TestFieldDetector();
-        // WHEN
-        final boolean actual = detector.dependsOnTimeOnly();
-        // THEN
-        Assertions.assertFalse(actual);
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldEventDetectionSettings<Binary64> detectionSettings = new FieldEventDetectionSettings<>(field,
+                EventDetectionSettings.getDefaultEventDetectionSettings());
+        final EventFunction eventFunction = state -> -1.;
+        final FieldEventHandler<Binary64> handler = new FieldStopOnEvent<>();
+        final FieldEventDetector<Binary64> detector = FieldEventDetector.of(eventFunction, handler, detectionSettings);
+        // WHEN & THEN
+        Assertions.assertEquals(handler, detector.getHandler());
+        Assertions.assertEquals(detectionSettings, detector.getDetectionSettings());
+        Assertions.assertEquals(eventFunction, detector.getEventFunction());
+        final FieldSpacecraftState<Binary64> mockedState = mock();
+        when(mockedState.getDate()).thenReturn(FieldAbsoluteDate.getArbitraryEpoch(field));
+        Assertions.assertEquals(eventFunction.value(mockedState), detector.g(mockedState));
     }
 
     @Test
-    void testDependsOnMainVariablesOnly() {
+    void testOfNonFieldHandler() {
         // GIVEN
-        final FieldEventDetector<Binary64> detector = new TestFieldDetector();
-        // WHEN
-        final boolean actual = detector.dependsOnMainVariablesOnly();
-        // THEN
-        Assertions.assertTrue(actual);
+        final Binary64Field field = Binary64Field.getInstance();
+        final EventFunction function = state -> 1.;
+        final FieldEventHandler<Binary64> handler = new FieldStopOnEvent<>();
+        final EventDetector detector = EventDetector.of(function);
+        final FieldEventDetector<Binary64> fieldDetector = FieldEventDetector.of(field, handler, detector);
+        // WHEN & THEN
+        Assertions.assertEquals(handler, fieldDetector.getHandler());
+        Assertions.assertEquals(function, fieldDetector.getEventFunction());
     }
 
-    private static class TestFieldDetector implements FieldEventDetector<Binary64> {
+    @Test
+    void testOfNonFieldInit() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final TestDetector detector = new TestDetector();
+        final FieldEventDetector<Binary64> fieldDetector = FieldEventDetector.of(field, new FieldContinueOnEvent<>(), detector);
+        final SpacecraftState state = new SpacecraftState(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH));
+        final FieldSpacecraftState<Binary64> fieldState = new FieldSpacecraftState<>(field, state);
+        // WHEN
+        fieldDetector.init(fieldState, FieldAbsoluteDate.getFutureInfinity(field));
+        // THEN
+        Assertions.assertTrue(detector.initialized);
+    }
 
-        @Override
-        public Binary64 g(FieldSpacecraftState<Binary64> s) {
-            return Binary64.ONE;
-        }
+    @Test
+    void testOfNonFieldReset() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final TestDetector detector = new TestDetector();
+        final FieldEventDetector<Binary64> fieldDetector = FieldEventDetector.of(field, new FieldContinueOnEvent<>(), detector);
+        final SpacecraftState state = new SpacecraftState(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH));
+        final FieldSpacecraftState<Binary64> fieldState = new FieldSpacecraftState<>(field, state);
+        // WHEN
+        fieldDetector.reset(fieldState, FieldAbsoluteDate.getFutureInfinity(field));
+        // THEN
+        Assertions.assertTrue(detector.reset);
+    }
 
-        @Override
-        public FieldEventHandler<Binary64> getHandler() {
-            return null;
-        }
-
-        @Override
-        public FieldEventDetectionSettings<Binary64> getDetectionSettings() {
-            return null;
-        }
+    @Test
+    void testOfNonFieldFinish() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final TestDetector detector = new TestDetector();
+        final FieldEventDetector<Binary64> fieldDetector = FieldEventDetector.of(field, new FieldContinueOnEvent<>(), detector);
+        final SpacecraftState state = new SpacecraftState(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH));
+        final FieldSpacecraftState<Binary64> fieldState = new FieldSpacecraftState<>(field, state);
+        // WHEN
+        fieldDetector.finish(fieldState);
+        // THEN
+        Assertions.assertTrue(detector.finished);
     }
 
     @Test
@@ -112,9 +153,10 @@ class FieldEventDetectorTest {
     void testFinish() {
         // GIVEN
         final FinishingHandler handler = new FinishingHandler();
-        final FieldEventDetector<?> detector = new DummyDetector(new FieldEventDetectionSettings<>(1.0, Binary64.ONE, 100), handler);
+        final FieldEventDetector<?> detector = FieldEventDetector.of(state -> 1., handler,
+                new FieldEventDetectionSettings<>(1.0, Binary64.ONE, 100));
         // WHEN
-        detector.finish(Mockito.mock(FieldSpacecraftState.class));
+        detector.finish(mock(FieldSpacecraftState.class));
         // THEN
         Assertions.assertTrue(handler.isFinished);
     }
@@ -128,40 +170,13 @@ class FieldEventDetectorTest {
         }
     }
 
-    private static class DummyDetector implements FieldEventDetector<Binary64> {
-
-        private final FieldEventDetectionSettings<Binary64> detectionSettings;
-        private final FieldEventHandler<Binary64> handler;
-
-        public DummyDetector(final FieldEventDetectionSettings<Binary64> detectionSettings,
-                             final FieldEventHandler<Binary64> handler) {
-            this.detectionSettings = detectionSettings;
-            this.handler = handler;
-        }
-
-        public Binary64 g(final FieldSpacecraftState<Binary64> s) {
-            return s.getDate().getField().getZero();
-        }
-
-        @Override
-        public FieldEventHandler<Binary64> getHandler() {
-            return handler;
-        }
-
-        @Override
-        public FieldEventDetectionSettings<Binary64> getDetectionSettings() {
-            return detectionSettings;
-        }
-
-    }
-
     @Test
     @SuppressWarnings("unchecked")
     void testGetDetectionSettings() {
         // GIVEN
-        final FieldAdaptableInterval<Binary64> mockedInterval = Mockito.mock(FieldAdaptableInterval.class);
+        final FieldAdaptableInterval<Binary64> mockedInterval = mock(FieldAdaptableInterval.class);
         final FieldEventDetectionSettings<Binary64> settings = new FieldEventDetectionSettings<>(mockedInterval, Binary64.ONE, 10);
-        final FieldEventDetector<Binary64> detector = new DummyDetector(settings, null);
+        final FieldEventDetector<Binary64> detector = FieldEventDetector.of(mock(EventFunction.class), null, settings);
         // WHEN
         final FieldEventDetectionSettings<Binary64> actualSettings = detector.getDetectionSettings();
         // THEN
@@ -365,6 +380,7 @@ class FieldEventDetectorTest {
             return count;
         }
 
+        @Override
         public T g(FieldSpacecraftState<T> s) {
             count++;
             return s.getMass().getField().getZero().add(1.0);
@@ -429,6 +445,7 @@ class FieldEventDetectorTest {
             this.provider = provider;
         }
 
+        @Override
         public T g(final FieldSpacecraftState<T> s) {
             FieldPVCoordinates<T> pv1     = provider.getPVCoordinates(s.getDate(), s.getFrame());
             FieldPVCoordinates<T> pv2     = s.getPVCoordinates();
@@ -505,7 +522,12 @@ class FieldEventDetectorTest {
 
             @Override
             public T g(FieldSpacecraftState<T> s) {
-                return s.getDate().durationFrom(AbsoluteDate.J2000_EPOCH);
+                return getEventFunction().value(s);
+            }
+
+            @Override
+            public EventFunction getEventFunction() {
+                return s -> s.getDate().durationFrom(AbsoluteDate.J2000_EPOCH);
             }
 
             @Override
@@ -638,6 +660,38 @@ class FieldEventDetectorTest {
             ++calls;
         }
 
+    }
+
+    private static class TestDetector implements EventDetector {
+
+        boolean initialized = false;
+        boolean finished = false;
+        boolean reset = false;
+
+        @Override
+        public void init(SpacecraftState s0, AbsoluteDate t) {
+            initialized = true;
+        }
+
+        @Override
+        public void reset(SpacecraftState state, AbsoluteDate target) {
+            reset = true;
+        }
+
+        @Override
+        public void finish(SpacecraftState state) {
+            finished = true;
+        }
+
+        @Override
+        public double g(SpacecraftState s) {
+            return 0;
+        }
+
+        @Override
+        public EventHandler getHandler() {
+            return null;
+        }
     }
 
     @BeforeEach

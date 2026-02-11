@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,26 +16,21 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import java.util.Map;
+
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
-
-import java.util.Map;
 
 /** Builder for {@link AngularAzEl} measurements.
  * @author Luc Maisonobe
  * @since 9.3
  */
-public class AngularAzElBuilder extends AbstractMeasurementBuilder<AngularAzEl> {
-
-    /** Zero value for initial dummy measurement. */
-    private static final double[] ZERO = { 0.0, 0.0 };
-
-    /** Ground station from which measurement is performed. */
-    private final GroundStation station;
+public class AngularAzElBuilder extends AbstractAngularBuilder<AngularAzEl> {
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
@@ -44,21 +39,32 @@ public class AngularAzElBuilder extends AbstractMeasurementBuilder<AngularAzEl> 
      * @param baseWeight base weight
      * @param satellite satellite related to this builder
      */
-    public AngularAzElBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                              final GroundStation station,
+    public AngularAzElBuilder(final CorrelatedRandomVectorGenerator noiseSource, final GroundStation station,
+                              final double[] sigma, final double[] baseWeight, final ObservableSatellite satellite) {
+        this(noiseSource, station, sigma, baseWeight, new SignalTravelTimeModel(), satellite);
+    }
+
+    /** Simple constructor.
+     * @param noiseSource noise source, may be null for generating perfect measurements
+     * @param station ground station from which measurement is performed
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param signalTravelTimeModel signal travel time model
+     * @param satellite satellite related to this builder
+     * @since 14.0
+     */
+    public AngularAzElBuilder(final CorrelatedRandomVectorGenerator noiseSource, final GroundStation station,
                               final double[] sigma, final double[] baseWeight,
-                              final ObservableSatellite satellite) {
-        super(noiseSource, sigma, baseWeight, satellite);
-        this.station = station;
+                              final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
+        super(noiseSource, station, sigma, baseWeight, signalTravelTimeModel, satellite);
     }
 
     /** {@inheritDoc} */
     @Override
     protected AngularAzEl buildObserved(final AbsoluteDate date,
                                         final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new AngularAzEl(station, date, ZERO,
-                               getTheoreticalStandardDeviation(),
-                               getBaseWeight(), getSatellites()[0]);
+        return new AngularAzEl(getStation(), date, ZERO, getTheoreticalStandardDeviation(),
+                               getBaseWeight(), getSignalTravelTimeModel(), getSatellites()[0]);
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.util.Arrays;
 
 import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.EventFunction;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 
@@ -79,6 +80,9 @@ public class EventEnablingPredicateFilter implements DetectorModifier {
     /** Specialized event handler. */
     private final LocalHandler handler;
 
+    /** Specialized event function. */
+    private final EventFunction eventFunction;
+
     /** Indicator for forward integration. */
     private boolean forward;
 
@@ -109,6 +113,7 @@ public class EventEnablingPredicateFilter implements DetectorModifier {
         this.handler = new LocalHandler();
         this.rawDetector  = rawDetector;
         this.predicate = enabler;
+        this.eventFunction = new LocalEventFunction();
         this.transformers = new Transformer[HISTORY_SIZE];
         this.updates      = new AbsoluteDate[HISTORY_SIZE];
     }
@@ -155,13 +160,8 @@ public class EventEnablingPredicateFilter implements DetectorModifier {
 
     /**  {@inheritDoc} */
     @Override
-    public boolean dependsOnTimeOnly() {
-        return false;  // cannot know what predicate needs
-    }
-
-    @Override
-    public boolean dependsOnMainVariablesOnly() {
-        return false;  // cannot know what predicate needs
+    public EventFunction getEventFunction() {
+        return eventFunction;
     }
 
     /**  {@inheritDoc} */
@@ -326,6 +326,21 @@ public class EventEnablingPredicateFilter implements DetectorModifier {
      */
     public boolean isForward() {
         return forward;
+    }
+
+    /** Local event function.
+     * @since 14.0
+     */
+    private class LocalEventFunction implements EventFunction {
+        @Override
+        public double value(final SpacecraftState state) {
+            return g(state);
+        }
+
+        @Override
+        public boolean dependsOnMainVariablesOnly() {
+            return getDetector().getEventFunction().dependsOnMainVariablesOnly() && getPredicate().dependsOnMainVariablesOnly();
+        }
     }
 
     /** Local handler. */

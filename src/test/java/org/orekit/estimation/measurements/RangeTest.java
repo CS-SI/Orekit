@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -33,9 +34,14 @@ import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.data.DataContext;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
+import org.orekit.estimation.measurements.signal.FieldSignalTravelTimeAdjustableEmitter;
+import org.orekit.estimation.measurements.signal.FieldSignalTravelTimeAdjustableReceiver;
+import org.orekit.estimation.measurements.signal.SignalTravelTimeAdjustableEmitter;
+import org.orekit.estimation.measurements.signal.SignalTravelTimeAdjustableReceiver;
 import org.orekit.models.earth.troposphere.EstimatedModel;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
 import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
@@ -197,7 +203,7 @@ class RangeTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
@@ -220,8 +226,8 @@ class RangeTest {
             // adjust emitter, double version
             final TimeStampedPVCoordinates staPV = stationParameter.getOffsetToInertial(state.getFrame(), datemeas, false).
                                                    transformPVCoordinates(new TimeStampedPVCoordinates(datemeas, PVCoordinates.ZERO));
-            final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = SignalTravelTimeAdjustableEmitter.of(state);
-            final double    downDelayE = signalTimeOfFlight.compute(state.getDate(), staPV.getPosition(), datemeas, state.getFrame());
+            final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = new SignalTravelTimeAdjustableEmitter(state.getOrbit());
+            final double    downDelayE = signalTimeOfFlight.computeDelay(state.getDate(), staPV.getPosition(), datemeas, state.getFrame());
             final Vector3D satPosE = propagator2.propagate(datemeas.shiftedBy(-downDelayE)).getPosition();
             Assertions.assertEquals(Vector3D.distance(satPosE, staPV.getPosition()), downDelayE * Constants.SPEED_OF_LIGHT, 2.0e-7);
 
@@ -230,8 +236,8 @@ class RangeTest {
             final FieldAbsoluteDate<Binary64> datemeasF = new FieldAbsoluteDate<>(field, datemeas);
             final FieldSpacecraftState<Binary64> stateF = new FieldSpacecraftState<>(field, state);
             final TimeStampedFieldPVCoordinates<Binary64> staPVF = new TimeStampedFieldPVCoordinates<>(field, staPV);
-            final FieldSignalTravelTimeAdjustableEmitter<Binary64> fieldComputer = FieldSignalTravelTimeAdjustableEmitter.of(stateF);
-            final Binary64    downDelayEF = fieldComputer.compute(staPVF.getDate(), staPVF.getPosition(), datemeasF, state.getFrame());
+            final FieldSignalTravelTimeAdjustableEmitter<Binary64> fieldComputer = new FieldSignalTravelTimeAdjustableEmitter<>(new FieldAbsolutePVCoordinates<>(stateF.getFrame(), stateF.getPVCoordinates()));
+            final Binary64    downDelayEF = fieldComputer.computeDelay(staPVF.getDate(), staPVF.getPosition(), datemeasF, state.getFrame());
             final FieldVector3D<Binary64> satPosEF =
                 new FieldVector3D<>(field, propagator2.propagate(datemeas.shiftedBy(-downDelayEF.getReal())).getPosition());
             Assertions.assertEquals(FieldVector3D.distance(satPosEF, staPVF.getPosition()).getReal(),
@@ -240,7 +246,7 @@ class RangeTest {
 
             // adjust receiver, double version
             final SignalTravelTimeAdjustableReceiver computer = new SignalTravelTimeAdjustableReceiver(new AbsolutePVCoordinates(state.getFrame(), staPV));
-            final double    downDelayR = computer.compute(state.getPVCoordinates().getPosition(), state.getDate(), datemeas, state.getFrame());
+            final double    downDelayR = computer.computeDelay(state.getPVCoordinates().getPosition(), state.getDate(), datemeas, state.getFrame());
             final Vector3D staPosR = stationParameter.
                                      getOffsetToInertial(state.getFrame(), state.getDate().shiftedBy(downDelayR), false).
                                      transformPosition(Vector3D.ZERO);
@@ -250,7 +256,7 @@ class RangeTest {
             // adjust receiver, field version
             final FieldSignalTravelTimeAdjustableReceiver<Binary64> fieldAdjustableReceiverComputer = new FieldSignalTravelTimeAdjustableReceiver<>(new FieldAbsolutePVCoordinates<Binary64>(state.getFrame(),
                     staPVF));
-            final Binary64    downDelayRF = fieldAdjustableReceiverComputer.compute(stateF.getPVCoordinates().getPosition(), stateF.getDate(), datemeasF, state.getFrame());
+            final Binary64    downDelayRF = fieldAdjustableReceiverComputer.computeDelay(stateF.getPVCoordinates().getPosition(), stateF.getDate(), datemeasF, state.getFrame());
             final FieldVector3D<Binary64> staPosRF = new FieldVector3D<>(field,
                                                                          stationParameter.
                                                                              getOffsetToInertial(state.getFrame(),
@@ -274,7 +280,7 @@ class RangeTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
@@ -374,26 +380,35 @@ class RangeTest {
 
         // Statistics' assertion
         final double absErrorsMedian = new Median().evaluate(absErrors);
+        final double absErrorsMean   = new Mean().evaluate(absErrors);
         final double absErrorsMin    = new Min().evaluate(absErrors);
         final double absErrorsMax    = new Max().evaluate(absErrors);
         final double relErrorsMedian = new Median().evaluate(relErrors);
+        final double relErrorsMean   = new Mean().evaluate(relErrors);
         final double relErrorsMax    = new Max().evaluate(relErrors);
 
         // Print the results on console ? Final results
         if (printResults) {
             System.out.println();
             System.out.println("Absolute errors median: " +  absErrorsMedian);
+            System.out.println("Absolute errors mean  : " +  absErrorsMean);
             System.out.println("Absolute errors min   : " +  absErrorsMin);
             System.out.println("Absolute errors max   : " +  absErrorsMax);
             System.out.println("Relative errors median: " +  relErrorsMedian);
+            System.out.println("Relative errors mean  : " +  relErrorsMean);
             System.out.println("Relative errors max   : " +  relErrorsMax);
+            Set<String> names = DataContext.getDefault()
+                    .getDataProvidersManager().getLoadedDataNames();
+            System.out.println("Used files:\n  " + String.join("\n  ", names));
         }
 
         Assertions.assertEquals(0.0, absErrorsMedian, 6.3e-8);
+        Assertions.assertEquals(0.0, absErrorsMean,   5.6e-8);
         Assertions.assertEquals(0.0, absErrorsMin,    2.0e-7);
         Assertions.assertEquals(0.0, absErrorsMax,    2.6e-7);
         Assertions.assertEquals(0.0, relErrorsMedian, 8.5e-15);
-        Assertions.assertEquals(0.0, relErrorsMax,    2.9e-14);
+        Assertions.assertEquals(0.0, relErrorsMean,   9.9e-15);
+        Assertions.assertEquals(0.0, relErrorsMax,    3.0e-14);
 
         // Test measurement type
         Assertions.assertEquals(Range.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
@@ -406,7 +421,7 @@ class RangeTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
@@ -552,7 +567,7 @@ class RangeTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
@@ -698,7 +713,7 @@ class RangeTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -1029,10 +1029,10 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             if (getHarvester() != null) {
                 final GradientField field = GradientField.getField(getHarvester().getStateDimension() + 1);
                 getForceModels().stream().flatMap(forceModel -> forceModel.getFieldEventDetectors(field))
-                        .filter(fieldEventDetector -> !fieldEventDetector.dependsOnTimeOnly())
+                        .filter(fieldEventDetector -> !fieldEventDetector.getEventFunction().dependsOnTimeOnly())
                         .forEach(fieldDetectors::add);
                 getAttitudeProvider().getFieldEventDetectors(field)
-                        .filter(fieldEventDetector -> !fieldEventDetector.dependsOnTimeOnly())
+                        .filter(fieldEventDetector -> !fieldEventDetector.getEventFunction().dependsOnTimeOnly())
                         .forEach(fieldDetectors::add);
             }
             for (final ForceModel forceModel : getForceModels()) {
@@ -1054,7 +1054,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                                                 final NumericalTimeDerivativesEquations cartesianEquations,
                                                 final List<FieldEventDetector<Gradient>> fieldDetectors) {
             final EventDetector internalDetector;
-            if (!fieldDetectors.isEmpty() && !eventDetector.dependsOnTimeOnly()) {
+            if (!fieldDetectors.isEmpty() && !eventDetector.getEventFunction().dependsOnTimeOnly()) {
                 // need to modify STM at each dynamics discontinuities
                 final NumericalPropagationHarvester harvester = (NumericalPropagationHarvester) getHarvester();
                 final SwitchEventHandler handler = new SwitchEventHandler(eventDetector.getHandler(), harvester,

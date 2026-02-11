@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -58,6 +58,11 @@ public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends C
      * @return true if the measurement is enabled
      */
     boolean isEnabled();
+
+    /** Check if a measurement is two-way.
+     * @return true if the measurement is two-way
+     */
+    boolean isTwoWay();
 
     /** Get the dimension of the measurement.
      * <p>

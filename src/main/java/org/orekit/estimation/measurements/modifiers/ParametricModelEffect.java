@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.propagation.SpacecraftState;
 
 /** Functional interface for parametric models.
@@ -31,6 +31,6 @@ public interface ParametricModelEffect {
      * @param state spacecraft state
      * @return the measurement error due to parametric model
      */
-    double evaluate(GroundStation station, SpacecraftState state);
+    double evaluate(Observer station, SpacecraftState state);
 
 }

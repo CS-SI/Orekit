@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.SingleDateEventFunction;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.time.AbsoluteDate;
@@ -35,14 +36,14 @@ public class SingleDateDetector extends AbstractDetector<SingleDateDetector> imp
     private final AbsoluteDate date;
 
     /** Full constructor.
+     * @param eventFunction event function
      * @param detectionSettings event detection settings
      * @param eventHandler event handler
-     * @param date event date
      */
-    public SingleDateDetector(final EventDetectionSettings detectionSettings, final EventHandler eventHandler,
-                              final AbsoluteDate date) {
-        super(detectionSettings, eventHandler);
-        this.date = date;
+    public SingleDateDetector(final SingleDateEventFunction eventFunction,
+                              final EventDetectionSettings detectionSettings, final EventHandler eventHandler) {
+        super(eventFunction, detectionSettings, eventHandler);
+        this.date = eventFunction.getDate();
     }
 
     /** Build a new instance with default detection settings.
@@ -50,8 +51,9 @@ public class SingleDateDetector extends AbstractDetector<SingleDateDetector> imp
      * @param date event date
      */
     public SingleDateDetector(final EventHandler eventHandler, final AbsoluteDate date) {
-        this(new EventDetectionSettings(DateDetector.DEFAULT_MAX_CHECK, DateDetector.DEFAULT_THRESHOLD, DEFAULT_MAX_ITER),
-                eventHandler, date);
+        this(new SingleDateEventFunction(date),
+                new EventDetectionSettings(DateDetector.DEFAULT_MAX_CHECK, DateDetector.DEFAULT_THRESHOLD, DEFAULT_MAX_ITER),
+                eventHandler);
     }
 
     /** Build a new instance with default detection settings and event handler (stop on event).
@@ -64,19 +66,13 @@ public class SingleDateDetector extends AbstractDetector<SingleDateDetector> imp
     /** {@inheritDoc} */
     @Override
     protected SingleDateDetector create(final EventDetectionSettings detectionSettings, final EventHandler newHandler) {
-        return new SingleDateDetector(detectionSettings, newHandler, date);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean dependsOnTimeOnly() {
-        return true;
+        return new SingleDateDetector((SingleDateEventFunction) getEventFunction(), detectionSettings, newHandler);
     }
 
     /** {@inheritDoc} */
     @Override
     public double g(final SpacecraftState s) {
-        return s.durationFrom(date);
+        return getEventFunction().value(s);
     }
 
     /** {@inheritDoc} */
@@ -97,6 +93,6 @@ public class SingleDateDetector extends AbstractDetector<SingleDateDetector> imp
      * @return new detector
      */
     public SingleDateDetector withDate(final AbsoluteDate newDate) {
-        return new SingleDateDetector(getDetectionSettings(), getHandler(), newDate);
+        return new SingleDateDetector(new SingleDateEventFunction(newDate), getDetectionSettings(), getHandler());
     }
 }

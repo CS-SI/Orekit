@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,12 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.ApsideEventFunction;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
-import org.orekit.utils.PVCoordinates;
 
 /** Finder for apside crossing events.
  * <p>This class finds apside crossing events (i.e. apogee or perigee crossing).</p>
@@ -47,7 +46,7 @@ public class ApsideDetector extends AbstractDetector<ApsideDetector> {
      * @since 12.1
      */
     public ApsideDetector(final double keplerianPeriod) {
-        super(keplerianPeriod / 3, 1e-13 * keplerianPeriod, DEFAULT_MAX_ITER, new StopOnIncreasing());
+        this(new EventDetectionSettings(keplerianPeriod / 3, 1e-13 * keplerianPeriod, DEFAULT_MAX_ITER), new StopOnIncreasing());
     }
 
     /** Build a new instance.
@@ -67,7 +66,7 @@ public class ApsideDetector extends AbstractDetector<ApsideDetector> {
      * @param orbit initial orbit
      */
     public ApsideDetector(final double threshold, final Orbit orbit) {
-        super(orbit.getKeplerianPeriod() / 3, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing());
+        this(new EventDetectionSettings(orbit.getKeplerianPeriod() / 3, threshold, DEFAULT_MAX_ITER), new StopOnIncreasing());
     }
 
     /** Public constructor with full parameters.
@@ -79,7 +78,18 @@ public class ApsideDetector extends AbstractDetector<ApsideDetector> {
      * @since 13.0
      */
     public ApsideDetector(final EventDetectionSettings detectionSettings, final EventHandler handler) {
-        super(detectionSettings, handler);
+        this(new ApsideEventFunction(), detectionSettings, handler);
+    }
+
+    /** Protected constructor with full parameters.
+     * @param apsideEventFunction event function
+     * @param detectionSettings detection settings
+     * @param handler event handler to call at event occurrences
+     * @since 14.0
+     */
+    protected ApsideDetector(final ApsideEventFunction apsideEventFunction,
+                             final EventDetectionSettings detectionSettings, final EventHandler handler) {
+        super(apsideEventFunction, detectionSettings, handler);
     }
 
     /** {@inheritDoc} */
@@ -93,9 +103,9 @@ public class ApsideDetector extends AbstractDetector<ApsideDetector> {
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
      */
+    @Override
     public double g(final SpacecraftState s) {
-        final PVCoordinates pv = s.getPVCoordinates();
-        return Vector3D.dotProduct(pv.getPosition(), pv.getVelocity());
+        return getEventFunction().value(s);
     }
 
 }

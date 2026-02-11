@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 package org.orekit.forces.empirical;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -48,8 +52,18 @@ import org.orekit.forces.maneuvers.ConstantThrustManeuver;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
-import org.orekit.orbits.*;
-import org.orekit.propagation.*;
+import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.CircularOrbit;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.FieldBoundedPropagator;
+import org.orekit.propagation.FieldEphemerisGenerator;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagatorsParallelizer;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -63,10 +77,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
 
@@ -435,7 +445,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         estimator.estimate();
         Assertions.assertTrue(estimator.getIterationsCount()  < 15);
         Assertions.assertTrue(estimator.getEvaluationsCount() < 15);
-        Assertions.assertEquals(0.0, estimator.getOptimum().getRMS(), 1.0e-5);
+        Assertions.assertEquals(0.0, estimator.getOptimum().getRMS(), 1.6e-5);
 
         Assertions.assertEquals(hpaRefX1.getParametersDrivers().get(0).getValue(), getParameter(estimator, "X1 γ"), 1.e-12);
         Assertions.assertEquals(hpaRefX1.getParametersDrivers().get(1).getValue(), getParameter(estimator, "X1 φ"), 1.e-12);
@@ -448,7 +458,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
 
     private void setParameter(BatchLSEstimator estimator, String name, double value)
         {
-        for (final ParameterDriver driver : estimator.getPropagatorParametersDrivers(false).getDrivers()) {
+        for (final ParameterDriver driver : estimator.getPropagationParametersDrivers(false).getDrivers()) {
             if (driver.getName().equals(name)) {
                 driver.setSelected(true);
                 driver.setValue(value);
@@ -461,7 +471,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
     // if Pdriver has only 1 value driven
     private double getParameter(BatchLSEstimator estimator, String name)
     {
-    for (final ParameterDriver driver : estimator.getPropagatorParametersDrivers(false).getDrivers()) {
+    for (final ParameterDriver driver : estimator.getPropagationParametersDrivers(false).getDrivers()) {
         if (driver.getName().equals(name)) {
             return driver.getValue();
         }

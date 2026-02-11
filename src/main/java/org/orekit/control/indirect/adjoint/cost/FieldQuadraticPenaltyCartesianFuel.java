@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,16 +16,15 @@
  */
 package org.orekit.control.indirect.adjoint.cost;
 
+import java.util.stream.Stream;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.FieldEventDetectionSettings;
 import org.orekit.propagation.events.FieldEventDetector;
-
-import java.util.stream.Stream;
 
 /**
  * Fuel cost penalized with a quadratic term. For epsilon equal to 1, one gets the bounded energy cost.
@@ -126,35 +125,20 @@ public class FieldQuadraticPenaltyCartesianFuel<T extends CalculusFieldElement<T
     /** {@inheritDoc} */
     @Override
     public Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
-        return Stream.of(new FieldQuadraticPenalizedSwitchDetector(getEventDetectionSettings(), field.getZero()),
-                new FieldQuadraticPenalizedSwitchDetector(getEventDetectionSettings(), getMaximumThrustMagnitude()));
+        return Stream.of(buildSwitchDetector(buildSwitchFunction(field.getZero()), getEventDetectionSettings()),
+                buildSwitchDetector(buildSwitchFunction(getMaximumThrustMagnitude()), getEventDetectionSettings()));
     }
 
     /**
      * Event detector for control non-differentiability.
+     * @param criticalValue critical value
+     * @return switch function
      */
-    private class FieldQuadraticPenalizedSwitchDetector extends FieldControlSwitchDetector<T> {
-
-        /** Critical value at which the switching function has an event. */
-        private final T criticalValue;
-
-        /**
-         * Constructor.
-         * @param detectionSettings detection settings.
-         * @param criticalValue switch function value to detect
-         */
-        FieldQuadraticPenalizedSwitchDetector(final FieldEventDetectionSettings<T> detectionSettings,
-                                              final T criticalValue) {
-            super(detectionSettings);
-            this.criticalValue = criticalValue;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public T g(final FieldSpacecraftState<T> state) {
+    private FieldSwitchFunction buildSwitchFunction(final T criticalValue) {
+        return new FieldSwitchFunction(state -> {
             final T[] adjoint = state.getAdditionalState(getAdjointName());
             return evaluateSwitchFunction(adjoint, state.getMass()).subtract(criticalValue);
-        }
+        });
     }
 
     /** {@inheritDoc} */

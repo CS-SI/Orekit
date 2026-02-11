@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,14 +23,14 @@ import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.TDOA;
-import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.PVCoordinatesProvider;
 
 /** Class modifying theoretical TDOA measurements with ionospheric delay.
  * <p>
@@ -72,12 +72,12 @@ public class TDOAIonosphericDelayModifier implements EstimationModifier<TDOA> {
      * @param state spacecraft state
      * @return the measurement error due to ionosphere (s)
      */
-    private double timeErrorIonosphericModel(final GroundStation station,
+    private double timeErrorIonosphericModel(final Observer station,
                                              final SpacecraftState state) {
         // base frame associated with the station
-        final TopocentricFrame baseFrame = station.getBaseFrame();
+        final PVCoordinatesProvider coordsProvider = station.getPVCoordinatesProvider();
         // delay in meters
-        final double delay = ionoModel.pathDelay(state, baseFrame, frequency, ionoModel.getParameters(state.getDate()));
+        final double delay = ionoModel.pathDelay(state, coordsProvider, frequency, ionoModel.getParameters(state.getDate()));
         // return delay in seconds
         return delay / Constants.SPEED_OF_LIGHT;
     }
@@ -89,13 +89,13 @@ public class TDOAIonosphericDelayModifier implements EstimationModifier<TDOA> {
      * @param parameters ionospheric model parameters
      * @return the measurement error due to ionosphere (s)
      */
-    private <T extends CalculusFieldElement<T>> T timeErrorIonosphericModel(final GroundStation station,
+    private <T extends CalculusFieldElement<T>> T timeErrorIonosphericModel(final Observer station,
                                                                             final FieldSpacecraftState<T> state,
                                                                             final T[] parameters) {
         // Base frame associated with the station
-        final TopocentricFrame baseFrame = station.getBaseFrame();
+        final PVCoordinatesProvider coordsProvider = station.getPVCoordinatesProvider();
         // Delay in meters
-        final T delay = ionoModel.pathDelay(state, baseFrame, frequency, parameters);
+        final T delay = ionoModel.pathDelay(state, coordsProvider, frequency, parameters);
         // return delay in seconds
         return delay.divide(Constants.SPEED_OF_LIGHT);
     }
@@ -110,8 +110,8 @@ public class TDOAIonosphericDelayModifier implements EstimationModifier<TDOA> {
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<TDOA> estimated) {
 
         final TDOA measurement              = estimated.getObservedMeasurement();
-        final GroundStation   primeStation  = measurement.getPrimeStation();
-        final GroundStation   secondStation = measurement.getSecondStation();
+        final Observer   primeStation  = measurement.getPrimeStation();
+        final Observer   secondStation = measurement.getSecondStation();
 
         TDOAModifierUtil.modifyWithoutDerivatives(estimated,  primeStation, secondStation,
                                                   this::timeErrorIonosphericModel,
@@ -123,8 +123,8 @@ public class TDOAIonosphericDelayModifier implements EstimationModifier<TDOA> {
     public void modify(final EstimatedMeasurement<TDOA> estimated) {
 
         final TDOA measurement              = estimated.getObservedMeasurement();
-        final GroundStation   primeStation  = measurement.getPrimeStation();
-        final GroundStation   secondStation = measurement.getSecondStation();
+        final Observer   primeStation  = measurement.getPrimeStation();
+        final Observer   secondStation = measurement.getSecondStation();
         final SpacecraftState state         = estimated.getStates()[0];
 
         TDOAModifierUtil.modify(estimated, ionoModel,

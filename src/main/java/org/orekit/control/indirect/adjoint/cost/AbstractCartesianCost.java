@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,10 @@
 package org.orekit.control.indirect.adjoint.cost;
 
 
-import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
+import org.orekit.propagation.events.EventDetectionSettings;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 
 /**
  * Abstract class for cost with Cartesian coordinates.
@@ -82,12 +84,14 @@ public abstract class AbstractCartesianCost implements CartesianCost {
     }
 
     /**
-     * Computes the Euclidean norm of the adjoint velocity vector.
-     * @param adjointVariables adjoint vector
-     * @param <T> field type
-     * @return norm of adjoint velocity
+     * Build event detector for control switches.
+     * @param controlSwitchFunction switch function
+     * @param detectionSettings event detection settings
+     * @return event detector
+     * @since 14.0
      */
-    protected <T extends CalculusFieldElement<T>> T getFieldAdjointVelocityNorm(final T[] adjointVariables) {
-        return FastMath.sqrt(adjointVariables[3].square().add(adjointVariables[4].square()).add(adjointVariables[5].square()));
+    protected EventDetector buildSwitchDetector(final ControlSwitchFunction controlSwitchFunction,
+                                                final EventDetectionSettings detectionSettings) {
+        return EventDetector.of(controlSwitchFunction, new ResetDerivativesOnEvent(), detectionSettings);
     }
 }

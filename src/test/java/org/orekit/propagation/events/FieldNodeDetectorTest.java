@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,11 +33,16 @@ import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldCountAndContinue;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 
 public class FieldNodeDetectorTest {
 
@@ -144,6 +149,19 @@ public class FieldNodeDetectorTest {
         Assertions.assertEquals(t1.getReal(), t2.getReal(), t1.getReal() / 10000);
         Assertions.assertEquals(t2.getReal() / 3, detector2.getMaxCheckInterval().currentInterval(null, true), t2.getReal() / 10000);
 
+    }
+
+    @Test
+    void testToEventDetector() {
+        // GIVEN
+        final FieldNodeDetector<Binary64> fieldDetector = new FieldNodeDetector<>(Binary64Field.getInstance(),
+                mock(Frame.class));
+        final EventHandler expectedHandler = new ContinueOnEvent();
+        // WHEN
+        final NodeDetector detector = fieldDetector.toEventDetector(expectedHandler);
+        // THEN
+        assertEquals(expectedHandler, detector.getHandler());
+        assertEquals(fieldDetector.getFrame(), detector.getFrame());
     }
 
     @BeforeEach

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,16 +18,14 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.orekit.bodies.BodyShape;
-import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.functions.LatitudeExtremumEventFunction;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
-import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.FieldPVCoordinates;
 
-/** Detector for latitude extram.
+/** Detector for latitude extrema.
  * @author Romain Serra
  * @since 14.0
  * @see LatitudeExtremumDetector
@@ -48,12 +46,7 @@ public class FieldLatitudeExtremumDetector<T extends CalculusFieldElement<T>>
                 new FieldStopOnIncreasing<>(), body);
     }
 
-    /** Constructor with full parameters.
-     * <p>
-     * This constructor is not public as users are expected to use the builder
-     * API with the various {@code withXxx()} methods to set up the instance
-     * in a readable manner without using a huge amount of parameters.
-     * </p>
+    /** Constructor with body shape.
      * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param body body on which the latitude is defined
@@ -61,26 +54,38 @@ public class FieldLatitudeExtremumDetector<T extends CalculusFieldElement<T>>
      */
     public FieldLatitudeExtremumDetector(final FieldEventDetectionSettings<T> detectionSettings,
                                          final FieldEventHandler<T> handler, final BodyShape body) {
-        super(detectionSettings, handler, body);
+        this(new LatitudeExtremumEventFunction(body), detectionSettings, handler);
+    }
+
+    /** Constructor with full parameters.
+     * @param latitudeExtremumEventFunction event function
+     * @param detectionSettings event detection settings
+     * @param handler event handler to call at event occurrences
+     * @since 14.0
+     */
+    public FieldLatitudeExtremumDetector(final LatitudeExtremumEventFunction latitudeExtremumEventFunction,
+                                         final FieldEventDetectionSettings<T> detectionSettings,
+                                         final FieldEventHandler<T> handler) {
+        super(latitudeExtremumEventFunction, detectionSettings, handler, latitudeExtremumEventFunction.getBodyShape());
     }
 
     /** {@inheritDoc} */
     @Override
     protected FieldLatitudeExtremumDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                                       final FieldEventHandler<T> newHandler) {
-        return new FieldLatitudeExtremumDetector<>(detectionSettings, newHandler, getBodyShape());
+        return new FieldLatitudeExtremumDetector<>((LatitudeExtremumEventFunction) getEventFunction(),
+                detectionSettings, newHandler);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public T g(final FieldSpacecraftState<T> s) {
+        return getEventFunction().value(s);
     }
 
     @Override
-    public T g(final FieldSpacecraftState<T> s) {
-        // convert state to geodetic coordinates
-        final FieldAbsoluteDate<FieldUnivariateDerivative2<T>> fud2Date = s.getDate().toFUD2Field();
-        final FieldPVCoordinates<FieldUnivariateDerivative2<T>> pv = s.getPVCoordinates().toUnivariateDerivative2PV();
-        final FieldGeodeticPoint<FieldUnivariateDerivative2<T>> gp = getBodyShape().transform(pv.getPosition(), s.getFrame(), fud2Date);
-
-        // latitude rate
-        return gp.getLatitude().getFirstDerivative();
-
+    public LatitudeExtremumDetector toEventDetector(final EventHandler eventHandler) {
+        return new LatitudeExtremumDetector((LatitudeExtremumEventFunction) getEventFunction(),
+                getDetectionSettings().toEventDetectionSettings(), eventHandler);
     }
-
 }

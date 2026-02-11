@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,8 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -313,13 +315,13 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     @Test
     void testLocalJacobianIsotropicClassicalVsFiniteDifferencesFullLight() {
         // here, lighting ratio is exactly 1 for all points used for finite differences
-        doTestLocalJacobianIsotropicClassicalVsFiniteDifferences(250.0, 1000.0, 3.0e-8, false);
+        doTestLocalJacobianIsotropicClassicalVsFiniteDifferences(250.0, 10000.0, 3.0e-8, false);
     }
 
     @Test
     void testLocalJacobianIsotropicClassicalVsFiniteDifferencesGradientFullLight() {
         // here, lighting ratio is exactly 1 for all points used for finite differences
-        doTestLocalJacobianIsotropicClassicalVsFiniteDifferencesGradient(250.0, 1000.0, 3.0e-8, false);
+        doTestLocalJacobianIsotropicClassicalVsFiniteDifferencesGradient(250.0, 10000.0, 3.0e-8, false);
     }
 
     @Test
@@ -430,7 +432,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         SpacecraftState state0 = new SpacecraftState(orbit);
 
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           1e6, tolerances[0], 4.2e-5);
+                           1e5, tolerances[0], 4.2e-5);
 
     }
 
@@ -868,7 +870,8 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final Vector3D     v     = new Vector3D(-213.65557094060222, -2377.3633988328584,  3079.4740070013495);
         final Orbit        orbit = new CartesianOrbit(new TimeStampedPVCoordinates(date, p, v),
                                                       FramesFactory.getGCRF(), Constants.EIGEN5C_EARTH_MU);
-        doTestMoonEarth(orbit, 720.0, 1.0, 0, 525, 0, 0, 2.192e-3);
+        // expected value was 2.192e-3 before fixing celestial body time
+        doTestMoonEarth(orbit, 720.0, 1.0, 0, 525, 0, 0, 2.191e-3);
     }
 
     @Test
@@ -878,7 +881,8 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final Vector3D     v     = new Vector3D(-348.8911736753223, -2383.738528546711, 3060.9815784341567);
         final Orbit        orbit = new CartesianOrbit(new TimeStampedPVCoordinates(date, p, v),
                                                       FramesFactory.getGCRF(), Constants.EIGEN5C_EARTH_MU);
-        doTestMoonEarth(orbit, 3600.0, 1.0, 534, 1003, 0, 0, 11.689e-3);
+        // expected value was 11.689e-3 before fixing celestial body time
+        doTestMoonEarth(orbit, 3600.0, 1.0, 534, 1003, 0, 0, 11.686e-3);
     }
 
     private void doTestMoonEarth(Orbit orbit, double duration, double step,
@@ -931,10 +935,11 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         propagatorWithoutFlattening.addForceModel(srpWithoutFlattening);
         final SpacecraftState withoutFlattening = propagatorWithoutFlattening.propagate(orbit.getDate().shiftedBy(duration));
 
-        Assertions.assertEquals(expectedDistance,
-                                Vector3D.distance(withFlattening.getPosition(),
-                                                  withoutFlattening.getPosition()),
-                                1.0e-6);
+        final double actualDistance = Vector3D.distance(
+                withFlattening.getPosition(),
+                withoutFlattening.getPosition());
+        MatcherAssert.assertThat(actualDistance, Matchers.closeTo(expectedDistance, 1.0e-6));
+        Assertions.assertEquals(expectedDistance, actualDistance, 1.0e-6);
 
     }
 

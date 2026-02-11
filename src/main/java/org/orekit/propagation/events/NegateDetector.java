@@ -17,6 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.NegateEventFunction;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
@@ -31,6 +32,9 @@ public class NegateDetector extends AbstractDetector<NegateDetector> implements 
 
     /** the delegate event detector. */
     private final EventDetector original;
+
+    /** Event function. */
+    private final NegateEventFunction<?> eventFunction;
 
     /**
      * Create a new event detector that negates an existing event detector.
@@ -59,6 +63,7 @@ public class NegateDetector extends AbstractDetector<NegateDetector> implements 
                              final EventDetector original) {
         super(eventDetectionSettings, newHandler);
         this.original = original;
+        this.eventFunction = new NegateEventFunction<>(original.getEventFunction());
     }
 
     /**
@@ -82,14 +87,12 @@ public class NegateDetector extends AbstractDetector<NegateDetector> implements 
     }
 
     @Override
-    public double g(final SpacecraftState s) {
-        return -this.original.g(s);
+    public NegateEventFunction<?> getEventFunction() {
+        return eventFunction;
     }
 
     @Override
-    protected NegateDetector create(
-            final EventDetectionSettings detectionSettings,
-            final EventHandler newHandler) {
+    protected NegateDetector create(final EventDetectionSettings detectionSettings, final EventHandler newHandler) {
         return new NegateDetector(detectionSettings, newHandler, this.original);
     }
 

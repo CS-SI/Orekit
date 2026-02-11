@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,8 +25,11 @@ import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.functions.EventFunction;
 import org.orekit.time.FieldAbsoluteDate;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for {@link FieldNegateDetector}.
@@ -48,30 +51,19 @@ class FieldNegateDetectorTest {
         Assertions.assertEquals(expectedDetector, negateDetector.getOriginal());
     }
 
-    /**
-     * check g function is negated.
-     */
     @Test
-    void testG() {
-        doTestG(Binary64Field.getInstance());
-    }
-
-    private <T extends CalculusFieldElement<T>> void doTestG(final Field<T> field) {
-        //setup
-        @SuppressWarnings("unchecked")
-        FieldEventDetector<T> a = Mockito.mock(FieldEventDetector.class);
-        Mockito.when(a.getDetectionSettings()).thenReturn(new FieldEventDetectionSettings<>(field,
+    @SuppressWarnings("unchecked")
+    void testGetEventFunction() {
+        // GIVEN
+        final FieldEventDetector<Binary64> mockedDetector = mock();
+        final EventFunction eventFunction = mock();
+        when(mockedDetector.getEventFunction()).thenReturn(eventFunction);
+        when(mockedDetector.getDetectionSettings()).thenReturn(new FieldEventDetectionSettings<>(Binary64Field.getInstance(),
                 EventDetectionSettings.getDefaultEventDetectionSettings()));
-        FieldNegateDetector<T> detector = new FieldNegateDetector<>(a);
-        @SuppressWarnings("unchecked")
-        FieldSpacecraftState<T> s = Mockito.mock(FieldSpacecraftState.class);
-
-        // verify + to -
-        Mockito.when(a.g(s)).thenReturn(field.getZero().newInstance(1.0));
-        MatcherAssert.assertThat(detector.g(s).getReal(), CoreMatchers.is(-1.0));
-        // verify - to +
-        Mockito.when(a.g(s)).thenReturn(field.getZero().newInstance(-1.0));
-        MatcherAssert.assertThat(detector.g(s).getReal(), CoreMatchers.is(1.0));
+        // WHEN
+        final FieldNegateDetector<Binary64> detector = new FieldNegateDetector<>(mockedDetector);
+        // THEN
+        Assertions.assertEquals(eventFunction, detector.getEventFunction().getBaseFunction());
     }
 
     /** Check a with___ method. */

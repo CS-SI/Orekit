@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,18 +16,17 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import java.util.Arrays;
-
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.orekit.estimation.measurements.CommonParametersWithDerivatives;
+import org.orekit.estimation.measurements.CommonParametersWithoutDerivatives;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObserverSatellite;
+import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** One-way GNSS phase measurement.
@@ -49,7 +48,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class OneWayGNSSPhase extends AbstractOneWayGNSSMeasurement<OneWayGNSSPhase> {
+public class OneWayGNSSPhase extends AbstractOneWayGNSS<OneWayGNSSPhase> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "OneWayGNSSPhase";
@@ -77,12 +76,12 @@ public class OneWayGNSSPhase extends AbstractOneWayGNSSMeasurement<OneWayGNSSPha
                            final double baseWeight, final ObservableSatellite local,
                            final AmbiguityCache cache) {
         // Call super constructor
-        super(gnssSatellite, date, phase, sigma, baseWeight, local);
+        super(gnssSatellite, date, phase, sigma, baseWeight, new SignalTravelTimeModel(), local);
 
         // Initialize phase ambiguity driver
         ambiguityDriver = cache.getAmbiguity(gnssSatellite.getName(), local.getName(), wavelength);
 
-        // The local satellite clock offset affects the measurement
+        // Add ambiguity parameter to measurement
         addParameterDriver(ambiguityDriver);
 
         // Initialise fields
@@ -109,7 +108,8 @@ public class OneWayGNSSPhase extends AbstractOneWayGNSSMeasurement<OneWayGNSSPha
                                                                                                 final int evaluation,
                                                                                                 final SpacecraftState[] states) {
 
-        final OnBoardCommonParametersWithoutDerivatives common = computeCommonParametersWithout(states, false);
+        final CommonParametersWithoutDerivatives common =
+            computeLocalParametersWithout(states, getSatellites().get(0), getDate(), false);
 
         // prepare the evaluation
         final EstimatedMeasurementBase<OneWayGNSSPhase> estimatedPhase =
@@ -124,8 +124,8 @@ public class OneWayGNSSPhase extends AbstractOneWayGNSSMeasurement<OneWayGNSSPha
         // Phase value
         final double   cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
         final double   ambiguity   = ambiguityDriver.getValue(common.getState().getDate());
-        final double   phase       = (common.getTauD() + common.getLocalOffset() - common.getRemoteOffset()) * cOverLambda +
-                                     ambiguity;
+        final double   phase       = (common.getTauD() + common.getLocalOffset().getOffset() -
+                                      common.getRemoteOffset().getOffset()) * cOverLambda + ambiguity;
 
         // Set value of the estimated measurement
         estimatedPhase.setEstimatedValue(phase);
@@ -141,7 +141,8 @@ public class OneWayGNSSPhase extends AbstractOneWayGNSSMeasurement<OneWayGNSSPha
                                                                           final int evaluation,
                                                                           final SpacecraftState[] states) {
 
-        final OnBoardCommonParametersWithDerivatives common = computeCommonParametersWith(states, false);
+        final CommonParametersWithDerivatives common =
+            computeLocalParametersWith(states, getSatellites().get(0), getDate(), false, getParametersDrivers());
 
         // prepare the evaluation
         final EstimatedMeasurement<OneWayGNSSPhase> estimatedPhase =
@@ -157,27 +158,12 @@ public class OneWayGNSSPhase extends AbstractOneWayGNSSMeasurement<OneWayGNSSPha
         final double   cOverLambda      = Constants.SPEED_OF_LIGHT / wavelength;
         final Gradient ambiguity        = ambiguityDriver.getValue(common.getTauD().getFreeParameters(), common.getIndices(),
                                                                    common.getState().getDate());
-        final Gradient phase            = common.getTauD().add(common.getLocalOffset()).subtract(common.getRemoteOffset()).
-                                          multiply(cOverLambda).
-                                          add(ambiguity);
-        final double[] phaseDerivatives = phase.getGradient();
-
-        // Set value and state first order derivatives of the estimated measurement
-        estimatedPhase.setEstimatedValue(phase.getValue());
-        estimatedPhase.setStateDerivatives(0, Arrays.copyOfRange(phaseDerivatives, 0,  6));
-
-        // Set first order derivatives with respect to parameters
-        for (final ParameterDriver phaseMeasurementDriver : getParametersDrivers()) {
-            for (Span<String> span = phaseMeasurementDriver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
-                final Integer index = common.getIndices().get(span.getData());
-                if (index != null) {
-                    estimatedPhase.setParameterDerivatives(phaseMeasurementDriver, span.getStart(), phaseDerivatives[index]);
-                }
-            }
-        }
+        final Gradient phase            = common.getTauD().add(common.getLocalOffset().getOffset()).
+                                          subtract(common.getRemoteOffset().getOffset()).
+                                          multiply(cOverLambda).add(ambiguity);
 
         // Return the estimated measurement
+        fillDerivatives(phase, common.getIndices(), estimatedPhase);
         return estimatedPhase;
 
     }

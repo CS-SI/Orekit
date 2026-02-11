@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -80,7 +80,16 @@ import org.orekit.estimation.measurements.modifiers.RangeIonosphericDelayModifie
 import org.orekit.estimation.measurements.modifiers.RangeRateIonosphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.ShapiroRangeModifier;
-import org.orekit.estimation.sequential.*;
+import org.orekit.estimation.sequential.AbstractKalmanEstimator;
+import org.orekit.estimation.sequential.ConstantProcessNoise;
+import org.orekit.estimation.sequential.KalmanEstimation;
+import org.orekit.estimation.sequential.KalmanEstimator;
+import org.orekit.estimation.sequential.KalmanEstimatorBuilder;
+import org.orekit.estimation.sequential.KalmanObserver;
+import org.orekit.estimation.sequential.PhysicalEstimatedState;
+import org.orekit.estimation.sequential.RtsSmoother;
+import org.orekit.estimation.sequential.UnscentedKalmanEstimator;
+import org.orekit.estimation.sequential.UnscentedKalmanEstimatorBuilder;
 import org.orekit.files.ilrs.CPF;
 import org.orekit.files.ilrs.CPF.CPFCoordinate;
 import org.orekit.files.ilrs.CPF.CPFEphemeris;
@@ -114,8 +123,8 @@ import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.models.AtmosphericRefractionModel;
-import org.orekit.models.earth.ITURP834AtmosphericRefraction;
 import org.orekit.models.earth.Geoid;
+import org.orekit.models.earth.ITURP834AtmosphericRefraction;
 import org.orekit.models.earth.ReferenceEllipsoid;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.models.earth.atmosphere.DTM2000;
@@ -442,7 +451,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                           rangeLog, rangeRateLog, azimuthLog, elevationLog, positionOnlyLog, positionLog, velocityLog);
         }
 
-        final ParameterDriversList propagatorParameters   = estimator.getPropagatorParametersDrivers(true);
+        final ParameterDriversList propagatorParameters   = estimator.getPropagationParametersDrivers(true);
         final ParameterDriversList measurementsParameters = estimator.getMeasurementsParametersDrivers(true);
         return new ResultBatchLeastSquares(propagatorParameters, measurementsParameters,
                                            estimator.getIterationsCount(), estimator.getEvaluationsCount(), estimated.getPVCoordinates(),
@@ -580,7 +589,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                           rangeLog, rangeRateLog, azimuthLog, elevationLog, positionOnlyLog, positionLog, velocityLog);
         }
 
-        final ParameterDriversList propagatorParameters   = estimator.getPropagatorParametersDrivers(true);
+        final ParameterDriversList propagatorParameters   = estimator.getPropagationParametersDrivers(true);
         final ParameterDriversList measurementsParameters = estimator.getMeasurementsParametersDrivers(true);
 
         return new ResultSequentialBatchLeastSquares(propagatorParameters, measurementsParameters,
@@ -1657,7 +1666,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                 if (stationIonosphericModelEstimated[i]) {
                     // Estimated ionospheric model
                     final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction(stationIonosphericHIon[i]);
-                    ionosphericModel  = new EstimatedIonosphericModel(mapping, stationIonosphericVTEC[i]);
+                    ionosphericModel  = new EstimatedIonosphericModel(body, mapping, stationIonosphericVTEC[i]);
                     final ParameterDriver  ionosphericDriver = ionosphericModel.getParametersDrivers().get(0);
                     ionosphericDriver.setSelected(stationVTECEstimated[i]);
                     ionosphericDriver.setName(stationNames[i].substring(0, 5) + EstimatedIonosphericModel.VERTICAL_TOTAL_ELECTRON_CONTENT);
@@ -1666,7 +1675,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                     // Klobuchar model
                     final KlobucharIonoCoefficientsLoader loader = new KlobucharIonoCoefficientsLoader();
                     loader.loadKlobucharIonosphericCoefficients(parser.getDate(ParameterKey.ORBIT_DATE, utc).getComponents(utc).getDate());
-                    ionosphericModel = new KlobucharIonoModel(loader.getAlpha(), loader.getBeta());
+                    ionosphericModel = new KlobucharIonoModel(body, loader.getAlpha(), loader.getBeta());
                 }
             } else {
                 ionosphericModel = null;

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,11 +15,6 @@
  * limitations under the License.
  */
 package org.orekit.propagation.events;
-
-import java.lang.reflect.Array;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -45,6 +40,8 @@ import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.tle.FieldTLE;
 import org.orekit.propagation.analytical.tle.FieldTLEPropagator;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
@@ -57,6 +54,13 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.FieldPVCoordinates;
+
+import java.lang.reflect.Array;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FieldDateDetectorTest {
 
@@ -128,7 +132,7 @@ public class FieldDateDetectorTest {
         // GIVEN
         final FieldDateDetector<Binary64> detector = new FieldDateDetector<>(FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance()));
         // WHEN
-        final boolean value = detector.dependsOnTimeOnly();
+        final boolean value = detector.getEventFunction().dependsOnTimeOnly();
         // THEN
         Assertions.assertTrue(value);
     }
@@ -413,6 +417,18 @@ public class FieldDateDetectorTest {
         final FieldTimeStamped<T>[] array = (FieldTimeStamped<T>[]) Array.newInstance(FieldTimeStamped.class, 1);
         array[0] = date;
         return array;
+    }
+
+    @Test
+    void testToEventDetector() {
+        // GIVEN
+        final FieldDateDetector<Binary64> fieldDetector = new FieldDateDetector<>(FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance()));
+        final EventHandler expectedHandler = new ContinueOnEvent();
+        // WHEN
+        final DateDetector detector = fieldDetector.toEventDetector(expectedHandler);
+        // THEN
+        assertEquals(expectedHandler, detector.getHandler());
+        assertEquals(fieldDetector.getDate().toAbsoluteDate(), detector.getDate());
     }
 
     @BeforeEach

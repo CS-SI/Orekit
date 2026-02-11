@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,13 +17,13 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.functions.ApsideEventFunction;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
-import org.orekit.utils.FieldPVCoordinates;
 
 /** Finder for apside crossing events.
  * <p>This class finds apside crossing events (i.e. apogee or perigee crossing).</p>
@@ -49,8 +49,9 @@ public class FieldApsideDetector<T extends CalculusFieldElement<T>> extends Fiel
      * @since 12.1
      */
     public FieldApsideDetector(final T keplerianPeriod) {
-        super(new FieldEventDetectionSettings<>(keplerianPeriod.divide(3).getReal(), keplerianPeriod.multiply(1e-13),
-            DEFAULT_MAX_ITER), new FieldStopOnIncreasing<>());
+        super(new ApsideEventFunction(),
+                new FieldEventDetectionSettings<>(keplerianPeriod.divide(3).getReal(), keplerianPeriod.multiply(1e-13), DEFAULT_MAX_ITER),
+                new FieldStopOnIncreasing<>());
     }
 
     /** Build a new instance.
@@ -70,11 +71,11 @@ public class FieldApsideDetector<T extends CalculusFieldElement<T>> extends Fiel
      * @param orbit initial orbit
      */
     public FieldApsideDetector(final T threshold, final FieldOrbit<T> orbit) {
-        super(new FieldEventDetectionSettings<>(orbit.getKeplerianPeriod().divide(3).getReal(), threshold,
-              DEFAULT_MAX_ITER), new FieldStopOnIncreasing<>());
+        this(new FieldEventDetectionSettings<>(orbit.getKeplerianPeriod().divide(3).getReal(), threshold, DEFAULT_MAX_ITER),
+                new FieldStopOnIncreasing<>());
     }
 
-    /** Constructor with full parameters.
+    /** Constructor.
      * <p>
      * This constructor is public because otherwise all accessible ones would require an orbit.
      * </p>
@@ -84,14 +85,26 @@ public class FieldApsideDetector<T extends CalculusFieldElement<T>> extends Fiel
      */
     public FieldApsideDetector(final FieldEventDetectionSettings<T> detectionSettings,
                                final FieldEventHandler<T> handler) {
-        super(detectionSettings, handler);
+        this(new ApsideEventFunction(), detectionSettings, handler);
+    }
+
+    /** Constructor with full parameters.
+     * @param apsideEventFunction event function
+     * @param detectionSettings event detection settings
+     * @param handler event handler to call at event occurrences
+     * @since 14.0
+     */
+    protected FieldApsideDetector(final ApsideEventFunction apsideEventFunction,
+                                  final FieldEventDetectionSettings<T> detectionSettings,
+                                  final FieldEventHandler<T> handler) {
+        super(apsideEventFunction, detectionSettings, handler);
     }
 
     /** {@inheritDoc} */
     @Override
     protected FieldApsideDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                             final FieldEventHandler<T> newHandler) {
-        return new FieldApsideDetector<>(detectionSettings, newHandler);
+        return new FieldApsideDetector<>((ApsideEventFunction) getEventFunction(), detectionSettings, newHandler);
     }
 
     /** Compute the value of the switching function.
@@ -99,9 +112,14 @@ public class FieldApsideDetector<T extends CalculusFieldElement<T>> extends Fiel
      * @param s the current state information: date, kinematics, attitude
      * @return value of the switching function
      */
+    @Override
     public T g(final FieldSpacecraftState<T> s) {
-        final FieldPVCoordinates<T> pv = s.getPVCoordinates();
-        return FieldVector3D.dotProduct(pv.getPosition(), pv.getVelocity());
+        return getEventFunction().value(s);
     }
 
+    @Override
+    public ApsideDetector toEventDetector(final EventHandler eventHandler) {
+        return new ApsideDetector((ApsideEventFunction) getEventFunction(),
+                getDetectionSettings().toEventDetectionSettings(), eventHandler);
+    }
 }

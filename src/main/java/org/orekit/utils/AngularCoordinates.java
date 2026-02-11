@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -75,7 +75,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates> {
      * <p> Sets the Coordinates to default : Identity, Ω = (0 0 0), dΩ/dt = (0 0 0).</p>
      */
     public AngularCoordinates() {
-        this(Rotation.IDENTITY, Vector3D.ZERO, Vector3D.ZERO);
+        this(Rotation.IDENTITY, Vector3D.ZERO);
     }
 
     /** Builds a rotation/rotation rate pair.

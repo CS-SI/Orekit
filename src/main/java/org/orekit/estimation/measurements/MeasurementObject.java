@@ -1,5 +1,5 @@
-/* Copyright 2002-2025 Brianna Aubin
- * Licensed to Hawkeye 360 (HE360) under one or more
+/* Copyright 2025-2026 Hawkeye 360 (HE360)
+ * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,134 +17,64 @@
 
 package org.orekit.estimation.measurements;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-//import java.util.Map;
+import java.util.Map;
 
-//import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.util.FastMath;
-//import org.orekit.time.AbsoluteDate;
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.clocks.QuadraticClockModel;
-//import org.orekit.time.clocks.QuadraticFieldClockModel;
+import org.orekit.time.clocks.QuadraticFieldClockModel;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 
-/** Abstract class underlying both observed and observing measurement
- * objects.  Contains the QuadraticClockModel and the ability to store a
- * master list of all parameter drivers associated with the object.
+/** Interface underlying both observed and observing measurement objects. Contains the clock model.
  *
  * @author Brianna Aubin
  * @since 14.0
  */
-
-abstract class MeasurementObject {
+public interface MeasurementObject extends ParameterDriversProvider {
 
     /** Suffix for ground station position and clock offset parameters names. */
-    public static final String OFFSET_SUFFIX = "-offset";
+    String OFFSET_SUFFIX = "-offset";
 
     /** Suffix for ground clock drift parameters name. */
-    public static final String DRIFT_SUFFIX = "-drift";
+    String DRIFT_SUFFIX = "-drift";
 
     /** Suffix for ground clock drift parameters name.
      * @since 12.1
      */
-    public static final String ACCELERATION_SUFFIX = "-acceleration";
-
-    /** Checkstyle is annoying sometimes. */
-    private static final String CLOCK_STRING = "-clock";
-
-    /** Clock offset scaling factor.
-     * <p>
-     * We use a power of 2 to avoid numeric noise introduction
-     * in the multiplications/divisions sequences.
-     * </p>
-     */
-    private static final double CLOCK_OFFSET_SCALE = FastMath.scalb(1.0, -10);
-
-    /** Stores quadratic clock model. */
-    private final QuadraticClockModel quadraticClockModel;
-
-    /** Stores list of all ParameterDriver values. */
-    private final List<ParameterDriver> parameterDrivers = new ArrayList<>();
-
-    /** Name of the satellite. */
-    private final String name;
-
-    /** Simple constructor.
-     * @param name name of MeasurementObject
-     */
-    protected MeasurementObject(final String name) {
-        this(name, createEmptyQuadraticClock(name));
-    }
-
-    /** Simple constructor.
-     * @param name name of MeasurementObject
-     * @param quadraticClock clock belonging to MeasurementObject
-     */
-    protected MeasurementObject(final String name, final QuadraticClockModel quadraticClock) {
-
-        // Initialize member variables
-        this.name = name;
-        this.quadraticClockModel = quadraticClock;
-
-        // Add clock parameters
-        parameterDrivers.add(quadraticClockModel.getClockOffsetDriver());
-        parameterDrivers.add(quadraticClockModel.getClockDriftDriver());
-        parameterDrivers.add(quadraticClockModel.getClockAccelerationDriver());
-    }
+    String ACCELERATION_SUFFIX = "-acceleration";
 
     /** Get the MeasurementObject name.
      * @return name for the object
      * @since 12.1
      */
-    public final String getName() {
-        return name;
-    }
+    String getName();
 
     /** Get the clock offset driver.
      * @return clock offset driver
      */
-    public final ParameterDriver getClockOffsetDriver() {
-        return quadraticClockModel.getClockOffsetDriver();
+    default ParameterDriver getClockOffsetDriver() {
+        return getQuadraticClockModel().getClockOffsetDriver();
     }
 
     /** Get the clock drift driver.
      * @return clock drift driver
      */
-    public final ParameterDriver getClockDriftDriver() {
-        return quadraticClockModel.getClockDriftDriver();
+    default ParameterDriver getClockDriftDriver() {
+        return getQuadraticClockModel().getClockDriftDriver();
     }
 
     /** Get the clock acceleration driver.
      * @return clock acceleration driver
      */
-    public final ParameterDriver getClockAccelerationDriver() {
-        return quadraticClockModel.getClockAccelerationDriver();
-    }
-
-    /** Creates an quadratic clock with zero displacement.
-     * @param name name of object that is holding the clock
-     * @return new quadratic clock model
-     */
-    protected static QuadraticClockModel createEmptyQuadraticClock(final String name) {
-        return new QuadraticClockModel(new ParameterDriver(name + CLOCK_STRING + OFFSET_SUFFIX,
-                                                    0.0, CLOCK_OFFSET_SCALE,
-                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY),
-                                           new ParameterDriver(name + CLOCK_STRING + DRIFT_SUFFIX,
-                                                    0.0, CLOCK_OFFSET_SCALE,
-                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY),
-                                           new ParameterDriver(name + CLOCK_STRING + ACCELERATION_SUFFIX,
-                                                    0.0, CLOCK_OFFSET_SCALE,
-                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+    default ParameterDriver getClockAccelerationDriver() {
+        return getQuadraticClockModel().getClockAccelerationDriver();
     }
 
     /** Get a quadratic clock model valid at some date.
      * @return quadratic clock model
-     * @since 12.1
      */
-    public final QuadraticClockModel getQuadraticClockModel() {
-        return quadraticClockModel;
-    }
+    QuadraticClockModel getQuadraticClockModel();
 
     /** Get emitting satellite clock provider.
      * @param freeParameters total number of free parameters in the gradient
@@ -153,26 +83,10 @@ abstract class MeasurementObject {
      * must be span name and not driver name
      * @return emitting satellite clock provider
      */
-    /*
-    protected QuadraticFieldClockModel<Gradient> getQuadraticFieldClock(final int freeParameters,
-                                                                        final AbsoluteDate date,
-                                                                        final Map<String, Integer> indices) {
+    default QuadraticFieldClockModel<Gradient> getQuadraticFieldClock(final int freeParameters,
+                                                                      final AbsoluteDate date,
+                                                                      final Map<String, Integer> indices) {
         return getQuadraticClockModel().toGradientModel(freeParameters, indices, date);
     }
-    */
 
-    /** Return all parameter drivers associated with the MeasurementObject.
-     * @return list of parameter drivers
-     */
-    public List<ParameterDriver> getParametersDrivers() {
-        return Collections.unmodifiableList(parameterDrivers);
-    }
-
-    /**
-     * Add a single parameter.
-     * @param parameterDriver parameter being added to the MeasurementObject
-     */
-    protected final void addParameterDriver(final ParameterDriver parameterDriver) {
-        parameterDrivers.add(parameterDriver);
-    }
 }

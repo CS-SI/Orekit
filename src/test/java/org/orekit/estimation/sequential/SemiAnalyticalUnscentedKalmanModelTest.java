@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,9 +26,9 @@ import org.hipparchus.util.MerweUnscentedTransform;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.orekit.estimation.DSSTContext;
-import org.orekit.estimation.DSSTEstimationTestUtils;
+import org.orekit.estimation.Context;
 import org.orekit.estimation.DSSTForce;
+import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Range;
@@ -89,14 +89,14 @@ public class SemiAnalyticalUnscentedKalmanModelTest {
     @BeforeEach
     public void setup() {
         // Create context
-        final DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        final Context context = EstimationTestUtils.dsstEccentricContext("regular-data:potential:tides");
 
         // Initial orbit and date
         this.orbit0 = context.initialOrbit;
         ObservableSatellite sat = new ObservableSatellite(0);
 
         // Create propagator builder
-        this.propagatorBuilder = context.createBuilder(PropagationType.MEAN, PropagationType.OSCULATING, true,
+        this.propagatorBuilder = context.createDsst(PropagationType.MEAN, PropagationType.OSCULATING, true,
                                                        1.0e-6, 60.0, 10., DSSTForce.SOLAR_RADIATION_PRESSURE);
 
         //  t0

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -94,26 +94,24 @@ abstract class CartesianEnergyConsideringMass extends AbstractCartesianCost {
     }
 
     /**
-     * Event detector for singularities in adjoint dynamics.
+     * Event function for singularities in adjoint dynamics.
      */
-    class SingularityDetector extends ControlSwitchDetector {
+    class SingularitySwitchFunction extends ControlSwitchFunction {
 
         /** Value to detect. */
         private final double detectionValue;
 
         /**
          * Constructor.
-         * @param detectionSettings detection settings
          * @param detectionValue value to detect
          */
-        SingularityDetector(final EventDetectionSettings detectionSettings, final double detectionValue) {
-            super(detectionSettings);
+        SingularitySwitchFunction(final double detectionValue) {
             this.detectionValue = detectionValue;
         }
 
         /** {@inheritDoc} */
         @Override
-        public double g(final SpacecraftState state) {
+        public double value(final SpacecraftState state) {
             final double[] adjoint = state.getAdditionalState(getAdjointName());
             return evaluateVariablePart(adjoint, state.getMass()) - detectionValue;
         }

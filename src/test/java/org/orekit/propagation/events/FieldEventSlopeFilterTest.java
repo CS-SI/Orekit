@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -54,14 +53,27 @@ class FieldEventSlopeFilterTest {
     private final double sunRadius = 696000000.;
     private final double earthRadius = 6400000.;
 
-    @SuppressWarnings("unchecked")
+    @Test
+    void testDependsOnTimeOnly() {
+        // GIVEN
+        final FieldDateDetector<Binary64> detector = new FieldDateDetector<>(FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance()));
+        final FieldEventSlopeFilter<FieldDateDetector<Binary64>, Binary64> template = new FieldEventSlopeFilter<>(detector, FilterType.TRIGGER_ONLY_DECREASING_EVENTS);
+        final FieldEventDetectionSettings<Binary64> detectionSettings = new FieldEventDetectionSettings<>(Binary64Field.getInstance(),
+                EventDetectionSettings.getDefaultEventDetectionSettings());
+        // WHEN
+        final FieldEventSlopeFilter<FieldDateDetector<Binary64>, Binary64> filter = template.withDetectionSettings(detectionSettings);
+        // THEN
+        Assertions.assertTrue(filter.getEventFunction().dependsOnTimeOnly());
+    }
+
     @ParameterizedTest
     @EnumSource(FilterType.class)
     void testWithDetectionSettings(final FilterType filterType) {
         // GIVEN
         final FieldDateDetector<Binary64> detector = new FieldDateDetector<>(FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance()));
         final FieldEventSlopeFilter<FieldDateDetector<Binary64>, Binary64> template = new FieldEventSlopeFilter<>(detector, filterType);
-        final FieldEventDetectionSettings<Binary64> detectionSettings = Mockito.mock();
+        final FieldEventDetectionSettings<Binary64> detectionSettings = new FieldEventDetectionSettings<>(Binary64Field.getInstance(),
+                EventDetectionSettings.getDefaultEventDetectionSettings());
         // WHEN
         final FieldEventSlopeFilter<FieldDateDetector<Binary64>, Binary64> filter = template.withDetectionSettings(detectionSettings);
         // THEN
@@ -436,7 +448,7 @@ class FieldEventSlopeFilterTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         try {
             Utils.setDataRoot("regular-data");
             Binary64 mu  = new Binary64(3.9860047e14);
@@ -461,7 +473,7 @@ class FieldEventSlopeFilterTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         iniDate    = null;
         propagator = null;
         earth      = null;

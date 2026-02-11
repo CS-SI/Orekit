@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,12 +19,12 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
-import org.orekit.estimation.measurements.GroundStation;
-import org.orekit.frames.TopocentricFrame;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.PVCoordinatesProvider;
 
 /** Base class modifying theoretical range-rate measurement with ionospheric delay.
  * The effect of ionospheric correction on the range-rate is directly computed
@@ -78,16 +78,16 @@ public abstract class BaseRangeRateIonosphericDelayModifier {
      * @param state spacecraft state
      * @return the measurement error due to Ionosphere
      */
-    protected double rangeRateErrorIonosphericModel(final GroundStation station, final SpacecraftState state) {
+    protected double rangeRateErrorIonosphericModel(final Observer station, final SpacecraftState state) {
         final double dt = 10; // s
         // Base frame associated with the station
-        final TopocentricFrame baseFrame = station.getBaseFrame();
+        final PVCoordinatesProvider coordsProvider = station.getPVCoordinatesProvider();
         // delay in meters
-        final double delay1 = ionoModel.pathDelay(state, baseFrame, frequency, ionoModel.getParameters(state.getDate()));
+        final double delay1 = ionoModel.pathDelay(state, coordsProvider, frequency, ionoModel.getParameters(state.getDate()));
         // propagate spacecraft state forward by dt
         final SpacecraftState state2 = state.shiftedBy(dt);
         // ionospheric delay dt after in meters
-        final double delay2 = ionoModel.pathDelay(state2, baseFrame, frequency, ionoModel.getParameters(state.getDate()));
+        final double delay2 = ionoModel.pathDelay(state2, coordsProvider, frequency, ionoModel.getParameters(state.getDate()));
         // delay in meters
         return (delay2 - delay1) / dt;
     }
@@ -99,18 +99,18 @@ public abstract class BaseRangeRateIonosphericDelayModifier {
      * @param parameters ionospheric model parameters
      * @return the measurement error due to Ionosphere
      */
-    protected <T extends CalculusFieldElement<T>> T rangeRateErrorIonosphericModel(final GroundStation station,
+    protected <T extends CalculusFieldElement<T>> T rangeRateErrorIonosphericModel(final Observer station,
                                                                                    final FieldSpacecraftState<T> state,
                                                                                    final T[] parameters) {
         final double dt = 10; // s
         // Base frame associated with the station
-        final TopocentricFrame baseFrame = station.getBaseFrame();
+        final PVCoordinatesProvider coordsProvider = station.getPVCoordinatesProvider();
         // delay in meters
-        final T delay1 = ionoModel.pathDelay(state, baseFrame, frequency, parameters);
+        final T delay1 = ionoModel.pathDelay(state, coordsProvider, frequency, parameters);
         // propagate spacecraft state forward by dt
         final FieldSpacecraftState<T> state2 = state.shiftedBy(dt);
         // ionospheric delay dt after in meters
-        final T delay2 = ionoModel.pathDelay(state2, baseFrame, frequency, parameters);
+        final T delay2 = ionoModel.pathDelay(state2, coordsProvider, frequency, parameters);
         // delay in meters
         return delay2.subtract(delay1).divide(dt);
     }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,19 +16,18 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import java.util.Arrays;
-
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.orekit.estimation.measurements.CommonParametersWithDerivatives;
+import org.orekit.estimation.measurements.CommonParametersWithoutDerivatives;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.InterSatellitesRange;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObserverSatellite;
+import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** One-way GNSS range measurement.
@@ -50,7 +49,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class OneWayGNSSRange extends AbstractOneWayGNSSMeasurement<OneWayGNSSRange> {
+public class OneWayGNSSRange extends AbstractOneWayGNSS<OneWayGNSSRange> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "OneWayGNSSRange";
@@ -69,7 +68,7 @@ public class OneWayGNSSRange extends AbstractOneWayGNSSMeasurement<OneWayGNSSRan
                            final double range, final double sigma,
                            final double baseWeight, final ObservableSatellite local) {
         // Call super constructor
-        super(gnssSatellite, date, range, sigma, baseWeight, local);
+        super(gnssSatellite, date, range, sigma, baseWeight, new SignalTravelTimeModel(), local);
     }
 
     /** {@inheritDoc} */
@@ -78,8 +77,8 @@ public class OneWayGNSSRange extends AbstractOneWayGNSSMeasurement<OneWayGNSSRan
                                                                                                 final int evaluation,
                                                                                                 final SpacecraftState[] states) {
 
-
-        final OnBoardCommonParametersWithoutDerivatives common = computeCommonParametersWithout(states, false);
+        final CommonParametersWithoutDerivatives common =
+            computeLocalParametersWithout(states, getSatellites().get(0), getDate(), false);
 
         // Estimated measurement
         final EstimatedMeasurementBase<OneWayGNSSRange> estimatedRange =
@@ -92,7 +91,8 @@ public class OneWayGNSSRange extends AbstractOneWayGNSSMeasurement<OneWayGNSSRan
                                                        });
 
         // Range value
-        final double range = (common.getTauD() + common.getLocalOffset() - common.getRemoteOffset()) *
+        final double range = (common.getTauD() + common.getLocalOffset().getOffset() -
+                              common.getRemoteOffset().getOffset()) *
                              Constants.SPEED_OF_LIGHT;
 
         // Set value of the estimated measurement
@@ -109,7 +109,9 @@ public class OneWayGNSSRange extends AbstractOneWayGNSSMeasurement<OneWayGNSSRan
                                                                           final int evaluation,
                                                                           final SpacecraftState[] states) {
 
-        final OnBoardCommonParametersWithDerivatives common = computeCommonParametersWith(states, false);
+        final CommonParametersWithDerivatives common =
+            computeLocalParametersWith(states, getSatellites().get(0), getDate(),
+                                       false, getParametersDrivers());
 
         // Estimated measurement
         final EstimatedMeasurement<OneWayGNSSRange> estimatedRange =
@@ -122,24 +124,10 @@ public class OneWayGNSSRange extends AbstractOneWayGNSSMeasurement<OneWayGNSSRan
                                                    });
 
         // Range value
-        final Gradient range            = common.getTauD().add(common.getLocalOffset()).subtract(common.getRemoteOffset()).
+        final Gradient range            = common.getTauD().add(common.getLocalOffset().getOffset()).
+                                          subtract(common.getRemoteOffset().getOffset()).
                                           multiply(Constants.SPEED_OF_LIGHT);
-        final double[] rangeDerivatives = range.getGradient();
-
-        // Set value and state first order derivatives of the estimated measurement
-        estimatedRange.setEstimatedValue(range.getValue());
-        estimatedRange.setStateDerivatives(0, Arrays.copyOfRange(rangeDerivatives, 0,  6));
-
-        // Set first order derivatives with respect to parameters
-        for (final ParameterDriver measurementDriver : getParametersDrivers()) {
-            for (Span<String> span = measurementDriver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
-                final Integer index = common.getIndices().get(span.getData());
-                if (index != null) {
-                    estimatedRange.setParameterDerivatives(measurementDriver, span.getStart(), rangeDerivatives[index]);
-                }
-            }
-        }
+        fillDerivatives(range, common.getIndices(), estimatedRange);
 
         // Return the estimated measurement
         return estimatedRange;

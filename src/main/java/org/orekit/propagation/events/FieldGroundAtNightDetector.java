@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,14 +17,14 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.orekit.frames.Frame;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.functions.EventFunctionModifier;
+import org.orekit.propagation.events.functions.GroundAtNightEventFunction;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ExtendedPositionProvider;
 
 
@@ -81,7 +81,9 @@ public class FieldGroundAtNightDetector<T extends CalculusFieldElement<T>>
                                          final AtmosphericRefractionModel refractionModel,
                                          final FieldEventDetectionSettings<T> detectionSettings,
                                          final FieldEventHandler<T> handler) {
-        super(detectionSettings, handler, topocentricFrame);
+        super(EventFunctionModifier.addFieldValue(new GroundAtNightEventFunction(topocentricFrame, sun,
+                        dawnDuskElevation.getReal(), refractionModel), dawnDuskElevation.getAddendum()),
+                detectionSettings, handler, topocentricFrame);
         this.sun               = sun;
         this.dawnDuskElevation = dawnDuskElevation;
         this.refractionModel   = refractionModel;
@@ -95,11 +97,6 @@ public class FieldGroundAtNightDetector<T extends CalculusFieldElement<T>>
                 detectionSettings, newHandler);
     }
 
-    @Override
-    public boolean dependsOnTimeOnly() {
-        return true;
-    }
-
     /** {@inheritDoc}
      * <p>
      * The {@code g} function of this detector is positive when ground is at night
@@ -111,21 +108,12 @@ public class FieldGroundAtNightDetector<T extends CalculusFieldElement<T>>
      */
     @Override
     public T g(final FieldSpacecraftState<T> state) {
-
-        final FieldAbsoluteDate<T> date     = state.getDate();
-        final Frame         frame    = state.getFrame();
-        final FieldVector3D<T> position = sun.getPosition(date, frame);
-        final T trueElevation   = getTopocentricFrame().getElevation(position, frame, date);
-
-        final T calculatedElevation;
-        if (refractionModel != null) {
-            calculatedElevation = trueElevation.add(refractionModel.getRefraction(trueElevation.getReal()));
-        } else {
-            calculatedElevation = trueElevation;
-        }
-
-        return dawnDuskElevation.subtract(calculatedElevation);
-
+        return getEventFunction().value(state);
     }
 
+    @Override
+    public GroundAtNightDetector toEventDetector(final EventHandler eventHandler) {
+        return new GroundAtNightDetector(new GroundAtNightEventFunction(getTopocentricFrame(), sun, dawnDuskElevation.getReal(),
+                refractionModel), getDetectionSettings().toEventDetectionSettings(), eventHandler);
+    }
 }

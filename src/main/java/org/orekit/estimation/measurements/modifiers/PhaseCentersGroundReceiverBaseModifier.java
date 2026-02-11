@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,8 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
+import org.orekit.estimation.measurements.AbstractMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
-import org.orekit.estimation.measurements.GroundReceiverMeasurement;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -31,7 +31,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class PhaseCentersGroundReceiverBaseModifier<T extends GroundReceiverMeasurement<T>> {
+public abstract class PhaseCentersGroundReceiverBaseModifier<T extends AbstractMeasurement<T>> {
 
     /** Uplink offset model. */
     private final PhaseCentersOffsetComputer uplink;
@@ -43,8 +43,8 @@ public class PhaseCentersGroundReceiverBaseModifier<T extends GroundReceiverMeas
      * @param stationPattern station pattern
      * @param satellitePattern satellite pattern
      */
-    public PhaseCentersGroundReceiverBaseModifier(final FrequencyPattern stationPattern,
-                                                  final FrequencyPattern satellitePattern) {
+    protected PhaseCentersGroundReceiverBaseModifier(final FrequencyPattern stationPattern,
+                                                     final FrequencyPattern satellitePattern) {
         this.uplink   = new PhaseCentersOffsetComputer(stationPattern, satellitePattern);
         this.downlink = new PhaseCentersOffsetComputer(satellitePattern, stationPattern);
     }
@@ -56,6 +56,13 @@ public class PhaseCentersGroundReceiverBaseModifier<T extends GroundReceiverMeas
     public String getEffectName() {
         return "mean phase center";
     }
+
+    /** Retrieve ground station observer.
+     * @param estimated estimated measurement to modify
+     * @return ground station associated with measurement
+     * @since 14.0
+     */
+    public abstract GroundStation getObserver(EstimatedMeasurementBase<T> estimated);
 
     /** Compute distance modification for one way measurement.
      * @param estimated estimated measurement to modify
@@ -70,7 +77,7 @@ public class PhaseCentersGroundReceiverBaseModifier<T extends GroundReceiverMeas
 
         // station at reception date
         final Frame         inertial       = estimated.getStates()[0].getFrame();
-        final GroundStation station        = estimated.getObservedMeasurement().getStation();
+        final GroundStation station        = getObserver(estimated);
         final AbsoluteDate  receptionDate  = participants[1].getDate();
         final Transform     stationToInert = station.getOffsetToInertial(inertial, receptionDate, false);
 
@@ -98,7 +105,7 @@ public class PhaseCentersGroundReceiverBaseModifier<T extends GroundReceiverMeas
 
         // station at reception date
         final Frame         inertial                = estimated.getStates()[0].getFrame();
-        final GroundStation station                 = estimated.getObservedMeasurement().getStation();
+        final GroundStation station                 = getObserver(estimated);
         final AbsoluteDate  receptionDate           = participants[2].getDate();
         final Transform     stationToInertReception = station.getOffsetToInertial(inertial, receptionDate, false);
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,10 @@
  */
 package org.orekit.utils;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -31,14 +35,10 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.AbstractTimeInterpolator;
 import org.orekit.time.TimeInterpolator;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
 class AbsolutePVCoordinatesHermiteInterpolatorTest {
 
     @Test
-    public void testInterpolatePolynomialPVA() {
+    void testInterpolatePolynomialPVA() {
         Random       random = new Random(0xfe3945fcb8bf47ceL);
         AbsoluteDate t0     = AbsoluteDate.J2000_EPOCH;
         Frame        frame  = FramesFactory.getEME2000();
@@ -89,7 +89,7 @@ class AbsolutePVCoordinatesHermiteInterpolatorTest {
     }
 
     @Test
-    public void testInterpolatePolynomialPV() {
+    void testInterpolatePolynomialPV() {
         Random       random = new Random(0xae7771c9933407bdL);
         AbsoluteDate t0     = AbsoluteDate.J2000_EPOCH;
         Frame        frame  = FramesFactory.getEME2000();
@@ -139,7 +139,7 @@ class AbsolutePVCoordinatesHermiteInterpolatorTest {
     }
 
     @Test
-    public void testInterpolatePolynomialPositionOnly() {
+    void testInterpolatePolynomialPositionOnly() {
         Random       random = new Random(0x88740a12e4299003L);
         AbsoluteDate t0     = AbsoluteDate.J2000_EPOCH;
         Frame        frame  = FramesFactory.getEME2000();
@@ -159,7 +159,7 @@ class AbsolutePVCoordinatesHermiteInterpolatorTest {
             List<AbsolutePVCoordinates> sample = new ArrayList<>();
             for (double dt : new double[] { 0.0, 0.2, 0.4, 0.6, 0.8, 1.0 }) {
                 Vector3D position = new Vector3D(px.value(dt), py.value(dt), pz.value(dt));
-                sample.add(new AbsolutePVCoordinates(frame, t0.shiftedBy(dt), position, Vector3D.ZERO, Vector3D.ZERO));
+                sample.add(new AbsolutePVCoordinates(frame, t0.shiftedBy(dt), position, Vector3D.ZERO));
             }
 
             // Create interpolator
@@ -187,7 +187,7 @@ class AbsolutePVCoordinatesHermiteInterpolatorTest {
     }
 
     @Test
-    public void testInterpolateNonPolynomial() {
+    void testInterpolateNonPolynomial() {
         AbsoluteDate t0    = AbsoluteDate.J2000_EPOCH;
         Frame        frame = FramesFactory.getEME2000();
 
@@ -223,6 +223,65 @@ class AbsolutePVCoordinatesHermiteInterpolatorTest {
 
     }
 
+    /**
+     * Test related to issue 1844.
+     *
+     * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1844">Issue 1844</a>
+     */
+    @Test
+    void testOutputFrame() {
+        // GIVEN
+
+        // Define output frame
+        final Frame outputFrame = FramesFactory.getEME2000();
+
+        // Create samples
+        final Frame                       inputFrame = FramesFactory.getGCRF();
+        final List<AbsolutePVCoordinates> samples    = new ArrayList<>();
+
+        final AbsoluteDate date1 = AbsoluteDate.J2000_EPOCH;
+        final AbsolutePVCoordinates sample1 = new AbsolutePVCoordinates(inputFrame,
+                                                                        date1,
+                                                                        Vector3D.PLUS_I,
+                                                                        Vector3D.PLUS_J);
+
+        final AbsoluteDate date2 = AbsoluteDate.J2000_EPOCH.shiftedBy(1);
+        final AbsolutePVCoordinates sample2 = new AbsolutePVCoordinates(inputFrame,
+                                                                        date2,
+                                                                        Vector3D.PLUS_J,
+                                                                        Vector3D.MINUS_I);
+
+        samples.add(sample1);
+        samples.add(sample2);
+
+        // Create interpolator
+        final AbsolutePVCoordinatesHermiteInterpolator interpolator =
+                new AbsolutePVCoordinatesHermiteInterpolator(2,
+                                                             outputFrame,
+                                                             CartesianDerivativesFilter.USE_P);
+
+        // Define interpolation date
+        final AbsoluteDate interpolationDate = AbsoluteDate.J2000_EPOCH.shiftedBy(0.5);
+
+
+        // WHEN
+        final AbsolutePVCoordinates interpolated = interpolator.interpolate(interpolationDate, samples);
+
+        // THEN
+        final PVCoordinates pvInInputFrame = interpolated.getPVCoordinates(inputFrame);
+
+        // Assert actual output frame is respected
+        Assertions.assertEquals(outputFrame, interpolated.getFrame());
+
+        // Assert that the interpolated result is correct
+        Assertions.assertEquals(0.5, pvInInputFrame.getPosition().getX(), 1e-15);
+        Assertions.assertEquals(0.5, pvInInputFrame.getPosition().getY(), 1e-15);
+        Assertions.assertEquals(0, pvInInputFrame.getPosition().getZ(), 1e-15);
+
+        // Assert that input and output frame does not match
+        Assertions.assertNotEquals(inputFrame, outputFrame);
+    }
+
     private PolynomialFunction randomPolynomial(int degree, Random random) {
         double[] coeff = new double[1 + degree];
         for (int j = 0; j < degree; ++j) {
@@ -251,7 +310,7 @@ class AbsolutePVCoordinatesHermiteInterpolatorTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

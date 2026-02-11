@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,15 +18,8 @@ package org.orekit.orbits;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.frames.Frame;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.ExtendedPositionProvider;
+import org.orekit.utils.AbstractExtendedPositionProvider;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * Position provider assuming pure Keplerian motion.
@@ -39,10 +32,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *
  * @since 14.0
  */
-public class KeplerianExtendedPositionProvider implements ExtendedPositionProvider {
-
-    /** Reference orbit. */
-    private final Orbit referenceOrbit;
+public class KeplerianExtendedPositionProvider extends AbstractExtendedPositionProvider<Orbit> {
 
     /**
      * Constructor.
@@ -50,57 +40,13 @@ public class KeplerianExtendedPositionProvider implements ExtendedPositionProvid
      */
     public KeplerianExtendedPositionProvider(final Orbit referenceOrbit) {
         // Remove non-Keplerian rates if any
-        final PVCoordinates keplerianPV = new PVCoordinates(referenceOrbit.getPosition(), referenceOrbit.getVelocity());
-        final CartesianOrbit cartesianOrbit = new CartesianOrbit(keplerianPV, referenceOrbit.getFrame(),
-                referenceOrbit.getDate(), referenceOrbit.getMu());
-        this.referenceOrbit = referenceOrbit.getType().convertType(cartesianOrbit);
+        super(referenceOrbit.getType().convertType(new CartesianOrbit(new PVCoordinates(referenceOrbit.getPosition(),
+                referenceOrbit.getVelocity()), referenceOrbit.getFrame(), referenceOrbit.getDate(), referenceOrbit.getMu())));
     }
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
-        return referenceOrbit.getPosition(date, frame);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Vector3D getVelocity(final AbsoluteDate date, final Frame frame) {
-        return referenceOrbit.getVelocity(date, frame);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
-        return referenceOrbit.getPVCoordinates(date, frame);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> date,
-                                                                            final Frame frame) {
-        return buildFieldOrbit(date.getField()).getPosition(date, frame);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getVelocity(final FieldAbsoluteDate<T> date, final Frame frame) {
-        return buildFieldOrbit(date.getField()).getVelocity(date, frame);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date,
-                                                                                                 final Frame frame) {
-        return buildFieldOrbit(date.getField()).getPVCoordinates(date, frame);
-    }
-
-    /**
-     * Convert reference orbit to Field.
-     * @param field field type
-     * @return FieldOrbit
-     * @param <T> field
-     */
-    private <T extends CalculusFieldElement<T>> FieldOrbit<T> buildFieldOrbit(final Field<T> field) {
-        return referenceOrbit.getType().convertToFieldOrbit(field, referenceOrbit);
+    protected <T extends CalculusFieldElement<T>> FieldOrbit<T> getFieldProvider(final Field<T> field) {
+        return getProvider().getType().convertToFieldOrbit(field, getProvider());
     }
 }

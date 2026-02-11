@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.orekit.bodies.BodyShape;
+import org.orekit.propagation.events.functions.EventFunction;
 import org.orekit.propagation.events.handlers.EventHandler;
 
 /** Abstract class for detectors using a body shape.
@@ -31,6 +32,21 @@ public abstract class AbstractGeographicalDetector<T extends AbstractDetector<T>
     private final BodyShape bodyShape;
 
     /** Protected constructor with full parameters.
+     * @param eventFunction event function
+     * @param detectionSettings detection settings
+     * @param handler event handler to call at event occurrences
+     * @param bodyShape body shape with respect to which altitude should be evaluated
+     * @since 14.0
+     */
+    protected AbstractGeographicalDetector(final EventFunction eventFunction,
+                                           final EventDetectionSettings detectionSettings,
+                                           final EventHandler handler,
+                                           final BodyShape bodyShape) {
+        super(eventFunction, detectionSettings, handler);
+        this.bodyShape = bodyShape;
+    }
+
+    /** Protected constructor.
      * @param detectionSettings detection settings
      * @param handler event handler to call at event occurrences
      * @param bodyShape body shape with respect to which altitude should be evaluated

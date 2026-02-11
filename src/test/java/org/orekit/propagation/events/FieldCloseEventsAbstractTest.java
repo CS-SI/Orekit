@@ -16,6 +16,10 @@
  */
 package org.orekit.propagation.events;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.ode.events.Action;
@@ -45,10 +49,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * Check events are detected correctly when the event times are close.
  *
@@ -69,7 +69,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         Utils.setDataRoot("regular-data");
     }
 
-    public FieldCloseEventsAbstractTest(final Field<T> field) {
+    protected FieldCloseEventsAbstractTest(final Field<T> field) {
         this.field = field;
         this.epoch = new FieldAbsoluteDate<>(field, AbsoluteDate.J2000_EPOCH);
         this.initialOrbit = new FieldKeplerianOrbit<>(

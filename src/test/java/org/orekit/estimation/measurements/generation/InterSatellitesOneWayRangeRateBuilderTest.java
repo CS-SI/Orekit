@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Thales Alenia Space
+/* Copyright 2022-2026 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -159,7 +159,7 @@ public class InterSatellitesOneWayRangeRateBuilderTest {
      public void setUp() {
          context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-         propagatorBuilder = context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+         propagatorBuilder = context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                                    1.0e-6, 300.0, 0.001, Force.POTENTIAL,
                                                    Force.THIRD_BODY_SUN, Force.THIRD_BODY_MOON);
      }

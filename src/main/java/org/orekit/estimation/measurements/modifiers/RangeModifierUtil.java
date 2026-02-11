@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,11 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.Arrays;
-
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -53,7 +51,7 @@ public class RangeModifierUtil {
      * @since 12.1
      */
     public static <T extends ObservedMeasurement<T>> void modifyWithoutDerivatives(final EstimatedMeasurementBase<T> estimated,
-                                                                                   final GroundStation station,
+                                                                                   final Observer station,
                                                                                    final ParametricModelEffect modelEffect,
                                                                                    final EstimationModifier<T> modifier) {
 
@@ -81,7 +79,7 @@ public class RangeModifierUtil {
     public static <T extends ObservedMeasurement<T>> void modify(final EstimatedMeasurement<T> estimated,
                                                                  final ParameterDriversProvider parametricModel,
                                                                  final AbstractGradientConverter converter,
-                                                                 final GroundStation station,
+                                                                 final Observer station,
                                                                  final ParametricModelEffect modelEffect,
                                                                  final ParametricModelEffectGradient modelEffectGradient,
                                                                  final EstimationModifier<T> modifier) {
@@ -114,10 +112,7 @@ public class RangeModifierUtil {
 
         }
 
-        for (final ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
-                                                          station.getEastOffsetDriver(),
-                                                          station.getNorthOffsetDriver(),
-                                                          station.getZenithOffsetDriver())) {
+        for (final ParameterDriver driver : station.getParametersDrivers()) {
             if (driver.isSelected()) {
                 // update estimated derivatives with derivative of the modification wrt station parameters
                 for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {

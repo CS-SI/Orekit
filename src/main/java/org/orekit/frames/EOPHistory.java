@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -592,7 +592,7 @@ public class EOPHistory {
      * @return nutation correction in Celestial Intermediate Pole coordinates
      * δX and δY (zero if date is outside covered range)
      */
-    public double[] getNonRotatinOriginNutationCorrection(final AbsoluteDate date) {
+    public double[] getNonRotatingOriginNutationCorrection(final AbsoluteDate date) {
 
         // check if there is data for date
         if (!this.hasDataFor(date)) {
@@ -612,7 +612,7 @@ public class EOPHistory {
      * @return nutation correction in Celestial Intermediate Pole coordinates
      * δX and δY (zero if date is outside covered range)
      */
-    public <T extends CalculusFieldElement<T>> T[] getNonRotatinOriginNutationCorrection(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> T[] getNonRotatingOriginNutationCorrection(final FieldAbsoluteDate<T> date) {
 
         final AbsoluteDate aDate = date.toAbsoluteDate();
 

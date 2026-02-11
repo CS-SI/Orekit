@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,9 +20,12 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.EventFunction;
 import org.orekit.time.AbsoluteDate;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for {@link NegateDetector}.
@@ -36,8 +39,8 @@ class NegateDetectorTest {
         //setup
         final DateDetector dateDetector = new DateDetector();
         final NegateDetector negateDetector = new NegateDetector(dateDetector);
-        final SpacecraftState state = Mockito.mock(SpacecraftState.class);
-        Mockito.when(state.getDate()).thenReturn(AbsoluteDate.ARBITRARY_EPOCH);
+        final SpacecraftState state = mock(SpacecraftState.class);
+        when(state.getDate()).thenReturn(AbsoluteDate.ARBITRARY_EPOCH);
 
         //action
         negateDetector.init(state, AbsoluteDate.PAST_INFINITY);
@@ -51,8 +54,8 @@ class NegateDetectorTest {
         //setup
         final DateDetector dateDetector = new DateDetector();
         final NegateDetector negateDetector = new NegateDetector(dateDetector);
-        final SpacecraftState state = Mockito.mock(SpacecraftState.class);
-        Mockito.when(state.getDate()).thenReturn(AbsoluteDate.ARBITRARY_EPOCH);
+        final SpacecraftState state = mock(SpacecraftState.class);
+        when(state.getDate()).thenReturn(AbsoluteDate.ARBITRARY_EPOCH);
 
         //action
         negateDetector.init(state, AbsoluteDate.FUTURE_INFINITY);
@@ -74,31 +77,29 @@ class NegateDetectorTest {
         Assertions.assertEquals(expectedDetector, detector.getOriginal());
     }
 
-    /**
-     * check g function is negated.
-     */
     @Test
-    void testG() {
-        //setup
-        EventDetector a = Mockito.mock(EventDetector.class);
-        Mockito.when(a.getDetectionSettings()).thenReturn(EventDetectionSettings.getDefaultEventDetectionSettings());
-        NegateDetector detector = new NegateDetector(a);
-        SpacecraftState s = Mockito.mock(SpacecraftState.class);
-
-        // verify + to -
-        Mockito.when(a.g(s)).thenReturn(1.0);
-        MatcherAssert.assertThat(detector.g(s), CoreMatchers.is(-1.0));
-        // verify - to +
-        Mockito.when(a.g(s)).thenReturn(-1.0);
-        MatcherAssert.assertThat(detector.g(s), CoreMatchers.is(1.0));
+    void testGetEventFunction() {
+        // GIVEN
+        final EventDetector mockedDetector = mock();
+        final EventFunction eventFunction = mock();
+        final SpacecraftState state = mock();
+        final double originalG = 1.;
+        when(eventFunction.value(state)).thenReturn(originalG);
+        when(mockedDetector.getEventFunction()).thenReturn(eventFunction);
+        when(mockedDetector.getDetectionSettings()).thenReturn(EventDetectionSettings.getDefaultEventDetectionSettings());
+        // WHEN
+        final NegateDetector detector = new NegateDetector(mockedDetector);
+        // THEN
+        Assertions.assertEquals(eventFunction, detector.getEventFunction().getBaseFunction());
+        Assertions.assertEquals(-originalG, detector.g(state));
     }
 
     /** Check a with___ method. */
     @Test
     void testCreate() {
         //setup
-        EventDetector a = Mockito.mock(EventDetector.class);
-        Mockito.when(a.getDetectionSettings()).thenReturn(EventDetectionSettings.getDefaultEventDetectionSettings());
+        EventDetector a = mock(EventDetector.class);
+        when(a.getDetectionSettings()).thenReturn(EventDetectionSettings.getDefaultEventDetectionSettings());
         NegateDetector detector = new NegateDetector(a);
 
         // action

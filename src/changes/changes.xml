@@ -1,4 +1,4 @@
-<!-- Copyright 2002-2025 CS GROUP
+<!-- Copyright 2002-2026 CS GROUP
   Licensed to CS GROUP (CS) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
@@ -20,8 +20,60 @@
   </properties>
   <body>
     <release version="14.0" date="TBD" description="TBD">
+        <action dev="serrof" type="add" issue="1911">
+            Reducing code duplication and renaming for estimators.
+        </action>
+        <action dev="bryan" type="fix" issue="1910">
+            Fixed typo in EOPHistory#getNonRotatingOriginNutationCorrection method name.
+        </action>
+        <action dev="serrof" type="add" issue="1905">
+            Add ephemeris-based ExtendedPositionProvider.
+        </action>
+        <action dev="rafa" type="add" issue="1899">
+            Add support for NAIF SPICE generic DAF binary files.
+        </action>
+        <action dev="bryan" type="fix" issue="1898">
+            Refactored orbit determination contexts to reduce code duplication.
+        </action>
+        <action dev="serrof" type="add" issue="1897">
+            Introduce abstract class for GNSS one way measurements.
+        </action>
+        <action dev="serrof" type="fix" issue="1893">
+            Use proper shiftedBy for position-velocity of observable satellites with light-time delay.
+        </action>
+        <action dev="luc" type="add" issue="issue-1896">
+            Allow to build simply a Starlette or Lageos type shape without wings
+            for BoxAndSolarArray (aka disco ball).
+        </action>
+        <action dev="serrof" type="add" issue="issue-1888">
+            Add plane crossing event function and detector.
+        </action>
+        <action dev="serrof" type="add" issue="issue-1886">
+            Add performance flag in (Field)EnablingPredicate.
+        </action>
+        <action dev="serrof" type="update" issue="issue-1885">
+            Refactoring of indirect control switches.
+        </action>
+        <action dev="serrof" type="update" issue="issue-1884">
+            Make IntervalEventTrigger and StartStopEventsTrigger non abstract.
+        </action>
+        <action dev="serrof" type="add" issue="issue-1881">
+            Add toEventDetector in FieldAbstractDetector.
+        </action>
+        <action dev="serrof" type="add" issue="issue-1879">
+            Introduce EventFunction.
+        </action>
+        <action dev="serrof" type="add" issue="issue-1877">
+            Add Taylor ExtendedPositionProvider.
+        </action>
         <action dev="serrof" type="add" issue="issue-1871">
           Add GNSS ExtendedPositionProvider.
+        </action>
+        <action dev="serrof" type="add" issue="issue-1870">
+            Add FieldEphemeris.
+        </action>
+        <action dev="xiaozhongguo" type="add" issue="1865">
+          Add a method of loadLibration in JPLEphemerisLoader and an new JPLLibration class.
         </action>
         <action dev="luc" type="update" issue="issue-1863">
           Use more realistic scaling factors in GNSS propagators parameter drivers.
@@ -185,6 +237,42 @@
         <action dev="serrof" type="update" issue="1244">
             Add abstract classes for detectors based on body shape.
         </action>
+    </release>
+    <release version="13.1.3" date="2026-01-27" description="Orekit 13.1.3 is a patch release. It fixes documentation issues and various bugs.">
+      <action dev="bryan" type="fix" issue="1895">
+          Fixed JavaDoc for gradient method in HolmesFeatherstoneAttractionModel.
+      </action>
+      <action dev="luc" type="fix" issue="1894">
+          Added explanation about test reference values and tolerances.
+      </action>
+      <action dev="evan" type="fix" issue="1892">
+          Fix NaN in ConicallyShadowedLightFluxModel.
+      </action>
+        <action dev="evan" type="fix" issue="1891">
+          Improve time accuracy in CelestialBodies.
+      </action>
+      <action dev="vcucchie" type="fix" issue="1878">
+          Fixed getSubInterpolators method in attitude interpolators (including fielded version).
+      </action>
+      <action dev="vcucchie" type="fix" issue="1875">
+          Fixed number of interpolation points used when using interpolators with sub-interpolators requiring more
+          interpolation points (normal and fielded version).
+      </action>
+      <action dev="serrof" type="fix" issue="1874">
+          Call init and finish in FieldImpulseProvider built from ImpulseProvider.
+      </action>
+      <action dev="afossa" type="fix" issue="1866">
+          Added check on date and mu in faster computation of field acceleration in HolmesFeatherstoneAttractionModel.
+      </action>
+      <action dev="serrof" type="fix" issue="1864">
+          Take into account rejected measurements in dimension for chi distribution in least-squares.
+      </action>
+      <action dev="evan" type="fix" issue="1854">
+          Fixed regression on performance with OCM.
+      </action>
+      <action dev="vcucchie" type="fix" issue="1844">
+          Fixed frame conversion issue with Ephemeris class (for both AbsolutePVCoordinates and any type of Orbit)
+      </action>
     </release>
     <release version="13.1.2" date="2025-09-25" description="Orekit 13.1.2 is a patch release. It fixes various bugs including a couple of urgent ones">
         <action dev="luc" type="fix" issue="1831">

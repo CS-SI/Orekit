@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,12 @@
  * limitations under the License.
  */
 package org.orekit.propagation.numerical;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -41,13 +47,14 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
-import org.orekit.propagation.events.DetectorModifier;
 import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldDateDetector;
-import org.orekit.propagation.events.FieldDetectorModifier;
 import org.orekit.propagation.events.FieldEventDetectionSettings;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.FieldSingleDateDetector;
+import org.orekit.propagation.events.SingleDateDetector;
+import org.orekit.propagation.events.functions.EventFunction;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
@@ -62,14 +69,8 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -371,6 +372,28 @@ class SwitchEventHandlerTest {
         }
 
         @Override
+        public EventFunction getEventFunction() {
+            return new EventFunction() {
+                @Override
+                public double value(SpacecraftState s) {
+                    final PVCoordinates relativePV = new PVCoordinates(s.getPosition().subtract(pvCoordinates.getPosition()),
+                            s.getPVCoordinates().getVelocity().subtract(pvCoordinates.getVelocity()));
+                    final Vector3D relativePosition = relativePV.getPosition();
+                    final Vector3D relativeVelocity = relativePV.getVelocity();
+                    return s.durationFrom(pvCoordinates.getDate())
+                            + relativePosition.getX() + (relativePosition.getY() + relativePosition.getZ())
+                            + relativeVelocity.getX() + (relativeVelocity.getY()) + (relativeVelocity.getZ());
+                }
+
+                @Override
+                @SuppressWarnings("unchecked")
+                public <S extends CalculusFieldElement<S>> S value(FieldSpacecraftState<S> fieldState) {
+                    return (S) g((FieldSpacecraftState<T>) fieldState);
+                }
+            };
+        }
+
+        @Override
         public T g(FieldSpacecraftState<T> s) {
             final FieldPVCoordinates<T> relativePV = new FieldPVCoordinates<>(s.getPosition().subtract(pvCoordinates.getPosition()),
                     s.getPVCoordinates().getVelocity().subtract(pvCoordinates.getVelocity()));
@@ -401,32 +424,12 @@ class SwitchEventHandlerTest {
 
             @Override
             public Stream<EventDetector> getEventDetectors() {
-                return Stream.of(new DetectorModifier() {
-                    @Override
-                    public boolean dependsOnTimeOnly() {
-                        return false;
-                    }
-
-                    @Override
-                    public EventDetector getDetector() {
-                        return new DateDetector(date);
-                    }
-                });
+                return Stream.of(new SingleDateDetector(date));
             }
 
             @Override
             public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field) {
-                return Stream.of(new FieldDetectorModifier<T>() {
-                    @Override
-                    public boolean dependsOnTimeOnly() {
-                        return false;
-                    }
-
-                    @Override
-                    public FieldEventDetector<T> getDetector() {
-                        return new FieldDateDetector<>(new FieldAbsoluteDate<>(field, date));
-                    }
-                });
+                return Stream.of(new FieldSingleDateDetector<>(field, date));
             }
         };
     }

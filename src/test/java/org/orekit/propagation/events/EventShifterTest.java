@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.events;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
@@ -23,6 +26,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -40,9 +45,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-import java.util.ArrayList;
-import java.util.List;
-
 class EventShifterTest {
 
     private double           mu;
@@ -52,6 +54,18 @@ class EventShifterTest {
 
     private double sunRadius = 696000000.;
     private double earthRadius = 6400000.;
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testGetter(final boolean useShifted) {
+        // GIVEN
+        final EventDetector detector = new DateDetector();
+        final EventShifter shifter = new EventShifter(detector, useShifted, 1., 2.);
+        // WHEN
+        final boolean actual = shifter.isUseShiftedStates();
+        // THEN
+        Assertions.assertEquals(useShifted,actual);
+    }
 
     @Test
     void testWithDetectionSettings() {
@@ -243,7 +257,7 @@ class EventShifterTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         try {
             Utils.setDataRoot("regular-data");
             mu  = 3.9860047e14;
@@ -267,7 +281,7 @@ class EventShifterTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         iniDate = null;
         propagator = null;
         log = null;

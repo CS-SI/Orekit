@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,16 @@
 package org.orekit.control.indirect.adjoint.cost;
 
 
+import java.util.function.Function;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.FieldEventDetectionSettings;
+import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.functions.EventFunction;
+import org.orekit.propagation.events.functions.EventFunctionModifier;
+import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
 
 /**
  * Abstract class for cost with Cartesian coordinates.
@@ -78,5 +86,40 @@ public abstract class FieldAbstractCartesianCost<T extends CalculusFieldElement<
      */
     protected T getFieldAdjointVelocityNorm(final T[] adjointVariables) {
         return FastMath.sqrt(adjointVariables[3].square().add(adjointVariables[4].square()).add(adjointVariables[5].square()));
+    }
+
+    /**
+     * Build event detector.
+     * @param eventFunction event function
+     * @param fieldEventDetectionSettings detection settings
+     * @return event detector
+     * @since 14.0
+     */
+    protected FieldEventDetector<T> buildSwitchDetector(final FieldSwitchFunction eventFunction,
+                                                        final FieldEventDetectionSettings<T> fieldEventDetectionSettings) {
+        return FieldEventDetector.of(eventFunction, new FieldResetDerivativesOnEvent<>(), fieldEventDetectionSettings);
+    }
+
+    /**
+     * Class for control switch function involving Field.
+     */
+    public class FieldSwitchFunction implements EventFunctionModifier {
+
+        /** Wrapped event function. */
+        private final EventFunction baseFunction;
+
+        protected FieldSwitchFunction(final Function<FieldSpacecraftState<T>, T> fieldFunction) {
+            this.baseFunction = EventFunction.of(getMassFlowRateFactor().getField(), fieldFunction);
+        }
+
+        @Override
+        public EventFunction getBaseFunction() {
+            return baseFunction;
+        }
+
+        @Override
+        public boolean dependsOnMainVariablesOnly() {
+            return false;
+        }
     }
 }

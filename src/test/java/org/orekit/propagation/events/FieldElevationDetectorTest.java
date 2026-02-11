@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,12 +20,16 @@ import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.AtmosphericRefractionModel;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.handlers.EventHandler;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 
 class FieldElevationDetectorTest {
 
@@ -35,10 +39,23 @@ class FieldElevationDetectorTest {
         final TopocentricFrame frame = new TopocentricFrame(new OneAxisEllipsoid(1, 0, FramesFactory.getGCRF()),
                 new GeodeticPoint(0., 0., 0), "");
         final FieldElevationDetector<Binary64> fieldElevationDetector = new FieldElevationDetector<>(Binary64Field.getInstance(), frame);
-        final AtmosphericRefractionModel model = Mockito.mock(AtmosphericRefractionModel.class);
+        final AtmosphericRefractionModel model = mock(AtmosphericRefractionModel.class);
         // WHEN
         final FieldElevationDetector<Binary64> detector = fieldElevationDetector.withRefraction(model);
         // THEN
         Assertions.assertEquals(model, detector.getRefractionModel());
+    }
+
+    @Test
+    void testToEventDetector() {
+        // GIVEN
+        final FieldElevationDetector<Binary64> fieldDetector = new FieldElevationDetector<>(Binary64Field.getInstance(),
+                mock(TopocentricFrame.class));
+        final EventHandler expectedHandler = new ContinueOnEvent();
+        // WHEN
+        final ElevationDetector detector = fieldDetector.toEventDetector(expectedHandler);
+        // THEN
+        assertEquals(expectedHandler, detector.getHandler());
+        assertEquals(fieldDetector.getTopocentricFrame(), detector.getTopocentricFrame());
     }
 }

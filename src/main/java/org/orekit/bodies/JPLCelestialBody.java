@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,10 +35,13 @@ import org.orekit.frames.Transform;
 import org.orekit.frames.TransformProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import java.util.concurrent.TimeUnit;
 
 /** Implementation of the {@link CelestialBody} interface using JPL or INPOP ephemerides.
  * @author Luc Maisonobe
@@ -363,23 +366,25 @@ class JPLCelestialBody implements CelestialBody {
 
                 /** {@inheritDoc} */
                 public Transform getTransform(final AbsoluteDate date) {
-                    final double dt = 10.0;
+                    final TimeOffset dt = new TimeOffset(10, TimeUnit.SECONDS);
                     final double w0 = iauPole.getPrimeMeridianAngle(date);
                     final double w1 = iauPole.getPrimeMeridianAngle(date.shiftedBy(dt));
                     return new Transform(date,
                             new Rotation(Vector3D.PLUS_K, w0, RotationConvention.FRAME_TRANSFORM),
-                            new Vector3D((w1 - w0) / dt, Vector3D.PLUS_K));
+                            new Vector3D((w1 - w0) / dt.toDouble(), Vector3D.PLUS_K));
                 }
 
                 /** {@inheritDoc} */
                 public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
-                    final double dt = 10.0;
+                    final TimeOffset dt = new TimeOffset(10, TimeUnit.SECONDS);
                     final T w0 = iauPole.getPrimeMeridianAngle(date);
                     final T w1 = iauPole.getPrimeMeridianAngle(date.shiftedBy(dt));
                     return new FieldTransform<>(date,
                             new FieldRotation<>(FieldVector3D.getPlusK(date.getField()), w0,
                                     RotationConvention.FRAME_TRANSFORM),
-                            new FieldVector3D<>(w1.subtract(w0).divide(dt), Vector3D.PLUS_K));
+                            new FieldVector3D<>(
+                                    w1.subtract(w0).divide(dt.toDouble()),
+                                    Vector3D.PLUS_K));
                 }
 
             }, frameName == null ? name + BODY_FRAME_SUFFIX : frameName, false);

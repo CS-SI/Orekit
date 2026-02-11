@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,8 +27,8 @@ import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
-import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
+import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.oned.Vector1D;
 import org.hipparchus.geometry.euclidean.threed.FieldLine;
@@ -69,7 +69,6 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.orekit.OrekitMatchers.closeTo;
 
@@ -280,7 +279,7 @@ class OneAxisEllipsoidTest {
             Vector3D p = model.projectToGround(shiftedPV.getPosition(), shiftedPV.getDate(), frame);
             pvList.add(shiftedPV);
             groundPVList.add(new TimeStampedPVCoordinates(shiftedPV.getDate(),
-                                                          p, Vector3D.ZERO, Vector3D.ZERO));
+                                                          p, Vector3D.ZERO));
         }
 
         // create interpolators
@@ -993,7 +992,7 @@ class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testPointAtAltitude() {
+    void testPointAtAltitude() {
         final Frame inertial = FramesFactory.getGCRF();
         final AbsoluteDate date = new AbsoluteDate(2003, 5, 7, 12, 34, 0.0, TimeScalesFactory.getUTC());
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -1029,7 +1028,7 @@ class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testPointAtAltitudeNoCrossing() {
+    void testPointAtAltitudeNoCrossing() {
         final Frame inertial = FramesFactory.getGCRF();
         final AbsoluteDate date = new AbsoluteDate(2003, 5, 7, 12, 34, 0.0, TimeScalesFactory.getUTC());
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -1056,7 +1055,7 @@ class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testPointAtAltitudeNoConvergence() {
+    void testPointAtAltitudeNoConvergence() {
         final Frame inertial = FramesFactory.getGCRF();
         final AbsoluteDate date = new AbsoluteDate(2003, 5, 7, 12, 34, 0.0, TimeScalesFactory.getUTC());
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -1082,7 +1081,7 @@ class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testFieldPointAtAltitude() {
+    void testFieldPointAtAltitude() {
         doTestFieldPointAtAltitude(Binary64Field.getInstance());
     }
 
@@ -1126,7 +1125,7 @@ class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testFieldPointAtAltitudeNoCrossing() {
+    void testFieldPointAtAltitudeNoCrossing() {
         doTestFieldPointAtAltitudeNoCrossing(Binary64Field.getInstance());
     }
 
@@ -1161,7 +1160,7 @@ class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testFieldPointAtAltitudeNoConvergence() {
+    void testFieldPointAtAltitudeNoConvergence() {
         doTestFieldPointAtAltitudeNoConvergence(Binary64Field.getInstance());
     }
 
@@ -1192,6 +1191,39 @@ class OneAxisEllipsoidTest {
             Assertions.assertEquals(LocalizedCoreFormats.CONVERGENCE_FAILED, ex.getSpecifier());
         }
 
+    }
+
+    @Test
+    void testGetLongitude() {
+        // GIVEN
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                Constants.WGS84_EARTH_FLATTENING,
+                FramesFactory.getITRF(IERSConventions.IERS_2010, false));
+        final Vector3D point = new Vector3D(1e4, 2e5, -1e6);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame frame = earth.getBodyFrame();
+        // WHEN
+        final double actualLongitude = earth.getLongitude(point, frame, date);
+        // THEN
+        final double expectedLongitude = earth.transform(point, frame, date).getLongitude();
+        Assertions.assertEquals(expectedLongitude, actualLongitude);
+    }
+
+    @Test
+    void testGetLongitudeField() {
+        // GIVEN
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                Constants.WGS84_EARTH_FLATTENING,
+                FramesFactory.getITRF(IERSConventions.IERS_2010, false));
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldVector3D<Binary64> point = new FieldVector3D<>(field, new Vector3D(1e4, 2e5, -1e6));
+        final FieldAbsoluteDate<Binary64> date = FieldAbsoluteDate.getArbitraryEpoch(field);
+        final Frame frame = earth.getBodyFrame();
+        // WHEN
+        final Binary64 actualLongitude = earth.getLongitude(point, frame, date);
+        // THEN
+        final Binary64 expectedLongitude = earth.transform(point, frame, date).getLongitude();
+        Assertions.assertEquals(expectedLongitude, actualLongitude);
     }
 
     private void doTestTransformVsOldIterative(OneAxisEllipsoid model,
@@ -1261,7 +1293,7 @@ class OneAxisEllipsoidTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,8 @@ package org.orekit.propagation.events;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.functions.TimeIntervalEventFunction;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.intervals.DateDetectionAdaptableIntervalFactory;
@@ -60,8 +62,22 @@ public class FieldTimeIntervalDetector<T extends CalculusFieldElement<T>>
     public FieldTimeIntervalDetector(final FieldEventDetectionSettings<T> detectionSettings,
                                      final FieldEventHandler<T> handler,
                                      final TimeInterval timeInterval) {
-        super(detectionSettings, handler);
+        super(new TimeIntervalEventFunction(timeInterval), detectionSettings, handler);
         this.timeInterval = timeInterval;
+    }
+
+    /**
+     * Full constructor.
+     * @param eventFunction event function
+     * @param detectionSettings event detection settings
+     * @param handler event handler
+     * @since 14.0
+     */
+    public FieldTimeIntervalDetector(final TimeIntervalEventFunction eventFunction,
+                                     final FieldEventDetectionSettings<T> detectionSettings,
+                                     final FieldEventHandler<T> handler) {
+        super(eventFunction, detectionSettings, handler);
+        this.timeInterval = eventFunction.getTimeInterval();
     }
 
     /**
@@ -92,18 +108,18 @@ public class FieldTimeIntervalDetector<T extends CalculusFieldElement<T>>
     @Override
     protected FieldTimeIntervalDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                                  final FieldEventHandler<T> newHandler) {
-        return new FieldTimeIntervalDetector<>(detectionSettings, newHandler, timeInterval);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean dependsOnTimeOnly() {
-        return true;
+        return new FieldTimeIntervalDetector<>((TimeIntervalEventFunction) getEventFunction(), detectionSettings,
+                newHandler);
     }
 
     @Override
     public T g(final FieldSpacecraftState<T> s) {
-        final FieldAbsoluteDate<T> date = s.getDate();
-        return (date.durationFrom(timeInterval.getStartDate())).multiply(date.durationFrom(timeInterval.getEndDate())).negate();
+        return getEventFunction().value(s);
+    }
+
+    @Override
+    public TimeIntervalDetector toEventDetector(final EventHandler eventHandler) {
+        return new TimeIntervalDetector((TimeIntervalEventFunction) getEventFunction(),
+                getDetectionSettings().toEventDetectionSettings(), eventHandler);
     }
 }

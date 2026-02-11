@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.bodies.BodyShape;
+import org.orekit.propagation.events.functions.EventFunction;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 
 /** Abstract class for detectors using a body shape.
@@ -33,12 +34,27 @@ public abstract class FieldAbstractGeographicalDetector<D extends FieldAbstractD
     /** Reference body shape. */
     private final BodyShape bodyShape;
 
-    /** Protected constructor with full parameters.
+    /** Protected constructor with event function.
+     * @param eventFunction event function
      * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
-     * @param bodyShape body sshape
+     * @param bodyShape body shape
      */
-    protected FieldAbstractGeographicalDetector(final FieldEventDetectionSettings<T> detectionSettings, final FieldEventHandler<T> handler,
+    protected FieldAbstractGeographicalDetector(final EventFunction eventFunction,
+                                                final FieldEventDetectionSettings<T> detectionSettings,
+                                                final FieldEventHandler<T> handler,
+                                                final BodyShape bodyShape) {
+        super(eventFunction, detectionSettings, handler);
+        this.bodyShape = bodyShape;
+    }
+
+    /** Protected constructor.
+     * @param detectionSettings event detection settings
+     * @param handler event handler to call at event occurrences
+     * @param bodyShape body shape
+     */
+    protected FieldAbstractGeographicalDetector(final FieldEventDetectionSettings<T> detectionSettings,
+                                                final FieldEventHandler<T> handler,
                                                 final BodyShape bodyShape) {
         super(detectionSettings, handler);
         this.bodyShape = bodyShape;

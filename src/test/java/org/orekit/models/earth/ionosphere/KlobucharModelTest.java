@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -60,16 +60,24 @@ public class KlobucharModelTest {
     private KlobucharIonoModel model;
 
     private UTCScale utc;
-
+    
+    /** Earth model. */
+    private OneAxisEllipsoid earthBodyShape;
     @BeforeEach
     public void setUp() throws Exception {
+
+        Utils.setDataRoot("regular-data");
+        earthBodyShape = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                                 Constants.WGS84_EARTH_FLATTENING,
+                                                                                 FramesFactory.getITRF(IERSConventions.IERS_2010, 
+                                                                                 true));
+
         // Navigation message data
         // .3820D-07   .1490D-07  -.1790D-06   .0000D-00          ION ALPHA
         // .1430D+06   .0000D+00  -.3280D+06   .1130D+06          ION BETA
-        model = new KlobucharIonoModel(new double[]{.3820e-07, .1490e-07, -.1790e-06, 0},
+        model = new KlobucharIonoModel(earthBodyShape, new double[]{.3820e-07, .1490e-07, -.1790e-06, 0},
                                        new double[]{.1430e+06, 0, -.3280e+06, .1130e+06});
 
-        Utils.setDataRoot("regular-data");
         utc = TimeScalesFactory.getUTC();
     }
 

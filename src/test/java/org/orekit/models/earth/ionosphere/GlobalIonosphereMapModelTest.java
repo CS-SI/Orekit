@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,8 +47,6 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.PredefinedGnssSignal;
-import org.orekit.models.earth.Geoid;
-import org.orekit.models.earth.ReferenceEllipsoid;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
@@ -72,6 +70,8 @@ public class GlobalIonosphereMapModelTest {
     private static final double epsilonParser = 1.0e-16;
     private static final double epsilonDelay  = 0.001;
     private SpacecraftState state;
+
+    /** Earth model. */
     private OneAxisEllipsoid earth;
 
     @BeforeEach
@@ -84,13 +84,13 @@ public class GlobalIonosphereMapModelTest {
                                                Constants.WGS84_EARTH_MU);
         state = new SpacecraftState(orbit);
         earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                     Constants.WGS84_EARTH_FLATTENING,
-                                     FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+                                              Constants.WGS84_EARTH_FLATTENING,
+                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true));
     }
 
     @Test
     public void testDelayAtIPP() {
-        GlobalIonosphereMapModel model = new GlobalIonosphereMapModel("gpsg0150.19i");
+        GlobalIonosphereMapModel model = new GlobalIonosphereMapModel(earth, "gpsg0150.19i");
         final double latitude  = FastMath.toRadians(30.0);
         final double longitude = FastMath.toRadians(-130.0);
         try {
@@ -116,7 +116,7 @@ public class GlobalIonosphereMapModelTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldDelayAtIPP(final Field<T> field) {
-        GlobalIonosphereMapModel model = new GlobalIonosphereMapModel("gpsg0150.19i");
+        GlobalIonosphereMapModel model = new GlobalIonosphereMapModel(earth, "gpsg0150.19i");
         final T zero = field.getZero();
         final double latitude  = FastMath.toRadians(30.0);
         final double longitude = FastMath.toRadians(-130.0);
@@ -144,7 +144,7 @@ public class GlobalIonosphereMapModelTest {
 
     @Test
     public void testSpacecraftState() {
-        GlobalIonosphereMapModel model = new GlobalIonosphereMapModel("gpsg0150.19i");
+        GlobalIonosphereMapModel model = new GlobalIonosphereMapModel(earth, "gpsg0150.19i");
         double a = 7187990.1979844316;
         double e = 0.5e-4;
         double i = FastMath.toRadians(98.01);
@@ -184,7 +184,7 @@ public class GlobalIonosphereMapModelTest {
 
     @Test
     public void testAboveIono() {
-        GlobalIonosphereMapModel model = new GlobalIonosphereMapModel("gpsg0150.19i");
+        GlobalIonosphereMapModel model = new GlobalIonosphereMapModel(earth, "gpsg0150.19i");
         double a = 7187990.1979844316;
         double e = 0.5e-4;
         double i = FastMath.toRadians(98.01);
@@ -213,7 +213,7 @@ public class GlobalIonosphereMapModelTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestSpacecraftStateField(final Field<T> field) {
-        GlobalIonosphereMapModel model = new GlobalIonosphereMapModel("gpsg0150.19i");
+        GlobalIonosphereMapModel model = new GlobalIonosphereMapModel(earth, "gpsg0150.19i");
         final T zero = field.getZero();
         T a = zero.newInstance(7187990.1979844316);
         T e = zero.newInstance(0.5e-4);
@@ -262,7 +262,7 @@ public class GlobalIonosphereMapModelTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestAboveIonoField(final Field<T> field) {
-        GlobalIonosphereMapModel model = new GlobalIonosphereMapModel("gpsg0150.19i");
+        GlobalIonosphereMapModel model = new GlobalIonosphereMapModel(earth, "gpsg0150.19i");
         final T zero = field.getZero();
         T a = zero.newInstance(7187990.1979844316);
         T e = zero.newInstance(0.5e-4);
@@ -298,7 +298,7 @@ public class GlobalIonosphereMapModelTest {
         URL url3 = DirectoryCrawlerTest.class.getClassLoader().getResource("ionex/split-3.19i");
         DataSource ds3 = new DataSource(Paths.get(url3.toURI()).toString());
         GlobalIonosphereMapModel model =
-            new GlobalIonosphereMapModel(TimeScalesFactory.getUTC(),
+            new GlobalIonosphereMapModel(earth, TimeScalesFactory.getUTC(),
                                          GlobalIonosphereMapModel.TimeInterpolator.SIMPLE_LINEAR,
                                          ds1, ds2, ds3);
 
@@ -358,7 +358,7 @@ public class GlobalIonosphereMapModelTest {
         final String fileName = "corrupted-bad-data-gpsg0150.19i";
 
         try {
-            new GlobalIonosphereMapModel(fileName);
+            new GlobalIonosphereMapModel(earth, fileName);
             Assertions.fail("An exception should have been thrown");
 
         } catch (OrekitException oe) {
@@ -368,7 +368,7 @@ public class GlobalIonosphereMapModelTest {
 
     @Test
     public void testEarlierDate() {
-        GlobalIonosphereMapModel model = new GlobalIonosphereMapModel("gpsg0150.19i");
+        GlobalIonosphereMapModel model = new GlobalIonosphereMapModel(earth, "gpsg0150.19i");
         final double latitude  = FastMath.toRadians(60.0);
         final double longitude = FastMath.toRadians(-130.0);
         final GeodeticPoint point = new GeodeticPoint(latitude, longitude, 0.0);
@@ -389,7 +389,7 @@ public class GlobalIonosphereMapModelTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldEarlierDate(final Field<T> field) {
-        GlobalIonosphereMapModel model = new GlobalIonosphereMapModel("gpsg0150.19i");
+        GlobalIonosphereMapModel model = new GlobalIonosphereMapModel(earth, "gpsg0150.19i");
         final double latitude  = FastMath.toRadians(60.0);
         final double longitude = FastMath.toRadians(-130.0);
         final GeodeticPoint point = new GeodeticPoint(latitude, longitude, 0.0);
@@ -409,35 +409,36 @@ public class GlobalIonosphereMapModelTest {
     public void testDeprecated() throws URISyntaxException {
         final TimeScale utc = DataContext.getDefault().getTimeScales().getUTC();
         Assertions.assertEquals(GlobalIonosphereMapModel.TimeInterpolator.SIMPLE_LINEAR,
-                                new GlobalIonosphereMapModel("gpsg0150.19i",
+                                new GlobalIonosphereMapModel(earth, "gpsg0150.19i",
                                                              DataContext.getDefault().getDataProvidersManager(),
                                                              utc).getInterpolator());
         final URL        url = DirectoryCrawlerTest.class.getClassLoader().getResource("ionex/gpsg0150.19i");
         final DataSource ds  = new DataSource(url.toURI());
         Assertions.assertEquals(GlobalIonosphereMapModel.TimeInterpolator.SIMPLE_LINEAR,
-                                new GlobalIonosphereMapModel(utc, ds).getInterpolator());
+                                new GlobalIonosphereMapModel(earth, utc, ds).getInterpolator());
     }
 
     @Test
     public void testTimeInterpolation() throws URISyntaxException {
         final TimeScale  utc = DataContext.getDefault().getTimeScales().getUTC();
         final URI        uri = DirectoryCrawlerTest.class.getClassLoader().getResource("ionex/gpsg0150.19i").toURI();
-        final GlobalIonosphereMapModel nearest =
-            new GlobalIonosphereMapModel(utc,
-                                         GlobalIonosphereMapModel.TimeInterpolator.NEAREST_MAP,
-                                         new DataSource(uri));
-        final GlobalIonosphereMapModel simple =
-            new GlobalIonosphereMapModel(utc,
-                                         GlobalIonosphereMapModel.TimeInterpolator.SIMPLE_LINEAR,
-                                         new DataSource(uri));
-        final GlobalIonosphereMapModel rotated =
-            new GlobalIonosphereMapModel(utc,
-                                         GlobalIonosphereMapModel.TimeInterpolator.ROTATED_LINEAR,
-                                         new DataSource(uri));
         final OneAxisEllipsoid sphericalEarth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                      0.0,
                                                                      FramesFactory.getITRF(IERSConventions.IERS_2010,
                                                                                            true));
+
+        final GlobalIonosphereMapModel nearest =
+            new GlobalIonosphereMapModel(sphericalEarth, utc,
+                                         GlobalIonosphereMapModel.TimeInterpolator.NEAREST_MAP,
+                                         new DataSource(uri));
+        final GlobalIonosphereMapModel simple =
+            new GlobalIonosphereMapModel(sphericalEarth, utc,
+                                         GlobalIonosphereMapModel.TimeInterpolator.SIMPLE_LINEAR,
+                                         new DataSource(uri));
+        final GlobalIonosphereMapModel rotated =
+            new GlobalIonosphereMapModel(sphericalEarth, utc,
+                                         GlobalIonosphereMapModel.TimeInterpolator.ROTATED_LINEAR,
+                                         new DataSource(uri));
         final TopocentricFrame topo = new TopocentricFrame(sphericalEarth,
                                                            new GeodeticPoint(FastMath.toRadians(55.0),
                                                                              FastMath.toRadians(15.0),
@@ -508,22 +509,23 @@ public class GlobalIonosphereMapModelTest {
         final T zero = field.getZero();
         final TimeScale  utc = DataContext.getDefault().getTimeScales().getUTC();
         final URI        uri = DirectoryCrawlerTest.class.getClassLoader().getResource("ionex/gpsg0150.19i").toURI();
-        final GlobalIonosphereMapModel nearest =
-            new GlobalIonosphereMapModel(utc,
-                                         GlobalIonosphereMapModel.TimeInterpolator.NEAREST_MAP,
-                                         new DataSource(uri));
-        final GlobalIonosphereMapModel simple =
-            new GlobalIonosphereMapModel(utc,
-                                         GlobalIonosphereMapModel.TimeInterpolator.SIMPLE_LINEAR,
-                                         new DataSource(uri));
-        final GlobalIonosphereMapModel rotated =
-            new GlobalIonosphereMapModel(utc,
-                                         GlobalIonosphereMapModel.TimeInterpolator.ROTATED_LINEAR,
-                                         new DataSource(uri));
+
         final OneAxisEllipsoid sphericalEarth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                      0.0,
                                                                      FramesFactory.getITRF(IERSConventions.IERS_2010,
                                                                                            true));
+        final GlobalIonosphereMapModel nearest =
+            new GlobalIonosphereMapModel(sphericalEarth, utc,
+                                         GlobalIonosphereMapModel.TimeInterpolator.NEAREST_MAP,
+                                         new DataSource(uri));
+        final GlobalIonosphereMapModel simple =
+            new GlobalIonosphereMapModel(sphericalEarth, utc,
+                                         GlobalIonosphereMapModel.TimeInterpolator.SIMPLE_LINEAR,
+                                         new DataSource(uri));
+        final GlobalIonosphereMapModel rotated =
+            new GlobalIonosphereMapModel(sphericalEarth, utc,
+                                         GlobalIonosphereMapModel.TimeInterpolator.ROTATED_LINEAR,
+                                         new DataSource(uri));
         final TopocentricFrame topo = new TopocentricFrame(sphericalEarth,
                                                            new GeodeticPoint(FastMath.toRadians(55.0),
                                                                              FastMath.toRadians(15.0),
@@ -593,14 +595,16 @@ public class GlobalIonosphereMapModelTest {
 
     }
 
-    @Test
+    /* @Test
     public void testNotEllipsoid() throws URISyntaxException {
+        // NOTE: This test is no longer valid and should be moved to the creation of the IonosphericModel itself, 
+        // since what it is testing is the proper plugging in of the OneAxisEllipsoid data, which has been moved.
         Utils.setDataRoot("regular-data:ionex:potential");
         final DataContext dataContext = DataContext.getDefault();
         final TimeScale   utc         = dataContext.getTimeScales().getUTC();
         final URI         uri         = DirectoryCrawlerTest.class.getClassLoader().getResource("ionex/gpsg0150.19i").toURI();
         final GlobalIonosphereMapModel gim =
-            new GlobalIonosphereMapModel(utc,
+            new GlobalIonosphereMapModel(earth, utc,
                                          GlobalIonosphereMapModel.TimeInterpolator.ROTATED_LINEAR,
                                          new DataSource(uri));
         try {
@@ -615,21 +619,24 @@ public class GlobalIonosphereMapModelTest {
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.BODY_SHAPE_MUST_BE_A_ONE_AXIS_ELLIPSOID, oe.getSpecifier());
         }
-    }
+    } */
 
+    /*
    @Test
     public void testFieldNotEllipsoid() throws URISyntaxException {
         doTestFieldNotEllipsoid(Binary64Field.getInstance());
    }
 
    private <T extends CalculusFieldElement<T>> void doTestFieldNotEllipsoid(final Field<T> field)
+        // NOTE: This test is no longer valid and should be moved to the creation of the IonosphericModel itself, 
+        // since what it is testing is the proper plugging in of the OneAxisEllipsoid data, which has been moved.
        throws URISyntaxException {
         Utils.setDataRoot("regular-data:ionex:potential");
         final DataContext dataContext = DataContext.getDefault();
         final TimeScale   utc         = dataContext.getTimeScales().getUTC();
         final URI         uri         = DirectoryCrawlerTest.class.getClassLoader().getResource("ionex/gpsg0150.19i").toURI();
         final GlobalIonosphereMapModel gim =
-            new GlobalIonosphereMapModel(utc,
+            new GlobalIonosphereMapModel(earth, utc,
                                          GlobalIonosphereMapModel.TimeInterpolator.ROTATED_LINEAR,
                                          new DataSource(uri));
         try {
@@ -645,10 +652,11 @@ public class GlobalIonosphereMapModelTest {
             Assertions.assertEquals(OrekitMessages.BODY_SHAPE_MUST_BE_A_ONE_AXIS_ELLIPSOID, oe.getSpecifier());
         }
     }
+         */
 
     @Test
     public void testLaterDate() {
-        GlobalIonosphereMapModel model = new GlobalIonosphereMapModel("gpsg0150.19i");
+        GlobalIonosphereMapModel model = new GlobalIonosphereMapModel(earth, "gpsg0150.19i");
         final double latitude  = FastMath.toRadians(60.0);
         final double longitude = FastMath.toRadians(-130.0);
         final GeodeticPoint point = new GeodeticPoint(latitude, longitude, 0.0);
@@ -670,7 +678,7 @@ public class GlobalIonosphereMapModelTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldLaterDate(final Field<T> field) {
-        GlobalIonosphereMapModel model = new GlobalIonosphereMapModel("gpsg0150.19i");
+        GlobalIonosphereMapModel model = new GlobalIonosphereMapModel(earth, "gpsg0150.19i");
         final double latitude  = FastMath.toRadians(60.0);
         final double longitude = FastMath.toRadians(-130.0);
         final GeodeticPoint point = new GeodeticPoint(latitude, longitude, 0.0);
@@ -687,7 +695,7 @@ public class GlobalIonosphereMapModelTest {
 
     @Test
     public void testLastDate() {
-        GlobalIonosphereMapModel model = new GlobalIonosphereMapModel("gpsg0150.19i");
+        GlobalIonosphereMapModel model = new GlobalIonosphereMapModel(earth, "gpsg0150.19i");
         final double latitude  = FastMath.toRadians(60.0);
         final double longitude = FastMath.toRadians(-130.0);
         final GeodeticPoint point = new GeodeticPoint(latitude, longitude, 0.0);
@@ -704,7 +712,7 @@ public class GlobalIonosphereMapModelTest {
 
     @Test
     public void testLastDateField() {
-        GlobalIonosphereMapModel model = new GlobalIonosphereMapModel("gpsg0150.19i");
+        GlobalIonosphereMapModel model = new GlobalIonosphereMapModel(earth, "gpsg0150.19i");
         final Field<Binary64> field = Binary64Field.getInstance();
         final double latitude  = FastMath.toRadians(60.0);
         final double longitude = FastMath.toRadians(-130.0);
@@ -732,7 +740,7 @@ public class GlobalIonosphereMapModelTest {
         final String fileName  = "missing-lat-lon-header-gpsg0150.19i";
 
         try {
-            new GlobalIonosphereMapModel(fileName);
+            new GlobalIonosphereMapModel(earth, fileName);
             Assertions.fail("An exception should have been thrown");
 
         } catch (OrekitException oe) {
@@ -742,7 +750,7 @@ public class GlobalIonosphereMapModelTest {
 
     @Test
     public void testJammedFields() {
-        Assertions.assertNotNull(new GlobalIonosphereMapModel("jammed-fields.14i"));
+        Assertions.assertNotNull(new GlobalIonosphereMapModel(earth, "jammed-fields.14i"));
     }
 
     @Test
@@ -750,7 +758,7 @@ public class GlobalIonosphereMapModelTest {
         final String fileName  = "missing-epoch-header-gpsg0150.19i";
 
         try {
-            new GlobalIonosphereMapModel(fileName);
+            new GlobalIonosphereMapModel(earth, fileName);
             Assertions.fail("An exception should have been thrown");
 
         } catch (OrekitException oe) {

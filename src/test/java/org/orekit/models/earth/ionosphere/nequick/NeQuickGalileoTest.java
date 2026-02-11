@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -51,6 +51,9 @@ import org.orekit.utils.PVCoordinates;
  * Open Service-Ionospheric Correction Algorithm for Galileo Single Frequency Users. 1.2."
  */
 public class NeQuickGalileoTest {
+    
+    /** Earth model. */
+    private OneAxisEllipsoid earthBodyShape;
 
     private double[] medium;
     private double[] high;
@@ -64,14 +67,16 @@ public class NeQuickGalileoTest {
         medium = new double[] {
             121.129893, 0.351254133, 0.0134635348
         };
-
+        earthBodyShape = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                    Constants.WGS84_EARTH_FLATTENING,
+                                                    FramesFactory.getITRF(IERSConventions.IERS_2010, true));
     }
 
     @Test
     public void testHighSolarActivityGalileo() {
 
         // Model
-        final NeQuickGalileo model = new NeQuickGalileo(high);
+        final NeQuickGalileo model = new NeQuickGalileo(earthBodyShape, high);
 
         // Getters
         Assertions.assertEquals(236.831641,    model.getAlpha()[0], 1.0e-6);
@@ -102,7 +107,7 @@ public class NeQuickGalileoTest {
         final T zero = field.getZero();
 
         // Model
-        final NeQuickGalileo model = new NeQuickGalileo(high);
+        final NeQuickGalileo model = new NeQuickGalileo(earthBodyShape, high);
 
         // Geodetic points
         final FieldGeodeticPoint<T> recP = new FieldGeodeticPoint<>(zero.newInstance(FastMath.toRadians(82.49)),
@@ -124,7 +129,7 @@ public class NeQuickGalileoTest {
     public void testMediumSolarActivityGalileo() {
 
         // Model
-        final NeQuickGalileo model = new NeQuickGalileo(medium);
+        final NeQuickGalileo model = new NeQuickGalileo(earthBodyShape, medium);
 
         // Geodetic points
         final GeodeticPoint recP = new GeodeticPoint(FastMath.toRadians(-31.80), FastMath.toRadians(115.89), 12.78);
@@ -149,7 +154,7 @@ public class NeQuickGalileoTest {
         final T zero = field.getZero();
 
         // Model
-        final NeQuickGalileo model = new NeQuickGalileo(medium);
+        final NeQuickGalileo model = new NeQuickGalileo(earthBodyShape, medium);
 
         // Geodetic points
         final FieldGeodeticPoint<T> recP = new FieldGeodeticPoint<>(zero.newInstance(FastMath.toRadians(-31.80)),
@@ -171,7 +176,7 @@ public class NeQuickGalileoTest {
     public void testDelay() {
 
         // Model
-        final NeQuickGalileo model = new NeQuickGalileo(medium);
+        final NeQuickGalileo model = new NeQuickGalileo(earthBodyShape, medium);
 
         // Geodetic points
         final GeodeticPoint recP = new GeodeticPoint(FastMath.toRadians(-31.80), FastMath.toRadians(115.89), 12.78);
@@ -180,20 +185,16 @@ public class NeQuickGalileoTest {
         // Date
         final AbsoluteDate date = new AbsoluteDate(2018, 4, 2, 16, 0, 0, TimeScalesFactory.getUTC());
 
-        // Earth
-        final OneAxisEllipsoid ellipsoid = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                Constants.WGS84_EARTH_FLATTENING,
-                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         // Satellite position
-        final Vector3D satPosInITRF    = ellipsoid.transform(satP);
-        final Vector3D satPosInEME2000 = ellipsoid.getBodyFrame().getStaticTransformTo(FramesFactory.getEME2000(), date).transformPosition(satPosInITRF);
+        final Vector3D satPosInITRF    = earthBodyShape.transform(satP);
+        final Vector3D satPosInEME2000 = earthBodyShape.getBodyFrame().getStaticTransformTo(FramesFactory.getEME2000(), date).transformPosition(satPosInITRF);
 
         // Spacecraft state
         final PVCoordinates   pv      = new PVCoordinates(satPosInEME2000, new Vector3D(1.0, 1.0, 1.0));
         final Orbit           orbit   = new CartesianOrbit(pv, FramesFactory.getEME2000(), date, Constants.WGS84_EARTH_MU);
         final SpacecraftState state   = new SpacecraftState(orbit);
 
-        final double delay = model.pathDelay(state, new TopocentricFrame(ellipsoid, recP, null),
+        final double delay = model.pathDelay(state, new TopocentricFrame(earthBodyShape, recP, null),
                                              PredefinedGnssSignal.G01.getFrequency(), model.getParameters());
        
         // Verify
@@ -212,7 +213,7 @@ public class NeQuickGalileoTest {
         final T one  = field.getOne();
 
         // Model
-        final NeQuickGalileo model = new NeQuickGalileo(medium);
+        final NeQuickGalileo model = new NeQuickGalileo(earthBodyShape, medium);
 
         // Geodetic points
         final double recLat = FastMath.toRadians(-31.80);
@@ -225,20 +226,16 @@ public class NeQuickGalileoTest {
         // Date
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2018, 4, 2, 16, 0, 0, TimeScalesFactory.getUTC());
 
-        // Earth
-        final OneAxisEllipsoid ellipsoid = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                Constants.WGS84_EARTH_FLATTENING,
-                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         // Satellite position
-        final FieldVector3D<T> satPosInITRF    = ellipsoid.transform(satP);
-        final FieldVector3D<T> satPosInEME2000 = ellipsoid.getBodyFrame().getStaticTransformTo(FramesFactory.getEME2000(), date).transformPosition(satPosInITRF);
+        final FieldVector3D<T> satPosInITRF    = earthBodyShape.transform(satP);
+        final FieldVector3D<T> satPosInEME2000 = earthBodyShape.getBodyFrame().getStaticTransformTo(FramesFactory.getEME2000(), date).transformPosition(satPosInITRF);
 
         // Spacecraft state
         final FieldPVCoordinates<T>   pv      = new FieldPVCoordinates<>(satPosInEME2000, new FieldVector3D<>(one, one, one));
         final FieldOrbit<T>           orbit   = new FieldCartesianOrbit<>(pv, FramesFactory.getEME2000(), date, zero.newInstance(Constants.WGS84_EARTH_MU));
         final FieldSpacecraftState<T> state   = new FieldSpacecraftState<>(orbit);
 
-        final T delay = model.pathDelay(state, new TopocentricFrame(ellipsoid, recP, null),
+        final T delay = model.pathDelay(state, new TopocentricFrame(earthBodyShape, recP, null),
                                         PredefinedGnssSignal.G01.getFrequency(), model.getParameters(field));
        
         // Verify
@@ -249,7 +246,7 @@ public class NeQuickGalileoTest {
     public void testAntiMeridian() {
 
         // Model
-        final NeQuickGalileo model = new NeQuickGalileo(medium);
+        final NeQuickGalileo model = new NeQuickGalileo(earthBodyShape, medium);
 
         // Date
         final AbsoluteDate date = new AbsoluteDate(2018,  11,  2, 16, 0, 0, TimeScalesFactory.getUTC());
@@ -272,7 +269,7 @@ public class NeQuickGalileoTest {
         final T zero = field.getZero();
 
         // Model
-        final NeQuickGalileo model = new NeQuickGalileo(medium);
+        final NeQuickGalileo model = new NeQuickGalileo(earthBodyShape, medium);
 
         // Date
         final FieldAbsoluteDate<T> date =
@@ -295,7 +292,7 @@ public class NeQuickGalileoTest {
     public void testZenith() {
 
         // Model
-        final NeQuickGalileo model = new NeQuickGalileo(medium);
+        final NeQuickGalileo model = new NeQuickGalileo(earthBodyShape, medium);
 
         // Date
         final AbsoluteDate date = new AbsoluteDate(2018,  4,  2, 16, 0, 0, TimeScalesFactory.getUTC());
@@ -318,7 +315,7 @@ public class NeQuickGalileoTest {
         final T zero = field.getZero();
 
         // Model
-        final NeQuickGalileo model = new NeQuickGalileo(medium);
+        final NeQuickGalileo model = new NeQuickGalileo(earthBodyShape, medium);
 
         // Date
         final FieldAbsoluteDate<T> date =

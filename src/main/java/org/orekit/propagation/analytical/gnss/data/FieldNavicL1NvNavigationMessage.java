@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,6 +33,16 @@ public class FieldNavicL1NvNavigationMessage<T extends CalculusFieldElement<T>>
     /** Reference signal flag. */
     private int referenceSignalFlag;
 
+    /** User Range Accuracy Index.
+     * @since 14.0
+     */
+    private int urai;
+
+    /** L1 SPS health.
+     * @since 14.0
+     */
+    private int l1SpsHealth;
+
     /** Estimated group delay differential TGD for S-L5 correction. */
     private T tgdSL5;
 
@@ -55,6 +65,8 @@ public class FieldNavicL1NvNavigationMessage<T extends CalculusFieldElement<T>>
     public FieldNavicL1NvNavigationMessage(final Field<T> field, final NavICL1NvNavigationMessage original) {
         super(field, original);
         setReferenceSignalFlag(original.getReferenceSignalFlag());
+        setUrai(original.getUrai());
+        setL1SpsHealth(original.getL1SpsHealth());
         setTGDSL5(field.getZero().newInstance(original.getTGDSL5()));
         setIscSL1P(field.getZero().newInstance(original.getIscSL1P()));
         setIscL1DL1P(field.getZero().newInstance(original.getIscL1DL1P()));
@@ -71,6 +83,8 @@ public class FieldNavicL1NvNavigationMessage<T extends CalculusFieldElement<T>>
                                                                                final FieldNavicL1NvNavigationMessage<V> original) {
         super(converter, original);
         setReferenceSignalFlag(original.getReferenceSignalFlag());
+        setUrai(original.getUrai());
+        setL1SpsHealth(original.getL1SpsHealth());
         setTGDSL5(converter.apply(original.getTGDSL5()));
         setIscSL1P(converter.apply(original.getIscSL1P()));
         setIscL1DL1P(converter.apply(original.getIscL1DL1P()));
@@ -104,6 +118,38 @@ public class FieldNavicL1NvNavigationMessage<T extends CalculusFieldElement<T>>
      */
     public int getReferenceSignalFlag() {
         return referenceSignalFlag;
+    }
+
+    /** Set User Range Accuracy Index.
+     * @param urai User Range Accuracy Index
+     * @since 14.0
+     */
+    public void setUrai(final int urai) {
+        this.urai = urai;
+    }
+
+    /** Get User Range Accuracy Index.
+     * @return User Range Accuracy Index
+     * @since 14.0
+     */
+    public int getUrai() {
+        return urai;
+    }
+
+    /** Set L1 SPS health.
+     * @param l1SpsHealth L1 SPS health
+     * @since 14.0
+     */
+    public void setL1SpsHealth(final int l1SpsHealth) {
+        this.l1SpsHealth = l1SpsHealth;
+    }
+
+    /** Get L1 SPS health.
+     * @return L1 SPS health
+     * @since 14.0
+     */
+    public int getL1SpsHealth() {
+        return l1SpsHealth;
     }
 
     /**

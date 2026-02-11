@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,11 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.orekit.estimation.measurements.signal.FieldSignalTravelTimeAdjustableEmitter;
+import org.orekit.estimation.measurements.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
@@ -70,10 +73,13 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Maxime Journot
  * @since 8.0
  */
-public class Range extends GroundReceiverMeasurement<Range> {
+public class Range extends AbstractMeasurement<Range> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "Range";
+
+    /** Ground station that receives signal from satellite. */
+    private final GroundStation station;
 
     /** Simple constructor.
      * @param station ground station from which measurement is performed
@@ -88,7 +94,17 @@ public class Range extends GroundReceiverMeasurement<Range> {
     public Range(final GroundStation station, final boolean twoWay, final AbsoluteDate date,
                  final double range, final double sigma, final double baseWeight,
                  final ObservableSatellite satellite) {
-        super(station, twoWay, date, range, sigma, baseWeight, satellite);
+        super(date, twoWay, range, sigma, baseWeight, Collections.singletonList(satellite));
+        addParametersDrivers(station.getParametersDrivers());
+
+        this.station = station;
+    }
+
+    /** Get receiving ground station.
+     * @return ground station
+     */
+    public final GroundStation getStation() {
+        return station;
     }
 
     /** {@inheritDoc} */
@@ -97,7 +113,8 @@ public class Range extends GroundReceiverMeasurement<Range> {
                                                                                       final int evaluation,
                                                                                       final SpacecraftState[] states) {
 
-        final GroundReceiverCommonParametersWithoutDerivatives common = computeCommonParametersWithout(states[0]);
+        final CommonParametersWithoutDerivatives common =
+            getStation().computeRemoteParametersWithout(states, getSatellites().get(0), getDate(), false);
         final TimeStampedPVCoordinates transitPV = common.getTransitState().getPVCoordinates();
 
         // prepare the evaluation
@@ -107,11 +124,15 @@ public class Range extends GroundReceiverMeasurement<Range> {
         if (isTwoWay()) {
 
             // Station at transit state date (derivatives of tauD taken into account)
-            final TimeStampedPVCoordinates stationAtTransitDate = common.getStationDownlink().shiftedBy(-common.getTauD());
+            final TimeStampedPVCoordinates stationAtTransitDate = common.getRemotePV().shiftedBy(-common.getTauD());
             // Uplink delay
-            final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = new SignalTravelTimeAdjustableEmitter(new AbsolutePVCoordinates(common.getState().getFrame(), stationAtTransitDate));
-            final double tauU = signalTimeOfFlight.compute(stationAtTransitDate.getDate(), transitPV.getPosition(), transitPV.getDate(), common.getState().getFrame());
-            final TimeStampedPVCoordinates stationUplink = common.getStationDownlink().shiftedBy(-common.getTauD() - tauU);
+            final SignalTravelTimeAdjustableEmitter signalTimeOfFlight =
+                getSignalTravelTimeModel().getAdjustableEmitterComputer(new AbsolutePVCoordinates(common.getState().getFrame(), stationAtTransitDate));
+            final double tauU = signalTimeOfFlight.computeDelay(stationAtTransitDate.getDate(),
+                                                           transitPV.getPosition(),
+                                                           transitPV.getDate(),
+                                                           common.getState().getFrame());
+            final TimeStampedPVCoordinates stationUplink = common.getRemotePV().shiftedBy(-common.getTauD() - tauU);
 
             // Prepare the evaluation
             estimated = new EstimatedMeasurementBase<>(this, iteration, evaluation,
@@ -120,7 +141,7 @@ public class Range extends GroundReceiverMeasurement<Range> {
                                                         }, new TimeStampedPVCoordinates[] {
                                                             stationUplink,
                                                             transitPV,
-                                                            common.getStationDownlink()
+                                                            common.getRemotePV()
                                                         });
 
             // Range value
@@ -135,7 +156,7 @@ public class Range extends GroundReceiverMeasurement<Range> {
                                                            common.getTransitState()
                                                        }, new TimeStampedPVCoordinates[] {
                                                            transitPV,
-                                                           common.getStationDownlink()
+                                                           common.getRemotePV()
                                                        });
 
             // Clock offsets
@@ -151,7 +172,6 @@ public class Range extends GroundReceiverMeasurement<Range> {
         estimated.setEstimatedValue(range);
 
         return estimated;
-
     }
 
     /** {@inheritDoc} */
@@ -170,7 +190,10 @@ public class Range extends GroundReceiverMeasurement<Range> {
         //  - 0..2 - Position of the spacecraft in inertial frame
         //  - 3..5 - Velocity of the spacecraft in inertial frame
         //  - 6..n - measurements parameters (clock offset, station offsets, pole, prime meridian, sat clock offset...)
-        final GroundReceiverCommonParametersWithDerivatives common = computeCommonParametersWithDerivatives(state);
+
+        final CommonParametersWithDerivatives common = getStation().
+            computeRemoteParametersWith(states, getSatellites().get(0), getDate(), getParametersDrivers());
+
         final int nbParams = common.getTauD().getFreeParameters();
         final TimeStampedFieldPVCoordinates<Gradient> transitPV = common.getTransitPV();
 
@@ -182,13 +205,15 @@ public class Range extends GroundReceiverMeasurement<Range> {
 
             // Station at transit state date (derivatives of tauD taken into account)
             final TimeStampedFieldPVCoordinates<Gradient> stationAtTransitDate =
-                            common.getStationDownlink().shiftedBy(common.getTauD().negate());
+                            common.getRemotePV().shiftedBy(common.getTauD().negate());
             // Uplink delay
-            final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer = new FieldSignalTravelTimeAdjustableEmitter<>(new FieldAbsolutePVCoordinates<>(state.getFrame(), stationAtTransitDate));
+            final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer = getSignalTravelTimeModel()
+                    .getFieldAdjustableEmitterComputer(transitPV.getDate().getField(),
+                            new FieldAbsolutePVCoordinates<>(state.getFrame(), stationAtTransitDate));
             final Gradient tauU =
-                            fieldComputer.compute(stationAtTransitDate.getDate(), transitPV.getPosition(), transitPV.getDate(), state.getFrame());
+                fieldComputer.computeDelay(stationAtTransitDate.getDate(), transitPV.getPosition(), transitPV.getDate(), state.getFrame());
             final TimeStampedFieldPVCoordinates<Gradient> stationUplink =
-                            common.getStationDownlink().shiftedBy(-common.getTauD().getValue() - tauU.getValue());
+                common.getRemotePV().shiftedBy(-common.getTauD().getValue() - tauU.getValue());
 
             // Prepare the evaluation
             estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
@@ -197,7 +222,7 @@ public class Range extends GroundReceiverMeasurement<Range> {
                                                             }, new TimeStampedPVCoordinates[] {
                                                                 stationUplink.toTimeStampedPVCoordinates(),
                                                                 transitPV.toTimeStampedPVCoordinates(),
-                                                                common.getStationDownlink().toTimeStampedPVCoordinates()
+                                                                common.getRemotePV().toTimeStampedPVCoordinates()
                                                             });
 
             // Range value
@@ -212,7 +237,7 @@ public class Range extends GroundReceiverMeasurement<Range> {
                                 common.getTransitState()
                             }, new TimeStampedPVCoordinates[] {
                                 transitPV.toTimeStampedPVCoordinates(),
-                                common.getStationDownlink().toTimeStampedPVCoordinates()
+                                common.getRemotePV().toTimeStampedPVCoordinates()
                             });
 
             // Clock offsets

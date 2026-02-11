@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,9 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.Arrays;
+import java.util.Map;
+
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolver;
@@ -23,6 +26,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
+import org.orekit.estimation.measurements.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
@@ -32,9 +36,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.Arrays;
-import java.util.Map;
 /**
  * Class creating a list of turn-around range measurement
  * @author Maxime Journot
@@ -184,7 +185,7 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
                     // Here the state date is known. Thus we can use the function "signalTimeOfFlight"
                     // of the AbstractMeasurement class
                     final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = new SignalTravelTimeAdjustableEmitter(new AbsolutePVCoordinates(inertial, primaryStationAtReception));
-                    final double primaryTauU = signalTimeOfFlight.compute(primaryStationAtReception.getDate(), P1, T1, inertial);
+                    final double primaryTauU = signalTimeOfFlight.computeDelay(primaryStationAtReception.getDate(), P1, T1, inertial);
 
                     final AbsoluteDate primaryEmissionDate   = T1.shiftedBy(-primaryTauU);
 

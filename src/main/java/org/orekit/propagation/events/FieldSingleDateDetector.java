@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Romain Serra
+/* Copyright 2022-2026 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,8 @@ package org.orekit.propagation.events;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.functions.SingleDateEventFunction;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.time.AbsoluteDate;
@@ -40,14 +42,15 @@ public class FieldSingleDateDetector<T extends CalculusFieldElement<T>>
     private final AbsoluteDate date;
 
     /** Full constructor.
+     * @param eventFunction event function
      * @param detectionSettings event detection settings
      * @param eventHandler event handler
-     * @param date event date
      */
-    public FieldSingleDateDetector(final FieldEventDetectionSettings<T> detectionSettings, final FieldEventHandler<T> eventHandler,
-                                   final AbsoluteDate date) {
-        super(detectionSettings, eventHandler);
-        this.date = date;
+    public FieldSingleDateDetector(final SingleDateEventFunction eventFunction,
+                                   final FieldEventDetectionSettings<T> detectionSettings,
+                                   final FieldEventHandler<T> eventHandler) {
+        super(eventFunction, detectionSettings, eventHandler);
+        this.date = eventFunction.getDate();
     }
 
     /** Build a new instance with default detection settings and handler (stop on event).
@@ -55,28 +58,22 @@ public class FieldSingleDateDetector<T extends CalculusFieldElement<T>>
      * @param date event date
      */
     public FieldSingleDateDetector(final Field<T> field, final AbsoluteDate date) {
-        this(new FieldEventDetectionSettings<>(FieldDateDetector.DEFAULT_MAX_CHECK,
+        this(new SingleDateEventFunction(date), new FieldEventDetectionSettings<>(FieldDateDetector.DEFAULT_MAX_CHECK,
                 field.getZero().newInstance(FieldDateDetector.DEFAULT_THRESHOLD),
-                DEFAULT_MAX_ITER), new FieldStopOnEvent<>(), date);
+                DEFAULT_MAX_ITER), new FieldStopOnEvent<>());
     }
 
     /** {@inheritDoc} */
     @Override
     protected FieldSingleDateDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                                 final FieldEventHandler<T> newHandler) {
-        return new FieldSingleDateDetector<>(detectionSettings, newHandler, date);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean dependsOnTimeOnly() {
-        return true;
+        return new FieldSingleDateDetector<>((SingleDateEventFunction) getEventFunction(), detectionSettings, newHandler);
     }
 
     /** {@inheritDoc} */
     @Override
     public T g(final FieldSpacecraftState<T> s) {
-        return s.durationFrom(date);
+        return getEventFunction().value(s);
     }
 
     /** {@inheritDoc} */
@@ -97,6 +94,12 @@ public class FieldSingleDateDetector<T extends CalculusFieldElement<T>>
      * @return new detector
      */
     public FieldSingleDateDetector<T> withDate(final AbsoluteDate newDate) {
-        return new FieldSingleDateDetector<>(getDetectionSettings(), getHandler(), newDate);
+        return new FieldSingleDateDetector<>(new SingleDateEventFunction(newDate), getDetectionSettings(), getHandler());
+    }
+
+    @Override
+    public SingleDateDetector toEventDetector(final EventHandler eventHandler) {
+        return new SingleDateDetector((SingleDateEventFunction) getEventFunction(),
+                getDetectionSettings().toEventDetectionSettings(), eventHandler);
     }
 }

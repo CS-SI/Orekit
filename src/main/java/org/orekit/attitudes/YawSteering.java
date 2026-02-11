@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -70,8 +70,7 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 public class YawSteering extends GroundPointingAttitudeModifier implements AttitudeProviderModifier {
 
     /** Pointing axis. */
-    private static final PVCoordinates PLUS_Z =
-            new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO, Vector3D.ZERO);
+    private static final PVCoordinates PLUS_Z = new PVCoordinates(Vector3D.PLUS_K);
 
     /** Sun motion model. */
     private final ExtendedPositionProvider sun;

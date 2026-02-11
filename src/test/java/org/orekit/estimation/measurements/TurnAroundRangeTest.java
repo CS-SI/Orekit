@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -156,7 +156,7 @@ public class TurnAroundRangeTest {
         double refErrorQMMedian = 1.3e-8;
         double refErrorQMMean   = 8.9e-8;
         double refErrorQMMax    = 5.1e-6;
-        double refErrorQSMedian = 3.4e-8;
+        double refErrorQSMedian = 3.6e-8;
         double refErrorQSMean   = 1.9e-5;
         double refErrorQSMax    = 2.2e-4;
         this.genericTestParameterDerivatives(isModifier, printResults,
@@ -174,7 +174,7 @@ public class TurnAroundRangeTest {
         //Context context = EstimationTestUtils.geoStationnaryContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -272,7 +272,7 @@ public class TurnAroundRangeTest {
         //Context context = EstimationTestUtils.geoStationnaryContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range2 measurements
@@ -404,7 +404,7 @@ public class TurnAroundRangeTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect TAR measurements

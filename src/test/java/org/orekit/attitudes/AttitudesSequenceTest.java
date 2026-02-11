@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -282,7 +282,7 @@ class AttitudesSequenceTest {
         // as we have 2 switch events (even if they share the same underlying event detector),
         // and these events are triggered at both eclipse entry and exit, we get 8
         // raw events on 2 orbits
-        Assertions.assertEquals(10, logger.getLoggedEvents().size());
+        Assertions.assertEquals(8, logger.getLoggedEvents().size());
 
         // we have 4 attitudes switch on 2 orbits, 2 of each type
         Assertions.assertEquals(2, dayToNightHandler.dates.size());
@@ -643,7 +643,7 @@ class AttitudesSequenceTest {
         // THEN
         Assertions.assertEquals(1, switches1.size());
         Assertions.assertNotSame(switches1, switches2);
-        Assertions.assertFalse(switches1.get(0).dependsOnMainVariablesOnly());
+        Assertions.assertFalse(switches1.get(0).getEventFunction().dependsOnMainVariablesOnly());
     }
 
     private static class Handler implements AttitudeSwitchHandler {

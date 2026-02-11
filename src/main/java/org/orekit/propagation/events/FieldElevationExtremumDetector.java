@@ -1,4 +1,4 @@
-/* Copyright 2022-2025 Luc Maisonobe
+/* Copyright 2022-2026 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,12 +18,11 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.FieldEventSlopeFilter;
-import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.functions.ElevationExtremumEventFunction;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
 
@@ -71,35 +70,39 @@ public class FieldElevationExtremumDetector<T extends CalculusFieldElement<T>>
              topo);
     }
 
+    /** Constructor with input detection settings and handler.
+     * @param detectionSettings event detection settings
+     * @param handler event handler to call at event occurrences
+     * @param topo topocentric frame centered on ground point
+     */
+    public FieldElevationExtremumDetector(final FieldEventDetectionSettings<T> detectionSettings,
+                                          final FieldEventHandler<T> handler,
+                                          final TopocentricFrame topo) {
+        this(new ElevationExtremumEventFunction(topo), detectionSettings, handler);
+    }
+
     /** Protected constructor with full parameters.
      * <p>
      * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
+     * @param eventFunction event function
      * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
-     * @param topo topocentric frame centered on ground point
      */
-    protected FieldElevationExtremumDetector(final FieldEventDetectionSettings<T> detectionSettings,
-                                             final FieldEventHandler<T> handler,
-                                             final TopocentricFrame topo) {
-        super(detectionSettings, handler, topo);
+    protected FieldElevationExtremumDetector(final ElevationExtremumEventFunction eventFunction,
+                                             final FieldEventDetectionSettings<T> detectionSettings,
+                                             final FieldEventHandler<T> handler) {
+        super(eventFunction, detectionSettings, handler, eventFunction.getTopocentricFrame());
     }
 
     /** {@inheritDoc} */
     @Override
     protected FieldElevationExtremumDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                                        final FieldEventHandler<T> newHandler) {
-        return new FieldElevationExtremumDetector<>(detectionSettings, newHandler, getTopocentricFrame());
-    }
-
-    /** Get the elevation value.
-     * @param s the current state information: date, kinematics, attitude
-     * @return spacecraft elevation
-     */
-    public T getElevation(final FieldSpacecraftState<T> s) {
-        return getTopocentricFrame().getElevation(s.getPosition(), s.getFrame(), s.getDate());
+        return new FieldElevationExtremumDetector<>((ElevationExtremumEventFunction) getEventFunction(),
+                detectionSettings, newHandler);
     }
 
     /** Compute the value of the detection function.
@@ -109,20 +112,14 @@ public class FieldElevationExtremumDetector<T extends CalculusFieldElement<T>>
      * @param s the current state information: date, kinematics, attitude
      * @return spacecraft elevation first time derivative
      */
+    @Override
     public T g(final FieldSpacecraftState<T> s) {
-
-        // get position, velocity acceleration of spacecraft in topocentric frame
-        final FieldStaticTransform<FieldUnivariateDerivative1<T>> inertToTopo = s.getFrame().getStaticTransformTo(getTopocentricFrame(),
-                s.getDate().toFUD1Field());
-        final FieldVector3D<FieldUnivariateDerivative1<T>> positionInert = s.getPVCoordinates().toUnivariateDerivative1Vector();
-        final FieldVector3D<FieldUnivariateDerivative1<T>> posTopo = inertToTopo.transformPosition(positionInert);
-
-        // compute elevation and its first time derivative
-        final FieldUnivariateDerivative1<T> elevation = posTopo.getDelta();
-
-        // return elevation first time derivative
-        return elevation.getFirstDerivative();
-
+        return getEventFunction().value(s);
     }
 
+    @Override
+    public ElevationExtremumDetector toEventDetector(final EventHandler eventHandler) {
+        return new ElevationExtremumDetector((ElevationExtremumEventFunction) getEventFunction(),
+                getDetectionSettings().toEventDetectionSettings(), eventHandler);
+    }
 }

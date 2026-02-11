@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2026 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -160,7 +160,8 @@ class FieldDSSTPropagatorTest {
 
         // The purpose is not verifying propagated values, but to check that no exception occurred
         Assertions.assertEquals(0.0, propagated.getDate().durationFrom(orbitEpoch.shiftedBy(20.0 * Constants.JULIAN_DAY)).getReal(), Double.MIN_VALUE);
-        Assertions.assertEquals(4.216464862956647E7, propagated.getOrbit().getA().getReal(), Double.MIN_VALUE);
+        MatcherAssert.assertThat(propagated.getOrbit().getA().getReal(),
+                OrekitMatchers.numberCloseTo(4.216464862956647E7, Double.MIN_VALUE, 2e-14));
 
     }
 

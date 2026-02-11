@@ -1,0 +1,88 @@
+/* Copyright 2022-2026 Romain Serra
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.orekit.propagation.events;
+
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
+import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.functions.EventFunction;
+import org.orekit.propagation.events.functions.PlaneCrossingFunction;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
+import org.orekit.propagation.events.handlers.FieldStopOnEvent;
+import org.orekit.propagation.events.handlers.StopOnEvent;
+import org.orekit.time.AbsoluteDate;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class FieldPlaneCrossingDetectorTest {
+
+    @Test
+    void testG() {
+        // GIVEN
+        final Frame frame = FramesFactory.getGCRF();
+        final PlaneCrossingFunction crossingFunction = new PlaneCrossingFunction(Vector3D.PLUS_J, frame);
+        final FieldPlaneCrossingDetector<Binary64> crossingDetector = new FieldPlaneCrossingDetector<>(new FieldEventDetectionSettings<>(
+                Binary64Field.getInstance(), EventDetectionSettings.getDefaultEventDetectionSettings()),
+                new FieldContinueOnEvent<>(), crossingFunction);
+        final SpacecraftState state = new SpacecraftState(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH));
+        final FieldSpacecraftState<Binary64> fieldState = new FieldSpacecraftState<>(Binary64Field.getInstance(), state);
+        // WHEN
+        final Binary64 g = crossingDetector.g(fieldState);
+        // THEN
+        assertEquals(crossingFunction.value(fieldState), g);
+    }
+
+    @Test
+    void testCreate() {
+        // GIVEN
+        final Frame frame = FramesFactory.getGCRF();
+        final PlaneCrossingFunction crossingFunction = new PlaneCrossingFunction(Vector3D.PLUS_I, frame);
+        final FieldPlaneCrossingDetector<Binary64> crossingDetector = new FieldPlaneCrossingDetector<>(new FieldEventDetectionSettings<>(
+                Binary64Field.getInstance(), EventDetectionSettings.getDefaultEventDetectionSettings()),
+                new FieldContinueOnEvent<>(), crossingFunction);
+        final FieldStopOnEvent<Binary64> expectedHandler = new FieldStopOnEvent<>();
+        // WHEN
+        final FieldPlaneCrossingDetector<Binary64> otherDetector = crossingDetector.withHandler(expectedHandler);
+        // THEN
+        final EventFunction actualFunction = otherDetector.getEventFunction();
+        assertEquals(crossingFunction, actualFunction);
+        assertEquals(expectedHandler, otherDetector.getHandler());
+    }
+
+    @Test
+    void testToEventFunction() {
+        // GIVEN
+        final Frame frame = FramesFactory.getGCRF();
+        final PlaneCrossingFunction crossingFunction = new PlaneCrossingFunction(Vector3D.PLUS_K, frame);
+        final FieldPlaneCrossingDetector<Binary64> fieldDetector = new FieldPlaneCrossingDetector<>(new FieldEventDetectionSettings<>(
+                Binary64Field.getInstance(), EventDetectionSettings.getDefaultEventDetectionSettings()),
+                new FieldContinueOnEvent<>(), crossingFunction);
+        final EventHandler expectedHandler = new StopOnEvent();
+        // WHEN
+        final PlaneCrossingDetector detector = fieldDetector.toEventDetector(expectedHandler);
+        // THEN
+        final EventFunction actualFunction = detector.getEventFunction();
+        assertEquals(crossingFunction, actualFunction);
+        assertEquals(expectedHandler, detector.getHandler());
+    }
+}
