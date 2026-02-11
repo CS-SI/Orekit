@@ -683,8 +683,8 @@ public class FieldAngularCoordinatesTest {
         PVCoordinates u2 = new PVCoordinates(new Vector3D( 0.23723907259910096,   0.9628700806685033,    -0.1288364474275361),
                                              new Vector3D(-7.98741002062555E-24,  2.4979687659429984E-24, 3.9607863426704016E-24),
                                              new Vector3D(-3.150541868418562E-23, 9.856329862034835E-24,  1.5648124883326986E-23));
-        PVCoordinates v1 = new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO, Vector3D.ZERO);
-        PVCoordinates v2 = new PVCoordinates(Vector3D.MINUS_J, Vector3D.ZERO, Vector3D.ZERO);
+        PVCoordinates v1 = new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO);
+        PVCoordinates v2 = new PVCoordinates(Vector3D.MINUS_J, Vector3D.ZERO);
         AngularCoordinates ac = new AngularCoordinates(u1, u2, v1, v2, 1.0e-9);
         PVCoordinates v1Computed = ac.applyTo(u1);
         PVCoordinates v2Computed = ac.applyTo(u2);

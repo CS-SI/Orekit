@@ -16,6 +16,10 @@
  */
 package org.orekit.attitudes;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -57,12 +61,8 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
-
-public class TabulatedLofOffsetTest {
+class TabulatedLofOffsetTest {
 
     // Computation date
     private AbsoluteDate date;
@@ -190,7 +190,7 @@ public class TabulatedLofOffsetTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         try {
 
             Utils.setDataRoot("regular-data");
@@ -226,7 +226,7 @@ public class TabulatedLofOffsetTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         date = null;
         itrf = null;
         earth = null;

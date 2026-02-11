@@ -16,6 +16,10 @@
  */
 package org.orekit;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
@@ -23,8 +27,6 @@ import org.hamcrest.SelfDescribing;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.hamcrest.TypeSafeMatcher;
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.FieldElement;
-import org.hipparchus.dfp.Dfp;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
@@ -35,11 +37,6 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.array;
 

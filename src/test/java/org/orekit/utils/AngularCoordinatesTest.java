@@ -258,7 +258,7 @@ public class AngularCoordinatesTest {
     @Test
     public void testZeroRate() {
         AngularCoordinates ac =
-                new AngularCoordinates(new Rotation(0.48, 0.64, 0.36, 0.48, false), Vector3D.ZERO, Vector3D.ZERO);
+                new AngularCoordinates(new Rotation(0.48, 0.64, 0.36, 0.48, false), Vector3D.ZERO);
         Assertions.assertEquals(Vector3D.ZERO, ac.getRotationRate());
         double dt = 10.0;
         AngularCoordinates shifted = ac.shiftedBy(dt);
@@ -472,7 +472,7 @@ public class AngularCoordinatesTest {
     public void testRodriguesSpecialCases() {
 
         // identity
-        double[][] identity = new AngularCoordinates(Rotation.IDENTITY, Vector3D.ZERO, Vector3D.ZERO).getModifiedRodrigues(1.0);
+        double[][] identity = new AngularCoordinates(Rotation.IDENTITY, Vector3D.ZERO).getModifiedRodrigues(1.0);
         for (double[] row : identity) {
             for (double element : row) {
                 Assertions.assertEquals(0.0, element, Precision.SAFE_MIN);
@@ -487,7 +487,7 @@ public class AngularCoordinatesTest {
         for (int i = 0; i < 100; ++i) {
             Vector3D axis = randomVector(random, 1.0);
             AngularCoordinates original = new AngularCoordinates(new Rotation(axis, FastMath.PI, RotationConvention.VECTOR_OPERATOR),
-                                                                 Vector3D.ZERO, Vector3D.ZERO);
+                                                                 Vector3D.ZERO);
             AngularCoordinates rebuilt = AngularCoordinates.createFromModifiedRodrigues(original.getModifiedRodrigues(1.0));
             Assertions.assertEquals(FastMath.PI, rebuilt.getRotation().getAngle(), 1.0e-15);
             Assertions.assertEquals(0.0, FastMath.sin(Vector3D.angle(axis, rebuilt.getRotation().getAxis(RotationConvention.VECTOR_OPERATOR))), 1.0e-15);
@@ -606,8 +606,8 @@ public class AngularCoordinatesTest {
         PVCoordinates u2 = new PVCoordinates(new Vector3D( 0.23723907259910096,   0.9628700806685033,    -0.1288364474275361),
                                              new Vector3D(-7.98741002062555E-24,  2.4979687659429984E-24, 3.9607863426704016E-24),
                                              new Vector3D(-3.150541868418562E-23, 9.856329862034835E-24,  1.5648124883326986E-23));
-        PVCoordinates v1 = new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO, Vector3D.ZERO);
-        PVCoordinates v2 = new PVCoordinates(Vector3D.MINUS_J, Vector3D.ZERO, Vector3D.ZERO);
+        PVCoordinates v1 = new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO);
+        PVCoordinates v2 = new PVCoordinates(Vector3D.MINUS_J, Vector3D.ZERO);
         AngularCoordinates ac = new AngularCoordinates(u1, u2, v1, v2, 1.0e-9);
         PVCoordinates v1Computed = ac.applyTo(u1);
         PVCoordinates v2Computed = ac.applyTo(u2);

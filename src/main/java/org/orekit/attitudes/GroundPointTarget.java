@@ -57,7 +57,7 @@ public class GroundPointTarget implements TargetProvider
      */
     public GroundPointTarget(final Vector3D location)
     {
-        this.location        = new PVCoordinates(location, Vector3D.ZERO, Vector3D.ZERO);
+        this.location        = new PVCoordinates(location);
         this.cachedLocations = new HashMap<>();
     }
 

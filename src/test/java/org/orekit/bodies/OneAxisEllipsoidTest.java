@@ -279,7 +279,7 @@ class OneAxisEllipsoidTest {
             Vector3D p = model.projectToGround(shiftedPV.getPosition(), shiftedPV.getDate(), frame);
             pvList.add(shiftedPV);
             groundPVList.add(new TimeStampedPVCoordinates(shiftedPV.getDate(),
-                                                          p, Vector3D.ZERO, Vector3D.ZERO));
+                                                          p, Vector3D.ZERO));
         }
 
         // create interpolators
