@@ -16,6 +16,11 @@
  */
 package org.orekit.propagation.covariance;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
 import org.hipparchus.analysis.polynomials.SmoothStepFactory;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.BlockRealMatrix;
@@ -80,14 +85,7 @@ import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
 
 public class StateCovarianceKeplerianHermiteInterpolatorTest {
     private static Orbit  sergeiOrbit;

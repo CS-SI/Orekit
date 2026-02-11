@@ -282,7 +282,7 @@ public class NadirPointing extends GroundPointing {
         // nadir point position in reference frame
         final Vector3D pNadirRef = refToBody.getInverse().transformPosition(pNadirBody);
 
-        return new TimeStampedPVCoordinates(scRef.getDate(), pNadirRef, Vector3D.ZERO, Vector3D.ZERO);
+        return new TimeStampedPVCoordinates(scRef.getDate(), pNadirRef, Vector3D.ZERO);
 
     }
 

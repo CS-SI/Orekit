@@ -240,7 +240,7 @@ public class TimeStampedAngularCoordinatesHermiteInterpolator
                 offset = offset.addOffset(new AngularCoordinates(new Rotation(Vector3D.PLUS_I,
                                                                               epsilon,
                                                                               RotationConvention.VECTOR_OPERATOR),
-                                                                 Vector3D.ZERO, Vector3D.ZERO));
+                                                                 Vector3D.ZERO));
             }
             else {
                 // interpolation succeeded with the current offset

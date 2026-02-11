@@ -16,6 +16,13 @@
  */
 package org.orekit.bodies;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Scanner;
+import java.util.Set;
+
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -24,7 +31,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
-import org.orekit.data.DataProvidersManager;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
@@ -32,14 +38,6 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Scanner;
-import java.util.Set;
 
 public class JPLEphemeridesLoaderTest {
 

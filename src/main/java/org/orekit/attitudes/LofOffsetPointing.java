@@ -259,8 +259,7 @@ public class LofOffsetPointing extends GroundPointing {
             throw new OrekitException(OrekitMessages.ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND);
         }
 
-        return new TimeStampedPVCoordinates(scToBody.getDate(),
-                                            pIntersection, Vector3D.ZERO, Vector3D.ZERO);
+        return new TimeStampedPVCoordinates(scToBody.getDate(), pIntersection, Vector3D.ZERO);
 
     }
 

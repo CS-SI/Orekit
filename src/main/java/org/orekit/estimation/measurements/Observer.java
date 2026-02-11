@@ -187,7 +187,7 @@ public interface Observer extends MeasurementObject {
 
         // Observer position in inertial frame at end of the downlink leg
         final TimeStampedPVCoordinates origin = new TimeStampedPVCoordinates(downlinkDate,
-                                                                             Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO);
+                                                                             Vector3D.ZERO, Vector3D.ZERO);
         final TimeStampedPVCoordinates satelliteDownlink = offsetToInertialDownlink.transformPVCoordinates(origin);
 
         // Coordinates provider for emitting object (observed spacecraft)
