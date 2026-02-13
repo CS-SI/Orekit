@@ -16,6 +16,9 @@
  */
 package org.orekit.control.indirect.shooting;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -28,7 +31,11 @@ import org.junit.jupiter.api.Test;
 import org.orekit.TestUtils;
 import org.orekit.control.indirect.adjoint.CartesianAdjointDerivativesProvider;
 import org.orekit.control.indirect.adjoint.CartesianAdjointKeplerianTerm;
-import org.orekit.control.indirect.shooting.propagation.*;
+import org.orekit.control.indirect.shooting.propagation.CartesianAdjointDynamicsProvider;
+import org.orekit.control.indirect.shooting.propagation.CartesianAdjointDynamicsProviderFactory;
+import org.orekit.control.indirect.shooting.propagation.ShootingIntegrationSettings;
+import org.orekit.control.indirect.shooting.propagation.ShootingIntegrationSettingsFactory;
+import org.orekit.control.indirect.shooting.propagation.ShootingPropagationSettings;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -38,9 +45,6 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
-
-import java.util.ArrayList;
-import java.util.List;
 
 class AbstractFixedInitialCartesianSingleShootingTest {
 
@@ -68,7 +72,7 @@ class AbstractFixedInitialCartesianSingleShootingTest {
     }
 
     @Test
-    void buildPropagatorTest() {
+    void buildInternalPropagatorTest() {
         // GIVEN
         final ShootingIntegrationSettings integrationSettings = ShootingIntegrationSettingsFactory.getClassicalRungeKuttaIntegratorSettings(1);
         final ShootingPropagationSettings propagationSettings = new ShootingPropagationSettings(new ArrayList<>(),
@@ -76,7 +80,7 @@ class AbstractFixedInitialCartesianSingleShootingTest {
         final SpacecraftState state = new SpacecraftState(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH));
         final TestSingleShooting testSingleShooting = new TestSingleShooting(propagationSettings, state);
         // WHEN
-        final NumericalPropagator propagator = testSingleShooting.buildPropagator(state);
+        final NumericalPropagator propagator = testSingleShooting.buildInternalPropagator(state);
         // THEN
         Assertions.assertEquals(1, propagator.getMultiplexer().getHandlers().size());
     }
@@ -155,7 +159,7 @@ class AbstractFixedInitialCartesianSingleShootingTest {
         }
 
         @Override
-        public ShootingBoundaryOutput computeCandidateSolution(SpacecraftState initialState, int iterationCount) {
+        protected ShootingBoundaryOutput computeCandidateSolution(SpacecraftState initialState, int iterationCount) {
             return null;
         }
 

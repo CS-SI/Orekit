@@ -20,6 +20,9 @@
   </properties>
   <body>
     <release version="14.0" date="TBD" description="TBD">
+        <action dev="serrof" type="update" issue="1915">
+            Propose proper way of accessing propagator in indirect shooting.
+        </action>
         <action dev="serrof" type="add" issue="1911">
             Reducing code duplication and renaming for estimators.
         </action>
