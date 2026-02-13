@@ -21,8 +21,10 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -50,11 +52,8 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
     /** Observed value. */
     private double[] observed;
 
-    /** Theoretical standard deviation. */
-    private final double[] sigma;
-
-    /** Base weight. */
-    private final double[] baseWeight;
+    /** Measurement data. */
+    private final MeasurementQuality measurementQuality;
 
     /** Modifiers that apply to the measurement.*/
     private final List<EstimationModifier<T>> modifiers;
@@ -101,7 +100,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
     protected AbstractMeasurement(final AbsoluteDate date, final boolean isTwoWay, final double[] observed,
                                   final double[] sigma, final double[] baseWeight,
                                   final List<ObservableSatellite> satellites) {
-        this(date, isTwoWay, observed, sigma, baseWeight, new SignalTravelTimeModel(), satellites);
+        this(date, isTwoWay, observed, new MeasurementQuality(sigma, baseWeight), new SignalTravelTimeModel(), satellites);
     }
 
     /** Simple constructor, for multi-dimensional measurements.
@@ -121,13 +120,34 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
                                   final double[] sigma, final double[] baseWeight,
                                   final SignalTravelTimeModel signalTravelTimeModel,
                                   final List<ObservableSatellite> satellites) {
+        this(date, isTwoWay, observed, new MeasurementQuality(sigma, baseWeight), signalTravelTimeModel, satellites);
+    }
+
+    /** Simple constructor, for multi-dimensional measurements.
+     * <p>
+     * At construction, a measurement is enabled.
+     * </p>
+     * @param date date of the measurement
+     * @param isTwoWay true for two-way measurement
+     * @param observed observed value
+     * @param measurementQuality measurement quality data
+     * @param signalTravelTimeModel signal travel time model
+     * @param satellites satellites related to this measurement
+     * @since 14.0
+     */
+    protected AbstractMeasurement(final AbsoluteDate date, final boolean isTwoWay, final double[] observed,
+                                  final MeasurementQuality measurementQuality,
+                                  final SignalTravelTimeModel signalTravelTimeModel,
+                                  final List<ObservableSatellite> satellites) {
+        if (measurementQuality.getDimension() != observed.length) {
+            throw new OrekitException(LocalizedCoreFormats.DIMENSIONS_MISMATCH, measurementQuality.getDimension(), observed.length);
+        }
         this.supportedParameters = new ArrayList<>();
 
         this.date       = date;
         this.isTwoWay   = isTwoWay;
         this.observed   = observed.clone();
-        this.sigma      = sigma.clone();
-        this.baseWeight = baseWeight.clone();
+        this.measurementQuality = measurementQuality;
         this.signalTravelTimeModel = signalTravelTimeModel;
         this.satellites = satellites;
 
@@ -136,7 +156,6 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
 
         this.modifiers = new ArrayList<>();
         setEnabled(true);
-
     }
 
     /** {@inheritDoc} */
@@ -202,16 +221,25 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
         return observed.length;
     }
 
+    /**
+     * Getter for the measurement quality data.
+     * @return measurement quality
+     * @since 14.0
+     */
+    public MeasurementQuality getMeasurementQuality() {
+        return measurementQuality;
+    }
+
     /** {@inheritDoc} */
     @Override
     public double[] getTheoreticalStandardDeviation() {
-        return sigma.clone();
+        return measurementQuality.getStandardDeviations();
     }
 
     /** {@inheritDoc} */
     @Override
     public double[] getBaseWeight() {
-        return baseWeight.clone();
+        return measurementQuality.getWeights();
     }
 
     /** {@inheritDoc} */
