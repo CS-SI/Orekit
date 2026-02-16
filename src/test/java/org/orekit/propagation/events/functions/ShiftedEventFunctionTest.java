@@ -26,8 +26,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.PVCoordinates;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ShiftedEventFunctionTest {
 
@@ -54,7 +53,8 @@ class ShiftedEventFunctionTest {
         // WHEN
         final double value = shiftedEventFunction.value(state);
         // THEN
-        final double expected = apsideEventFunction.value(state.shiftedBy(shiftedEventFunction.getTimeShift()));
+        final double shift = shiftedEventFunction.getTimeShiftFunction().value(state);
+        final double expected = apsideEventFunction.value(state.shiftedBy(shift));
         assertEquals(expected, value);
     }
 
@@ -72,7 +72,8 @@ class ShiftedEventFunctionTest {
         // WHEN
         final Binary64 value = shiftedEventFunction.value(fieldState);
         // THEN
-        final Binary64 expected = apsideEventFunction.value(fieldState.shiftedBy(shiftedEventFunction.getTimeShift()));
+        final double shift = shiftedEventFunction.getTimeShiftFunction().value(state);
+        final Binary64 expected = apsideEventFunction.value(fieldState.shiftedBy(shift));
         assertEquals(expected, value);
     }
 }
