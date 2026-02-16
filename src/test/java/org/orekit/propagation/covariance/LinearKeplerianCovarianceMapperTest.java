@@ -29,8 +29,8 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class LinearKeplerianCovarianceMapperTest {
 
@@ -67,16 +67,16 @@ class LinearKeplerianCovarianceMapperTest {
         final StateCovariance covariance = new StateCovariance(covarianceMatrix, orbit.getDate(), orbit.getFrame(),
                 orbit.getType(), orbit.getCachedPositionAngleType());
         final LinearKeplerianCovarianceMapper mapper = new LinearKeplerianCovarianceMapper(orbit, covariance);
-        final Orbit shitedOrbit = orbit.shiftedBy(dt);
+        final Orbit shiftedOrbit = orbit.shiftedBy(dt);
         // WHEN
-        final StateCovariance mappedCovariance = mapper.map(shitedOrbit);
+        final StateCovariance mappedCovariance = mapper.map(shiftedOrbit);
         // THEN
         final RealMatrix stm = MatrixUtils.createRealIdentityMatrix(6);
         final double contribution = orbit.getMeanAnomalyDotWrtA() * dt;
         stm.setEntry(5, 0, contribution);
         final RealMatrix expectedCovarianceMatrix = stm.multiply(covarianceMatrix.multiplyTransposed(stm));
-        assertEquals(shitedOrbit.getDate(), mappedCovariance.getDate());
-        assertEquals(shitedOrbit.getFrame(), mappedCovariance.getFrame());
+        assertEquals(shiftedOrbit.getDate(), mappedCovariance.getDate());
+        assertEquals(shiftedOrbit.getFrame(), mappedCovariance.getFrame());
         assertEquals(OrbitType.EQUINOCTIAL, mappedCovariance.getOrbitType());
 
         assertArrayEquals(expectedCovarianceMatrix.getRow(0), mappedCovariance.getMatrix().getRow(0), 1e-2);

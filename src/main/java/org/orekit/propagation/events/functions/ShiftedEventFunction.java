@@ -16,11 +16,14 @@
  */
 package org.orekit.propagation.events.functions;
 
+import java.util.function.ToDoubleFunction;
+
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.utils.ExtendedStateScalarFunction;
 
-/** Time-shifted event function.
+/** Time-shifted event function. The value can depend on the state or be constant.
  * @author Romain Serra
  * @since 14.0
  */
@@ -30,24 +33,42 @@ public class ShiftedEventFunction implements EventFunctionModifier {
     private final EventFunction baseFunction;
 
     /** Event time shift. */
-    private final double timeShift;
+    private final ExtendedStateScalarFunction timeShiftFunction;
 
     /**
-     * Constructor.
+     * Constructor with constant shift.
      * @param baseFunction event function to shift in time
      * @param timeShift shift value
      */
     public ShiftedEventFunction(final EventFunction baseFunction, final double timeShift) {
-        this.baseFunction = baseFunction;
-        this.timeShift = timeShift;
+        this(baseFunction, (ToDoubleFunction<SpacecraftState>) value -> timeShift);
     }
 
     /**
-     * Getter for time shift.
-     * @return shit
+     * Constructor with non-Field function.
+     * @param baseFunction event function to shift in time
+     * @param timeShiftFunction shift value function
      */
-    public double getTimeShift() {
-        return timeShift;
+    public ShiftedEventFunction(final EventFunction baseFunction, final ToDoubleFunction<SpacecraftState> timeShiftFunction) {
+        this(baseFunction, ExtendedStateScalarFunction.of(timeShiftFunction));
+    }
+
+    /**
+     * Constructor.
+     * @param baseFunction event function to shift in time
+     * @param timeShiftFunction shift value function
+     */
+    public ShiftedEventFunction(final EventFunction baseFunction, final ExtendedStateScalarFunction timeShiftFunction) {
+        this.baseFunction = baseFunction;
+        this.timeShiftFunction = timeShiftFunction;
+    }
+
+    /**
+     * Getter for time shift function.
+     * @return shift function
+     */
+    public ExtendedStateScalarFunction getTimeShiftFunction() {
+        return timeShiftFunction;
     }
 
     @Override
@@ -57,12 +78,12 @@ public class ShiftedEventFunction implements EventFunctionModifier {
 
     @Override
     public double value(final SpacecraftState state) {
-        return baseFunction.value(state.shiftedBy(timeShift));
+        return baseFunction.value(state.shiftedBy(timeShiftFunction.value(state)));
     }
 
     @Override
     public <T extends CalculusFieldElement<T>> T value(final FieldSpacecraftState<T> fieldState) {
-        return baseFunction.value(fieldState.shiftedBy(timeShift));
+        return baseFunction.value(fieldState.shiftedBy(timeShiftFunction.value(fieldState)));
     }
 
 }
