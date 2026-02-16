@@ -22,7 +22,6 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -63,7 +62,6 @@ class IodGoodingTest extends AbstractIodTest {
 
     /** Based on example provided in forum thread:
      * <a href="https://forum.orekit.org/t/iodgooging-orbit-got-from-three-angular-observations/2749">IodGooding</a> */
-    @Disabled("Disabled provisionally due to OS-dependent different results")
     @Test
     void testIssue1166RaDec() {
         AbsoluteDate t1 = new AbsoluteDate(2023, Month.JUNE, 9, 17, 4,59.10, TimeScalesFactory.getUTC());
@@ -99,15 +97,15 @@ class IodGoodingTest extends AbstractIodTest {
         // BEFORE the fix -> Gooding: {a: 6.993021221010809E7; e: 0.3347390725866758; i: 0.5890565053278204; pa: -108.07120996868652; raan: -12.64337508041537; v: 2.587189785272028;}
         // Values changed slightly after updating to new Lambert solver
         // BEFORE the update -> Gooding {a: 4.242929828622434E7; e: 0.005085550484861005; i: 0.09455751549021724; pa: 162.64799060142445; raan: 90.00027281152558; v: -10.884841988914873;}
-        // AFTER the update (still forcing an intermediate planar solution) -> Gooding {a: 4.2403353295223184E7; e: 0.004577584580855903; i: 0.09260357354394354; pa: 167.5968594644297; raan: 90.67242725909259; v: -16.505869685082935}
+        // AFTER the update (still forcing an intermediate planar solution) -> Gooding: {a: 4.241177632328943E7; e: 0.004736060203413131; i: 0.09325899964608757; pa: 165.8244285539966; raan: 90.44187169480168; v: -14.502881368143266;}
         Orbit estimatedOrbitGooding = new IodGooding(mu).estimate(eme2000, raDec1,raDec2,raDec3);
         KeplerianOrbit orbitGooding = new KeplerianOrbit(estimatedOrbitGooding);
-        Assertions.assertEquals(4.2403353295223184E7, orbitGooding.getA(), 1.0e-6);
-        Assertions.assertEquals(0.004577584580855903, orbitGooding.getE(), 1.0e-10);
-        Assertions.assertEquals(FastMath.toRadians(0.09260357354394354), orbitGooding.getI(), 1.0e-10);
-        Assertions.assertEquals(FastMath.toRadians(167.5968594644297), orbitGooding.getPerigeeArgument(), 1.0e-10);
-        Assertions.assertEquals(FastMath.toRadians(90.67242725909259), orbitGooding.getRightAscensionOfAscendingNode(), 1.0e-10);
-        Assertions.assertEquals(FastMath.toRadians(-16.505869685082935), orbitGooding.getTrueAnomaly(), 1.0e-10);
+        Assertions.assertEquals(4.241177632328943E7, orbitGooding.getA(), 1.0e-6);
+        Assertions.assertEquals(0.004736060203413131, orbitGooding.getE(), 1.0e-10);
+        Assertions.assertEquals(FastMath.toRadians(0.09325899964608757), orbitGooding.getI(), 1.0e-10);
+        Assertions.assertEquals(FastMath.toRadians(165.8244285539966), orbitGooding.getPerigeeArgument(), 1.0e-10);
+        Assertions.assertEquals(FastMath.toRadians(90.44187169480168), orbitGooding.getRightAscensionOfAscendingNode(), 1.0e-10);
+        Assertions.assertEquals(FastMath.toRadians(-14.502881368143266), orbitGooding.getTrueAnomaly(), 1.0e-10);
     }
 
     @Test
