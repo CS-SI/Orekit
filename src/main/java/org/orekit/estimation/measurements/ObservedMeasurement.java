@@ -59,11 +59,6 @@ public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends C
      */
     boolean isEnabled();
 
-    /** Check if a measurement is two-way.
-     * @return true if the measurement is two-way
-     */
-    boolean isTwoWay();
-
     /** Get the dimension of the measurement.
      * <p>
      * Dimension is the size of the array containing the

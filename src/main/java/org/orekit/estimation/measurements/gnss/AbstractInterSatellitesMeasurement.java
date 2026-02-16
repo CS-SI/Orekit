@@ -22,12 +22,12 @@ import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
-import org.orekit.estimation.measurements.AbstractMeasurement;
 import org.orekit.estimation.measurements.AbstractMeasurementObject;
 import org.orekit.estimation.measurements.CommonParametersWithDerivatives;
 import org.orekit.estimation.measurements.CommonParametersWithoutDerivatives;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.measurements.SignalBasedMeasurement;
 import org.orekit.estimation.measurements.signal.FieldSignalTravelTimeAdjustableEmitter;
 import org.orekit.estimation.measurements.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
@@ -59,7 +59,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  * @since 12.1
  */
-public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasurement<T>> extends AbstractMeasurement<T> {
+public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasurement<T>> extends SignalBasedMeasurement<T> {
 
     /** Constructor.
      * @param date date of the measurement

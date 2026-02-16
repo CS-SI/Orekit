@@ -28,8 +28,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeSpanMap;
-import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class multiplexing several measurements as one.
  * <p>
@@ -74,7 +74,7 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
      * @since 10.1
      */
     public MultiplexedMeasurement(final List<ObservedMeasurement<?>> measurements) {
-        super(measurements.get(0).getDate(), solveTwoWay(measurements),
+        super(measurements.get(0).getDate(),
               multiplex(measurements, ComparableMeasurement::getObservedValue),
               multiplex(measurements, ObservedMeasurement::getTheoreticalStandardDeviation),
               multiplex(measurements, ObservedMeasurement::getBaseWeight),
@@ -328,15 +328,6 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
 
         return multiplexed;
 
-    }
-
-    private static boolean solveTwoWay(final List<ObservedMeasurement<?>> measurements) {
-        for (final ObservedMeasurement<?> measurement : measurements) {
-            if (measurement.isTwoWay()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /** Multiplex measurements data.

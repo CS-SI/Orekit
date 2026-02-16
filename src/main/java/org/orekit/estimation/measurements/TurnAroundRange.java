@@ -59,7 +59,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *
  * @since 9.0
  */
-public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
+public class TurnAroundRange extends SignalBasedMeasurement<TurnAroundRange> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "TurnAroundRange";
@@ -104,7 +104,7 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
                            final double sigma, final double baseWeight,
                            final SignalTravelTimeModel signalTravelTimeModel,
                            final ObservableSatellite satellite) {
-        super(date, true, new double[] {turnAroundRange}, new double[] {sigma}, new double[] {baseWeight},
+        super(date, true, new double[] {turnAroundRange}, new MeasurementQuality(sigma, baseWeight),
                 signalTravelTimeModel, Collections.singletonList(satellite));
 
         // Add parameter drivers
