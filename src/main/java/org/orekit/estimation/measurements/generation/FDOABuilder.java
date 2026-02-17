@@ -20,8 +20,8 @@ import java.util.Map;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.FDOA;
-import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -37,25 +37,25 @@ public class FDOABuilder extends AbstractBireceiverBuilder<FDOA> {
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
-     * @param primeStation ground station that gives the date of the measurement
-     * @param secondStation ground station that gives the measurement
+     * @param primeObserver observer that gives the date of the measurement
+     * @param secondObserver observer that gives the measurement value
      * @param centreFrequency satellite emitter frequency
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellite satellite related to this builder
      */
     public FDOABuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                       final GroundStation primeStation, final GroundStation secondStation,
+                       final Observer primeObserver, final Observer secondObserver,
                        final double centreFrequency, final double sigma, final double baseWeight,
                        final ObservableSatellite satellite) {
-        this(noiseSource, primeStation, secondStation, centreFrequency, sigma, baseWeight, new SignalTravelTimeModel(),
+        this(noiseSource, primeObserver, secondObserver, centreFrequency, sigma, baseWeight, new SignalTravelTimeModel(),
                 satellite);
     }
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
-     * @param primeStation ground station that gives the date of the measurement
-     * @param secondStation ground station that gives the measurement
+     * @param primeObserver observer that gives the date of the measurement
+     * @param secondObserver observer that gives the measurement value
      * @param centreFrequency satellite emitter frequency
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
@@ -64,10 +64,10 @@ public class FDOABuilder extends AbstractBireceiverBuilder<FDOA> {
      * @since 14.0
      */
     public FDOABuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                       final GroundStation primeStation, final GroundStation secondStation,
+                       final Observer primeObserver, final Observer secondObserver,
                        final double centreFrequency, final double sigma, final double baseWeight,
                        final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
-        super(noiseSource, primeStation, secondStation, sigma, baseWeight, signalTravelTimeModel, satellite);
+        super(noiseSource, primeObserver, secondObserver, sigma, baseWeight, signalTravelTimeModel, satellite);
         this.centreFrequency = centreFrequency;
     }
 
@@ -75,7 +75,7 @@ public class FDOABuilder extends AbstractBireceiverBuilder<FDOA> {
     @Override
     protected FDOA buildObserved(final AbsoluteDate date,
                                  final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new FDOA(getPrimeStation(), getSecondStation(), centreFrequency, date, Double.NaN,
+        return new FDOA(getPrimeObserver(), getSecondObserver(), centreFrequency, date, Double.NaN,
                         getTheoreticalStandardDeviation()[0], getBaseWeight()[0], getSignalTravelTimeModel(), getSatellites()[0]);
     }
 

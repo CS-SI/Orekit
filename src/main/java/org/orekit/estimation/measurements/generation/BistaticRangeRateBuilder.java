@@ -20,7 +20,7 @@ import java.util.Map;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.BistaticRangeRate;
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
@@ -34,14 +34,14 @@ public class BistaticRangeRateBuilder extends AbstractBistaticBuilder<BistaticRa
 
     /** Constructor with default signal travel time model.
      * @param noiseSource noise source, may be null for generating perfect measurements
-     * @param emitter emitter ground station
-     * @param receiver receiver ground station, from which measurement is performed
+     * @param emitter emitter observer
+     * @param receiver receiver observer, from which measurement is performed
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellite satellite related to this builder
      */
     public BistaticRangeRateBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                    final GroundStation emitter, final GroundStation receiver,
+                                    final Observer emitter, final Observer receiver,
                                     final double sigma, final double baseWeight,
                                     final ObservableSatellite satellite) {
         this(noiseSource, emitter, receiver, sigma, baseWeight, new SignalTravelTimeModel(), satellite);
@@ -49,8 +49,8 @@ public class BistaticRangeRateBuilder extends AbstractBistaticBuilder<BistaticRa
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
-     * @param emitter emitter ground station
-     * @param receiver receiver ground station, from which measurement is performed
+     * @param emitter emitter observer
+     * @param receiver receiver observer, from which measurement is performed
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param signalTravelTimeModel signal travel time model
@@ -58,7 +58,7 @@ public class BistaticRangeRateBuilder extends AbstractBistaticBuilder<BistaticRa
      * @since 14.0
      */
     public BistaticRangeRateBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                    final GroundStation emitter, final GroundStation receiver,
+                                    final Observer emitter, final Observer receiver,
                                     final double sigma, final double baseWeight, final SignalTravelTimeModel signalTravelTimeModel,
                                     final ObservableSatellite satellite) {
         super(noiseSource, emitter, receiver, sigma, baseWeight, signalTravelTimeModel, satellite);

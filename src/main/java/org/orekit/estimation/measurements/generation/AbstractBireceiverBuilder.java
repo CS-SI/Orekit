@@ -17,7 +17,7 @@
 package org.orekit.estimation.measurements.generation;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
@@ -28,45 +28,45 @@ import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
  */
 public abstract class AbstractBireceiverBuilder<T extends ObservedMeasurement<T>> extends AbstractSignalBasedBuilder<T> {
 
-    /** Prime ground station. */
-    private final GroundStation primeStation;
+    /** Prime ground observer. */
+    private final Observer primeObserver;
 
-    /** Second ground station. */
-    private final GroundStation secondStation;
+    /** Second ground observer. */
+    private final Observer secondObserver;
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
-     * @param primeStation ground station that gives the date of the measurement
-     * @param secondStation ground station that gives the measurement
+     * @param primeObserver observer that gives the date of the measurement
+     * @param secondObserver observer that gives the measurement
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param signalTravelTimeModel signal travel time model
      * @param satellite satellite related to this builder
      */
     protected AbstractBireceiverBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                        final GroundStation primeStation, final GroundStation secondStation,
+                                        final Observer primeObserver, final Observer secondObserver,
                                         final double sigma, final double baseWeight,
                                         final SignalTravelTimeModel signalTravelTimeModel,
                                         final ObservableSatellite satellite) {
         super(noiseSource, new double[] {sigma}, new double[] {baseWeight}, signalTravelTimeModel, satellite);
-        this.primeStation  = primeStation;
-        this.secondStation = secondStation;
+        this.primeObserver  = primeObserver;
+        this.secondObserver = secondObserver;
     }
 
     /**
      * Getter for prime observer.
-     * @return station
+     * @return observer
      */
-    public GroundStation getPrimeStation() {
-        return primeStation;
+    public Observer getPrimeObserver() {
+        return primeObserver;
     }
 
     /**
      * Getter for second observer.
-     * @return station
+     * @return observer
      */
-    public GroundStation getSecondStation() {
-        return secondStation;
+    public Observer getSecondObserver() {
+        return secondObserver;
     }
 
 }

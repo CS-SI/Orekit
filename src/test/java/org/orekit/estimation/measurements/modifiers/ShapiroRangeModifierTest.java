@@ -69,7 +69,7 @@ public class ShapiroRangeModifierTest {
             final List<ObservedMeasurement<?>> converted = new ArrayList<>();
             for (final ObservedMeasurement<?> m : measurements) {
                 final Range range = (Range) m;
-                converted.add(new Range(range.getStation(), false, range.getDate(),
+                converted.add(new Range(range.getObserver(), false, range.getDate(),
                                         range.getObservedValue()[0],
                                         range.getTheoreticalStandardDeviation()[0],
                                         range.getBaseWeight()[0],

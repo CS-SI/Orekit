@@ -20,6 +20,8 @@ import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.AngularAzEl;
@@ -35,6 +37,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
+import org.orekit.estimation.measurements.SpaceTwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.TDOA;
 import org.orekit.estimation.measurements.TDOAMeasurementCreator;
 import org.orekit.estimation.measurements.TurnAroundRange;
@@ -42,7 +45,6 @@ import org.orekit.estimation.measurements.TurnAroundRangeMeasurementCreator;
 import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.estimation.measurements.gnss.PhaseMeasurementCreator;
-import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.models.earth.ITURP834AtmosphericRefraction;
 import org.orekit.models.earth.troposphere.EstimatedModel;
@@ -145,15 +147,14 @@ public class TropoModifierTest {
             EstimatedMeasurementBase<Range> evalNoMod = range.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             // add modifier
-            final GroundStation                  stationParameter = ((Range) measurement).getStation();
-            final TopocentricFrame               baseFrame        = stationParameter.getBaseFrame();
+            final String                         observerName     = ((Range) measurement).getObserver().getName();
             final NiellMappingFunctionModel      mappingFunction  = new NiellMappingFunctionModel();
             final EstimatedModel                 tropoModel       = new EstimatedModel(mappingFunction, 5.0);
             final RangeTroposphericDelayModifier modifier         = new RangeTroposphericDelayModifier(tropoModel);
 
             final ParameterDriver parameterDriver = modifier.getParametersDrivers().get(0);
             parameterDriver.setSelected(true);
-            parameterDriver.setName(baseFrame.getName() + EstimatedModel.TOTAL_ZENITH_DELAY);
+            parameterDriver.setName(observerName + EstimatedModel.TOTAL_ZENITH_DELAY);
             range.addModifier(modifier);
             EstimatedMeasurementBase<Range> eval = range.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
@@ -163,6 +164,52 @@ public class TropoModifierTest {
             Assertions.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
             Assertions.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
         }
+    }
+
+    @Test
+    public void testSpaceRangeEstimatedTropoModifier() {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createNumerical(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                                              1.0e-6, 60.0, 0.001);
+
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new SpaceTwoWayRangeMeasurementCreator(context),
+                                                               1.0, 1.1, 300.0);
+        propagator.clearStepHandlers();
+
+        final ObservedMeasurement<?> measurement = measurements.get(0);
+        final AbsoluteDate           date        = measurement.getDate();
+        final SpacecraftState        refState    = propagator.propagate(date);
+        final Range                  range       = (Range) measurement;
+
+        // add modifier
+        final String                         observerName     = ((Range) measurement).getObserver().getName();
+        final NiellMappingFunctionModel      mappingFunction  = new NiellMappingFunctionModel();
+        final EstimatedModel                 tropoModel       = new EstimatedModel(mappingFunction, 5.0);
+        final RangeTroposphericDelayModifier modifier         = new RangeTroposphericDelayModifier(tropoModel);
+
+        final ParameterDriver parameterDriver = modifier.getParametersDrivers().get(0);
+        parameterDriver.setSelected(true);
+        parameterDriver.setName(observerName + EstimatedModel.TOTAL_ZENITH_DELAY);
+        range.addModifier(modifier);
+
+        // This attempt should not work because the Observer is space-based
+        Assertions.assertThrows(OrekitException.class, () -> {
+            try {
+                range.estimateWithoutDerivatives(new SpacecraftState[] { refState });
+            } catch (OrekitException oe) {
+                // expected behavior
+                Assertions.assertEquals(OrekitMessages.WRONG_OBSERVER_TYPE, oe.getSpecifier());
+                throw oe;
+            }
+        });
+
     }
 
     @Test
@@ -256,17 +303,15 @@ public class TropoModifierTest {
             Phase phase = (Phase) measurement;
             EstimatedMeasurementBase<Phase> evalNoMod = phase.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
-
             // add modifier
-            final GroundStation                  stationParameter = phase.getStation();
-            final TopocentricFrame               baseFrame        = stationParameter.getBaseFrame();
+            final String                         observerName     = phase.getObserver().getName();
             final NiellMappingFunctionModel      mappingFunction  = new NiellMappingFunctionModel();
             final EstimatedModel                 tropoModel       = new EstimatedModel(mappingFunction, 5.0);
             final PhaseTroposphericDelayModifier modifier         = new PhaseTroposphericDelayModifier(tropoModel);
 
             final ParameterDriver parameterDriver = modifier.getParametersDrivers().get(0);
             parameterDriver.setSelected(true);
-            parameterDriver.setName(baseFrame.getName() + EstimatedModel.TOTAL_ZENITH_DELAY);
+            parameterDriver.setName(observerName + EstimatedModel.TOTAL_ZENITH_DELAY);
             phase.addModifier(modifier);
             EstimatedMeasurementBase<Phase> eval = phase.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
@@ -471,10 +516,9 @@ public class TropoModifierTest {
             final BistaticRangeRateTroposphericDelayModifier modifier =
                             new BistaticRangeRateTroposphericDelayModifier(tropoModel);
 
-            final TopocentricFrame baseFrame = biRangeRate.getReceiverStation().getBaseFrame();
             final ParameterDriver parameterDriver = modifier.getParametersDrivers().get(0);
             parameterDriver.setSelected(true);
-            parameterDriver.setName(baseFrame.getName() + EstimatedModel.TOTAL_ZENITH_DELAY);
+            parameterDriver.setName(biRangeRate.getReceiver().getName() + EstimatedModel.TOTAL_ZENITH_DELAY);
 
             biRangeRate.addModifier(modifier);
 
@@ -579,10 +623,9 @@ public class TropoModifierTest {
             final EstimatedModel                tropoModel   = new EstimatedModel(mappingFunct, 5.0);
             final TDOATroposphericDelayModifier modifier     = new TDOATroposphericDelayModifier(tropoModel);
 
-            final TopocentricFrame baseFrame      = tdoa.getPrimeStation().getBaseFrame();
             final ParameterDriver parameterDriver = modifier.getParametersDrivers().get(0);
             parameterDriver.setSelected(true);
-            parameterDriver.setName(baseFrame.getName() + EstimatedModel.TOTAL_ZENITH_DELAY);
+            parameterDriver.setName(tdoa.getPrimeObserver().getName() + EstimatedModel.TOTAL_ZENITH_DELAY);
 
             tdoa.addModifier(modifier);
 
@@ -674,15 +717,14 @@ public class TropoModifierTest {
             EstimatedMeasurementBase<RangeRate> evalNoMod = rangeRate.estimateWithoutDerivatives(new SpacecraftState[] { refState });
 
             // add modifier
-            final GroundStation                      stationParameter = ((RangeRate) measurement).getStation();
-            final TopocentricFrame                   baseFrame        = stationParameter.getBaseFrame();
+            final String                             stationName      = ((RangeRate) measurement).getObserver().getName();
             final NiellMappingFunctionModel          mappingFunction  = new NiellMappingFunctionModel();
             final EstimatedModel                     tropoModel       = new EstimatedModel(mappingFunction, 5.0);
             final RangeRateTroposphericDelayModifier modifier         = new RangeRateTroposphericDelayModifier(tropoModel, false);
 
             final ParameterDriver parameterDriver = modifier.getParametersDrivers().get(0);
             parameterDriver.setSelected(true);
-            parameterDriver.setName(baseFrame.getName() + EstimatedModel.TOTAL_ZENITH_DELAY);
+            parameterDriver.setName( stationName + EstimatedModel.TOTAL_ZENITH_DELAY);
             rangeRate.addModifier(modifier);
 
             //

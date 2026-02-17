@@ -61,10 +61,10 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
     public static final String MEASUREMENT_TYPE = "RangeRate";
 
     /** Ground station that receives signal from satellite. */
-    private final GroundStation station;
+    private final Observer observer;
 
     /** Simple constructor.
-     * @param station ground station from which measurement is performed
+     * @param observer observer that performs the measurement
      * @param date date of the measurement
      * @param rangeRate observed value, m/s
      * @param sigma theoretical standard deviation
@@ -73,14 +73,14 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
      * @param satellite satellite related to this measurement
      * @since 9.3
      */
-    public RangeRate(final GroundStation station, final AbsoluteDate date,
+    public RangeRate(final Observer observer, final AbsoluteDate date,
                      final double rangeRate, final double sigma, final double baseWeight,
                      final boolean twoWay, final ObservableSatellite satellite) {
-        this(station, date, rangeRate, sigma, baseWeight, twoWay, new SignalTravelTimeModel(), satellite);
+        this(observer, date, rangeRate, sigma, baseWeight, twoWay, new SignalTravelTimeModel(), satellite);
     }
 
     /** Simple constructor.
-     * @param station ground station from which measurement is performed
+     * @param observer observer that performs the measurement
      * @param date date of the measurement
      * @param rangeRate observed value, m/s
      * @param sigma theoretical standard deviation
@@ -90,21 +90,34 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
      * @param satellite satellite related to this measurement
      * @since 14.0
      */
-    public RangeRate(final GroundStation station, final AbsoluteDate date,
+    public RangeRate(final Observer observer, final AbsoluteDate date,
                      final double rangeRate, final double sigma, final double baseWeight,
                      final boolean twoWay, final SignalTravelTimeModel signalTravelTimeModel,
                      final ObservableSatellite satellite) {
         super(date, twoWay, new double[] {rangeRate}, new double[] {sigma}, new double[] {baseWeight},
                 signalTravelTimeModel, Collections.singletonList(satellite));
-        addParametersDrivers(station.getParametersDrivers());
-        this.station = station;
+        addParametersDrivers(observer.getParametersDrivers());
+        this.observer = observer;
     }
 
-    /** Get the ground station that receives the signal.
-     * @return ground station
+    /** Get receiving ground station.
+     * @return measurement ground station
+     * @deprecated as of 14.0, replaced by {@link #getObserver()}
      */
+    @Deprecated
     public final GroundStation getStation() {
-        return station;
+        if (!(observer instanceof GroundStation)) {
+            return null;
+        }
+        return (GroundStation) observer;
+    }
+
+    /** Get receiving object.
+     * @return measurement observer
+     * @since 14.0
+     */
+    public final Observer getObserver() {
+        return observer;
     }
 
     /** {@inheritDoc} */
@@ -113,7 +126,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
                                                                                           final int evaluation,
                                                                                           final SpacecraftState[] states) {
         // compute reception date
-        final double clockOffset = getStation().getClockOffsetDriver().getValue(getDate());  // FIXME see Field
+        final double clockOffset = getObserver().getClockOffsetDriver().getValue(getDate());  // FIXME see Field
         final AbsoluteDate receptionDate = getDate().shiftedBy(-clockOffset);
 
         if (isTwoWay()) {
@@ -136,7 +149,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         //  - 0..2 - Position of the spacecraft in inertial frame
         //  - 3..5 - Velocity of the spacecraft in inertial frame
         //  - 6..n - station parameters (clock offset, clock drift, station offsets, pole, prime meridian...)
-        final Map<String, Integer> paramIndices = getStation().getParameterIndices(states, getParametersDrivers());
+        final Map<String, Integer> paramIndices = getParameterIndices(states);
         final int                  nbParams     = 6 * states.length + paramIndices.size();
         final SpacecraftState state = states[0];
         final TimeStampedFieldPVCoordinates<Gradient> pva = AbstractMeasurement.getCoordinates(state, 0, nbParams);
@@ -165,7 +178,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
                                                                                               final SpacecraftState state) {
         // Compute light time delays
         final Frame frame = state.getFrame();
-        final PVCoordinatesProvider observerPVProvider = getStation().getPVCoordinatesProvider();
+        final PVCoordinatesProvider observerPVProvider = getObserver().getPVCoordinatesProvider();
         final TimeStampedPVCoordinates receiverPV = observerPVProvider.getPVCoordinates(receptionDate, frame);
         final PVCoordinatesProvider satellitePVProvider = AbstractMeasurementObject.extractPVCoordinatesProvider(state,
                 state.getPVCoordinates());
@@ -207,7 +220,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         final PVCoordinatesProvider observablePVProvider = AbstractMeasurementObject.extractPVCoordinatesProvider(state, state.getPVCoordinates());
         final SignalTravelTimeAdjustableEmitter adjustableEmitter = getSignalTravelTimeModel()
                 .getAdjustableEmitterComputer(observablePVProvider);
-        final TimeStampedPVCoordinates stationPVAtReception = getStation().getPVCoordinatesProvider()
+        final TimeStampedPVCoordinates stationPVAtReception = getObserver().getPVCoordinatesProvider()
                 .getPVCoordinates(receptionDate, frame);
         final double delay = adjustableEmitter.computeDelay(stationPVAtReception.getPosition(), receptionDate, frame);
 
@@ -226,7 +239,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         // clock drifts, taken in account only in case of one way
         final ObservableSatellite satellite    = getSatellites().get(0);
         final double              dtsDot       = satellite.getClockDriftDriver().getValue(emissionState.getDate());
-        final double              dtgDot       = getStation().getClockDriftDriver().getValue(receptionDate);
+        final double              dtgDot       = getObserver().getClockDriftDriver().getValue(receptionDate);
         final double clockDriftBias = (dtgDot - dtsDot) * Constants.SPEED_OF_LIGHT;
         rangeRate += clockDriftBias;
 
@@ -251,7 +264,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
                                                                         final int nbParams) {
         // Compute light time delays
         final Frame frame = state.getFrame();
-        final FieldPVCoordinatesProvider<Gradient> observerPVProvider = getStation().getFieldPVCoordinatesProvider(nbParams, indices);
+        final FieldPVCoordinatesProvider<Gradient> observerPVProvider = getObserver().getFieldPVCoordinatesProvider(nbParams, indices);
         final FieldAbsoluteDate<Gradient> receptionDate = getCorrectedReceptionDateField(nbParams, indices);
         final TimeStampedFieldPVCoordinates<Gradient> receiverPV = observerPVProvider.getPVCoordinates(receptionDate, frame);
         final TwoLegsSignalTravelTimer twoLegsSignalTravelTimer = new TwoLegsSignalTravelTimer(getSignalTravelTimeModel());
@@ -265,7 +278,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         final EstimatedMeasurement<RangeRate> estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
                 new SpacecraftState[] { transitState },
                 new TimeStampedPVCoordinates[] {
-                        getStation().getPVCoordinatesProvider().getPVCoordinates(emissionDate.toAbsoluteDate(), frame),
+                        getObserver().getPVCoordinatesProvider().getPVCoordinates(emissionDate.toAbsoluteDate(), frame),
                         transitState.getPVCoordinates(),
                         receiverPV.toTimeStampedPVCoordinates()});
 
@@ -298,7 +311,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         final Field<Gradient> field = receptionDate.getField();
         final FieldSignalTravelTimeAdjustableEmitter<Gradient> adjustableEmitter = getSignalTravelTimeModel().getFieldAdjustableEmitterComputer(
                 field, satellitePVProvider);
-        final TimeStampedFieldPVCoordinates<Gradient> stationPVAtReception = getStation().getFieldPVCoordinatesProvider(nbParams, indices)
+        final TimeStampedFieldPVCoordinates<Gradient> stationPVAtReception = getObserver().getFieldPVCoordinatesProvider(nbParams, indices)
                 .getPVCoordinates(receptionDate, frame);
         final Gradient delay = adjustableEmitter.computeDelay(stationPVAtReception.getPosition(), receptionDate, frame);
 
@@ -318,7 +331,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         // clock drifts, taken in account only in case of one way
         final ObservableSatellite satellite    = getSatellites().get(0);
         final Gradient            dtsDot       = satellite.getClockDriftDriver().getValue(nbParams, indices, emissionState.getDate());
-        final Gradient            dtgDot       = getStation().getClockDriftDriver().getValue(nbParams, indices, receptionDate.toAbsoluteDate());
+        final Gradient            dtgDot       = getObserver().getClockDriftDriver().getValue(nbParams, indices, receptionDate.toAbsoluteDate());
         final Gradient clockDriftBias = dtgDot.subtract(dtsDot).multiply(Constants.SPEED_OF_LIGHT);
         rangeRate = rangeRate.add(clockDriftBias);
 
@@ -335,7 +348,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
      */
     private FieldAbsoluteDate<Gradient> getCorrectedReceptionDateField(final int nbParams,
                                                                        final Map<String, Integer> paramIndices) {
-        final Gradient offset = getStation().getClockOffsetDriver().getValue(nbParams, paramIndices, getDate());  // FIXME missing drift and quatratic term
+        final Gradient offset = getObserver().getClockOffsetDriver().getValue(nbParams, paramIndices, getDate());  // FIXME missing drift and quatratic term
         final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(GradientField.getField(nbParams), getDate());
         return fieldDate.shiftedBy(offset.negate());
     }

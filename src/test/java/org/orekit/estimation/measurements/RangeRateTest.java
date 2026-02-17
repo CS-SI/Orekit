@@ -323,7 +323,7 @@ class RangeRateTest {
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             // parameter corresponding to station position offset
-            final GroundStation stationParameter = ((RangeRate) measurement).getStation();
+            final GroundStation stationParameter = (GroundStation) ((RangeRate) measurement).getObserver();
 
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by
@@ -407,7 +407,7 @@ class RangeRateTest {
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             // parameter corresponding to station position offset
-            final GroundStation stationParameter = ((RangeRate) measurement).getStation();
+            final GroundStation stationParameter = (GroundStation) ((RangeRate) measurement).getObserver();
 
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by
@@ -627,7 +627,7 @@ class RangeRateTest {
             ((RangeRate) measurement).addModifier(modifier);
 
             // parameter corresponding to station position offset
-            final GroundStation stationParameter = ((RangeRate) measurement).getStation();
+            final GroundStation stationParameter = (GroundStation) ((RangeRate) measurement).getObserver();
 
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by

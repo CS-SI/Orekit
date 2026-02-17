@@ -91,9 +91,9 @@ public class BiasTest {
         for (final ObservedMeasurement<?> measurement : measurements) {
             final Range range = (Range) measurement;
             for (int i = 0; i < context.stations.size(); ++i) {
-                if (range.getStation() == context.stations.get(i)) {
+                if (range.getObserver() == context.stations.get(i)) {
                     double biasedRange = range.getObservedValue()[0] + realStationsBiases[i];
-                    final Range m = new Range(range.getStation(),
+                    final Range m = new Range(range.getObserver(),
                                               range.isTwoWay(),
                                               range.getDate(),
                                               biasedRange,

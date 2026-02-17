@@ -243,8 +243,8 @@ public class TDOATest {
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             // parameter corresponding to station position offset
-            final GroundStation primeParameter  = ((TDOA) measurement).getPrimeStation();
-            final GroundStation secondParameter = ((TDOA) measurement).getSecondStation();
+            final GroundStation primeParameter  = (GroundStation) ((TDOA) measurement).getPrimeObserver();
+            final GroundStation secondParameter = (GroundStation) ((TDOA) measurement).getSecondObserver();
 
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by
@@ -332,8 +332,8 @@ public class TDOATest {
             ((TDOA) measurement).addModifier(modifier);
 
             // parameter corresponding to station position offset
-            final GroundStation primeParameter  = ((TDOA) measurement).getPrimeStation();
-            final GroundStation secondParameter = ((TDOA) measurement).getSecondStation();
+            final GroundStation primeParameter  = (GroundStation) ((TDOA) measurement).getPrimeObserver();
+            final GroundStation secondParameter = (GroundStation) ((TDOA) measurement).getSecondObserver();
 
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by

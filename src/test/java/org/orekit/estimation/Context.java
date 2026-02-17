@@ -23,6 +23,7 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.ObserverSatellite;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -86,6 +87,12 @@ public class Context implements StationDataProvider {
 
     /** Ground stations for orbit determination. */
     public List<GroundStation> stations;
+
+    /** Stations for turn-around range.
+     * Map entry = primary station
+     * Map value = secondary station associated
+     */
+    public List<ObserverSatellite> satellites;
 
     /** Stations for turn-around range.
      * Map entry = primary station
@@ -277,10 +284,43 @@ public class Context implements StationDataProvider {
                                                    altitude);
         return new GroundStation(new TopocentricFrame(earth, gp, name), ut1.getEOPHistory(), displacements);
     }
+    
+    ObserverSatellite createObserverSatellite(final Vector3D deltaPosition, final Vector3D deltaVelocity,
+            final String name, final Force... forces) {
+
+        final Vector3D initialPosition = initialOrbit.getPosition();
+        final Vector3D initialVelocity = initialOrbit.getVelocity();
+        final Vector3D finalPosition = initialPosition.add(deltaPosition);
+        final Vector3D finalVelocity = initialVelocity.add(deltaVelocity);
+
+        final Orbit orbit = new CartesianOrbit(new PVCoordinates(finalPosition, finalVelocity),
+                initialOrbit.getFrame(),
+                initialOrbit.getDate(),
+                initialOrbit.getMu());
+
+        final NumericalPropagatorBuilder propagatorBuilder = new NumericalPropagatorBuilder(orbit,
+                new DormandPrince853IntegratorBuilder(1.0, 5.0, 10.0),
+                PositionAngleType.TRUE, 10.0);
+        for (Force force : forces) {
+            propagatorBuilder.addForceModel(force.getForceModel(this));
+        }
+
+        return new ObserverSatellite(name, propagatorBuilder.buildPropagator());
+    }
 
     @Override
     public List<GroundStation> getStations() {
         return stations;
+    }
+    
+    @Override
+    public List<ObserverSatellite> getSatellites() {
+        return satellites;
+    }
+
+    @Override
+    public OneAxisEllipsoid getEarth() {
+        return earth;
     }
 
 }

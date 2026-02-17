@@ -77,7 +77,7 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
     private double timeErrorTroposphericModel(final Observer observer, final SpacecraftState state) {
 
         // Currently not calculating tropospheric delays for this type of observer
-        if (observer.getObserverType() == Observer.ObserverType.SATELLITE) {
+        if (observer.isSpaceBased()) {
             throw new OrekitException(OrekitMessages.WRONG_OBSERVER_TYPE);
         }
 
@@ -114,7 +114,7 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
                                                                              final T[] parameters) {
 
         // Currently not calculating tropospheric delays for this type of observer
-        if (observer.getObserverType() == Observer.ObserverType.SATELLITE) {
+        if (observer.isSpaceBased()) {
             throw new OrekitException(OrekitMessages.WRONG_OBSERVER_TYPE);
         }
 
@@ -152,11 +152,11 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
     @Override
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<TDOA> estimated) {
 
-        final TDOA            measurement   = estimated.getObservedMeasurement();
-        final GroundStation   primeStation  = measurement.getPrimeStation();
-        final GroundStation   secondStation = measurement.getSecondStation();
+        final TDOA     measurement    = estimated.getObservedMeasurement();
+        final Observer primeObserver  = measurement.getPrimeObserver();
+        final Observer secondObserver = measurement.getSecondObserver();
 
-        TDOAModifierUtil.modifyWithoutDerivatives(estimated,  primeStation, secondStation,
+        TDOAModifierUtil.modifyWithoutDerivatives(estimated,  primeObserver, secondObserver,
                                                   this::timeErrorTroposphericModel, this);
 
     }
@@ -165,14 +165,14 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
     @Override
     public void modify(final EstimatedMeasurement<TDOA> estimated) {
 
-        final TDOA            measurement   = estimated.getObservedMeasurement();
-        final GroundStation   primeStation  = measurement.getPrimeStation();
-        final GroundStation   secondStation = measurement.getSecondStation();
-        final SpacecraftState state         = estimated.getStates()[0];
+        final TDOA            measurement    = estimated.getObservedMeasurement();
+        final Observer        primeObserver  = measurement.getPrimeObserver();
+        final Observer        secondObserver = measurement.getSecondObserver();
+        final SpacecraftState state          = estimated.getStates()[0];
 
         TDOAModifierUtil.modify(estimated, tropoModel,
                                 new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame())),
-                                primeStation, secondStation,
+                                primeObserver, secondObserver,
                                 this::timeErrorTroposphericModel,
                                 this::timeErrorTroposphericModel,
                                 this);

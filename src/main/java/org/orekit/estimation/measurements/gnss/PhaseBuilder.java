@@ -19,8 +19,8 @@ package org.orekit.estimation.measurements.gnss;
 import java.util.Map;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
-import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.generation.AbstractMeasurementBuilder;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -36,15 +36,15 @@ public class PhaseBuilder extends AbstractMeasurementBuilder<Phase> {
      */
     private final AmbiguityCache cache;
 
-    /** Ground station from which measurement is performed. */
-    private final GroundStation station;
+    /** Observer from which measurement is performed. */
+    private final Observer observer;
 
     /** Wavelength of the phase observed value [m]. */
     private final double wavelength;
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
-     * @param station ground station from which measurement is performed
+     * @param observer observer from which measurement is performed
      * @param wavelength phase observed value wavelength (m)
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
@@ -53,12 +53,12 @@ public class PhaseBuilder extends AbstractMeasurementBuilder<Phase> {
      * @since 12.1
      */
     public PhaseBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                        final GroundStation station, final double wavelength,
+                        final Observer observer, final double wavelength,
                         final double sigma, final double baseWeight,
                         final ObservableSatellite satellite,
                         final AmbiguityCache cache) {
         super(noiseSource, sigma, baseWeight, satellite);
-        this.station    = station;
+        this.observer   = observer;
         this.wavelength = wavelength;
         this.cache      = cache;
     }
@@ -67,7 +67,7 @@ public class PhaseBuilder extends AbstractMeasurementBuilder<Phase> {
     @Override
     protected Phase buildObserved(final AbsoluteDate date,
                                   final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-        return new Phase(station, date, Double.NaN, wavelength,
+        return new Phase(observer, date, Double.NaN, wavelength,
                          getTheoreticalStandardDeviation()[0],
                          getBaseWeight()[0], getSatellites()[0], cache);
     }

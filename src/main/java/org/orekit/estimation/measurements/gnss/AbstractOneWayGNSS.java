@@ -18,34 +18,18 @@ package org.orekit.estimation.measurements.gnss;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.analysis.differentiation.GradientField;
 import org.orekit.estimation.measurements.AbstractMeasurement;
-import org.orekit.estimation.measurements.CommonParametersWithDerivatives;
-import org.orekit.estimation.measurements.CommonParametersWithoutDerivatives;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.ObserverSatellite;
-import org.orekit.estimation.measurements.signal.FieldSignalTravelTimeAdjustableEmitter;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeAdjustableEmitter;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
-import org.orekit.frames.Frame;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.clocks.ClockOffset;
-import org.orekit.time.clocks.FieldClockOffset;
-import org.orekit.time.clocks.QuadraticFieldClockModel;
-import org.orekit.utils.FieldPVCoordinatesProvider;
-import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap.Span;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Abstract class for one-way GNSS, scalar measurement.
  * @author Romain Serra
@@ -53,11 +37,11 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public abstract class AbstractOneWayGNSS<T extends ObservedMeasurement<T>> extends AbstractMeasurement<T> {
 
-    /** GNSS satellite sending data. */
-    private final ObserverSatellite gnssSat;
+    /** Observer sending measurement data. */
+    private final Observer observer;
 
     /** Simple constructor.
-     * @param gnssSatellite GNSS observer satellite
+     * @param observer sender of GNSS signal
      * @param date date of the measurement
      * @param observedValue observed value
      * @param sigma theoretical standard deviation
@@ -65,125 +49,20 @@ public abstract class AbstractOneWayGNSS<T extends ObservedMeasurement<T>> exten
      * @param signalTravelTimeModel time delay computer
      * @param local satellite which receives the signal and perform the measurement
      */
-    protected AbstractOneWayGNSS(final ObserverSatellite gnssSatellite, final AbsoluteDate date,
+    protected AbstractOneWayGNSS(final Observer observer, final AbsoluteDate date,
                                  final double observedValue, final double sigma, final double baseWeight,
                                  final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite local) {
         // Call super constructor
         super(date, false, new double[] {observedValue}, new double[] {sigma}, new double[] {baseWeight},
                 signalTravelTimeModel, Collections.singletonList(local));
-        this.gnssSat = gnssSatellite;
+        this.observer = observer;
     }
 
-    /** Get satellite sending signal.
-     * @return GNSS satellite
+    /** Observer object sending signal.
+     * @return observer object
      */
-    public final ObserverSatellite getObserver() {
-        return gnssSat;
-    }
-
-    /** Compute common estimation parameters in case where measured object is the
-     * receiver of the signal value (e.g. GNSS to ObservableSatellite).
-     * @param states state(s) of all measured spacecraft
-     * @param localSat satellite whose state is being estimated
-     * @param measurementDate date when measurement was taken
-     * @param receiverClockOffsetAlreadyApplied if true, the specified {@code date} is as read
-     * by the receiver clock (i.e. clock offset <em>not</em> compensated), if false,
-     * the specified {@code date} was already compensated and is a physical absolute date
-     * @return common parameters
-     */
-    protected CommonParametersWithoutDerivatives computeLocalParametersWithout(final SpacecraftState[] states,
-                                                                               final ObservableSatellite localSat,
-                                                                               final AbsoluteDate measurementDate,
-                                                                               final boolean receiverClockOffsetAlreadyApplied) {
-
-        // Coordinates of the observed spacecraft
-        final Frame frame            = states[0].getFrame();
-        final TimeStampedPVCoordinates pvaLocal         = states[0].getPVCoordinates(frame);
-
-        // Clock values of the observed spacecraft and signal receiver
-        final ClockOffset localClock       = localSat.getQuadraticClockModel().getOffset(measurementDate);
-        final double                   localClockOffset = localClock.getOffset();
-
-        // take clock offset of receiver (in this case, ObservableSatellite) into account
-        final AbsoluteDate arrivalDate = receiverClockOffsetAlreadyApplied ? measurementDate : measurementDate.shiftedBy(-localClockOffset);
-
-        // Coordinates provider of the Observer object providing the signal information
-        final PVCoordinatesProvider remotePV = getObserver().getPVCoordinatesProvider();
-
-        // Downlink delay / determine time-of-emission of signal information from remote object
-        final double deltaT = arrivalDate.durationFrom(states[0]);
-        final TimeStampedPVCoordinates pvaDownlink = pvaLocal.shiftedBy(deltaT);
-        final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = new SignalTravelTimeAdjustableEmitter(remotePV);
-        final double tauD = signalTimeOfFlight.computeDelay(arrivalDate, pvaDownlink.getPosition(), arrivalDate, frame);
-
-        // Remote object pos/vel at time of signal emission
-        final AbsoluteDate emissionDate = arrivalDate.shiftedBy(-tauD);
-        final ClockOffset  remoteClock  = getObserver().getQuadraticClockModel().getOffset(emissionDate);
-
-        return new CommonParametersWithoutDerivatives(states[0], tauD,
-                localClock, remoteClock,
-                states[0].shiftedBy(deltaT),
-                pvaDownlink,
-                remotePV.getPVCoordinates(emissionDate, frame));
-
-    }
-
-    /** Compute common estimation parameters with derivatives when the measured object is the
-     * receiver of the signal sent by the Observer.
-     * @param states state(s) of all measured spacecraft
-     * @param localSat satellite whose state is being estimated
-     * @param measurementDate date when measurement was taken
-     * @param receiverClockOffsetAlreadyApplied if true, the specified {@code date} is as read
-     * @param parameterDrivers list of parameter drivers associated with measurement
-     * by the receiver clock (i.e. clock offset <em>not</em> compensated), if false,
-     * the specified {@code date} was already compensated and is a physical absolute date
-     * @return common parameters
-     */
-    protected CommonParametersWithDerivatives computeLocalParametersWith(final SpacecraftState[] states,
-                                                                         final ObservableSatellite localSat,
-                                                                         final AbsoluteDate measurementDate,
-                                                                         final boolean receiverClockOffsetAlreadyApplied,
-                                                                         final List<ParameterDriver> parameterDrivers)  {
-        // Create the parameter indices map
-        final Frame                frame        = states[0].getFrame();
-        final Map<String, Integer> paramIndices = getObserver().getParameterIndices(states, parameterDrivers);
-        final int                  nbParams     = 6 * states.length + paramIndices.size();
-
-        // Turn measurement date into FieldAbsoluteDate<Gradient>
-        final FieldAbsoluteDate<Gradient> gDate = new FieldAbsoluteDate<>(GradientField.getField(nbParams), measurementDate);
-
-        // Measured satellite object data
-        final TimeStampedFieldPVCoordinates<Gradient> pvaLocal         = AbstractMeasurement.getCoordinates(states[0], 0, nbParams);
-        final QuadraticFieldClockModel<Gradient> localClock       = localSat.getQuadraticClockModel().
-                toGradientModel(nbParams, paramIndices, measurementDate);
-        final FieldClockOffset<Gradient> localClockOffset = localClock.getOffset(gDate);
-
-        // take clock offset into account for arrival date
-        final FieldAbsoluteDate<Gradient> arrivalDate = receiverClockOffsetAlreadyApplied ?
-                gDate : gDate.shiftedBy(localClockOffset.getOffset().negate());
-
-        // Coords provider for observer object that is sending signal
-        final FieldPVCoordinatesProvider<Gradient> remotePV = getObserver().getFieldPVCoordinatesProvider(nbParams, paramIndices);
-
-        // Downlink delay
-        final Gradient deltaT = arrivalDate.durationFrom(states[0].getDate());
-        final TimeStampedFieldPVCoordinates<Gradient> pvaDownlink = pvaLocal.shiftedBy(deltaT);
-        final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer =
-                new FieldSignalTravelTimeAdjustableEmitter<>(remotePV);
-        final Gradient tauD = fieldComputer.computeDelay(arrivalDate, pvaDownlink.getPosition(), arrivalDate, frame);
-
-        // Remote observer at signal emission time
-        final FieldAbsoluteDate<Gradient> emissionDate = arrivalDate.shiftedBy(tauD.negate());
-        final QuadraticFieldClockModel<Gradient> remoteClock = getObserver().getQuadraticFieldClock(nbParams,
-                emissionDate.toAbsoluteDate(), paramIndices);
-        final FieldClockOffset<Gradient>  remoteClockOffset = remoteClock.getOffset(emissionDate);
-
-        return new CommonParametersWithDerivatives(states[0], paramIndices, tauD,
-                localClockOffset, remoteClockOffset,
-                states[0].shiftedBy(deltaT.getValue()),
-                pvaDownlink,
-                remotePV.getPVCoordinates(emissionDate, frame));
-
+    public final Observer getObserver() {
+        return observer;
     }
 
     /**

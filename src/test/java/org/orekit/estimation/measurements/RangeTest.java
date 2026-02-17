@@ -218,10 +218,10 @@ class RangeTest {
                                                                            propagatorBuilder);
         for (final ObservedMeasurement<?> measurement : measurements) {
             // parameter corresponding to station position offset
-            final GroundStation stationParameter = ((Range) measurement).getStation();
+            final GroundStation stationParameter = (GroundStation) ((Range) measurement).getObserver();
 
-            final AbsoluteDate datemeas  = measurement.getDate();
-            SpacecraftState state      = propagator2.propagate(datemeas);
+            final AbsoluteDate datemeas = measurement.getDate();
+            SpacecraftState    state    = propagator2.propagate(datemeas);
 
             // adjust emitter, double version
             final TimeStampedPVCoordinates staPV = stationParameter.getOffsetToInertial(state.getFrame(), datemeas, false).
@@ -344,7 +344,7 @@ class RangeTest {
                     // Print results on console ?
                     if (printResults) {
                         final AbsoluteDate measurementDate = measurement.getDate();
-                        String stationName = ((Range) measurement).getStation().getBaseFrame().getName();
+                        String stationName = ((Range) measurement).getObserver().getName();
 
                         System.out.format(Locale.US, "%-15s  %-23s  %-23s  %19.6f  %19.6f  %13.6e  %13.6e%n",
                                          stationName, measurementDate, date,
@@ -495,7 +495,7 @@ class RangeTest {
                     }
                     // Print values in console ?
                     if (printResults) {
-                        String stationName  = ((Range) measurement).getStation().getBaseFrame().getName();
+                        String stationName  = ((Range) measurement).getObserver().getName();
                         System.out.format(Locale.US, "%-15s  %-23s  %-23s  " +
                                         "%10.3e  %10.3e  %10.3e  " +
                                         "%10.3e  %10.3e  %10.3e  " +
@@ -606,7 +606,7 @@ class RangeTest {
                     }
 
                     // Parameter corresponding to station position offset
-                    final GroundStation station = ((Range) measurement).getStation();
+                    final GroundStation station = (GroundStation) ((Range) measurement).getObserver();
 
                     // We intentionally propagate to a date which is close to the
                     // real spacecraft state but is *not* the accurate date, by
@@ -626,7 +626,7 @@ class RangeTest {
                     };
 
                     if (printResults) {
-                        String stationName  = ((Range) measurement).getStation().getBaseFrame().getName();
+                        String stationName  = ((Range) measurement).getObserver().getName();
                         System.out.format(Locale.US, "%-15s  %-23s  %-23s  ",
                                           stationName, measurement.getDate(), date);
                     }
@@ -737,7 +737,7 @@ class RangeTest {
                     (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)
                    ) {
 
-                    String stationName  = ((Range) measurement).getStation().getBaseFrame().getName();
+                    String stationName  = ((Range) measurement).getObserver().getName();
 
                     // Add modifiers if test implies it
                     final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel();

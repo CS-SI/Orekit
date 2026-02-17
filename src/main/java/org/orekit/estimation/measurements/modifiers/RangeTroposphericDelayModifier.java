@@ -55,9 +55,9 @@ public class RangeTroposphericDelayModifier extends BaseRangeTroposphericDelayMo
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<Range> estimated) {
 
         final Range    measurement = estimated.getObservedMeasurement();
-        final Observer station     = measurement.getStation();
+        final Observer observer    = measurement.getObserver();
 
-        RangeModifierUtil.modifyWithoutDerivatives(estimated, station,
+        RangeModifierUtil.modifyWithoutDerivatives(estimated, observer,
                                                    this::rangeErrorTroposphericModel,
                                                    this);
 
@@ -69,12 +69,12 @@ public class RangeTroposphericDelayModifier extends BaseRangeTroposphericDelayMo
     public void modify(final EstimatedMeasurement<Range> estimated) {
 
         final Range           measurement = estimated.getObservedMeasurement();
-        final Observer        station     = measurement.getStation();
+        final Observer        observer    = measurement.getObserver();
         final SpacecraftState state       = estimated.getStates()[0];
 
         RangeModifierUtil.modify(estimated, getTropoModel(),
                                  new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame())),
-                                 station,
+                                 observer,
                                  this::rangeErrorTroposphericModel,
                                  this::rangeErrorTroposphericModel,
                                  this);

@@ -25,7 +25,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.CommonParametersWithDerivatives;
 import org.orekit.estimation.measurements.CommonParametersWithoutDerivatives;
-import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -60,11 +60,11 @@ public class Phase extends AbstractMeasurement<Phase> {
     /** Wavelength of the phase observed value [m]. */
     private final double wavelength;
 
-    /** Ground station that receives signal from satellite. */
-    private final GroundStation station;
+    /** Observer that receives signal from satellite. */
+    private final Observer observer;
 
     /** Simple constructor.
-     * @param station ground station from which measurement is performed
+     * @param observer observer that performs the measurement
      * @param date date of the measurement
      * @param phase observed value (cycles)
      * @param wavelength phase observed value wavelength (m)
@@ -74,25 +74,25 @@ public class Phase extends AbstractMeasurement<Phase> {
      * @param cache from which ambiguity drive should come
      * @since 12.1
      */
-    public Phase(final GroundStation station, final AbsoluteDate date,
+    public Phase(final Observer observer, final AbsoluteDate date,
                  final double phase, final double wavelength, final double sigma,
                  final double baseWeight, final ObservableSatellite satellite,
                  final AmbiguityCache cache) {
         super(date, false, phase, sigma, baseWeight, Collections.singletonList(satellite));
         ambiguityDriver = cache.getAmbiguity(satellite.getName(),
-                                             station.getName(),
+                                             observer.getName(),
                                              wavelength);
-        addParametersDrivers(station.getParametersDrivers());
+        addParametersDrivers(observer.getParametersDrivers());
         addParameterDriver(ambiguityDriver);
-        this.station = station;
+        this.observer = observer;
         this.wavelength = wavelength;
     }
 
-    /** Get receiving ground station.
-     * @return ground station
+    /** Get receiving observer.
+     * @return observer
      */
-    public final GroundStation getStation() {
-        return station;
+    public final Observer getObserver() {
+        return observer;
     }
 
     /** Get the wavelength.
@@ -116,7 +116,7 @@ public class Phase extends AbstractMeasurement<Phase> {
                                                                                       final int evaluation,
                                                                                       final SpacecraftState[] states) {
 
-        final CommonParametersWithoutDerivatives common = getStation().
+        final CommonParametersWithoutDerivatives common = getObserver().
             computeRemoteParametersWithout(states, getSatellites().get(0), getDate(), false);
 
         // prepare the evaluation
@@ -132,7 +132,7 @@ public class Phase extends AbstractMeasurement<Phase> {
         // Clock offsets
         final ObservableSatellite satellite = getSatellites().get(0);
         final double              dts       = satellite.getClockOffsetDriver().getValue(common.getState().getDate());
-        final double              dtg       = getStation().getClockOffsetDriver().getValue(getDate());
+        final double              dtg       = getObserver().getClockOffsetDriver().getValue(getDate());
 
         // Phase value
         final double cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
@@ -161,7 +161,7 @@ public class Phase extends AbstractMeasurement<Phase> {
         //  - 0..2 - Position of the spacecraft in inertial frame
         //  - 3..5 - Velocity of the spacecraft in inertial frame
         //  - 6..n - station parameters (ambiguity, clock offset, station offsets, pole, prime meridian...)
-        final CommonParametersWithDerivatives common = getStation().
+        final CommonParametersWithDerivatives common = getObserver().
             computeRemoteParametersWith(states, getSatellites().get(0), getDate(), getParametersDrivers());
         final int nbParams = common.getTauD().getFreeParameters();
 
@@ -178,7 +178,7 @@ public class Phase extends AbstractMeasurement<Phase> {
         // Clock offsets
         final ObservableSatellite satellite = getSatellites().get(0);
         final Gradient            dts       = satellite.getClockOffsetDriver().getValue(nbParams, common.getIndices(), state.getDate());
-        final Gradient            dtg       = getStation().getClockOffsetDriver().getValue(nbParams, common.getIndices(), getDate());
+        final Gradient            dtg       = getObserver().getClockOffsetDriver().getValue(nbParams, common.getIndices(), getDate());
 
         // Phase value
         final double   cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;

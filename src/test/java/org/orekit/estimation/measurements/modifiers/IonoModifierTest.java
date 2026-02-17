@@ -763,11 +763,11 @@ public class IonoModifierTest {
 
         for (final ObservedMeasurement<?> measurement : measurements) {
             // parameter corresponding to station position offset
-            final GroundStation   station = ((Range) measurement).getStation();
-            final AbsoluteDate    date    = measurement.getDate();
-            final SpacecraftState state   = propagator.propagate(date);
+            final PVCoordinatesProvider coordsProvider = ((Range) measurement).getObserver().getPVCoordinatesProvider();
+            final AbsoluteDate          date           = measurement.getDate();
+            final SpacecraftState       state          = propagator.propagate(date);
 
-            double delayMeters = model.pathDelay(state, station.getBaseFrame(), frequency, model.getParameters());
+            double delayMeters = model.pathDelay(state, coordsProvider, frequency, model.getParameters());
 
             final double epsilon = 1e-6;
             Assertions.assertTrue(Precision.compareTo(delayMeters, 15., epsilon) < 0);

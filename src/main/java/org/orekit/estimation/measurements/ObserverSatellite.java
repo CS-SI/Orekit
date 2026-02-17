@@ -28,6 +28,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.clocks.QuadraticClockModel;
 import org.orekit.utils.ExtendedPositionProvider;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -47,8 +48,7 @@ public class ObserverSatellite extends AbstractMeasurementObject implements Obse
 
     /** Simple constructor.
      * @param name name of receiver
-     * @param pvCoordsProvider position/velocity coordinates provider for receiver
-     * @since 14.0
+     * @param pvCoordsProvider satellite propagator
      */
     public ObserverSatellite(final String name, final PVCoordinatesProvider pvCoordsProvider) {
         this(name, pvCoordsProvider, createEmptyQuadraticClock(name));
@@ -58,7 +58,6 @@ public class ObserverSatellite extends AbstractMeasurementObject implements Obse
      * @param name name of receiver
      * @param pvCoordsProvider position/velocity coordinates provider for receiver
      * @param quadraticClock clock model for receiver
-     * @since 14.0
      */
     public ObserverSatellite(final String name, final PVCoordinatesProvider pvCoordsProvider,
                              final QuadraticClockModel quadraticClock) {
@@ -68,8 +67,8 @@ public class ObserverSatellite extends AbstractMeasurementObject implements Obse
 
     /** {@inheritDoc} */
     @Override
-    public final ObserverType getObserverType() {
-        return ObserverType.SATELLITE;
+    public final boolean isSpaceBased() {
+        return true;
     }
 
     /** {@inheritDoc} */
@@ -131,11 +130,9 @@ public class ObserverSatellite extends AbstractMeasurementObject implements Obse
                                                         final int freeParameters,
                                                         final Map<String, Integer> indices) {
 
-        final AbsoluteDate    clockDate = offsetCompensatedDate.toAbsoluteDate();
-        final Field<Gradient> field     = offsetCompensatedDate.getField();
-        final Transform       transform = getOffsetToInertial(inertial, clockDate, true);
+        final FieldPVCoordinates<Gradient> coords = getFieldPVCoordinatesProvider(freeParameters, indices).getPVCoordinates(offsetCompensatedDate, inertial);
+        return new FieldTransform<>(offsetCompensatedDate, coords.getPosition(), coords.getVelocity(), coords.getAcceleration());
 
-        return new FieldTransform<>(field, transform);
     }
 
 }
