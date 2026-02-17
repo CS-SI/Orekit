@@ -44,7 +44,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Brianna Aubin
  * @since 14.0
  */
-public abstract class AbstractMeasurementObject implements MeasurementParticipant {
+public abstract class AbstractParticipant implements MeasurementParticipant {
 
     /** Checkstyle is annoying sometimes. */
     private static final String CLOCK_STRING = "-clock";
@@ -69,7 +69,7 @@ public abstract class AbstractMeasurementObject implements MeasurementParticipan
     /** Simple constructor.
      * @param name name of MeasurementObject
      */
-    protected AbstractMeasurementObject(final String name) {
+    protected AbstractParticipant(final String name) {
         this(name, createEmptyQuadraticClock(name));
     }
 
@@ -77,7 +77,7 @@ public abstract class AbstractMeasurementObject implements MeasurementParticipan
      * @param name name of MeasurementObject
      * @param quadraticClock clock belonging to MeasurementObject
      */
-    protected AbstractMeasurementObject(final String name, final QuadraticClockModel quadraticClock) {
+    protected AbstractParticipant(final String name, final QuadraticClockModel quadraticClock) {
 
         // Initialize member variables
         this.name = name;

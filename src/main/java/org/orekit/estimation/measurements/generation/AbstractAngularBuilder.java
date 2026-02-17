@@ -20,7 +20,7 @@ import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
+import org.orekit.signal.SignalTravelTimeModel;
 
 /** Abstract builder for angular measurements based involving one receiver.
  * @author Romain Serra

@@ -20,4 +20,4 @@
  * @author Romain Serra
  * @since 14.0
  */
-package org.orekit.estimation.measurements.signal;
+package org.orekit.signal;

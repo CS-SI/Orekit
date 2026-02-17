@@ -18,7 +18,7 @@ package org.orekit.estimation.measurements;
 
 import java.util.Collections;
 
-import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 
 /** Base class modeling a measurement where receiver is a ground station.

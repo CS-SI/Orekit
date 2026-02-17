@@ -17,10 +17,10 @@
 package org.orekit.estimation.measurements.generation;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
-import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
+import org.orekit.estimation.measurements.Observer;
+import org.orekit.signal.SignalTravelTimeModel;
 
 /** Abstract builder for scalar measurements based on one signal emitter and one receiver.
  * @author Romain Serra

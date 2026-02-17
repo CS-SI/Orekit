@@ -24,12 +24,12 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.estimation.measurements.signal.FieldSignalTravelTimeAdjustableEmitter;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
+import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.clocks.ClockOffset;
@@ -317,7 +317,7 @@ public interface Observer extends MeasurementParticipant {
         final TimeStampedPVCoordinates satelliteDownlink = offsetToInertialDownlink.transformPVCoordinates(origin);
 
         // Coordinates provider for emitting object (observed spacecraft)
-        final PVCoordinatesProvider pvCoordinatesProvider = AbstractMeasurementObject.extractPVCoordinatesProvider(states[0], pva);
+        final PVCoordinatesProvider pvCoordinatesProvider = AbstractParticipant.extractPVCoordinatesProvider(states[0], pva);
 
         // Downlink delay / determine time of emission of signal by ObservableSatellite
         final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = new SignalTravelTimeAdjustableEmitter(pvCoordinatesProvider);
@@ -375,7 +375,7 @@ public interface Observer extends MeasurementParticipant {
                                                                                                             zero, zero, zero));
 
         // Form coordinates provider
-        final FieldPVCoordinatesProvider<Gradient> fieldPVCoordinatesProvider = AbstractMeasurementObject.extractFieldPVCoordinatesProvider(states[0], pva);
+        final FieldPVCoordinatesProvider<Gradient> fieldPVCoordinatesProvider = AbstractParticipant.extractFieldPVCoordinatesProvider(states[0], pva);
 
         // Downlink delay
         final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer = new FieldSignalTravelTimeAdjustableEmitter<>(fieldPVCoordinatesProvider);

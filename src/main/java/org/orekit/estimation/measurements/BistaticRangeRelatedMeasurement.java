@@ -21,10 +21,10 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
-import org.orekit.estimation.measurements.signal.TwoLegsSignalTravelTimer;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.SignalTravelTimeModel;
+import org.orekit.signal.TwoLeggedSignalTravelTimer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
@@ -64,7 +64,7 @@ abstract class BistaticRangeRelatedMeasurement<T extends AbstractMeasurement<T>>
     private final Observer receiver;
 
     /** Two-way signal model .*/
-    private final TwoLegsSignalTravelTimer twoLegsSignalTimer;
+    private final TwoLeggedSignalTravelTimer twoLegsSignalTimer;
 
     /**
      * Simple constructor.
@@ -93,14 +93,14 @@ abstract class BistaticRangeRelatedMeasurement<T extends AbstractMeasurement<T>>
         // Set emitter
         this.emitter  = emitter;
         this.receiver = receiver;
-        this.twoLegsSignalTimer = new TwoLegsSignalTravelTimer(signalTravelTimeModel);
+        this.twoLegsSignalTimer = new TwoLeggedSignalTravelTimer(signalTravelTimeModel);
     }
 
     /**
      * Getter for the two legs timer.
      * @return model
      */
-    public TwoLegsSignalTravelTimer getTwoLegsSignalTimer() {
+    public TwoLeggedSignalTravelTimer getTwoLegsSignalTimer() {
         return twoLegsSignalTimer;
     }
 
@@ -157,7 +157,7 @@ abstract class BistaticRangeRelatedMeasurement<T extends AbstractMeasurement<T>>
         final PVCoordinatesProvider receiverPVProvider = getReceiver().getPVCoordinatesProvider();
         final Frame frame = state.getFrame();
         final TimeStampedPVCoordinates receiverPV = receiverPVProvider.getPVCoordinates(receptionDate, frame);
-        final PVCoordinatesProvider satellitePVProvider = AbstractMeasurementObject.extractPVCoordinatesProvider(state,
+        final PVCoordinatesProvider satellitePVProvider = AbstractParticipant.extractPVCoordinatesProvider(state,
                 state.getPVCoordinates());
         final double[] delays = getTwoLegsSignalTimer().computeDelays(frame, receiverPV.getPosition(), receptionDate,
                 satellitePVProvider, getEmitter().getPVCoordinatesProvider());
@@ -197,7 +197,7 @@ abstract class BistaticRangeRelatedMeasurement<T extends AbstractMeasurement<T>>
         // Compute light time delays
         final FieldPVCoordinatesProvider<Gradient> receiverPVProvider = getReceiver().getFieldPVCoordinatesProvider(nbParams, paramIndices);
         final TimeStampedFieldPVCoordinates<Gradient> receiverPV = receiverPVProvider.getPVCoordinates(receptionDate, frame);
-        final FieldPVCoordinatesProvider<Gradient> satellitePVProvider = AbstractMeasurementObject.extractFieldPVCoordinatesProvider(state, pva);
+        final FieldPVCoordinatesProvider<Gradient> satellitePVProvider = AbstractParticipant.extractFieldPVCoordinatesProvider(state, pva);
         final FieldPVCoordinatesProvider<Gradient> emitterPVProvider = getEmitter().getFieldPVCoordinatesProvider(nbParams, paramIndices);
         final Gradient[] delays = getTwoLegsSignalTimer().computeDelays(frame, receiverPV.getPosition(), receptionDate,
                 satellitePVProvider, emitterPVProvider);

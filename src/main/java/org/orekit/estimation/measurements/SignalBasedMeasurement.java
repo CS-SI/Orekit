@@ -18,7 +18,7 @@ package org.orekit.estimation.measurements;
 
 import java.util.List;
 
-import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 
 /** Abstract class modeling a measurement based on signal transmission.

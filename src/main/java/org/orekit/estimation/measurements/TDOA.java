@@ -19,10 +19,10 @@ package org.orekit.estimation.measurements;
 import java.util.Arrays;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.orekit.estimation.measurements.signal.FieldSignalTravelTimeAdjustableReceiver;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeAdjustableReceiver;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.FieldSignalTravelTimeAdjustableReceiver;
+import org.orekit.signal.SignalTravelTimeAdjustableReceiver;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;

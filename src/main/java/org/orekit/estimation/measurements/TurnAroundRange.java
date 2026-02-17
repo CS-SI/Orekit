@@ -24,10 +24,10 @@ import java.util.Map;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
-import org.orekit.estimation.measurements.signal.FieldSignalTravelTimeAdjustableEmitter;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeAdjustableEmitter;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
+import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
@@ -195,7 +195,7 @@ public class TurnAroundRange extends SignalBasedMeasurement<TurnAroundRange> {
                 .getPVCoordinates(measurementDate, state.getFrame());
 
         // Compute propagation times
-        final PVCoordinatesProvider localCoordsProvider = AbstractMeasurementObject.extractPVCoordinatesProvider(state, pva);
+        final PVCoordinatesProvider localCoordsProvider = AbstractParticipant.extractPVCoordinatesProvider(state, pva);
         final SignalTravelTimeAdjustableEmitter signalTimeOfFlight = getSignalTravelTimeModel().getAdjustableEmitterComputer(localCoordsProvider);
         final double primaryTauD = signalTimeOfFlight.computeDelay(pva.getDate(), primaryArrival.getPosition(), measurementDate, state.getFrame());
 
@@ -362,7 +362,7 @@ public class TurnAroundRange extends SignalBasedMeasurement<TurnAroundRange> {
                                                                        getPVCoordinates(measurementDateDS, states[0].getFrame());
 
         // Compute propagation times
-        final FieldPVCoordinatesProvider<Gradient> satellitePVProvider = AbstractMeasurementObject
+        final FieldPVCoordinatesProvider<Gradient> satellitePVProvider = AbstractParticipant
                 .extractFieldPVCoordinatesProvider(state, pvaDS);
         final FieldSignalTravelTimeAdjustableEmitter<Gradient> fieldComputer = getSignalTravelTimeModel()
                 .getFieldAdjustableEmitterComputer(field, satellitePVProvider);

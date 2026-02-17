@@ -41,7 +41,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Brianna Aubin
  * @since 14.0
  */
-public class ObserverSatellite extends AbstractMeasurementObject implements Observer {
+public class ObserverSatellite extends AbstractParticipant implements Observer {
 
     /** Provides satellite trajectory. */
     private final PVCoordinatesProvider pvCoordsProvider;
