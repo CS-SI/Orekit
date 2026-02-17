@@ -21,12 +21,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.orekit.estimation.measurements.signal.FieldSignalTravelTimeAdjustableEmitter;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeAdjustableEmitter;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
-import org.orekit.estimation.measurements.signal.TwoLegsSignalTravelTimer;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
+import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
+import org.orekit.signal.SignalTravelTimeModel;
+import org.orekit.signal.TwoLeggedSignalTravelTimer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
@@ -150,7 +150,7 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
 
         // compute transit and emission dates
         final Frame           frame = local.getFrame();
-        final TwoLegsSignalTravelTimer travelTimer = new TwoLegsSignalTravelTimer(getSignalTravelTimeModel());
+        final TwoLeggedSignalTravelTimer travelTimer = new TwoLeggedSignalTravelTimer(getSignalTravelTimeModel());
         final SpacecraftState localAtReception = local.shiftedBy(receptionDate.durationFrom(local));
         final double[] delays = travelTimer.computeDelays(frame, localAtReception.getPosition(), receptionDate,
                 AbstractMeasurementObject.extractPVCoordinatesProvider(remote, remote.getPVCoordinates()),
@@ -278,7 +278,7 @@ public class InterSatellitesRange extends SignalBasedMeasurement<InterSatellites
         final FieldAbsoluteDate<Gradient> receptionDate = new FieldAbsoluteDate<>(getDate(), dtl.negate());
 
         // compute transit and emission dates
-        final TwoLegsSignalTravelTimer travelTimer = new TwoLegsSignalTravelTimer(getSignalTravelTimeModel());
+        final TwoLeggedSignalTravelTimer travelTimer = new TwoLeggedSignalTravelTimer(getSignalTravelTimeModel());
         final FieldPVCoordinatesProvider<Gradient> localPVProvider = AbstractMeasurementObject.extractFieldPVCoordinatesProvider(local, pvaL);
         final FieldPVCoordinatesProvider<Gradient> remotePVProvider = AbstractMeasurementObject.extractFieldPVCoordinatesProvider(remote, pvaR);
         final TimeStampedFieldPVCoordinates<Gradient> localPVAtReception = localPVProvider.getPVCoordinates(receptionDate, frame);

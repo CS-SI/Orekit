@@ -1,4 +1,4 @@
-package org.orekit.estimation.measurements.signal;
+package org.orekit.signal;
 
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolver;

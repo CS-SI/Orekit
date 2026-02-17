@@ -21,10 +21,10 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
-import org.orekit.estimation.measurements.signal.TwoLegsSignalTravelTimer;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.SignalTravelTimeModel;
+import org.orekit.signal.TwoLeggedSignalTravelTimer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
@@ -64,7 +64,7 @@ abstract class BistaticRangeRelatedMeasurement<T extends AbstractMeasurement<T>>
     private final Observer receiver;
 
     /** Two-way signal model .*/
-    private final TwoLegsSignalTravelTimer twoLegsSignalTimer;
+    private final TwoLeggedSignalTravelTimer twoLegsSignalTimer;
 
     /**
      * Simple constructor.
@@ -93,14 +93,14 @@ abstract class BistaticRangeRelatedMeasurement<T extends AbstractMeasurement<T>>
         // Set emitter
         this.emitter  = emitter;
         this.receiver = receiver;
-        this.twoLegsSignalTimer = new TwoLegsSignalTravelTimer(signalTravelTimeModel);
+        this.twoLegsSignalTimer = new TwoLeggedSignalTravelTimer(signalTravelTimeModel);
     }
 
     /**
      * Getter for the two legs timer.
      * @return model
      */
-    public TwoLegsSignalTravelTimer getTwoLegsSignalTimer() {
+    public TwoLeggedSignalTravelTimer getTwoLegsSignalTimer() {
         return twoLegsSignalTimer;
     }
 

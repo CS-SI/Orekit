@@ -22,9 +22,9 @@ import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 
 /** Builder for {@link AngularRaDec} measurements.

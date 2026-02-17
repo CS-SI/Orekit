@@ -22,8 +22,8 @@ import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.BistaticRange;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Observer;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 
 /** Builder for {@link BistaticRange} measurements.

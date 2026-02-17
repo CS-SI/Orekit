@@ -14,57 +14,55 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements.signal;
+package org.orekit.signal;
 
-import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.optim.ConvergenceChecker;
 import org.hipparchus.util.FastMath;
 import org.orekit.frames.Frame;
-import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
-import org.orekit.utils.FieldPVCoordinatesProvider;
+import org.orekit.utils.PVCoordinatesProvider;
 
 /**
- * Abstract class for computing signal travel time in vacuum.
+ * Abstract class for computation of signal travel time in vacuum.
  * @since 14.0
  * @author Romain Serra
  * @author Luc Maisonnobe
  */
-abstract class FieldAbstractSignalTravelTime<T extends CalculusFieldElement<T>> {
+abstract class AbstractSignalTravelTime {
 
     /** Reciprocal for light speed. */
     protected static final double C_RECIPROCAL = 1.0 / Constants.SPEED_OF_LIGHT;
 
     /** Maximum number of iterations. */
-    private static final int DEFAULT_MAX_ITER = 10;
+    protected static final int DEFAULT_MAX_ITER = 10;
 
     /** Convergence checker. */
-    private final ConvergenceChecker<T> convergenceChecker;
+    private final ConvergenceChecker<Double> convergenceChecker;
 
     /**
      * Constructor.
      * @param convergenceChecker convergence checker
      */
-    protected FieldAbstractSignalTravelTime(final ConvergenceChecker<T> convergenceChecker) {
+    protected AbstractSignalTravelTime(final ConvergenceChecker<Double> convergenceChecker) {
         this.convergenceChecker = convergenceChecker;
     }
 
     /**
      * Get the default convergence checker.
      * @return checker
-     * @param <S> field type
      */
-    static <S extends CalculusFieldElement<S>> ConvergenceChecker<S> getDefaultConvergenceChecker() {
+    static ConvergenceChecker<Double> getDefaultConvergenceChecker() {
         return (iteration, previous, current) -> iteration != 0 && (iteration > DEFAULT_MAX_ITER ||
-                (previous.subtract(current)).norm() <= 2 * FastMath.ulp(current).getReal());
+                FastMath.abs(previous - current) <= 2 * FastMath.ulp(current));
     }
 
     /**
      * Getter for the convergence checker.
      * @return checker
      */
-    public ConvergenceChecker<T> getConvergenceChecker() {
+    public ConvergenceChecker<Double> getConvergenceChecker() {
         return convergenceChecker;
     }
 
@@ -77,22 +75,23 @@ abstract class FieldAbstractSignalTravelTime<T extends CalculusFieldElement<T>> 
      * @param frame Inertial frame in which receiver/emitter is defined.
      * @return <em>positive</em> delay between signal emission and signal reception dates
      */
-    protected T compute(final FieldPVCoordinatesProvider<T> pvCoordinatesProvider, final T initialOffset,
-                        final FieldVector3D<T> fixedPosition, final FieldAbsoluteDate<T> guessDate, final Frame frame) {
-        T delay = initialOffset;
+    protected double compute(final PVCoordinatesProvider pvCoordinatesProvider, final double initialOffset,
+                             final Vector3D fixedPosition, final AbsoluteDate guessDate, final Frame frame) {
+        double delay = initialOffset;
 
-        // search signal transit date, computing the signal travel in the frame shared by emitter and receiver
-        T previous = initialOffset.getField().getZero();
+        // search signal transit date, computing the signal travel in inertial frame
+        double previous = 0.;
         int count = 0;
         while (!convergenceChecker.converged(count, previous, delay)) {
-            previous           = delay.add(0.0);
-            final T shift = computeShift(initialOffset, delay);
-            final FieldVector3D<T> position = pvCoordinatesProvider.getPosition(guessDate.shiftedBy(shift), frame);
-            delay                           = position.distance(fixedPosition).multiply(C_RECIPROCAL);
+            previous = delay;
+            final double shift = computeShift(initialOffset, delay);
+            final Vector3D pos    = pvCoordinatesProvider.getPosition(guessDate.shiftedBy(shift), frame);
+            delay                 = fixedPosition.distance(pos) * C_RECIPROCAL;
             count++;
         }
 
         return delay;
+
     }
 
     /**
@@ -101,6 +100,6 @@ abstract class FieldAbstractSignalTravelTime<T extends CalculusFieldElement<T>> 
      * @param delay time delay
      * @return time shift to use in computation
      */
-    protected abstract T computeShift(T offset, T delay);
+    protected abstract double computeShift(double offset, double delay);
 
 }

@@ -20,10 +20,10 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.orekit.estimation.measurements.signal.FieldSignalTravelTimeAdjustableEmitter;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeAdjustableEmitter;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
+import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.Constants;

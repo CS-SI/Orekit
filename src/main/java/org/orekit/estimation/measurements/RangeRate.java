@@ -24,13 +24,13 @@ import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.orekit.estimation.measurements.model.OneLegRangeRateModel;
-import org.orekit.estimation.measurements.model.TwoLegsRangeRateModel;
-import org.orekit.estimation.measurements.signal.FieldSignalTravelTimeAdjustableEmitter;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeAdjustableEmitter;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
-import org.orekit.estimation.measurements.signal.TwoLegsSignalTravelTimer;
+import org.orekit.estimation.measurements.model.TwoLeggedRangeRateModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.FieldSignalTravelTimeAdjustableEmitter;
+import org.orekit.signal.SignalTravelTimeAdjustableEmitter;
+import org.orekit.signal.SignalTravelTimeModel;
+import org.orekit.signal.TwoLeggedSignalTravelTimer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
@@ -182,8 +182,8 @@ public class RangeRate extends SignalBasedMeasurement<RangeRate> {
         final TimeStampedPVCoordinates receiverPV = observerPVProvider.getPVCoordinates(receptionDate, frame);
         final PVCoordinatesProvider satellitePVProvider = AbstractMeasurementObject.extractPVCoordinatesProvider(state,
                 state.getPVCoordinates());
-        final TwoLegsSignalTravelTimer twoLegsSignalTravelTimer = new TwoLegsSignalTravelTimer(getSignalTravelTimeModel());
-        final double[] delays = twoLegsSignalTravelTimer.computeDelays(frame, receiverPV.getPosition(), receptionDate,
+        final TwoLeggedSignalTravelTimer twoLeggedSignalTravelTimer = new TwoLeggedSignalTravelTimer(getSignalTravelTimeModel());
+        final double[] delays = twoLeggedSignalTravelTimer.computeDelays(frame, receiverPV.getPosition(), receptionDate,
                 satellitePVProvider, observerPVProvider);
 
         // Prepare estimation
@@ -196,7 +196,7 @@ public class RangeRate extends SignalBasedMeasurement<RangeRate> {
                 new TimeStampedPVCoordinates[] {emissionPV, transitState.getPVCoordinates(), receiverPV});
 
         // Compute range rate
-        final double rangeRate = new TwoLegsRangeRateModel(twoLegsSignalTravelTimer).value(frame, receiverPV, receptionDate,
+        final double rangeRate = new TwoLeggedRangeRateModel(twoLeggedSignalTravelTimer).value(frame, receiverPV, receptionDate,
                 satellitePVProvider, transitDate, observerPVProvider, emissionDate) / 2.;
 
         estimated.setEstimatedValue(rangeRate);
@@ -267,8 +267,8 @@ public class RangeRate extends SignalBasedMeasurement<RangeRate> {
         final FieldPVCoordinatesProvider<Gradient> observerPVProvider = getObserver().getFieldPVCoordinatesProvider(nbParams, indices);
         final FieldAbsoluteDate<Gradient> receptionDate = getCorrectedReceptionDateField(nbParams, indices);
         final TimeStampedFieldPVCoordinates<Gradient> receiverPV = observerPVProvider.getPVCoordinates(receptionDate, frame);
-        final TwoLegsSignalTravelTimer twoLegsSignalTravelTimer = new TwoLegsSignalTravelTimer(getSignalTravelTimeModel());
-        final Gradient[] delays = twoLegsSignalTravelTimer.computeDelays(frame, receiverPV.getPosition(), receptionDate,
+        final TwoLeggedSignalTravelTimer twoLeggedSignalTravelTimer = new TwoLeggedSignalTravelTimer(getSignalTravelTimeModel());
+        final Gradient[] delays = twoLeggedSignalTravelTimer.computeDelays(frame, receiverPV.getPosition(), receptionDate,
                 satellitePVProvider, observerPVProvider);
 
         // Prepare the evaluation
@@ -283,7 +283,7 @@ public class RangeRate extends SignalBasedMeasurement<RangeRate> {
                         receiverPV.toTimeStampedPVCoordinates()});
 
         // Compute range rate
-        final Gradient rangeRate = new TwoLegsRangeRateModel(twoLegsSignalTravelTimer).value(frame, receiverPV,
+        final Gradient rangeRate = new TwoLeggedRangeRateModel(twoLeggedSignalTravelTimer).value(frame, receiverPV,
                 receptionDate, satellitePVProvider, transitDate, observerPVProvider, emissionDate).half();
 
         fillEstimation(rangeRate, indices, estimated);

@@ -26,7 +26,7 @@ import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Observer;
 import org.orekit.estimation.measurements.SignalBasedMeasurement;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap.Span;

@@ -19,7 +19,7 @@ package org.orekit.estimation.measurements.generation;
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
+import org.orekit.signal.SignalTravelTimeModel;
 
 /** Abstract builder for physical measurements (based on signal transmission).
  * @author Romain Serra

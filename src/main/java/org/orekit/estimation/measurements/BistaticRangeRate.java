@@ -20,10 +20,10 @@ import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
-import org.orekit.estimation.measurements.model.TwoLegsRangeRateModel;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
+import org.orekit.estimation.measurements.model.TwoLeggedRangeRateModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
@@ -59,7 +59,7 @@ public class BistaticRangeRate extends BistaticRangeRelatedMeasurement<BistaticR
     public static final String MEASUREMENT_TYPE = "BistaticRangeRate";
 
     /** Range-rate measurement model. */
-    private final TwoLegsRangeRateModel twoLegsRangeRateModel;
+    private final TwoLeggedRangeRateModel twoLeggedRangeRateModel;
 
     /** Simple constructor.
      * @param emitter    emitter object
@@ -93,7 +93,7 @@ public class BistaticRangeRate extends BistaticRangeRelatedMeasurement<BistaticR
                 signalTravelTimeModel, satellite);
 
         // Add class member values
-        this.twoLegsRangeRateModel = new TwoLegsRangeRateModel(getTwoLegsSignalTimer());
+        this.twoLeggedRangeRateModel = new TwoLeggedRangeRateModel(getTwoLegsSignalTimer());
     }
 
     /** {@inheritDoc} */
@@ -120,7 +120,7 @@ public class BistaticRangeRate extends BistaticRangeRelatedMeasurement<BistaticR
         // Compute range rate
         final PVCoordinatesProvider observablePVCoordinates = AbstractMeasurementObject.extractPVCoordinatesProvider(state,
                 state.getPVCoordinates());
-        final double rangeRate = twoLegsRangeRateModel.value(frame, participants[2], receptionDate,
+        final double rangeRate = twoLeggedRangeRateModel.value(frame, participants[2], receptionDate,
                 observablePVCoordinates, transitDate, getEmitter().getPVCoordinatesProvider(), emissionDate);
 
         estimated.setEstimatedValue(rangeRate);
@@ -169,7 +169,7 @@ public class BistaticRangeRate extends BistaticRangeRelatedMeasurement<BistaticR
                 paramIndices);
         final FieldPVCoordinatesProvider<Gradient> observable = AbstractMeasurementObject.extractFieldPVCoordinatesProvider(state,
                 AbstractMeasurement.getCoordinates(state, 0, nbParams));
-        final Gradient rangeRate = twoLegsRangeRateModel.value(frame, receiverPV, receptionDate, observable,
+        final Gradient rangeRate = twoLeggedRangeRateModel.value(frame, receiverPV, receptionDate, observable,
                 transitDate, emitter, emissionDate);
 
         fillEstimation(rangeRate, getParameterIndices(states), estimated);

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements.signal;
+package org.orekit.signal;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -32,7 +32,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @since 14.0
  * @author Romain Serra
  */
-public class TwoLegsSignalTravelTimer {
+public class TwoLeggedSignalTravelTimer {
 
     /** Signal travel time model. */
     private final SignalTravelTimeModel signalTravelTimeModel;
@@ -41,7 +41,7 @@ public class TwoLegsSignalTravelTimer {
      * Constructor.
      * @param signalTravelTimeModel time delay computer
      */
-    public TwoLegsSignalTravelTimer(final SignalTravelTimeModel signalTravelTimeModel) {
+    public TwoLeggedSignalTravelTimer(final SignalTravelTimeModel signalTravelTimeModel) {
         this.signalTravelTimeModel = signalTravelTimeModel;
     }
 

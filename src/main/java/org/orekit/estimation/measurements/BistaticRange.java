@@ -20,9 +20,9 @@ import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
-import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
