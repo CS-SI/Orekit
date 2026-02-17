@@ -28,7 +28,7 @@ import org.orekit.time.AbsoluteDate;
  * @since 12.0
  * @param <T> type of the measurement
  */
-public abstract class GroundReceiverMeasurement<T extends ObservedMeasurement<T>> extends AbstractMeasurement<T> {
+public abstract class GroundReceiverMeasurement<T extends ObservedMeasurement<T>> extends SignalBasedMeasurement<T> {
 
     /** Ground station that receives signal from satellite. */
     private final GroundStation station;

@@ -85,7 +85,7 @@ public class AngularRaDec extends GroundBasedAngularMeasurement<AngularRaDec> {
                         final SignalTravelTimeModel signalTravelTimeModel, final ObservableSatellite satellite) {
         super(station, date, angular, sigma, baseWeight, signalTravelTimeModel, satellite);
         this.referenceFrame = referenceFrame;
-        this.measurementModel = new RaDecModel(referenceFrame, getSignalTravelTimeModel());
+        this.measurementModel = new RaDecModel(referenceFrame, getSignalTravelTimeModel().getWarmedUpModel());
         this.station = station;
     }
 

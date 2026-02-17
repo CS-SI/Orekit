@@ -176,7 +176,7 @@ class RangeRateTest {
                                                                new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
         for (final ObservedMeasurement<?> m : measurements) {
-            Assertions.assertFalse(m.isTwoWay());
+            Assertions.assertFalse(((RangeRate) m).isTwoWay());
         }
         propagator.clearStepHandlers();
 

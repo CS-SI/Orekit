@@ -51,7 +51,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Romain Serra
  * @since 14.0
  */
-abstract class BistaticRangeRelatedMeasurement<T extends AbstractMeasurement<T>> extends AbstractMeasurement<T> {
+abstract class BistaticRangeRelatedMeasurement<T extends AbstractMeasurement<T>> extends SignalBasedMeasurement<T> {
 
     /**
      * Observer from which emission is made.

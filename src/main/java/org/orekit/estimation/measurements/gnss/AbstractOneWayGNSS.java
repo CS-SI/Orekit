@@ -21,11 +21,11 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.orekit.estimation.measurements.AbstractMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Observer;
+import org.orekit.estimation.measurements.SignalBasedMeasurement;
 import org.orekit.estimation.measurements.signal.SignalTravelTimeModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -35,7 +35,7 @@ import org.orekit.utils.TimeSpanMap.Span;
  * @author Romain Serra
  * @since 14.0
  */
-public abstract class AbstractOneWayGNSS<T extends ObservedMeasurement<T>> extends AbstractMeasurement<T> {
+public abstract class AbstractOneWayGNSS<T extends ObservedMeasurement<T>> extends SignalBasedMeasurement<T> {
 
     /** Observer sending measurement data. */
     private final Observer observer;

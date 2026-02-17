@@ -39,7 +39,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Brianna Aubin
  * @since 14.0
  */
-abstract class DualReceiverMeasurement<T extends AbstractMeasurement<T>> extends AbstractMeasurement<T> {
+abstract class DualReceiverMeasurement<T extends AbstractMeasurement<T>> extends SignalBasedMeasurement<T> {
 
     /**
      * First observer to receive signal.  Determines measurement date.
